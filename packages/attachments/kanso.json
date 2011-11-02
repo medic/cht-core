@@ -1,0 +1,11 @@
+{
+    "name": "attachments",
+    "version": "0.0.8",
+    "description": "Loads files or directories of files and attaches them to a design doc",
+    "preprocessors": {
+        "add": "build/add"
+    },
+    "postprocessors": {
+        "cleanup": "build/cleanup"
+    }
+}

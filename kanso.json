@@ -1,0 +1,24 @@
+{
+    "name": "kujua-export",
+    "version": "0.0.1",
+    "description": "My new CouchApp",
+    "load": "lib/app",
+    "modules": ["lib", "views"],
+    "attachments": "static",
+    "dust": {
+        "templates": "templates"
+    },
+    "duality": {
+        "base_template": "base.html"
+    },
+    "dependencies": {
+        "modules": null,
+        "properties": null,
+        "attachments": null,
+        "settings": null,
+        "duality": null,
+        "dust": null,
+        "duality-dust": null,
+        "couchtypes": null
+    }
+}

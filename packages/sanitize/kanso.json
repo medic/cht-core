@@ -1,0 +1,10 @@
+{
+    "name": "sanitize",
+    "version": "0.0.8",
+    "description": "Functions for santizing user input or other untrusted data",
+    "modules": "sanitize.js",
+    "dependencies": {
+        "modules": null,
+        "underscore": null
+    }
+}
