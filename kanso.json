@@ -1,7 +1,7 @@
 {
     "name": "kujua-export",
     "version": "0.0.1",
-    "description": "My new CouchApp",
+    "description": "Kujua Exports CouchApp",
     "load": "lib/app",
     "modules": ["lib", "views"],
     "attachments": "static",
