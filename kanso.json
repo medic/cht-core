@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "description": "Kujua Exports CouchApp",
     "load": "lib/app",
-    "modules": ["lib", "views"],
+    "modules": ["lib", "views", "tests"],
     "attachments": "static",
     "dust": {
         "templates": "templates"
@@ -19,6 +19,8 @@
         "duality": null,
         "dust": null,
         "duality-dust": null,
-        "couchtypes": null
+        "couchtypes": null,
+        "nodeunit": null,
+        "nodeunit-testrunner": null
     }
 }
