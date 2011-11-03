@@ -1,0 +1,1 @@
+require('duality/core').init();

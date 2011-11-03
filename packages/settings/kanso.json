@@ -1,0 +1,8 @@
+{
+    "name": "settings",
+    "version": "0.0.8",
+    "description": "Uploads the kanso.json file as a CommonJS module under the 'settings' directory. Useful for packages that need access to these values after deployment.",
+    "preprocessors": {
+        "add": "build/add"
+    }
+}
