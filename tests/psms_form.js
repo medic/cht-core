@@ -5,14 +5,12 @@ var smsparser = require('views/lib/smsparser'),
 exports.psms_example_data = function (test) {
     var def = smsforms['PSMS'];
     var msg = 'PSMS#facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4';
-    var d = new Date(0);
-    d.setYear(2011);
-    d.setMonth(10);
 
     var obj = smsparser.parse(def, msg);
     test.same(obj, {
         facility_id: 'facility',
-        date: d,
+        year: '2011',
+        month: '11',
         la_6x1_dispensed: 1,
         la_6x2_dispensed: 2,
         cotrimoxazole_dispensed: 3,
@@ -28,7 +26,10 @@ exports.psms_example_data = function (test) {
     });
 
     var arr = smsparser.parseArray(def, msg);
-    test.same(arr, ['facility', d, 1, 2, 3, 4, 5, 6, 9, 8, 7, 6, 5, 4]);
+    test.same(
+        arr,
+        ['facility', '2011', '11', 1, 2, 3, 4, 5, 6, 9, 8, 7, 6, 5, 4]
+    );
 
     test.done();
 };

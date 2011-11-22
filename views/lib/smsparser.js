@@ -12,13 +12,9 @@ exports.parseField = function (type, raw, prev) {
     case 'string':
         return raw;
     case 'year':
-        var val = prev || new Date(0);
-        val.setYear(raw);
-        return val;
+        return raw;
     case 'month':
-        var val = prev || new Date(0);
-        val.setMonth(exports.parseNum(raw) - 1);
-        return val;
+        return raw;
     case 'date':
         var val = prev || new Date(0);
         val.setDate(raw);

@@ -5,8 +5,8 @@ exports['TEST'] = [
 
 exports['PSMS'] = [
     {key: 'facility_id', label: 'Health Facility Identifier', type: 'string'},
-    {key: 'date', label: 'Collection Date', type: 'year'},
-    {key: 'date', label: 'Collection Date', type: 'month'},
+    {key: 'year', label: 'Report Year', type: 'year'},
+    {key: 'month', label: 'Report Month', type: 'month'},
     {key: 'la_6x1_dispensed', label: 'LA 6x1: Dispensed total', type: 'number'},
     {key: 'la_6x2_dispensed', label: 'LA 6x2: Dispensed total', type: 'number'},
     {key: 'cotrimoxazole_dispensed', label: 'Cotrimoxazole: Dispensed total', type: 'number'},
