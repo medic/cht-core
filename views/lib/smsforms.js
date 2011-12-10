@@ -57,11 +57,6 @@ exports['PSCQ'] = [
         type: 'number'
     },
     {
-        key: 'supervision_a3dist',
-        label: "Nombre des SRO/ZINC distribués au cours trimestre",
-        type: 'number'
-    },
-    {
         key: 'supervision_a1disp',
         label: "Nombre des ACT 1 disponible à la fin du trimestre",
         type: 'number'

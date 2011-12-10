@@ -34,10 +34,14 @@ var zip = function (a, b) {
 };
 
 exports.parse = function (def, msg) {
-    var parts = msg.split('#');
-        name = parts[0];
+    var parts = msg.split('#'),
+        header = parts[0].split('!'),
+        name = header[1],
         vals = parts.slice(1);
-        pairs = zip(def, vals);
+
+    vals.unshift(header[2]);
+
+    var pairs = zip(def, vals);
 
     return pairs.reduce(function (obj, v) {
         var d = v[0];
