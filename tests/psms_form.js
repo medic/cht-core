@@ -4,7 +4,7 @@ var smsparser = require('views/lib/smsparser'),
 
 exports.psms_example_data = function (test) {
     var def = smsforms['PSMS'];
-    var msg = 'PSMS#facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4';
+    var msg = '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4';
 
     var obj = smsparser.parse(def, msg);
     test.same(obj, {
