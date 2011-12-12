@@ -3,7 +3,7 @@ exports['TEST'] = {
         {key: 'foo', label: 'Foo', type: 'string'},
         {key: 'bar', label: 'Bar', type: 'number'}
     ],
-    autoreply: 'Data received, thank you.'
+    autoreply: 'Thank you!'
 };
 
 exports['PSMS'] = {
