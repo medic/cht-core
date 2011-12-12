@@ -33,6 +33,9 @@ var zip = function (a, b) {
     return zipped;
 };
 
+/*
+ * Return parsed object.
+ */
 exports.parse = function (def, msg) {
     var parts = msg.split('#'),
         header = parts[0].split('!'),

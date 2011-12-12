@@ -7,14 +7,14 @@ exports.pscm_example_data = function (test) {
     var msg = '1!PSCM!2012#12#20#aaaaaaaaaaaaaaaaaa#dddddddddddd#gggggggggggggggggggg#1#333#111#222#333#444#555#666#777#888#999#111#222#333#444#555#665#221#774#445#111';
     test.expect(2);
 
-    var obj = smsparser.parse(def, msg);
+    var obj = smsparser.parse(def.fields, msg);
     test.same(obj, {
-        synthese_year: "2012",
-        synthese_month: "12",
+        synthese_year: '2012',
+        synthese_month: '12',
         synthese_district: 20,
-        synthese_area: "aaaaaaaaaaaaaaaaaa",
-        synthese_village: "dddddddddddd",
-        synthese_chw: "gggggggggggggggggggg",
+        synthese_area: 'aaaaaaaaaaaaaaaaaa',
+        synthese_village: 'dddddddddddd',
+        synthese_chw: 'gggggggggggggggggggg',
         synthese_resident: 1,
         synthese_v1: 333,
         synthese_v2: 111,
@@ -38,10 +38,10 @@ exports.pscm_example_data = function (test) {
         synthese_d1: 111
     });
 
-    var arr = smsparser.parseArray(def, msg);
+    var arr = smsparser.parseArray(def.fields, msg);
     test.same(
         arr,
-        ["2012", "12", 20, "aaaaaaaaaaaaaaaaaa", "dddddddddddd", "gggggggggggggggggggg", 1, 333, 111, 222, 333, 444, 555, 666, 777, 888, 999, 111, 222, 333, 444, 555, 666, 221, 774, 445, 111]
+        ['2012', '12', 20, 'aaaaaaaaaaaaaaaaaa', 'dddddddddddd', 'gggggggggggggggggggg', 1, 333, 111, 222, 333, 444, 555, 666, 777, 888, 999, 111, 222, 333, 444, 555, 666, 221, 774, 445, 111]
     );
 
     test.done();
