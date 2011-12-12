@@ -6,7 +6,8 @@ exports.psms_example_data = function (test) {
     var def = smsforms['PSMS'];
     var msg = '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4';
 
-    var obj = smsparser.parse(def, msg);
+    var obj = smsparser.parse(def.fields, msg);
+
     test.same(obj, {
         facility_id: 'facility',
         year: '2011',
@@ -25,7 +26,7 @@ exports.psms_example_data = function (test) {
         eye_ointment_days_stocked_out: 4
     });
 
-    var arr = smsparser.parseArray(def, msg);
+    var arr = smsparser.parseArray(def.fields, msg);
     test.same(
         arr,
         ['facility', '2011', '11', 1, 2, 3, 4, 5, 6, 9, 8, 7, 6, 5, 4]

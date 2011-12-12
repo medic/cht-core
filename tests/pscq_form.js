@@ -5,7 +5,7 @@ var smsparser = require('views/lib/smsparser'),
 exports.pscq_example_data = function (test) {
     var def = smsforms['PSCQ'];
     var msg = '1!PSCQ!2013#2#20#aaaaaaaaaaaaaaaaaa#2222#1111#2222#3333#4444#5555#444#111#222#333#474#112#444#111#333#880#220#220#212#555#663#444#888#221#555';
-    var obj = smsparser.parse(def, msg);
+    var obj = smsparser.parse(def.fields, msg);
 
     test.expect(2);
 
@@ -46,7 +46,7 @@ exports.pscq_example_data = function (test) {
 
     test.same(obj, expectedObj);
 
-    var arr = smsparser.parseArray(def, msg);
+    var arr = smsparser.parseArray(def.fields, msg);
     var expectedArr = ["2013", 2, 20, "aaaaaaaaaaaaaaaaaa", 2222, 1111, 2222, 3333, 4444, 5555, 444, 111, 222, 333, 474, 112, 444, 111, 333, 880, 220, 220, 212, 555, 663, 444, 888, 221, 555, NaN, NaN, NaN];
 
     test.same(arr, expectedArr);
