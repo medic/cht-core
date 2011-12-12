@@ -44,8 +44,8 @@ exports.pscq_example_data = function (test) {
         supervision_d1: NaN
     };
 
-    console.log(obj);
-    console.log(expectedObj);
+    //console.log(obj);
+    //console.log(expectedObj);
 
     test.same(obj, expectedObj);
 

@@ -39,15 +39,15 @@ exports.pscm_example_data = function (test) {
         synthese_d1: 111
     };
 
-    console.log(obj);
-    console.log(expectedObj);
+    //console.log(obj);
+    //console.log(expectedObj);
 
     test.same(obj, expectedObj);
 
     var arr = smsparser.parseArray(def.fields, msg);
     var expectedArr = ['2012', '12', 20, 'aaaaaaaaaaaaaaaaaa', 'dddddddddddd', 'gggggggggggggggggggg', 1, 333, 111, 222, 333, 444, 555, 666, 777, 888, 999, 111, 222, 333, 444, 555, 666, 221, 774, 445, 111];
-    console.log(arr);
-    console.log(expectedArr);
+    //console.log(arr);
+    //console.log(expectedArr);
 
     test.same(arr, expectedArr);
 
