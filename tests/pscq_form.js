@@ -10,10 +10,10 @@ exports.pscq_example_data = function (test) {
     test.expect(2);
 
     var expectedObj = {
-        supervision_year: "2013",
+        supervision_year: '2013',
         supervision_trimester: 2,
         supervision_district: 20,
-        supervision_area: "aaaaaaaaaaaaaaaaaa",
+        supervision_area: 'aaaaaaaaaaaaaaaaaa',
         supervision_a1r: 2222,
         supervision_a2r: 1111,
         supervision_a3r: 2222,
@@ -44,10 +44,13 @@ exports.pscq_example_data = function (test) {
         supervision_d1: NaN
     };
 
+    console.log(obj);
+    console.log(expectedObj);
+
     test.same(obj, expectedObj);
 
     var arr = smsparser.parseArray(def.fields, msg);
-    var expectedArr = ["2013", 2, 20, "aaaaaaaaaaaaaaaaaa", 2222, 1111, 2222, 3333, 4444, 5555, 444, 111, 222, 333, 474, 112, 444, 111, 333, 880, 220, 220, 212, 555, 663, 444, 888, 221, 555, NaN, NaN, NaN];
+    var expectedArr = ['2013', 2, 20, 'aaaaaaaaaaaaaaaaaa', 2222, 1111, 2222, 3333, 4444, 5555, 444, 111, 222, 333, 474, 112, 444, 111, 333, 880, 220, 220, 212, 555, 663, 444, 888, 221, 555, NaN, NaN, NaN];
 
     test.same(arr, expectedArr);
 

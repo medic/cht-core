@@ -5,10 +5,11 @@ var smsparser = require('views/lib/smsparser'),
 exports.pscm_example_data = function (test) {
     var def = smsforms['PSCM'];
     var msg = '1!PSCM!2012#12#20#aaaaaaaaaaaaaaaaaa#dddddddddddd#gggggggggggggggggggg#1#333#111#222#333#444#555#666#777#888#999#111#222#333#444#555#665#221#774#445#111';
+
     test.expect(2);
 
     var obj = smsparser.parse(def.fields, msg);
-    test.same(obj, {
+    var expectedObj = {
         synthese_year: '2012',
         synthese_month: '12',
         synthese_district: 20,
@@ -36,13 +37,19 @@ exports.pscm_example_data = function (test) {
         synthese_b1: 774,
         synthese_b2: 445,
         synthese_d1: 111
-    });
+    };
+
+    console.log(obj);
+    console.log(expectedObj);
+
+    test.same(obj, expectedObj);
 
     var arr = smsparser.parseArray(def.fields, msg);
-    test.same(
-        arr,
-        ['2012', '12', 20, 'aaaaaaaaaaaaaaaaaa', 'dddddddddddd', 'gggggggggggggggggggg', 1, 333, 111, 222, 333, 444, 555, 666, 777, 888, 999, 111, 222, 333, 444, 555, 666, 221, 774, 445, 111]
-    );
+    var expectedArr = ['2012', '12', 20, 'aaaaaaaaaaaaaaaaaa', 'dddddddddddd', 'gggggggggggggggggggg', 1, 333, 111, 222, 333, 444, 555, 666, 777, 888, 999, 111, 222, 333, 444, 555, 666, 221, 774, 445, 111];
+    console.log(arr);
+    console.log(expectedArr);
+
+    test.same(arr, expectedArr);
 
     test.done();
 };
