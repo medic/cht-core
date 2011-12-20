@@ -4,8 +4,12 @@ var smsparser = require('views/lib/smsparser'),
 
 exports.pscq_example_data = function (test) {
     var def = smsforms['PSCQ'];
-    var msg = '1!PSCQ!2013#2#20#aaaaaaaaaaaaaaaaaa#2222#1111#2222#3333#4444#5555#444#111#222#333#474#112#444#111#333#880#220#220#212#555#663#444#888#221#555';
-    var obj = smsparser.parse(def.fields, msg);
+    var doc = {
+        sent_timestamp: '12-11-12 08:00',
+        from: '+15551212',
+        message: '1!PSCQ!2013#2#20#aaaaaaaaaaaaaaaaaa#2222#1111#2222#3333#4444#5555#444#111#222#333#474#112#444#111#333#880#220#220#212#555#663#444#888#221#555'
+    };
+    var obj = smsparser.parse(def.fields, doc);
 
     test.expect(2);
 
@@ -39,9 +43,9 @@ exports.pscq_example_data = function (test) {
         supervision_v3: 888,
         supervision_t1: 221,
         supervision_t2: 555,
-        supervision_ref1: NaN,
-        supervision_ref2: NaN,
-        supervision_d1: NaN
+        supervision_ref1: null,
+        supervision_ref2: null,
+        supervision_d1: null
     };
 
     //console.log(obj);
@@ -49,8 +53,8 @@ exports.pscq_example_data = function (test) {
 
     test.same(obj, expectedObj);
 
-    var arr = smsparser.parseArray(def.fields, msg);
-    var expectedArr = ['2013', 2, 20, 'aaaaaaaaaaaaaaaaaa', 2222, 1111, 2222, 3333, 4444, 5555, 444, 111, 222, 333, 474, 112, 444, 111, 333, 880, 220, 220, 212, 555, 663, 444, 888, 221, 555, NaN, NaN, NaN];
+    var arr = smsparser.parseArray(def.fields, doc);
+    var expectedArr = ['12-11-12 08:00', '+15551212', '2013', 2, 20, 'aaaaaaaaaaaaaaaaaa', 2222, 1111, 2222, 3333, 4444, 5555, 444, 111, 222, 333, 474, 112, 444, 111, 333, 880, 220, 220, 212, 555, 663, 444, 888, 221, 555, null, null, null];
 
     test.same(arr, expectedArr);
 
