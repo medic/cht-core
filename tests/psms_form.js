@@ -4,9 +4,13 @@ var smsparser = require('views/lib/smsparser'),
 
 exports.psms_example_data = function (test) {
     var def = smsforms['PSMS'];
-    var msg = '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4';
+    var doc = {
+        sent_timestamp: '12-11-11 15:00',
+        from: '+15551212',
+        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4'
+    };
 
-    var obj = smsparser.parse(def.fields, msg);
+    var obj = smsparser.parse(def.fields, doc);
 
     test.same(obj, {
         facility_id: 'facility',
@@ -26,10 +30,10 @@ exports.psms_example_data = function (test) {
         eye_ointment_days_stocked_out: 4
     });
 
-    var arr = smsparser.parseArray(def.fields, msg);
+    var arr = smsparser.parseArray(def.fields, doc);
     test.same(
         arr,
-        ['facility', '2011', '11', 1, 2, 3, 4, 5, 6, 9, 8, 7, 6, 5, 4]
+        ['12-11-11 15:00', '+15551212', 'facility', '2011', '11', 1, 2, 3, 4, 5, 6, 9, 8, 7, 6, 5, 4]
     );
 
     test.done();
