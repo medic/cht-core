@@ -1,3 +1,4 @@
+
 exports.parseNum = function (raw) {
     if (raw === '' || raw === null || raw === undefined) {
         return NaN;
@@ -48,14 +49,6 @@ exports.parse = function (def, doc) {
 
     return pairs.reduce(function (obj, v) {
         var d = v[0];
-        // the fields sent_timestamp and from are set by the gateway, so they
-        // are not included in the message.
-        if (d.key === 'sent_timestamp') {
-            v[1] = doc.sent_timestamp;
-        }
-        if (d.key === 'from') {
-            v[1] = doc.from;
-        }
         obj[d.key] = exports.parseField(d.type, v[1], obj[d.key]);
         return obj;
     }, {});
@@ -73,5 +66,9 @@ exports.parseArray = function (def, doc) {
     for (var k = 0; k < keys.length; k++) {
         arr.push(obj[keys[k]]);
     }
+    // The fields sent_timestamp and from are set by the gateway, so they are
+    // not included in the message.
+    arr.unshift(doc.from);
+    arr.unshift(doc.sent_timestamp);
     return arr;
 };

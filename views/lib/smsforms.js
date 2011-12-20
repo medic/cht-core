@@ -8,8 +8,6 @@ exports['TEST'] = {
 
 exports['PSMS'] = {
     fields: [
-        {key: 'sent_timestamp', label: 'Sent Timestamp', type: 'string'},
-        {key: 'from', label: 'From', type: 'string'},
         {key: 'facility_id', label: 'Health Facility Identifier', type: 'string'},
         {key: 'year', label: 'Report Year', type: 'year'},
         {key: 'month', label: 'Report Month', type: 'month'},
@@ -31,8 +29,6 @@ exports['PSMS'] = {
 
 exports['PSCQ'] = {
     fields: [
-        {key: 'sent_timestamp', label: 'Date envoyé', type: 'string'},
-        {key: 'from', label: 'Envoyé par', type: 'string'},
         {key: 'supervision_year', label: 'Année', type: 'year'},
         {key: 'supervision_trimester', label: 'Trimestre', type: 'number'},
         {key: 'supervision_district', label: 'District de Santé', type: 'number'},
@@ -163,8 +159,6 @@ exports['PSCQ'] = {
 
 exports['PSCM'] = {
     fields: [
-        {key: 'sent_timestamp', label: 'Date envoyé', type: 'string'},
-        {key: 'from', label: 'Envoyé par', type: 'string'},
         {key: 'synthese_year', label: "Année", type: 'year'},
         {key: 'synthese_month', label: "Mois", type: 'month'},
         {key: 'synthese_district', label: "District de Santé", type: 'number'},
