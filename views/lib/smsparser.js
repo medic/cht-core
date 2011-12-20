@@ -36,8 +36,8 @@ var zip = function (a, b) {
 /*
  * Return parsed object.
  */
-exports.parse = function (def, msg) {
-    var parts = msg.split('#'),
+exports.parse = function (def, doc) {
+    var parts = doc.message.split('#'),
         header = parts[0].split('!'),
         name = header[1],
         vals = parts.slice(1);
@@ -48,13 +48,21 @@ exports.parse = function (def, msg) {
 
     return pairs.reduce(function (obj, v) {
         var d = v[0];
+        // the fields sent_timestamp and from are set by the gateway, so they
+        // are not included in the message.
+        if (d.key === 'sent_timestamp') {
+            v[1] = doc.sent_timestamp;
+        }
+        if (d.key === 'from') {
+            v[1] = doc.from;
+        }
         obj[d.key] = exports.parseField(d.type, v[1], obj[d.key]);
         return obj;
     }, {});
 };
 
-exports.parseArray = function (def, msg) {
-    var obj = exports.parse(def, msg);
+exports.parseArray = function (def, doc) {
+    var obj = exports.parse(def, doc);
     var keys = [];
     for (var i = 0; i < def.length; i++) {
         if (keys.indexOf(def[i].key) === -1) {
