@@ -1,7 +1,7 @@
 
 exports.parseNum = function (raw) {
-    if (raw === '' || raw === null || raw === undefined) {
-        return NaN;
+    if (!isFinite(raw)) {
+        return null;
     }
     return Number(raw);
 };
