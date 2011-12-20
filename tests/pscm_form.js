@@ -4,11 +4,15 @@ var smsparser = require('views/lib/smsparser'),
 
 exports.pscm_example_data = function (test) {
     var def = smsforms['PSCM'];
-    var msg = '1!PSCM!2012#12#20#aaaaaaaaaaaaaaaaaa#dddddddddddd#gggggggggggggggggggg#1#333#111#222#333#444#555#666#777#888#999#111#222#333#444#555#665#221#774#445#111';
+    var doc = {
+        sent_timestamp: '12-10-11 09:00',
+        from: '+15551212',
+        message: '1!PSCM!2012#12#20#aaaaaaaaaaaaaaaaaa#dddddddddddd#gggggggggggggggggggg#1#333#111#222#333#444#555#666#777#888#999#111#222#333#444#555#665#221#774#445#111'
+    };
 
     test.expect(2);
 
-    var obj = smsparser.parse(def.fields, msg);
+    var obj = smsparser.parse(def.fields, doc);
     var expectedObj = {
         synthese_year: '2012',
         synthese_month: '12',
@@ -32,7 +36,7 @@ exports.pscm_example_data = function (test) {
         synthese_r5: 333,
         synthese_a1: 444,
         synthese_a2: 555,
-        synthese_s1: 666,
+        synthese_s1: 665,
         synthese_s2: 221,
         synthese_b1: 774,
         synthese_b2: 445,
@@ -44,10 +48,8 @@ exports.pscm_example_data = function (test) {
 
     test.same(obj, expectedObj);
 
-    var arr = smsparser.parseArray(def.fields, msg);
-    var expectedArr = ['2012', '12', 20, 'aaaaaaaaaaaaaaaaaa', 'dddddddddddd', 'gggggggggggggggggggg', 1, 333, 111, 222, 333, 444, 555, 666, 777, 888, 999, 111, 222, 333, 444, 555, 666, 221, 774, 445, 111];
-    //console.log(arr);
-    //console.log(expectedArr);
+    var arr = smsparser.parseArray(def.fields, doc);
+    var expectedArr = ['12-10-11 09:00', '+15551212', '2012', '12', 20, 'aaaaaaaaaaaaaaaaaa', 'dddddddddddd', 'gggggggggggggggggggg', 1, 333, 111, 222, 333, 444, 555, 666, 777, 888, 999, 111, 222, 333, 444, 555, 665, 221, 774, 445, 111];
 
     test.same(arr, expectedArr);
 
