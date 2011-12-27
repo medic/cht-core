@@ -33,6 +33,28 @@
     <script src="{baseURL}/static/js/jquery-1.5.2.min.js"></script>
     <script src="{baseURL}/static/js/json2.js"></script>
     <script src="{baseURL}/modules.js"></script>
+    <script type="text/javascript">
+        var db = require('db').current(),
+            templates = require('duality/templates'),
+            smsforms = require('views/lib/smsforms'),
+            _ = require('underscore')._,
+            forms = [];
+
+        // render available downloads based on data available
+        db.getView('kujua-export', 'sms_message_values', function(err, data) {
+            if (err) {
+                return alert(err);
+            }
+            for (var i = 0; i < data.rows.length; i++) {
+                var key = data.rows[i].key[0];
+                if (smsforms[key]) {
+                  forms.push(key);
+                }
+            }
+            $('#forms').html(
+                templates.render('sms_forms_data.html', {}, {forms:forms}));
+        });
+    </script>
     <!--script src="{baseURL}/kanso.js"></script-->
   </body>
 </html>
