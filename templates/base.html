@@ -38,7 +38,7 @@
             templates = require('duality/templates'),
             smsforms = require('views/lib/smsforms'),
             _ = require('underscore')._,
-            forms = [];
+            forms = {}; 
 
         // render available downloads based on data available
         db.getView('kujua-export', 'sms_message_values', function(err, data) {
@@ -48,11 +48,12 @@
             for (var i = 0; i < data.rows.length; i++) {
                 var key = data.rows[i].key[0];
                 if (smsforms[key]) {
-                  forms.push(key);
+                  forms[key] = 1;
                 }
             }
             $('#forms').html(
-                templates.render('sms_forms_data.html', {}, {forms:forms}));
+                templates.render(
+                    'sms_forms_data.html', {}, {forms:_.keys(forms)}));
         });
     </script>
     <!--script src="{baseURL}/kanso.js"></script-->
