@@ -1,7 +1,7 @@
 {
     "name": "kujua-export",
-    "version": "0.0.2",
-    "description": "Kujua Exports CouchApp",
+    "version": "0.0.3",
+    "description": "Provide easy access to your SMS form data.",
     "load": "lib/app",
     "modules": ["lib", "views", "tests"],
     "attachments": "static",
