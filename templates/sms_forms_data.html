@@ -1,4 +1,5 @@
 <ul>
+{?forms}
 {#forms}
 <li class="form">
   <h2><strong>{.}</strong></h2>
@@ -6,5 +7,8 @@
   <a href="{baseURL}/{.}/sms_messages.csv">[en]</a> 
   <a href="{baseURL}/{.}/sms_messages.csv?locale=fr">[fr]</a></p>
   </li>
+{/forms}
+{:else}
+<li>No data is available yet.</li>
 {/forms}
 </ul>
