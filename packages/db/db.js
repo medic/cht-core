@@ -1,18 +1,44 @@
 /*global $: false */
 
 /**
- * Contains functions for querying and storing data in CouchDB.
+ * ## DB Module
+ *
+ * This contains the core functions for dealing with CouchDB. That includes
+ * document CRUD operations, querying views and creating/deleting databases.
+ *
+ *
+ * ### Events
+ *
+ * The db module is an EventEmitter. See the
+ * [events package](http://kan.so/packages/details/events) for more information.
+ *
+ * #### unauthorized
+ *
+ * Emitted by the db module when a request results in a 401 Unauthorized
+ * response. This is listened to used by the session module to help detect
+ * session timeouts etc.
+ *
+ * ```javascript
+ * var db = require("db");
+ *
+ * db.on('unauthorized', function (req) {
+ *     // req is the ajax request object which returned 401
+ * });
+ * ```
  *
  * @module
  */
 
-/**
- * Module dependencies
- */
 
 var events = require('events'),
     _ = require('underscore')._;
 
+
+/**
+ * Tests if running in the browser
+ *
+ * @returns {Boolean}
+ */
 
 function isBrowser() {
     return (typeof(window) !== 'undefined');
@@ -24,15 +50,6 @@ function isBrowser() {
  */
 
 var exports = module.exports = new events.EventEmitter();
-
-
-/**
- * Cache for use by exports.request -- keeps track of
- * completed and in-process requests from Kanso to CouchDB.
- */
-
-exports.request_cache = {};
-exports.request_cache_wait_queue = {};
 
 
 /**
@@ -66,7 +83,7 @@ var httpData = function (xhr, type, s) {
  * Returns a function for handling ajax responses from jquery and calls
  * the callback with the data or appropriate error.
  *
- * @param {Function} callback
+ * @param {Function} callback(err,response)
  * @api private
  */
 
@@ -79,9 +96,7 @@ function onComplete(options, callback) {
                 resp = httpData(req, "json");
             }
             catch (e) {
-                return exports._invoke_request_callback(
-                    e, null, options, callback
-                );
+                return callback(e);
             }
         }
         else {
@@ -103,9 +118,7 @@ function onComplete(options, callback) {
             exports.emit('unauthorized', req);
         }
         if (req.status === 200 || req.status === 201 || req.status === 202) {
-            exports._invoke_request_callback(
-                null, resp, options, callback
-            );
+            callback(null, resp);
         }
         else if (resp.error || resp.reason) {
             var err = new Error(resp.reason || resp.error);
@@ -113,24 +126,66 @@ function onComplete(options, callback) {
             err.reason = resp.reason;
             err.code = resp.code;
             err.status = req.status;
-            exports._invoke_request_callback(
-                err, null, options, callback
-            );
+            callback(err);
         }
         else {
             // TODO: map status code to meaningful error message
             var err2 = new Error('Returned status code: ' + req.status);
             err2.status = req.status;
-            exports._invoke_request_callback(err2, null, options, callback);
+            callback(err2);
         }
     };
 }
 
+
 /**
+ * Attempts to guess the database name and design doc id from the current URL,
+ * or the loc paramter. Returns an object with 'db', 'design_doc' and 'root'
+ * properties, or null for a URL not matching the expected format (perhaps
+ * behing a vhost).
  *
- * @name escapeUrlParams(s)
- * @param {Object} obj An object containing url parameters, with
- *          parameter names stored as property names (or keys).
+ * You wouldn't normally use this function directly, but use `db.current()` to
+ * return a DB object bound to the current database instead.
+ *
+ * @name guessCurrent([loc])
+ * @param {String} loc - An alternative URL to use instead of window.location
+ *     (optional)
+ * @returns {Object|null} - An object with 'db', 'design_doc' and 'root'
+ *     properties, or null for a URL not matching the
+ *     expected format (perhaps behing a vhost)
+ * @api public
+ */
+
+exports.guessCurrent = function (loc) {
+    var loc = loc || window.location;
+
+    /**
+     * A database must be named with all lowercase letters (a-z), digits (0-9),
+     * or any of the _$()+-/ characters and must end with a slash in the URL.
+     * The name has to start with a lowercase letter (a-z).
+     *
+     * http://wiki.apache.org/couchdb/HTTP_database_API
+     */
+
+    var re = /\/([a-z][a-z0-9_\$\(\)\+-\/]*)\/_design\/([^\/]+)\//;
+    var match = re.exec(loc.pathname);
+
+    if (match) {
+        return {
+            db: match[1],
+            design_doc: match[2],
+            root: '/'
+        }
+    }
+    return null;
+};
+
+/**
+ * Converts an object to a string of properly escaped URL parameters.
+ *
+ * @name escapeUrlParams([obj])
+ * @param {Object} obj - An object containing url parameters, with
+ *       parameter names stored as property names (or keys).
  * @returns {String}
  * @api public
  */
@@ -147,10 +202,12 @@ exports.escapeUrlParams = function (obj) {
 };
 
 /**
- * Encodes a document id or view, list or show name.
+ * Encodes a document id or view, list or show name. This also will make sure
+ * the forward-slash is not escaped for documents with id's beginning with
+ * "\_design/".
  *
  * @name encode(str)
- * @param {String} str
+ * @param {String} str - the name or id to escape
  * @returns {String}
  * @api public
  */
@@ -193,210 +250,16 @@ exports.stringifyQuery = function (query) {
  *
  * @name request(options, callback)
  * @param {Object} options
- * @param {Function} callback
+ * @param {Function} callback(err,response)
  * @api public
  */
 
 exports.request = function (options, callback) {
     options.complete = onComplete(options, callback);
     options.dataType = 'json';
-
-    if (options.flush_cache) {
-        exports._request_cache_remove(options);
-    }
-
-    if (exports._should_cache_request(options)) {
-        if (exports._begin_cached_request(options, callback)) {
-            $.ajax(options);
-        }
-    } else {
-        $.ajax(options);
-    }
+    $.ajax(options);
 };
 
-
-/* Support for in-interpreter request caching:
-    The following functions are used to support the caching of
-    AJAX request results. If a to-be-cached resource has been
-    requested but not yet returned, a wait queue is employed. */
-
-/**
- * Clear the in-interpreter request cache. Use this function if
- * you need to ensure that the in-interpreter cache is empty,
- * e.g. inside of a test case. If {options} is left undefined, this
- * function destroys the *entire* request cache for *all* callers
- * of subsystems that rely upon db.request. To be more selective
- * and clear only a portion of the cache, supply the {options}
- * argument. The {options} argument is in the same format as that
- * used in options.request (i.e. with url and data properties).
- */
-exports.clear_request_cache = function (options) {
-    if (options) {
-        var key = exports._make_request_cache_key(options);
-        delete exports.request_cache[key];
-    } else {
-        exports.request_cache = {};
-    }
-}
-
-/**
- * Returns true if the AJAX request described by {options}
- * should be cached by the in-interpreter request caching
- * code. In general, this sort of caching is limited to requests
- * that (i) request caching explicitly, and (ii) have no side-effects.
- */
-exports._should_cache_request = function (options) {
-    return (
-        (!options.type || options.type === 'GET') &&
-            options.use_cache
-    );
-};
-
-/**
- * Returns a string that uniquely identifies the AJAX request
- * described by {options}. This string is used to look up cache entries.
- */
-exports._make_request_cache_key = function (options) {
-    return options.url + (
-        _.isString(options.data) ? '?' + options.data :
-            exports.escapeUrlParams(options.data || {})
-    );
-};
-
-/**
- * If caching is not appropriate for the AJAX request described by
- * {options}, invoke {callback} in the usual way. If caching is
- * appropriate, add the result to the request cache, and notify all
- * of the waiting requests that a response has arrived.
- */
-exports._invoke_request_callback = function (err, resp, options, callback) {
-
-    if (exports._should_cache_request(options)) {
-        exports._request_cache_add(err, resp, options, true);
-        exports._finish_cached_request(options);
-    } else {
-        callback(err, resp);
-    }
-};
-
-/**
- * Add information describing a completed AJAX request to the
- * in-interpreter request cache. This information will be handed
- * out to identical requests that occur in the future. If {clone}
- * is true, then the information provided will be cloned before
- * it is entered in to the cache. Otherwise, you must take care
- * not to later modify the values you provided -- unless you also
- * want those modifications to occur in the cache as well.
- */
-exports._request_cache_add = function (error, response, options, clone) {
-
-    var cache_key = exports._make_request_cache_key(options);
-    var response_clone = JSON.parse(JSON.stringify(response));
-
-    exports.request_cache[cache_key] = {
-        error: error,
-        response: response_clone
-    };
-};
-
-/**
- * Retrieve information describing a completed AJAX request from
- * the in-interpreter request cache. If no information is available,
- * this function will return undefined. If {clone} is true, then
- * the completed request's response data will be deep-cloned
- * before it is returned. Otherwise, this function will return the
- * cache's internal version of the data, which should not be modified.
- */
-exports._request_cache_fetch = function (options, clone) {
-
-    var cache_key = exports._make_request_cache_key(options);
-    var rv = exports.request_cache[cache_key];
-
-    if (rv && clone) {
-        rv = _.clone(rv);
-        rv.response = JSON.parse(JSON.stringify(rv.response));
-    }
-
-    return rv;
-};
-
-/**
- * Remove information describing a completed AJAX request from the
- * in-interpreter request cache. This forces the next identical
- * request to make an actual HTTP request.
- */
-exports._request_cache_remove = function (options) {
-
-    var cache_key = exports._make_request_cache_key(options);
-    delete exports.request_cache[cache_key];
-};
-
-/**
- * Start the process of issuing a cache request. This function
- * has one of three outcomes: (i) in the case of a cache hit,
- * the callback is immediately invoked, and given the cached
- * response; (ii) if a cache miss occurs, and another request
- * is already in progress, we place ourself on a queue to wait
- * for that request's response; (iii) in any other case, we
- * tell the caller to make an actual HTTP request, and add
- * ourself as the first queue waiter.
- */
-exports._begin_cached_request = function (options, callback) {
-
-    var should_send_request = false;
-    var cache_key = exports._make_request_cache_key(options);
-    var cache_item = exports._request_cache_fetch(options, true);
-
-    if (cache_item) {
-
-        /* Cache hit: Invoke callback and return */
-        callback(cache_item.error, cache_item.response);
-
-    } else {
-        /* Cache miss */
-        if (!exports.request_cache_wait_queue[cache_key]) {
-
-            /* Request not already-in-progress:
-                Instruct caller to issue actual HTTP request. */
-
-            exports.request_cache_wait_queue[cache_key] = [];
-            should_send_request = true;
-        }
-
-        /* Add this request to notification queue */
-        exports.request_cache_wait_queue[cache_key].push(
-            { options: options, callback: callback }
-        );
-    }
-
-    return should_send_request;
-};
-
-/**
- * Finish a request, using an item already in the request cache.
- * First, the cached result is retrieved from the cache. Second,
- * all waiters on the request cache's wait queue are notified.
- * Finally, the wait queue is emptied. The cached result is
- * removed as well if the result was an error.
- */
-exports._finish_cached_request = function (options) {
-
-    var cache_key = exports._make_request_cache_key(options);
-    var cache_item = exports._request_cache_fetch(options, true);
-    var request_queue = (exports.request_cache_wait_queue[cache_key] || []);
-
-    for (var i = 0, len = request_queue.length; i < len; ++i) {
-        request_queue[i].callback(
-            cache_item.error, cache_item.response
-        );
-    }
-
-    if (cache_item.error) {
-        exports._request_cache_remove(options);
-    }
-
-    delete exports.request_cache_wait_queue[cache_key];
-};
 
 /**
  * Creates a CouchDB database.
@@ -407,7 +270,7 @@ exports._finish_cached_request = function (options) {
  *
  * @name createDatabase(name, callback)
  * @param {String} name
- * @param {Function} callback
+ * @param {Function} callback(err,response)
  * @api public
  */
 
@@ -428,7 +291,7 @@ exports.createDatabase = function (name, callback) {
  *
  * @name deleteDatabase(name, callback)
  * @param {String} name
- * @param {Function} callback
+ * @param {Function} callback(err,response)
  * @api public
  */
 
@@ -448,6 +311,10 @@ exports.deleteDatabase = function (name, callback) {
  * If you're running behind a virtual host you'll need to set up
  * appropriate rewrites for a DELETE request to '/' either turning off safe
  * rewrites or setting up a new vhost entry.
+ *
+ * @name allDbs(callback)
+ * @param {Function} callback(err,response)
+ * @api public
  */
 
 exports.allDbs = function (callback) {
@@ -465,58 +332,31 @@ exports.allDbs = function (callback) {
  *
  * @name newUUID(cacheNum, callback)
  * @param {Number} cacheNum (optional, default: 1)
- * @param {Function} callback
+ * @param {Function} callback(err,response)
  * @api public
  */
+
+var uuidCache = [];
 
 exports.newUUID = function (cacheNum, callback) {
     if (!callback) {
         callback = cacheNum;
         cacheNum = 1;
     }
+    if (uuidCache.length) {
+        return callback(null, uuidCache.shift());
+    }
     var req = {
         url: '/_uuids',
-        use_cache: true,
-        expect_json: true,
-        data: { count: cacheNum }
+        data: {count: cacheNum},
+        expect_json: true
     };
-
-    /* Check cache; get reference to actual cache entry */
-    var cache_search = exports._request_cache_fetch(req, false);
-
-    if (cache_search) {
-        var uuids = cache_search.response.uuids;
-        if (uuids.length > 0) {
-            /* Remove one uuid from cache, return it */
-            return callback(null, uuids.shift());
-        }
-    }
-
-    exports.request(req, function (err, response) {
+    exports.request(req, function (err, resp) {
         if (err) {
             return callback(err);
         }
-        /* Get reference to cached version of response */
-        var cache_entry = exports._request_cache_fetch(req, false);
-        var uuids = ((cache_entry || {}).response || {}).uuids;
-
-        if (uuids && uuids.length > 0) {
-
-            /* Remove one uuid from cache:
-                Because we asked _request_cache_fetch not to clone,
-                our update here will affect the cache entry as well. */
-
-            callback(null, uuids.shift());
-
-        } else {
-
-            /* Others requests got all of our uuids:
-                Flush the cache entry to force a re-request,
-                than go around and retry the request again. */
-
-            exports._request_cache_remove(req);
-            exports.newUUID(cacheNum, callback);
-        }
+        uuidCache = resp.uuids;
+        callback(null, uuidCache.shift());
     });
 };
 
@@ -527,16 +367,72 @@ exports.newUUID = function (cacheNum, callback) {
 
 function DB(url) {
     this.url = url;
+    // add the module functions to the DB object
+    for (var k in exports) {
+        this[k] = exports[k];
+    }
 };
 
 
 /**
  * Creates a new DB object with methods operating on the database at 'url'
+ *
+ * The DB object also exposes the same module-level methods (eg, createDatabase)
+ * so it can be used in-place of the db exports object, for example:
+ *
+ * ```javascript
+ * var db = require('db').use('mydb');
+ *
+ * db.createDatabase('example', function (err, resp) {
+ *     // do something
+ * });
+ * ```
+ *
+ * @name use(url)
+ * @param {String} url - The url to bind the new DB object to
+ * @returns {DB}
+ * @api public
  */
 
+// TODO: handle full urls, not just db names
 exports.use = function (url) {
     /* Force leading slash; make absolute path */
     return new DB((url.substr(0, 1) !== '/' ? '/' : '') + url);
+};
+
+/**
+ * Attempts to guess the current DB name and return a DB object using that.
+ * Should work reliably unless running behind a virtual host.
+ *
+ * Throws an error if the current database url cannot be detected.
+ *
+ * The DB object also exposes the same module-level methods (eg, createDatabase)
+ * so it can be used in-place of the db exports object, for example:
+ *
+ * ```javascript
+ * var db = require('db').current();
+ *
+ * db.createDatabase('example', function (err, resp) {
+ *     // do something
+ * });
+ * ```
+ *
+ * @name current()
+ * @returns {DB}
+ * @api public
+ */
+
+exports.current = function () {
+    // guess current db url etc
+    var curr = exports.guessCurrent();
+    if (!curr) {
+        throw new Error(
+            'Cannot guess current database URL, if running behind a virtual ' +
+            'host you need to explicitly set the database URL using ' +
+            'db.use(database_url) instead of db.current()'
+        );
+    }
+    return exports.use(curr.db);
 };
 
 
@@ -545,11 +441,11 @@ exports.use = function (url) {
  * are passed to the callback, with the first argument of the callback
  * reserved for any exceptions that occurred (node.js style).
  *
- * @name getRewrite(path, [q], callback)
+ * @name DB.getRewrite(name, path, [q], callback)
  * @param {String} name - the name of the design doc
  * @param {String} path
  * @param {Object} q (optional)
- * @param {Function} callback
+ * @param {Function} callback(err,response)
  * @api public
  */
 
@@ -572,13 +468,13 @@ DB.prototype.getRewrite = function (name, path, /*optional*/q, callback) {
 /**
  * Queries all design documents in the database.
  *
- * @name allDocs([q], callback)
+ * @name DB.allDesignDocs([q], callback)
  * @param {Object} q - query parameters to pass to /_all_docs (optional)
- * @param {Function} callback
+ * @param {Function} callback(err,response)
  * @api public
  */
 
-DB.prototype.allDesignDocs = function (q, callback) {
+DB.prototype.allDesignDocs = function (/*optional*/q, callback) {
     if (!callback) {
         callback = q;
         q = {};
@@ -590,22 +486,23 @@ DB.prototype.allDesignDocs = function (q, callback) {
 
 
 /**
- * Queries all documents in the database.
+ * Queries all documents in the database (include design docs).
  *
- * @name allDocs([q], callback)
+ * @name DB.allDocs([q], callback)
  * @param {Object} q - query parameters to pass to /_all_docs (optional)
- * @param {Function} callback
+ * @param {Function} callback(err,response)
  * @api public
  */
 
-DB.prototype.allDocs = function (q, callback) {
+DB.prototype.allDocs = function (/*optional*/q, callback) {
     if (!callback) {
         callback = q;
         q = {};
     }
     var req = {
         url: this.url + '/_all_docs',
-        data: exports.stringifyQuery(q)
+        data: exports.stringifyQuery(q),
+        expect_json: true
     };
     exports.request(req, callback);
 };
@@ -616,35 +513,24 @@ DB.prototype.allDocs = function (q, callback) {
  * passed to the callback, with the first argument of the callback reserved
  * for any exceptions that occurred (node.js style).
  *
- * @name getDoc(id, [q, options], callback)
+ * @name DB.getDoc(id, [q], callback)
  * @param {String} id
  * @param {Object} q (optional)
- * @param {Object} options (optional)
- * @param {Function} callback
+ * @param {Function} callback(err,response)
  * @api public
  */
 
-DB.prototype.getDoc = function (id, /*opt*/q, /*opt*/options, callback) {
+DB.prototype.getDoc = function (id, /*optional*/q, callback) {
     if (!id) {
         throw new Error('getDoc requires an id parameter to work properly');
     }
     if (!callback) {
-        if (!options) {
-            /* Arity = 2: Omits q, options */
-            callback = q;
-            options = {};
-            q = {};
-        } else {
-          /* Arity = 3: Omits options */
-            callback = options;
-            options = {};
-        }
+        callback = q;
+        q = {};
     }
     var req = {
         url: this.url + '/' + exports.encode(id),
         expect_json: true,
-        use_cache: options.useCache,
-        flush_cache: options.flushCache,
         data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);
@@ -656,20 +542,14 @@ DB.prototype.getDoc = function (id, /*opt*/q, /*opt*/options, callback) {
  * passed to the callback, with the first argument of the callback reserved
  * for any exceptions that occurred (node.js style).
  *
- * @name saveDoc(doc, [options], callback)
+ * @name DB.saveDoc(doc, callback)
  * @param {Object} doc
- * @param {Object} options (optional)
- * @param {Function} callback
+ * @param {Function} callback(err,response)
  * @api public
  */
 
-DB.prototype.saveDoc = function (doc, /*optional*/options, callback) {
+DB.prototype.saveDoc = function (doc, callback) {
     var method, url = this.url;
-    if (!callback) {
-        /* Arity = 2: Omits options */
-        callback = options;
-        options = {};
-    }
     if (doc._id === undefined) {
         method = "POST";
     }
@@ -693,23 +573,18 @@ DB.prototype.saveDoc = function (doc, /*optional*/options, callback) {
  * passed to the callback, with the first argument of the callback reserved
  * for any exceptions that occurred (node.js style).
  *
- * @name removeDoc(doc, [options], callback)
+ * @name DB.removeDoc(doc, callback)
  * @param {Object} doc
- * @param {Function} callback
+ * @param {Function} callback(err,response)
  * @api public
  */
 
-DB.prototype.removeDoc = function (doc, /*optional*/options, callback) {
+DB.prototype.removeDoc = function (doc, callback) {
     if (!doc._id) {
         throw new Error('removeDoc requires an _id field in your document');
     }
     if (!doc._rev) {
         throw new Error('removeDoc requires a _rev field in your document');
-    }
-    if (!callback) {
-        /* Arity = 2: Omits options */
-        callback = options;
-        options = {};
     }
     var req = {
         type: 'DELETE',
@@ -725,27 +600,18 @@ DB.prototype.removeDoc = function (doc, /*optional*/options, callback) {
  * passed to the callback, with the first argument of the callback reserved
  * for any exceptions that occurred (node.js style).
  *
- * @name getView(view, [q], callback)
- * @param {String} name - the name of the design doc to use
- * @param {String} view
+ * @name DB.getView(name, view, [q], callback)
+ * @param {String} name - name of the design doc to use
+ * @param {String} view - name of the view
  * @param {Object} q (optional)
- * @param {Object} options (optional)
- * @param {Function} callback
+ * @param {Function} callback(err,response)
  * @api public
  */
 
-DB.prototype.getView = function (name, view, /*opt*/q, /*opt*/options, callback) {
+DB.prototype.getView = function (name, view, /*opt*/q, callback) {
     if (!callback) {
-        if (!options) {
-            /* Arity = 2: Omits q, options */
-            callback = q;
-            options = {};
-            q = {};
-        } else {
-          /* Arity = 3: Omits options */
-            callback = options;
-            options = {};
-        }
+        callback = q;
+        q = {};
     }
     var viewname = exports.encode(view);
     var req = {
@@ -754,8 +620,6 @@ DB.prototype.getView = function (name, view, /*opt*/q, /*opt*/options, callback)
             '/_view/' + viewname
         ),
         expect_json: true,
-        use_cache: options.useCache,
-        flush_cache: options.flushCache,
         data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);
@@ -768,12 +632,12 @@ DB.prototype.getView = function (name, view, /*opt*/q, /*opt*/options, callback)
  * argument of the callback reserved for any exceptions that occurred
  * (node.js style).
  *
- * @name getList(list, view, [q], callback)
- * @param {String} name - the name of the design doc to use
- * @param {String} list
- * @param {String} view
+ * @name DB.getList(name, list, view, [q], callback)
+ * @param {String} name - name of the design doc to use
+ * @param {String} list - name of the list function
+ * @param {String} view - name of the view to apply the list function to
  * @param {Object} q (optional)
- * @param {Function} callback
+ * @param {Function} callback(err,response)
  * @api public
  */
 
@@ -799,12 +663,12 @@ DB.prototype.getList = function (name, list, view, /*optional*/q, callback) {
  * argument of the callback reserved for any exceptions that occurred
  * (node.js style).
  *
- * @name getShow(show, docid, [q], callback)
- * @param {String} name - the name of the design doc to use
- * @param {String} show
- * @param {String} docid
+ * @name DB.getShow(name, show, docid, [q], callback)
+ * @param {String} name - name of the design doc to use
+ * @param {String} show - name of the show function
+ * @param {String} docid - id of the document to apply the show function to
  * @param {Object} q (optional)
- * @param {Function} callback
+ * @param {Function} callback(err,response)
  * @api public
  */
 
@@ -826,46 +690,17 @@ DB.prototype.getShow = function (name, show, docid, /*optional*/q, callback) {
 
 
 /**
- * Get all documents (including design docs).
+ * Fetch a design document from CouchDB.
  *
- * @name all([q], callback)
- * @param {Object} q (optional)
- * @param {Function} callback
- * @api public
- */
-
-DB.prototype.all = function (/*optional*/q, callback) {
-    if (!callback) {
-        callback = q;
-        q = {};
-    }
-    var req = {
-        url: this.url + '/_all_docs',
-        data: exports.stringifyQuery(q),
-        expect_json: true
-    };
-    exports.request(req, callback);
-};
-
-
-/**
- * Fetch a design document from CouchDB. By default, the
- * results of this function are cached within the javascript
- * engine. To avoid this, pass true for the no_cache argument.
- *
- * @name getDesignDoc(name, callback, no_cache)
- * @param name The name of (i.e. path to) the design document.
+ * @name DB.getDesignDoc(name, callback)
+ * @param name The name of (i.e. path to) the design document without the
+ *     preceeding "\_design/".
  * @param callback The callback to invoke when the request completes.
- * @param no_cache optional; true to force a cache miss for this request.
  * @api public
  */
 
-DB.prototype.getDesignDoc = function (name, callback, no_cache) {
-    var options = {
-        use_cache: !no_cache,
-        flush_cache: !!no_cache
-    };
-    this.getDoc('_design/' + name, options, function (err, ddoc) {
+DB.prototype.getDesignDoc = function (name, callback) {
+    this.getDoc('_design/' + name, function (err, ddoc) {
         if (err) {
             return callback(err);
         }
@@ -876,22 +711,15 @@ DB.prototype.getDesignDoc = function (name, callback, no_cache) {
 /**
  * Gets information about the database.
  *
- * @name info([options], callback)
- * @param {Object} options (optional)
- * @param {Function} callback
+ * @name DB.info(callback)
+ * @param {Function} callback(err,response)
  * @api public
  */
 
-DB.prototype.info = function (/*optional*/options, callback) {
-    if (!callback) {
-        callback = options;
-        options = {};
-    }
+DB.prototype.info = function (callback) {
     var req = {
         url: this.url,
         expect_json: true,
-        use_cache: options.useCache,
-        flush_cache: options.flushCache
     };
     exports.request(req, callback);
 };
@@ -900,33 +728,25 @@ DB.prototype.info = function (/*optional*/options, callback) {
 /**
  * Listen to the changes feed for a database.
  *
- * Options:
- * __db__ - the db url to use (defaults to current app's db)
- * __filter__ - the filter function to use
- * __since__ - the update_seq to start listening from
- * __heartbeat__ - the heartbeat time (defaults to 10 seconds)
- * __include_docs__ - whether to include docs in the results
+ * __Options:__
+ * * _filter_ - the filter function to use
+ * * _since_ - the update_seq to start listening from
+ * * _heartbeat_ - the heartbeat time (defaults to 10 seconds)
+ * * _include_docs_ - whether to include docs in the results
  *
  * Returning false from the callback will cancel the changes listener
  *
- * @name changes([options], callback)
- * @param {Object} options (optional)
- * @param {Function} callback
+ * @name DB.changes([q], callback)
+ * @param {Object} q (optional) query parameters (see options above)
+ * @param {Function} callback(err,response)
  * @api public
  */
 
-DB.prototype.changes = function (q, options, callback) {
+// TODO: change this to use an EventEmitter
+DB.prototype.changes = function (/*optional*/q, callback) {
     if (!callback) {
-        if (!options) {
-            /* Arity = 2: Omits q, options */
-            callback = q;
-            options = {};
-            q = {};
-        } else {
-          /* Arity = 3: Omits options */
-            callback = options;
-            options = {};
-        }
+        callback = q;
+        q = {};
     }
 
     var that = this;
@@ -959,11 +779,7 @@ DB.prototype.changes = function (q, options, callback) {
             getChanges(q.since);
         }
         else {
-            var opts = {};
-            if (options.db) {
-                opts.db = db;
-            }
-            that.info(opts, function (err, info) {
+            that.info(function (err, info) {
                 if (err) {
                     return callback(err);
                 }
@@ -982,17 +798,17 @@ DB.prototype.changes = function (q, options, callback) {
  * provide via its second argument; the first argument of the callback
  * is reserved for any exceptions that occurred (node.js style).
  *
- * @name bulkSave(docs, [options], callback)
+ * **Options:**
+ * * *all_or\_nothing* - Require that all documents be saved
+ *   successfully (or saved with a conflict); otherwise roll
+ *   back the operation.
+ *
+ * @name DB.bulkSave(docs, [options], callback)
  * @param {Array} docs An array of documents; each document is an object
  * @param {Object} options (optional) Options for the bulk-save operation.
- *          options.db: The name of the database to use, or false-like
- *              to use Kanso's current database.
- *          options.transactional: Require that all documents be saved
- *              successfully (or saved with a conflict); otherwise roll
- *              back the operation. This uses the 'all_or_nothing' option
- *              provided by CouchDB.
- * @param {Function} callback A function to accept results and/or errors.
- *          Document update conflicts are reported in the results array.
+ * @param {Function} callback(err,response) - A function to accept results
+ *          and/or errors. Document update conflicts are reported in the
+ *          results array.
  * @api public
  */
 
@@ -1003,18 +819,14 @@ DB.prototype.bulkSave = function (docs, /*optional*/ options, callback) {
         );
     }
     if (!callback) {
-        /* Arity = 2: Omits options */
         callback = options;
         options = {};
     }
-    var data = {
-        docs: docs,
-        all_or_nothing: !!options.transactional
-    };
+    options.docs = doc;
     var req = {
         type: 'POST',
         url: this.url + '/_bulk_docs',
-        data: JSON.stringify(data),
+        data: JSON.stringify(options),
         processData: false,
         contentType: 'application/json',
         expect_json: true
@@ -1031,33 +843,24 @@ DB.prototype.bulkSave = function (docs, /*optional*/ options, callback) {
  * argument; the first argument of the callback is reserved for any
  * exceptions that occurred (node.js style).
  *
- * @name bulkGet(docs, [options], callback)
- * @param {Array} docs An array of documents identifiers (i.e. strings).
- * @param {Object} options (optional) Options for the bulk-read operation.
- *          options.db: The name of the database to use, or false-like
- *              to use Kanso's current database.
- * @param {Function} callback A function to accept results and/or errors.
- *          Document update conflicts are reported in the results array.
+ * @name DB.bulkGet(keys, [q], callback)
+ * @param {Array} keys An array of documents identifiers (i.e. strings).
+ * @param {Object} q (optional) Query parameters for the bulk-read operation.
+ * @param {Function} callback(err,response) - A function to accept results
+ *          and/or errors. Document update conflicts are reported in the
+ *          results array.
  * @api public
  */
 
-DB.prototype.bulkGet = function (keys, /*opt*/ q, /*opt*/ options, callback) {
+DB.prototype.bulkGet = function (keys, /*optional*/ q, callback) {
     if (keys && !_.isArray(keys)) {
         throw new Error(
             'bulkGet requires that _id values be supplied as a list'
         );
     }
     if (!callback) {
-        if (!options) {
-            /* Arity = 2: Omits q, options */
-            callback = q;
-            options = {};
-            q = {};
-        } else {
-          /* Arity = 3: Omits options */
-            callback = options;
-            options = {};
-        }
+        callback = q;
+        q = {};
     }
 
     /* Encode every query-string option:
