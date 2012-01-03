@@ -9,8 +9,16 @@
     <div class="navbar navbar-fixed">
       <div class="navbar-inner">
         <div class="container">
-          <p class="brand">Kujua Export</p>
-          <p class="version">v{settings.version}</p>
+          <p class="brand">Kujua Export <span class="version">v{settings.version}</span></p>
+          <ul class="nav secondary-nav">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle">Admin</a>
+              <ul class="dropdown-menu">
+                <li><a href="{baseURL}/../_view/sms_messages?include_docs=true">Raw Messages</a></li>
+                <li><a href="{baseURL}/test">Run Tests</a></li>
+              </ul>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -21,17 +29,8 @@
     </div>
     <div class="container">
       <div class="content">
-        <div class="row">
-          <div id="content" class="span6">
-            {content|s}
-          </div>
-          <div id="sidebar" class="span2">
-            <h2>Admin</h2>
-            <ul>
-              <li><a href="{baseURL}/../_view/sms_messages?include_docs=true">Raw Messages</a></li>
-              <li><a href="{baseURL}/test">Run Tests</a></li>
-            </ul>
-          </div>
+        <div id="content">
+          {content|s}
         </div>
       </div>
       <div id="footer">
@@ -68,6 +67,11 @@
           // Dynamic year for footer copyright
           var currentYear = (new Date).getFullYear();
           $("#year").text( (new Date).getFullYear() );
+
+          // Admin menu control
+          $('.dropdown-toggle').click(function() {
+            $('.dropdown-menu').toggle(300);
+          });
         });
     </script>
   </body>

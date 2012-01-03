@@ -1,9 +1,20 @@
 @import "packages/bootstrap/bootstrap/lib/bootstrap.less";
 
+/* Kujua Colors */
+@aqua: #1A8FB2;
+@gold: #CC8F00;
+@green: #8EB51C;
+@red: #CA410B;
+@grey: #797979;
+@lightgrey: #CBCBCB;
+@nearwhite: #F2F2F2;
+@linkColor: @aqua;
+
+/* shrink container width for kujua export */
 @gridColumns: 8;
 
+/* background noise */
 html, body {
-      /* background noise */
       background: #ccc url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAmUlEQVQYV12Q2wrEIAxEVaSI+P/f6JMPIkWk1OUEpmwrSEicW/S11n0ch1trOWqM0V3X9erP83S+tbZ55HwBmlF9733DSCmZ2n3fD4HZnNPlnJ3/WisCMXAIIVg1RQ2wQBFlXAADRNUUSykWnosNRB052DJqxAaMokjMX1vLTl+Eqr7OMpKLHP+ZBNDmlpEGMI9jjMdSSxHhB0QBnc28Jnb5AAAAAElFTkSuQmCC);
 }
 body {
@@ -27,12 +38,14 @@ body {
   margin: -20px -20px 20px;*/
 }
 .version {
-  float: right;
+  /*
   padding-right: 40px;
- /* color: @gray;*/
+  color: @gray;
   padding-left: 0;
   margin-left: 20px;
+  */
   font-weight: bold;
+  font-size: .567em;
   color: #000;
   text-shadow: 0 1px 0 rgba(255,255,255,.1), 0 0 30px rgba(255,255,255,.125);
 }
