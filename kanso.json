@@ -1,6 +1,6 @@
 {
     "name": "kujua-export",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "Provide easy access to your SMS form data.",
     "load": "lib/app",
     "modules": ["lib", "views", "tests"],
@@ -10,6 +10,11 @@
     },
     "duality": {
         "base_template": "base.html"
+    },
+    "less": {
+        "compress": true,
+        "compile": "static/css/app.less",
+        "remove_from_attachments": true
     },
     "dependencies": {
         "modules": null,
@@ -21,6 +26,8 @@
         "duality-dust": null,
         "couchtypes": null,
         "nodeunit": null,
-        "nodeunit-testrunner": null
+        "nodeunit-testrunner": null,
+        "less-precompiler": null,
+        "bootstrap": "0.0.1"
     }
 }

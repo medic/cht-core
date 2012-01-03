@@ -3,32 +3,40 @@
   <head> 
     <meta charset="utf-8">
     <title>{title}</title> 
-    <style type="text/css">
-      .form {
-        width: 15em;
-        float: left;
-        overflow: auto;
-        margin: 0 10px 10px 0;
-        padding: 0;
-        border: solid 0.125em #ddd;
-      }
-      .form h2 {
-        padding: 5px;
-        margin: 0;
-        font-size: 1.5em;
-        background-color: #ddd;
-      }
-      .form p {
-        padding: 5px;
-      }
-      h1 { 
-        clear: both;
-      }
-    </style>
-  </head> 
+    <link rel="stylesheet" type="text/css" href="static/css/app.css" />
+  </head>
   <body> 
-    <div id="content">
-      {content|s}
+    <div class="navbar navbar-fixed">
+      <div class="navbar-inner">
+        <div class="container">
+          <p class="brand">Kujua Export</p>
+          <p class="version">v{settings.version}</p>
+        </div>
+      </div>
+    </div>
+    <div class="page-header">
+      <div class="container">
+        <h1>SMS Forms Data</h1>
+      </div>
+    </div>
+    <div class="container">
+      <div class="content">
+        <div class="row">
+          <div id="content" class="span6">
+            {content|s}
+          </div>
+          <div id="sidebar" class="span2">
+            <h2>Admin</h2>
+            <ul>
+              <li><a href="{baseURL}/../_view/sms_messages?include_docs=true">Raw Messages</a></li>
+              <li><a href="{baseURL}/test">Run Tests</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div id="footer">
+        <p>&copy; <span id="year">2011</span> Medic Mobile.</p>
+      </div>
     </div>
     <script src="{baseURL}/static/js/jquery-1.5.2.min.js"></script>
     <script src="{baseURL}/static/js/json2.js"></script>
@@ -55,7 +63,12 @@
                 templates.render(
                     'sms_forms_data.html', {}, {forms:_.keys(forms)}));
         });
+
+        $(function() {
+          // Dynamic year for footer copyright
+          var currentYear = (new Date).getFullYear();
+          $("#year").text( (new Date).getFullYear() );
+        });
     </script>
-    <!--script src="{baseURL}/kanso.js"></script-->
   </body>
 </html>

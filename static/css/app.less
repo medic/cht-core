@@ -1,0 +1,38 @@
+@import "packages/bootstrap/bootstrap/lib/bootstrap.less";
+
+@gridColumns: 8;
+
+html, body {
+      /* background noise */
+      background: #ccc url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAmUlEQVQYV12Q2wrEIAxEVaSI+P/f6JMPIkWk1OUEpmwrSEicW/S11n0ch1trOWqM0V3X9erP83S+tbZ55HwBmlF9733DSCmZ2n3fD4HZnNPlnJ3/WisCMXAIIVg1RQ2wQBFlXAADRNUUSykWnosNRB052DJqxAaMokjMX1vLTl+Eqr7OMpKLHP+ZBNDmlpEGMI9jjMdSSxHhB0QBnc28Jnb5AAAAAElFTkSuQmCC);
+}
+body {
+  padding-top: 40px;
+}
+.content {
+  border-top: solid 3px black;
+  background-color: white;
+  @shadow: inset 0 1px 3px rgba(0,0,0,.1), 0 3px 8px #cecece;
+  .box-shadow(@shadow);
+}
+#footer {
+  margin: 40px auto;
+  width: 10em;
+  color: @grayLight;
+}
+.page-header {
+  background-color: white;
+  padding-top: 10px;
+  /*padding: 20px 20px 10px;
+  margin: -20px -20px 20px;*/
+}
+.version {
+  float: right;
+  padding-right: 40px;
+ /* color: @gray;*/
+  padding-left: 0;
+  margin-left: 20px;
+  font-weight: bold;
+  color: #000;
+  text-shadow: 0 1px 0 rgba(255,255,255,.1), 0 0 30px rgba(255,255,255,.125);
+}

@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Bootstrap, from Twitter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="../bootstrap.css" rel="stylesheet">
+    <link href="assets/css/docs.css" rel="stylesheet">
+    <link href="assets/js/google-code-prettify/prettify.css" rel="stylesheet">
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" type="image/x-icon" href="assets/ico/favicon.ico">
+    <link rel="apple-touch-icon" href="assets/ico/bootstrap-apple-57x57.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="assets/ico/bootstrap-apple-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="assets/ico/bootstrap-apple-114x114.png">
+  </head>
+
+  <body>
+
+    <!-- Navbar
+    ================================================== -->
+    <div class="navbar navbar-fixed">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="./index.html">Bootstrap</a>
+          <ul class="nav">
+            <li><a href="./index.html">Overview</a></li>
+            <li><a href="./scaffolding.html">Scaffolding</a></li>
+            <li><a href="./base-css.html">Base CSS</a></li>
+            <li class="active"><a href="./components.html">Components</a></li>
+            <li><a href="./javascript.html">Javascript plugins</a></li>
+            <li><a href="./less.html">Using LESS</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <!-- Masthead
+      ================================================== -->
+      <header class="jumbotron subhead" id="overview">
+        <h1>Components</h1>
+        <p class="lead">Dozens of reusable components are built into Bootstrap to provide navigation, alerts, popovers, and much more.</p>
+      </header>
+
+
+<!-- Media
+================================================== -->
+<section id="media">
+  <div class="page-header">
+    <h1>Thumbnails <small>Grids of images, videos, text, and more</small></h1>
+  </div>
+
+  <div class="row">
+    <div class="span6">
+      <h2>Default thumbnails</h2>
+      <p>By default, Bootstrap's thumbnails are designed to showcase linked images with minimal required markup.</p>
+      <ul class="thumbnails">
+        <li class="span3">
+          <a href="#" class="thumbnail">
+            <img src="http://placehold.it/210x150" alt="">
+          </a>
+        </li>
+        <li class="span3">
+          <a href="#" class="thumbnail">
+            <img src="http://placehold.it/210x150" alt="">
+          </a>
+        </li>
+        <li class="span3">
+          <a href="#" class="thumbnail">
+            <img src="http://placehold.it/210x150" alt="">
+          </a>
+        </li>
+        <li class="span3">
+          <a href="#" class="thumbnail">
+            <img src="http://placehold.it/210x150" alt="">
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="span6">
+      <h2>Highly customizable</h2>
+      <p>With a bit of extra markup, it's possible to add any kind of HTML content like headings, paragraphs, or buttons into thumbnails.</p>
+      <ul class="thumbnails">
+        <li class="span3">
+          <div class="thumbnail">
+            <img src="http://placehold.it/210x150" alt="">
+            <div class="caption">
+              <h5>Thumbnail label</h5>
+              <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+              <p><a href="#" class="btn primary">Action</a> <a href="#" class="btn">Action</a></p>
+            </div>
+          </div>
+        </li>
+        <li class="span3">
+          <div class="thumbnail">
+            <img src="http://placehold.it/210x150" alt="">
+            <div class="caption">
+              <h5>Thumbnail label</h5>
+              <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+              <p><a href="#" class="btn primary">Action</a> <a href="#" class="btn">Action</a></p>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="span4">
+      <h3>Why use thumbnails</h3>
+      <p>Thumbnails (previously <code>.media-grid</code> up until v1.4) are great for grids of photos or videos, image search results, retail products, portfolios, and much more. They can be links or static content.</p>
+    </div>
+    <div class="span4">
+      <h3>Simple, flexible markup</h3>
+      <p>Thumbnail markup is simple&mdash;a <code>ul</code> with any number of <code>li</code> elements is all that is required. It's also super flexible, allowing for any type of content with just a bit more markup to wrap your contents.</p>
+    </div>
+    <div class="span4">
+      <h3>Uses grid column sizes</h3>
+      <p>Lastly, the thumbnails component uses existing grid system classes&mdash;like <code>.span2</code> or <code>.span3</code>&mdash;for control of thumbnail dimensions.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="span6">
+      <h2>The markup</h2>
+      <p>As mentioned previously, the required markup for thumbnails is light and straightforward. Here's a look at the default setup <strong>for linked images</strong>:</p>
+<pre class="prettyprint linenums">
+&lt;ul class="thumbnails"&gt;
+  &lt;li class="span3"&gt;
+    &lt;a href="#" class="thumbnail"&gt;
+      &lt;img src="http://placehold.it/210x150" alt=""&gt;
+    &lt;/a&gt;
+  &lt;/li&gt;
+  ...
+&lt;/ul&gt;
+</pre>
+      <p>For custom HTML content in thumbnails, the markup changes slightly. To allow block level content anywhere, we swap the <code>&lt;a&gt;</code> for a <code>&lt;div&gt;</code> like so:</p>
+<pre class="prettyprint linenums">
+&lt;ul class="thumbnails"&gt;
+  &lt;li class="span3"&gt;
+    &lt;div class="thumbnail"&gt;
+      &lt;img src="http://placehold.it/210x150" alt=""&gt;
+      &lt;h5&gt;Thumbnail label&lt;/h5&gt;
+      &lt;p&gt;Thumbnail caption right here...&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/li&gt;
+  ...
+&lt;/ul&gt;
+</pre>
+    </div>
+    <div class="span6">
+      <h2>More examples</h2>
+      <p>Explore all your options with the various grid classes available to you. You can also mix and match different sizes.</p>
+      <ul class="thumbnails">
+        <li class="span4">
+          <a href="#" class="thumbnail">
+            <img src="http://placehold.it/290x230" alt="">
+          </a>
+        </li>
+        <li class="span2">
+          <a href="#" class="thumbnail">
+            <img src="http://placehold.it/130x100" alt="">
+          </a>
+        </li>
+        <li class="span2">
+          <a href="#" class="thumbnail">
+            <img src="http://placehold.it/130x100" alt="">
+          </a>
+        </li>
+        <li class="span2">
+          <a href="#" class="thumbnail">
+            <img src="http://placehold.it/130x100" alt="">
+          </a>
+        </li>
+        <li class="span2">
+          <a href="#" class="thumbnail">
+            <img src="http://placehold.it/130x100" alt="">
+          </a>
+        </li>
+        <li class="span2">
+          <a href="#" class="thumbnail">
+            <img src="http://placehold.it/130x100" alt="">
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+</section>
+
+
+
+<!-- Autocomplete
+================================================== -->
+<section id="autocomplete">
+  <div class="page-header">
+    <h1>Autocomplete <small></small></h1>
+  </div>
+
+</section>
+
+
+
+<!-- Carousel
+================================================== -->
+<section id="carousel">
+  <div class="page-header">
+    <h1>Carousel <small></small></h1>
+  </div>
+
+</section>
+
+
+
+<!-- Navbar
+================================================== -->
+<section id="navbar">
+  <div class="page-header">
+    <h1>Navbar</h1>
+  </div>
+  <h2>Fixed navbar</h2>
+  <div class="navbar navbar-static" >
+    <div class="navbar-inner">
+      <div class="container" style="width: auto;">
+        <a class="brand" href="#">Project Name</a>
+        <ul class="nav">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="#">Link</a></li>
+          <li><a href="#">Link</a></li>
+          <li><a href="#">Link</a></li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown</a>
+            <ul class="dropdown-menu">
+              <li><a href="#">Secondary link</a></li>
+              <li><a href="#">Something else here</a></li>
+              <li class="divider"></li>
+              <li><a href="#">Another link</a></li>
+            </ul>
+          </li>
+        </ul>
+        <form class="form-search navbar-search pull-left" action="">
+          <input type="text" class="search-query span2" placeholder="Search">
+        </form>
+        <ul class="nav secondary-nav">
+          <li class="divider"></li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown</a>
+            <ul class="dropdown-menu">
+              <li><a href="#">Secondary link</a></li>
+              <li><a href="#">Something else here</a></li>
+              <li class="divider"></li>
+              <li><a href="#">Another link</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div><!-- /navbar-inner -->
+  </div><!-- /navbar -->
+
+  <div class="row">
+    <div class="span4">
+      <h4>What is it</h4>
+      <p>Our navbar is a fixed bar that houses a website’s logo or name, primary navigation, and search form.</p>
+    </div>
+    <div class="span4">
+      <h4>Customizable</h4>
+      <p>All elements within, and the entire navbar as well, are optional. You can choose to include a logo/name, nav, search, and a secondary nav&mdash;or any combination of that.</p>
+    </div>
+    <div class="span4">
+      <h4>Dropdowns included</h4>
+      <p>As part of the main navigation, we’ve included the ability for you to add dropdowns to your nav. Check out the secondary nav above (right aligned) to see how it’s done. Dropdowns <code>&lt;li&gt;</code> tags also support <code>.active</code> for showing current page selection.</p>
+    </div>
+  </div>
+  <p><strong>Note:</strong> When using the navbar on any page, be sure to account for the overlap it causes by adding <code>padding-top: 40px;</code> to your <code>&lt;body&gt;</code>.</p>
+
+</section>
+
+
+
+<!-- Tabs & Pills
+================================================== -->
+<section id="tabsAndPills">
+  <div class="page-header">
+    <h1>Tabs and pills <small></small></h1>
+  </div>
+
+  <div class="row">
+    <div class="span3">
+      <p>Create simple secondary navigation with a <code>&lt;ul&gt;</code>. Swap between tabs or pills by adding the appropriate class.</p>
+      <p>Great for sub-sections of content like our account settings pages and user timelines for toggling between pages of like content. Available in tabbed or pill styles.</p>
+    </div>
+    <div class="span9">
+      <h3>Basic tabs example</h3>
+      <p>Tabs can be used as regular navigation (loading external pages in the same tab) or as tabbable content areas for swapping out panes of content. We have a <a href="./javascript.html#tabs">tabs plugin</a> that can be used to integrate the latter.</p>
+      <ul class="tabs">
+        <li class="active"><a href="#">Home</a></li>
+        <li><a href="#">Profile</a></li>
+        <li><a href="#">Messages</a></li>
+        <li><a href="#">Settings</a></li>
+        <li><a href="#">Contact</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown</a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Secondary link</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li class="divider"></li>
+            <li><a href="#">Another link</a></li>
+          </ul>
+        </li>
+      </ul>
+<pre class="prettyprint linenums">
+&lt;ul class="tabs"&gt;
+  &lt;li class="active"&gt;&lt;a href="#"&gt;Home&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#"&gt;Profile&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#"&gt;Messages&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#"&gt;Settings&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#"&gt;Contact&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</pre>
+      <h3>Tabbable tabs</h3>
+      <p>As mentioned above, you can bring your tabs to life with a simple plugin. Here we have integrated all four variations of the tabs&mdash;default (top), right, bottom, left&mdash;with example tab areas.</p>
+
+      <div class="tabbable">
+        <ul class="tabs">
+          <li class="active"><a href="#1" data-toggle="tab">Section 1</a></li>
+          <li><a href="#2" data-toggle="tab">Section 2</a></li>
+          <li><a href="#3" data-toggle="tab">Section 3</a></li>
+          <li><a href="#4" data-toggle="tab">Section 4</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="1">
+            <p>Oh hai #1!</p>
+          </div>
+          <div class="tab-pane" id="2">
+            <p>Oh hai #2!</p>
+          </div>
+          <div class="tab-pane" id="3">
+            <p>Oh hai #3!</p>
+          </div>
+          <div class="tab-pane" id="4">
+            <p>Oh hai #4!</p>
+          </div>
+        </div>
+      </div>
+
+       <div class="row">
+        <div class="span4">
+          <div class="tabbable tabs-left">
+            <ul class="tabs">
+              <li class="active"><a href="#5" data-toggle="tab">Section 1</a></li>
+              <li><a href="#6" data-toggle="tab">Section 2</a></li>
+              <li><a href="#7" data-toggle="tab">Section 3</a></li>
+            </ul>
+            <div class="tab-content" id="myTabContent2">
+              <div class="tab-pane active" id="5">
+                <h4>Section 1</h4>
+                <p>Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Maecenas sed diam eget risus varius blandit sit amet non magna. Vestibulum id ligula porta felis euismod semper.</p>
+              </div>
+              <div class="tab-pane" id="6">
+                <h4>Section 2</h4>
+                <p>Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Maecenas sed diam eget risus varius blandit sit amet non magna. Vestibulum id ligula porta felis euismod semper.</p>
+              </div>
+              <div class="tab-pane" id="7">
+                <h4>Section 3</h4>
+                <p>Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Maecenas sed diam eget risus varius blandit sit amet non magna. Vestibulum id ligula porta felis euismod semper.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="span4 offset1">
+          <div class="tabbable tabs-right">
+            <ul class="tabs">
+              <li class="active"><a href="#8" data-toggle="tab">Section 1</a></li>
+              <li><a href="#9" data-toggle="tab">Section 2</a></li>
+              <li><a href="#10" data-toggle="tab">Section 3</a></li>
+            </ul>
+            <div class="tab-content" id="myTabContent3">
+              <div class="tab-pane active" id="8">
+                <h4>Section 1</h4>
+                <p>Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Maecenas sed diam eget risus varius blandit sit amet non magna. Vestibulum id ligula porta felis euismod semper.</p>
+              </div>
+              <div class="tab-pane" id="9">
+                <h4>Section 2</h4>
+                <p>Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Maecenas sed diam eget risus varius blandit sit amet non magna. Vestibulum id ligula porta felis euismod semper.</p>
+              </div>
+              <div class="tab-pane" id="10">
+                <h4>Section 3</h4>
+                <p>Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Maecenas sed diam eget risus varius blandit sit amet non magna. Vestibulum id ligula porta felis euismod semper.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabbable tabs-bottom">
+        <div class="tab-content">
+          <div class="tab-pane active" id="11">
+            <p>Oh hai #1!</p>
+          </div>
+          <div class="tab-pane" id="12">
+            <p>Oh hai #2!</p>
+          </div>
+          <div class="tab-pane" id="13">
+            <p>Oh hai #3!</p>
+          </div>
+          <div class="tab-pane" id="14">
+            <p>Oh hai #4!</p>
+          </div>
+        </div>
+        <ul class="tabs">
+          <li class="active"><a href="#11" data-toggle="tab">Section 1</a></li>
+          <li><a href="#12" data-toggle="tab">Section 2</a></li>
+          <li><a href="#13" data-toggle="tab">Section 3</a></li>
+          <li><a href="#14" data-toggle="tab">Section 4</a></li>
+        </ul>
+      </div>
+
+
+      <p>In addition to tabs, we have pills! Though a bit more limited in functionality, they share much of the same markup.</p>
+      <hr>
+      <h3>Basic pills example</h3>
+      <ul class="pills">
+        <li class="active"><a href="#">Home</a></li>
+        <li><a href="#">Profile</a></li>
+        <li><a href="#">Messages</a></li>
+        <li><a href="#">Settings</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+<pre class="prettyprint linenums">
+&lt;ul class="pills"&gt;
+  &lt;li class="active"&gt;&lt;a href="#"&gt;Home&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#"&gt;Profile&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#"&gt;Messages&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#"&gt;Settings&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#"&gt;Contact&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</pre>
+      <h3>Vertical pill nav</h3>
+      <p>With a pill-style nav, you can also stack the list items to have a simple sidebar. We don't offer left or right aligned versions here because that's easy enough to customize based on your own needs</p>
+      <ul class="pills pills-vertical span4">
+        <li class="active"><a href="#">Home</a></li>
+        <li><a href="#">Profile</a></li>
+        <li><a href="#">Messages</a></li>
+        <li><a href="#">Settings</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </div><!-- /row -->
+
+</section>
+
+
+
+<!-- Breadcrumbs
+================================================== -->
+<section id="breadcrumbs">
+  <div class="page-header">
+    <h1>Breadcrumbs <small></small></h1>
+  </div>
+
+  <div class="row">
+    <div class="span3">
+      <p>Breadcrumb navigation is used as a way to show users where they are within an app or a site, but not for primary navigation.</p>
+    </div>
+    <div class="span9">
+      <ul class="breadcrumb">
+        <li class="active">Home</li>
+      </ul>
+      <ul class="breadcrumb">
+        <li><a href="#">Home</a> <span class="divider">/</span></li>
+        <li class="active">Middle page</li>
+      </ul>
+      <ul class="breadcrumb">
+        <li><a href="#">Home</a> <span class="divider">/</span></li>
+        <li><a href="#">Middle page</a> <span class="divider">/</span></li>
+        <li class="active">Another one</li>
+      </ul>
+      <ul class="breadcrumb">
+        <li><a href="#">Home</a> <span class="divider">/</span></li>
+        <li><a href="#">Middle page</a> <span class="divider">/</span></li>
+        <li><a href="#">Another one</a> <span class="divider">/</span></li>
+        <li class="active">You are here</li>
+      </ul>
+<pre class="prettyprint linenums">
+&lt;ul class="breadcrumb"&gt;
+  &lt;li&gt;&lt;a href="#"&gt;Home&lt;/a&gt; &lt;span class="divider"&gt;/&lt;/span&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#"&gt;Middle page&lt;/a&gt; &lt;span class="divider"&gt;/&lt;/span&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#"&gt;Another one&lt;/a&gt; &lt;span class="divider"&gt;/&lt;/span&gt;&lt;/li&gt;
+  &lt;li class="active"&gt;You are here&lt;/li&gt;
+&lt;/ul&gt;
+</pre>
+    </div>
+  </div>
+
+</section>
+
+
+
+<!-- Step nav
+================================================== -->
+<section id="stepNav">
+  <div class="page-header">
+    <h1>Step nav <small></small></h1>
+  </div>
+
+  <!-- Step nav -->
+  <div class="row">
+    <div class="span3">
+      <p>Placeholder for now!</p>
+    </div>
+    <div class="span9">
+      <br>
+      <ul class="step-nav">
+        <li class="prev"><a href="#">&laquo; Overview</a></li>
+        <li class="active"><a class="dot" href="#">1</a></li>
+        <li><a class="dot" href="#">2</a></li>
+        <li><a class="dot" href="#">3</a></li>
+        <li><a class="dot" href="#">4</a></li>
+        <li><a class="dot" href="#">5</a></li>
+        <li class="next"><a href="#">Base CSS &raquo;</a></li>
+      </ul>
+      <br>
+      <br>
+    </div>
+  </div>
+
+</section>
+
+
+
+<!-- Pagination
+================================================== -->
+<section id="carousel">
+  <div class="page-header">
+    <h1>Pagination <small></small></h1>
+  </div>
+
+  <div class="row">
+    <div class="span3">
+      <h2>Pagination</h2>
+      <p>Ultra simplistic and minimally styled pagination inspired by Rdio. The large block is hard to miss, easily scalable, and provides large click areas.</p>
+    </div>
+    <div class="span9">
+      <div class="pagination">
+        <ul>
+          <li class="prev disabled"><a href="#">&larr; Previous</a></li>
+          <li class="active"><a href="#">1</a></li>
+          <li><a href="#">2</a></li>
+          <li><a href="#">3</a></li>
+          <li><a href="#">4</a></li>
+          <li class="next"><a href="#">Next &rarr;</a></li>
+        </ul>
+      </div>
+      <div class="pagination">
+        <ul>
+          <li class="prev"><a href="#">&larr;</a></li>
+          <li class="active"><a href="#">10</a></li>
+          <li><a href="#">11</a></li>
+          <li class="disabled"><a href="#">…</a></li>
+          <li><a href="#">20</a></li>
+          <li><a href="#">21</a></li>
+          <li class="next"><a href="#">&rarr;</a></li>
+        </ul>
+      </div>
+      <div class="pagination">
+        <ul>
+          <li class="prev"><a href="#">&larr;</a></li>
+          <li><a href="#">10</a></li>
+          <li><a href="#">11</a></li>
+          <li class="active"><a href="#">12</a></li>
+          <li><a href="#">13</a></li>
+          <li><a href="#">14</a></li>
+          <li class="next"><a href="#">&rarr;</a></li>
+        </ul>
+      </div>
+<pre class="prettyprint linenums">
+&lt;div class="pagination"&gt;
+  &lt;ul&gt;
+    &lt;li class="prev disabled"&gt;&lt;a href="#"&gt;&amp;larr; Previous&lt;/a&gt;&lt;/li>
+    &lt;li class="active"&gt;&lt;a href="#"&gt;1&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#"&gt;2&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#"&gt;3&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#"&gt;4&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#"&gt;5&lt;/a&gt;&lt;/li&gt;
+    &lt;li class="next"&gt;&lt;a href="#"&gt;Next &amp;rarr;&lt;/a&gt;&lt;/li>
+  &lt;/ul&gt;
+&lt;/div&gt;
+</pre>
+    </div>
+  </div><!-- /row -->
+
+</section>
+
+
+
+<!-- Alerts & Messages
+================================================== -->
+<section id="alerts">
+  <div class="page-header">
+    <h1>Alerts &amp; Errors <small>Styles for success, warning, and error messages or alerts</small></h1>
+  </div>
+  <!-- Basic alert messages -->
+  <div class="row">
+    <div class="span3">
+      <h2>Basic alerts</h2>
+      <p><code>.alert-message</code></p>
+      <p>One-line messages for highlighting the failure, possible failure, or success of an action. Particularly useful for forms.</p>
+      <p><a class="btn js-btn" href="./javascript.html#alerts">Get the javascript &raquo;</a></p>
+    </div>
+    <div class="span9">
+      <div class="alert-message warning">
+        <a class="close" href="#">&times;</a>
+        <p><strong>Holy guacamole!</strong> Best check yo self, you’re not looking too good.</p>
+      </div>
+      <div class="alert-message error">
+        <a class="close" href="#">&times;</a>
+        <p><strong>Oh snap!</strong> Change this and that and try again.</p>
+      </div>
+      <div class="alert-message success">
+        <a class="close" href="#">&times;</a>
+        <p><strong>Well done!</strong> You successfully read this alert message.</p>
+      </div>
+      <div class="alert-message info">
+        <a class="close" href="#">&times;</a>
+        <p><strong>Heads up!</strong> This is an alert that needs your attention, but it’s not a huge priority just yet.</p>
+      </div>
+
+      <h4>Example code</h4>
+<pre class="prettyprint linenums">
+&lt;div class="alert-message warning"&gt;
+  &lt;a class="close" href="#"&gt;&times;&lt;/a&gt;
+  &lt;p&gt;&lt;strong&gt;Holy guacamole!&lt;/strong&gt; Best check yo self, you’re not looking too good.&lt;/p&gt;
+&lt;/div&gt;
+</pre>
+    </div>
+  </div><!-- /row -->
+  <!-- Block messages -->
+  <div class="row">
+    <div class="span3">
+      <h2>Block messages</h2>
+      <p><code>&lt;div class="alert-message block-message"&gt;</code></p>
+      <p>For messages that require a bit of explanation, we have paragraph style alerts. These are perfect for bubbling up longer error messages, warning a user of a pending action, or just presenting information for more emphasis on the page.</p>
+      <p><a class="btn js-btn" href="./javascript.html#alerts">Get the javascript &raquo;</a></p>
+    </div>
+    <div class="span9">
+      <div class="alert-message block-message warning">
+        <a class="close" href="#">&times;</a>
+        <p><strong>Holy guacamole! This is a warning!</strong> Best check yo self, you’re not looking too good. Nulla vitae elit libero, a pharetra augue. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.</p>
+        <div class="alert-actions">
+          <a class="btn small" href="#">Take this action</a> <a class="btn small" href="#">Or do this</a>
+        </div>
+      </div>
+      <div class="alert-message block-message error">
+        <a class="close" href="#">&times;</a>
+        <p><strong>Oh snap! You got an error!</strong> Change this and that and try again.</p>
+        <ul>
+          <li>Duis mollis est non commodo luctus</li>
+          <li>Nisi erat porttitor ligula</li>
+          <li>Eget lacinia odio sem nec elit</li>
+        </ul>
+        <div class="alert-actions">
+          <a class="btn small" href="#">Take this action</a> <a class="btn small" href="#">Or do this</a>
+        </div>
+      </div>
+      <div class="alert-message block-message success">
+        <a class="close" href="#">&times;</a>
+        <p><strong>Well done!</strong> You successfully read this alert message. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Maecenas faucibus mollis interdum.</p>
+        <div class="alert-actions">
+          <a class="btn small" href="#">Take this action</a> <a class="btn small" href="#">Or do this</a>
+        </div>
+      </div>
+      <div class="alert-message block-message info">
+        <a class="close" href="#">&times;</a>
+        <p><strong>Heads up!</strong> This is an alert that needs your attention, but it’s not a huge priority just yet.</p>
+        <div class="alert-actions">
+          <a class="btn small" href="#">Take this action</a> <a class="btn small" href="#">Or do this</a>
+        </div>
+      </div>
+
+      <h4>Example code</h4>
+<pre class="prettyprint linenums">
+&lt;div class="alert-message block-message warning"&gt;
+  &lt;a class="close" href="#"&gt;&times;&lt;/a&gt;
+  &lt;p&gt;&lt;strong&gt;Holy guacamole! This is a warning!&lt;/strong&gt; Best check yo self, you’re not looking too good. Nulla vitae elit libero, a pharetra augue. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.&lt;/p&gt;
+  &lt;div class="alert-actions"&gt;
+    &lt;a class="btn small" href="#"&gt;Take this action&lt;/a&gt; &lt;a class="btn small" href="#"&gt;Or do this&lt;/a>
+  &lt;/div&gt;
+&lt;/div&gt;
+</pre>
+    </div>
+  </div><!-- /row -->
+</section>
+
+
+<!-- Modals
+================================================== -->
+<section id="popovers">
+  <div class="page-header">
+    <h1>Modals <small></small></h1>
+  </div>
+  <div class="row">
+    <div class="span3">
+      <h2>Modals</h2>
+      <p>Modals&mdash;dialogs or lightboxes&mdash;are great for contextual actions in situations where it’s important that the background context be maintained.</p>
+      <p><a class="btn js-btn" href="./javascript.html#modal">Get the javascript &raquo;</a></p>
+    </div>
+    <div class="span9">
+      <div class="well" style="background-color: #888; border: none; ">
+        <!-- Modal -->
+        <div class="modal" style="position: relative; top: auto; left: auto; margin: 0 auto; z-index: 1">
+          <div class="modal-header">
+            <a href="#" class="close js-dismiss">&times;</a>
+            <h3>Modal Heading</h3>
+          </div>
+          <div class="modal-body">
+            <p>One fine body…</p>
+          </div>
+          <div class="modal-footer">
+            <a href="#" class="btn primary">Primary</a>
+            <a href="#" class="btn">Secondary</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /row -->
+
+</section>
+
+
+
+<!-- Twipsies
+================================================== -->
+<section id="carousel">
+  <div class="page-header">
+    <h1>Twipsy tooltips <small></small></h1>
+  </div>
+
+  <div class="row">
+    <div class="span3">
+      <h2>Tooltips</h2>
+      <p>Twipsies are super useful for aiding a confused user and pointing them in the right direction.</p>
+      <p><a class="btn js-btn" href="./javascript.html#twipsy">Get the javascript &raquo;</a></p>
+    </div>
+    <div class="span9">
+      <div class="twipsies well">
+        <div style="position: relative">
+          <p class="muted" style="margin-bottom: 0">
+Lorem ipsum dolar sit amet illo error <a href="#" title="bottom">ipsum</a> veritatis aut iste perspiciatis iste voluptas natus illo quasi odit aut natus consequuntur consequuntur, aut natus illo voluptatem odit perspiciatis laudantium rem doloremque totam voluptas. <a href="#" title="right">Voluptasdicta</a> eaque beatae aperiam ut enim voluptatem explicabo explicabo, voluptas quia odit fugit accusantium totam totam architecto explicabo sit quasi fugit fugit, totam doloremque unde sunt <a href="#" title="left">sed</a> dicta quae accusantium fugit voluptas nemo voluptas voluptatem <a href="#" title="top">rem</a> quae aut veritatis quasi quae.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div><!-- /row -->
+
+</section>
+
+
+
+<!-- Popovers
+================================================== -->
+<section id="popovers">
+  <div class="page-header">
+    <h1>Popovers <small></small></h1>
+  </div>
+
+  <div class="row">
+    <div class="span3">
+      <h2>Popovers</h2>
+      <p>Use popovers to provide subtextual information to a page without affecting layout.</p>
+      <p><a class="btn js-btn" href="./javascript.html#popover">Get the javascript &raquo;</a></p>
+    </div>
+    <div class="span9">
+      <div class="well popover-well">
+         <div class="popover-wrapper">
+          <div class="popover left">
+            <div class="arrow"></div>
+            <div class="inner">
+              <h3 class="title">Popover Title</h3>
+              <div class="content">
+                <p>Etiam porta sem malesuada magna mollis euismod. Maecenas faucibus mollis interdum. Morbi leo risus, porta ac consectetur ac, vestibulum at eros.</p>
+              </div>
+            </div>
+          </div>
+          <img class="large-bird" src="assets/img/bird.png" >
+        </div>
+      </div>
+    </div>
+  </div><!-- /row -->
+</section>
+
+      <!-- Footer
+      ================================================== -->
+      <footer class="footer">
+        <p class="pull-right"><a href="#">Back to top</a></p>
+        <p>Designed and built with all the love in the world <a href="http://twitter.com/twitter" target="_blank">@twitter</a> by <a href="http://twitter.com/mdo" target="_blank">@mdo</a> and <a href="http://twitter.com/fat" target="_blank">@fat</a>.</p>
+        <p>Code licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache License v2.0</a>. Documentation licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
+        <p>Icons from <a href="http://glyphicons.com">Glyphicons Free</a>, licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
+      </footer>
+    </div><!-- /container -->
+
+    <!-- Le javascript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="http://code.jquery.com/jquery-1.7.min.js"></script>
+    <script src="assets/js/google-code-prettify/prettify.js"></script>
+    <script src="../js/bootstrap-transition.js"></script>
+    <script src="../js/bootstrap-dropdown.js"></script>
+    <script src="../js/bootstrap-tab.js"></script>
+    <script src="../js/bootstrap-scrollspy.js"></script>
+    <script src="../js/bootstrap-twipsy.js"></script>
+    <script src="assets/js/application.js"></script>
+  </body>
+</html>
