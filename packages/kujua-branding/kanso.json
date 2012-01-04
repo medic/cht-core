@@ -1,0 +1,8 @@
+{
+    "name": "kujua-branding",
+    "version": "0.0.1",
+    "description": "Kujua shared branding style and fonts.",
+    "dependencies": {
+        "less-precompiler": null
+    }
+}

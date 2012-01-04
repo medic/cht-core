@@ -1,14 +1,5 @@
 @import "packages/bootstrap/bootstrap/lib/bootstrap.less";
-
-/* Kujua Colors */
-@aqua: #1A8FB2;
-@gold: #CC8F00;
-@green: #8EB51C;
-@red: #CA410B;
-@grey: #797979;
-@lightgrey: #CBCBCB;
-@nearwhite: #F2F2F2;
-@linkColor: @aqua;
+@import "packages/kujua-branding/css/base.less";
 
 /* shrink container width for kujua export */
 @gridColumns: 8;
@@ -23,7 +14,7 @@ body {
 }
 .content {
   border-top: solid 3px black;
-  background-color: white;
+  background-color: @white;
   @shadow: inset 0 1px 3px rgba(0,0,0,.1), 0 3px 8px #cecece;
   .box-shadow(@shadow);
 }
@@ -33,7 +24,7 @@ body {
   color: @grayLight;
 }
 .page-header {
-  background-color: white;
+  background-color: @white;
   padding-top: 10px;
 }
 .version {

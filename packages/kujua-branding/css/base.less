@@ -1,0 +1,30 @@
+/*
+ * Kujua shared branding styles
+ * Requires Less and uses some conventions from Twitter Boostrap
+ */
+
+@import "fonts.less";
+
+@aqua: #1A8FB2;
+@gold: #CC8F00;
+@green: #8EB51C;
+@red: #CA410B;
+@grey: #797979;
+@lightgrey: #CBCBCB;
+@nearwhite: #F2F2F2;
+@linkColor: @aqua;
+
+.droidBold {
+    font-weight: bold;
+    font-family: DroidSerifBold, Georgia, serif;
+}
+
+.kujua {
+    color: @white;
+    font-weight: bold;
+    font-style: normal;
+    .droidBold;
+    &:hover {
+        color: @gold;
+    }
+}
