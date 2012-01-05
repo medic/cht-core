@@ -1,10 +1,21 @@
+// this is because some require paths changed in the npm-compatible version
+// of kanso, we want this package to support older installs too
+var tryRequire = function (a, b) {
+    try {
+        return require(a);
+    }
+    catch (e) {
+        // throw if this one fails
+        return require(b);
+    }
+};
+
 var fs = require('fs'),
-    mime = require('node-mime/mime'),
-    jsp = require('UglifyJS/lib/parse-js'),
-    pro = require('UglifyJS/lib/process'),
-    modules = require('kanso/modules'),
-    logger = require('kanso/logger'),
-    utils = require('kanso/utils');
+    mime = require('mime'),
+    jsp = require('uglify-js/lib/parse-js'),
+    pro = require('uglify-js/lib/process'),
+    modules = require('kanso-utils/modules'),
+    utils = require('kanso-utils/utils');
 
 
 function minify(src) {
@@ -45,7 +56,7 @@ module.exports = function (root, path, settings, doc, callback) {
         var data = content.toString() + (wrapped_modules || '');
 
         if (settings.minify) {
-            logger.info('compressing', 'modules.js');
+            console.log('Compressing modules.js');
             data = minify(data);
         }
 

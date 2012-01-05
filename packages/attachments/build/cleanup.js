@@ -1,4 +1,4 @@
-var attachments = require('kanso/attachments'),
+var attachments = require('kanso-utils/attachments'),
     async = require('async');
 
 

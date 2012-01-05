@@ -1,6 +1,7 @@
 {
     "name": "attachments",
-    "version": "0.0.8",
+    "version": "0.0.9",
+    "categories": ["build-tools"],
     "description": "Loads files or directories of files and attaches them to a design doc",
     "preprocessors": {
         "add": "build/add"

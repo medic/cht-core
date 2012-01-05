@@ -1,8 +1,8 @@
 var async = require('async'),
-    utils = require('kanso/utils'),
-    dust = require('../dustjs/lib/dust'),
+    utils = require('kanso-utils/utils'),
+    dust = require('dust'),
     fs = require('fs'),
-    _ = require('underscore/underscore')._;
+    _ = require('underscore')._;
 
 
 // disable whitespace compression

@@ -175,17 +175,17 @@ function loadDeps(deps) {
         }
     }
 }
-if (settings.load) {
-    // load root app
-    var tmp = {};
-    tmp[settings.name] = null;
-    loadDeps(tmp);
 
-    // load dependencies of root app
-    loadDeps(settings.dependencies);
 
-    exports._rewrites = _.flatten(exports._rewrites);
-}
+// load root app
+var tmp = {};
+tmp[settings.name] = null;
+loadDeps(tmp);
+
+// load dependencies of root app
+loadDeps(settings.dependencies);
+
+exports._rewrites = _.flatten(exports._rewrites);
 
 
 /**
@@ -234,8 +234,9 @@ exports.init = function () {
 
         $('a').live('click', function (ev) {
             var href = $(this).attr('href');
+            var rel = $(this).attr('rel');
 
-            if (href && exports.isAppURL(href)) {
+            if (href && exports.isAppURL(href) && rel !== 'external') {
                 var url = exports.appPath(href);
                 ev.preventDefault();
                 var match = exports.matchURL('GET', url);
@@ -566,6 +567,9 @@ exports.handleResponse = function (req, res) {
 exports.runShowBrowser = function (req, name, docid, callback) {
     var result;
     var fn = exports._shows[name];
+    if (!fn) {
+        throw new Error('Unknown show function: ' + name);
+    }
 
     var info = {
         type: 'show',
@@ -754,6 +758,9 @@ exports.runShow = function (fn, doc, req) {
 exports.runUpdateBrowser = function (req, name, docid, callback) {
     var result;
     var fn = exports._updates[name];
+    if (!fn) {
+        throw new Error('Unknown update function: ' + name);
+    }
 
     var info = {
         type: 'update',
@@ -910,6 +917,9 @@ exports.createHead = function (data) {
 
 exports.runListBrowser = function (req, name, view, callback) {
     var fn = exports._lists[name];
+    if (!fn) {
+        throw new Error('Unknown list function: ' + name);
+    }
 
     var info = {
         type: 'list',
@@ -1106,16 +1116,25 @@ exports.handle = function (method, url, data) {
                 exports.runShowBrowser(
                     req, req.path[1], req.path.slice(2).join('/'), after
                 );
+                if (!utils.initial_hit) {
+                    window.scrollTo(0, 0);
+                }
             }
             else if (req.path[0] === '_list') {
                 exports.runListBrowser(
                     req, req.path[1], req.path.slice(2).join('/'), after
                 );
+                if (!utils.initial_hit) {
+                    window.scrollTo(0, 0);
+                }
             }
             else if (req.path[0] === '_update') {
                 exports.runUpdateBrowser(
                     req, req.path[1], req.path.slice(2).join('/'), after
                 );
+                if (!utils.initial_hit) {
+                    window.scrollTo(0, 0);
+                }
             }
             else {
                 console.log('Unknown rewrite target: ' + req.path.join('/'));

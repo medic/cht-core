@@ -1,6 +1,7 @@
 {
     "name": "modules",
-    "version": "0.0.8",
+    "version": "0.0.10",
+    "categories": ["build-tools"],
     "description": "Loads CommonJS modules from the filesystem and adds to a design doc",
     "preprocessors": {
         "add": "build/add"

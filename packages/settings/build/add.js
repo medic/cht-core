@@ -1,37 +1,14 @@
-var modules = require('kanso/modules');
+var utils = require('./utils');
 
-/**
- * Wraps the settings JSON as a CommonJS Module and includes in the document
- * so package config is easily available in the CommonJS environment.
- */
-
-function add_settings(root, doc, settings, name) {
-    name = name || 'packages/' + settings.name;
-    var json = JSON.stringify(settings);
-    var path = 'settings/' + name;
-    var src = 'module.exports = ' + json + ';';
-    modules.add(doc, path, src);
-    if (root) {
-        if (doc.settings.root) {
-            // root settings already defined
-            throw new Error('Root settings conflict');
-        }
-        modules.add(doc, 'settings/root', 'module.exports = require("' +
-            path.replace('"', '\\"') +
-        '");');
-    }
-    return doc;
-}
 
 module.exports = function (root, path, settings, doc, callback) {
-    if (!doc.settings) {
-        doc.settings = {};
+    if (root) {
+        // the root settings are added by the post processor
+        return callback(null, doc);
     }
-    if (!doc.settings.packages) {
-        doc.settings.packages = {};
-    }
+    utils.prepareDoc(doc);
     try {
-        add_settings(root, doc, settings);
+        utils.addSettings(root, doc, settings);
     }
     catch (e) {
         return callback(e);
