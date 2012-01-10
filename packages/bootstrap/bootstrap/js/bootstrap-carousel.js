@@ -25,11 +25,72 @@
  /* CAROUSEL CLASS DEFINITION
   * ========================= */
 
-  var Carousel = function () {
-
+  var Carousel = function (element, options) {
+    this.$element = $(element)
+    this.options = $.extend({}, $.fn.carousel.defaults, options)
+    this.options.slide && this.slide(this.options.slide)
   }
 
   Carousel.prototype = {
+
+    cycle: function () {
+      this.interval = setInterval($.proxy(this.next, this), this.options.interval)
+      return this
+    }
+
+  , pause: function () {
+      clearInterval(this.interval)
+      return this
+    }
+
+  , next: function () {
+      if (this.sliding) return
+      return this.slide('next')
+    }
+
+  , prev: function () {
+      if (this.sliding) return
+      return this.slide('prev')
+    }
+
+  , slide: function (type) {
+      var $active = this.$element.find('.active')
+        , $next = $active[type]()
+        , isCycling = this.interval
+        , direction = type == 'next' ? 'left' : 'right'
+        , fallback  = type == 'next' ? 'first' : 'last'
+        , that = this
+
+      this.sliding = true
+
+      isCycling && this.pause()
+
+      $next = $next.length ? $next : this.$element.find('.item')[fallback]()
+
+      if (!$.support.transition && this.$element.hasClass('slide')) {
+        this.$element.trigger('slide')
+        $active.removeClass('active')
+        $next.addClass('active')
+        this.$element.trigger('slid')
+        this.sliding = false
+      } else {
+        $next.addClass(type)
+        $next[0].offsetWidth // force reflow
+        $active.addClass(direction)
+        $next.addClass(direction)
+        this.$element.trigger('slide')
+        this.$element.one($.support.transition.end, function () {
+          $next.removeClass([type, direction].join(' ')).addClass('active')
+          $active.removeClass(['active', direction].join(' '))
+          that.$element.trigger('slid')
+          that.sliding = false
+        })
+      }
+
+      isCycling && this.cycle()
+
+      return this
+    }
 
   }
 
@@ -41,11 +102,30 @@
     return this.each(function () {
       var $this = $(this)
         , data = $this.data('carousel')
-      if (!data) $this.data('carousel', (data = new Carousel(this)))
-      if (typeof option == 'string') data[option].call($this)
+        , options = typeof option == 'object' && option
+      if (!data) $this.data('carousel', (data = new Carousel(this, options)))
+      if (typeof option == 'string' || (option = options.slide)) data[option]()
+      else data.cycle()
     })
   }
 
+  $.fn.carousel.defaults = {
+    interval: 5000
+  }
+
   $.fn.carousel.Constructor = Carousel
+
+
+ /* CAROUSEL DATA-API
+  * ================= */
+
+  $(function () {
+    $('body').on('click.carousel.data-api', '[data-slide]', function ( e ) {
+      var $this = $(this)
+        , $target = $($this.attr('data-target') || $this.attr('href'))
+        , options = !$target.data('modal') && $.extend({}, $target.data(), $this.data())
+      $target.carousel(options)
+    })
+  })
 
 }( window.jQuery )

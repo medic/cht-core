@@ -10,11 +10,11 @@
       <div class="navbar-inner">
         <div class="container">
           <p class="brand"><a href="{baseURL}/" class="kujua">Kujua</a> Export <span class="version">v{settings.version}</span></p>
-          <ul class="nav secondary-nav">
+          <ul class="nav pull-right">
             <li class="home"><a href="{baseURL}/">Home</a></li>
             <li class="docs"><a href="{baseURL}/docs/">Docs</a></li>
             <li class="dropdown">
-              <a href="#" class="dropdown-toggle">Admin</a>
+            <a href="#" class="dropdown-toggle">Admin <b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <li><a href="{baseURL}/../_view/sms_messages?include_docs=true">Raw Messages</a></li>
                 <li><a href="{baseURL}/test">Run Tests</a></li>
@@ -44,7 +44,6 @@
     <script src="{baseURL}/modules.js"></script>
     <script type="text/javascript">
         var db = require('db').current(),
-            utils = require('duality/utils'),
             templates = require('duality/templates'),
             smsforms = require('views/lib/smsforms'),
             _ = require('underscore')._,

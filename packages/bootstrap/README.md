@@ -54,7 +54,7 @@ compiles to.
 </html>
 ```
 
-Tell Kanso to compile the less file and create an attachment:
+Tell Kanso to compile the less files and attach them as css:
 
 ```json
 {
@@ -64,7 +64,7 @@ Tell Kanso to compile the less file and create an attachment:
     "attachments": ["index.html", "static"],
     "less": {
         "compress": true,
-        "compile": "static/css/example.less",
+        "compile": ["static/css/example.less"],
         "remove_from_attachments": true
     },
     "dependencies": {

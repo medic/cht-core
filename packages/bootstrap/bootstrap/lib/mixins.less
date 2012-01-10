@@ -60,7 +60,7 @@
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     }
     .monospace() {
-      font-family: Menlo, Monaco, Courier New, monospace;
+      font-family: Menlo, Monaco, "Courier New", monospace;
     }
   }
   .shorthand(@size: @baseFontSize, @weight: normal, @lineHeight: @baseLineHeight) {
@@ -98,7 +98,6 @@
 
 // Necessary grid styles for every column to make them appear next to each other horizontally
 .gridColumn() {
-  display: inline;
   float: left;
   margin-left: @gridGutterWidth;
 }
@@ -178,6 +177,13 @@
   -webkit-background-clip: @clip;
      -moz-background-clip: @clip;
           background-clip: @clip;
+}
+
+// Box sizing
+.box-sizing(@boxmodel) {
+  -webkit-box-sizing: @boxmodel;
+     -moz-box-sizing: @boxmodel;
+          box-sizing: @boxmodel;
 }
 
 // Resize anything
@@ -271,6 +277,15 @@
     background-repeat: no-repeat;
     // Opera cannot do radial gradients yet
   }
+  .striped(@color,@angle: -45deg) {
+    background-color: @color;
+    background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.25, rgba(255,255,255,.15)), color-stop(.25, transparent), color-stop(.5, transparent), color-stop(.5, rgba(255,255,255,.15)), color-stop(.75, rgba(255,255,255,.15)), color-stop(.75, transparent), to(transparent));
+    background-image: -webkit-linear-gradient(@angle, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent);
+    background-image: -moz-linear-gradient(@angle, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent);
+    background-image: -ms-linear-gradient(@angle, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent);
+    background-image: -o-linear-gradient(@angle, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent);
+    background-image: linear-gradient(@angle, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent);
+  }
 }
 
 // Reset filters for IE
@@ -320,4 +335,11 @@
     border-bottom: @arrowWidth solid transparent;
     border-right: @arrowWidth solid @black;
   }
+}
+
+.background-size(@width, @height){
+  -webkit-background-size: @width @height;
+     -moz-background-size: @width @height;
+       -o-background-size: @width @height;
+          background-size: @width @height;
 }

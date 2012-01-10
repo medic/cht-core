@@ -28,7 +28,7 @@
         "nodeunit": null,
         "nodeunit-testrunner": null,
         "less-precompiler": null,
-        "bootstrap": ">=0.0.1",
+        "bootstrap": ">=0.0.2",
         "kujua-branding": ">=0.0.1",
         "showdown": null
     }

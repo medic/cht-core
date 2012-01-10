@@ -36,7 +36,12 @@ body > .navbar-fixed .brand:hover {
 /* Space out sub-sections more
 -------------------------------------------------- */
 .page-header {
-  margin-top: 36px;
+  margin: 45px 0 18px;
+  border-bottom: 1px solid #eee;
+}
+.page-header h1 {
+  margin-bottom: 17px;
+  line-height: 1;
 }
 
 
@@ -158,7 +163,7 @@ body > .navbar-fixed .brand:hover {
 /* Marketing section of Overview
 -------------------------------------------------- */
 .marketing .row {
-  margin-bottom: 18px;
+  margin-bottom: 9px;
 }
 .marketing h1 {
   margin: 36px 0 27px;
@@ -171,7 +176,7 @@ body > .navbar-fixed .brand:hover {
   font-weight: 300;
 }
 .marketing h2 {
-  margin-bottom: 9px;
+  font-size: 22px;
 }
 .marketing p {
   margin-right: 10px;
@@ -187,6 +192,75 @@ body > .navbar-fixed .brand:hover {
 }
 
 
+/* Quickstart section for getting le code
+-------------------------------------------------- */
+.getting-started {
+  background-color: #f5f5f5;
+  background-repeat: repeat-x;
+  background-image: -khtml-gradient(linear, left top, left bottom, from(#f9f9f9), to(#f5f5f5));
+  background-image: -moz-linear-gradient(#f9f9f9, #f5f5f5);
+  background-image: -ms-linear-gradient(#f9f9f9, #f5f5f5);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f9f9f9), color-stop(100%, #f5f5f5));
+  background-image: -webkit-linear-gradient(#f9f9f9, #f5f5f5);
+  background-image: -o-linear-gradient(#f9f9f9, #f5f5f5);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#f9f9f9', endColorstr='#f5f5f5', GradientType=0)";
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f9f9f9', endColorstr='#f5f5f5', GradientType=0);
+  background-image: linear-gradient(#f9f9f9, #f5f5f5);
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+}
+.getting-started {
+  border-color: #eee;
+}
+.getting-started td {
+  width: 33%;
+  border-right: 1px solid #eee;
+}
+.getting-started td + td {
+  border-left: 1px solid #fff;
+}
+.getting-started td:last-child {
+  border-right: 0;
+}
+.quick-start {
+  padding: 17px 20px;
+}
+.quick-start h3,
+.quick-start p {
+  line-height: 18px;
+  text-align: center;
+  margin-bottom: 9px;
+}
+.quick-start p {
+  color: #777;
+}
+.quick-start .current-version,
+.quick-start .current-version a {
+  color: #999;
+}
+.quick-start form {
+  margin-bottom: 0;
+}
+.quick-start textarea {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: 0;
+  line-height: 21px;
+  white-space: nowrap;
+  overflow: hidden;
+  /* Makes inputs behave like true block-level elements */
+  -webkit-box-sizing: border-box; /* Older Webkit */
+     -moz-box-sizing: border-box; /* Older FF */
+      -ms-box-sizing: border-box; /* IE8 */
+          box-sizing: border-box; /* CSS3 spec*/
+  /* Hacks for IE7 to make this work just okay enough to function */
+  *width: 90%;
+  *height: 24px;
+}
+
+
 /* Footer
 -------------------------------------------------- */
 .footer {
@@ -198,6 +272,28 @@ body > .navbar-fixed .brand:hover {
   margin-bottom: 0;
   color: #555;
 }
+.footer dl {
+  margin-bottom: 0;
+}
+.footer dl dt {
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+}
+.footer dl dd + dt {
+  margin-top: 18px;
+}
+.footer dl dd {
+  margin-left: 0;
+  font-size: 12px;
+}
+.footer dl a {
+  color: #999;
+}
+.footer dl a:hover {
+  color: #555;
+}
+
 
 
 /* Special grid styles
@@ -301,16 +397,13 @@ pre.prettyprint {
   overflow: hidden;
 }
 
-.well form {
-  margin-bottom: 0;
-}
-
 .browser-support {
   max-width: 100%;
 }
 
 /* Make tables spaced out a bit more */
-h2 + table {
+h2 + table,
+h2 + .row {
   margin-top: 5px;
 }
 
@@ -318,8 +411,10 @@ h2 + table {
 .example-sites img {
   max-width: 290px;
 }
-.built-with {
+.marketing-byline {
   margin: -18px 0 27px;
+  font-size: 18px;
+  font-weight: 300;
   color: #999;
   text-align: center;
 }
@@ -328,6 +423,62 @@ h2 + table {
   height: 200px;
   overflow: auto;
   position: relative;
+}
+
+/* Remove bottom margin on example forms in wells */
+form.well {
+  margin-bottom: 0;
+}
+
+/* Tighten up spacing */
+.well hr {
+  margin: 18px 0;
+}
+
+/* Form docs for horizontal forms */
+.form-docs {
+  padding-left: 10px;
+}
+.form-docs h3,
+.form-docs p,
+.form-docs li {
+  color: #777;
+}
+.form-docs hr {
+  margin: 18px 0;
+}
+
+/* Fake the :focus state to demo it */
+.focused {
+  border-color: rgba(82,168,236,.8);
+  -webkit-box-shadow: inset 0 1px 3px rgba(0,0,0,.1), 0 0 8px rgba(82,168,236,.6);
+     -moz-box-shadow: inset 0 1px 3px rgba(0,0,0,.1), 0 0 8px rgba(82,168,236,.6);
+          box-shadow: inset 0 1px 3px rgba(0,0,0,.1), 0 0 8px rgba(82,168,236,.6);
+  outline: 0;
+}
+
+/* For input sizes, make them display block */
+.docs-input-sizes input[type=text] {
+  display: block;
+  margin-bottom: 9px;
+}
+
+/* Icons
+------------------------- */
+.the-icons {
+  
+}
+.the-icons i {
+  display: block;
+  margin-bottom: 5px;
+  background-color: rgba(255,0,0,.25);
+}
+.the-icons i:after {
+  display: block;
+  content: attr(class);
+  font-style: normal;
+  margin-left: 20px;
+  width: 100px;
 }
 
 
