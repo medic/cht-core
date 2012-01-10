@@ -1,0 +1,11 @@
+{
+    "name": "showdown",
+    "version": "0.0.1",
+    "url": "https://github.com/coreyti/showdown",
+    "categories": ["frontend"],
+    "description": "Markdown support for your browser.",
+    "modules": "showdown.js",
+    "dependencies": {
+        "modules": ">=0.0.8"
+    }
+}

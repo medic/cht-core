@@ -2,7 +2,7 @@
 @import "packages/kujua-branding/css/base.less";
 
 /* shrink container width for kujua export */
-@gridColumns: 8;
+@gridColumns: 11;
 
 /* background noise */
 html, body {
@@ -33,7 +33,19 @@ body {
   color: #000;
   text-shadow: 0 1px 0 rgba(255,255,255,.1), 0 0 30px rgba(255,255,255,.125);
 }
+#docs {
+  padding: 20px;
+}
 #forms li {
   padding: 10px;
   list-style-type: none;
+}
+.navbar, .brand {
+  font-weight: normal;
+}
+.navbar .brand a.kujua {
+  .kujua;
+}
+.navbar .brand a.kujua:hover {
+  background:none;
 }

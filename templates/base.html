@@ -3,14 +3,16 @@
   <head> 
     <meta charset="utf-8">
     <title>{title}</title> 
-    <link rel="stylesheet" type="text/css" href="static/css/app.css" />
+    <link rel="stylesheet" type="text/css" href="{baseURL}/static/css/app.css" />
   </head>
   <body> 
     <div class="navbar navbar-fixed">
       <div class="navbar-inner">
         <div class="container">
-          <p class="brand"><em class="kujua">Kujua</em> Export <span class="version">v{settings.version}</span></p>
+          <p class="brand"><a href="{baseURL}/" class="kujua">Kujua</a> Export <span class="version">v{settings.version}</span></p>
           <ul class="nav secondary-nav">
+            <li class="home"><a href="{baseURL}/">Home</a></li>
+            <li class="docs"><a href="{baseURL}/docs/">Docs</a></li>
             <li class="dropdown">
               <a href="#" class="dropdown-toggle">Admin</a>
               <ul class="dropdown-menu">
@@ -42,26 +44,45 @@
     <script src="{baseURL}/modules.js"></script>
     <script type="text/javascript">
         var db = require('db').current(),
+            utils = require('duality/utils'),
             templates = require('duality/templates'),
             smsforms = require('views/lib/smsforms'),
             _ = require('underscore')._,
-            forms = {}; 
+            forms = {},
+            showdown = require('showdown').Showdown,
+            sd = new showdown.converter();
 
-        // render available downloads based on data available
-        db.getView('kujua-export', 'sms_message_values', function(err, data) {
-            if (err) {
-                return alert(err);
-            }
-            for (var i = 0; i < data.rows.length; i++) {
-                var key = data.rows[i].key[0];
-                if (smsforms[key]) {
-                  forms[key] = 1;
-                }
-            }
-            $('#forms').html(
-                templates.render(
-                    'sms_forms_data.html', {}, {forms:_.keys(forms)}));
-        });
+        if ($('#forms').get(0)) {
+          // render available downloads based on data available
+          db.getView('kujua-export', 'sms_message_values', function(err, data) {
+              if (err) {
+                  return alert(err);
+              }
+              for (var i = 0; i < data.rows.length; i++) {
+                  var key = data.rows[i].key[0];
+                  if (smsforms[key]) {
+                    forms[key] = 1;
+                  }
+              }
+              $('#forms').html(
+                  templates.render(
+                      'sms_forms_data.html', {}, {forms:_.keys(forms)}));
+              $('.nav .home').addClass('active');
+          });
+        }
+
+        if ($('#docs').get(0)) {
+          $.ajax({
+              url: "../../docs/setup.md",
+              success: function(data){
+                //console.log(data);
+                //console.log(sd.makeHtml(data));
+                $('.page-header h1').html('SMS Data Collection Setup');
+                $('#docs').html(sd.makeHtml(data));
+                $('.nav .docs').addClass('active');
+              }
+          });
+        }
 
         $(function() {
           // Dynamic year for footer copyright
@@ -73,6 +94,7 @@
             $('.dropdown-menu').toggle(300);
           });
         });
+
     </script>
   </body>
 </html>
