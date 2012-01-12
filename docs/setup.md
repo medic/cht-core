@@ -1,3 +1,5 @@
+# SMS Data Collection Setup
+
 ## Intro
 
 This guide will help you install two main components of the Medic platform:

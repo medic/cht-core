@@ -1,1 +1,4 @@
-# Docs Index
+# Documentation
+
+* [SMS Data Collection Setup](setup)
+

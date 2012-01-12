@@ -26,7 +26,7 @@
     </div>
     <div class="page-header">
       <div class="container">
-        <h1>SMS Forms Data</h1>
+        <h1>&nbsp;</h1>
       </div>
     </div>
     <div class="container">
@@ -53,6 +53,7 @@ var db = require('db').current(),
 
 $(function() {
   if ($('#forms').get(0)) {
+    $('.page-header h1').text('SMS Forms Data');
     // render available downloads based on data available
     db.getView('kujua-export', 'sms_message_values', function(err, data) {
         if (err) {
@@ -71,26 +72,36 @@ $(function() {
     });
   }
 
-  var renderDoc = function(data) {
-    $('.page-header h1').html('SMS Data Collection Setup');
+  var renderDoc = function(data, slug) {
     $('#docs-body').html(sd.makeHtml(data));
+    var title = $('#docs-body h1:first-child').text();
+    $('#docs-body h1:first-child').remove();
+    $('.page-header h1').text(title);
+    //html(.html('SMS Data Collection Setup');
     $('.nav .docs').addClass('active');
-    var ul = $('<ul/>');
-    $('#docs-body h2, #docs-body h3').each(function(idx, el) {
-      var header = $(el),
-          title = header.text(),
-          id = header.attr('id');
-      if (el.tagName === 'H2') {
-        ul.append(
-          $('<li/>').append(
-            $('<a/>').attr('href', '#'+id).text(title)));
-      } else {
-        ul.append(
-          $('<li class="subhead"/>').append(
-            $('<a/>').attr('href', '#'+id).text(title)));
-      }
-    });
-    $('.sections').append(ul);
+
+    // render TOC unless loading the index
+    if (slug !== 'index') {
+      var ul = $('<ul/>');
+      $('#docs-body h2, #docs-body h3').each(function(idx, el) {
+        var header = $(el),
+            title = header.text(),
+            id = header.attr('id');
+        if (el.tagName === 'H2') {
+          ul.append(
+            $('<li/>').append(
+              $('<a/>').attr('href', '#'+id).text(title)));
+        } else {
+          ul.append(
+            $('<li class="subhead"/>').append(
+              $('<a/>').attr('href', '#'+id).text(title)));
+        }
+      });
+      $('.sections').append(ul);
+      $('.sections').show();
+    } else {
+      $('.sections').hide();
+    }
 
     // make large images zoomable
     $('#docs-body img').each(function(idx, el) {
@@ -117,9 +128,10 @@ $(function() {
     });
   }
   if ($('#docs').get(0)) {
+    var slug = $(location).attr('href').split('/').pop() || 'index';
     $.ajax({
-        url: "../../docs/setup.md",
-        success: renderDoc
+        url: '../../docs/'+ slug +'.md',
+        success: function(data) { renderDoc(data, slug); }
     });
   }
 
