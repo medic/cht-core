@@ -1,9 +1,6 @@
 @import "packages/bootstrap/bootstrap/lib/bootstrap.less";
 @import "packages/kujua-branding/css/base.less";
 
-/* shrink container width for kujua export */
-@gridColumns: 11;
-
 /* background noise */
 html, body {
       background: #ccc url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAmUlEQVQYV12Q2wrEIAxEVaSI+P/f6JMPIkWk1OUEpmwrSEicW/S11n0ch1trOWqM0V3X9erP83S+tbZ55HwBmlF9733DSCmZ2n3fD4HZnNPlnJ3/WisCMXAIIVg1RQ2wQBFlXAADRNUUSykWnosNRB052DJqxAaMokjMX1vLTl+Eqr7OMpKLHP+ZBNDmlpEGMI9jjMdSSxHhB0QBnc28Jnb5AAAAAElFTkSuQmCC);
@@ -35,7 +32,22 @@ body {
   text-shadow: 0 1px 0 rgba(255,255,255,.1), 0 0 30px rgba(255,255,255,.125);
 }
 #docs {
+}
+#docs-body {
   padding: 20px;
+  h2, h3, h4 {
+    padding: 40px 0 10px 0;
+  }
+  h2 {
+    border-top-width: 4px;
+    border-top-style: solid;
+    border-top-color: rgba(0, 0, 0, 0.1);
+  }
+  h2:first-child {
+    border: none;
+    padding-top: 0;
+    margin-top: 0;
+  }
 }
 #forms li {
   padding: 10px;
@@ -49,4 +61,32 @@ body {
 }
 .navbar .brand a.kujua:hover {
   background:none;
+}
+.sections {
+  border-top: solid 2px @aqua;
+  background-color: @lightaqua;
+  padding: 10px;
+  margin: 20px;
+  ul {
+    padding: 0;
+    margin: 0;
+  }
+  ul > li {
+    list-style: none;
+  }
+  li {
+    font-weight: bold;
+  }
+  .subhead {
+    font-size: 1em;
+    font-weight: normal;
+    padding-left: 10px;
+    line-height: 1.4em;
+  }
+}
+.zoom:hover {
+  cursor: pointer;
+}
+.images {
+  width: 920px;
 }

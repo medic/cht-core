@@ -43,57 +43,95 @@
     <script src="{baseURL}/static/js/json2.js"></script>
     <script src="{baseURL}/modules.js"></script>
     <script type="text/javascript">
-        var db = require('db').current(),
-            templates = require('duality/templates'),
-            smsforms = require('views/lib/smsforms'),
-            _ = require('underscore')._,
-            forms = {},
-            showdown = require('showdown').Showdown,
-            sd = new showdown.converter();
+var db = require('db').current(),
+    templates = require('duality/templates'),
+    smsforms = require('views/lib/smsforms'),
+    _ = require('underscore')._,
+    forms = {},
+    showdown = require('showdown').Showdown,
+    sd = new showdown.converter();
 
-        if ($('#forms').get(0)) {
-          // render available downloads based on data available
-          db.getView('kujua-export', 'sms_message_values', function(err, data) {
-              if (err) {
-                  return alert(err);
-              }
-              for (var i = 0; i < data.rows.length; i++) {
-                  var key = data.rows[i].key[0];
-                  if (smsforms[key]) {
-                    forms[key] = 1;
-                  }
-              }
-              $('#forms').html(
-                  templates.render(
-                      'sms_forms_data.html', {}, {forms:_.keys(forms)}));
-              $('.nav .home').addClass('active');
-          });
+$(function() {
+  if ($('#forms').get(0)) {
+    // render available downloads based on data available
+    db.getView('kujua-export', 'sms_message_values', function(err, data) {
+        if (err) {
+            return alert(err);
         }
-
-        if ($('#docs').get(0)) {
-          $.ajax({
-              url: "../../docs/setup.md",
-              success: function(data){
-                //console.log(data);
-                //console.log(sd.makeHtml(data));
-                $('.page-header h1').html('SMS Data Collection Setup');
-                $('#docs').html(sd.makeHtml(data));
-                $('.nav .docs').addClass('active');
-              }
-          });
+        for (var i = 0; i < data.rows.length; i++) {
+            var key = data.rows[i].key[0];
+            if (smsforms[key]) {
+              forms[key] = 1;
+            }
         }
+        $('#forms').html(
+            templates.render(
+                'sms_forms_data.html', {}, {forms:_.keys(forms)}));
+        $('.nav .home').addClass('active');
+    });
+  }
 
-        $(function() {
-          // Dynamic year for footer copyright
-          var currentYear = (new Date).getFullYear();
-          $("#year").text( (new Date).getFullYear() );
+  var renderDoc = function(data) {
+    $('.page-header h1').html('SMS Data Collection Setup');
+    $('#docs-body').html(sd.makeHtml(data));
+    $('.nav .docs').addClass('active');
+    var ul = $('<ul/>');
+    $('#docs-body h2, #docs-body h3').each(function(idx, el) {
+      var header = $(el),
+          title = header.text(),
+          id = header.attr('id');
+      if (el.tagName === 'H2') {
+        ul.append(
+          $('<li/>').append(
+            $('<a/>').attr('href', '#'+id).text(title)));
+      } else {
+        ul.append(
+          $('<li class="subhead"/>').append(
+            $('<a/>').attr('href', '#'+id).text(title)));
+      }
+    });
+    $('.sections').append(ul);
 
-          // Admin menu control
-          $('.dropdown-toggle').click(function() {
-            $('.dropdown-menu').toggle(300);
-          });
+    // make large images zoomable
+    $('#docs-body img').each(function(idx, el) {
+        var t =  $("<img/>"),
+            width = 0,
+            height = 0;
+        t.attr("src", $(el).attr("src"));
+        t.load(function() { 
+            width = this.width; 
+            height = this.height; 
+            $(el).parent().addClass('images');
+            if (width > 960) {
+              $(el).parent().addClass('zoom');
+              $(el).parent().bind('click', function() {
+                var p = $(this);
+                if (p.attr('style')) {
+                  p.attr('style',null);
+                } else {
+                  p.css({'width': width});
+                }
+              });
+            };
         });
+    });
+  }
+  if ($('#docs').get(0)) {
+    $.ajax({
+        url: "../../docs/setup.md",
+        success: renderDoc
+    });
+  }
 
+  // Dynamic year for footer copyright
+  var currentYear = (new Date).getFullYear();
+  $("#year").text( (new Date).getFullYear() );
+
+  // Admin menu control
+  $('.dropdown-toggle').click(function() {
+    $('.dropdown-menu').toggle(300);
+  });
+});
     </script>
   </body>
 </html>
