@@ -14,7 +14,7 @@
             <li class="home"><a href="{baseURL}/">Home</a></li>
             <li class="docs"><a href="{baseURL}/docs/">Docs</a></li>
             <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Admin <b class="caret"></b></a>
+            <a class="dropdown-toggle">Admin <b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <li><a href="{baseURL}/../_view/sms_messages?include_docs=true">Raw Messages</a></li>
                 <li><a href="{baseURL}/test">Run Tests</a></li>
@@ -132,7 +132,10 @@ $(function() {
     var slug = $(location).attr('href').split('/').pop() || 'index';
     $.ajax({
         url: '../../docs/'+ slug +'.md',
-        success: function(data) { renderDoc(data, slug); }
+        success: function(data) { renderDoc(data, slug); },
+        error: function(jqXHR, textStatus, errorThrown) {
+          alert(textStatus + ' ' + errorThrown);
+        }
     });
   }
 
