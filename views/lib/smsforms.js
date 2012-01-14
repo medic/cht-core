@@ -273,3 +273,40 @@ exports['PSCM'] = {
     ],
     autoreply: 'Merci, votre formulaire a été bien reçu.'
 };
+
+exports['MSBR'] = {
+    fields: [
+        {key: 'ref_year', label: "Année", type: 'year'},
+        {key: 'ref_month', label: "Mois", type: 'month'},
+        {key: 'ref_day', label: "Jour", type: 'number'},
+        {key: 'ref_rc', label: "Code du RC", type: 'number'},
+        {key: 'ref_hour', label: "Heure de départ", type: 'number'},
+        {key: 'ref_name', label: "Nom", type: 'string'},
+        {key: 'ref_age', label: "Age", type: 'number'},
+        {
+            key: 'ref_reason',
+            label: "Motif référenc",
+            type: 'choice',
+            choices: {
+                1: "Femme enceinte très malade",
+                2: "Accouchement difficile",
+                3: "Accouchée très malade",
+                4: "Nouveau-né malade",
+                5: "Enfant avec SGD ou SG",
+                6: "Enfant traité ne va pas mieux ",
+                7: "Manque de médicament",
+                8: "TB dans le rouge",
+                8: "Palu grave",
+                9: "Diarrhée grave",
+                10: "Malnutrition Aigue modérée",
+                11: "Autre"
+            }
+        },
+        {
+            key: 'ref_reason_other',
+            label: "Si 'autre', précisez motif référenc",
+            type: 'string'
+        }
+    ],
+    autoreply: 'Merci, votre formulaire a été bien reçu.'
+};
