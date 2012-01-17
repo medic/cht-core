@@ -92,10 +92,10 @@ Success, the tools are installed!
 
 The next section explains how to configure the gateway to send messages to
 CouchDB.  This involves finding your local network IP address, more
-specifically the address that CouchDB is listening on.  In this guide we
-assume there are two devices on **the same IP network**, this is typically a
-laptop and phone on the same wireless network.  A network connection can be
-established via USB tethering, but in this guide we focus on wireless.
+specifically the address that CouchDB is listening on.  In this guide we assume
+there are two devices on **the same IP network**, this is typically a laptop
+and phone on a secured LAN.  A network connection can be established via USB
+tethering, but in this guide we focus on wireless.
 
 ### Step 1: Verify your IP address
 
