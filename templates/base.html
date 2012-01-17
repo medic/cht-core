@@ -130,7 +130,7 @@ $(function() {
   }
   if ($('#docs').get(0)) {
     var href = $(location).attr('href'),
-        slug = href.split('/').pop().split(/[^\w]+/)[0];
+        slug = href.split('/').pop().split(/[^\w]+/)[0] || 'index';
     $.ajax({
         url: '../../docs/'+ slug +'.md',
         success: function(data) { renderDoc(data, slug); },
