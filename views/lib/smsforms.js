@@ -297,10 +297,10 @@ exports['MSBR'] = {
                 6: "Enfant traité ne va pas mieux ",
                 7: "Manque de médicament",
                 8: "TB dans le rouge",
-                8: "Palu grave",
-                9: "Diarrhée grave",
-                10: "Malnutrition Aigue modérée",
-                11: "Autre"
+                9: "Palu grave",
+                10: "Diarrhée grave",
+                11: "Malnutrition Aigue modérée",
+                12: "Autre"
             }
         },
         {

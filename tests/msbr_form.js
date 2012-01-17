@@ -7,7 +7,7 @@ exports.msbr_example_data = function (test) {
     var doc = {
         sent_timestamp: '1-13-12 15:35',
         from: '+15551212',
-        message: '1!MSBR!2012#12#20#12345678901#1111#bbbbbbbbbbbbbbbbbbbb#22#33#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+        message: '1!MSBR!2012#12#20#12345678901#1111#bbbbbbbbbbbbbbbbbbbb#22#10#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
     };
 
     test.expect(2);
@@ -21,7 +21,7 @@ exports.msbr_example_data = function (test) {
         ref_hour: '1111',
         ref_name: 'bbbbbbbbbbbbbbbbbbbb',
         ref_age: 22,
-        ref_reason: 33,
+        ref_reason: 'Diarrhée grave',
         ref_reason_other: 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
     };
 
@@ -31,7 +31,7 @@ exports.msbr_example_data = function (test) {
     test.same(obj, expectedObj);
 
     var arr = smsparser.parseArray(def.fields, doc);
-    var expectedArr = ['1-13-12 15:35', '+15551212', '2012', '12', 20, 12345678901, '1111', 'bbbbbbbbbbbbbbbbbbbb', 22, 33, 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc']
+    var expectedArr = ['1-13-12 15:35', '+15551212', '2012', '12', 20, 12345678901, '1111', 'bbbbbbbbbbbbbbbbbbbb', 22, 'Diarrhée grave', 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc']
 
     test.same(arr, expectedArr);
 
