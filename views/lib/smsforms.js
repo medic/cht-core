@@ -400,7 +400,7 @@ exports['MSBC'] = {
             }
         },
         { key: 'cref_name', label: "Nom", type: 'string' },
-        { key: 'cref_rc', label: "Age", type: 'number' },
+        { key: 'cref_age', label: "Age", type: 'number' },
         { key: 'cref_mom', label: "Nom de la mère ou de l'accompagnant", type: 'string' },
         { key: 'cref_treated', label: "Patient traité pour", type: 'string' },
         {
