@@ -2,18 +2,15 @@
 {?forms}
 {#iter:forms}
 <li class="form">
-  <h3>Title goes here longer <small>{key}</small></h3>
-  <h4>{value} total</h4>
+  <h3>{?value.schema.title}{value.schema.title} <small>{key}</small></h3>
+      {:else}{key}</h3>{/value.schema.title}
+  <h4>{value.total} total</h4>
       <form method="get">
         <select name="format">
-          <optgroup label="English">
-            <option value="{key}/sms_messages.xls">Excel</option>
-            <option value="{key}/sms_messages.csv">CSV</option>
-          </optgroup>
-          <optgroup label="French">
-            <option value="{key}/sms_messages.xls?locale=fr">Excel</option>
-            <option value="{key}/sms_messages.cvs?locale=fr">CSV</a></li>
-          </optgroup>
+          <option value="{key}/sms_messages.xls">Excel (English)</option>
+          <option value="{key}/sms_messages.csv">CSV (English)</option>
+          <option value="{key}/sms_messages.xls?locale=fr">Excel (French)</option>
+          <option value="{key}/sms_messages.csv?locale=fr">CSV (French)</a></li>
         </select>
         <input class="btn primary" type="submit" value="Download"/>
       </form>

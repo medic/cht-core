@@ -63,7 +63,9 @@ $(function() {
         for (var i = 0; i < data.rows.length; i++) {
             var key = data.rows[i].key[0];
             if (smsforms[key]) {
-              forms[key] = forms[key] ? forms[key]+1 : 1; 
+              if (!forms[key]) 
+                forms[key] = {total: 0, schema: smsforms[key]};
+              forms[key].total++;
             }
         }
         var context = {
