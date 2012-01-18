@@ -1,13 +1,24 @@
 <ul>
 {?forms}
-{#forms}
+{#iter:forms}
 <li class="form">
-  <h2><strong>{.}</strong></h2>
-  <p>Download CSV:
-  <a href="{baseURL}/{.}/sms_messages.csv" class="btn">EN</a> 
-  <a href="{baseURL}/{.}/sms_messages.csv?locale=fr" class="btn">FR</a></p>
-  </li>
-{/forms}
+  <h3>Title goes here longer <small>{key}</small></h3>
+  <h4>{value} total</h4>
+      <form method="get">
+        <select name="format">
+          <optgroup label="English">
+            <option value="{key}/sms_messages.xls">Excel</option>
+            <option value="{key}/sms_messages.csv">CSV</option>
+          </optgroup>
+          <optgroup label="French">
+            <option value="{key}/sms_messages.xls?locale=fr">Excel</option>
+            <option value="{key}/sms_messages.cvs?locale=fr">CSV</a></li>
+          </optgroup>
+        </select>
+        <input class="btn primary" type="submit" value="Download"/>
+      </form>
+</li>
+{/iter}
 {:else}
 <li>No data is available yet.</li>
 {/forms}

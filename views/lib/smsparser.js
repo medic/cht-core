@@ -21,7 +21,6 @@ exports.parseField = function (type, raw, prev) {
         val.setDate(raw);
         return val;
     case 'choice':
-        console.log(arguments);
         return exports.parseNum(raw);
     default:
         throw new Error('Unknown field type: ' + type);

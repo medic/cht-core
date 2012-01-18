@@ -63,13 +63,30 @@ $(function() {
         for (var i = 0; i < data.rows.length; i++) {
             var key = data.rows[i].key[0];
             if (smsforms[key]) {
-              forms[key] = 1;
+              forms[key] = forms[key] ? forms[key]+1 : 1; 
             }
         }
+        var context = {
+            forms: forms,
+            iter: function(chk, ctx, bodies) {
+              var obj = ctx.current();
+              for (var k in obj) {
+                chk = chk.render(
+                  bodies.block, ctx.push({key: k, value: obj[k]}));
+              }
+              return chk;
+            }
+        };
         $('#forms').html(
-            templates.render(
-                'sms_forms_data.html', {}, {forms:_.keys(forms)}));
+            templates.render('sms_forms_data.html', {}, context));
         $('.nav .home').addClass('active');
+
+        // bind to form download buttons
+        $('#forms form').on('submit', function(ev) {
+            ev.preventDefault();
+            var url = $(this).find('option').filter(':selected').attr('value');
+            $(location).attr('href', '{baseURL}/'+url);
+        });
     });
   }
 
@@ -78,7 +95,6 @@ $(function() {
     var title = $('#docs-body h1:first-child').text();
     $('#docs-body h1:first-child').remove();
     $('.page-header h1').text(title);
-    //html(.html('SMS Data Collection Setup');
     $('.nav .docs').addClass('active');
 
     // render TOC unless loading the index
@@ -130,7 +146,7 @@ $(function() {
   }
   if ($('#docs').get(0)) {
     var href = $(location).attr('href'),
-        slug = href.split('/').pop().split(/[^\w]+/)[0];
+        slug = href.split('/').pop().split(/[^\w]+/)[0] || 'index';
     $.ajax({
         url: '../../docs/'+ slug +'.md',
         success: function(data) { renderDoc(data, slug); },
@@ -145,8 +161,9 @@ $(function() {
   $("#year").text( (new Date).getFullYear() );
 
   // Admin menu control
-  $('.dropdown-toggle').click(function() {
-    $('.dropdown-menu').toggle(300);
+  $('.dropdown-toggle').on('click', function(ev) {
+    ev.preventDefault();
+    $(this).siblings('.dropdown-menu').toggle(300);
   });
 });
     </script>
