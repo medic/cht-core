@@ -7,7 +7,7 @@ exports.parseNum = function (raw) {
 };
 
 exports.parseField = function (type, raw, prev) {
-    switch (type) {
+    switch (type.type) {
     case 'number':
         return exports.parseNum(raw);
     case 'string':
@@ -21,9 +21,13 @@ exports.parseField = function (type, raw, prev) {
         val.setDate(raw);
         return val;
     case 'choice':
-        return exports.parseNum(raw);
+        var val = exports.parseNum(raw);
+        if (val in type.choices)
+            return type.choices[val];
+        console.log('Option not available for '+val+' in choices.');
+        return raw;
     default:
-        throw new Error('Unknown field type: ' + type);
+        throw new Error('Unknown field type: ' + type.type);
     }
 };
 
@@ -51,7 +55,7 @@ exports.parse = function (def, doc) {
 
     return pairs.reduce(function (obj, v) {
         var d = v[0];
-        obj[d.key] = exports.parseField(d.type, v[1], obj[d.key]);
+        obj[d.key] = exports.parseField(d, v[1], obj[d.key]);
         return obj;
     }, {});
 };

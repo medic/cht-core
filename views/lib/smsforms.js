@@ -279,6 +279,7 @@ exports['MSBR'] = {
         {key: 'ref_year', label: "Année", type: 'year'},
         {key: 'ref_month', label: "Mois", type: 'month'},
         {key: 'ref_day', label: "Jour", type: 'number'},
+
         {key: 'ref_rc', label: "Code du RC", type: 'number'},
         {key: 'ref_hour', label: "Heure de départ", type: 'number'},
         {key: 'ref_name', label: "Nom", type: 'string'},
@@ -296,10 +297,10 @@ exports['MSBR'] = {
                 6: "Enfant traité ne va pas mieux ",
                 7: "Manque de médicament",
                 8: "TB dans le rouge",
-                8: "Palu grave",
-                9: "Diarrhée grave",
-                10: "Malnutrition Aigue modérée",
-                11: "Autre"
+                9: "Palu grave",
+                10: "Diarrhée grave",
+                11: "Malnutrition Aigue modérée",
+                12: "Autre"
             }
         },
         {
@@ -307,6 +308,117 @@ exports['MSBR'] = {
             label: "Si 'autre', précisez motif référenc",
             type: 'string'
         }
+    ],
+    autoreply: 'Merci, votre formulaire a été bien reçu.'
+};
+
+
+exports['MSBM'] = {
+    fields: [
+        { key: 'med_year', label: "Année", type: 'year' },
+        { key: 'med_month', label: "Mois", type: 'month' },
+        { key: 'med_day', label: "Jour", type: 'number' },
+        { key: 'med_rc', label: "Code du RC", type: 'number' },
+        { key: 'med_cta_a', label: "CTA actuel", type: 'number' },
+        { key: 'med_cta_c', label: "CTA commendé", type: 'number' },
+        { key: 'med_tdr_a', label: "TDR actuel", type: 'number' },
+        { key: 'med_tdr_c', label: "TDR commandé", type: 'number' },
+        { key: 'med_ctm_a', label: "CTM 480 actuel", type: 'number' },
+        { key: 'med_ctm_c', label: "CTM 480 commandé", type: 'number' },
+        { key: 'med_sro_a', label: "SRO/Zinc actuel", type: 'number' },
+        { key: 'med_sro_c', label: "SRO/Zinc commandé", type: 'number' },
+        { key: 'med_para_a', label: "PARA actuel", type: 'number' },
+        { key: 'med_para_c', label: "PARA commandé", type: 'number' }
+    ],
+    autoreply: 'Merci, votre formulaire a été bien reçu.'
+};
+
+
+
+exports['MSBP'] = {
+    fields: [
+        { key: 'case_year', label: "Année", type: 'year' },
+        { key: 'case_month', label: "Mois", type: 'month' },
+        { key: 'case_day', label: "Jour", type: 'number' },
+        { key: 'case_rc', label: "Code du RC", type: 'number' },
+        { key: 'case_pec_m', label: "M: 0-5 ans PEC", type: 'number' },
+        { key: 'case_pec_f', label: "F: 0-5 ans PEC", type: 'number' },
+        { key: 'case_urg_m', label: "M: 0-5 ans référé en urgence", type: 'number' },
+        { key: 'case_urg_f', label: "F: 0-5 ans référé en urgence", type: 'number' },
+        { key: 'case_tdr', label: "TDR de palu réalisé", type: 'number' },
+        { key: 'case_palu_m', label: "M: Palu simple traité", type: 'number' },
+        { key: 'case_palu_f', label: "F: Palu simple traité", type: 'number' },
+        { key: 'case_dia_m', label: "M: Diarrhée simple traité", type: 'number' },
+        { key: 'case_dia_f', label: "F: Diarrhée simple traité", type: 'number' },
+        { key: 'case_pneu_m', label: "M: Pneumonie traité", type: 'number' },
+        { key: 'case_pneu_f', label: "F: Pneumonie traité", type: 'number' },
+        { key: 'case_mal_m', label: "M: Malnutrition dépisté", type: 'number' },
+        { key: 'case_mal_f', label: "F: Malnutrition dépisté", type: 'number' },
+        { key: 'case_rev', label: "0-5 ans revu pour suivi des soins", type: 'number' },
+        { key: 'case_vad', label: "0-5 and vu au cours VAD", type: 'number' },
+        { key: 'case_edu', label: "Séance éducative réalisée", type: 'number' }
+    ],
+    autoreply: 'Merci, votre formulaire a été bien reçu.'
+};
+
+
+exports['MSBG'] = {
+    fields: [
+        { key: 'monthly_year', label: "Année", type: 'year' },
+        { key: 'monthly_month', label: "Mois", type: 'month' },
+        { key: 'monthly_rc', label: "Code du RC", type: 'number' },
+        { key: 'monthly_cta1', label: "CTA au début de mois", type: 'number' },
+        { key: 'monthly_cta2', label: "CTA cédés dans le mois", type: 'number' },
+        { key: 'monthly_cta3', label: "CTA restants à la fin du mois", type: 'number' },
+        { key: 'monthly_sro1', label: "SRO/Zinc au début de mois", type: 'number' },
+        { key: 'monthly_sro2', label: "SRO/Zinc cédés dans le mois", type: 'number' },
+        { key: 'monthly_sro3', label: "SRO/Zinc restants à la fin du mois", type: 'number' },
+        { key: 'monthly_ctm1', label: "CTM 480mg au début de mois", type: 'number' },
+        { key: 'monthly_ctm2', label: "CTM 480mg cédés dans le mois", type: 'number' },
+        { key: 'monthly_ctm3', label: "CTM 480mg restants à la fin du mois", type: 'number' }
+    ],
+    autoreply: 'Merci, votre formulaire a été bien reçu.'
+};
+
+
+exports['MSBC'] = {
+    fields: [
+        { key: 'cref_year', label: "Année", type: 'year' },
+        { key: 'cref_month', label: "Mois", type: 'month' },
+        { key: 'cref_day', label: "Jour", type: 'number' },
+        { key: 'cref_rc', label: "Code du RC", type: 'number' },
+        {
+            key: 'cref_ptype',
+            label: "Type de patient",
+            type: 'choice',
+            choices: {
+                1: "Femme enceinte",
+                2: "Accouchée malade",
+                3: "Enfant",
+                4: "Nouveau né",
+                5: "Autre"
+            }
+        },
+        { key: 'cref_name', label: "Nom", type: 'string' },
+        { key: 'cref_age', label: "Age", type: 'number' },
+        { key: 'cref_mom', label: "Nom de la mère ou de l'accompagnant", type: 'string' },
+        { key: 'cref_treated', label: "Patient traité pour", type: 'string' },
+        {
+            key: 'cref_rec',
+            label: "Recommandations/Conseils",
+            type: 'choice',
+            choices: {
+                1: "A revenir au centre de santé",
+                2: "Suivi de soins à domicile",
+                3: "Guéri",
+                4: "Décédé",
+                5: "Référé",
+                6: "Conseils hygiéno-diététiques",
+                7: "Autres"
+            }
+        },
+        { key: 'cref_reason', label: "Précisions pour recommandations", type: 'string' },
+        { key: 'cref_agent', label: "Nom de l'agent de santé", type: 'string' }
     ],
     autoreply: 'Merci, votre formulaire a été bien reçu.'
 };
