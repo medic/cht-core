@@ -1,4 +1,3 @@
-console.log('loading showdown');
 //
 // showdown.js -- A javascript port of Markdown.
 //
