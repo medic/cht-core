@@ -14,12 +14,19 @@
             <li class="home"><a href="{baseURL}/">Home</a></li>
             <li class="docs"><a href="{baseURL}/docs/">Docs</a></li>
             <li class="dropdown">
-            <a class="dropdown-toggle">Admin <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="{baseURL}/../_view/sms_messages?include_docs=true">Raw Messages</a></li>
-                <li><a href="{baseURL}/test">Run Tests</a></li>
-                <li><a href="https://github.com/medic/kujua-export">Source Code</a></li>
-              </ul>
+              <a class="dropdown-toggle">Locale <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="{baseURL}/?locale=en">English</a></li>
+                  <li><a href="{baseURL}/?locale=fr">French</a></li> 
+                </ul>
+            </li>
+            <li class="dropdown">
+              <a class="dropdown-toggle">Admin <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="{baseURL}/../_view/sms_messages?include_docs=true">Raw Messages</a></li>
+                  <li><a href="{baseURL}/test">Run Tests</a></li>
+                  <li><a href="https://github.com/medic/kujua-export">Source Code</a></li>
+                </ul>
             </li>
           </ul>
         </div>
@@ -49,6 +56,8 @@ var db = require('db').current(),
     smsforms = require('views/lib/smsforms'),
     _ = require('underscore')._,
     forms = {},
+    querystring = require('querystring'),
+    params = querystring.parse($(location).attr('href').split('?')[1]),
     showdown = require('showdown'),
     sd = new showdown.converter();
 
@@ -83,6 +92,17 @@ $(function() {
             templates.render('sms_forms_data.html', {}, context));
         $('.nav .home').addClass('active');
 
+        // adjust download options based on locale value.  currently only
+        // supporting French.
+        if (params.locale && ['FR','fr'].indexOf(params.locale) !== -1) {
+          $('.form option').each(function(idx, el) {
+              var option = $(el);
+              var val = option.attr('value').split('.')[1];
+              if ('xls?locale=fr' === val) {
+                option.attr('selected','selected');
+              }
+          });
+        }
         // bind to form download buttons
         $('#forms form').on('submit', function(ev) {
             ev.preventDefault();
