@@ -72,13 +72,13 @@ $(function() {
         for (var i = 0; i < data.rows.length; i++) {
             var key = data.rows[i].key[0];
             if (smsforms[key]) {
-              if (!forms[key]) 
+              if (!forms[key])
                 forms[key] = {total: 0, schema: smsforms[key]};
               forms[key].total++;
             }
         }
         var context = {
-            forms: forms,
+            forms: ($.isEmptyObject(forms) ? null : forms),
             iter: function(chk, ctx, bodies) {
               var obj = ctx.current();
               for (var k in obj) {
@@ -88,6 +88,7 @@ $(function() {
               return chk;
             }
         };
+
         $('#forms').html(
             templates.render('sms_forms_data.html', {}, context));
         $('.nav .home').addClass('active');
