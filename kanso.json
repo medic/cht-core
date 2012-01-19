@@ -1,6 +1,6 @@
 {
     "name": "kujua-export",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "description": "Provide easy access to your SMS form data.",
     "load": "lib/app",
     "modules": ["lib", "views", "tests"],
