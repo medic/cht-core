@@ -30,6 +30,7 @@
         "less-precompiler": null,
         "bootstrap": ">=0.0.2",
         "kujua-branding": ">=0.0.1",
-        "showdown": null
+        "showdown": null,
+        "jsDump": null
     }
 }
