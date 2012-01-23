@@ -4,6 +4,45 @@ var fs = require('fs'),
     http = require('http'),
     querystring = require('querystring');
 
+// http request that does a callback request
+var req = function(options) {
+    return http.request(options, function(res) {
+        var resBody = '';
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            resBody += chunk;
+        });
+        res.on('end', function() {
+            console.log('response body');
+            console.log(resBody);
+            var resJSON = JSON.parse(resBody);
+            var callback = undefined;
+            if(resJSON.callback) {
+                callback = resJSON.callback;
+                console.log('callback request options');
+                console.log(callback.options);
+                var req2 = req(callback.options);
+                if (callback.data) {
+                    console.log('callback request data');
+                    console.log(JSON.stringify(callback.data));
+                    req2.write(JSON.stringify(callback.data));
+                }
+                req2.end();
+            }
+        });
+    });
+};
+
+var run = function(options, data) {
+    var qs = querystring.stringify(data);
+    options.headers['Content-Length'] = qs.length;
+    var r = req(options);
+    console.log('request data');
+    console.log(qs);
+    r.write(qs);
+    r.end();
+};
+
 console.log('smssync format, example data for referral form submission');
 var data = {
     from: '+13128131320',
@@ -27,51 +66,5 @@ var options = {
     }
 };
 console.log(options);
-
-var run = function(options, data) {
-
-    var qs = querystring.stringify(data);
-    options.headers['Content-Length'] = qs.length;
-
-    // setup http request
-    var req = http.request(options, function(res) {
-        var resBody = '';
-        res.setEncoding('utf8');
-        res.on('data', function (chunk) {
-            resBody += chunk;
-        });
-        res.on('end', function() {
-            console.log('response body');
-            console.log(resBody);
-            var resJSON = JSON.parse(resBody);
-            var callback = undefined;
-            if(resJSON.payload && resJSON.payload.callback) {
-                callback = resJSON.payload.callback;
-                console.log('callback request options');
-                console.log(callback.options);
-                var req = http.request(callback.options, function(res) {
-                    var resBody = '';
-                    res.setEncoding('utf8');
-                    res.on('data', function (chunk) {
-                        resBody += chunk;
-                    });
-                    res.on('end', function() {
-                        console.log('callback response body');
-                        console.log(resBody);
-                    });
-                });
-                console.log('callback request data');
-                console.log(JSON.stringify(callback.data));
-                req.write(JSON.stringify(callback.data));
-                req.end();
-            }
-        });
-    });
-
-    console.log('request data');
-    console.log(qs);
-    req.write(qs);
-    req.end();
-};
 
 run(options, data);
