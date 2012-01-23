@@ -39,7 +39,7 @@ var req = function(options) {
     });
     r.on('error', function(err) {
         if (err) {
-            console.log('request error.')
+            console.log('request error.');
             console.log(err);
         }
     });
@@ -49,11 +49,13 @@ var req = function(options) {
 var run = function(options, data) {
     var qs = querystring.stringify(data);
     options.headers['Content-Length'] = qs.length;
+    // smsform message is received
     var r = req(options);
     console.log('request data');
     console.log(qs);
     r.write(qs);
     r.end();
+    // TODO request new tasks/referrals to go out
 };
 
 console.log('smssync format, example data for referral form submission');
