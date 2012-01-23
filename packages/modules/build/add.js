@@ -12,7 +12,7 @@ module.exports = function (root, path, settings, doc, callback) {
     if (!Array.isArray(paths)) {
         paths = [paths];
     }
-    async.forEach(paths, function (p, cb) {
+    async.forEachLimit(paths, 10, function (p, cb) {
         modules.addPath(path, p, doc, cb);
     },
     function (err) {
