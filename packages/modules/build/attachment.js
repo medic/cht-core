@@ -39,6 +39,7 @@ module.exports = function (root, path, settings, doc, callback) {
 
     if (settings.modules_attachment === false) {
         delete doc._modules;
+        delete doc._module_paths;
         return callback(null, doc);
     }
 
@@ -48,6 +49,7 @@ module.exports = function (root, path, settings, doc, callback) {
     }
 
     delete doc._modules;
+    delete doc._module_paths;
 
     fs.readFile(__dirname + '/bootstrap.js', function (err, content) {
         if (err) {

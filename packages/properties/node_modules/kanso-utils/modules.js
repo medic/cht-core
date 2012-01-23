@@ -15,7 +15,8 @@ var utils = require('./utils'),
 
 // As modules are added, their original file paths are added to this object
 // eg: {'lib': {'mymodule': '/home/user/project/lib/mymodule.js'}, ...}
-exports.originalPaths = {};
+//exports.originalPaths = {};
+// REPLACED BY doc._module_paths - so it works across package processors
 
 
 /**
@@ -111,7 +112,10 @@ exports.addFile = function (pkgdir, p, doc, callback) {
         var module_path = rel.replace(/\.js$/, '');
         var src = content.toString();
         exports.add(doc, module_path, src);
-        utils.setPropertyPath(exports.originalPaths, rel, p);
+        if (!doc._module_paths) {
+            doc._module_paths = {};
+        }
+        utils.setPropertyPath(doc._module_paths, rel, p);
         callback()
     });
 };
@@ -161,7 +165,7 @@ exports.filenameFilter = function (p) {
 
 
 /**
- * Parses the exports.originalPaths object to return an array of filenames
+ * Parses the doc._module_paths object to return an array of filenames
  */
 
 exports.getFilenames = function (obj) {
@@ -218,7 +222,7 @@ exports.require = function (module_cache, doc, current, target, context) {
     }, doc);
 
     var filename = utils.getPropertyPath(
-        exports.originalPaths, p.substr(1), true
+        doc._module_paths, p.substr(1), true
     );
 
     // if you attempt to require
@@ -273,12 +277,20 @@ exports.require = function (module_cache, doc, current, target, context) {
         var s = new Script(content, filename).runInNewContext(sandbox);
     }
     catch (e) {
-        if (e instanceof SyntaxError && filename) {
+        if (e instanceof SyntaxError && filename && !e.caught) {
+            e.caught = true;
             // gives a better syntax error than runInNewContext
             // with filename and line number
-            require(filename);
+            try {
+                require(filename);
+            }
+            catch (e2) {
+                e.message = 'Error loading: ' + filename + '\n' + e.message;
+                e.got_filename = true;
+                throw e;
+            }
         }
-        if (!e.got_filename) {
+        if (!e.got_filename && filename) {
             e.message = 'Error loading: ' + filename + '\n' + e.message;
             e.got_filename = true;
         }
