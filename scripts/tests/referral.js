@@ -6,7 +6,7 @@ var fs = require('fs'),
 
 // http request that does a callback request
 var req = function(options) {
-    return http.request(options, function(res) {
+    var r = http.request(options, function(res) {
         var resBody = '';
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
@@ -30,7 +30,20 @@ var req = function(options) {
                 req2.end();
             }
         });
+        res.on('error', function(err) {
+            if (err) {
+                console.log('response error.')
+                console.log(err);
+            }
+        });
     });
+    r.on('error', function(err) {
+        if (err) {
+            console.log('request error.')
+            console.log(err);
+        }
+    });
+    return r;
 };
 
 var run = function(options, data) {
