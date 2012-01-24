@@ -16,9 +16,8 @@ var req = function(options) {
             console.log('response body');
             console.log(resBody);
             var resJSON = JSON.parse(resBody);
-            var callback = undefined;
-            if(resJSON.callback) {
-                callback = resJSON.callback;
+            var callback = resJSON.callback;
+            if(callback && callback.options) {
                 console.log('callback request options');
                 console.log(callback.options);
                 var req2 = req(callback.options);
@@ -29,8 +28,8 @@ var req = function(options) {
                 }
                 req2.end();
             } else {
-                console.log('done with callbacks. doing tasks...');
-                doTasks();
+                console.log('done with task creation. do tasks...');
+                tasksCreated === false ? doTasks() : allDone();
             }
         });
         res.on('error', function(err) {
@@ -49,24 +48,21 @@ var req = function(options) {
     return r;
 };
 
+var tasksCreated = false;
+
+var allDone = function() {
+    console.log('Done!');
+};
+
 var doTasks = function() {
+    tasksCreated = true;
     var options = {
         host: 'localhost',
         port: 5984,
         path: '/kujua/_design/kujua-export/_rewrite/tasks_referral/pending',
         method: 'GET'
     };
-    var r = http.request(options, function(res) {
-        var resBody = '';
-        res.setEncoding('utf8');
-        res.on('data', function (chunk) {
-            resBody += chunk;
-        });
-        res.on('end', function() {
-            var resBodyJSON = JSON.parse(resBody);
-            console.log(resBody);
-        });
-    });
+    var r = req(options);
     r.end();
 };
 
