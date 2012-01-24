@@ -28,6 +28,9 @@ var req = function(options) {
                     req2.write(JSON.stringify(callback.data));
                 }
                 req2.end();
+            } else {
+                console.log('done with callbacks. doing tasks...');
+                doTasks();
             }
         });
         res.on('error', function(err) {
@@ -46,6 +49,27 @@ var req = function(options) {
     return r;
 };
 
+var doTasks = function() {
+    var options = {
+        host: 'localhost',
+        port: 5984,
+        path: '/kujua/_design/kujua-export/_rewrite/tasks_referral/pending',
+        method: 'GET'
+    };
+    var r = http.request(options, function(res) {
+        var resBody = '';
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            resBody += chunk;
+        });
+        res.on('end', function() {
+            var resBodyJSON = JSON.parse(resBody);
+            console.log(resBody);
+        });
+    });
+    r.end();
+};
+
 var run = function(options, data) {
     var qs = querystring.stringify(data);
     options.headers['Content-Length'] = qs.length;
@@ -54,21 +78,8 @@ var run = function(options, data) {
     console.log('request data');
     console.log(qs);
     r.write(qs);
-    r.end();
     // TODO request new tasks/referrals to be sent out
 };
-
-console.log('smssync format, example data for referral form submission');
-var data = {
-    from: '+13128131320',
-    message: '1!MSBR!2012#12#20#12345678901#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
-    sent_timestamp: '1-19-12 18:45',
-    sent_to: '+15551212',
-    message_id: '13579',
-    foo: 'bar' // extra is ok
-};
-console.log(data);
-
 
 console.log('http req options');
 var options = {
@@ -81,5 +92,16 @@ var options = {
     }
 };
 console.log(options);
+
+console.log('data: smssync format example for referral form submission');
+var data = {
+    from: '+13128131320',
+    message: '1!MSBR!2012#1#24#12345678901#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+    sent_timestamp: '1-19-12 18:45',
+    sent_to: '+15551212',
+    message_id: '13579',
+    foo: 'bar' // extra is ok
+};
+console.log(data);
 
 run(options, data);
