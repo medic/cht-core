@@ -6,29 +6,29 @@ exports.parseNum = function (raw) {
     return Number(raw);
 };
 
-exports.parseField = function (type, raw, prev) {
-    switch (type.type) {
-    case 'number':
-        return exports.parseNum(raw);
-    case 'string':
-        return raw;
-    case 'year':
-        return raw;
-    case 'month':
-        return raw;
-    case 'date':
-        var val = prev || new Date(0);
-        val.setDate(raw);
-        return val;
-    case 'choice':
-        var val = exports.parseNum(raw);
-        if (val in type.choices)
-            return type.choices[val];
-        if (log)
-            log('Option not available for '+val+' in choices.');
-        return raw;
-    default:
-        throw new Error('Unknown field type: ' + type.type);
+exports.parseField = function (field, raw, prev) {
+    switch (field.type) {
+        case 'number':
+            return exports.parseNum(raw);
+        case 'string':
+            return raw;
+        case 'year':
+            return raw;
+        case 'month':
+            return raw;
+        case 'date':
+            var val = prev || new Date(0);
+            val.setDate(raw);
+            return val;
+        case 'choice':
+            var val = exports.parseNum(raw);
+            if (val in field.choices)
+                return field.choices[val];
+            if (log)
+                log('Option not available for '+val+' in choices.');
+            return raw;
+        default:
+            throw new Error('Unknown field type: ' + field.type);
     }
 };
 
@@ -41,32 +41,52 @@ var zip = function (a, b) {
     return zipped;
 };
 
-/*
- * Return parsed object.
+/**
+ * @param {Object} def - smsforms definition
+ * @param {Object} doc - sms_message document
+ * @param {Number} format - if 1 then include labels in value
+ * @returns {Object|{}} - An parsed object from the raw sms message
+ * @api public
  */
-exports.parse = function (def, doc) {
+exports.parse = function (def, doc, format) {
     var parts = doc.message.split('#'),
         header = parts[0].split('!'),
         name = header[1],
-        vals = parts.slice(1);
+        vals = parts.slice(1),
+        format = format ? format : 0;
 
     vals.unshift(header[2]);
 
-    var pairs = zip(def, vals);
+    if (!def.fields)
+        throw new Error('Form definition has no fields attribute.');
+
+    var pairs = zip(def.fields, vals);
 
     return pairs.reduce(function (obj, v) {
-        var d = v[0];
-        obj[d.key] = exports.parseField(d, v[1], obj[d.key]);
+        var field = v[0],
+            val = v[1];
+        if (format === 1) {
+            obj[field.key] = [
+                exports.parseField(field, val, obj[field.key]), field.label];
+        } else {
+            obj[field.key] = exports.parseField(field, val, obj[field.key]);
+        }
         return obj;
     }, {});
 };
 
+/**
+ * @param {Object} def - smsforms definition
+ * @param {Object} doc - sms_message document
+ * @returns {Array|[]} - An array of values from the raw sms message
+ * @api public
+ */
 exports.parseArray = function (def, doc) {
     var obj = exports.parse(def, doc);
     var keys = [];
-    for (var i = 0; i < def.length; i++) {
-        if (keys.indexOf(def[i].key) === -1) {
-            keys.push(def[i].key);
+    for (var i = 0; i < def.fields.length; i++) {
+        if (keys.indexOf(def.fields[i].key) === -1) {
+            keys.push(def.fields[i].key);
         }
     }
     var arr = [];
@@ -74,7 +94,7 @@ exports.parseArray = function (def, doc) {
         arr.push(obj[keys[k]]);
     }
     // The fields sent_timestamp and from are set by the gateway, so they are
-    // not included in the message.
+    // not included in the raw sms message and added manually.
     arr.unshift(doc.from);
     arr.unshift(doc.sent_timestamp);
     return arr;

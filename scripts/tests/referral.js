@@ -55,13 +55,13 @@ var run = function(options, data) {
     console.log(qs);
     r.write(qs);
     r.end();
-    // TODO request new tasks/referrals to go out
+    // TODO request new tasks/referrals to be sent out
 };
 
 console.log('smssync format, example data for referral form submission');
 var data = {
     from: '+13128131320',
-    message: '1!MSBR!2012#12#20#12345678901#1111#bbbbbbbbbbbbbbbbbbbb#22#33#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+    message: '1!MSBR!2012#12#20#12345678901#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
     sent_timestamp: '1-19-12 18:45',
     sent_to: '+15551212',
     message_id: '13579',
