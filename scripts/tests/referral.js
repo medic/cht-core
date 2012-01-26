@@ -3,11 +3,12 @@
 var fs = require('fs'),
     http = require('http'),
     querystring = require('querystring'),
+    jsDump = require('jsDump'),
     debug = true;
 
 var log = function(o) {
     if (debug) {
-        console.log('');
+        console.log('##########################################################');
         console.log(o);
     }
 };
@@ -24,7 +25,7 @@ var req = function(options) {
         });
         res.on('end', function() {
             log('response body');
-            log(resBody);
+            log(jsDump.parse(JSON.parse(resBody)));
             var resJSON = JSON.parse(resBody);
             var callback = resJSON.callback;
             if(callback && callback.options) {
@@ -95,9 +96,9 @@ var options = {
     }
 };
 
-log('smssync format example referral form submission data:');
+log('smssync format example referral form from clinic:');
 var data = {
-    from: '+13128131320',
+    from: '+13125551212', // clinic.contact.phone
     message: '1!MSBR!2012#1#24#99345678901#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
     sent_timestamp: '1-19-12 18:45',
     sent_to: '+15551212',
@@ -108,15 +109,16 @@ log(data);
 
 run(options, data);
 
-log('smssync format example referral form submission data:');
+log('smssync format example counter referral from health center:');
 var data = {
-    from: '+13128131320',
+    from: '+13124449999', // health_center.contact.phone
     message: '1!MSBC!2012#1#16#99345678901#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm',
     sent_timestamp: '1-25-12 18:45',
-    sent_to: '+15551212',
+    sent_to: '+12223333333',
     message_id: '13579',
     foo: 'bar' // extra is ok
 };
 log(data);
 
-setTimeout(run(options, data), 5000);
+// counter referral comes after referral
+setTimeout(function(){tasksCreated=false; run(options, data);}, 1000);
