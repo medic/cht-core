@@ -2,11 +2,14 @@
 
 var fs = require('fs'),
     http = require('http'),
-    querystring = require('querystring');
+    querystring = require('querystring'),
+    debug = true;
 
 var log = function(o) {
-    console.log('');
-    console.log(o);
+    if (debug) {
+        console.log('');
+        console.log(o);
+    }
 };
 
 // http request that does a callback request
@@ -39,15 +42,15 @@ var req = function(options) {
         });
         res.on('error', function(err) {
             if (err) {
-                log('response error.')
-                log(err);
+                console.log('response error.')
+                console.log(err);
             }
         });
     });
     r.on('error', function(err) {
         if (err) {
-            log('request error.');
-            log(err);
+            console.log('request error.');
+            console.log(err);
         }
     });
     return r;
@@ -56,7 +59,7 @@ var req = function(options) {
 var tasksCreated = false;
 
 var allDone = function() {
-    log('Done!');
+    console.log('Done!');
 };
 
 var doTasks = function() {
@@ -95,8 +98,21 @@ var options = {
 log('smssync format example referral form submission data:');
 var data = {
     from: '+13128131320',
-    message: '1!MSBR!2012#1#24#12345678901#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+    message: '1!MSBR!2012#1#24#99345678901#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
     sent_timestamp: '1-19-12 18:45',
+    sent_to: '+15551212',
+    message_id: '13579',
+    foo: 'bar' // extra is ok
+};
+log(data);
+
+run(options, data);
+
+log('smssync format example referral form submission data:');
+var data = {
+    from: '+13128131320',
+    message: '1!MSBC!2012#1#16#99345678901#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm',
+    sent_timestamp: '1-25-12 18:45',
     sent_to: '+15551212',
     message_id: '13579',
     foo: 'bar' // extra is ok

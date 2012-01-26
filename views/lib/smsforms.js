@@ -430,5 +430,7 @@ exports['MSBC'] = {
         { key: 'cref_reason', label: "Précisions pour recommandations", type: 'string' },
         { key: 'cref_agent', label: "Nom de l'agent de santé", type: 'string' }
     ],
+    cref_key: 'function(){ return "cref_rc"; }',
+    ref_key: 'function(){ return "ref_rc"; }',
     autoreply: 'Merci, votre formulaire a été bien reçu.'
 };
