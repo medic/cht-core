@@ -66,6 +66,7 @@ exports.parse = function (def, doc, format) {
         var field = v[0],
             val = v[1];
         if (format === 1) {
+            // include label in array
             obj[field.key] = [
                 exports.parseField(field, val, obj[field.key]), field.label];
         } else {
