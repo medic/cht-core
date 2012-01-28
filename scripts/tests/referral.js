@@ -86,6 +86,15 @@ var run = function(options, data) {
     // TODO request new tasks/referrals to be sent out
 };
 
+var rand = function(from, to) {
+    from = from || 10000000000;
+    to = to || 99999999999;
+    return Math.floor(Math.random() * (to - from + 1) + from);
+}
+
+// random ref_rc for better test data
+var ref_rc = rand();
+
 var options = {
     host: 'localhost',
     port: 5984,
@@ -99,7 +108,8 @@ var options = {
 log('smssync format example referral form from clinic:');
 var data = {
     from: '+13125551212', // clinic.contact.phone
-    message: '1!MSBR!2012#1#24#99345678901#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+    message: '1!MSBR!2012#1#24#' + ref_rc +
+             '#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
     sent_timestamp: '1-19-12 18:45',
     sent_to: '+15551212',
     message_id: '13579',
@@ -112,7 +122,8 @@ run(options, data);
 log('smssync format example counter referral from health center:');
 var data = {
     from: '+13124449999', // health_center.contact.phone
-    message: '1!MSBC!2012#1#16#99345678901#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm',
+    message: '1!MSBC!2012#1#16#' + ref_rc +
+             '#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm',
     sent_timestamp: '1-25-12 18:45',
     sent_to: '+12223333333',
     message_id: '13579',
