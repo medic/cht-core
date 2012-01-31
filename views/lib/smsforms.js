@@ -276,7 +276,6 @@ exports['PSCM'] = {
 
 exports['MSBR'] = {
     title: 'Alerte référence',
-    key: 'MSBR',
     fields: [
         {key: 'ref_year', label: "Année", type: 'year'},
         {key: 'ref_month', label: "Mois", type: 'month'},
@@ -317,7 +316,6 @@ exports['MSBR'] = {
 
 exports['MSBM'] = {
     title: 'Alerte besoin médicaments',
-    key: 'MSBM',
     fields: [
         { key: 'med_year', label: "Année", type: 'year' },
         { key: 'med_month', label: "Mois", type: 'month' },
@@ -341,7 +339,6 @@ exports['MSBM'] = {
 
 exports['MSBP'] = {
     title: 'Synthese des cas pris en charge',
-    key: 'MSBP',
     fields: [
         { key: 'case_year', label: "Année", type: 'year' },
         { key: 'case_month', label: "Mois", type: 'month' },
@@ -370,7 +367,6 @@ exports['MSBP'] = {
 
 exports['MSBG'] = {
     title: 'Rapport mensuel de gestion des médicaments',
-    key: 'MSBG',
     fields: [
         { key: 'monthly_year', label: "Année", type: 'year' },
         { key: 'monthly_month', label: "Mois", type: 'month' },
@@ -391,7 +387,6 @@ exports['MSBG'] = {
 
 exports['MSBC'] = {
     title: 'Contre-référence',
-    key: 'MSBC',
     fields: [
         { key: 'cref_year', label: "Année", type: 'year' },
         { key: 'cref_month', label: "Mois", type: 'month' },
@@ -431,4 +426,14 @@ exports['MSBC'] = {
         { key: 'cref_agent', label: "Nom de l'agent de santé", type: 'string' }
     ],
     autoreply: 'Merci, votre formulaire a été bien reçu.'
+};
+
+/**
+ * @param {String} form - smsforms key string
+ * @returns {Boolean} - Return true if this form is a referral since we need to
+ * do extra work to process a referral form.
+ * @api public
+ */
+exports.isReferralForm = function(form) {
+    return ['MSBR','MSBC','MSBB'].indexOf(form) !== -1;
 };
