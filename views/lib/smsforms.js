@@ -1,3 +1,13 @@
+/**
+ * @param {String} form - smsforms key string
+ * @returns {Boolean} - Return true if this form is a referral since we need to
+ * do extra work to process a referral form.
+ * @api public
+ */
+exports.isReferralForm = function(form) {
+    return ['MSBR','MSBC','MSBB'].indexOf(form) !== -1;
+};
+
 exports['TEST'] = {
     fields: [
         {key: 'foo', label: 'Foo', type: 'string'},
@@ -469,12 +479,3 @@ exports['MSBC'] = {
     autoreply: 'Merci, votre formulaire a été bien reçu.'
 };
 
-/**
- * @param {String} form - smsforms key string
- * @returns {Boolean} - Return true if this form is a referral since we need to
- * do extra work to process a referral form.
- * @api public
- */
-exports.isReferralForm = function(form) {
-    return ['MSBR','MSBC','MSBB'].indexOf(form) !== -1;
-};
