@@ -365,77 +365,6 @@ exports['MSBB'] = {
     autoreply: 'Merci, votre formulaire a été bien reçu.'
 };
 
-exports['MSBM'] = {
-    title: 'Alerte besoin médicaments',
-    fields: [
-        { key: 'med_year', label: "Année", type: 'year' },
-        { key: 'med_month', label: "Mois", type: 'month' },
-        { key: 'med_day', label: "Jour", type: 'number' },
-        { key: 'med_rc', label: "Code du RC", type: 'number' },
-        { key: 'med_cta_a', label: "CTA actuel", type: 'number' },
-        { key: 'med_cta_c', label: "CTA commendé", type: 'number' },
-        { key: 'med_tdr_a', label: "TDR actuel", type: 'number' },
-        { key: 'med_tdr_c', label: "TDR commandé", type: 'number' },
-        { key: 'med_ctm_a', label: "CTM 480 actuel", type: 'number' },
-        { key: 'med_ctm_c', label: "CTM 480 commandé", type: 'number' },
-        { key: 'med_sro_a', label: "SRO/Zinc actuel", type: 'number' },
-        { key: 'med_sro_c', label: "SRO/Zinc commandé", type: 'number' },
-        { key: 'med_para_a', label: "PARA actuel", type: 'number' },
-        { key: 'med_para_c', label: "PARA commandé", type: 'number' }
-    ],
-    autoreply: 'Merci, votre formulaire a été bien reçu.'
-};
-
-
-
-exports['MSBP'] = {
-    title: 'Synthese des cas pris en charge',
-    fields: [
-        { key: 'case_year', label: "Année", type: 'year' },
-        { key: 'case_month', label: "Mois", type: 'month' },
-        { key: 'case_day', label: "Jour", type: 'number' },
-        { key: 'case_rc', label: "Code du RC", type: 'number' },
-        { key: 'case_pec_m', label: "M: 0-5 ans PEC", type: 'number' },
-        { key: 'case_pec_f', label: "F: 0-5 ans PEC", type: 'number' },
-        { key: 'case_urg_m', label: "M: 0-5 ans référé en urgence", type: 'number' },
-        { key: 'case_urg_f', label: "F: 0-5 ans référé en urgence", type: 'number' },
-        { key: 'case_tdr', label: "TDR de palu réalisé", type: 'number' },
-        { key: 'case_palu_m', label: "M: Palu simple traité", type: 'number' },
-        { key: 'case_palu_f', label: "F: Palu simple traité", type: 'number' },
-        { key: 'case_dia_m', label: "M: Diarrhée simple traité", type: 'number' },
-        { key: 'case_dia_f', label: "F: Diarrhée simple traité", type: 'number' },
-        { key: 'case_pneu_m', label: "M: Pneumonie traité", type: 'number' },
-        { key: 'case_pneu_f', label: "F: Pneumonie traité", type: 'number' },
-        { key: 'case_mal_m', label: "M: Malnutrition dépisté", type: 'number' },
-        { key: 'case_mal_f', label: "F: Malnutrition dépisté", type: 'number' },
-        { key: 'case_rev', label: "0-5 ans revu pour suivi des soins", type: 'number' },
-        { key: 'case_vad', label: "0-5 and vu au cours VAD", type: 'number' },
-        { key: 'case_edu', label: "Séance éducative réalisée", type: 'number' }
-    ],
-    autoreply: 'Merci, votre formulaire a été bien reçu.'
-};
-
-
-exports['MSBG'] = {
-    title: 'Rapport mensuel de gestion des médicaments',
-    fields: [
-        { key: 'monthly_year', label: "Année", type: 'year' },
-        { key: 'monthly_month', label: "Mois", type: 'month' },
-        { key: 'monthly_rc', label: "Code du RC", type: 'number' },
-        { key: 'monthly_cta1', label: "CTA au début de mois", type: 'number' },
-        { key: 'monthly_cta2', label: "CTA cédés dans le mois", type: 'number' },
-        { key: 'monthly_cta3', label: "CTA restants à la fin du mois", type: 'number' },
-        { key: 'monthly_sro1', label: "SRO/Zinc au début de mois", type: 'number' },
-        { key: 'monthly_sro2', label: "SRO/Zinc cédés dans le mois", type: 'number' },
-        { key: 'monthly_sro3', label: "SRO/Zinc restants à la fin du mois", type: 'number' },
-        { key: 'monthly_ctm1', label: "CTM 480mg au début de mois", type: 'number' },
-        { key: 'monthly_ctm2', label: "CTM 480mg cédés dans le mois", type: 'number' },
-        { key: 'monthly_ctm3', label: "CTM 480mg restants à la fin du mois", type: 'number' }
-    ],
-    autoreply: 'Merci, votre formulaire a été bien reçu.'
-};
-
-
 exports['MSBC'] = {
     title: 'Contre-référence',
     fields: [
@@ -479,3 +408,69 @@ exports['MSBC'] = {
     autoreply: 'Merci, votre formulaire a été bien reçu.'
 };
 
+exports['MSBM'] = {
+    title: 'Alerte besoin médicaments',
+    fields: [
+        { key: 'med_year', label: "Année", type: 'year' },
+        { key: 'med_month', label: "Mois", type: 'month' },
+        { key: 'med_day', label: "Jour", type: 'number' },
+        { key: 'med_rc', label: "Code du RC", type: 'number' },
+        { key: 'med_cta_a', label: "CTA actuel", type: 'number' },
+        { key: 'med_cta_c', label: "CTA commendé", type: 'number' },
+        { key: 'med_tdr_a', label: "TDR actuel", type: 'number' },
+        { key: 'med_tdr_c', label: "TDR commandé", type: 'number' },
+        { key: 'med_ctm_a', label: "CTM 480 actuel", type: 'number' },
+        { key: 'med_ctm_c', label: "CTM 480 commandé", type: 'number' },
+        { key: 'med_sro_a', label: "SRO/Zinc actuel", type: 'number' },
+        { key: 'med_sro_c', label: "SRO/Zinc commandé", type: 'number' },
+        { key: 'med_para_a', label: "PARA actuel", type: 'number' },
+        { key: 'med_para_c', label: "PARA commandé", type: 'number' }
+    ],
+    autoreply: 'Merci, votre formulaire a été bien reçu.'
+};
+
+exports['MSBP'] = {
+    title: 'Synthese des cas pris en charge',
+    fields: [
+        { key: 'case_year', label: "Année", type: 'year' },
+        { key: 'case_month', label: "Mois", type: 'month' },
+        { key: 'case_day', label: "Jour", type: 'number' },
+        { key: 'case_rc', label: "Code du RC", type: 'number' },
+        { key: 'case_pec_m', label: "M: 0-5 ans PEC", type: 'number' },
+        { key: 'case_pec_f', label: "F: 0-5 ans PEC", type: 'number' },
+        { key: 'case_urg_m', label: "M: 0-5 ans référé en urgence", type: 'number' },
+        { key: 'case_urg_f', label: "F: 0-5 ans référé en urgence", type: 'number' },
+        { key: 'case_tdr', label: "TDR de palu réalisé", type: 'number' },
+        { key: 'case_palu_m', label: "M: Palu simple traité", type: 'number' },
+        { key: 'case_palu_f', label: "F: Palu simple traité", type: 'number' },
+        { key: 'case_dia_m', label: "M: Diarrhée simple traité", type: 'number' },
+        { key: 'case_dia_f', label: "F: Diarrhée simple traité", type: 'number' },
+        { key: 'case_pneu_m', label: "M: Pneumonie traité", type: 'number' },
+        { key: 'case_pneu_f', label: "F: Pneumonie traité", type: 'number' },
+        { key: 'case_mal_m', label: "M: Malnutrition dépisté", type: 'number' },
+        { key: 'case_mal_f', label: "F: Malnutrition dépisté", type: 'number' },
+        { key: 'case_rev', label: "0-5 ans revu pour suivi des soins", type: 'number' },
+        { key: 'case_vad', label: "0-5 and vu au cours VAD", type: 'number' },
+        { key: 'case_edu', label: "Séance éducative réalisée", type: 'number' }
+    ],
+    autoreply: 'Merci, votre formulaire a été bien reçu.'
+};
+
+exports['MSBG'] = {
+    title: 'Rapport mensuel de gestion des médicaments',
+    fields: [
+        { key: 'monthly_year', label: "Année", type: 'year' },
+        { key: 'monthly_month', label: "Mois", type: 'month' },
+        { key: 'monthly_rc', label: "Code du RC", type: 'number' },
+        { key: 'monthly_cta1', label: "CTA au début de mois", type: 'number' },
+        { key: 'monthly_cta2', label: "CTA cédés dans le mois", type: 'number' },
+        { key: 'monthly_cta3', label: "CTA restants à la fin du mois", type: 'number' },
+        { key: 'monthly_sro1', label: "SRO/Zinc au début de mois", type: 'number' },
+        { key: 'monthly_sro2', label: "SRO/Zinc cédés dans le mois", type: 'number' },
+        { key: 'monthly_sro3', label: "SRO/Zinc restants à la fin du mois", type: 'number' },
+        { key: 'monthly_ctm1', label: "CTM 480mg au début de mois", type: 'number' },
+        { key: 'monthly_ctm2', label: "CTM 480mg cédés dans le mois", type: 'number' },
+        { key: 'monthly_ctm3', label: "CTM 480mg restants à la fin du mois", type: 'number' }
+    ],
+    autoreply: 'Merci, votre formulaire a été bien reçu.'
+};
