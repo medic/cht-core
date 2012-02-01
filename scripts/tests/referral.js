@@ -105,6 +105,9 @@ var options = {
     }
 };
 
+/*
+ * MSBR (from clinic)
+ */
 log('smssync format example referral form from clinic:');
 var data = {
     from: '+13125551212', // clinic.contact.phone
@@ -119,17 +122,62 @@ log(data);
 
 run(options, data);
 
-log('smssync format example counter referral from health center:');
-var data = {
-    from: '+13124449999', // health_center.contact.phone
-    message: '1!MSBC!2012#1#16#' + ref_rc +
-             '#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm',
-    sent_timestamp: '1-25-12 18:45',
-    sent_to: '+12223333333',
-    message_id: '13579',
-    foo: 'bar' // extra is ok
-};
-log(data);
+// Using settimeout since referral needs to be created with the refid first.
 
-// counter referral comes after referral
-setTimeout(function(){tasksCreated=false; run(options, data);}, 1000);
+/*
+ * MSBC (from health center)
+ */
+setTimeout(function(){
+    log('MSBC smssync format example counter referral to clinic:');
+    var data = {
+        from: '+17084449999', // health_center.contact.phone
+        message: '1!MSBC!2012#1#16#' + ref_rc +
+                 '#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm',
+        sent_timestamp: '1-25-12 18:45',
+        sent_to: '+12223333333',
+        message_id: '13579',
+        foo: 'bar' // extra is ok
+    };
+    log(data);
+    tasksCreated=false;
+    run(options, data);
+}, 1000);
+
+/*
+ * MSBB (from health center)
+ */
+setTimeout(function(){
+    log('MSBB smssync format example counter referral to hospital:');
+    var data = {
+        from: '+17084449999', // health_center.contact.phone
+        message: '1!MSBB!2012#1#24#' + ref_rc +
+                 '#1111#bbbbbbbbbbbbbbbbbbbb#22#16#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+        sent_timestamp: '1-25-12 18:45',
+        sent_to: '+12223333333',
+        message_id: '13579',
+        foo: 'bar' // extra is ok
+    };
+    log(data);
+    tasksCreated=false;
+    run(options, data);
+}, 1000);
+
+/*
+ * MSBC (from hospital)
+ */
+setTimeout(function(){
+    log('MSBC smssync format example counter referral to clinic:');
+    var data = {
+        from: '+14151112222', // hospital.contact.phone
+        message: '1!MSBC!2012#1#16#' + ref_rc +
+                 '#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm',
+        sent_timestamp: '1-25-12 18:45',
+        sent_to: '+12223333333',
+        message_id: '13579',
+        foo: 'bar' // extra is ok
+    };
+    log(data);
+    tasksCreated=false;
+    run(options, data);
+}, 1000);
+
