@@ -313,6 +313,47 @@ exports['MSBR'] = {
     autoreply: 'Merci, votre formulaire a été bien reçu.'
 };
 
+exports['MSBB'] = {
+    title: 'Alerte référence',
+    fields: [
+        {key: 'ref_year', label: "Année", type: 'year'},
+        {key: 'ref_month', label: "Mois", type: 'month'},
+        {key: 'ref_day', label: "Jour", type: 'number'},
+
+        {key: 'ref_rc', label: "Code du RC", type: 'number'},
+        {key: 'ref_hour', label: "Heure de départ", type: 'number'},
+        {key: 'ref_name', label: "Nom", type: 'string'},
+        {key: 'ref_age', label: "Age", type: 'number'},
+        {
+            key: 'ref_reason',
+            label: "Motif référenc",
+            type: 'choice',
+            choices: {
+                1: "Palu grave",
+                2: "Urg Chir",
+                3: "Hémorragie Fm",
+                4: "HTA grossesse",
+                5: "Détresse resp",
+                6: "Coma",
+                7: "Anémie sevére",
+                8: "Ut cicatriciel",
+                9: "-Choléra",
+                10: "-Fievre jaune",
+                11: "-Méningite",
+                12: "-Tétanos",
+                13: "-PFA",
+                14: "-Autres MPE",
+                15: "Autres"
+            }
+        },
+        {
+            key: 'ref_reason_other',
+            label: "Si 'autre', précisez motif référenc",
+            type: 'string'
+        }
+    ],
+    autoreply: 'Merci, votre formulaire a été bien reçu.'
+};
 
 exports['MSBM'] = {
     title: 'Alerte besoin médicaments',
