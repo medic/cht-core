@@ -24,8 +24,10 @@ exports.parseField = function (field, raw, prev) {
             var val = exports.parseNum(raw);
             if (val in field.choices)
                 return field.choices[val];
-            if (log)
+            if (typeof log !== 'undefined')
                 log('Option not available for '+val+' in choices.');
+            if (typeof console !== 'undefined')
+                console.log('Option not available for '+val+' in choices.');
             return raw;
         default:
             throw new Error('Unknown field type: ' + field.type);
