@@ -38,6 +38,7 @@ exports['PSMS'] = {
 };
 
 exports['PSCQ'] = {
+    title: 'Supervision trimestriel',
     fields: [
         {key: 'supervision_year', label: 'Année', type: 'year'},
         {key: 'supervision_trimester', label: 'Trimestre', type: 'number'},
@@ -187,6 +188,7 @@ exports['PSCQ'] = {
 };
 
 exports['PSCA'] = {
+    title: 'Synthèse mensuelle des aires de santé',
     fields: [
         {key: 'synthese_year', label: "Année", type: 'year'},
         {key: 'synthese_month', label: "Mois", type: 'month'},
@@ -317,6 +319,7 @@ exports['PSCA'] = {
 };
 
 exports['PSCR'] = {
+    title: 'Synthèse mensuelle des relais communautaires',
     fields: [
         {key: 'synthese_year', label: "Année", type: 'year'},
         {key: 'synthese_month', label: "Mois", type: 'month'},
