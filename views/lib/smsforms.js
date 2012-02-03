@@ -45,62 +45,74 @@ exports['PSCQ'] = {
         {key: 'supervision_area', label: 'Aire de Santé', type: 'string'},
         {
             key: 'supervision_a1r',
-            label: 'Nombre des ACT 1 reçus au cours du trimestre',
-            type: 'number'
-        },
-        {
-            key: 'supervision_a2r',
-            label: "Nombre des ACT 2 reçus au cours du trimestre",
-            type: 'number'
-        },
-        {
-            key: 'supervision_a3r',
-            label: "Nombre des SRO/Zinc reçus au cours du trimestre",
-            type: 'number'
-        },
-        {
-            key: 'supervision_a1dist',
-            label: "Nombre des ACT 1 distribués au cours trimestre",
-            type: 'number'
-        },
-        {
-            key: 'supervision_a2dist',
-            label: "Nombre des ACT 2 distribués au cours trimestre",
-            type: 'number'
-        },
-        {
-            key: 'supervision_a3dist',
-            label: "Nombre des SRO/ZINC distribués au cours trimestre",
+            label: 'ACT 1 reçus - Nombre de ACT 1 reçus au cours du trimestre',
             type: 'number'
         },
         {
             key: 'supervision_a1disp',
-            label: "Nombre des ACT 1 disponible à la fin du trimestre",
+            label: 'ACT 1 disponibles - Nombre de ACT 1 disponibles à la fin du trimestre',
+            type: 'number'
+        },
+        {
+            key: 'generic_stockout1',
+            label: "ACT 1 rupture de stock 3 jours ou plus",
+            type: 'choice',
+            choices: {
+                1: "False",
+                2: "True"
+            }
+        },
+        {
+            key: 'supervision_a2r',
+            label: "Act 2 reçus - Nombre de ACT 2 reçus au cours du trimestre",
             type: 'number'
         },
         {
             key: 'supervision_a2disp',
-            label: "Nombre des ACT 2 disponible à la fin du trimestre",
+            label: 'ACT 2 disponibles à la fin du trimestre',
+            type: 'number'
+        },
+        {
+            key: 'generic_stockout2',
+            label: "ACT 2 rupture de stock 3 jours ou plus",
+            type: 'choice',
+            choices: {
+                1: "False",
+                2: "True"
+            }
+        },
+        {
+            key: 'supervision_a3r',
+            label: "SRO/Zinc reçus - Nombre de SRO/Zinc reçus au cours du trimestre",
             type: 'number'
         },
         {
             key: 'supervision_a3disp',
-            label: "Nombre des SRO/ZINC disponible à la fin du trimestre",
+            label: 'SRO/Zinc disponibles - Nombre de SRO/Zinc disponibles à la fin du trimestre',
             type: 'number'
         },
         {
+            key: 'generic_stockout3',
+            label: "SRO/Zinc rupture de stock 3 jours ou plus",
+            type: 'choice',
+            choices: {
+                1: "False",
+                2: "True"
+            }
+        },
+        {
             key: 'supervision_r1',
-            label: "Nombre des relais formés",
+            label: "RC formés",
             type: 'number'
         },
         {
             key: 'supervision_r2',
-            label: "Nombre des relais fonctionnels",
+            label: "RC fonctionnels",
             type: 'number'
         },
         {
             key: 'supervision_r3',
-            label: "Nombre de relais supervisés au cours du trimestre",
+            label: "RC supervisés",
             type: 'number'
         },
         {
@@ -115,56 +127,63 @@ exports['PSCQ'] = {
         },
         {
             key: 'supervision_r6',
-            label: "Nombre de relais communautaire supervisés ayant connu une rupture de stock en ACT de plus de 7 jours",
+            label: "ACT1, # ayant rupture de stock plus de 3 jours",
+            type: 'number'
+        },
+        {
+            key: 'supervision_r6b',
+            label: "ACT2, # ayant rupture de stock plus de 3 jours",
             type: 'number'
         },
         {
             key: 'supervision_r7',
-            label: "Nombre de relais communautaire supervisés ayant connu une rupture de stock en kits SRO + zinc de plus de 7 jours",
+            label: "SRO/Zinc, # ayant rupture de stock plus de 3 jours",
             type: 'number'
         },
         {
             key: 'supervision_p1',
-            label: "Nombre de personnes interrogées",
+            label: "Personnes interrogées",
             type: 'number'
         },
         {
             key: 'supervision_p2',
-            label: "Nombre de personnes interrogées qui rapportent les services rendus par le RC au sein de la communauté",
+            label: "Personnes interrogées qui rapportent les services rendus par le RC au sein de la communauté",
             type: 'number'
         },
         {
             key: 'supervision_p3',
-            label: "Nombre de personnes interrogées qui affirment avoir administré un traitement à leur enfant chaque fois qu'il est malade",
+            label: "Personnes interrogées qui affirment avoir administré un traitement à leur enfant chaque fois qu'il est malade",
             type: 'number'
         },
         {
             key: 'supervision_p4',
-            label: "Nombre de personnes interrogées qui déclarent avoir rencontré le RC lorsqu'ils étaient dans le besoin",
+            label: "Personnes interrogées qui déclarent avoir rencontré le RC lorsqu'ils étaient dans le besoin",
             type: 'number'
         },
         {
             key: 'supervision_v1',
-            label: "Nombre de malades vus par les RC pour toutes causes confondues",
+            label: "Malades vus par les RC pour toutes causes confondues",
             type: 'number'
         },
         {
             key: 'supervision_v2',
-            label: "Nombre de malades vus par les RC pour paludisme",
+            label: "Malades vus par les RC pour paludisme",
             type: 'number'
         },
         {
             key: 'supervision_v3',
-            label: "Nombre de malades vus par les RC pour diarrhée",
+            label: "Malades vus par les RC pour diarrhée",
             type: 'number'
         },
-        {key: 'supervision_t1', label: "Paludisme traités", type: 'number'},
+        {key: 'supervision_t1', label: "Paludisme traités total", type: 'number'},
+        {key: 'supervision_t1a', label: "Paludisme traités < 24h", type: 'number'},
+        {key: 'supervision_t1b', label: "Paludisme traités 24-48h", type: 'number'},
         {key: 'supervision_t2', label: "Diarrhée traitées", type: 'number'},
-        {key: 'supervision_ref1', label: "Cas référés par les RC", type: 'number'},
-        {key: 'supervision_ref2', label: "Cas référés au district", type: 'number'},
+        {key: 'supervision_ref1', label: "Cas référés par RC au AS", type: 'number'},
+        {key: 'supervision_ref2', label: "Cas référés par AS au DS", type: 'number'},
         {key: 'supervision_d1', label: "Décès < 5 ans", type: 'number'}
     ],
-    autoreply: 'Merci, votre formulaire a été bien reçu.'
+    autoreply: 'Merci, votre formulaire "Supervision AS" a été bien reçu.'
 };
 
 exports['PSCA'] = {
@@ -173,8 +192,8 @@ exports['PSCA'] = {
         {key: 'synthese_month', label: "Mois", type: 'month'},
         {key: 'synthese_district', label: "District de Santé", type: 'number'},
         {key: 'synthese_area', label: "Aire de Santé", type: 'string'},
-        {key: 'synthese_village_as', label: "# de villages", type: 'number'},
-        {key: 'synthese_name_as', label: "Nome du chef AS", type: 'number'},
+        {key: 'synthese_village_as', label: "Nombre de villages", type: 'number'},
+        {key: 'synthese_name_as', label: "Nom du chef AS", type: 'string'},
         {
             key: 'synthese_v1',
             label: "Malades vus, toutes causes confondues",
@@ -247,11 +266,11 @@ exports['PSCA'] = {
         },
         {
             key: 'generic_stockout1',
-            label: "Rupture de stock",
+            label: "ACT1 rupture 3 jours ou plus",
             type: 'choice',
             choices: {
-                1: "Aucune rupture",
-                2: "ACT1 rupture 3 jours ou plus"
+                1: "False",
+                2: "True"
             }
         },
         {
@@ -266,11 +285,11 @@ exports['PSCA'] = {
         },
         {
             key: 'generic_stockout2',
-            label: "Rupture de stock",
+            label: "ACT2 rupture 3 jours ou plus",
             type: 'choice',
             choices: {
-                1: "Aucune rupture",
-                2: "ACT2 rupture 3 jours ou plus"
+                1: "False",
+                2: "True"
             }
         },
         {
@@ -285,16 +304,16 @@ exports['PSCA'] = {
         },
         {
             key: 'generic_stockout3',
-            label: "Rupture de stock",
+            label: "SRO/ZINC rupture 3 jours ou plus",
             type: 'choice',
             choices: {
-                1: "Aucune rupture",
-                2: "SRO/ZINC rupture 3 jours ou plus"
+                1: "False",
+                2: "True"
             }
         },
         {key: 'synthese_d1', label: "Décès < 5 ans", type: 'number'}
     ],
-    autoreply: 'Merci, votre formulaire a été bien reçu.'
+    autoreply: 'Merci, votre formulaire "Synthèse AS" a été bien reçu.'
 };
 
 exports['PSCR'] = {
@@ -303,8 +322,8 @@ exports['PSCR'] = {
         {key: 'synthese_month', label: "Mois", type: 'month'},
         {key: 'synthese_district', label: "District de Santé", type: 'number'},
         {key: 'synthese_area', label: "Aire de Santé", type: 'string'},
-        {key: 'synthese_village_rc', label: "Village/quartier", type: 'number'},
-        {key: 'synthese_name_rc', label: "Nome du RC", type: 'number'},
+        {key: 'synthese_village_rc', label: "Village/quartier", type: 'string'},
+        {key: 'synthese_name_rc', label: "Nom du RC", type: 'string'},
         {
             key: 'synthese_v1',
             label: "Malades vus, toutes causes confondues",
@@ -317,12 +336,12 @@ exports['PSCR'] = {
         },
         {
             key: 'synthese_v3',
-            label: "Diarrhée, malades vus",
+            label: "Diarrhées vues",
             type: 'number'
         },
         {
             key: 'synthese_v5',
-            label: "Autres causes vus",
+            label: "Autres causes vues",
             type: 'number'
         },
         {
@@ -377,11 +396,11 @@ exports['PSCR'] = {
         },
         {
             key: 'generic_stockout1',
-            label: "Rupture de stock",
+            label: "ACT1 rupture 3 jours ou plus",
             type: 'choice',
             choices: {
-                1: "Aucune rupture",
-                2: "ACT1 rupture 3 jours ou plus"
+                1: "False",
+                2: "True"
             }
         },
         {
@@ -396,11 +415,11 @@ exports['PSCR'] = {
         },
         {
             key: 'generic_stockout2',
-            label: "Rupture de stock",
+            label: "ACT2 rupture 3 jours ou plus",
             type: 'choice',
             choices: {
-                1: "Aucune rupture",
-                2: "ACT2 rupture 3 jours ou plus"
+                1: "False",
+                2: "True"
             }
         },
         {
@@ -415,16 +434,16 @@ exports['PSCR'] = {
         },
         {
             key: 'generic_stockout3',
-            label: "Rupture de stock",
+            label: "SRO/ZINC rupture 3 jours ou plus",
             type: 'choice',
             choices: {
-                1: "Aucune rupture",
-                2: "SRO/ZINC rupture 3 jours ou plus"
+                1: "False",
+                2: "True"
             }
         },
         {key: 'synthese_d1', label: "Décès < 5 ans", type: 'number'}
     ],
-    autoreply: 'Merci, votre formulaire a été bien reçu.'
+    autoreply: 'Merci, votre formulaire "Synthèse RC" a été bien reçu.'
 };
 
 exports['MSBR'] = {
@@ -434,13 +453,13 @@ exports['MSBR'] = {
         {key: 'ref_month', label: "Mois", type: 'month'},
         {key: 'ref_day', label: "Jour", type: 'number'},
 
-        {key: 'ref_rc', label: "Code du RC", type: 'number'},
+        {key: 'ref_rc', label: "Code du RC", type: 'string'},
         {key: 'ref_hour', label: "Heure de départ", type: 'number'},
         {key: 'ref_name', label: "Nom", type: 'string'},
         {key: 'ref_age', label: "Age", type: 'number'},
         {
             key: 'ref_reason',
-            label: "Motif référenc",
+            label: "Motif référence",
             type: 'choice',
             choices: {
                 1: "Femme enceinte très malade",
@@ -459,7 +478,7 @@ exports['MSBR'] = {
         },
         {
             key: 'ref_reason_other',
-            label: "Si 'autre', précisez motif référenc",
+            label: "Si 'autre', précisez motif référence",
             type: 'string'
         }
     ],
@@ -473,13 +492,13 @@ exports['MSBB'] = {
         {key: 'ref_month', label: "Mois", type: 'month'},
         {key: 'ref_day', label: "Jour", type: 'number'},
 
-        {key: 'ref_rc', label: "Code du RC", type: 'number'},
+        {key: 'ref_rc', label: "Code du RC", type: 'string'},
         {key: 'ref_hour', label: "Heure de départ", type: 'number'},
         {key: 'ref_name', label: "Nom", type: 'string'},
         {key: 'ref_age', label: "Age", type: 'number'},
         {
             key: 'ref_reason',
-            label: "Motif référenc",
+            label: "Motif référence",
             type: 'choice',
             choices: {
                 1: "Palu grave",
@@ -501,7 +520,7 @@ exports['MSBB'] = {
         },
         {
             key: 'ref_reason_other',
-            label: "Si 'autre', précisez motif référenc",
+            label: "Si 'autre', précisez motif référence",
             type: 'string'
         }
     ],
@@ -514,7 +533,7 @@ exports['MSBC'] = {
         { key: 'cref_year', label: "Année", type: 'year' },
         { key: 'cref_month', label: "Mois", type: 'month' },
         { key: 'cref_day', label: "Jour", type: 'number' },
-        { key: 'cref_rc', label: "Code du RC", type: 'number' },
+        { key: 'cref_rc', label: "Code du RC", type: 'string' },
         {
             key: 'cref_ptype',
             label: "Type de patient",
@@ -557,7 +576,7 @@ exports['MSBM'] = {
         { key: 'med_year', label: "Année", type: 'year' },
         { key: 'med_month', label: "Mois", type: 'month' },
         { key: 'med_day', label: "Jour", type: 'number' },
-        { key: 'med_rc', label: "Code du RC", type: 'number' },
+        { key: 'med_rc', label: "Code du RC", type: 'string' },
         { key: 'med_cta_a', label: "CTA actuel", type: 'number' },
         { key: 'med_cta_c', label: "CTA commendé", type: 'number' },
         { key: 'med_tdr_a', label: "TDR actuel", type: 'number' },
@@ -578,7 +597,7 @@ exports['MSBP'] = {
         { key: 'case_year', label: "Année", type: 'year' },
         { key: 'case_month', label: "Mois", type: 'month' },
         { key: 'case_day', label: "Jour", type: 'number' },
-        { key: 'case_rc', label: "Code du RC", type: 'number' },
+        { key: 'case_rc', label: "Code du RC", type: 'string' },
         { key: 'case_pec_m', label: "M: 0-5 ans PEC", type: 'number' },
         { key: 'case_pec_f', label: "F: 0-5 ans PEC", type: 'number' },
         { key: 'case_urg_m', label: "M: 0-5 ans référé en urgence", type: 'number' },
@@ -604,7 +623,7 @@ exports['MSBG'] = {
     fields: [
         { key: 'monthly_year', label: "Année", type: 'year' },
         { key: 'monthly_month', label: "Mois", type: 'month' },
-        { key: 'monthly_rc', label: "Code du RC", type: 'number' },
+        { key: 'monthly_rc', label: "Code du RC", type: 'string' },
         { key: 'monthly_cta1', label: "CTA au début de mois", type: 'number' },
         { key: 'monthly_cta2', label: "CTA cédés dans le mois", type: 'number' },
         { key: 'monthly_cta3', label: "CTA restants à la fin du mois", type: 'number' },
