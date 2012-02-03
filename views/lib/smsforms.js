@@ -167,37 +167,27 @@ exports['PSCQ'] = {
     autoreply: 'Merci, votre formulaire a été bien reçu.'
 };
 
-exports['PSCM'] = {
+exports['PSCA'] = {
     fields: [
         {key: 'synthese_year', label: "Année", type: 'year'},
         {key: 'synthese_month', label: "Mois", type: 'month'},
         {key: 'synthese_district', label: "District de Santé", type: 'number'},
         {key: 'synthese_area', label: "Aire de Santé", type: 'string'},
-        {key: 'synthese_village', label: "Village/quartier", type: 'string'},
-        {key: 'synthese_chw', label: "Nom du RC", type: 'string'},
-        {
-            key: 'synthese_resident',
-            label: "Habite dans le village déservi",
-            type: 'number'
-        },
+        {key: 'synthese_village_as', label: "# de villages", type: 'number'},
+        {key: 'synthese_name_as', label: "Nome du chef AS", type: 'number'},
         {
             key: 'synthese_v1',
-            label: "Toutes causes confondues, malades vus",
+            label: "Malades vus, toutes causes confondues",
             type: 'number'
         },
         {
             key: 'synthese_v2',
-            label: "Paludisme vus",
+            label: "Palu vus",
             type: 'number'
         },
         {
             key: 'synthese_v3',
             label: "Diarrhée, malades vus",
-            type: 'number'
-        },
-        {
-            key: 'synthese_v4',
-            label: "Pneumonie vus",
             type: 'number'
         },
         {
@@ -211,13 +201,18 @@ exports['PSCM'] = {
             type: 'number'
         },
         {
-            key: 'synthese_t2',
-            label: "Diarrhées, cas traitées",
+            key: 'synthese_t1a',
+            label: "Paludisme, cas traités < 24h",
             type: 'number'
         },
         {
-            key: 'synthese_t3',
-            label: "Pneumonie,cas traités",
+            key: 'synthese_t1b',
+            label: "Paludisme, cas traités 24-48h",
+            type: 'number'
+        },
+        {
+            key: 'synthese_t2',
+            label: "Diarrhées, cas traitées",
             type: 'number'
         },
         {
@@ -231,8 +226,133 @@ exports['PSCM'] = {
             type: 'number'
         },
         {
-            key: 'synthese_r3',
-            label: "Pneumonies, cas référées au CSI",
+            key: 'synthese_r4',
+            label: "Autres causes, cas référées au CSI",
+            type: 'number'
+        },
+        {
+            key: 'synthese_r5',
+            label: "Cas contre référés par le CSI",
+            type: 'number'
+        },
+        {
+            key: 'synthese_a1d',
+            label: "ACT1 distribués",
+            type: 'number'
+        },
+        {
+            key: 'synthese_a1f',
+            label: "ACT1 disponibles fin du mois",
+            type: 'number'
+        },
+        {
+            key: 'generic_stockout1',
+            label: "Rupture de stock",
+            type: 'choice',
+            choices: {
+                1: "Aucune rupture",
+                2: "ACT1 rupture 3 jours ou plus"
+            }
+        },
+        {
+            key: 'synthese_a2d',
+            label: "ACT2 distribués",
+            type: 'number'
+        },
+        {
+            key: 'synthese_a2f',
+            label: "ACT2 disponibles fin du mois",
+            type: 'number'
+        },
+        {
+            key: 'generic_stockout2',
+            label: "Rupture de stock",
+            type: 'choice',
+            choices: {
+                1: "Aucune rupture",
+                2: "ACT2 rupture 3 jours ou plus"
+            }
+        },
+        {
+            key: 'synthese_sd',
+            label: "SRO/ZINC distribués",
+            type: 'number'
+        },
+        {
+            key: 'synthese_sf',
+            label: "SRO/ZINC disponibles fin du mois",
+            type: 'number'
+        },
+        {
+            key: 'generic_stockout3',
+            label: "Rupture de stock",
+            type: 'choice',
+            choices: {
+                1: "Aucune rupture",
+                2: "SRO/ZINC rupture 3 jours ou plus"
+            }
+        },
+        {key: 'synthese_d1', label: "Décès < 5 ans", type: 'number'}
+    ],
+    autoreply: 'Merci, votre formulaire a été bien reçu.'
+};
+
+exports['PSCR'] = {
+    fields: [
+        {key: 'synthese_year', label: "Année", type: 'year'},
+        {key: 'synthese_month', label: "Mois", type: 'month'},
+        {key: 'synthese_district', label: "District de Santé", type: 'number'},
+        {key: 'synthese_area', label: "Aire de Santé", type: 'string'},
+        {key: 'synthese_village_rc', label: "Village/quartier", type: 'number'},
+        {key: 'synthese_name_rc', label: "Nome du RC", type: 'number'},
+        {
+            key: 'synthese_v1',
+            label: "Malades vus, toutes causes confondues",
+            type: 'number'
+        },
+        {
+            key: 'synthese_v2',
+            label: "Palu vus",
+            type: 'number'
+        },
+        {
+            key: 'synthese_v3',
+            label: "Diarrhée, malades vus",
+            type: 'number'
+        },
+        {
+            key: 'synthese_v5',
+            label: "Autres causes vus",
+            type: 'number'
+        },
+        {
+            key: 'synthese_t1',
+            label: "Paludisme, cas traités",
+            type: 'number'
+        },
+        {
+            key: 'synthese_t1a',
+            label: "Paludisme, cas traités < 24h",
+            type: 'number'
+        },
+        {
+            key: 'synthese_t1b',
+            label: "Paludisme, cas traités 24-48h",
+            type: 'number'
+        },
+        {
+            key: 'synthese_t2',
+            label: "Diarrhées, cas traitées",
+            type: 'number'
+        },
+        {
+            key: 'synthese_r1',
+            label: "Paludisme, cas référés au CSI",
+            type: 'number'
+        },
+        {
+            key: 'synthese_r2',
+            label: "Diarrhées, cas référées au CSI",
             type: 'number'
         },
         {
@@ -246,40 +366,63 @@ exports['PSCM'] = {
             type: 'number'
         },
         {
-            key: 'synthese_a1',
-            label: "ACT au début du mois",
+            key: 'synthese_a1d',
+            label: "ACT1 distribués",
             type: 'number'
         },
         {
-            key: 'synthese_a2',
-            label: "ACT à la fin du mois",
+            key: 'synthese_a1f',
+            label: "ACT1 disponibles fin du mois",
             type: 'number'
         },
         {
-            key: 'synthese_s1',
-            label: "SRO/ZINC au début du mois",
+            key: 'generic_stockout1',
+            label: "Rupture de stock",
+            type: 'choice',
+            choices: {
+                1: "Aucune rupture",
+                2: "ACT1 rupture 3 jours ou plus"
+            }
+        },
+        {
+            key: 'synthese_a2d',
+            label: "ACT2 distribués",
             type: 'number'
         },
         {
-            key: 'synthese_s2',
-            label: "SRO/ZINC à la fin du mois",
+            key: 'synthese_a2f',
+            label: "ACT2 disponibles fin du mois",
             type: 'number'
         },
         {
-            key: 'synthese_b1',
-            label: "Antibiotiques au début du mois",
+            key: 'generic_stockout2',
+            label: "Rupture de stock",
+            type: 'choice',
+            choices: {
+                1: "Aucune rupture",
+                2: "ACT2 rupture 3 jours ou plus"
+            }
+        },
+        {
+            key: 'synthese_sd',
+            label: "SRO/ZINC distribués",
             type: 'number'
         },
         {
-            key: 'synthese_b2',
-            label: "Antibiotiques à la fin du mois",
+            key: 'synthese_sf',
+            label: "SRO/ZINC disponibles fin du mois",
             type: 'number'
         },
         {
-            key: 'synthese_d1',
-            label: "Décès < 5 ans",
-            type: 'number'
-        }
+            key: 'generic_stockout3',
+            label: "Rupture de stock",
+            type: 'choice',
+            choices: {
+                1: "Aucune rupture",
+                2: "SRO/ZINC rupture 3 jours ou plus"
+            }
+        },
+        {key: 'synthese_d1', label: "Décès < 5 ans", type: 'number'}
     ],
     autoreply: 'Merci, votre formulaire a été bien reçu.'
 };
