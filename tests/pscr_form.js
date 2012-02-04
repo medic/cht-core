@@ -7,7 +7,7 @@ exports.pscr_example_data = function (test) {
     var doc = {
         sent_timestamp: '12-10-11 09:00',
         from: '+15551212',
-        message: '1!PSCA!2012#12#20#aaaaaaaaaaaa#000111222333#kkkkkkkkkkkkkkkkkkkk#333#111#222#444#555#555#555#666#888#999#222#333#444#333#2#555#555#2#665#221#1#111'
+        message: '1!PSCR!2012#12#20#aaaaaaaaaaaa#000111222333#kkkkkkkkkkkkkkkkkkkk#333#111#222#444#555#555#555#666#888#999#222#333#444#333#2#555#555#2#665#221#1#111'
     };
 
     test.expect(2);
