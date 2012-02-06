@@ -160,7 +160,7 @@ setTimeout(function(){
     log(data);
     tasksCreated=false;
     run(options, data);
-}, 1000);
+}, 2000);
 
 /*
  * MSBC (from hospital)
@@ -179,5 +179,5 @@ setTimeout(function(){
     log(data);
     tasksCreated=false;
     run(options, data);
-}, 1000);
+}, 3000);
 
