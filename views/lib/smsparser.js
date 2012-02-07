@@ -59,8 +59,7 @@ exports.parse = function (def, doc, format) {
 
     vals.unshift(header[2]);
 
-    if (!def.fields)
-        throw new Error('Form definition has no fields attribute.');
+    if (!def || !def.fields) return {};
 
     var pairs = zip(def.fields, vals);
 
