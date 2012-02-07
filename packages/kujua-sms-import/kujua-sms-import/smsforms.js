@@ -8,27 +8,6 @@ exports.isReferralForm = function(form) {
     return ['MSBR','MSBC','MSBB'].indexOf(form) !== -1;
 };
 
-exports.getResponse = function (key, locale) {
-    var locale = locale || 'en',
-        resp = responses[key] || responses['success'];
-    return resp[locale];
-};
-
-var responses = {
-    form_not_found: {
-        en: "The report sent %s was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
-        fr: "Le formulaire envoyé %s n'est pas reconnu. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur."
-    },
-    form_invalid: {
-        en: "The report sent %s was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
-        fr: "Le formulaire envoyé %s n'est pas complet. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur."
-    },
-    success: {
-        en: 'Data received, thank you.',
-        fr: 'Merci, votre formulaire a été bien reçu.'
-    }
-};
-
 exports['TEST'] = {
     fields: [
         {key: 'foo', label: 'Foo', type: 'string'},

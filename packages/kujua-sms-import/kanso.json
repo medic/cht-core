@@ -1,0 +1,10 @@
+{
+    "name": "kujua-sms-import",
+    "version": "0.0.1",
+    "description": "Import SMS into kujua.",
+    "modules": "kujua-sms-import",
+    "dependencies": {
+        "modules": null,
+        "underscore": null
+    }
+}

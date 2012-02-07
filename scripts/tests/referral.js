@@ -68,7 +68,7 @@ var doTasks = function() {
     var options = {
         host: 'localhost',
         port: 5984,
-        path: '/kujua/_design/kujua-export/_rewrite/tasks_referral/pending',
+        path: '/kujua-export/_design/kujua-export/_rewrite/tasks_referral/pending',
         method: 'GET'
     };
     var r = req(options);
@@ -98,7 +98,7 @@ var ref_rc = rand();
 var options = {
     host: 'localhost',
     port: 5984,
-    path: '/kujua/_design/kujua-export/_rewrite/add',
+    path: '/kujua-export/_design/kujua-export/_rewrite/add',
     method: 'POST',
     headers: {
         'Content-Type': 'application/x-www-form-urlencoded',

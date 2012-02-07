@@ -1,3 +1,4 @@
+var _ = require('underscore')._;
 
 exports.parseNum = function (raw) {
     if (!isFinite(raw)) {
@@ -59,11 +60,12 @@ exports.parse = function (def, doc, format) {
 
     vals.unshift(header[2]);
 
-    if (!def || !def.fields) return {};
-
+    if (!def.fields)
+        throw new Error('Form definition has no fields attribute.');
+    
     var pairs = zip(def.fields, vals);
 
-    return pairs.reduce(function (obj, v) {
+    return _.reduce(pairs, function (obj, v) {
         var field = v[0],
             val = v[1];
         if (format === 1) {
