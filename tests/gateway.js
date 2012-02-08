@@ -56,27 +56,25 @@ exports.responses_form_not_found_fr = function (test) {
 
 exports.responses_empty_message = function (test) {
     test.expect(1);
-    var msg = '',
-        doc = {
+    var doc = {
             "from":"+15551212",
-            "message":"' + msg + '",
+            "message":" ",
             "form":""},
         respBody = JSON.parse(updates.getRespBody(doc)),
-        expectedResp = JSON.parse('{"payload":{"success":true,"task":"send","messages":[{"to":"+15551212","message":"The report sent \'\' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor."}]}}');
+        expectedResp = JSON.parse('{"payload":{"success":true,"task":"send","messages":[{"to":"+15551212","message": "There was a problem with your message, please try to resend. If you continue to have this problem please contact your supervisor."}]}}');
     test.same(respBody, expectedResp);
     test.done();
 };
 
 exports.responses_empty_message_fr = function (test) {
     test.expect(1);
-    var msg = '',
-        doc = {
+    var doc = {
             "from":"+15551212",
-            "message":"' + msg + '",
+            "message":" ",
             "form":"",
             "locale": "fr"},
         respBody = JSON.parse(updates.getRespBody(doc)),
-        expectedResp = JSON.parse('{"payload":{"success":true,"task":"send","messages":[{"to":"+15551212","message": "Le formulaire envoyé \'\' n\'est pas reconnu. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur."}]}}');
+        expectedResp = JSON.parse('{"payload":{"success":true,"task":"send","messages":[{"to":"+15551212","message": "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur."}]}}');
     test.same(respBody, expectedResp);
     test.done();
 };

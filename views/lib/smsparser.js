@@ -47,7 +47,9 @@ var zip = function (a, b) {
  * @param {Object} def - smsforms form definition
  * @param {Object} doc - sms_message document
  * @param {Number} format - if 1 then include labels in value
- * @returns {Object|{}} - An parsed object from the raw sms message
+ * @returns {Object|{}} - A parsed object of the sms message or an empty
+ * object if parsing fails.
+ *
  * @api public
  */
 exports.parse = function (def, doc, format) {

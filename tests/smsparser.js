@@ -53,7 +53,7 @@ exports.form_not_found = function(test) {
     test.done();
 };
 
-exports.wrong_type = function(test) {
+exports.wrong_field_type = function(test) {
     test.expect(1);
     var doc = {
             "message":"1!PSMS!facility#2011#11#zzzz#2#3#4#5#6#9#8#7#6#5#4",
