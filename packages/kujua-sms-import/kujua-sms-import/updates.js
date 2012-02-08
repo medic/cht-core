@@ -89,11 +89,13 @@ var getRespBody = exports.getRespBody = function(doc) {
             break;
     }
 
+    var duality = require('duality/core');
+    
     resp.callback = {
         options: {
             host: "localhost",
             port: 5984,
-            path: '/kujua/_design/kujua-export/_rewrite' + cb_path,
+            path: duality.getDBURL() + cb_path,
             method: "POST",
             headers: {'Content-Type': 'application/json; charset=utf-8'}},
         data: task
