@@ -1,5 +1,3 @@
-var _ = require('underscore')._;
-
 exports.parseNum = function (raw) {
     if (!isFinite(raw)) {
         return null;
@@ -65,7 +63,7 @@ exports.parse = function (def, doc, format) {
     
     var pairs = zip(def.fields, vals);
 
-    return _.reduce(pairs, function (obj, v) {
+    return pairs.reduce(function (obj, v) {
         var field = v[0],
             val = v[1];
         if (format === 1) {
