@@ -1,6 +1,6 @@
 var _ = require('underscore')._,
-    smsforms = require('kujua-sms-import/smsforms'),
-    smsparser = require('kujua-sms-import/smsparser');
+    smsforms = require('views/lib/smsforms'),
+    smsparser = require('views/lib/smsparser');
 
 
 /*

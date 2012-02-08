@@ -1,5 +1,5 @@
-var smsparser = require('kujua-sms-import/smsparser'),
-    smsforms = require('vkujua-sms-import/smsforms');
+var smsparser = require('views/lib/smsparser'),
+    smsforms = require('views/lib/smsforms');
 
 
 exports.msbb_example_data = function (test) {

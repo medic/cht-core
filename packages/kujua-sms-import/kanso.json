@@ -2,7 +2,7 @@
     "name": "kujua-sms-import",
     "version": "0.0.1",
     "description": "Import SMS into kujua.",
-    "modules": "kujua-sms-import",
+    "modules": ["kujua-sms-import","views"],
     "dependencies": {
         "modules": null,
         "underscore": null
