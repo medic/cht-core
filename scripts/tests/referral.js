@@ -4,7 +4,8 @@ var fs = require('fs'),
     http = require('http'),
     querystring = require('querystring'),
     jsDump = require('jsDump'),
-    debug = true;
+    debug = true,
+    db_name = 'kujua-export';
 
 var log = function(o) {
     if (debug) {
@@ -68,7 +69,7 @@ var doTasks = function() {
     var options = {
         host: 'localhost',
         port: 5984,
-        path: '/kujua-export/_design/kujua-export/_rewrite/tasks_referral/pending',
+        path: '/' + db_name + '/_design/kujua-export/_rewrite/tasks_referral/pending',
         method: 'GET'
     };
     var r = req(options);
@@ -98,7 +99,7 @@ var ref_rc = rand();
 var options = {
     host: 'localhost',
     port: 5984,
-    path: '/kujua-export/_design/kujua-export/_rewrite/add',
+    path: '/' + db_name + '/_design/kujua-export/_rewrite/add',
     method: 'POST',
     headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
