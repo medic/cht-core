@@ -16,12 +16,12 @@ exports.getResponse = function (key, locale) {
 
 var responses = {
     form_not_found: {
-        en: "The report sent %s was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
-        fr: "Le formulaire envoyé %s n'est pas reconnu. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur."
+        en: "The report sent '%s' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
+        fr: "Le formulaire envoyé '%s' n'est pas reconnu. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur."
     },
     form_invalid: {
-        en: "The report sent %s was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
-        fr: "Le formulaire envoyé %s n'est pas complet. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur."
+        en: "The report sent '%s' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
+        fr: "Le formulaire envoyé '%s' n'est pas complet. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur."
     },
     success: {
         en: 'Data received, thank you.',
