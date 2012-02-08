@@ -143,8 +143,8 @@ Now configure SMSSync with the URL to our Export application:
 ![Edit Settings](img/smssync_settings.png)
 ![Configure URL](img/smssync_config.png)
 
-* Enter the URL you discovered in the previous step and **append one more part**: ```add```.<br />
-  For example, ```http://10.10.20.243:5984/kujua/_design/kujua-export/_rewrite/add```.
+* Enter the URL you discovered in the previous step and **append one more part**: `add`. 
+  e.g., `http://10.10.20.243:5984/kujua/_design/kujua-export/_rewrite/add`.
 * Choose **OK**
 * **Start the SMS gateway**.  You will see a status icon in the notifications bar that tells you it is running.
 * Finally scroll down a bit further and set **Get Reply From Server** so the person submitting the report gets a messaging confirming it was received.
@@ -156,6 +156,16 @@ Now configure SMSSync with the URL to our Export application:
 *Note:* the URL is difficult to enter manually, it is less error prone to email or sms the URL to the device so you can copy and paste it into the SMSSync dialogue box.
 
 If you got this far without any error messages, great!  You are on the home stretch.
+
+#### Language/Locale parameter
+
+The gateway processes responses from Kujua so it is important that these
+responses are in the correct language and locale.  If you want to specify your
+locale, you can append the `locale` query parameter to the sync URL above.  The
+default locale is english or `en` and we also support `fr` at the moment.  
+
+For example, to get responses from Kujua in french use
+`http://10.10.20.243:5984/kujua/_design/kujua-export/_rewrite/add?locale=fr`.
 
 ## Test the Pipes
 
