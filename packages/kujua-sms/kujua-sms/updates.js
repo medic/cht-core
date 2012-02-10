@@ -96,7 +96,7 @@ var getRespBody = exports.getRespBody = function(doc) {
             host: "localhost",
             port: 5984,
             path: duality.getDBURL() + cb_path,
-            method: "POST",
+            method: "PUT",
             headers: {'Content-Type': 'application/json; charset=utf-8'}},
         data: task
     };

@@ -31,6 +31,6 @@
         "bootstrap": ">=0.0.2",
         "kujua-branding": ">=0.0.1",
         "showdown": null,
-        "kujua-sms-import": null
+        "kujua-sms": null
     }
 }
