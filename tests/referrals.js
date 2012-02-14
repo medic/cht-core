@@ -28,6 +28,17 @@ exports.get_recip_phone = function(test) {
 
 
 exports.referral_msbr = function (test) {
+
+    var setUp = function (callback) {
+        this.getrow_orig = getrow;
+        callback();
+    };
+
+    var tearDown = function (callback) {
+        getrow = this.getrow_orig;
+        callback();
+    };
+
     test.expect(11);
 
     var rand = function(from, to) {
@@ -89,20 +100,36 @@ exports.referral_msbr = function (test) {
     test.same(resp.callback.data.refid, ref_rc);
     test.same(resp.callback.data.clinic, null);
 
+    // redefine global getrow to mock list function
+    getrow = function() {
+        return {
+            "key": ["+13125551212"],
+            "value": {
+                "_id": "4a6399c98ff78ac7da33b639ed60f458",
+                "_rev": "1-0b8990a46b81aa4c5d08c4518add3786",
+                "type": "clinic",
+                "name": "Example clinic 1",
+                "contact": {
+                    "name": "Sam Jones",
+                    "phone": "+13125551212"}}};
+    };
+
     // step 2 call task_referral list function to add clinic data and construct
     // last callback.
     var result2 = lists.tasks_referral(null, {
         method: "POST",
         query:{},
         headers:{
-            "Content-Length": resp.callback.data.length,
+            "Content-Length": querystring.stringify(resp.callback.data).length,
             "Content-Type":"application/json; charset=utf-8",
             "Host": window.location.host
         },
-        body: querystring.stringify(resp.data),
-        form: resp.data,
+        body: querystring.stringify(resp.callback.data),
+        form: {}
     });
 
+    console.log("result2");
+    console.log(result2);
     var doc2 = result2[0];
     var resp2 = JSON.parse(result2[1]);
 
