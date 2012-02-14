@@ -2,6 +2,7 @@
     "name": "kujua-export",
     "version": "0.0.11-pre",
     "description": "Provide easy access to your SMS form data.",
+    "loglevel": "info",
     "load": "lib/app",
     "modules": ["lib", "views", "tests"],
     "attachments": ["static", "docs"],
@@ -30,6 +31,7 @@
         "less-precompiler": null,
         "bootstrap": ">=0.0.2",
         "kujua-branding": ">=0.0.1",
+        "jsDump": null,
         "showdown": null
     }
 }
