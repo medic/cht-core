@@ -1,6 +1,7 @@
 {
     "name": "nodeunit",
-    "version": "0.5.3",
+    "version": "0.7.2",
+    "categories": ["testing"],
     "maintainers": [
         {
             "name": "Caolan McMahon",
