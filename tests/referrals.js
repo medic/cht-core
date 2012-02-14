@@ -27,7 +27,8 @@ exports.get_recip_phone = function(test) {
 };
 
 
-exports.referralReponses = function (test) {
+exports.referral_msbr = function (test) {
+    test.expect(11);
 
     var rand = function(from, to) {
         from = from || 10000000000;
@@ -44,7 +45,6 @@ exports.referralReponses = function (test) {
                  '#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
         sent_timestamp: '1-19-12 18:45',
         sent_to: '+15551212',
-        message_id: '13579',
         foo: 'bar' // extra is ok
     };
 
@@ -63,16 +63,14 @@ exports.referralReponses = function (test) {
     var doc = result[0];
     var resp = JSON.parse(result[1]);
 
-
     // delete volatile properties
     delete doc.sent_timestamp;
 
     test.same(doc, {
         "from": "+13125551212",
-        "message": "1!MSBR!2012#1#24#46717965675#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "message": "1!MSBR!2012#1#24#"+ ref_rc +"#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
         //"sent_timestamp": "1-19-12 18:45",
         "sent_to": "+15551212",
-        "message_id": "13579",
         "foo": "bar",
         "type": "sms_message",
         "locale": "en",
@@ -80,72 +78,39 @@ exports.referralReponses = function (test) {
     });
 
 
-    // delete volatile properties
-    delete resp.callback.data.sms_message.sent_timestamp;
+    test.same(resp.payload.success, true);
+    test.same(resp.payload.messages[0].to, "+13125551212");
+    test.same(resp.callback.options.host, window.location.hostname);
+    test.same(resp.callback.options.port, window.location.port);
+    test.same(resp.callback.data.from, '+13125551212');
+    test.same(resp.callback.data.to, '');
+    test.same(resp.callback.data.state, '');
+    test.same(resp.callback.data.form, 'MSBR');
+    test.same(resp.callback.data.refid, ref_rc);
+    test.same(resp.callback.data.clinic, null);
 
-    test.same(resp, {
-        "payload": {
-            "success": true,
-            "task": "send",
-            "messages": [
-                {
-                    "to": "+13125551212",
-                    "message": "Merci, votre formulaire a été bien reçu."
-                }
-            ]
+    // step 2 call task_referral list function to add clinic data and construct
+    // last callback.
+    var result2 = lists.tasks_referral(null, {
+        method: "POST",
+        query:{},
+        headers:{
+            "Content-Length": resp.callback.data.length,
+            "Content-Type":"application/json; charset=utf-8",
+            "Host": window.location.host
         },
-        "callback": {
-            "options": {
-                "host": "localhost",
-                "port": "5984",
-                "path": "/kujua/_design/kujua-export/_rewrite/MSBR/tasks_referral/add/%2B13125551212",
-                "method": "POST",
-                "headers": {
-                    "Content-Type": "application/json; charset=utf-8"
-                }
-            },
-            "data": {
-                "type": "tasks_referral",
-                "state": "pending",
-                "from": "+13125551212",
-                "to": "",
-                "refid": "46717965675",
-                "sms_message": {
-                    "from": "+13125551212",
-                    "message": "1!MSBR!2012#1#24#46717965675#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-                    //"sent_timestamp": "1-19-12 18:45",
-                    "sent_to": "+15551212",
-                    "message_id": "13579",
-                    "foo": "bar",
-                    "type": "sms_message",
-                    "locale": "en",
-                    "form": "MSBR"
-                },
-                "messages": [],
-                "form": "MSBR",
-                "form_data": {
-                    "ref_year": [ "2012", "Année" ],
-                    "ref_month": [ "1", "Mois" ],
-                    "ref_day": [ 24, "Jour" ],
-                    "ref_rc": [ "46717965675", "Code du RC" ],
-                    "ref_hour": [ 1111, "Heure de départ" ],
-                    "ref_name": [ "bbbbbbbbbbbbbbbbbbbb", "Nom" ],
-                    "ref_age": [ 22, "Age" ],
-                    "ref_reason": [ "TB dans le rouge", "Motif référence" ],
-                    "ref_reason_other": [ "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "Si 'autre', précisez motif référence" ]
-                },
-                "clinic": null,
-                "errors": []
-            }
-        }
+        body: querystring.stringify(resp.data),
+        form: resp.data,
     });
 
-    // step 2 of MSBR referral creation, clinic data is added and callback saves it
+    var doc2 = result2[0];
+    var resp2 = JSON.parse(result2[1]);
+
+    // TODO Step 2 assertions
+
     // Step 3 The finalized doc is POSTed/saved
-
-    // Step 4 Another request polls the db for tasks_referral documents that are pending.
-    // messages get sent
-
+    // Step 4 Another request polls the db for tasks_referral documents that
+    // are pending. messages get sent
     // Step 5 Bulk db update to update the 'state' field to 'complete'
     // http post to _bulk_docs
 
