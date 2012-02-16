@@ -4,7 +4,7 @@
     "description": "Provide easy access to your SMS form data.",
     "loglevel": "info",
     "load": "lib/app",
-    "modules": ["lib", "views", "tests"],
+    "modules": ["lib", "tests"],
     "attachments": ["static", "docs"],
     "dust": {
         "templates": "templates"
@@ -31,6 +31,7 @@
         "less-precompiler": null,
         "bootstrap": ">=0.0.2",
         "kujua-branding": ">=0.0.1",
+        "kujua-sms": null,
         "jsDump": null,
         "showdown": null
     }

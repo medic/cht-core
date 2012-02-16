@@ -1,34 +1,28 @@
-/**
- * Update functions to be exported from the design doc.
- */
-
 var _ = require('underscore')._,
-    logger = require('./utils').logger,
     smsforms = require('views/lib/smsforms'),
     smsparser = require('views/lib/smsparser');
-    //querystring = require('querystring'),
-    //TODO get current db name or url
-    //Error: ReferenceError: Error loading: undefined
-    //window is not defined
-    //db = require('db').current(),
+
+
+/*
+ * TODO:
+ *    - somehow update should work without having to import those functions 
+ *      in the update.js file of the project
+ *    - rewrite rules need to be exported 
+ *
+ */
+
 
 /*
  * Return Ushahidi SMSSync compatible response message.  Supports custom
  * auto-reply message in the form definition. Also uses callbacks to create
  * 1st phase of tasks_referral doc.
  */
-var getRespBody = exports.getRespBody = function(doc, req) {
-
+var getRespBody = exports.getRespBody = function(doc) {
     var form = doc.form,
         def = smsforms[doc.form],
         form_data = smsparser.parse(def, doc, 1),
-        baseURL = require('duality/core').getBaseURL(),
-        headers = req.headers.Host.split(":"),
-        host = headers[0],
-        port = headers[1] || "",
         phone = doc.from, // set by gateway
-        autoreply = smsforms.getResponse('success'),
-        errormsg = '',
+        autoreply = '',//smsforms.getResponse('success'),
         resp = { //smssync gateway response format
             payload: {
                 success: true,
@@ -37,18 +31,14 @@ var getRespBody = exports.getRespBody = function(doc, req) {
                     to: phone,
                     message: autoreply}]}};
 
-    if (!doc.message || !doc.message.trim()) {
-        errormsg = smsforms.getResponse('error', doc.locale);
-    } else if (!form || !def) {
-        errormsg = smsforms.getResponse('form_not_found', doc.locale)
-                  .replace('%(form)', form || 'NULL');
-    }
-
-    if (errormsg) {
-        // TODO integrate with kujua notifications
-        logger.error({'error':errormsg, 'doc':doc});
-        resp.payload.messages[0].message = errormsg;
-        logger.debug(resp);
+    if (!form || !def) {
+        // TODO integrate with kujua notifications to resolve this, respond
+        // with boiler "ok" to the muvuku client.
+        var msg = '';//smsforms.getResponse('form_not_found', doc.locale)
+                  //.replace('%s', form);
+        if (typeof log !== 'undefined')
+            log(msg);
+        resp.payload.messages[0].message = msg;
         return JSON.stringify(resp);
     }
 
@@ -57,7 +47,6 @@ var getRespBody = exports.getRespBody = function(doc, req) {
     }
 
     if (!smsforms.isReferralForm(form)) {
-        logger.debug(resp);
         return JSON.stringify(resp);
     }
 
@@ -98,35 +87,33 @@ var getRespBody = exports.getRespBody = function(doc, req) {
                       .replace('%1', encodeURIComponent(form))
                       .replace('%2', encodeURIComponent(phone));
             break;
-    };
+    }
 
+    var duality = require('duality/core');
+    
     resp.callback = {
         options: {
-            host: host,
-            port: port,
-            path: baseURL + cb_path,
-            method: "POST",
+            host: "localhost",
+            port: 5984,
+            path: duality.getDBURL() + cb_path,
+            method: "PUT",
             headers: {'Content-Type': 'application/json; charset=utf-8'}},
         data: task
     };
 
-    logger.debug(resp);
     return JSON.stringify(resp);
 
 };
 
 exports.add_sms = function (doc, req) {
-    // TODO add validation if necessary
-    logger.debug(req);
     var new_doc = _.extend(req.form, {
         _id: req.uuid,
         type: "sms_message",
-        locale: req.query.locale || 'en',
+        locale: req.form.locale || 'en',
         form: req.form.message ? req.form.message.split('!')[1] : ''
     });
-    return [new_doc, getRespBody(new_doc, req)];
+    return [new_doc, getRespBody(new_doc)];
 };
 
 exports.add = function (doc, req) {
 };
-

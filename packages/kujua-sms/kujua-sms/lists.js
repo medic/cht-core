@@ -1,12 +1,8 @@
-/**
- * List functions to be exported from the design doc.
- */
-
-var smsforms = require('views/lib/smsforms'),
-    smsparser = require('views/lib/smsparser'),
-    _ = require('underscore')._,
+var _ = require('underscore')._,
     utils = require('./utils'),
-    logger = utils.logger;
+    logger = utils.logger,
+    smsforms = require('views/lib/smsforms'),
+    smsparser = require('views/lib/smsparser');
 
 var gateway = {
     sent_timestamp: {
@@ -20,8 +16,7 @@ var gateway = {
 };
 
 exports.sms_messages_csv = function (head, req) {
-
-    var formKey  = req.query.form;
+    var formKey = req.query.form,
         def = smsforms[formKey ],
         filename = def ? formKey  + '_sms_messages.csv': 'unknown_form.csv',
         locale = req.query.locale || 'en',
@@ -109,6 +104,19 @@ exports.sms_messages_xml = function (head, req) {
     return '';
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * @param {String} phone - phone number of the phone sending the referral (from)
  * @param {Object} clinic - facility object of type 'clinic'
@@ -127,7 +135,7 @@ var isFromHealthCenter = function(phone, clinic) {
  * @returns {String} - Return phone number of where the referral should go to.
  * @api private
  */
-var getRecipientPhone = exports.getRecipientPhone = function(form, phone, clinic) {
+var getRecipientPhone = function(form, phone, clinic) {
     switch (form) {
         case 'MSBR':
             // Clinic -> Health Center
@@ -140,13 +148,14 @@ var getRecipientPhone = exports.getRecipientPhone = function(form, phone, clinic
                 // default to health center TODO check with abbyad
                 return clinic.parent.contact.phone;
             }
+            break;
         case 'MSBB':
             // Health Center -> Hospital
             return clinic.parent.parent.contact.phone;
         default:
             // Not sure what to do here
             return '';
-    };
+    }
 };
 
 /**
@@ -164,13 +173,16 @@ var getReferralMessage = function(phone, form, form_data, clinic) {
         message = [];
     switch (form) {
         case 'MSBC':
-            if (isFromHealthCenter(phone, clinic))
+            if (isFromHealthCenter(phone, clinic)) {
                 ignore.push('cref_treated');
+            }
+            break;
         default:
-            for (k in form_data) {
+            for (var k in form_data) {
                 var val = form_data[k];
-                if (ignore.indexOf(k) === -1)
+                if (ignore.indexOf(k) === -1) {
                     message.push(val[1] + ': ' + val[0]);
+                }
             }
             return message.join(', ');
     }
@@ -187,17 +199,12 @@ var addTaskError = function(task, error) {
  * update the tasks_referral doc.
  */
 exports.tasks_referral = function (head, req) {
-
     start({code: 200, headers: {
         'Content-Type': 'application/json; charset=utf-8'
     }});
 
     var task = JSON.parse(req.body),
         form = req.query.form,
-        headers = req.headers.Host.split(":"),
-        host = headers[0],
-        port = headers[1] || "",
-        appdb = require('duality/core').getDBURL(req),
         def = smsforms[form];
 
     task.created = new Date();
@@ -231,48 +238,39 @@ exports.tasks_referral = function (head, req) {
     var respBody = {
         callback: {
             options: {
-                host: host,
-                port: port,
-                path: appdb,
+                host: "localhost",
+                port: 5984,
+                path: '/kujua/',
                 method: "POST",
                 headers: {'Content-Type': 'application/json; charset=utf-8'}},
             data: task}};
 
-    logger.debug(respBody);
-    return JSON.stringify(respBody)
-
+    return JSON.stringify(respBody);
 };
+
 
 /*
  * Respond to smssync task polling, callback does a bulk update to update the
  * state field of tasks_referral docs to 'complete'.
  */
 exports.tasks_referral_pending = function (head, req) {
-
     start({code: 200, headers: {
         'Content-Type': 'application/json; charset=utf-8'
     }});
 
     var newDocs = [],
-        appdb = require('duality/core').getDBURL(req),
-        headers = req.headers.Host.split(":"),
-        host = headers[0],
-        port = headers[1] || "",
         respBody = {
+            // smssync format
             payload: {
-                success: true,
                 task: "send",
-                secret: "",
+                secret: "sssshhh-it",
                 messages: []}};
 
     var row = [];
     while (row = getRow()) {
         var task = row.doc;
-
         // update state attribute for the bulk update callback
         task.state = 'sent';
-
-        // append outgoing message data
         respBody.payload.messages.push.apply(
                 respBody.payload.messages,
                 task.messages);
@@ -282,16 +280,15 @@ exports.tasks_referral_pending = function (head, req) {
     if (newDocs.length) {
         respBody.callback = {
             options: {
-                host: host,
-                port: port,
-                path: appdb + '/_bulk_docs',
+                host: "localhost",
+                port: 5984,
+                path: '/kujua/_bulk_docs',
                 method: "POST",
                 headers: {'Content-Type': 'application/json; charset=utf-8'}},
             // bulk update
             data: {docs: newDocs}
-        }
+        };
     }
 
-    logger.debug(respBody);
-    return JSON.stringify(respBody)
+    return JSON.stringify(respBody);
 };
