@@ -1,6 +1,5 @@
 exports.rules = [
     {from: '/add', to: '_update/add_sms', method: 'POST'},
-    {from: '/', to: '_show/sms_forms'},
     {
         from: '/:form/sms_messages.csv',
         to: '_list/sms_messages_csv/sms_message_values',
