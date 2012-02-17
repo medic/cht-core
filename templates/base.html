@@ -12,7 +12,7 @@
           <p class="brand"><a href="{baseURL}/" class="kujua">Kujua</a> Export <span class="version">v{settings.version}</span></p>
           <ul class="nav pull-right">
             <li class="home"><a href="{baseURL}/">Home</a></li>
-            <li class="docs"><a href="{baseURL}/docs/">Docs</a></li>
+            <li class="docs"><a href="{baseURL}/install/">Install</a></li>
             <li class="dropdown">
               <a class="dropdown-toggle">Locale <b class="caret"></b></a>
                 <ul class="dropdown-menu">
@@ -169,7 +169,9 @@ $(function() {
   }
   if ($('#docs').get(0)) {
     var href = $(location).attr('href'),
-        slug = href.split('/').pop().split(/[^\w]+/)[0] || 'index';
+        slug = href.split('/').pop().split(/[^\w]+/)[0] || 'install/index';
+    console.log(href);
+    console.log(slug);
     $.ajax({
         url: '../../docs/'+ slug +'.md',
         success: function(data) { renderDoc(data, slug); },
