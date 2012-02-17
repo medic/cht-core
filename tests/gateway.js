@@ -1,4 +1,4 @@
-var updates = require('lib/updates'),
+var updates = require('kujua-sms/updates'),
     querystring = require('querystring');
 
 exports.success_response_psms = function (test) {

@@ -1,7 +1,6 @@
-var updates = require('lib/updates'),
-    querystring = require('querystring'),
-    lists = require('lib/lists');
-
+var updates = require('kujua-sms/updates'),
+    lists = require('kujua-sms/lists'),
+    querystring = require('querystring');
 
 exports.setUp = function (callback) {
     this.getRow_orig = getRow;

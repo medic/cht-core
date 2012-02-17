@@ -1,4 +1,3 @@
-
 exports.parseNum = function (raw) {
     if (!isFinite(raw)) {
         return null;
@@ -61,8 +60,9 @@ exports.parse = function (def, doc, format) {
 
     vals.unshift(header[2]);
 
-    if (!def || !def.fields) return {};
-
+    if (!def.fields)
+        throw new Error('Form definition has no fields attribute.');
+    
     var pairs = zip(def.fields, vals);
 
     return pairs.reduce(function (obj, v) {

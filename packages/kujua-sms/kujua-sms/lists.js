@@ -2,11 +2,11 @@
  * List functions to be exported from the design doc.
  */
 
-var smsforms = require('views/lib/smsforms'),
-    smsparser = require('views/lib/smsparser'),
-    _ = require('underscore')._,
+var _ = require('underscore')._,
     utils = require('./utils'),
-    logger = utils.logger;
+    logger = utils.logger,
+    smsforms = require('views/lib/smsforms'),
+    smsparser = require('views/lib/smsparser');
 
 var gateway = {
     sent_timestamp: {
@@ -116,7 +116,9 @@ exports.sms_messages_xml = function (head, req) {
  * @api private
  */
 var isFromHealthCenter = function(phone, clinic) {
-    if (phone === clinic.parent.contact.phone) { return true; }
+    if (phone === clinic.parent.contact.phone) {
+        return true;
+    }
     return false;
 };
 
@@ -167,10 +169,11 @@ var getReferralMessage = function(phone, form, form_data, clinic) {
             if (isFromHealthCenter(phone, clinic))
                 ignore.push('cref_treated');
         default:
-            for (k in form_data) {
+            for (var k in form_data) {
                 var val = form_data[k];
-                if (ignore.indexOf(k) === -1)
+                if (ignore.indexOf(k) === -1) {
                     message.push(val[1] + ': ' + val[0]);
+                }
             }
             return message.join(', ');
     }
@@ -238,7 +241,6 @@ exports.tasks_referral = function (head, req) {
                 headers: {'Content-Type': 'application/json; charset=utf-8'}},
             data: task}};
 
-    logger.debug(respBody);
     return JSON.stringify(respBody)
 
 };
@@ -292,6 +294,5 @@ exports.tasks_pending = function (head, req) {
         }
     }
 
-    logger.debug(respBody);
     return JSON.stringify(respBody)
 };

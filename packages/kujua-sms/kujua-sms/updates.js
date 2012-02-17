@@ -6,11 +6,6 @@ var _ = require('underscore')._,
     logger = require('./utils').logger,
     smsforms = require('views/lib/smsforms'),
     smsparser = require('views/lib/smsparser');
-    //querystring = require('querystring'),
-    //TODO get current db name or url
-    //Error: ReferenceError: Error loading: undefined
-    //window is not defined
-    //db = require('db').current(),
 
 /*
  * Return Ushahidi SMSSync compatible response message.  Supports custom
