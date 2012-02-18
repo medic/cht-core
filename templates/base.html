@@ -2,6 +2,7 @@
 <html lang="en-us"> 
   <head> 
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title}</title> 
     <link rel="stylesheet" type="text/css" href="{baseURL}/static/css/app.css" />
   </head>
@@ -170,8 +171,6 @@ $(function() {
   if ($('#docs').get(0)) {
     var href = $(location).attr('href'),
         slug = href.split('/').pop().split(/[^\w]+/)[0] || 'install/index';
-    console.log(href);
-    console.log(slug);
     $.ajax({
         url: '../../docs/'+ slug +'.md',
         success: function(data) { renderDoc(data, slug); },

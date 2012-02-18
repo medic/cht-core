@@ -92,7 +92,7 @@ browser.
 
 ### Step 3: Verify the Export tool
 
-* Now append the following path to it:<br />
+* Now append the following path to it:
   ```/kujua/_design/kujua-export/_rewrite/```.<br /> In this example we use 
   ```http://10.10.20.105:5984/kujua/_design/kujua-export/_rewrite/```.
 * Verify that the Export app responds with a screen similiar to the one below.
@@ -114,11 +114,15 @@ Ushahidi](http://smssync.ushahidi.com/) as the gateway; your device needs to run
 
 ### Step 2: Download SMSSync to Device
 
-[SMSSync 1.1.9 Kujua.1](gateway/SMSSync-kujua.1-debug.apk)
+<a href="gateway/SMSSync-kujua.1-debug.apk" class="btn btn-primary">Download SMSSync 1.1.9 Kujua.1</a>
 [[md5]](gateway/SMSSync-kujua.1-debug.apk.md5)
 [[sha]](gateway/SMSSync-kujua.1-debug.apk.sha)
 
-* Open the link above on your Android browser; you can type it manually into the address bar or send it to your phone either via SMS or email. 
+* Take the URL you discovered in the previous step and append the gateway download path to it, `install/gateway/SMSSync-kujua.1-debug.apk`.<br />
+Complete example: `http://10.10.20.105:5984/kujua/_design/kujua-export/_rewrite/install/gateway/SMSSync-kujua.1-debug.apk`
+* Send the gateway download URL to the device either through SMS or email, then
+open it in your Android browser.  *Note*, you can type it manually into the
+address bar too.  
 * Choose **Accept** when Android prompts you to download.  The file is approximately 200KB and should download to your SD Card pretty quickly.
 
 ![Select Link in SMS](img/sms_select_link.png)
@@ -136,27 +140,30 @@ To install the application you have to find the apk file on your SD Card.
 
 *Note* if you do not have a file manager there are several free applications available on the Android Market.
 
-### Step 4: Configure the Sync URL
+## Configure SMSSync
+
+### Step 1: Enter the Sync URL
 
 Now configure SMSSync with the URL to our Export application:
 
 * Launch SMSSync
 * Edit Settings
 * Choose **Enter the Sync URL** option
+* Enter the Kujua Export URL you discovered in the previous step and **append one more part**: `add`.  Complete example: `http://10.10.20.105:5984/kujua/_design/kujua-export/_rewrite/add`.
+* Choose **OK**
 
-![Launch SMSSync](img/smssync_icon.png)
 ![Edit Settings](img/smssync_settings.png)
 ![Configure URL](img/smssync_config.png)
+![Input URL](img/smssync_config_url.png)
 
-* Enter the URL you discovered in the previous step and **append one more part**: `add`. 
-  e.g., `http://10.10.20.105:5984/kujua/_design/kujua-export/_rewrite/add`.
-* Choose **OK**
+### Step 2: Configure a few more options
+
 * **Start the SMS gateway**.  You will see a status icon in the notifications bar that tells you it is running.
 * Finally scroll down a bit further and set **Get Reply From Server** so the person submitting the report gets a messaging confirming it was received.
 
-![Input URL](img/smssync_config_url.png)
 ![Start](img/smssync_start.png)
 ![Get Reply From Server](img/smssync_getreply.png)
+![Enable Task Checking](img/enable_task_checking.png)
 
 *Note:* the URL is difficult to enter manually, it is less error prone to email or sms the URL to the device so you can copy and paste it into the SMSSync dialogue box.
 
