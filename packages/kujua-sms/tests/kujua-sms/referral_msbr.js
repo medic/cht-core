@@ -28,6 +28,56 @@ exports.referral_msbr = function (test) {
         foo: 'bar' // extra is ok
     };
 
+    var sms_message = {
+       "from": "+13125551212",
+       "message": "1!MSBR!2012#1#24#" + ref_rc +
+                  "#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+       "sent_timestamp": "1-19-12 18:45",
+       "sent_to": "+15551212",
+       "foo": "bar",
+       "type": "sms_message",
+       "locale": "en",
+       "form": "MSBR"
+    };
+    var form_data = {
+       "ref_year": [
+          "2012",
+          "Année"
+       ],
+       "ref_month": [
+          "1",
+          "Mois"
+       ],
+       "ref_day": [
+          24,
+          "Jour"
+       ],
+       "ref_rc": [
+          ref_rc,
+          "Code du RC"
+       ],
+       "ref_hour": [
+          1111,
+          "Heure de départ"
+       ],
+       "ref_name": [
+          "bbbbbbbbbbbbbbbbbbbb",
+          "Nom"
+       ],
+       "ref_age": [
+          22,
+          "Age"
+       ],
+       "ref_reason": [
+          "TB dans le rouge",
+          "Motif référence"
+       ],
+       "ref_reason_other": [
+          "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "Si 'autre', précisez motif référence"
+       ]
+    };
+
     var result = updates.add_sms(null, {
         method: "POST",
         query:{},
@@ -43,20 +93,7 @@ exports.referral_msbr = function (test) {
     var doc = result[0];
     var resp = JSON.parse(result[1]);
 
-    // delete volatile properties
-    delete doc.sent_timestamp;
-
-    test.same(doc, {
-        "from": "+13125551212",
-        "message": "1!MSBR!2012#1#24#"+ ref_rc +"#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-        //"sent_timestamp": "1-19-12 18:45",
-        "sent_to": "+15551212",
-        "foo": "bar",
-        "type": "sms_message",
-        "locale": "en",
-        "form": "MSBR"
-    });
-
+    test.same(doc, sms_message);
 
     test.same(resp.payload, {
         "success": true,
@@ -85,57 +122,10 @@ exports.referral_msbr = function (test) {
         "from": "+13125551212",
         "to": "",
         "refid": ref_rc,
-        "sms_message": {
-           "from": "+13125551212",
-           "message": "1!MSBR!2012#1#24#" + ref_rc +
-                      "#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-           "sent_timestamp": "1-19-12 18:45",
-           "sent_to": "+15551212",
-           "foo": "bar",
-           "type": "sms_message",
-           "locale": "en",
-           "form": "MSBR"
-        },
+        "sms_message": sms_message,
         "messages": [],
         "form": "MSBR",
-        "form_data": {
-           "ref_year": [
-              "2012",
-              "Année"
-           ],
-           "ref_month": [
-              "1",
-              "Mois"
-           ],
-           "ref_day": [
-              24,
-              "Jour"
-           ],
-           "ref_rc": [
-              ref_rc,
-              "Code du RC"
-           ],
-           "ref_hour": [
-              1111,
-              "Heure de départ"
-           ],
-           "ref_name": [
-              "bbbbbbbbbbbbbbbbbbbb",
-              "Nom"
-           ],
-           "ref_age": [
-              22,
-              "Age"
-           ],
-           "ref_reason": [
-              "TB dans le rouge",
-              "Motif référence"
-           ],
-           "ref_reason_other": [
-              "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-              "Si 'autre', précisez motif référence"
-           ]
-        },
+        "form_data": form_data,
         "clinic": null,
         "errors": []
     });
@@ -204,16 +194,7 @@ exports.referral_msbr = function (test) {
         "from": "+13125551212",
         "to": "+17085551212",
         "refid": ref_rc,
-        "sms_message": {
-           "from": "+13125551212",
-           "message": "1!MSBR!2012#1#24#"+ ref_rc + "#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-           "sent_timestamp": "1-19-12 18:45",
-           "sent_to": "+15551212",
-           "foo": "bar",
-           "type": "sms_message",
-           "locale": "en",
-           "form": "MSBR"
-        },
+        "sms_message": sms_message,
         "messages": [
            {
               "to": "+17085551212",
@@ -222,44 +203,7 @@ exports.referral_msbr = function (test) {
            }
         ],
         "form": "MSBR",
-        "form_data": {
-           "ref_year": [
-              "2012",
-              "Année"
-           ],
-           "ref_month": [
-              "1",
-              "Mois"
-           ],
-           "ref_day": [
-              24,
-              "Jour"
-           ],
-           "ref_rc": [
-              ref_rc,
-              "Code du RC"
-           ],
-           "ref_hour": [
-              1111,
-              "Heure de départ"
-           ],
-           "ref_name": [
-              "bbbbbbbbbbbbbbbbbbbb",
-              "Nom"
-           ],
-           "ref_age": [
-              22,
-              "Age"
-           ],
-           "ref_reason": [
-              "TB dans le rouge",
-              "Motif référence"
-           ],
-           "ref_reason_other": [
-              "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-              "Si 'autre', précisez motif référence"
-           ]
-        },
+        "form_data": form_data,
         "clinic": clinic1,
         "errors": [],
     };
@@ -318,16 +262,7 @@ exports.referral_msbr = function (test) {
         "from": "+13125551212",
         "to": "+17085551212",
         "refid": ref_rc,
-        "sms_message": {
-           "from": "+13125551212",
-           "message": "1!MSBR!2012#1#24#" + ref_rc + "#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-           "sent_timestamp": "1-19-12 18:45",
-           "sent_to": "+15551212",
-           "foo": "bar",
-           "type": "sms_message",
-           "locale": "en",
-           "form": "MSBR"
-        },
+        "sms_message": sms_message,
         "messages": [
            {
               "to": "+17085551212",
@@ -335,61 +270,8 @@ exports.referral_msbr = function (test) {
            }
         ],
         "form": "MSBR",
-        "form_data": {
-           "ref_year": [
-              "2012",
-              "Année"
-           ],
-           "ref_month": [
-              "1",
-              "Mois"
-           ],
-           "ref_day": [
-              24,
-              "Jour"
-           ],
-           "ref_rc": [
-              ref_rc,
-              "Code du RC"
-           ],
-           "ref_hour": [
-              1111,
-              "Heure de départ"
-           ],
-           "ref_name": [
-              "bbbbbbbbbbbbbbbbbbbb",
-              "Nom"
-           ],
-           "ref_age": [
-              22,
-              "Age"
-           ],
-           "ref_reason": [
-              "TB dans le rouge",
-              "Motif référence"
-           ],
-           "ref_reason_other": [
-              "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-              "Si 'autre', précisez motif référence"
-           ]
-        },
-        "clinic": {
-           "_id": "4a6399c98ff78ac7da33b639ed60f458",
-           "_rev": "1-0b8990a46b81aa4c5d08c4518add3786",
-           "type": "clinic",
-           "name": "Example clinic 1",
-           "contact": {
-              "name": "Sam Jones",
-              "phone": "+13125551212"
-           },
-           "parent": {
-              "type": "health_center",
-              "contact": {
-                 "name": "Neal Young",
-                 "phone": "+17085551212"
-              }
-           }
-        },
+        "form_data": form_data,
+        "clinic": clinic1,
         "errors": []
     }]);
 
