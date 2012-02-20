@@ -1,12 +1,14 @@
 var updates = require('kujua-sms/updates'),
     lists = require('kujua-sms/lists'),
+    baseURL = require('duality/core').getBaseURL(),
+    appdb = require('duality/core').getDBURL(),
     querystring = require('querystring'),
     fakerequest = require('couch-fakerequest');
 
 
 exports.referral_msbr = function (test) {
 
-    test.expect(13);
+    test.expect(7);
 
     var rand = function(from, to) {
         from = from || 10000000000;
@@ -15,7 +17,7 @@ exports.referral_msbr = function (test) {
     };
 
     // random ref_rc for better test data
-    var ref_rc = rand();
+    var ref_rc = String(rand());
 
     var data = {
         from: '+13125551212', // clinic.contact.phone
@@ -56,33 +58,111 @@ exports.referral_msbr = function (test) {
     });
 
 
-    test.same(resp.payload.success, true);
-    test.same(resp.payload.messages[0].to, "+13125551212");
-    test.same(resp.callback.options.host, window.location.hostname);
-    test.same(resp.callback.options.port, window.location.port);
-    test.same(resp.callback.data.from, '+13125551212');
-    test.same(resp.callback.data.to, '');
-    test.same(resp.callback.data.state, '');
-    test.same(resp.callback.data.form, 'MSBR');
-    test.same(resp.callback.data.refid, ref_rc);
-    test.same(resp.callback.data.clinic, null);
+    test.same(resp.payload, {
+        "success": true,
+        "task": "send",
+        "messages": [
+            {
+            "to": "+13125551212",
+            "message": "Merci, votre formulaire a été bien reçu."
+            }
+        ]
+    });
+
+    test.same(resp.callback.options, {
+        "host": window.location.hostname,
+        "port": window.location.port,
+        "path": baseURL + "/MSBR/tasks_referral/add/%2B13125551212",
+        "method": "POST",
+        "headers": {
+           "Content-Type": "application/json; charset=utf-8"
+        }
+     });
+
+    test.same(resp.callback.data, {
+        "type": "tasks_referral",
+        "state": "",
+        "from": "+13125551212",
+        "to": "",
+        "refid": ref_rc,
+        "sms_message": {
+           "from": "+13125551212",
+           "message": "1!MSBR!2012#1#24#" + ref_rc +
+                      "#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+           "sent_timestamp": "1-19-12 18:45",
+           "sent_to": "+15551212",
+           "foo": "bar",
+           "type": "sms_message",
+           "locale": "en",
+           "form": "MSBR"
+        },
+        "messages": [],
+        "form": "MSBR",
+        "form_data": {
+           "ref_year": [
+              "2012",
+              "Année"
+           ],
+           "ref_month": [
+              "1",
+              "Mois"
+           ],
+           "ref_day": [
+              24,
+              "Jour"
+           ],
+           "ref_rc": [
+              ref_rc,
+              "Code du RC"
+           ],
+           "ref_hour": [
+              1111,
+              "Heure de départ"
+           ],
+           "ref_name": [
+              "bbbbbbbbbbbbbbbbbbbb",
+              "Nom"
+           ],
+           "ref_age": [
+              22,
+              "Age"
+           ],
+           "ref_reason": [
+              "TB dans le rouge",
+              "Motif référence"
+           ],
+           "ref_reason_other": [
+              "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "Si 'autre', précisez motif référence"
+           ]
+        },
+        "clinic": null,
+        "errors": []
+    });
+
+    var clinic1 = {
+        "_id": "4a6399c98ff78ac7da33b639ed60f458",
+        "_rev": "1-0b8990a46b81aa4c5d08c4518add3786",
+        "type": "clinic",
+        "name": "Example clinic 1",
+        "contact": {
+            "name": "Sam Jones",
+            "phone": "+13125551212"
+        },
+        "parent": {
+            "type": "health_center",
+            "contact": {
+                "name": "Neal Young",
+                "phone": "+17085551212"
+            }
+        }
+    };
 
     // redefine global getRow to mock list function
     var viewdata = {rows: [
         {
             "key": ["+13125551212"],
-            "value": {
-                "_id": "4a6399c98ff78ac7da33b639ed60f458",
-                "_rev": "1-0b8990a46b81aa4c5d08c4518add3786",
-                "type": "clinic",
-                "name": "Example clinic 1",
-                "parent": {
-                    "contact": {
-                        "name": "Sam Jones",
-                        "phone": "+13125551212"
-                    }                    
-                }
-            }
+            "value": clinic1,
         }
     ]};
 
@@ -99,10 +179,90 @@ exports.referral_msbr = function (test) {
         form: {}
     });
 
+    test.same(result2.headers, {
+        "Content-Type": "application/json; charset=utf-8"
+    });
     var doc2 = JSON.parse(result2.body);
-    test.same(doc2.callback.data.form, 'MSBR');
-    test.same(doc2.callback.data.clinic.name, 'Example clinic 1');
-    
+    test.same(doc2.callback.options, {
+        "host": window.location.hostname,
+        "port": window.location.port,
+        "path": appdb,
+        "method": "POST",
+        "headers": {
+           "Content-Type": "application/json; charset=utf-8"
+        }
+     });
+
+
+    // delete volatile properties for test
+    delete doc2.callback.data.created;
+
+    test.same(doc2.callback.data, {
+        "type": "tasks_referral",
+        "state": "pending",
+        "from": "+13125551212",
+        "to": "+17085551212",
+        "refid": ref_rc,
+        "sms_message": {
+           "from": "+13125551212",
+           "message": "1!MSBR!2012#1#24#"+ ref_rc + "#1111#bbbbbbbbbbbbbbbbbbbb#22#8#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+           "sent_timestamp": "1-19-12 18:45",
+           "sent_to": "+15551212",
+           "foo": "bar",
+           "type": "sms_message",
+           "locale": "en",
+           "form": "MSBR"
+        },
+        "messages": [
+           {
+              "to": "+17085551212",
+              "message": "Année: 2012, Mois: 1, Jour: 24, Code du RC: " + ref_rc
+                         + ", Heure de départ: 1111, Nom: bbbbbbbbbbbbbbbbbbbb, Age: 22, Motif référence: TB dans le rouge, Si 'autre', précisez motif référence: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+           }
+        ],
+        "form": "MSBR",
+        "form_data": {
+           "ref_year": [
+              "2012",
+              "Année"
+           ],
+           "ref_month": [
+              "1",
+              "Mois"
+           ],
+           "ref_day": [
+              24,
+              "Jour"
+           ],
+           "ref_rc": [
+              ref_rc,
+              "Code du RC"
+           ],
+           "ref_hour": [
+              1111,
+              "Heure de départ"
+           ],
+           "ref_name": [
+              "bbbbbbbbbbbbbbbbbbbb",
+              "Nom"
+           ],
+           "ref_age": [
+              22,
+              "Age"
+           ],
+           "ref_reason": [
+              "TB dans le rouge",
+              "Motif référence"
+           ],
+           "ref_reason_other": [
+              "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "Si 'autre', précisez motif référence"
+           ]
+        },
+        "clinic": clinic1,
+        "errors": [],
+    });
+
     // TODO Step 2 assertions
 
     // Step 3 The finalized doc is POSTed/saved

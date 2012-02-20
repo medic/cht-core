@@ -17,7 +17,7 @@ var getRespBody = exports.getRespBody = function(doc, req) {
     var form = doc.form,
         def = smsforms[doc.form],
         form_data = smsparser.parse(def, doc, 1),
-        baseURL = require('duality/core').getDBURL(),
+        baseURL = require('duality/core').getBaseURL(),
         headers = req.headers.Host.split(":"),
         host = headers[0],
         port = headers[1] || "",
