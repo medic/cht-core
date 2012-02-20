@@ -4,7 +4,7 @@
     "description": "Provide easy access to your SMS form data.",
     "loglevel": "info",
     "load": "lib/app",
-    "modules": ["lib", "tests"],
+    "modules": ["lib"],
     "attachments": ["static", "docs"],
     "dust": {
         "templates": "templates"
