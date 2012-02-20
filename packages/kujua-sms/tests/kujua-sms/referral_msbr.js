@@ -6,7 +6,7 @@ var updates = require('kujua-sms/updates'),
 
 exports.referral_msbr = function (test) {
 
-    test.expect(11);
+    test.expect(13);
 
     var rand = function(from, to) {
         from = from || 10000000000;
@@ -39,9 +39,7 @@ exports.referral_msbr = function (test) {
     });
 
     var doc = result[0];
-    console.log(['doc', doc]);
     var resp = JSON.parse(result[1]);
-    console.log(['resp', resp]);
 
     // delete volatile properties
     delete doc.sent_timestamp;
@@ -78,9 +76,11 @@ exports.referral_msbr = function (test) {
                 "_rev": "1-0b8990a46b81aa4c5d08c4518add3786",
                 "type": "clinic",
                 "name": "Example clinic 1",
-                "contact": {
-                    "name": "Sam Jones",
-                    "phone": "+13125551212"
+                "parent": {
+                    "contact": {
+                        "name": "Sam Jones",
+                        "phone": "+13125551212"
+                    }                    
                 }
             }
         }
@@ -90,7 +90,7 @@ exports.referral_msbr = function (test) {
     // last callback.
     var result2 = fakerequest.list(lists.tasks_referral, viewdata, {
         method: "POST",
-        query:{},
+        query:{form: 'MSBR'},
         headers:{
             "Content-Type":"application/json; charset=utf-8",
             "Host": window.location.host
@@ -99,10 +99,10 @@ exports.referral_msbr = function (test) {
         form: {}
     });
 
-    console.log("result2");
-    console.log(result2);
-    var doc2 = JSON.parse(result2);
-
+    var doc2 = JSON.parse(result2.body);
+    test.same(doc2.callback.data.form, 'MSBR');
+    test.same(doc2.callback.data.clinic.name, 'Example clinic 1');
+    
     // TODO Step 2 assertions
 
     // Step 3 The finalized doc is POSTed/saved
