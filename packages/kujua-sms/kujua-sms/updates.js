@@ -97,9 +97,15 @@ var getRespBody = exports.getRespBody = function(doc, req) {
 
     resp.callback = {
         options: {
+<<<<<<< Updated upstream
             host: host,
             port: port,
             path: baseURL + cb_path,
+=======
+            host: "localhost",
+            port: 5984,
+            path: duality.getDBURL() + cb_path,
+>>>>>>> Stashed changes
             method: "POST",
             headers: {'Content-Type': 'application/json; charset=utf-8'}},
         data: task
