@@ -69,7 +69,7 @@ var doTasks = function() {
     var options = {
         host: 'localhost',
         port: 5984,
-        path: '/' + db_name + '/_design/kujua-export/_rewrite/tasks_referral/pending',
+        path: '/' + db_name + '/_design/kujua-export/_rewrite/add',
         method: 'GET'
     };
     var r = req(options);
