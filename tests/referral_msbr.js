@@ -1,16 +1,8 @@
 var updates = require('kujua-sms/updates'),
     lists = require('kujua-sms/lists'),
-    querystring = require('querystring');
+    querystring = require('querystring'),
+    fakerequest = require('couch-fakerequest');
 
-exports.setUp = function (callback) {
-    this.getRow_orig = getRow;
-    callback();
-};
-
-exports.tearDown = function (callback) {
-    getRow = this.getRow_orig;
-    callback();
-};
 
 exports.referral_msbr = function (test) {
 
@@ -47,7 +39,9 @@ exports.referral_msbr = function (test) {
     });
 
     var doc = result[0];
+    console.log(['doc', doc]);
     var resp = JSON.parse(result[1]);
+    console.log(['resp', resp]);
 
     // delete volatile properties
     delete doc.sent_timestamp;
@@ -76,8 +70,8 @@ exports.referral_msbr = function (test) {
     test.same(resp.callback.data.clinic, null);
 
     // redefine global getRow to mock list function
-    getRow = function() {
-        return {
+    var viewdata = {rows: [
+        {
             "key": ["+13125551212"],
             "value": {
                 "_id": "4a6399c98ff78ac7da33b639ed60f458",
@@ -86,27 +80,28 @@ exports.referral_msbr = function (test) {
                 "name": "Example clinic 1",
                 "contact": {
                     "name": "Sam Jones",
-                    "phone": "+13125551212"}}};
-    };
+                    "phone": "+13125551212"
+                }
+            }
+        }
+    ]};
 
     // step 2 call task_referral list function to add clinic data and construct
     // last callback.
-    var result2 = lists.tasks_referral(null, {
+    var result2 = fakerequest.list(lists.tasks_referral, viewdata, {
         method: "POST",
         query:{},
         headers:{
-            "Content-Length": querystring.stringify(resp.callback.data).length,
             "Content-Type":"application/json; charset=utf-8",
             "Host": window.location.host
         },
-        body: querystring.stringify(resp.callback.data),
+        body: JSON.stringify(resp.callback.data),
         form: {}
     });
 
     console.log("result2");
     console.log(result2);
-    var doc2 = result2[0];
-    //var resp2 = JSON.parse(result2[1]);
+    var doc2 = JSON.parse(result2);
 
     // TODO Step 2 assertions
 

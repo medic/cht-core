@@ -34,6 +34,7 @@
         "kujua-sms": null,
         "jsDump": null,
         "git-info": null,
-        "showdown": null
+        "showdown": null,
+        "couch-fakerequest": null
     }
 }
