@@ -173,7 +173,7 @@ exports.referral_msbr = function (test) {
     var viewdata = {rows: [
         {
             "key": ["+13125551212"],
-            "value": clinic1,
+            "value": clinic1
         }
     ]};
 
