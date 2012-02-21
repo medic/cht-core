@@ -6,7 +6,10 @@ var updates = require('kujua-sms/updates'),
     jsDump = require('jsDump'),
     fakerequest = require('couch-fakerequest');
 
-exports.referral_msbb = function (test) {
+/*
+ * MSBC test for Hospital -> Health Center counter referral
+ */
+exports.referral_msbc2 = function (test) {
 
     test.expect(10);
 
@@ -21,11 +24,10 @@ exports.referral_msbb = function (test) {
 
     // Data as passed in from SMSSync, JSON formatted
     var data = {
-        from: '+17085551212', // health_center.contact.phone
-        message: '1!MSBB!2012#1#24#' + ref_rc +
-                 '#1111#bbbbbbbbbbbbbbbbbbbb#22#16#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+        from: '+14155551212', // hospital.contact.phone
+        message: '1!MSBC!2012#1#16#' + ref_rc + '#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm',
         sent_timestamp: '1-19-12 18:45',
-        sent_to: '+15551212',
+        sent_to: '+15551212', // gateway address
         // delete volatile properties for test
         //message_id: '13579',
         foo: 'bar' // extra is ok
@@ -33,54 +35,65 @@ exports.referral_msbb = function (test) {
 
     // sms_message document
     var sms_message = {
-       "from": "+17085551212", // health_center.contact.phone
-       "message": '1!MSBB!2012#1#24#' + ref_rc +
-                 '#1111#bbbbbbbbbbbbbbbbbbbb#22#16#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+       "from": "+14155551212", // hospital.contact.phone
+       "message": '1!MSBC!2012#1#16#' + ref_rc + '#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm',
        "sent_timestamp": "1-19-12 18:45",
        "sent_to": "+15551212",
        "foo": "bar",
        "type": "sms_message",
        "locale": "en",
-       "form": "MSBB"
+       "form": "MSBC"
     };
 
     // parsed sms_message data that includes labels
     var form_data = {
-        "ref_year": [
+        "cref_year": [
            "2012",
            "Année"
         ],
-        "ref_month": [
+        "cref_month": [
            "1",
            "Mois"
         ],
-        "ref_day": [
-           24,
+        "cref_day": [
+           16,
            "Jour"
         ],
-        "ref_rc": [
+        "cref_rc": [
            ref_rc,
            "Code du RC"
         ],
-        "ref_hour": [
-           1111,
-           "Heure de départ"
+        "cref_ptype": [
+           "Autre",
+           "Type de patient"
         ],
-        "ref_name": [
-           "bbbbbbbbbbbbbbbbbbbb",
+        "cref_name": [
+           "abcdefghijklmnopqrst",
            "Nom"
         ],
-        "ref_age": [
-           22,
+        "cref_age": [
+           31,
            "Age"
         ],
-        "ref_reason": [
-           "16",
-           "Motif référence"
+        "cref_mom": [
+           "bcdefghijklmnopqrstu",
+           "Nom de la mère ou de l'accompagnant"
         ],
-        "ref_reason_other": [
-           "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-           "Si 'autre', précisez motif référence"
+        "cref_treated": [
+           "cdefghijklmnopqrstuv",
+           "Patient traité pour"
+        ],
+        "cref_rec": [
+           "Référé",
+           "Recommandations/Conseils"
+        ],
+        "cref_reason": [
+           "defghijklmnopqrstuvw",
+           "Précisions pour recommandations"
+        ],
+        "cref_agent": [
+           "efghijklmnopqrstuvwxyzabcdefghijklm",
+           "Nom de l'agent de santé"
         ]
     };
 
@@ -97,19 +110,22 @@ exports.referral_msbb = function (test) {
         form: data,
     });
 
+    console.log(result);
     // check results of add_sms update run
     var doc = result[0];
     var resp = JSON.parse(result[1]);
 
     test.same(doc, sms_message);
 
-    // Assert proper outgoing messages for the gateway to process
+    /*
+     * Assert proper outgoing messages for the gateway to process
+     */
     test.same(resp.payload, {
         "success": true,
         "task": "send",
         "messages": [
             {
-            "to": "+17085551212",
+            "to": "+14155551212",
             "message": "Merci, votre formulaire a été bien reçu."
             }
         ]
@@ -122,7 +138,7 @@ exports.referral_msbb = function (test) {
     test.same(resp.callback.options, {
         "host": window.location.hostname,
         "port": window.location.port,
-        "path": baseURL + "/MSBB/tasks_referral/add/health_center/%2B17085551212",
+        "path": baseURL + "/MSBC/tasks_referral/add/refid/" + ref_rc,
         "method": "POST",
         "headers": {
            "Content-Type": "application/json; charset=utf-8"
@@ -136,19 +152,19 @@ exports.referral_msbb = function (test) {
     test.same(resp.callback.data, {
         "type": "tasks_referral",
         "state": "",
-        "from": "+17085551212",
+        "from": "+14155551212",
         "to": "",
         "refid": ref_rc,
         "sms_message": sms_message,
         "messages": [],
-        "form": "MSBB",
+        "form": "MSBC",
         "form_data": form_data,
         "clinic": null,
         "errors": []
     });
 
     /*
-     * Our clinic mockup for this test. MSBB is Health Center -> Hospital
+     * Our clinic mockup for this test.
      */
     var clinic1 = {
         "_id": "4a6399c98ff78ac7da33b639ed60f458",
@@ -181,7 +197,7 @@ exports.referral_msbb = function (test) {
      */
     var viewdata = {rows: [
         {
-            "key": ["+17085551212"],
+            "key": [ref_rc],
             "value": clinic1
         }
     ]};
@@ -192,7 +208,7 @@ exports.referral_msbb = function (test) {
      */
     var result2 = fakerequest.list(lists.tasks_referral, viewdata, {
         method: "POST",
-        query:{form: 'MSBB'},
+        query:{form: 'MSBC'},
         headers:{
             "Content-Type":"application/json; charset=utf-8",
             "Host": window.location.host
@@ -223,9 +239,8 @@ exports.referral_msbb = function (test) {
     delete doc2.callback.data.created;
 
     var messages = [{
-        "to": "+14155551212",
-        "message": "Année: 2012, Mois: 1, Jour: 24, Code du RC: " + ref_rc
-                 + ", Heure de départ: 1111, Nom: bbbbbbbbbbbbbbbbbbbb, Age: 22, Motif référence: TB dans le rouge, Si 'autre', précisez motif référence: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        "to": "+13125551212",
+        "message": "Année: 2012, Mois: 1, Jour: 16, Code du RC: "+ ref_rc +", Type de patient: Autre, Nom: abcdefghijklmnopqrst, Age: 31, Nom de la mère ou de l'accompagnant: bcdefghijklmnopqrstu, Recommandations/Conseils: Référé, Précisions pour recommandations: defghijklmnopqrstuvw, Nom de l'agent de santé: efghijklmnopqrstuvwxyzabcdefghijklm"
     }];
 
     /*
@@ -234,13 +249,13 @@ exports.referral_msbb = function (test) {
      */
     var task = {
         "type": "tasks_referral",
-        "state": "blah",
-        "from": "+17085551212",
-        "to": "+14155551212",
+        "state": "pending",
+        "from": "+14155551212",
+        "to": "+17085551212",
         "refid": ref_rc,
         "sms_message": sms_message,
         "messages": messages,
-        "form": "MSBB",
+        "form": "MSBC",
         "form_data": form_data,
         "clinic": clinic1,
         "errors": [],
@@ -309,12 +324,12 @@ exports.referral_msbb = function (test) {
     test.same(doc3.callback.data.docs, [{
         "type": "tasks_referral",
         "state": "sent",
-        "from": "+17085551212",
-        "to": "+14155551212",
+        "from": "+14155551212",
+        "to": "+17085551212",
         "refid": ref_rc,
         "sms_message": sms_message,
         "messages": messages,
-        "form": "MSBB",
+        "form": "MSBC",
         "form_data": form_data,
         "clinic": clinic1,
         "errors": []
@@ -325,3 +340,4 @@ exports.referral_msbb = function (test) {
 
     test.done();
 };
+
