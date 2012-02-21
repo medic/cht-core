@@ -110,7 +110,6 @@ exports.referral_msbc1 = function (test) {
         form: data,
     });
 
-    console.log(result);
     // check results of add_sms update run
     var doc = result[0];
     var resp = JSON.parse(result[1]);
