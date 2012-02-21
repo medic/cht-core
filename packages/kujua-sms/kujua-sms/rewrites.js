@@ -26,8 +26,16 @@ exports.rules = [
         }
     },
     {
-        from: '/:form/tasks_referral/add/:phone',
+        from: '/:form/tasks_referral/add/clinic/:phone',
         to: '_list/tasks_referral/clinic_by_phone',
+        query: {
+            startkey: [':phone'],
+            endkey: [':phone',{}]
+        }
+    },
+    {
+        from: '/:form/tasks_referral/add/health_center/:phone',
+        to: '_list/tasks_referral/clinic_by_parent_phone',
         query: {
             startkey: [':phone'],
             endkey: [':phone',{}]

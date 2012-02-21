@@ -240,7 +240,7 @@ exports.tasks_referral = function (head, req) {
                 method: "POST",
                 headers: {'Content-Type': 'application/json; charset=utf-8'}},
             data: task}};
-    
+
     return JSON.stringify(respBody);
 };
 

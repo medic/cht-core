@@ -34,6 +34,17 @@ exports.clinic_by_phone = {
 };
 
 /*
+ * Get clinic based on health center phone number
+ */
+exports.clinic_by_parent_phone = {
+    map: function (doc) {
+        if (doc.type === 'clinic') {
+            emit([doc.parent.contact.phone], doc);
+        }
+    }
+};
+
+/*
  * Get clinic based on referral id in a tasks_referral doc.
  */
 exports.clinic_by_refid = {

@@ -83,13 +83,13 @@ var getRespBody = exports.getRespBody = function(doc, req) {
             break;
         case 'MSBB':
             task.refid = form_data.ref_rc[0];
-            cb_path = '/%1/tasks_referral/add/refid/%2'
+            cb_path = '/%1/tasks_referral/add/health_center/%2'
                       .replace('%1', encodeURIComponent(form))
-                      .replace('%2', encodeURIComponent(task.refid));
+                      .replace('%2', encodeURIComponent(phone));
             break;
         case 'MSBR':
             task.refid = form_data.ref_rc[0];
-            cb_path = '/%1/tasks_referral/add/%2'
+            cb_path = '/%1/tasks_referral/add/clinic/%2'
                       .replace('%1', encodeURIComponent(form))
                       .replace('%2', encodeURIComponent(phone));
             break;
