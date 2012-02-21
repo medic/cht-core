@@ -40,21 +40,19 @@ easy to install on any modern operating system.
 On the Replicator screen complete the following fields and their corresponding values:
 
 * Replicate Changes from: **Remote Database** ```https://medic.iriscouch.com/kujua-export```
-* to: **Local Database** ```kujua``` (\*note below)
+* to: **Local Database** ```kujua```\*
 * Click the **Replicate** button
 * After you click replicate verify your screen updates with the replication session data:
 
 ![Replicator Success](img/replicator_success.png)
 
-*Note* your database name may vary if you have an existing installation.
+\**Note* your local database name may vary if you have an existing installation.
 
 ### Step 4: Verify
 
-As a final step to verify you have Kujua Export installed, navigate to the kujua-export design doc: <http://127.0.0.1:5984/_utils/document.html?kujua/_design/kujua-export>, you should see the design doc:
+As a final step navigate to the Kujua Export home screen: <http://127.0.0.1:5984/kujua/_design/kujua-export/_rewrite/>, you should see something close to this:
 
-![Kujua Design Doc](img/kujua_designdoc.png)
-
-
+![Kujua Export](img/kujua_export_localhost.png)
 
 
 ## Verify Network Configuration
@@ -96,7 +94,7 @@ browser.
   ```/kujua/_design/kujua-export/_rewrite/```.<br /> In this example we use 
   ```http://10.10.20.105:5984/kujua/_design/kujua-export/_rewrite/```.
 * Verify that the Export app responds with a screen similiar to the one below.
-* Keep this URL handy, you will need it for the next step.
+* Now **copy your local network URL somewhere**, possibly in the clipboard or notepad.  You will need it for the next steps.
 
 ![Verify Export Tool](img/verify_export.png)
 
@@ -114,31 +112,39 @@ Ushahidi](http://smssync.ushahidi.com/) as the gateway; your device needs to run
 
 ### Step 2: Download SMSSync to Device
 
-<a href="gateway/SMSSync-kujua.1-debug.apk" class="btn btn-primary">Download SMSSync 1.1.9 Kujua.1</a>
-[[md5]](gateway/SMSSync-kujua.1-debug.apk.md5)
-[[sha]](gateway/SMSSync-kujua.1-debug.apk.sha)
 
-* Take the URL you discovered in the previous step and append the gateway download path to it, `install/gateway/SMSSync-kujua.1-debug.apk`.<br />
-Complete example: `http://10.10.20.105:5984/kujua/_design/kujua-export/_rewrite/install/gateway/SMSSync-kujua.1-debug.apk`
-* Send the gateway download URL to the device either through SMS or email, then
-open it in your Android browser.  *Note*, you can type it manually into the
-address bar too.  
+* Copy this link destination [SMSSync-kujua.1-debug.apk](gateway/SMSSync 1.1.9-kujua.1.apk)\*
+* Send the gateway download URL to the device either through SMS, email or other 
+means, then open it in your Android browser.  You can type it manually into the
+address bar too.
 * Choose **Accept** when Android prompts you to download.  The file is approximately 200KB and should download to your SD Card pretty quickly.
 
 ![Select Link in SMS](img/sms_select_link.png)
 ![Select Action](img/select_action.png)
 ![Browser Loading](img/browser_loading.png)
 
-*Note* there are other ways to get the apk file onto your device, this was the easiest I have found.
+\*Verify the checksums if necessary: 
+[[md5]](gateway/SMSSync-kujua.1-debug.apk.md5)
+[[sha]](gateway/SMSSync-kujua.1-debug.apk.sha)
 
 ### Step 3: Install SMSSync on Device
 
-To install the application you have to find the apk file on your SD Card.  
+* Open your browser and go to settings
+* Choose the **More** option
+* Choose **Downloads** from the menu
+* Choose **SMSSync-kujua** package from the download history
 
-* Use the native file manager to navigate to the **SD Card > Downloads** portion of the file system and choose the apk filename you downloaded in the previous step.
-* Choose **Install** when Android prompts you.
+![Browser More Option](img/browser_more.png)
+![Browser Downloads](img/browser_downloads.png)
+![Choose SMSSync from download history](img/download_history.png)
 
-*Note* if you do not have a file manager there are several free applications available on the Android Market.
+* Choose **Install** from the SMSSync menu
+* Wait a few seconds for the application to install
+* Choose **Open** from the SMSSync menu
+
+![Install SMSSync](img/install_smssync.png)
+![Installer Screen](img/installing_smssync.png)
+![Choose Open SMSSync](img/open_smssync.png)
 
 ## Configure SMSSync
 
@@ -146,10 +152,10 @@ To install the application you have to find the apk file on your SD Card.
 
 Now configure SMSSync with the URL to our Export application:
 
-* Launch SMSSync
+* Launch SMSSync 
 * Edit Settings
 * Choose **Enter the Sync URL** option
-* Enter the Kujua Export URL you discovered in the previous step and **append one more part**: `add`.  Complete example: `http://10.10.20.105:5984/kujua/_design/kujua-export/_rewrite/add`.
+* Enter the local network URL you discovered in the Verify Network steps above and **append one more part**: `add`.  Complete example: `http://10.10.20.105:5984/kujua/_design/kujua-export/_rewrite/add`.
 * Choose **OK**
 
 ![Edit Settings](img/smssync_settings.png)
@@ -159,15 +165,13 @@ Now configure SMSSync with the URL to our Export application:
 ### Step 2: Configure a few more options
 
 * **Start the SMS gateway**.  You will see a status icon in the notifications bar that tells you it is running.
-* Finally scroll down a bit further and set **Get Reply From Server** so the person submitting the report gets a messaging confirming it was received.
+* Scroll down a bit further and set **Get Reply From Server** so the person submitting the report gets a messaging confirming it was received.
+* Finally and set **Enable Task Checking** so the gateway processes outgoing messages.
 
 ![Start](img/smssync_start.png)
 ![Get Reply From Server](img/smssync_getreply.png)
 ![Enable Task Checking](img/enable_task_checking.png)
 
-*Note:* the URL is difficult to enter manually, it is less error prone to email or sms the URL to the device so you can copy and paste it into the SMSSync dialogue box.
-
-If you got this far without any error messages, great!  You are on the home stretch.
 
 #### Language/Locale parameter
 
@@ -201,21 +205,28 @@ it all fits together.
 ![Report Received](img/report_received.png)
 
 *Note*, if messages are in the Sent box that means they were successfully synced or 
-saved to the database.
+saved to CouchDB.
+
+### Step 2: View Response
+
+* You should also receive a response from the gateway, like **Zikomo!**
+
+![Zikomo!](img/zikomo.png)
 
 *Note*, our version of SMSSync won't send SMS responses to itself because this can
 cause an endless loop of error responses to and from the gateway.
 
-### Step 2: View Report Data
+### Step 3: View Report Data
 
 Now lets see if we can get our data out of the database and in a useful format; the Export tool does this.
 
 * Browse to the export tool
-* Choose the **PSMS: Download CSV** link, a file should download to your computer.
+* Choose the download format your prefer
+* Choose the **PSMS: Download** button and a file should download to your computer.
 
 ![Export Screen](img/export_screen.png)
 
-* Now open the CSV file in your favorite spreadsheet program and verify the
+* Now open the file in your favorite spreadsheet program and verify the
   formatting, field names and data look accurate.
 
 ![CSV Output](img/csv_output.png)
