@@ -23,7 +23,7 @@ exports.referral_msbb = function (test) {
     var data = {
         from: '+17085551212', // health_center.contact.phone
         message: '1!MSBB!2012#1#24#' + ref_rc +
-                 '#1111#bbbbbbbbbbbbbbbbbbbb#22#16#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+                 '#1111#bbbbbbbbbbbbbbbbbbbb#22#15#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
         sent_timestamp: '1-19-12 18:45',
         sent_to: '+15551212',
         // delete volatile properties for test
@@ -35,7 +35,7 @@ exports.referral_msbb = function (test) {
     var sms_message = {
        "from": "+17085551212", // health_center.contact.phone
        "message": '1!MSBB!2012#1#24#' + ref_rc +
-                 '#1111#bbbbbbbbbbbbbbbbbbbb#22#16#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+                 '#1111#bbbbbbbbbbbbbbbbbbbb#22#15#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
        "sent_timestamp": "1-19-12 18:45",
        "sent_to": "+15551212",
        "foo": "bar",
@@ -75,7 +75,7 @@ exports.referral_msbb = function (test) {
            "Age"
         ],
         "ref_reason": [
-           "16",
+           "Autres",
            "Motif référence"
         ],
         "ref_reason_other": [
@@ -225,7 +225,7 @@ exports.referral_msbb = function (test) {
     var messages = [{
         "to": "+14155551212",
         "message": "Année: 2012, Mois: 1, Jour: 24, Code du RC: " + ref_rc
-                 + ", Heure de départ: 1111, Nom: bbbbbbbbbbbbbbbbbbbb, Age: 22, Motif référence: TB dans le rouge, Si 'autre', précisez motif référence: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+                 + ", Heure de départ: 1111, Nom: bbbbbbbbbbbbbbbbbbbb, Age: 22, Motif référence: Autres, Si 'autre', précisez motif référence: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
     }];
 
     /*
@@ -234,7 +234,7 @@ exports.referral_msbb = function (test) {
      */
     var task = {
         "type": "tasks_referral",
-        "state": "blah",
+        "state": "pending",
         "from": "+17085551212",
         "to": "+14155551212",
         "refid": ref_rc,
@@ -252,7 +252,7 @@ exports.referral_msbb = function (test) {
     // HTTP POST to CouchDB API (No test needed?)
 
     /*
-     * Step 4 Another request polls the db for tasks_referral documents that
+     * Step 4 Another request polls the db for tasks_* documents that
      * are pending. Messages get formatted into the payload for the gateway.
      *
      * Mockup the view data first.

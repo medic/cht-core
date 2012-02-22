@@ -11,7 +11,7 @@ var updates = require('kujua-sms/updates'),
  */
 exports.referral_msbc2 = function (test) {
 
-    test.expect(10);
+    test.expect(12);
 
     var rand = function(from, to) {
         from = from || 10000000000;
@@ -238,8 +238,8 @@ exports.referral_msbc2 = function (test) {
     delete doc2.callback.data.created;
 
     var messages = [{
-        "to": "+13125551212",
-        "message": "Année: 2012, Mois: 1, Jour: 16, Code du RC: "+ ref_rc +", Type de patient: Autre, Nom: abcdefghijklmnopqrst, Age: 31, Nom de la mère ou de l'accompagnant: bcdefghijklmnopqrstu, Recommandations/Conseils: Référé, Précisions pour recommandations: defghijklmnopqrstuvw, Nom de l'agent de santé: efghijklmnopqrstuvwxyzabcdefghijklm"
+        "to": "+17085551212",
+        "message": "Année: 2012, Mois: 1, Jour: 16, Code du RC: "+ ref_rc +", Type de patient: Autre, Nom: abcdefghijklmnopqrst, Age: 31, Nom de la mère ou de l'accompagnant: bcdefghijklmnopqrstu, Patient traité pour: cdefghijklmnopqrstuv, Recommandations/Conseils: Référé, Précisions pour recommandations: defghijklmnopqrstuvw, Nom de l'agent de santé: efghijklmnopqrstuvwxyzabcdefghijklm"
     }];
 
     /*
@@ -260,6 +260,9 @@ exports.referral_msbc2 = function (test) {
         "errors": [],
     };
 
+    // somewhat redundant to test all these but aides debugging
+    test.same(doc2.callback.data.messages, task.messages);
+    test.same(doc2.callback.data.form_data, task.form_data);
     test.same(doc2.callback.data, task);
 
     // Step 3 tasks_referral doc is saved
