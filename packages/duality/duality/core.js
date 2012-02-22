@@ -916,6 +916,7 @@ exports.createHead = function (data) {
  */
 
 exports.runListBrowser = function (req, name, view, callback) {
+    log('runListBrowser runListBrowser runListBrowser')
     var fn = exports._lists[name];
     if (!fn) {
         throw new Error('Unknown list function: ' + name);

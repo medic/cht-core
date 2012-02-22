@@ -1,0 +1,18 @@
+{
+    "name": "jquery",
+    "version": "2.0.0",
+    "categories": ["utils"],
+    "maintainers": [
+        {
+            "name": "David Robbins",
+            "url": "https://github.com/drobbins"
+        }
+    ],
+    "url": "http://jquery.com/",
+    "modules": "jquery.js",
+    "modules_attachment": false,
+    "dependencies": {
+        "modules": ">=0.0.8"
+    },
+    "description": "jQuery is a fast and concise JavaScript Library that simplifies HTML document traversing, event handling, animating, and Ajax interactions for rapid web development. jQuery is designed to change the way that you write JavaScript."
+}

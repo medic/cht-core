@@ -1,6 +1,7 @@
 var nodeunit = require('nodeunit'),
     utils = require('./utils'),
-    _ = require('underscore')._;
+    _ = require('underscore')._,
+    $ = require('jquery');
 
 
 exports.init = function (baseURL) {

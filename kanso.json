@@ -1,9 +1,10 @@
 {
     "name": "kujua-export",
-    "version": "0.0.10",
+    "version": "0.1.0-pre",
     "description": "Provide easy access to your SMS form data.",
+    "loglevel": "info",
     "load": "lib/app",
-    "modules": ["lib", "views", "tests"],
+    "modules": ["lib"],
     "attachments": ["static", "docs"],
     "dust": {
         "templates": "templates"
@@ -30,6 +31,10 @@
         "less-precompiler": null,
         "bootstrap": ">=0.0.2",
         "kujua-branding": ">=0.0.1",
-        "showdown": null
+        "kujua-sms": null,
+        "jsDump": null,
+        "git-info": null,
+        "showdown": null,
+        "couch-fakerequest": null
     }
 }
