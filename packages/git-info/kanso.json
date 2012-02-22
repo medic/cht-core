@@ -1,0 +1,10 @@
+{
+    "name" : "git-info",
+    "version" : "0.0.1",
+    "categories" : ["build-tools"],
+    "description" : "Adds git information to the design doc",
+    "url": "https://github.com/ryanramage/git-info",
+    "postprocessors": {
+          "compile": "git-info"
+    }
+}

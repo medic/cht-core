@@ -12,8 +12,7 @@
     <div id="main">
     </div>
 
-    <script src="static/nodeunit-testrunner/js/jquery-1.5.2.min.js"></script>
-    <script src="static/nodeunit-testrunner/js/json2.js"></script>
+    <script src="modules.js"></script>
     <script>
         // get baseURL value
         var baseURL = '';
@@ -22,10 +21,12 @@
         if (match) {
             baseURL = match[1];
         }
-
-        $.getScript(baseURL + '/modules.js', function (data, textStatus) {
-            require('nodeunit-testrunner/ui').init(baseURL);
-        });
+        var script = document.createElement('script');
+        script.src = baseURL + '/modules.js';
+        document.body.appendChild(script);
+        var script2 = document.createElement('script');
+        script2.innerHTML = "require('nodeunit-testrunner/ui').init('" + baseURL + "');"
+        document.body.appendChild(script2);
     </script>
   </body>
 </html>

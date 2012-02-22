@@ -1,4 +1,4 @@
 # Documentation
 
-* [SMS Data Collection Setup](setup)
+* [SMS Data Collection Setup](install)
 
