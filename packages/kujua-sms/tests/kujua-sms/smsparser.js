@@ -1,6 +1,7 @@
 var smsparser = require('views/lib/smsparser'),
     smsforms = require('views/lib/smsforms');
 
+
 exports.valid_message = function(test) {
     test.expect(1);
     var doc = {

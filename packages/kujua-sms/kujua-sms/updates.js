@@ -7,6 +7,87 @@ var _ = require('underscore')._,
     smsforms = require('views/lib/smsforms'),
     smsparser = require('views/lib/smsparser');
 
+var getCallbackBody = function(phone, form, form_data) {
+
+    var body = {};
+
+    if (smsforms.isReferralForm(form)) {
+        body = {
+            type: 'tasks_referral',
+            state: '',
+            from: phone,
+            to: '',
+            refid: getRefID(form, form_data),
+            messages: [],
+            form: form,
+            form_data: form_data,
+            clinic: null,
+            errors: []};
+    } else {
+        body = {
+            type: 'data_record',
+            from: phone,
+            form: form,
+            form_data: form_data,
+            related_entities: {clinic: null},
+            errors: []};
+    }
+
+    return body;
+};
+
+var getRefID = function(form, form_data) {
+
+    switch(form) {
+        case 'MSBC':
+            return form_data.cref_rc[0];
+        case 'MSBB':
+            return form_data.ref_rc[0];
+        case 'MSBR':
+            return form_data.ref_rc[0];
+    };
+
+};
+
+/**
+ * @param {String} phone - smsforms key string
+ * @param {String} form - smsforms key string
+ * @param {Object} form_data - parsed form data
+ * @returns {String} - Path for callback
+ * @api private
+ */
+var getCallbackPath = function(phone, form, form_data) {
+
+    var path = '';
+
+    switch(form) {
+        case 'MSBC':
+            path = '/%1/tasks_referral/add/refid/%2'
+                      .replace('%1', encodeURIComponent(form))
+                      .replace('%2', encodeURIComponent(
+                          getRefID(form, form_data)));
+            break;
+        case 'MSBB':
+            path = '/%1/tasks_referral/add/health_center/%2'
+                      .replace('%1', encodeURIComponent(form))
+                      .replace('%2', encodeURIComponent(phone));
+            break;
+        case 'MSBR':
+            path = '/%1/tasks_referral/add/clinic/%2'
+                      .replace('%1', encodeURIComponent(form))
+                      .replace('%2', encodeURIComponent(phone));
+            break;
+        default:
+            path = '/%1/data_record/add/clinic/%2'
+                      .replace('%1', encodeURIComponent(form))
+                      .replace('%2', encodeURIComponent(phone));
+    };
+
+    return path;
+
+};
+
+
 /*
  * Return Ushahidi SMSSync compatible response message.  Supports custom
  * auto-reply message in the form definition. Also uses callbacks to create
@@ -24,7 +105,8 @@ var getRespBody = exports.getRespBody = function(doc, req) {
         phone = doc.from, // set by gateway
         autoreply = smsforms.getResponse('success'),
         errormsg = '',
-        resp = { //smssync gateway response format
+        resp = {
+            //smssync gateway response format
             payload: {
                 success: true,
                 task: "send",
@@ -51,59 +133,18 @@ var getRespBody = exports.getRespBody = function(doc, req) {
         resp.payload.messages[0].message = def.autoreply;
     }
 
-    if (!smsforms.isReferralForm(form)) {
-        logger.debug(resp);
-        return JSON.stringify(resp);
-    }
-
-    /*
-     * This is a referral form, so construct tasks_referral doc and callback
-     * for gateway to process.
-     */
-    var cb_path = '',
-        task = {
-            type: 'tasks_referral',
-            state: '',
-            from: phone,
-            to: '',
-            refid: '',
-            sms_message: doc,
-            messages: [],
-            form: form,
-            form_data: form_data,
-            clinic: null,
-            errors: []};
-
-    switch(form) {
-        case 'MSBC':
-            task.refid = form_data.cref_rc[0];
-            cb_path = '/%1/tasks_referral/add/refid/%2'
-                      .replace('%1', encodeURIComponent(form))
-                      .replace('%2', encodeURIComponent(task.refid));
-            break;
-        case 'MSBB':
-            task.refid = form_data.ref_rc[0];
-            cb_path = '/%1/tasks_referral/add/health_center/%2'
-                      .replace('%1', encodeURIComponent(form))
-                      .replace('%2', encodeURIComponent(phone));
-            break;
-        case 'MSBR':
-            task.refid = form_data.ref_rc[0];
-            cb_path = '/%1/tasks_referral/add/clinic/%2'
-                      .replace('%1', encodeURIComponent(form))
-                      .replace('%2', encodeURIComponent(phone));
-            break;
-    };
-
+    // provide callback for next part of record creation.
     resp.callback = {
         options: {
             host: host,
             port: port,
-            path: baseURL + cb_path,
+            path: baseURL + getCallbackPath(phone, form, form_data),
             method: "POST",
             headers: {'Content-Type': 'application/json; charset=utf-8'}},
-        data: task
-    };
+        data: getCallbackBody(phone, form, form_data)};
+
+    // keep sms_message part of record
+    resp.callback.data.sms_message = doc;
 
     logger.debug(resp);
     return JSON.stringify(resp);

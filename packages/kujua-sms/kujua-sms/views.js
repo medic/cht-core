@@ -23,6 +23,21 @@ exports.sms_messages = {
 };
 
 /*
+ * Get facility based on phone number
+ */
+exports.facility_by_phone = {
+    map: function (doc) {
+        if (doc.type === 'clinic') {
+            emit([doc.contact.phone, 'clinic'], doc);
+        } else if (doc.type === 'health_center') {
+            emit([doc.contact.phone, 'health_center'], doc);
+        } else if (doc.type === 'district_hospital') {
+            emit([doc.contact.phone, 'district_hospital'], doc);
+        }
+    }
+};
+
+/*
  * Get clinic based on phone number
  */
 exports.clinic_by_phone = {
