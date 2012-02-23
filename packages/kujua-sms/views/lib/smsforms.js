@@ -1,6 +1,7 @@
 /**
  * @param {String} form - smsforms key string
- * @returns {Boolean} - Return true if this form is a referral
+ * @returns {Boolean} - Return true if this form is a referral since we need to
+ * do extra work to process a referral form.
  * @api public
  */
 exports.isReferralForm = function(form) {
@@ -46,18 +47,18 @@ exports['PSMS'] = {
         {key: 'facility_id', label: 'Health Facility Identifier', type: 'string'},
         {key: 'year', label: 'Report Year', type: 'year'},
         {key: 'month', label: 'Report Month', type: 'month'},
-        {key: 'supplies.la_6x1_dispensed', label: 'LA 6x1: Dispensed total', type: 'number'},
-        {key: 'supplies.la_6x2_dispensed', label: 'LA 6x2: Dispensed total', type: 'number'},
-        {key: 'supplies.cotrimoxazole_dispensed', label: 'Cotrimoxazole: Dispensed total', type: 'number'},
-        {key: 'supplies.zinc_dispensed', label: 'Zinc: Dispensed total', type: 'number'},
-        {key: 'supplies.ors_dispensed', label: 'ORS: Dispensed total', type: 'number'},
-        {key: 'supplies.eye_ointment_dispensed', label: 'Eye Ointment: Dispensed total', type: 'number'},
-        {key: 'supplies.la_6x1_days_stocked_out', label: 'LA 6x1: Days stocked out', type: 'number'},
-        {key: 'supplies.la_6x2_days_stocked_out', label: 'LA 6x2: Days stocked out', type: 'number'},
-        {key: 'supplies.cotrimoxazole_days_stocked_out', label: 'Cotrimoxazole: Days stocked out', type: 'number'},
-        {key: 'supplies.zinc_days_stocked_out', label: 'Zinc: Days stocked out', type: 'number'},
-        {key: 'supplies.ors', label: 'ORS: Days stocked out', type: 'number'},
-        {key: 'supplies.eye_ointment', label: 'Eye Ointment: Days stocked out', type: 'number'}
+        {key: 'quantity_dispensed.la_6x1', label: 'LA 6x1: Dispensed total', type: 'number'},
+        {key: 'quantity_dispensed.la_6x2', label: 'LA 6x2: Dispensed total', type: 'number'},
+        {key: 'quantity_dispensed.cotrimoxazole', label: 'Cotrimoxazole: Dispensed total', type: 'number'},
+        {key: 'quantity_dispensed.zinc', label: 'Zinc: Dispensed total', type: 'number'},
+        {key: 'quantity_dispensed.ors', label: 'ORS: Dispensed total', type: 'number'},
+        {key: 'quantity_dispensed.eye_ointment', label: 'Eye Ointment: Dispensed total', type: 'number'},
+        {key: 'days_stocked_out.la_6x1', label: 'LA 6x1: Days stocked out', type: 'number'},
+        {key: 'days_stocked_out.la_6x2', label: 'LA 6x2: Days stocked out', type: 'number'},
+        {key: 'days_stocked_out.cotrimoxazole', label: 'Cotrimoxazole: Days stocked out', type: 'number'},
+        {key: 'days_stocked_out.zinc', label: 'Zinc: Days stocked out', type: 'number'},
+        {key: 'days_stocked_out.ors_days', label: 'ORS: Days stocked out', type: 'number'},
+        {key: 'days_stocked_out.eye_ointment', label: 'Eye Ointment: Days stocked out', type: 'number'}
     ],
     autoreply: "Zikomo!"
 };

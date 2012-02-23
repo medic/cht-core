@@ -7,6 +7,13 @@ var _ = require('underscore')._,
     smsforms = require('views/lib/smsforms'),
     smsparser = require('views/lib/smsparser');
 
+/**
+ * @param {String} phone - smsforms key string
+ * @param {String} form - smsforms key string
+ * @param {Object} form_data - parsed form data
+ * @returns {Object} - Body for callback
+ * @api private
+ */
 var getCallbackBody = function(phone, form, form_data) {
 
     var body = {};
@@ -36,6 +43,12 @@ var getCallbackBody = function(phone, form, form_data) {
     return body;
 };
 
+/**
+ * @param {String} phone - smsforms key string
+ * @param {Object} form_data - parsed form data
+ * @returns {String} - Referral ID value
+ * @api private
+ */
 var getRefID = function(form, form_data) {
 
     switch(form) {
