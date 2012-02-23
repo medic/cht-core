@@ -57,7 +57,7 @@ exports['PSMS'] = {
         {key: 'days_stocked_out.la_6x2', label: 'LA 6x2: Days stocked out', type: 'number'},
         {key: 'days_stocked_out.cotrimoxazole', label: 'Cotrimoxazole: Days stocked out', type: 'number'},
         {key: 'days_stocked_out.zinc', label: 'Zinc: Days stocked out', type: 'number'},
-        {key: 'days_stocked_out.ors_days', label: 'ORS: Days stocked out', type: 'number'},
+        {key: 'days_stocked_out.ors', label: 'ORS: Days stocked out', type: 'number'},
         {key: 'days_stocked_out.eye_ointment', label: 'Eye Ointment: Days stocked out', type: 'number'}
     ],
     autoreply: "Zikomo!"

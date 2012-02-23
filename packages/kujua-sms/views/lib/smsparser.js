@@ -42,6 +42,31 @@ var zip = function (a, b) {
     return zipped;
 };
 
+
+/**
+ * Splits key by '.' and creates a deep key on the obj.
+ * Assigns the val to the key in the obj.
+ * If key already exists, only assign value.
+ *
+ * @param {Object} obj - object in which value is assigned to key
+ * @param {String} key - key in dot notation (e.g. some.thing.else)
+ * @param {String} val - value to be assigned to the generated key
+ */
+var createDeepKey = function(obj, key, val) {
+    if(key.length > 1) {
+        var tmp = key.shift();
+        if(!obj[tmp]) {
+            obj[tmp] = {};
+        }
+
+        createDeepKey(obj[tmp], key, val);
+    } else {
+        obj[key[0]] = val;
+    }
+};
+
+
+
 /**
  * @param {Object} def - smsforms form definition
  * @param {Object} doc - sms_message document
@@ -69,17 +94,22 @@ exports.parse = function (def, doc, format) {
     }
     
     var pairs = zip(def.fields, vals);
-
+    
     return pairs.reduce(function (obj, v) {
         var field = v[0],
-            val = v[1];
+            val = v[1],
+            result;
+        
         if (format === 1) {
             // include label in array
-            obj[field.key] = [
+            result = [
                 exports.parseField(field, val, obj[field.key]), field.label];
         } else {
-            obj[field.key] = exports.parseField(field, val, obj[field.key]);
+            result = exports.parseField(field, val, obj[field.key]);
         }
+        
+        createDeepKey(obj, field.key.split('.'), result);
+        
         return obj;
     }, {});
 };
@@ -93,18 +123,29 @@ exports.parse = function (def, doc, format) {
 exports.parseArray = function (def, doc) {
     var obj = exports.parse(def, doc);
     var keys = [];
+
     for (var i = 0; i < def.fields.length; i++) {
         if (keys.indexOf(def.fields[i].key) === -1) {
             keys.push(def.fields[i].key);
         }
     }
+    
     var arr = [];
     for (var k = 0; k < keys.length; k++) {
-        arr.push(obj[keys[k]]);
+        var key = keys[k].split('.');
+        var result = obj;
+
+        while(key.length > 0) {
+            result = result[key.shift()];
+        }
+
+        arr.push(result);
     }
+    
     // The fields sent_timestamp and from are set by the gateway, so they are
     // not included in the raw sms message and added manually.
     arr.unshift(doc.from);
     arr.unshift(doc.sent_timestamp);
+    
     return arr;
 };
