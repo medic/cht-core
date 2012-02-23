@@ -179,9 +179,56 @@ var getReferralMessage = function(phone, form, form_data, clinic) {
     }
 };
 
-var addTaskError = function(task, error) {
-    task.errors.push(error);
+var addError = function(obj, error) {
+    obj.errors.push(error);
     logger.error(error);
+};
+
+exports.data_record = function (head, req) {
+
+    start({code: 200, headers: {
+        'Content-Type': 'application/json; charset=utf-8'
+    }});
+
+    var record = JSON.parse(req.body),
+        form = req.query.form,
+        headers = req.headers.Host.split(":"),
+        host = headers[0],
+        port = headers[1] || "",
+        appdb = require('duality/core').getDBURL(req),
+        def = smsforms[form];
+
+    record.created = new Date();
+
+    /* Panic */
+    if (!def) {
+        addError(task, {error: 'No form definition found for '+ form +'.'});
+    }
+
+    /* Add clinic to task */
+    var row = {};
+    while (row = getRow()) {
+        record.clinic = row.value;
+        break;
+    }
+
+    /* Can't do much without a clinic */
+    if (!record.clinic) {
+        addError(task, {error: "Clinic not found."});
+    }
+
+    /* Send callback to gateway to save the doc. */
+    var respBody = {
+        callback: {
+            options: {
+                host: host,
+                port: port,
+                path: appdb,
+                method: "POST",
+                headers: {'Content-Type': 'application/json; charset=utf-8'}},
+            data: task}};
+
+    return JSON.stringify(respBody);
 };
 
 /*
@@ -207,7 +254,7 @@ exports.tasks_referral = function (head, req) {
 
     /* Panic */
     if (!def) {
-        addTaskError(task, {error: 'No form definition found for '+ form +'.'});
+        addError(task, {error: 'No form definition found for '+ form +'.'});
     }
 
     /* Add clinic to task */
@@ -219,7 +266,7 @@ exports.tasks_referral = function (head, req) {
 
     /* Can't do much without a clinic */
     if (!task.clinic) {
-        addTaskError(task, {error: "Clinic not found."});
+        addError(task, {error: "Clinic not found."});
     } else {
         // When the state field is pending, the task is ready for consumption.
         task.state = 'pending';
