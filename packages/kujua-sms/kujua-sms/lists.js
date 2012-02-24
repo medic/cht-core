@@ -198,8 +198,6 @@ exports.data_record = function (head, req) {
         appdb = require('duality/core').getDBURL(req),
         def = smsforms[form];
 
-    record.created = new Date();
-
     /* Panic */
     if (!def) {
         addError(task, {error: 'No form definition found for '+ form +'.'});
@@ -208,13 +206,13 @@ exports.data_record = function (head, req) {
     /* Add clinic to task */
     var row = {};
     while (row = getRow()) {
-        record.clinic = row.value;
+        record.related_entities.clinic = row.value;
         break;
     }
 
     /* Can't do much without a clinic */
-    if (!record.clinic) {
-        addError(task, {error: "Clinic not found."});
+    if (!record.related_entities.clinic) {
+        addError(record, {error: "Clinic not found."});
     }
 
     /* Send callback to gateway to save the doc. */
@@ -226,7 +224,7 @@ exports.data_record = function (head, req) {
                 path: appdb,
                 method: "POST",
                 headers: {'Content-Type': 'application/json; charset=utf-8'}},
-            data: task}};
+            data: record}};
 
     return JSON.stringify(respBody);
 };
