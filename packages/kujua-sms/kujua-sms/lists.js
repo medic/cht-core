@@ -19,8 +19,9 @@ var gateway = {
     }
 };
 
-exports.sms_messages_csv = function (head, req) {
 
+
+exports.sms_messages_csv = function (head, req) {
     var formKey  = req.query.form;
         def = smsforms[formKey ],
         filename = def ? formKey  + '_sms_messages.csv': 'unknown_form.csv',
@@ -60,6 +61,8 @@ exports.sms_messages_csv = function (head, req) {
     // when the form def can't be found
     return '';
 };
+
+
 
 exports.sms_messages_xml = function (head, req) {
 
@@ -109,6 +112,8 @@ exports.sms_messages_xml = function (head, req) {
     return '';
 };
 
+
+
 /**
  * @param {String} phone - phone number of the phone sending the referral (from)
  * @param {Object} clinic - facility object of type 'clinic'
@@ -121,6 +126,8 @@ var isFromHealthCenter = function(phone, clinic) {
     }
     return false;
 };
+
+
 
 /**
  * @param {String} form - form key
@@ -151,6 +158,8 @@ var getRecipientPhone = exports.getRecipientPhone = function(form, phone, clinic
     };
 };
 
+
+
 /**
  * @param {String} phone - Phone number of where the message is *from*.
  * @param {String} form - smsforms form key
@@ -179,16 +188,36 @@ var getReferralMessage = function(phone, form, form_data, clinic) {
     }
 };
 
+
+
+
 var addError = function(obj, error) {
     obj.errors.push(error);
     logger.error(error);
 };
 
-exports.data_record = function (head, req) {
+var json_headers = {
+    'Content-Type': 'application/json; charset=utf-8'
+};
 
-    start({code: 200, headers: {
-        'Content-Type': 'application/json; charset=utf-8'
-    }});
+
+
+
+/*
+ * Second step of adding a data record for an incoming SMS.
+ * This adds the clinic to the data record data and
+ * returns the necessary callback information for
+ * creating the data record.
+ *
+ * @param {Object} head
+ * @param {Object} req
+ *
+ * @returns {String} response body 
+ *
+ * @api public
+ */
+exports.data_record = function (head, req) {
+    start({code: 200, headers: json_headers});
 
     var record = JSON.parse(req.body),
         form = req.query.form,
@@ -223,22 +252,27 @@ exports.data_record = function (head, req) {
                 port: port,
                 path: appdb,
                 method: "POST",
-                headers: {'Content-Type': 'application/json; charset=utf-8'}},
+                headers: json_headers},
             data: record}};
 
     return JSON.stringify(respBody);
 };
 
+
 /*
- * 2nd phase of tasks_referral processing.  Update clinic, to, messages and
- * state fields, then include callback data for gateway to execute the POST to
- * update the tasks_referral doc.
+ * Second step of tasks_referral processing. Add clinic, to, messages and
+ * state fields to the tasks_referral data, then include callback data for 
+ * gateway to execute the POST to create the tasks_referral doc.
+ *
+ * @param {Object} head
+ * @param {Object} req
+ *
+ * @returns {String} response body
+ *
+ * @api public
  */
 exports.tasks_referral = function (head, req) {
-
-    start({code: 200, headers: {
-        'Content-Type': 'application/json; charset=utf-8'
-    }});
+    start({code: 200, headers: json_headers});
 
     var task = JSON.parse(req.body),
         form = req.query.form,
@@ -283,21 +317,20 @@ exports.tasks_referral = function (head, req) {
                 port: port,
                 path: appdb,
                 method: "POST",
-                headers: {'Content-Type': 'application/json; charset=utf-8'}},
+                headers: json_headers},
             data: task}};
 
     return JSON.stringify(respBody);
 };
+
+
 
 /*
  * Respond to smssync task polling, callback does a bulk update to update the
  * state field of tasks.
  */
 exports.tasks_pending = function (head, req) {
-
-    start({code: 200, headers: {
-        'Content-Type': 'application/json; charset=utf-8'
-    }});
+    start({code: 200, headers: json_headers});
 
     var newDocs = [],
         appdb = require('duality/core').getDBURL(req),
@@ -332,7 +365,7 @@ exports.tasks_pending = function (head, req) {
                 port: port,
                 path: appdb + '/_bulk_docs',
                 method: "POST",
-                headers: {'Content-Type': 'application/json; charset=utf-8'}},
+                headers: json_headers},
             // bulk update
             data: {docs: newDocs}
         }
