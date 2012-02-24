@@ -8,6 +8,7 @@ var _ = require('underscore')._,
     smsforms = require('views/lib/smsforms'),
     smsparser = require('views/lib/smsparser');
 
+
 var gateway = {
     sent_timestamp: {
         en: 'Sent Timestamp',

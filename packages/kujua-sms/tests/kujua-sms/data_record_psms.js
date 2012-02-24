@@ -7,8 +7,8 @@ var updates = require('kujua-sms/updates'),
     fakerequest = require('couch-fakerequest'),
     helpers = require('../helpers/helpers');
 
-exports.data_record_psms = function (test) {
 
+exports.data_record_psms = function (test) {
     test.expect(7);
 
     var ref_rc = String(helpers.rand());
@@ -98,7 +98,7 @@ exports.data_record_psms = function (test) {
     // STEP 2:
     //
     // Run data_record/add/clinic and expect a callback to 
-    // create the data record.
+    // check if the same data record already exists.
     //
     
     var clinic = {
@@ -144,7 +144,7 @@ exports.data_record_psms = function (test) {
     var doc2 = JSON.parse(result2.body);
     
     test.same(doc2.callback.options.method, "POST");
-    test.same(doc2.callback.options.path, appdb);
+    test.same(doc2.callback.options.path, baseURL + "/PSMS/data_record/check_for_duplicate/2011/11/4a6399c98ff78ac7da33b639ed60f458");
     
     test.same(doc2.callback.data.errors, []);
     test.same(doc2.callback.data.related_entities.clinic, clinic);

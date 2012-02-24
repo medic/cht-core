@@ -10,7 +10,8 @@ exports.headers = function(type, data) {
     var types = {
         json: "application/json; charset=utf-8",
         url: "application/x-www-form-urlencoded"
-    }
+    };
+    
     return {
         "Content-Length": data.length,
         "Content-Type": types[type],
