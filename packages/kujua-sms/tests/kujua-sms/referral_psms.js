@@ -15,14 +15,14 @@ exports.referral_psms = function (test) {
 
     var data = {
         from: '+17085551212',
-        message: ,
+        message: '',
         sent_timestamp: '1-19-12 18:45',
         sent_to: '+15551212'
     };
 
     var sms_message = {
        from: "+17085551212",
-       message: ,
+       message: '',
        sent_timestamp: "1-19-12 18:45",
        sent_to: "+15551212",
        type: "sms_message",
