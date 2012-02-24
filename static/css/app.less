@@ -1,5 +1,7 @@
-@import "packages/bootstrap/bootstrap/lib/bootstrap.less";
+@import "packages/bootstrap/bootstrap/less/bootstrap.less";
 @import "packages/kujua-branding/css/base.less";
+
+@gridColumns: 12;
 
 /* background noise */
 html, body {
@@ -9,6 +11,7 @@ html, body {
 body {
   padding-top: 40px;
 }
+
 .content {
   margin-top: 20px;
   border-top: solid 3px black;
@@ -24,6 +27,7 @@ body {
 .page-header {
   background-color: @white;
   padding: 10px;
+  margin: 0;
 }
 .version {
   font-weight: bold;

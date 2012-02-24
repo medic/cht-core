@@ -2,7 +2,7 @@
 
 This package allows you to quickly start using [Twitter
 Bootstrap](http://twitter.github.com/bootstrap/) and Less in your Kanso
-project.  It currently tracks the 2.0-wip branch.
+project. 
 
 ## Install
 
@@ -33,7 +33,7 @@ Create a css/less file `static/css/example.less` for your site that
 includes bootstrap:
 
 ```css
-@import "packages/bootstrap/bootstrap/lib/bootstrap.less";
+@import "packages/bootstrap/bootstrap/less/bootstrap.less";
 /* Now use bootstrap and less! */
 body { background-color: @pink; }
 ```
@@ -75,6 +75,20 @@ Tell Kanso to compile the less files and attach them as css:
 }
 ```
 
+### Icons
+
+Bootstrap 2.0 provides icons with the following html:
+
+```html
+<i class="icon-chevron-left"></i>
+```
+
+To include the icons/sprite in your project, include the sprites `png` files 
+in your static diretory.
+
+1. Make a folder, `mkdir -p static/img` in your kanso project
+2. Copy the sprite images into the directory, e.g. `cp packages/bootstrap/bootstrap/img/* static/img`
+
 ## Deploy
 
 Do a kanso push to make the build and deploy to your CouchDB:
@@ -85,5 +99,14 @@ kanso push example
 
 ## Docs
 
-Until 2.0 is released you can browse the Bootstrap docs locally in the package
-directory under `bootstrap/docs/index.html`.
+You an browse the Bootstrap docs locally in the package directory under
+`bootstrap/docs/index.html` or check the website.
+
+## Upgrading
+
+### 2.0.1-kanso.1
+
+The directory structure changed so instead of including lib/bootstrap.less you
+include less/bootstrap.less. You also need to update the sprite image path, see
+the Icons section above.
+

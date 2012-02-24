@@ -1,6 +1,6 @@
 {
     "name": "bootstrap",
-    "version": "0.0.2",
+    "version": "2.0.1-kanso.1",
     "categories": ["frontend"],
     "maintainers": [
         {
@@ -8,10 +8,10 @@
             "url": "http://m.andric.us"
         }
     ],
-    "url": "http://github.com/mandric/bootstrap",
+    "url": "http://github.com/mandric/kanso-bootstrap",
     "dependencies": {
         "modules": ">=0.0.8",
         "attachments": null
     },
-    "description": "Kanso package to quickly start using Twitter Bootstrap and Less in your project. It currently packages the 2.0-wip branch."
+    "description": "Kanso package to quickly start using Twitter Bootstrap and Less in your project."
 }

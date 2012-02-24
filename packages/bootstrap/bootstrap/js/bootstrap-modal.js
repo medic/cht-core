@@ -1,8 +1,8 @@
 /* =========================================================
- * bootstrap-modal.js v2.0.0
- * http://twitter.github.com/bootstrap/javascript.html#modal
+ * bootstrap-modal.js v2.0.1
+ * http://twitter.github.com/bootstrap/javascript.html#modals
  * =========================================================
- * Copyright 2011 Twitter, Inc.
+ * Copyright 2012 Twitter, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
   * ====================== */
 
   var Modal = function ( content, options ) {
-    this.options = $.extend({}, $.fn.modal.defaults, options)
+    this.options = options
     this.$element = $(content)
       .delegate('[data-dismiss="modal"]', 'click.dismiss.modal', $.proxy(this.hide, this))
   }
@@ -43,6 +43,8 @@
         var that = this
 
         if (this.isShown) return
+
+        $('body').addClass('modal-open')
 
         this.isShown = true
         this.$element.trigger('show')
@@ -76,6 +78,8 @@
 
         var that = this
         this.isShown = false
+
+        $('body').removeClass('modal-open')
 
         escape.call(this)
 
@@ -173,16 +177,17 @@
     return this.each(function () {
       var $this = $(this)
         , data = $this.data('modal')
-        , options = typeof option == 'object' && option
+        , options = $.extend({}, $.fn.modal.defaults, $this.data(), typeof option == 'object' && option)
       if (!data) $this.data('modal', (data = new Modal(this, options)))
       if (typeof option == 'string') data[option]()
-      else data.show()
+      else if (options.show) data.show()
     })
   }
 
   $.fn.modal.defaults = {
       backdrop: true
     , keyboard: true
+    , show: true
   }
 
   $.fn.modal.Constructor = Modal
@@ -193,8 +198,8 @@
 
   $(function () {
     $('body').on('click.modal.data-api', '[data-toggle="modal"]', function ( e ) {
-      var $this = $(this)
-        , $target = $($this.attr('data-target') || $this.attr('href'))
+      var $this = $(this), href
+        , $target = $($this.attr('data-target') || (href = $this.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '')) //strip for ie7
         , option = $target.data('modal') ? 'toggle' : $.extend({}, $target.data(), $this.data())
 
       e.preventDefault()
@@ -202,4 +207,4 @@
     })
   })
 
-}( window.jQuery )
+}( window.jQuery );

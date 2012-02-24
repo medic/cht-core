@@ -6,31 +6,10 @@ Bootstrap is Twitter's toolkit for kickstarting CSS for websites, apps, and more
 To get started -- checkout http://twitter.github.com/bootstrap!
 
 
-Usage
------
-
-You can use Twitter Bootstrap in one of two ways: just drop the compiled CSS into any new project and start cranking, or run LESS on your site and compile on the fly like a boss.
-
-Here's what the LESS version looks like:
-
-``` html
-<link rel="stylesheet/less" type="text/css" href="lib/bootstrap.less">
-<script src="less.js" type="text/javascript"></script>
-```
-
-Or if you prefer, the standard CSS way:
-
-``` html
-<link rel="stylesheet" type="text/css" href="bootstrap.css">
-```
-
-For more info, refer to the docs!
-
-
 Versioning
 ----------
 
-For transparency and insight into our release cycle, and for striving to maintain backwards compatibility, Bootstrap will be maintained under the Semantic Versioning guidelines as much as possible.
+For transparency and insight into our release cycle, and for striving to maintain backward compatibility, Bootstrap will be maintained under the Semantic Versioning guidelines as much as possible.
 
 Releases will be numbered with the follow format:
 
@@ -38,8 +17,8 @@ Releases will be numbered with the follow format:
 
 And constructed with the following guidelines:
 
-* Breaking backwards compatibility bumps the major
-* New additions without breaking backwards compatibility bumps the minor
+* Breaking backward compatibility bumps the major
+* New additions without breaking backward compatibility bumps the minor
 * Bug fixes and misc changes bump the patch
 
 For more information on SemVer, please visit http://semver.org/.
@@ -69,18 +48,24 @@ twitter-bootstrap@googlegroups.com
 http://groups.google.com/group/twitter-bootstrap
 
 
+IRC
+---
+
+Server: irc.freenode.net
+
+Channel: ##twitter-bootstrap (the double ## is not a typo)
+
+
 Developers
 ----------
 
 We have included a makefile with convenience methods for working with the Bootstrap library.
 
-+ **build** - `make build`
-This will run the less compiler on the bootstrap lib and generate a bootstrap.css and bootstrap.min.css file.
-The lessc compiler is required for this command to run.
++ **build** - `make`
+Runs the LESS compiler to rebuild the `/less` files and compiles the docs pages. Requires lessc and uglify-js. <a href="http://twitter.github.com/bootstrap/less.html#compiling">Read more in our docs &raquo;</a>
 
 + **watch** - `make watch`
-This is a convenience method for watching your less files and automatically building them whenever you save.
-Watchr is required for this command to run.
+This is a convenience method for watching just Less files and automatically building them whenever you save. Requires the Watchr gem.
 
 
 Authors
@@ -100,7 +85,7 @@ Authors
 Copyright and license
 ---------------------
 
-Copyright 2011 Twitter, Inc.
+Copyright 2012 Twitter, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this work except in compliance with the License.

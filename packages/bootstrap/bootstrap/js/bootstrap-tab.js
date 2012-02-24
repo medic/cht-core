@@ -1,8 +1,8 @@
 /* ========================================================
- * bootstrap-tabs.js v2.0.0
+ * bootstrap-tab.js v2.0.1
  * http://twitter.github.com/bootstrap/javascript.html#tabs
  * ========================================================
- * Copyright 2011 Twitter, Inc.
+ * Copyright 2012 Twitter, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,14 @@
   , show: function () {
       var $this = this.element
         , $ul = $this.closest('ul:not(.dropdown-menu)')
-        , href = $this.attr('data-target') || $this.attr('href')
+        , selector = $this.attr('data-target')
         , previous
-        , $href
+        , $target
+
+      if (!selector) {
+        selector = $this.attr('href')
+        selector = selector && selector.replace(/.*(?=#[^\s]*$)/, '') //strip for ie7
+      }
 
       if ( $this.parent('li').hasClass('active') ) return
 
@@ -49,10 +54,10 @@
       , relatedTarget: previous
       })
 
-      $href = $(href)
+      $target = $(selector)
 
       this.activate($this.parent('li'), $ul)
-      this.activate($href, $href.parent(), function () {
+      this.activate($target, $target.parent(), function () {
         $this.trigger({
           type: 'shown'
         , relatedTarget: previous
@@ -122,4 +127,4 @@
     })
   })
 
-}( window.jQuery )
+}( window.jQuery );

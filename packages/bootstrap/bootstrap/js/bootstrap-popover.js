@@ -1,8 +1,8 @@
 /* ===========================================================
- * bootstrap-popover.js v2.0.0
- * http://twitter.github.com/bootstrap/javascript.html#popover
+ * bootstrap-popover.js v2.0.1
+ * http://twitter.github.com/bootstrap/javascript.html#popovers
  * ===========================================================
- * Copyright 2011 Twitter, Inc.
+ * Copyright 2012 Twitter, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@
     this.init('popover', element, options)
   }
 
-  /* NOTE: POPOVER EXTENDS BOOTSTRAP-TWIPSY.js
-     ========================================= */
+  /* NOTE: POPOVER EXTENDS BOOTSTRAP-TOOLTIP.js
+     ========================================== */
 
-  Popover.prototype = $.extend({}, $.fn.twipsy.Constructor.prototype, {
+  Popover.prototype = $.extend({}, $.fn.tooltip.Constructor.prototype, {
 
     constructor: Popover
 
@@ -38,10 +38,10 @@
         , title = this.getTitle()
         , content = this.getContent()
 
-      $tip.find('.title')[ $.type(title) == 'object' ? 'append' : 'html' ](title)
-      $tip.find('.content > *')[ $.type(content) == 'object' ? 'append' : 'html' ](content)
+      $tip.find('.popover-title')[ $.type(title) == 'object' ? 'append' : 'html' ](title)
+      $tip.find('.popover-content > *')[ $.type(content) == 'object' ? 'append' : 'html' ](content)
 
-      $tip[0].className = 'popover'
+      $tip.removeClass('fade top bottom left right in')
     }
 
   , hasContent: function () {
@@ -86,10 +86,10 @@
 
   $.fn.popover.Constructor = Popover
 
-  $.fn.popover.defaults = $.extend({} , $.fn.twipsy.defaults, {
+  $.fn.popover.defaults = $.extend({} , $.fn.tooltip.defaults, {
     placement: 'right'
   , content: ''
-  , template: '<div class="popover"><div class="arrow"></div><div class="inner"><h3 class="title"></h3><div class="content"><p></p></div></div></div>'
+  , template: '<div class="popover"><div class="arrow"></div><div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div></div>'
   })
 
-}( window.jQuery )
+}( window.jQuery );
