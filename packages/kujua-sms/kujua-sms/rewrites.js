@@ -34,32 +34,24 @@ exports.rules = [
         }
     },
     {
-        from: '/:form/data_record/check_for_duplicate/:year/:month/:clinic_id',
-        to: '_list/data_record/data_record_by_year_month_and_clinic',
+        from: '/:form/data_record/merge/:year/:month/:clinic_id',
+        to: '_list/data_record/monthly_report_by_key',
         query: {
             startkey: [':year', ':month', ':clinic_id'],
             endkey: [':year', ':month', ':clinic_id', {}]
         }
     },
     {
-        from: '/:form/tasks_referral/add/clinic/:phone',
-        to: '_list/tasks_referral/clinic_by_phone',
+        from: '/:form/data_record/add/health_center/:phone',
+        to: '_list/data_record/clinic_by_parent_phone',
         query: {
             startkey: [':phone'],
             endkey: [':phone',{}]
         }
     },
     {
-        from: '/:form/tasks_referral/add/health_center/:phone',
-        to: '_list/tasks_referral/clinic_by_parent_phone',
-        query: {
-            startkey: [':phone'],
-            endkey: [':phone',{}]
-        }
-    },
-    {
-        from: '/:form/tasks_referral/add/refid/:refid',
-        to: '_list/tasks_referral/clinic_by_refid',
+        from: '/:form/data_record/add/refid/:refid',
+        to: '_list/data_record/clinic_by_refid',
         query: {
             startkey: [':refid',{}],
             endkey: [':refid'],

@@ -11,7 +11,7 @@ var updates = require('kujua-sms/updates'),
  */
 exports.referral_msbc2 = function (test) {
 
-    test.expect(12);
+    test.expect(13);
 
     var rand = function(from, to) {
         from = from || 10000000000;
@@ -137,7 +137,7 @@ exports.referral_msbc2 = function (test) {
     test.same(resp.callback.options, {
         "host": window.location.hostname,
         "port": window.location.port,
-        "path": baseURL + "/MSBC/tasks_referral/add/refid/" + ref_rc,
+        "path": baseURL + "/MSBC/data_record/add/refid/" + ref_rc,
         "method": "POST",
         "headers": {
            "Content-Type": "application/json; charset=utf-8"
@@ -145,21 +145,21 @@ exports.referral_msbc2 = function (test) {
     });
 
     /*
-     * Assert we have formed a phase 1 tasks_referral document, not 'to' and
+     * Assert we have formed a phase 1 data_record document, not 'to' and
      * 'clinic' fields are null. These get added in the next callback request.
      */
+    test.same(resp.callback.data.sms_message, sms_message);
+    test.same(resp.callback.data.form_data, form_data);
     test.same(resp.callback.data, {
-        "type": "tasks_referral",
-        "state": "",
+        "type": "data_record",
         "from": "+14155551212",
-        "to": "",
         "refid": ref_rc,
         "sms_message": sms_message,
-        "messages": [],
         "form": "MSBC",
         "form_data": form_data,
-        "clinic": null,
-        "errors": []
+        "related_entities": {"clinic": null},
+        "errors": [],
+        "tasks": []
     });
 
     /*
@@ -191,7 +191,7 @@ exports.referral_msbc2 = function (test) {
     };
 
     /*
-     * Mockup out view data for lists.tasks_referral
+     * Mockup out view data for lists.data_record
      * Redefines global getRow function, to pass into fakerequest.
      */
     var viewdata = {rows: [
@@ -202,10 +202,10 @@ exports.referral_msbc2 = function (test) {
     ]};
 
     /*
-     * Execute step 2 by calling task_referral list function.  This adds clinic
-     * data and constructs task document ready to be saved.
+     * Execute step 2 by calling data_record list function.  This adds clinic
+     * data and constructs document ready to be saved.
      */
-    var result2 = fakerequest.list(lists.tasks_referral, viewdata, {
+    var result2 = fakerequest.list(lists.data_record, viewdata, {
         method: "POST",
         query:{form: 'MSBC'},
         headers:{
@@ -243,34 +243,36 @@ exports.referral_msbc2 = function (test) {
     }];
 
     /*
-     * The task that gets created after step2, includes clinic data and health
-     * center phone number is in the to field. Define and assert the task doc.
+     * The record  that gets created after step2, includes clinic data and health
+     * center phone number is in the to field. Define and assert the record  doc.
      */
-    var task = {
-        "type": "tasks_referral",
-        "state": "pending",
+    var record  = {
+        "type": "data_record",
         "from": "+14155551212",
-        "to": "+17085551212",
         "refid": ref_rc,
         "sms_message": sms_message,
-        "messages": messages,
         "form": "MSBC",
         "form_data": form_data,
-        "clinic": clinic1,
+        "related_entities": {"clinic": clinic1},
         "errors": [],
+        "tasks": [{
+            "type": "referral",
+            "state": "pending",
+            "to": "+17085551212",
+            "messages": messages}]
     };
 
     // somewhat redundant to test all these but aides debugging
-    test.same(doc2.callback.data.messages, task.messages);
-    test.same(doc2.callback.data.form_data, task.form_data);
-    test.same(doc2.callback.data, task);
+    test.same(doc2.callback.data.messages, record.messages);
+    test.same(doc2.callback.data.form_data, record.form_data);
+    test.same(doc2.callback.data, record);
 
-    // Step 3 tasks_referral doc is saved
+    // Step 3 doc is saved
     // HTTP POST to CouchDB API (No test needed?)
 
     /*
-     * Step 4 Another request polls the db for tasks_referral documents that
-     * are pending. Messages get formatted into the payload for the gateway.
+     * Step 4 Another request polls the db for documents that have pending
+     * tasks. Messages get formatted into the payload for the gateway.
      *
      * Mockup the view data first.
      */
@@ -278,7 +280,7 @@ exports.referral_msbc2 = function (test) {
         {
             "key": [null, ref_rc],
             "value": null,
-            "doc": task
+            "doc": record
         }
     ]};
 
@@ -323,19 +325,21 @@ exports.referral_msbc2 = function (test) {
      * Assert that docs is an array, and the document includes all the fields.
      * The only real change is the state field is set to 'sent'.
      */
-    test.same(doc3.callback.data.docs, [{
-        "type": "tasks_referral",
-        "state": "sent",
+    var record  = {
+        "type": "data_record",
         "from": "+14155551212",
-        "to": "+17085551212",
         "refid": ref_rc,
         "sms_message": sms_message,
-        "messages": messages,
         "form": "MSBC",
         "form_data": form_data,
-        "clinic": clinic1,
-        "errors": []
-    }]);
+        "related_entities": {"clinic": null},
+        "errors": [],
+        "tasks": [{
+            "type": "referral",
+            "state": "sent",
+            "to": "+17085551212",
+            "messages": messages}]
+    };
 
     // Step 5 Bulk db update to update the 'state' field to 'sent'
     // HTTP POST to _bulk_docs CouchDB API (No test)

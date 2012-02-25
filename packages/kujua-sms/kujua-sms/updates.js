@@ -16,28 +16,19 @@ var _ = require('underscore')._,
  */
 var getCallbackBody = function(phone, form, form_data) {
 
-    var body = {};
+    logger.debug(['getCallbackBody arguments', arguments]);
 
-    if (smsforms.isReferralForm(form)) {
-        body = {
-            type: 'tasks_referral',
-            state: '',
-            from: phone,
-            to: '',
-            refid: getRefID(form, form_data),
-            messages: [],
-            form: form,
-            form_data: form_data,
-            clinic: null,
-            errors: []};
-    } else {
-        body = {
+    var body = {
             type: 'data_record',
             from: phone,
             form: form,
             form_data: form_data,
             related_entities: {clinic: null},
-            errors: []};
+            errors: [],
+            tasks: []};
+
+    if (smsforms.isReferralForm(form)) {
+        body.refid = getRefID(form, form_data);
     }
 
     return body;
@@ -71,22 +62,19 @@ var getRefID = function(form, form_data) {
  */
 var getCallbackPath = function(phone, form, form_data) {
 
+    logger.debug(['getCallbackPath arguments', arguments]);
+
     var path = '';
 
     switch(form) {
         case 'MSBC':
-            path = '/%1/tasks_referral/add/refid/%2'
+            path = '/%1/data_record/add/refid/%2'
                       .replace('%1', encodeURIComponent(form))
                       .replace('%2', encodeURIComponent(
                           getRefID(form, form_data)));
             break;
         case 'MSBB':
-            path = '/%1/tasks_referral/add/health_center/%2'
-                      .replace('%1', encodeURIComponent(form))
-                      .replace('%2', encodeURIComponent(phone));
-            break;
-        case 'MSBR':
-            path = '/%1/tasks_referral/add/clinic/%2'
+            path = '/%1/data_record/add/health_center/%2'
                       .replace('%1', encodeURIComponent(form))
                       .replace('%2', encodeURIComponent(phone));
             break;
@@ -108,6 +96,8 @@ var getCallbackPath = function(phone, form, form_data) {
  */
 var getRespBody = exports.getRespBody = function(doc, req) {
 
+    logger.debug('getRespBody jsDump.parse(req)');
+    logger.debug(req);
     var form = doc.form,
         def = smsforms[doc.form],
         form_data = smsparser.parse(def, doc, 1),
@@ -166,7 +156,6 @@ var getRespBody = exports.getRespBody = function(doc, req) {
 
 exports.add_sms = function (doc, req) {
     // TODO add validation if necessary
-    logger.debug(req);
     var new_doc = _.extend(req.form, {
         _id: req.uuid,
         type: "sms_message",

@@ -64,7 +64,7 @@ exports.clinic_by_parent_phone = {
  */
 exports.clinic_by_refid = {
     map: function (doc) {
-        if (doc.type === 'tasks_referral' && doc.refid) {
+        if (doc.type === 'data_record' && doc.refid) {
             // need String because rewriter wraps everything in quotes
             emit([String(doc.refid), doc.created], doc.clinic);
         }
@@ -73,8 +73,12 @@ exports.clinic_by_refid = {
 
 exports.tasks_pending = {
     map: function (doc) {
-        if (doc.type.substr(0,6) === 'tasks_' && doc.state === 'pending') {
-            emit([doc.created, doc.refid]);
+        if (doc.tasks && doc.tasks.length) {
+            for (var i in docs.tasks) {
+                if (doc.tasks[i].state === 'pending') {
+                    emit([doc.created, doc.refid]);
+                }
+            }
         }
     }
 };

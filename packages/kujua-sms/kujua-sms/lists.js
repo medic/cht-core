@@ -162,8 +162,8 @@ var getRecipientPhone = exports.getRecipientPhone = function(form, phone, clinic
 
 
 /**
- * @param {String} phone - Phone number of where the message is *from*.
  * @param {String} form - smsforms form key
+ * @param {String} phone - Phone number of where the message is *from*.
  * @param {Object} form_data - parsed form data that includes labels (format:1)
  * @param {Object} clinic - the clinic from the tasks_referral doc
  *
@@ -171,7 +171,7 @@ var getRecipientPhone = exports.getRecipientPhone = function(form, phone, clinic
  *
  * @api private
  */
-var getReferralMessage = function(phone, form, form_data, clinic) {
+var getReferralMessage = function(form, phone, form_data, clinic) {
     var ignore = [],
         message = [];
     switch (form) {
@@ -190,6 +190,28 @@ var getReferralMessage = function(phone, form, form_data, clinic) {
 };
 
 
+/**
+ * @param {String} form - smsforms form key
+ * @param {String} phone - Phone number of where the message is *from*.
+ * @param {Object} form_data - parsed form data that includes labels (format:1)
+ * @param {Object} clinic - the clinic from the tasks_referral doc
+ *
+ * @returns {Object} Return referral task object for later processing
+ *
+ * @api private
+ */
+var getReferralTask = function(form, phone, form_data, clinic) {
+    logger.debug(['getReferralTask arguments', arguments]);
+    var to = getRecipientPhone(form, phone, clinic),
+        task = {
+            type: 'referral',
+            state: 'pending',
+            to: to,
+            messages: [{
+                to: to,
+                message: getReferralMessage(form, phone, form_data, clinic)}]};
+    return task;
+};
 
 
 var addError = function(obj, error) {
@@ -213,7 +235,7 @@ var json_headers = {
  * @param {Object} head
  * @param {Object} req
  *
- * @returns {String} response body 
+ * @returns {String} response body
  *
  * @api public
  */
@@ -226,7 +248,10 @@ exports.data_record = function (head, req) {
         host = headers[0],
         port = headers[1] || "",
         appdb = require('duality/core').getDBURL(req),
-        def = smsforms[form];
+        def = smsforms[form],
+        clinic = {};
+
+    record.created = new Date(); // used in views for sorting
 
     /* Panic */
     if (!def) {
@@ -236,13 +261,20 @@ exports.data_record = function (head, req) {
     /* Add clinic to task */
     var row = {};
     while (row = getRow()) {
-        record.related_entities.clinic = row.value;
+        clinic = record.related_entities.clinic = row.value;
         break;
     }
 
     /* Can't do much without a clinic */
-    if (!record.related_entities.clinic) {
+    if (!clinic) {
         addError(record, {error: "Clinic not found."});
+    } else if (smsforms.isReferralForm(form)) {
+        record.tasks.push(
+            getReferralTask(
+                form,
+                record.from,
+                record.form_data,
+                record.related_entities.clinic));
     }
 
     /* Send callback to gateway to save the doc. */
@@ -258,73 +290,6 @@ exports.data_record = function (head, req) {
 
     return JSON.stringify(respBody);
 };
-
-
-/*
- * Second step of tasks_referral processing. Add clinic, to, messages and
- * state fields to the tasks_referral data, then include callback data for 
- * gateway to execute the POST to create the tasks_referral doc.
- *
- * @param {Object} head
- * @param {Object} req
- *
- * @returns {String} response body
- *
- * @api public
- */
-exports.tasks_referral = function (head, req) {
-    start({code: 200, headers: json_headers});
-
-    var task = JSON.parse(req.body),
-        form = req.query.form,
-        headers = req.headers.Host.split(":"),
-        host = headers[0],
-        port = headers[1] || "",
-        appdb = require('duality/core').getDBURL(req),
-        def = smsforms[form];
-
-    task.created = new Date();
-
-    /* Panic */
-    if (!def) {
-        addError(task, {error: 'No form definition found for '+ form +'.'});
-    }
-
-    /* Add clinic to task */
-    var row = {};
-    while (row = getRow()) {
-        task.clinic = row.value;
-        break;
-    }
-
-    /* Can't do much without a clinic */
-    if (!task.clinic) {
-        addError(task, {error: "Clinic not found."});
-    } else {
-        // When the state field is pending, the task is ready for consumption.
-        task.state = 'pending';
-        task.to = getRecipientPhone(task.form, task.from, task.clinic);
-        task.messages.push({
-            to: task.to,
-            message: getReferralMessage(
-                task.from, task.form, task.form_data, task.clinic)});
-    }
-
-    /* Send callback to gateway to save the doc. */
-    var respBody = {
-        callback: {
-            options: {
-                host: host,
-                port: port,
-                path: appdb,
-                method: "POST",
-                headers: json_headers},
-            data: task}};
-
-    return JSON.stringify(respBody);
-};
-
-
 
 /*
  * Respond to smssync task polling, callback does a bulk update to update the
@@ -347,16 +312,20 @@ exports.tasks_pending = function (head, req) {
 
     var row = [];
     while (row = getRow()) {
-        var task = row.doc;
+        var doc = row.doc;
 
         // update state attribute for the bulk update callback
-        task.state = 'sent';
+        for (var i in doc.tasks) {
+            if (doc.tasks[i].state === 'pending') {
+                doc.tasks[i].state = 'sent';
+                // append outgoing message data payload for smsssync
+                respBody.payload.messages.push.apply(
+                        respBody.payload.messages,
+                        doc.tasks[i].messages);
+            }
+        }
 
-        // append outgoing message data
-        respBody.payload.messages.push.apply(
-                respBody.payload.messages,
-                task.messages);
-        newDocs.push(task);
+        newDocs.push(doc);
     }
 
     if (newDocs.length) {
