@@ -213,6 +213,34 @@ var getReferralTask = function(form, phone, form_data, clinic) {
     return task;
 };
 
+/**
+ * @param {Object} req - Kanso request object
+ * @param {String} form - smsforms key string
+ * @param {Object} form_data - parsed form data
+ * @param {Object} clinic - clinic facility object
+ * @returns {String} - Path for callback
+ * @api private
+ */
+var getCallbackPath = function(req, form, form_data, clinic) {
+
+    logger.debug(['lists.getCallbackPath arguments', arguments]);
+
+    var path = '',
+        appdb = require('duality/core').getDBURL(req),
+        baseURL = require('duality/core').getBaseURL();
+
+    if (smsforms.isReferralForm(form)) {
+        path = appdb;
+    } else {
+        path = baseURL + '/:form/data_record/merge/:year/:month/:clinic_id'
+                  .replace(':form', encodeURIComponent(form))
+                  .replace(':year', encodeURIComponent(form_data.year[0]))
+                  .replace(':month', encodeURIComponent(form_data.month[0]))
+                  .replace(':clinic_id', encodeURIComponent(clinic._id));
+    }
+    return path;
+};
+
 
 var addError = function(obj, error) {
     obj.errors.push(error);
@@ -222,8 +250,6 @@ var addError = function(obj, error) {
 var json_headers = {
     'Content-Type': 'application/json; charset=utf-8'
 };
-
-
 
 
 /*
@@ -283,12 +309,15 @@ exports.data_record = function (head, req) {
             options: {
                 host: host,
                 port: port,
-                path: appdb,
+                path: getCallbackPath(req, form, record.form_data, clinic),
                 method: "POST",
                 headers: json_headers},
             data: record}};
 
     return JSON.stringify(respBody);
+};
+
+exports.data_record_merge = function (head, req) {
 };
 
 /*

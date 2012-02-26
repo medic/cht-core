@@ -11,7 +11,7 @@ var updates = require('kujua-sms/updates'),
  */
 exports.referral_msbc2 = function (test) {
 
-    test.expect(13);
+    test.expect(16);
 
     var rand = function(from, to) {
         from = from || 10000000000;
@@ -325,21 +325,25 @@ exports.referral_msbc2 = function (test) {
      * Assert that docs is an array, and the document includes all the fields.
      * The only real change is the state field is set to 'sent'.
      */
-    var record  = {
+    var docs = [{
         "type": "data_record",
         "from": "+14155551212",
         "refid": ref_rc,
         "sms_message": sms_message,
         "form": "MSBC",
         "form_data": form_data,
-        "related_entities": {"clinic": null},
+        "related_entities": {"clinic": clinic1},
         "errors": [],
         "tasks": [{
             "type": "referral",
             "state": "sent",
             "to": "+17085551212",
             "messages": messages}]
-    };
+    }];
+    // somewhat redundant to test all these but aides debugging
+    test.same(doc3.callback.data.docs[0].messages, docs[0].messages);
+    test.same(doc3.callback.data.docs[0].form_data, docs[0].form_data);
+    test.same(doc3.callback.data.docs, docs);
 
     // Step 5 Bulk db update to update the 'state' field to 'sent'
     // HTTP POST to _bulk_docs CouchDB API (No test)

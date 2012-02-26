@@ -34,14 +34,6 @@ exports.rules = [
         }
     },
     {
-        from: '/:form/data_record/merge/:year/:month/:clinic_id',
-        to: '_list/data_record/monthly_report_by_key',
-        query: {
-            startkey: [':year', ':month', ':clinic_id'],
-            endkey: [':year', ':month', ':clinic_id', {}]
-        }
-    },
-    {
         from: '/:form/data_record/add/health_center/:phone',
         to: '_list/data_record/clinic_by_parent_phone',
         query: {
@@ -57,5 +49,13 @@ exports.rules = [
             endkey: [':refid'],
             descending: 'true'
         }
-    }
+    },
+    {
+        from: '/:form/data_record/merge/:year/:month/:clinic_id',
+        to: '_list/data_record_merge/monthly_report_by_key',
+        query: {
+            startkey: [':year', ':month', ':clinic_id'],
+            endkey: [':year', ':month', ':clinic_id', {}]
+        }
+    },
 ];

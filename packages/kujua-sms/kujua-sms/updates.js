@@ -62,7 +62,7 @@ var getRefID = function(form, form_data) {
  */
 var getCallbackPath = function(phone, form, form_data) {
 
-    logger.debug(['getCallbackPath arguments', arguments]);
+    logger.debug(['updates.getCallbackPath arguments', arguments]);
 
     var path = '';
 
