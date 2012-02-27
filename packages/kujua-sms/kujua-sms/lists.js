@@ -66,7 +66,6 @@ exports.sms_messages_csv = function (head, req) {
 
 
 exports.sms_messages_xml = function (head, req) {
-
     var formKey = req.query.form,
         form = smsforms[formKey],
         filename = form ? formKey + '_sms_messages.xml': 'unknown_form.xml',
@@ -222,7 +221,6 @@ var getReferralTask = function(form, phone, form_data, clinic) {
  * @api private
  */
 var getCallbackPath = function(req, form, form_data, clinic) {
-
     logger.debug(['lists.getCallbackPath arguments', arguments]);
 
     var path = '',
@@ -275,7 +273,7 @@ exports.data_record = function (head, req) {
         port = headers[1] || "",
         appdb = require('duality/core').getDBURL(req),
         def = smsforms[form],
-        clinic = {};
+        clinic = null;
 
     record.created = new Date(); // used in views for sorting
 
