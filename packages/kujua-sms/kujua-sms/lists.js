@@ -236,6 +236,7 @@ var getCallbackPath = function(req, form, form_data, clinic) {
                   .replace(':month', encodeURIComponent(form_data.month[0]))
                   .replace(':clinic_id', encodeURIComponent(clinic._id));
     }
+    
     return path;
 };
 
@@ -301,7 +302,7 @@ exports.data_record = function (head, req) {
                 record.related_entities.clinic));
     }
 
-    /* Send callback to gateway to save the doc. */
+    /* Send callback to gateway to check for already existing doc. */
     var respBody = {
         callback: {
             options: {
@@ -315,8 +316,66 @@ exports.data_record = function (head, req) {
     return JSON.stringify(respBody);
 };
 
+
+/*
+ * Third step of adding a data record for an incoming SMS.
+ * If a data record for the year/month/clinic already exists
+ * this merges the data and sends a callback to update it,
+ * if no data record exists, it sends a callback to create
+ * a new data record.
+ *
+ * @param {Object} head
+ * @param {Object} req
+ *
+ * @returns {String} response body
+ *
+ * @api public
+  */
 exports.data_record_merge = function (head, req) {
+    start({code: 200, headers: json_headers});
+
+    var new_data_record = JSON.parse(req.body),
+        form = req.query.form,
+        headers = req.headers.Host.split(":"),
+        host = headers[0],
+        port = headers[1] || "",
+        def = smsforms[form],
+        appdb = require('duality/core').getDBURL(req),
+        old_data_record = null,
+        path = appdb,
+        row = {};
+    
+    /* Panic */
+    if (!def) {
+        addError(task, {error: 'No form definition found for '+ form +'.'});
+    }
+    
+    while (row = getRow()) {
+        old_data_record = row.value;
+        break;
+    }
+    
+    if(old_data_record) {
+        path += '/' + old_data_record._id;
+        new_data_record._id = old_data_record._id;
+        new_data_record._rev = old_data_record._rev;
+    };
+    
+    /* Send callback to gateway to save the doc. */
+    var respBody = {
+        callback: {
+            options: {
+                host: host,
+                port: port,
+                path: path,
+                method: old_data_record ? "PUT" : "POST",
+                headers: json_headers},
+            data: new_data_record}};
+
+    return JSON.stringify(respBody);
 };
+
+
 
 /*
  * Respond to smssync task polling, callback does a bulk update to update the

@@ -82,3 +82,11 @@ exports.tasks_pending = {
         }
     }
 };
+
+exports.data_record_by_year_month_and_clinic_id = {
+    map: function (doc) {
+        if (doc.type === 'data_record') {
+            emit([doc.year, doc.month, doc.related_entities.clinic._id], doc);
+        }
+    }
+};
