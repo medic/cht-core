@@ -10,7 +10,7 @@ var updates = require('kujua-sms/updates'),
 
 exports.data_record_psms = function (test) {
     
-    test.expect(15);
+    test.expect(19);
 
     var ref_rc = String(helpers.rand());
 
@@ -78,7 +78,6 @@ exports.data_record_psms = function (test) {
 
     test.same(resp1.callback.options.path,
         baseURL + "/PSMS/data_record/add/clinic/%2B13125551212");
-
     test.same(resp1.callback.data, {
         type: "data_record",
         form: "PSMS",
@@ -89,7 +88,9 @@ exports.data_record_psms = function (test) {
         sms_message: sms_message,
         from: "+13125551212",
         errors: [],
-        tasks: []
+        tasks: [],
+        days_stocked_out: form_data.days_stocked_out,
+        quantity_dispensed: form_data.quantity_dispensed
     });
 
 
@@ -238,6 +239,8 @@ exports.data_record_psms = function (test) {
     test.same(doc3a.callback.data._rev, "484399c98ff78ac7da33b639ed60f923");
     test.same(doc3a.callback.data.form_data, form_data);
     test.same(doc3a.callback.data.sms_message, sms_message);
+    test.same(doc3a.callback.data.quantity_dispensed, form_data.quantity_dispensed);
+    test.same(doc3a.callback.data.days_stocked_out, form_data.days_stocked_out);
 
 
 
@@ -275,6 +278,8 @@ exports.data_record_psms = function (test) {
     test.same(doc3b.callback.data.errors, []);
     test.same(doc3b.callback.data.form_data, form_data);
     test.same(doc3b.callback.data.sms_message, sms_message);
+    test.same(doc3b.callback.data.days_stocked_out, form_data.days_stocked_out);
+    test.same(doc3b.callback.data.quantity_dispensed, form_data.quantity_dispensed);
     
     
     

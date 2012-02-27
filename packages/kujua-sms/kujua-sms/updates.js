@@ -15,20 +15,32 @@ var _ = require('underscore')._,
  * @api private
  */
 var getCallbackBody = function(phone, form, form_data) {
-
     logger.debug(['getCallbackBody arguments', arguments]);
 
     var body = {
-            type: 'data_record',
-            from: phone,
-            form: form,
-            form_data: form_data,
-            related_entities: {clinic: null},
-            errors: [],
-            tasks: []};
+        type: 'data_record',
+        from: phone,
+        form: form,
+        form_data: form_data,
+        related_entities: {clinic: null},
+        errors: [],
+        tasks: []
+    };
 
     if (smsforms.isReferralForm(form)) {
         body.refid = getRefID(form, form_data);
+    }
+
+    //
+    // What we actually need to do here is: get the type definition,
+    // match the fields of the type againt the fields of the smsforms
+    // definition and then set all the values.
+    // This is a temporary solution since we do not have the data
+    // record type definition here.
+    //
+    if (form === 'PSMS') {
+        body.days_stocked_out = form_data.days_stocked_out;
+        body.quantity_dispensed = form_data.quantity_dispensed;
     }
 
     return body;
@@ -41,7 +53,6 @@ var getCallbackBody = function(phone, form, form_data) {
  * @api private
  */
 var getRefID = function(form, form_data) {
-
     switch(form) {
         case 'MSBC':
             return form_data.cref_rc[0];
@@ -50,7 +61,6 @@ var getRefID = function(form, form_data) {
         case 'MSBR':
             return form_data.ref_rc[0];
     };
-
 };
 
 /**
@@ -61,7 +71,6 @@ var getRefID = function(form, form_data) {
  * @api private
  */
 var getCallbackPath = function(phone, form, form_data) {
-
     logger.debug(['updates.getCallbackPath arguments', arguments]);
 
     var path = '';
@@ -85,7 +94,6 @@ var getCallbackPath = function(phone, form, form_data) {
     };
 
     return path;
-
 };
 
 
@@ -95,11 +103,10 @@ var getCallbackPath = function(phone, form, form_data) {
  * 1st phase of tasks_referral doc.
  */
 var getRespBody = exports.getRespBody = function(doc, req) {
-
     logger.debug('getRespBody jsDump.parse(req)');
     logger.debug(req);
     var form = doc.form,
-        def = smsforms[doc.form],
+        def = smsforms[form],
         form_data = smsparser.parse(def, doc, 1),
         baseURL = require('duality/core').getBaseURL(),
         headers = req.headers.Host.split(":"),
@@ -151,7 +158,6 @@ var getRespBody = exports.getRespBody = function(doc, req) {
 
     logger.debug(resp);
     return JSON.stringify(resp);
-
 };
 
 exports.add_sms = function (doc, req) {
