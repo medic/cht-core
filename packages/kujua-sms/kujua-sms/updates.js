@@ -17,6 +17,9 @@ var _ = require('underscore')._,
 var getCallbackBody = function(phone, form, form_data) {
     logger.debug(['getCallbackBody arguments', arguments]);
 
+    var data_record_types = require('kujua-couchtypes/types').data_records;
+    var data_record_type = smsforms.dataRecordTypeForForm(form);
+    
     var body = {
         type: 'data_record',
         from: phone,
@@ -31,19 +34,33 @@ var getCallbackBody = function(phone, form, form_data) {
         body.refid = getRefID(form, form_data);
     }
 
-    //
-    // What we actually need to do here is: get the type definition,
-    // match the fields of the type againt the fields of the smsforms
-    // definition and then set all the values.
-    // This is a temporary solution since we do not have the data
-    // record type definition here.
-    //
-    if (form === 'PSMS') {
-        body.days_stocked_out = form_data.days_stocked_out;
-        body.quantity_dispensed = form_data.quantity_dispensed;
-    }
+    merge(data_record_types[data_record_type].fields, body, form_data);
 
     return body;
+};
+
+/*
+ * Merge fields from the data record type with
+ * the form data received through the SMS into
+ * a data record.
+ *
+ * @param {Object} fields       - fields of the data record type
+ * @param {Object} data_record  - record into which the data is merged
+ * @param {Object} form_data    - data from the SMS 
+ *                                to be merged into the data record
+ * @api private
+ */
+var merge = function(fields, data_record, form_data) {
+    _.each(fields, function(field, key) {
+        if(form_data[key]) {
+            if(_.isArray(form_data[key])) {
+                data_record[key] = form_data[key][0];
+            } else {
+                data_record[key] = {};
+                merge(fields[key], data_record[key], form_data[key]);
+            }
+        }
+    });    
 };
 
 /**

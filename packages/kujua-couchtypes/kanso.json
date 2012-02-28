@@ -1,0 +1,12 @@
+{
+    "name": "kujua-couchtypes",
+    "version": "0.0.1",
+    "description": "Couchtypes needed in kujua.",
+    "modules": ["kujua-couchtypes"],
+    "load": "kujua-couchtypes/app",
+    "dependencies": {
+        "modules": null,
+        "underscore": null,
+        "properties": null
+    }
+}

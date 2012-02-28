@@ -53,7 +53,23 @@ exports.data_record_psms = function (test) {
         year: ['2011', 'Report Year']
     };
 
-
+    var days_stocked_out = {
+        cotrimoxazole: 7,
+        eye_ointment: 4,
+        la_6x1: 9,
+        la_6x2: 8,
+        ors: 5,
+        zinc: 6
+    };
+    
+    var quantity_dispensed = {
+        cotrimoxazole: 3,
+        eye_ointment: 6,
+        la_6x1: 1,
+        la_6x2: 2,
+        ors: 5,
+        zinc: 4
+    };
 
     //
     // STEP 1:
@@ -78,6 +94,7 @@ exports.data_record_psms = function (test) {
 
     test.same(resp1.callback.options.path,
         baseURL + "/PSMS/data_record/add/clinic/%2B13125551212");
+
     test.same(resp1.callback.data, {
         type: "data_record",
         form: "PSMS",
@@ -89,8 +106,10 @@ exports.data_record_psms = function (test) {
         from: "+13125551212",
         errors: [],
         tasks: [],
-        days_stocked_out: form_data.days_stocked_out,
-        quantity_dispensed: form_data.quantity_dispensed
+        days_stocked_out: days_stocked_out,
+        quantity_dispensed: quantity_dispensed,
+        month: '11',
+        year: '2011'
     });
 
 
@@ -239,8 +258,8 @@ exports.data_record_psms = function (test) {
     test.same(doc3a.callback.data._rev, "484399c98ff78ac7da33b639ed60f923");
     test.same(doc3a.callback.data.form_data, form_data);
     test.same(doc3a.callback.data.sms_message, sms_message);
-    test.same(doc3a.callback.data.quantity_dispensed, form_data.quantity_dispensed);
-    test.same(doc3a.callback.data.days_stocked_out, form_data.days_stocked_out);
+    test.same(doc3a.callback.data.quantity_dispensed, quantity_dispensed);
+    test.same(doc3a.callback.data.days_stocked_out, days_stocked_out);
 
 
 
@@ -278,8 +297,8 @@ exports.data_record_psms = function (test) {
     test.same(doc3b.callback.data.errors, []);
     test.same(doc3b.callback.data.form_data, form_data);
     test.same(doc3b.callback.data.sms_message, sms_message);
-    test.same(doc3b.callback.data.days_stocked_out, form_data.days_stocked_out);
-    test.same(doc3b.callback.data.quantity_dispensed, form_data.quantity_dispensed);
+    test.same(doc3b.callback.data.days_stocked_out, days_stocked_out);
+    test.same(doc3b.callback.data.quantity_dispensed, quantity_dispensed);
     
     
     

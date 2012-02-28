@@ -8,10 +8,13 @@ exports.isReferralForm = function(form) {
     return ['MSBR','MSBC','MSBB'].indexOf(form) !== -1;
 };
 
-exports.getResponse = function (key, locale) {
-    var locale = locale || 'en',
-        resp = responses[key] || responses['success'];
-    return resp[locale];
+/**
+ * @param {String} form - smsforms key string
+ * @returns {String} - data record type that matches the form
+ * @api public
+ */
+exports.dataRecordTypeForForm = function (form) {
+    return 'psi_malawi';
 };
 
 var responses = {
@@ -32,6 +35,17 @@ var responses = {
         en: 'Data received, thank you.',
         fr: 'Merci, votre formulaire a été bien reçu.'
     }
+};
+
+/**
+ * @param {String} key
+ * @param {String} locale
+ * @returns {String} - localized string for the key
+ * @api public
+ */
+exports.getResponse = function (key, locale) {
+    locale = locale || 'en';
+    return (responses[key] || responses['success'])[locale];
 };
 
 exports['TEST'] = {
