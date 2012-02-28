@@ -5,7 +5,7 @@ var updates = require('kujua-sms/updates'),
     querystring = require('querystring'),
     jsDump = require('jsDump'),
     fakerequest = require('couch-fakerequest'),
-    helpers = require('../helpers/helpers');
+    helpers = require('../../test-helpers/helpers');
 
 
 exports.data_record_psms = function (test) {
