@@ -8,14 +8,6 @@ exports.isReferralForm = function(form) {
     return ['MSBR','MSBC','MSBB'].indexOf(form) !== -1;
 };
 
-/**
- * @param {String} form - smsforms key string
- * @returns {String} - data record type that matches the form
- * @api public
- */
-exports.dataRecordTypeForForm = function (form) {
-    return 'psi_malawi';
-};
 
 var responses = {
     form_not_found: {
@@ -74,7 +66,8 @@ exports['PSMS'] = {
         {key: 'days_stocked_out.ors', label: 'ORS: Days stocked out', type: 'number'},
         {key: 'days_stocked_out.eye_ointment', label: 'Eye Ointment: Days stocked out', type: 'number'}
     ],
-    autoreply: "Zikomo!"
+    autoreply: "Zikomo!",
+    data_record_type: "psi_malawi"
 };
 
 exports['PSCQ'] = {
