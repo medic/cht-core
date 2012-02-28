@@ -509,12 +509,35 @@ var psi_malawi = {
                         widget: widgets.text({maxlength: 3})
                     })
                 },
+                /* PSMM/PSMS form definition is in flux, commenting out for
+                 * the moment for sake of simplicity.
                 new_cases_2_to_11_months: conditions,
                 new_cases_12_to_59_months: conditions,
                 referrals_2_to_11_months: conditions,
                 referrals_12_to_59_months: conditions,
                 deaths_2_to_11_months: conditions,
                 deaths_12_to_59_months: conditions,
+                */
+                referrals_2_to_11_months: fields.number({
+                    required: false,
+                    validators: [validators.max(999)],
+                    widget: widgets.text({maxlength: 3})
+                }),
+                referrals_12_to_59_months: fields.number({
+                    required: false,
+                    validators: [validators.max(999)],
+                    widget: widgets.text({maxlength: 3})
+                }),
+                deaths_2_to_11_months: fields.number({
+                    required: false,
+                    validators: [validators.max(999)],
+                    widget: widgets.text({maxlength: 3})
+                }),
+                deaths_12_to_59_months: fields.number({
+                    required: false,
+                    validators: [validators.max(999)],
+                    widget: widgets.text({maxlength: 3})
+                }),
                 opening_balance: supplies,
                 days_stocked_out: supplies,
                 quantity_dispensed: supplies,

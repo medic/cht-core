@@ -30,9 +30,9 @@ var responses = {
 };
 
 /**
- * @param {String} key
- * @param {String} locale
- * @returns {String} - localized string for the key
+ * @param {String} key from responses object
+ * @param {String} locale string that is supported in responses
+ * @returns {String} - localized response message for the key
  * @api public
  */
 exports.getResponse = function (key, locale) {
@@ -65,6 +65,38 @@ exports['PSMS'] = {
         {key: 'days_stocked_out.zinc', label: 'Zinc: Days stocked out', type: 'number'},
         {key: 'days_stocked_out.ors', label: 'ORS: Days stocked out', type: 'number'},
         {key: 'days_stocked_out.eye_ointment', label: 'Eye Ointment: Days stocked out', type: 'number'}
+    ],
+    autoreply: "Zikomo!",
+    data_record_type: "psi_malawi",
+    data_record_merge: "/:form/data_record/merge/:year/:month/:clinic_id"
+};
+
+exports['PSMM'] = {
+    fields: [
+        {key: 'facility_id', label: 'Health Facility Identifier', type: 'string'},
+        {key: 'year', label: 'Report Year', type: 'year'},
+        {key: 'month', label: 'Report Month', type: 'month'},
+        {key: 'cases.fever_lt_1d', label: 'Fever cases < 1 day', type: 'number'},
+        {key: 'cases.fever_lt_2d', label: 'Fever cases < 2 day', type: 'number'},
+        {key: 'cases.fever_gt_3d', label: 'Fever cases > 3 days', type: 'number'},
+        {key: 'cases.diarrhea_lt_1d', label: 'Diarrhea cases < 1 day', type: 'number'},
+        {key: 'cases.diarrhea_lt_2d', label: 'Diarrhea cases < 2 days', type: 'number'},
+        {key: 'cases.diarrhea_gt_3d', label: 'Diarrhea cases > 3 days', type: 'number'},
+        {key: 'cases.fast_breath_lt_1d', label: 'Fast breath cases < 1 day', type: 'number'},
+        {key: 'cases.fast_breath_lt_2d', label: 'Fast breath cases < 2 days', type: 'number'},
+        {key: 'cases.fast_breath_gt_3d', label: 'Fast breath cases > 3 days', type: 'number'},
+        {key: 'supervisor_visits', label: 'Supervisor Visits', type: 'number'},
+        {key: 'mentorship_visits', label: 'Mentorship Sessions', type: 'number'},
+        {key: 'days_stocked_out.la_6x1', label: 'LA 6x1: Days stocked out', type: 'number'},
+        {key: 'days_stocked_out.la_6x2', label: 'LA 6x2: Days stocked out', type: 'number'},
+        {key: 'days_stocked_out.ors', label: 'ORS: Days stocked out', type: 'number'},
+        {key: 'days_stocked_out.cotrimoxazole', label: 'Cotrimoxazole: Days stocked out', type: 'number'},
+        {key: 'days_stocked_out.zinc', label: 'Zinc: Days stocked out', type: 'number'},
+        {key: 'days_stocked_out.eye_ointment', label: 'Eye Ointment: Days stocked out', type: 'number'},
+        {key: 'referrals_2_to_11_months', label: 'Referral 2-11 month total', type: 'number'},
+        {key: 'referrals_12_to_59_months', label: 'Referral 12-59 month total', type: 'number'},
+        {key: 'deaths_2_to_11_months', label: 'Deaths 2-11 month total', type: 'number'},
+        {key: 'deaths_12_to_59_months', label: 'Deaths 12-59 month total', type: 'number'}
     ],
     autoreply: "Zikomo!",
     data_record_type: "psi_malawi",
