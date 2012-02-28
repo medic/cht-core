@@ -230,7 +230,7 @@ var getCallbackPath = function(req, form, form_data, clinic) {
     if (smsforms.isReferralForm(form)) {
         path = appdb;
     } else {
-        path = baseURL + '/:form/data_record/merge/:year/:month/:clinic_id'
+        path = baseURL + smsforms[form].data_record_merge
                   .replace(':form', encodeURIComponent(form))
                   .replace(':year', encodeURIComponent(form_data.year[0]))
                   .replace(':month', encodeURIComponent(form_data.month[0]))

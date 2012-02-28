@@ -67,7 +67,8 @@ exports['PSMS'] = {
         {key: 'days_stocked_out.eye_ointment', label: 'Eye Ointment: Days stocked out', type: 'number'}
     ],
     autoreply: "Zikomo!",
-    data_record_type: "psi_malawi"
+    data_record_type: "psi_malawi",
+    data_record_merge: "/:form/data_record/merge/:year/:month/:clinic_id"
 };
 
 exports['PSCQ'] = {
