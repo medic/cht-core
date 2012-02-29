@@ -8,7 +8,7 @@ var _ = require('underscore')._,
     smsparser = require('views/lib/smsparser');
 
 /**
- * @param {String} phone - smsforms key string
+ * @param {String} phone - phone number of the sending phone (from)
  * @param {String} form - smsforms key string
  * @param {Object} form_data - parsed form data
  * @returns {Object} - Body for callback
@@ -19,7 +19,7 @@ var getCallbackBody = function(phone, form, form_data) {
 
     var data_record_types = require('kujua-couchtypes/types').data_records;
     var data_record_type = smsforms[form].data_record_type;
-    
+ 
     var body = {
         type: 'data_record',
         from: phone,
@@ -64,7 +64,7 @@ var merge = function(fields, data_record, form_data) {
 };
 
 /**
- * @param {String} phone - smsforms key string
+ * @param {String} form - smsforms key string
  * @param {Object} form_data - parsed form data
  * @returns {String} - Referral ID value
  * @api private
@@ -81,7 +81,7 @@ var getRefID = function(form, form_data) {
 };
 
 /**
- * @param {String} phone - smsforms key string
+ * @param {String} phone - phone number of the sending phone (from)
  * @param {String} form - smsforms key string
  * @param {Object} form_data - parsed form data
  * @returns {String} - Path for callback

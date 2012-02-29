@@ -4,20 +4,15 @@ var updates = require('kujua-sms/updates'),
     appdb = require('duality/core').getDBURL(),
     querystring = require('querystring'),
     jsDump = require('jsDump'),
-    fakerequest = require('couch-fakerequest');
+    fakerequest = require('couch-fakerequest'),
+    helpers = require('../../test-helpers/helpers');
 
 exports.referral_msbb = function (test) {
 
     test.expect(10);
 
-    var rand = function(from, to) {
-        from = from || 10000000000;
-        to = to || 99999999999;
-        return Math.floor(Math.random() * (to - from + 1) + from);
-    };
-
     // random ref_rc (Referral ID) for better test data
-    var ref_rc = String(rand());
+    var ref_rc = String(helpers.rand());
 
     // Data as passed in from SMSSync, JSON formatted
     var data = {
