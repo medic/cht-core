@@ -236,7 +236,7 @@ var getCallbackPath = function(req, form, form_data, clinic) {
                   .replace(':month', encodeURIComponent(form_data.month[0]))
                   .replace(':clinic_id', encodeURIComponent(clinic._id));
     }
-    
+
     return path;
 };
 
@@ -344,23 +344,23 @@ exports.data_record_merge = function (head, req) {
         old_data_record = null,
         path = appdb,
         row = {};
-    
+
     /* Panic */
     if (!def) {
         addError(task, {error: 'No form definition found for '+ form +'.'});
     }
-    
+
     while (row = getRow()) {
         old_data_record = row.value;
         break;
     }
-    
+
     if(old_data_record) {
         path += '/' + old_data_record._id;
         new_data_record._id = old_data_record._id;
         new_data_record._rev = old_data_record._rev;
     };
-    
+
     /* Send callback to gateway to save the doc. */
     var respBody = {
         callback: {
