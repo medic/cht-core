@@ -11,7 +11,7 @@ var _ = require('underscore')._,
  * @param {String} phone - phone number of the sending phone (from)
  * @param {String} form - smsforms key string
  * @param {Object} form_data - parsed form data
- * @returns {Object} - Body for callback
+ * @returns {Object} - body for callback
  * @api private
  */
 var getCallbackBody = function(phone, form, form_data) {
@@ -19,7 +19,7 @@ var getCallbackBody = function(phone, form, form_data) {
 
     var data_record_types = require('kujua-couchtypes/types').data_records;
     var data_record_type = smsforms[form].data_record_type;
- 
+
     var body = {
         type: 'data_record',
         from: phone,
@@ -46,7 +46,7 @@ var getCallbackBody = function(phone, form, form_data) {
  *
  * @param {Object} fields       - fields of the data record type
  * @param {Object} data_record  - record into which the data is merged
- * @param {Object} form_data    - data from the SMS 
+ * @param {Object} form_data    - data from the SMS
  *                                to be merged into the data record
  * @api private
  */
@@ -60,7 +60,7 @@ var merge = function(fields, data_record, form_data) {
                 merge(fields[key], data_record[key], form_data[key]);
             }
         }
-    });    
+    });
 };
 
 /**
