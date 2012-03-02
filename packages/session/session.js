@@ -1,17 +1,46 @@
 /**
- * Functions related to the management of user sessions and account information.
+ * ## Session module
+ *
+ * This module contains functions related to session management. Logging in,
+ * logging out and checking the current state of a user's session.
+ *
+ * Functions in this module follow the node.js callback style. The first
+ * argument is an error object (if one occurred), the following arguments are
+ * the results of the operation. The callback is always the last argument to a
+ * function.
+ *
+ *
+ * ### Events
+ *
+ * The session module is an EventEmitter. See the
+ * [events package](http://kan.so/packages/details/events) for more information.
+ *
+ * #### change
+ *
+ * Emitted whenever a change to the user's session is detected, this
+ * can occur as the result of a login/logout call or by getting the user's
+ * session info (and it's changed).
+ *
+ * ```javascript
+ * var session = require("session");
+ *
+ * session.on('change', function (userCtx) {
+ *     // update session information, eg "Logged in as ..."
+ * });
+ * ```
  *
  * @module
  */
 
-/**
- * Module dependencies
- */
 
 var events = require('events'),
-    users = require('users'),
     db = require('db');
 
+
+/**
+ * Quick utility function for testing if running in the browser, since
+ * these functions won't run on CouchDB server-side
+ */
 
 function isBrowser() {
     return (typeof(window) !== 'undefined');
@@ -45,43 +74,21 @@ var exports = module.exports = new events.EventEmitter();
 
 
 /**
- * Logs out the current user.
- *
- * @name logout(callback)
- * @param {Function} callback
- * @api public
- */
-
-exports.logout = function (callback) {
-    if (!isBrowser()) {
-        throw new Error('logout cannot be called server-side');
-    }
-    db.request({
-        type: "DELETE",
-        url: "/_session", // don't need baseURL, /_session always available
-        username: "_",
-        password : "_"
-    },
-    function (err, resp) {
-        if (resp && resp.ok) {
-            exports.userCtx = {name: null, roles: []};
-            exports.session = {userCtx: exports.userCtx};
-            exports.emit('change', exports.userCtx);
-        }
-        if (callback) {
-            callback(err, resp);
-        }
-    });
-};
-
-/**
  * Attempt to login using the username and password provided.
  *
  * @name login(username, password, callback)
- * @param {String} username
- * @param {String} password
- * @param {Function} callback
+ * @param {String} username - the username to login with
+ * @param {String} password - the user's password (unhashed)
+ * @param {Function} callback - function called with the result of the login
+ *     attempt
  * @api public
+ *
+ * ```javascript
+ * session.login('testuser', 'password', function (err, response) {
+ *     if (err) // an error occurred logging in
+ *     else     // success
+ * });
+ * ```
  */
 
 exports.login = function (username, password, callback) {
@@ -112,11 +119,60 @@ exports.login = function (username, password, callback) {
 
 
 /**
- * Returns the current user's session information.
+ * Logs out the current user.
+ *
+ * @name logout(callback)
+ * @param {Function} callback - function called with the result of the logout
+ *     attempt
+ * @api public
+ *
+ * ```javascript
+ * session.logout(function (err, response) {
+ *     if (err) // an error occurred logging out
+ *     else     // success
+ * });
+ * ```
+ */
+
+exports.logout = function (callback) {
+    if (!isBrowser()) {
+        throw new Error('logout cannot be called server-side');
+    }
+    db.request({
+        type: "DELETE",
+        url: "/_session", // don't need baseURL, /_session always available
+        username: "_",
+        password : "_"
+    },
+    function (err, resp) {
+        if (resp && resp.ok) {
+            exports.userCtx = {name: null, roles: []};
+            exports.session = {userCtx: exports.userCtx};
+            exports.emit('change', exports.userCtx);
+        }
+        if (callback) {
+            callback(err, resp);
+        }
+    });
+};
+
+
+/**
+ * Returns the current user's session information. The info object contains a
+ * `userCtx` property and an `info` property. The first contains the name and
+ * roles of the current user, the second contains information about the user
+ * database and authentication handlers.
  *
  * @name info(callback)
- * @param {Function} callback
+ * @param {Function} callback - function called with the session information
  * @api public
+ *
+ * ```javascript
+ * session.info(function (err, info) {
+ *     if (err) // an error occurred getting session info
+ *     else     // success
+ * });
+ * ```
  */
 
 exports.info = function (callback) {
@@ -139,24 +195,4 @@ exports.info = function (callback) {
             callback(err, resp);
         }
     });
-};
-
-
-/**
- * Creates a new user document with given username and password.
- *
- * @name signup(username, password, callback, options)
- * @param {String} username
- * @param {String} password
- * @param {Array} roles
- * @param {Function} callback
- * @param {Hash} options
- * @api public
- */
-
-exports.signup = function (username, password, roles, callback) {
-    if (!isBrowser()) {
-        throw new Error('signup cannot be called server-side');
-    }
-    users.create(username, password, roles, callback);
 };

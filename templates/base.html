@@ -53,86 +53,19 @@
     <script src="{baseURL}/modules.js"></script>
     <script src="{baseURL}/duality.js"></script>
     <script type="text/javascript">
-var showdown = require('showdown'),
-    sd = new showdown.converter();
+      $(function() {
 
-$(function() {
-  var renderDoc = function(data, slug) {
-    $('#docs-body').html(sd.makeHtml(data));
-    var title = $('#docs-body h1:first-child').text();
-    $('#docs-body h1:first-child').remove();
-    $('.page-header h1').text(title);
-    $('.nav .docs').addClass('active');
+        // Dynamic year for footer copyright
+        var currentYear = (new Date).getFullYear();
+        $("#year").text( (new Date).getFullYear() );
 
-    // render TOC unless loading the index
-    if (slug !== 'index') {
-      var ul = $('<ul/>');
-      $('#docs-body h2, #docs-body h3').each(function(idx, el) {
-        var header = $(el),
-            title = header.text(),
-            id = header.attr('id');
-        if (el.tagName === 'H2') {
-          ul.append(
-            $('<li/>').append(
-              $('<a/>').attr('href', '#'+id).text(title)));
-        } else {
-          ul.append(
-            $('<li class="subhead"/>').append(
-              $('<a/>').attr('href', '#'+id).text(title)));
-        }
-      });
-      $('.sections').append(ul);
-      $('.sections').show();
-    } else {
-      $('.sections').hide();
-    }
-
-    // make large images zoomable
-    $('#docs-body img').each(function(idx, el) {
-        var t =  $("<img/>"),
-            width = 0,
-            height = 0;
-        t.attr("src", $(el).attr("src"));
-        t.load(function() { 
-            width = this.width; 
-            height = this.height; 
-            $(el).parent().addClass('images');
-            if (width > 960) {
-              $(el).parent().addClass('zoom');
-              $(el).parent().bind('click', function() {
-                var p = $(this);
-                if (p.attr('style')) {
-                  p.attr('style',null);
-                } else {
-                  p.css({'width': width});
-                }
-              });
-            };
+        // Admin menu control
+        $('.dropdown-toggle').on('click', function(ev) {
+          ev.preventDefault();
+          $(this).siblings('.dropdown-menu').toggle(300);
         });
-    });
-  }
-  if ($('#docs').get(0)) {
-    var href = $(location).attr('href'),
-        slug = href.split('/').pop().split(/[^\w]+/)[0] || 'install/index';
-    $.ajax({
-        url: '../../docs/'+ slug +'.md',
-        success: function(data) { renderDoc(data, slug); },
-        error: function(jqXHR, textStatus, errorThrown) {
-          alert(textStatus + ' ' + errorThrown);
-        }
-    });
-  }
 
-  // Dynamic year for footer copyright
-  var currentYear = (new Date).getFullYear();
-  $("#year").text( (new Date).getFullYear() );
-
-  // Admin menu control
-  $('.dropdown-toggle').on('click', function(ev) {
-    ev.preventDefault();
-    $(this).siblings('.dropdown-menu').toggle(300);
-  });
-});
+      });
     </script>
   </body>
 </html>
