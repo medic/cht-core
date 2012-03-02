@@ -1,10 +1,9 @@
-var templates = require('duality/templates'),
-    settings = require('settings/root');
+var settings = require('settings/root'),
+    events = require('duality/events'),
+    smsforms = require('views/lib/smsforms'),
+    templates = require('duality/templates');
 
-exports.sms_forms = function (doc, req) {
-    return {
-        title: 'SMS Forms',
-        settings: settings,
-        content: templates.render('sms_forms.html', req, {})
-    };
+exports.test_sms_forms = function (doc, req) {
+    return {foo:'test'};
 };
+
