@@ -77,13 +77,21 @@ exports.hasAnyOfTheRoles = function (expectedRoles) {
  * created.
  *
  * @name fieldUneditable()
+ * @param {Boolean} disallow_admin - whether users with _admin role should be
+ *                                   also be prevented from editing the field
  * @returns {Function}
  * @api public
  */
 
-exports.fieldUneditable = function () {
+exports.fieldUneditable = function (disallow_admin) {
     return function (newDoc, oldDoc, newValue, oldValue, userCtx) {
         if (oldDoc) {
+            var roles = userCtx ? (userCtx.roles || []): [];
+            if (_.include(roles, '_admin')) {
+                if (!disallow_admin) {
+                    return;
+                }
+            }
             if (newValue !== oldValue) {
                 throw new Error('Field cannot be edited once created');
             }

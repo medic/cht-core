@@ -76,19 +76,22 @@ var load = function (module_cache, doc, settings, name) {
  * to the document.
  */
 
-module.exports = function (root, path, settings, doc, callback) {
-    var module_cache = {};
-    for (var k in doc._load) {
-        if (doc._load[k] && doc._load[k].load) {
-            try {
-                load(module_cache, doc, doc._load[k], k);
-            }
-            catch (e) {
-                return callback(e);
+module.exports = {
+    before: 'modules/cleanup',
+    run: function (root, path, settings, doc, callback) {
+        var module_cache = {};
+        for (var k in doc._load) {
+            if (doc._load[k] && doc._load[k].load) {
+                try {
+                    load(module_cache, doc, doc._load[k], k);
+                }
+                catch (e) {
+                    return callback(e);
+                }
             }
         }
+        doc.rewrites = _.flatten(doc.rewrites);
+        delete doc._load;
+        callback(null, doc);
     }
-    doc.rewrites = _.flatten(doc.rewrites);
-    delete doc._load;
-    callback(null, doc);
 };

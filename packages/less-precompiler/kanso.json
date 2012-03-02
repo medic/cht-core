@@ -1,9 +1,14 @@
 {
     "name": "less-precompiler",
-    "version": "1.1.6",
+    "version": "1.2.1-kanso.5",
+    "url": "http://github.com/kanso/less-precompiler",
     "categories": ["build-tools"],
     "description": "Precompiles .less CSS templates when building a package and attaches a compiled .css file to reduce parsing time in the browser",
     "preprocessors": {
-        "compile": "build/compile"
+        "add_paths": "build/add_paths"
+    },
+    "postprocessors": {
+        "compile": "build/compile",
+        "remove_attachments": "build/remove_attachments"
     }
 }

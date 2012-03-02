@@ -22,6 +22,9 @@ var h = sanitize.escapeHtml;
 
 var exports = module.exports = new events.EventEmitter();
 
+// set a high listener limit since there may be one for each field
+exports.setMaxListeners(1000);
+
 
 /**
  * Generates a script tag that fires the event named {name}.
@@ -294,7 +297,7 @@ exports.div = function () {
                     '<div class="errors">' +
                         exports.errorHTML(errors) +
                     '</div>' +
-                    '<div class="clear" />' +
+                    '<div class="clear"></div>' +
                 '</div>' +
             '</div>'
         );
@@ -312,7 +315,7 @@ exports.div = function () {
     */
     this.end = function () {
         return (
-                '<div class="final" />' +
+            '<div class="final"></div>' +
             '</div>'
         );
     };
