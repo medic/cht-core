@@ -5,12 +5,13 @@ var updates = require('kujua-sms/updates'),
     querystring = require('querystring'),
     jsDump = require('jsDump'),
     fakerequest = require('couch-fakerequest'),
-    helpers = require('../../test-helpers/helpers');
+    helpers = require('../../test-helpers/helpers'),
+    _ = require('underscore')._;
 
 
 exports.data_record_psms = function (test) {
     
-    test.expect(19);
+    test.expect(20);
 
     var ref_rc = String(helpers.rand());
 
@@ -70,6 +71,8 @@ exports.data_record_psms = function (test) {
         ors: 5,
         zinc: 4
     };
+    
+    
 
     //
     // STEP 1:
@@ -82,7 +85,9 @@ exports.data_record_psms = function (test) {
     var result1 = updates.add_sms(null, {
         method: "POST",
         query: {},
-        headers: helpers.headers("url", querystring.stringify(data)),
+        headers: _.extend(helpers.headers("url", querystring.stringify(data)), {
+            "Authorization": "Basic cm9vdDpwYXNzd29yZA=="
+        }),
         body: querystring.stringify(data),
         form: data
     });
@@ -94,6 +99,9 @@ exports.data_record_psms = function (test) {
 
     test.same(resp1.callback.options.path,
         baseURL + "/PSMS/data_record/add/clinic/%2B13125551212");
+
+    test.same(resp1.callback.options.headers.Authorization,
+        "Basic cm9vdDpwYXNzd29yZA==");
 
     test.same(resp1.callback.data, {
         type: "data_record",
@@ -110,10 +118,10 @@ exports.data_record_psms = function (test) {
         quantity_dispensed: quantity_dispensed,
         month: '11',
         year: '2011'
-    });
-
-
-
+    });    
+    
+    
+    
     //
     // STEP 2:
     //
@@ -145,34 +153,37 @@ exports.data_record_psms = function (test) {
             }
         }
     };
-
+    
     var viewdata2 = {rows: [
         {
             "key": ["+13125551212"],
             "value": clinic
         }
     ]};
-
+    
     var result2 = fakerequest.list(lists.data_record, viewdata2, {
         method: "POST",
         query: {form: "PSMS"},
-        headers: helpers.headers('json', JSON.stringify(resp1.callback.data)),
+        headers: _.extend(helpers.headers('json', JSON.stringify(resp1.callback.data)), {
+            "Authorization": "Basic cm9vdDpwYXNzd29yZA=="
+        }),
         body: JSON.stringify(resp1.callback.data),
         form: {}
     });
-
+    
     var doc2 = JSON.parse(result2.body);
-
+    
     test.same(doc2.callback.options, {
         "host": window.location.hostname,
         "port": window.location.port,
         "path": baseURL + "/PSMS/data_record/merge/2011/11/4a6399c98ff78ac7da33b639ed60f458",
         "method": "POST",
         "headers": {
-           "Content-Type": "application/json; charset=utf-8"
+           "Content-Type": "application/json; charset=utf-8",
+           "Authorization": "Basic cm9vdDpwYXNzd29yZA=="
         }
     });
-
+    
     test.same(doc2.callback.data.errors, []);
     test.same(doc2.callback.data.related_entities.clinic, clinic);
     
@@ -237,11 +248,13 @@ exports.data_record_psms = function (test) {
     var result3a = fakerequest.list(lists.data_record_merge, viewdata3a, {
         method: "POST",
         query: {form: "PSMS"},
-        headers: helpers.headers('json', JSON.stringify(doc2.callback.data)),
+        headers: _.extend(helpers.headers('json', JSON.stringify(doc2.callback.data)), {
+            "Authorization": "Basic cm9vdDpwYXNzd29yZA=="
+        }),
         body: JSON.stringify(doc2.callback.data),
         form: {}
     });
-
+    
     var doc3a = JSON.parse(result3a.body);
 
     test.same(doc3a.callback.options, {
@@ -250,19 +263,20 @@ exports.data_record_psms = function (test) {
         "path": appdb + "/777399c98ff78ac7da33b639ed60f422",
         "method": "PUT",
         "headers": {
-           "Content-Type": "application/json; charset=utf-8"
+           "Content-Type": "application/json; charset=utf-8",
+           "Authorization": "Basic cm9vdDpwYXNzd29yZA=="
         }
     });
-
+    
     test.same(doc3a.callback.data.errors, []);
     test.same(doc3a.callback.data._rev, "484399c98ff78ac7da33b639ed60f923");
     test.same(doc3a.callback.data.form_data, form_data);
     test.same(doc3a.callback.data.sms_message, sms_message);
     test.same(doc3a.callback.data.quantity_dispensed, quantity_dispensed);
     test.same(doc3a.callback.data.days_stocked_out, days_stocked_out);
+    
 
-
-
+    
     //
     // STEP 3, CASE 2:
     //
@@ -273,7 +287,7 @@ exports.data_record_psms = function (test) {
     //
     
     var viewdata3b = {rows: []};
-
+    
     var result3b = fakerequest.list(lists.data_record_merge, viewdata3b, {
         method: "POST",
         query: {form: "PSMS"},
@@ -281,9 +295,9 @@ exports.data_record_psms = function (test) {
         body: JSON.stringify(doc2.callback.data),
         form: {}
     });
-
+    
     var doc3b = JSON.parse(result3b.body);
-
+    
     test.same(doc3b.callback.options, {
         "host": window.location.hostname,
         "port": window.location.port,
@@ -293,7 +307,7 @@ exports.data_record_psms = function (test) {
            "Content-Type": "application/json; charset=utf-8"
         }
     });
-
+    
     test.same(doc3b.callback.data.errors, []);
     test.same(doc3b.callback.data.form_data, form_data);
     test.same(doc3b.callback.data.sms_message, sms_message);

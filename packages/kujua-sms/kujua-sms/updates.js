@@ -7,37 +7,6 @@ var _ = require('underscore')._,
     smsforms = require('views/lib/smsforms'),
     smsparser = require('views/lib/smsparser');
 
-/**
- * @param {String} phone - phone number of the sending phone (from)
- * @param {String} form - smsforms key string
- * @param {Object} form_data - parsed form data
- * @returns {Object} - body for callback
- * @api private
- */
-var getCallbackBody = function(phone, form, form_data) {
-    logger.debug(['getCallbackBody arguments', arguments]);
-
-    var data_record_types = require('kujua-couchtypes/types').data_records;
-    var data_record_type = smsforms[form].data_record_type;
-
-    var body = {
-        type: 'data_record',
-        from: phone,
-        form: form,
-        form_data: form_data,
-        related_entities: {clinic: null},
-        errors: [],
-        tasks: []
-    };
-
-    if (smsforms.isReferralForm(form)) {
-        body.refid = getRefID(form, form_data);
-    }
-
-    merge(data_record_types[data_record_type].fields, body, form_data);
-
-    return body;
-};
 
 /*
  * Merge fields from the data record type with
@@ -77,7 +46,39 @@ var getRefID = function(form, form_data) {
             return form_data.ref_rc[0];
         case 'MSBR':
             return form_data.ref_rc[0];
+    }
+};
+
+/**
+ * @param {String} phone - phone number of the sending phone (from)
+ * @param {String} form - smsforms key string
+ * @param {Object} form_data - parsed form data
+ * @returns {Object} - body for callback
+ * @api private
+ */
+var getCallbackBody = function(phone, form, form_data) {
+    logger.debug(['getCallbackBody arguments', arguments]);
+
+    var data_record_types = require('kujua-couchtypes/types').data_records;
+    var data_record_type = smsforms[form].data_record_type;
+
+    var body = {
+        type: 'data_record',
+        from: phone,
+        form: form,
+        form_data: form_data,
+        related_entities: {clinic: null},
+        errors: [],
+        tasks: []
     };
+
+    if (smsforms.isReferralForm(form)) {
+        body.refid = getRefID(form, form_data);
+    }
+
+    merge(data_record_types[data_record_type].fields, body, form_data);
+
+    return body;
 };
 
 /**
@@ -108,7 +109,7 @@ var getCallbackPath = function(phone, form, form_data) {
             path = '/%1/data_record/add/clinic/%2'
                       .replace('%1', encodeURIComponent(form))
                       .replace('%2', encodeURIComponent(phone));
-    };
+    }
 
     return path;
 };
@@ -119,9 +120,10 @@ var getCallbackPath = function(phone, form, form_data) {
  * auto-reply message in the form definition. Also uses callbacks to create
  * 1st phase of tasks_referral doc.
  */
-var getRespBody = exports.getRespBody = function(doc, req) {
+var getRespBody = function(doc, req) {
     logger.debug('getRespBody jsDump.parse(req)');
     logger.debug(req);
+
     var form = doc.form,
         def = smsforms[form],
         form_data = smsparser.parse(def, doc, 1),
@@ -170,12 +172,19 @@ var getRespBody = exports.getRespBody = function(doc, req) {
             headers: {'Content-Type': 'application/json; charset=utf-8'}},
         data: getCallbackBody(phone, form, form_data)};
 
+    // pass through Authorization header
+    if(req.headers.Authorization) {
+        resp.callback.options.headers.Authorization = req.headers.Authorization;
+    }
+    
     // keep sms_message part of record
     resp.callback.data.sms_message = doc;
 
     logger.debug(resp);
+    
     return JSON.stringify(resp);
 };
+exports.getRespBody = getRespBody;
 
 exports.add_sms = function (doc, req) {
     // TODO add validation if necessary

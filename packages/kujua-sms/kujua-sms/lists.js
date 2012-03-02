@@ -222,10 +222,14 @@ var getReferralTask = function(form, phone, form_data, clinic) {
  */
 var getCallbackPath = function(req, form, form_data, clinic) {
     logger.debug(['lists.getCallbackPath arguments', arguments]);
-
+    
     var path = '',
         appdb = require('duality/core').getDBURL(req),
         baseURL = require('duality/core').getBaseURL();
+
+    if(!clinic) {
+        return path;
+    }
 
     if (smsforms.isReferralForm(form)) {
         path = appdb;
@@ -310,8 +314,13 @@ exports.data_record = function (head, req) {
                 port: port,
                 path: getCallbackPath(req, form, record.form_data, clinic),
                 method: "POST",
-                headers: json_headers},
+                headers: _.clone(json_headers)},
             data: record}};
+
+    // pass through Authorization header
+    if(req.headers.Authorization) {
+        respBody.callback.options.headers.Authorization = req.headers.Authorization;
+    }
 
     return JSON.stringify(respBody);
 };
@@ -369,8 +378,13 @@ exports.data_record_merge = function (head, req) {
                 port: port,
                 path: path,
                 method: old_data_record ? "PUT" : "POST",
-                headers: json_headers},
+                headers: _.clone(json_headers)},
             data: new_data_record}};
+
+    // pass through Authorization header
+    if(req.headers.Authorization) {
+        respBody.callback.options.headers.Authorization = req.headers.Authorization;
+    }
 
     return JSON.stringify(respBody);
 };
