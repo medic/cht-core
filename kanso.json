@@ -24,6 +24,7 @@
         "settings": null,
         "duality": ">=0.0.18",
         "duality-contrib-session": null,
+        "duality-contrib-loading": null,
         "dust": null,
         "duality-dust": null,
         "couchtypes": null,

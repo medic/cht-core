@@ -48,6 +48,7 @@ body {
     margin-top: 0;
   }
 }
+#loader li,
 #forms li {
   margin: 10px;
   width: 280px;
@@ -203,4 +204,18 @@ table {
       .opacity(60);
     }
   }
+}
+
+#duality-contrib-loading {
+    background-color: @popcorn;
+    /*.border-radius(0 0 5px 5px);*/
+    position: fixed;
+    top: 40px;
+    left: 50%;
+    width: 6em;
+    padding: 0 1em;
+    margin-left: -4em; /* center it */
+    border: 1px solid #ccc;
+    border-right-color: #999;
+    border-bottom-color: #999;
 }

@@ -5,6 +5,7 @@
     "modules": "kujua-utils.js",
     "dependencies": {
         "modules": null,
-        "properties": null
+        "properties": null,
+        "underscore": null
     }
 }

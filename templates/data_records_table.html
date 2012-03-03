@@ -1,0 +1,46 @@
+<div id="data-records" class="row">
+  <div class="column span14">
+    <table class="common-table zebra-striped">
+      <thead>
+        <tr>
+          <th>Clinic</th>
+          <th>Phone</th>
+          <th>Year</th>
+          <th>Month/Week</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {#data_records}
+        <tr rel="{id}">
+          <td>
+            {#related_entities}
+              {#clinic}
+                {name}
+              {/clinic}
+            {/related_entities}
+          </td>
+          <td>
+            {reporting_phone}
+          </td>
+          <td>
+            {year}
+          </td>
+          <td style="text-align: center">
+            {?wkn}
+              {wkn}
+            {:else}
+              {month}
+            {/wkn}
+          </td>
+          <td>
+            <form style="display: inline; margin: 0;" action="{baseURL}/delete/{id}" method="post">
+              <input type="submit" class="btn danger" value="Remove" />
+            </form>
+          </td>
+        </tr>
+      {/data_records}
+      </tbody>
+    </table>
+  </div>
+</div>
