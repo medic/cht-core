@@ -1,0 +1,35 @@
+<div id="sms-messages" class="row">
+  <div class="column span14">
+    <table class="common-table zebra-striped">
+      <thead>
+        <tr>
+          <th>Form</th>
+          <th>From</th>
+          <th>Timestamp</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {#sms_messages}
+        <tr rel="{_id}">
+          <td>
+            {form}
+          </td>
+          <td>
+            {from}
+          </td>
+          <td>
+            {sent_timestamp}
+          </td>
+          <td>
+            <form style="display: inline; margin: 0;" action="{baseURL}/delete/{_id}" method="post">
+              <input type="hidden" name="next" value="/sms_messages" />
+              <input type="submit" class="btn danger" value="Remove" />
+            </form>
+          </td>
+        </tr>
+      {/sms_messages}
+      </tbody>
+    </table>
+  </div>
+</div>
