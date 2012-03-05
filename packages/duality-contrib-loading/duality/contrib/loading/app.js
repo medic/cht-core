@@ -6,7 +6,7 @@
 var events = require('duality/events'),
     isAfterResponse = false,
     settings = require('settings/root'),
-    timeout = 10;
+    timeout = 0;
 
 if (settings['duality-contrib-loading']) {
     timeout = settings['duality-contrib-loading'].timeout || timeout;
