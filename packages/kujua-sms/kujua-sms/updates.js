@@ -120,7 +120,7 @@ var getCallbackPath = function(phone, form, form_data) {
  * auto-reply message in the form definition. Also uses callbacks to create
  * 1st phase of tasks_referral doc.
  */
-var getRespBody = function(doc, req) {
+var getRespBody = exports.getRespBody = function(doc, req) {
     logger.debug('getRespBody jsDump.parse(req)');
     logger.debug(req);
 
@@ -176,15 +176,14 @@ var getRespBody = function(doc, req) {
     if(req.headers.Authorization) {
         resp.callback.options.headers.Authorization = req.headers.Authorization;
     }
-    
+
     // keep sms_message part of record
     resp.callback.data.sms_message = doc;
 
     logger.debug(resp);
-    
+
     return JSON.stringify(resp);
 };
-exports.getRespBody = getRespBody;
 
 exports.add_sms = function (doc, req) {
     // TODO add validation if necessary
