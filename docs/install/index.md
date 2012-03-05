@@ -101,7 +101,7 @@ browser.
 ## Install SMSSync
 
 At the time of this writing we are using a modified version of [SMSSync by
-Ushahidi](http://smssync.ushahidi.com/) as the gateway; your device needs to run Android version 1.6 or higher.
+Ushahidi](http://smssync.ushahidi.com/) as the gateway; your device needs to run Android version 2.2 or higher.
 
 ### Step 1: Allow Installation of non-Market Applications 
 
