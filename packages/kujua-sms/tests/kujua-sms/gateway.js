@@ -91,14 +91,15 @@ exports.add_sms = function (test) {
     test.expect(1);
 
     var data = {
-        from: '+13125551212', // clinic.contact.phone
-        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
-        sent_timestamp: '1-19-12 18:45',
-        sent_to: '+15551212',
-        foo: 'bar' // extra is ok
+        from: "+13125551212", // clinic.contact.phone
+        message: "1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4",
+        sent_timestamp: "1-19-12 18:45",
+        sent_to: "+15551212",
+        foo: "bar" // extra is ok
     };
 
     var result = updates.add_sms(null, {
+        uuid: "cb9751f4aa6e2b3658f26f810b07ed44",
         method: "POST",
         query:{},
         headers:{
@@ -112,14 +113,14 @@ exports.add_sms = function (test) {
 
     var doc = result[0];
     //var resp = JSON.parse(result[1]);
-
-    // delete volatile properties
-    delete doc.sent_timestamp;
+    console.log('result');
+    console.log(result);
 
     test.same(doc, {
+        _id: "cb9751f4aa6e2b3658f26f810b07ed44",
         from: "+13125551212",
-        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
-        //"sent_timestamp": "1-19-12 18:45",
+        message: "1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4",
+        sent_timestamp: "1-19-12 18:45",
         sent_to: "+15551212",
         foo: "bar",
         type: "sms_message",
@@ -142,6 +143,7 @@ exports.add_sms_fr = function (test) {
     };
 
     var result = updates.add_sms(null, {
+        uuid: "cb9751f4aa6e2b3658f26f810b07ed44",
         method: "POST",
         query: {locale: 'fr'}, //mock a ?locale=fr request
         headers:{
@@ -156,13 +158,11 @@ exports.add_sms_fr = function (test) {
     var doc = result[0];
     var resp = JSON.parse(result[1]);
 
-    // delete volatile properties
-    delete doc.sent_timestamp;
-
     test.same(doc, {
+        _id: "cb9751f4aa6e2b3658f26f810b07ed44",
         from: "+13125551212",
         message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
-        //"sent_timestamp": "1-19-12 18:45",
+        sent_timestamp: "1-19-12 18:45",
         sent_to: "+15551212",
         foo: "bar",
         type: "sms_message",
@@ -171,12 +171,3 @@ exports.add_sms_fr = function (test) {
     });
     test.done();
 };
-
-/* TODO
-exports.responses_form_invalid = function (test) {
-    var msg = '1!PSMS!2012#2#20#foo#bar';
-    var resp = JSON.parse(updates.getRespBody(doc));
-    var expected = JSON.parse('{"payload":{"success":true,"task":"send","messages":[{"to":"+15551212","message":"The report sent \'PSMS\' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor."}]}}');
-};
-*/
-
