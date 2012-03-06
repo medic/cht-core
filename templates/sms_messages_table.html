@@ -2,11 +2,10 @@
   <div class="column span1" style="padding-left: 30px; padding-right: -30px; padding-top: 100px;">
     <a class="prev" href="#">Previous</a>      
   </div>
-  <div class="column span8">
+  <div class="column span9">
     <table class="common-table zebra-striped">
       <thead>
         <tr>
-          <th>Id</th>
           <th>
             <a href="{baseURL}/sms_messages_by_form?limit=11">Form</a>
           </th>
@@ -16,13 +15,15 @@
           <th>
             <a href="{baseURL}/sms_messages_by_timestamp?limit=11">Timestamp</a>
           </th>
+          <th>
+            Message
+          </th>
           <th></th>
         </tr>
       </thead>
       <tbody>
       {#sms_messages}
         <tr rel="{_id}">
-          <td>{_id}</td>
           <td>
             {form}
           </td>
@@ -33,11 +34,17 @@
             {sent_timestamp}
           </td>
           <td>
+            <a href="#" class="extend">{short_message}</a>
+          </td>
+          <td>
             <form style="display: inline; margin: 0;" action="{baseURL}/delete/{_id}" method="post">
               <input type="hidden" name="next" value="/sms_messages" />
               <input type="submit" class="btn danger" value="Remove" />
             </form>
           </td>
+        </tr>
+        <tr class="extended" style="display: none">
+          <td colspan="5">{message|s}</td>
         </tr>
       {/sms_messages}
       </tbody>
