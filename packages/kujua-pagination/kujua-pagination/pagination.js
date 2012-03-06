@@ -64,7 +64,7 @@ exports.paginate = function(head, req, path, options) {
     if((head.total_rows > head.offset + exports.perPage) || descending) {
         var query = _.extend(req.query, {
             limit: exports.perPage + 1,
-            startkey: JSON.stringify(lastRecord._id)
+            startkey: JSON.stringify(lastRecord.key)
         });
         
         $('.next').
@@ -77,7 +77,7 @@ exports.paginate = function(head, req, path, options) {
     if((!descending && head.offset > 0) || (descending && head.total_rows > head.offset + exports.perPage + 1)) {
         var query = _.extend(req.query, {
             limit: exports.perPage + 1,
-            startkey: JSON.stringify(firstRecord._id),
+            startkey: JSON.stringify(firstRecord.key),
             descending: true
         });
         

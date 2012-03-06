@@ -191,7 +191,8 @@ exports.add_sms = function (doc, req) {
         _id: req.uuid,
         type: "sms_message",
         locale: req.query.locale || 'en',
-        form: req.form.message ? req.form.message.split('!')[1] : ''
+        form: req.form.message ? req.form.message.split('!')[1] : '',
+        created: new Date()
     });
     return [new_doc, getRespBody(new_doc, req)];
 };
