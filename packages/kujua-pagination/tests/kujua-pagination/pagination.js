@@ -38,12 +38,9 @@ exports.paginate = function (test) {
     
     
     // paginate on start page
-    // expect to see the next link
-    // expect not the prev link
-    // expect to see the limit being the given perPage value
     
     var head = {total_rows: records.length, offset: 0};
-    var req = {};
+    var req = {query: {}};
     
     pagination.paginate(head, req, records[0], records[3], '/sms_messages', {perPage: 3});
     
@@ -52,38 +49,54 @@ exports.paginate = function (test) {
     test.same(nextLink.url, baseURL + '/sms_messages?limit=4&startkey="4"');
     
     
-    
-    
-    // paginate on second page
-    // expect to see the next link
-    // expect to see the prev link
+    // go up to second page
     
     var head = {total_rows: records.length, offset: 3};
-    var req = {};
+    var req = {query: {}};
     
     pagination.paginate(head, req, records[3], records[6], '/sms_messages', {perPage: 3});
     
     test.same(prevLink.hidden, false);
-    test.same(prevLink.url, baseURL + '/sms_messages?limit=4&skip=1&descending=true&startkey="4"');
+    test.same(prevLink.url, baseURL + '/sms_messages?limit=4&descending=true&startkey="4"');
     test.same(nextLink.hidden, false);
     test.same(nextLink.url, baseURL + '/sms_messages?limit=4&startkey="7"');
     
     
-    
-    
-    // paginate on third page
-    // expect not to see a next link
-    // expect to see a prev link
+    // go up to third page
     
     var head = {total_rows: records.length, offset: 6};
-    var req = {};
+    var req = {query: {}};
     
     pagination.paginate(head, req, records[6], records[8], '/sms_messages', {perPage: 3});
     
     test.same(prevLink.hidden, false);
-    test.same(prevLink.url, baseURL + '/sms_messages?limit=4&skip=1&descending=true&startkey="7"');
+    test.same(prevLink.url, baseURL + '/sms_messages?limit=4&descending=true&startkey="7"');
     test.same(nextLink.hidden, true);
     
+    
+    // go down to second page
+    
+    var head = {total_rows: records.length, offset: 2};
+    var req = {query: {descending: true}};
+    
+    pagination.paginate(head, req, records[3], records[6], '/sms_messages', {perPage: 3});
+    
+    test.same(prevLink.hidden, false);
+    test.same(prevLink.url, baseURL + '/sms_messages?limit=4&descending=true&startkey="4"');
+    test.same(nextLink.hidden, false);
+    test.same(nextLink.url, baseURL + '/sms_messages?limit=4&startkey="7"');
+    
+    
+    // go down to first page
+
+    var head = {total_rows: records.length, offset: 5};
+    var req = {query: {descending: true}};
+    
+    pagination.paginate(head, req, records[0], records[3], '/sms_messages', {perPage: 3});
+    
+    test.same(prevLink.hidden, true);
+    test.same(nextLink.hidden, false);
+    test.same(nextLink.url, baseURL + '/sms_messages?limit=4&startkey="4"');
     
     
     // test pagination with other parameters
