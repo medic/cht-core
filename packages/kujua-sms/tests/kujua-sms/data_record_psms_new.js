@@ -193,19 +193,22 @@ var step2_lists_data_record = function(test, req_body) {
         resp.callback.data.related_entities,
         {clinic: clinic});
 
-    step3_lists_data_record_merge(test, resp.body);
+    lists_data_record_merge(test, resp.body);
 
 };
 
-//
-// STEP 3, CASE 1:
-//
-// A data record already exists.
-//
-// Run data_record/merge/year/month/clinic_id and expect
-// a callback to update the data record with the new data.
-//
-var step3_lists_data_record_merge = function(test, req_body) {
+
+/**
+ * STEP 3, CASE 1: A data record already exists.
+ *
+ * Run data_record/merge/year/month/clinic_id and expect a callback to update
+ * the data record with the new data.
+ *
+ * @param {Object} test - Unittest object
+ * @param {Object} callback - Callback object used to form the next request
+ * @api private
+ */
+var lists_data_record_merge = function(test, callback) {
 
     var viewdata = {rows: [
         {
@@ -220,8 +223,8 @@ var step3_lists_data_record_merge = function(test, req_body) {
     var resp = fakerequest.list(lists.data_record_merge, viewdata, {
         method: "POST",
         query: {form: "PSMS"},
-        headers: helpers.headers('json', JSON.stringify(req_body.callback.data)),
-        body: JSON.stringify(req_body.callback.data),
+        headers: helpers.headers('json', JSON.stringify(callback.data)),
+        body: JSON.stringify(callback.data),
         form: {}
     });
 
