@@ -1,5 +1,3 @@
-var querystring = require('querystring');
-
 exports.rand = function(from, to) {
     from = from || 10000000000;
     to = to || 99999999999;

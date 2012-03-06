@@ -34,7 +34,7 @@ exports.paginate = function (test) {
     
     
     
-    // test.expect(20);
+    test.expect(18);
     
     
     // paginate on start page
@@ -46,7 +46,7 @@ exports.paginate = function (test) {
     
     test.same(prevLink.hidden, true);
     test.same(nextLink.hidden, false);
-    test.same(nextLink.url, baseURL + '/sms_messages?limit=4&startkey="4"');
+    test.same(nextLink.url, baseURL + '/sms_messages?limit=4&startkey=%224%22');
     
     
     // go up to second page
@@ -57,9 +57,9 @@ exports.paginate = function (test) {
     pagination.paginate(head, req, records[3], records[6], '/sms_messages', {perPage: 3});
     
     test.same(prevLink.hidden, false);
-    test.same(prevLink.url, baseURL + '/sms_messages?limit=4&descending=true&startkey="4"');
+    test.same(prevLink.url, baseURL + '/sms_messages?limit=4&startkey=%224%22&descending=true');
     test.same(nextLink.hidden, false);
-    test.same(nextLink.url, baseURL + '/sms_messages?limit=4&startkey="7"');
+    test.same(nextLink.url, baseURL + '/sms_messages?limit=4&startkey=%227%22');
     
     
     // go up to third page
@@ -70,7 +70,7 @@ exports.paginate = function (test) {
     pagination.paginate(head, req, records[6], records[8], '/sms_messages', {perPage: 3});
     
     test.same(prevLink.hidden, false);
-    test.same(prevLink.url, baseURL + '/sms_messages?limit=4&descending=true&startkey="7"');
+    test.same(prevLink.url, baseURL + '/sms_messages?limit=4&startkey=%227%22&descending=true');
     test.same(nextLink.hidden, true);
     
     
@@ -82,9 +82,9 @@ exports.paginate = function (test) {
     pagination.paginate(head, req, records[3], records[6], '/sms_messages', {perPage: 3});
     
     test.same(prevLink.hidden, false);
-    test.same(prevLink.url, baseURL + '/sms_messages?limit=4&descending=true&startkey="4"');
+    test.same(prevLink.url, baseURL + '/sms_messages?limit=4&startkey=%224%22&descending=true');
     test.same(nextLink.hidden, false);
-    test.same(nextLink.url, baseURL + '/sms_messages?limit=4&startkey="7"');
+    test.same(nextLink.url, baseURL + '/sms_messages?limit=4&startkey=%227%22');
     
     
     // go down to first page
@@ -96,13 +96,18 @@ exports.paginate = function (test) {
     
     test.same(prevLink.hidden, true);
     test.same(nextLink.hidden, false);
-    test.same(nextLink.url, baseURL + '/sms_messages?limit=4&startkey="4"');
+    test.same(nextLink.url, baseURL + '/sms_messages?limit=4&startkey=%224%22');
     
     
     // test pagination with other parameters
     // coming in through the url (e.g. for sorting)
     
+    var head = {total_rows: records.length, offset: 0};
+    var req = {query: {sortBy: 'form'}};
     
+    pagination.paginate(head, req, records[0], records[3], '/sms_messages', {perPage: 3});
+    
+    test.same(nextLink.url, baseURL + '/sms_messages?sortBy=form&limit=4&startkey=%224%22');
     
     
     $ = originalDollar;
