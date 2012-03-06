@@ -23,6 +23,7 @@ exports.data_record_psms = function (test) {
     };
 
     var sms_message = {
+       _id: "ef6834e3b5",
        from: "+13125551212",
        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
        sent_timestamp: "1-19-12 18:45",
@@ -62,7 +63,7 @@ exports.data_record_psms = function (test) {
         ors: 5,
         zinc: 6
     };
-    
+
     var quantity_dispensed = {
         cotrimoxazole: 3,
         eye_ointment: 6,
@@ -71,8 +72,8 @@ exports.data_record_psms = function (test) {
         ors: 5,
         zinc: 4
     };
-    
-    
+
+
 
     //
     // STEP 1:
@@ -83,6 +84,7 @@ exports.data_record_psms = function (test) {
     //
 
     var result1 = updates.add_sms(null, {
+        uuid: "ef6834e3b5",
         method: "POST",
         query: {},
         headers: _.extend(helpers.headers("url", querystring.stringify(data)), {
