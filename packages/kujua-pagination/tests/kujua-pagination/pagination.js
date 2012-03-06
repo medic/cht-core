@@ -27,9 +27,9 @@ exports.paginate = function (test) {
     };
     
     var records = [
-        {_id: '1'}, {_id: '2'}, {_id: '3'},
-        {_id: '4'}, {_id: '5'}, {_id: '6'},
-        {_id: '7'}, {_id: '8'}, {_id: '9'}
+        {key: '1'}, {key: '2'}, {key: '3'},
+        {key: '4'}, {key: '5'}, {key: '6'},
+        {key: '7'}, {key: '8'}, {key: '9'}
     ];
     
     
