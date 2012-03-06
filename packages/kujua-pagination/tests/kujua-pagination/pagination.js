@@ -42,7 +42,8 @@ exports.paginate = function (test) {
     var head = {total_rows: records.length, offset: 0};
     var req = {query: {}};
     
-    pagination.paginate(head, req, records[0], records[3], '/sms_messages', {perPage: 3});
+    pagination.prepare(req, [records[0], records[1], records[2], records[3]], {perPage: 3});
+    pagination.paginate(head, req, '/sms_messages', {perPage: 3});
     
     test.same(prevLink.hidden, true);
     test.same(nextLink.hidden, false);
@@ -54,7 +55,8 @@ exports.paginate = function (test) {
     var head = {total_rows: records.length, offset: 3};
     var req = {query: {}};
     
-    pagination.paginate(head, req, records[3], records[6], '/sms_messages', {perPage: 3});
+    pagination.prepare(req, [records[3], records[4], records[5], records[6]], {perPage: 3});
+    pagination.paginate(head, req, '/sms_messages', {perPage: 3});
     
     test.same(prevLink.hidden, false);
     test.same(prevLink.url, baseURL + '/sms_messages?limit=4&startkey=%224%22&descending=true');
@@ -67,7 +69,8 @@ exports.paginate = function (test) {
     var head = {total_rows: records.length, offset: 6};
     var req = {query: {}};
     
-    pagination.paginate(head, req, records[6], records[8], '/sms_messages', {perPage: 3});
+    pagination.prepare(req, [records[6], records[7], records[8]], {perPage: 3});
+    pagination.paginate(head, req, '/sms_messages', {perPage: 3});
     
     test.same(prevLink.hidden, false);
     test.same(prevLink.url, baseURL + '/sms_messages?limit=4&startkey=%227%22&descending=true');
@@ -79,7 +82,8 @@ exports.paginate = function (test) {
     var head = {total_rows: records.length, offset: 2};
     var req = {query: {descending: true}};
     
-    pagination.paginate(head, req, records[3], records[6], '/sms_messages', {perPage: 3});
+    pagination.prepare(req, [records[6], records[5], records[4], records[3]], {perPage: 3});
+    pagination.paginate(head, req, '/sms_messages', {perPage: 3});
     
     test.same(prevLink.hidden, false);
     test.same(prevLink.url, baseURL + '/sms_messages?limit=4&startkey=%224%22&descending=true');
@@ -92,7 +96,8 @@ exports.paginate = function (test) {
     var head = {total_rows: records.length, offset: 5};
     var req = {query: {descending: true}};
     
-    pagination.paginate(head, req, records[0], records[3], '/sms_messages', {perPage: 3});
+    pagination.prepare(req, [records[3], records[2], records[1], records[0]], {perPage: 3});
+    pagination.paginate(head, req, '/sms_messages', {perPage: 3});
     
     test.same(prevLink.hidden, true);
     test.same(nextLink.hidden, false);
@@ -105,7 +110,8 @@ exports.paginate = function (test) {
     var head = {total_rows: records.length, offset: 0};
     var req = {query: {sortBy: 'form'}};
     
-    pagination.paginate(head, req, records[0], records[3], '/sms_messages', {perPage: 3});
+    pagination.prepare(req, [records[0], records[1], records[2], records[3]], {perPage: 3});
+    pagination.paginate(head, req, '/sms_messages', {perPage: 3});
     
     test.same(nextLink.url, baseURL + '/sms_messages?sortBy=form&limit=4&startkey=%224%22');
     
