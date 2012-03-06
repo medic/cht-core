@@ -11,6 +11,7 @@ var updates = require('kujua-sms/updates'),
 var add_sms = function (data, sms_message) {
 
     var result = updates.add_sms(null, {
+        uuid: '14dc3a5aa6',
         method: "POST",
         query: {},
         headers: helpers.headers("url", querystring.stringify(data)),
@@ -23,6 +24,30 @@ var add_sms = function (data, sms_message) {
 
     return [doc, resp_body];
 
+};
+var clinic = {
+    "_id": "4a6399c98ff78ac7da33b639ed60f458",
+    "_rev": "1-0b8990a46b81aa4c5d08c4518add3786",
+    "type": "clinic",
+    "name": "Example clinic 1",
+    "contact": {
+        "name": "Sam Jones",
+        "phone": "+13125551212"
+    },
+    "parent": {
+        "type": "health_center",
+        "contact": {
+            "name": "Neal Young",
+            "phone": "+17085551212"
+        },
+        "parent": {
+            "type": "district_hospital",
+            "contact": {
+                "name": "Bernie Mac",
+                "phone": "+14155551212"
+            }
+        }
+    }
 };
 
 
@@ -37,6 +62,7 @@ exports.start_psms = function (test) {
     text.expect(16);
 
     var sms_message = {
+       _id: '14dc3a5aa6',
        from: "+13125551212",
        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
        sent_timestamp: "1-19-12 18:45",
@@ -124,13 +150,15 @@ exports.start_psms = function (test) {
 
     test.same(resp[0], sms_message);
 
-    test.same(resp.callback.options.path, expected.callback.options.path);
+    test.same(
+        resp.callback.options.path,
+        expected.callback.options.path);
 
-    test.same(resp.callback.data, expected.callback.data);
+    test.same(
+        resp.callback.data,
+        expected.callback.data);
 
-    step2_lists_data_record(resp.body);
-
-    test.done();
+    step2_lists_data_record(test, resp.body);
 
 };
 
@@ -140,32 +168,7 @@ exports.start_psms = function (test) {
 // Run data_record/add/clinic and expect a callback to
 // check if the same data record already exists.
 //
-var step2_lists_data_record = function(resp_body) {
-
-    var clinic = {
-        "_id": "4a6399c98ff78ac7da33b639ed60f458",
-        "_rev": "1-0b8990a46b81aa4c5d08c4518add3786",
-        "type": "clinic",
-        "name": "Example clinic 1",
-        "contact": {
-            "name": "Sam Jones",
-            "phone": "+13125551212"
-        },
-        "parent": {
-            "type": "health_center",
-            "contact": {
-                "name": "Neal Young",
-                "phone": "+17085551212"
-            },
-            "parent": {
-                "type": "district_hospital",
-                "contact": {
-                    "name": "Bernie Mac",
-                    "phone": "+14155551212"
-                }
-            }
-        }
-    };
+var step2_lists_data_record = function(test, req_body) {
 
     var viewdata = {rows: [
         {
@@ -173,28 +176,6 @@ var step2_lists_data_record = function(resp_body) {
             "value": clinic
         }
     ]};
-
-    var resp = test_data_record(resp_body.callback.data, viewdata, assertions);
-
-    test.same(resp_body.callback.options.path,
-              baseURL + "/PSMS/data_record/merge/2011/11/" + clinic._id);
-
-    test.same(resp_body.callback.data.related_entities,
-              {clinic: clinic});
-
-    step3_lists_data_record_merge(resp.body);
-
-    step3_case2_lists_data_record_merge(resp.body);
-
-};
-
-/*
- * @param {Object} req_body - request body (parsed JSON)
- * @param {Object} view_data - mock data from a view, has a rows attribute.
- * @param {Object} callback - expected callback object (parsed JSON)
- * @api private
- */
-var test_data_record = function(req_body, viewdata, assertions) {
 
     var resp = fakerequest.list(lists.data_record, viewdata, {
         method: "POST",
@@ -204,11 +185,15 @@ var test_data_record = function(req_body, viewdata, assertions) {
         form: {}
     });
 
-    var resp_body = JSON.parse(resp.body);
+    test.same(
+        resp.callback.options.path,
+        baseURL + "/PSMS/data_record/merge/2011/11/" + clinic._id);
 
-    if (assertions) { assertions(resp_body); }
+    test.same(
+        resp.callback.data.related_entities,
+        {clinic: clinic});
 
-    return resp_body;
+    step3_lists_data_record_merge(test, resp.body);
 
 };
 
@@ -220,7 +205,7 @@ var test_data_record = function(req_body, viewdata, assertions) {
 // Run data_record/merge/year/month/clinic_id and expect
 // a callback to update the data record with the new data.
 //
-var step3_lists_data_record_merge = function(resp_body) {
+var step3_lists_data_record_merge = function(test, req_body) {
 
     var viewdata = {rows: [
         {
@@ -231,6 +216,22 @@ var step3_lists_data_record_merge = function(resp_body) {
             }
         }
     ]};
+
+    var resp = fakerequest.list(lists.data_record_merge, viewdata, {
+        method: "POST",
+        query: {form: "PSMS"},
+        headers: helpers.headers('json', JSON.stringify(req_body.callback.data)),
+        body: JSON.stringify(req_body.callback.data),
+        form: {}
+    });
+
+    var resp_body = JSON.parse(resp.body);
+
+    test.same(resp_body.callback.options,
+              expected_response.callback.options);
+
+    test.same(resp_body.callback.data,
+              expected_response.callback.data);
 
     var expected_changes = function(resp_body) {
 
@@ -249,7 +250,10 @@ var step3_lists_data_record_merge = function(resp_body) {
     step4_lists_data_record_merge(resp.body);
 };
 
-var test_data_record_merge = function(req_body, viewdata, expected_changes) {
+/*
+ * return response from lists.data_record_merge
+ */
+var lists_data_record_merge = function(req_body, viewdata) {
 
     var expected_resp = expected_changes(req_body);
 
