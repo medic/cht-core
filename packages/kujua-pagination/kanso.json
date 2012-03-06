@@ -1,0 +1,10 @@
+{
+    "name": "kujua-pagination",
+    "version": "0.0.1",
+    "description": "Paginate records in kujua.",
+    "modules": ["kujua-pagination","tests"],
+    "dependencies": {
+        "modules": null,
+        "underscore": null
+    }
+}
