@@ -1,9 +1,9 @@
 var smsparser = require('views/lib/smsparser'),
     smsforms = require('views/lib/smsforms');
 
-exports.cdc_weekly_example_data = function (test) {
+exports.cnpw_example_data = function (test) {
 
-    var def = smsforms['cdc_weekly'];
+    var def = smsforms['CNPW'];
     var doc = {
         sent_timestamp: '2-1-12 15:35',
         from: '+13125551212',
