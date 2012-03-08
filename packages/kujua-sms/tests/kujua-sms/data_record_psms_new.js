@@ -284,18 +284,17 @@ var step3_1 = function(test, req) {
 
     test.same(
         resp_body.callback.options.path =
-        appdb + "/777399c98ff78ac7da33b639ed60f422";
+        appdb + "/777399c98ff78ac7da33b639ed60f422");
 
-        resp_body.callback.options.method = "POST";
+    test.same(
+        resp_body.callback.options.method,
+        "POST");
 
-        resp_body.callback.data._rev = "484399c98ff78ac7da33b639ed60f923";
+    test.same(
+        resp_body.callback.data._rev,
+        "484399c98ff78ac7da33b639ed60f923");
 
-        return resp_body
-    };
-
-    var resp = test_data_record_merge(resp_body, viewdata, expected_changes);
-
-    step4_lists_data_record_merge(resp.body);
+    step4(test, {body: resp.body});
 };
 
 /*
