@@ -12,6 +12,7 @@ exports.success_response_psms = function (test) {
 };
 
 exports.success_response_pscq = function (test) {
+    console.log('PSCQ1')
     test.expect(1);
     var req = {headers:{ "Host": window.location.host }};
     var msg = '1!PSCQ!2013#2#20#aaaaaaaaaaaaaaaaaa#2222#3333#1#1111#1111#1#2222#2222#2#333#474#112#444#111#333#333#880#220#220#212#555#6633#4444#8888#2211#2211#2211#5555#222#444#22',
@@ -25,6 +26,7 @@ exports.success_response_pscq = function (test) {
             form: "PSCQ"},
         respBody = JSON.parse(updates.getRespBody(doc, req)),
         payload = JSON.parse('{"success":true,"task":"send","messages":[{"to":"+15551212","message":"Merci, votre formulaire \\"Supervision AS\\" a été bien reçu."}]}');
+
     test.same(respBody.payload, payload);
     
     test.done();
@@ -112,10 +114,8 @@ exports.add_sms = function (test) {
     });
 
     var doc = result[0];
-    //var resp = JSON.parse(result[1]);
-    console.log('result');
-    console.log(result);
 
+    delete doc.created;
     test.same(doc, {
         _id: "cb9751f4aa6e2b3658f26f810b07ed44",
         from: "+13125551212",
@@ -156,8 +156,8 @@ exports.add_sms_fr = function (test) {
     });
 
     var doc = result[0];
-    var resp = JSON.parse(result[1]);
 
+    delete doc.created;
     test.same(doc, {
         _id: "cb9751f4aa6e2b3658f26f810b07ed44",
         from: "+13125551212",

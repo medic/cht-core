@@ -99,6 +99,8 @@ exports.referral_msbr = function (test) {
     var doc = result[0];
     var resp = JSON.parse(result[1]);
 
+    delete doc.created;
+    delete doc._id;
     test.same(doc, sms_message);
 
     // Assert proper outgoing messages for the gateway to process
@@ -120,7 +122,7 @@ exports.referral_msbr = function (test) {
     test.same(resp.callback.options, {
         "host": window.location.hostname,
         "port": window.location.port,
-        "path": baseURL + "/MSBR/tasks_referral/add/clinic/%2B13125551212",
+        "path": baseURL + "/MSBR/data_record/add/clinic/%2B13125551212",
         "method": "POST",
         "headers": {
            "Content-Type": "application/json; charset=utf-8"
@@ -131,6 +133,7 @@ exports.referral_msbr = function (test) {
      * Assert we have formed a phase 1 tasks_referral document, not 'to' and
      * 'clinic' fields are null. These get added in the next callback request.
      */
+    delete resp.callback.data.sms_message.created;
     test.same(resp.callback.data, {
         "type": "tasks_referral",
         "state": "",

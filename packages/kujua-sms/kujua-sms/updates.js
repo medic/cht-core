@@ -60,7 +60,7 @@ var getCallbackBody = function(phone, form, form_data) {
     logger.debug(['getCallbackBody arguments', arguments]);
 
     var data_record_types = require('kujua-couchtypes/types').data_records;
-    var data_record_type = smsforms[form].data_record_type;
+    var data_record_type = smsforms[form].data_record_type || 'psi_malawi';
 
     var body = {
         type: 'data_record',
