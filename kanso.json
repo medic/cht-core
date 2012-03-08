@@ -31,7 +31,7 @@
         "nodeunit": null,
         "nodeunit-testrunner": null,
         "less-precompiler": null,
-        "bootstrap": null,
+        "bootstrap-fontawesome": null,
         "kujua-branding": null,
         "kujua-sms": null,
         "kujua-utils": null,
