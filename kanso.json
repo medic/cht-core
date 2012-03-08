@@ -12,6 +12,9 @@
     "duality": {
         "base_template": "base.html"
     },
+    "duality-contrib-loading": {
+        "timeout": 50
+    },
     "less": {
         "compress": true,
         "compile": "static/css/app.less",
