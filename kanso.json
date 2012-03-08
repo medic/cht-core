@@ -13,7 +13,7 @@
         "base_template": "base.html"
     },
     "duality-contrib-loading": {
-        "timeout": 50
+        "timeout": 300
     },
     "less": {
         "compress": true,
