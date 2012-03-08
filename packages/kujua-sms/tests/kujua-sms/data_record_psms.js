@@ -98,7 +98,6 @@ exports.data_record_psms = function (test) {
     var resp1 = JSON.parse(result1[1]);
 
     delete doc1.created;
-    delete doc1._id;
     test.same(doc1, sms_message);
 
     test.same(resp1.callback.options.path,
@@ -122,9 +121,9 @@ exports.data_record_psms = function (test) {
         days_stocked_out: days_stocked_out,
         quantity_dispensed: quantity_dispensed,
         month: '11',
-        year: '2011'
-    });    
-    
+        year: '2011',
+        facility_id: 'facility'
+    });
     
     
     //

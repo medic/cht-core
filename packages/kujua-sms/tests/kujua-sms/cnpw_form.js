@@ -3,7 +3,6 @@ var smsparser = require('views/lib/smsparser'),
 
 exports.cnpw_example_data = function (test) {
 
-    var def = smsforms['CNPW'];
     var doc = {
         sent_timestamp: '2-1-12 15:35',
         from: '+13125551212',
@@ -12,7 +11,7 @@ exports.cnpw_example_data = function (test) {
 
     test.expect(2);
 
-    var obj = smsparser.parse(def, doc);
+    var obj = smsparser.parse('CNPW', null, doc);
     var expectedObj = {
         wkn: 2,
         wks: 3,
@@ -24,8 +23,8 @@ exports.cnpw_example_data = function (test) {
 
     test.same(obj, expectedObj);
 
-    var arr = smsparser.parseArray(def, doc);
-    var expectedArr = [2, 3, 99, 0, 5, 1]
+    var arr = smsparser.parseArray('CNPW', null, doc);
+    var expectedArr = ['2-1-12 15:35', '+13125551212', 2, 3, 99, 0, 5, 1]
 
     test.same(arr, expectedArr);
 

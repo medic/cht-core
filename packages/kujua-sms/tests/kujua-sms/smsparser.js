@@ -10,7 +10,7 @@ exports.valid_message = function(test) {
             "type":"sms_message",
             "form":"PSMS"},
         def = smsforms[doc.form],
-        data = smsparser.parse(def, doc);
+        data = smsparser.parse('PSMS', def, doc);
 
     test.same(data, {
         "facility_id": "facility",
@@ -44,7 +44,7 @@ exports.blank_message = function(test) {
             "type":"sms_message",
             "form":""},
         def = smsforms[doc.form],
-        data = smsparser.parse(def, doc);
+        data = smsparser.parse("", def, doc);
     test.same({}, data);
     test.done();
 };
@@ -56,7 +56,7 @@ exports.form_not_found = function(test) {
             "type":"sms_message",
             "form":"X0X0"},
         def = smsforms[doc.form],
-        data = smsparser.parse(def, doc);
+        data = smsparser.parse('X0X0', def, doc);
     test.same({}, data);
     test.done();
 };
@@ -69,7 +69,7 @@ exports.wrong_field_type = function(test) {
             "type":"sms_message",
             "form":"PSMS"},
         def = smsforms[doc.form],
-        data = smsparser.parse(def, doc);
+        data = smsparser.parse('PSMS', def, doc);
     
     test.same(data, {
         "facility_id": "facility",
@@ -104,7 +104,7 @@ exports.missing_fields = function(test) {
             "type":"sms_message",
             "form":"PSMS"},
         def = smsforms[doc.form],
-        data = smsparser.parse(def, doc);
+        data = smsparser.parse('PSMS', def, doc);
 
     test.same(data, {
         "facility_id": "facility",

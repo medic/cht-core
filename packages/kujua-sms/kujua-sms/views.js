@@ -8,7 +8,7 @@ exports.sms_message_values = {
             if (def) {
                 emit(
                     [doc.form, doc.sent_timestamp],
-                    smsparser.parseArray(def, doc));
+                    smsparser.parseArray(doc.form, def, doc));
             }
         }
     }
