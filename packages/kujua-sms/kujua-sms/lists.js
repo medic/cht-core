@@ -5,9 +5,7 @@
 var _ = require('underscore')._,
     utils = require('./utils'),
     logger = utils.logger,
-    smsforms = require('views/lib/smsforms'),
-    smsparser = require('views/lib/smsparser');
-
+    smsforms = require('views/lib/smsforms');
 
 var gateway = {
     sent_timestamp: {
@@ -19,8 +17,6 @@ var gateway = {
         fr: 'Envoyé par'
     }
 };
-
-
 
 exports.sms_messages_csv = function (head, req) {
     var formKey  = req.query.form;

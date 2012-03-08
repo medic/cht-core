@@ -10,7 +10,7 @@ exports.psms_example_data = function (test) {
         message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4'
     };
 
-    var obj = smsparser.parse(def, doc);
+    var obj = smsparser.parse('PSMS', def, doc);
 
     test.same(obj, {
         facility_id: 'facility',
@@ -34,7 +34,7 @@ exports.psms_example_data = function (test) {
         }
     });
 
-    var arr = smsparser.parseArray(def, doc);
+    var arr = smsparser.parseArray('PSMS', def, doc);
     test.same(
         arr,
         ['12-11-11 15:00', '+15551212', 'facility', '2011', '11', 1, 2, 3, 4, 5, 6, 9, 8, 7, 6, 5, 4]

@@ -12,7 +12,7 @@ exports.msbc_example_data = function (test) {
 
     test.expect(2);
 
-    var obj = smsparser.parse(def, doc);
+    var obj = smsparser.parse('MSBC', def, doc);
     var expectedObj = {
         cref_year: '2012',
         cref_month: '1',
@@ -33,7 +33,7 @@ exports.msbc_example_data = function (test) {
 
     test.same(obj, expectedObj);
 
-    var arr = smsparser.parseArray(def, doc);
+    var arr = smsparser.parseArray('MSBC', def, doc);
     var expectedArr = ['1-13-12 15:35', '+15551212', '2012', '1', 16, 12345678901, 'Autre', 'abcdefghijklmnopqrst', 31, 'bcdefghijklmnopqrstu', 'cdefghijklmnopqrstuv','Référé','defghijklmnopqrstuvw','efghijklmnopqrstuvwxyzabcdefghijklm'];
 
     test.same(arr, expectedArr);

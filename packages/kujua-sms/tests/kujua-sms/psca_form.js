@@ -12,7 +12,7 @@ exports.psca_example_data = function (test) {
 
     test.expect(2);
 
-    var obj = smsparser.parse(def, doc);
+    var obj = smsparser.parse('PSCA', def, doc);
     var expectedObj = {
         synthese_year: '2012',
         synthese_month: '12',
@@ -49,7 +49,7 @@ exports.psca_example_data = function (test) {
 
     test.same(obj, expectedObj);
 
-    var arr = smsparser.parseArray(def, doc);
+    var arr = smsparser.parseArray('PSCA', def, doc);
     var expectedArr = ['12-10-11 09:00', '+15551212', '2012', '12', 20, 'aaaaaaaaaaaa', 123, 'kkkkkkkkkkkkkkkkkkkk', 333, 111, 222, 444, 555, 555, 555, 666, 888, 999, 222, 333, 444, 333, "True", 555, 555, "True", 665, 221, "False", 111];
 
     test.same(arr, expectedArr);
