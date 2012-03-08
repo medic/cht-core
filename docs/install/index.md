@@ -1,4 +1,4 @@
-# SMS Data Collection Setup
+# Install
 
 ## Intro
 
