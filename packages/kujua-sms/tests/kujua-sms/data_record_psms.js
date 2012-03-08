@@ -121,9 +121,9 @@ exports.data_record_psms = function (test) {
         days_stocked_out: days_stocked_out,
         quantity_dispensed: quantity_dispensed,
         month: '11',
-        year: '2011'
-    });    
-    
+        year: '2011',
+        facility_id: 'facility'
+    });
     
     
     //

@@ -8,28 +8,29 @@ var _ = require('underscore')._,
     smsparser = require('views/lib/smsparser');
 
 
-/*
- * Merge fields from the data record type with
+/**
+ * Merge fields from the smsforms definition with
  * the form data received through the SMS into
  * a data record.
  *
- * @param {Object} fields       - fields of the data record type
+ * @param {Array}  key          - key of the field separated by '.'
  * @param {Object} data_record  - record into which the data is merged
  * @param {Object} form_data    - data from the SMS
  *                                to be merged into the data record
  * @api private
  */
-var merge = function(fields, data_record, form_data) {
-    _.each(fields, function(field, key) {
-        if(form_data[key]) {
-            if(_.isArray(form_data[key])) {
-                data_record[key] = form_data[key][0];
-            } else {
-                data_record[key] = {};
-                merge(fields[key], data_record[key], form_data[key]);
+var merge = function(key, data_record, form_data) {
+    if(key.length > 1) {
+        var tmp = key.shift();
+        if(form_data[tmp]) {
+            if(!data_record[tmp]) {
+                data_record[tmp] = {};
             }
+            merge(key, data_record[tmp], form_data[tmp]);            
         }
-    });
+    } else {
+        data_record[key[0]] = form_data[key[0]][0];
+    }
 };
 
 /**
@@ -59,9 +60,6 @@ var getRefID = function(form, form_data) {
 var getCallbackBody = function(phone, form, form_data) {
     logger.debug(['getCallbackBody arguments', arguments]);
 
-    var data_record_types = require('kujua-couchtypes/types').data_records;
-    var data_record_type = smsforms[form].data_record_type || 'psi_malawi';
-
     var body = {
         type: 'data_record',
         from: phone,
@@ -76,7 +74,9 @@ var getCallbackBody = function(phone, form, form_data) {
         body.refid = getRefID(form, form_data);
     }
 
-    merge(data_record_types[data_record_type].fields, body, form_data);
+    _.each(smsforms[form].fields, function(field) {
+        merge(field.key.split('.'), body, form_data);        
+    });
 
     return body;
 };
@@ -120,7 +120,7 @@ var getCallbackPath = function(phone, form, form_data) {
  * auto-reply message in the form definition. Also uses callbacks to create
  * 1st phase of tasks_referral doc.
  */
-var getRespBody = exports.getRespBody = function(doc, req) {
+var getRespBody = function(doc, req) {
     logger.debug('getRespBody jsDump.parse(req)');
     logger.debug(req);
 
@@ -184,6 +184,7 @@ var getRespBody = exports.getRespBody = function(doc, req) {
 
     return JSON.stringify(resp);
 };
+exports.getRespBody = getRespBody;
 
 exports.add_sms = function (doc, req) {
     // TODO add validation if necessary

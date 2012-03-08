@@ -12,7 +12,6 @@ exports.success_response_psms = function (test) {
 };
 
 exports.success_response_pscq = function (test) {
-    console.log('PSCQ1')
     test.expect(1);
     var req = {headers:{ "Host": window.location.host }};
     var msg = '1!PSCQ!2013#2#20#aaaaaaaaaaaaaaaaaa#2222#3333#1#1111#1111#1#2222#2222#2#333#474#112#444#111#333#333#880#220#220#212#555#6633#4444#8888#2211#2211#2211#5555#222#444#22',
