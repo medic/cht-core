@@ -97,6 +97,8 @@ exports.data_record_psms = function (test) {
     var doc1 = result1[0];
     var resp1 = JSON.parse(result1[1]);
 
+    delete doc1.created;
+    delete doc1._id;
     test.same(doc1, sms_message);
 
     test.same(resp1.callback.options.path,
@@ -105,6 +107,7 @@ exports.data_record_psms = function (test) {
     test.same(resp1.callback.options.headers.Authorization,
         "Basic cm9vdDpwYXNzd29yZA==");
 
+    delete resp1.callback.data.sms_message.created;
     test.same(resp1.callback.data, {
         type: "data_record",
         form: "PSMS",
@@ -270,6 +273,7 @@ exports.data_record_psms = function (test) {
         }
     });
     
+    delete doc3a.callback.data.sms_message.created;
     test.same(doc3a.callback.data.errors, []);
     test.same(doc3a.callback.data._rev, "484399c98ff78ac7da33b639ed60f923");
     test.same(doc3a.callback.data.form_data, form_data);

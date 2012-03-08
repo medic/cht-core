@@ -149,3 +149,18 @@ exports.parseArray = function (def, doc) {
     
     return arr;
 };
+
+/**
+ * Determine form through message
+ *
+ * @param {String} message
+ * @returns {String} form
+ * @api public
+ */
+exports.getForm = function(message) {
+    if(message.split('!').length === 3) {
+        return message.split('!')[1];
+    } else {
+        return 'CNPW';
+    }
+};
