@@ -12,22 +12,20 @@
         <div class="container">
           <span class="brand"><a href="{baseURL}/" class="kujua">Kujua</a> Export <span class="version">{settings.version}</span></span>
           <ul class="nav pull-right">
-            <li class="home"><a href="{baseURL}/">Home</a></li>
-            <li class="docs"><a href="{baseURL}/docs/">Docs</a></li>
-            <li class="dropdown">
-              <a class="dropdown-toggle">Locale <b class="caret"></b></a>
-                <ul class="dropdown-menu">
-                  <li><a href="{baseURL}/?locale=en">English</a></li>
-                  <li><a href="{baseURL}/?locale=fr">French</a></li> 
-                </ul>
-            </li>
+            <li class="home"><a href="{baseURL}/"><i class="icon-download-alt"></i> Download</a></li>
+            <li class="records"><a href="{baseURL}/sms_messages_by_timestamp?limit=11"><i class="icon-list"></i> Records</a></li>
+            <li class="docs"><a href="{baseURL}/docs/"><i class="icon-book"></i> Docs</a></li>
             <li class="admin dropdown">
-              <a class="dropdown-toggle">Admin <b class="caret"></b></a>
+            <a class="dropdown-toggle"><i class="icon-cogs"></i> Admin <b class="icon-chevron-down"></b></a>
                 <ul class="dropdown-menu">
-                  <li><a href="{baseURL}/sms_messages_by_timestamp?limit=11">SMS Messages</a></li>
-                  <li><a href="{baseURL}/raw/sms_messages?include_docs=true">Raw Messages</a></li>
                   <li><a href="{baseURL}/test">Run Tests</a></li>
-                  <li><a href="https://github.com/medic/kujua-export">Source Code</a></li>
+                  <li class="dropdown">
+                    <a class="dropdown-toggle">Locale <b class="icon-chevron-down"></b></a>
+                      <ul class="dropdown-menu">
+                        <li><a href="{baseURL}/?locale=en">English</a></li>
+                        <li><a href="{baseURL}/?locale=fr">French</a></li> 
+                      </ul>
+                  </li>
                 </ul>
             </li>
           </ul>
