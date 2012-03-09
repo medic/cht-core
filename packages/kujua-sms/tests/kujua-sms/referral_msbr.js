@@ -99,7 +99,6 @@ exports.referral_msbr = function (test) {
     var doc = result[0];
     var resp = JSON.parse(result[1]);
 
-    delete doc.created;
     delete doc._id;
     test.same(doc, sms_message);
 
@@ -133,7 +132,6 @@ exports.referral_msbr = function (test) {
      * Assert we have formed a phase 1 tasks_referral document, not 'to' and
      * 'clinic' fields are null. These get added in the next callback request.
      */
-    delete resp.callback.data.sms_message.created;
     test.same(resp.callback.data, {
         "type": "tasks_referral",
         "state": "",
@@ -212,9 +210,6 @@ exports.referral_msbr = function (test) {
            "Content-Type": "application/json; charset=utf-8"
         }
      });
-
-    // delete volatile properties for test
-    delete doc2.callback.data.created;
 
     /*
      * The task that gets created after step2, includes clinic data and health

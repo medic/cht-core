@@ -232,9 +232,6 @@ exports.referral_msbc1 = function (test) {
         }
     });
 
-    // delete volatile properties for test
-    delete doc2.callback.data.created;
-
     /*
      * Since this is going from Health Center -> Clinic we ignore the
      * cref_treated field.

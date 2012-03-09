@@ -60,14 +60,20 @@ var getRefID = function(form, form_data) {
 var getCallbackBody = function(phone, form, form_data) {
     logger.debug(['getCallbackBody arguments', arguments]);
 
+    var type = 'data_record';
+    if(smsforms[form].data_record_type) {
+        type += '_' + smsforms[form].data_record_type;
+    }
+    
     var body = {
-        type: 'data_record',
+        type: type,
         from: phone,
         form: form,
         form_data: form_data,
         related_entities: {clinic: null},
         errors: [],
-        tasks: []
+        tasks: [],
+        reported_date: new Date().getTime()
     };
 
     if (smsforms.isReferralForm(form)) {
@@ -187,17 +193,12 @@ var getRespBody = function(doc, req) {
 exports.getRespBody = getRespBody;
 
 exports.add_sms = function (doc, req) {
-    // TODO add validation if necessary
-    var new_doc = _.extend(req.form, {
-        _id: req.uuid,
+    return [null, getRespBody(_.extend(req.form, {
         type: "sms_message",
         locale: req.query.locale || 'en',
-        form: smsparser.getForm(req.form.message),
-        created: new Date()
-    });
-    return [new_doc, getRespBody(new_doc, req)];
+        form: smsparser.getForm(req.form.message)
+    }), req)];
 };
 
 exports.add = function (doc, req) {
 };
-
