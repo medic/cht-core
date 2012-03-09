@@ -279,8 +279,6 @@ exports.data_record = function (head, req) {
         def = smsforms[form],
         clinic = null;
 
-    record.created = new Date(); // used in views for sorting
-
     /* Panic */
     if (!def) {
         addError(task, {error: 'No form definition found for '+ form +'.'});

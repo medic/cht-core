@@ -66,7 +66,7 @@ exports.clinic_by_refid = {
     map: function (doc) {
         if (doc.type === 'data_record' && doc.refid) {
             // need String because rewriter wraps everything in quotes
-            emit([String(doc.refid), doc.created], doc.clinic);
+            emit([String(doc.refid), doc.reported_date], doc.clinic);
         }
     }
 };
@@ -76,7 +76,7 @@ exports.tasks_pending = {
         if (doc.tasks && doc.tasks.length) {
             for (var i in docs.tasks) {
                 if (doc.tasks[i].state === 'pending') {
-                    emit([doc.created, doc.refid]);
+                    emit([doc.reported_date, doc.refid]);
                 }
             }
         }

@@ -214,9 +214,6 @@ exports.referral_msbb = function (test) {
         }
     });
 
-    // delete volatile properties for test
-    delete doc2.callback.data.created;
-
     var messages = [{
         "to": "+14155551212",
         "message": "Année: 2012, Mois: 1, Jour: 24, Code du RC: " + ref_rc

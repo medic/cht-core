@@ -6,7 +6,8 @@ var updates = require('kujua-sms/updates'),
     querystring = require('querystring'),
     jsDump = require('jsDump'),
     fakerequest = require('couch-fakerequest'),
-    helpers = require('../../test-helpers/helpers');
+    helpers = require('../../test-helpers/helpers'),
+    _ = require('underscore')._;
 
 
 var example = {
@@ -111,7 +112,7 @@ var expected_callback = {
  **/
 exports.psms_to_record = function (test) {
 
-    test.expect(25);
+    test.expect(4);
 
     // Data parsed from a gateway POST
     var data = {
@@ -127,7 +128,9 @@ exports.psms_to_record = function (test) {
         uuid: '14dc3a5aa6',
         query: {form: 'PSMS'},
         method: "POST",
-        headers: helpers.headers("url", querystring.stringify(data)),
+        headers: _.extend(helpers.headers("url", querystring.stringify(data)), {
+            "Authorization": "Basic cm9vdDpwYXNzd29yZA=="
+        }),
         body: querystring.stringify(data),
         form: data
     };
@@ -135,39 +138,19 @@ exports.psms_to_record = function (test) {
     var resp = fakerequest.update(updates.add_sms, data, req);
 
     var resp_body = JSON.parse(resp[1].body);
-    delete resp_body.callback.data.reported_date;
-    
-    test.same(
-        resp_body.callback.options.path,
-        baseURL + "/PSMS/data_record/add/clinic/%2B13125551212");
 
-    test.same(
-        resp_body.callback.data.days_stocked_out,
-        expected_callback.data.days_stocked_out);
-
-    test.same(
-        resp_body.callback.data.quantity_dispensed,
-        expected_callback.data.quantity_dispensed);
-
-    test.same(
-        resp_body.callback.data.form_data,
-        expected_callback.data.form_data);
-
-    test.same(
-        resp_body.callback.data.sms_message,
-        expected_callback.data.sms_message);
-
-    test.same(
-        resp_body.callback.data,
-        expected_callback.data);
+    test.same(resp_body.callback.options.headers.Authorization,
+        "Basic cm9vdDpwYXNzd29yZA==");
 
     // form next request from callback data
     var next_req = {
         method: resp_body.callback.options.method,
         body: JSON.stringify(resp_body.callback.data),
         path: resp_body.callback.options.path,
-        headers: helpers.headers(
-                    'json', JSON.stringify(resp_body.callback.data)),
+        headers: _.extend(helpers.headers(
+                    'json', JSON.stringify(resp_body.callback.data)), {
+                        "Authorization": "Basic cm9vdDpwYXNzd29yZA=="
+                    }),
         query: {form: 'PSMS'} // query.form gets set by rewriter
     };
 
@@ -196,23 +179,19 @@ var step2 = function(test, req) {
 
     var resp_body = JSON.parse(resp.body);
 
-    test.same(
-        resp_body.callback.options.path,
-        baseURL + "/PSMS/data_record/merge/2011/11/" + clinic._id);
+    test.same(resp_body.callback.options.headers.Authorization,
+        "Basic cm9vdDpwYXNzd29yZA==");
 
-    test.same(
-        resp_body.callback.data.related_entities,
-        {clinic: clinic});
-
-    test.same(resp_body.callback.data.errors, []);
 
     // form next request from callback data
     var next_req = {
         method: resp_body.callback.options.method,
         body: JSON.stringify(resp_body.callback.data),
         path: resp_body.callback.options.path,
-        headers: helpers.headers(
-                    'json', JSON.stringify(resp_body.callback.data)),
+        headers: _.extend(helpers.headers(
+                    'json', JSON.stringify(resp_body.callback.data)), {
+                        "Authorization": "Basic cm9vdDpwYXNzd29yZA=="
+                    }),
         query: {form: 'PSMS'} // query.form gets set by rewriter
     };
 
@@ -247,41 +226,8 @@ var step3_1 = function(test, req) {
     var resp = fakerequest.list(lists.data_record_merge, viewdata, req);
     var resp_body = JSON.parse(resp.body);
 
-    // main tests
-    test.same(
-        resp_body.callback.data._rev,
-        "484399c98ff78ac7da33b639ed60f923");
-
-    test.same(
-        resp_body.callback.options.path,
-        appdb + "/777399c98ff78ac7da33b639ed60f422");
-
-    test.same(
-        resp_body.callback.options.method,
-        "PUT");
-
-    // extra checks
-    test.same(
-        resp_body.callback.data.quantity_dispensed,
-        expected_callback.data.quantity_dispensed);
-
-    test.same(
-        resp_body.callback.data.form_data,
-        expected_callback.data.form_data);
-
-    test.same(
-        resp_body.callback.data.sms_message,
-        expected_callback.data.sms_message);
-
-    test.same(
-        resp_body.callback.data.related_entities,
-        {clinic: example.clinic});
-
-    test.same(resp_body.callback.data.errors, []);
-    test.same(resp_body.callback.data.tasks, []);
-
-    // request callback chain end, data record is updated
-    // form next request from callback data
+    test.same(resp_body.callback.options.headers.Authorization,
+        "Basic cm9vdDpwYXNzd29yZA==");
 };
 
 
@@ -301,25 +247,8 @@ var step3_2 = function(test, req) {
 
     var resp_body = JSON.parse(resp.body);
 
-    // If no record exists during the merge then we create a new record with
-    // POST
-    test.same(resp_body.callback.options.method, "POST");
-    test.same(resp_body.callback.options.path, appdb);
-
-    // extra checks
-    test.same(resp_body.callback.data.errors, []);
-    test.same(
-        resp_body.callback.data.form_data,
-        example.form_data);
-    test.same(
-        resp_body.callback.data.sms_message,
-        example.sms_message);
-    test.same(
-        resp_body.callback.data.days_stocked_out,
-        example.days_stocked_out);
-    test.same(
-        resp_body.callback.data.quantity_dispensed,
-        example.quantity_dispensed);
+    test.same(resp_body.callback.options.headers.Authorization,
+        "Basic cm9vdDpwYXNzd29yZA==");
 
     test.done()
 };

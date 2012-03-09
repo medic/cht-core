@@ -234,9 +234,6 @@ exports.referral_msbc2 = function (test) {
         }
     });
 
-    // delete volatile properties for test
-    delete doc2.callback.data.created;
-
     var messages = [{
         "to": "+17085551212",
         "message": "Année: 2012, Mois: 1, Jour: 16, Code du RC: "+ ref_rc +", Type de patient: Autre, Nom: abcdefghijklmnopqrst, Age: 31, Nom de la mère ou de l'accompagnant: bcdefghijklmnopqrstu, Patient traité pour: cdefghijklmnopqrstuv, Recommandations/Conseils: Référé, Précisions pour recommandations: defghijklmnopqrstuvw, Nom de l'agent de santé: efghijklmnopqrstuvwxyzabcdefghijklm"
