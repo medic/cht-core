@@ -60,7 +60,7 @@ exports.clinic_by_parent_phone = {
 };
 
 /*
- * Get clinic based on referral id in a tasks_referral doc.
+ * Get clinic based on referral id (refid) in a tasks_referral doc.
  */
 exports.clinic_by_refid = {
     map: function (doc) {
