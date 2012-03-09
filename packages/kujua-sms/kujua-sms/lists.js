@@ -7,14 +7,16 @@ var _ = require('underscore')._,
     logger = utils.logger,
     smsforms = require('views/lib/smsforms');
 
-var gateway = {
-    sent_timestamp: {
-        en: 'Sent Timestamp',
-        fr: 'Date envoyé'
-    },
-    from: {
-        en: 'From',
-        fr: 'Envoyé par'
+var strings = {
+    gateway: {
+        sent_timestamp: {
+            en: 'Sent Timestamp',
+            fr: 'Date envoyé'
+        },
+        from: {
+            en: 'From',
+            fr: 'Envoyé par'
+        }
     }
 };
 
@@ -41,8 +43,8 @@ exports.sms_messages_csv = function (head, req) {
         var headings = _.map(def.fields, function (r) {
             return r.label || r.key;
         });
-        headings.unshift(gateway.from[locale]);
-        headings.unshift(gateway.sent_timestamp[locale]);
+        headings.unshift(strings.gateway.from[locale]);
+        headings.unshift(strings.gateway.sent_timestamp[locale]);
 
         var data = _.map(rows, function(r) {
             return r.value ? r.value : '';
@@ -81,8 +83,8 @@ exports.sms_messages_xml = function (head, req) {
         var headings = _.map(form.fields, function (r) {
             return r.label || r.key;
         });
-        headings.unshift(gateway.from[locale]);
-        headings.unshift(gateway.sent_timestamp[locale]);
+        headings.unshift(strings.gateway.from[locale]);
+        headings.unshift(strings.gateway.sent_timestamp[locale]);
 
         var data = _.map(rows, function(r) {
             return r.value ? r.value : '';
@@ -266,6 +268,7 @@ var json_headers = {
  */
 exports.data_record = function (head, req) {
     start({code: 200, headers: json_headers});
+    logger.debug(['data_record arguments', arguments]);
 
     var record = JSON.parse(req.body),
         form = req.query.form,
@@ -338,6 +341,7 @@ exports.data_record = function (head, req) {
   */
 exports.data_record_merge = function (head, req) {
     start({code: 200, headers: json_headers});
+    logger.debug(['data_record_merge arguments', arguments]);
 
     var new_data_record = JSON.parse(req.body),
         form = req.query.form,
