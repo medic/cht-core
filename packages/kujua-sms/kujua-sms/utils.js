@@ -1,5 +1,5 @@
 /**
- * Utility functions for Kujua Export
+ * Utility functions for Kujua
  */
 
 var jsDump = require('jsDump'),
