@@ -29,7 +29,6 @@ var updates = require('kujua-sms/updates'),
 
 var example = {
     sms_message: {
-       _id: '14dc3a5aa6',
        from: "+13125551212",
        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
        sent_timestamp: "1-19-12 18:45",
@@ -103,7 +102,7 @@ var example = {
 
 var expected_callback = {
     data: {
-        type: "data_record",
+        type: "data_record_psi_malawi",
         form: "PSMS",
         form_data: example.form_data,
         related_entities: {
@@ -130,7 +129,7 @@ var expected_callback = {
  **/
 exports.psms_to_record = function (test) {
 
-    test.expect(26);
+    test.expect(25);
 
     // Data parsed from a gateway POST
     var data = {
@@ -153,17 +152,9 @@ exports.psms_to_record = function (test) {
 
     var resp = fakerequest.update(updates.add_sms, data, req);
 
-
-    var saved_doc = resp[0];
-    delete saved_doc.created; // volatile
-
-    test.same(saved_doc, example.sms_message);
-
-
     var resp_body = JSON.parse(resp[1].body);
-    delete resp_body.callback.data.created;
-    delete resp_body.callback.data.sms_message.created;
-
+    delete resp_body.callback.data.reported_date;
+    
     test.same(
         resp_body.callback.options.path,
         baseURL + "/PSMS/data_record/add/clinic/%2B13125551212");

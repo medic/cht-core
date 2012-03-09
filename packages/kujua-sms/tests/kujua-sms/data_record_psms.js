@@ -23,7 +23,6 @@ exports.data_record_psms = function (test) {
     };
 
     var sms_message = {
-       _id: "ef6834e3b5",
        from: "+13125551212",
        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
        sent_timestamp: "1-19-12 18:45",
@@ -94,21 +93,22 @@ exports.data_record_psms = function (test) {
         form: data
     });
 
-    var doc1 = result1[0];
-    var resp1 = JSON.parse(result1[1]);
-
-    delete doc1.created;
-    test.same(doc1, sms_message);
-
-    test.same(resp1.callback.options.path,
+    var doc1 = JSON.parse(result1[1]);
+    
+    test.same(doc1.callback.options.path,
         baseURL + "/PSMS/data_record/add/clinic/%2B13125551212");
-
-    test.same(resp1.callback.options.headers.Authorization,
+    
+    test.same(doc1.callback.options.headers.Authorization,
         "Basic cm9vdDpwYXNzd29yZA==");
-
-    delete resp1.callback.data.sms_message.created;
-    test.same(resp1.callback.data, {
-        type: "data_record",
+    
+    test.same(
+        new Date(doc1.callback.data.reported_date).toDateString(),
+        new Date().toDateString()
+    );
+    
+    delete doc1.callback.data.reported_date;
+    test.same(doc1.callback.data, {
+        type: "data_record_psi_malawi",
         form: "PSMS",
         form_data: form_data,
         related_entities: {
@@ -124,6 +124,7 @@ exports.data_record_psms = function (test) {
         year: '2011',
         facility_id: 'facility'
     });
+    
     
     
     //
@@ -168,10 +169,10 @@ exports.data_record_psms = function (test) {
     var result2 = fakerequest.list(lists.data_record, viewdata2, {
         method: "POST",
         query: {form: "PSMS"},
-        headers: _.extend(helpers.headers('json', JSON.stringify(resp1.callback.data)), {
+        headers: _.extend(helpers.headers('json', JSON.stringify(doc1.callback.data)), {
             "Authorization": "Basic cm9vdDpwYXNzd29yZA=="
         }),
-        body: JSON.stringify(resp1.callback.data),
+        body: JSON.stringify(doc1.callback.data),
         form: {}
     });
     
@@ -248,7 +249,7 @@ exports.data_record_psms = function (test) {
             }
         }
     ]};
-
+    
     var result3a = fakerequest.list(lists.data_record_merge, viewdata3a, {
         method: "POST",
         query: {form: "PSMS"},
@@ -260,7 +261,7 @@ exports.data_record_psms = function (test) {
     });
     
     var doc3a = JSON.parse(result3a.body);
-
+    
     test.same(doc3a.callback.options, {
         "host": window.location.hostname,
         "port": window.location.port,
@@ -280,7 +281,7 @@ exports.data_record_psms = function (test) {
     test.same(doc3a.callback.data.quantity_dispensed, quantity_dispensed);
     test.same(doc3a.callback.data.days_stocked_out, days_stocked_out);
     
-
+    
     
     //
     // STEP 3, CASE 2:
