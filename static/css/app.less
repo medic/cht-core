@@ -43,8 +43,6 @@ body {
   text-shadow: 0 1px 0 rgba(255,255,255,.1), 0 0 30px rgba(255,255,255,.125);
   &:before { content:"v" }
 }
-#docs {
-}
 #docs-body {
   padding: 20px;
   h2, h3, h4 {
@@ -55,17 +53,14 @@ body {
     padding-top: 0;
     margin-top: 0;
   }
-  .code-wrap {
+  .scroll {
     overflow: auto;
     width: 860px;
     padding: 1em 0;
   }
-  .code-wrap-short {
-    .code-wrap;
+  .scroll-short {
+    .scroll;
     width: 580px;
-  }
-  code {
-    padding: .5em;
   }
 }
 #loader li,
@@ -123,7 +118,6 @@ body {
 code {
   white-space:nowrap;
 }
-
 table {
   width: 100%;
   margin: 18px;
