@@ -1,4 +1,4 @@
-<div id="sms-messages" class="row">
+<div id="data-records" class="row">
   <div class="column span1" style="padding-left: 30px; padding-right: -30px; padding-top: 100px;">
     <a class="btn prev" href="#"><i class="icon-arrow-left"></i> Previous</a>
   </div>
@@ -7,13 +7,10 @@
       <thead>
         <tr>
           <th>
-            <a href="{baseURL}/sms_messages_by_form?limit=11">Form</a>
+            <a href="{baseURL}/sms_messages_by_reported_date?limit=11">Reported Date</a>
           </th>
           <th>
-            <a href="{baseURL}/sms_messages_by_from?limit=11">From</a>
-          </th>
-          <th>
-            <a href="{baseURL}/sms_messages_by_timestamp?limit=11">Timestamp</a>
+            Clinic
           </th>
           <th>
             Message
@@ -22,21 +19,24 @@
         </tr>
       </thead>
       <tbody>
-      {#sms_messages}
+      {#data_records}
         <tr rel="{_id}">
           <td>
-            {form}
+            {reported_date}
           </td>
           <td>
-            {from}
+            {#related_entities}
+              {#clinic}
+                {name}
+              {/clinic}
+            {/related_entities}
           </td>
           <td>
-            {sent_timestamp}
+            {#sms_message}
+              <a href="#" class="extend">{short_message}</a>
+            {/sms_message}
           </td>
-          <td>
-            <a href="#" class="extend">{short_message}</a>
-          </td>
-          <td class="edit-col">
+          <td class="edit-col" style="text-align: center">
             <form style="display: inline; margin: 0;" action="{baseURL}/delete/{_id}" method="post">
               <input type="hidden" name="next" class="next_url" value="{currentURL}" />
               <button type="submit" class="btn">
@@ -45,10 +45,12 @@
             </form>
           </td>
         </tr>
-        <tr class="extended" style="display: none">
-          <td colspan="5">{message|s}</td>
-        </tr>
-      {/sms_messages}
+        {#sms_message}
+          <tr class="extended" style="display: none">
+            <td colspan="5">{message|s}</td>
+          </tr>
+        {/sms_message}
+      {/data_records}
       </tbody>
     </table>      
   </div>
