@@ -111,7 +111,7 @@ var expected_callback = {
  **/
 exports.psms_to_record = function (test) {
 
-    test.expect(25);
+    test.expect(26);
 
     // Data parsed from a gateway POST
     var data = {
@@ -135,6 +135,12 @@ exports.psms_to_record = function (test) {
     var resp = fakerequest.update(updates.add_sms, data, req);
 
     var resp_body = JSON.parse(resp[1].body);
+    
+    test.same(
+        new Date(resp_body.callback.data.reported_date).toDateString(),
+        new Date().toDateString()
+    );
+    
     delete resp_body.callback.data.reported_date;
     
     test.same(
