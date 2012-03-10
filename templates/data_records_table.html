@@ -1,64 +1,72 @@
 <div id="data-records" class="row">
-  <div class="column span1" style="padding-left: 30px; padding-right: -30px; padding-top: 100px;">
-    <a class="btn prev" href="#"><i class="icon-arrow-left"></i> Previous</a>
-  </div>
-  <div class="column span9">
-    <table class="common-table zebra-striped">
-      <thead>
-        <tr>
-          <th>
-            <a href="{baseURL}/sms_messages_by_reported_date?limit=11">Reported Date</a>
-          </th>
-          <th>
-            Clinic
-          </th>
-          <th>
-            Message
-          </th>
-          <th class="edit-col" style="display: none"></th>
-        </tr>
-      </thead>
-      <tbody>
-      {#data_records}
-        <tr rel="{_id}">
-          <td>
-            {reported_date}
-          </td>
-          <td>
-            {#related_entities}
-              {#clinic}
-                {name}
-              {/clinic}
-            {/related_entities}
-          </td>
-          <td>
-            {#sms_message}
-              <a href="#" class="extend">{short_message}</a>
-            {/sms_message}
-          </td>
-          <td class="edit-col" style="text-align: center; display: none">
-            <form style="display: inline; margin: 0;" action="{baseURL}/delete/{_id}" method="post">
-              <input type="hidden" name="next" class="next_url" value="{currentURL}" />
-              <button type="submit" class="btn">
-                <i class="icon-trash icon-large"></i> Delete
-              </button>
-            </form>
-          </td>
-        </tr>
-        {#sms_message}
-          <tr class="extended" style="display: none">
-            <td colspan="5">{message|s}</td>
+  <div class="span12">
+    <div class="wrap">
+      <ul class="pager">
+        <li>
+            <a class="prev" href="#"><i class="icon-arrow-left"></i> Newer</a>
+        </li>
+        <li>
+            <a class="next" href="#">Older <i class="icon-arrow-right"></i></a>
+        </li>
+      </ul>
+      <table class="common-table zebra-striped">
+        <thead>
+          <tr>
+            <th>
+              <a href="{baseURL}/sms_messages_by_reported_date?limit=11">Reported Date</a>
+            </th>
+            <th>
+              Clinic
+            </th>
+            <th>
+              Message
+            </th>
+            <th class="edit-col hide">Edit</th>
           </tr>
-        {/sms_message}
-      {/data_records}
-      </tbody>
-    </table>
-    <div style="text-align: center; margin-bottom: 20px;">
-      <a class="btn edit" href="#"><i class="icon-edit icon-large"></i> Edit</a>
+        </thead>
+        <tbody>
+        {#data_records}
+          <tr rel="{_id}">
+            <td>
+              {reported_date}
+            </td>
+            <td>
+              {#related_entities}
+                {#clinic}
+                  {name}
+                {/clinic}
+              {/related_entities}
+            </td>
+            <td>
+              {#sms_message}
+                <a href="#" class="extend">{short_message}</a>
+              {/sms_message}
+            </td>
+            <td class="edit-col hide">
+              <form style="display: inline; margin: 0;" action="{baseURL}/delete/{_id}" method="post">
+                <input type="hidden" name="next" class="next_url" value="{currentURL}" />
+                <button type="submit" class="btn btn-small btn-danger">
+                  <i class="icon-trash icon-large"></i> Delete
+                </button>
+              </form>
+            </td>
+          </tr>
+          {#sms_message}
+            <tr class="extended" style="display: none">
+              <td colspan="5">{message|s}</td>
+            </tr>
+          {/sms_message}
+        {/data_records}
+        </tbody>
+      </table>
+      <ul class="pager">
+        <li>
+            <a class="prev" href="#"><i class="icon-arrow-left"></i> Newer</a>
+        </li>
+        <li>
+            <a class="next" href="#">Older <i class="icon-arrow-right"></i></a>
+        </li>
+      </ul>
     </div>
-  </div>
-  <div class="column span1" style="padding-left: 30px; padding-right: -30px; padding-top: 100px;">
-    <a class="btn next" href="#"
-      ><i class="icon-arrow-right icon-large"></i> Next</a>
   </div>
 </div>

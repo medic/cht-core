@@ -15,8 +15,7 @@
             <li class="home"><a href="{baseURL}/"><i class="icon-download-alt"></i> Download</a></li>
             <li class="records">
               <a href="{baseURL}/data_records_by_reported_date?limit=11">
-                <i class="icon-list"></i> Records
-              </a>
+                <i class="icon-list"></i> Records</a>
             </li>
             <li class="docs"><a href="{baseURL}/docs/"><i class="icon-book"></i> Docs</a></li>
             <li class="admin dropdown">
@@ -40,7 +39,21 @@
     </div>
     <div class="page-header">
       <div class="container">
-        <h1>&nbsp;</h1>
+        <h1 class="pull-left">&nbsp;</h1>
+        <div class="controls hide">
+          <button class="btn edit pull-right">
+            <i class="icon-edit icon-large"></i> Edit</button>
+          <div class="btn-group pull-right">
+            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+              Limit <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="?limit=11">10</a></li>
+              <li><a href="?limit=51">50</a></li>
+              <li><a href="?limit=101">100</a></li>
+              <li><a href="?limit=251">250</a></li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
     <div class="container">
@@ -57,20 +70,5 @@
     <script src="{baseURL}/static/js/json2.js"></script>
     <script src="{baseURL}/modules.js"></script>
     <script src="{baseURL}/duality.js"></script>
-    <script type="text/javascript">
-      $(function() {
-
-        // Dynamic year for footer copyright
-        var currentYear = (new Date).getFullYear();
-        $("#year").text( (new Date).getFullYear() );
-
-        // Admin menu control
-        $('.dropdown-toggle').on('click', function(ev) {
-          ev.preventDefault();
-          $(this).siblings('.dropdown-menu').toggle(300);
-        });
-
-      });
-    </script>
   </body>
 </html>
