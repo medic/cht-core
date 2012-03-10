@@ -87,9 +87,36 @@ body {
   background:none;
 }
 .controls {
-  .hide;
   .btn {
     margin-left: 10px;
+  }
+  .edit.active {
+    .btn-warning;
+  }
+}
+#data-records {
+  table {
+    margin-bottom: 0;
+  }
+  .span12 .wrap {
+    padding: 0 20px
+  }
+  .pager {
+    text-align: right;
+    padding-top: 20px;
+    li a {
+      .hide;
+    }
+  }
+  .edit-col {
+    form {
+      margin: 0;
+    }
+    .delete {
+      color: @red;
+      font-size: 1.2em;
+      margin-left: 20px;
+    }
   }
 }
 .sections {
@@ -125,20 +152,6 @@ code {
   white-space:nowrap;
 }
 
-.span12 .wrap {
-  padding: 0 20px
-}
-
-#data-records table {
-  margin-bottom: 0;
-}
-
-.pager {
-  padding-top: 20px;
-  li a {
-    .hide;
-  }
-}
 
 #duality-contrib-loading {
     background-color: @popcorn;
