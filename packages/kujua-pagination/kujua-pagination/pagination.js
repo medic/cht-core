@@ -64,7 +64,7 @@ exports.paginate = function(head, req, path, options) {
     if((head.total_rows > head.offset + exports.perPage) || descending) {
         var query = _.extend(req.query, {
             limit: exports.perPage + 1,
-            startkey: JSON.stringify(lastRecord.key)
+            startkey: JSON.stringify(lastRecord ? lastRecord.key : undefined)
         });
         
         $('.next').
