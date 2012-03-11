@@ -192,7 +192,8 @@ var getRespBody = function(doc, req) {
 exports.getRespBody = getRespBody;
 
 /*
- * Parse an sms message and if we discover a support format save a data record.
+ * Parse an sms message and if we discover a supported format save a data
+ * record.
  */
 exports.add_sms = function (doc, req) {
     return [null, getRespBody(_.extend(req.form, {
