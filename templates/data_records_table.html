@@ -52,11 +52,15 @@
               </form>
             </td>
           </tr>
-          {#sms_message}
-            <tr class="extended" style="display: none">
-              <td colspan="5">{message|s}</td>
+          {#form_data}
+            <tr class="extended hide">
+              <td colspan="5">
+                <a href="#" data-dismiss="extended" class="pull-right close">
+                  <i class="icon-remove"></i></a>
+                <div class="scroll">{_html|s}</div>
+              </td>
             </tr>
-          {/sms_message}
+          {/form_data}
         {/data_records}
         </tbody>
       </table>

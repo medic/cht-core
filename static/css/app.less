@@ -54,15 +54,28 @@ body {
     padding-top: 0;
     margin-top: 0;
   }
-  .scroll {
-    overflow: auto;
-    width: 860px;
-    padding: 1em 0;
+}
+.scroll {
+  overflow: auto;
+  width: 860px;
+  padding: 1em 0;
+}
+.scroll-short {
+  .scroll;
+  width: 580px;
+}
+// override bootstrap for inner tables 
+.table-striped .form-data {
+  thead tr th, 
+  tbody tr td {
+    background-color: #fff;
   }
-  .scroll-short {
-    .scroll;
-    width: 580px;
-  }
+}
+.table-striped tbody tr.extended td {
+  background-color: #fff;
+}
+.extended .close {
+  font-size: 1em;
 }
 #loader li,
 #forms li {
@@ -152,8 +165,6 @@ body {
 code {
   white-space:nowrap;
 }
-
-
 #duality-contrib-loading {
     background-color: @popcorn;
     /*.border-radius(0 0 5px 5px);*/
