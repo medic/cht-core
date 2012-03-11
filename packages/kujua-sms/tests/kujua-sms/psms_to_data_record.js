@@ -222,8 +222,7 @@ var step2 = function(test, req) {
         query: {form: 'PSMS'} // query.form gets set by rewriter
     };
 
-    step3_1(test, next_req);
-    step3_2(test, next_req);
+    step3_1(test, next_req, step3_2, [test, next_req]);
 
 };
 
@@ -234,11 +233,13 @@ var step2 = function(test, req) {
  * Run data_record/merge/year/month/clinic_id and expect a callback to update
  * the data record with the new data.
  *
- * @param {Object} test - Unittest object
- * @param {Object} callback - Callback object used to form the next request
+ * @param {Object} test     - Unittest object
+ * @param {Object} req      - Callback object used to form the next request
+ * @param {Function} finish - Last callback where test.done() is called
+ * @param {Array} args      - Args for last callback
  * @api private
  */
-var step3_1 = function(test, req) {
+var step3_1 = function(test, req, finish, args) {
 
     var viewdata = {rows: [
         {
@@ -286,8 +287,9 @@ var step3_1 = function(test, req) {
     test.same(resp_body.callback.data.errors, []);
     test.same(resp_body.callback.data.tasks, []);
 
-    // request callback chain end, data record is updated
-    // form next request from callback data
+    if (typeof finish === 'function') {
+        finish.apply(this, args);
+    }
 };
 
 
