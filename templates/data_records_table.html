@@ -25,6 +25,12 @@
           </tr>
         </thead>
         <tbody>
+        {?data_records}
+        {:else}
+          <tr>
+            <td colspan="5">No records found.</td>
+          </tr>
+        {/data_records}
         {#data_records}
           <tr rel="{_id}">
             <td>
