@@ -83,21 +83,17 @@ exports.parse = function(def, doc, format) {
 
     vals.unshift(header[2]);
 
-    if(!def) {
+    if(!def || !def.fields) {
         return {};
     }
-    
-    if (!def.fields) {
-        throw new Error('Form definition has no fields attribute.');
-    }
-    
+
     var pairs = zip(def.fields, vals);
-    
+
     return pairs.reduce(function (obj, v) {
         var field = v[0],
             val = v[1],
             result;
-        
+
         if (format === 1) {
             // include label in array
             result = [
@@ -105,9 +101,9 @@ exports.parse = function(def, doc, format) {
         } else {
             result = exports.parseField(field, val, obj[field.key]);
         }
-        
+
         createDeepKey(obj, field.key.split('.'), result);
-        
+
         return obj;
     }, {});
 };
@@ -123,12 +119,16 @@ exports.parseArray = function(def, doc) {
 
     var keys = [];
 
+    if(!def || !def.fields) {
+        return [];
+    }
+
     for (var i = 0; i < def.fields.length; i++) {
         if (keys.indexOf(def.fields[i].key) === -1) {
             keys.push(def.fields[i].key);
         }
     }
-    
+
     var arr = [];
     for (var k = 0; k < keys.length; k++) {
         var key = keys[k].split('.');
@@ -140,7 +140,7 @@ exports.parseArray = function(def, doc) {
 
         arr.push(result);
     }
-    
+
     // The fields sent_timestamp and from are set by the gateway, so they are
     // not included in the raw sms message and added manually.
     arr.unshift(doc.from);

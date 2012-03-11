@@ -10,7 +10,8 @@ exports.psms_example_data = function (test) {
         message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4'
     };
 
-    var obj = smsparser.parse('PSMS', def, doc);
+    var form = smsparser.getForm(doc);
+    var obj = smsparser.parse(form, def, doc);
 
     test.same(obj, {
         facility_id: 'facility',

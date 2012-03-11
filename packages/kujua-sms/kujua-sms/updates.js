@@ -58,13 +58,13 @@ var getRefID = function(form, form_data) {
  * @api private
  */
 var getCallbackBody = function(phone, form, form_data) {
-    logger.debug(['getCallbackBody arguments', arguments]);
+    //logger.debug(['getCallbackBody arguments', arguments]);
 
     var type = 'data_record';
     if(smsforms[form].data_record_type) {
         type += '_' + smsforms[form].data_record_type;
     }
-    
+
     var body = {
         type: type,
         from: phone,
@@ -81,7 +81,7 @@ var getCallbackBody = function(phone, form, form_data) {
     }
 
     _.each(smsforms[form].fields, function(field) {
-        merge(field.key.split('.'), body, form_data);        
+        merge(field.key.split('.'), body, form_data);
     });
 
     return body;
@@ -95,7 +95,7 @@ var getCallbackBody = function(phone, form, form_data) {
  * @api private
  */
 var getCallbackPath = function(phone, form, form_data) {
-    logger.debug(['updates.getCallbackPath arguments', arguments]);
+    //logger.debug(['updates.getCallbackPath arguments', arguments]);
 
     var path = '';
 
@@ -127,9 +127,8 @@ var getCallbackPath = function(phone, form, form_data) {
  * 1st phase of tasks_referral doc.
  */
 var getRespBody = function(doc, req) {
-    logger.debug('getRespBody jsDump.parse(req)');
-    logger.debug(req);
 
+    logger.debug(['Request', req]);
     var form = doc.form,
         def = smsforms[form],
         form_data = smsparser.parse(form, def, doc, 1),
@@ -157,10 +156,10 @@ var getRespBody = function(doc, req) {
     }
 
     if (errormsg) {
-        // TODO integrate with kujua notifications
-        logger.error({'error':errormsg, 'doc':doc});
+        // TODO integrate with kujua notifications?
         resp.payload.messages[0].message = errormsg;
-        logger.debug(resp);
+        logger.debug(['Response', resp]);
+        logger.error({'error':errormsg, 'doc':doc});
         return JSON.stringify(resp);
     }
 
@@ -186,12 +185,15 @@ var getRespBody = function(doc, req) {
     // keep sms_message part of record
     resp.callback.data.sms_message = doc;
 
-    logger.debug(resp);
+    logger.debug(['Response', resp]);
 
     return JSON.stringify(resp);
 };
 exports.getRespBody = getRespBody;
 
+/*
+ * Parse an sms message and if we discover a support format save a data record.
+ */
 exports.add_sms = function (doc, req) {
     return [null, getRespBody(_.extend(req.form, {
         type: "sms_message",
