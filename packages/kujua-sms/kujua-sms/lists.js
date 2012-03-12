@@ -130,24 +130,46 @@ exports.data_records_csv = function (head, req) {
 
     return '\uFEFF' + utils.arrayToCSV(rows, delimiter);
 
-    // got values based on smsforms fields def, now get labels/headings.
-    //var headings = formatHeadings(doc, row);
-    //headings.unshift(strings.from[locale]);
-    //headings.unshift(strings.sent_timestamp[locale]);
+};
 
-    //var data = _.map(rows, function(r) {
-    //    return r.value ? r.value : '';
-    //});
-    //data.unshift(headings);
-    // Prepend BOM for MS Excel compat
-    //return '\uFEFF' + utils.arrayToCSV(data, delimiter);
+exports.data_records_xml = function (head, req) {
 
+    var form  = req.query.form,
+        filename = form + '_data_records.xml',
+        locale = req.query.locale || 'en', //TODO get from session
+        delimiter = locale === 'fr' ? '";"' : null,
+        // doc fields we want to export
+        keys = ['reported_date', 'from'];
 
-    // It would be nice to do a 404 page here, but we've already started the
-    // request with a 200 response and test/csv mime type - thanks couch!
-    // At the top of this function the filename is set to unknown_form.csv
-    // when the form def can't be found
-    //return '';
+    start({code: 200, headers: {
+        'Content-Type': 'application/vnd.ms-excel; charset=utf-8',
+        'Content-Disposition': 'attachment; filename=' + filename
+    }});
+
+    // add form keys from form def
+    keys.push.apply(keys, getFormKeys(form));
+
+    // fetch labels for all keys
+    labels = getLabels(keys, form, locale);
+
+    var row = [],
+        rows = [labels];
+    while (row = getRow()) {
+        rows.push(getValues(row.value, keys));
+    }
+
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+        // tells windows to auto-associate with excel
+        '<?mso-application progid="Excel.Sheet"?>\n' +
+        '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
+        ' xmlns:o="urn:schemas-microsoft-com:office:office"\n' +
+        ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n' +
+        ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n' +
+        ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
+        '<Worksheet ss:Name="'+form+'"><Table>' +
+        utils.arrayToXML(rows) +
+        '</Table></Worksheet></Workbook>';
+
 };
 
 exports.deprecate_sms_messages_csv = function (head, req) {
@@ -193,7 +215,7 @@ exports.deprecate_sms_messages_csv = function (head, req) {
 
 
 
-exports.sms_messages_xml = function (head, req) {
+exports.deprecated_sms_messages_xml = function (head, req) {
     var formKey = req.query.form,
         form = smsforms[formKey],
         filename = form ? formKey + '_sms_messages.xml': 'unknown_form.xml',
