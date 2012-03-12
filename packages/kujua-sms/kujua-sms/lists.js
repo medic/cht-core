@@ -106,7 +106,7 @@ exports.data_records_csv = function (head, req) {
         filename = form + '_data_records.csv',
         locale = req.query.locale || 'en', //TODO get from session
         delimiter = locale === 'fr' ? '";"' : null,
-        // doc fields we want to export
+        // extra doc fields we want to export not in form
         keys = ['reported_date', 'from'];
 
     start({code: 200, headers: {
@@ -138,7 +138,7 @@ exports.data_records_xml = function (head, req) {
         filename = form + '_data_records.xml',
         locale = req.query.locale || 'en', //TODO get from session
         delimiter = locale === 'fr' ? '";"' : null,
-        // doc fields we want to export
+        // extra doc fields we want to export not in form
         keys = ['reported_date', 'from'];
 
     start({code: 200, headers: {
