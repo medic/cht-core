@@ -34,7 +34,7 @@ exports.paginate = function (test) {
     
     
     
-    test.expect(18);
+    test.expect(19);
     
     
     // paginate on start page
@@ -43,7 +43,7 @@ exports.paginate = function (test) {
     var req = {query: {}};
     
     pagination.prepare(req, [records[0], records[1], records[2], records[3]], {perPage: 3});
-    pagination.paginate(head, req, '/sms_messages', {perPage: 3});
+    pagination.paginate(head, req, '/sms_messages');
     
     test.same(prevLink.hidden, true);
     test.same(nextLink.hidden, false);
@@ -56,7 +56,7 @@ exports.paginate = function (test) {
     var req = {query: {}};
     
     pagination.prepare(req, [records[3], records[4], records[5], records[6]], {perPage: 3});
-    pagination.paginate(head, req, '/sms_messages', {perPage: 3});
+    pagination.paginate(head, req, '/sms_messages');
     
     test.same(prevLink.hidden, false);
     test.same(prevLink.url, baseURL + '/sms_messages?limit=4&startkey=%224%22&descending=true');
@@ -70,7 +70,7 @@ exports.paginate = function (test) {
     var req = {query: {}};
     
     pagination.prepare(req, [records[6], records[7], records[8]], {perPage: 3});
-    pagination.paginate(head, req, '/sms_messages', {perPage: 3});
+    pagination.paginate(head, req, '/sms_messages');
     
     test.same(prevLink.hidden, false);
     test.same(prevLink.url, baseURL + '/sms_messages?limit=4&startkey=%227%22&descending=true');
@@ -83,7 +83,7 @@ exports.paginate = function (test) {
     var req = {query: {descending: true}};
     
     pagination.prepare(req, [records[6], records[5], records[4], records[3]], {perPage: 3});
-    pagination.paginate(head, req, '/sms_messages', {perPage: 3});
+    pagination.paginate(head, req, '/sms_messages');
     
     test.same(prevLink.hidden, false);
     test.same(prevLink.url, baseURL + '/sms_messages?limit=4&startkey=%224%22&descending=true');
@@ -97,7 +97,7 @@ exports.paginate = function (test) {
     var req = {query: {descending: true}};
     
     pagination.prepare(req, [records[3], records[2], records[1], records[0]], {perPage: 3});
-    pagination.paginate(head, req, '/sms_messages', {perPage: 3});
+    pagination.paginate(head, req, '/sms_messages');
     
     test.same(prevLink.hidden, true);
     test.same(nextLink.hidden, false);
@@ -111,10 +111,21 @@ exports.paginate = function (test) {
     var req = {query: {sortBy: 'form'}};
     
     pagination.prepare(req, [records[0], records[1], records[2], records[3]], {perPage: 3});
-    pagination.paginate(head, req, '/sms_messages', {perPage: 3});
+    pagination.paginate(head, req, '/sms_messages');
     
     test.same(nextLink.url, baseURL + '/sms_messages?sortBy=form&limit=4&startkey=%224%22');
     
+    
+    // perPage query overwrites given perPage
+    
+    var head = {total_rows: records.length, offset: 0};
+    var req = {query: {sortBy: 'form', perPage: 4}};
+    
+    pagination.prepare(req, [records[0], records[1], records[2], records[3], records[4]], {perPage: 3});
+    pagination.paginate(head, req, '/sms_messages');
+    
+    test.same(nextLink.url, baseURL + '/sms_messages?sortBy=form&perPage=4&limit=5&startkey=%225%22');
+
     
     $ = originalDollar;
     

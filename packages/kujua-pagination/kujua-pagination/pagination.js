@@ -20,7 +20,7 @@ var lastRecord = null;
  */
 exports.prepare = function(req, rows, options) {
     options = options || {};
-    exports.perPage = options.perPage || exports.perPage;
+    exports.perPage = parseInt(req.query.perPage, 10) || options.perPage || exports.perPage;
     
     if(req.query.descending) {
         rows.reverse();
@@ -51,14 +51,11 @@ exports.prepare = function(req, rows, options) {
  *
  * @api public
  */
-exports.paginate = function(head, req, path, options) {
+exports.paginate = function(head, req, path) {
     var baseURL = require('duality/core').getBaseURL(req),
         descending = req.query.descending,
         url = baseURL + path;
 
-    options = options || {};
-    exports.perPage = options.perPage || exports.perPage;
-    
     delete req.query.descending;
     
     if((head.total_rows > head.offset + exports.perPage) || descending) {
