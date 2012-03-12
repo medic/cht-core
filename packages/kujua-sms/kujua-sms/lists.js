@@ -14,6 +14,7 @@ var _ = require('underscore')._,
  *                 english by default.
  */
 var _s = function(key, locale) {
+    logger.debug(['_s args', arguments]);
     if (strings[key]) {
         if (strings[key][locale]) {
             return strings[key][locale];
@@ -24,6 +25,10 @@ var _s = function(key, locale) {
 };
 
 /*
+ * Fetch labels from base strings or smsforms objects, maintaining order in
+ * the returned array.
+ *
+ * param Array keys - keys we want to resolve labels for
  * param String form - form code string
  * param String locale - locale string, e.g. 'en', 'fr', 'en-gb'
  *
@@ -32,43 +37,78 @@ var _s = function(key, locale) {
  *
  * api private
  */
-var getLabels = function(form, locale) {
+var getLabels = function(keys, form, locale) {
+    logger.debug(['getLabels args', arguments]);
 
     var def = smsforms[form],
-        // base keys from data record doc
-        keys = ['from', 'reported_date'],
-        labels = [];
+        labels = [],
+        form_labels = {};
 
+    // collect form labels from form def if we have one.
+    // TODO support locale strings in form labels
+    if (def) {
+        _.map(def.fields, function (f) {
+            form_labels[f.key] = f.label || f.key;
+        });
+    }
+
+    // resolve labels based on form def or base strings
     for (var i in keys) {
-        labels.push(_s(i, locale));
+        var key = keys[i];
+        if (form_labels[key]) {
+            labels.push(form_labels[key]);
+        } else {
+            labels.push(_s(key, locale));
+        }
     };
-
-    _.map(def.fields, function (r) {
-        labels.push(r.label || r.key);
-    });
 
     return labels;
 };
 
 /*
- * Return values based on smsforms fields defintion.
- *
  * param Object doc - data record document
- * return Array  - form field values based on smsforms definition
+ * param Array keys - keys we want to resolve labels for
  *
- * TODO Support dotted key notation to resolve keys
+ * return Array  - values from doc in the same order as keys
+ *
+ * TODO Support dotted key notation to resolve keys?
  */
-var getFormValues = function(doc) {
+var getValues = function(doc, keys) {
+    logger.debug(['getValues args', arguments]);
     var ret = [];
+    for (var i in keys) {
+        ret.push(doc[keys[i]]);
+    }
+    return ret;
+};
+
+/*
+ * param String form - smsforms key
+ * return Array  - form field keys based on smsforms definition
+ *
+ * TODO Support dotted key notation to resolve keys?
+ */
+var getFormKeys = function(form) {
+    logger.debug(['getFormKeys args', arguments]);
+    var ret = [],
+        def = smsforms[form];
     if (def) {
         for (var i in def.fields) {
-            ret.push(doc[def.fields[i].key]);
+            ret.push(def.fields[i].key);
         }
     }
     return ret;
 };
 
 exports.data_records_csv = function (head, req) {
+
+    var form  = req.query.form,
+        filename = form + '_data_records.csv',
+        locale = req.query.locale || 'en', //TODO get from session
+        delimiter = locale === 'fr' ? '";"' : null,
+        // doc fields we want to export
+        keys = ['reported_date', 'from'];
+
     start({code: 200, headers: {
         'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': 'attachment; filename=' + filename
@@ -76,15 +116,16 @@ exports.data_records_csv = function (head, req) {
         //  'filename*=UTF-8\'\'testit.csv'
     }});
 
-    var form  = req.query.form,
-        filename = form + '_data_records.csv',
-        locale = req.query.locale || 'en', //TODO get from session
-        delimiter = locale === 'fr' ? '";"' : null;
+    // add form keys from form def
+    keys.push.apply(keys, getFormKeys(form));
+
+    // fetch labels for all keys
+    labels = getLabels(keys, form, locale);
 
     var row = [],
-        rows = getLabels(form, locale); // first array is labels
+        rows = [labels];
     while (row = getRow()) {
-        rows.push(getFormValues(row.value));
+        rows.push(getValues(row.value, keys));
     }
 
     return '\uFEFF' + utils.arrayToCSV(rows, delimiter);
