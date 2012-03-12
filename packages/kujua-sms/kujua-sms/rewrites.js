@@ -10,16 +10,16 @@ exports.rules = [
         method: 'GET'
     },
     {
-        from: '/:form/sms_messages.csv',
-        to: '_list/sms_messages_csv/sms_message_values',
+        from: '/:form/data_records.csv',
+        to: '_list/data_records_csv/data_records_valid',
         query: {
             startkey: [':form'],
             endkey: [':form', {}]
         }
     },
     {
-        from: '/:form/sms_messages.xml',
-        to: '_list/sms_messages_xml/sms_message_values',
+        from: '/:form/data_records.xml',
+        to: '_list/data_records_xml/data_records_valid',
         query: {
             startkey: [':form'],
             endkey: [':form', {}]

@@ -5,6 +5,21 @@
 var jsDump = require('jsDump'),
     settings = require('settings/root');
 
+exports.strings = {
+    reported_date: {
+        en: 'Reported Date',
+        fr: 'Date envoyé'
+    },
+    from: {
+        en: 'From',
+        fr: 'Envoyé par'
+    },
+    sent_timestamp: {
+        en: 'Sent Timestamp',
+        fr: 'Date envoyé'
+    }
+};
+
 var logger = exports.logger = {
     levels: {silent:0, error:1, info:2, debug:3},
     log: function(obj) {
@@ -371,6 +386,10 @@ var capitalize = exports.capitalize = function(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+/*
+ * param Array arr  - array of headings and data arrays/rows
+ * return String - string for rows with appropriate csv conventions.
+ */
 var arrayToCSV = exports.arrayToCSV = function(arr, delimiter) {
     var rows = [],
         delimiter = delimiter || '","';

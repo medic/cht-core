@@ -4,24 +4,113 @@
 
 var _ = require('underscore')._,
     utils = require('./utils'),
+    strings = utils.strings,
     logger = utils.logger,
     smsforms = require('views/lib/smsforms');
 
-var strings = {
-    gateway: {
-        sent_timestamp: {
-            en: 'Sent Timestamp',
-            fr: 'Date envoyé'
-        },
-        from: {
-            en: 'From',
-            fr: 'Envoyé par'
+
+/*
+ * return String - Try to return appropriate locale translation for a string,
+ *                 english by default.
+ */
+var _s = function(key, locale) {
+    if (strings[key]) {
+        if (strings[key][locale]) {
+            return strings[key][locale];
+        } else if (strings[key]['en']) {
+            return strings[key]['en'];
         }
     }
 };
 
-exports.sms_messages_csv = function (head, req) {
-    var formKey  = req.query.form;
+/*
+ * param String form - form code string
+ * param String locale - locale string, e.g. 'en', 'fr', 'en-gb'
+ *
+ * return Array  - form field labels/headers and values based on smsforms
+ *                 definition.
+ *
+ * api private
+ */
+var getLabels = function(form, locale) {
+
+    var def = smsforms[form],
+        // base keys from data record doc
+        keys = ['from', 'reported_date'],
+        labels = [];
+
+    for (var i in keys) {
+        labels.push(_s(i, locale));
+    };
+
+    _.map(def.fields, function (r) {
+        labels.push(r.label || r.key);
+    });
+
+    return labels;
+};
+
+/*
+ * Return values based on smsforms fields defintion.
+ *
+ * param Object doc - data record document
+ * return Array  - form field values based on smsforms definition
+ *
+ * TODO Support dotted key notation to resolve keys
+ */
+var getFormValues = function(doc) {
+    var ret = [];
+    if (def) {
+        for (var i in def.fields) {
+            ret.push(doc[def.fields[i].key]);
+        }
+    }
+    return ret;
+};
+
+exports.data_records_csv = function (head, req) {
+    start({code: 200, headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': 'attachment; filename=' + filename
+        //'Content-Disposition': 'attachment; filename="testit.csv";'+
+        //  'filename*=UTF-8\'\'testit.csv'
+    }});
+
+    var form  = req.query.form,
+        filename = form + '_data_records.csv',
+        locale = req.query.locale || 'en', //TODO get from session
+        delimiter = locale === 'fr' ? '";"' : null;
+
+    var row = [],
+        rows = getLabels(form, locale); // first array is labels
+    while (row = getRow()) {
+        rows.push(getFormValues(row.value));
+    }
+
+    return '\uFEFF' + utils.arrayToCSV(rows, delimiter);
+
+    // got values based on smsforms fields def, now get labels/headings.
+    //var headings = formatHeadings(doc, row);
+    //headings.unshift(strings.from[locale]);
+    //headings.unshift(strings.sent_timestamp[locale]);
+
+    //var data = _.map(rows, function(r) {
+    //    return r.value ? r.value : '';
+    //});
+    //data.unshift(headings);
+    // Prepend BOM for MS Excel compat
+    //return '\uFEFF' + utils.arrayToCSV(data, delimiter);
+
+
+    // It would be nice to do a 404 page here, but we've already started the
+    // request with a 200 response and test/csv mime type - thanks couch!
+    // At the top of this function the filename is set to unknown_form.csv
+    // when the form def can't be found
+    //return '';
+};
+
+exports.deprecate_sms_messages_csv = function (head, req) {
+    var formKey  = req.query.form,
         def = smsforms[formKey ],
         filename = def ? formKey  + '_sms_messages.csv': 'unknown_form.csv',
         locale = req.query.locale || 'en',
@@ -43,8 +132,8 @@ exports.sms_messages_csv = function (head, req) {
         var headings = _.map(def.fields, function (r) {
             return r.label || r.key;
         });
-        headings.unshift(strings.gateway.from[locale]);
-        headings.unshift(strings.gateway.sent_timestamp[locale]);
+        headings.unshift(strings.from[locale]);
+        headings.unshift(strings.sent_timestamp[locale]);
 
         var data = _.map(rows, function(r) {
             return r.value ? r.value : '';
@@ -83,8 +172,8 @@ exports.sms_messages_xml = function (head, req) {
         var headings = _.map(form.fields, function (r) {
             return r.label || r.key;
         });
-        headings.unshift(strings.gateway.from[locale]);
-        headings.unshift(strings.gateway.sent_timestamp[locale]);
+        headings.unshift(strings.from[locale]);
+        headings.unshift(strings.sent_timestamp[locale]);
 
         var data = _.map(rows, function(r) {
             return r.value ? r.value : '';

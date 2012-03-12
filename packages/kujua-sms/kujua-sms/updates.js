@@ -26,7 +26,7 @@ var merge = function(key, data_record, form_data) {
             if(!data_record[tmp]) {
                 data_record[tmp] = {};
             }
-            merge(key, data_record[tmp], form_data[tmp]);            
+            merge(key, data_record[tmp], form_data[tmp]);
         }
     } else {
         data_record[key[0]] = form_data[key[0]][0];
