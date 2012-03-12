@@ -9,99 +9,7 @@ var _ = require('underscore')._,
     smsforms = require('views/lib/smsforms');
 
 
-/*
- * return String - Try to return appropriate locale translation for a string,
- *                 english by default.
- */
-var _s = function(key, locale) {
-    logger.debug(['_s args', arguments]);
-    if (strings[key]) {
-        if (strings[key][locale]) {
-            return strings[key][locale];
-        } else if (strings[key]['en']) {
-            return strings[key]['en'];
-        }
-    }
-};
-
-/*
- * Fetch labels from base strings or smsforms objects, maintaining order in
- * the returned array.
- *
- * param Array keys - keys we want to resolve labels for
- * param String form - form code string
- * param String locale - locale string, e.g. 'en', 'fr', 'en-gb'
- *
- * return Array  - form field labels/headers and values based on smsforms
- *                 definition.
- *
- * api private
- */
-var getLabels = function(keys, form, locale) {
-    logger.debug(['getLabels args', arguments]);
-
-    var def = smsforms[form],
-        labels = [],
-        form_labels = {};
-
-    // collect form labels from form def if we have one.
-    // TODO support locale strings in form labels
-    if (def) {
-        _.map(def.fields, function (f) {
-            form_labels[f.key] = f.label || f.key;
-        });
-    }
-
-    // resolve labels based on form def or base strings
-    for (var i in keys) {
-        var key = keys[i];
-        if (form_labels[key]) {
-            labels.push(form_labels[key]);
-        } else {
-            labels.push(_s(key, locale));
-        }
-    };
-
-    return labels;
-};
-
-/*
- * param Object doc - data record document
- * param Array keys - keys we want to resolve labels for
- *
- * return Array  - values from doc in the same order as keys
- *
- * TODO Support dotted key notation to resolve keys?
- */
-var getValues = function(doc, keys) {
-    logger.debug(['getValues args', arguments]);
-    var ret = [];
-    for (var i in keys) {
-        ret.push(doc[keys[i]]);
-    }
-    return ret;
-};
-
-/*
- * param String form - smsforms key
- * return Array  - form field keys based on smsforms definition
- *
- * TODO Support dotted key notation to resolve keys?
- */
-var getFormKeys = function(form) {
-    logger.debug(['getFormKeys args', arguments]);
-    var ret = [],
-        def = smsforms[form];
-    if (def) {
-        for (var i in def.fields) {
-            ret.push(def.fields[i].key);
-        }
-    }
-    return ret;
-};
-
 exports.data_records_csv = function (head, req) {
-
     var form  = req.query.form,
         filename = form + '_data_records.csv',
         locale = req.query.locale || 'en', //TODO get from session
@@ -117,23 +25,22 @@ exports.data_records_csv = function (head, req) {
     }});
 
     // add form keys from form def
-    keys.push.apply(keys, getFormKeys(form));
+    keys.push.apply(keys, utils.getFormKeys(form));
 
     // fetch labels for all keys
-    labels = getLabels(keys, form, locale);
+    labels = utils.getLabels(keys, form, locale);
 
     var row = [],
         rows = [labels];
+
     while (row = getRow()) {
-        rows.push(getValues(row.value, keys));
+        rows.push(utils.getValues(row.value, keys));
     }
 
     return '\uFEFF' + utils.arrayToCSV(rows, delimiter);
-
 };
 
 exports.data_records_xml = function (head, req) {
-
     var form  = req.query.form,
         filename = form + '_data_records.xml',
         locale = req.query.locale || 'en', //TODO get from session
@@ -147,19 +54,19 @@ exports.data_records_xml = function (head, req) {
     }});
 
     // add form keys from form def
-    keys.push.apply(keys, getFormKeys(form));
+    keys.push.apply(keys, utils.getFormKeys(form));
 
     // fetch labels for all keys
-    labels = getLabels(keys, form, locale);
+    labels = utils.getLabels(keys, form, locale);
 
     var row = [],
         rows = [labels];
+
     while (row = getRow()) {
-        rows.push(getValues(row.value, keys));
+        rows.push(utils.getValues(row.value, keys));
     }
 
     return '<?xml version="1.0" encoding="UTF-8"?>\n' +
-        // tells windows to auto-associate with excel
         '<?mso-application progid="Excel.Sheet"?>\n' +
         '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
         ' xmlns:o="urn:schemas-microsoft-com:office:office"\n' +
@@ -169,7 +76,6 @@ exports.data_records_xml = function (head, req) {
         '<Worksheet ss:Name="'+form+'"><Table>' +
         utils.arrayToXML(rows) +
         '</Table></Worksheet></Workbook>';
-
 };
 
 exports.deprecate_sms_messages_csv = function (head, req) {
