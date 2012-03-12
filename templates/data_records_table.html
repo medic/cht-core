@@ -24,6 +24,9 @@
             <th>
               Message
             </th>
+            <th>
+              Valid
+            </th>
             <th class="edit-col hide">Edit</th>
           </tr>
         </thead>
@@ -60,19 +63,26 @@
                 <a href="#" class="extend">{short_message}</a>
               {/sms_message}
             </td>
+            <td>
+              {?errors}
+              <i class="icon-exclamation-sign icon-large"><i>
+              {:else}
+              <i class="icon-ok icon-large"><i>
+              {/errors}
+            </td>
             <td class="edit-col hide">
               <form action="" method="POST" data-ajax="removeDoc">
                 <input type="hidden" name="_id" value="{_id}" />
                 <input type="hidden" name="_rev" value="{_rev}" />
-                <a class="submit delete" href="#">
-                  <i title="Delete" class="icon-remove-sign icon-large"></i>
+                <a class="btn btn-small submit delete" href="#">
+                  <i class="icon-trash icon-large"></i> Delete
                 </a>
               </form>
             </td>
           </tr>
           {#form_data}
             <tr class="extended hide">
-              <td colspan="5">
+              <td colspan="7">
                 <a title="Close" data-dismiss="extended" class="pull-right close">
                   <i class="icon-remove"></i></a>
                 <div class="scroll">{_html|s}</div>
