@@ -75,15 +75,16 @@
                 </form>
               </td>
             </tr>
-            {#form_data}
-              <tr class="extended hide">
-                <td colspan="7">
-                  <a title="Close" data-dismiss="extended" class="pull-right close">
-                    <i class="icon-remove"></i></a>
-                  <div class="scroll">{_html|s}</div>
-                </td>
-              </tr>
-            {/form_data}
+            <tr class="extended hide">
+              <td colspan="7">
+                <a title="Close" data-dismiss="extended" class="pull-right close">
+                  <i class="icon-remove"></i>
+                </a>
+                <div class="scroll">
+                  {>"data_record_fields.html":fields/}
+                </div>
+              </td>
+            </tr>
           {/data_records}
         {:else}
           <tr>
