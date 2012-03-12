@@ -32,7 +32,7 @@ exports.deprecated_sms_message_values = {
     }
 };
 
-exports.sms_messages = {
+exports.deprecated_sms_messages = {
     map: function (doc) {
         if (doc.type === 'sms_message') {
             emit(doc._id, doc);
