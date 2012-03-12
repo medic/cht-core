@@ -110,7 +110,7 @@ var expected_callback = {
  * Run add_sms and expect a callback to add a clinic to a data record which
  * contains all the information from the SMS.
  **/
-exports.psms_to_record = function (test) {
+exports.psms_to_record_with_auth = function (test) {
 
     test.expect(4);
 
@@ -195,8 +195,8 @@ var step2 = function(test, req) {
         query: {form: 'PSMS'} // query.form gets set by rewriter
     };
 
-    step3_1(test, next_req);
-    step3_2(test, next_req);
+    // pass in function and args toas callback
+    step3_1(test, next_req, step3_2, [test, next_req]);
 
 };
 
@@ -207,11 +207,13 @@ var step2 = function(test, req) {
  * Run data_record/merge/year/month/clinic_id and expect a callback to update
  * the data record with the new data.
  *
- * @param {Object} test - Unittest object
- * @param {Object} callback - Callback object used to form the next request
+ * @param {Object} test     - Unittest object
+ * @param {Object} req      - Callback object used to form the next request
+ * @param {Function} finish - Last callback where test.done() is called
+ * @param {Array} args      - Args for last callback
  * @api private
  */
-var step3_1 = function(test, req) {
+var step3_1 = function(test, req, finish, args) {
 
     var viewdata = {rows: [
         {
@@ -228,6 +230,10 @@ var step3_1 = function(test, req) {
 
     test.same(resp_body.callback.options.headers.Authorization,
         "Basic cm9vdDpwYXNzd29yZA==");
+
+    if (typeof finish === 'function') {
+        finish.apply(this, args);
+    }
 };
 
 

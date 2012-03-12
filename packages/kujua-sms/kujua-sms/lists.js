@@ -198,7 +198,7 @@ var getReferralMessage = function(form, phone, form_data, clinic) {
  * @api private
  */
 var getReferralTask = function(form, phone, form_data, clinic) {
-    logger.debug(['getReferralTask arguments', arguments]);
+    //logger.debug(['lists.getReferralTask arguments', arguments]);
     var to = getRecipientPhone(form, phone, clinic),
         task = {
             type: 'referral',
@@ -219,25 +219,25 @@ var getReferralTask = function(form, phone, form_data, clinic) {
  * @api private
  */
 var getCallbackPath = function(req, form, form_data, clinic) {
-    logger.debug(['lists.getCallbackPath arguments', arguments]);
-    
-    var path = '',
-        appdb = require('duality/core').getDBURL(req),
-        baseURL = require('duality/core').getBaseURL();
+    //logger.debug(['lists.getCallbackPath arguments', arguments]);
 
-    if(!clinic) {
+    var appdb = require('duality/core').getDBURL(req),
+        baseURL = require('duality/core').getBaseURL(),
+        path = appdb;
+
+    if(!clinic || !form || !form_data || !smsforms[form]) {
         return path;
     }
 
-    if (smsforms.isReferralForm(form)) {
-        path = appdb;
-    } else {
-        path = baseURL + smsforms[form].data_record_merge
-                  .replace(':form', encodeURIComponent(form))
-                  .replace(':year', encodeURIComponent(form_data.year[0]))
-                  .replace(':month', encodeURIComponent(form_data.month[0]))
-                  .replace(':clinic_id', encodeURIComponent(clinic._id));
+    if (smsforms.isReferralForm(form) || !smsforms[form].data_record_merge) {
+        return path;
     }
+
+    path = baseURL + smsforms[form].data_record_merge
+              .replace(':form', encodeURIComponent(form))
+              .replace(':year', encodeURIComponent(form_data.year[0]))
+              .replace(':month', encodeURIComponent(form_data.month[0]))
+              .replace(':clinic_id', encodeURIComponent(clinic._id));
 
     return path;
 };
@@ -268,7 +268,6 @@ var json_headers = {
  */
 exports.data_record = function (head, req) {
     start({code: 200, headers: json_headers});
-    logger.debug(['data_record arguments', arguments]);
 
     var record = JSON.parse(req.body),
         form = req.query.form,
@@ -279,7 +278,6 @@ exports.data_record = function (head, req) {
         def = smsforms[form],
         clinic = null;
 
-    /* Panic */
     if (!def) {
         addError(task, {error: 'No form definition found for '+ form +'.'});
     }
@@ -319,6 +317,7 @@ exports.data_record = function (head, req) {
         respBody.callback.options.headers.Authorization = req.headers.Authorization;
     }
 
+    logger.debug(['Response lists.data_record', respBody]);
     return JSON.stringify(respBody);
 };
 
@@ -339,7 +338,7 @@ exports.data_record = function (head, req) {
   */
 exports.data_record_merge = function (head, req) {
     start({code: 200, headers: json_headers});
-    logger.debug(['data_record_merge arguments', arguments]);
+    //logger.debug(['data_record_merge arguments', arguments]);
 
     var new_data_record = JSON.parse(req.body),
         form = req.query.form,
@@ -352,7 +351,6 @@ exports.data_record_merge = function (head, req) {
         path = appdb,
         row = {};
 
-    /* Panic */
     if (!def) {
         addError(task, {error: 'No form definition found for '+ form +'.'});
     }
@@ -362,6 +360,7 @@ exports.data_record_merge = function (head, req) {
         break;
     }
 
+    logger.debug(['old_data_record', old_data_record]);
     if(old_data_record) {
         path += '/' + old_data_record._id;
         new_data_record._id = old_data_record._id;
@@ -384,6 +383,7 @@ exports.data_record_merge = function (head, req) {
         respBody.callback.options.headers.Authorization = req.headers.Authorization;
     }
 
+    logger.debug(['Response lists.data_record_merge', respBody]);
     return JSON.stringify(respBody);
 };
 
@@ -439,5 +439,6 @@ exports.tasks_pending = function (head, req) {
         }
     }
 
+    logger.debug(['Response lists.tasks_pending', respBody]);
     return JSON.stringify(respBody)
 };

@@ -16,10 +16,16 @@
               <a href="{baseURL}/sms_messages_by_reported_date?limit=11">Reported Date</a>
             </th>
             <th>
-              Clinic
+              From
+            </th>
+            <th>
+              Facility
             </th>
             <th>
               Message
+            </th>
+            <th>
+              Valid
             </th>
             <th class="edit-col hide">Edit</th>
           </tr>
@@ -37,10 +43,19 @@
               {reported_date}
             </td>
             <td>
+              {from}
+            </td>
+            <td>
               {#related_entities}
-                {#clinic}
-                  {name}
+                {?clinic}
+                <i class="clinic">{clinic.name}</i>
                 {/clinic}
+                {?health_center}
+                <i class="health_center">{health_center.name}</i>
+                {/health_center}
+                {?district_hospital}
+                <i class="district_hospital">{district_hospital.name}</i>
+                {/district_hospital}
               {/related_entities}
             </td>
             <td>
@@ -48,20 +63,27 @@
                 <a href="#" class="extend">{short_message}</a>
               {/sms_message}
             </td>
+            <td>
+              {?errors}
+              <i class="icon-exclamation-sign icon-large"><i>
+              {:else}
+              <i class="icon-ok icon-large"><i>
+              {/errors}
+            </td>
             <td class="edit-col hide">
               <form action="" method="POST" data-ajax="removeDoc">
                 <input type="hidden" name="_id" value="{_id}" />
                 <input type="hidden" name="_rev" value="{_rev}" />
-                <a class="submit delete" href="#">
-                  <i title="Delete" class="icon-remove-sign icon-large"></i>
+                <a class="btn btn-small btn-danger submit delete" href="#">
+                  <i class="icon-trash icon-large"></i> Delete
                 </a>
               </form>
             </td>
           </tr>
           {#form_data}
             <tr class="extended hide">
-              <td colspan="5">
-                <a href="#" data-dismiss="extended" class="pull-right close">
+              <td colspan="7">
+                <a title="Close" data-dismiss="extended" class="pull-right close">
                   <i class="icon-remove"></i></a>
                 <div class="scroll">{_html|s}</div>
               </td>

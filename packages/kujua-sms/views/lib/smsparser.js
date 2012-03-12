@@ -36,16 +36,18 @@ exports.parseArray = function (form, def, doc) {
 };
 
 /**
- * Determine form through message
+ * Determine form through message headers, currently supporting muvuku and
+ * textforms message formats.
  *
  * @param {String} message
- * @returns {String} form
+ * @returns {String} form or undefined if we don't recognize the format
  * @api public
  */
 exports.getForm = function(message) {
     if(message.split('!').length === 3) {
         return message.split('!')[1];
-    } else {
+    }
+    if (message.match(new RegExp('\s*SUR'))) {
         return 'CNPW';
     }
 };
