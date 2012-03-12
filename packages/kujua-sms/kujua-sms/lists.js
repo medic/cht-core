@@ -14,7 +14,7 @@ var _ = require('underscore')._,
  *                 english by default.
  */
 var _s = function(key, locale) {
-    logger.debug(['_s args', arguments]);
+    //logger.debug(['_s args', arguments]);
     if (strings[key]) {
         if (strings[key][locale]) {
             return strings[key][locale];
@@ -38,7 +38,7 @@ var _s = function(key, locale) {
  * api private
  */
 var getLabels = function(keys, form, locale) {
-    logger.debug(['getLabels args', arguments]);
+    //logger.debug(['getLabels args', arguments]);
 
     var def = smsforms[form],
         labels = [],
@@ -74,7 +74,7 @@ var getLabels = function(keys, form, locale) {
  * TODO Support dotted key notation to resolve keys?
  */
 var getValues = function(doc, keys) {
-    logger.debug(['getValues args', arguments]);
+    //logger.debug(['getValues args', arguments]);
     var ret = [];
     for (var i in keys) {
         ret.push(doc[keys[i]]);
@@ -89,7 +89,7 @@ var getValues = function(doc, keys) {
  * TODO Support dotted key notation to resolve keys?
  */
 var getFormKeys = function(form) {
-    logger.debug(['getFormKeys args', arguments]);
+    //logger.debug(['getFormKeys args', arguments]);
     var ret = [],
         def = smsforms[form];
     if (def) {
