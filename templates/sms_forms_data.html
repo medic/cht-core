@@ -1,23 +1,22 @@
 <ul>
 {?forms}
-{#iter:forms}
+{#forms}
 <li class="form">
-  <h3>{?value.schema.title}{value.schema.title} <small>{key}</small></h3>
-      {:else}{key}</h3>{/value.schema.title}
-  <h4>{value.total} total</h4>
+  <h3>{title}</h3>
+  <h4>{size} total</h4>
       <form method="get">
         <select name="format">
-          <option value="{baseURL}/{key}/data_records.xml">Excel (English)</option>
-          <option value="{baseURL}/{key}/data_records.csv">CSV (English)</option>
-          <option value="{baseURL}/{key}/data_records.xml?locale=fr">Excel (French)</option>
-          <option value="{baseURL}/{key}/data_records.csv?locale=fr">CSV (French)</a></li>
+          <option value="{baseURL}/{form}/data_records.xml">Excel (English)</option>
+          <option value="{baseURL}/{form}/data_records.csv">CSV (English)</option>
+          <option value="{baseURL}/{form}/data_records.xml?locale=fr">Excel (French)</option>
+          <option value="{baseURL}/{form}/data_records.csv?locale=fr">CSV (French)</a></li>
         </select>
         <button class="btn btn-primary" type="submit">
           <i class="icon-arrow-down icon-large"></i>
         </button>
       </form>
 </li>
-{/iter}
+{/forms}
 {:else}
 <li>No data is available yet.</li>
 {/forms}
