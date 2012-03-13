@@ -35,6 +35,7 @@ exports.data_records_csv = function (head, req) {
 
     while (row = getRow()) {
         rows.push(utils.getValues(row.value, keys));
+        rows[rows.length - 1][0] = new Date(rows[rows.length - 1][0]).toLocaleString();
     }
 
     return '\uFEFF' + utils.arrayToCSV(rows, delimiter);
@@ -64,6 +65,7 @@ exports.data_records_xml = function (head, req) {
 
     while (row = getRow()) {
         rows.push(utils.getValues(row.value, keys));
+        rows[rows.length - 1][0] = new Date(rows[rows.length - 1][0]).toLocaleString();
     }
 
     return '<?xml version="1.0" encoding="UTF-8"?>\n' +
