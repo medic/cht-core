@@ -1,4 +1,22 @@
-exports.sms_message_values = {
+
+// TODO
+exports.data_records_valid_by_form = {
+    map: function (doc) {},
+    reduce: function(doc, rereduce) {}
+};
+
+exports.data_records_valid = {
+    map: function (doc) {
+        if (doc.form
+                && doc.type
+                && doc.type.substr(0,11) === 'data_record'
+                && doc.errors.length === 0) {
+            emit([doc.form, doc.reported_date], doc);
+        }
+    }
+};
+
+exports.deprecated_sms_message_values = {
     map: function (doc) {
         var smsparser = require('views/lib/smsparser'),
             smsforms = require('views/lib/smsforms');
@@ -14,7 +32,7 @@ exports.sms_message_values = {
     }
 };
 
-exports.sms_messages = {
+exports.deprecated_sms_messages = {
     map: function (doc) {
         if (doc.type === 'sms_message') {
             emit(doc._id, doc);

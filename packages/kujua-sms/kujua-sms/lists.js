@@ -4,24 +4,82 @@
 
 var _ = require('underscore')._,
     utils = require('./utils'),
+    strings = utils.strings,
     logger = utils.logger,
     smsforms = require('views/lib/smsforms');
 
-var strings = {
-    gateway: {
-        sent_timestamp: {
-            en: 'Sent Timestamp',
-            fr: 'Date envoyé'
-        },
-        from: {
-            en: 'From',
-            fr: 'Envoyé par'
-        }
+
+exports.data_records_csv = function (head, req) {
+    var form  = req.query.form,
+        filename = form + '_data_records.csv',
+        locale = req.query.locale || 'en', //TODO get from session
+        delimiter = locale === 'fr' ? '";"' : null,
+        // extra doc fields we want to export not in form
+        keys = ['reported_date', 'from'];
+
+    start({code: 200, headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': 'attachment; filename=' + filename
+        //'Content-Disposition': 'attachment; filename="testit.csv";'+
+        //  'filename*=UTF-8\'\'testit.csv'
+    }});
+
+    // add form keys from form def
+    keys.push.apply(keys, utils.getFormKeys(form));
+
+    // fetch labels for all keys
+    labels = utils.getLabels(keys, form, locale);
+
+    var row = [],
+        rows = [labels];
+
+    while (row = getRow()) {
+        rows.push(utils.getValues(row.value, keys));
     }
+
+    return '\uFEFF' + utils.arrayToCSV(rows, delimiter);
 };
 
-exports.sms_messages_csv = function (head, req) {
-    var formKey  = req.query.form;
+exports.data_records_xml = function (head, req) {
+    var form  = req.query.form,
+        filename = form + '_data_records.xml',
+        locale = req.query.locale || 'en', //TODO get from session
+        delimiter = locale === 'fr' ? '";"' : null,
+        // extra doc fields we want to export not in form
+        keys = ['reported_date', 'from'];
+
+    start({code: 200, headers: {
+        'Content-Type': 'application/vnd.ms-excel; charset=utf-8',
+        'Content-Disposition': 'attachment; filename=' + filename
+    }});
+
+    // add form keys from form def
+    keys.push.apply(keys, utils.getFormKeys(form));
+
+    // fetch labels for all keys
+    labels = utils.getLabels(keys, form, locale);
+
+    var row = [],
+        rows = [labels];
+
+    while (row = getRow()) {
+        rows.push(utils.getValues(row.value, keys));
+    }
+
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+        '<?mso-application progid="Excel.Sheet"?>\n' +
+        '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
+        ' xmlns:o="urn:schemas-microsoft-com:office:office"\n' +
+        ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n' +
+        ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n' +
+        ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
+        '<Worksheet ss:Name="'+form+'"><Table>' +
+        utils.arrayToXML(rows) +
+        '</Table></Worksheet></Workbook>';
+};
+
+exports.deprecate_sms_messages_csv = function (head, req) {
+    var formKey  = req.query.form,
         def = smsforms[formKey ],
         filename = def ? formKey  + '_sms_messages.csv': 'unknown_form.csv',
         locale = req.query.locale || 'en',
@@ -43,8 +101,8 @@ exports.sms_messages_csv = function (head, req) {
         var headings = _.map(def.fields, function (r) {
             return r.label || r.key;
         });
-        headings.unshift(strings.gateway.from[locale]);
-        headings.unshift(strings.gateway.sent_timestamp[locale]);
+        headings.unshift(strings.from[locale]);
+        headings.unshift(strings.sent_timestamp[locale]);
 
         var data = _.map(rows, function(r) {
             return r.value ? r.value : '';
@@ -63,7 +121,7 @@ exports.sms_messages_csv = function (head, req) {
 
 
 
-exports.sms_messages_xml = function (head, req) {
+exports.deprecated_sms_messages_xml = function (head, req) {
     var formKey = req.query.form,
         form = smsforms[formKey],
         filename = form ? formKey + '_sms_messages.xml': 'unknown_form.xml',
@@ -83,8 +141,8 @@ exports.sms_messages_xml = function (head, req) {
         var headings = _.map(form.fields, function (r) {
             return r.label || r.key;
         });
-        headings.unshift(strings.gateway.from[locale]);
-        headings.unshift(strings.gateway.sent_timestamp[locale]);
+        headings.unshift(strings.from[locale]);
+        headings.unshift(strings.sent_timestamp[locale]);
 
         var data = _.map(rows, function(r) {
             return r.value ? r.value : '';

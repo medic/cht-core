@@ -7,10 +7,10 @@
   <h4>{value.total} total</h4>
       <form method="get">
         <select name="format">
-          <option value="{key}/sms_messages.xml">Excel (English)</option>
-          <option value="{key}/sms_messages.csv">CSV (English)</option>
-          <option value="{key}/sms_messages.xml?locale=fr">Excel (French)</option>
-          <option value="{key}/sms_messages.csv?locale=fr">CSV (French)</a></li>
+          <option value="{baseURL}/{key}/data_records.xml">Excel (English)</option>
+          <option value="{baseURL}/{key}/data_records.csv">CSV (English)</option>
+          <option value="{baseURL}/{key}/data_records.xml?locale=fr">Excel (French)</option>
+          <option value="{baseURL}/{key}/data_records.csv?locale=fr">CSV (French)</a></li>
         </select>
         <button class="btn btn-primary" type="submit">
           <i class="icon-arrow-down icon-large"></i>
