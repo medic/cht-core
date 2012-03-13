@@ -62,7 +62,6 @@ var expected_callback = {
     data: {
         type: "data_record",
         form: "MSBB",
-        form_data: example.form_data,
         related_entities: {
             clinic: null
         },
@@ -132,10 +131,6 @@ exports.msbb_to_record = function (test) {
     });
 
     test.same(
-        resp_body.callback.data.form_data,
-        expected_callback.data.form_data);
-
-    test.same(
         resp_body.callback.data.sms_message,
         expected_callback.data.sms_message);
 
@@ -192,9 +187,6 @@ var step2 = function(test, req) {
     // extra checks
     test.same(resp_body.callback.data.errors, []);
     test.same(
-        resp_body.callback.data.form_data,
-        example.form_data);
-    test.same(
         resp_body.callback.data.sms_message,
         example.sms_message);
         
@@ -207,6 +199,10 @@ var step2 = function(test, req) {
             expected_callback.data[attr]);
     });
 
+    test.same(
+        resp_body.callback.data.tasks[0].messages[0].message,
+        "Année: 2012, Mois: 1, Jour: 24, Code du RC: abcdef, Heure de départ: 1111, Nom: bbbbbb, Age: 22, Motif référence: Autres, Si 'autre', précisez motif référence: cccccc"
+    );    
 
     test.done();
 };

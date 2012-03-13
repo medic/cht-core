@@ -69,7 +69,6 @@ var getCallbackBody = function(phone, form, form_data) {
         type: type,
         from: phone,
         form: form,
-        form_data: form_data,
         related_entities: {clinic: null},
         errors: [],
         tasks: [],

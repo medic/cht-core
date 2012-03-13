@@ -43,27 +43,6 @@ var example = {
             }
         }
     },
-    form_data: {
-        days_stocked_out: {
-            cotrimoxazole: [7, "Cotrimoxazole: Days stocked out"],
-            eye_ointment: [4, "Eye Ointment: Days stocked out"],
-            la_6x1: [9, "LA 6x1: Days stocked out"],
-            la_6x2: [8, "LA 6x2: Days stocked out"],
-            ors: [5, "ORS: Days stocked out"],
-            zinc: [6, "Zinc: Days stocked out"]
-        },
-        facility_id: ['facility', 'Health Facility Identifier'],
-        month: ['11', 'Report Month'],
-        quantity_dispensed: {
-            cotrimoxazole: [3, "Cotrimoxazole: Dispensed total"],
-            eye_ointment: [6, "Eye Ointment: Dispensed total"],
-            la_6x1: [1, "LA 6x1: Dispensed total"],
-            la_6x2: [2, "LA 6x2: Dispensed total"],
-            ors: [5, "ORS: Dispensed total"],
-            zinc: [4, "Zinc: Dispensed total"]
-        },
-        year: ['2011', 'Report Year']
-    },
     days_stocked_out: {
         cotrimoxazole: 7,
         eye_ointment: 4,
@@ -86,7 +65,6 @@ var expected_callback = {
     data: {
         type: "data_record_psi_malawi",
         form: "PSMS",
-        form_data: example.form_data,
         related_entities: {
             clinic: null
         },
@@ -111,7 +89,7 @@ var expected_callback = {
  **/
 exports.psms_to_record = function (test) {
 
-    test.expect(26);
+    test.expect(23);
 
     // Data parsed from a gateway POST
     var data = {
@@ -154,10 +132,6 @@ exports.psms_to_record = function (test) {
     test.same(
         resp_body.callback.data.quantity_dispensed,
         expected_callback.data.quantity_dispensed);
-
-    test.same(
-        resp_body.callback.data.form_data,
-        expected_callback.data.form_data);
 
     test.same(
         resp_body.callback.data.sms_message,
@@ -273,10 +247,6 @@ var step3_1 = function(test, req, finish, args) {
         expected_callback.data.quantity_dispensed);
 
     test.same(
-        resp_body.callback.data.form_data,
-        expected_callback.data.form_data);
-
-    test.same(
         resp_body.callback.data.sms_message,
         expected_callback.data.sms_message);
 
@@ -316,9 +286,6 @@ var step3_2 = function(test, req) {
 
     // extra checks
     test.same(resp_body.callback.data.errors, []);
-    test.same(
-        resp_body.callback.data.form_data,
-        example.form_data);
     test.same(
         resp_body.callback.data.sms_message,
         example.sms_message);

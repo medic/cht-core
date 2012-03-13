@@ -149,14 +149,12 @@ exports.referral_msbc2 = function (test) {
      * 'clinic' fields are null. These get added in the next callback request.
      */
     test.same(resp.callback.data.sms_message, sms_message);
-    test.same(resp.callback.data.form_data, form_data);
     test.same(resp.callback.data, {
         "type": "data_record",
         "from": "+14155551212",
         "refid": ref_rc,
         "sms_message": sms_message,
         "form": "MSBC",
-        "form_data": form_data,
         "related_entities": {"clinic": null},
         "errors": [],
         "tasks": []
@@ -249,7 +247,6 @@ exports.referral_msbc2 = function (test) {
         "refid": ref_rc,
         "sms_message": sms_message,
         "form": "MSBC",
-        "form_data": form_data,
         "related_entities": {"clinic": clinic1},
         "errors": [],
         "tasks": [{
@@ -261,7 +258,6 @@ exports.referral_msbc2 = function (test) {
 
     // somewhat redundant to test all these but aides debugging
     test.same(doc2.callback.data.messages, record.messages);
-    test.same(doc2.callback.data.form_data, record.form_data);
     test.same(doc2.callback.data, record);
 
     // Step 3 doc is saved
@@ -328,7 +324,6 @@ exports.referral_msbc2 = function (test) {
         "refid": ref_rc,
         "sms_message": sms_message,
         "form": "MSBC",
-        "form_data": form_data,
         "related_entities": {"clinic": clinic1},
         "errors": [],
         "tasks": [{
@@ -339,7 +334,6 @@ exports.referral_msbc2 = function (test) {
     }];
     // somewhat redundant to test all these but aides debugging
     test.same(doc3.callback.data.docs[0].messages, docs[0].messages);
-    test.same(doc3.callback.data.docs[0].form_data, docs[0].form_data);
     test.same(doc3.callback.data.docs, docs);
 
     // Step 5 Bulk db update to update the 'state' field to 'sent'

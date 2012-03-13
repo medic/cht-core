@@ -28,7 +28,7 @@ exports.data_records_csv = function (head, req) {
     keys.push.apply(keys, utils.getFormKeys(form));
 
     // fetch labels for all keys
-    labels = utils.getLabels(keys, form, locale);
+    var labels = utils.getLabels(keys, form, locale);
 
     var row = [],
         rows = [labels];
@@ -57,7 +57,7 @@ exports.data_records_xml = function (head, req) {
     keys.push.apply(keys, utils.getFormKeys(form));
 
     // fetch labels for all keys
-    labels = utils.getLabels(keys, form, locale);
+    var labels = utils.getLabels(keys, form, locale);
 
     var row = [],
         rows = [labels];
@@ -192,7 +192,7 @@ var isFromHealthCenter = function(phone, clinic) {
  * @returns {String} - Return phone number of where the referral should go to.
  * @api private
  */
-var getRecipientPhone = exports.getRecipientPhone = function(form, phone, clinic) {
+exports.getRecipientPhone = function(form, phone, clinic) {
     switch (form) {
         case 'MSBR':
             // Clinic -> Health Center
@@ -205,45 +205,49 @@ var getRecipientPhone = exports.getRecipientPhone = function(form, phone, clinic
                 // default to health center TODO check with abbyad
                 return clinic.parent.contact.phone;
             }
+            break;
         case 'MSBB':
             // Health Center -> Hospital
             return clinic.parent.parent.contact.phone;
         default:
             // Not sure what to do here
             return '';
-    };
+    }
 };
-
-
+var getRecipientPhone = exports.getRecipientPhone;
 
 /**
- * @param {String} form - smsforms form key
- * @param {String} phone - Phone number of where the message is *from*.
- * @param {Object} form_data - parsed form data that includes labels (format:1)
- * @param {Object} clinic - the clinic from the tasks_referral doc
+ * @param {String} form
+ * @param {String} phone
+ * @param {Object} clinic
+ * @param {Object} record
  *
  * @returns {String} Return referral message formated as string.
  *
  * @api private
  */
-var getReferralMessage = function(form, phone, form_data, clinic) {
+var getReferralMessage = function(form, phone, clinic, record) {
     var ignore = [],
         message = [];
-    switch (form) {
-        case 'MSBC':
-            if (isFromHealthCenter(phone, clinic))
-                ignore.push('cref_treated');
-        default:
-            for (var k in form_data) {
-                var val = form_data[k];
-                if (ignore.indexOf(k) === -1) {
-                    message.push(val[1] + ': ' + val[0]);
-                }
-            }
-            return message.join(', ');
+    
+    if(form === "MSBC") {
+        if (isFromHealthCenter(phone, clinic)) {
+            ignore.push('cref_treated');
+        }        
     }
-};
+    
+    var keys = utils.getFormKeys(form);
+    var labels = utils.getLabels(keys, form);
+    var values = utils.getValues(record, keys);
+    
+    _.each(keys, function(key) {
+        if (ignore.indexOf(key) === -1) {
+            message.push(labels.shift() + ': ' + values.shift());
+        }
+    });
 
+    return message.join(', ');
+};
 
 /**
  * @param {String} form - smsforms form key
@@ -255,8 +259,11 @@ var getReferralMessage = function(form, phone, form_data, clinic) {
  *
  * @api private
  */
-var getReferralTask = function(form, phone, form_data, clinic) {
-    //logger.debug(['lists.getReferralTask arguments', arguments]);
+var getReferralTask = function(form, record) {
+    var phone = record.from,
+        form_data = record.form_data,
+        clinic = record.related_entities.clinic;
+    
     var to = getRecipientPhone(form, phone, clinic),
         task = {
             type: 'referral',
@@ -264,26 +271,29 @@ var getReferralTask = function(form, phone, form_data, clinic) {
             to: to,
             messages: [{
                 to: to,
-                message: getReferralMessage(form, phone, form_data, clinic)}]};
+                message: getReferralMessage(form, phone, clinic, record)
+            }]
+        };
+
     return task;
 };
 
 /**
- * @param {Object} req - Kanso request object
+ * @param {Object} req - kanso request object
  * @param {String} form - smsforms key string
- * @param {Object} form_data - parsed form data
+ * @param {Object} record - record
  * @param {Object} clinic - clinic facility object
- * @returns {String} - Path for callback
+ *
+ * @returns {String} - path for callback
+ *
  * @api private
  */
-var getCallbackPath = function(req, form, form_data, clinic) {
-    //logger.debug(['lists.getCallbackPath arguments', arguments]);
-
+var getCallbackPath = function(req, form, record, clinic) {
     var appdb = require('duality/core').getDBURL(req),
         baseURL = require('duality/core').getBaseURL(),
         path = appdb;
 
-    if(!clinic || !form || !form_data || !smsforms[form]) {
+    if(!clinic || !form || !record || !smsforms[form]) {
         return path;
     }
 
@@ -293,8 +303,8 @@ var getCallbackPath = function(req, form, form_data, clinic) {
 
     path = baseURL + smsforms[form].data_record_merge
               .replace(':form', encodeURIComponent(form))
-              .replace(':year', encodeURIComponent(form_data.year[0]))
-              .replace(':month', encodeURIComponent(form_data.month[0]))
+              .replace(':year', encodeURIComponent(record.year))
+              .replace(':month', encodeURIComponent(record.month))
               .replace(':clinic_id', encodeURIComponent(clinic._id));
 
     return path;
@@ -337,7 +347,7 @@ exports.data_record = function (head, req) {
         clinic = null;
 
     if (!def) {
-        addError(task, {error: 'No form definition found for '+ form +'.'});
+        addError(record, {error: 'No form definition found for '+ form +'.'});
     }
 
     /* Add clinic to task */
@@ -352,11 +362,8 @@ exports.data_record = function (head, req) {
         addError(record, {error: "Clinic not found."});
     } else if (smsforms.isReferralForm(form)) {
         record.tasks.push(
-            getReferralTask(
-                form,
-                record.from,
-                record.form_data,
-                record.related_entities.clinic));
+            getReferralTask(form, record)
+        );
     }
 
     /* Send callback to gateway to check for already existing doc. */
@@ -365,7 +372,7 @@ exports.data_record = function (head, req) {
             options: {
                 host: host,
                 port: port,
-                path: getCallbackPath(req, form, record.form_data, clinic),
+                path: getCallbackPath(req, form, record, clinic),
                 method: "POST",
                 headers: _.clone(json_headers)},
             data: record}};
@@ -410,7 +417,7 @@ exports.data_record_merge = function (head, req) {
         row = {};
 
     if (!def) {
-        addError(task, {error: 'No form definition found for '+ form +'.'});
+        addError(new_data_record, {error: 'No form definition found for '+ form +'.'});
     }
 
     while (row = getRow()) {
@@ -423,7 +430,7 @@ exports.data_record_merge = function (head, req) {
         path += '/' + old_data_record._id;
         new_data_record._id = old_data_record._id;
         new_data_record._rev = old_data_record._rev;
-    };
+    }
 
     /* Send callback to gateway to save the doc. */
     var respBody = {
@@ -494,9 +501,9 @@ exports.tasks_pending = function (head, req) {
                 headers: json_headers},
             // bulk update
             data: {docs: newDocs}
-        }
+        };
     }
 
     logger.debug(['Response lists.tasks_pending', respBody]);
-    return JSON.stringify(respBody)
+    return JSON.stringify(respBody);
 };

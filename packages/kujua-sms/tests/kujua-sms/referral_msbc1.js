@@ -155,7 +155,6 @@ exports.referral_msbc1 = function (test) {
         "sms_message": sms_message,
         "messages": [],
         "form": "MSBC",
-        "form_data": form_data,
         "clinic": null,
         "errors": []
     });
@@ -254,14 +253,12 @@ exports.referral_msbc1 = function (test) {
         "sms_message": sms_message,
         "messages": messages,
         "form": "MSBC",
-        "form_data": form_data,
         "clinic": clinic1,
         "errors": [],
     };
 
     // somewhat redundant to test all these but aides debugging
     test.same(doc2.callback.data.messages, task.messages);
-    test.same(doc2.callback.data.form_data, task.form_data);
     test.same(doc2.callback.data, task);
 
     // Step 3 tasks_referral doc is saved
@@ -331,7 +328,6 @@ exports.referral_msbc1 = function (test) {
         "sms_message": sms_message,
         "messages": messages,
         "form": "MSBC",
-        "form_data": form_data,
         "clinic": clinic1,
         "errors": []
     }]);

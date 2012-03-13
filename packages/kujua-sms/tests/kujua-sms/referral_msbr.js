@@ -141,7 +141,6 @@ exports.referral_msbr = function (test) {
         "sms_message": sms_message,
         "messages": [],
         "form": "MSBR",
-        "form_data": form_data,
         "clinic": null,
         "errors": []
     });
@@ -230,7 +229,6 @@ exports.referral_msbr = function (test) {
            }
         ],
         "form": "MSBR",
-        "form_data": form_data,
         "clinic": clinic1,
         "errors": [],
     };
@@ -315,7 +313,6 @@ exports.referral_msbr = function (test) {
            }
         ],
         "form": "MSBR",
-        "form_data": form_data,
         "clinic": clinic1,
         "errors": []
     }]);
