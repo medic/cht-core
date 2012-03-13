@@ -511,12 +511,12 @@ exports.getLabels = function(keys, form, locale) {
  */
 exports.getValues = function(doc, keys) {
     var values = [];
-
+    
     for (var i in keys) {
         var key = keys[i];
         
         if(_.isArray(key)) {
-            values = _.union(values, exports.getValues(doc[key[0]], key[1]));
+            values = values.concat(exports.getValues(doc[key[0]], key[1]));
         } else {
             values.push(doc[key]);
         }
