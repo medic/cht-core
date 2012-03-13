@@ -41,6 +41,8 @@
         "jsDump": null,
         "git-info": null,
         "showdown": null,
-        "couch-fakerequest": null
+        "couch-fakerequest": null,
+        "users": null,
+        "cookies": null
     }
 }
