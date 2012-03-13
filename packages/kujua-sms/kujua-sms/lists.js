@@ -233,7 +233,7 @@ var getReferralMessage = function(form, phone, clinic, record) {
     if(form === "MSBC") {
         if (isFromHealthCenter(phone, clinic)) {
             ignore.push('cref_treated');
-        }        
+        }
     }
     
     var keys = utils.getFormKeys(form);
@@ -243,6 +243,9 @@ var getReferralMessage = function(form, phone, clinic, record) {
     _.each(keys, function(key) {
         if (ignore.indexOf(key) === -1) {
             message.push(labels.shift() + ': ' + values.shift());
+        } else {
+            labels.shift();
+            values.shift();
         }
     });
 

@@ -13,12 +13,12 @@ var updates = require('kujua-sms/updates'),
 var example = {
     sms_message: {
        from: "+13125551212",
-       message: '1!MSBB!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc',
+       message: '1!MSBR!2012#1#24#abcdef#1111#bbb#22#8#ccc',
        sent_timestamp: "1-19-12 18:45",
        sent_to: "+15551212",
        type: "sms_message",
        locale: "en",
-       form: "MSBB"
+       form: "MSBR"
     },
     clinic: {
         "_id": "4a6399c98ff78ac7da33b639ed60f458",
@@ -27,13 +27,13 @@ var example = {
         "name": "Example clinic 1",
         "contact": {
             "name": "Sam Jones",
-            "phone": "+13125551212"
+            "phone": "+17085551212"
         },
         "parent": {
             "type": "health_center",
             "contact": {
                 "name": "Neal Young",
-                "phone": "+17085551212"
+                "phone": "+13125551212"
             },
             "parent": {
                 "type": "district_hospital",
@@ -49,12 +49,13 @@ var example = {
 var expected_callback = {
     data: {
         type: "data_record",
-        form: "MSBB",
+        form: "MSBR",
         related_entities: {
             clinic: null
         },
         sms_message: example.sms_message,
         from: "+13125551212",
+        refid: "abcdef",
         errors: [],
         tasks: [],
         ref_year: "2012",
@@ -62,11 +63,10 @@ var expected_callback = {
         ref_day: 24,
         ref_rc: "abcdef",
         ref_hour: 1111,
-        ref_name: "bbbbbb",
+        ref_name: "bbb",
         ref_age: 22,
-        ref_reason: "Autres",
-        ref_reason_other: "cccccc",
-        refid: "abcdef"
+        ref_reason: "TB dans le rouge",
+        ref_reason_other: "ccc"
     }
 };
 
@@ -77,14 +77,14 @@ var expected_callback = {
  * Run add_sms and expect a callback to add a clinic to a data record which
  * contains all the information from the SMS.
  **/
-exports.msbb_to_record = function (test) {
+exports.msbc1_to_record = function (test) {
 
     test.expect(26);
 
     // Data parsed from a gateway POST
     var data = {
         from: '+13125551212',
-        message: '1!MSBB!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc',
+        message: '1!MSBR!2012#1#24#abcdef#1111#bbb#22#8#ccc',
         sent_timestamp: '1-19-12 18:45',
         sent_to: '+15551212'
     };
@@ -93,7 +93,7 @@ exports.msbb_to_record = function (test) {
     // rewriter.
     var req = {
         uuid: '14dc3a5aa6',
-        query: {form: 'MSBB'},
+        query: {form: 'MSBR'},
         method: "POST",
         headers: helpers.headers("url", querystring.stringify(data)),
         body: querystring.stringify(data),
@@ -107,11 +107,12 @@ exports.msbb_to_record = function (test) {
     
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/MSBB/data_record/add/health_center/%2B13125551212");
+        baseURL + "/MSBR/data_record/add/clinic/%2B13125551212");
 
     _.each([
-        'ref_year', 'ref_month', 'ref_day', 'ref_rc', 'ref_hour',
-        'ref_name', 'ref_age', 'ref_reason', 'ref_reason_other'
+        'ref_year', 'ref_month', 'ref_day', 'ref_rc',
+        'ref_hour', 'ref_name', 'ref_age', 'ref_reason',
+        'ref_reason_other'
     ], function(attr) {
         test.same(
             resp_body.callback.data[attr],
@@ -133,7 +134,7 @@ exports.msbb_to_record = function (test) {
         path: resp_body.callback.options.path,
         headers: helpers.headers(
                     'json', JSON.stringify(resp_body.callback.data)),
-        query: {form: 'MSBB'} // query.form gets set by rewriter
+        query: {form: 'MSBR'}
     };
 
     step2(test, next_req);
@@ -179,8 +180,9 @@ var step2 = function(test, req) {
         example.sms_message);
         
     _.each([
-        'ref_year', 'ref_month', 'ref_day', 'ref_rc', 'ref_hour',
-        'ref_name', 'ref_age', 'ref_reason', 'ref_reason_other'
+        'ref_year', 'ref_month', 'ref_day', 'ref_rc',
+        'ref_hour', 'ref_name', 'ref_age', 'ref_reason',
+        'ref_reason_other'
     ], function(attr) {
         test.same(
             resp_body.callback.data[attr],
@@ -189,7 +191,7 @@ var step2 = function(test, req) {
 
     test.same(
         resp_body.callback.data.tasks[0].messages[0].message,
-        "Année: 2012, Mois: 1, Jour: 24, Code du RC: abcdef, Heure de départ: 1111, Nom: bbbbbb, Age: 22, Motif référence: Autres, Si 'autre', précisez motif référence: cccccc"
+        "Année: 2012, Mois: 1, Jour: 24, Code du RC: abcdef, Heure de départ: 1111, Nom: bbb, Age: 22, Motif référence: TB dans le rouge, Si 'autre', précisez motif référence: ccc"
     );    
 
     test.done();

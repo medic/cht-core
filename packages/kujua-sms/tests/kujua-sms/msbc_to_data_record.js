@@ -13,12 +13,12 @@ var updates = require('kujua-sms/updates'),
 var example = {
     sms_message: {
        from: "+13125551212",
-       message: '1!MSBB!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc',
+       message: '1!MSBC!2012#1#16#abcdef#5#aaa#31#bbb#ccc#5#ddd#eee',
        sent_timestamp: "1-19-12 18:45",
        sent_to: "+15551212",
        type: "sms_message",
        locale: "en",
-       form: "MSBB"
+       form: "MSBC"
     },
     clinic: {
         "_id": "4a6399c98ff78ac7da33b639ed60f458",
@@ -27,13 +27,13 @@ var example = {
         "name": "Example clinic 1",
         "contact": {
             "name": "Sam Jones",
-            "phone": "+13125551212"
+            "phone": "+17085551212"
         },
         "parent": {
             "type": "health_center",
             "contact": {
                 "name": "Neal Young",
-                "phone": "+17085551212"
+                "phone": "+13125551212"
             },
             "parent": {
                 "type": "district_hospital",
@@ -49,24 +49,27 @@ var example = {
 var expected_callback = {
     data: {
         type: "data_record",
-        form: "MSBB",
+        form: "MSBC",
         related_entities: {
             clinic: null
         },
         sms_message: example.sms_message,
         from: "+13125551212",
+        refid: "abcdef",
         errors: [],
         tasks: [],
-        ref_year: "2012",
-        ref_month: "1",
-        ref_day: 24,
-        ref_rc: "abcdef",
-        ref_hour: 1111,
-        ref_name: "bbbbbb",
-        ref_age: 22,
-        ref_reason: "Autres",
-        ref_reason_other: "cccccc",
-        refid: "abcdef"
+        cref_year: "2012",
+        cref_month: "1",
+        cref_day: 16,
+        cref_rc: "abcdef",
+        cref_ptype: "Autre",
+        cref_name: "aaa",
+        cref_age: 31,
+        cref_mom: "bbb",
+        cref_treated: "ccc",
+        cref_rec: "Référé",
+        cref_reason: "ddd",
+        cref_agent: "eee"
     }
 };
 
@@ -77,14 +80,14 @@ var expected_callback = {
  * Run add_sms and expect a callback to add a clinic to a data record which
  * contains all the information from the SMS.
  **/
-exports.msbb_to_record = function (test) {
+exports.msbc1_to_record = function (test) {
 
-    test.expect(26);
+    test.expect(32);
 
     // Data parsed from a gateway POST
     var data = {
         from: '+13125551212',
-        message: '1!MSBB!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc',
+        message: '1!MSBC!2012#1#16#abcdef#5#aaa#31#bbb#ccc#5#ddd#eee',
         sent_timestamp: '1-19-12 18:45',
         sent_to: '+15551212'
     };
@@ -93,7 +96,7 @@ exports.msbb_to_record = function (test) {
     // rewriter.
     var req = {
         uuid: '14dc3a5aa6',
-        query: {form: 'MSBB'},
+        query: {form: 'MSBC'},
         method: "POST",
         headers: helpers.headers("url", querystring.stringify(data)),
         body: querystring.stringify(data),
@@ -107,11 +110,12 @@ exports.msbb_to_record = function (test) {
     
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/MSBB/data_record/add/health_center/%2B13125551212");
+        baseURL + "/MSBC/data_record/add/refid/abcdef");
 
     _.each([
-        'ref_year', 'ref_month', 'ref_day', 'ref_rc', 'ref_hour',
-        'ref_name', 'ref_age', 'ref_reason', 'ref_reason_other'
+        'cref_year', 'cref_month', 'cref_day', 'cref_rc',
+        'cref_ptype', 'cref_name', 'cref_age', 'cref_mom',
+        'cref_treated', 'cref_rec', 'cref_reason', 'cref_agent'
     ], function(attr) {
         test.same(
             resp_body.callback.data[attr],
@@ -133,7 +137,7 @@ exports.msbb_to_record = function (test) {
         path: resp_body.callback.options.path,
         headers: helpers.headers(
                     'json', JSON.stringify(resp_body.callback.data)),
-        query: {form: 'MSBB'} // query.form gets set by rewriter
+        query: {form: 'MSBC'}
     };
 
     step2(test, next_req);
@@ -179,8 +183,9 @@ var step2 = function(test, req) {
         example.sms_message);
         
     _.each([
-        'ref_year', 'ref_month', 'ref_day', 'ref_rc', 'ref_hour',
-        'ref_name', 'ref_age', 'ref_reason', 'ref_reason_other'
+        'cref_year', 'cref_month', 'cref_day', 'cref_rc',
+        'cref_ptype', 'cref_name', 'cref_age', 'cref_mom',
+        'cref_treated', 'cref_rec', 'cref_reason', 'cref_agent'
     ], function(attr) {
         test.same(
             resp_body.callback.data[attr],
@@ -189,7 +194,7 @@ var step2 = function(test, req) {
 
     test.same(
         resp_body.callback.data.tasks[0].messages[0].message,
-        "Année: 2012, Mois: 1, Jour: 24, Code du RC: abcdef, Heure de départ: 1111, Nom: bbbbbb, Age: 22, Motif référence: Autres, Si 'autre', précisez motif référence: cccccc"
+        "Année: 2012, Mois: 1, Jour: 16, Code du RC: abcdef, Type de patient: Autre, Nom: aaa, Age: 31, Nom de la mère ou de l'accompagnant: bbb, Recommandations/Conseils: Référé, Précisions pour recommandations: ddd, Nom de l'agent de santé: eee"
     );    
 
     test.done();
