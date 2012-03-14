@@ -22,12 +22,21 @@ exports.prepare = function(req, rows, options) {
     options = options || {};
     exports.perPage = parseInt(req.query.perPage, 10) || options.perPage || exports.perPage;
     
+    var filter = req.query.filter || options.filter;
+    
     if(req.query.descending) {
         rows.reverse();
     }
 
     if(rows.length > exports.perPage) {
         lastRecord = rows.pop();
+    }
+    
+    if(filter) {
+        rows = _.filter(rows, function(row) {
+            return _.isArray(row.key) &&
+                    row.key[0] === filter;
+        });
     }
     
     firstRecord = rows[0];
@@ -47,19 +56,24 @@ exports.prepare = function(req, rows, options) {
  * @param {Object} head - incl. total_rows, offset, etc.
  * @param {Object} req - incl. descending and other query options
  * @param {String} path - e.g. "/data_records"
+ * @param {Array} rows - the rows last received
  * @param {Object} options - incl. perPage, etc.
  *
  * @api public
  */
-exports.paginate = function(head, req, path) {
+exports.paginate = function(head, req, path, rows) {
     var baseURL = require('duality/core').getBaseURL(req),
         descending = req.query.descending,
-        url = baseURL + path;
+        url = baseURL + path,
+        query;
 
     delete req.query.descending;
-    
-    if((head.total_rows > head.offset + exports.perPage) || descending) {
-        var query = _.extend(req.query, {
+
+    if((
+        (head.total_rows > head.offset + exports.perPage) &&
+        (rows.length === exports.perPage)
+       ) || descending) {
+        query = _.extend(req.query, {
             limit: exports.perPage + 1,
             startkey: JSON.stringify(lastRecord ? lastRecord.key : undefined)
         });
@@ -71,8 +85,10 @@ exports.paginate = function(head, req, path) {
         $('.next').hide();
     }
 
-    if((!descending && head.offset > 0) || (descending && head.total_rows > head.offset + exports.perPage + 1)) {
-        var query = _.extend(req.query, {
+    if(
+        (!descending && head.offset > 0) ||
+        (descending && head.total_rows > head.offset + exports.perPage + 1)) {
+        query = _.extend(req.query, {
             limit: exports.perPage + 1,
             startkey: JSON.stringify(firstRecord.key),
             descending: true
