@@ -1,4 +1,4 @@
-<div id="data-records" class="row">
+<div id="data-records">
   <div class="span12">
     <div class="wrap">
       <ul class="pager">
@@ -16,10 +16,16 @@
               Reported Date
             </th>
             <th>
-              From
+              Name
             </th>
             <th>
-              Facility
+              Phone
+            </th>
+            <th>
+              District
+            </th>
+            <th>
+              Clinic
             </th>
             <th>
               Message
@@ -38,7 +44,19 @@
                 {reported_date}
               </td>
               <td>
-                {from}
+                {#related_entities}
+                  {?clinic}{clinic.contact.name}{/clinic}
+                {/related_entities}
+              </td>
+              <td>
+                {from} 
+              </td>
+              <td>
+                {#related_entities}
+                  {?clinic}
+                  <i class="district">{clinic.parent.parent.name}</i>
+                  {/clinic}
+                {/related_entities}
               </td>
               <td>
                 {#related_entities}
