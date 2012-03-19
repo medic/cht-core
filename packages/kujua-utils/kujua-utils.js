@@ -90,3 +90,21 @@ exports.dumper = {
         }
     }
 };
+
+exports.isUserAdmin = function(userCtx) {
+    return userCtx.roles.indexOf('national_admin') !== -1;
+};
+
+exports.getUserDistrict = function(userCtx) {
+
+    // FIX
+    if (userCtx.name === 'bassila') {
+        return '68d45afe29fbf23d1cb9ee227345ee82';
+    } else if (userCtx.name === 'tchaourou') {
+        return '68d45afe29fbf23d1cb9ee227345ec08';
+    }
+
+    // problem when new records come in, the cookie seems to get reset.
+    //cookies.readBrowserCookie('kujua_facility'),
+};
+
