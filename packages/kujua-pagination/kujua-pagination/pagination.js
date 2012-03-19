@@ -19,6 +19,7 @@ var lastRecord = null;
  * @api public
  */
 exports.prepare = function(req, rows, options) {
+    if (!rows) { return; }
     options = options || {};
     exports.perPage = parseInt(req.query.perPage, 10) || options.perPage || exports.perPage;
     
