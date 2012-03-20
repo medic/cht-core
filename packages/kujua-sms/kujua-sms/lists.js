@@ -15,7 +15,16 @@ exports.data_records_csv = function (head, req) {
         locale = req.query.locale || 'en', //TODO get from session
         delimiter = locale === 'fr' ? '";"' : null,
         // extra doc fields we want to export not in form
-        keys = ['reported_date', 'from'];
+        keys = [
+            'reported_date',
+            // TODO support dot notation or array notation to resolve field
+            // labels and values.
+            //'related_entities.clinic.contact.name',
+            //['related_entities', ['clinic', ['contact', ['name']]]],
+            'from',
+            //'related_entities.clinic.parent.name',
+            //'related_entities.clinic.name',
+        ];
 
     start({code: 200, headers: {
         'Content-Type': 'text/csv; charset=utf-8',
