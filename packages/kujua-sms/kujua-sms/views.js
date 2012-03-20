@@ -16,30 +16,6 @@ exports.data_records_valid = {
     }
 };
 
-exports.deprecated_sms_message_values = {
-    map: function (doc) {
-        var smsparser = require('views/lib/smsparser'),
-            smsforms = require('views/lib/smsforms');
-
-        if (doc.type === 'sms_message' && doc.form) {
-            var def = smsforms[doc.form];
-            if (def) {
-                emit(
-                    [doc.form, doc.sent_timestamp],
-                    smsparser.parseArray(doc.form, def, doc));
-            }
-        }
-    }
-};
-
-exports.deprecated_sms_messages = {
-    map: function (doc) {
-        if (doc.type === 'sms_message') {
-            emit(doc._id, doc);
-        }
-    }
-};
-
 /*
  * Get facility based on phone number
  */

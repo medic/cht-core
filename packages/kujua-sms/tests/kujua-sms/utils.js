@@ -5,6 +5,22 @@ exports.getLabels = function(test) {
     var keys = [
         'facility_id',
         [
+            'related_entities', [
+                'clinic', [
+                    'contact',[
+                        'name'
+                    ]
+                ]
+            ]
+        ],
+        [
+            "related_entities", [
+                "clinic", [
+                    "name"
+                ]
+            ]
+        ],
+        [
             'days_stocked_out', [
                 'la_6x1',
                 'la_6x2'
@@ -18,6 +34,8 @@ exports.getLabels = function(test) {
         utils.getLabels(keys, 'PSMS', locale),
         [
             'Health Facility Identifier',
+            'Name',
+            'Clinic',
             'LA 6x1: Days stocked out',
             'LA 6x2: Days stocked out'
         ]
@@ -31,6 +49,13 @@ exports.getValues = function(test) {
         "reported_date",
         "from",
         "facility_id",
+        [
+            "related_entities", [
+                "clinic", [
+                    "name"
+                ]
+            ]
+        ],
         "year",
         "month",
         [
@@ -126,6 +151,7 @@ exports.getValues = function(test) {
             1331643982002,
             "+13125551212",
             "facility",
+            "Example clinic 1",
             "2011",
             "11",
             1,

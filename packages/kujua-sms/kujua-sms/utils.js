@@ -12,6 +12,18 @@ exports.strings = {
         en: 'Reported Date',
         fr: 'Date envoyé'
     },
+    "related_entities.clinic.contact.name": {
+        en: "Name",
+        fr: "Name"
+    },
+    "related_entities.clinic.parent.parent.name": {
+        en: "District",
+        fr: "District"
+    },
+    "related_entities.clinic.name": {
+        en: "Clinic",
+        fr: "Clinic"
+    },
     from: {
         en: 'From',
         fr: 'Envoyé par'
@@ -438,12 +450,17 @@ var arrayToXML = exports.arrayToXML = function(arr, format) {
 };
 
 
+var arrayToStringNotation = function(arr) {
+    var str = _.flatten(arr).join('.');
+    return str;
+};
 
 /*
  * return String - Try to return appropriate locale translation for a string,
- *                 english by default.
+ *                 english by default. Support array keys, just concatenate.
  */
-exports._s = function(key, locale) {
+var _s = exports._s = function(key, locale) {
+    var key = _.isArray(key) ? arrayToStringNotation(key) : key;
     if (exports.strings[key]) {
         if (exports.strings[key][locale]) {
             return exports.strings[key][locale];
@@ -451,6 +468,18 @@ exports._s = function(key, locale) {
             return exports.strings[key]['en'];
         }
     }
+};
+
+var arrayDepth = function(arr) {
+    var depth = 0;
+    for (var i in arr) {
+        var a = arr[i];
+        if (a instanceof Array) {
+            depth++;
+            depth = arrayDepth(a) + depth;
+        }
+    }
+    return depth;
 };
 
 /*
@@ -461,8 +490,7 @@ exports._s = function(key, locale) {
  * @param String form - form code string
  * @param String locale - locale string, e.g. 'en', 'fr', 'en-gb'
  *
- * @return Array  - form field labels/headers and values based on smsforms
- *                 definition.
+ * @return Array  - form field labels based on smsforms definition.
  *
  * @api private
  */
@@ -481,20 +509,28 @@ exports.getLabels = function(keys, form, locale) {
         for (var i in keys) {
             var _key = keys[i];
 
-            if(_.isArray(_key)) {
+            if(_.isArray(_key) && arrayDepth(_key) === 1) {
                 labelsForKeys(_key[1], _key[0] + '.');
-            } else {
-                var key = (appendTo || '') + _key;
-                
+                continue;
+            } else if(_.isArray(_key) && arrayDepth(_key) > 1) {
+                var key = arrayToStringNotation(_key);
                 if (form_labels[key]) {
                     labels.push(form_labels[key]);
                 } else {
-                    labels.push(exports._s(key, locale));
+                    labels.push(_s(key, locale));
+                }
+            } else {
+                var key = (appendTo || '') + _key;
+
+                if (form_labels[key]) {
+                    labels.push(form_labels[key]);
+                } else {
+                    labels.push(_s(key, locale));
                 }
             }
-        }        
+        }
     }
-    
+
     labelsForKeys(keys);
 
     return labels;
@@ -509,12 +545,38 @@ exports.getLabels = function(keys, form, locale) {
  *
  * @return Array  - values from doc in the same order as keys
  */
-exports.getValues = function(doc, keys) {
+var getValues = exports.getValues = function(doc, keys) {
     var values = [];
-    
+
     for (var i in keys) {
         var key = keys[i];
-        
+        if(key instanceof Array) {
+            if(typeof doc[key[0]] === 'object') {
+                var d = doc[key[0]];
+                if (_.isArray(key[1]) && key[1].length > 1) {
+                    values = values.concat(getValues(d, key[1]));
+                }
+            } else {
+                values.push(doc[key]);
+            }
+        } else if (typeof doc[key] !== 'object') {
+            values.push(doc[key]);
+        } else if (typeof doc[key] === 'object') {
+            keys.shift();
+            values = values.concat(getValues(doc[key], keys));
+        }
+    }
+
+    return values;
+};
+
+/* I'm sorry I butchered this nice thing, was in a pinch. -mandric */
+exports.old_getValues = function(doc, keys) {
+    var values = [];
+
+    for (var i in keys) {
+        var key = keys[i];
+
         if(_.isArray(key)) {
             values = values.concat(exports.getValues(doc[key[0]], key[1]));
         } else {
