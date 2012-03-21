@@ -11,19 +11,11 @@ exports.rules = [
     },
     {
         from: '/:form/data_records.csv',
-        to: '_list/data_records_csv/data_records_valid',
-        query: {
-            startkey: [':form'],
-            endkey: [':form', {}]
-        }
+        to: '_list/data_records_csv/data_records_valid_by_district'
     },
     {
         from: '/:form/data_records.xml',
-        to: '_list/data_records_xml/data_records_valid',
-        query: {
-            startkey: [':form'],
-            endkey: [':form', {}]
-        }
+        to: '_list/data_records_xml/data_records_valid_by_district'
     },
     {
         from: '/:form/data_record/add/clinic/:phone',

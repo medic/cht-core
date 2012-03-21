@@ -5,6 +5,15 @@ exports.data_records_valid_by_form = {
     reduce: function(doc, rereduce) {}
 };
 
+exports.data_records_valid_by_district = {
+    map: function (doc) {
+        if (doc.related_entities.clinic && doc.errors.length === 0) {
+            var dh = doc.related_entities.clinic.parent.parent;
+            emit([dh._id, doc.form, doc.reported_date], doc);
+        }
+    }
+};
+
 exports.data_records_valid = {
     map: function (doc) {
         if (doc.form
