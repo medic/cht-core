@@ -11,7 +11,8 @@ var _ = require('underscore')._,
 
 exports.data_records_csv = function (head, req) {
     var form  = req.query.form,
-        filename = form + '_data_records.csv',
+        dh_name = req.query.dh_name,
+        filename = dh_name + '_' + form + '_data_records.csv',
         locale = req.query.locale || 'en', //TODO get from session
         delimiter = locale === 'fr' ? '";"' : null,
         // extra doc fields we want to export not in form
@@ -43,7 +44,7 @@ exports.data_records_csv = function (head, req) {
         rows = [labels];
 
     while (row = getRow()) {
-        rows.push(utils.getValues(row.value, keys));
+        rows.push(utils.getValues(row.doc, keys));
         rows[rows.length - 1][0] = new Date(rows[rows.length - 1][0]).toLocaleString();
     }
 

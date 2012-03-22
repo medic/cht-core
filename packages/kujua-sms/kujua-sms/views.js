@@ -1,29 +1,40 @@
 
-// TODO
-exports.data_records_valid_by_form = {
-    map: function (doc) {},
-    reduce: function(doc, rereduce) {}
+// also sorts by reported_date
+exports.data_records_valid_by_district_and_form = {
+    map: function(doc) {
+        if(doc.type.match(/data_record/)) {
+            var smsforms = require('views/lib/smsforms'),
+                def = smsforms[doc.form],
+                title = def ? def.title : null;
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent
+                    && doc.errors.length === 0) {
+                var dh = doc.related_entities.clinic.parent.parent;
+                emit([dh._id, doc.form, dh.name, title], 1);
+            }
+        }
+    },
+
+    reduce: function(key, counts) {
+        return sum(counts);
+    }
 };
 
-exports.data_records_valid_by_district = {
-    map: function (doc) {
-        if (doc.related_entities.clinic && doc.errors.length === 0) {
-            var dh = doc.related_entities.clinic.parent.parent;
-            emit([dh._id, doc.form, doc.reported_date], doc);
+exports.data_records_by_reported_date = {
+    map: function(doc) {
+        if (doc.type.match(/data_record/)) {
+            var date = parseInt(doc.reported_date, 10) * -1;
+            if (doc.related_entities.clinic) {
+                var dh = doc.related_entities.clinic.parent.parent;
+                emit([dh._id, date, doc._id], doc);
+            } else {
+                emit([null, date, doc._id], doc);
+            }
         }
     }
 };
 
-exports.data_records_valid = {
-    map: function (doc) {
-        if (doc.form
-                && doc.type
-                && doc.type.substr(0,11) === 'data_record'
-                && doc.errors.length === 0) {
-            emit([doc.form, doc.reported_date], doc);
-        }
-    }
-};
 
 /*
  * Get facility based on phone number

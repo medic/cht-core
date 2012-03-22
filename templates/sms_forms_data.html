@@ -2,8 +2,8 @@
 {?forms}
 {#forms}
 <li class="form">
-  <h3>{title} <small>{form}</small></h3>
-  <h4>{size} total</h4>
+  <h3>{title} <small>{form}{?isAdmin}/{dh_name}{/isAdmin}</small></h3>
+  <h4>{total} total</h4>
       <form method="get">
         <select name="format">
           <option value="{baseURL}/{form}/data_records.xml?{q}">Excel (English)</option>

@@ -11,11 +11,11 @@ exports.rules = [
     },
     {
         from: '/:form/data_records.csv',
-        to: '_list/data_records_csv/data_records_valid_by_district'
+        to: '_list/data_records_csv/data_records_valid_by_district_and_form'
     },
     {
         from: '/:form/data_records.xml',
-        to: '_list/data_records_xml/data_records_valid_by_district'
+        to: '_list/data_records_xml/data_records_valid_by_district_and_form'
     },
     {
         from: '/:form/data_record/add/clinic/:phone',
