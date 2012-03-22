@@ -10,15 +10,22 @@ exports.lists_data_record_csv = function(test) {
     test.expect(1);
 
     // the first char is the BOM
-    var expected = '\uFEFF"Reported Date","From","Année","Mois","Jour","Code du RC","Type de patient","Nom","Age","Nom de la mère ou de l\'accompagnant","Patient traité pour","Recommandations/Conseils","Précisions pour recommandations","Nom de l\'agent de santé"\n' +
-        '"1331503842461","+12229990000","2012","1","16","","","","","","","","",""\n'+
-        '"1331503850000","+13331110000","2012","1","16","","","","","","","","",""';
+    var expected = '\uFEFF"Reported Date","From","Année","Mois","Jour","Code du RC","Type de patient","Nom","Age","Nom de la mère ou de l\'accompagnant","Patient traité pour","Recommandations/Conseils","Précisions pour recommandations","Nom de l\'agent de santé"\n'
+        +'"'+new Date(1331503842461).toLocaleString()+'"'
+        +',"+12229990000","2012","1","16","","","","","","","","",""\n'
+        +'"'+new Date(1331503850000).toLocaleString()+'"'
+        +',"+13331110000","2012","1","16","","","","","","","","",""';
 
-    // mockup the view data from data_records_valid
+    // mockup the view data
     var viewdata = {rows: [
         {
-            "key": ["MSBC", 1331503842461],
-            "value": {
+            "key":[
+                "68d45afe29fbf23d1cb9ee227345ec08",
+                "MSBC",
+                "District Name",
+                "Form Title"],
+            "value": 1,
+            "doc": {
                 _id: 'abc123z',
                 reported_date: 1331503842461,
                 from: '+12229990000',
@@ -28,8 +35,13 @@ exports.lists_data_record_csv = function(test) {
             }
         },
         {
-            "key": ["MSBC", 1331503850000],
-            "value": {
+            "key":[
+                "68d45afe29fbf23d1cb9ee227345ec08",
+                "MSBC",
+                "District Name",
+                "Form title"],
+            "value": 1,
+            "doc": {
                 _id: 'ssdk23z',
                 reported_date: 1331503850000,
                 from: '+13331110000',
@@ -58,15 +70,18 @@ exports.lists_data_record_csv_fr = function(test) {
     test.expect(1);
 
     // the first char is the BOM
-    var expected = '\uFEFF"Date envoyé";"Envoyé par";"Année";"Mois";"Jour";"Code du RC";"Type de patient";"Nom";"Age";"Nom de la mère ou de l\'accompagnant";"Patient traité pour";"Recommandations/Conseils";"Précisions pour recommandations";"Nom de l\'agent de santé"\n' +
-        '"1331503842461";"+12229990000";"2012";"1";"16";"";"";"";"";"";"";"";"";""\n'+
-        '"1331503850000";"+13331110000";"2012";"1";"16";"";"";"";"";"";"";"";"";""';
+    var expected = '\uFEFF"Date envoyé";"Envoyé par";"Année";"Mois";"Jour";"Code du RC";"Type de patient";"Nom";"Age";"Nom de la mère ou de l\'accompagnant";"Patient traité pour";"Recommandations/Conseils";"Précisions pour recommandations";"Nom de l\'agent de santé"\n'
+        +'"'+new Date(1331503842461).toLocaleString()
+        +'";"+12229990000";"2012";"1";"16";"";"";"";"";"";"";"";"";""\n'
+        +'"'+new Date(1331503850000).toLocaleString()
+        +'";"+13331110000";"2012";"1";"16";"";"";"";"";"";"";"";"";""';
 
-    // mockup the view data from data_records_valid
+    // mockup the view data
     var viewdata = {rows: [
         {
             "key": ["MSBC", 1331503842461],
-            "value": {
+            "value": 1,
+            "doc": {
                 _id: 'abc123z',
                 reported_date: 1331503842461,
                 from: '+12229990000',
@@ -77,7 +92,8 @@ exports.lists_data_record_csv_fr = function(test) {
         },
         {
             "key": ["MSBC", 1331503850000],
-            "value": {
+            "value": 1,
+            "doc": {
                 _id: 'ssdk23z',
                 reported_date: 1331503850000,
                 from: '+13331110000',
