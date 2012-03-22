@@ -1,5 +1,4 @@
 
-// also sorts by reported_date
 exports.data_records_valid_by_district_and_form = {
     map: function(doc) {
         if(doc.type.match(/data_record/)) {
