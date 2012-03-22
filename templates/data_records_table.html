@@ -42,7 +42,9 @@
               </td>
               <td>
                 {#related_entities}
-                  {?clinic}{clinic.contact.name}{/clinic}
+                {?clinic.contact.name}{clinic.contact.name}
+                {:else}Null
+                {/clinic.contact.name}
                 {/related_entities}
               </td>
               <td>
@@ -50,9 +52,11 @@
               </td>
               <td>
                 {#related_entities}
-                  {?clinic}
+                  {?clinic.name}
                   <i class="clinic">{clinic.name}</i>
-                  {/clinic}
+                  {:else}
+                  <i>Null</i>
+                  {/clinic.name}
                   {?health_center}
                   <i class="health_center">{health_center.name}</i>
                   {/health_center}
