@@ -5,6 +5,7 @@
 var _ = require('underscore')._,
     utils = require('./utils'),
     strings = utils.strings,
+    moment = require('moment'),
     logger = utils.logger,
     smsforms = require('views/lib/smsforms');
 
@@ -45,7 +46,8 @@ exports.data_records_csv = function (head, req) {
 
     while (row = getRow()) {
         rows.push(utils.getValues(row.doc, keys));
-        rows[rows.length - 1][0] = new Date(rows[rows.length - 1][0]).toLocaleString();
+        var m = moment(rows[rows.length - 1][0]);
+        rows[rows.length - 1][0] = m.format('DD, MMM YYYY, hh:mm:ss');
     }
 
     return '\uFEFF' + utils.arrayToCSV(rows, delimiter);
@@ -75,7 +77,8 @@ exports.data_records_xml = function (head, req) {
 
     while (row = getRow()) {
         rows.push(utils.getValues(row.doc, keys));
-        rows[rows.length - 1][0] = new Date(rows[rows.length - 1][0]).toLocaleString();
+        var m = moment(rows[rows.length - 1][0]);
+        rows[rows.length - 1][0] = m.format('DD, MMM YYYY, hh:mm:ss');
     }
 
     return '<?xml version="1.0" encoding="UTF-8"?>\n' +

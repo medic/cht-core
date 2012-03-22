@@ -27,7 +27,6 @@
         "settings": null,
         "duality": ">=0.0.18",
         "duality-contrib-session": null,
-        "duality-contrib-loading": null,
         "dust": null,
         "duality-dust": null,
         "nodeunit": null,
@@ -43,6 +42,7 @@
         "showdown": null,
         "couch-fakerequest": null,
         "users": null,
-        "cookies": null
+        "cookies": null,
+        "moment": null
     }
 }
