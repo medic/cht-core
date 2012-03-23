@@ -1,7 +1,7 @@
 
 exports.data_records_valid_by_district_and_form = {
     map: function(doc) {
-        if(doc.type.match(/data_record/)) {
+        if(doc.type.match(/^data_record/)) {
             var smsforms = require('views/lib/smsforms'),
                 def = smsforms[doc.form],
                 title = def ? def.title : null;
@@ -22,7 +22,7 @@ exports.data_records_valid_by_district_and_form = {
 
 exports.data_records_by_district = {
     map: function(doc) {
-        if(doc.type.match(/data_record/)) {
+        if(doc.type.match(/^data_record/)) {
             if (doc.related_entities.clinic
                     && doc.related_entities.clinic.parent
                     && doc.related_entities.clinic.parent.parent) {
@@ -39,7 +39,7 @@ exports.data_records_by_district = {
 
 exports.data_records_by_district_and_reported_date = {
     map: function(doc) {
-        if (doc.type.match(/data_record/)) {
+        if (doc.type.match(/^data_record/)) {
             //var date = parseInt(doc.reported_date, 10) * -1;
             if (doc.related_entities.clinic) {
                 var dh = doc.related_entities.clinic.parent.parent;
@@ -47,6 +47,14 @@ exports.data_records_by_district_and_reported_date = {
             } else {
                 emit([null, doc.reported_date, doc._id], doc);
             }
+        }
+    }
+};
+
+exports.data_records_by_reported_date = {
+    map: function(doc) {
+        if (doc.type.match(/^data_record/)) {
+            emit([doc.reported_date, doc._id], doc);
         }
     }
 };

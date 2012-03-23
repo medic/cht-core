@@ -21,25 +21,28 @@ var lastRecord = null;
 exports.prepare = function(req, rows, options) {
     if (!rows) { return; }
     options = options || {};
-    exports.perPage = parseInt(req.query.perPage, 10) || options.perPage || exports.perPage;
-    
+    exports.perPage = parseInt(req.query.perPage, 10)
+                        || options.perPage
+                        || exports.perPage;
+
     var filter = req.query.filter || options.filter;
-    
+
     if(req.query.descending) {
         rows.reverse();
     }
 
-    if(rows.length > exports.perPage) {
-        lastRecord = rows.pop();
-    }
-    
     if(filter) {
         rows = _.filter(rows, function(row) {
             return _.isArray(row.key) &&
                     row.key[0] === filter;
         });
     }
-    
+
+    if(rows.length > exports.perPage) {
+        lastRecord = rows.pop();
+    }
+
+
     firstRecord = rows[0];
 
     return rows;

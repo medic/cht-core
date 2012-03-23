@@ -1,5 +1,6 @@
 var lists = require('kujua-sms/lists'),
     logger = require('kujua-utils').logger,
+    moment = require('moment'),
     fakerequest = require('couch-fakerequest'),
     helpers = require('../../test-helpers/helpers');
 
@@ -11,9 +12,9 @@ exports.lists_data_record_csv = function(test) {
 
     // the first char is the BOM
     var expected = '\uFEFF"Reported Date","From","Année","Mois","Jour","Code du RC","Type de patient","Nom","Age","Nom de la mère ou de l\'accompagnant","Patient traité pour","Recommandations/Conseils","Précisions pour recommandations","Nom de l\'agent de santé"\n'
-        +'"'+new Date(1331503842461).toLocaleString()+'"'
+        +'"'+moment(1331503842461).format('DD, MMM YYYY, hh:mm:ss')+'"'
         +',"+12229990000","2012","1","16","","","","","","","","",""\n'
-        +'"'+new Date(1331503850000).toLocaleString()+'"'
+        +'"'+moment(1331503850000).format('DD, MMM YYYY, hh:mm:ss')+'"'
         +',"+13331110000","2012","1","16","","","","","","","","",""';
 
     // mockup the view data
@@ -71,9 +72,9 @@ exports.lists_data_record_csv_fr = function(test) {
 
     // the first char is the BOM
     var expected = '\uFEFF"Date envoyé";"Envoyé par";"Année";"Mois";"Jour";"Code du RC";"Type de patient";"Nom";"Age";"Nom de la mère ou de l\'accompagnant";"Patient traité pour";"Recommandations/Conseils";"Précisions pour recommandations";"Nom de l\'agent de santé"\n'
-        +'"'+new Date(1331503842461).toLocaleString()
+        +'"'+moment(1331503842461).format('DD, MMM YYYY, hh:mm:ss')
         +'";"+12229990000";"2012";"1";"16";"";"";"";"";"";"";"";"";""\n'
-        +'"'+new Date(1331503850000).toLocaleString()
+        +'"'+moment(1331503850000).format('DD, MMM YYYY, hh:mm:ss')
         +'";"+13331110000";"2012";"1";"16";"";"";"";"";"";"";"";"";""';
 
     // mockup the view data
