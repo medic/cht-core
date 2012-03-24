@@ -119,6 +119,26 @@ var getCallbackPath = function(phone, form, form_data) {
     return path;
 };
 
+/*
+ * Try to parse SMSSync gateway sent_timestamp field and use it for
+ * reported_date.  Particularly useful when re-importing data from gateway to
+ * maintain accurate reported_date field.
+ *
+ * return unix timestamp string or undefined
+ */
+var parseSentTimestamp = function(str) {
+    if(!str) { return; }
+    var match = str.match(/(\d{2})-(\d{2}|\d{1})-(\d{2})\s(\d{2}):(\d{2})/);
+    if (match) {
+        var ret = new Date();
+        ret.setMonth(parseInt(match[1],10) - 1);
+        ret.setYear('20'+match[3]); //HACK for two-digit year
+        ret.setDate(match[2]);
+        ret.setHours(match[4]);
+        ret.setMinutes(match[5]);
+        return ret.getTime();
+    }
+};
 
 /*
  * Return Ushahidi SMSSync compatible response message.  Supports custom
@@ -183,6 +203,12 @@ var getRespBody = function(doc, req) {
 
     // keep sms_message part of record
     resp.callback.data.sms_message = doc;
+
+    // try to parse timestamp from gateway
+    var ts = parseSentTimestamp(doc.sent_timestamp);
+    if (ts) {
+        resp.callback.data.reported_date = ts;
+    }
 
     logger.debug(['Response', resp]);
 

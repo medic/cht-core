@@ -128,3 +128,15 @@ exports.data_record_by_year_month_and_clinic_id = {
         }
     }
 };
+
+/*
+ * Emit the sms_message.sent_timestamp string as created by gateway.
+ */
+exports.sms_message_by_sent_timestamp = {
+    map: function (doc) {
+        if (doc.type.match(/^data_record/)) {
+            var sms = doc.sms_message;
+            emit([sms.sent_timestamp, sms.form, sms.from], null);
+        }
+    }
+}

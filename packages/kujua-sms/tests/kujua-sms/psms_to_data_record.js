@@ -13,7 +13,7 @@ var example = {
     sms_message: {
        from: "+13125551212",
        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
-       sent_timestamp: "1-19-12 18:45",
+       sent_timestamp: '01-19-12 18:45',
        sent_to: "+15551212",
        type: "sms_message",
        locale: "en",
@@ -89,13 +89,13 @@ var expected_callback = {
  **/
 exports.psms_to_record = function (test) {
 
-    test.expect(23);
+    test.expect(24);
 
     // Data parsed from a gateway POST
     var data = {
         from: '+13125551212',
         message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
-        sent_timestamp: '1-19-12 18:45',
+        sent_timestamp: '01-19-12 18:45',
         sent_to: '+15551212'
     };
 
@@ -113,14 +113,21 @@ exports.psms_to_record = function (test) {
     var resp = fakerequest.update(updates.add_sms, data, req);
 
     var resp_body = JSON.parse(resp[1].body);
-    
+
+    // assert that we are parsing sent_timestamp
     test.same(
-        new Date(resp_body.callback.data.reported_date).toDateString(),
-        new Date().toDateString()
+        'Thu Jan 19 2012',
+        new Date(resp_body.callback.data.reported_date).toDateString()
     );
-    
+
+    test.equal(
+        "18:45",
+        new Date(resp_body.callback.data.reported_date)
+            .toTimeString().match(/^18:45/)[0]
+    );
+
     delete resp_body.callback.data.reported_date;
-    
+
     test.same(
         resp_body.callback.options.path,
         baseURL + "/PSMS/data_record/add/clinic/%2B13125551212");

@@ -9,12 +9,12 @@ var updates = require('kujua-sms/updates'),
     helpers = require('../../test-helpers/helpers'),
     _ = require('underscore')._;
 
-    
+
 var example = {
     sms_message: {
        from: "+13125551212",
        message: '1!MSBB!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc',
-       sent_timestamp: "1-19-12 18:45",
+       sent_timestamp: "10-01-11 18:45",
        sent_to: "+15551212",
        type: "sms_message",
        locale: "en",
@@ -79,13 +79,13 @@ var expected_callback = {
  **/
 exports.msbb_to_record = function (test) {
 
-    test.expect(26);
+    test.expect(27);
 
     // Data parsed from a gateway POST
     var data = {
         from: '+13125551212',
         message: '1!MSBB!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc',
-        sent_timestamp: '1-19-12 18:45',
+        sent_timestamp: "10-01-11 18:45",
         sent_to: '+15551212'
     };
 
@@ -103,6 +103,13 @@ exports.msbb_to_record = function (test) {
     var resp = fakerequest.update(updates.add_sms, data, req);
 
     var resp_body = JSON.parse(resp[1].body);
+
+    // assert parsing of sent_timestamp
+    test.same(
+        'Sat Oct 01 2011',
+        new Date(resp_body.callback.data.reported_date).toDateString()
+    );
+
     delete resp_body.callback.data.reported_date;
     
     test.same(
