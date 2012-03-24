@@ -81,7 +81,7 @@ exports.paginate = function(head, req, path, rows) {
             limit: exports.perPage + 1,
             startkey: JSON.stringify(lastRecord ? lastRecord.key : undefined)
         });
-        
+
         $('.next').
             attr('href', url + '?' + querystring.encode(query)).
             show();
@@ -97,7 +97,7 @@ exports.paginate = function(head, req, path, rows) {
             startkey: JSON.stringify(firstRecord.key),
             descending: true
         });
-        
+
         $('.prev').
             attr('href', url + '?' + querystring.encode(query)).
             show();
