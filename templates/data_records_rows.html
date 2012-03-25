@@ -1,0 +1,67 @@
+        {#data_records}
+        <table class="table table-bordered table-striped">
+        <tbody>
+            <tr rel="{_id}" data-key="{_key}">
+              <td>
+                {reported_date}
+              </td>
+              <td>
+                {#related_entities}
+                {?clinic.contact.name}{clinic.contact.name}
+                {:else}Null
+                {/clinic.contact.name}
+                {/related_entities}
+              </td>
+              <td>
+                {from} 
+              </td>
+              <td>
+                {#related_entities}
+                  {?clinic.name}
+                  <i class="clinic">{clinic.name}</i>
+                  {:else}
+                  <i>Null</i>
+                  {/clinic.name}
+                  {?health_center}
+                  <i class="health_center">{health_center.name}</i>
+                  {/health_center}
+                  {?district_hospital}
+                  <i class="district_hospital">{district_hospital.name}</i>
+                  {/district_hospital}
+                {/related_entities}
+              </td>
+              <td>
+                {#sms_message}
+                  <a href="#" class="extend">{short_message}</a>
+                {/sms_message}
+              </td>
+              <td>
+                {?errors}
+                <i class="icon-exclamation-sign icon-large"><i>
+                {:else}
+                <i class="icon-ok icon-large"><i>
+                {/errors}
+              </td>
+              <td class="edit-col hide">
+                <form action="" method="POST" data-ajax="removeDoc">
+                  <input type="hidden" name="_id" value="{_id}" />
+                  <input type="hidden" name="_rev" value="{_rev}" />
+                  <a class="btn btn-small btn-danger submit delete" href="#">
+                    <i class="icon-trash icon-large"></i> Delete
+                  </a>
+                </form>
+              </td>
+            </tr>
+            <tr class="extended hide" rel="{_id}" data-key="{_key}">
+              <td colspan="9">
+                <a title="Close" data-dismiss="extended" class="pull-right close">
+                  <i class="icon-remove"></i>
+                </a>
+                <div class="scroll">
+                  {>"data_record_fields.html":fields/}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+          </table>
+          {/data_records}
