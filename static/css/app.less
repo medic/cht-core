@@ -23,7 +23,7 @@ body {
 }
 #footer {
   margin: 40px auto;
-  width: 12em;
+  width: 10em;
   color: @grayLight;
 /*
   background-image: url('../img/medic-logo-foot.png');
@@ -73,7 +73,7 @@ body {
     background-color: #fff;
   }
 }
-.table-striped tbody tr.extended td {
+.table-striped.extended tbody tr td {
   background-color: #fff;
 }
 #loader li {
@@ -107,6 +107,9 @@ body {
     margin-left: 10px;
   }
 }
+.edit-mode.active {
+  .btn-warning;
+}
 .icon-exclamation-sign {
     color: @red;
 }
@@ -135,29 +138,29 @@ body {
   /* Specifying width for each column since the rows are their own tables.  
    */
   .reported-date {
-    width: 15%;
+    width: 110px;
   }
   .contact-name {
-    width: 15%;
+    width: 110px;
   }
   .phone {
-    width: 15%;
+    width: 110px;
   }
   .related-entities {
-    width: 15%;
+    width: 110px;
   }
   .sms-message {
-    width: 15%;
+    width: 110px;
   }
   .sms-message > div {
-    width: 10em;
+    width: 100px;
     margin: 0;
-    padding: .5em;
+    padding: 10px 0;
     overflow: auto;
     white-space: nowrap;
   }
   .errors {
-    width: 3%;
+    width: 30px;
   }
   .relative {
     position: relative;
@@ -166,17 +169,17 @@ body {
     padding: 20px;
     position: absolute;
     top: 0;
-    right: 150px;
+    right: 45px;
     .hide;
-    padding: 5px 20px 5px;
-    width: 3.4em;
+    padding: 5px 50px 5px;
+    width: 50px;
     form {
       margin: 0;
       padding: 0;
-      .hide;
     }
     .delete {
-      width: 4em;
+      color: @red;
+      font-size: 1.75em;
     }
   }
   .extended .close {
@@ -187,6 +190,10 @@ body {
   }
   .ajax-loader {
     width: 5em;
+    margin: 0 auto 20px auto;
+  }
+  .reached-last-record {
+    width: 1em;
     margin: 0 auto 20px auto;
   }
 }

@@ -6,13 +6,11 @@
                 <div class="relative">
                 {reported_date}
                   <div class="row-controls">
-                    <a href="#" class="edit">
-                    <i class="icon-edit icon-large"></i> Edit</a>
                     <form action="" method="POST" data-ajax="removeDoc">
                       <input type="hidden" name="_id" value="{_id}" />
                       <input type="hidden" name="_rev" value="{_rev}" />
-                      <a class="btn btn-small btn-danger submit delete" href="#">
-                        <i class="icon-trash icon-large"></i> Delete
+                      <a class="submit delete" href="#">
+                        <i class="icon-remove-sign icon-large"></i>
                       </a>
                     </form>
                   </div>
@@ -28,19 +26,25 @@
               <td class="phone">
                 {from} 
               </td>
-              <td class="related-entities">
+              <td class="related-entities district_hospital">
+                {#related_entities}
+                  {?clinic.parent.parent.name}
+                  <i>{clinic.parent.parent.name}</i>
+                  {/clinic.parent.parent.name}
+                {/related_entities}
+              </td>
+              <td class="related-entities health_center">
+                {#related_entities}
+                  {?clinic.parent.name}
+                  <i>{clinic.parent.name}</i>
+                  {/clinic.parent.name}
+                {/related_entities}
+              </td>
+              <td class="related-entities clinic">
                 {#related_entities}
                   {?clinic.name}
-                  <i class="clinic">{clinic.name}</i>
-                  {:else}
-                  <i>Null</i>
+                  <i>{clinic.name}</i>
                   {/clinic.name}
-                  {?health_center}
-                  <i class="health_center">{health_center.name}</i>
-                  {/health_center}
-                  {?district_hospital}
-                  <i class="district_hospital">{district_hospital.name}</i>
-                  {/district_hospital}
                 {/related_entities}
               </td>
               <td class="sms-message">
@@ -58,8 +62,12 @@
                 {/errors}
               </td>
             </tr>
-            <tr class="extended hide" rel="{_id}" data-key="{_key}">
-              <td colspan="6">
+          </tbody>
+          </table>
+          <table class="table table-bordered table-striped hide extended">
+          <tbody>
+            <tr rel="{_id}" data-key="{_key}">
+              <td colspan="8">
                 <div class="relative">
                   <a title="Close" data-dismiss="extended" class="pull-right close">
                     <i class="icon-remove"></i>
