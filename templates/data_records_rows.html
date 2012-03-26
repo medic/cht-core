@@ -1,21 +1,34 @@
         {#data_records}
         <table class="table table-bordered table-striped">
         <tbody>
-            <tr rel="{_id}" data-key="{_key}">
-              <td>
+            <tr rel="{_id}" data-key="{_key}" class="main">
+              <td class="reported-date">
+                <div class="relative">
                 {reported_date}
+                  <div class="row-controls">
+                    <a href="#" class="edit">
+                    <i class="icon-edit icon-large"></i> Edit</a>
+                    <form action="" method="POST" data-ajax="removeDoc">
+                      <input type="hidden" name="_id" value="{_id}" />
+                      <input type="hidden" name="_rev" value="{_rev}" />
+                      <a class="btn btn-small btn-danger submit delete" href="#">
+                        <i class="icon-trash icon-large"></i> Delete
+                      </a>
+                    </form>
+                  </div>
+              </div>
               </td>
-              <td>
+              <td class="contact-name">
                 {#related_entities}
                 {?clinic.contact.name}{clinic.contact.name}
                 {:else}Null
                 {/clinic.contact.name}
                 {/related_entities}
               </td>
-              <td>
+              <td class="phone">
                 {from} 
               </td>
-              <td>
+              <td class="related-entities">
                 {#related_entities}
                   {?clinic.name}
                   <i class="clinic">{clinic.name}</i>
@@ -30,35 +43,30 @@
                   {/district_hospital}
                 {/related_entities}
               </td>
-              <td>
+              <td class="sms-message">
+                <div>
                 {#sms_message}
-                  <a href="#" class="extend">{short_message}</a>
+                  <a href="#" class="extend">{message}</a>
                 {/sms_message}
+                </div>
               </td>
-              <td>
+              <td class="errors last">
                 {?errors}
-                <i class="icon-exclamation-sign icon-large"><i>
+                <i class="icon-exclamation-sign icon-large"></i>
                 {:else}
-                <i class="icon-ok icon-large"><i>
+                <i class="icon-ok icon-large"></i>
                 {/errors}
-              </td>
-              <td class="edit-col hide">
-                <form action="" method="POST" data-ajax="removeDoc">
-                  <input type="hidden" name="_id" value="{_id}" />
-                  <input type="hidden" name="_rev" value="{_rev}" />
-                  <a class="btn btn-small btn-danger submit delete" href="#">
-                    <i class="icon-trash icon-large"></i> Delete
-                  </a>
-                </form>
               </td>
             </tr>
             <tr class="extended hide" rel="{_id}" data-key="{_key}">
-              <td colspan="9">
-                <a title="Close" data-dismiss="extended" class="pull-right close">
-                  <i class="icon-remove"></i>
-                </a>
-                <div class="scroll">
-                  {>"data_record_fields.html":fields/}
+              <td colspan="6">
+                <div class="relative">
+                  <a title="Close" data-dismiss="extended" class="pull-right close">
+                    <i class="icon-remove"></i>
+                  </a>
+                  <div class="scroll">
+                    {>"data_record_fields.html":fields/}
+                  </div>
                 </div>
               </td>
             </tr>
