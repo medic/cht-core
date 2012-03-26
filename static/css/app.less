@@ -102,11 +102,6 @@ body {
 .navbar .brand a.kujua:hover {
   background:none;
 }
-.controls {
-  .btn {
-    margin-left: 10px;
-  }
-}
 .edit-mode.active {
   .btn-warning;
 }
@@ -133,10 +128,7 @@ body {
   .icon-ok {
     color: @green;
   }
-  .cell-padding {
-  }
-  /* Specifying width for each column since the rows are their own tables.  
-   */
+  // Specifying width for each column since the rows are their own tables.  
   .reported-date {
     width: 110px;
   }
@@ -179,7 +171,7 @@ body {
     }
     .delete {
       color: @red;
-      font-size: 1.75em;
+      font-size: 1.5em;
     }
   }
   .extended .close {
@@ -188,14 +180,17 @@ body {
     right: -25px;
     font-size: 1em;
   }
-  .ajax-loader {
-    width: 5em;
-    margin: 0 auto 20px auto;
-  }
   .reached-last-record {
     width: 1em;
     margin: 0 auto 20px auto;
   }
+  tr.main:hover {
+    cursor: pointer;
+  }
+}
+.ajax-loader {
+  width: 4em;
+  margin: 0 auto 20px auto;
 }
 .sections {
   display: none;
