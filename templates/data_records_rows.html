@@ -19,7 +19,7 @@
               <td class="contact-name">
                 {#related_entities}
                 {?clinic.contact.name}{clinic.contact.name}
-                {:else}Null
+                {:else}<i class="icon-question-sign icon-large"></i>
                 {/clinic.contact.name}
                 {/related_entities}
               </td>
@@ -30,6 +30,7 @@
                 {#related_entities}
                   {?clinic.parent.parent.name}
                   <i>{clinic.parent.parent.name}</i>
+                  {:else}<i class="icon-question-sign icon-large"></i>
                   {/clinic.parent.parent.name}
                 {/related_entities}
               </td>
@@ -37,6 +38,7 @@
                 {#related_entities}
                   {?clinic.parent.name}
                   <i>{clinic.parent.name}</i>
+                  {:else}<i class="icon-question-sign icon-large"></i>
                   {/clinic.parent.name}
                 {/related_entities}
               </td>
@@ -44,6 +46,7 @@
                 {#related_entities}
                   {?clinic.name}
                   <i>{clinic.name}</i>
+                  {:else}<i class="icon-question-sign icon-large"></i>
                   {/clinic.name}
                 {/related_entities}
               </td>
@@ -54,11 +57,17 @@
                 {/sms_message}
                 </div>
               </td>
-              <td class="errors last">
+              <td class="errors">
                 {?errors}
                 <i class="icon-exclamation-sign icon-large"></i>
                 {:else}
-                <i class="icon-ok icon-large"></i>
+                  {?tasks}
+                  {#tasks}
+                  <i class="{state} icon-ok icon-large"></i>
+                  {/tasks}
+                  {:else}
+                  <i class="icon-ok icon-large"></i>
+                  {/tasks}
                 {/errors}
               </td>
             </tr>

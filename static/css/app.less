@@ -128,8 +128,15 @@ body {
   .icon-exclamation-sign {
     font-size: 1.2em;
   }
+  .icon-question-sign {
+    font-size: 1.2em;
+    color: @grayLight;
+  }
   .icon-ok {
     color: @green;
+  }
+  .icon-ok.pending {
+    color: @blue;
   }
   // Specifying width for each column since the rows are their own tables.  
   .reported-date {
@@ -192,6 +199,16 @@ body {
   }
   .reached-last-record {
     color: @grayLight;
+  }
+  .tasks-state-pending:before { 
+    content: "Pending";
+    .label;
+    .label-info;
+  }
+  .tasks-state-sent:before { 
+    content: "Sent";
+    .label;
+    .label-success;
   }
 }
 .ajax-loader {

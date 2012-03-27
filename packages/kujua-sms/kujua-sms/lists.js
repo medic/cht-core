@@ -500,13 +500,18 @@ exports.tasks_pending = function (head, req) {
         var doc = row.doc;
 
         // update state attribute for the bulk update callback
+        // don't process tasks that have no to field since we can't send a
+        // message and we don't want to mark the task as sent.  TODO have
+        // better support in the gateway for tasks so the gateway can verify
+        // that it processed the task successfully.
         for (var i in doc.tasks) {
-            if (doc.tasks[i].state === 'pending') {
-                doc.tasks[i].state = 'sent';
+            var t = doc.tasks[i];
+            if (t.state === 'pending' && t.to) {
+                t.state = 'sent';
                 // append outgoing message data payload for smsssync
                 respBody.payload.messages.push.apply(
                         respBody.payload.messages,
-                        doc.tasks[i].messages);
+                        t.messages);
             }
         }
 
