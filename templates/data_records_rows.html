@@ -75,6 +75,11 @@
                   <div class="scroll">
                     {>"data_record_fields.html":fields/}
                   </div>
+                  {?tasks}
+                  <div class="scroll">
+                    {>"data_record_tasks.html"/}
+                  </div>
+                  {/tasks}
                 </div>
               </td>
             </tr>

@@ -1,0 +1,39 @@
+<table>
+  <thead>
+    <tr>
+      <th>To</td>
+      <th>State</td>
+      <th>Type</td>
+      <th>Messages</td>
+    </tr>    
+  </thead>
+  <tbody>
+    {#tasks}
+    <tr>
+        <td>
+          {?to}{to}
+          {:else}<i class="icon-exclamation-sign" title="Missing phone"></i>
+          {/to}
+        </td>
+        <td>
+          {state}
+        </td>
+        <td>
+          {type}
+        </td>
+        <td>
+         {?messages}
+           {#messages}
+           <dl>
+             <dt>To: {?to}{to}
+                  {:else}<i class="icon-exclamation-sign" title="Missing phone"></i>
+                  {/to}</dt>
+              <dt>Message</dt><dd>{message}</dd>
+           </dl>
+           {/messages}
+         {/messages}
+        </td>
+    </tr>    
+    {/tasks}
+  </tbody>
+</table>
