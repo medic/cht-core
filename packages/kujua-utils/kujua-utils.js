@@ -108,3 +108,17 @@ exports.getUserDistrict = function(userCtx) {
     //cookies.readBrowserCookie('kujua_facility'),
 };
 
+/**
+ * Return a title-case version of the supplied string.
+ * @name titleize(str)
+ * @param str The string to transform.
+ * @returns {String}
+ * @api public
+ */
+exports.titleize = function (str) {
+    return (str || '').toLowerCase().replace(/_+/g, ' ').replace(
+        /(?:^|\s+)\w/g, function (m) {
+            return m.toUpperCase();
+        }
+    );
+};
