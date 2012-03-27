@@ -112,7 +112,7 @@ exports.clinic_by_refid = {
 exports.tasks_pending = {
     map: function (doc) {
         if (doc.tasks && doc.tasks.length) {
-            for (var i in docs.tasks) {
+            for (var i in doc.tasks) {
                 if (doc.tasks[i].state === 'pending') {
                     emit([doc.reported_date, doc.refid]);
                 }
