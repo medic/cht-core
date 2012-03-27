@@ -204,7 +204,9 @@ var isFromHealthCenter = function(phone, clinic) {
  * @param {String} form - form key
  * @param {String} phone - phone number of the sending phone (from)
  * @param {Object} clinic - facility object of type 'clinic'
- * @returns {String} - Return phone number of where the referral should go to.
+ * @returns {String} - Return phone number of where the referral should go to
+ *                     or empty string.
+ *
  * @api private
  */
 exports.getRecipientPhone = function(form, phone, clinic) {
@@ -225,7 +227,7 @@ exports.getRecipientPhone = function(form, phone, clinic) {
             // Health Center -> Hospital
             return clinic.parent.parent.contact.phone;
         default:
-            // Not sure what to do here
+            // No recipient could be resolved for form
             return '';
     }
 };
@@ -379,9 +381,11 @@ exports.data_record = function (head, req) {
     if (!clinic) {
         addError(record, {error: "Clinic not found."});
     } else if (smsforms.isReferralForm(form)) {
-        record.tasks.push(
-            getReferralTask(form, record)
-        );
+        var task = getReferralTask(form, record);
+        record.tasks.push(task);
+        if (!task.to) {
+            addError(record, {error: 'Could not find referral recipient.'});
+        };
     }
 
     /* Send callback to gateway to check for already existing doc. */
