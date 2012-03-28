@@ -85,10 +85,15 @@
                     {>"data_record_fields.html":fields/}
                   </div>
                   {?tasks}
-                  <div class="scroll">
+                  <div>
                     {>"data_record_tasks.html"/}
                   </div>
                   {/tasks}
+                  {?errors}
+                  <div>
+                    {>"data_record_errors.html"/}
+                  </div>
+                  {/errors}
                 </div>
               </td>
             </tr>
