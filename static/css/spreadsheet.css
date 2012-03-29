@@ -4,6 +4,8 @@ table.spreadsheet {
     border-bottom: 1px solid #ccc;
     border-right: 1px solid #ccc;
     background: white;
+    width: 100%;
+    overflow: auto;
 }
 table.spreadsheet th,
 table.spreadsheet td {
