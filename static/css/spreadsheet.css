@@ -29,11 +29,13 @@ table.spreadsheet th {
     background: #eee;
 }
 table.spreadsheet td {
+    color: #333;
 }
 input.edit-inline {
+    color: #333;
     display: block;
     border: 2px solid blue;
-    padding: 10px 4px;
+    padding: 0 4px;
     margin: 0;
     font-size: 14px;
     font-family: sans-serif;

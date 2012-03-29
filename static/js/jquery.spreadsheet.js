@@ -97,8 +97,8 @@
         clearInlineEditor();
         var offset = $(td).offset();
         var input = $('<input class="edit-inline" type="text" />').css({
-            height: $(td).outerHeight() + 'px',
-            minWidth: ($(td).outerWidth() + 1) + 'px',
+            height: ($(td).outerHeight() - 3) + 'px',
+            minWidth: ($(td).outerWidth() - 1) + 'px',
             position: 'absolute',
             top: offset.top,
             left: offset.left
