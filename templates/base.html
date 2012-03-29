@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title}</title> 
     <link rel="stylesheet" type="text/css" href="{baseURL}/static/css/app.css" />
+    <link rel="stylesheet" type="text/css" href="{baseURL}/static/css/spreadsheet.css" />
   </head>
   <body> 
     <div id="topnav" class="navbar navbar-fixed-top">
@@ -16,6 +17,10 @@
             <li class="records">
               <a href="{baseURL}/data_records">
                 <i class="icon-list"></i> Records</a>
+            </li>
+            <li class="facilities">
+              <a href="{baseURL}/facilities">
+                <i class="icon-home"></i> Facilities</a>
             </li>
             <li class="docs"><a href="{baseURL}/docs/"><i class="icon-book"></i> Docs</a></li>
             <!--li class="admin dropdown">
@@ -74,6 +79,8 @@
     <script src="{baseURL}/static/js/jquery-1.7.min.js"></script>
     <script src="{baseURL}/static/js/json2.js"></script>
     <script src="{baseURL}/bootstrap/js/bootstrap-modal.js"></script>
+    <script src="{baseURL}/static/js/underscore.js"></script>
+    <script src="{baseURL}/static/js/jquery.spreadsheet.js"></script>
     <script src="{baseURL}/modules.js"></script>
     <script src="{baseURL}/duality.js"></script>
   </body>
