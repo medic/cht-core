@@ -30,6 +30,7 @@ table.spreadsheet th {
 }
 table.spreadsheet td {
     color: #333;
+    height: 25px;
 }
 input.edit-inline {
     color: #333;
