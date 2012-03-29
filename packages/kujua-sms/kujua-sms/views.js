@@ -76,11 +76,33 @@ exports.facility_by_phone = {
 };
 
 /*
+ * Get phone numbers for health centers based on clinic docs
+ */
+exports.phones_by_district_and_health_center = {
+    map: function (doc) {
+        if (doc.type === 'clinic') {
+            if(doc.parent && doc.parent.parent && doc.parent.parent.contact) {
+                if(doc.parent && doc.parent.contact.phone) {
+                    emit([
+                        doc.parent.parent.name,
+                        doc.parent.name,
+                        doc.parent.contact.phone],
+                        null);
+                }
+            }
+        }
+    },
+    reduce: function(key, doc) {
+        return true;
+    }
+};
+
+/*
  * Get clinic based on phone number
  */
 exports.clinic_by_phone = {
     map: function (doc) {
-        if (doc.type === 'clinic') {
+        if (doc.type === 'clinic' && doc.contact) {
             emit([doc.contact.phone], doc);
         }
     }

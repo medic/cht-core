@@ -1,5 +1,5 @@
 {#tasks}
-<table class="table">
+<table class="table tasks-{type}">
   <thead>
     <tr>
       <th>Messages <span class="tasks-state-{state}"></span>
@@ -12,9 +12,19 @@
     <tr>
         <td>
           <ul>
-            <li>To: {?to}{to}{:else}
-                <i class="icon-exclamation-sign" title="Missing phone"></i>
-                {/to}</li>
+            <li class="to">To: {?to}{to}
+              {:else}
+              <i class="error icon-exclamation-sign" title="Missing phone"></i>
+              <form action="" method="POST" data-ajax="updatePhone" class="hide">
+                <input type="hidden" name="_id" value="{_id}" />
+                <input type="hidden" name="_rev" value="{_rev}" />
+                <input type="text" name="phone" maxlength="15" />
+                <a class="submit" href="#">
+                  <i class="icon-ok icon-large"></i>
+                </a>
+              </form>
+              {/to}
+            </li>
             <li>{message}</li>
          </ul>
         </td>
