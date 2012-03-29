@@ -3,6 +3,7 @@ table.spreadsheet {
     border-spacing: 0;
     border-bottom: 1px solid #ccc;
     border-right: 1px solid #ccc;
+    background: white;
 }
 table.spreadsheet th,
 table.spreadsheet td {
