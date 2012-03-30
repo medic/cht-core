@@ -15,13 +15,10 @@
             <li class="to">To: {?to}{to}
               {:else}
               <i class="error icon-exclamation-sign" title="Missing phone"></i>
-              <form action="" method="POST" data-ajax="updatePhone" class="hide">
+              <form action="" method="POST" class="hide">
                 <input type="hidden" name="_id" value="{_id}" />
                 <input type="hidden" name="_rev" value="{_rev}" />
-                <input type="text" name="phone" maxlength="15" />
-                <a class="submit" href="#">
-                  <i class="icon-ok icon-large"></i>
-                </a>
+                <input type="text" data-provide="typeahead" name="phone" /> e.g. +22995960001
               </form>
               {/to}
             </li>
