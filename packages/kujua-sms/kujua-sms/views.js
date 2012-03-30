@@ -124,6 +124,29 @@ exports.phones_by_district_and_clinic = {
 };
 
 /*
+ * Get phone numbers for district hospitals
+ */
+exports.phones_by_district = {
+    map: function (doc) {
+        if (doc.type === 'clinic') {
+            if( doc.parent
+                    && doc.parent.parent
+                    && doc.parent.parent.contact
+                    && doc.parent.parent.contact.phone) {
+                emit([
+                    doc.parent.parent._id,
+                    doc.parent.parent.name,
+                    doc.parent.parent.contact.name,
+                    doc.parent.parent.contact.phone], null);
+            }
+        }
+    },
+    reduce: function(key, doc) {
+        return true;
+    }
+};
+
+/*
  * Get clinic based on phone number
  */
 exports.clinic_by_phone = {
