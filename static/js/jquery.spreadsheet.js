@@ -252,14 +252,16 @@
             }
         });
         $(document).bind('paste', function (ev) {
-            $($.spreadsheet.clipboard_textarea).val('').focus();
-            setTimeout(function () {
-                var val = $($.spreadsheet.clipboard_textarea).val();
-                var td = $.spreadsheet.selected_td;
-                if (td) {
-                    setValue(td, val);
-                }
-            }, 0);
+            if (ev.target.tagName !== 'INPUT') {
+                $($.spreadsheet.clipboard_textarea).val('').focus();
+                setTimeout(function () {
+                    var val = $($.spreadsheet.clipboard_textarea).val();
+                    var td = $.spreadsheet.selected_td;
+                    if (td) {
+                        setValue(td, val);
+                    }
+                }, 0);
+            }
         });
         $('#spreadsheet_select').live('dblclick', function (ev) {
             if ($.spreadsheet.selected_td) {
