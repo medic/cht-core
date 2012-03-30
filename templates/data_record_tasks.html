@@ -15,15 +15,15 @@
             <li class="to">To: {?to}{to}
               {:else}
               <i class="error-missing-phone icon-exclamation-sign" title="Missing phone"></i>
-              <form action="" method="POST" class="hide">
-                <div class="control-group form-inline">
+              <form action="" method="POST" class="hide form-inline">
+                <span class="control-group">
                   <input type="hidden" name="_id" value="{_id}" />
                   <input type="hidden" name="_rev" value="{_rev}" />
                   <input type="hidden" name="idx" value="{@idx}{.}{/idx}" />
-                  <input class="span2" type="text" data-provide="typeahead" name="phone" /> 
+                  <input class="span2" type="text" data-provide="typeahead" name="phone" />
                   <button type="submit" class="btn">Submit</button>
                   <p class="help-block">e.g. +22995960001</p>
-                </div>
+                </span>
               </form>
               {/to}
             </li>
