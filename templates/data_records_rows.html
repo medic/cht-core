@@ -1,7 +1,9 @@
-        {#data_records}
+    {#data_records}
+    <tr rel="{_id}" data-key="{_key}">
+      <td colspan="8">
         <table class="table table-bordered table-striped">
         <tbody>
-            <tr rel="{_id}" data-key="{_key}" class="main">
+            <tr class="main">
               <td class="reported-date">
                 <div class="relative">
                 {reported_date}
@@ -75,7 +77,7 @@
           </table>
           <table class="table table-bordered table-striped hide extended">
           <tbody>
-            <tr rel="{_id}" data-key="{_key}">
+            <tr>
               <td colspan="8">
                 <div class="relative">
                   <a title="Close" data-dismiss="extended" class="pull-right close">
@@ -99,4 +101,6 @@
             </tr>
           </tbody>
           </table>
-          {/data_records}
+        </td>
+      </tr>
+      {/data_records}
