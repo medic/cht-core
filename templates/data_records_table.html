@@ -32,7 +32,6 @@
           </tr>
         </thead>
         <tbody>
-          {>"data_records_rows.html"/}
         {:else}
           <tr>
             <td colspan="8">No records found.</td>
@@ -40,6 +39,9 @@
         {/data_records}
         </tbody>
       </table>
+      {?data_records}
+        {>"data_records_rows.html"/}
+      {/data_records}
     </div>
     <div class="ajax-loader">
       <img src="{baseURL}/static/img/ajax-loader-turq.gif" />
