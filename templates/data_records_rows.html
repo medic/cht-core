@@ -1,7 +1,8 @@
-        {#data_records}
+      {#data_records}
+      <div class="data-record" rel="{_id}" data-key="{_key}">
         <table class="table table-bordered table-striped">
         <tbody>
-            <tr rel="{_id}" data-key="{_key}" class="main">
+            <tr class="main">
               <td class="reported-date">
                 <div class="relative">
                 {reported_date}
@@ -75,7 +76,7 @@
           </table>
           <table class="table table-bordered table-striped hide extended">
           <tbody>
-            <tr rel="{_id}" data-key="{_key}">
+            <tr>
               <td colspan="8">
                 <div class="relative">
                   <a title="Close" data-dismiss="extended" class="pull-right close">
@@ -85,13 +86,19 @@
                     {>"data_record_fields.html":fields/}
                   </div>
                   {?tasks}
-                  <div class="scroll">
+                  <div>
                     {>"data_record_tasks.html"/}
                   </div>
                   {/tasks}
+                  {?errors}
+                  <div class="data-record-errors">
+                    {>"data_record_errors.html"/}
+                  </div>
+                  {/errors}
                 </div>
               </td>
             </tr>
           </tbody>
           </table>
-          {/data_records}
+        </div>
+        {/data_records}

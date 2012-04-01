@@ -76,11 +76,82 @@ exports.facility_by_phone = {
 };
 
 /*
+ * Get phone numbers for health centers based on clinic docs
+ */
+exports.phones_by_district_and_health_center = {
+    map: function (doc) {
+        if (doc.type === 'clinic') {
+            if(doc.parent
+                    && doc.parent.parent
+                    && doc.parent.contact
+                    && doc.parent.contact.phone) {
+                emit([
+                    doc.parent.parent._id,
+                    doc.parent._id,
+                    doc.parent.name,
+                    doc.parent.contact.name,
+                    doc.parent.contact.phone], null);
+            }
+        }
+    },
+    reduce: function(key, doc) {
+        return true;
+    }
+};
+
+/*
+ * Get phone numbers for clinics
+ */
+exports.phones_by_district_and_clinic = {
+    map: function (doc) {
+        if (doc.type === 'clinic') {
+            if( doc.parent
+                    && doc.parent.parent
+                    && doc.contact
+                    && doc.contact.phone) {
+                emit([
+                    doc.parent.parent._id,
+                    doc._id,
+                    doc.name,
+                    doc.contact.name,
+                    doc.contact.phone], null);
+            }
+        }
+    },
+    reduce: function(key, doc) {
+        return true;
+    }
+};
+
+/*
+ * Get phone numbers for district hospitals
+ */
+exports.phones_by_district = {
+    map: function (doc) {
+        if (doc.type === 'clinic') {
+            if( doc.parent
+                    && doc.parent.parent
+                    && doc.parent.parent.contact
+                    && doc.parent.parent.contact.phone) {
+                emit([
+                    doc.parent.parent._id,
+                    doc.parent.parent.name,
+                    doc.parent.parent.contact.name,
+                    doc.parent.parent.contact.phone], null);
+            }
+        }
+    },
+    reduce: function(key, doc) {
+        return true;
+    }
+};
+
+/*
  * Get clinic based on phone number
  */
 exports.clinic_by_phone = {
     map: function (doc) {
-        if (doc.type === 'clinic') {
+        if (doc.type === 'clinic' && doc.contact) {
             emit([doc.contact.phone], doc);
         }
     }

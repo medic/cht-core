@@ -114,9 +114,16 @@ body {
 #data-records {
   table {
     margin-bottom: 0;
+    width: 100%;
+  }
+  table thead th {
+    vertical-align: bottom;
+    text-align: left;
+    padding: 8px;
+    line-height: 18px;
   }
   .span12 .wrap {
-    padding: 20px;
+    padding: 10px 20px;
   }
   .pager {
     text-align: right;
@@ -170,10 +177,10 @@ body {
   .row-controls {
     padding: 20px;
     position: absolute;
-    top: 0;
+    top: -10px;
     right: 45px;
     .hide;
-    padding: 5px 50px 5px;
+    padding: 15px 50px;
     width: 50px;
     form {
       margin: 0;
@@ -186,29 +193,54 @@ body {
   }
   .extended .close {
     position: absolute;
-    top: 0;
-    right: -25px;
+    top: -9px;
+    right: -5px;
+    z-index: 100;
     font-size: 1em;
   }
   .reached-last-record {
     width: 1em;
     margin: 0 auto 20px auto;
   }
-  tr.main:hover {
+  .data-record .main:hover {
     cursor: pointer;
+  }
+  .warning {
+    background-color: @warningBackground;
   }
   .reached-last-record {
     color: @grayLight;
   }
-  .tasks-state-pending:before { 
-    content: "Pending";
+  .tasks-state-cancelled {
+    .label;
+  }
+  .tasks-state-cancelled:before {
+    content: "Cancelled";
+  }
+  .tasks-state-pending {
     .label;
     .label-info;
   }
-  .tasks-state-sent:before { 
-    content: "Sent";
+  .tasks-state-pending:before {
+    content: "Pending";
+  }
+  .tasks-state-sent {
     .label;
     .label-success;
+  }
+  .tasks-state-sent:before {
+    content: "Sent";
+  }
+  .tasks-type {
+    color: @grayLight;
+  }
+  .tasks-referral {
+    .error-missing-phone {
+      cursor: pointer;
+    }
+    .to .help-block {
+      padding-left:20px;
+    }
   }
 }
 .ajax-loader {
