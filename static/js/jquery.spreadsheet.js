@@ -338,34 +338,34 @@
             else if (ev.keyCode === 17)  { /* CTRL */   return; }
             else if (ev.keyCode === 18)  { /* ALT */    return; }
             else if (ev.keyCode === 38)  { /* UP */
-                ev.preventDefault();
                 var pos = getCellPosition(table, selected);
                 var cell = getCellAt(table, pos.row - 1, pos.column)
                 if (cell) {
+                    ev.preventDefault();
                     select(cell);
                 }
             }
             else if (ev.keyCode === 40)  { /* DOWN */
-                ev.preventDefault();
                 var pos = getCellPosition(table, selected);
                 var cell = getCellAt(table, pos.row + 1, pos.column)
                 if (cell) {
+                    ev.preventDefault();
                     select(cell);
                 }
             }
             else if (ev.keyCode === 37)  { /* LEFT */
-                ev.preventDefault();
                 var pos = getCellPosition(table, selected);
                 var cell = getCellAt(table, pos.row, pos.column - 1)
                 if (cell) {
+                    ev.preventDefault();
                     select(cell);
                 }
             }
             else if (ev.keyCode === 39)  { /* RIGHT */
-                ev.preventDefault();
                 var pos = getCellPosition(table, selected);
                 var cell = getCellAt(table, pos.row, pos.column + 1)
                 if (cell) {
+                    ev.preventDefault();
                     select(cell);
                 }
             }
