@@ -367,7 +367,10 @@ exports.data_record = function (head, req) {
         clinic = null;
 
     if (!def) {
-        addError(record, {error: 'No form definition found for '+ form +'.'});
+        addError(
+            record,
+            {code: 'form_not_found',
+             message: 'No form definition found for '+ form +'.'});
     }
 
     /* Add clinic to task */
@@ -379,12 +382,17 @@ exports.data_record = function (head, req) {
 
     /* Can't do much without a clinic */
     if (!clinic) {
-        addError(record, {error: "Clinic not found."});
+        addError(
+            record,
+            {code: 'facility_not_found', message: "Clinic not found."});
     } else if (smsforms.isReferralForm(form)) {
         var task = getReferralTask(form, record);
         record.tasks.push(task);
         if (!task.to) {
-            addError(record, {error: 'Could not find referral recipient.'});
+            addError(
+                record,
+                {code: 'recipient_not_found',
+                 message: 'Could not find referral recipient.'});
         };
     }
 
@@ -439,7 +447,10 @@ exports.data_record_merge = function (head, req) {
         row = {};
 
     if (!def) {
-        addError(new_data_record, {error: 'No form definition found for '+ form +'.'});
+        addError(
+            new_data_record,
+            {code: 'form_not_found',
+             message: 'No form definition found for '+ form +'.'});
     }
 
     while (row = getRow()) {

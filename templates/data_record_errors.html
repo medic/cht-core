@@ -9,7 +9,12 @@
     <tr>
         <td>
           <ul>
+            {?error}
             <li>{error}</li>
+            {/error}
+            {?message}
+            <li>{message}</li>
+            {/message}
          </ul>
         </td>
     </tr>    
