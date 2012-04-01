@@ -233,30 +233,17 @@
                 var offset = s.offset();
                 var scroll_y = $(window).scrollTop();
                 var max_y = scroll_y + $(window).height() - s.outerHeight();
-                console.log([
-                    'offset.top', offset.top,
-                    'max_y', max_y,
-                    'scroll_y', scroll_y
-                ]);
                 if (offset.top > max_y) {
-                    console.log('scrollTop');
                     $(window).scrollTop(scroll_y + (offset.top - max_y) + 1);
                 }
                 // TODO: 41 is the height of the navbar on KE, make this
                 // configurable
                 else if (offset.top - 41 < scroll_y) {
-                    console.log('scroll up');
                     $(window).scrollTop(offset.top - 41);
                 }
                 var scroll_x = $(window).scrollLeft();
                 var max_x = scroll_x + $(window).width() - s.outerWidth();
-                console.log([
-                    'offset.left', offset.left,
-                    'max_x', max_x,
-                    'scroll_x', scroll_x
-                ]);
                 if (offset.left > max_x) {
-                    console.log('scrollLeft');
                     $(window).scrollLeft(scroll_x + (offset.left - max_x) + 1);
                 }
                 else if (offset.left < scroll_x) {
