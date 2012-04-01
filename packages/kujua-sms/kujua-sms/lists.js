@@ -275,20 +275,18 @@ var getReferralMessage = function(form, phone, clinic, record) {
  * @param {Object} form_data - parsed form data that includes labels (format:1)
  * @param {Object} clinic - the clinic from the tasks_referral doc
  *
- * @returns {Object} Return referral task object for later processing
+ * @returns {Object} Return referral task object
  *
  * @api private
  */
 var getReferralTask = function(form, record) {
     var phone = record.from,
         form_data = record.form_data,
-        clinic = record.related_entities.clinic;
-    
-    var to = getRecipientPhone(form, phone, clinic),
+        clinic = record.related_entities.clinic,
+        to = getRecipientPhone(form, phone, clinic),
         task = {
             type: 'referral',
             state: 'pending',
-            to: to,
             messages: [{
                 to: to,
                 message: getReferralMessage(form, phone, clinic, record)
@@ -516,13 +514,17 @@ exports.tasks_pending = function (head, req) {
         // better support in the gateway for tasks so the gateway can verify
         // that it processed the task successfully.
         for (var i in doc.tasks) {
-            var t = doc.tasks[i];
-            if (t.state === 'pending' && t.to) {
-                t.state = 'sent';
-                // append outgoing message data payload for smsssync
-                respBody.payload.messages.push.apply(
-                        respBody.payload.messages,
-                        t.messages);
+            var task = doc.tasks[i];
+            if (task.state === 'pending') {
+                for (var j in task.messages) {
+                    var msg = task.messages[j];
+                    // if to: field is defined then append messages
+                    if (msg.to) {
+                        task.state = 'sent';
+                        // append outgoing message data payload for smsssync
+                        respBody.payload.messages.push(msg);
+                    }
+                }
             }
         }
 
