@@ -1,4 +1,5 @@
 # Documentation
 
-* [SMS Data Collection Setup](install)
+* [Install](install/)
+* [Gateway Testing](testing)
 

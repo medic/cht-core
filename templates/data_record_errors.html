@@ -1,0 +1,24 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>Errors</th>
+    </tr>    
+  </thead>
+  <tbody>
+    {#errors}
+    <tr>
+        <td>
+          <ul>
+            {?error}
+            <!-- legacy errors format //-->
+            <li>{error}</li>
+            {/error}
+            {?message}
+            <li>{message}</li>
+            {/message}
+         </ul>
+        </td>
+    </tr>    
+    {/errors}
+  </tbody>
+</table>

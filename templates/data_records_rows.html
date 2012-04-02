@@ -1,0 +1,104 @@
+      {#data_records}
+      <div class="data-record" rel="{_id}" data-key="{_key}">
+        <table class="table table-bordered table-striped">
+        <tbody>
+            <tr class="main">
+              <td class="reported-date">
+                <div class="relative">
+                {reported_date}
+                  <div class="row-controls">
+                    <form action="" method="POST" data-ajax="removeDoc">
+                      <input type="hidden" name="_id" value="{_id}" />
+                      <input type="hidden" name="_rev" value="{_rev}" />
+                      <a class="submit delete" href="#">
+                        <i class="icon-remove-sign icon-large"></i>
+                      </a>
+                    </form>
+                  </div>
+              </div>
+              </td>
+              <td class="contact-name">
+                {#related_entities}
+                {?clinic.contact.name}{clinic.contact.name}
+                {:else}<i class="icon-question-sign icon-large"></i>
+                {/clinic.contact.name}
+                {/related_entities}
+              </td>
+              <td class="phone">
+                {from} 
+              </td>
+              <td class="related-entities district_hospital">
+                {#related_entities}
+                  {?clinic.parent.parent.name}
+                  <i>{clinic.parent.parent.name}</i>
+                  {:else}<i class="icon-question-sign icon-large"></i>
+                  {/clinic.parent.parent.name}
+                {/related_entities}
+              </td>
+              <td class="related-entities health_center">
+                {#related_entities}
+                  {?clinic.parent.name}
+                  <i>{clinic.parent.name}</i>
+                  {:else}<i class="icon-question-sign icon-large"></i>
+                  {/clinic.parent.name}
+                {/related_entities}
+              </td>
+              <td class="related-entities clinic">
+                {#related_entities}
+                  {?clinic.name}
+                  <i>{clinic.name}</i>
+                  {:else}<i class="icon-question-sign icon-large"></i>
+                  {/clinic.name}
+                {/related_entities}
+              </td>
+              <td class="sms-message">
+                <div>
+                {#sms_message}
+                  <a href="#" class="extend">{message}</a>
+                {/sms_message}
+                </div>
+              </td>
+              <td class="errors">
+                {?errors}
+                <i class="icon-exclamation-sign icon-large"></i>
+                {:else}
+                  {?tasks}
+                  {#tasks}
+                  <i class="{state} icon-ok icon-large"></i>
+                  {/tasks}
+                  {:else}
+                  <i class="icon-ok icon-large"></i>
+                  {/tasks}
+                {/errors}
+              </td>
+            </tr>
+          </tbody>
+          </table>
+          <table class="table table-bordered table-striped hide extended">
+          <tbody>
+            <tr>
+              <td colspan="8">
+                <div class="relative">
+                  <a title="Close" data-dismiss="extended" class="pull-right close">
+                    <i class="icon-remove"></i>
+                  </a>
+                  <div class="scroll">
+                    {>"data_record_fields.html":fields/}
+                  </div>
+                  {?tasks}
+                  <div>
+                    {>"data_record_tasks.html"/}
+                  </div>
+                  {/tasks}
+                  {?errors}
+                  <div class="data-record-errors">
+                    {>"data_record_errors.html"/}
+                  </div>
+                  {/errors}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+          </table>
+        </div>
+        {/data_records}

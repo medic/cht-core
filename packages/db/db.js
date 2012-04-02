@@ -627,6 +627,43 @@ DB.prototype.getView = function (name, view, /*opt*/q, callback) {
 
 
 /**
+ * Fetches a spatial view from the database the app is running on. Results are
+ * passed to the callback, with the first argument of the callback reserved
+ * for any exceptions that occurred (node.js style).
+ *
+ * __Parameters:__
+ * * bbox - the bounding box filter e.g.: bbox: '0,0,180,90'
+ * * plane_bounds - e.g.: plane_bounds: '-180,-90,180,90'
+ * * stale - stale: 'ok' prevents the spatial index to be rebuilt
+ * * count - count: true will only return the number of geometries
+ *
+ * @name DB.getSpatialView(name, view, q, callback)
+ * @param {String} name - name of the design doc to use
+ * @param {String} view - name of the view
+ * @param {Object} q - query parameters (see options above)
+ * @param {Function} callback(err,response)
+ * @api public
+ */
+
+DB.prototype.getSpatialView = function (name, view, q, callback) {
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    var viewname = exports.encode(view);
+    var req = {
+        url: (this.url +
+            '/_design/' + exports.encode(name) +
+            '/_spatial/' + viewname
+        ),
+        expect_json: true,
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+};
+
+
+/**
  * Transforms and fetches a view through a list from the database the app
  * is running on. Results are passed to the callback, with the first
  * argument of the callback reserved for any exceptions that occurred
@@ -822,7 +859,7 @@ DB.prototype.bulkSave = function (docs, /*optional*/ options, callback) {
         callback = options;
         options = {};
     }
-    options.docs = doc;
+    options.docs = docs;
     var req = {
         type: 'POST',
         url: this.url + '/_bulk_docs',

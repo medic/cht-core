@@ -5,37 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title}</title> 
     <link rel="stylesheet" type="text/css" href="{baseURL}/static/css/app.css" />
+    <link rel="stylesheet" type="text/css" href="{baseURL}/static/css/spreadsheet.css" />
   </head>
   <body> 
-    <div class="navbar navbar-fixed">
+    <div id="topnav" class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <p class="brand"><a href="{baseURL}/" class="kujua">Kujua</a> Export <span class="version">v{settings.version}</span></p>
+          <span class="brand"><a href="{baseURL}/" class="kujua">Kujua</a> Export <span class="version">{settings.version}</span></span>
           <ul class="nav pull-right">
-            <li class="home"><a href="{baseURL}/">Home</a></li>
-            <li class="docs"><a href="{baseURL}/install/">Install</a></li>
-            <li class="dropdown">
-              <a class="dropdown-toggle">Locale <b class="caret"></b></a>
-                <ul class="dropdown-menu">
-                  <li><a href="{baseURL}/?locale=en">English</a></li>
-                  <li><a href="{baseURL}/?locale=fr">French</a></li> 
-                </ul>
+            <li class="home"><a href="{baseURL}/"><i class="icon-download-alt"></i> Download</a></li>
+            <li class="records">
+              <a href="{baseURL}/data_records">
+                <i class="icon-list"></i> Records</a>
             </li>
-            <li class="dropdown">
-              <a class="dropdown-toggle">Admin <b class="caret"></b></a>
-                <ul class="dropdown-menu">
-                  <li><a href="{baseURL}/../_view/sms_messages?include_docs=true">Raw Messages</a></li>
-                  <li><a href="{baseURL}/test">Run Tests</a></li>
-                  <li><a href="https://github.com/medic/kujua-export">Source Code</a></li>
-                </ul>
+            <li class="facilities">
+              <a href="{baseURL}/facilities">
+                <i class="icon-home"></i> Facilities</a>
             </li>
+            <li class="docs"><a href="{baseURL}/docs/"><i class="icon-book"></i> Docs</a></li>
+            <!--li class="admin dropdown">
+              <a class="dropdown-toggle">
+                <i class="icon-cogs"></i> Admin <b class="icon-chevron-down"></b>
+              </a>
+              <ul class="dropdown-menu">
+                <li><a href="{baseURL}/test">Run Tests</a></li>
+                <li class="dropdown">
+                  <a class="dropdown-toggle">Locale <b class="icon-chevron-down"></b></a>
+                    <ul class="dropdown-menu">
+                      <li><a href="{baseURL}/?locale=en">English</a></li>
+                      <li><a href="{baseURL}/?locale=fr">French</a></li> 
+                    </ul>
+                </li>
+              </ul>
+            </li-->
           </ul>
         </div>
       </div>
     </div>
     <div class="page-header">
       <div class="container">
-        <h1>&nbsp;</h1>
+        <h1 class="pull-left">&nbsp;</h1>
+        <div class="controls hide">
+          <button class="btn edit-mode pull-right">
+            <i class="icon-edit icon-large"></i> Edit</button>
+          <!--div class="btn-group pull-right">
+            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+              Limit <span class="caret"></span></a>
+            <ul class="dropdown-menu limits">
+              <li><a href="?limit=11&amp;perPage=10">10</a></li>
+              <li><a href="?limit=26&amp;perPage=25">25</a></li>
+              <li><a href="?limit=51&amp;perPage=50">50</a></li>
+            </ul>
+          </div//-->
+          <div id="district-filter" class="btn-group pull-right hide" style="margin-right: 10px">
+            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+              District <span class="caret"></span></a>
+            <ul class="dropdown-menu district-hospitals">
+            </ul>            
+          </div>
+        </div>
       </div>
     </div>
     <div class="container">
@@ -45,151 +73,16 @@
         </div>
       </div>
       <div id="footer">
-        <p>&copy; <span id="year">2011</span> Medic Mobile</p>
+        <p>&copy; <span id="year"></span> Medic Mobile</p>
       </div>
     </div>
     <script src="{baseURL}/static/js/jquery-1.7.min.js"></script>
     <script src="{baseURL}/static/js/json2.js"></script>
+    <script src="{baseURL}/bootstrap/js/bootstrap-modal.js"></script>
+    <script src="{baseURL}/bootstrap/js/bootstrap-typeahead.js"></script>
+    <script src="{baseURL}/static/js/underscore.js"></script>
+    <script src="{baseURL}/static/js/jquery.spreadsheet.js"></script>
     <script src="{baseURL}/modules.js"></script>
-    <script type="text/javascript">
-var db = require('db').current(),
-    templates = require('duality/templates'),
-    smsforms = require('views/lib/smsforms'),
-    _ = require('underscore')._,
-    forms = {},
-    querystring = require('querystring'),
-    params = querystring.parse($(location).attr('href').split('?')[1]),
-    showdown = require('showdown'),
-    sd = new showdown.converter();
-
-$(function() {
-  if ($('#forms').get(0)) {
-    $('.page-header h1').text('SMS Forms Data');
-    // render available downloads based on data available
-    db.getView('kujua-export', 'sms_message_values', function(err, data) {
-        if (err) {
-            return alert(err);
-        }
-        for (var i = 0; i < data.rows.length; i++) {
-            var key = data.rows[i].key[0];
-            if (smsforms[key]) {
-              if (!forms[key])
-                forms[key] = {total: 0, schema: smsforms[key]};
-              forms[key].total++;
-            }
-        }
-        var context = {
-            forms: ($.isEmptyObject(forms) ? null : forms),
-            iter: function(chk, ctx, bodies) {
-              var obj = ctx.current();
-              for (var k in obj) {
-                chk = chk.render(
-                  bodies.block, ctx.push({key: k, value: obj[k]}));
-              }
-              return chk;
-            }
-        };
-
-        $('#forms').html(
-            templates.render('sms_forms_data.html', {}, context));
-        $('.nav .home').addClass('active');
-
-        // adjust download options based on locale value.  currently only
-        // supporting French.
-        if (params.locale && ['FR','fr'].indexOf(params.locale) !== -1) {
-          $('.form option').each(function(idx, el) {
-              var option = $(el);
-              var val = option.attr('value').split('.')[1];
-              if ('xml?locale=fr' === val) {
-                option.attr('selected','selected');
-              }
-          });
-        }
-        // bind to form download buttons
-        $('#forms form').on('submit', function(ev) {
-            ev.preventDefault();
-            var url = $(this).find('option').filter(':selected').attr('value');
-            $(location).attr('href', '{baseURL}/'+url);
-        });
-    });
-  }
-
-  var renderDoc = function(data, slug) {
-    $('#docs-body').html(sd.makeHtml(data));
-    var title = $('#docs-body h1:first-child').text();
-    $('#docs-body h1:first-child').remove();
-    $('.page-header h1').text(title);
-    $('.nav .docs').addClass('active');
-
-    // render TOC unless loading the index
-    if (slug !== 'index') {
-      var ul = $('<ul/>');
-      $('#docs-body h2, #docs-body h3').each(function(idx, el) {
-        var header = $(el),
-            title = header.text(),
-            id = header.attr('id');
-        if (el.tagName === 'H2') {
-          ul.append(
-            $('<li/>').append(
-              $('<a/>').attr('href', '#'+id).text(title)));
-        } else {
-          ul.append(
-            $('<li class="subhead"/>').append(
-              $('<a/>').attr('href', '#'+id).text(title)));
-        }
-      });
-      $('.sections').append(ul);
-      $('.sections').show();
-    } else {
-      $('.sections').hide();
-    }
-
-    // make large images zoomable
-    $('#docs-body img').each(function(idx, el) {
-        var t =  $("<img/>"),
-            width = 0,
-            height = 0;
-        t.attr("src", $(el).attr("src"));
-        t.load(function() { 
-            width = this.width; 
-            height = this.height; 
-            $(el).parent().addClass('images');
-            if (width > 960) {
-              $(el).parent().addClass('zoom');
-              $(el).parent().bind('click', function() {
-                var p = $(this);
-                if (p.attr('style')) {
-                  p.attr('style',null);
-                } else {
-                  p.css({'width': width});
-                }
-              });
-            };
-        });
-    });
-  }
-  if ($('#docs').get(0)) {
-    var href = $(location).attr('href'),
-        slug = href.split('/').pop().split(/[^\w]+/)[0] || 'install/index';
-    $.ajax({
-        url: '../../docs/'+ slug +'.md',
-        success: function(data) { renderDoc(data, slug); },
-        error: function(jqXHR, textStatus, errorThrown) {
-          alert(textStatus + ' ' + errorThrown);
-        }
-    });
-  }
-
-  // Dynamic year for footer copyright
-  var currentYear = (new Date).getFullYear();
-  $("#year").text( (new Date).getFullYear() );
-
-  // Admin menu control
-  $('.dropdown-toggle').on('click', function(ev) {
-    ev.preventDefault();
-    $(this).siblings('.dropdown-menu').toggle(300);
-  });
-});
-    </script>
+    <script src="{baseURL}/duality.js"></script>
   </body>
 </html>

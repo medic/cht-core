@@ -59,7 +59,8 @@ exports.readBrowserCookie = function (name) {
 exports.cookieString = function (req, opt) {
     var str = escape(opt.name) + '=' + escape(opt.value) + '; path=' + opt.path;
     if (opt.days) {
-        var expires = new Date().setTime(
+        var expires = new Date();
+        expires.setTime(
             new Date().getTime() + 1000 * 60 * 60 * 24 * opt.days
         );
         str += '; expires=' + expires.toGMTString();

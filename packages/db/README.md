@@ -4,6 +4,24 @@ This contains the core functions for dealing with CouchDB. That includes
 document CRUD operations, querying views and creating/deleting databases.
 
 
+### Installation
+
+Add `db` to your dependencies section in `kanso.json`.
+
+```javascript
+  ...
+  "dependencies": {
+    "db": null,
+    ...
+  }
+```
+
+> run `kanso install` to fetch the package
+
+You also need __jQuery__ to be included on your page, since this module uses
+jQuery.ajax to make requests.
+
+
 ### Events
 
 The db module is an EventEmitter. See the
