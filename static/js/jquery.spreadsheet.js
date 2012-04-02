@@ -171,7 +171,6 @@
     var setValue = function (td, val) {
         $(td).text(val);
         $(td).trigger('change');
-        //$(td).parents('tr').trigger('change');
         return td;
     };
 
@@ -295,6 +294,8 @@
         });
         $('td', table).live('click', function (ev) {
             $('td', table).removeClass('active');
+            var pos = getCellPosition(table, this);
+            $.spreadsheet.start_column = pos.column;
             select(this);
         });
         $('td', table).live('change', function (ev) {
@@ -331,6 +332,7 @@
                 var cell = getCellAt(table, pos.row - 1, pos.column)
                 if (cell) {
                     ev.preventDefault();
+                    $.spreadsheet.start_column = pos.column;
                     select(cell);
                 }
             }
@@ -339,6 +341,7 @@
                 var cell = getCellAt(table, pos.row + 1, pos.column)
                 if (cell) {
                     ev.preventDefault();
+                    $.spreadsheet.start_column = pos.column;
                     select(cell);
                 }
             }
@@ -347,6 +350,7 @@
                 var cell = getCellAt(table, pos.row, pos.column - 1)
                 if (cell) {
                     ev.preventDefault();
+                    $.spreadsheet.start_column = pos.column - 1;
                     select(cell);
                 }
             }
@@ -355,6 +359,7 @@
                 var cell = getCellAt(table, pos.row, pos.column + 1)
                 if (cell) {
                     ev.preventDefault();
+                    $.spreadsheet.start_column = pos.column + 1;
                     select(cell);
                 }
             }
@@ -381,9 +386,13 @@
                 //   A3, then hit ENTER it will move to B3 (not B2)
                 if (ev.target === input) {
                     completeInlineEditor();
-                    // move to cell below if possible
                     var pos = getCellPosition(table, selected);
-                    var cell = getCellAt(table, pos.row + 1, pos.column)
+                    var col = $.spreadsheet.start_column;
+                    if (col === undefined) {
+                        col = pos.column;
+                    }
+                    var cell = getCellAt(table, pos.row + 1, col)
+                    // move to cell below if possible
                     if (cell) {
                         select(cell);
                     }
