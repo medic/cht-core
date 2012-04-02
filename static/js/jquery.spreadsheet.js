@@ -370,11 +370,13 @@
                 }
             }
             else if (ev.keyCode === 9)  { /* TAB */
-                ev.preventDefault();
-                var pos = getCellPosition(table, selected);
-                var cell = getCellAt(table, pos.row, pos.column + 1)
-                if (cell) {
-                    select(cell);
+                if (ev.target.tagName !== 'INPUT' || ev.target === input) {
+                    ev.preventDefault();
+                    var pos = getCellPosition(table, selected);
+                    var cell = getCellAt(table, pos.row, pos.column + 1)
+                    if (cell) {
+                        select(cell);
+                    }
                 }
             }
             else if (ev.keyCode === 13)  { /* ENTER */
@@ -397,7 +399,7 @@
                         select(cell);
                     }
                 }
-                else if (selected) {
+                else if (selected && ev.target.tagName !== 'INPUT') {
                     editInline(selected);
                 }
             }
