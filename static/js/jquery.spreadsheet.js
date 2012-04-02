@@ -49,6 +49,7 @@
 
         _.each(data, function (row) {
             var tr = $('<tr/>');
+            tr.data('_id', row._id);
             tbody.append(tr);
 
             _.each(keys, function (k) {
@@ -170,6 +171,7 @@
     var setValue = function (td, val) {
         $(td).text(val);
         $(td).trigger('change');
+        //$(td).parents('tr').trigger('change');
         return td;
     };
 
