@@ -42,8 +42,10 @@ input.edit-inline {
     font-family: sans-serif;
     outline: none;
     box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    z-index: 1030;
 }
 #spreadsheet_select {
+    z-index: 1020;
     border: 2px solid blue;
     cursor: default;
     -webkit-touch-callout: none;

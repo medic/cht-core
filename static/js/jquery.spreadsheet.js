@@ -109,7 +109,7 @@
         else {
             input.val($(td).text());
         }
-        $(document.body).append(input);
+        $(td).parents('table').after(input);
         $.spreadsheet.edit_inline_input = $(input)[0];
         $.spreadsheet.edit_inline_td = $(td)[0];
         return input.focus();
@@ -124,7 +124,7 @@
         var div = $('#spreadsheet_select');
         if (!div.length) {
             div = $('<div id="spreadsheet_select" />');
-            $(document.body).append(div);
+            $(td).parents('table').after(div);
         }
         var offset = $(td).offset();
         div.css({
@@ -416,7 +416,7 @@
 
         var textarea = $('<textarea id="spreadsheet_clipboard"></textarea>');
         $.spreadsheet.clipboard_textarea = textarea;
-        $(this).append(textarea);
+        $(this).after(textarea);
 
         bindEvents(this);
 
