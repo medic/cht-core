@@ -13,6 +13,15 @@ catch (e) {
     // flashmessages module may not be available
 }
 
+if (!dust.optimizers) {
+    dust.optimizers = {};
+}
+
+// disable whitespace compression
+dust.optimizers.format = function (ctx, node) {
+    return node;
+};
+
 
 /**
  * Synchronously render dust template and return result, automatically adding

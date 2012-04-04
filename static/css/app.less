@@ -1,5 +1,9 @@
-@import "packages/bootstrap/bootstrap/lib/bootstrap.less";
+@import "bootstrap/less/bootstrap.less";
 @import "packages/kujua-branding/css/base.less";
+
+// avoid header bug to bypass rewrite and directly access attachment
+@baseFontPath: "../../../bootstrap/font/";
+@gridColumns: 12;
 
 /* background noise */
 html, body {
@@ -9,6 +13,7 @@ html, body {
 body {
   padding-top: 40px;
 }
+
 .content {
   margin-top: 20px;
   border-top: solid 3px black;
@@ -20,18 +25,24 @@ body {
   margin: 40px auto;
   width: 10em;
   color: @grayLight;
+/*
+  background-image: url('../img/medic-logo-foot.png');
+  background-position: center bottom;
+  background-repeat:no-repeat;
+*/
+  /*background-attachment:fixed; */
 }
 .page-header {
   background-color: @white;
   padding: 10px;
+  margin: 0;
 }
 .version {
   font-weight: bold;
   font-size: .567em;
   color: #000;
   text-shadow: 0 1px 0 rgba(255,255,255,.1), 0 0 30px rgba(255,255,255,.125);
-}
-#docs {
+  &:before { content:"v" }
 }
 #docs-body {
   padding: 20px;
@@ -44,6 +55,31 @@ body {
     margin-top: 0;
   }
 }
+.scroll {
+  overflow: auto;
+  width: 880px;
+  padding: 0 0 1em 0;
+  margin: 0;
+  position: relative;
+}
+.scroll-short {
+  .scroll;
+  width: 580px;
+}
+// override bootstrap for inner tables 
+.table-striped .form-data {
+  thead tr th, 
+  tbody tr td {
+    background-color: #fff;
+  }
+}
+.table-striped.extended tbody tr td {
+  background-color: #fff;
+}
+#loader li {
+  list-style-type: none;
+  padding: 10px 0 0 20px;
+}
 #forms li {
   margin: 10px;
   width: 280px;
@@ -53,6 +89,9 @@ body {
 }
 #forms li form {
   margin-top: 10px;
+  select {
+    margin-bottom: 0;
+  }
 }
 .navbar, .brand {
   font-weight: normal;
@@ -62,6 +101,151 @@ body {
 }
 .navbar .brand a.kujua:hover {
   background:none;
+}
+.edit-mode.active {
+  .btn-warning;
+}
+.icon-exclamation-sign {
+    color: @red;
+}
+.icon-exclamation-sign {
+    color: @red;
+}
+#data-records {
+  table {
+    margin-bottom: 0;
+    width: 100%;
+  }
+  table thead th {
+    vertical-align: bottom;
+    text-align: left;
+    padding: 8px;
+    line-height: 18px;
+  }
+  .span12 .wrap {
+    padding: 10px 20px;
+  }
+  .pager {
+    text-align: right;
+    padding-top: 20px;
+    li a {
+      .hide;
+    }
+  }
+  .icon-exclamation-sign {
+    font-size: 1.2em;
+  }
+  .icon-question-sign {
+    font-size: 1.2em;
+    color: @grayLight;
+  }
+  .icon-ok {
+    color: @green;
+  }
+  .icon-ok.pending {
+    color: @blue;
+  }
+  // Specifying width for each column since the rows are their own tables.  
+  .reported-date {
+    width: 100px;
+  }
+  .contact-name {
+    width: 100px;
+  }
+  .phone {
+    width: 100px;
+  }
+  .related-entities {
+    width: 100px;
+  }
+  .sms-message {
+    width: 100px;
+  }
+  .sms-message > div {
+    width: 100px;
+    margin: 0;
+    padding: 10px 0;
+    overflow: auto;
+    white-space: nowrap;
+  }
+  .errors {
+    width: 30px;
+  }
+  .relative {
+    position: relative;
+  }
+  .row-controls {
+    padding: 20px;
+    position: absolute;
+    top: -10px;
+    right: 45px;
+    .hide;
+    padding: 15px 50px;
+    width: 50px;
+    form {
+      margin: 0;
+      padding: 0;
+    }
+    .delete {
+      color: @red;
+      font-size: 1.5em;
+    }
+  }
+  .extended .close {
+    position: absolute;
+    top: -9px;
+    right: -5px;
+    z-index: 100;
+    font-size: 1em;
+  }
+  .reached-last-record {
+    width: 1em;
+    margin: 0 auto 20px auto;
+  }
+  .data-record .main:hover {
+    cursor: pointer;
+  }
+  .warning {
+    background-color: @warningBackground;
+  }
+  .reached-last-record {
+    color: @grayLight;
+  }
+  .tasks-state-cancelled {
+    .label;
+  }
+  .tasks-state-cancelled:before {
+    content: "Cancelled";
+  }
+  .tasks-state-pending {
+    .label;
+    .label-info;
+  }
+  .tasks-state-pending:before {
+    content: "Pending";
+  }
+  .tasks-state-sent {
+    .label;
+    .label-success;
+  }
+  .tasks-state-sent:before {
+    content: "Sent";
+  }
+  .tasks-type {
+    color: @grayLight;
+  }
+  .tasks-referral {
+    .error-missing-phone {
+      cursor: pointer;
+    }
+    .to .help-block {
+      padding-left:20px;
+    }
+  }
+}
+.ajax-loader {
+  width: 4em;
+  margin: 0 auto 20px auto;
 }
 .sections {
   display: none;
@@ -94,4 +278,22 @@ body {
 }
 code {
   white-space:nowrap;
+}
+#duality-contrib-loading {
+    background-color: @popcorn;
+    /*.border-radius(0 0 5px 5px);*/
+    position: fixed;
+    top: 40px;
+    left: 50%;
+    width: 6em;
+    padding: 0 1em;
+    margin-left: -4em; /* center it */
+    border: 1px solid #ccc;
+    border-right-color: #999;
+    border-bottom-color: #999;
+}
+
+table.spreadsheet {
+    margin: 20px !important;
+    width: 900px !important;
 }

@@ -9,7 +9,7 @@ exports.proxyShowFn = function (path, app, doc, props) {
         str += '["' + props[i].replace('"', '\\"') + '"]';
     }
     str += ';';
-    str += 'return core.runShow(fn, doc, req);';
+    str += 'return core.runShow.call(this, fn, doc, req);';
     str += '}';
     utils.setPropertyPath(doc, props.join('/'), str);
 };
@@ -23,7 +23,7 @@ exports.proxyUpdateFn = function (path, app, doc, props) {
     }
     str += ';';
     str += 'var r;';
-    str += 'core.runUpdate(fn, doc, req, function (err, res) { r = res; });';
+    str += 'core.runUpdate.call(this, fn, doc, req, function (err, res) { r = res; });';
     str += 'return r;';
     str += '}';
     utils.setPropertyPath(doc, props.join('/'), str);
@@ -37,7 +37,7 @@ exports.proxyListFn = function (path, app, doc, props) {
         str += '["' + props[i].replace('"', '\\"') + '"]';
     }
     str += ';';
-    str += 'return core.runList(fn, head, req);';
+    str += 'return core.runList.call(this, fn, head, req);';
     str += '}';
     utils.setPropertyPath(doc, props.join('/'), str);
 };

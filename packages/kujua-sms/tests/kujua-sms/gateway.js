@@ -6,8 +6,8 @@ exports.success_response_psms = function (test) {
     var req = {headers:{ "Host": window.location.host }},
         doc = JSON.parse('{ "_id":"b0221beaed5222596224e4d123002045", "_rev":"1-94fa1caf624d9f2896f2ef16148f874c", "secret":"", "from":"+15551212", "message":"1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4", "message_id":"0", "sent_timestamp":"11-23-11 13:43", "sent_to":"", "type":"sms_message", "form":"PSMS"}'),
         respBody = JSON.parse(updates.getRespBody(doc, req)),
-        expectedResp = JSON.parse('{"payload":{"success":true,"task":"send","messages":[{"to":"+15551212","message":"Zikomo!"}]}}');
-    test.same(respBody, expectedResp);
+        payload = JSON.parse('{"success":true,"task":"send","messages":[{"to":"+15551212","message":"Zikomo!"}]}');
+    test.same(respBody.payload, payload);
     test.done();
 };
 
@@ -24,8 +24,9 @@ exports.success_response_pscq = function (test) {
             type: "sms_message",
             form: "PSCQ"},
         respBody = JSON.parse(updates.getRespBody(doc, req)),
-        expectedResp = JSON.parse('{"payload":{"success":true,"task":"send","messages":[{"to":"+15551212","message":"Merci, votre formulaire \\"Supervision AS\\" a été bien reçu."}]}}');
-    test.same(respBody, expectedResp);
+        payload = JSON.parse('{"success":true,"task":"send","messages":[{"to":"+15551212","message":"Merci, votre formulaire \\"Supervision AS\\" a été bien reçu."}]}');
+
+    test.same(respBody.payload, payload);
     
     test.done();
 };
@@ -85,98 +86,3 @@ exports.responses_empty_message_fr = function (test) {
     test.same(respBody, expectedResp);
     test.done();
 };
-
-exports.add_sms = function (test) {
-
-    test.expect(1);
-
-    var data = {
-        from: '+13125551212', // clinic.contact.phone
-        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
-        sent_timestamp: '1-19-12 18:45',
-        sent_to: '+15551212',
-        foo: 'bar' // extra is ok
-    };
-
-    var result = updates.add_sms(null, {
-        method: "POST",
-        query:{},
-        headers:{
-            "Content-Length": querystring.stringify(data).length,
-            "Content-Type":"application/x-www-form-urlencoded",
-            "Host": window.location.host
-        },
-        body: querystring.stringify(data),
-        form: data,
-    });
-
-    var doc = result[0];
-    //var resp = JSON.parse(result[1]);
-
-    // delete volatile properties
-    delete doc.sent_timestamp;
-
-    test.same(doc, {
-        from: "+13125551212",
-        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
-        //"sent_timestamp": "1-19-12 18:45",
-        sent_to: "+15551212",
-        foo: "bar",
-        type: "sms_message",
-        locale: "en",
-        form: "PSMS"
-    });
-    test.done();
-};
-
-exports.add_sms_fr = function (test) {
-
-    test.expect(1);
-
-    var data = {
-        from: '+13125551212', // clinic.contact.phone
-        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
-        sent_timestamp: '1-19-12 18:45',
-        sent_to: '+15551212',
-        foo: 'bar' // extra is ok
-    };
-
-    var result = updates.add_sms(null, {
-        method: "POST",
-        query: {locale: 'fr'}, //mock a ?locale=fr request
-        headers:{
-            "Content-Length": querystring.stringify(data).length,
-            "Content-Type":"application/x-www-form-urlencoded",
-            "Host": window.location.host
-        },
-        body: querystring.stringify(data),
-        form: data,
-    });
-
-    var doc = result[0];
-    var resp = JSON.parse(result[1]);
-
-    // delete volatile properties
-    delete doc.sent_timestamp;
-
-    test.same(doc, {
-        from: "+13125551212",
-        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
-        //"sent_timestamp": "1-19-12 18:45",
-        sent_to: "+15551212",
-        foo: "bar",
-        type: "sms_message",
-        locale: "fr",
-        form: "PSMS"
-    });
-    test.done();
-};
-
-/* TODO
-exports.responses_form_invalid = function (test) {
-    var msg = '1!PSMS!2012#2#20#foo#bar';
-    var resp = JSON.parse(updates.getRespBody(doc));
-    var expected = JSON.parse('{"payload":{"success":true,"task":"send","messages":[{"to":"+15551212","message":"The report sent \'PSMS\' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor."}]}}');
-};
-*/
-

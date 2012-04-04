@@ -236,6 +236,13 @@ exports.init = function () {
             var href = $(this).attr('href');
             var rel = $(this).attr('rel');
 
+            if (/#[A-Za-z_\-:\.]+/.test(href)) {
+                exports._in_page = true;
+                // in-page anchor
+                return;
+            }
+            if(typeof(console) !== 'undefined')
+                console.log('no in-page anchor');
             if (href && exports.isAppURL(href) && rel !== 'external') {
                 var url = exports.appPath(href);
                 ev.preventDefault();
@@ -252,10 +259,16 @@ exports.init = function () {
                     // button
                     window.open(exports.getBaseURL() + url);
                 }
+                return false;
             }
         });
 
         window.onpopstate = function (ev) {
+            if (exports._in_page) {
+                exports._in_page = false;
+                // let the browser handle in-page anchors
+                return;
+            }
             var url = exports.getAppURL();
             var state = ev.state || {};
             var method = state.method || 'GET';
@@ -578,7 +591,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
         query: req.query,
         fn: fn
     };
-    events.emit('beforeResource', info);
+    events.emit('beforeResource', info, req);
 
     if (docid) {
         var appdb = db.use(exports.getDBURL(req));
@@ -739,6 +752,14 @@ exports.runShow = function (fn, doc, req) {
 
     if (flashmessages) {
         res = flashmessages.updateResponse(req, res);
+    } else {
+        // set the baseURL cookie for the browser
+        var baseURL = utils.getBaseURL(req);
+        cookies.setResponseCookie(req, res, {
+            name: 'baseURL',
+            value : baseURL,
+            path : baseURL
+        });
     }
     req.response_received = true;
     return res;
@@ -769,7 +790,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
         query: req.query,
         fn: fn
     };
-    events.emit('beforeResource', info);
+    events.emit('beforeResource', info, req);
 
     if (docid) {
         var appdb = db.use(exports.getDBURL(req));
@@ -864,6 +885,14 @@ exports.runUpdate = function (fn, doc, req, cb) {
 
     if (flashmessages) {
         res = flashmessages.updateResponse(req, res);
+    } else {
+            // set the baseURL cookie for the browser
+            var baseURL = utils.getBaseURL(req);
+            cookies.setResponseCookie(req, res, {
+                name: 'baseURL',
+                value : baseURL,
+                path : baseURL
+            });
     }
     var r = [val ? val[0]: null, res];
     if (req.client && r[0]) {
@@ -916,7 +945,6 @@ exports.createHead = function (data) {
  */
 
 exports.runListBrowser = function (req, name, view, callback) {
-    log('runListBrowser runListBrowser runListBrowser')
     var fn = exports._lists[name];
     if (!fn) {
         throw new Error('Unknown list function: ' + name);
@@ -929,7 +957,7 @@ exports.runListBrowser = function (req, name, view, callback) {
         query: req.query,
         fn: fn
     };
-    events.emit('beforeResource', info);
+    events.emit('beforeResource', info, req);
 
     if (view) {
         // update_seq used in head parameter passed to list function
@@ -1015,6 +1043,14 @@ exports.runList = function (fn, head, req) {
         }
         if (flashmessages) {
             res = flashmessages.updateResponse(req, res);
+        } else {
+                // set the baseURL cookie for the browser
+                var baseURL = utils.getBaseURL(req);
+                cookies.setResponseCookie(req, res, {
+                    name: 'baseURL',
+                    value : baseURL,
+                    path : baseURL
+                });
         }
         _start(res);
     };
@@ -1109,6 +1145,9 @@ exports.handle = function (method, url, data) {
                     }
                     // TODO: handle invalid values?
                 }
+                else if (!utils.initial_hit) {
+                    window.scrollTo(0, 0);
+                }
             };
 
             var src, fn, name;
@@ -1117,25 +1156,16 @@ exports.handle = function (method, url, data) {
                 exports.runShowBrowser(
                     req, req.path[1], req.path.slice(2).join('/'), after
                 );
-                if (!utils.initial_hit) {
-                    window.scrollTo(0, 0);
-                }
             }
             else if (req.path[0] === '_list') {
                 exports.runListBrowser(
                     req, req.path[1], req.path.slice(2).join('/'), after
                 );
-                if (!utils.initial_hit) {
-                    window.scrollTo(0, 0);
-                }
             }
             else if (req.path[0] === '_update') {
                 exports.runUpdateBrowser(
                     req, req.path[1], req.path.slice(2).join('/'), after
                 );
-                if (!utils.initial_hit) {
-                    window.scrollTo(0, 0);
-                }
             }
             else {
                 console.log('Unknown rewrite target: ' + req.path.join('/'));

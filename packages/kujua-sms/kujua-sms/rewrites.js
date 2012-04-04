@@ -10,44 +10,44 @@ exports.rules = [
         method: 'GET'
     },
     {
-        from: '/:form/sms_messages.csv',
-        to: '_list/sms_messages_csv/sms_message_values',
-        query: {
-            startkey: [':form'],
-            endkey: [':form', {}]
-        }
+        from: '/:form/data_records.csv',
+        to: '_list/data_records_csv/data_records_valid_by_district_and_form'
     },
     {
-        from: '/:form/sms_messages.xml',
-        to: '_list/sms_messages_xml/sms_message_values',
-        query: {
-            startkey: [':form'],
-            endkey: [':form', {}]
-        }
+        from: '/:form/data_records.xml',
+        to: '_list/data_records_xml/data_records_valid_by_district_and_form'
     },
     {
-        from: '/:form/tasks_referral/add/clinic/:phone',
-        to: '_list/tasks_referral/clinic_by_phone',
+        from: '/:form/data_record/add/clinic/:phone',
+        to: '_list/data_record/clinic_by_phone',
         query: {
             startkey: [':phone'],
             endkey: [':phone',{}]
         }
     },
     {
-        from: '/:form/tasks_referral/add/health_center/:phone',
-        to: '_list/tasks_referral/clinic_by_parent_phone',
+        from: '/:form/data_record/add/health_center/:phone',
+        to: '_list/data_record/clinic_by_parent_phone',
         query: {
             startkey: [':phone'],
             endkey: [':phone',{}]
         }
     },
     {
-        from: '/:form/tasks_referral/add/refid/:refid',
-        to: '_list/tasks_referral/clinic_by_refid',
+        from: '/:form/data_record/add/refid/:refid',
+        to: '_list/data_record/clinic_by_refid',
         query: {
             startkey: [':refid',{}],
             endkey: [':refid'],
             descending: 'true'
         }
-    }
+    },
+    {
+        from: '/:form/data_record/merge/:year/:month/:clinic_id',
+        to: '_list/data_record_merge/data_record_by_year_month_and_clinic_id',
+        query: {
+            startkey: [':year', ':month', ':clinic_id'],
+            endkey: [':year', ':month', ':clinic_id', {}]
+        }
+    },
 ];

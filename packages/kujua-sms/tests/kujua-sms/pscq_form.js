@@ -9,7 +9,7 @@ exports.pscq_example_data = function (test) {
         from: '+15551212',
         message: '1!PSCQ!2013#2#20#aaaaaaaaaaaaaaaaaa#2222#3333#1#1111#1111#1#2222#2222#2#333#474#112#444#111#333#333#880#220#220#212#555#6633#4444#8888#2211#2211#2211#5555#222#444#22'
     };
-    var obj = smsparser.parse(def, doc);
+    var obj = smsparser.parse('PSCQ', def, doc);
 
     test.expect(2);
 
@@ -56,7 +56,7 @@ exports.pscq_example_data = function (test) {
 
     test.same(obj, expectedObj);
 
-    var arr = smsparser.parseArray(def, doc);
+    var arr = smsparser.parseArray('PSCQ', def, doc);
     var expectedArr = ['12-11-12 08:00', '+15551212', '2013', 2, 20, 'aaaaaaaaaaaaaaaaaa', 2222, 3333, 'False', 1111, 1111, 'False', 2222, 2222, 'True', 333, 474, 112, 444, 111, 333, 333, 880, 220, 220, 212, 555, 6633, 4444, 8888, 2211, 2211, 2211, 5555, 222, 444, 22];
 
     test.same(arr, expectedArr);

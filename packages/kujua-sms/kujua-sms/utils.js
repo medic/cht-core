@@ -1,9 +1,38 @@
 /**
- * Utility functions for Kujua Export
+ * Utility functions for Kujua
  */
 
 var jsDump = require('jsDump'),
-    settings = require('settings/root');
+    settings = require('settings/root'),
+    smsforms = require('views/lib/smsforms'),
+    _ = require('underscore')._;
+
+exports.strings = {
+    reported_date: {
+        en: 'Reported Date',
+        fr: 'Date envoyé'
+    },
+    "related_entities.clinic.contact.name": {
+        en: "Name",
+        fr: "Name"
+    },
+    "related_entities.clinic.parent.parent.name": {
+        en: "District",
+        fr: "District"
+    },
+    "related_entities.clinic.name": {
+        en: "Clinic",
+        fr: "Clinic"
+    },
+    from: {
+        en: 'From',
+        fr: 'Envoyé par'
+    },
+    sent_timestamp: {
+        en: 'Sent Timestamp',
+        fr: 'Date envoyé'
+    }
+};
 
 var logger = exports.logger = {
     levels: {silent:0, error:1, info:2, debug:3},
@@ -371,6 +400,10 @@ var capitalize = exports.capitalize = function(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+/*
+ * param Array arr  - array of headings and data arrays/rows
+ * return String - string for rows with appropriate csv conventions.
+ */
 var arrayToCSV = exports.arrayToCSV = function(arr, delimiter) {
     var rows = [],
         delimiter = delimiter || '","';
@@ -415,3 +448,190 @@ var arrayToXML = exports.arrayToXML = function(arr, format) {
     }
     return '<Row>' + rows.join('</Row>\n<Row>') + '</Row>';
 };
+
+
+var arrayToStringNotation = function(arr) {
+    var str = _.flatten(arr).join('.');
+    return str;
+};
+
+/*
+ * return String - Try to return appropriate locale translation for a string,
+ *                 english by default. Support array keys, just concatenate.
+ */
+var _s = exports._s = function(key, locale) {
+    var key = _.isArray(key) ? arrayToStringNotation(key) : key;
+    if (exports.strings[key]) {
+        if (exports.strings[key][locale]) {
+            return exports.strings[key][locale];
+        } else if (exports.strings[key]['en']) {
+            return exports.strings[key]['en'];
+        }
+    }
+};
+
+var arrayDepth = function(arr) {
+    var depth = 0;
+    for (var i in arr) {
+        var a = arr[i];
+        if (a instanceof Array) {
+            depth++;
+            depth = arrayDepth(a) + depth;
+        }
+    }
+    return depth;
+};
+
+/*
+ * Fetch labels from base strings or smsforms objects, maintaining order in
+ * the returned array.
+ *
+ * @param Array keys - keys we want to resolve labels for
+ * @param String form - form code string
+ * @param String locale - locale string, e.g. 'en', 'fr', 'en-gb'
+ *
+ * @return Array  - form field labels based on smsforms definition.
+ *
+ * @api private
+ */
+exports.getLabels = function(keys, form, locale) {
+    var def = smsforms[form],
+        labels = [],
+        form_labels = {};
+
+    if (def) {
+        _.map(def.fields, function (f) {
+            form_labels[f.key] = f.label || f.key;
+        });
+    }
+
+    var labelsForKeys = function(keys, appendTo) {
+        for (var i in keys) {
+            var _key = keys[i];
+
+            if(_.isArray(_key) && arrayDepth(_key) === 1) {
+                labelsForKeys(_key[1], _key[0] + '.');
+                continue;
+            } else if(_.isArray(_key) && arrayDepth(_key) > 1) {
+                var key = arrayToStringNotation(_key);
+                if (form_labels[key]) {
+                    labels.push(form_labels[key]);
+                } else {
+                    labels.push(_s(key, locale));
+                }
+            } else {
+                var key = (appendTo || '') + _key;
+
+                if (form_labels[key]) {
+                    labels.push(form_labels[key]);
+                } else {
+                    labels.push(_s(key, locale));
+                }
+            }
+        }
+    }
+
+    labelsForKeys(keys);
+
+    return labels;
+};
+
+/*
+ * Get an array of values from the doc by the keys from
+ * the given keys array.
+ *
+ * @param Object doc - data record document
+ * @param Array keys - keys we want to resolve labels for
+ *
+ * @return Array  - values from doc in the same order as keys
+ */
+var getValues = exports.getValues = function(doc, keys) {
+    var values = [];
+
+    for (var i in keys) {
+        var key = keys[i];
+        if(key instanceof Array) {
+            if(typeof doc[key[0]] === 'object') {
+                var d = doc[key[0]];
+                if (_.isArray(key[1]) && key[1].length > 1) {
+                    values = values.concat(getValues(d, key[1]));
+                }
+            } else {
+                values.push(doc[key]);
+            }
+        } else if (typeof doc[key] !== 'object') {
+            values.push(doc[key]);
+        } else if (typeof doc[key] === 'object') {
+            keys.shift();
+            values = values.concat(getValues(doc[key], keys));
+        }
+    }
+
+    return values;
+};
+
+/* I'm sorry I butchered this nice thing, was in a pinch. -mandric */
+exports.old_getValues = function(doc, keys) {
+    var values = [];
+
+    for (var i in keys) {
+        var key = keys[i];
+
+        if(_.isArray(key)) {
+            values = values.concat(exports.getValues(doc[key[0]], key[1]));
+        } else {
+            values.push(doc[key]);
+        }
+    }
+
+    return values;
+};
+
+/*
+ * Get an array of keys from the form.
+ * If dot notation is used it will be an array
+ * of arrays.
+ *
+ * @param String form - smsforms key
+ * 
+ * @return Array  - form field keys based on smsforms definition
+ */
+exports.getFormKeys = function(form) {
+    var keys = {},
+        def = smsforms[form];
+        
+    var getKeys = function(key, hash) {
+        if(key.length > 1) {
+            var tmp = key.shift();
+            if(!hash[tmp]) {
+                hash[tmp] = {};
+            }
+            getKeys(key, hash[tmp]);
+        } else {
+            hash[key[0]] = '';
+        }            
+    };
+
+    var hashToArray = function(hash) {
+        var array = [];
+        
+        _.each(hash, function(value, key) {
+            if(typeof value === "string") {
+                array.push(key);
+            } else {
+                array.push([key, hashToArray(hash[key])]);
+            }
+        });
+        
+        return array;
+    };
+    
+    if (def) {
+        for (var i in def.fields) {
+            getKeys(def.fields[i].key.split('.'), keys);
+        }
+    }
+    
+    return hashToArray(keys);
+};
+

@@ -1,0 +1,25 @@
+{
+    "name": "bootstrap-fontawesome",
+    "version": "2.0.1-kanso.1",
+    "categories": ["frontend"],
+    "maintainers": [
+        {
+            "name": "Milan Andric",
+            "url": "http://m.andric.us"
+        }
+    ],
+    "url": "http://github.com/mandric/kanso-bootstrap-fontawesome",
+    "attachments": [
+        "bootstrap/img",
+        "bootstrap/font",
+        "bootstrap/js"
+    ],
+    "less": {
+        "paths": ["."]
+    },
+    "dependencies": {
+        "attachments": null,
+        "less-precompiler": null
+    },
+    "description": "Less files for bootstrap with font-awesome icons and javascript plugins, allowing you to modify the base variables and choose which parts to use before compiling to css on push."
+}

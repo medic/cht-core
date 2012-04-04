@@ -12,6 +12,9 @@
     "duality": {
         "base_template": "base.html"
     },
+    "duality-contrib-loading": {
+        "timeout": 300
+    },
     "less": {
         "compress": true,
         "compile": "static/css/app.less",
@@ -22,19 +25,24 @@
         "properties": null,
         "attachments": null,
         "settings": null,
-        "duality": null,
+        "duality": ">=0.0.18",
+        "duality-contrib-session": null,
         "dust": null,
         "duality-dust": null,
-        "couchtypes": null,
         "nodeunit": null,
         "nodeunit-testrunner": null,
         "less-precompiler": null,
-        "bootstrap": ">=0.0.2",
-        "kujua-branding": ">=0.0.1",
+        "bootstrap-fontawesome": null,
+        "kujua-branding": null,
         "kujua-sms": null,
+        "kujua-utils": null,
+        "kujua-pagination": null,
         "jsDump": null,
         "git-info": null,
         "showdown": null,
-        "couch-fakerequest": null
+        "couch-fakerequest": null,
+        "users": null,
+        "cookies": null,
+        "moment": null
     }
 }
