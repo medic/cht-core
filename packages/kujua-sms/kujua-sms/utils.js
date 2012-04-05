@@ -541,8 +541,9 @@ exports.getLabels = function(keys, form, locale) {
 };
 
 /*
- * Get an array of values from the doc by the keys from
- * the given keys array.
+ * Get an array of values from the doc by the keys from the given keys array.
+ * Note: Do not mutate the original keys parameter reference, use the
+ * non-mutating array methods.
  *
  * @param Object doc - data record document
  * @param Array keys - keys we want to resolve labels for
@@ -565,9 +566,8 @@ var getValues = exports.getValues = function(doc, keys) {
         } else if (typeof doc[key] !== 'object') {
             values.push(doc[key]);
         } else if (typeof doc[key] === 'object') {
-            keys.shift();
-            values = values.concat(getValues(doc[key], keys));
-        }        
+            values = values.concat(getValues(doc[key], keys.slice(1)));
+        }
     });
 
     return values;
