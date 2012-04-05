@@ -380,17 +380,21 @@ exports.data_record = function (head, req) {
 
     /* Can't do much without a clinic */
     if (!clinic) {
-        addError(
-            record,
-            {code: 'facility_not_found', message: "Clinic not found."});
+        var err = {code: 'facility_not_found', message: "Clinic not found."};
+        addError(record, err);
     } else if (smsforms.isReferralForm(form)) {
         var task = getReferralTask(form, record);
         record.tasks.push(task);
-        if (!task.to) {
-            addError(
-                record,
-                {code: 'recipient_not_found',
-                 message: 'Could not find referral recipient.'});
+        for (var i in task.messages) {
+            var msg = task.messages[i];
+            if(!msg.to) {
+                addError(
+                    record,
+                    {code: 'recipient_not_found',
+                     message: 'Could not find referral recipient.'});
+                // we don't need redundant error messages
+                break;
+            };
         };
     }
 
