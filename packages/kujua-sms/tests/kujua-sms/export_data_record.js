@@ -11,11 +11,13 @@ exports.lists_data_record_csv = function(test) {
     test.expect(1);
 
     // the first char is the BOM
-    var expected = '\uFEFF"Reported Date","From","Année","Mois","Jour","Code du RC","Type de patient","Nom","Age","Nom de la mère ou de l\'accompagnant","Patient traité pour","Recommandations/Conseils","Précisions pour recommandations","Nom de l\'agent de santé"\n'
-        +'"'+moment(1331503842461).format('DD, MMM YYYY, hh:mm:ss')+'"'
-        +',"+12229990000","2012","1","16","","","","","","","","",""\n'
-        +'"'+moment(1331503850000).format('DD, MMM YYYY, hh:mm:ss')+'"'
-        +',"+13331110000","2012","1","16","","","","","","","","",""';
+    var expected = '\uFEFF"Reported Date","From","Name","Clinic","Health Center","Année","Mois","Jour","Code du RC","Type de patient","Nom","Age","Nom de la mère ou de l\'accompagnant","Patient traité pour","Recommandations/Conseils","Précisions pour recommandations","Nom de l\'agent de santé"\n'
+        +'"'+moment(1331503842461).format('DD, MMM YYYY, hh:mm:ss')
+        +'","+12229990000","Paul","Clinic 1","Health Center 1"'
+        +',"2012","1","16","","","","","","","","",""\n'
+        +'"'+moment(1331503850000).format('DD, MMM YYYY, hh:mm:ss')
+        +'","+13331110000","Sam","Clinic 2",""'
+        +',"2012","1","16","","","","","","","","",""';
 
     // mockup the view data
     var viewdata = {rows: [
@@ -28,6 +30,14 @@ exports.lists_data_record_csv = function(test) {
             "value": 1,
             "doc": {
                 _id: 'abc123z',
+                related_entities: {
+                    clinic: {
+                        name:"Clinic 1",
+                        contact: { name:"Paul", phone: ""},
+                        parent: {
+                            name: "Health Center 1",
+                            contact: { name: "" },
+                            parent: { name: "District 1" }}}},
                 reported_date: 1331503842461,
                 from: '+12229990000',
                 cref_year: '2012',
@@ -44,6 +54,14 @@ exports.lists_data_record_csv = function(test) {
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
+                related_entities: {
+                    clinic: {
+                        name:"Clinic 2",
+                        contact: {name:"Sam", phone: ""},
+                        parent: {
+                            name: "",
+                            contact: { name:""},
+                            parent: { name: "District 2" }}}},
                 reported_date: 1331503850000,
                 from: '+13331110000',
                 cref_year: '2012',
@@ -71,11 +89,13 @@ exports.lists_data_record_csv_fr = function(test) {
     test.expect(1);
 
     // the first char is the BOM
-    var expected = '\uFEFF"Date envoyé";"Envoyé par";"Année";"Mois";"Jour";"Code du RC";"Type de patient";"Nom";"Age";"Nom de la mère ou de l\'accompagnant";"Patient traité pour";"Recommandations/Conseils";"Précisions pour recommandations";"Nom de l\'agent de santé"\n'
+    var expected = '\uFEFF"Date envoyé";"Envoyé par";"Name";"Clinic";"Health Center";"Année";"Mois";"Jour";"Code du RC";"Type de patient";"Nom";"Age";"Nom de la mère ou de l\'accompagnant";"Patient traité pour";"Recommandations/Conseils";"Précisions pour recommandations";"Nom de l\'agent de santé"\n'
         +'"'+moment(1331503842461).format('DD, MMM YYYY, hh:mm:ss')
-        +'";"+12229990000";"2012";"1";"16";"";"";"";"";"";"";"";"";""\n'
+        +'";"+12229990000";"Paul";"Clinic 1";"Health Center 1"'
+        +';"2012";"1";"16";"";"";"";"";"";"";"";"";""\n'
         +'"'+moment(1331503850000).format('DD, MMM YYYY, hh:mm:ss')
-        +'";"+13331110000";"2012";"1";"16";"";"";"";"";"";"";"";"";""';
+        +'";"+13331110000";"Sam";"Clinic 2";"Health Center 2"'
+        +';"2012";"1";"16";"";"";"";"";"";"";"";"";""';
 
     // mockup the view data
     var viewdata = {rows: [
@@ -84,6 +104,14 @@ exports.lists_data_record_csv_fr = function(test) {
             "value": 1,
             "doc": {
                 _id: 'abc123z',
+                related_entities: {
+                    clinic: {
+                        name:"Clinic 1",
+                        contact: { name:"Paul", phone: ""},
+                        parent: {
+                            name: "Health Center 1",
+                            contact: { name: "" },
+                            parent: { name: "District 1" }}}},
                 reported_date: 1331503842461,
                 from: '+12229990000',
                 cref_year: '2012',
@@ -96,6 +124,14 @@ exports.lists_data_record_csv_fr = function(test) {
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
+                related_entities: {
+                    clinic: {
+                        name:"Clinic 2",
+                        contact: {name:"Sam", phone: ""},
+                        parent: {
+                            name: "",
+                            contact: { name:""},
+                            parent: { name: "District 2" }}}},
                 reported_date: 1331503850000,
                 from: '+13331110000',
                 cref_year: '2012',
