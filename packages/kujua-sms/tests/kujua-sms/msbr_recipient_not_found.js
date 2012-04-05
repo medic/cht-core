@@ -9,7 +9,7 @@ var updates = require('kujua-sms/updates'),
     helpers = require('../../test-helpers/helpers'),
     _ = require('underscore')._;
 
-    
+
 var example = {
     sms_message: {
        from: "+13125551212",
@@ -27,20 +27,15 @@ var example = {
         "name": "Example clinic 1",
         "contact": {
             "name": "Sam Jones",
-            "phone": "+13125551212"
+            "phone": "+17085551212"
         },
+        //empty health center should cause recipient_not_found error
         "parent": {
             "type": "health_center",
-            "contact": {
-                "name": "Neal Young",
-                "phone": "+17085551212"
-            },
+            "contact": {},
             "parent": {
                 "type": "district_hospital",
-                "contact": {
-                    "name": "Bernie Mac",
-                    "phone": "+14155551212"
-                }
+                "contact": {}
             }
         }
     }
@@ -77,7 +72,7 @@ var expected_callback = {
  * Run add_sms and expect a callback to add a clinic to a data record which
  * contains all the information from the SMS.
  **/
-exports.msbc1_to_record = function (test) {
+exports.msbr_recipient_not_found = function (test) {
 
     test.expect(26);
 
@@ -167,18 +162,24 @@ var step2 = function(test, req) {
     // so we just check that the data record gets created
     // without merging it with an existing one.
     //
-
+    
     // If no record exists during the merge then we create a new record with
     // POST
     test.same(resp_body.callback.options.method, "POST");
     test.same(resp_body.callback.options.path, appdb);
 
-    // extra checks
-    test.same(resp_body.callback.data.errors, []);
+    // error check
+    test.same(
+        resp_body.callback.data.errors,
+        [{code: 'recipient_not_found',
+         message: 'Could not find referral recipient.'}]);
+
+    // the sms_message should not be affected
     test.same(
         resp_body.callback.data.sms_message,
         example.sms_message);
-        
+
+    // the form keys/values should not be affected
     _.each([
         'ref_year', 'ref_month', 'ref_day', 'ref_rc',
         'ref_hour', 'ref_name', 'ref_age', 'ref_reason',
