@@ -4,6 +4,8 @@ var lists = require('kujua-sms/lists'),
     fakerequest = require('couch-fakerequest'),
     helpers = require('../../test-helpers/helpers');
 
+// @endor: very strange how both of these tests work on the first row but fail
+// parsing the related_entities data on the *second* row...
 
 exports.lists_data_record_csv = function(test) {
 
