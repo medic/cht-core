@@ -19,13 +19,10 @@ exports.data_records_csv = function (head, req) {
         // extra doc fields we want to export not in form
         keys = [
             'reported_date',
-            // TODO support dot notation or array notation to resolve field
-            // labels and values.
-            //'related_entities.clinic.contact.name',
-            //['related_entities', ['clinic', ['contact', ['name']]]],
             'from',
-            //'related_entities.clinic.parent.name',
-            //'related_entities.clinic.name',
+            ['related_entities', ['clinic', ['contact', ['name']]]],
+            ['related_entities', ['clinic', ['name']]],
+            ['related_entities', ['clinic', ['parent', ['name']]]]
         ];
 
     start({code: 200, headers: {
@@ -38,9 +35,11 @@ exports.data_records_csv = function (head, req) {
     // add form keys from form def
     keys.push.apply(keys, utils.getFormKeys(form));
 
+    logger.debug(['keys',keys]);
     // fetch labels for all keys
     var labels = utils.getLabels(keys, form, locale);
 
+    logger.debug(['labels',labels]);
     var row = [],
         rows = [labels];
 

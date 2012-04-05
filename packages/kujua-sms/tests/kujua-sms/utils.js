@@ -2,6 +2,7 @@ var utils = require('kujua-sms/utils'),
     smsforms = require('views/lib/smsforms');
 
 exports.getLabels = function(test) {
+    test.expect(1);
     var keys = [
         'facility_id',
         [
@@ -66,7 +67,78 @@ exports.getLabels = function(test) {
     test.done();
 };
 
+exports.getLabels_msbr = function(test) {
+    test.expect(1);
+    var keys = [
+      "reported_date",
+      "from",
+      [
+         "related_entities",
+         [
+            "clinic",
+            [
+               "contact",
+               [
+                  "name"
+               ]
+            ]
+         ]
+      ],
+      [
+         "related_entities",
+         [
+            "clinic",
+            [
+               "name"
+            ]
+         ]
+      ],
+      [
+         "related_entities",
+         [
+            "clinic",
+            [
+               "parent",
+               [
+                  "name"
+               ]
+            ]
+         ]
+      ],
+      "ref_year",
+      "ref_month",
+      "ref_day",
+      "ref_rc",
+      "ref_hour",
+      "ref_name",
+      "ref_age",
+      "ref_reason",
+      "ref_reason_other"
+    ];
+    test.same(
+        utils.getLabels(keys, 'MSBR', 'fr'),
+        [
+            "Date envoyé",
+            "Envoyé par",
+            'Name',
+            'Clinic',
+            'Health Center',
+            "Année",
+            "Mois",
+            "Jour",
+            "Code du RC",
+            "Heure de départ",
+            "Nom",
+            "Age",
+            "Motif référence",
+            "Si 'autre', précisez motif référence"
+        ]
+    );
+    test.done();
+};
+
 exports.getValues = function(test) {
+    test.expect(1);
     var keys = [
         "reported_date",
         "from",
@@ -224,13 +296,13 @@ exports.getValues = function(test) {
             4
         ]
     );
-    
     test.done();
 };
 
 exports.getFormKeys = function(test) {
+    test.expect(1);
     test.same(
-        utils.getFormKeys('PSMS'), 
+        utils.getFormKeys('PSMS'),
         [
             'facility_id',
             'year',
@@ -257,6 +329,5 @@ exports.getFormKeys = function(test) {
             ]
         ]
     );
-    
     test.done();
 };
