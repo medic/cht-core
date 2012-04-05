@@ -16,6 +16,10 @@ exports.strings = {
         en: "Name",
         fr: "Name"
     },
+    "related_entities.clinic.parent.name": {
+        en: "Health Center",
+        fr: "Health Center"
+    },
     "related_entities.clinic.parent.parent.name": {
         en: "District",
         fr: "District"
@@ -548,12 +552,11 @@ exports.getLabels = function(keys, form, locale) {
 var getValues = exports.getValues = function(doc, keys) {
     var values = [];
 
-    for (var i in keys) {
-        var key = keys[i];
-        if(key instanceof Array) {
+    _.each(keys, function(key) {
+        if(_.isArray(key)) {
             if(typeof doc[key[0]] === 'object') {
                 var d = doc[key[0]];
-                if (_.isArray(key[1]) && key[1].length > 1) {
+                if (_.isArray(key[1])) {
                     values = values.concat(getValues(d, key[1]));
                 }
             } else {
@@ -564,25 +567,8 @@ var getValues = exports.getValues = function(doc, keys) {
         } else if (typeof doc[key] === 'object') {
             keys.shift();
             values = values.concat(getValues(doc[key], keys));
-        }
-    }
-
-    return values;
-};
-
-/* I'm sorry I butchered this nice thing, was in a pinch. -mandric */
-exports.old_getValues = function(doc, keys) {
-    var values = [];
-
-    for (var i in keys) {
-        var key = keys[i];
-
-        if(_.isArray(key)) {
-            values = values.concat(exports.getValues(doc[key[0]], key[1]));
-        } else {
-            values.push(doc[key]);
-        }
-    }
+        }        
+    });
 
     return values;
 };

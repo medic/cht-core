@@ -14,9 +14,29 @@ exports.getLabels = function(test) {
             ]
         ],
         [
+            'related_entities', [
+                'clinic', [
+                    'parent', [
+                        'parent', [
+                            'name'
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        [
             "related_entities", [
                 "clinic", [
                     "name"
+                ]
+            ]
+        ],
+        [
+            "related_entities", [
+                "clinic", [
+                    "parent", [
+                        "name"
+                    ]
                 ]
             ]
         ],
@@ -35,7 +55,9 @@ exports.getLabels = function(test) {
         [
             'Health Facility Identifier',
             'Name',
+            'District',
             'Clinic',
+            'Health Center',
             'LA 6x1: Days stocked out',
             'LA 6x2: Days stocked out'
         ]
@@ -52,7 +74,36 @@ exports.getValues = function(test) {
         [
             "related_entities", [
                 "clinic", [
+                    "contact", [
+                        "name"
+                    ]
+                ]
+            ]
+        ],        
+        [
+            "related_entities", [
+                "clinic", [
                     "name"
+                ]
+            ]
+        ],
+        [
+            "related_entities", [
+                "clinic", [
+                    "parent", [
+                        "name"
+                    ]
+                ]
+            ]
+        ],
+        [
+            'related_entities', [
+                'clinic', [
+                    'parent', [
+                        'parent', [
+                            'name'
+                        ]
+                    ]
                 ]
             ]
         ],
@@ -98,12 +149,14 @@ exports.getValues = function(test) {
                 },
                 "parent": {
                     "type": "health_center",
+                    "name": "HC1",
                     "contact": {
                         "name": "Neal Young",
                         "phone": "+17085551212"
                     },
                     "parent": {
                         "type": "district_hospital",
+                        "name": "Zomba",
                         "contact": {
                             "name": "Bernie Mac",
                             "phone": "+14155551212"
@@ -151,7 +204,10 @@ exports.getValues = function(test) {
             1331643982002,
             "+13125551212",
             "facility",
+            "Sam Jones",
             "Example clinic 1",
+            "HC1",
+            "Zomba",
             "2011",
             "11",
             1,
