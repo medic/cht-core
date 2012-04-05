@@ -25,7 +25,7 @@ exports.lists_data_record_csv = function(test) {
             "key":[
                 "68d45afe29fbf23d1cb9ee227345ec08",
                 "MSBC",
-                "District Name",
+                "District 1",
                 "Form Title"],
             "value": 1,
             "doc": {
@@ -47,9 +47,9 @@ exports.lists_data_record_csv = function(test) {
         },
         {
             "key":[
-                "68d45afe29fbf23d1cb9ee227345ec08",
+                "fbf23d1cb9ee227345ec0868d45afe29",
                 "MSBC",
-                "District Name",
+                "District 2",
                 "Form title"],
             "value": 1,
             "doc": {
