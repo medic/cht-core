@@ -16,7 +16,6 @@ exports.data_records_csv = function (head, req) {
         filename = dh_name + '_' + form + '_data_records.csv',
         locale = req.query.locale || 'en', //TODO get from session
         delimiter = locale === 'fr' ? '";"' : null,
-        // extra doc fields we want to export not in form
         keys = [
             'reported_date',
             'from',
@@ -28,25 +27,24 @@ exports.data_records_csv = function (head, req) {
     start({code: 200, headers: {
         'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': 'attachment; filename=' + filename
-        //'Content-Disposition': 'attachment; filename="testit.csv";'+
-        //  'filename*=UTF-8\'\'testit.csv'
     }});
 
     // add form keys from form def
     keys.push.apply(keys, utils.getFormKeys(form));
 
-    logger.debug(['keys',keys]);
     // fetch labels for all keys
     var labels = utils.getLabels(keys, form, locale);
 
-    logger.debug(['labels',labels]);
     var row = [],
         rows = [labels];
 
     while (row = getRow()) {
-        rows.push(utils.getValues(row.doc, keys));
-        var m = moment(rows[rows.length - 1][0]);
-        rows[rows.length - 1][0] = m.format('DD, MMM YYYY, hh:mm:ss');
+        if(row.doc) {
+            // add values for each data record to the rows
+            rows.push(utils.getValues(row.doc, keys));
+            var m = moment(rows[rows.length - 1][0]);
+            rows[rows.length - 1][0] = m.format('DD, MMM YYYY, hh:mm:ss');            
+        }
     }
 
     return '\uFEFF' + utils.arrayToCSV(rows, delimiter);

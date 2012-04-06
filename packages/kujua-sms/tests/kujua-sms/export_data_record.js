@@ -96,7 +96,7 @@ exports.lists_data_record_csv_fr = function(test) {
         +'";"+12229990000";"Paul";"Clinic 1";"Health Center 1"'
         +';"2012";"1";"16";"";"";"";"";"";"";"";"";""\n'
         +'"'+moment(1331503850000).format('DD, MMM YYYY, hh:mm:ss')
-        +'";"+13331110000";"Sam";"Clinic 2";"Health Center 2"'
+        +'";"+13331110000";"Sam";"Clinic 2";""'
         +';"2012";"1";"16";"";"";"";"";"";"";"";"";""';
 
     // mockup the view data

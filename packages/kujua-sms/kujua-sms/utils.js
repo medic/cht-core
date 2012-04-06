@@ -551,9 +551,11 @@ exports.getLabels = function(keys, form, locale) {
  * @return Array  - values from doc in the same order as keys
  */
 var getValues = exports.getValues = function(doc, keys) {
-    var values = [];
-
-    _.each(keys, function(key) {
+    var values = [],
+        _keys = _.clone(keys);
+    log('getValues')
+    log(JSON.stringify(doc))
+    _.each(_keys, function(key) {
         if(_.isArray(key)) {
             if(typeof doc[key[0]] === 'object') {
                 var d = doc[key[0]];
@@ -566,7 +568,8 @@ var getValues = exports.getValues = function(doc, keys) {
         } else if (typeof doc[key] !== 'object') {
             values.push(doc[key]);
         } else if (typeof doc[key] === 'object') {
-            values = values.concat(getValues(doc[key], keys.slice(1)));
+            _keys.shift();
+            values = values.concat(getValues(doc[key], _keys));
         }
     });
 
