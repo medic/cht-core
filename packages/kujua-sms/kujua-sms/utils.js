@@ -542,8 +542,6 @@ exports.getLabels = function(keys, form, locale) {
 
 /*
  * Get an array of values from the doc by the keys from the given keys array.
- * Note: Do not mutate the original keys parameter reference, use the
- * non-mutating array methods.
  *
  * @param Object doc - data record document
  * @param Array keys - keys we want to resolve labels for
