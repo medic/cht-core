@@ -476,13 +476,14 @@ var _s = exports._s = function(key, locale) {
 
 var arrayDepth = function(arr) {
     var depth = 0;
-    for (var i in arr) {
-        var a = arr[i];
-        if (a instanceof Array) {
+    
+    _.each(arr, function(a) {
+        if (_.isArray(a)) {
             depth++;
             depth = arrayDepth(a) + depth;
-        }
-    }
+        }        
+    });
+    
     return depth;
 };
 
@@ -551,8 +552,7 @@ exports.getLabels = function(keys, form, locale) {
 var getValues = exports.getValues = function(doc, keys) {
     var values = [],
         _keys = _.clone(keys);
-    log('getValues')
-    log(JSON.stringify(doc))
+
     _.each(_keys, function(key) {
         if(_.isArray(key)) {
             if(typeof doc[key[0]] === 'object') {
