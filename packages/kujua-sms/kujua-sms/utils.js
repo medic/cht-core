@@ -14,7 +14,11 @@ exports.strings = {
     },
     "related_entities.clinic.contact.name": {
         en: "Name",
-        fr: "Name"
+        fr: "Nom et Prénoms"
+    },
+    "related_entities.clinic.parent.name": {
+        en: "Health Center",
+        fr: "Arrondissement"
     },
     "related_entities.clinic.parent.parent.name": {
         en: "District",
@@ -22,7 +26,7 @@ exports.strings = {
     },
     "related_entities.clinic.name": {
         en: "Clinic",
-        fr: "Clinic"
+        fr: "Villages"
     },
     from: {
         en: 'From',
@@ -472,13 +476,14 @@ var _s = exports._s = function(key, locale) {
 
 var arrayDepth = function(arr) {
     var depth = 0;
-    for (var i in arr) {
-        var a = arr[i];
-        if (a instanceof Array) {
+    
+    _.each(arr, function(a) {
+        if (_.isArray(a)) {
             depth++;
             depth = arrayDepth(a) + depth;
-        }
-    }
+        }        
+    });
+    
     return depth;
 };
 
@@ -537,8 +542,7 @@ exports.getLabels = function(keys, form, locale) {
 };
 
 /*
- * Get an array of values from the doc by the keys from
- * the given keys array.
+ * Get an array of values from the doc by the keys from the given keys array.
  *
  * @param Object doc - data record document
  * @param Array keys - keys we want to resolve labels for
@@ -546,14 +550,14 @@ exports.getLabels = function(keys, form, locale) {
  * @return Array  - values from doc in the same order as keys
  */
 var getValues = exports.getValues = function(doc, keys) {
-    var values = [];
+    var values = [],
+        _keys = _.clone(keys);
 
-    for (var i in keys) {
-        var key = keys[i];
-        if(key instanceof Array) {
+    _.each(_keys, function(key) {
+        if(_.isArray(key)) {
             if(typeof doc[key[0]] === 'object') {
                 var d = doc[key[0]];
-                if (_.isArray(key[1]) && key[1].length > 1) {
+                if (_.isArray(key[1])) {
                     values = values.concat(getValues(d, key[1]));
                 }
             } else {
@@ -562,27 +566,10 @@ var getValues = exports.getValues = function(doc, keys) {
         } else if (typeof doc[key] !== 'object') {
             values.push(doc[key]);
         } else if (typeof doc[key] === 'object') {
-            keys.shift();
-            values = values.concat(getValues(doc[key], keys));
+            _keys.shift();
+            values = values.concat(getValues(doc[key], _keys));
         }
-    }
-
-    return values;
-};
-
-/* I'm sorry I butchered this nice thing, was in a pinch. -mandric */
-exports.old_getValues = function(doc, keys) {
-    var values = [];
-
-    for (var i in keys) {
-        var key = keys[i];
-
-        if(_.isArray(key)) {
-            values = values.concat(exports.getValues(doc[key[0]], key[1]));
-        } else {
-            values.push(doc[key]);
-        }
-    }
+    });
 
     return values;
 };
