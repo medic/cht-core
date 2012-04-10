@@ -1,5 +1,4 @@
 var lists = require('kujua-sms/lists'),
-    logger = require('kujua-utils').logger,
     moment = require('moment'),
     fakerequest = require('couch-fakerequest'),
     helpers = require('../../test-helpers/helpers');
@@ -9,7 +8,6 @@ var lists = require('kujua-sms/lists'),
 
 exports.lists_data_record_csv = function(test) {
 
-    logger.debug(lists);
     test.expect(1);
 
     // the first char is the BOM
@@ -87,7 +85,6 @@ exports.lists_data_record_csv = function(test) {
 
 exports.lists_data_record_csv_fr = function(test) {
 
-    logger.debug(lists);
     test.expect(1);
 
     // the first char is the BOM
