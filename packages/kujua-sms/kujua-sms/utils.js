@@ -14,11 +14,11 @@ exports.strings = {
     },
     "related_entities.clinic.contact.name": {
         en: "Name",
-        fr: "Name"
+        fr: "Nom et Prénoms"
     },
     "related_entities.clinic.parent.name": {
         en: "Health Center",
-        fr: "Health Center"
+        fr: "Arrondissement"
     },
     "related_entities.clinic.parent.parent.name": {
         en: "District",
@@ -26,7 +26,7 @@ exports.strings = {
     },
     "related_entities.clinic.name": {
         en: "Clinic",
-        fr: "Clinic"
+        fr: "Villages"
     },
     from: {
         en: 'From',
