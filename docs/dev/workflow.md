@@ -11,3 +11,9 @@ Typically a small number of developers are working so they can share one 'dev'
 branch where new code is developed.  It is at the discretion of the developer
 and usually discussed with the team whether to start a separate feature branch
 or not.
+
+## Releasing new versions
+
+Things to do/check before releasing new versions.
+
+1. Test in Firefox
