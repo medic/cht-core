@@ -16,23 +16,17 @@ exports.data_records_csv = function (head, req) {
         filename = dh_name + '_' + form + '_data_records.csv',
         locale = req.query.locale || 'en', //TODO get from session
         delimiter = locale === 'fr' ? '";"' : null,
-        // extra doc fields we want to export not in form
         keys = [
             'reported_date',
-            // TODO support dot notation or array notation to resolve field
-            // labels and values.
-            //'related_entities.clinic.contact.name',
-            //['related_entities', ['clinic', ['contact', ['name']]]],
             'from',
-            //'related_entities.clinic.parent.name',
-            //'related_entities.clinic.name',
+            ['related_entities', ['clinic', ['contact', ['name']]]],
+            ['related_entities', ['clinic', ['name']]],
+            ['related_entities', ['clinic', ['parent', ['name']]]]
         ];
 
     start({code: 200, headers: {
         'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': 'attachment; filename=' + filename
-        //'Content-Disposition': 'attachment; filename="testit.csv";'+
-        //  'filename*=UTF-8\'\'testit.csv'
     }});
 
     // add form keys from form def
@@ -45,9 +39,12 @@ exports.data_records_csv = function (head, req) {
         rows = [labels];
 
     while (row = getRow()) {
-        rows.push(utils.getValues(row.doc, keys));
-        var m = moment(rows[rows.length - 1][0]);
-        rows[rows.length - 1][0] = m.format('DD, MMM YYYY, hh:mm:ss');
+        if(row.doc) {
+            // add values for each data record to the rows
+            rows.push(utils.getValues(row.doc, keys));
+            var m = moment(rows[rows.length - 1][0]);
+            rows[rows.length - 1][0] = m.format('DD, MMM YYYY, hh:mm:ss');            
+        }
     }
 
     return '\uFEFF' + utils.arrayToCSV(rows, delimiter);
@@ -380,17 +377,21 @@ exports.data_record = function (head, req) {
 
     /* Can't do much without a clinic */
     if (!clinic) {
-        addError(
-            record,
-            {code: 'facility_not_found', message: "Clinic not found."});
+        var err = {code: 'facility_not_found', message: "Clinic not found."};
+        addError(record, err);
     } else if (smsforms.isReferralForm(form)) {
         var task = getReferralTask(form, record);
         record.tasks.push(task);
-        if (!task.to) {
-            addError(
-                record,
-                {code: 'recipient_not_found',
-                 message: 'Could not find referral recipient.'});
+        for (var i in task.messages) {
+            var msg = task.messages[i];
+            if(!msg.to) {
+                addError(
+                    record,
+                    {code: 'recipient_not_found',
+                     message: 'Could not find referral recipient.'});
+                // we don't need redundant error messages
+                break;
+            };
         };
     }
 
