@@ -1,3 +1,11 @@
+// TODO: save row on change
+//  - row emits a 'change' event and has .data('_id') of the original doc
+//  - need to write a parseRow function to update bound doc with new values
+//  - call save function passed to options object
+//  - the save function may need to be called only on change of selected row
+//    - how about also saving after a timeout (if they leave the row selected) ?
+//    - or after a mouse event (mouse moved, so they're no longer typing) ?
+
 // TODO: select cell ranges
 
 (function ($) {
@@ -218,7 +226,7 @@
      * Handles user interaction with the table
      */
 
-    var bindEvents = function (table) {
+    var bindEvents = function (table, options) {
         $(table).bind('selectionChange', function () {
             if (!$.spreadsheet.selected_td) {
                 completeInlineEditor();
@@ -297,6 +305,13 @@
             var pos = getCellPosition(table, this);
             $.spreadsheet.start_column = pos.column;
             select(this);
+        });
+        $('tr', table).live('change', function (ev) {
+            if (options.save) {
+                options.save('doc', function () {
+                    console.log('save callback');
+                });
+            }
         });
         $('td', table).live('change', function (ev) {
             // re-select td to make sure select box is properly resized.
@@ -431,7 +446,7 @@
         $.spreadsheet.clipboard_textarea = textarea;
         $(this).after(textarea);
 
-        bindEvents(this);
+        bindEvents(this, options);
 
         return this;
     };
