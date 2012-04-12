@@ -48,6 +48,18 @@ exports['TEST'] = {
     autoreply: 'Thank you!'
 };
 
+exports['CNPW'] = {
+    fields: [
+        {key: 'wkn', type: 'number'},
+        {key: 'wks', type: 'number'},
+        {key: 'afp', type: 'number'},
+        {key: 'nnt', type: 'number'},
+        {key: 'msl', type: 'number'},
+        {key: 'aes', type: 'number'}
+    ],
+    data_record_type: "cdc_nepal"
+};
+
 exports['PSMS'] = {
     fields: [
         {key: 'facility_id', label: 'Health Facility Identifier', type: 'string'},

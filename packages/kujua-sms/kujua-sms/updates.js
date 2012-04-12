@@ -9,31 +9,6 @@ var _ = require('underscore')._,
 
 
 /**
- * Merge fields from the smsforms definition with
- * the form data received through the SMS into
- * a data record.
- *
- * @param {Array}  key          - key of the field separated by '.'
- * @param {Object} data_record  - record into which the data is merged
- * @param {Object} form_data    - data from the SMS
- *                                to be merged into the data record
- * @api private
- */
-var merge = function(key, data_record, form_data) {
-    if(key.length > 1) {
-        var tmp = key.shift();
-        if(form_data[tmp]) {
-            if(!data_record[tmp]) {
-                data_record[tmp] = {};
-            }
-            merge(key, data_record[tmp], form_data[tmp]);
-        }
-    } else {
-        data_record[key[0]] = form_data[key[0]][0];
-    }
-};
-
-/**
  * @param {String} form - smsforms key string
  * @param {Object} form_data - parsed form data
  * @returns {String} - Referral ID value
@@ -58,8 +33,6 @@ var getRefID = function(form, form_data) {
  * @api private
  */
 var getCallbackBody = function(phone, form, form_data) {
-    //logger.debug(['getCallbackBody arguments', arguments]);
-
     var type = 'data_record';
     if(smsforms[form].data_record_type) {
         type += '_' + smsforms[form].data_record_type;
@@ -78,9 +51,9 @@ var getCallbackBody = function(phone, form, form_data) {
     if (smsforms.isReferralForm(form)) {
         body.refid = getRefID(form, form_data);
     }
-
+    
     _.each(smsforms[form].fields, function(field) {
-        merge(field.key.split('.'), body, form_data);
+        smsparser.merge(form, field.key.split('.'), body, form_data);
     });
 
     return body;

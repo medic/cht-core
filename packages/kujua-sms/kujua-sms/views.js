@@ -8,7 +8,7 @@ exports.data_records_valid_by_district_and_form = {
             if (doc.related_entities.clinic
                     && doc.related_entities.clinic.parent
                     && doc.related_entities.clinic.parent.parent
-                    && doc.errors.length === 0) {
+                    && (!doc.errors || doc.errors.length === 0)) {
                 var dh = doc.related_entities.clinic.parent.parent;
                 emit([dh._id, doc.form, dh.name, title], 1);
             }
@@ -207,7 +207,9 @@ exports.sms_message_by_sent_timestamp = {
     map: function (doc) {
         if (doc.type.match(/^data_record/)) {
             var sms = doc.sms_message;
-            emit([sms.sent_timestamp, sms.form, sms.from], null);
+            if(sms) {
+                emit([sms.sent_timestamp, sms.form, sms.from], null);                
+            }
         }
     }
 }

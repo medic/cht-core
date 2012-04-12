@@ -51,3 +51,34 @@ exports.getForm = function(message) {
         return 'CNPW';
     }
 };
+
+/**
+ * Merge fields from the smsforms definition with
+ * the form data received through the SMS into
+ * a data record.
+ *
+ * @param {String} form         - form id
+ * @param {Array}  key          - key of the field separated by '.'
+ * @param {Object} data_record  - record into which the data is merged
+ * @param {Object} form_data    - data from the SMS
+ *                                to be merged into the data record
+ * @api private
+ */
+exports.merge = function(form, key, data_record, form_data) {
+    if(key.length > 1) {
+        var tmp = key.shift();
+        if(form_data[tmp]) {
+            if(!data_record[tmp]) {
+                data_record[tmp] = {};
+            }
+            exports.merge(key, data_record[tmp], form_data[tmp]);
+        }
+    } else {
+        if(form === "CNPW") {
+            data_record[key[0]] = form_data[key[0]];
+        } else {
+            data_record[key[0]] = form_data[key[0]][0];            
+        }
+    }
+};
+
