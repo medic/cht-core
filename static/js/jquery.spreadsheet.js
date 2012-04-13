@@ -18,29 +18,16 @@
 
 
     /**
-     * returns a unique, sorted list of all keys in use
-     * by the objects in the data array
-     */
-
-    var getDataKeys = function (data) {
-        var nested = _.map(data, function (row) {
-            return _.keys(row);
-        });
-        return _.uniq(_.flatten(nested).sort(), true);
-    };
-
-
-    /**
      * Creates a thead element for the given unique key list.
      */
 
-    var createHeadings = function (keys) {
+    var createHeadings = function (columns) {
         var thead = $('<thead/>');
         var thead_tr = $('<tr/>');
         thead.append(thead_tr);
 
-        _.each(keys, function (k) {
-            var th = $('<th/>').text(k);
+        _.each(columns, function (c) {
+            var th = $('<th/>').text(c.label);
             thead_tr.append(th);
         });
 
@@ -48,11 +35,72 @@
     };
 
 
+    // path is a property name or array of property names
+    var getProperty = function (obj, path) {
+        // if path is empty, return the root object
+        if (!path) {
+            return obj;
+        }
+        if (!_.isArray(path)) {
+            path = [path];
+        }
+
+        // loop through all parts of the path, throwing an exception
+        // if a property doesn't exist
+        for (var i = 0; i < path.length; i++) {
+            var x = path[i];
+            if (obj[x] === undefined) {
+                return undefined;
+            }
+            obj = obj[x];
+        }
+        return obj;
+    };
+
+    var setProperty = function (obj, path, val) {
+        // if path is empty, return the root object
+        if (!_.isArray(path)) {
+            path = [path];
+        }
+        var curr = [];
+
+        // loop through all parts of the path except the last, creating the
+        // properties if they don't exist
+        var prop = path.slice(0, path.length - 1).reduce(function (a, x) {
+            curr.push(x);
+            if (a[x] === undefined) {
+                a[x] = {};
+            }
+            if (typeof a[x] === 'object' && !Array.isArray(a[x])) {
+                a = a[x];
+            }
+            else {
+                /*
+                throw new Error(
+                    'Updating "' + p + '" would overwrite "' +
+                        curr.join('.') + '"\n' +
+                    '\n' +
+                );
+                */
+                // overwrite existing structure
+                a = a[x] = {}
+            }
+            return a;
+        }, obj);
+
+        // set the final property to the given value
+        prop[path[path.length - 1]] = val;
+
+        return val;
+    };
+
+
+
     /**
      * Creates a tbody element for the given keys and data
      */
 
-    var createBody = function (keys, data) {
+    var createBody = function (columns, data) {
         var tbody = $('<tbody/>');
 
         _.each(data, function (row) {
@@ -60,9 +108,10 @@
             tr.data('_id', row._id);
             tbody.append(tr);
 
-            _.each(keys, function (k) {
-                var td = $('<td/>').text(row[k] ? JSON.stringify(row[k]): '');
-                td.data('key', k);
+            _.each(columns, function (c) {
+                var p = getProperty(row, c.property);
+                var td = $('<td/>').text(p === undefined ? '': p.toString());
+                td.data('property', c.property);
                 tr.append(td);
             });
         });
@@ -343,7 +392,7 @@
             var tr = $(this).parent();
             var doc = getDoc(tr, options);
             // TODO: coerce value to correct type depending on options
-            doc[$(this).data('key')] = $(this).text();
+            setProperty(doc, $(this).data('property'), $(this).text());
 
             // re-select td to make sure select box is properly resized.
             if ($.spreadsheet.selected_td) {
@@ -464,11 +513,13 @@
 
     $.fn.spreadsheet = function (options) {
         options.data = options.data || [];
-        options.keys = options.keys || getDataKeys(options.data);
+        if (!options.columns) {
+            throw new Error('You must define some columns');
+        }
 
         var table = $('<table class="spreadsheet"></table>');
-        var thead = createHeadings(options.keys);
-        var tbody = createBody(options.keys, options.data);
+        var thead = createHeadings(options.columns);
+        var tbody = createBody(options.columns, options.data);
 
         table.append(thead).append(tbody);
         $(this).html(table);
