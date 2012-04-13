@@ -21,6 +21,28 @@ branch where new code is developed.  It is at the discretion of the developer
 and usually discussed with the team whether to start a separate feature branch
 or not.
 
+## Issues
+
+When creating issues assign a difficulty value by choosing a label.  This is
+used to track progress, so we have some idea of how much work we can handle in
+a week.  Issues are managed in Github and pulled/copied via the Github API to
+our a dev server couch instance just in case Github decides to disappear. If
+you create a new repository and want the issues mirrored then checkout and
+modify the issues project.
+
+We maintain a home grown mini issue tracker on the dev server.  It's generally
+neglected and needs love, if you feel so inclined and have time please
+contribute.
+
+## Commits
+
+Strive to include a ticket number with every commit.  Every commit should be
+related to a ticket, in some cases you might create a ticket for the commit
+before you push it.  Commit and push, early and often,  but don't introduce
+breaking changes if the branch if it is shared.  In the case you want to commit
+and push for feedback, you can try to put breaking commits in a switch so they
+don't impede another developer's progress.
+
 ## Code Review
 
 Before merging code into master/production we should review and test it, so
@@ -40,7 +62,7 @@ typically once or twice a week.
 ### Manual Tests
 
 1. Make sure code review is ok
-2. Test new features in Firefox
+2. Test new features in Firefox and Webkit
 
 ### Release Steps
 
