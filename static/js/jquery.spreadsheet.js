@@ -62,6 +62,7 @@
 
             _.each(keys, function (k) {
                 var td = $('<td/>').text(row[k] ? JSON.stringify(row[k]): '');
+                td.data('key', k);
                 tr.append(td);
             });
         });
@@ -222,6 +223,28 @@
     };
 
 
+    /*
+    var parseRow = function (tr, options) {
+        var tds = $('td', tr);
+        return _.reduce(options.keys, function (obj, k, i) {
+            // TODO: coerce values according options
+            obj[k] = $(tds[i]).text();
+            return obj;
+        }, {});
+    };
+    */
+
+    var getDoc = function (tr, options) {
+        var id = $(tr).data('_id');
+        for (var i = 0; i < options.data.length; i++) {
+            if (id === options.data[i]._id) {
+                return options.data[i];
+            }
+        }
+        throw new Error('No document found with _id: ' + JSON.stringify(id));
+    };
+
+
     /**
      * Handles user interaction with the table
      */
@@ -308,12 +331,20 @@
         });
         $('tr', table).live('change', function (ev) {
             if (options.save) {
-                options.save('doc', function () {
-                    console.log('save callback');
+                var tr = $(this);
+                tr.addClass('saving');
+                options.save(getDoc(tr, options), function () {
+                    tr.removeClass('saving');
                 });
             }
         });
         $('td', table).live('change', function (ev) {
+            // update doc value in spreadsheet data array
+            var tr = $(this).parent();
+            var doc = getDoc(tr, options);
+            // TODO: coerce value to correct type depending on options
+            doc[$(this).data('key')] = $(this).text();
+
             // re-select td to make sure select box is properly resized.
             if ($.spreadsheet.selected_td) {
                 select($.spreadsheet.selected_td);

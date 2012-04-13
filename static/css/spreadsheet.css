@@ -32,6 +32,9 @@ table.spreadsheet td {
     color: #333;
     height: 25px;
 }
+table.spreadsheet tr.saving td {
+    background: #ccc;
+}
 input.edit-inline {
     color: #333;
     display: block;
