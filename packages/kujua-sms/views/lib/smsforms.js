@@ -50,12 +50,12 @@ exports['TEST'] = {
 
 exports['CNPW'] = {
     fields: [
-        {key: 'wkn', type: 'number'},
-        {key: 'wks', type: 'number'},
-        {key: 'afp', type: 'number'},
-        {key: 'nnt', type: 'number'},
-        {key: 'msl', type: 'number'},
-        {key: 'aes', type: 'number'}
+        {key: 'wkn', label: 'Week number', type: 'number'},
+        {key: 'wks', label: 'Number of weeks', type: 'number'},
+        {key: 'afp', label: 'Acute Flaccid Paralysis', type: 'number'},
+        {key: 'nnt', label: 'Neonatal Tetanus', type: 'number'},
+        {key: 'msl', label: 'Measles', type: 'number'},
+        {key: 'aes', label: 'Acute Encephalitis Syndrome', type: 'number'}
     ],
     data_record_type: "cdc_nepal"
 };

@@ -92,7 +92,8 @@ exports.dumper = {
 };
 
 exports.isUserAdmin = function(userCtx) {
-    return userCtx.roles.indexOf('national_admin') !== -1;
+    return userCtx.roles.indexOf('national_admin') !== -1 ||
+            userCtx.roles.indexOf('_admin') !== -1;
 };
 
 exports.getUserDistrict = function(userCtx) {
