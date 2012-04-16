@@ -89,7 +89,7 @@ var expected_callback = {
  **/
 exports.psms_to_record = function (test) {
 
-    test.expect(24);
+    test.expect(25);
 
     // Data parsed from a gateway POST
     var data = {
@@ -111,43 +111,43 @@ exports.psms_to_record = function (test) {
     };
 
     var resp = fakerequest.update(updates.add_sms, data, req);
-
+    
     var resp_body = JSON.parse(resp[1].body);
-
+    
     // assert that we are parsing sent_timestamp
     test.same(
         'Thu Jan 19 2012',
         new Date(resp_body.callback.data.reported_date).toDateString()
     );
-
+    
     test.equal(
         "18:45",
         new Date(resp_body.callback.data.reported_date)
             .toTimeString().match(/^18:45/)[0]
     );
-
+    
     delete resp_body.callback.data.reported_date;
-
+    
     test.same(
         resp_body.callback.options.path,
         baseURL + "/PSMS/data_record/add/clinic/%2B13125551212");
-
+    
     test.same(
         resp_body.callback.data.days_stocked_out,
         expected_callback.data.days_stocked_out);
-
+    
     test.same(
         resp_body.callback.data.quantity_dispensed,
         expected_callback.data.quantity_dispensed);
-
+    
     test.same(
         resp_body.callback.data.sms_message,
         expected_callback.data.sms_message);
-
+    
     test.same(
         resp_body.callback.data,
         expected_callback.data);
-
+    
     // form next request from callback data
     var next_req = {
         method: resp_body.callback.options.method,
@@ -158,7 +158,7 @@ exports.psms_to_record = function (test) {
         query: {form: 'PSMS'} // query.form gets set by rewriter
     };
 
-    step2(test, next_req);
+    step2_1(test, next_req);
 
 };
 
@@ -166,9 +166,31 @@ exports.psms_to_record = function (test) {
 // STEP 2:
 //
 // Run data_record/add/clinic and expect a callback to
-// check if the same data record already exists.
+// check if the same data record already exists with missing clinic.
 //
-var step2 = function(test, req) {
+var step2_1 = function(test, req) {
+    
+    var clinic = example.clinic;
+
+    var viewdata = {rows: []};
+
+    var resp = fakerequest.list(lists.data_record, viewdata, req);
+
+    var resp_body = JSON.parse(resp.body);
+
+    test.same(resp_body.callback.data.errors, [{"code":"facility_not_found","message":"Clinic not found."}]);
+
+    step2_2(test, req);
+    
+};
+
+
+// STEP 2:
+//
+// Run data_record/add/clinic and expect a callback to
+// check if the same data record already exists with existing clinic.
+//
+var step2_2 = function(test, req) {
 
     var clinic = example.clinic;
 
@@ -206,6 +228,7 @@ var step2 = function(test, req) {
     step3_1(test, next_req, step3_2, [test, next_req]);
 
 };
+
 
 
 /**
@@ -303,5 +326,5 @@ var step3_2 = function(test, req) {
         resp_body.callback.data.quantity_dispensed,
         example.quantity_dispensed);
 
-    test.done()
+    test.done();
 };

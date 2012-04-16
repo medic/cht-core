@@ -71,13 +71,13 @@ exports.merge = function(form, key, data_record, form_data) {
             if(!data_record[tmp]) {
                 data_record[tmp] = {};
             }
-            exports.merge(key, data_record[tmp], form_data[tmp]);
+            exports.merge(form, key, data_record[tmp], form_data[tmp]);
         }
     } else {
         if(form === "CNPW") {
             data_record[key[0]] = form_data[key[0]];
         } else {
-            data_record[key[0]] = form_data[key[0]][0];            
+            data_record[key[0]] = form_data[key[0]][0];
         }
     }
 };
