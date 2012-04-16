@@ -8,10 +8,6 @@ var updates = require('kujua-sms/updates'),
     fakerequest = require('couch-fakerequest'),
     helpers = require('../../test-helpers/helpers');
 
-//
-// TODO:
-//   check to see that there are errors if not all fields are filled out
-//
 
 var example = {
     sms_message: {
@@ -75,10 +71,11 @@ var expected_callback = {
  *
  * Run add_sms and expect a callback to add a clinic to a data record which
  * contains all the information from the SMS.
- **/
+ *
+ */
 exports.cnpw_to_record = function (test) {
 
-    // test.expect(24);
+    test.expect(8);
 
     // Data parsed from a gateway POST
     var data = {
@@ -134,151 +131,80 @@ exports.cnpw_to_record = function (test) {
         query: {form: 'CNPW'} // query.form gets set by rewriter
     };
 
-    test.done();
-    // step2(test, next_req);
+    step2(test, next_req);
 
 };
 
-// //
-// // STEP 2:
-// //
-// // Run data_record/add/clinic and expect a callback to
-// // check if the same data record already exists.
-// //
-// var step2 = function(test, req) {
-// 
-//     var clinic = example.clinic;
-// 
-//     var viewdata = {rows: [
-//         {
-//             "key": ["+13125551212"],
-//             "value": clinic
-//         }
-//     ]};
-// 
-//     var resp = fakerequest.list(lists.data_record, viewdata, req);
-// 
-//     var resp_body = JSON.parse(resp.body);
-// 
-//     test.same(
-//         resp_body.callback.options.path,
-//         baseURL + "/CNPW/data_record/merge/2011/11/" + clinic._id);
-// 
-//     test.same(
-//         resp_body.callback.data.related_entities,
-//         {clinic: clinic});
-// 
-//     test.same(resp_body.callback.data.errors, []);
-// 
-//     // form next request from callback data
-//     var next_req = {
-//         method: resp_body.callback.options.method,
-//         body: JSON.stringify(resp_body.callback.data),
-//         path: resp_body.callback.options.path,
-//         headers: helpers.headers(
-//                     'json', JSON.stringify(resp_body.callback.data)),
-//         query: {form: 'PSMS'} // query.form gets set by rewriter
-//     };
-// 
-//     step3_1(test, next_req, step3_2, [test, next_req]);
-// 
-// };
-// 
-// 
-// /**
-//  * STEP 3, CASE 1: A data record already exists.
-//  *
-//  * Run data_record/merge/year/month/clinic_id and expect a callback to update
-//  * the data record with the new data.
-//  *
-//  * @param {Object} test     - Unittest object
-//  * @param {Object} req      - Callback object used to form the next request
-//  * @param {Function} finish - Last callback where test.done() is called
-//  * @param {Array} args      - Args for last callback
-//  * @api private
-//  */
-// var step3_1 = function(test, req, finish, args) {
-// 
-//     var viewdata = {rows: [
-//         {
-//             key: ["2011", "11", "4a6399c98ff78ac7da33b639ed60f458"],
-//             value: {
-//                 _id: "777399c98ff78ac7da33b639ed60f422",
-//                 _rev: "484399c98ff78ac7da33b639ed60f923"
-//             }
-//         }
-//     ]};
-// 
-//     var resp = fakerequest.list(lists.data_record_merge, viewdata, req);
-//     var resp_body = JSON.parse(resp.body);
-// 
-//     // main tests
-//     test.same(
-//         resp_body.callback.data._rev,
-//         "484399c98ff78ac7da33b639ed60f923");
-// 
-//     test.same(
-//         resp_body.callback.options.path,
-//         appdb + "/777399c98ff78ac7da33b639ed60f422");
-// 
-//     test.same(
-//         resp_body.callback.options.method,
-//         "PUT");
-// 
-//     // extra checks
-//     test.same(
-//         resp_body.callback.data.quantity_dispensed,
-//         expected_callback.data.quantity_dispensed);
-// 
-//     test.same(
-//         resp_body.callback.data.sms_message,
-//         expected_callback.data.sms_message);
-// 
-//     test.same(
-//         resp_body.callback.data.related_entities,
-//         {clinic: example.clinic});
-// 
-//     test.same(resp_body.callback.data.errors, []);
-//     test.same(resp_body.callback.data.tasks, []);
-// 
-//     if (typeof finish === 'function') {
-//         finish.apply(this, args);
-//     }
-// };
-// 
-// 
-// /**
-//  * STEP 3, CASE 2:
-//  *
-//  * A data record does not exist.
-//  *
-//  * Run data_record/merge/year/month/clinic_id and expect a callback to create a
-//  * new data record.
-//  */
-// var step3_2 = function(test, req) {
-// 
-//     var viewdata = {rows: []};
-// 
-//     var resp = fakerequest.list(lists.data_record_merge, viewdata, req);
-// 
-//     var resp_body = JSON.parse(resp.body);
-// 
-//     // If no record exists during the merge then we create a new record with
-//     // POST
-//     test.same(resp_body.callback.options.method, "POST");
-//     test.same(resp_body.callback.options.path, appdb);
-// 
-//     // extra checks
-//     test.same(resp_body.callback.data.errors, []);
-//     test.same(
-//         resp_body.callback.data.sms_message,
-//         example.sms_message);
-//     test.same(
-//         resp_body.callback.data.days_stocked_out,
-//         example.days_stocked_out);
-//     test.same(
-//         resp_body.callback.data.quantity_dispensed,
-//         example.quantity_dispensed);
-// 
-//     test.done()
-// };
+
+/*
+ * STEP 2:
+ *
+ * Run data_record/add/clinic and expect a callback to
+ * check if the same data record already exists.
+ *
+ */
+var step2 = function(test, req) {
+
+    var clinic = example.clinic;
+
+    var viewdata = {rows: [
+        {
+            "key": ["+13125551212"],
+            "value": clinic
+        }
+    ]};
+
+    var resp = fakerequest.list(lists.data_record, viewdata, req);
+
+    var resp_body = JSON.parse(resp.body);
+
+    test.same(
+        resp_body.callback.options.path,
+        baseURL + '/_db');
+
+    test.same(
+        resp_body.callback.data.related_entities,
+        {clinic: clinic});
+
+    test.same(resp_body.callback.data.errors, []);
+
+    step1_with_errors(test);
+
+};
+
+
+/*
+ * STEP 1 WITH ERRORS:
+ *
+ * Run add_sms and expect errors to appear on the 
+ * callback object.
+ *
+ */
+var step1_with_errors = function(test) {
+    // Data parsed from a gateway POST
+    var data = {
+        from: '+13125551212',
+        message: 'SUR WKN2# WKS 3# AFP 99# NNT 0## AES01',
+        sent_timestamp: '01-19-12 18:45',
+        sent_to: '+15551212'
+    };
+
+    // request object generated by duality includes uuid and query.form from
+    // rewriter.
+    var req = {
+        uuid: '14dc3a5aa6',
+        method: "POST",
+        headers: helpers.headers("url", querystring.stringify(data)),
+        body: querystring.stringify(data),
+        form: data
+    };
+
+    var resp = fakerequest.update(updates.add_sms, data, req);
+
+    var resp_body = JSON.parse(resp[1].body);
+
+    test.same(resp_body.callback.data.errors[0],
+        "Missing field: Measles");
+    
+    test.done();
+};

@@ -5,7 +5,8 @@
 var _ = require('underscore')._,
     logger = require('./utils').logger,
     smsforms = require('views/lib/smsforms'),
-    smsparser = require('views/lib/smsparser');
+    smsparser = require('views/lib/smsparser'),
+    validate = require('./validate');
 
 
 /**
@@ -56,6 +57,11 @@ var getCallbackBody = function(phone, form, form_data) {
         smsparser.merge(form, field.key.split('.'), body, form_data);
     });
 
+    var errors = validate.validate(form, form_data);
+    if(errors.length > 0) {
+        body.errors = errors;
+    }
+    
     return body;
 };
 
@@ -67,8 +73,6 @@ var getCallbackBody = function(phone, form, form_data) {
  * @api private
  */
 var getCallbackPath = function(phone, form, form_data) {
-    //logger.debug(['updates.getCallbackPath arguments', arguments]);
-
     var path = '';
 
     switch(form) {
@@ -119,8 +123,6 @@ var parseSentTimestamp = function(str) {
  * 1st phase of tasks_referral doc.
  */
 var getRespBody = function(doc, req) {
-
-    logger.debug(['Request', req]);
     var form = doc.form,
         def = smsforms[form],
         form_data = smsparser.parse(form, def, doc, 1),
@@ -182,8 +184,6 @@ var getRespBody = function(doc, req) {
     if (ts) {
         resp.callback.data.reported_date = ts;
     }
-
-    logger.debug(['Response', resp]);
 
     return JSON.stringify(resp);
 };
