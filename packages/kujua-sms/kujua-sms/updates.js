@@ -196,7 +196,7 @@ exports.getRespBody = getRespBody;
 exports.add_sms = function (doc, req) {
     return [null, getRespBody(_.extend(req.form, {
         type: "sms_message",
-        locale: req.query.locale || 'en',
+        locale: (req.query && req.query.locale) || 'en',
         form: smsparser.getForm(req.form.message)
     }), req)];
 };

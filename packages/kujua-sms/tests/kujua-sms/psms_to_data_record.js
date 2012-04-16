@@ -103,7 +103,6 @@ exports.psms_to_record = function (test) {
     // rewriter.
     var req = {
         uuid: '14dc3a5aa6',
-        query: {form: 'PSMS'},
         method: "POST",
         headers: helpers.headers("url", querystring.stringify(data)),
         body: querystring.stringify(data),
