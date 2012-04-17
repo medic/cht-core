@@ -1,7 +1,8 @@
 {
     "name": "users",
-    "version": "0.0.9",
-    "description": "A browser CouchDB library for managing users",
+    "version": "0.0.10",
+    "categories": ["couchdb"],
+    "description": "Functions for querying, creating, updating and deleting user documents",
     "modules": "users.js",
     "dependencies": {
         "modules": null,
