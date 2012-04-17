@@ -6,6 +6,10 @@
 //    - how about also saving after a timeout (if they leave the row selected) ?
 //    - or after a mouse event (mouse moved, so they're no longer typing) ?
 
+// TODO: add options.createDoc function for adding a new row to the spreadsheet
+// - this is so that unused/hidden properties can be added to the doc (even
+//   though they are not editable in the spreadsheet).
+
 // TODO: select cell ranges
 
 (function ($) {
@@ -294,6 +298,60 @@
     };
 
 
+    var updateDoc = function (doc, options) {
+        for (var i = 0; i < options.data.length; i++) {
+            if (doc._id === options.data[i]._id) {
+                options.data[i] = doc;
+                return;
+            }
+        }
+        throw new Error(
+            'No document found with _id: ' + JSON.stringify(doc._id)
+        );
+    };
+
+
+    var saveDoc = function (tr, options) {
+        if (!options.save) {
+            return;
+        };
+        function _saveDoc() {
+            if (!$(tr).data('save_queued')) {
+                return;
+            }
+            if ($(tr).hasClass('saving')) {
+                // _saveDoc will be called again once the current
+                // save operation has completed
+                return;
+            }
+            $(tr).data('save_queued', false);
+            $(tr).addClass('saving');
+            options.save(getDoc(tr, options), function (err, doc) {
+                if (err) {
+                    // TODO: do something better than alert
+                    return alert(err.toString());
+                }
+                if (!doc || !doc._id) {
+                    throw new Error(
+                        'new doc must be returned to save callback'
+                    );
+                }
+                updateDoc(doc, options);
+                tr.removeClass('saving');
+                _saveDoc();
+            });
+        }
+        if ($(tr).data('save_queued')) {
+            return;
+        }
+        else {
+            // collect all save calls for this tick into a single save operation
+            $(tr).data('save_queued', true);
+            setTimeout(_saveDoc, 0);
+        }
+    };
+
+
     /**
      * Handles user interaction with the table
      */
@@ -379,13 +437,10 @@
             select(this);
         });
         $('tr', table).live('change', function (ev) {
-            if (options.save) {
-                var tr = $(this);
-                tr.addClass('saving');
-                options.save(getDoc(tr, options), function () {
-                    tr.removeClass('saving');
-                });
-            }
+            // TODO: don't save on every cell change, use a timeout and
+            // wait until a different tr is selected if possible
+            var tr = $(this);
+            saveDoc(tr, options);
         });
         $('td', table).live('change', function (ev) {
             // update doc value in spreadsheet data array
