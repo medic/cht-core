@@ -106,20 +106,24 @@
 
     var createBody = function (columns, data) {
         var tbody = $('<tbody/>');
-
-        _.each(data, function (row) {
-            var tr = $('<tr/>');
-            tr.data('_id', row._id);
+        _.each(data, function (doc) {
+            var tr = createRow(columns, doc);
             tbody.append(tr);
-
-            _.each(columns, function (c) {
-                var p = getProperty(row, c.property);
-                var td = $('<td/>').text(p === undefined ? '': p.toString());
-                td.data('property', c.property);
-                tr.append(td);
-            });
         });
         return tbody;
+    };
+
+
+    var createRow = function (columns, doc) {
+        var tr = $('<tr/>');
+        tr.data('_id', doc._id);
+        _.each(columns, function (c) {
+            var p = getProperty(doc, c.property);
+            var td = $('<td/>').text(p === undefined ? '': p.toString());
+            td.data('property', c.property);
+            tr.append(td);
+        });
+        return tr;
     };
 
 
@@ -321,9 +325,6 @@
 
 
     var saveDoc = function (tr, options) {
-        if (!options.save) {
-            return;
-        };
         function _saveDoc() {
             if (!$(tr).data('save_queued')) {
                 return;
@@ -358,6 +359,23 @@
             $(tr).data('save_queued', true);
             setTimeout(_saveDoc, 0);
         }
+    };
+
+    var addRow = function (table, options) {
+        var _add = function (err, doc) {
+            if (err) {
+                return console.error(err);
+            }
+            if (!doc) {
+                throw new Error(
+                    'Create function did not return a document object'
+                );
+            }
+            options.data.push(doc);
+            var tr = createRow(options.columns, doc);
+            $('tbody', table).append(tr);
+        };
+        options.create(_add);
     };
 
 
@@ -568,6 +586,11 @@
                 }
             }
         });
+        $('.spreadsheet-actions .add-row-btn').live('click', function (ev) {
+            ev.preventDefault();
+            addRow(table, options);
+            return false;
+        });
     };
 
 
@@ -587,6 +610,13 @@
 
         table.append(thead).append(tbody);
         $(this).html(table);
+        $(this).append(
+            '<div class="spreadsheet-actions">' +
+                '<a href="#" class="btn add-row-btn">' +
+                    '<i class="icon-plus-sign"></i> Add row' +
+                '</a>' +
+            '</div>'
+        );
 
         var textarea = $('<textarea id="spreadsheet_clipboard"></textarea>');
         $.spreadsheet.clipboard_textarea = textarea;
