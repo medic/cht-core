@@ -64,3 +64,14 @@ input.edit-inline {
     top: -9999px;
     left: -9999px;
 }
+
+.spreadsheet-actions {
+    position: relative;
+}
+
+.row-counter {
+    position: absolute;
+    right: 2px;
+    top: 5px;
+    color: #999;
+}
