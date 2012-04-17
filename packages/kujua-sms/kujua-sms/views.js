@@ -37,10 +37,16 @@ exports.data_records_by_district = {
     }
 };
 
+
+
+/*
+ * Views needed to filter data records on
+ * data records page.
+ */
+ 
 exports.data_records_by_district_and_reported_date = {
     map: function(doc) {
         if (doc.type.match(/^data_record/)) {
-            //var date = parseInt(doc.reported_date, 10) * -1;
             if (doc.related_entities.clinic) {
                 var dh = doc.related_entities.clinic.parent.parent;
                 emit([dh._id, doc.reported_date, doc._id], doc);
@@ -59,10 +65,32 @@ exports.data_records_by_reported_date = {
     }
 };
 
+exports.data_records_by_form_and_reported_date = {
+    map: function(doc) {
+        if (doc.type.match(/^data_record/)) {
+            emit([doc.form, doc.reported_date, doc._id], doc);
+        }
+    }
+};
+
+exports.data_records_by_district_form_and_reported_date = {
+    map: function(doc) {
+        if (doc.type.match(/^data_record/)) {
+            if (doc.related_entities.clinic) {
+                var dh = doc.related_entities.clinic.parent.parent;
+                emit([dh._id, doc.form, doc.reported_date, doc._id], doc);
+            } else {
+                emit([null, doc.form, doc.reported_date, doc._id], doc);
+            }            
+        }
+    }
+};
+
 
 /*
  * Get facility based on phone number
  */
+
 exports.facility_by_phone = {
     map: function (doc) {
         if (doc.type === 'clinic') {
