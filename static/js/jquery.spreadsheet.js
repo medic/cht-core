@@ -374,6 +374,7 @@
             options.data.push(doc);
             var tr = createRow(options.columns, doc);
             $('tbody', table).append(tr);
+            $(table).trigger('change');
         };
         options.create(_add);
     };
@@ -457,6 +458,12 @@
                 editInline($.spreadsheet.selected_td);
             }
         });
+        $(table).bind('change', function (ev) {
+            // re-select td to make sure select box is properly resized.
+            if ($.spreadsheet.selected_td) {
+                select($.spreadsheet.selected_td);
+            }
+        });
         $('td', table).live('click', function (ev) {
             $('td', table).removeClass('active');
             var pos = getCellPosition(table, this);
@@ -475,11 +482,6 @@
             var doc = getDoc(tr, options);
             // TODO: coerce value to correct type depending on options
             setProperty(doc, $(this).data('property'), $(this).text());
-
-            // re-select td to make sure select box is properly resized.
-            if ($.spreadsheet.selected_td) {
-                select($.spreadsheet.selected_td);
-            }
         });
         $(document).click(function (ev) {
             var el = $(ev.target);
