@@ -185,7 +185,12 @@
 
     var select = function (td) {
         var div = $('#spreadsheet_select');
+        var reselect = false;
         if (!div.length) {
+            // previously unselected - this was causing some strange
+            // problems with highlight positioning until the next
+            // selection change, so force another selection change now
+            reselect = true;
             div = $('<div id="spreadsheet_select" />');
             $(td).parents('table').after(div);
         }
@@ -206,6 +211,10 @@
         $.spreadsheet.select_div = div;
 
         var table = $($.spreadsheet.selected_td).parents('table');
+        if (reselect) {
+            return select(td);
+        }
+
         table.trigger('selectionChange');
     };
 
