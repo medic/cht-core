@@ -36,18 +36,20 @@ exports.data_records_csv = function (head, req) {
     var labels = utils.getLabels(keys, form, locale);
 
     var row = [],
-        rows = [labels];
+        values;
 
+    send('\uFEFF');
+    send(utils.arrayToCSV([labels], delimiter) + '\n');
+    
     while (row = getRow()) {
         if(row.doc) {
             // add values for each data record to the rows
-            rows.push(utils.getValues(row.doc, keys));
-            var m = moment(rows[rows.length - 1][0]);
-            rows[rows.length - 1][0] = m.format('DD, MMM YYYY, hh:mm:ss');            
+            values = utils.getValues(row.doc, keys);
+            var m = moment(values[0]);
+            values[0] = m.format('DD, MMM YYYY, hh:mm:ss');            
+            send(utils.arrayToCSV([values], delimiter) + '\n');
         }
     }
-
-    return '\uFEFF' + utils.arrayToCSV(rows, delimiter);
 };
 
 exports.data_records_xml = function (head, req) {
@@ -70,24 +72,27 @@ exports.data_records_xml = function (head, req) {
     var labels = utils.getLabels(keys, form, locale);
 
     var row = [],
-        rows = [labels];
+        values;
 
+    send('<?xml version="1.0" encoding="UTF-8"?>\n' +
+         '<?mso-application progid="Excel.Sheet"?>\n' +
+         '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
+         ' xmlns:o="urn:schemas-microsoft-com:office:office"\n' +
+         ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n' +
+         ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n' +
+         ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
+         '<Worksheet ss:Name="'+form+'"><Table>');
+
+    send(utils.arrayToXML([labels]));
+    
     while (row = getRow()) {
-        rows.push(utils.getValues(row.doc, keys));
-        var m = moment(rows[rows.length - 1][0]);
-        rows[rows.length - 1][0] = m.format('DD, MMM YYYY, hh:mm:ss');
+        values = utils.getValues(row.doc, keys);
+        var m = moment(values[0]);
+        values[0] = m.format('DD, MMM YYYY, hh:mm:ss');
+        send(utils.arrayToXML([values]));
     }
 
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' +
-        '<?mso-application progid="Excel.Sheet"?>\n' +
-        '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
-        ' xmlns:o="urn:schemas-microsoft-com:office:office"\n' +
-        ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n' +
-        ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n' +
-        ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
-        '<Worksheet ss:Name="'+form+'"><Table>' +
-        utils.arrayToXML(rows) +
-        '</Table></Worksheet></Workbook>';
+    send('</Table></Worksheet></Workbook>');
 };
 
 
