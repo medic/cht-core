@@ -463,6 +463,8 @@
             if ($.spreadsheet.selected_td) {
                 select($.spreadsheet.selected_td);
             }
+            // update row counter
+            $('.row-counter', table).text(options.data.length + ' rows');
         });
         $('td', table).live('click', function (ev) {
             $('td', table).removeClass('active');
@@ -617,6 +619,7 @@
                 '<a href="#" class="btn add-row-btn">' +
                     '<i class="icon-plus-sign"></i> Add row' +
                 '</a>' +
+                '<span class="row-counter"></span>' +
             '</div>'
         );
 
@@ -625,6 +628,7 @@
         $(this).after(textarea);
 
         bindEvents(this, options);
+        $('.row-counter', this).text(options.data.length + ' rows');
 
         return this;
     };
