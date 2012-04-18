@@ -35,8 +35,10 @@ var getRefID = function(form, form_data) {
  */
 var getCallbackBody = function(phone, form, form_data) {
     var type = 'data_record';
-    if(smsforms[form].data_record_type) {
-        type += '_' + smsforms[form].data_record_type;
+    var form_definition = smsforms[form];
+    
+    if(form_definition.data_record_type) {
+        type += '_' + form_definition.data_record_type;
     }
 
     var body = {
@@ -49,15 +51,15 @@ var getCallbackBody = function(phone, form, form_data) {
         reported_date: new Date().getTime()
     };
 
-    if (smsforms.isReferralForm(form)) {
+    if(smsforms.isReferralForm(form)) {
         body.refid = getRefID(form, form_data);
     }
     
-    _.each(smsforms[form].fields, function(field) {
+    _.each(form_definition.fields, function(field) {
         smsparser.merge(form, field.key.split('.'), body, form_data);
     });
 
-    var errors = validate.validate(form, form_data);
+    var errors = validate.validate(form_definition, form_data);
     if(errors.length > 0) {
         body.errors = errors;
     }
