@@ -12,7 +12,7 @@ var mp_parser = require('./mp_parser'),
  * @api public
  */
 exports.parse = function (form, def, doc, format) {
-    if(form === "CNPW") {
+    if(exports.isTextForms(form)) {
         return textforms_parser.parse(doc);
     } else {
         return mp_parser.parse(def, doc, format);        
@@ -27,7 +27,7 @@ exports.parse = function (form, def, doc, format) {
  * @api public
  */
 exports.parseArray = function (form, def, doc) {
-    if(form === "CNPW") {
+    if(exports.isTextForms(form)) {
         return textforms_parser.parseArray(doc);
     } else {
         return mp_parser.parseArray(def, doc);
@@ -74,7 +74,7 @@ exports.merge = function(form, key, data_record, form_data) {
             exports.merge(form, key, data_record[tmp], form_data[tmp]);
         }
     } else {
-        if(form === "CNPW") {
+        if(exports.isTextForms(form)) {
             data_record[key[0]] = form_data[key[0]];
         } else {
             data_record[key[0]] = form_data[key[0]][0];
@@ -82,3 +82,14 @@ exports.merge = function(form, key, data_record, form_data) {
     }
 };
 
+/**
+ * Decide if it's a form parsed by the testforms
+ * parser.
+ *
+ * @param {String} form         - form id
+ *
+ * @api private
+ */
+exports.isTextForms = function(form) {
+    return form === "CNPW";
+};
