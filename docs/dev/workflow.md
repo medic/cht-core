@@ -56,7 +56,7 @@ notes later.
 
 ## Production release
 
-Pushed to productiong and merging dev into master should be done frequently,
+Pushes to production and merging dev into master should be done frequently,
 typically once or twice a week.
 
 ### Manual Tests
@@ -70,7 +70,7 @@ typically once or twice a week.
 
     Edit kanso.json with new version string
 
-2. Include new features in release notes.
+2. Include new feature descriptions in release notes.
 
     Edit docs/dev/release_notes.md
 
