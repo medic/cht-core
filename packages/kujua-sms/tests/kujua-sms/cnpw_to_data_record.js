@@ -75,7 +75,7 @@ var expected_callback = {
  */
 exports.cnpw_to_record = function (test) {
 
-    test.expect(24);
+    test.expect(26);
 
     // Data parsed from a gateway POST
     var data = {
@@ -317,6 +317,35 @@ var step3_with_errors = function(test, req) {
     test.same(resp_body.callback.data.afp, 99);
     test.same(resp_body.callback.data.nnt, 0);
     test.same(resp_body.callback.data.aes, 1);
+    
+    
+    
+    var body = JSON.parse(req.body);
+    body.errors = [];
+    body.msl = 5;
+    req.body = JSON.stringify(body);
+    
+    var viewdata = {rows: [
+        {
+            key: ["%2B13125551212", "2", "777399c98ff78ac7da33b639ed60f422"],
+            value: {
+                _id: "777399c98ff78ac7da33b639ed60f422",
+                _rev: "484399c98ff78ac7da33b639ed60f923",
+                wkn: 2,
+                wks: 3,
+                afp: 80,
+                nnt: 70,
+                aes: 50,
+                errors: ["Missing field: Measles"]
+            }
+        }
+    ]};
+
+    var resp = fakerequest.list(lists.data_record_merge, viewdata, req);
+    var resp_body = JSON.parse(resp.body);
+
+    test.same(resp_body.callback.data.errors, []);
+    test.same(resp_body.callback.data.msl, 5);
     
     test.done();    
 };
