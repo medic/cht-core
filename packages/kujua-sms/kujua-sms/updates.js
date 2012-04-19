@@ -173,6 +173,11 @@ var getRespBody = function(doc, req) {
             headers: {'Content-Type': 'application/json; charset=utf-8'}},
         data: getCallbackBody(phone, form, form_data)};
 
+    if(resp.callback.data.errors.length > 0) {
+        resp.payload.success = false;
+        resp.payload.messages[0].message = resp.callback.data.errors.join(', ');
+    }
+    
     // pass through Authorization header
     if(req.headers.Authorization) {
         resp.callback.options.headers.Authorization = req.headers.Authorization;

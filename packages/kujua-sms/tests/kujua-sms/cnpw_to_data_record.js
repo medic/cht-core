@@ -75,7 +75,7 @@ var expected_callback = {
  */
 exports.cnpw_to_record = function (test) {
 
-    test.expect(26);
+    test.expect(28);
 
     // Data parsed from a gateway POST
     var data = {
@@ -219,6 +219,10 @@ var step1_with_errors = function(test) {
 
     var resp_body = JSON.parse(resp[1].body);
 
+    test.same(resp_body.payload.success, false);
+    test.same(resp_body.payload.messages[0].message,
+        "Missing field: Measles");
+    
     test.same(resp_body.callback.data.errors[0],
         "Missing field: Measles");
     
