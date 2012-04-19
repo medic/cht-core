@@ -43,7 +43,7 @@ exports.rules = [
         }
     },
     {
-        from: '/:form/data_record/merge/:year/:month/:clinic_id',
+        from: '/:form/data_record/merge/psms/:year/:month/:clinic_id',
         to: '_list/data_record_merge/data_record_by_year_month_and_clinic_id',
         query: {
             startkey: [':year', ':month', ':clinic_id'],

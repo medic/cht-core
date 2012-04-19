@@ -234,7 +234,9 @@ var getCallbackPath = function(req, form, record, clinic) {
               .replace(':form', encodeURIComponent(form))
               .replace(':year', encodeURIComponent(record.year))
               .replace(':month', encodeURIComponent(record.month))
-              .replace(':clinic_id', encodeURIComponent(clinic._id));
+              .replace(':clinic_id', encodeURIComponent(clinic._id))
+              .replace(':phone', encodeURIComponent(record.from))
+              .replace(':wkn', encodeURIComponent(record.wkn));
 
     return path;
 };
@@ -305,8 +307,8 @@ exports.data_record = function (head, req) {
                      message: 'Could not find referral recipient.'});
                 // we don't need redundant error messages
                 break;
-            };
-        };
+            }
+        }
     }
 
     /* Send callback to gateway to check for already existing doc. */

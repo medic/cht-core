@@ -147,26 +147,17 @@ exports.psms_to_record = function (test) {
         resp_body.callback.data,
         expected_callback.data);
     
-    // form next request from callback data
-    var next_req = {
-        method: resp_body.callback.options.method,
-        body: JSON.stringify(resp_body.callback.data),
-        path: resp_body.callback.options.path,
-        headers: helpers.headers(
-                    'json', JSON.stringify(resp_body.callback.data)),
-        query: {form: 'PSMS'} // query.form gets set by rewriter
-    };
-
-    step2_1(test, next_req);
+    step2_1(test, helpers.nextRequest(resp_body, 'PSMS'));
 
 };
 
-//
-// STEP 2:
-//
-// Run data_record/add/clinic and expect a callback to
-// check if the same data record already exists with missing clinic.
-//
+
+/*
+ * STEP 2:
+ * 
+ * Run data_record/add/clinic and expect a callback to
+ * check if the same data record already exists with missing clinic.
+ */
 var step2_1 = function(test, req) {
     
     var clinic = example.clinic;
@@ -184,11 +175,12 @@ var step2_1 = function(test, req) {
 };
 
 
-// STEP 2:
-//
-// Run data_record/add/clinic and expect a callback to
-// check if the same data record already exists with existing clinic.
-//
+/*
+ * STEP 2:
+ * 
+ * Run data_record/add/clinic and expect a callback to
+ * check if the same data record already exists with existing clinic.
+ */
 var step2_2 = function(test, req) {
 
     var clinic = example.clinic;
@@ -206,7 +198,7 @@ var step2_2 = function(test, req) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/PSMS/data_record/merge/2011/11/" + clinic._id);
+        baseURL + "/PSMS/data_record/merge/psms/2011/11/" + clinic._id);
 
     test.same(
         resp_body.callback.data.related_entities,
@@ -214,17 +206,8 @@ var step2_2 = function(test, req) {
 
     test.same(resp_body.callback.data.errors, []);
 
-    // form next request from callback data
-    var next_req = {
-        method: resp_body.callback.options.method,
-        body: JSON.stringify(resp_body.callback.data),
-        path: resp_body.callback.options.path,
-        headers: helpers.headers(
-                    'json', JSON.stringify(resp_body.callback.data)),
-        query: {form: 'PSMS'} // query.form gets set by rewriter
-    };
-
-    step3_1(test, next_req, step3_2, [test, next_req]);
+    step3_1(test, helpers.nextRequest(resp_body, 'PSMS'),
+        step3_2, [test, helpers.nextRequest(resp_body, 'PSMS')]);
 
 };
 
@@ -233,7 +216,7 @@ var step2_2 = function(test, req) {
 /**
  * STEP 3, CASE 1: A data record already exists.
  *
- * Run data_record/merge/year/month/clinic_id and expect a callback to update
+ * Run data_record/merge/psms/year/month/clinic_id and expect a callback to update
  * the data record with the new data.
  *
  * @param {Object} test     - Unittest object
@@ -297,7 +280,7 @@ var step3_1 = function(test, req, finish, args) {
  *
  * A data record does not exist.
  *
- * Run data_record/merge/year/month/clinic_id and expect a callback to create a
+ * Run data_record/merge/psms/year/month/clinic_id and expect a callback to create a
  * new data record.
  */
 var step3_2 = function(test, req) {
