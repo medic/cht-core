@@ -219,7 +219,7 @@ var step1_with_errors = function(test) {
 
     var resp_body = JSON.parse(resp[1].body);
 
-    test.same(resp_body.payload.success, false);
+    test.same(resp_body.payload.success, true);
     test.same(resp_body.payload.messages[0].message,
         "Missing field: Measles");
     

@@ -174,7 +174,6 @@ var getRespBody = function(doc, req) {
         data: getCallbackBody(phone, form, form_data)};
 
     if(resp.callback.data.errors.length > 0) {
-        resp.payload.success = false;
         resp.payload.messages[0].message = resp.callback.data.errors.join(', ');
     }
     
