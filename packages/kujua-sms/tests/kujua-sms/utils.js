@@ -115,14 +115,15 @@ exports.getLabels_msbr = function(test) {
       "ref_reason",
       "ref_reason_other"
     ];
+    
     test.same(
         utils.getLabels(keys, 'MSBR', 'fr'),
         [
             "Date envoyé",
             "Envoyé par",
-            'Name',
-            'Clinic',
-            'Health Center',
+            'Nom et Prénoms',
+            'Villages',
+            'Arrondissement',
             "Année",
             "Mois",
             "Jour",
