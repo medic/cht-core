@@ -46,7 +46,7 @@ exports.data_records_csv = function (head, req) {
             // add values for each data record to the rows
             values = utils.getValues(row.doc, keys);
             var m = moment(values[0]);
-            values[0] = m.format('DD, MMM YYYY, hh:mm:ss');
+            values[0] = m.format('DD, MMM YYYY, HH:mm:ss');
             send(utils.arrayToCSV([values], delimiter) + '\n');
         }
     }
@@ -90,7 +90,7 @@ exports.data_records_xml = function (head, req) {
     while (row = getRow()) {
         values = utils.getValues(row.doc, keys);
         var m = moment(values[0]);
-        values[0] = m.format('DD, MMM YYYY, hh:mm:ss');
+        values[0] = m.format('DD, MMM YYYY, HH:mm:ss');
         send(utils.arrayToXML([values]));
     }
 
