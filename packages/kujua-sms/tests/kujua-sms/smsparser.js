@@ -133,7 +133,7 @@ exports.missing_fields = function(test) {
 
 /*
  * handle the case when a form submission has more fields than the form
- * definition.
+ * definition. it should still get parsed.
  */
 exports.extra_fields = function(test) {
     test.expect(1);

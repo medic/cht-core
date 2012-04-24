@@ -94,6 +94,10 @@ exports.parse = function(def, doc, format) {
             val = v[1],
             result;
 
+        // ignore extra form data that has no matching field definition.
+        if (!field)
+            return obj;
+
         if (format === 1) {
             // include label in array
             result = [
