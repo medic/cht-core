@@ -215,6 +215,8 @@
         $.spreadsheet.select_div = div;
 
         var table = $($.spreadsheet.selected_td).parents('table');
+        $.spreadsheet.current_table = table;
+
         if (reselect) {
             return select(td);
         }
@@ -384,7 +386,7 @@
      * Handles user interaction with the table
      */
 
-    var bindEvents = function (table, options) {
+    var bindTableEvents = function (table, options) {
         $(table).bind('selectionChange', function () {
             if (!$.spreadsheet.selected_td) {
                 completeInlineEditor();
@@ -418,6 +420,47 @@
                 }
             }
         });
+        $(table).bind('change', function (ev) {
+            // re-select td to make sure select box is properly resized.
+            if ($.spreadsheet.selected_td) {
+                select($.spreadsheet.selected_td);
+            }
+            // update row counter
+            $('.row-counter', table).text(options.data.length + ' rows');
+        });
+        $(table).on('click', 'td', function (ev) {
+            $('td', table).removeClass('active');
+            var pos = getCellPosition(table, this);
+            $.spreadsheet.start_column = pos.column;
+            select(this);
+        });
+        $(table).on('change', 'tr', function (ev) {
+            // TODO: don't save on every cell change, use a timeout and
+            // wait until a different tr is selected if possible
+            // TODO: check if doc has actually changed values
+            var tr = $(this);
+            saveDoc(tr, options);
+        });
+        $(table).on('change', 'td', function (ev) {
+            // update doc value in spreadsheet data array
+            var tr = $(this).parent();
+            var doc = getDoc(tr, options);
+            // TODO: coerce value to correct type depending on options
+            setProperty(doc, $(this).data('property'), $(this).text());
+        });
+        $(table).on('click', '.spreadsheet-actions .add-row-btn', function (ev) {
+            ev.preventDefault();
+            addRow(table, options);
+            return false;
+        });
+    };
+
+
+    var bindDocumentEvents = function () {
+        if ($.spreadsheet.document_bound) {
+            // only bind these event handlers once
+            return;
+        }
         $(document).bind('cut', function (ev) {
             var td = $.spreadsheet.selected_td;
             if (td) {
@@ -458,43 +501,17 @@
                 editInline($.spreadsheet.selected_td);
             }
         });
-        $(table).bind('change', function (ev) {
-            // re-select td to make sure select box is properly resized.
-            if ($.spreadsheet.selected_td) {
-                select($.spreadsheet.selected_td);
-            }
-            // update row counter
-            $('.row-counter', table).text(options.data.length + ' rows');
-        });
-        $(table).on('click', 'td', function (ev) {
-            $('td', table).removeClass('active');
-            var pos = getCellPosition(table, this);
-            $.spreadsheet.start_column = pos.column;
-            select(this);
-        });
-        $(table).on('change', 'tr', function (ev) {
-            // TODO: don't save on every cell change, use a timeout and
-            // wait until a different tr is selected if possible
-            var tr = $(this);
-            saveDoc(tr, options);
-        });
-        $(table).on('change', 'td', function (ev) {
-            // update doc value in spreadsheet data array
-            var tr = $(this).parent();
-            var doc = getDoc(tr, options);
-            // TODO: coerce value to correct type depending on options
-            setProperty(doc, $(this).data('property'), $(this).text());
-        });
         $(document).click(function (ev) {
             var el = $(ev.target);
             var input = $.spreadsheet.edit_inline_input;
             var select_div = $.spreadsheet.select_div;
+            var table = $.spreadsheet.current_table;
             if (!el.is('td', table) && !el.is(input) && !el.is(select_div)) {
                 clearSelection();
             }
         });
         $(document).keydown(function (ev) {
-            console.log(['keydown', ev]);
+            var table = $.spreadsheet.current_table;
             var selected = $.spreadsheet.selected_td;
             var input = $.spreadsheet.edit_inline_input;
 
@@ -590,11 +607,7 @@
                 }
             }
         });
-        $(table).on('click', '.spreadsheet-actions .add-row-btn', function (ev) {
-            ev.preventDefault();
-            addRow(table, options);
-            return false;
-        });
+        $.spreadsheet.document_bound = true;
     };
 
 
@@ -627,7 +640,8 @@
         $.spreadsheet.clipboard_textarea = textarea;
         $(this).after(textarea);
 
-        bindEvents(this, options);
+        bindDocumentEvents();
+        bindTableEvents(this, options);
         $('.row-counter', this).text(options.data.length + ' rows');
 
         return this;
