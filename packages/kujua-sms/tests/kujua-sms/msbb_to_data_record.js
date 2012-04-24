@@ -133,17 +133,7 @@ exports.msbb_to_record = function (test) {
         resp_body.callback.data,
         expected_callback.data);
 
-    // form next request from callback data
-    var next_req = {
-        method: resp_body.callback.options.method,
-        body: JSON.stringify(resp_body.callback.data),
-        path: resp_body.callback.options.path,
-        headers: helpers.headers(
-                    'json', JSON.stringify(resp_body.callback.data)),
-        query: {form: 'MSBB'} // query.form gets set by rewriter
-    };
-
-    step2(test, next_req);
+    step2(test, helpers.nextRequest(resp_body, 'MSBB'));
 
 };
 
