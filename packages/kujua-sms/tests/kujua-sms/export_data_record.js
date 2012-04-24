@@ -9,10 +9,10 @@ exports.lists_data_record_csv = function(test) {
 
     // the first char is the BOM
     var expected = '\uFEFF"Reported Date","From","Name","Clinic","Health Center","Année","Mois","Jour","Code du RC","Type de patient","Nom","Age","Nom de la mère ou de l\'accompagnant","Patient traité pour","Recommandations/Conseils","Précisions pour recommandations","Nom de l\'agent de santé"\n'
-        +'"'+moment(1331503842461).format('DD, MMM YYYY, hh:mm:ss')
+        +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss')
         +'","+12229990000","Paul","Clinic 1","Health Center 1"'
         +',"2012","1","16","","","","","","","","",""\n'
-        +'"'+moment(1331503850000).format('DD, MMM YYYY, hh:mm:ss')
+        +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss')
         +'","+13331110000","Sam","Clinic 2",""'
         +',"2012","1","16","","","","","","","","",""\n';
 
@@ -85,10 +85,10 @@ exports.lists_data_record_csv_fr = function(test) {
 
     // the first char is the BOM
     var expected = '\uFEFF"Date envoyé";"Envoyé par";"Nom et Prénoms";"Villages";"Arrondissement";"Année";"Mois";"Jour";"Code du RC";"Type de patient";"Nom";"Age";"Nom de la mère ou de l\'accompagnant";"Patient traité pour";"Recommandations/Conseils";"Précisions pour recommandations";"Nom de l\'agent de santé"\n'
-        +'"'+moment(1331503842461).format('DD, MMM YYYY, hh:mm:ss')
+        +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss')
         +'";"+12229990000";"Paul";"Clinic 1";"Health Center 1"'
         +';"2012";"1";"16";"";"";"";"";"";"";"";"";""\n'
-        +'"'+moment(1331503850000).format('DD, MMM YYYY, hh:mm:ss')
+        +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss')
         +'";"+13331110000";"Sam";"Clinic 2";""'
         +';"2012";"1";"16";"";"";"";"";"";"";"";"";""\n';
 
@@ -159,7 +159,7 @@ exports.lists_data_record_csv_msbm = function(test) {
 
     // the first char is the BOM
     var expected = '\uFEFF"Reported Date","From","Name","Clinic","Health Center","Année","Mois","Jour","Code du RC","CTA actuel","CTA commendé","TDR actuel","TDR commandé","CTM 480 actuel","CTM 480 commandé","SRO/Zinc actuel","SRO/Zinc commandé","PARA actuel","PARA commandé"\n'
-        +'"'+moment(1333246225526).format('DD, MMM YYYY, hh:mm:ss')
+        +'"'+moment(1333246225526).format('DD, MMM YYYY, HH:mm:ss')
         +'","+22995409314","Sam","Clinic Name","Health Center Name","2012","1","16",'
         +'"12345678901","123","456","789","123","456","789","123","456","123","456"\n';
 
