@@ -89,6 +89,7 @@ exports['PSMM'] = {
         {key: 'facility_id', label: 'Health Facility Identifier', type: 'string'},
         {key: 'year', label: 'Report Year', type: 'year'},
         {key: 'month', label: 'Report Month', type: 'month'},
+        {key: 'residence', label: 'Live in village served?', type: 'number'},
         {key: 'cases.fever_lt_1d', label: 'Fever cases < 1 day', type: 'number'},
         {key: 'cases.fever_lt_2d', label: 'Fever cases < 2 day', type: 'number'},
         {key: 'cases.fever_gt_3d', label: 'Fever cases > 3 days', type: 'number'},
@@ -534,15 +535,15 @@ exports['MSBR'] = {
         {key: 'ref_year', label: "Année", type: 'year'},
         {key: 'ref_month', label: "Mois", type: 'month'},
         {key: 'ref_day', label: "Jour", type: 'number'},
-
-        {key: 'ref_rc', label: "Code du RC", type: 'string'},
-        {key: 'ref_hour', label: "Heure de départ", type: 'number'},
+        {key: 'ref_rc', label: "Code du RC", type: 'string', required: false},
+        {key: 'ref_hour', label: "Heure de départ", type: 'number', required: false},
         {key: 'ref_name', label: "Nom", type: 'string'},
-        {key: 'ref_age', label: "Age", type: 'number'},
+        {key: 'ref_age', label: "Age", type: 'number', required: false},
         {
             key: 'ref_reason',
             label: "Motif référence",
             type: 'choice',
+            required: false,
             choices: {
                 1: "Femme enceinte très malade",
                 2: "Accouchement difficile",
@@ -561,7 +562,8 @@ exports['MSBR'] = {
         {
             key: 'ref_reason_other',
             label: "Si 'autre', précisez motif référence",
-            type: 'string'
+            type: 'string',
+            required: false
         }
     ],
     autoreply: 'Merci, votre formulaire a été bien reçu.'
@@ -573,15 +575,15 @@ exports['MSBB'] = {
         {key: 'ref_year', label: "Année", type: 'year'},
         {key: 'ref_month', label: "Mois", type: 'month'},
         {key: 'ref_day', label: "Jour", type: 'number'},
-
-        {key: 'ref_rc', label: "Code du RC", type: 'string'},
-        {key: 'ref_hour', label: "Heure de départ", type: 'number'},
+        {key: 'ref_rc', label: "Code du RC", type: 'string', required: false},
+        {key: 'ref_hour', label: "Heure de départ", type: 'number', required: false},
         {key: 'ref_name', label: "Nom", type: 'string'},
-        {key: 'ref_age', label: "Age", type: 'number'},
+        {key: 'ref_age', label: "Age", type: 'number', required: false},
         {
             key: 'ref_reason',
             label: "Motif référence",
             type: 'choice',
+            required: false,
             choices: {
                 1: "Palu grave",
                 2: "Urg Chir",
@@ -603,6 +605,7 @@ exports['MSBB'] = {
         {
             key: 'ref_reason_other',
             label: "Si 'autre', précisez motif référence",
+            required: false,
             type: 'string'
         }
     ],
@@ -615,11 +618,12 @@ exports['MSBC'] = {
         { key: 'cref_year', label: "Année", type: 'year' },
         { key: 'cref_month', label: "Mois", type: 'month' },
         { key: 'cref_day', label: "Jour", type: 'number' },
-        { key: 'cref_rc', label: "Code du RC", type: 'string' },
+        { key: 'cref_rc', label: "Code du RC", type: 'string', required: false},
         {
             key: 'cref_ptype',
             label: "Type de patient",
             type: 'choice',
+            required: false,
             choices: {
                 1: "Femme enceinte",
                 2: "Accouchée malade",
@@ -629,13 +633,24 @@ exports['MSBC'] = {
             }
         },
         { key: 'cref_name', label: "Nom", type: 'string' },
-        { key: 'cref_age', label: "Age", type: 'number' },
-        { key: 'cref_mom', label: "Nom de la mère ou de l'accompagnant", type: 'string' },
-        { key: 'cref_treated', label: "Patient traité pour", type: 'string' },
+        { key: 'cref_age', label: "Age", type: 'number', required: false },
+        { 
+            key: 'cref_mom', 
+            label: "Nom de la mère ou de l'accompagnant", 
+            type: 'string',
+            required: false
+        },
+        { 
+            key: 'cref_treated', 
+            label: "Patient traité pour", 
+            type: 'string',
+            required: false
+        },
         {
             key: 'cref_rec',
             label: "Recommandations/Conseils",
             type: 'choice',
+            required: false,
             choices: {
                 1: "A revenir au centre de santé",
                 2: "Suivi de soins à domicile",
@@ -646,8 +661,18 @@ exports['MSBC'] = {
                 7: "Autres"
             }
         },
-        { key: 'cref_reason', label: "Précisions pour recommandations", type: 'string' },
-        { key: 'cref_agent', label: "Nom de l'agent de santé", type: 'string' }
+        { 
+            key: 'cref_reason', 
+            label: "Précisions pour recommandations", 
+            type: 'string',
+            required: false
+        },
+        { 
+            key: 'cref_agent', 
+            label: "Nom de l'agent de santé", 
+            type: 'string',
+            required: false
+        }
     ],
     autoreply: 'Merci, votre formulaire a été bien reçu.'
 };
@@ -658,17 +683,17 @@ exports['MSBM'] = {
         { key: 'med_year', label: "Année", type: 'year' },
         { key: 'med_month', label: "Mois", type: 'month' },
         { key: 'med_day', label: "Jour", type: 'number' },
-        { key: 'med_rc', label: "Code du RC", type: 'string' },
-        { key: 'med_cta_a', label: "CTA actuel", type: 'number' },
-        { key: 'med_cta_c', label: "CTA commendé", type: 'number' },
-        { key: 'med_tdr_a', label: "TDR actuel", type: 'number' },
-        { key: 'med_tdr_c', label: "TDR commandé", type: 'number' },
-        { key: 'med_ctm_a', label: "CTM 480 actuel", type: 'number' },
-        { key: 'med_ctm_c', label: "CTM 480 commandé", type: 'number' },
-        { key: 'med_sro_a', label: "SRO/Zinc actuel", type: 'number' },
-        { key: 'med_sro_c', label: "SRO/Zinc commandé", type: 'number' },
-        { key: 'med_para_a', label: "PARA actuel", type: 'number' },
-        { key: 'med_para_c', label: "PARA commandé", type: 'number' }
+        { key: 'med_rc', label: "Code du RC", type: 'string', required: false },
+        { key: 'med_cta_a', label: "CTA actuel", type: 'number', required: false },
+        { key: 'med_cta_c', label: "CTA commendé", type: 'number', required: false },
+        { key: 'med_tdr_a', label: "TDR actuel", type: 'number', required: false },
+        { key: 'med_tdr_c', label: "TDR commandé", type: 'number', required: false },
+        { key: 'med_ctm_a', label: "CTM 480 actuel", type: 'number', required: false },
+        { key: 'med_ctm_c', label: "CTM 480 commandé", type: 'number', required: false },
+        { key: 'med_sro_a', label: "SRO/Zinc actuel", type: 'number', required: false },
+        { key: 'med_sro_c', label: "SRO/Zinc commandé", type: 'number', required: false },
+        { key: 'med_para_a', label: "PARA actuel", type: 'number', required: false },
+        { key: 'med_para_c', label: "PARA commandé", type: 'number', required: false }
     ],
     autoreply: 'Merci, votre formulaire a été bien reçu.'
 };
@@ -679,23 +704,108 @@ exports['MSBP'] = {
         { key: 'case_year', label: "Année", type: 'year' },
         { key: 'case_month', label: "Mois", type: 'month' },
         { key: 'case_day', label: "Jour", type: 'number' },
-        { key: 'case_rc', label: "Code du RC", type: 'string' },
-        { key: 'case_pec_m', label: "M: 0-5 ans PEC", type: 'number' },
-        { key: 'case_pec_f', label: "F: 0-5 ans PEC", type: 'number' },
-        { key: 'case_urg_m', label: "M: 0-5 ans référé en urgence", type: 'number' },
-        { key: 'case_urg_f', label: "F: 0-5 ans référé en urgence", type: 'number' },
-        { key: 'case_tdr', label: "TDR de palu réalisé", type: 'number' },
-        { key: 'case_palu_m', label: "M: Palu simple traité", type: 'number' },
-        { key: 'case_palu_f', label: "F: Palu simple traité", type: 'number' },
-        { key: 'case_dia_m', label: "M: Diarrhée simple traité", type: 'number' },
-        { key: 'case_dia_f', label: "F: Diarrhée simple traité", type: 'number' },
-        { key: 'case_pneu_m', label: "M: Pneumonie traité", type: 'number' },
-        { key: 'case_pneu_f', label: "F: Pneumonie traité", type: 'number' },
-        { key: 'case_mal_m', label: "M: Malnutrition dépisté", type: 'number' },
-        { key: 'case_mal_f', label: "F: Malnutrition dépisté", type: 'number' },
-        { key: 'case_rev', label: "0-5 ans revu pour suivi des soins", type: 'number' },
-        { key: 'case_vad', label: "0-5 and vu au cours VAD", type: 'number' },
-        { key: 'case_edu', label: "Séance éducative réalisée", type: 'number' }
+        { 
+            key: 'case_rc', 
+            label: "Code du RC", 
+            type: 'string', 
+            required: false 
+        },
+        { 
+            key: 'case_pec_m', 
+            label: "M: 0-5 ans PEC", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_pec_f', 
+            label: "F: 0-5 ans PEC", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_urg_m', 
+            label: "M: 0-5 ans référé en urgence", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_urg_f', 
+            label: "F: 0-5 ans référé en urgence", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_tdr', 
+            label: "TDR de palu réalisé", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_palu_m', 
+            label: "M: Palu simple traité", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_palu_f', 
+            label: "F: Palu simple traité", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_dia_m', 
+            label: "M: Diarrhée simple traité", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_dia_f', 
+            label: "F: Diarrhée simple traité", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_pneu_m', 
+            label: "M: Pneumonie traité", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_pneu_f', 
+            label: "F: Pneumonie traité", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_mal_m', 
+            label: "M: Malnutrition dépisté", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_mal_f', 
+            label: "F: Malnutrition dépisté", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_rev', 
+            label: "0-5 ans revu pour suivi des soins", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_vad', 
+            label: "0-5 and vu au cours VAD", 
+            type: 'number', 
+            required: false 
+        },
+        { 
+            key: 'case_edu', 
+            label: "Séance éducative réalisée", 
+            type: 'number', 
+            required: false 
+        }
     ],
     autoreply: 'Merci, votre formulaire a été bien reçu.'
 };
@@ -705,16 +815,66 @@ exports['MSBG'] = {
     fields: [
         { key: 'monthly_year', label: "Année", type: 'year' },
         { key: 'monthly_month', label: "Mois", type: 'month' },
-        { key: 'monthly_rc', label: "Code du RC", type: 'string' },
-        { key: 'monthly_cta1', label: "CTA au début de mois", type: 'number' },
-        { key: 'monthly_cta2', label: "CTA cédés dans le mois", type: 'number' },
-        { key: 'monthly_cta3', label: "CTA restants à la fin du mois", type: 'number' },
-        { key: 'monthly_sro1', label: "SRO/Zinc au début de mois", type: 'number' },
-        { key: 'monthly_sro2', label: "SRO/Zinc cédés dans le mois", type: 'number' },
-        { key: 'monthly_sro3', label: "SRO/Zinc restants à la fin du mois", type: 'number' },
-        { key: 'monthly_ctm1', label: "CTM 480mg au début de mois", type: 'number' },
-        { key: 'monthly_ctm2', label: "CTM 480mg cédés dans le mois", type: 'number' },
-        { key: 'monthly_ctm3', label: "CTM 480mg restants à la fin du mois", type: 'number' }
+        {
+            key: 'monthly_rc', 
+            label: "Code du RC", 
+            type: 'string',
+            required: false
+        },
+        { 
+            key: 'monthly_cta1', 
+            label: "CTA au début de mois", 
+            type: 'number',
+            required: false
+        },
+        { 
+            key: 'monthly_cta2', 
+            label: "CTA cédés dans le mois", 
+            type: 'number',
+            required: false
+        },
+        { 
+            key: 'monthly_cta3', 
+            label: "CTA restants à la fin du mois", 
+            type: 'number',
+            required: false
+        },
+        { 
+            key: 'monthly_sro1', 
+            label: "SRO/Zinc au début de mois", 
+            type: 'number',
+            required: false
+        },
+        { 
+            key: 'monthly_sro2', 
+            label: "SRO/Zinc cédés dans le mois", 
+            type: 'number',
+            required: false
+        },
+        { 
+            key: 'monthly_sro3', 
+            label: "SRO/Zinc restants à la fin du mois", 
+            type: 'number',
+            required: false
+        },
+        { 
+            key: 'monthly_ctm1', 
+            label: "CTM 480mg au début de mois", 
+            type: 'number',
+            required: false
+        },
+        { 
+            key: 'monthly_ctm2', 
+            label: "CTM 480mg cédés dans le mois", 
+            type: 'number',
+            required: false
+        },
+        { 
+            key: 'monthly_ctm3', 
+            label: "CTM 480mg restants à la fin du mois", 
+            type: 'number',
+            required: false
+        }
     ],
     autoreply: 'Merci, votre formulaire a été bien reçu.'
 };
