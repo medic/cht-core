@@ -453,7 +453,7 @@
                 }, 0);
             }
         });
-        $('#spreadsheet_select').live('dblclick', function (ev) {
+        $(document).on('dblclick', '#spreadsheet_select', function (ev) {
             if ($.spreadsheet.selected_td) {
                 editInline($.spreadsheet.selected_td);
             }
@@ -466,19 +466,19 @@
             // update row counter
             $('.row-counter', table).text(options.data.length + ' rows');
         });
-        $('td', table).live('click', function (ev) {
+        $(table).on('click', 'td', function (ev) {
             $('td', table).removeClass('active');
             var pos = getCellPosition(table, this);
             $.spreadsheet.start_column = pos.column;
             select(this);
         });
-        $('tr', table).live('change', function (ev) {
+        $(table).on('change', 'tr', function (ev) {
             // TODO: don't save on every cell change, use a timeout and
             // wait until a different tr is selected if possible
             var tr = $(this);
             saveDoc(tr, options);
         });
-        $('td', table).live('change', function (ev) {
+        $(table).on('change', 'td', function (ev) {
             // update doc value in spreadsheet data array
             var tr = $(this).parent();
             var doc = getDoc(tr, options);
@@ -590,7 +590,7 @@
                 }
             }
         });
-        $('.spreadsheet-actions .add-row-btn').live('click', function (ev) {
+        $(table).on('click', '.spreadsheet-actions .add-row-btn', function (ev) {
             ev.preventDefault();
             addRow(table, options);
             return false;
