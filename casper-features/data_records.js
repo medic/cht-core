@@ -1,5 +1,5 @@
 var casper = require('casper').create();
-// var utils = require('./features/utils');
+// var utils = require('./casper-features/utils');
 
 casper.start();
 
