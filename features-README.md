@@ -15,3 +15,4 @@ This does not work: $('#session_menu').replaceWith(el);
 This works: $('#session_menu').remove(); $('.nav').append(el);
 And that is because it cannot find $('#session_menu') in the code.. why not? I can see it with $(body).html().
 
+For now rewrote the replaceWith part with something similar and it seems to work now.
