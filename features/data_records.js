@@ -19,7 +19,7 @@ utils.createTestDB(username, password, function() {
                         browser.clickLink(".records a", function() {
                             browser.clickLink(".extend", function() {
                                 assert.equal(
-                                    0, browser.query(".extended.hide").length,
+                                    undefined, browser.query(".extended.hide"),
                                     "SMS info should be extended"
                                 );
                                 process.exit(0);
