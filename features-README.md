@@ -13,3 +13,5 @@ Problem: it seems there is a problem loading external resources like modules.js,
 Problem: the session.on('change') callback is run, but for some reason the jQuery does not put the login link on the page.
 This does not work: $('#session_menu').replaceWith(el);
 This works: $('#session_menu').remove(); $('.nav').append(el);
+And that is because it cannot find $('#session_menu') in the code.. why not? I can see it with $(body).html().
+

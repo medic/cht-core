@@ -29,3 +29,12 @@ exports.createDataRecord = function(user, password, callback) {
         if (callback) { callback(); }    
     });
 };
+
+exports.login = function(browser, username, password, callback) {
+    browser.clickLink(".login", function() {
+        browser.
+            fill("username", username).
+            fill("password", password).
+            clickLink(".modal-footer .btn.btn-primary", callback);
+    });
+};
