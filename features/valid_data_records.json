@@ -21,8 +21,9 @@
                         "phone": "+17085551212"
                     },
                     "parent": {
-                        "_id": "89716f96177206326cc07653ab9659c7",
+                        "_id": "89716f96177206326cc07653ab965999",
                         "type": "district_hospital",
+                        "name": "A",
                         "contact": {
                             "name": "Bernie Mac",
                             "phone": "+14155551212"
@@ -85,8 +86,9 @@
                         "phone": "+17085551212"
                     },
                     "parent": {
-                        "_id": "89716f96177206326cc07653ab9659c7",
+                        "_id": "89716f96177206326cc07653ab965777",
                         "type": "district_hospital",
+                        "name": "B",
                         "contact": {
                             "name": "Bernie Mac",
                             "phone": "+14155551212"
