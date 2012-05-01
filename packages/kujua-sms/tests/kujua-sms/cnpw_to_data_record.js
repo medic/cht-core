@@ -150,7 +150,7 @@ var step2 = function(test, req) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + '/CNPW/data_record/merge/cnpw/%2B13125551212/2');
+        baseURL + '/CNPW/data_record/merge/%2B13125551212/2');
 
     test.same(
         resp_body.callback.data.related_entities,
@@ -168,7 +168,7 @@ var step2 = function(test, req) {
  *
  * A data record does not exist.
  *
- * Run data_record/merge/cnpw/phone/wkn and expect a callback to create a
+ * Run data_record/merge/phone/wkn and expect a callback to create a
  * new data record.
  *
  */
@@ -259,7 +259,7 @@ var step2_with_errors = function(test, req) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + '/CNPW/data_record/merge/cnpw/%2B13125551212/2');
+        baseURL + '/CNPW/data_record/merge/%2B13125551212/2');
 
     test.same(
         resp_body.callback.data.related_entities,

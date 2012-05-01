@@ -86,6 +86,13 @@ exports.data_records_by_district_form_and_reported_date = {
     }
 };
 
+exports.data_record_by_phone_and_wkn = {
+    map: function(doc) {
+        if (doc.type.match(/^data_record/)) {
+            emit([doc.from, doc.wkn, doc._id], doc);
+        }
+    }
+};
 
 /*
  * Get facility based on phone number
@@ -222,7 +229,7 @@ exports.tasks_pending = {
 
 exports.data_record_by_year_month_and_clinic_id = {
     map: function (doc) {
-        if (doc.type === 'data_record') {
+        if (doc.type.match(/^data_record/)) {
             emit([doc.year, doc.month, doc.related_entities.clinic._id], doc);
         }
     }

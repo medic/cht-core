@@ -198,7 +198,7 @@ var step2_2 = function(test, req) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/PSMS/data_record/merge/psms/2011/11/" + clinic._id);
+        baseURL + "/PSMS/data_record/merge/2011/11/" + clinic._id);
 
     test.same(
         resp_body.callback.data.related_entities,
@@ -216,7 +216,7 @@ var step2_2 = function(test, req) {
 /**
  * STEP 3, CASE 1: A data record already exists.
  *
- * Run data_record/merge/psms/year/month/clinic_id and expect a callback to update
+ * Run data_record/merge/year/month/clinic_id and expect a callback to update
  * the data record with the new data.
  *
  * @param {Object} test     - Unittest object
@@ -280,7 +280,7 @@ var step3_1 = function(test, req, finish, args) {
  *
  * A data record does not exist.
  *
- * Run data_record/merge/psms/year/month/clinic_id and expect a callback to create a
+ * Run data_record/merge/year/month/clinic_id and expect a callback to create a
  * new data record.
  */
 var step3_2 = function(test, req) {
