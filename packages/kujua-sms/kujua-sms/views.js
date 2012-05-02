@@ -1,7 +1,7 @@
 
 exports.data_records_valid_by_district_and_form = {
     map: function(doc) {
-        if(doc.type.match(/^data_record/)) {
+        if(doc.type === 'data_record') {
             var smsforms = require('views/lib/smsforms'),
                 def = smsforms[doc.form],
                 title = def ? def.title : null;
@@ -22,7 +22,7 @@ exports.data_records_valid_by_district_and_form = {
 
 exports.data_records_by_district = {
     map: function(doc) {
-        if(doc.type.match(/^data_record/)) {
+        if(doc.type === 'data_record') {
             if (doc.related_entities.clinic
                     && doc.related_entities.clinic.parent
                     && doc.related_entities.clinic.parent.parent) {
@@ -46,7 +46,7 @@ exports.data_records_by_district = {
  
 exports.data_records_by_district_and_reported_date = {
     map: function(doc) {
-        if (doc.type.match(/^data_record/)) {
+        if (doc.type === 'data_record') {
             if (doc.related_entities.clinic) {
                 var dh = doc.related_entities.clinic.parent.parent;
                 emit([dh._id, doc.reported_date, doc._id], doc);
@@ -59,7 +59,7 @@ exports.data_records_by_district_and_reported_date = {
 
 exports.data_records_by_reported_date = {
     map: function(doc) {
-        if (doc.type.match(/^data_record/)) {
+        if (doc.type === 'data_record') {
             emit([doc.reported_date, doc._id], doc);
         }
     }
@@ -67,7 +67,7 @@ exports.data_records_by_reported_date = {
 
 exports.data_records_by_form_and_reported_date = {
     map: function(doc) {
-        if (doc.type.match(/^data_record/)) {
+        if (doc.type === 'data_record') {
             emit([doc.form, doc.reported_date, doc._id], doc);
         }
     }
@@ -75,7 +75,7 @@ exports.data_records_by_form_and_reported_date = {
 
 exports.data_records_by_district_form_and_reported_date = {
     map: function(doc) {
-        if (doc.type.match(/^data_record/)) {
+        if (doc.type === 'data_record') {
             if (doc.related_entities.clinic) {
                 var dh = doc.related_entities.clinic.parent.parent;
                 emit([dh._id, doc.form, doc.reported_date, doc._id], doc);
@@ -88,7 +88,7 @@ exports.data_records_by_district_form_and_reported_date = {
 
 exports.data_record_by_phone_and_wkn = {
     map: function(doc) {
-        if (doc.type.match(/^data_record/)) {
+        if (doc.type === 'data_record') {
             emit([doc.from, doc.wkn, doc._id], doc);
         }
     }
@@ -229,7 +229,7 @@ exports.tasks_pending = {
 
 exports.data_record_by_year_month_and_clinic_id = {
     map: function (doc) {
-        if (doc.type.match(/^data_record/)) {
+        if (doc.type === 'data_record') {
             emit([doc.year, doc.month, doc.related_entities.clinic._id], doc);
         }
     }
@@ -240,7 +240,7 @@ exports.data_record_by_year_month_and_clinic_id = {
  */
 exports.sms_message_by_sent_timestamp = {
     map: function (doc) {
-        if (doc.type.match(/^data_record/)) {
+        if (doc.type === 'data_record') {
             var sms = doc.sms_message;
             if(sms) {
                 emit([sms.sent_timestamp, sms.form, sms.from], null);                

@@ -37,10 +37,6 @@ var getCallbackBody = function(phone, form, form_data) {
     var type = 'data_record';
     var form_definition = smsforms[form];
     
-    if(form_definition.data_record_type) {
-        type += '_' + form_definition.data_record_type;
-    }
-
     var body = {
         type: type,
         from: phone,

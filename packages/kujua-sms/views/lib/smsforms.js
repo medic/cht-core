@@ -57,7 +57,6 @@ exports['CNPW'] = {
         {key: 'msl', label: 'Measles', type: 'number'},
         {key: 'aes', label: 'Acute Encephalitis Syndrome', type: 'number'}
     ],
-    data_record_type: "cdc_nepal",
     data_record_merge: "/:form/data_record/merge/:phone/:wkn"
 };
 
@@ -80,7 +79,6 @@ exports['PSMS'] = {
         {key: 'days_stocked_out.eye_ointment', label: 'Eye Ointment: Days stocked out', type: 'number'}
     ],
     autoreply: "Zikomo!",
-    data_record_type: "psi_malawi",
     data_record_merge: "/:form/data_record/merge/:year/:month/:clinic_id"
 };
 
@@ -113,7 +111,6 @@ exports['PSMM'] = {
         {key: 'deaths_12_to_59_months', label: 'Deaths 12-59 month total', type: 'number'}
     ],
     autoreply: "Zikomo!",
-    data_record_type: "psi_malawi",
     data_record_merge: "/:form/data_record/merge/:year/:month/:clinic_id"
 };
 
