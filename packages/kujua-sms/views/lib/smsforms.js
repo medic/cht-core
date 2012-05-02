@@ -58,7 +58,7 @@ exports['CNPW'] = {
         {key: 'aes', label: 'Acute Encephalitis Syndrome', type: 'number'}
     ],
     data_record_type: "cdc_nepal",
-    data_record_merge: "/:form/data_record/merge/cnpw/:phone/:wkn"
+    data_record_merge: "/:form/data_record/merge/:phone/:wkn"
 };
 
 exports['PSMS'] = {
@@ -81,7 +81,7 @@ exports['PSMS'] = {
     ],
     autoreply: "Zikomo!",
     data_record_type: "psi_malawi",
-    data_record_merge: "/:form/data_record/merge/psms/:year/:month/:clinic_id"
+    data_record_merge: "/:form/data_record/merge/:year/:month/:clinic_id"
 };
 
 exports['PSMM'] = {
