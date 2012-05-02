@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
-var fs = require('fs'),
-    http = require('http'),
-    querystring = require('querystring'),
+var http = require('http'),
     db_name = 'kujua-export',
     username = 'root',
     password = 'password',
