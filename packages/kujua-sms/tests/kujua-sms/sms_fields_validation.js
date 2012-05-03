@@ -10,15 +10,6 @@ var updates = require('kujua-sms/updates'),
 
 
 var example = {
-    sms_message: {
-       from: "+13125551212",
-       message: '1!TEST!a',
-       sent_timestamp: '01-19-12 18:45',
-       sent_to: "+15551212",
-       type: "sms_message",
-       locale: "en",
-       form: "TEST"
-    },
     clinic: {
         "_id": "4a6399c98ff78ac7da33b639ed60f458",
         "_rev": "1-0b8990a46b81aa4c5d08c4518add3786",
@@ -46,6 +37,46 @@ var example = {
 };
 
 
+/*
+ * Assert that success message is sent when required fields are met.
+ *
+ */
+exports.sms_fields_validation = function (test) {
+    test.expect(16);
+
+    var data = {
+        from: '+13125551212',
+        message: '1!TEST!a#2',
+        sent_timestamp: '01-19-12 18:45',
+        sent_to: '+15551212'
+    };
+
+    var req = {
+        uuid: '14dc3a5aa6',
+        method: "POST",
+        headers: helpers.headers("url", querystring.stringify(data)),
+        body: querystring.stringify(data),
+        form: data
+    };
+
+    var resp = fakerequest.update(updates.add_sms, data, req);
+
+    var resp_body = JSON.parse(resp[1].body);
+
+    test.same(resp_body.payload.success, true);
+    test.same(resp_body.payload.messages[0].message,
+        "Thank you!");
+    
+    test.same(resp_body.callback.data.errors, []);
+    
+    test.same(
+        resp_body.callback.options.path,
+        baseURL + "/TEST/data_record/add/clinic/%2B13125551212");
+    
+    step1_with_errors(test);
+    
+};
+
 
 /*
  * STEP 1 WITH ERRORS:
@@ -54,9 +85,7 @@ var example = {
  * callback object.
  *
  */
-exports.sms_fields_validation = function (test) {
-    test.expect(12);
-
+var step1_with_errors = function(test) {
     var data = {
         from: '+13125551212',
         message: '1!TEST!a',
