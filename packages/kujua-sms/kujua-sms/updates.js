@@ -60,6 +60,10 @@ var getCallbackBody = function(phone, form, form_data) {
         body.errors = errors;
     }
     
+    if(form_data.extra_fields) {
+        body.errors.push("Extra fields.");
+    }
+    
     return body;
 };
 

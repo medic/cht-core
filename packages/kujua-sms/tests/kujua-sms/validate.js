@@ -62,6 +62,6 @@ exports.validate = function(test) {
     errors = validate.validate(form_definition, form_data);
     test.same(errors[0], "Missing field: defdef");
     
-    
+     
     test.done();
 };

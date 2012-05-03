@@ -95,8 +95,10 @@ exports.parse = function(def, doc, format) {
             result;
 
         // ignore extra form data that has no matching field definition.
-        if (!field)
+        if (!field) {
+            obj.extra_fields = true;
             return obj;
+        }
 
         if (format === 1) {
             // include label in array

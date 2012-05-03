@@ -42,7 +42,7 @@ var example = {
  *
  */
 exports.sms_fields_validation = function (test) {
-    test.expect(16);
+    test.expect(19);
 
     var data = {
         from: '+13125551212',
@@ -73,8 +73,47 @@ exports.sms_fields_validation = function (test) {
         resp_body.callback.options.path,
         baseURL + "/TEST/data_record/add/clinic/%2B13125551212");
     
-    step1_with_errors(test);
+    step1_with_extra_fields(test);
     
+};
+
+
+/*
+ * Assert that a 'form_extra_fields' message gets sent
+ * when a form with extra fields is submitted and
+ * assert .errors is set.
+ *
+ */
+var step1_with_extra_fields = function(test) {
+    
+    var data = {
+        from: '+13125551212',
+        message: '1!TEST!a#2#3',
+        sent_timestamp: '01-19-12 18:45',
+        sent_to: '+15551212'
+    };
+
+    var req = {
+        uuid: '14dc3a5aa6',
+        method: "POST",
+        headers: helpers.headers("url", querystring.stringify(data)),
+        body: querystring.stringify(data),
+        form: data
+    };
+
+    var resp = fakerequest.update(updates.add_sms, data, req);
+
+    var resp_body = JSON.parse(resp[1].body);
+
+    test.same(resp_body.payload.success, true);
+    test.same(resp_body.payload.messages[0].message,
+        "Extra fields.");
+    
+    test.same(resp_body.callback.data.errors[0], 
+        "Extra fields.");
+    
+    step1_with_errors(test);
+
 };
 
 

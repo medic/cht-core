@@ -131,15 +131,11 @@ exports.missing_fields = function(test) {
     test.done();
 };
 
-/*
- * handle the case when a form submission has more fields than the form
- * definition. it should still get parsed.
- */
 exports.extra_fields = function(test) {
     test.expect(1);
     
     var doc = {
-            "message":"1!PSMS!facility#2011#11#1#2#3#1#1#1#1#1#1#1#1#1#1######",
+            "message":"1!PSMS!facility#2011#11#1#2#3#1#1#1#1#1#1#1#1#1#1#####77#",
             "type":"sms_message",
             "form":"PSMS"},
         def = smsforms[doc.form],
@@ -164,7 +160,8 @@ exports.extra_fields = function(test) {
             "zinc": 1,
             "ors": 1,
             "eye_ointment": 1
-        }
+        },
+        "extra_fields": true
     });
     
     test.done();
