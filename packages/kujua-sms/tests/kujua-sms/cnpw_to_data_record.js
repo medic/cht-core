@@ -47,7 +47,7 @@ var example = {
 
 var expected_callback = {
     data: {
-        type: "data_record_cdc_nepal",
+        type: "data_record",
         form: "CNPW",
         related_entities: {
             clinic: null

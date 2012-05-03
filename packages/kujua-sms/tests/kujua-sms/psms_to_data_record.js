@@ -63,7 +63,7 @@ var example = {
 
 var expected_callback = {
     data: {
-        type: "data_record_psi_malawi",
+        type: "data_record",
         form: "PSMS",
         related_entities: {
             clinic: null
