@@ -42,8 +42,8 @@ exports.getResponse = function (key, locale) {
 
 exports['TEST'] = {
     fields: [
-        {key: 'foo', label: 'Foo', type: 'string'},
-        {key: 'bar', label: 'Bar', type: 'number'}
+        {key: 'foo', label: 'Foo', type: 'string', required: true},
+        {key: 'bar', label: 'Bar', type: 'number', required: true}
     ],
     autoreply: 'Thank you!'
 };
