@@ -567,12 +567,12 @@ exports['MSBR'] = {
 exports['MSBB'] = {
     title: 'Alerte référence',
     fields: [
-        {key: 'ref_year', label: "Année", type: 'year'},
-        {key: 'ref_month', label: "Mois", type: 'month'},
-        {key: 'ref_day', label: "Jour", type: 'number'},
+        {key: 'ref_year', label: "Année", type: 'year', required: true},
+        {key: 'ref_month', label: "Mois", type: 'month', required: true},
+        {key: 'ref_day', label: "Jour", type: 'number', required: true},
         {key: 'ref_rc', label: "Code du RC", type: 'string'},
         {key: 'ref_hour', label: "Heure de départ", type: 'number'},
-        {key: 'ref_name', label: "Nom", type: 'string'},
+        {key: 'ref_name', label: "Nom", type: 'string', required: true},
         {key: 'ref_age', label: "Age", type: 'number'},
         {
             key: 'ref_reason',

@@ -114,17 +114,17 @@ exports.missing_fields = function(test) {
             "la_6x1": 1,
             "la_6x2": 2,
             "cotrimoxazole": 3,
-            "zinc": null,
-            "ors": null,
-            "eye_ointment": null,
+            "zinc": undefined,
+            "ors": undefined,
+            "eye_ointment": undefined,
         },
         "days_stocked_out": {
-            "la_6x1": null,
-            "la_6x2": null,
-            "cotrimoxazole": null,
-            "zinc": null,
-            "ors": null,
-            "eye_ointment": null
+            "la_6x1": undefined,
+            "la_6x2": undefined,
+            "cotrimoxazole": undefined,
+            "zinc": undefined,
+            "ors": undefined,
+            "eye_ointment": undefined
         }
     });
     

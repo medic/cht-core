@@ -49,7 +49,7 @@ var example = {
     referrals_2_to_11_months: 6,
     referrals_12_to_59_months: 8,
     deaths_2_to_11_months: 9,
-    deaths_12_to_59_months: 0,
+    deaths_12_to_59_months: null,
     cases: {
         fever_lt_1d: 5,
         fever_lt_2d: 3,
