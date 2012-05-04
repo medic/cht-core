@@ -1,8 +1,11 @@
 exports.parseNum = function (raw) {
-    if (!isFinite(raw)) {
+    if (raw === void 0) {
+        return undefined;        
+    } else if (!isFinite(raw) || raw === "") {
         return null;
+    } else {
+        return Number(raw);
     }
-    return Number(raw);
 };
 
 exports.parseField = function (field, raw, prev) {
@@ -10,7 +13,7 @@ exports.parseField = function (field, raw, prev) {
         case 'number':
             return exports.parseNum(raw);
         case 'string':
-            return raw;
+            return raw === "" ? null : raw;
         case 'year':
             return raw;
         case 'month':
@@ -109,7 +112,7 @@ exports.parse = function(def, doc, format) {
         }
 
         createDeepKey(obj, field.key.split('.'), result);
-
+        console.log(obj)
         return obj;
     }, {});
 };
