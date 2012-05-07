@@ -76,10 +76,10 @@ var expected_callback = {
  *
  * Run add_sms and expect a callback to add a clinic to a data record which
  * contains all the information from the SMS.
- **/
+ */
 exports.msbb_to_record = function (test) {
 
-    test.expect(27);
+    test.expect(57);
 
     // Data parsed from a gateway POST
     var data = {
@@ -133,28 +133,19 @@ exports.msbb_to_record = function (test) {
         resp_body.callback.data,
         expected_callback.data);
 
-    // form next request from callback data
-    var next_req = {
-        method: resp_body.callback.options.method,
-        body: JSON.stringify(resp_body.callback.data),
-        path: resp_body.callback.options.path,
-        headers: helpers.headers(
-                    'json', JSON.stringify(resp_body.callback.data)),
-        query: {form: 'MSBB'} // query.form gets set by rewriter
-    };
-
-    step2(test, next_req);
+    step2(test, helpers.nextRequest(resp_body, 'MSBB'));
 
 };
 
-//
-// STEP 2:
-//
-// Run data_record/add/clinic and expect a callback to
-// check if the same data record already exists.
-//
-var step2 = function(test, req) {
 
+/*
+ * STEP 2:
+ *
+ * Run data_record/add/clinic and expect a callback to
+ * check if the same data record already exists.
+ */
+var step2 = function(test, req) {
+    
     var clinic = example.clinic;
 
     var viewdata = {rows: [
@@ -174,8 +165,8 @@ var step2 = function(test, req) {
     // without merging it with an existing one.
     //
     
-    // If no record exists during the merge then we create a new record with
-    // POST
+    // If no record exists during the merge then we 
+    // create a new record with POST
     test.same(resp_body.callback.options.method, "POST");
     test.same(resp_body.callback.options.path, appdb);
 
@@ -196,8 +187,199 @@ var step2 = function(test, req) {
 
     test.same(
         resp_body.callback.data.tasks[0].messages[0].message,
-        "Année: 2012, Mois: 1, Jour: 24, Code du RC: abcdef, Heure de départ: 1111, Nom: bbbbbb, Age: 22, Motif référence: Autres, Si 'autre', précisez motif référence: cccccc"
-    );    
+        "Année: 2012, Mois: 1, Jour: 24, Code du RC: abcdef, Heure de " +
+        "départ: 1111, Nom: bbbbbb, Age: 22, Motif référence: Autres, " +
+        "Si 'autre', précisez motif référence: cccccc"
+    );
+
+    step1_with_only_required_fields_defined(test);
+    
+};
+
+
+/*
+ * STEP 1 WITH ONLY REQUIRED FIELDS:
+ *
+ * Run add_sms and expect a callback to add a clinic to a data record which
+ * contains all the information from the SMS. Do this with only the required
+ * fields defined in the sms message and check that it still succeeds.
+ */
+var step1_with_only_required_fields_defined = function(test) {
+    
+    var data = {
+        from: '+13125551212',
+        message: '1!MSBB!2012#1#24###bbbbbb',
+        sent_timestamp: "10-01-11 18:45",
+        sent_to: '+15551212'
+    };
+
+    var req = {
+        uuid: '14dc3a5aa6',
+        query: {form: 'MSBB'},
+        method: "POST",
+        headers: helpers.headers("url", querystring.stringify(data)),
+        body: querystring.stringify(data),
+        form: data
+    };
+
+    var resp = fakerequest.update(updates.add_sms, data, req);
+
+    var resp_body = JSON.parse(resp[1].body);
+
+    test.same(
+        resp_body.callback.options.path,
+        baseURL + "/MSBB/data_record/add/health_center/%2B13125551212");
+    
+    _.each([
+        'ref_year', 'ref_month', 'ref_day', 'ref_name'
+    ], function(attr) {
+        test.same(
+            resp_body.callback.data[attr],
+            expected_callback.data[attr]);
+    });
+
+    test.same(
+        resp_body.callback.data.ref_rc, null);
+    test.same(
+        resp_body.callback.data.ref_hour, null);
+
+    _.each([
+        'ref_age', 'ref_reason', 'ref_reason_other'
+    ], function(attr) {
+        test.same(
+            resp_body.callback.data[attr],
+            undefined);
+    });
+
+    test.same(
+        resp_body.callback.data.errors, []);
+        
+    step2_with_only_required_fields_defined(test, helpers.nextRequest(resp_body, 'MSBB'));
+    
+};
+
+
+/*
+ * STEP 2 WITH ONLY REQUIRED FIELDS:
+ *
+ * Run data_record/add/clinic and expect a callback to
+ * check if the same data record already exists.
+ */
+var step2_with_only_required_fields_defined = function(test, req) {
+    
+    var clinic = example.clinic;
+
+    var viewdata = {rows: [
+        {
+            "key": ["+13125551212"],
+            "value": clinic
+        }
+    ]};
+
+    var resp = fakerequest.list(lists.data_record, viewdata, req);
+
+    var resp_body = JSON.parse(resp.body);
+
+    test.same(resp_body.callback.options.method, "POST");
+    test.same(resp_body.callback.options.path, appdb);
+
+    test.same(
+        resp_body.callback.data.errors, []);
+
+    step1_with_extra_fields_defined(test);
+    
+};
+
+
+/*
+ * STEP 1 WITH EXTRA FIELDS:
+ *
+ * Run add_sms and expect a callback to add a clinic to a data record which
+ * contains all the information from the SMS. Do this with extra fields
+ * defined in the sms message and check that it still succeeds.
+ */
+var step1_with_extra_fields_defined = function(test) {
+    
+    var data = {
+        from: '+13125551212',
+        message: '1!MSBB!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc#YYY#ZZZ',
+        sent_timestamp: '10-01-11 18:45',
+        sent_to: '+15551212'
+    };
+
+    var req = {
+        uuid: '14dc3a5aa6',
+        query: {form: 'MSBB'},
+        method: "POST",
+        headers: helpers.headers("url", querystring.stringify(data)),
+        body: querystring.stringify(data),
+        form: data
+    };
+
+    var resp = fakerequest.update(updates.add_sms, data, req);
+
+    var resp_body = JSON.parse(resp[1].body);
+
+    test.same(
+        resp_body.callback.options.path,
+        baseURL + "/MSBB/data_record/add/health_center/%2B13125551212");
+    
+    test.same(
+        resp_body.callback.data.errors,
+        ["Extra fields."]);
+
+    step2_with_extra_fields_defined(test, helpers.nextRequest(resp_body, 'MSBB'));
+    
+};
+
+
+/*
+ * STEP 2 WITH EXTRA FIELDS:
+ *
+ * Run data_record/add/clinic and expect a callback to
+ * check if the same data record already exists.
+ */
+var step2_with_extra_fields_defined = function(test, req) {
+    
+    var clinic = example.clinic;
+
+    var viewdata = {rows: [
+        {
+            "key": ["+13125551212"],
+            "value": clinic
+        }
+    ]};
+
+    var resp = fakerequest.list(lists.data_record, viewdata, req);
+
+    var resp_body = JSON.parse(resp.body);
+
+    test.same(resp_body.callback.options.method, "POST");
+    test.same(resp_body.callback.options.path, appdb);
+
+    test.same(resp_body.callback.data.errors, ["Extra fields."]);
+    test.same(
+        resp_body.callback.data.sms_message,
+        _.extend(example.sms_message, {
+            message: '1!MSBB!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc#YYY#ZZZ'
+        }));
+        
+    _.each([
+        'ref_year', 'ref_month', 'ref_day', 'ref_rc', 'ref_hour',
+        'ref_name', 'ref_age', 'ref_reason', 'ref_reason_other'
+    ], function(attr) {
+        test.same(
+            resp_body.callback.data[attr],
+            expected_callback.data[attr]);
+    });
+
+    test.same(
+        resp_body.callback.data.tasks[0].messages[0].message,
+        "Année: 2012, Mois: 1, Jour: 24, Code du RC: abcdef, Heure de " +
+        "départ: 1111, Nom: bbbbbb, Age: 22, Motif référence: Autres, " +
+        "Si 'autre', précisez motif référence: cccccc"
+    );
 
     test.done();
+    
 };

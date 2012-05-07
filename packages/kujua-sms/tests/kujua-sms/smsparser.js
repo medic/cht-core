@@ -114,18 +114,54 @@ exports.missing_fields = function(test) {
             "la_6x1": 1,
             "la_6x2": 2,
             "cotrimoxazole": 3,
-            "zinc": null,
-            "ors": null,
-            "eye_ointment": null,
+            "zinc": undefined,
+            "ors": undefined,
+            "eye_ointment": undefined,
         },
         "days_stocked_out": {
-            "la_6x1": null,
-            "la_6x2": null,
-            "cotrimoxazole": null,
-            "zinc": null,
-            "ors": null,
-            "eye_ointment": null
+            "la_6x1": undefined,
+            "la_6x2": undefined,
+            "cotrimoxazole": undefined,
+            "zinc": undefined,
+            "ors": undefined,
+            "eye_ointment": undefined
         }
+    });
+    
+    test.done();
+};
+
+exports.extra_fields = function(test) {
+    test.expect(1);
+    
+    var doc = {
+            "message":"1!PSMS!facility#2011#11#1#2#3#1#1#1#1#1#1#1#1#1#1#####77#",
+            "type":"sms_message",
+            "form":"PSMS"},
+        def = smsforms[doc.form],
+        data = smsparser.parse('PSMS', def, doc);
+
+    test.same(data, {
+        "facility_id": "facility",
+        "year": "2011",
+        "month": "11",
+        "quantity_dispensed": {
+            "la_6x1": 1,
+            "la_6x2": 2,
+            "cotrimoxazole": 3,
+            "zinc": 1,
+            "ors": 1,
+            "eye_ointment": 1,
+        },
+        "days_stocked_out": {
+            "la_6x1": 1,
+            "la_6x2": 1,
+            "cotrimoxazole": 1,
+            "zinc": 1,
+            "ors": 1,
+            "eye_ointment": 1
+        },
+        "extra_fields": true
     });
     
     test.done();

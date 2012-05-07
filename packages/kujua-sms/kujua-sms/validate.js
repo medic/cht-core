@@ -13,10 +13,13 @@ exports.validate = function(form_definition, form_data) {
         }
         
         key = key[0];
-        
-        if(_.isUndefined(data[key]) &&
-            (_.isUndefined(field.required) || field.required)) {
-            errors.push("Missing field: " + field.label)
+
+        if(
+            ((_.isUndefined(data[key]) || _.isNull(data[key])) && !!field.required) ||
+            ((!_.isUndefined(data[key]) && !_.isNull(data[key])) && !!field.required &&
+            _.isArray(data[key]) && (_.isUndefined(data[key][0]) || _.isNull(data[key][0])))
+        ) {
+            errors.push("Missing field: " + field.label);
         }
     });
     

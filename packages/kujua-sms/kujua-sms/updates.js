@@ -37,10 +37,6 @@ var getCallbackBody = function(phone, form, form_data) {
     var type = 'data_record';
     var form_definition = smsforms[form];
     
-    if(form_definition.data_record_type) {
-        type += '_' + form_definition.data_record_type;
-    }
-
     var body = {
         type: type,
         from: phone,
@@ -62,6 +58,10 @@ var getCallbackBody = function(phone, form, form_data) {
     var errors = validate.validate(form_definition, form_data);
     if(errors.length > 0) {
         body.errors = errors;
+    }
+    
+    if(form_data.extra_fields) {
+        body.errors.push("Extra fields.");
     }
     
     return body;

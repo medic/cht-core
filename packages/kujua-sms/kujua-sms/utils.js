@@ -563,7 +563,7 @@ var getValues = exports.getValues = function(doc, keys) {
             } else {
                 values.push(doc[key]);
             }
-        } else if (typeof doc[key] !== 'object') {
+        } else if (typeof doc[key] !== 'object' || doc[key] === null) {
             values.push(doc[key]);
         } else if (typeof doc[key] === 'object') {
             _keys.shift();

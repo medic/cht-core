@@ -23,23 +23,23 @@ or not.
 
 ## Issues
 
-When creating issues assign a difficulty value by choosing a label.  This is
-used to track progress, so we have some idea of how much work we can handle in
-a week.  Issues are managed in Github and pulled/copied via the Github API to
-our a dev server couch instance just in case Github decides to disappear. If
-you create a new repository and want the issues mirrored then checkout and
-modify the issues project.
+Issues are managed in Github.  When creating issues assign a difficulty value
+by choosing a label.  This is used to track progress, so we have some idea of
+how much work we can handle in a week. Use the `wip` label for
+work-in-progress.
 
-We maintain a home grown mini issue tracker on the dev server.  It's generally
-neglected and needs love, if you feel so inclined and have time please
-contribute.
+Issues are mirrored via the Github API to a dev server couch instance just in
+case Github decides to disappear. If you create a new repository and want the
+issues mirrored then checkout and modify the issues project.  We also maintain
+a tiny issue velocity tracker on the dev server, but it's not used that much
+yet.
 
 ## Commits
 
 Strive to include a ticket number with every commit.  Every commit should be
 related to a ticket, in some cases you might create a ticket for the commit
 before you push it.  Commit and push, early and often,  but don't introduce
-breaking changes if the branch if it is shared.  In the case you want to commit
+breaking changes if the branch is shared.  In the case you want to commit
 and push for feedback, you can try to put breaking commits in a switch so they
 don't impede another developer's progress.
 
@@ -56,7 +56,7 @@ notes later.
 
 ## Production release
 
-Pushed to productiong and merging dev into master should be done frequently,
+Pushes to production and merging dev into master should be done frequently,
 typically once or twice a week.
 
 ### Manual Tests
@@ -70,7 +70,7 @@ typically once or twice a week.
 
     Edit kanso.json with new version string
 
-2. Include new features in release notes.
+2. Include new feature descriptions in release notes.
 
     Edit docs/dev/release_notes.md
 

@@ -47,7 +47,7 @@ var example = {
 
 var expected_callback = {
     data: {
-        type: "data_record_cdc_nepal",
+        type: "data_record",
         form: "CNPW",
         related_entities: {
             clinic: null
@@ -75,7 +75,7 @@ var expected_callback = {
  */
 exports.cnpw_to_record = function (test) {
 
-    test.expect(28);
+    test.expect(11);
 
     // Data parsed from a gateway POST
     var data = {
@@ -150,7 +150,7 @@ var step2 = function(test, req) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + '/CNPW/data_record/merge/cnpw/%2B13125551212/2');
+        baseURL + '/CNPW/data_record/merge/%2B13125551212/2');
 
     test.same(
         resp_body.callback.data.related_entities,
@@ -168,7 +168,7 @@ var step2 = function(test, req) {
  *
  * A data record does not exist.
  *
- * Run data_record/merge/cnpw/phone/wkn and expect a callback to create a
+ * Run data_record/merge/phone/wkn and expect a callback to create a
  * new data record.
  *
  */
@@ -187,169 +187,6 @@ var step3 = function(test, req) {
         resp_body.callback.data.sms_message,
         example.sms_message);    
     
-    step1_with_errors(test);
+    test.done();
 
-};
-
-
-/*
- * STEP 1 WITH ERRORS:
- *
- * Run add_sms and expect errors to appear on the 
- * callback object.
- *
- */
-var step1_with_errors = function(test) {
-    var data = {
-        from: '+13125551212',
-        message: 'SUR WKN2# WKS 3# AFP 99# NNT 0## AES01',
-        sent_timestamp: '01-19-12 18:45',
-        sent_to: '+15551212'
-    };
-
-    var req = {
-        uuid: '14dc3a5aa6',
-        method: "POST",
-        headers: helpers.headers("url", querystring.stringify(data)),
-        body: querystring.stringify(data),
-        form: data
-    };
-
-    var resp = fakerequest.update(updates.add_sms, data, req);
-
-    var resp_body = JSON.parse(resp[1].body);
-
-    test.same(resp_body.payload.success, true);
-    test.same(resp_body.payload.messages[0].message,
-        "Missing field: Measles");
-    
-    test.same(resp_body.callback.data.errors[0],
-        "Missing field: Measles");
-    
-    test.same(
-        resp_body.callback.options.path,
-        baseURL + "/CNPW/data_record/add/clinic/%2B13125551212");
-    
-    step2_with_errors(test, helpers.nextRequest(resp_body, 'CNPW'));
-    
-};
-
-
-/*
- * STEP 2 WITH ERRORS:
- *
- * Run data_record/add/clinic and expect a callback to
- * check if the same data record already exists when
- * there were errors in the add_sms function.
- *
- */
-var step2_with_errors = function(test, req) {
-    var clinic = example.clinic;
-
-    var viewdata = {rows: [
-        {
-            "key": ["+13125551212"],
-            "value": clinic
-        }
-    ]};
-
-    var resp = fakerequest.list(lists.data_record, viewdata, req);
-
-    var resp_body = JSON.parse(resp.body);
-
-    test.same(
-        resp_body.callback.options.path,
-        baseURL + '/CNPW/data_record/merge/cnpw/%2B13125551212/2');
-
-    test.same(
-        resp_body.callback.data.related_entities,
-        {clinic: clinic});
-
-    test.same(resp_body.callback.data.errors[0],
-        "Missing field: Measles");
-    
-    step3_with_errors(test, helpers.nextRequest(resp_body, 'CNPW'));
-    
-};
-
-
-/*
- * STEP 3 WITH ERRORS:
- *
- * Check that when posting again with the same 
- * phone and wkn the data is overwritten on
- * the original record.
- *
- */
-var step3_with_errors = function(test, req) {
-    var viewdata = {rows: [
-        {
-            key: ["%2B13125551212", "2", "777399c98ff78ac7da33b639ed60f422"],
-            value: {
-                _id: "777399c98ff78ac7da33b639ed60f422",
-                _rev: "484399c98ff78ac7da33b639ed60f923",
-                wkn: 2,
-                wks: 3,
-                afp: 80,
-                nnt: 70,
-                msl: 60,
-                aes: 50
-            }
-        }
-    ]};
-
-    var resp = fakerequest.list(lists.data_record_merge, viewdata, req);
-    var resp_body = JSON.parse(resp.body);
-
-    test.same(
-        resp_body.callback.data._rev,
-        "484399c98ff78ac7da33b639ed60f923");
-
-    test.same(
-        resp_body.callback.options.path,
-        appdb + "/777399c98ff78ac7da33b639ed60f422");
-
-    test.same(
-        resp_body.callback.options.method,
-        "PUT");
-
-    test.same(resp_body.callback.data.tasks, []);
-    
-    test.same(resp_body.callback.data.errors[0],
-        "Missing field: Measles");
-
-    test.same(resp_body.callback.data.afp, 99);
-    test.same(resp_body.callback.data.nnt, 0);
-    test.same(resp_body.callback.data.aes, 1);
-    
-    
-    
-    var body = JSON.parse(req.body);
-    body.errors = [];
-    body.msl = 5;
-    req.body = JSON.stringify(body);
-    
-    var viewdata = {rows: [
-        {
-            key: ["%2B13125551212", "2", "777399c98ff78ac7da33b639ed60f422"],
-            value: {
-                _id: "777399c98ff78ac7da33b639ed60f422",
-                _rev: "484399c98ff78ac7da33b639ed60f923",
-                wkn: 2,
-                wks: 3,
-                afp: 80,
-                nnt: 70,
-                aes: 50,
-                errors: ["Missing field: Measles"]
-            }
-        }
-    ]};
-
-    var resp = fakerequest.list(lists.data_record_merge, viewdata, req);
-    var resp_body = JSON.parse(resp.body);
-
-    test.same(resp_body.callback.data.errors, []);
-    test.same(resp_body.callback.data.msl, 5);
-    
-    test.done();    
 };

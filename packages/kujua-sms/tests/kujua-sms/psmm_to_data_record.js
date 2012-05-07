@@ -12,12 +12,12 @@ var updates = require('kujua-sms/updates'),
 var example = {
     sms_message: {
        from: "+13125551212",
-       message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
+       message: '1!PSMM!facility#2011#2#1#5#3#7#9#9#2#5#2#2#11#3#4#5#6#2#1#3#6#8#9#',
        sent_timestamp: '01-19-12 18:45',
        sent_to: "+15551212",
        type: "sms_message",
        locale: "en",
-       form: "PSMS"
+       form: "PSMM"
     },
     clinic: {
         "_id": "4a6399c98ff78ac7da33b639ed60f458",
@@ -43,28 +43,38 @@ var example = {
             }
         }
     },
-    days_stocked_out: {
-        cotrimoxazole: 7,
-        eye_ointment: 4,
-        la_6x1: 9,
-        la_6x2: 8,
-        ors: 5,
-        zinc: 6
+    residence: 1,
+    supervisor_visits: 11,
+    mentorship_visits: 3,
+    referrals_2_to_11_months: 6,
+    referrals_12_to_59_months: 8,
+    deaths_2_to_11_months: 9,
+    deaths_12_to_59_months: null,
+    cases: {
+        fever_lt_1d: 5,
+        fever_lt_2d: 3,
+        fever_gt_3d: 7,
+        diarrhea_lt_1d: 9,
+        diarrhea_lt_2d: 9,
+        diarrhea_gt_3d: 2,
+        fast_breath_lt_1d: 5,
+        fast_breath_lt_2d: 2,
+        fast_breath_gt_3d: 2,
     },
-    quantity_dispensed: {
-        cotrimoxazole: 3,
-        eye_ointment: 6,
-        la_6x1: 1,
-        la_6x2: 2,
-        ors: 5,
-        zinc: 4
+    days_stocked_out: {
+        cotrimoxazole: 2,
+        eye_ointment: 3,
+        la_6x1: 4,
+        la_6x2: 5,
+        ors: 6,
+        zinc: 1
     }
 };
 
 var expected_callback = {
     data: {
         type: "data_record",
-        form: "PSMS",
+        form: "PSMM",
         related_entities: {
             clinic: null
         },
@@ -73,9 +83,16 @@ var expected_callback = {
         errors: [],
         tasks: [],
         days_stocked_out: example.days_stocked_out,
-        quantity_dispensed: example.quantity_dispensed,
+        cases: example.cases,
+        residence: example.residence,
+        supervisor_visits: example.supervisor_visits,
+        mentorship_visits: example.mentorship_visits,
+        referrals_2_to_11_months: example.referrals_2_to_11_months,
+        referrals_12_to_59_months: example.referrals_12_to_59_months,
+        deaths_2_to_11_months: example.deaths_2_to_11_months,
+        deaths_12_to_59_months: example.deaths_12_to_59_months,
         facility_id:"facility",
-        month: '11',
+        month: '2',
         year: '2011'
     }
 };
@@ -87,14 +104,14 @@ var expected_callback = {
  * Run add_sms and expect a callback to add a clinic to a data record which
  * contains all the information from the SMS.
  **/
-exports.psms_to_record = function (test) {
+exports.psmm_to_record = function (test) {
 
-    test.expect(25);
+    test.expect(26);
 
     // Data parsed from a gateway POST
     var data = {
         from: '+13125551212',
-        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
+        message: '1!PSMM!facility#2011#2#1#5#3#7#9#9#2#5#2#2#11#3#4#5#6#2#1#3#6#8#9#',
         sent_timestamp: '01-19-12 18:45',
         sent_to: '+15551212'
     };
@@ -129,15 +146,15 @@ exports.psms_to_record = function (test) {
     
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/PSMS/data_record/add/clinic/%2B13125551212");
+        baseURL + "/PSMM/data_record/add/clinic/%2B13125551212");
     
     test.same(
         resp_body.callback.data.days_stocked_out,
         expected_callback.data.days_stocked_out);
     
     test.same(
-        resp_body.callback.data.quantity_dispensed,
-        expected_callback.data.quantity_dispensed);
+        resp_body.callback.data.cases,
+        expected_callback.data.cases);
     
     test.same(
         resp_body.callback.data.sms_message,
@@ -147,7 +164,7 @@ exports.psms_to_record = function (test) {
         resp_body.callback.data,
         expected_callback.data);
     
-    step2_1(test, helpers.nextRequest(resp_body, 'PSMS'));
+    step2_1(test, helpers.nextRequest(resp_body, 'PSMM'));
 
 };
 
@@ -168,16 +185,18 @@ var step2_1 = function(test, req) {
 
     var resp_body = JSON.parse(resp.body);
 
-    test.same(resp_body.callback.data.errors, [{"code":"facility_not_found","message":"Clinic not found."}]);
+    test.same(
+        resp_body.callback.data.errors,
+        [{"code":"facility_not_found", "message":"Clinic not found."}]);
 
     step2_2(test, req);
-    
+
 };
 
 
 /*
  * STEP 2:
- * 
+ *
  * Run data_record/add/clinic and expect a callback to
  * check if the same data record already exists with existing clinic.
  */
@@ -198,7 +217,7 @@ var step2_2 = function(test, req) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/PSMS/data_record/merge/2011/11/" + clinic._id);
+        baseURL + "/PSMM/data_record/merge/2011/2/" + clinic._id);
 
     test.same(
         resp_body.callback.data.related_entities,
@@ -206,8 +225,8 @@ var step2_2 = function(test, req) {
 
     test.same(resp_body.callback.data.errors, []);
 
-    step3_1(test, helpers.nextRequest(resp_body, 'PSMS'),
-        step3_2, [test, helpers.nextRequest(resp_body, 'PSMS')]);
+    step3_1(test, helpers.nextRequest(resp_body, 'PSMM'),
+        step3_2, [test, helpers.nextRequest(resp_body, 'PSMM')]);
 
 };
 
@@ -229,7 +248,7 @@ var step3_1 = function(test, req, finish, args) {
 
     var viewdata = {rows: [
         {
-            key: ["2011", "11", "4a6399c98ff78ac7da33b639ed60f458"],
+            key: ["2011", "2", "4a6399c98ff78ac7da33b639ed60f458"],
             value: {
                 _id: "777399c98ff78ac7da33b639ed60f422",
                 _rev: "484399c98ff78ac7da33b639ed60f923"
@@ -255,8 +274,12 @@ var step3_1 = function(test, req, finish, args) {
 
     // extra checks
     test.same(
-        resp_body.callback.data.quantity_dispensed,
-        expected_callback.data.quantity_dispensed);
+        resp_body.callback.data.cases,
+        expected_callback.data.cases);
+
+    test.same(
+        resp_body.callback.data.days_stocked_out,
+        example.days_stocked_out);
 
     test.same(
         resp_body.callback.data.sms_message,
@@ -305,8 +328,8 @@ var step3_2 = function(test, req) {
         resp_body.callback.data.days_stocked_out,
         example.days_stocked_out);
     test.same(
-        resp_body.callback.data.quantity_dispensed,
-        example.quantity_dispensed);
+        resp_body.callback.data.cases,
+        example.cases);
 
     test.done();
 };

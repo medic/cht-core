@@ -207,7 +207,7 @@ exports.getValues = function(test) {
     var doc = {
         "_id": "61716f96177206326cc07653ab9659c7",
         "_rev": "2-03adf0258d78fbbd831d35193c53ce0f",
-        "type": "data_record_psi_malawi",
+        "type": "data_record",
         "from": "+13125551212",
         "form": "PSMS",
         "related_entities": {
