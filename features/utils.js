@@ -1,0 +1,35 @@
+var util = require('util');
+var exec = require('child_process').exec;
+
+exports.createTestDB = function(user, password, callback) {
+    var url = "http://" + user + ":" + password + "@localhost:5984/kujua-export-test";
+    exec("kanso push . " + url, function(error, stdout, stderr) {
+        if (error) { util.puts(stderr); }
+        if (callback) { callback(); }    
+    });
+};
+
+exports.removeTestDB = function(user, password, callback) {
+    var url = "http://" + user + ":" + password + "@localhost:5984/kujua-export-test";
+    exec("kanso deletedb " + url, function(error, stdout, stderr) {
+        if (error) { util.puts(stderr); }
+        if (callback) { callback(); }    
+    });
+};
+
+exports.createDataRecord = function(user, password, callback) {
+    var url = "http://" + user + ":" + password + "@localhost:5984/kujua-export-test";
+    exec("kanso upload features/valid_data_record.json " + url, function(error, stdout, stderr) {
+        if (error) { util.puts(stderr); }
+        if (callback) { callback(); }    
+    });
+};
+
+exports.login = function(browser, username, password, callback) {
+    browser.clickLink(".login", function() {
+        browser.
+            fill("username", username).
+            fill("password", password).
+            clickLink(".modal-footer .btn.btn-primary", callback);
+    });
+};
