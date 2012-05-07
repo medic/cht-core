@@ -1,7 +1,7 @@
 [
     {
         "_id": "4a6399c98ff78ac7da33b639ed407777",
-        "type": "data_record_psi_malawi",
+        "type": "data_record",
         "from": "+13125551212",
         "form": "PSMS",
         "related_entities": {

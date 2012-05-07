@@ -11,7 +11,7 @@ Feature("Data Records", module)
     .given("I am logged in", function() {
         utils.loggedIn(username, password, this.callback);
     })
-    .and("a PSMS and a MSBR data record the test DB", function(browser) {
+    .and("data records from district A and B in the test DB", function(browser) {
         utils.createDataRecords(browser, username, password, this.callback);
     })
     .when("I go to the data records page", function(browser) {
@@ -27,36 +27,35 @@ Feature("Data Records", module)
         var $ = browser.evaluate("window.jQuery");
         assert.equal(
             "Neal Young", $.trim($("td.contact-name").text()),
-            "PSMS data record with Neal Young as contact should be visible"
+            "Data record from district B with Neal Young as contact should be visible"
         );
     })
     .complete()
 
-    // .scenario("Filter data records by form")
-    // .given("I am logged in", function() {
-    //     utils.loggedIn(username, password, this.callback);
-    // })
-    // .and("a PSMS and a MSBR data record the test DB", function(browser) {
-    //     utils.createDataRecords(browser, username, password, this.callback);
-    // })
-    // .when("I go to the data records page", function(browser) {
-    //     browser.clickLink(".records a", this.callback);
-    // })
-    // .and("I click on the form selector", function(browser) {
-    //     browser.clickLink("Form", this.callback);
-    // })
-    // .and("I select MSBR as form", function(browser) {
-    //     browser.clickLink("MSBR", this.callback);
-    // })
-    // .then("I should just see the MSBR data record but not the PSMS data record", function(err, browser) {
-    //     var $ = browser.evaluate("window.jQuery");
-    //     assert.equal(
-    //         "Neal Young", $.trim($("td.contact-name").text()),
-    //         "PSMS data record with Neal Young as contact should be visible"
-    //     );
-    // })
-    // .complete()
-    
+    .scenario("Filter data records by form")
+    .given("I am logged in", function() {
+        utils.loggedIn(username, password, this.callback);
+    })
+    .and("a PSMS and a MSBR data record in the test DB", function(browser) {
+        utils.createDataRecords(browser, username, password, this.callback);
+    })
+    .when("I go to the data records page", function(browser) {
+        browser.clickLink(".records a", this.callback);
+    })
+    .and("I click on the form selector", function(browser) {
+        browser.clickLink("Form", this.callback);
+    })
+    .and("I select PSMS as form", function(browser) {
+        browser.clickLink("PSMS", this.callback);
+    })
+    .then("I should just see the PSMS data record but not the MSBR data record", function(err, browser) {
+        var $ = browser.evaluate("window.jQuery");
+        assert.equal(
+            "Sam Jones", $.trim($("td.contact-name").text()),
+            "PSMS data record with Sam Jones as contact should be visible"
+        );
+    })
+    .complete()
     
     .scenario("Displaying data records")
     .given("I am logged in", function() {
