@@ -1,5 +1,6 @@
-var util = require('util');
-var exec = require('child_process').exec;
+var util = require('util')
+  , exec = require('child_process').exec
+  , Browser = require("zombie");
 
 exports.createTestDB = function(user, password, callback) {
     var url = "http://" + user + ":" + password + "@localhost:5984/kujua-export-test";
@@ -17,11 +18,11 @@ exports.removeTestDB = function(user, password, callback) {
     });
 };
 
-exports.createDataRecord = function(user, password, callback) {
+exports.createDataRecords = function(browser, user, password, callback) {
     var url = "http://" + user + ":" + password + "@localhost:5984/kujua-export-test";
-    exec("kanso upload features/valid_data_record.json " + url, function(error, stdout, stderr) {
+    exec("kanso upload features/valid_data_records.json " + url, function(error, stdout, stderr) {
         if (error) { util.puts(stderr); }
-        if (callback) { callback(); }    
+        if (callback) { callback(null, browser); }
     });
 };
 
@@ -31,5 +32,16 @@ exports.login = function(browser, username, password, callback) {
             fill("username", username).
             fill("password", password).
             clickLink(".modal-footer .btn.btn-primary", callback);
+    });
+};
+
+exports.loggedIn = function(username, password, callback) {
+    exports.removeTestDB(username, password, function() {
+        exports.createTestDB(username, password, function() {
+            var browser = new Browser({ site: "http://localhost:5984", debug: false });
+            browser.visit("/kujua-export-test/_design/kujua-export/_rewrite/data_records", function() {
+                exports.login(browser, username, password, callback);
+            });
+        });
     });
 };

@@ -193,6 +193,7 @@ exports._rewrites = _.flatten(exports._rewrites);
  */
 
 exports.init = function () {
+
     if (window.history && history.pushState) {
         exports.history_support = true;
 
@@ -591,7 +592,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
         fn: fn
     };
     events.emit('beforeResource', info, req);
-    
+
     if (docid) {
         var appdb = db.use(exports.getDBURL(req));
         appdb.getDoc(docid, req.query, function (err, doc) {

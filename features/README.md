@@ -1,5 +1,8 @@
 # Functional JavaScript Tests
 
+Current choice: Vows-bdd + Zombie.js
+
+
 ## Casper.js + Phantom.js
 
 Problem: weird error when accessing the authdb after logging in. xhr returns with status 0.
@@ -10,9 +13,4 @@ Problem: it seems there is a problem loading external resources like modules.js,
 
 ## Zombie.js
 
-Problem: the session.on('change') callback is run, but for some reason the jQuery does not put the login link on the page.
-This does not work: $('#session_menu').replaceWith(el);
-This works: $('#session_menu').remove(); $('.nav').append(el);
-And that is because it cannot find $('#session_menu') in the code.. why not? I can see it with $(body).html().
-
-For now rewrote the replaceWith part with something similar and it seems to work now.
+Have to delete the DB for every scenario, otherwise there's a strange error where the status of the XHR is 0 and so session.info does not work. When deleting the DB the problem is that the browser is still trying to access the changes feed and so shows an unnecessary error. Not sure how to solve that yet.
