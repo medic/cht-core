@@ -32,6 +32,9 @@ table.spreadsheet td {
     color: #333;
     height: 25px;
 }
+table.spreadsheet tr.saving td {
+    background: #ccc;
+}
 input.edit-inline {
     color: #333;
     display: block;
@@ -60,4 +63,15 @@ input.edit-inline {
     position: absolute;
     top: -9999px;
     left: -9999px;
+}
+
+.spreadsheet-actions {
+    position: relative;
+}
+
+.row-counter {
+    position: absolute;
+    right: 2px;
+    top: 5px;
+    color: #999;
 }

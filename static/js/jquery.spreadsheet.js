@@ -1,3 +1,15 @@
+// TODO: save row on change
+//  - row emits a 'change' event and has .data('_id') of the original doc
+//  - need to write a parseRow function to update bound doc with new values
+//  - call save function passed to options object
+//  - the save function may need to be called only on change of selected row
+//    - how about also saving after a timeout (if they leave the row selected) ?
+//    - or after a mouse event (mouse moved, so they're no longer typing) ?
+
+// TODO: add options.createDoc function for adding a new row to the spreadsheet
+// - this is so that unused/hidden properties can be added to the doc (even
+//   though they are not editable in the spreadsheet).
+
 // TODO: select cell ranges
 
 (function ($) {
@@ -10,29 +22,16 @@
 
 
     /**
-     * returns a unique, sorted list of all keys in use
-     * by the objects in the data array
-     */
-
-    var getDataKeys = function (data) {
-        var nested = _.map(data, function (row) {
-            return _.keys(row);
-        });
-        return _.uniq(_.flatten(nested).sort(), true);
-    };
-
-
-    /**
      * Creates a thead element for the given unique key list.
      */
 
-    var createHeadings = function (keys) {
+    var createHeadings = function (columns) {
         var thead = $('<thead/>');
         var thead_tr = $('<tr/>');
         thead.append(thead_tr);
 
-        _.each(keys, function (k) {
-            var th = $('<th/>').text(k);
+        _.each(columns, function (c) {
+            var th = $('<th/>').text(c.label);
             thead_tr.append(th);
         });
 
@@ -40,24 +39,91 @@
     };
 
 
+    // path is a property name or array of property names
+    var getProperty = function (obj, path) {
+        // if path is empty, return the root object
+        if (!path) {
+            return obj;
+        }
+        if (!_.isArray(path)) {
+            path = [path];
+        }
+
+        // loop through all parts of the path, throwing an exception
+        // if a property doesn't exist
+        for (var i = 0; i < path.length; i++) {
+            var x = path[i];
+            if (obj[x] === undefined) {
+                return undefined;
+            }
+            obj = obj[x];
+        }
+        return obj;
+    };
+
+    var setProperty = function (obj, path, val) {
+        // if path is empty, return the root object
+        if (!_.isArray(path)) {
+            path = [path];
+        }
+        var curr = [];
+
+        // loop through all parts of the path except the last, creating the
+        // properties if they don't exist
+        var prop = path.slice(0, path.length - 1).reduce(function (a, x) {
+            curr.push(x);
+            if (a[x] === undefined) {
+                a[x] = {};
+            }
+            if (typeof a[x] === 'object' && !Array.isArray(a[x])) {
+                a = a[x];
+            }
+            else {
+                /*
+                throw new Error(
+                    'Updating "' + p + '" would overwrite "' +
+                        curr.join('.') + '"\n' +
+                    '\n' +
+                );
+                */
+                // overwrite existing structure
+                a = a[x] = {}
+            }
+            return a;
+        }, obj);
+
+        // set the final property to the given value
+        prop[path[path.length - 1]] = val;
+
+        return val;
+    };
+
+
+
     /**
      * Creates a tbody element for the given keys and data
      */
 
-    var createBody = function (keys, data) {
+    var createBody = function (columns, data) {
         var tbody = $('<tbody/>');
-
-        _.each(data, function (row) {
-            var tr = $('<tr/>');
-            tr.data('_id', row._id);
+        _.each(data, function (doc) {
+            var tr = createRow(columns, doc);
             tbody.append(tr);
-
-            _.each(keys, function (k) {
-                var td = $('<td/>').text(row[k] ? JSON.stringify(row[k]): '');
-                tr.append(td);
-            });
         });
         return tbody;
+    };
+
+
+    var createRow = function (columns, doc) {
+        var tr = $('<tr/>');
+        tr.data('_id', doc._id);
+        _.each(columns, function (c) {
+            var p = getProperty(doc, c.property);
+            var td = $('<td/>').text(p === undefined ? '': p.toString());
+            td.data('property', c.property);
+            tr.append(td);
+        });
+        return tr;
     };
 
 
@@ -123,7 +189,12 @@
 
     var select = function (td) {
         var div = $('#spreadsheet_select');
+        var reselect = false;
         if (!div.length) {
+            // previously unselected - this was causing some strange
+            // problems with highlight positioning until the next
+            // selection change, so force another selection change now
+            reselect = true;
             div = $('<div id="spreadsheet_select" />');
             $(td).parents('table').after(div);
         }
@@ -144,6 +215,12 @@
         $.spreadsheet.select_div = div;
 
         var table = $($.spreadsheet.selected_td).parents('table');
+        $.spreadsheet.current_table = table;
+
+        if (reselect) {
+            return select(td);
+        }
+
         table.trigger('selectionChange');
     };
 
@@ -214,11 +291,102 @@
     };
 
 
+    /*
+    var parseRow = function (tr, options) {
+        var tds = $('td', tr);
+        return _.reduce(options.keys, function (obj, k, i) {
+            // TODO: coerce values according options
+            obj[k] = $(tds[i]).text();
+            return obj;
+        }, {});
+    };
+    */
+
+    var getDoc = function (tr, options) {
+        var id = $(tr).data('_id');
+        for (var i = 0; i < options.data.length; i++) {
+            if (id === options.data[i]._id) {
+                return options.data[i];
+            }
+        }
+        throw new Error('No document found with _id: ' + JSON.stringify(id));
+    };
+
+
+    var updateDoc = function (doc, options) {
+        for (var i = 0; i < options.data.length; i++) {
+            if (doc._id === options.data[i]._id) {
+                options.data[i] = doc;
+                return;
+            }
+        }
+        throw new Error(
+            'No document found with _id: ' + JSON.stringify(doc._id)
+        );
+    };
+
+
+    var saveDoc = function (tr, options) {
+        function _saveDoc() {
+            if (!$(tr).data('save_queued')) {
+                return;
+            }
+            if ($(tr).hasClass('saving')) {
+                // _saveDoc will be called again once the current
+                // save operation has completed
+                return;
+            }
+            $(tr).data('save_queued', false);
+            $(tr).addClass('saving');
+            options.save(getDoc(tr, options), function (err, doc) {
+                if (err) {
+                    // TODO: do something better than alert
+                    return alert(err.toString());
+                }
+                if (!doc || !doc._id) {
+                    throw new Error(
+                        'new doc must be returned to save callback'
+                    );
+                }
+                updateDoc(doc, options);
+                tr.removeClass('saving');
+                _saveDoc();
+            });
+        }
+        if ($(tr).data('save_queued')) {
+            return;
+        }
+        else {
+            // collect all save calls for this tick into a single save operation
+            $(tr).data('save_queued', true);
+            setTimeout(_saveDoc, 0);
+        }
+    };
+
+    var addRow = function (table, options) {
+        var _add = function (err, doc) {
+            if (err) {
+                return console.error(err);
+            }
+            if (!doc) {
+                throw new Error(
+                    'Create function did not return a document object'
+                );
+            }
+            options.data.push(doc);
+            var tr = createRow(options.columns, doc);
+            $('tbody', table).append(tr);
+            $(table).trigger('change');
+        };
+        options.create(_add);
+    };
+
+
     /**
      * Handles user interaction with the table
      */
 
-    var bindEvents = function (table) {
+    var bindTableEvents = function (table, options) {
         $(table).bind('selectionChange', function () {
             if (!$.spreadsheet.selected_td) {
                 completeInlineEditor();
@@ -252,6 +420,47 @@
                 }
             }
         });
+        $(table).bind('change', function (ev) {
+            // re-select td to make sure select box is properly resized.
+            if ($.spreadsheet.selected_td) {
+                select($.spreadsheet.selected_td);
+            }
+            // update row counter
+            $('.row-counter', table).text(options.data.length + ' rows');
+        });
+        $(table).on('click', 'td', function (ev) {
+            $('td', table).removeClass('active');
+            var pos = getCellPosition(table, this);
+            $.spreadsheet.start_column = pos.column;
+            select(this);
+        });
+        $(table).on('change', 'tr', function (ev) {
+            // TODO: don't save on every cell change, use a timeout and
+            // wait until a different tr is selected if possible
+            // TODO: check if doc has actually changed values
+            var tr = $(this);
+            saveDoc(tr, options);
+        });
+        $(table).on('change', 'td', function (ev) {
+            // update doc value in spreadsheet data array
+            var tr = $(this).parent();
+            var doc = getDoc(tr, options);
+            // TODO: coerce value to correct type depending on options
+            setProperty(doc, $(this).data('property'), $(this).text());
+        });
+        $(table).on('click', '.spreadsheet-actions .add-row-btn', function (ev) {
+            ev.preventDefault();
+            addRow(table, options);
+            return false;
+        });
+    };
+
+
+    var bindDocumentEvents = function () {
+        if ($.spreadsheet.document_bound) {
+            // only bind these event handlers once
+            return;
+        }
         $(document).bind('cut', function (ev) {
             var td = $.spreadsheet.selected_td;
             if (td) {
@@ -287,33 +496,22 @@
                 }, 0);
             }
         });
-        $('#spreadsheet_select').live('dblclick', function (ev) {
+        $(document).on('dblclick', '#spreadsheet_select', function (ev) {
             if ($.spreadsheet.selected_td) {
                 editInline($.spreadsheet.selected_td);
-            }
-        });
-        $('td', table).live('click', function (ev) {
-            $('td', table).removeClass('active');
-            var pos = getCellPosition(table, this);
-            $.spreadsheet.start_column = pos.column;
-            select(this);
-        });
-        $('td', table).live('change', function (ev) {
-            // re-select td to make sure select box is properly resized.
-            if ($.spreadsheet.selected_td) {
-                select($.spreadsheet.selected_td);
             }
         });
         $(document).click(function (ev) {
             var el = $(ev.target);
             var input = $.spreadsheet.edit_inline_input;
             var select_div = $.spreadsheet.select_div;
+            var table = $.spreadsheet.current_table;
             if (!el.is('td', table) && !el.is(input) && !el.is(select_div)) {
                 clearSelection();
             }
         });
         $(document).keydown(function (ev) {
-            console.log(['keydown', ev]);
+            var table = $.spreadsheet.current_table;
             var selected = $.spreadsheet.selected_td;
             var input = $.spreadsheet.edit_inline_input;
 
@@ -409,6 +607,7 @@
                 }
             }
         });
+        $.spreadsheet.document_bound = true;
     };
 
 
@@ -418,20 +617,32 @@
 
     $.fn.spreadsheet = function (options) {
         options.data = options.data || [];
-        options.keys = options.keys || getDataKeys(options.data);
+        if (!options.columns) {
+            throw new Error('You must define some columns');
+        }
 
         var table = $('<table class="spreadsheet"></table>');
-        var thead = createHeadings(options.keys);
-        var tbody = createBody(options.keys, options.data);
+        var thead = createHeadings(options.columns);
+        var tbody = createBody(options.columns, options.data);
 
         table.append(thead).append(tbody);
         $(this).html(table);
+        $(this).append(
+            '<div class="spreadsheet-actions">' +
+                '<a href="#" class="btn add-row-btn">' +
+                    '<i class="icon-plus-sign"></i> Add row' +
+                '</a>' +
+                '<span class="row-counter"></span>' +
+            '</div>'
+        );
 
         var textarea = $('<textarea id="spreadsheet_clipboard"></textarea>');
         $.spreadsheet.clipboard_textarea = textarea;
         $(this).after(textarea);
 
-        bindEvents(this);
+        bindDocumentEvents();
+        bindTableEvents(this, options);
+        $('.row-counter', this).text(options.data.length + ' rows');
 
         return this;
     };

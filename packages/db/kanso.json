@@ -1,6 +1,6 @@
 {
     "name": "db",
-    "version": "0.0.12",
+    "version": "0.1.0",
     "categories": ["couchdb"],
     "description": "A browser CouchDB library, used for CRUD operations on documents and querying views etc",
     "modules": "db.js",
