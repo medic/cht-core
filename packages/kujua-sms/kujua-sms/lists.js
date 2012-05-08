@@ -467,6 +467,11 @@ exports.tasks_pending = function (head, req) {
         };
     }
 
+    // pass through Authorization header
+    if(req.headers.Authorization) {
+        respBody.callback.options.headers.Authorization = req.headers.Authorization;
+    }
+
     logger.debug(['Response lists.tasks_pending', respBody]);
     return JSON.stringify(respBody);
 };
