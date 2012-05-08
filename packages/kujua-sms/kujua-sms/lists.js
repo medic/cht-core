@@ -107,6 +107,7 @@ exports.data_records_xml = function (head, req) {
  * @api private
  */
 var isFromHealthCenter = function(phone, clinic) {
+    if (!clinic.parent || !clinic.parent.contact) { return false; }
     if (phone === clinic.parent.contact.phone) {
         return true;
     }
@@ -125,6 +126,7 @@ var isFromHealthCenter = function(phone, clinic) {
  * @api private
  */
 exports.getRecipientPhone = function(form, phone, clinic) {
+    if (!clinic.parent || !clinic.parent.contact) { return ''; }
     switch (form) {
         case 'MSBR':
             // Clinic -> Health Center
