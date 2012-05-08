@@ -1,5 +1,6 @@
 var fs = require('fs')
   , muvuku_path = '../muvuku/forms/json'
+  , async = require('async')
   , _ = require('underscore')._
   , result = {}
   , locales = ['en', 'fr'];
@@ -7,31 +8,33 @@ var fs = require('fs')
 module.exports = {
     after: 'modules',
     run: function (root, path, settings, doc, callback) {
-        console.log(doc);
         if (doc['kujua-sms']) {
             var files = doc['kujua-sms'].sms_forms;
 
-            _.each(files, function(filename, idx) {
+            async.reduce(files, {}, function(result, filename, cb) {
                 fs.readFile(muvuku_path + '/' + filename, function(err, content) {
-                    if(err) { return callback(err); }
+                    if(err) { return cb(err); }
 
                     var translation = convert(JSON.parse(content), locales);
-                    collect(translation, files.length, idx, callback, doc);
+                    _.extend(result, translation);
+                    cb(null, result);
                 });
+            },
+            function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                var code = doc.views.lib.smsforms;
+                for (var k in result) {
+                    code += '\n\nexports["' + k.replace('"', '\\"') + '"] = ' +
+                        JSON.stringify(result[k]) + ';';
+                }
+                doc.views.lib.smsforms = code;
+                callback(null, doc);
             });
         } else {
             callback(null, doc);
         }
-    }
-};
-      
-var collect = function(_result, total, idx, callback, doc) {
-    _.extend(doc._modules['views/lib/smsforms'], _result);
-    
-    if(idx + 1 === total) {
-        // console.log(doc._module_paths.views.lib);
-        // delete doc['kujua-sms'];
-        callback(null, doc);
     }
 };
 
