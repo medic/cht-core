@@ -1,3 +1,14 @@
+exports.all_data_records_by_form = {
+    map: function(doc) {
+        if(doc.type === 'data_record') {
+            emit(doc.form, 1);
+        }
+    },
+
+    reduce: function(key, counts) {
+        return sum(counts);
+    }    
+}
 
 exports.data_records_valid_by_district_and_form = {
     map: function(doc) {
@@ -5,6 +16,7 @@ exports.data_records_valid_by_district_and_form = {
             var smsforms = require('views/lib/smsforms'),
                 def = smsforms[doc.form],
                 title = def ? def.title : null;
+
             if (doc.related_entities.clinic
                     && doc.related_entities.clinic.parent
                     && doc.related_entities.clinic.parent.parent
