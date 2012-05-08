@@ -112,7 +112,6 @@ exports.parse = function(def, doc, format) {
         }
 
         createDeepKey(obj, field.key.split('.'), result);
-        console.log(obj)
         return obj;
     }, {});
 };
