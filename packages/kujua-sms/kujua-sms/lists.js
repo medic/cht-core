@@ -354,7 +354,6 @@ exports.data_record = function (head, req) {
   */
 exports.data_record_merge = function (head, req) {
     start({code: 200, headers: json_headers});
-    //logger.debug(['data_record_merge arguments', arguments]);
 
     var new_data_record = JSON.parse(req.body),
         form = req.query.form,
@@ -379,7 +378,6 @@ exports.data_record_merge = function (head, req) {
         break;
     }
 
-    logger.debug(['old_data_record', old_data_record]);
     if(old_data_record) {
         path += '/' + old_data_record._id;
         new_data_record._id = old_data_record._id;
@@ -402,7 +400,6 @@ exports.data_record_merge = function (head, req) {
         respBody.callback.options.headers.Authorization = req.headers.Authorization;
     }
 
-    logger.debug(['Response lists.data_record_merge', respBody]);
     return JSON.stringify(respBody);
 };
 
@@ -472,6 +469,5 @@ exports.tasks_pending = function (head, req) {
         respBody.callback.options.headers.Authorization = req.headers.Authorization;
     }
 
-    logger.debug(['Response lists.tasks_pending', respBody]);
     return JSON.stringify(respBody);
 };

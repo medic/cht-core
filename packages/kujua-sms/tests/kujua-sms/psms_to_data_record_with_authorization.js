@@ -87,10 +87,10 @@ var expected_callback = {
  *
  * Run add_sms and expect a callback to add a clinic to a data record which
  * contains all the information from the SMS.
- **/
+ */
 exports.psms_to_record_with_auth = function (test) {
 
-    test.expect(4);
+    test.expect(5);
 
     // Data parsed from a gateway POST
     var data = {
@@ -136,12 +136,12 @@ exports.psms_to_record_with_auth = function (test) {
 
 };
 
-//
-// STEP 2:
-//
-// Run data_record/add/clinic and expect a callback to
-// check if the same data record already exists.
-//
+/*
+ * STEP 2:
+ *
+ * Run data_record/add/clinic and expect a callback to
+ * check if the same data record already exists.
+ */
 var step2 = function(test, req) {
 
     var clinic = example.clinic;
@@ -173,13 +173,12 @@ var step2 = function(test, req) {
         query: {form: 'PSMS'} // query.form gets set by rewriter
     };
 
-    // pass in function and args toas callback
-    step3_1(test, next_req, step3_2, [test, next_req]);
+    step3_1(test, next_req);
 
 };
 
 
-/**
+/*
  * STEP 3, CASE 1: A data record already exists.
  *
  * Run data_record/merge/year/month/clinic_id and expect a callback to update
@@ -209,13 +208,12 @@ var step3_1 = function(test, req, finish, args) {
     test.same(resp_body.callback.options.headers.Authorization,
         "Basic cm9vdDpwYXNzd29yZA==");
 
-    if (typeof finish === 'function') {
-        finish.apply(this, args);
-    }
+    step3_2(test, req);
+
 };
 
 
-/**
+/*
  * STEP 3, CASE 2:
  *
  * A data record does not exist.
@@ -234,5 +232,44 @@ var step3_2 = function(test, req) {
     test.same(resp_body.callback.options.headers.Authorization,
         "Basic cm9vdDpwYXNzd29yZA==");
 
-    test.done()
+    step4(test);
+
+};
+
+/*
+ * STEP 4
+ *
+ * Tasks pending
+ *
+ */
+var step4 = function(test) {
+
+    var viewdata = {
+        rows: [{
+            doc: {
+                tasks: []
+            }
+        }]
+    };
+    
+    var next_req = {
+        method: "GET",
+        body: "",
+        path: baseURL + "/add",
+        headers: _.extend(helpers.headers(
+                    'json', ''), {
+                        "Authorization": "Basic cm9vdDpwYXNzd29yZA=="
+                    }),
+        query: {form: 'PSMS'}
+    };
+
+    var resp = fakerequest.list(lists.tasks_pending, viewdata, next_req);
+
+    var resp_body = JSON.parse(resp.body);
+
+    test.same(resp_body.callback.options.headers.Authorization,
+        "Basic cm9vdDpwYXNzd29yZA==");
+
+    test.done();
+
 };
