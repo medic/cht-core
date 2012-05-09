@@ -75,3 +75,7 @@ input.edit-inline {
     top: 5px;
     color: #999;
 }
+
+.spreadsheet td.handle {
+    background: #eee;
+}

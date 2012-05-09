@@ -1,15 +1,3 @@
-// TODO: save row on change
-//  - row emits a 'change' event and has .data('_id') of the original doc
-//  - need to write a parseRow function to update bound doc with new values
-//  - call save function passed to options object
-//  - the save function may need to be called only on change of selected row
-//    - how about also saving after a timeout (if they leave the row selected) ?
-//    - or after a mouse event (mouse moved, so they're no longer typing) ?
-
-// TODO: add options.createDoc function for adding a new row to the spreadsheet
-// - this is so that unused/hidden properties can be added to the doc (even
-//   though they are not editable in the spreadsheet).
-
 // TODO: select cell ranges
 
 (function ($) {
@@ -29,6 +17,8 @@
         var thead = $('<thead/>');
         var thead_tr = $('<tr/>');
         thead.append(thead_tr);
+
+        thead_tr.append('<th class="handle"></td>');
 
         _.each(columns, function (c) {
             var th = $('<th/>').text(c.label);
@@ -117,6 +107,7 @@
     var createRow = function (columns, doc) {
         var tr = $('<tr/>');
         tr.data('_id', doc._id);
+        tr.append('<td class="handle"></td>');
         _.each(columns, function (c) {
             var p = getProperty(doc, c.property);
             var td = $('<td/>').text(p === undefined ? '': p.toString());
@@ -260,7 +251,8 @@
         var trs = $('tbody>tr', table);
         for (var r = 0; r < trs.length; r++) {
             var tds = $('td', trs[r]);
-            for (var c = 0; c < tds.length; c++) {
+            // start at col 1 becuase first col is a handle
+            for (var c = 1; c < tds.length; c++) {
                 if (tds[c] === td) {
                     return {row: r, column: c};
                 }
@@ -275,7 +267,7 @@
      */
 
     var getCellAt = function (table, row, column) {
-        if (row < 0 || column < 0) {
+        if (row < 0 || column < 1) {
             // no negative values for row or column
             return;
         }
