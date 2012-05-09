@@ -373,6 +373,16 @@
         options.create(_add);
     };
 
+    var updateActiveRange = function (table) {
+        var selected = $.spreadsheet.selected_td;
+        var pos = getCellPosition(table, selected);
+        var ths = $('thead th', table);
+        ths.removeClass('active');
+        $(ths[pos.column]).addClass('active');
+        $('td.handle').removeClass('active');
+        $('td.handle', $(selected).parents('tr')).addClass('active');
+    };
+
 
     /**
      * Handles user interaction with the table
@@ -380,6 +390,7 @@
 
     var bindTableEvents = function (table, options) {
         $(table).bind('selectionChange', function () {
+            updateActiveRange(table);
             if (!$.spreadsheet.selected_td) {
                 completeInlineEditor();
             }
