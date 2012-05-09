@@ -209,7 +209,7 @@
         $.spreadsheet.current_table = table;
 
         if (reselect) {
-            return select(td);
+            select(td);
         }
 
         table.trigger('selectionChange');
