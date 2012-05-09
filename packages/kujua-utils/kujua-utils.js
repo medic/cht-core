@@ -123,3 +123,13 @@ exports.titleize = function (str) {
         }
     );
 };
+
+/**
+ * Mirrors db.getView API but ddoc is optional.
+ * */
+exports.getView = function(ddoc, view, q, callback) {
+    var db = require('db').current(),
+        ddoc = ddoc ? ddoc : db.guessCurrent().design_doc;
+    db.getView(ddoc, view, q, callback);
+};
+
