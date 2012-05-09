@@ -80,7 +80,7 @@ input.edit-inline {
     background: #eee;
 }
 
-.spreadsheet td.handle.active {
+.spreadsheet th.handle.active {
     background: #ccc;
 }
 .spreadsheet thead th.active {

@@ -107,7 +107,7 @@
     var createRow = function (columns, doc) {
         var tr = $('<tr/>');
         tr.data('_id', doc._id);
-        tr.append('<td class="handle"></td>');
+        tr.append('<th class="handle"></th>');
         _.each(columns, function (c) {
             var p = getProperty(doc, c.property);
             var td = $('<td/>').text(p === undefined ? '': p.toString());
@@ -251,8 +251,7 @@
         var trs = $('tbody>tr', table);
         for (var r = 0; r < trs.length; r++) {
             var tds = $('td', trs[r]);
-            // start at col 1 becuase first col is a handle
-            for (var c = 1; c < tds.length; c++) {
+            for (var c = 0; c < tds.length; c++) {
                 if (tds[c] === td) {
                     return {row: r, column: c};
                 }
@@ -267,7 +266,7 @@
      */
 
     var getCellAt = function (table, row, column) {
-        if (row < 0 || column < 1) {
+        if (row < 0 || column < 0) {
             // no negative values for row or column
             return;
         }
@@ -375,12 +374,16 @@
 
     var updateActiveRange = function (table) {
         var selected = $.spreadsheet.selected_td;
-        var pos = getCellPosition(table, selected);
         var ths = $('thead th', table);
         ths.removeClass('active');
-        $(ths[pos.column]).addClass('active');
-        $('td.handle').removeClass('active');
-        $('td.handle', $(selected).parents('tr')).addClass('active');
+        if (selected) {
+            var pos = getCellPosition(table, selected);
+            $(ths[pos.column + 1]).addClass('active');
+        }
+        $('th.handle').removeClass('active');
+        if (selected) {
+            $('th.handle', $(selected).parents('tr')).addClass('active');
+        }
     };
 
 
