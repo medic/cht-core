@@ -431,7 +431,7 @@
             // update row counter
             $('.row-counter', table).text(options.data.length + ' rows');
         });
-        $(table).on('click', 'td', function (ev) {
+        $(table).on('mousedown', 'td', function (ev) {
             $('td', table).removeClass('active');
             var pos = getCellPosition(table, this);
             $.spreadsheet.start_column = pos.column;
