@@ -224,7 +224,10 @@ exports.clinic_by_phone = {
  */
 exports.clinic_by_parent_phone = {
     map: function (doc) {
-        if (doc.type === 'clinic') {
+        if (doc.type === 'clinic'
+                && doc.parent
+                && doc.parent.contact
+                && doc.parent.contact.phone) {
             emit([doc.parent.contact.phone], doc);
         }
     }
@@ -256,7 +259,9 @@ exports.tasks_pending = {
 
 exports.data_record_by_year_month_and_clinic_id = {
     map: function (doc) {
-        if (doc.type === 'data_record') {
+        if (doc.type === 'data_record'
+                && doc.related_entities
+                && doc.related_entities.clinic) {
             emit([doc.year, doc.month, doc.related_entities.clinic._id], doc);
         }
     }
