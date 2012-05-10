@@ -70,7 +70,9 @@ exports.data_records_by_district = {
 exports.data_records_by_district_and_reported_date = {
     map: function(doc) {
         if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic) {
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent) {
                 var dh = doc.related_entities.clinic.parent.parent;
                 emit([dh._id, doc.reported_date, doc._id], doc);
             } else {
@@ -99,12 +101,14 @@ exports.data_records_by_form_and_reported_date = {
 exports.data_records_by_district_form_and_reported_date = {
     map: function(doc) {
         if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic) {
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent) {
                 var dh = doc.related_entities.clinic.parent.parent;
                 emit([dh._id, doc.form, doc.reported_date, doc._id], doc);
             } else {
                 emit([null, doc.form, doc.reported_date, doc._id], doc);
-            }            
+            }
         }
     }
 };
