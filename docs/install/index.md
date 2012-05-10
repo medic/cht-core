@@ -2,57 +2,78 @@
 
 ## Intro
 
-This guide will help you install two main components of the Medic platform:
-Kujua Export and SMSSync.  This is the minimal setup you need for basic data
-collection via SMS.  SMSSync is an Android application that receives SMS data
-and automatically pushes or syncs the data using HTTP to another service.
-Kujua Export allows you to get data out of the database in a format that a
-spreadsheet program can read.
+This guide should help you install two main parts of the Medic platform: Kujua
+and SMSSync.  SMSSync is an Android application that receives SMS data and
+automatically sends it to a web service via HTTP.  Kujua provides the web
+service and an interface to manage your data.  This is the minimal setup you
+need for Muvuku form-based data collection via SMS.
 
-## Install Kujua Export
+## Install CouchDB
 
-The export tool requires CouchDB and provides a few things under the hood: a
-web interface, form definitions, and a parser.  It exports the data into
-useable formats compatible with programs like Excel. 
-
-### Step 1: Install CouchDB
-
-Kujua requires CouchDB version 1.1 or higher.  We are currently using the
+Kujua requires **CouchDB version 1.1 or higher**.  We are currently using the
 Couchbase Single Server binaries.  Couchbase packages CouchDB to make it very
 easy to install on any modern operating system.  
+
+### Step 1: Download 
 
 * Click the **Download** button on [Couchbase Single Server 2.0 Preview](http://www.couchbase.org/get/couchbase-single/2.0)
 * Choose the right file for your operating system, if you are using Windows for example, download the .exe file.
 * Launch or extract the package file and follow the instructions for your operating system to install Couchbase Single Server.
 
-*Note* throughout this guide I refer to *CouchDB* and *Couchbase Single Server* synonymously.
+*Note* this guide refers to *CouchDB* and *Couchbase Single Server* synonymously.
 
-### Step 2: Navigate to Replicator Screen
+### Step 2: Create Root User
 
-* Launch CouchDB
-* Navigate your browser to Futon, the CouchDB admin tool, by default it can be found at <http://localhost:5984/_utils/>. 
-* Click the **Replicator** item in the right column under Tools. 
+The first thing you should do with any CouchDB database is setup an admin
+account if it does not have one.  You will need to think of a secure password,
+it should contain numbers, lower and uppercase letters and special characters. 
+
+* Navigate your browser to Futon, the CouchDB admin tool, by default it can be found at <http://localhost:5984/_utils/>.
+* Click the **Fix this** link in the bottom right to show the admin create screen.
+* Enter the username **root** and a secure password.
+* Click **Create**
+* Save the password somewhere so you remember it.
+
+![Fix this](img/fix_this.png)
+
+
+### Step 3: Require Valid User
+
+Additionally we recommend you restrict all access to your database to authenticated users.  Change the `require_valid_user` default configuration.
+
+* Click **Configuration** in the right column in Futon.
+* Click the `false` value in the `couch_httpd_auth` section.  
+* Replace the `false` text with `true` and press the enter key.
+
+![Require Valid User](img/require_valid_user.png)
+![Set Require Valid User True](img/require_valid_user_true.png)
+
+## Install Kujua
+
+Since Kujua is just a CouchApp the easiest way to install it by replicating
+from another instance of CouchDB.
+
+### Step 1: Replicate 
+
+* Navigate your browser to Futon.
+* Click the **Replicator** item in the right column under Tools.
 
 ![Replicator Screen](img/replicator.png)
 
-### Step 3: Replicate the Export Tool
-
 On the Replicator screen complete the following fields and their corresponding values:
 
-* Replicate Changes from: **Remote Database** ```https://medic.iriscouch.com/kujua-export```
+* Replicate Changes from: **Remote Database** ```https://medic.iriscouch.com/kujua-base```
 * to: **Local Database** ```kujua```\*
 * Click the **Replicate** button
 * After you click replicate verify your screen updates with the replication session data:
 
 ![Replicator Success](img/replicator_success.png)
 
-\**Note* your local database name may vary if you have an existing installation.
+* Verify you can navigate to the home screen:
+<http://127.0.0.1:5984/kujua/_design/kujua-base/_rewrite/>, you should see the
+home screen:
 
-### Step 4: Verify
-
-As a final step navigate to the Kujua Export home screen: <http://127.0.0.1:5984/kujua/_design/kujua-export/_rewrite/>, you should see something close to this:
-
-![Kujua Export](img/kujua_export_localhost.png)
+![Kujua](img/kujua_base_localhost.png)
 
 
 ## Verify Network Configuration
