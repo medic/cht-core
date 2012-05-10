@@ -86,3 +86,6 @@ input.edit-inline {
 .spreadsheet thead th.active {
     background: #ccc;
 }
+.spreadsheet td.range {
+    background: #eef;
+}

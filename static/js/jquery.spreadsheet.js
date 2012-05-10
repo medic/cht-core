@@ -372,18 +372,78 @@
         options.create(_add);
     };
 
-    var updateActiveRange = function (table) {
-        var selected = $.spreadsheet.selected_td;
+    // adds .active class to thead th for columns and first th element of rows
+    // that are in range or selected
+    var updateActiveMarkers = function (table) {
         var ths = $('thead th', table);
         ths.removeClass('active');
-        if (selected) {
-            var pos = getCellPosition(table, selected);
-            $(ths[pos.column + 1]).addClass('active');
-        }
         $('th.handle').removeClass('active');
-        if (selected) {
-            $('th.handle', $(selected).parents('tr')).addClass('active');
+
+        if ($.spreadsheet.range_tds) {
+            console.log(['updateActiveMarkers range', $.spreadsheet]);
+            var sc = $.spreadsheet.range_start_col;
+            var ec = $.spreadsheet.range_end_col;
+            for (var c = sc; c <= ec; c++) {
+                $(ths[c + 1]).addClass('active');
+            }
+            var trs = $('tbody tr', table);
+            var sr = $.spreadsheet.range_start_row;
+            var er = $.spreadsheet.range_end_row;
+            for (var r = sr; r <= er; r++) {
+                $('th.handle', trs[r]).addClass('active');
+            }
         }
+        else {
+            var selected = $.spreadsheet.selected_td;
+            if (selected) {
+                var pos = getCellPosition(table, selected);
+                $(ths[pos.column + 1]).addClass('active');
+            }
+            if (selected) {
+                $('th.handle', $(selected).parents('tr')).addClass('active');
+            }
+        }
+    };
+
+
+    var setRangeElements = function (table, start_td, end_td) {
+        var start = getCellPosition(table, start_td);
+        var end = getCellPosition(table, end_td);
+        return setRange(table, start.column, start.row, end.column, end.row);
+    };
+
+    var setRange = function (table, start_col, start_row, end_col, end_row) {
+        $('td.range', table).removeClass('range');
+        var sc = Math.min(start_col, end_col);
+        var ec = Math.max(start_col, end_col);
+        var sr = Math.min(start_row, end_row);
+        var er = Math.max(start_row, end_row);
+
+        $.spreadsheet.range_tds = [];
+        $.spreadsheet.range_start_col = sc;
+        $.spreadsheet.range_end_col = ec;
+        $.spreadsheet.range_start_row = sr;
+        $.spreadsheet.range_end_row = er;
+
+        for (var c = sc; c <= ec; c++) {
+            for (var r = sr; r <= er; r++) {
+                var cell = getCellAt(table, r, c);
+                $(cell).addClass('range');
+                $.spreadsheet.range_tds.push(cell);
+            }
+        }
+        table.trigger('rangeChange');
+    };
+
+
+    var clearRange = function (table) {
+        $('td.range', table).removeClass('range');
+        delete $.spreadsheet.range_tds;
+        delete $.spreadsheet.range_start_col;
+        delete $.spreadsheet.range_end_col;
+        delete $.spreadsheet.range_start_row;
+        delete $.spreadsheet.range_end_row;
+        table.trigger('rangeChange');
     };
 
 
@@ -392,8 +452,13 @@
      */
 
     var bindTableEvents = function (table, options) {
+        $(table).bind('rangeChange', function () {
+            updateActiveMarkers(table);
+        });
         $(table).bind('selectionChange', function () {
-            updateActiveRange(table);
+            clearRange(table);
+            updateActiveMarkers(table);
+
             if (!$.spreadsheet.selected_td) {
                 completeInlineEditor();
             }
@@ -435,10 +500,18 @@
             $('.row-counter', table).text(options.data.length + ' rows');
         });
         $(table).on('mousedown', 'td', function (ev) {
+            ev.preventDefault();
             $('td', table).removeClass('active');
             var pos = getCellPosition(table, this);
             $.spreadsheet.start_column = pos.column;
             select(this);
+            return false;
+        });
+        $('tbody td', table).mouseover(function (ev) {
+            if (ev.which === 1 && $.spreadsheet.selected_td) {
+                // left mouse button pressed and move started on table
+                setRangeElements(table, $.spreadsheet.selected_td, this);
+            }
         });
         $(table).on('change', 'tr', function (ev) {
             // TODO: don't save on every cell change, use a timeout and
