@@ -1,17 +1,3 @@
-// TODO: save row on change
-//  - row emits a 'change' event and has .data('_id') of the original doc
-//  - need to write a parseRow function to update bound doc with new values
-//  - call save function passed to options object
-//  - the save function may need to be called only on change of selected row
-//    - how about also saving after a timeout (if they leave the row selected) ?
-//    - or after a mouse event (mouse moved, so they're no longer typing) ?
-
-// TODO: add options.createDoc function for adding a new row to the spreadsheet
-// - this is so that unused/hidden properties can be added to the doc (even
-//   though they are not editable in the spreadsheet).
-
-// TODO: select cell ranges
-
 (function ($) {
 
     /**
@@ -29,6 +15,8 @@
         var thead = $('<thead/>');
         var thead_tr = $('<tr/>');
         thead.append(thead_tr);
+
+        thead_tr.append('<th class="handle"></td>');
 
         _.each(columns, function (c) {
             var th = $('<th/>').text(c.label);
@@ -117,10 +105,14 @@
     var createRow = function (columns, doc) {
         var tr = $('<tr/>');
         tr.data('_id', doc._id);
+        tr.append('<th class="handle"></th>');
         _.each(columns, function (c) {
             var p = getProperty(doc, c.property);
             var td = $('<td/>').text(p === undefined ? '': p.toString());
             td.data('property', c.property);
+            if (c.className) {
+                td.addClass(c.className);
+            }
             tr.append(td);
         });
         return tr;
@@ -218,7 +210,7 @@
         $.spreadsheet.current_table = table;
 
         if (reselect) {
-            return select(td);
+            select(td);
         }
 
         table.trigger('selectionChange');
@@ -338,8 +330,12 @@
             }
             $(tr).data('save_queued', false);
             $(tr).addClass('saving');
+            $(tr).removeClass('error');
+
             options.save(getDoc(tr, options), function (err, doc) {
+                $(tr).removeClass('saving');
                 if (err) {
+                    $(tr).addClass('error');
                     // TODO: do something better than alert
                     return alert(err.toString());
                 }
@@ -349,7 +345,6 @@
                     );
                 }
                 updateDoc(doc, options);
-                tr.removeClass('saving');
                 _saveDoc();
             });
         }
@@ -381,13 +376,92 @@
         options.create(_add);
     };
 
+    // adds .active class to thead th for columns and first th element of rows
+    // that are in range or selected
+    var updateActiveMarkers = function (table) {
+        var ths = $('thead th', table);
+        ths.removeClass('active');
+        $('th.handle').removeClass('active');
+
+        if ($.spreadsheet.range_tds) {
+            var sc = $.spreadsheet.range_start_col;
+            var ec = $.spreadsheet.range_end_col;
+            for (var c = sc; c <= ec; c++) {
+                $(ths[c + 1]).addClass('active');
+            }
+            var trs = $('tbody tr', table);
+            var sr = $.spreadsheet.range_start_row;
+            var er = $.spreadsheet.range_end_row;
+            for (var r = sr; r <= er; r++) {
+                $('th.handle', trs[r]).addClass('active');
+            }
+        }
+        else {
+            var selected = $.spreadsheet.selected_td;
+            if (selected) {
+                var pos = getCellPosition(table, selected);
+                $(ths[pos.column + 1]).addClass('active');
+            }
+            if (selected) {
+                $('th.handle', $(selected).parents('tr')).addClass('active');
+            }
+        }
+    };
+
+
+    var setRangeElements = function (table, start_td, end_td) {
+        var start = getCellPosition(table, start_td);
+        var end = getCellPosition(table, end_td);
+        return setRange(table, start.column, start.row, end.column, end.row);
+    };
+
+    var setRange = function (table, start_col, start_row, end_col, end_row) {
+        $('td.range', table).removeClass('range');
+        var sc = Math.min(start_col, end_col);
+        var ec = Math.max(start_col, end_col);
+        var sr = Math.min(start_row, end_row);
+        var er = Math.max(start_row, end_row);
+
+        $.spreadsheet.range_tds = [];
+        $.spreadsheet.range_start_col = sc;
+        $.spreadsheet.range_end_col = ec;
+        $.spreadsheet.range_start_row = sr;
+        $.spreadsheet.range_end_row = er;
+
+        for (var c = sc; c <= ec; c++) {
+            for (var r = sr; r <= er; r++) {
+                var cell = getCellAt(table, r, c);
+                $(cell).addClass('range');
+                $.spreadsheet.range_tds.push(cell);
+            }
+        }
+        table.trigger('rangeChange');
+    };
+
+
+    var clearRange = function (table) {
+        $('td.range', table).removeClass('range');
+        delete $.spreadsheet.range_tds;
+        delete $.spreadsheet.range_start_col;
+        delete $.spreadsheet.range_end_col;
+        delete $.spreadsheet.range_start_row;
+        delete $.spreadsheet.range_end_row;
+        table.trigger('rangeChange');
+    };
+
 
     /**
      * Handles user interaction with the table
      */
 
     var bindTableEvents = function (table, options) {
+        $(table).bind('rangeChange', function () {
+            updateActiveMarkers(table);
+        });
         $(table).bind('selectionChange', function () {
+            clearRange(table);
+            updateActiveMarkers(table);
+
             if (!$.spreadsheet.selected_td) {
                 completeInlineEditor();
             }
@@ -428,11 +502,46 @@
             // update row counter
             $('.row-counter', table).text(options.data.length + ' rows');
         });
-        $(table).on('click', 'td', function (ev) {
+        $(table).on('mousedown', 'thead th', function (ev) {
+            ev.preventDefault();
+            var ths = $('thead th', table);
+            var trs = $('tbody tr', table);
+
+            for (var i = 1; i < ths.length; i++) {
+                if (this === ths[i]) {
+                    // select whole column
+                    setRange(table, i - 1, 0, i - 1, trs.length);
+                }
+            }
+            return false;
+        });
+        $(table).on('mousedown', 'tbody th.handle', function (ev) {
+            ev.preventDefault();
+            var this_tr = $(this).parent()[0];
+            var tds = $('td', this_tr);
+            var trs = $('tbody tr', table);
+
+            for (var i = 0; i < trs.length; i++) {
+                if (this_tr === trs[i]) {
+                    // select whole row
+                    setRange(table, 0, i, tds.length - 1, i);
+                }
+            }
+            return false;
+        });
+        $(table).on('mousedown', 'td', function (ev) {
+            ev.preventDefault();
             $('td', table).removeClass('active');
             var pos = getCellPosition(table, this);
             $.spreadsheet.start_column = pos.column;
             select(this);
+            return false;
+        });
+        $(table).on('mouseover', 'tbody td', function (ev) {
+            if (ev.which === 1 && $.spreadsheet.selected_td) {
+                // left mouse button pressed and move started on table
+                setRangeElements(table, $.spreadsheet.selected_td, this);
+            }
         });
         $(table).on('change', 'tr', function (ev) {
             // TODO: don't save on every cell change, use a timeout and
@@ -474,17 +583,21 @@
             }
         });
         $(document).bind('copy', function (ev) {
-            var td = $.spreadsheet.selected_td;
-            if (td) {
-                var val = $(td).text();
-                var textarea = $($.spreadsheet.clipboard_textarea);
-                textarea.val(val).focus().select();
-                setTimeout(function () {
-                    textarea.val('');
-                }, 0);
+            // TODO: copy cell ranges
+            if (ev.target.tagName !== 'INPUT') {
+                var td = $.spreadsheet.selected_td;
+                if (td) {
+                    var val = $(td).text();
+                    var textarea = $($.spreadsheet.clipboard_textarea);
+                    textarea.val(val).focus().select();
+                    setTimeout(function () {
+                        textarea.val('');
+                    }, 0);
+                }
             }
         });
         $(document).bind('paste', function (ev) {
+            // TODO: paste cell ranges
             if (ev.target.tagName !== 'INPUT') {
                 $($.spreadsheet.clipboard_textarea).val('').focus();
                 setTimeout(function () {
@@ -515,10 +628,6 @@
             var selected = $.spreadsheet.selected_td;
             var input = $.spreadsheet.edit_inline_input;
 
-            if (!selected) {
-                return;
-            }
-
             if (ev.keyCode === 27)  { /* ESC */
                 clearInlineEditor();
             }
@@ -526,6 +635,9 @@
             else if (ev.keyCode === 17)  { /* CTRL */   return; }
             else if (ev.keyCode === 18)  { /* ALT */    return; }
             else if (ev.keyCode === 38)  { /* UP */
+                if (!selected) {
+                    return;
+                }
                 var pos = getCellPosition(table, selected);
                 var cell = getCellAt(table, pos.row - 1, pos.column)
                 if (cell) {
@@ -535,6 +647,9 @@
                 }
             }
             else if (ev.keyCode === 40)  { /* DOWN */
+                if (!selected) {
+                    return;
+                }
                 var pos = getCellPosition(table, selected);
                 var cell = getCellAt(table, pos.row + 1, pos.column)
                 if (cell) {
@@ -544,6 +659,9 @@
                 }
             }
             else if (ev.keyCode === 37)  { /* LEFT */
+                if (!selected) {
+                    return;
+                }
                 var pos = getCellPosition(table, selected);
                 var cell = getCellAt(table, pos.row, pos.column - 1)
                 if (cell) {
@@ -553,6 +671,9 @@
                 }
             }
             else if (ev.keyCode === 39)  { /* RIGHT */
+                if (!selected) {
+                    return;
+                }
                 var pos = getCellPosition(table, selected);
                 var cell = getCellAt(table, pos.row, pos.column + 1)
                 if (cell) {
@@ -563,11 +684,22 @@
             }
             else if (ev.keyCode === 46)  { /* DEL */
                 if (ev.target.tagName !== 'INPUT') {
-                    // clear value of selected td
-                    setValue(selected, '');
+                    if ($.spreadsheet.range_tds) {
+                        _.each($.spreadsheet.range_tds, function (td) {
+                            // clear value of selected td
+                            setValue(td, '');
+                        });
+                    }
+                    else if (selected) {
+                        // clear value of selected td
+                        setValue(selected, '');
+                    }
                 }
             }
             else if (ev.keyCode === 9)  { /* TAB */
+                if (!selected) {
+                    return;
+                }
                 if (ev.target.tagName !== 'INPUT' || ev.target === input) {
                     ev.preventDefault();
                     var pos = getCellPosition(table, selected);
@@ -578,12 +710,9 @@
                 }
             }
             else if (ev.keyCode === 13)  { /* ENTER */
-                // TODO: google docs will return to the first edited column
-                // on the row below. Eg, you edit A2 then TAB and edit A3 and
-                // press ENTER it will move to B2.
-                // - interestingly, this only happens when using TAB to move
-                //   between cells, if I edit A2, then RIGHT ARROW, then edit
-                //   A3, then hit ENTER it will move to B3 (not B2)
+                if (!selected) {
+                    return;
+                }
                 if (ev.target === input) {
                     completeInlineEditor();
                     var pos = getCellPosition(table, selected);
@@ -602,6 +731,9 @@
                 }
             }
             else if (ev.target.tagName !== 'INPUT') {
+                if (!selected) {
+                    return;
+                }
                 if (!ev.altKey && !ev.ctrlKey) {
                     editInline(selected, true);
                 }
