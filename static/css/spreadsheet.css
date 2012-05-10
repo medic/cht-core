@@ -35,6 +35,9 @@ table.spreadsheet td {
 table.spreadsheet tr.saving td {
     background: #ccc;
 }
+table.spreadsheet tr.error td {
+    background: #fcc;
+}
 input.edit-inline {
     color: #333;
     display: block;
@@ -74,4 +77,18 @@ input.edit-inline {
     right: 2px;
     top: 5px;
     color: #999;
+}
+
+.spreadsheet td.handle {
+    background: #eee;
+}
+
+.spreadsheet th.handle.active {
+    background: #ccc;
+}
+.spreadsheet thead th.active {
+    background: #ccc;
+}
+.spreadsheet td.range {
+    background: #eef;
 }
