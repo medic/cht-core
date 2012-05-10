@@ -110,6 +110,9 @@
             var p = getProperty(doc, c.property);
             var td = $('<td/>').text(p === undefined ? '': p.toString());
             td.data('property', c.property);
+            if (c.className) {
+                td.addClass(c.className);
+            }
             tr.append(td);
         });
         return tr;
