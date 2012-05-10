@@ -552,6 +552,7 @@
             }
         });
         $(document).bind('copy', function (ev) {
+            // TODO: check if INPUT has focus (like paste event)
             var td = $.spreadsheet.selected_td;
             if (td) {
                 var val = $(td).text();
@@ -641,8 +642,16 @@
             }
             else if (ev.keyCode === 46)  { /* DEL */
                 if (ev.target.tagName !== 'INPUT') {
-                    // clear value of selected td
-                    setValue(selected, '');
+                    if ($.spreadsheet.range_tds) {
+                        _.each($.spreadsheet.range_tds, function (td) {
+                            // clear value of selected td
+                            setValue(td, '');
+                        });
+                    }
+                    else {
+                        // clear value of selected td
+                        setValue(selected, '');
+                    }
                 }
             }
             else if (ev.keyCode === 9)  { /* TAB */
