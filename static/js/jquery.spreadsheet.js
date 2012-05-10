@@ -327,8 +327,12 @@
             }
             $(tr).data('save_queued', false);
             $(tr).addClass('saving');
+            $(tr).removeClass('error');
+
             options.save(getDoc(tr, options), function (err, doc) {
+                $(tr).removeClass('saving');
                 if (err) {
+                    $(tr).addClass('error');
                     // TODO: do something better than alert
                     return alert(err.toString());
                 }
@@ -338,7 +342,6 @@
                     );
                 }
                 updateDoc(doc, options);
-                tr.removeClass('saving');
                 _saveDoc();
             });
         }
