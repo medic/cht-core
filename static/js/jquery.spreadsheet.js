@@ -552,18 +552,21 @@
             }
         });
         $(document).bind('copy', function (ev) {
-            // TODO: check if INPUT has focus (like paste event)
-            var td = $.spreadsheet.selected_td;
-            if (td) {
-                var val = $(td).text();
-                var textarea = $($.spreadsheet.clipboard_textarea);
-                textarea.val(val).focus().select();
-                setTimeout(function () {
-                    textarea.val('');
-                }, 0);
+            // TODO: copy cell ranges
+            if (ev.target.tagName !== 'INPUT') {
+                var td = $.spreadsheet.selected_td;
+                if (td) {
+                    var val = $(td).text();
+                    var textarea = $($.spreadsheet.clipboard_textarea);
+                    textarea.val(val).focus().select();
+                    setTimeout(function () {
+                        textarea.val('');
+                    }, 0);
+                }
             }
         });
         $(document).bind('paste', function (ev) {
+            // TODO: paste cell ranges
             if (ev.target.tagName !== 'INPUT') {
                 $($.spreadsheet.clipboard_textarea).val('').focus();
                 setTimeout(function () {
