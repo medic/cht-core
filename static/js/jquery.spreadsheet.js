@@ -1,5 +1,3 @@
-// TODO: select cell ranges
-
 (function ($) {
 
     /**
@@ -498,6 +496,33 @@
             // update row counter
             $('.row-counter', table).text(options.data.length + ' rows');
         });
+        $(table).on('mousedown', 'thead th', function (ev) {
+            ev.preventDefault();
+            var ths = $('thead th', table);
+            var trs = $('tbody tr', table);
+
+            for (var i = 1; i < ths.length; i++) {
+                if (this === ths[i]) {
+                    // select whole column
+                    setRange(table, i - 1, 0, i - 1, trs.length);
+                }
+            }
+            return false;
+        });
+        $(table).on('mousedown', 'tbody th.handle', function (ev) {
+            ev.preventDefault();
+            var this_tr = $(this).parent()[0];
+            var tds = $('td', this_tr);
+            var trs = $('tbody tr', table);
+
+            for (var i = 0; i < trs.length; i++) {
+                if (this_tr === trs[i]) {
+                    // select whole row
+                    setRange(table, 0, i, tds.length - 1, i);
+                }
+            }
+            return false;
+        });
         $(table).on('mousedown', 'td', function (ev) {
             ev.preventDefault();
             $('td', table).removeClass('active');
@@ -506,7 +531,7 @@
             select(this);
             return false;
         });
-        $('tbody td', table).mouseover(function (ev) {
+        $(table).on('mouseover', 'tbody td', function (ev) {
             if (ev.which === 1 && $.spreadsheet.selected_td) {
                 // left mouse button pressed and move started on table
                 setRangeElements(table, $.spreadsheet.selected_td, this);
@@ -597,10 +622,6 @@
             var selected = $.spreadsheet.selected_td;
             var input = $.spreadsheet.edit_inline_input;
 
-            if (!selected) {
-                return;
-            }
-
             if (ev.keyCode === 27)  { /* ESC */
                 clearInlineEditor();
             }
@@ -608,6 +629,9 @@
             else if (ev.keyCode === 17)  { /* CTRL */   return; }
             else if (ev.keyCode === 18)  { /* ALT */    return; }
             else if (ev.keyCode === 38)  { /* UP */
+                if (!selected) {
+                    return;
+                }
                 var pos = getCellPosition(table, selected);
                 var cell = getCellAt(table, pos.row - 1, pos.column)
                 if (cell) {
@@ -617,6 +641,9 @@
                 }
             }
             else if (ev.keyCode === 40)  { /* DOWN */
+                if (!selected) {
+                    return;
+                }
                 var pos = getCellPosition(table, selected);
                 var cell = getCellAt(table, pos.row + 1, pos.column)
                 if (cell) {
@@ -626,6 +653,9 @@
                 }
             }
             else if (ev.keyCode === 37)  { /* LEFT */
+                if (!selected) {
+                    return;
+                }
                 var pos = getCellPosition(table, selected);
                 var cell = getCellAt(table, pos.row, pos.column - 1)
                 if (cell) {
@@ -635,6 +665,9 @@
                 }
             }
             else if (ev.keyCode === 39)  { /* RIGHT */
+                if (!selected) {
+                    return;
+                }
                 var pos = getCellPosition(table, selected);
                 var cell = getCellAt(table, pos.row, pos.column + 1)
                 if (cell) {
@@ -651,13 +684,16 @@
                             setValue(td, '');
                         });
                     }
-                    else {
+                    else if (selected) {
                         // clear value of selected td
                         setValue(selected, '');
                     }
                 }
             }
             else if (ev.keyCode === 9)  { /* TAB */
+                if (!selected) {
+                    return;
+                }
                 if (ev.target.tagName !== 'INPUT' || ev.target === input) {
                     ev.preventDefault();
                     var pos = getCellPosition(table, selected);
@@ -668,12 +704,9 @@
                 }
             }
             else if (ev.keyCode === 13)  { /* ENTER */
-                // TODO: google docs will return to the first edited column
-                // on the row below. Eg, you edit A2 then TAB and edit A3 and
-                // press ENTER it will move to B2.
-                // - interestingly, this only happens when using TAB to move
-                //   between cells, if I edit A2, then RIGHT ARROW, then edit
-                //   A3, then hit ENTER it will move to B3 (not B2)
+                if (!selected) {
+                    return;
+                }
                 if (ev.target === input) {
                     completeInlineEditor();
                     var pos = getCellPosition(table, selected);
@@ -692,6 +725,9 @@
                 }
             }
             else if (ev.target.tagName !== 'INPUT') {
+                if (!selected) {
+                    return;
+                }
                 if (!ev.altKey && !ev.ctrlKey) {
                     editInline(selected, true);
                 }
