@@ -380,7 +380,6 @@
         $('th.handle').removeClass('active');
 
         if ($.spreadsheet.range_tds) {
-            console.log(['updateActiveMarkers range', $.spreadsheet]);
             var sc = $.spreadsheet.range_start_col;
             var ec = $.spreadsheet.range_end_col;
             for (var c = sc; c <= ec; c++) {
