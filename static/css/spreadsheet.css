@@ -35,7 +35,7 @@ table.spreadsheet td {
 table.spreadsheet tr.saving td {
     background: #ccc;
 }
-table.spreadsheet tr.error td {
+table.spreadsheet .error {
     background: #fcc;
 }
 input.edit-inline {

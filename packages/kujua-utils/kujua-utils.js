@@ -33,7 +33,7 @@ exports.months = function () {
 };
 
 exports.logger = {
-    levels: {silent:0, error:1, info:2, debug:3},
+    levels: {silent:0, error:1, warn:2, info:3, debug:4},
     log: function(obj) {
         if (typeof(console) !== 'undefined') {
             console.log(obj);
@@ -44,6 +44,11 @@ exports.logger = {
     silent: function (obj) {},
     error: function (obj) {
         if (this.levels[settings.loglevel] >= this.levels['error']) {
+            this.log(obj);
+        }
+    },
+    warn: function (obj) {
+        if (this.levels[settings.loglevel] >= this.levels['warn']) {
             this.log(obj);
         }
     },
@@ -91,22 +96,29 @@ exports.dumper = {
     }
 };
 
+/* poorly named */
 exports.isUserAdmin = function(userCtx) {
     return userCtx.roles.indexOf('national_admin') !== -1 ||
-            userCtx.roles.indexOf('_admin') !== -1;
+           userCtx.roles.indexOf('_admin') !== -1;
+};
+
+exports.hasPerm = function(userCtx, perm) {
+    if (!userCtx || !perm) { return false; }
+    switch (perm) {
+        case 'can_edit_facility':
+            return _.indexOf(userCtx.roles, '_admin') !== -1 ||
+                   _.indexOf(userCtx.roles, 'national_admin') !== -1 ||
+                   _.indexOf(userCtx.roles, 'district_admin') !== -1;
+        case 'can_edit_any_facility':
+            return _.indexOf(userCtx.roles, '_admin') !== -1 ||
+                   _.indexOf(userCtx.roles, 'national_admin') !== -1;
+        default:
+            return false;
+    }
 };
 
 exports.getUserDistrict = function(userCtx) {
-
-    // FIX
-    if (userCtx.name === 'bassila') {
-        return '68d45afe29fbf23d1cb9ee227345ee82';
-    } else if (userCtx.name === 'tchaourou') {
-        return '68d45afe29fbf23d1cb9ee227345ec08';
-    }
-
-    // problem when new records come in, the cookie seems to get reset.
-    //cookies.readBrowserCookie('kujua_facility'),
+    return userCtx.kujua_facility;
 };
 
 /**
@@ -122,14 +134,5 @@ exports.titleize = function (str) {
             return m.toUpperCase();
         }
     );
-};
-
-/**
- * Mirrors db.getView API but ddoc is optional.
- * */
-exports.getView = function(ddoc, view, q, callback) {
-    var db = require('db').current(),
-        ddoc = ddoc ? ddoc : db.guessCurrent().design_doc;
-    db.getView(ddoc, view, q, callback);
 };
 

@@ -22,7 +22,7 @@ easy to install on any modern operating system.
 
 *Note* this guide refers to *CouchDB* and *Couchbase Single Server* synonymously.
 
-### Step 2: Create Root User
+### Step 2: Create Admin User
 
 The first thing you should do with any CouchDB database is setup an admin
 account if it does not have one.  You will need to think of a secure password,

@@ -34,6 +34,8 @@ exports.data_records_valid_by_district_and_form = {
                     && (!doc.errors || doc.errors.length === 0)) {
                 var dh = doc.related_entities.clinic.parent.parent;
                 emit([dh._id, doc.form, dh.name, title], 1);
+            } else {
+                emit([null, doc.form, null, title], 1);
             }
         }
     },

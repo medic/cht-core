@@ -113,6 +113,9 @@
             if (c.className) {
                 td.addClass(c.className);
             }
+            if (c.embed) {
+                td.data('embed', c.embed);
+            }
             tr.append(td);
         });
         return tr;
@@ -162,6 +165,11 @@
             top: offset.top,
             left: offset.left
         });
+        if ($(td).data('embed') && $(td).data('embed').typeahead) {
+            $(input).attr('data-provide', 'typeahead');
+            //pass in typeahead options to bootstrap typeahead api
+            $(input).typeahead($(td).data('embed').typeahead);
+        }
         if (clear_value) {
             input.val('');
         }
