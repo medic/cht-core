@@ -643,7 +643,7 @@
             else if (ev.keyCode === 17)  { /* CTRL */   return; }
             else if (ev.keyCode === 18)  { /* ALT */    return; }
             else if (ev.keyCode === 38)  { /* UP */
-                if (!selected) {
+                if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
                 var pos = getCellPosition(table, selected);
@@ -655,7 +655,7 @@
                 }
             }
             else if (ev.keyCode === 40)  { /* DOWN */
-                if (!selected) {
+                if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
                 var pos = getCellPosition(table, selected);
@@ -667,7 +667,7 @@
                 }
             }
             else if (ev.keyCode === 37)  { /* LEFT */
-                if (!selected) {
+                if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
                 var pos = getCellPosition(table, selected);
@@ -679,7 +679,7 @@
                 }
             }
             else if (ev.keyCode === 39)  { /* RIGHT */
-                if (!selected) {
+                if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
                 var pos = getCellPosition(table, selected);
@@ -691,17 +691,18 @@
                 }
             }
             else if (ev.keyCode === 46)  { /* DEL */
-                if (ev.target.tagName !== 'INPUT') {
-                    if ($.spreadsheet.range_tds) {
-                        _.each($.spreadsheet.range_tds, function (td) {
-                            // clear value of selected td
-                            setValue(td, '');
-                        });
-                    }
-                    else if (selected) {
+                if (ev.target.tagName === 'INPUT') {
+                    return;
+                }
+                if ($.spreadsheet.range_tds) {
+                    _.each($.spreadsheet.range_tds, function (td) {
                         // clear value of selected td
-                        setValue(selected, '');
-                    }
+                        setValue(td, '');
+                    });
+                }
+                else if (selected) {
+                    // clear value of selected td
+                    setValue(selected, '');
                 }
             }
             else if (ev.keyCode === 9)  { /* TAB */
