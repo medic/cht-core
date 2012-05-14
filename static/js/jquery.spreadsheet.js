@@ -636,14 +636,15 @@
             var selected = $.spreadsheet.selected_td;
             var input = $.spreadsheet.edit_inline_input;
 
-            if (ev.keyCode === 27)  { /* ESC */
+            if (ev.which === 27)  { /* ESC */
                 clearInlineEditor();
             }
-            else if (ev.keyCode === 16)  { /* SHIFT */  return; }
-            else if (ev.keyCode === 17)  { /* CTRL */   return; }
-            else if (ev.keyCode === 18)  { /* ALT */    return; }
-            else if (ev.keyCode === 38)  { /* UP */
-                if (!selected) {
+            else if (ev.which === 16)  { /* SHIFT */            return; }
+            else if (ev.which === 17)  { /* CTRL */             return; }
+            else if (ev.which === 18)  { /* ALT */              return; }
+            else if (ev.which === 91)  { /* MAC COMMAND KEY */  return; }
+            else if (ev.which === 38)  { /* UP */
+                if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
                 var pos = getCellPosition(table, selected);
@@ -654,8 +655,8 @@
                     select(cell);
                 }
             }
-            else if (ev.keyCode === 40)  { /* DOWN */
-                if (!selected) {
+            else if (ev.which === 40)  { /* DOWN */
+                if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
                 var pos = getCellPosition(table, selected);
@@ -666,8 +667,8 @@
                     select(cell);
                 }
             }
-            else if (ev.keyCode === 37)  { /* LEFT */
-                if (!selected) {
+            else if (ev.which === 37)  { /* LEFT */
+                if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
                 var pos = getCellPosition(table, selected);
@@ -678,8 +679,8 @@
                     select(cell);
                 }
             }
-            else if (ev.keyCode === 39)  { /* RIGHT */
-                if (!selected) {
+            else if (ev.which === 39)  { /* RIGHT */
+                if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
                 var pos = getCellPosition(table, selected);
@@ -690,21 +691,22 @@
                     select(cell);
                 }
             }
-            else if (ev.keyCode === 46)  { /* DEL */
-                if (ev.target.tagName !== 'INPUT') {
-                    if ($.spreadsheet.range_tds) {
-                        _.each($.spreadsheet.range_tds, function (td) {
-                            // clear value of selected td
-                            setValue(td, '');
-                        });
-                    }
-                    else if (selected) {
+            else if (ev.which === 46)  { /* DEL */
+                if (ev.target.tagName === 'INPUT') {
+                    return;
+                }
+                if ($.spreadsheet.range_tds) {
+                    _.each($.spreadsheet.range_tds, function (td) {
                         // clear value of selected td
-                        setValue(selected, '');
-                    }
+                        setValue(td, '');
+                    });
+                }
+                else if (selected) {
+                    // clear value of selected td
+                    setValue(selected, '');
                 }
             }
-            else if (ev.keyCode === 9)  { /* TAB */
+            else if (ev.which === 9)  { /* TAB */
                 if (!selected) {
                     return;
                 }
@@ -717,7 +719,7 @@
                     }
                 }
             }
-            else if (ev.keyCode === 13)  { /* ENTER */
+            else if (ev.which === 13)  { /* ENTER */
                 if (!selected) {
                     return;
                 }
