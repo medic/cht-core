@@ -113,9 +113,6 @@
             if (c.className) {
                 td.addClass(c.className);
             }
-            if (c.embed) {
-                td.data('embed', c.embed);
-            }
             tr.append(td);
         });
         return tr;
@@ -165,11 +162,14 @@
             top: offset.top,
             left: offset.left
         });
-        if ($(td).data('embed') && $(td).data('embed').typeahead) {
+        // inherit classes from td to allow for external hooks
+        $(input).addClass($(td).attr('class'));
+        /*if ($(td).data('typeahead')) {
             $(input).attr('data-provide', 'typeahead');
             //pass in typeahead options to bootstrap typeahead api
-            $(input).typeahead($(td).data('embed').typeahead);
-        }
+            console.log(['typeahead data is', $(td).data('typeahead').source]);
+            $(input).typeahead($(td).data('typeahead'));
+        }*/
         if (clear_value) {
             input.val('');
         }
