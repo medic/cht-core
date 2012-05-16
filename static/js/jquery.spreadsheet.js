@@ -37,8 +37,8 @@
             path = [path];
         }
 
-        // loop through all parts of the path, throwing an exception
-        // if a property doesn't exist
+        // loop through all parts of the path, returning undefined if a
+        // property doesn't exist
         for (var i = 0; i < path.length; i++) {
             var x = path[i];
             if (obj[x] === undefined) {
@@ -108,11 +108,15 @@
         tr.append('<th class="handle"></th>');
         _.each(columns, function (c) {
             var p = getProperty(doc, c.property);
-            var td = $('<td/>').text(p === undefined ? '': p.toString());
-            td.data('property', c.property);
-            if (c.className) {
-                td.addClass(c.className);
+            if (typeof c.createCellHandler === 'function') {
+               var td = c.createCellHandler(c, p);
+            } else {
+               var td = $('<td/>').text(p === undefined ? '': p.toString());
             }
+            if (typeof c.editSelectionHandler === 'function') {
+                td.data('editSelectionHandler', c.editSelectionHandler);
+            }
+            td.data('property', c.property);
             tr.append(td);
         });
         return tr;
@@ -146,14 +150,21 @@
         clearInlineEditor();
     };
 
+    var editCell = function (td, clear_value) {
+        if (!td) { return; }
+        clearInlineEditor();
+        if (typeof $(td).data('editSelectionHandler') === 'function') {
+            $(td).data('editSelectionHandler')(td, setValue);
+        } else {
+            editInline(td, clear_value);
+        }
+    };
 
     /**
      * Clears exisitng inline-edit elements and creates a new one for the
      * provided td element
      */
-
     var editInline = function (td, clear_value) {
-        clearInlineEditor();
         var offset = $(td).offset();
         var input = $('<input class="edit-inline" type="text" />').css({
             height: ($(td).outerHeight() - 3) + 'px',
@@ -162,14 +173,6 @@
             top: offset.top,
             left: offset.left
         });
-        // inherit classes from td to allow for external hooks
-        $(input).addClass($(td).attr('class'));
-        /*if ($(td).data('typeahead')) {
-            $(input).attr('data-provide', 'typeahead');
-            //pass in typeahead options to bootstrap typeahead api
-            console.log(['typeahead data is', $(td).data('typeahead').source]);
-            $(input).typeahead($(td).data('typeahead'));
-        }*/
         if (clear_value) {
             input.val('');
         }
@@ -181,6 +184,7 @@
         $.spreadsheet.edit_inline_td = $(td)[0];
         return input.focus();
     };
+
 
 
     /**
@@ -618,9 +622,8 @@
             }
         });
         $(document).on('dblclick', '#spreadsheet_select', function (ev) {
-            if ($.spreadsheet.selected_td) {
-                editInline($.spreadsheet.selected_td);
-            }
+            var td = $.spreadsheet.selected_td;
+            editCell(td);
         });
         $(document).click(function (ev) {
             var el = $(ev.target);
@@ -737,7 +740,7 @@
                     }
                 }
                 else if (selected && ev.target.tagName !== 'INPUT') {
-                    editInline(selected);
+                    editCell(selected);
                 }
             }
             else if (ev.target.tagName !== 'INPUT') {
@@ -745,7 +748,7 @@
                     return;
                 }
                 if (!ev.altKey && !ev.ctrlKey) {
-                    editInline(selected, true);
+                    editCell(selected, true);
                 }
             }
         });
