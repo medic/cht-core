@@ -515,7 +515,6 @@
             $('.row-counter', table).text(options.data.length + ' rows');
         });
         $(table).on('mousedown', 'thead th', function (ev) {
-            ev.preventDefault();
             var ths = $('thead th', table);
             var trs = $('tbody tr', table);
 
@@ -525,10 +524,8 @@
                     setRange(table, i - 1, 0, i - 1, trs.length);
                 }
             }
-            return false;
         });
         $(table).on('mousedown', 'tbody th.handle', function (ev) {
-            ev.preventDefault();
             var this_tr = $(this).parent()[0];
             var tds = $('td', this_tr);
             var trs = $('tbody tr', table);
@@ -539,21 +536,20 @@
                     setRange(table, 0, i, tds.length - 1, i);
                 }
             }
-            return false;
         });
         $(table).on('mousedown', 'td', function (ev) {
-            ev.preventDefault();
             $('td', table).removeClass('active');
             var pos = getCellPosition(table, this);
             $.spreadsheet.start_column = pos.column;
             select(this);
-            return false;
         });
         $(table).on('mouseover', 'tbody td', function (ev) {
-            if (ev.which === 1 && $.spreadsheet.selected_td) {
+            ev.preventDefault();
+            if ($.spreadsheet.left_btn_down && $.spreadsheet.selected_td) {
                 // left mouse button pressed and move started on table
                 setRangeElements(table, $.spreadsheet.selected_td, this);
             }
+            return false;
         });
         $(table).on('change', 'tr', function (ev) {
             // TODO: don't save on every cell change, use a timeout and
@@ -582,6 +578,19 @@
             // only bind these event handlers once
             return;
         }
+        // keep track of left btn, since ev.which is unreliable inside
+        // mouseover events (FF seems to think it's always pressed)
+        $.spreadsheet.left_btn_down = false;
+        $(document).mousedown(function (ev) {
+            if (ev.which === 1) {
+                $.spreadsheet.left_btn_down = true;
+            }
+        });
+        $(document).mouseup(function (ev) {
+            if (ev.which === 1) {
+                $.spreadsheet.left_btn_down = false;
+            }
+        });
         $(document).bind('cut', function (ev) {
             var td = $.spreadsheet.selected_td;
             if (td) {
