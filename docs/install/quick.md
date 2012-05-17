@@ -1,6 +1,6 @@
 # Quick Install 
 
-This document shuld help you quickly get Kujua software components installed,
+This document should help you quickly get Kujua software components installed,
 including SMSSync, over a local wifi network.
 
 ## Download Couchbase
@@ -44,7 +44,7 @@ Then open it in the browser on your device and then run the `.apk` file to compl
 
 ## Configure the SMSSync settings
 
-* Launch SMSSync and choose **settings**
+* Launch SMSSync and choose settings on the device to display the SMSSync settings menu
 * Update the Sync URL: `http://root:your-secret@local-ip-address:5984/kujua/_design/kujua-base/_rewrite/add`
 * Choose **OK** to save
 
