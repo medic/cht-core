@@ -5,9 +5,10 @@ including SMSSync, over a local wifi network.
 
 ## Download Couchbase
 
-Go here
+* Go here
 [http://www.couchbase.org/get/couchbase-single/2.0](http://www.couchbase.org/get/couchbase-single/2.0)
-and click the right link for your operating system, use the `.zip` file if
+* Click the Download button under Developer Preview to the right
+* Click the right link for your operating system, use the `.zip` file if
 you are on OSX, `.exe` on Windows.
 
 ## Create Admin User
