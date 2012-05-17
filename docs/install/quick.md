@@ -10,6 +10,7 @@ including SMSSync, over a local wifi network.
 * Click the Download button under Developer Preview to the right
 * Click the right link for your operating system, use the `.zip` file if
 you are on OSX, `.exe` on Windows.
+* Open the install file and follow the instructions.
 
 ## Create Admin User
 
