@@ -22,7 +22,7 @@ Click the "Fix This" link in the bottom right.  And create a user:
 
 ## Configure CouchDB 
 
-* Navigate Configuration section in Futon
+* Navigate to **Configuration** section in Futon
 * Scroll to **http** section
 * Change `bind_address` to `0.0.0.0`
 
