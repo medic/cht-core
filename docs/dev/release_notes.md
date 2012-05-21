@@ -14,6 +14,8 @@
 * Fixed 24-hour time display bug 
 * Added close button to login window #70
 * Fixed bug with scroll listener binding to other pages #69
+* Renamed kujua-export to kujua-base #88
+* Added CouchDB security steps to intall doc
 
 ## 0.1.0-pre.1
 

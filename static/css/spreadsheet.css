@@ -32,6 +32,13 @@ table.spreadsheet td {
     color: #333;
     height: 25px;
 }
+table.spreadsheet td a {
+    color: #333;
+}
+table.spreadsheet td a:hover {
+    text-decoration: none;
+    cursor: default;
+}
 table.spreadsheet tr.saving td {
     background: #ccc;
 }

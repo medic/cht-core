@@ -2,17 +2,17 @@
 
 ## Intro
 
-This guide should help you install two main parts of the Medic platform: Kujua
+This guide should help you install two main parts of the Medic toolset: Kujua
 and SMSSync.  SMSSync is an Android application that receives SMS data and
-automatically sends it to a web service via HTTP.  Kujua provides the web
-service and an interface to manage your data.  This is the minimal setup you
-need for Muvuku form-based data collection via SMS.
+sends it to a web service via HTTP.  Kujua provides the web service as well as
+a web interface to manage your data.  This setup typically used to in
+combination with unstructured or structured SMS messages to collect data.
 
 ## Install CouchDB
 
 Kujua requires **CouchDB version 1.1 or higher**.  We are currently using the
-Couchbase Single Server binaries.  Couchbase packages CouchDB to make it very
-easy to install on any modern operating system.  
+Couchbase Single Server binaries.  Couchbase provides CouchDB packages that are
+easy to install on Windows, Linux or Mac OSX.
 
 ### Step 1: Download 
 
@@ -112,8 +112,8 @@ browser.
 ### Step 3: Verify the Export tool
 
 * Now append the following path to it:
-  ```/kujua/_design/kujua-export/_rewrite/```.<br /> In this example we use 
-  ```http://10.10.20.105:5984/kujua/_design/kujua-export/_rewrite/```.
+  ```/kujua/_design/kujua-base/_rewrite/```.<br /> In this example we use 
+  ```http://10.10.20.105:5984/kujua/_design/kujua-base/_rewrite/```.
 * Verify that the Export app responds with a screen similiar to the one below.
 * Now **copy your local network URL somewhere**, possibly in the clipboard or notepad.  You will need it for the next steps.
 
@@ -178,7 +178,7 @@ Now configure SMSSync with the URL to our Export application:
 * Launch SMSSync 
 * Edit Settings
 * Choose **Enter the Sync URL** option
-* Enter the local network URL you discovered in the Verify Network steps above and **append one more part**: `add`.  Complete example: `http://10.10.20.105:5984/kujua/_design/kujua-export/_rewrite/add`.
+* Enter the local network URL you discovered in the Verify Network steps above and **append one more part**: `add`.  Complete example: `http://10.10.20.105:5984/kujua/_design/kujua-base/_rewrite/add`.
 * Choose **OK**
 
 ![Edit Settings](img/smssync_settings.png)
@@ -204,7 +204,7 @@ locale, you can append the `locale` query parameter to the sync URL above.  The
 default locale is english or `en` and we also support `fr` at the moment.  
 
 For example, to get responses from Kujua in french use
-`http://10.10.20.105:5984/kujua/_design/kujua-export/_rewrite/add?locale=fr`.
+`http://10.10.20.105:5984/kujua/_design/kujua-base/_rewrite/add?locale=fr`.
 
 ## Test the Pipes
 
