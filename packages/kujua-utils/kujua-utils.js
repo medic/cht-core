@@ -41,10 +41,18 @@ exports.logger = {
             log(obj);
         }
     },
+    log_error: function(obj) {
+        if (typeof(console) !== 'undefined') {
+            console.error(obj);
+        } else if (typeof(log) !== 'undefined') {
+            log('ERROR');
+            log(obj);
+        }
+    },
     silent: function (obj) {},
     error: function (obj) {
         if (this.levels[settings.loglevel] >= this.levels['error']) {
-            this.log(obj);
+            this.log_error(obj);
         }
     },
     warn: function (obj) {
