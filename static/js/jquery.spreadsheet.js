@@ -458,6 +458,11 @@
     };
 
 
+    var showRowContextMenu = function () {
+        alert('row context menu');
+    };
+
+
     /**
      * Handles user interaction with the table
      */
@@ -560,6 +565,27 @@
             var doc = getDoc(tr, options);
             // TODO: coerce value to correct type depending on options
             setProperty(doc, $(this).data('property'), $(this).text());
+        });
+        $(table).on('click', 'tbody th', function (ev) {
+            console.log(['click', ev.which]);
+            if (ev.which === 3) { // right mouse button
+
+                // disable actual context-menu
+                ev.preventDefault();
+                ev.stopImmediatePropagation();
+            }
+        });
+        $(table).on('mousedown', 'tbody th', function (ev) {
+            console.log(['mousedown', ev.which]);
+            if (ev.which === 3) { // right mouse button
+
+                // disable actual context-menu
+                ev.preventDefault();
+                ev.stopImmediatePropagation();
+
+                showRowContextMenu();
+                return true;
+            }
         });
         $(table).on('click', '.spreadsheet-actions .add-row-btn', function (ev) {
             ev.preventDefault();
