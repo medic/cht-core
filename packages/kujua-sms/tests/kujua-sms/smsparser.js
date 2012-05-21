@@ -97,6 +97,7 @@ exports.wrong_field_type = function(test) {
 };
 
 exports.missing_fields = function(test) {
+    console.log('HUHUHUHU', smsforms);
     test.expect(1);
     
     var doc = {

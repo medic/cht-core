@@ -9,5 +9,11 @@
         "underscore": null,
         "properties": null,
         "kujua-utils": null
+    },
+    "preprocessors": {
+        "register_sms_forms": "build/register_sms_forms"
+    },
+    "postprocessors": {
+        "translate_sms_forms": "build/translate_sms_forms"
     }
 }
