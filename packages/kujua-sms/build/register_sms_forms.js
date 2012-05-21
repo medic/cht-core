@@ -12,7 +12,9 @@ module.exports = function (root, dir, settings, doc, callback) {
     fs.readdir(path, function(err, files) {
         if(err) { return callback(err); }
 
-        doc['kujua-sms'].sms_forms = files;
+        doc['kujua-sms'].sms_forms = files.filter(function (f) {
+            return /.*\.json$/.test(f);
+        });
         callback(null, doc);
     });
 };
