@@ -12,12 +12,12 @@ var updates = require('kujua-sms/updates'),
 var example = {
     sms_message: {
        from: "+13125551212",
-       message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
+       message: '1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
        sent_timestamp: '01-19-12 18:45',
        sent_to: "+15551212",
        type: "sms_message",
        locale: "en",
-       form: "PSMS"
+       form: "TEST"
     },
     clinic: {
         "_id": "4a6399c98ff78ac7da33b639ed60f458",
@@ -64,7 +64,7 @@ var example = {
 var expected_callback = {
     data: {
         type: "data_record",
-        form: "PSMS",
+        form: "TEST",
         related_entities: {
             clinic: null
         },
@@ -94,7 +94,7 @@ exports.psms_to_record = function (test) {
     // Data parsed from a gateway POST
     var data = {
         from: '+13125551212',
-        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
+        message: '1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
         sent_timestamp: '01-19-12 18:45',
         sent_to: '+15551212'
     };
@@ -129,7 +129,7 @@ exports.psms_to_record = function (test) {
     
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/PSMS/data_record/add/clinic/%2B13125551212");
+        baseURL + "/TEST/data_record/add/clinic/%2B13125551212");
     
     test.same(
         resp_body.callback.data.days_stocked_out,
@@ -147,7 +147,7 @@ exports.psms_to_record = function (test) {
         resp_body.callback.data,
         expected_callback.data);
     
-    step2_1(test, helpers.nextRequest(resp_body, 'PSMS'));
+    step2_1(test, helpers.nextRequest(resp_body, 'TEST'));
 
 };
 
@@ -198,7 +198,7 @@ var step2_2 = function(test, req) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/PSMS/data_record/merge/2011/11/" + clinic._id);
+        baseURL + "/TEST/data_record/merge/2011/11/" + clinic._id);
 
     test.same(
         resp_body.callback.data.related_entities,
@@ -206,8 +206,8 @@ var step2_2 = function(test, req) {
 
     test.same(resp_body.callback.data.errors, []);
 
-    step3_1(test, helpers.nextRequest(resp_body, 'PSMS'),
-        step3_2, [test, helpers.nextRequest(resp_body, 'PSMS')]);
+    step3_1(test, helpers.nextRequest(resp_body, 'TEST'),
+        step3_2, [test, helpers.nextRequest(resp_body, 'TEST')]);
 
 };
 

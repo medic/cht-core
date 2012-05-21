@@ -41,11 +41,25 @@ exports.getResponse = function (key, locale) {
 };
 
 exports['TEST'] = {
-    fields: [
-        {key: 'foo', label: 'Foo', type: 'string', required: true},
-        {key: 'bar', label: 'Bar', type: 'number', required: true}
-    ],
-    autoreply: 'Thank you!'
+     fields: [
+         {key: 'facility_id', label: 'Health Facility Identifier', type: 'string', required: true},
+         {key: 'year', label: 'Report Year', type: 'year', required: true},
+         {key: 'month', label: 'Report Month', type: 'month'},
+         {key: 'quantity_dispensed.la_6x1', label: 'LA 6x1: Dispensed total', type: 'number'},
+         {key: 'quantity_dispensed.la_6x2', label: 'LA 6x2: Dispensed total', type: 'number'},
+         {key: 'quantity_dispensed.cotrimoxazole', label: 'Cotrimoxazole: Dispensed total', type: 'number'},
+         {key: 'quantity_dispensed.zinc', label: 'Zinc: Dispensed total', type: 'number'},
+         {key: 'quantity_dispensed.ors', label: 'ORS: Dispensed total', type: 'number'},
+         {key: 'quantity_dispensed.eye_ointment', label: 'Eye Ointment: Dispensed total', type: 'number'},
+         {key: 'days_stocked_out.la_6x1', label: 'LA 6x1: Days stocked out', type: 'number'},
+         {key: 'days_stocked_out.la_6x2', label: 'LA 6x2: Days stocked out', type: 'number'},
+         {key: 'days_stocked_out.cotrimoxazole', label: 'Cotrimoxazole: Days stocked out', type: 'number'},
+         {key: 'days_stocked_out.zinc', label: 'Zinc: Days stocked out', type: 'number'},
+         {key: 'days_stocked_out.ors', label: 'ORS: Days stocked out', type: 'number'},
+         {key: 'days_stocked_out.eye_ointment', label: 'Eye Ointment: Days stocked out', type: 'number'}
+     ],
+     autoreply: "Zikomo!",
+     data_record_merge: "/:form/data_record/merge/:year/:month/:clinic_id"
 };
 
 // exports['CNPW'] = {
@@ -60,27 +74,6 @@ exports['TEST'] = {
 //     data_record_merge: "/:form/data_record/merge/:phone/:wkn"
 // };
 // 
-// exports['PSMS'] = {
-//     fields: [
-//         {key: 'facility_id', label: 'Health Facility Identifier', type: 'string'},
-//         {key: 'year', label: 'Report Year', type: 'year'},
-//         {key: 'month', label: 'Report Month', type: 'month'},
-//         {key: 'quantity_dispensed.la_6x1', label: 'LA 6x1: Dispensed total', type: 'number'},
-//         {key: 'quantity_dispensed.la_6x2', label: 'LA 6x2: Dispensed total', type: 'number'},
-//         {key: 'quantity_dispensed.cotrimoxazole', label: 'Cotrimoxazole: Dispensed total', type: 'number'},
-//         {key: 'quantity_dispensed.zinc', label: 'Zinc: Dispensed total', type: 'number'},
-//         {key: 'quantity_dispensed.ors', label: 'ORS: Dispensed total', type: 'number'},
-//         {key: 'quantity_dispensed.eye_ointment', label: 'Eye Ointment: Dispensed total', type: 'number'},
-//         {key: 'days_stocked_out.la_6x1', label: 'LA 6x1: Days stocked out', type: 'number'},
-//         {key: 'days_stocked_out.la_6x2', label: 'LA 6x2: Days stocked out', type: 'number'},
-//         {key: 'days_stocked_out.cotrimoxazole', label: 'Cotrimoxazole: Days stocked out', type: 'number'},
-//         {key: 'days_stocked_out.zinc', label: 'Zinc: Days stocked out', type: 'number'},
-//         {key: 'days_stocked_out.ors', label: 'ORS: Days stocked out', type: 'number'},
-//         {key: 'days_stocked_out.eye_ointment', label: 'Eye Ointment: Days stocked out', type: 'number'}
-//     ],
-//     autoreply: "Zikomo!",
-//     data_record_merge: "/:form/data_record/merge/:year/:month/:clinic_id"
-// };
 // 
 // exports['PSMM'] = {
 //     fields: [

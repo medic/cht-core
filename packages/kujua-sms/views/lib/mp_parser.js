@@ -13,7 +13,7 @@ exports.parseField = function (field, raw, prev) {
         case 'number':
             return exports.parseNum(raw);
         case 'integer':
-            return parseInt(raw, 10);
+            return exports.parseNum(raw);
         case 'string':
             return raw === "" ? null : raw;
         case 'year':

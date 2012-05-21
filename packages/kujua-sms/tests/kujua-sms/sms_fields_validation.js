@@ -46,7 +46,7 @@ exports.sms_fields_validation = function (test) {
 
     var data = {
         from: '+13125551212',
-        message: '1!TEST!a#2',
+        message: "1!TEST!facility#2011",
         sent_timestamp: '01-19-12 18:45',
         sent_to: '+15551212'
     };
@@ -65,7 +65,7 @@ exports.sms_fields_validation = function (test) {
 
     test.same(resp_body.payload.success, true);
     test.same(resp_body.payload.messages[0].message,
-        "Thank you!");
+        "Zikomo!");
     
     test.same(resp_body.callback.data.errors, []);
     
@@ -88,7 +88,7 @@ var step1_with_extra_fields = function(test) {
     
     var data = {
         from: '+13125551212',
-        message: '1!TEST!a#2#3',
+        message: "1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4#123",
         sent_timestamp: '01-19-12 18:45',
         sent_to: '+15551212'
     };
@@ -146,10 +146,10 @@ var step1_with_errors = function(test) {
 
     test.same(resp_body.payload.success, true);
     test.same(resp_body.payload.messages[0].message,
-        "Missing field: Bar");
+        "Missing field: Report Year");
     
     test.same(resp_body.callback.data.errors[0],
-        "Missing field: Bar");
+        "Missing field: Report Year");
     
     test.same(
         resp_body.callback.options.path,
@@ -183,7 +183,7 @@ var step2_with_errors = function(test, req) {
     var resp_body = JSON.parse(resp.body);
 
     test.same(resp_body.callback.data.errors[0],
-        "Missing field: Bar");
+        "Missing field: Report Year");
     
     step3_with_errors(test, helpers.nextRequest(resp_body, 'TEST'));
     
@@ -205,8 +205,8 @@ var step3_with_errors = function(test, req) {
             value: {
                 _id: "777399c98ff78ac7da33b639ed60f422",
                 _rev: "484399c98ff78ac7da33b639ed60f923",
-                foo: "a",
-                bar: "b"
+                facility_id: "a",
+                year: "b"
             }
         }
     ]};
@@ -229,7 +229,7 @@ var step3_with_errors = function(test, req) {
     test.same(resp_body.callback.data.tasks, []);
     
     test.same(resp_body.callback.data.errors[0],
-        "Missing field: Bar");
+        "Missing field: Report Year");
     
     
     var body = JSON.parse(req.body);
@@ -243,8 +243,8 @@ var step3_with_errors = function(test, req) {
             value: {
                 _id: "777399c98ff78ac7da33b639ed60f422",
                 _rev: "484399c98ff78ac7da33b639ed60f923",
-                foo: "a",
-                errors: ["Missing field: Bar"]
+                facility_id: "a",
+                errors: ["Missing field: Report Year"]
             }
         }
     ]};

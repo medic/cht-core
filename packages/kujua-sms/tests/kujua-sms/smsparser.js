@@ -6,11 +6,11 @@ exports.valid_message = function(test) {
     test.expect(1);
 
     var doc = {
-            "message":"1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4",
+            "message":"1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4",
             "type":"sms_message",
-            "form":"PSMS"},
+            "form":"TEST"},
         def = smsforms[doc.form],
-        data = smsparser.parse('PSMS', def, doc);
+        data = smsparser.parse('TEST', def, doc);
 
     test.same(data, {
         "facility_id": "facility",
@@ -65,11 +65,11 @@ exports.wrong_field_type = function(test) {
     test.expect(1);
     
     var doc = {
-            "message":"1!PSMS!facility#2011#11#zzzz#2#3#4#5#6#9#8#7#6#5#4",
+            "message":"1!TEST!facility#2011#11#zzzz#2#3#4#5#6#9#8#7#6#5#4",
             "type":"sms_message",
-            "form":"PSMS"},
+            "form":"TEST"},
         def = smsforms[doc.form],
-        data = smsparser.parse('PSMS', def, doc);
+        data = smsparser.parse('TEST', def, doc);
     
     test.same(data, {
         "facility_id": "facility",
@@ -101,11 +101,11 @@ exports.missing_fields = function(test) {
     test.expect(1);
     
     var doc = {
-            "message":"1!PSMS!facility#2011#11#1#2#3",
+            "message":"1!TEST!facility#2011#11#1#2#3",
             "type":"sms_message",
-            "form":"PSMS"},
+            "form":"TEST"},
         def = smsforms[doc.form],
-        data = smsparser.parse('PSMS', def, doc);
+        data = smsparser.parse('TEST', def, doc);
 
     test.same(data, {
         "facility_id": "facility",
@@ -136,11 +136,11 @@ exports.extra_fields = function(test) {
     test.expect(1);
     
     var doc = {
-            "message":"1!PSMS!facility#2011#11#1#2#3#1#1#1#1#1#1#1#1#1#1#####77#",
+            "message":"1!TEST!facility#2011#11#1#2#3#1#1#1#1#1#1#1#1#1#1#####77#",
             "type":"sms_message",
-            "form":"PSMS"},
+            "form":"TEST"},
         def = smsforms[doc.form],
-        data = smsparser.parse('PSMS', def, doc);
+        data = smsparser.parse('TEST', def, doc);
 
     test.same(data, {
         "facility_id": "facility",

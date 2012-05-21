@@ -3,11 +3,11 @@ var smsparser = require('views/lib/smsparser'),
 
 
 exports.psms_example_data = function (test) {
-    var def = smsforms['PSMS'];
+    var def = smsforms['TEST'];
     var doc = {
         sent_timestamp: '12-11-11 15:00',
         from: '+15551212',
-        message: '1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4'
+        message: '1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4'
     };
 
     var form = smsparser.getForm(doc.message);
@@ -35,7 +35,7 @@ exports.psms_example_data = function (test) {
         }
     });
 
-    var arr = smsparser.parseArray('PSMS', def, doc);
+    var arr = smsparser.parseArray('TEST', def, doc);
     test.same(
         arr,
         ['12-11-11 15:00', '+15551212', 'facility', '2011', '11', 1, 2, 3, 4, 5, 6, 9, 8, 7, 6, 5, 4]

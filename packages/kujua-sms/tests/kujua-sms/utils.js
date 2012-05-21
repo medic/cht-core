@@ -52,7 +52,7 @@ exports.getLabels = function(test) {
     var locale = 'en';
     
     test.same(
-        utils.getLabels(keys, 'PSMS', locale),
+        utils.getLabels(keys, 'TEST', locale),
         [
             'Health Facility Identifier',
             'Name',
@@ -209,7 +209,7 @@ exports.getValues = function(test) {
         "_rev": "2-03adf0258d78fbbd831d35193c53ce0f",
         "type": "data_record",
         "from": "+13125551212",
-        "form": "PSMS",
+        "form": "TEST",
         "related_entities": {
             "clinic": {
                 "_id": "4a6399c98ff78ac7da33b639ed60f458",
@@ -261,12 +261,12 @@ exports.getValues = function(test) {
         },
         "sms_message": {
             "from": "+13125551212",
-            "message": "1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4",
+            "message": "1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4",
             "sent_timestamp": "1-19-12 18:45",
             "sent_to": "+15551212",
             "type": "sms_message",
             "locale": "en",
-            "form": "PSMS"
+            "form": "TEST"
         },
         "reported_date": 1331643982002
     };
@@ -303,7 +303,7 @@ exports.getValues = function(test) {
 exports.getFormKeys = function(test) {
     test.expect(1);
     test.same(
-        utils.getFormKeys('PSMS'),
+        utils.getFormKeys('TEST'),
         [
             'facility_id',
             'year',
