@@ -59,8 +59,8 @@ var convert = function(content, locales) {
             fields: []
         };
         
-        if(type.meta.title) {
-            result[type.meta.code].title = type.meta.title;
+        if(type.meta.label) {
+            result[type.meta.code].title = type.meta.label;
         }
         
         _.each(type.fields, function(val, key) {
