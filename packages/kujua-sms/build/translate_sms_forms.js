@@ -1,12 +1,13 @@
 var fs = require('fs')
   , muvuku_path = '../muvuku/forms/json'
   , async = require('async')
+  , modules = require('kanso-utils/modules')
   , _ = require('underscore')._
   , result = {}
   , locales = ['en', 'fr'];
 
 module.exports = {
-    after: 'modules',
+    before: 'modules',
     run: function (root, path, settings, doc, callback) {
         if (doc['kujua-sms']) {
             var files = doc['kujua-sms'].sms_forms;
@@ -29,7 +30,8 @@ module.exports = {
                     code += '\n\nexports["' + k.replace('"', '\\"') + '"] = ' +
                         JSON.stringify(result[k]) + ';';
                 }
-                doc.views.lib.smsforms = code;
+                delete doc.views.lib.smsforms;
+                modules.add(doc, 'views/lib/smsforms', code);
                 callback(null, doc);
             });
         } else {
