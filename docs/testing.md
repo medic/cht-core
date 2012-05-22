@@ -138,6 +138,14 @@ Hospital to Health Center referral.
 
 2. Assert response is positive.
 
+### PSTA Report
+
+1. As the Clinic phone send:
+
+    `1!PSTA!ddddddddddddddd#2011#5#1111#2222#3333#4444#5555#6666#7777#8888#9999#0000#1111#2222#3333#4444#111#222#333#444#555#666#777`
+
+2. Assert response is positive.
+
 ### XOXO Not Found 
 
 1. As the Clinic phone send:
