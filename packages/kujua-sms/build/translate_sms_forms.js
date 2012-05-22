@@ -78,6 +78,9 @@ var convert = function(content, locales) {
             if(val.required) {
                 field.required = true;
             }
+            if(val.type === 'select' || val.type === 'boolean') {
+                field.type = 'integer';
+            }
             result[type.meta.code].fields.push(field);
         });
     });
