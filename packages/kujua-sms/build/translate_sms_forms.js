@@ -43,8 +43,10 @@ module.exports = {
 var localizedString = function(strings, locales) {
     var string = '';
     
+    if (_.isString(strings)) { return strings; }
+
     _.each(locales, function(locale) {
-        if(!_.isUndefined(strings[locale])) {
+        if (!_.isUndefined(strings[locale])) {
             string = strings[locale];
         }
     });
@@ -66,7 +68,7 @@ var convert = function(content, locales) {
         _.each(type.fields, function(val, key) {
             var field = {
                 key: key,
-                label: localizedString(val.labels.short, locales),
+                label: localizedString(val.labels.short, locales).replace('\\n',': '),
                 type: val.type
             };
             if(val.choices) {
