@@ -146,6 +146,15 @@ Hospital to Health Center referral.
 
 2. Assert response is positive.
 
+### PSTB Report
+
+1. As the Clinic phone send:
+
+    `1!PSTB!ddddddddddddddd#2011#5#1111#2222#3333#4444#5555#6666#7777#31#31#31#31#31#31#31#1#1#1#1#1#1#1`
+
+2. Assert response is positive.
+
+
 ### XOXO Not Found 
 
 1. As the Clinic phone send:
