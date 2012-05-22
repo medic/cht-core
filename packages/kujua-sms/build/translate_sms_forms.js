@@ -62,7 +62,7 @@ var convert = function(content, locales) {
         };
         
         if(type.meta.label) {
-            result[type.meta.code].title = type.meta.label;
+            result[type.meta.code].title = localizedString(type.meta.label, locales);
         }
         
         _.each(type.fields, function(val, key) {
