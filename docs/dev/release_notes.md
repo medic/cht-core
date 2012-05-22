@@ -16,6 +16,8 @@
 * Fixed bug with scroll listener binding to other pages #69
 * Renamed kujua-export to kujua-base #88
 * Added CouchDB security steps to intall doc
+* Added Quick Install Doc
+* Support for Muvuku JSON form definitions #76
 
 ## 0.1.0-pre.1
 
