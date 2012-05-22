@@ -130,6 +130,14 @@ Hospital to Health Center referral.
 
 2. Assert response is positive.
 
+### PVCB Report
+
+1. As the Clinic phone send:
+
+    `1!PVCB!ddddddddddddddd#2011#5#111#222#333#444#555#666#777#888#999#000#111#222#333#444#555#666#777#888#999#000#111#222#333#444#555#666#777#888#999`
+
+2. Assert response is positive.
+
 ### XOXO Not Found 
 
 1. As the Clinic phone send:
