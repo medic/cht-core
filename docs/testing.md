@@ -20,7 +20,7 @@ Kujua Export.
 
 1. As the clinic phone send:
     
-    `1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4`
+    `1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4`
 
 2. Assert response is positive.
 
@@ -119,6 +119,14 @@ Hospital to Health Center referral.
 1. As the Clinic phone send:
 
     `1!PSCR!2012#12#20#aaaaaaaaaaaa#000111222333#kkkkkkkkkkkkkkkkkkkk#333#111#222#444#555#555#555#666#888#999#222#333#444#333#2#555#555#2#665#221#1#111`
+
+2. Assert response is positive.
+
+### PVCA Report
+
+1. As the Clinic phone send:
+
+    `1!PVCA!ddddddddddddddd#2011#5#ccccccccccccccc#bbbbbbbbbbbbbbb#1#eeeeeeeeee#ffffffffff#9#8#111#222#333#444#555#666#777#888#999`
 
 2. Assert response is positive.
 
