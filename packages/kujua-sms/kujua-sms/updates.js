@@ -154,7 +154,6 @@ var getRespBody = function(doc, req) {
     if (errormsg) {
         // TODO integrate with kujua notifications?
         resp.payload.messages[0].message = errormsg;
-        logger.debug(['Response', resp]);
         logger.error({'error':errormsg, 'doc':doc});
         return JSON.stringify(resp);
     }

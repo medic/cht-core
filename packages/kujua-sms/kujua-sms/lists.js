@@ -333,7 +333,6 @@ exports.data_record = function (head, req) {
         respBody.callback.options.headers.Authorization = req.headers.Authorization;
     }
 
-    logger.debug(['Response lists.data_record', respBody]);
     return JSON.stringify(respBody);
 };
 

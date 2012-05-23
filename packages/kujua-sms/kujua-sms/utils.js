@@ -7,6 +7,37 @@ var jsDump = require('jsDump'),
     smsforms = require('views/lib/smsforms'),
     _ = require('underscore')._;
 
+var localizedString = exports.localizedString = function(strings, locales) {
+    
+    var str = '',
+        locales = !_.isUndefined(locales) ? locales : ['en'],
+        locales = _.isString(locales) ? [locales] : locales ;
+    
+    if (_.isUndefined(strings)) { return ''; }
+
+    if (_.isString(strings)) { return strings; }
+
+    _.each(locales, function(locale) {
+        if (!_.isUndefined(strings[locale])) {
+            str = strings[locale];
+        }
+    });
+    
+    return str.replace('\\n', ': ');
+
+};
+
+/*
+ * return String - Try to return appropriate locale translation for a string,
+ *                 english by default. Support array keys, just concatenate.
+ */
+var _s = exports._s = function(key, locale) {
+    var key = _.isArray(key) ? arrayToStringNotation(key) : key;
+    if (exports.strings[key]) {
+        return localizedString(exports.strings[key], [locale]);
+    }
+};
+
 exports.strings = {
     reported_date: {
         en: 'Reported Date',
@@ -459,21 +490,6 @@ var arrayToStringNotation = function(arr) {
     return str;
 };
 
-/*
- * return String - Try to return appropriate locale translation for a string,
- *                 english by default. Support array keys, just concatenate.
- */
-var _s = exports._s = function(key, locale) {
-    var key = _.isArray(key) ? arrayToStringNotation(key) : key;
-    if (exports.strings[key]) {
-        if (exports.strings[key][locale]) {
-            return exports.strings[key][locale];
-        } else if (exports.strings[key]['en']) {
-            return exports.strings[key]['en'];
-        }
-    }
-};
-
 var arrayDepth = function(arr) {
     var depth = 0;
     
@@ -506,7 +522,7 @@ exports.getLabels = function(keys, form, locale) {
 
     if (def) {
         _.map(def.fields, function (f) {
-            form_labels[f.key] = f.label || f.key;
+            form_labels[f.key] = localizedString(f.label, locale) || f.key;
         });
     }
 

@@ -1,6 +1,10 @@
+var logger = require('kujua-utils').logger,
+    utils = require('kujua-sms/utils'),
+    _ = require('underscore')._;
+
 exports.parseNum = function (raw) {
     if (raw === void 0) {
-        return undefined;        
+        return undefined;
     } else if (!isFinite(raw) || raw === "") {
         return null;
     } else {
@@ -13,9 +17,9 @@ exports.parseField = function (field, raw, prev) {
         case 'number':
             return exports.parseNum(raw);
         case 'integer':
-            return exports.parseNum(raw);
+            return raw;
         case 'string':
-            return raw === "" ? null : raw;
+            return raw === "" ? null : utils.localizedString(raw);
         case 'year':
             return raw;
         case 'month':
@@ -24,15 +28,15 @@ exports.parseField = function (field, raw, prev) {
             var val = prev || new Date(0);
             val.setDate(raw);
             return val;
-        case 'choice':
+        case 'select':
             var val = exports.parseNum(raw);
-            if (val in field.choices)
-                return field.choices[val];
-            if (typeof log !== 'undefined')
-                log('Option not available for '+val+' in choices.');
-            if (typeof console !== 'undefined')
-                console.log('Option not available for '+val+' in choices.');
-            return raw;
+            var match = _.find(field.list, function(l) {
+                return l[0] === val;
+            });
+            if (match && match[1]) { return utils.localizedString(match[1]); }
+            logger.error('Option not available for '+val+' in select list.');
+            logger.error(field.list);
+            return val;
         default:
             throw new Error('Unknown field type: ' + field.type);
     }

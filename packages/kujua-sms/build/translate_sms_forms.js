@@ -40,20 +40,6 @@ module.exports = {
     }
 };
 
-var localizedString = function(strings, locales) {
-    var string = '';
-    
-    if (_.isString(strings)) { return strings; }
-
-    _.each(locales, function(locale) {
-        if (!_.isUndefined(strings[locale])) {
-            string = strings[locale];
-        }
-    });
-    
-    return string;
-};
-
 var convert = function(content, locales) {
     var result = {};
     _.each(content, function(type) {
@@ -62,26 +48,25 @@ var convert = function(content, locales) {
         };
         
         if(type.meta.label) {
-            result[type.meta.code].title = localizedString(type.meta.label, locales);
+            result[type.meta.code].title = type.meta.label;
         }
         
         _.each(type.fields, function(val, key) {
             var field = {
                 key: key,
-                label: localizedString(val.labels.short, locales).replace('\\n',': '),
+                label: val.labels.short,
                 type: val.type
             };
-            if(val.choices) {
-                field.choices = {};
-                _.each(val.choices, function(choice, idx) {
-                    field.choices[idx + 1] = localizedString(choice[1], locales);
-                });
+            if (val.type === 'select' && val.list) {
+                field.list = val.list;
             }
-            if(val.required) {
+            if (val.required) {
                 field.required = true;
             }
-            if(val.type === 'select' || val.type === 'boolean') {
-                field.type = 'integer';
+            // turn boolean into select form
+            if (val.type === 'boolean') {
+                field.type = 'select';
+                field.list = [[0,{en: 'False'}],[1,{en: 'True'}]];
             }
             result[type.meta.code].fields.push(field);
         });
