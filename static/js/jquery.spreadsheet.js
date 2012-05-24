@@ -680,7 +680,10 @@
             else if (ev.which === 16)  { /* SHIFT */            return; }
             else if (ev.which === 17)  { /* CTRL */             return; }
             else if (ev.which === 18)  { /* ALT */              return; }
-            else if (ev.which === 91)  { /* MAC COMMAND KEY */  return; }
+            /* MAC COMMAND KEYS FOR CHROME/FF http://stackoverflow.com/q/3834175/22419 */
+            else if (ev.which === 91 ||
+                     ev.which === 93 ||
+                     ev.which === 224)  {                       return; }
             else if (ev.which === 38)  { /* UP */
                 if (!selected || ev.target.tagName === 'INPUT') {
                     return;
