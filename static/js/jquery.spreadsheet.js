@@ -674,69 +674,74 @@
             }
         });
         $(document).keydown(function (ev) {
-            var table = $.spreadsheet.current_table;
-            var selected = $.spreadsheet.selected_td;
-            var input = $.spreadsheet.edit_inline_input;
+            var table = $.spreadsheet.current_table,
+                selected = $.spreadsheet.selected_td,
+                input = $.spreadsheet.edit_inline_input,
+                cell,
+                col,
+                pos,
+                offset,
+                key = ev.which;
 
-            if (ev.which === 27)  { /* ESC */
+            if (key === 27)  { /* ESC */
                 clearInlineEditor();
             }
-            else if (ev.which === 16)  { /* SHIFT */            return; }
-            else if (ev.which === 17)  { /* CTRL */             return; }
-            else if (ev.which === 18)  { /* ALT */              return; }
+            else if (key === 16)  { /* SHIFT */            return; }
+            else if (key === 17)  { /* CTRL */             return; }
+            else if (key === 18)  { /* ALT */              return; }
             /* MAC COMMAND KEYS FOR CHROME/FF http://stackoverflow.com/q/3834175/22419 */
-            else if (ev.which === 91 ||
-                     ev.which === 93 ||
-                     ev.which === 224)  {                       return; }
-            else if (ev.which === 38)  { /* UP */
+            else if (key === 91 ||
+                     key === 93 ||
+                     key === 224)  {                       return; }
+            else if (key === 38)  { /* UP */
                 if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
-                var pos = getCellPosition(table, selected);
-                var cell = getCellAt(table, pos.row - 1, pos.column)
+                pos = getCellPosition(table, selected);
+                cell = getCellAt(table, pos.row - 1, pos.column)
                 if (cell) {
                     ev.preventDefault();
                     $.spreadsheet.start_column = pos.column;
                     select(cell);
                 }
             }
-            else if (ev.which === 40)  { /* DOWN */
+            else if (key === 40)  { /* DOWN */
                 if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
-                var pos = getCellPosition(table, selected);
-                var cell = getCellAt(table, pos.row + 1, pos.column)
+                pos = getCellPosition(table, selected);
+                cell = getCellAt(table, pos.row + 1, pos.column)
                 if (cell) {
                     ev.preventDefault();
                     $.spreadsheet.start_column = pos.column;
                     select(cell);
                 }
             }
-            else if (ev.which === 37)  { /* LEFT */
+            else if (key === 37)  { /* LEFT */
                 if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
-                var pos = getCellPosition(table, selected);
-                var cell = getCellAt(table, pos.row, pos.column - 1)
+                pos = getCellPosition(table, selected);
+                cell = getCellAt(table, pos.row, pos.column - 1)
                 if (cell) {
                     ev.preventDefault();
                     $.spreadsheet.start_column = pos.column - 1;
                     select(cell);
                 }
             }
-            else if (ev.which === 39)  { /* RIGHT */
+            else if (key === 39)  { /* RIGHT */
                 if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
-                var pos = getCellPosition(table, selected);
-                var cell = getCellAt(table, pos.row, pos.column + 1)
+                pos = getCellPosition(table, selected);
+                cell = getCellAt(table, pos.row, pos.column + 1)
                 if (cell) {
                     ev.preventDefault();
                     $.spreadsheet.start_column = pos.column + 1;
                     select(cell);
                 }
             }
-            else if (ev.which === 46)  { /* DEL */
+            else if (key === 46)  { /* DEL */
                 if (ev.target.tagName === 'INPUT') {
                     return;
                 }
@@ -751,31 +756,32 @@
                     setValue(selected, '');
                 }
             }
-            else if (ev.which === 9)  { /* TAB */
+            else if (key === 9)  { /* TAB */
                 if (!selected) {
                     return;
                 }
                 if (ev.target.tagName !== 'INPUT' || ev.target === input) {
                     ev.preventDefault();
-                    var pos = getCellPosition(table, selected);
-                    var cell = getCellAt(table, pos.row, pos.column + 1)
+                    pos = getCellPosition(table, selected);
+                    offset = ev.shiftKey ? -1 : 1;
+                    cell = getCellAt(table, pos.row, pos.column + offset)
                     if (cell) {
                         select(cell);
                     }
                 }
             }
-            else if (ev.which === 13)  { /* ENTER */
+            else if (key === 13)  { /* ENTER */
                 if (!selected) {
                     return;
                 }
                 if (ev.target === input) {
                     completeInlineEditor();
-                    var pos = getCellPosition(table, selected);
-                    var col = $.spreadsheet.start_column;
+                    pos = getCellPosition(table, selected);
+                    col = $.spreadsheet.start_column;
                     if (col === undefined) {
                         col = pos.column;
                     }
-                    var cell = getCellAt(table, pos.row + 1, col)
+                    cell = getCellAt(table, pos.row + 1, col)
                     // move to cell below if possible
                     if (cell) {
                         select(cell);
