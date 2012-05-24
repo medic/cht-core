@@ -543,10 +543,14 @@
             }
         });
         $(table).on('mousedown', 'td', function (ev) {
-            $('td', table).removeClass('active');
+            $('td.active', table).removeClass('active');
             var pos = getCellPosition(table, this);
             $.spreadsheet.start_column = pos.column;
-            select(this);
+            if (ev.shiftKey) {
+                setRangeElements(table, $.spreadsheet.selected_td, this);
+            } else {
+                select(this);
+            }
         });
         $(table).on('mouseover', 'tbody td', function (ev) {
             ev.preventDefault();
