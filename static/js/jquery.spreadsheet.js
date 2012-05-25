@@ -105,7 +105,7 @@
     var createRow = function (columns, doc) {
         var tr = $('<tr/>');
         tr.data('_id', doc._id);
-        tr.append('<th class="handle"></th>');
+        tr.append('<th class="handle"><div class="control"><a class="btn btn-mini btn-danger delete-row" href="#"><i class="icon-trash"></i></a></div></th>');
         _.each(columns, function (c) {
             var p = getProperty(doc, c.property);
             if (typeof c.createCellHandler === 'function') {
@@ -308,6 +308,7 @@
 
     var getDoc = function (tr, options) {
         var id = $(tr).data('_id');
+
         for (var i = 0; i < options.data.length; i++) {
             if (id === options.data[i]._id) {
                 return options.data[i];
@@ -316,6 +317,17 @@
         throw new Error('No document found with _id: ' + JSON.stringify(id));
     };
 
+
+    var removeDoc = function(doc, options) {
+        var index = _.indexOf(options.data, doc);
+        if (index >= 0) {
+            options.data.splice(index, 1);
+        } else {
+            throw new Error(
+                'No document found with _id: ' + JSON.stringify(doc._id)
+            );
+        }
+    };
 
     var updateDoc = function (doc, options) {
         for (var i = 0; i < options.data.length; i++) {
@@ -331,23 +343,28 @@
 
 
     var saveDoc = function (tr, options) {
+        var $tr = $(tr);
         function _saveDoc() {
-            if (!$(tr).data('save_queued')) {
+            var callback,
+                doc,
+                update = $tr.parent().length > 0; // no parent => detached from document
+            if (!$tr.data('save_queued')) {
                 return;
             }
-            if ($(tr).hasClass('saving')) {
+            if ($tr.hasClass('saving')) {
                 // _saveDoc will be called again once the current
                 // save operation has completed
                 return;
             }
-            $(tr).data('save_queued', false);
-            $(tr).addClass('saving');
-            $(tr).removeClass('error');
+            $tr.data('save_queued', false);
+            $tr.addClass('saving');
+            $tr.removeClass('error');
 
-            options.save(getDoc(tr, options), function (err, doc) {
-                $(tr).removeClass('saving');
+            doc = getDoc(tr, options);
+            callback = function (err, doc) {
+                $tr.removeClass('saving');
                 if (err) {
-                    $(tr).addClass('error');
+                    $tr.addClass('error');
                     // TODO: do something better than alert
                     return alert(err.toString());
                 }
@@ -356,16 +373,25 @@
                         'new doc must be returned to save callback'
                     );
                 }
-                updateDoc(doc, options);
+                if (update) {
+                    updateDoc(doc, options);
+                } else {
+                    removeDoc(doc, options);
+                }
                 _saveDoc();
-            });
+            };
+
+            if (update) {
+              options.save(doc, callback);
+            } else {
+              options.remove(doc, callback);
+            }
         }
-        if ($(tr).data('save_queued')) {
+        if ($tr.data('save_queued')) {
             return;
-        }
-        else {
+        } else {
             // collect all save calls for this tick into a single save operation
-            $(tr).data('save_queued', true);
+            $tr.data('save_queued', true);
             setTimeout(_saveDoc, 0);
         }
     };
@@ -583,17 +609,12 @@
                 ev.stopImmediatePropagation();
             }
         });
-        $(table).on('mousedown', 'tbody th', function (ev) {
-            console.log(['mousedown', ev.which]);
-            if (ev.which === 3) { // right mouse button
-
-                // disable actual context-menu
-                ev.preventDefault();
-                ev.stopImmediatePropagation();
-
-                showRowContextMenu();
-                return true;
-            }
+        $(table).on('click', 'tbody .delete-row', function (ev) {
+              var deleted,
+                  row = $(this).parents('tr'),
+                  index = row.index();
+              row.trigger('change');
+              row.detach();
         });
         $(table).on('click', '.spreadsheet-actions .add-row-btn', function (ev) {
             ev.preventDefault();
@@ -809,7 +830,12 @@
      */
 
     $.fn.spreadsheet = function (options) {
-        options.data = options.data || [];
+        _.defaults(options, {
+            create: $.noop,
+            data: [],
+            remove: $.noop,
+            save: $.noop
+        })
         if (!options.columns) {
             throw new Error('You must define some columns');
         }
