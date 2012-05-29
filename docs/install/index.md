@@ -10,7 +10,7 @@ combination with unstructured or structured SMS messages to collect data.
 
 ## Install CouchDB
 
-Kujua requires **CouchDB version 1.1 or higher**.  We are currently using the
+Kujua requires **CouchDB version 1.2 or higher**.  We are currently using the
 Couchbase Single Server binaries.  Couchbase provides CouchDB packages that are
 easy to install on Windows, Linux or Mac OSX.
 
