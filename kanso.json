@@ -17,7 +17,7 @@
     },
     "less": {
         "compress": true,
-        "compile": "static/css/app.less",
+        "compile": ["static/css/app.less", "static/css/spreadsheet.less"],
         "remove_from_attachments": true
     },
     "dependencies": {
