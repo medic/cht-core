@@ -3,29 +3,11 @@
  */
 
 var jsDump = require('jsDump'),
+    utils = require('kujua-utils'),
     settings = require('settings/root'),
     smsforms = require('views/lib/smsforms'),
     _ = require('underscore')._;
 
-var localizedString = exports.localizedString = function(strings, locales) {
-    
-    var str = '',
-        locales = !_.isUndefined(locales) ? locales : ['en'],
-        locales = _.isString(locales) ? [locales] : locales ;
-    
-    if (_.isUndefined(strings)) { return ''; }
-
-    if (_.isString(strings)) { return strings; }
-
-    _.each(locales, function(locale) {
-        if (!_.isUndefined(strings[locale])) {
-            str = strings[locale];
-        }
-    });
-    
-    return str.replace('\\n', ': ');
-
-};
 
 /*
  * return String - Try to return appropriate locale translation for a string,
@@ -34,7 +16,7 @@ var localizedString = exports.localizedString = function(strings, locales) {
 var _s = exports._s = function(key, locale) {
     var key = _.isArray(key) ? arrayToStringNotation(key) : key;
     if (exports.strings[key]) {
-        return localizedString(exports.strings[key], [locale]);
+        return utils.localizedString(exports.strings[key], [locale]);
     }
 };
 
@@ -66,32 +48,6 @@ exports.strings = {
     sent_timestamp: {
         en: 'Sent Timestamp',
         fr: 'Date envoyé'
-    }
-};
-
-var logger = exports.logger = {
-    levels: {silent:0, error:1, info:2, debug:3},
-    log: function(obj) {
-        if (typeof log !== 'undefined')
-            log(jsDump.parse(obj));
-        if (typeof console !== 'undefined')
-            console.log(obj);
-    },
-    silent: function (obj) {},
-    error: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['error']) {
-            this.log(obj);
-        }
-    },
-    info: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['info']) {
-            this.log(obj);
-        }
-    },
-    debug: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['debug']) {
-            this.log(obj);
-        }
     }
 };
 
@@ -522,7 +478,7 @@ exports.getLabels = function(keys, form, locale) {
 
     if (def) {
         _.map(def.fields, function (f) {
-            form_labels[f.key] = localizedString(f.label, locale) || f.key;
+            form_labels[f.key] = utils.localizedString(f.label, locale) || f.key;
         });
     }
 

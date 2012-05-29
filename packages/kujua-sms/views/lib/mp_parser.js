@@ -1,5 +1,4 @@
-var logger = require('kujua-utils').logger,
-    utils = require('kujua-sms/utils'),
+var utils = require('kujua-utils'),
     _ = require('underscore')._;
 
 exports.parseNum = function (raw) {
@@ -34,8 +33,8 @@ exports.parseField = function (field, raw, prev) {
                 return l[0] === val;
             });
             if (match && match[1]) { return utils.localizedString(match[1]); }
-            logger.error('Option not available for '+val+' in select list.');
-            logger.error(field.list);
+            utils.logger.error('Option not available for '+val+' in select list.');
+            utils.logger.error(field.list);
             return val;
         default:
             throw new Error('Unknown field type: ' + field.type);

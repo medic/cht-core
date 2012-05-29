@@ -41,6 +41,7 @@ exports.getResponse = function (key, locale) {
 };
 
 exports['TEST'] = {
+     title: 'Monthly Report',
      fields: [
          {key: 'facility_id', label: 'Health Facility Identifier', type: 'string', required: true},
          {key: 'year', label: 'Report Year', type: 'year', required: true},

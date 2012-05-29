@@ -238,9 +238,9 @@ TextForms.prototype = {
 };
 
 /**
- * Remove the SUR from the beginning of the message
+ * Remove the form code from the beginning of the message
  * since it does not belong to the TextForms format
- * but is just a convention to identify the message. 
+ * but is just a convention to identify the message.
  *
  * @param {Object} doc - sms_message document
  * @returns {Object|{}} - A parsed object of the sms message or an empty
@@ -250,7 +250,7 @@ TextForms.prototype = {
  */
 exports.parse = function(doc) {
     var t = new TextForms();
-    var message = doc.message.match(new RegExp('SUR(.*)'))[1];
+    var message = doc.message.match(/^\s*\w+\s+(.*)/)[1];
 
     return t.parse(message).result();
 };

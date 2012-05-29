@@ -80,7 +80,7 @@ exports.cnpw_to_record = function (test) {
     // Data parsed from a gateway POST
     var data = {
         from: '+13125551212',
-        message: 'SUR WKN2# WKS 3# AFP 99# NNT 0# MSL 5# AES01',
+        message: 'CNPW WKN2# WKS 3# AFP 99# NNT 0# MSL 5# AES01',
         sent_timestamp: '01-19-12 18:45',
         sent_to: '+15551212'
     };

@@ -57,7 +57,7 @@ var convert = function(content, locales) {
                 label: val.labels.short,
                 type: val.type
             };
-            if (val.type === 'select' && val.list) {
+            if (val.list) {
                 field.list = val.list;
             }
             if (val.required) {

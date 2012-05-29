@@ -6,7 +6,7 @@ var _ = require('underscore')._,
     utils = require('./utils'),
     strings = utils.strings,
     moment = require('moment'),
-    logger = utils.logger,
+    logger = require('kujua-utils').logger,
     smsforms = require('views/lib/smsforms');
 
 

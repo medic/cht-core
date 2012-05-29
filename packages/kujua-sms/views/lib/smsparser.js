@@ -32,7 +32,6 @@ exports.parseArray = function (form, def, doc) {
     } else {
         return mp_parser.parseArray(def, doc);
     }
-    
 };
 
 /**
@@ -47,8 +46,9 @@ exports.getForm = function(message) {
     if(message.split('!').length === 3) {
         return message.split('!')[1];
     }
-    if (message.match(new RegExp('\s*SUR'))) {
-        return 'CNPW';
+    var txtforms = message.match(/^\s*(\w+)\s+/);
+    if (txtforms.length && txtforms.length === 2) {
+        return txtforms[1];
     }
 };
 
