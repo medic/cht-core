@@ -43,6 +43,13 @@ breaking changes if the branch is shared.  In the case you want to commit
 and push for feedback, you can try to put breaking commits in a switch so they
 don't impede another developer's progress.
 
+Format your commit messages nicely, according to Git standards.  First line
+should be a short title/summary (50 characters or so) with more details in a
+separate paragraph if necessary, respecting 79 character line widths. Using
+`git -av` is recommended to review your diff while you write your commit
+message.
+
+
 ## Code Review
 
 Before merging code into master/production we should review and test it, so
