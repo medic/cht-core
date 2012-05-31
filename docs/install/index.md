@@ -242,7 +242,7 @@ For example, to get responses from Kujua in french use
 
 ## Test the Pipes
 
-Now the setup should be complete and we can see the fruits of our labor.
+Now the setup should be complete,  let's see the fruits of our labor.
 
 ### Step 1: Sync Tests
 
@@ -252,7 +252,7 @@ Now the setup should be complete and we can see the fruits of our labor.
 * Observe the **SMSSync Message Sent** notice.
 * Choose the **Sent** tab and notice your message in the Sent box.
 * Send another message but using a special **Report format**,<br />
-  for example, ```1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4```.
+  `1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4`.
 * Observe your report data in the Sent box again.
 
 ![Input URL](img/test_received.png)
@@ -260,24 +260,61 @@ Now the setup should be complete and we can see the fruits of our labor.
 ![Report Received](img/report_received.png)
 
 *Note*, if messages are in the Sent box that means they were successfully synced or 
-saved to CouchDB.
+saved to CouchDB.  If they remain in Pending then there is likely a problem, usually the first place to look is the [CouchDB log](http://localhost:5984/_log?bytes=50000).
 
 ### Step 2: View Response
 
-* You should also receive a response from the gateway, like **Zikomo!**
-
-![Zikomo!](img/zikomo.png)
+* You should also receive a response SMS from the gateway, like **Zikomo!**
 
 *Note*, our version of SMSSync does not send SMS responses to itself because this can
 cause an endless loop of error responses to and from the gateway.
 
-### Step 3: View Report Data
+### Step 3: View Form Data
+
+If the message was sent correctly you should see the parsed output form the test form.
+
+* Browse to the **Records** screen
+* Click on the record to expand and view your parsed form data and verify it looks correct.
+
+![Records Screen](img/records_screen.png)
+
+#### Woot! We got data! Crack open a beer.
+
+## Facility Data
+
+Notice in the previous step the records is **not valid**, this is because a
+facility could not be associated with the message, or more specifically the
+sender's phone number.  We can fix this by creating a facility for it.
+
+### Step 1: Create Facilities
+
+* Navigate to the Facilities screen and click on the **District** tab
+* Create a district
+
+![Create District](img/create_district.png)
+
+* Then Create a Health Center and associate with the District
+
+![Associate with District](img/associate_district.png)
+
+* Then Create a Clinic and associate with a Health Center 
+* Take note that the **Contact Phone must match** in order for the record to be created correctly.
+
+![Enter Phone Number](img/enter_phone_number.png)
+
+### Step 2: Resend Form Data
+
+* Now resend the form data, you should get a valid record!
+
+![Valid Record](img/valid_record.png)
+
+### Step 3: Download Report Data
 
 Now lets see if we can get our data out of the database and in a useful format.
 
 * Browse to the Downloads screen
-* Choose the download format your prefer
-* Choose the **PSMS: Download** button and a file should download to your computer.
+* Select the download format your prefer
+* Click the **Download button** and a file should download to your computer.
 
 ![Export Screen](img/export_screen.png)
 
