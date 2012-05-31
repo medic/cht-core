@@ -25,28 +25,49 @@ easy to install on Windows, Linux or Mac OSX.
 ### Step 2: Create Admin User
 
 The first thing you should do with any CouchDB database is setup an admin
-account if it does not have one.  You will need to think of a secure password,
-it should contain numbers, lower and uppercase letters and special characters. 
+account if it does not have one.  You will need to think of a decent password.
+This account has full privileges on the database.
 
 * Navigate your browser to Futon, the CouchDB admin tool, by default it can be found at <http://localhost:5984/_utils/>.
 * Click the **Fix this** link in the bottom right to show the admin create screen.
-* Enter the username **root** and a secure password.
+* Enter the username **root** and a your password.
 * Click **Create**
 * Save the password somewhere so you remember it.
 
 ![Fix this](img/fix_this.png)
 
-
 ### Step 3: Require Valid User
 
-Additionally we recommend you restrict all access to your database to authenticated users.  Change the `require_valid_user` default configuration.
+We recommend you restrict all access to your database to authenticated users.
+Change the `require_valid_user` configuration setting.
 
 * Click **Configuration** in the right column in Futon.
-* Click the `false` value in the `couch_httpd_auth` section.  
+* Click the `false` value in the **couch\_httpd\_auth** section.  
 * Replace the `false` text with `true` and press the enter key.
 
 ![Require Valid User](img/require_valid_user.png)
 ![Set Require Valid User True](img/require_valid_user_true.png)
+
+### Step 4: Create Additional Users
+
+We do not want everyone using the root account so lets create some other less
+privileged accounts. Typically we create at least one for the gateway to use.
+Once the user document is generated edit the
+[_users](http://localhost:5984/_utils/database.html?_users) database to create
+it. 
+
+<form class="form-inline" id="createuser">
+<span class="control-group">
+<input type="text" value="gateway" name="username" class="span2">
+</span>
+<span class="control-group">
+<input type="text" placeholder="password" name="password" class="span2">
+</span>
+<button type="submit" class="btn">Generate</button>
+</form>
+<pre id="createuser-output" class="hide"/>
+
+*Note* remember to keep your account usernames and passwords stored somewhere safe.
 
 ## Install Kujua
 
@@ -62,19 +83,17 @@ from another instance of CouchDB.
 
 On the Replicator screen complete the following fields and their corresponding values:
 
-* Replicate Changes from: **Remote Database** ```https://medic.iriscouch.com/kujua-base```
-* to: **Local Database** ```kujua```\*
+* Replicate Changes from: **Remote Database** `https://medic.iriscouch.com/kujua-base`
+* to: **Local Database** `kujua`
 * Click the **Replicate** button
 * After you click replicate verify your screen updates with the replication session data:
 
 ![Replicator Success](img/replicator_success.png)
 
 * Verify you can navigate to the home screen:
-<http://127.0.0.1:5984/kujua/_design/kujua-base/_rewrite/>, you should see the
-home screen:
+<http://127.0.0.1:5984/kujua/_design/kujua-base/_rewrite/>, you should see the following:
 
 ![Kujua](img/kujua_base_localhost.png)
-
 
 ## Verify Network Configuration
 
@@ -83,7 +102,19 @@ specifically the network address that CouchDB is listening on.  In this guide
 we assume there are two devices on **the same IP network**, this is typically a
 laptop and phone on a secured LAN via wireless or USB tethering.  
 
-### Step 1: Verify your IP address
+### Step 1: Listen to all networks
+
+Typically we want to bind CouchDB to all available network interfaces on the
+machine.  This allows CouchDB to communicate on the internet or your local
+network.  For security CouchDB is shipped to only listen to localhost, so only
+the machine it is running on can access it.
+
+* Navigate to the **Configuration** section in Futon and  find the **httpd** section
+* Change `bind_address` to `0.0.0.0`
+
+![Bind to all networks](img/bindaddress.png)
+
+### Step 2: Verify your IP address
 
 On Windows the easiest way to find your IP address is:
 
@@ -99,23 +130,26 @@ This should provide you with an IP address on the local network.  We assume you
 know enough about your system to find this piece of common information if not
 on Windows.
 
-### Step 2: Verify CouchDB is listening
+### Step 3: Verify CouchDB is listening
 
 Now to verify CouchDB is listening on a network address you can use your web
 browser.  
 
 * Type the IP address into the browser address bar and **append the following port number** prefaced with a colon ```:5984```. In this example the complete address is ```http://10.10.20.105:5984```.
+* You will be prompted for a password again since you are now using a different URL.
+* Enter the root username and password.
 * Verify you see a status message from CouchDB.
 
 ![CouchDB heartbeat](img/test_network_address.png)
 
-### Step 3: Verify the Export tool
+### Step 4: Verify Kujua is listening
 
 * Now append the following path to it:
   ```/kujua/_design/kujua-base/_rewrite/```.<br /> In this example we use 
   ```http://10.10.20.105:5984/kujua/_design/kujua-base/_rewrite/```.
-* Verify that the Export app responds with a screen similiar to the one below.
-* Now **copy your local network URL somewhere**, possibly in the clipboard or notepad.  You will need it for the next steps.
+* Verify that Kujua responds with a similiar screen (there will be some difference between versions) to the one below.
+* Now **copy and paste your local network URL somewhere**, possibly in the
+clipboard or notepad.  You will need it when you configure the Gateway Sync URL soon.
 
 ![Verify Export Tool](img/verify_export.png)
 
@@ -134,8 +168,8 @@ Ushahidi](http://smssync.ushahidi.com/) as the gateway; your device needs to run
 ### Step 2: Download SMSSync to Device
 
 
-* Copy this link destination: [SMSSync 1.1.9-kujua.2](gateway/SMSSync-kujua2-debug.apk)\*
-* Send the gateway download URL to the device either through SMS, email or other 
+* Copy this link address: [SMSSync 1.1.9-kujua.2](https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-kujua2-debug.apk)\*
+* Send the URL to the device either through SMS, email or other 
 means, then open it in your Android browser.  You can type it manually into the
 address bar too.
 * Choose **Accept** when Android prompts you to download.  The file is approximately 200KB and should download to your SD Card pretty quickly.
@@ -148,7 +182,7 @@ address bar too.
 [md5](gateway/SMSSync-kujua2-debug.apk.md5),
 [sha](gateway/SMSSync-kujua2-debug.apk.sha)
 
-\* We also maintain a copy on the web: [SMSSync 1.1.9-kujua.2](https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-kujua2-debug.apk)
+*Note* We also include a local copy with Kujua that is available locally in case you do not have internet access at the time of install. [SMSSync 1.1.9-kujua.2](gateway/SMSSync-kujua2-debug.apk)
 
 ### Step 3: Install SMSSync on Device
 
@@ -175,21 +209,21 @@ address bar too.
 
 Now configure SMSSync with the URL to our Export application:
 
-* Launch SMSSync 
-* Edit Settings
+* Launch SMSSync and Edit Settings
 * Choose **Enter the Sync URL** option
-* Enter the local network URL you discovered in the Verify Network steps above and **append one more part**: `add`.  Complete example: `http://10.10.20.105:5984/kujua/_design/kujua-base/_rewrite/add`.
+* Enter your gateway username and password similar to this `gateway:secret@`, so it is separated by a colon and ending with the at symbol.
+* Enter the local network URL you discovered in the Verify Network steps above and **append one more part**: `add`.  Complete example: `http://gateway:secret@10.10.20.105:5984/kujua/_design/kujua-base/_rewrite/add`.
 * Choose **OK**
 
-![Edit Settings](img/smssync_settings.png)
 ![Configure URL](img/smssync_config.png)
+![Input URL](img/smssync_config_user.png)
 ![Input URL](img/smssync_config_url.png)
 
 ### Step 2: Configure a few more options
 
-* **Start the SMS gateway**.  You will see a status icon in the notifications bar that tells you it is running.
+* Choose **Start the SMS gateway**.  You will see a status icon in the notifications bar that tells you it is running.
 * Scroll down a bit further and set **Get Reply From Server** so the person submitting the report gets a messaging confirming it was received.
-* Finally and set **Enable Task Checking** so the gateway processes outgoing messages.
+* Finally set **Enable Task Checking** so the gateway processes outgoing messages.
 
 ![Start](img/smssync_start.png)
 ![Get Reply From Server](img/smssync_getreply.png)
@@ -204,13 +238,11 @@ locale, you can append the `locale` query parameter to the sync URL above.  The
 default locale is english or `en` and we also support `fr` at the moment.  
 
 For example, to get responses from Kujua in french use
-`http://10.10.20.105:5984/kujua/_design/kujua-base/_rewrite/add?locale=fr`.
+`http://gateway:secret@10.10.20.105:5984/kujua/_design/kujua-base/_rewrite/add?locale=fr`.
 
 ## Test the Pipes
 
-Now the setup of the Gateway and Export tools should all be complete.  Let's
-see the fruits of our labor in action; this should also help us understand how
-it all fits together.
+Now the setup should be complete and we can see the fruits of our labor.
 
 ### Step 1: Sync Tests
 
@@ -236,14 +268,14 @@ saved to CouchDB.
 
 ![Zikomo!](img/zikomo.png)
 
-*Note*, our version of SMSSync won't send SMS responses to itself because this can
+*Note*, our version of SMSSync does not send SMS responses to itself because this can
 cause an endless loop of error responses to and from the gateway.
 
 ### Step 3: View Report Data
 
-Now lets see if we can get our data out of the database and in a useful format; the Export tool does this.
+Now lets see if we can get our data out of the database and in a useful format.
 
-* Browse to the export tool
+* Browse to the Downloads screen
 * Choose the download format your prefer
 * Choose the **PSMS: Download** button and a file should download to your computer.
 
