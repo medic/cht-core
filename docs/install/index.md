@@ -151,7 +151,7 @@ browser.
 * Now **copy and paste your local network URL somewhere**, possibly in the
 clipboard or notepad.  You will need it when you configure the Gateway Sync URL soon.
 
-![Verify Export Tool](img/verify_export.png)
+![Verify Kujua](img/verify_kujua.png)
 
 ## Install SMSSync
 
