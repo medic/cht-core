@@ -182,7 +182,7 @@ address bar too.
 [md5](gateway/SMSSync-kujua2-debug.apk.md5),
 [sha](gateway/SMSSync-kujua2-debug.apk.sha)
 
-*Note* We also include a local copy with Kujua that is available locally in case you do not have internet access at the time of install. [SMSSync 1.1.9-kujua.2](gateway/SMSSync-kujua2-debug.apk)
+*Note* We also include a copy with Kujua available locally in case you do not have internet access at the time of install. [SMSSync 1.1.9-kujua.2](gateway/SMSSync-kujua2-debug.apk)
 
 ### Step 3: Install SMSSync on Device
 
