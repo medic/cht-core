@@ -15,7 +15,7 @@ exports.parse = function (form, def, doc, format) {
     if(exports.isTextForms(form)) {
         return textforms_parser.parse(doc);
     } else {
-        return mp_parser.parse(def, doc, format);        
+        return mp_parser.parse(def, doc, format);
     }
 };
 
@@ -47,7 +47,7 @@ exports.getForm = function(message) {
         return message.split('!')[1];
     }
     var txtforms = message.match(/^\s*(\w+)\s+/);
-    if (txtforms.length && txtforms.length === 2) {
+    if (txtforms !== null && txtforms.length === 2) {
         return txtforms[1];
     }
 };

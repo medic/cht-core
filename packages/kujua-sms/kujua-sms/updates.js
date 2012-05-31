@@ -3,7 +3,7 @@
  */
 
 var _ = require('underscore')._,
-    logger = require('./utils').logger,
+    logger = require('kujua-utils').logger,
     smsforms = require('views/lib/smsforms'),
     smsparser = require('views/lib/smsparser'),
     validate = require('./validate');
