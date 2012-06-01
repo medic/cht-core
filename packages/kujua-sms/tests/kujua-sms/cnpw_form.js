@@ -6,7 +6,7 @@ exports.cnpw_example_data = function (test) {
     var doc = {
         sent_timestamp: '2-1-12 15:35',
         from: '+13125551212',
-        message: 'SUR WKN2# WKS 3# AFP 99# NNT 0# MSL 5# AES01'
+        message: 'CNPW WKN2# WKS 3# AFP 99# NNT 0# MSL 5# AES01'
     };
 
     test.expect(2);
