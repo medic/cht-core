@@ -36,7 +36,7 @@ var getRefID = function(form, form_data) {
 var getCallbackBody = function(phone, form, form_data) {
     var type = 'data_record';
     var form_definition = smsforms[form];
-    
+
     var body = {
         type: type,
         from: phone,
@@ -50,7 +50,7 @@ var getCallbackBody = function(phone, form, form_data) {
     if(smsforms.isReferralForm(form)) {
         body.refid = getRefID(form, form_data);
     }
-    
+
     _.each(form_definition.fields, function(field) {
         smsparser.merge(form, field.key.split('.'), body, form_data);
     });
@@ -59,11 +59,11 @@ var getCallbackBody = function(phone, form, form_data) {
     if(errors.length > 0) {
         body.errors = errors;
     }
-    
+
     if(form_data.extra_fields) {
         body.errors.push("Extra fields.");
     }
-    
+
     return body;
 };
 
