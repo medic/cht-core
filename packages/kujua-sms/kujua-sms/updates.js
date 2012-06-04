@@ -134,7 +134,7 @@ var getRespBody = function(doc, req) {
         host = headers[0],
         port = headers[1] || "",
         phone = doc.from, // set by gateway
-        autoreply = utils.getResponse('success'),
+        autoreply = utils.getResponse('success', doc.locale),
         errormsg = '',
         resp = {
             //smssync gateway response format

@@ -11,8 +11,8 @@ exports.validate = function(test) {
     form = "TEST";
     form_definition = {
         fields: [
-            {key: "abc", labels: {short: "abcabc"}, required: true},
-            {key: "def", labels: {short: "defdef"}, required: true}
+            {key: "abc", labels: "abcabc", required: true},
+            {key: "def", labels: "defdef", required: true}
         ]
     };
     form_data = {
@@ -36,8 +36,8 @@ exports.validate = function(test) {
      * check that nested fields work.
      */
 
-    form_definition.fields[0] = {key: "abc.hij", label: "abcabc", required: true};
-    form_definition.fields[1] = {key: "def.hij", label: "defdef", required: true};
+    form_definition.fields[0] = {key: "abc.hij", labels: "abcabc", required: true};
+    form_definition.fields[1] = {key: "def.hij", labels: "defdef", required: true};
     form_data = {
         abc: { hij: 1 },
         def: { xyz: 3 }
