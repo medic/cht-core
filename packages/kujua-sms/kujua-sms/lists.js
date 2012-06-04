@@ -40,7 +40,7 @@ exports.data_records_csv = function (head, req) {
 
     send('\uFEFF');
     send(utils.arrayToCSV([labels], delimiter) + '\n');
-    
+
     while (row = getRow()) {
         if(row.doc) {
             // add values for each data record to the rows
@@ -50,7 +50,7 @@ exports.data_records_csv = function (head, req) {
             send(utils.arrayToCSV([values], delimiter) + '\n');
         }
     }
-    
+
     return '';
 };
 
@@ -86,7 +86,7 @@ exports.data_records_xml = function (head, req) {
          '<Worksheet ss:Name="'+form+'"><Table>');
 
     send(utils.arrayToXML([labels]));
-    
+
     while (row = getRow()) {
         values = utils.getValues(row.doc, keys);
         var m = moment(values[0]);
@@ -95,7 +95,7 @@ exports.data_records_xml = function (head, req) {
     }
 
     send('</Table></Worksheet></Workbook>');
-    
+
     return '';
 };
 
@@ -163,17 +163,17 @@ var getRecipientPhone = exports.getRecipientPhone;
 var getReferralMessage = function(form, phone, clinic, record) {
     var ignore = [],
         message = [];
-    
+
     if(form === "MSBC") {
         if (isFromHealthCenter(phone, clinic)) {
             ignore.push('cref_treated');
         }
     }
-    
+
     var keys = utils.getFormKeys(form);
     var labels = utils.getLabels(keys, form);
     var values = utils.getValues(record, keys);
-    
+
     _.each(keys, function(key) {
         if (ignore.indexOf(key) === -1) {
             message.push(labels.shift() + ': ' + values.shift());
