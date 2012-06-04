@@ -6,7 +6,8 @@ var _ = require('underscore')._,
     logger = require('kujua-utils').logger,
     smsforms = require('views/lib/smsforms'),
     smsparser = require('views/lib/smsparser'),
-    validate = require('./validate');
+    validate = require('./validate'),
+    utils = require('./utils');
 
 
 /**
@@ -47,7 +48,7 @@ var getCallbackBody = function(phone, form, form_data) {
         reported_date: new Date().getTime()
     };
 
-    if(smsforms.isReferralForm(form)) {
+    if(utils.isReferralForm(form)) {
         body.refid = getRefID(form, form_data);
     }
 
@@ -133,7 +134,7 @@ var getRespBody = function(doc, req) {
         host = headers[0],
         port = headers[1] || "",
         phone = doc.from, // set by gateway
-        autoreply = smsforms.getResponse('success'),
+        autoreply = utils.getResponse('success'),
         errormsg = '',
         resp = {
             //smssync gateway response format
@@ -145,9 +146,9 @@ var getRespBody = function(doc, req) {
                     message: autoreply}]}};
 
     if (!doc.message || !doc.message.trim()) {
-        errormsg = smsforms.getResponse('error', doc.locale);
+        errormsg = utils.getResponse('error', doc.locale);
     } else if (!form || !def) {
-        errormsg = smsforms.getResponse('form_not_found', doc.locale)
+        errormsg = utils.getResponse('form_not_found', doc.locale)
                   .replace('%(form)', form || 'NULL');
     }
 

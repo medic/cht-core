@@ -232,7 +232,7 @@ var getCallbackPath = function(req, form, record, clinic) {
         return path;
     }
 
-    if (smsforms.isReferralForm(form) || !smsforms[form].data_record_merge) {
+    if (utils.isReferralForm(form) || !smsforms[form].data_record_merge) {
         return path;
     }
 
@@ -301,7 +301,7 @@ exports.data_record = function (head, req) {
     if (!clinic) {
         var err = {code: 'facility_not_found', message: "Clinic not found."};
         addError(record, err);
-    } else if (smsforms.isReferralForm(form)) {
+    } else if (utils.isReferralForm(form)) {
         var task = getReferralTask(form, record);
         record.tasks.push(task);
         for (var i in task.messages) {

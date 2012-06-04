@@ -1,63 +1,23 @@
-/**
- * @param {String} form - smsforms key string
- * @returns {Boolean} - Return true if this form is a referral since we need to
- * do extra work to process a referral form.
- * @api public
- */
-exports.isReferralForm = function(form) {
-    return ['MSBR','MSBC','MSBB'].indexOf(form) !== -1;
-};
 
-
-var responses = {
-    form_not_found: {
-        en: "The report sent '%(form)' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
-        fr: "Le formulaire envoyé '%(form)' n'est pas reconnu. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur."
-    },
-    /* form_invalid is placeholder until we do proper form validation */
-    form_invalid: {
-        en: "The report sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
-        fr: "Le formulaire envoyé '%(form)' n'est pas complet. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur."
-    },
-    error: {
-        en: "There was a problem with your message, please try to resend. If you continue to have this problem please contact your supervisor.",
-        fr: "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur."
-    },
-    success: {
-        en: 'Data received, thank you.',
-        fr: 'Merci, votre formulaire a été bien reçu.'
-    }
-};
-
-/**
- * @param {String} key from responses object
- * @param {String} locale string that is supported in responses
- * @returns {String} - localized response message for the key
- * @api public
- */
-exports.getResponse = function (key, locale) {
-    locale = locale || 'en';
-    return (responses[key] || responses['success'])[locale];
-};
-
+// Example, mainly used for tests.
 exports['TEST'] = {
      title: 'Monthly Report',
      fields: [
-         {key: 'facility_id', label: 'Health Facility Identifier', type: 'string', required: true},
-         {key: 'year', label: 'Report Year', type: 'year', required: true},
-         {key: 'month', label: 'Report Month', type: 'month'},
-         {key: 'quantity_dispensed.la_6x1', label: 'LA 6x1: Dispensed total', type: 'number'},
-         {key: 'quantity_dispensed.la_6x2', label: 'LA 6x2: Dispensed total', type: 'number'},
-         {key: 'quantity_dispensed.cotrimoxazole', label: 'Cotrimoxazole: Dispensed total', type: 'number'},
-         {key: 'quantity_dispensed.zinc', label: 'Zinc: Dispensed total', type: 'number'},
-         {key: 'quantity_dispensed.ors', label: 'ORS: Dispensed total', type: 'number'},
-         {key: 'quantity_dispensed.eye_ointment', label: 'Eye Ointment: Dispensed total', type: 'number'},
-         {key: 'days_stocked_out.la_6x1', label: 'LA 6x1: Days stocked out', type: 'number'},
-         {key: 'days_stocked_out.la_6x2', label: 'LA 6x2: Days stocked out', type: 'number'},
-         {key: 'days_stocked_out.cotrimoxazole', label: 'Cotrimoxazole: Days stocked out', type: 'number'},
-         {key: 'days_stocked_out.zinc', label: 'Zinc: Days stocked out', type: 'number'},
-         {key: 'days_stocked_out.ors', label: 'ORS: Days stocked out', type: 'number'},
-         {key: 'days_stocked_out.eye_ointment', label: 'Eye Ointment: Days stocked out', type: 'number'}
+         {key: 'facility_id', labels: 'Health Facility Identifier', type: 'string', required: true},
+         {key: 'year', labels: 'Report Year', type: 'year', required: true},
+         {key: 'month', labels: 'Report Month', type: 'month'},
+         {key: 'quantity_dispensed.la_6x1', labels: 'LA 6x1: Dispensed total', type: 'number'},
+         {key: 'quantity_dispensed.la_6x2', labels: 'LA 6x2: Dispensed total', type: 'number'},
+         {key: 'quantity_dispensed.cotrimoxazole', labels: 'Cotrimoxazole: Dispensed total', type: 'number'},
+         {key: 'quantity_dispensed.zinc', labels: 'Zinc: Dispensed total', type: 'number'},
+         {key: 'quantity_dispensed.ors', labels: 'ORS: Dispensed total', type: 'number'},
+         {key: 'quantity_dispensed.eye_ointment', labels: 'Eye Ointment: Dispensed total', type: 'number'},
+         {key: 'days_stocked_out.la_6x1', labels: 'LA 6x1: Days stocked out', type: 'number'},
+         {key: 'days_stocked_out.la_6x2', labels: 'LA 6x2: Days stocked out', type: 'number'},
+         {key: 'days_stocked_out.cotrimoxazole', labels: 'Cotrimoxazole: Days stocked out', type: 'number'},
+         {key: 'days_stocked_out.zinc', labels: 'Zinc: Days stocked out', type: 'number'},
+         {key: 'days_stocked_out.ors', labels: 'ORS: Days stocked out', type: 'number'},
+         {key: 'days_stocked_out.eye_ointment', labels: 'Eye Ointment: Days stocked out', type: 'number'}
      ],
      autoreply: "Zikomo!",
      data_record_merge: "/:form/data_record/merge/:year/:month/:clinic_id"

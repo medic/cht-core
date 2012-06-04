@@ -11,8 +11,8 @@ exports.validate = function(test) {
     form = "TEST";
     form_definition = {
         fields: [
-            {key: "abc", label: "abcabc", required: true},
-            {key: "def", label: "defdef", required: true}
+            {key: "abc", labels: {short: "abcabc"}, required: true},
+            {key: "def", labels: {short: "defdef"}, required: true}
         ]
     };
     form_data = {

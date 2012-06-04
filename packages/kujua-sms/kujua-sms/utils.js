@@ -13,7 +13,7 @@ var jsDump = require('jsDump'),
  * return String - Try to return appropriate locale translation for a string,
  *                 english by default. Support array keys, just concatenate.
  */
-var _s = exports._s = function(key, locale) {
+var _s = function(key, locale) {
     var key = _.isArray(key) ? arrayToStringNotation(key) : key;
     if (exports.strings[key]) {
         return utils.localizedString(exports.strings[key], [locale]);
@@ -50,6 +50,214 @@ exports.strings = {
         fr: 'Date envoyé'
     }
 };
+
+var arrayToStringNotation = function(arr) {
+    var str = _.flatten(arr).join('.');
+    return str;
+};
+
+var arrayDepth = function(arr) {
+    var depth = 0;
+
+    _.each(arr, function(a) {
+        if (_.isArray(a)) {
+            depth++;
+            depth = arrayDepth(a) + depth;
+        }
+    });
+
+    return depth;
+};
+
+/*
+ * Fetch labels from base strings or smsforms objects, maintaining order in
+ * the returned array.
+ *
+ * @param Array keys - keys we want to resolve labels for
+ * @param String form - form code string
+ * @param String locale - locale string, e.g. 'en', 'fr', 'en-gb'
+ *
+ * @return Array  - form field labels based on smsforms definition.
+ *
+ * @api private
+ */
+exports.getLabels = function(keys, form, locale) {
+    var def = smsforms[form],
+        labels = [],
+        form_labels = {};
+
+    if (def) {
+        _.map(def.fields, function (f) {
+            var label = utils.getLabel(f.labels);
+            form_labels[f.key] = utils.localizedString(label, locale) || f.key;
+        });
+    }
+
+    var labelsForKeys = function(keys, appendTo) {
+        for (var i in keys) {
+            var _key = keys[i];
+
+            if(_.isArray(_key) && arrayDepth(_key) === 1) {
+                labelsForKeys(_key[1], _key[0] + '.');
+                continue;
+            } else if(_.isArray(_key) && arrayDepth(_key) > 1) {
+                var key = arrayToStringNotation(_key);
+                if (form_labels[key]) {
+                    labels.push(form_labels[key]);
+                } else {
+                    labels.push(_s(key, locale));
+                }
+            } else {
+                var key = (appendTo || '') + _key;
+
+                if (form_labels[key]) {
+                    labels.push(form_labels[key]);
+                } else {
+                    labels.push(_s(key, locale));
+                }
+            }
+        }
+    }
+
+    labelsForKeys(keys);
+
+    return labels;
+};
+
+/*
+ * Get an array of values from the doc by the keys from the given keys array.
+ *
+ * @param Object doc - data record document
+ * @param Array keys - keys we want to resolve labels for
+ *
+ * @return Array  - values from doc in the same order as keys
+ */
+var getValues = exports.getValues = function(doc, keys) {
+    var values = [],
+        _keys = _.clone(keys);
+
+    _.each(_keys, function(key) {
+        if(_.isArray(key)) {
+            if(typeof doc[key[0]] === 'object') {
+                var d = doc[key[0]];
+                if (_.isArray(key[1])) {
+                    values = values.concat(getValues(d, key[1]));
+                }
+            } else {
+                values.push(doc[key]);
+            }
+        } else if (typeof doc[key] !== 'object' || doc[key] === null) {
+            values.push(doc[key]);
+        } else if (typeof doc[key] === 'object') {
+            _keys.shift();
+            values = values.concat(getValues(doc[key], _keys));
+        }
+    });
+
+    return values;
+};
+
+/*
+ * Get an array of keys from the form.
+ * If dot notation is used it will be an array
+ * of arrays.
+ *
+ * @param String form - smsforms key
+ *
+ * @return Array  - form field keys based on smsforms definition
+ */
+exports.getFormKeys = function(form) {
+    var keys = {},
+        def = smsforms[form];
+
+    var getKeys = function(key, hash) {
+        if(key.length > 1) {
+            var tmp = key.shift();
+            if(!hash[tmp]) {
+                hash[tmp] = {};
+            }
+            getKeys(key, hash[tmp]);
+        } else {
+            hash[key[0]] = '';
+        }
+    };
+
+    var hashToArray = function(hash) {
+        var array = [];
+
+        _.each(hash, function(value, key) {
+            if(typeof value === "string") {
+                array.push(key);
+            } else {
+                array.push([key, hashToArray(hash[key])]);
+            }
+        });
+
+        return array;
+    };
+
+    if (def) {
+        for (var i in def.fields) {
+            getKeys(def.fields[i].key.split('.'), keys);
+        }
+    }
+
+    return hashToArray(keys);
+};
+
+/**
+ * @param {String} form - smsforms key string
+ * @returns {Boolean} - Return true if this form is a referral since we need to
+ * do extra work to process a referral form.
+ * @api public
+ */
+exports.isReferralForm = function(form) {
+    return ['MSBR','MSBC','MSBB'].indexOf(form) !== -1;
+};
+
+
+var responses = {
+    form_not_found: {
+        en: "The report sent '%(form)' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
+        fr: "Le formulaire envoyé '%(form)' n'est pas reconnu. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur."
+    },
+    /* form_invalid is placeholder until we do proper form validation */
+    form_invalid: {
+        en: "The report sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
+        fr: "Le formulaire envoyé '%(form)' n'est pas complet. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur."
+    },
+    error: {
+        en: "There was a problem with your message, please try to resend. If you continue to have this problem please contact your supervisor.",
+        fr: "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur."
+    },
+    success: {
+        en: 'Data received, thank you.',
+        fr: 'Merci, votre formulaire a été bien reçu.'
+    }
+};
+
+/**
+ * @param {String} key from responses object
+ * @param {String} locale string that is supported in responses
+ * @returns {String} - localized response message for the key
+ * @api public
+ */
+exports.getResponse = function (key, locale) {
+    locale = locale || 'en';
+    return (responses[key] || responses['success'])[locale];
+};
+
+/**
+ * @param {Object} labels object from JSON forms
+ * @param {String|Array} locales, preferred locale strings
+ * @api public
+ */
+exports.getLabel = function (labels, locales) {
+    if (typeof labels === 'string') { return labels; }
+    //if object use short label by default
+    return labels.short;
+};
+
 
 var entityTable = {
 //  34: "&quot;",       // Quotation mark. Not required
@@ -440,157 +648,4 @@ var arrayToXML = exports.arrayToXML = function(arr, format) {
     return '<Row>' + rows.join('</Row>\n<Row>') + '</Row>';
 };
 
-
-var arrayToStringNotation = function(arr) {
-    var str = _.flatten(arr).join('.');
-    return str;
-};
-
-var arrayDepth = function(arr) {
-    var depth = 0;
-    
-    _.each(arr, function(a) {
-        if (_.isArray(a)) {
-            depth++;
-            depth = arrayDepth(a) + depth;
-        }        
-    });
-    
-    return depth;
-};
-
-/*
- * Fetch labels from base strings or smsforms objects, maintaining order in
- * the returned array.
- *
- * @param Array keys - keys we want to resolve labels for
- * @param String form - form code string
- * @param String locale - locale string, e.g. 'en', 'fr', 'en-gb'
- *
- * @return Array  - form field labels based on smsforms definition.
- *
- * @api private
- */
-exports.getLabels = function(keys, form, locale) {
-    var def = smsforms[form],
-        labels = [],
-        form_labels = {};
-
-    if (def) {
-        _.map(def.fields, function (f) {
-            form_labels[f.key] = utils.localizedString(f.label, locale) || f.key;
-        });
-    }
-
-    var labelsForKeys = function(keys, appendTo) {
-        for (var i in keys) {
-            var _key = keys[i];
-
-            if(_.isArray(_key) && arrayDepth(_key) === 1) {
-                labelsForKeys(_key[1], _key[0] + '.');
-                continue;
-            } else if(_.isArray(_key) && arrayDepth(_key) > 1) {
-                var key = arrayToStringNotation(_key);
-                if (form_labels[key]) {
-                    labels.push(form_labels[key]);
-                } else {
-                    labels.push(_s(key, locale));
-                }
-            } else {
-                var key = (appendTo || '') + _key;
-
-                if (form_labels[key]) {
-                    labels.push(form_labels[key]);
-                } else {
-                    labels.push(_s(key, locale));
-                }
-            }
-        }
-    }
-
-    labelsForKeys(keys);
-
-    return labels;
-};
-
-/*
- * Get an array of values from the doc by the keys from the given keys array.
- *
- * @param Object doc - data record document
- * @param Array keys - keys we want to resolve labels for
- *
- * @return Array  - values from doc in the same order as keys
- */
-var getValues = exports.getValues = function(doc, keys) {
-    var values = [],
-        _keys = _.clone(keys);
-
-    _.each(_keys, function(key) {
-        if(_.isArray(key)) {
-            if(typeof doc[key[0]] === 'object') {
-                var d = doc[key[0]];
-                if (_.isArray(key[1])) {
-                    values = values.concat(getValues(d, key[1]));
-                }
-            } else {
-                values.push(doc[key]);
-            }
-        } else if (typeof doc[key] !== 'object' || doc[key] === null) {
-            values.push(doc[key]);
-        } else if (typeof doc[key] === 'object') {
-            _keys.shift();
-            values = values.concat(getValues(doc[key], _keys));
-        }
-    });
-
-    return values;
-};
-
-/*
- * Get an array of keys from the form.
- * If dot notation is used it will be an array
- * of arrays.
- *
- * @param String form - smsforms key
- * 
- * @return Array  - form field keys based on smsforms definition
- */
-exports.getFormKeys = function(form) {
-    var keys = {},
-        def = smsforms[form];
-        
-    var getKeys = function(key, hash) {
-        if(key.length > 1) {
-            var tmp = key.shift();
-            if(!hash[tmp]) {
-                hash[tmp] = {};
-            }
-            getKeys(key, hash[tmp]);
-        } else {
-            hash[key[0]] = '';
-        }            
-    };
-
-    var hashToArray = function(hash) {
-        var array = [];
-        
-        _.each(hash, function(value, key) {
-            if(typeof value === "string") {
-                array.push(key);
-            } else {
-                array.push([key, hashToArray(hash[key])]);
-            }
-        });
-        
-        return array;
-    };
-    
-    if (def) {
-        for (var i in def.fields) {
-            getKeys(def.fields[i].key.split('.'), keys);
-        }
-    }
-    
-    return hashToArray(keys);
-};
 

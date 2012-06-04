@@ -46,15 +46,15 @@ var convert = function(content, locales) {
         result[type.meta.code] = {
             fields: []
         };
-        
+
         if(type.meta.label) {
             result[type.meta.code].title = type.meta.label;
         }
-        
+
         _.each(type.fields, function(val, key) {
             var field = {
                 key: key,
-                label: val.labels.short,
+                labels: val.labels,
                 type: val.type
             };
             if (val.list) {

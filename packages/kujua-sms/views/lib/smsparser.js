@@ -53,9 +53,9 @@ exports.getForm = function(message) {
 };
 
 /**
- * Merge fields from the smsforms definition with
- * the form data received through the SMS into
- * a data record.
+ * Merge fields from the form definition with the form data received through
+ * the SMS into a data record. Always use the key property on the form
+ * definition to define the data record.
  *
  * @param {String} form         - form id
  * @param {Array}  key          - key of the field separated by '.'
