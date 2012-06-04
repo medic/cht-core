@@ -88,7 +88,7 @@ exports.getLabels = function(keys, form, locale) {
 
     if (def) {
         _.map(def.fields, function (f) {
-            var label = utils.getLabel(f.labels);
+            var label = exports.getLabel(f.labels);
             form_labels[f.key] = utils.localizedString(label, locale) || f.key;
         });
     }
