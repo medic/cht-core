@@ -3,15 +3,15 @@ var utils = require('./utils'),
 
 exports.validate = function(form_definition, form_data) {
     var errors = [], key, data;
-    
+
     _.each(form_definition.fields, function(field) {
         key = field.key.split('.');
         data = form_data;
-        
+
         while(key.length > 1) {
             data = data[key.shift()];
         }
-        
+
         key = key[0];
 
         if(
@@ -22,6 +22,6 @@ exports.validate = function(form_definition, form_data) {
             errors.push("Missing field: " + utils.getLabel(field.labels);
         }
     });
-    
+
     return errors;
 };

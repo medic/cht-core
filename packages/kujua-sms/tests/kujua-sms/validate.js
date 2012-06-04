@@ -2,12 +2,12 @@ var validate = require('kujua-sms/validate');
 
 exports.validate = function(test) {
     var form, form_definition, form_data, errors;
-    
+
     /*
      * check that missing fields are logged
      * as errors.
      */
-     
+
     form = "TEST";
     form_definition = {
         fields: [
@@ -24,19 +24,18 @@ exports.validate = function(test) {
 
 
     /*
-     * check that unrequired fields do not 
+     * check that unrequired fields do not
      * produce errors.
      */
-     
+
     form_definition.fields[1].required = false;
     errors = validate.validate(form_definition, form_data);
     test.same(errors.length, 0);
-    
-    
+
     /*
      * check that nested fields work.
      */
-     
+
     form_definition.fields[0] = {key: "abc.hij", label: "abcabc", required: true};
     form_definition.fields[1] = {key: "def.hij", label: "defdef", required: true};
     form_data = {
@@ -45,12 +44,11 @@ exports.validate = function(test) {
     }
     errors = validate.validate(form_definition, form_data);
     test.same(errors[0], "Missing field: defdef");
-    
-    
+
     /*
      * check form data with labels.
      */
-     
+
     form_data = {
         abc: {
             hij: [ '1', 'abcabc' ]
@@ -61,7 +59,6 @@ exports.validate = function(test) {
     }
     errors = validate.validate(form_definition, form_data);
     test.same(errors[0], "Missing field: defdef");
-    
-     
+
     test.done();
 };
