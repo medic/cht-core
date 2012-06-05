@@ -57,12 +57,13 @@ var getCallbackBody = function(phone, form, form_data) {
     });
 
     var errors = validate.validate(form_definition, form_data);
+
     if(errors.length > 0) {
         body.errors = errors;
     }
 
     if(form_data.extra_fields) {
-        body.errors.push("Extra fields.");
+        body.errors.push({code: "extra_fields"});
     }
 
     return body;
@@ -134,7 +135,7 @@ var getRespBody = function(doc, req) {
         host = headers[0],
         port = headers[1] || "",
         phone = doc.from, // set by gateway
-        autoreply = utils.getResponse('success', doc.locale),
+        autoreply = utils.getMessage('success', doc.locale),
         errormsg = '',
         resp = {
             //smssync gateway response format
@@ -146,10 +147,9 @@ var getRespBody = function(doc, req) {
                     message: autoreply}]}};
 
     if (!doc.message || !doc.message.trim()) {
-        errormsg = utils.getResponse('error', doc.locale);
+        errormsg = utils.getMessage('error', doc.locale);
     } else if (!form || !def) {
-        errormsg = utils.getResponse('form_not_found', doc.locale)
-                  .replace('%(form)', form || 'NULL');
+        errormsg = utils.getMessage({code:'form_not_found', form: form}, doc.locale)
     }
 
     if (errormsg) {
@@ -174,9 +174,11 @@ var getRespBody = function(doc, req) {
         data: getCallbackBody(phone, form, form_data)};
 
     if(resp.callback.data.errors.length > 0) {
-        resp.payload.messages[0].message = resp.callback.data.errors.join(', ');
+        resp.payload.messages[0].message = _.map(resp.callback.data.errors, function(err) {
+            return utils.getMessage(err, doc.locale);
+        }).join(', ');
     }
-    
+
     // pass through Authorization header
     if(req.headers.Authorization) {
         resp.callback.options.headers.Authorization = req.headers.Authorization;

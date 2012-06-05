@@ -66,15 +66,15 @@ exports.sms_fields_validation = function (test) {
     test.same(resp_body.payload.success, true);
     test.same(resp_body.payload.messages[0].message,
         "Zikomo!");
-    
+
     test.same(resp_body.callback.data.errors, []);
-    
+
     test.same(
         resp_body.callback.options.path,
         baseURL + "/TEST/data_record/add/clinic/%2B13125551212");
-    
+
     step1_with_extra_fields(test);
-    
+
 };
 
 
@@ -85,7 +85,7 @@ exports.sms_fields_validation = function (test) {
  *
  */
 var step1_with_extra_fields = function(test) {
-    
+
     var data = {
         from: '+13125551212',
         message: "1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4#123",
@@ -108,10 +108,9 @@ var step1_with_extra_fields = function(test) {
     test.same(resp_body.payload.success, true);
     test.same(resp_body.payload.messages[0].message,
         "Extra fields.");
-    
-    test.same(resp_body.callback.data.errors[0], 
-        "Extra fields.");
-    
+
+    test.same(resp_body.callback.data.errors[0], {code: "extra_fields"});
+
     step1_with_errors(test);
 
 };
@@ -120,7 +119,7 @@ var step1_with_extra_fields = function(test) {
 /*
  * STEP 1 WITH ERRORS:
  *
- * Run add_sms and expect errors to appear on the 
+ * Run add_sms and expect errors to appear on the
  * callback object.
  *
  */
@@ -146,17 +145,17 @@ var step1_with_errors = function(test) {
 
     test.same(resp_body.payload.success, true);
     test.same(resp_body.payload.messages[0].message,
-        "Missing field: Report Year");
-    
+        "Missing fields: year.");
+
     test.same(resp_body.callback.data.errors[0],
-        "Missing field: Report Year");
-    
+        {code: "missing_fields", fields: ["year"]});
+
     test.same(
         resp_body.callback.options.path,
         baseURL + "/TEST/data_record/add/clinic/%2B13125551212");
-    
+
     step2_with_errors(test, helpers.nextRequest(resp_body, 'TEST'));
-    
+
 };
 
 
@@ -183,17 +182,16 @@ var step2_with_errors = function(test, req) {
     var resp_body = JSON.parse(resp.body);
 
     test.same(resp_body.callback.data.errors[0],
-        "Missing field: Report Year");
-    
+        {code: "missing_fields", fields: ["year"]});
+
     step3_with_errors(test, helpers.nextRequest(resp_body, 'TEST'));
-    
 };
 
 
 /*
  * STEP 3 WITH ERRORS:
  *
- * Check that when posting again with the same 
+ * Check that when posting again with the same
  * phone and wkn the data is overwritten on
  * the original record.
  *
@@ -227,16 +225,15 @@ var step3_with_errors = function(test, req) {
         "PUT");
 
     test.same(resp_body.callback.data.tasks, []);
-    
+
     test.same(resp_body.callback.data.errors[0],
-        "Missing field: Report Year");
-    
-    
+        {code: "missing_fields", fields: ["year"]});
+
     var body = JSON.parse(req.body);
     body.errors = [];
     body.bar = 5;
     req.body = JSON.stringify(body);
-    
+
     var viewdata = {rows: [
         {
             key: ["%2B13125551212", "2", "777399c98ff78ac7da33b639ed60f422"],
@@ -244,7 +241,7 @@ var step3_with_errors = function(test, req) {
                 _id: "777399c98ff78ac7da33b639ed60f422",
                 _rev: "484399c98ff78ac7da33b639ed60f923",
                 facility_id: "a",
-                errors: ["Missing field: Report Year"]
+                errors: [{code: "missing_fields", fields: ['year']}]
             }
         }
     ]};
@@ -254,6 +251,6 @@ var step3_with_errors = function(test, req) {
 
     test.same(resp_body.callback.data.errors, []);
     test.same(resp_body.callback.data.bar, 5);
-    
-    test.done();    
+
+    test.done();
 };

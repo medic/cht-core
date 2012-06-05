@@ -284,10 +284,9 @@ exports.data_record = function (head, req) {
         clinic = null;
 
     if (!def) {
-        addError(
-            record,
-            {code: 'form_not_found',
-             message: 'No form definition found for '+ form +'.'});
+        var err = {code: 'form_not_found', form: form};
+        err.message = utils.getMessage(err);
+        addError(record, err);
     }
 
     /* Add clinic to task */
@@ -299,7 +298,8 @@ exports.data_record = function (head, req) {
 
     /* Can't do much without a clinic */
     if (!clinic) {
-        var err = {code: 'facility_not_found', message: "Clinic not found."};
+        var err = {code: 'facility_not_found'};
+        err.message = utils.getMessage(err);
         addError(record, err);
     } else if (utils.isReferralForm(form)) {
         var task = getReferralTask(form, record);
@@ -307,10 +307,9 @@ exports.data_record = function (head, req) {
         for (var i in task.messages) {
             var msg = task.messages[i];
             if(!msg.to) {
-                addError(
-                    record,
-                    {code: 'recipient_not_found',
-                     message: 'Could not find referral recipient.'});
+                var err = {code: 'recipient_not_found'};
+                err.message = utils.getMesasge(err);
+                addError(record, err);
                 // we don't need redundant error messages
                 break;
             }
@@ -366,10 +365,9 @@ exports.data_record_merge = function (head, req) {
         row = {};
 
     if (!def) {
-        addError(
-            new_data_record,
-            {code: 'form_not_found',
-             message: 'No form definition found for '+ form +'.'});
+        var err = {code: 'form_not_found', form: form};
+        err.message = utils.getMessage(err);
+        addError(new_data_record, err);
     }
 
     while (row = getRow()) {

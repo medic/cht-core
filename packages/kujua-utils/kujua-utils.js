@@ -5,11 +5,10 @@ var jsDump = require('jsDump'),
 /*
  * Resolve language string object based on fallback or specified locale.
  *
- * @param Object strings - language/locale strings object
- * @param Array/String locales - locale strings, e.g. 'en', 'fr', 'en-gb' or
- *                               ['en', 'fr']
- *
- * @return String - string value based on locale
+ * @param {Object} strings - object with locale strings as keys
+ * @param {Array|String} locales - locale strings, e.g. 'en', 'fr', 'en-gb' or
+ *                                 ['en', 'fr']
+ * @return {String} - string value based on locale
  *
  * @api public
  */

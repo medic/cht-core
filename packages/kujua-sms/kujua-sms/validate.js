@@ -1,10 +1,11 @@
-var utils = require('./utils'),
-    _ = require('underscore')._;
+var _ = require('underscore')._,
+    dumper = require('kujua-utils').dumper;
 
 exports.validate = function(form_definition, form_data) {
-    var errors = [], key, data;
+    var missing_fields = [], orig_key, key, data;
 
     _.each(form_definition.fields, function(field) {
+        orig_key = field.key;
         key = field.key.split('.');
         data = form_data;
 
@@ -19,9 +20,13 @@ exports.validate = function(form_definition, form_data) {
             ((!_.isUndefined(data[key]) && !_.isNull(data[key])) && !!field.required &&
             _.isArray(data[key]) && (_.isUndefined(data[key][0]) || _.isNull(data[key][0])))
         ) {
-            errors.push("Missing field: " + utils.getLabel(field.labels));
+            missing_fields.push(orig_key);
         }
     });
 
-    return errors;
+    if (!_.isEmpty(missing_fields)) {
+        return [{code: 'missing_fields', fields: missing_fields}];
+    }
+
+    return [];
 };

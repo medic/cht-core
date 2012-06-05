@@ -1,7 +1,7 @@
 var updates = require('kujua-sms/updates'),
     querystring = require('querystring');
 
-exports.success_response_psms = function (test) {
+exports.success_response_test = function (test) {
     test.expect(1);
     var req = {headers:{ "Host": window.location.host }},
         doc = JSON.parse('{ "_id":"b0221beaed5222596224e4d123002045", "_rev":"1-94fa1caf624d9f2896f2ef16148f874c", "secret":"", "from":"+15551212", "message":"1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4", "message_id":"0", "sent_timestamp":"11-23-11 13:43", "sent_to":"", "type":"sms_message", "form":"TEST"}'),

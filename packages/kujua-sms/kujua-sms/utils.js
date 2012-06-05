@@ -216,7 +216,13 @@ exports.isReferralForm = function(form) {
 };
 
 
-var responses = {
+var messages = {
+    missing_fields: {
+        en: "Missing fields: %(fields)."
+    },
+    extra_fields: {
+        en: "Extra fields."
+    },
     form_not_found: {
         en: "The report sent '%(form)' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
         fr: "Le formulaire envoyé '%(form)' n'est pas reconnu. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur."
@@ -225,6 +231,12 @@ var responses = {
     form_invalid: {
         en: "The report sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
         fr: "Le formulaire envoyé '%(form)' n'est pas complet. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur."
+    },
+    facility_not_found: {
+        en: "Clinic not found."
+    },
+    recipient_not_found: {
+        en: 'Could not find referral recipient.'
     },
     error: {
         en: "There was a problem with your message, please try to resend. If you continue to have this problem please contact your supervisor.",
@@ -237,14 +249,26 @@ var responses = {
 };
 
 /**
- * @param {String} key from responses object
- * @param {String} locale string that is supported in responses
- * @returns {String} - localized response message for the key
+ * @param {String|Object} code - key that maps to messages object, if object
+ *                        is passed in then use 'code' key of that object. This
+ *                        helps support error objects.
+ * @param {String} locale - string that is supported in messages, 'en'.
+ * @returns {String} - localized response message for the key or object
  * @api public
  */
-exports.getResponse = function (key, locale) {
-    locale = locale || 'en';
-    return (responses[key] || responses['success'])[locale];
+exports.getMessage = function (code, locale) {
+
+    var key = code.code ? code.code : code,
+        msg = utils.localizedString(messages[key], locale);
+
+    if (code.fields && _.isArray(code.fields))
+        return msg.replace('%(fields)', code.fields.join(', '));
+
+    if (code.form && _.isString(code.form))
+        return msg.replace('%(form)', code.form);
+
+    return msg;
+
 };
 
 /**

@@ -20,7 +20,7 @@ exports.validate = function(test) {
         hij: 3
     };
     errors = validate.validate(form_definition, form_data);
-    test.same(errors[0], "Missing field: defdef");
+    test.same(errors[0], {code: 'missing_fields', fields: ['def']});
 
 
     /*
@@ -43,7 +43,7 @@ exports.validate = function(test) {
         def: { xyz: 3 }
     }
     errors = validate.validate(form_definition, form_data);
-    test.same(errors[0], "Missing field: defdef");
+    test.same(errors[0], {code: "missing_fields", fields: ["def.hij"]});
 
     /*
      * check form data with labels.
@@ -58,7 +58,7 @@ exports.validate = function(test) {
         }
     }
     errors = validate.validate(form_definition, form_data);
-    test.same(errors[0], "Missing field: defdef");
+    test.same(errors[0], {code: "missing_fields", fields: ["def.hij"]});
 
     test.done();
 };
