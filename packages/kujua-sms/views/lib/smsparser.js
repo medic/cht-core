@@ -1,4 +1,5 @@
-var mp_parser = require('./mp_parser'),
+var utils = require('kujua-utils'),
+    mp_parser = require('./mp_parser'),
     textforms_parser = require('./textforms_parser');
 
 /**
@@ -12,11 +13,31 @@ var mp_parser = require('./mp_parser'),
  * @api public
  */
 exports.parse = function (form, def, doc, format) {
-    if(exports.isTextForms(form)) {
-        return textforms_parser.parse(doc);
-    } else {
-        return mp_parser.parse(def, doc, format);
+
+    if (!def) { return {}; }
+
+    // TODO isTextForms should take doc/msg
+    if (exports.isTextForms(form)) {
+        // parse message data and return lowercase key/value pairs
+        var msg_data = textforms_parser.parse(doc),
+            form_data = {};
+
+        // replace tiny labels with field keys
+        for (var k in msg_data) {
+            for (var i in def.fields) {
+                var field = def.fields[i],
+                    tiny = utils.localizedString(field.labels.tiny, doc.locale);
+                if (tiny.toLowerCase() === k) {
+                    form_data[field.key] = msg_data[k];
+                    break;
+                }
+            }
+        }
+
+        return form_data;
     }
+
+    return mp_parser.parse(def, doc, format);
 };
 
 /**
@@ -27,7 +48,7 @@ exports.parse = function (form, def, doc, format) {
  * @api public
  */
 exports.parseArray = function (form, def, doc) {
-    if(exports.isTextForms(form)) {
+    if (exports.isTextForms(form)) {
         return textforms_parser.parseArray(doc);
     } else {
         return mp_parser.parseArray(def, doc);

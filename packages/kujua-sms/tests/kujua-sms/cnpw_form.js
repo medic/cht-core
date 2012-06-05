@@ -12,14 +12,14 @@ exports.cnpw_example_data = function (test) {
     test.expect(2);
 
     var form = smsparser.getForm(doc.message);
-    var obj = smsparser.parse(form, null, doc);
+    var obj = smsparser.parse(form, smsforms['CNPW'], doc);
     var expectedObj = {
-        wkn: 2,
-        wks: 3,
-        afp: 99,
-        nnt: 0,
-        msl: 5,
-        aes: 1
+        week_number: 2,
+        weeks_duration: 3,
+        afp_cases: 99,
+        nnt_cases: 0,
+        msl_cases: 5,
+        aes_cases: 1
     };
 
     test.same(obj, expectedObj);
