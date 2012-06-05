@@ -1,5 +1,7 @@
 
-// Example, mainly used for tests.
+// Example, mainly used for tests. Typically forms are defined in the JSON
+// format and converted during the build process to be referenced from these
+// exports.
 exports['TEST'] = {
      title: 'Monthly Report',
      fields: [
