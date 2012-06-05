@@ -1,5 +1,4 @@
-var _ = require('underscore')._,
-    dumper = require('kujua-utils').dumper;
+var _ = require('underscore')._;
 
 exports.validate = function(form_definition, form_data) {
     var missing_fields = [], orig_key, key, data;
