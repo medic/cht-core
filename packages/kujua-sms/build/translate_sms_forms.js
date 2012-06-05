@@ -70,6 +70,10 @@ var convert = function(content, locales) {
         result[type.meta.code].data_record_merge = getUpdatePath(type.meta.code);
 
         _.each(type.fields, function(val, key) {
+            if (!val.labels) {
+                throw new Error(
+                    'Labels must be defined: ' + JSON.stringify(val));
+            }
             var field = {
                 key: key,
                 labels: val.labels,
