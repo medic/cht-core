@@ -40,6 +40,22 @@ module.exports = {
     }
 };
 
+// some forms update existing records instead of always creating new ones.  In
+// that case they need to define an update URL and a view needs to be setup
+// based on the fields to query for an existing record.
+var getUpdatePath = function(form) {
+
+    if(form === 'CNPW') {
+        return '/:form/data_record/merge/:phone/:week_number';
+    }
+
+    if(form === 'PSMM') {
+        return '/:form/data_record/merge/:year/:month/:clinic_id';
+    }
+
+    return '';
+};
+
 var convert = function(content, locales) {
     var result = {};
     _.each(content, function(type) {
@@ -50,6 +66,8 @@ var convert = function(content, locales) {
         if(type.meta.label) {
             result[type.meta.code].title = type.meta.label;
         }
+
+        result[type.meta.code].data_record_merge = getUpdatePath(type.meta.code);
 
         _.each(type.fields, function(val, key) {
             var field = {

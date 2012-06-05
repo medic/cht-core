@@ -242,7 +242,7 @@ var getCallbackPath = function(req, form, record, clinic) {
               .replace(':month', encodeURIComponent(record.month))
               .replace(':clinic_id', encodeURIComponent(clinic._id))
               .replace(':phone', encodeURIComponent(record.from))
-              .replace(':wkn', encodeURIComponent(record.wkn));
+              .replace(':week_number', encodeURIComponent(record.week_number));
 
     return path;
 };
