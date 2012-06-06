@@ -58,8 +58,8 @@ var getUpdatePath = function(form) {
 
 // given a range of numbers return one in between
 var randNum = function(from, to) {
-    from = from || 10000000000;
-    to = to || 99999999999;
+    from = from === undefined ? 10000000000: from;
+    to = to === undefined ? 99999999999: to;
     return Math.floor(Math.random() * (to - from + 1) + from);
 }
 
@@ -79,7 +79,7 @@ var generateFieldData = function(field) {
 
     // year
     if (field.validate && field.validate.is_numeric_year)
-        return randNum(2012, 2100);
+        return randNum(2012, 2050);
 
     // month
     if (field.validate && field.validate.is_numeric_month)
@@ -91,13 +91,17 @@ var generateFieldData = function(field) {
     if (field.type === 'date') {
         var d = new Date();
         d.setTime(d.getTime()*Math.random());
-        return d.toJSON();
+
+        return 'YYYY-MM-DD'
+            .replace('YYYY', randNum(2012, 2050))
+            .replace('MM', ("0" + randNum(1,12)).slice(-2))
+            .replace('DD', ("0" + d.getDate()).slice(-2));
     }
 
     if (field.type === 'string') {
-        // always generate max length, if string has no length use 3.
+        // try to generate max length, if string has no length use 3.
         var c = randChar(chars),
-            len = field.length ? field.length : 3,
+            len = field.length ? field.length[1] : 3,
             ret = '';
 
         for (var x = 0; x < len; x++) {
@@ -108,7 +112,7 @@ var generateFieldData = function(field) {
     }
 
     if (field.type === 'integer') {
-        // TODO always generate max length
+        // try to generate max length
         if (field.range)
             return randNum(field.range[0], field.range[1]);
 
