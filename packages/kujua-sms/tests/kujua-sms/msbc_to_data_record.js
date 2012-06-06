@@ -67,7 +67,7 @@ var expected_callback = {
         cref_age: 31,
         cref_mom: "bbb",
         cref_treated: "ccc",
-        cref_rec: "Référé",
+        cref_rec: "Guéri",
         cref_reason: "ddd",
         cref_agent: "eee"
     }
@@ -194,7 +194,7 @@ var step2 = function(test, req) {
 
     test.same(
         resp_body.callback.data.tasks[0].messages[0].message,
-        "Année: 2012, Mois: 1, Jour: 16, Code du RC: abcdef, Type de patient: Autre, Nom: aaa, Age: 31, Nom de la mère ou de l'accompagnant: bbb, Recommandations/Conseils: Référé, Précisions pour recommandations: ddd, Nom de l'agent de santé: eee"
+        "Année: 2012, Mois: 1, Jour: 16, Code du RC: abcdef, Type de patient: Autre, Nom: aaa, Age: 31, Nom de la mère ou de l'accompagnant: bbb, Recommandations/Conseils: Guéri, Précisions pour recommandations: ddd, Nom de l'agent de santé: eee"
     );    
 
     test.done();

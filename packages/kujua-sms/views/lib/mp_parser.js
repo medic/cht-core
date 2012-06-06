@@ -14,10 +14,10 @@ exports.parseNum = function (raw) {
 exports.parseField = function (field, raw, prev) {
     switch (field.type) {
         case 'number':
-            return exports.parseNum(raw);
         case 'integer':
-            return raw;
+            return exports.parseNum(raw);
         case 'string':
+            if (raw === undefined) { return; }
             return raw === "" ? null : utils.localizedString(raw);
         case 'year':
             return raw;

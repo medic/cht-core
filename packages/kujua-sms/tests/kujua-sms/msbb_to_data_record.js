@@ -326,7 +326,7 @@ var step1_with_extra_fields_defined = function(test) {
     
     test.same(
         resp_body.callback.data.errors,
-        ["Extra fields."]);
+        [{code: "extra_fields"}]);
 
     step2_with_extra_fields_defined(test, helpers.nextRequest(resp_body, 'MSBB'));
     
@@ -357,7 +357,7 @@ var step2_with_extra_fields_defined = function(test, req) {
     test.same(resp_body.callback.options.method, "POST");
     test.same(resp_body.callback.options.path, appdb);
 
-    test.same(resp_body.callback.data.errors, ["Extra fields."]);
+    test.same(resp_body.callback.data.errors, [{code: "extra_fields"}]);
     test.same(
         resp_body.callback.data.sms_message,
         _.extend(example.sms_message, {

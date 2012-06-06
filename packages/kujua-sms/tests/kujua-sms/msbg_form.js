@@ -14,9 +14,9 @@ exports.msbg_example_data = function (test) {
 
     var obj = smsparser.parse('MSBG', def, doc);
     var expectedObj = {
-        monthly_year: '2012',
-        monthly_month: '1',
-        monthly_rc: 12345678901,
+        case_year: '2012',
+        case_month: '1',
+        monthly_rc: "12345678901",
         monthly_cta1: 123,
         monthly_cta2: 456,
         monthly_cta3: 789,
@@ -27,9 +27,6 @@ exports.msbg_example_data = function (test) {
         monthly_ctm2: 456,
         monthly_ctm3: 789
     };
-
-    //console.log(obj);
-    //console.log(expectedObj);
 
     test.same(obj, expectedObj);
 

@@ -17,24 +17,22 @@ exports.msbc_example_data = function (test) {
         cref_year: '2012',
         cref_month: '1',
         cref_day: 16,
-        cref_rc: 12345678901,
+        cref_rc: "12345678901",
         cref_ptype: 'Autre',
         cref_name: 'abcdefghijklmnopqrst',
         cref_age: 31,
         cref_mom: 'bcdefghijklmnopqrstu',
         cref_treated: 'cdefghijklmnopqrstuv',
-        cref_rec: 'Référé',
+        cref_rec: 'Guéri',
         cref_reason: 'defghijklmnopqrstuvw',
         cref_agent: 'efghijklmnopqrstuvwxyzabcdefghijklm'
     };
 
-    //console.log(obj);
-    //console.log(expectedObj);
 
     test.same(obj, expectedObj);
 
     var arr = smsparser.parseArray('MSBC', def, doc);
-    var expectedArr = ['1-13-12 15:35', '+15551212', '2012', '1', 16, 12345678901, 'Autre', 'abcdefghijklmnopqrst', 31, 'bcdefghijklmnopqrstu', 'cdefghijklmnopqrstuv','Référé','defghijklmnopqrstuvw','efghijklmnopqrstuvwxyzabcdefghijklm'];
+    var expectedArr = ["1-13-12 15:35","+15551212","2012","1",16,"12345678901","Autre","abcdefghijklmnopqrst",31,"bcdefghijklmnopqrstu","cdefghijklmnopqrstuv","Guéri","defghijklmnopqrstuvw","efghijklmnopqrstuvwxyzabcdefghijklm"]
 
     test.same(arr, expectedArr);
 

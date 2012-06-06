@@ -43,32 +43,6 @@ var example = {
             }
         }
     },
-    residence: 1,
-    supervisor_visits: 11,
-    mentorship_visits: 3,
-    referrals_2_to_11_months: 6,
-    referrals_12_to_59_months: 8,
-    deaths_2_to_11_months: 9,
-    deaths_12_to_59_months: null,
-    cases: {
-        fever_lt_1d: 5,
-        fever_lt_2d: 3,
-        fever_gt_3d: 7,
-        diarrhea_lt_1d: 9,
-        diarrhea_lt_2d: 9,
-        diarrhea_gt_3d: 2,
-        fast_breath_lt_1d: 5,
-        fast_breath_lt_2d: 2,
-        fast_breath_gt_3d: 2,
-    },
-    days_stocked_out: {
-        cotrimoxazole: 2,
-        eye_ointment: 3,
-        la_6x1: 4,
-        la_6x2: 5,
-        ors: 6,
-        zinc: 1
-    }
 };
 
 var expected_callback = {
@@ -82,16 +56,7 @@ var expected_callback = {
         from: "+13125551212",
         errors: [],
         tasks: [],
-        days_stocked_out: example.days_stocked_out,
-        cases: example.cases,
-        residence: example.residence,
-        supervisor_visits: example.supervisor_visits,
-        mentorship_visits: example.mentorship_visits,
-        referrals_2_to_11_months: example.referrals_2_to_11_months,
-        referrals_12_to_59_months: example.referrals_12_to_59_months,
-        deaths_2_to_11_months: example.deaths_2_to_11_months,
-        deaths_12_to_59_months: example.deaths_12_to_59_months,
-        facility_id:"facility",
+        facility_id: "facility",
         month: '2',
         year: '2011'
     }
@@ -106,7 +71,7 @@ var expected_callback = {
  **/
 exports.psmm_to_record = function (test) {
 
-    test.expect(26);
+    test.expect(13);
 
     // Data parsed from a gateway POST
     var data = {
@@ -127,80 +92,39 @@ exports.psmm_to_record = function (test) {
     };
 
     var resp = fakerequest.update(updates.add_sms, data, req);
-    
+
     var resp_body = JSON.parse(resp[1].body);
-    
+
     // assert that we are parsing sent_timestamp
     test.same(
         'Thu Jan 19 2012',
         new Date(resp_body.callback.data.reported_date).toDateString()
     );
-    
+
     test.equal(
         "18:45",
         new Date(resp_body.callback.data.reported_date)
             .toTimeString().match(/^18:45/)[0]
     );
-    
+
     delete resp_body.callback.data.reported_date;
-    
+
     test.same(
         resp_body.callback.options.path,
         baseURL + "/PSMM/data_record/add/clinic/%2B13125551212");
-    
-    test.same(
-        resp_body.callback.data.days_stocked_out,
-        expected_callback.data.days_stocked_out);
-    
-    test.same(
-        resp_body.callback.data.cases,
-        expected_callback.data.cases);
-    
-    test.same(
-        resp_body.callback.data.sms_message,
-        expected_callback.data.sms_message);
-    
-    test.same(
-        resp_body.callback.data,
-        expected_callback.data);
-    
+
     step2_1(test, helpers.nextRequest(resp_body, 'PSMM'));
 
 };
 
 
 /*
- * STEP 2:
- * 
- * Run data_record/add/clinic and expect a callback to
- * check if the same data record already exists with missing clinic.
- */
-var step2_1 = function(test, req) {
-    
-    var clinic = example.clinic;
-
-    var viewdata = {rows: []};
-
-    var resp = fakerequest.list(lists.data_record, viewdata, req);
-
-    var resp_body = JSON.parse(resp.body);
-
-    test.same(
-        resp_body.callback.data.errors,
-        [{"code":"facility_not_found", "message":"Clinic not found."}]);
-
-    step2_2(test, req);
-
-};
-
-
-/*
- * STEP 2:
+ * STEP 1:
  *
  * Run data_record/add/clinic and expect a callback to
  * check if the same data record already exists with existing clinic.
  */
-var step2_2 = function(test, req) {
+var step2_1 = function(test, req) {
 
     var clinic = example.clinic;
 
@@ -272,23 +196,6 @@ var step3_1 = function(test, req, finish, args) {
         resp_body.callback.options.method,
         "PUT");
 
-    // extra checks
-    test.same(
-        resp_body.callback.data.cases,
-        expected_callback.data.cases);
-
-    test.same(
-        resp_body.callback.data.days_stocked_out,
-        example.days_stocked_out);
-
-    test.same(
-        resp_body.callback.data.sms_message,
-        expected_callback.data.sms_message);
-
-    test.same(
-        resp_body.callback.data.related_entities,
-        {clinic: example.clinic});
-
     test.same(resp_body.callback.data.errors, []);
     test.same(resp_body.callback.data.tasks, []);
 
@@ -318,18 +225,6 @@ var step3_2 = function(test, req) {
     // POST
     test.same(resp_body.callback.options.method, "POST");
     test.same(resp_body.callback.options.path, appdb);
-
-    // extra checks
-    test.same(resp_body.callback.data.errors, []);
-    test.same(
-        resp_body.callback.data.sms_message,
-        example.sms_message);
-    test.same(
-        resp_body.callback.data.days_stocked_out,
-        example.days_stocked_out);
-    test.same(
-        resp_body.callback.data.cases,
-        example.cases);
 
     test.done();
 };

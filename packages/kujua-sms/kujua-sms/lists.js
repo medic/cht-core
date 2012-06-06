@@ -236,15 +236,22 @@ var getCallbackPath = function(req, form, record, clinic) {
         return path;
     }
 
-    path = baseURL + smsforms[form].data_record_merge
-              .replace(':form', encodeURIComponent(form))
-              .replace(':year', encodeURIComponent(record.year))
-              .replace(':month', encodeURIComponent(record.month))
-              .replace(':clinic_id', encodeURIComponent(clinic._id))
-              .replace(':phone', encodeURIComponent(record.from))
-              .replace(':week_number', encodeURIComponent(record.week_number));
+    // parse data_record_merge attribute for field names and replace
+    var matches = smsforms[form].data_record_merge.match(/(:\w*)/g),
+        updateURL = smsforms[form].data_record_merge;
 
-    return path;
+    for (var i in matches) {
+        var key = matches[i].replace(':','');
+        if (record[key]) {
+            updateURL = updateURL.replace(
+                            matches[i], encodeURIComponent(record[key]));
+        }
+    }
+
+    return baseURL + updateURL
+        .replace(':clinic_id', clinic._id)
+        .replace(':form', encodeURIComponent(form));
+
 };
 
 
@@ -308,7 +315,7 @@ exports.data_record = function (head, req) {
             var msg = task.messages[i];
             if(!msg.to) {
                 var err = {code: 'recipient_not_found'};
-                err.message = utils.getMesasge(err);
+                err.message = utils.getMessage(err);
                 addError(record, err);
                 // we don't need redundant error messages
                 break;

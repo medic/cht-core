@@ -46,11 +46,11 @@ module.exports = {
 var getUpdatePath = function(form) {
 
     if(form === 'CNPW') {
-        return '/:form/data_record/merge/:phone/:week_number';
+        return '/:form/data_record/merge/:from/:week_number';
     }
 
     if(form === 'PSMM') {
-        return '/:form/data_record/merge/:year/:month/:clinic_id';
+        return '/:form/data_record/merge/:monthly_year/:monthly_month/:clinic_id';
     }
 
     return '';
@@ -79,11 +79,22 @@ var convert = function(content, locales) {
                 labels: val.labels,
                 type: val.type
             };
-            if (val.list) {
-                field.list = val.list;
-            }
             if (val.required) {
                 field.required = true;
+            }
+            if (val.list) {
+                field.type = 'select';
+                field.list = val.list;
+            }
+            // map months
+            if (val.validate && val.validate.is_numeric_month) {
+                field.type = 'month';
+                field.list = undefined;
+            }
+            // map years
+            if (val.validate && val.validate.is_numeric_year) {
+                field.type = 'year';
+                field.list = undefined;
             }
             // turn boolean into select form
             if (val.type === 'boolean') {
