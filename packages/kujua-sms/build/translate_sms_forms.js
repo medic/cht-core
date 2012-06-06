@@ -3,8 +3,7 @@ var fs = require('fs')
   , async = require('async')
   , modules = require('kanso-utils/modules')
   , _ = require('underscore')._
-  , result = {}
-  , locales = ['en', 'fr'];
+  , result = {};
 
 module.exports = {
     before: 'modules',
@@ -16,7 +15,7 @@ module.exports = {
                 fs.readFile(muvuku_path + '/' + filename, function(err, content) {
                     if(err) { return cb(err); }
 
-                    var translation = convert(JSON.parse(content), locales);
+                    var translation = convert(JSON.parse(content));
                     _.extend(result, translation);
                     cb(null, result);
                 });
@@ -131,7 +130,7 @@ var generateFieldData = function(field) {
 
 };
 
-var convert = function(content, locales) {
+var convert = function(content) {
     var result = {};
     _.each(content, function(type) {
         result[type.meta.code] = {
