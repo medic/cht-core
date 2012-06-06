@@ -56,11 +56,92 @@ var getUpdatePath = function(form) {
     return '';
 };
 
+// given a range of numbers return one in between
+var randNum = function(from, to) {
+    from = from || 10000000000;
+    to = to || 99999999999;
+    return Math.floor(Math.random() * (to - from + 1) + from);
+}
+
+// given a string return random character from the string
+var randChar = function(str) {
+    return str[Math.floor(Math.random() * str.length)];
+};
+
+// generate example muvuku message based on JSON form def
+var generateFieldData = function(field) {
+
+    var chars = "abcdefghiklmnopqrstuvwxyz",
+        ints = "123456789";
+
+    if (field.list)
+        return field.list[Math.floor(Math.random()*field.list.length)][0];
+
+    // year
+    if (field.validate && field.validate.is_numeric_year)
+        return randNum(2012, 2100);
+
+    // month
+    if (field.validate && field.validate.is_numeric_month)
+        return randNum(1,12);
+
+    if (field.type === 'boolean')
+        return randNum(0,1);
+
+    if (field.type === 'date') {
+        var d = new Date();
+        d.setTime(d.getTime()*Math.random());
+        return d.toJSON();
+    }
+
+    if (field.type === 'string') {
+        // always generate max length, if string has no length use 3.
+        var c = randChar(chars),
+            len = field.length ? field.length : 3,
+            ret = '';
+
+        for (var x = 0; x < len; x++) {
+            ret += c;
+        }
+
+        return ret;
+    }
+
+    if (field.type === 'integer') {
+        // TODO always generate max length
+        if (field.range)
+            return randNum(field.range[0], field.range[1]);
+
+        if (field.length) {
+            var i = randChar(ints),
+                ret = '';
+            for (var x = 0; x < field.length[1]; x++) {
+                ret += i;
+            }
+            return Number(ret);
+        }
+
+        // integer field has no length, generate random 3 digit number
+        return randNum(100,999);
+    }
+
+};
+
 var convert = function(content, locales) {
     var result = {};
     _.each(content, function(type) {
         result[type.meta.code] = {
-            fields: []
+            fields: [],
+            examples: {
+                data: {
+                    muvuku: [],
+                    textforms: []
+                },
+                messages: {
+                    muvuku: '',
+                    textforms: ''
+                }
+            }
         };
 
         if(type.meta.label) {
@@ -72,7 +153,7 @@ var convert = function(content, locales) {
         _.each(type.fields, function(val, key) {
             if (!val.labels) {
                 throw new Error(
-                    'Labels must be defined: ' + JSON.stringify(val));
+                    'Field must have labels: ' + JSON.stringify(val));
             }
             var field = {
                 key: key,
@@ -101,8 +182,16 @@ var convert = function(content, locales) {
                 field.type = 'select';
                 field.list = [[0,{en: 'False'}],[1,{en: 'True'}]];
             }
+            field.example_data = generateFieldData(val);
             result[type.meta.code].fields.push(field);
+            result[type.meta.code].examples.data.muvuku.push(field.example_data);
         });
+
+        // example data from muvuku
+        result[type.meta.code].examples.messages.muvuku =
+            '1!'+type.meta.code+'!'
+            + result[type.meta.code].examples.data.muvuku.join('#');
+
     });
     return result;
 };
