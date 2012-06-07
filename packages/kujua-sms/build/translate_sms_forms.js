@@ -133,7 +133,7 @@ var generateFieldData = function(field) {
 var convert = function(content) {
     var result = {};
     _.each(content, function(type) {
-        result[type.meta.code] = {
+        var r = result[type.meta.code] = {
             fields: [],
             examples: {
                 data: {
@@ -148,10 +148,10 @@ var convert = function(content) {
         };
 
         if(type.meta.label) {
-            result[type.meta.code].title = type.meta.label;
+            r.title = type.meta.label;
         }
 
-        result[type.meta.code].data_record_merge = getUpdatePath(type.meta.code);
+        r.data_record_merge = getUpdatePath(type.meta.code);
 
         _.each(type.fields, function(val, key) {
             if (!val.labels) {
@@ -185,15 +185,44 @@ var convert = function(content) {
                 field.type = 'select';
                 field.list = [[0,{en: 'False'}],[1,{en: 'True'}]];
             }
-            field.example_data = generateFieldData(val);
-            result[type.meta.code].fields.push(field);
-            result[type.meta.code].examples.data.muvuku.push(field.example_data);
+            r.fields.push(field);
+
+            // add muvuku example data
+            var example_data = generateFieldData(val);
+            r.examples.data.muvuku.push(example_data);
+
+            var tiny = val.labels.tiny;
+            // if tiny labels then add textforms data as well
+            if (tiny) {
+                // textforms include the label with the data values. tiny can
+                // be a locale object or string.
+                if (typeof tiny === 'string') {
+                    r.examples.data.textforms.push(tiny + ' ' + example_data);
+                } else if (typeof tiny === 'object') {
+                    // we only need to grab first locale for example messages
+                    for (var k in tiny) {
+                        var v = tiny[k];
+                        r.examples.data.textforms.push(v + ' ' + example_data);
+                        break;
+                    }
+                }
+            };
+
         });
 
-        // example data from muvuku
-        result[type.meta.code].examples.messages.muvuku =
-            '1!'+type.meta.code+'!'
-            + result[type.meta.code].examples.data.muvuku.join('#');
+        // combine muvuku example data into message
+        if (r.examples.data.muvuku) {
+            r.examples.messages.muvuku =
+                '1!'+type.meta.code+'!'
+                + r.examples.data.muvuku.join('#');
+        }
+
+        // combine textforms example data into message
+        if (r.examples.data.textforms.length > 0) {
+            r.examples.messages.textforms =
+                type.meta.code + ' '
+                + r.examples.data.textforms.join('#');
+        }
 
     });
     return result;
