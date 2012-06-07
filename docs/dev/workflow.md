@@ -83,4 +83,4 @@ typically once or twice a week.
 
 3. Push to production URL with Kanso.
 
-    kanso push https://medic.iriscouch.com/kujua-base
+    kanso push https://medic.iriscouch.com/kujua
