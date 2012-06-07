@@ -3,7 +3,7 @@
 // format and converted during the build process to be referenced from these
 // exports.
 exports['TEST'] = {
-     title: 'Monthly Report',
+     title: 'Test Monthly Report',
      fields: [
          {key: 'facility_id', labels: 'Health Facility Identifier', type: 'string', required: true},
          {key: 'year', labels: 'Report Year', type: 'year', required: true},
@@ -22,6 +22,11 @@ exports['TEST'] = {
          {key: 'days_stocked_out.eye_ointment', labels: 'Eye Ointment: Days stocked out', type: 'number'}
      ],
      autoreply: "Zikomo!",
-     data_record_merge: "/:form/data_record/merge/:year/:month/:clinic_id"
+     data_record_merge: "/:form/data_record/merge/:year/:month/:clinic_id",
+     examples: {
+         messages: {
+             muvuku: '1!TEST!facility#2012#4#222#333#444#555#666#777#888#999#111#222#333#444'
+         }
+     }
 };
 

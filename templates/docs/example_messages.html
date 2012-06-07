@@ -1,0 +1,11 @@
+<div class="example-form">
+{#iter:forms}
+  <h3>{value.title} <small>{key}</small></h3>
+  {#value.examples}
+    {#messages}
+    <dl><dt>Muvuku Example</dt><dd><code>{muvuku}</code></dd></dl>
+    {?textforms}<dl><dt>Textforms</dt><dd><code>{textforms}</code></dd></dl>{/textforms}
+    {/messages}
+  {/value.examples}
+{/iter}
+</div>
