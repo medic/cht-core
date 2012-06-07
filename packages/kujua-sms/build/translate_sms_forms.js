@@ -1,5 +1,5 @@
 var fs = require('fs')
-  , muvuku_path = '../muvuku/forms/json'
+  , jsonforms_path = 'json-forms'
   , async = require('async')
   , modules = require('kanso-utils/modules')
   , _ = require('underscore')._
@@ -12,7 +12,7 @@ module.exports = {
             var files = doc['kujua-sms'].sms_forms;
 
             async.reduce(files, {}, function(result, filename, cb) {
-                fs.readFile(muvuku_path + '/' + filename, function(err, content) {
+                fs.readFile(jsonforms_path + '/' + filename, function(err, content) {
                     if(err) { return cb(err); }
 
                     var translation = convert(JSON.parse(content));

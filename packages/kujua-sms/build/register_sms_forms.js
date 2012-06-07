@@ -1,4 +1,4 @@
-var path = '../muvuku/forms/json';
+var path = 'json-forms';
     
 module.exports = function (root, dir, settings, doc, callback) {
     if (!doc['kujua-sms']) {
