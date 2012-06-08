@@ -3,6 +3,49 @@ var utils = require('kujua-utils'),
     textforms_parser = require('./textforms_parser');
 
 /**
+ * Decide if it's a form parsed by the testforms parser.
+ *
+ * @param {String} msg      - sms message
+ *
+ * @api private
+ */
+exports.isTextformsFormat = function(msg) {
+    return msg.match(new RegExp('^\\s*[A-Z]{4}\\s+\\w+.*#')) !== null;
+};
+
+/**
+ * Decide if it's a form parsed by the muvuku parser.
+ *
+ * @param {String} msg      - sms message
+ *
+ * @api private
+ */
+exports.isMuvukuFormat = function(msg) {
+    return msg.match(new RegExp('^\\s*\\d+![A-Z]{4}!')) !== null;
+};
+
+/**
+ * Return format string for use on sms_message record and various decisions.
+ *
+ * @param {String} msg      - sms message
+ *
+ * @api public
+ * */
+exports.getSMSFormat = function(msg) {
+
+    if (!msg)
+        return 'unstructured';
+
+    if (exports.isTextformsFormat(msg))
+        return 'textforms';
+
+    if (exports.isMuvukuFormat(msg))
+        return 'muvuku';
+
+    return 'unstructured';
+};
+
+/**
  * @param {String} form - form definition id
  * @param {Object} def - smsforms form definition
  * @param {Object} doc - sms_message document
@@ -16,8 +59,7 @@ exports.parse = function (form, def, doc, format) {
 
     if (!def) { return {}; }
 
-    // TODO isTextForms should take doc/msg
-    if (exports.isTextForms(form)) {
+    if (exports.isTextformsFormat(doc.message)) {
         // parse message data and return lowercase key/value pairs
         var msg_data = textforms_parser.parse(doc),
             form_data = {};
@@ -48,7 +90,7 @@ exports.parse = function (form, def, doc, format) {
  * @api public
  */
 exports.parseArray = function (form, def, doc) {
-    if (exports.isTextForms(form)) {
+    if (exports.isTextformsFormat(doc.message)) {
         return textforms_parser.parseArray(doc);
     } else {
         return mp_parser.parseArray(def, doc);
@@ -83,34 +125,28 @@ exports.getForm = function(message) {
  * @param {Object} data_record  - record into which the data is merged
  * @param {Object} form_data    - data from the SMS
  *                                to be merged into the data record
- * @api private
+ * @param {String} format       - message type format string, derived from
+ *                                getSMSFormat
+ *
+ * @api public
  */
-exports.merge = function(form, key, data_record, form_data) {
+exports.merge = function(form, key, data_record, form_data, format) {
+    // support creating subobjects on the record if form defines key with dot
+    // notation.
     if(key.length > 1) {
         var tmp = key.shift();
         if(form_data[tmp]) {
             if(!data_record[tmp]) {
                 data_record[tmp] = {};
             }
-            exports.merge(form, key, data_record[tmp], form_data[tmp]);
+            exports.merge(form, key, data_record[tmp], form_data[tmp], format);
         }
     } else {
-        if(exports.isTextForms(form)) {
+        if (format === 'textforms') {
             data_record[key[0]] = form_data[key[0]];
-        } else {
+        } else if (format === 'muvuku') {
             data_record[key[0]] = form_data[key[0]][0];
         }
     }
 };
 
-/**
- * Decide if it's a form parsed by the testforms
- * parser.
- *
- * @param {String} form         - form id
- *
- * @api private
- */
-exports.isTextForms = function(form) {
-    return form === "CNPW";
-};

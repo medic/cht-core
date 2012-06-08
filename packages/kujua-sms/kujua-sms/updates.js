@@ -34,9 +34,10 @@ var getRefID = function(form, form_data) {
  * @returns {Object} - body for callback
  * @api private
  */
-var getCallbackBody = function(phone, form, form_data) {
-    var type = 'data_record';
-    var form_definition = smsforms[form];
+var getCallbackBody = function(phone, doc, form_data) {
+    var type = 'data_record',
+        form = doc.form,
+        def = smsforms[form];
 
     var body = {
         type: type,
@@ -45,18 +46,27 @@ var getCallbackBody = function(phone, form, form_data) {
         related_entities: {clinic: null},
         errors: [],
         tasks: [],
-        reported_date: new Date().getTime()
+        reported_date: new Date().getTime(),
+        // keep message datat part of record
+        sms_message: doc
     };
+
+    // try to parse timestamp from gateway
+    var ts = parseSentTimestamp(doc.sent_timestamp);
+    if (ts) {
+        body.reported_date = ts;
+    }
 
     if(utils.isReferralForm(form)) {
         body.refid = getRefID(form, form_data);
     }
 
-    _.each(form_definition.fields, function(field) {
-        smsparser.merge(form, field.key.split('.'), body, form_data);
-    });
+    for (var i in def.fields) {
+        var field = def.fields[i];
+        smsparser.merge(form, field.key.split('.'), body, form_data, doc.format);
+    }
 
-    var errors = validate.validate(form_definition, form_data);
+    var errors = validate.validate(def, form_data);
 
     if(errors.length > 0) {
         body.errors = errors;
@@ -171,7 +181,7 @@ var getRespBody = function(doc, req) {
             path: baseURL + getCallbackPath(phone, form, form_data),
             method: "POST",
             headers: {'Content-Type': 'application/json; charset=utf-8'}},
-        data: getCallbackBody(phone, form, form_data)};
+        data: getCallbackBody(phone, doc, form_data)};
 
     if(resp.callback.data.errors.length > 0) {
         resp.payload.messages[0].message = _.map(resp.callback.data.errors, function(err) {
@@ -182,15 +192,6 @@ var getRespBody = function(doc, req) {
     // pass through Authorization header
     if(req.headers.Authorization) {
         resp.callback.options.headers.Authorization = req.headers.Authorization;
-    }
-
-    // keep sms_message part of record
-    resp.callback.data.sms_message = doc;
-
-    // try to parse timestamp from gateway
-    var ts = parseSentTimestamp(doc.sent_timestamp);
-    if (ts) {
-        resp.callback.data.reported_date = ts;
     }
 
     return JSON.stringify(resp);
@@ -204,6 +205,7 @@ exports.getRespBody = getRespBody;
 exports.add_sms = function (doc, req) {
     return [null, getRespBody(_.extend(req.form, {
         type: "sms_message",
+        format: smsparser.getSMSFormat(req.form.message),
         locale: (req.query && req.query.locale) || 'en',
         form: smsparser.getForm(req.form.message)
     }), req)];
