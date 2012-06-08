@@ -13,9 +13,9 @@ var TextForms = function () {
     this.clear();
 
     this._re = {
-        decimal: /\./,
-        boundary: /\s*#\s*/,
-        numeric: /\d+(?:\.(?:\d+)?)?/,
+        decimal: new RegExp('\\.'),
+        boundary: new RegExp('\\s*#\\s*'),
+        numeric: new RegExp('\\d+(?:\\.(?:\\d+)?)?'),
     };
 
     this._re.numeric_only = new RegExp(
@@ -38,7 +38,8 @@ TextForms.prototype = {
      */
     embed_re: function (_regex) {
 
-        return _regex.toString().replace(/^\//, '').replace(/\/$/, '');
+        return _regex.toString().replace(new RegExp('^\\/'), '')
+                .replace(new RegExp('\\/$'), '');
     },
 
     /**
@@ -48,7 +49,7 @@ TextForms.prototype = {
      */
     trim: function (_s) {
 
-        return _s.replace(/^\s+/, '').replace(/\s+$/, '');
+        return _s.replace(new RegExp('^\\s+'), '').replace(new RegExp('\\s+$'), '');
     },
 
     /**
@@ -135,7 +136,7 @@ TextForms.prototype = {
                 either: (i) a value written with an explicit whitespace
                 separator (stored in `other`) or (ii) a value written with
                 an implicit separator (in `numeric`, and never a string). */
-                
+
             var m = fields[i].match(this._re.field);
 
             /* Empty component:
@@ -144,7 +145,7 @@ TextForms.prototype = {
             if (!m) {
                 continue;
             }
-            
+
             /* Capture subgroups:
                 These refer to the `this._re.field` regular expression. */
 
@@ -250,7 +251,7 @@ TextForms.prototype = {
  */
 exports.parse = function(doc) {
     var t = new TextForms();
-    var message = doc.message.match(/^\s*\w+\s+(.*)/)[1];
+    var message = doc.message.match(new RegExp('^\\s*\\w+\\s+(.*)'))[1];
 
     return t.parse(message).result();
 };
