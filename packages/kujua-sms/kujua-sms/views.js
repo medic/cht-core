@@ -1,8 +1,8 @@
 exports.data_records_by_district_and_form = {
     map: function(doc) {
         if(doc.type === 'data_record') {
-            var smsforms = require('views/lib/smsforms'),
-                def = smsforms[doc.form],
+            var jsonforms = require('views/lib/jsonforms'),
+                def = jsonforms[doc.form],
                 title = def ? def.title : null;
 
             if (doc.related_entities.clinic
@@ -24,8 +24,8 @@ exports.data_records_by_district_and_form = {
 exports.data_records_valid_by_district_and_form = {
     map: function(doc) {
         if(doc.type === 'data_record') {
-            var smsforms = require('views/lib/smsforms'),
-                def = smsforms[doc.form],
+            var jsonforms = require('views/lib/jsonforms'),
+                def = jsonforms[doc.form],
                 title = def ? def.title : null;
 
             if (doc.related_entities.clinic

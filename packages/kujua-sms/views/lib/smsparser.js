@@ -47,7 +47,7 @@ exports.getSMSFormat = function(msg) {
 
 /**
  * @param {String} form - form definition id
- * @param {Object} def - smsforms form definition
+ * @param {Object} def - jsonforms form definition
  * @param {Object} doc - sms_message document
  * @param {Number} format - if 1 then include labels in value
  * @returns {Object|{}} - A parsed object of the sms message or an empty
@@ -66,11 +66,11 @@ exports.parse = function (form, def, doc, format) {
 
         // replace tiny labels with field keys
         for (var k in msg_data) {
-            for (var i in def.fields) {
-                var field = def.fields[i],
+            for (var k in def.fields) {
+                var field = def.fields[k],
                     tiny = utils.localizedString(field.labels.tiny, doc.locale);
                 if (tiny.toLowerCase() === k) {
-                    form_data[field.key] = msg_data[k];
+                    form_data[k] = msg_data[k];
                     break;
                 }
             }
@@ -84,7 +84,7 @@ exports.parse = function (form, def, doc, format) {
 
 /**
  * @param {String} form - form definition id
- * @param {Object} def - smsforms definition
+ * @param {Object} def - jsonforms definition
  * @param {Object} doc - sms_message document
  * @returns {Array|[]} - An array of values from the raw sms message
  * @api public

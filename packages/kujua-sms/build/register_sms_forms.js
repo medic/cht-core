@@ -5,14 +5,14 @@ module.exports = function (root, dir, settings, doc, callback) {
         doc['kujua-sms'] = {};
     }
     
-    if (!doc['kujua-sms'].sms_forms) {
-        doc['kujua-sms'].sms_forms = [];
+    if (!doc['kujua-sms'].json_forms) {
+        doc['kujua-sms'].json_forms = [];
     }
     
     fs.readdir(path, function(err, files) {
         if(err) { return callback(err); }
 
-        doc['kujua-sms'].sms_forms = files.filter(function (f) {
+        doc['kujua-sms'].json_forms = files.filter(function (f) {
             return /.*\.json$/.test(f);
         });
         callback(null, doc);

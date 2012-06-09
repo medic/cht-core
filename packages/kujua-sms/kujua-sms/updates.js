@@ -4,14 +4,14 @@
 
 var _ = require('underscore')._,
     logger = require('kujua-utils').logger,
-    smsforms = require('views/lib/smsforms'),
+    jsonforms = require('views/lib/jsonforms'),
     smsparser = require('views/lib/smsparser'),
     validate = require('./validate'),
     utils = require('./utils');
 
 
 /**
- * @param {String} form - smsforms key string
+ * @param {String} form - jsonforms key string
  * @param {Object} form_data - parsed form data
  * @returns {String} - Referral ID value
  * @api private
@@ -37,7 +37,7 @@ var getRefID = function(form, form_data) {
 var getCallbackBody = function(phone, doc, form_data) {
     var type = 'data_record',
         form = doc.form,
-        def = smsforms[form];
+        def = jsonforms[form];
 
     var body = {
         type: type,
@@ -61,8 +61,8 @@ var getCallbackBody = function(phone, doc, form_data) {
         body.refid = getRefID(form, form_data);
     }
 
-    for (var i in def.fields) {
-        var field = def.fields[i];
+    for (var k in def.fields) {
+        var field = def.fields[k];
         smsparser.merge(form, field.key.split('.'), body, form_data, doc.format);
     }
 
@@ -81,7 +81,7 @@ var getCallbackBody = function(phone, doc, form_data) {
 
 /**
  * @param {String} phone - phone number of the sending phone (from)
- * @param {String} form - smsforms key string
+ * @param {String} form - jsonforms key string
  * @param {Object} form_data - parsed form data
  * @returns {String} - Path for callback
  * @api private
@@ -138,7 +138,7 @@ var parseSentTimestamp = function(str) {
  */
 var getRespBody = function(doc, req) {
     var form = doc.form,
-        def = smsforms[form],
+        def = jsonforms[form],
         form_data = smsparser.parse(form, def, doc, 1),
         baseURL = require('duality/core').getBaseURL(),
         headers = req.headers.Host.split(":"),

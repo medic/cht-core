@@ -5,7 +5,7 @@
 var jsDump = require('jsDump'),
     utils = require('kujua-utils'),
     settings = require('settings/root'),
-    smsforms = require('views/lib/smsforms'),
+    jsonforms = require('views/lib/jsonforms'),
     _ = require('underscore')._;
 
 
@@ -70,25 +70,26 @@ var arrayDepth = function(arr) {
 };
 
 /*
- * Fetch labels from base strings or smsforms objects, maintaining order in
+ * Fetch labels from base strings or jsonform objects, maintaining order in
  * the returned array.
  *
  * @param Array keys - keys we want to resolve labels for
  * @param String form - form code string
  * @param String locale - locale string, e.g. 'en', 'fr', 'en-gb'
  *
- * @return Array  - form field labels based on smsforms definition.
+ * @return Array  - form field labels based on jsonforms definition.
  *
  * @api private
  */
 exports.getLabels = function(keys, form, locale) {
-    var def = smsforms[form],
+    var def = jsonforms[form],
         labels = [],
         form_labels = {};
 
     if (def) {
-        _.map(def.fields, function (f) {
+        _.map(def.fields, function (f, key) {
             var label = exports.getLabel(f.labels);
+            // use the key as label as last resort
             form_labels[f.key] = utils.localizedString(label, locale) || f.key;
         });
     }
@@ -162,13 +163,13 @@ var getValues = exports.getValues = function(doc, keys) {
  * If dot notation is used it will be an array
  * of arrays.
  *
- * @param String form - smsforms key
+ * @param String form - jsonforms key
  *
- * @return Array  - form field keys based on smsforms definition
+ * @return Array  - form field keys based on jsonforms definition
  */
 exports.getFormKeys = function(form) {
     var keys = {},
-        def = smsforms[form];
+        def = jsonforms[form];
 
     var getKeys = function(key, hash) {
         if(key.length > 1) {
@@ -197,8 +198,8 @@ exports.getFormKeys = function(form) {
     };
 
     if (def) {
-        for (var i in def.fields) {
-            getKeys(def.fields[i].key.split('.'), keys);
+        for (var k in def.fields) {
+            getKeys(k.split('.'), keys);
         }
     }
 
@@ -206,7 +207,7 @@ exports.getFormKeys = function(form) {
 };
 
 /**
- * @param {String} form - smsforms key string
+ * @param {String} form - jsonforms key string
  * @returns {Boolean} - Return true if this form is a referral since we need to
  * do extra work to process a referral form.
  * @api public
@@ -278,7 +279,7 @@ exports.getMessage = function (code, locale) {
  */
 exports.getLabel = function (labels, locales) {
     if (typeof labels === 'string') { return labels; }
-    //if object use short label by default
+    // if object use short label by default
     return labels.short;
 };
 

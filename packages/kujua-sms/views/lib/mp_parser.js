@@ -74,7 +74,7 @@ var createDeepKey = function(obj, key, val) {
 };
 
 /**
- * @param {Object} def - smsforms form definition
+ * @param {Object} def - jsonforms form definition
  * @param {Object} doc - sms_message document
  * @param {Number} format - if 1 then include labels in value
  * @returns {Object|{}} - A parsed object of the sms message or an empty
@@ -95,7 +95,16 @@ exports.parse = function(def, doc, format) {
         return {};
     }
 
-    var pairs = zip(def.fields, vals);
+    // put field and values into paired array
+    var pairs = zip(
+        // include key value in paired array
+        _.map(def.fields, function(val, key) {
+            var field = def.fields[key];
+            field._key = key;
+            return field;
+        }),
+        vals
+    );
 
     return pairs.reduce(function (obj, v) {
         var field = v[0],
@@ -111,34 +120,37 @@ exports.parse = function(def, doc, format) {
         if (format === 1) {
             // include label in array
             result = [
-                exports.parseField(field, val, obj[field.key]), field.label];
+                exports.parseField(field, val, obj[field._key]),
+                utils.localizedString(field.labels.short) // TODO fix ugly
+            ];
         } else {
-            result = exports.parseField(field, val, obj[field.key]);
+            result = exports.parseField(field, val, obj[field._key]);
         }
 
-        createDeepKey(obj, field.key.split('.'), result);
+        createDeepKey(obj, field._key.split('.'), result);
         return obj;
     }, {});
 };
 
 /**
- * @param {Object} def - smsforms definition
+ * @param {Object} def - jsonforms form definition
  * @param {Object} doc - sms_message document
  * @returns {Array|[]} - An array of values from the raw sms message
  * @api public
  */
 exports.parseArray = function(def, doc) {
-    var obj = exports.parse(def, doc);
 
-    var keys = [];
+    var obj = exports.parse(def, doc);
 
     if(!def || !def.fields) {
         return [];
     }
 
-    for (var i = 0; i < def.fields.length; i++) {
-        if (keys.indexOf(def.fields[i].key) === -1) {
-            keys.push(def.fields[i].key);
+    // collect field keys into array
+    var keys = [];
+    for (var k in def.fields) {
+        if (keys.indexOf(k) === -1) {
+            keys.push(k);
         }
     }
 
@@ -158,6 +170,6 @@ exports.parseArray = function(def, doc) {
     // not included in the raw sms message and added manually.
     arr.unshift(doc.from);
     arr.unshift(doc.sent_timestamp);
-    
+
     return arr;
 };

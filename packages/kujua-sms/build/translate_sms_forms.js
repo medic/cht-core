@@ -9,7 +9,7 @@ module.exports = {
     before: 'modules',
     run: function (root, path, settings, doc, callback) {
         if (doc['kujua-sms']) {
-            var files = doc['kujua-sms'].sms_forms;
+            var files = doc['kujua-sms'].json_forms;
 
             async.reduce(files, {}, function(result, filename, cb) {
                 fs.readFile(jsonforms_path + '/' + filename, function(err, content) {
@@ -24,13 +24,13 @@ module.exports = {
                 if (err) {
                     return callback(err);
                 }
-                var code = doc.views.lib.smsforms;
+                var code = doc.views.lib.jsonforms;
                 for (var k in result) {
                     code += '\n\nexports["' + k.replace('"', '\\"') + '"] = ' +
                         JSON.stringify(result[k]) + ';';
                 }
-                delete doc.views.lib.smsforms;
-                modules.add(doc, 'views/lib/smsforms', code);
+                delete doc.views.lib.jsonforms;
+                modules.add(doc, 'views/lib/jsonforms', code);
                 callback(null, doc);
             });
         } else {
@@ -154,11 +154,21 @@ var convert = function(content) {
             }
         };
 
+        if (!type.fields) {
+            throw new Error(
+                'Form have fields: ' + JSON.stringify(type));
+        }
+
         _.each(type.fields, function(val, key) {
             // check for some required attributes
             if (!val.labels) {
                 throw new Error(
                     'Field must have labels: ' + JSON.stringify(val));
+            } else if (typeof val.labels === 'object')  {
+                if (!val.labels.short) {
+                    throw new Error(
+                        'Labels missing `short`: ' + JSON.stringify(val));
+                };
             }
 
             // add muvuku example data

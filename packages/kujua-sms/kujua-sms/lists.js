@@ -7,7 +7,7 @@ var _ = require('underscore')._,
     strings = utils.strings,
     moment = require('moment'),
     logger = require('kujua-utils').logger,
-    smsforms = require('views/lib/smsforms');
+    jsonforms  = require('views/lib/jsonforms');
 
 
 exports.data_records_csv = function (head, req) {
@@ -187,7 +187,7 @@ var getReferralMessage = function(form, phone, clinic, record) {
 };
 
 /**
- * @param {String} form - smsforms form key
+ * @param {String} form - jsonforms form key
  * @param {String} phone - Phone number of where the message is *from*.
  * @param {Object} form_data - parsed form data that includes labels (format:1)
  * @param {Object} clinic - the clinic from the tasks_referral doc
@@ -215,7 +215,7 @@ var getReferralTask = function(form, record) {
 
 /**
  * @param {Object} req - kanso request object
- * @param {String} form - smsforms key string
+ * @param {String} form - jsonforms key string
  * @param {Object} record - record
  * @param {Object} clinic - clinic facility object
  *
@@ -228,17 +228,17 @@ var getCallbackPath = function(req, form, record, clinic) {
         baseURL = require('duality/core').getBaseURL(),
         path = appdb;
 
-    if(!clinic || !form || !record || !smsforms[form]) {
+    if(!clinic || !form || !record || !jsonforms[form]) {
         return path;
     }
 
-    if (utils.isReferralForm(form) || !smsforms[form].data_record_merge) {
+    if (utils.isReferralForm(form) || !jsonforms[form].data_record_merge) {
         return path;
     }
 
     // parse data_record_merge attribute for field names and replace
-    var matches = smsforms[form].data_record_merge.match(/(:\w*)/g),
-        updateURL = smsforms[form].data_record_merge;
+    var matches = jsonforms[form].data_record_merge.match(/(:\w*)/g),
+        updateURL = jsonforms[form].data_record_merge;
 
     for (var i in matches) {
         var key = matches[i].replace(':','');
@@ -287,7 +287,7 @@ exports.data_record = function (head, req) {
         host = headers[0],
         port = headers[1] || "",
         appdb = require('duality/core').getDBURL(req),
-        def = smsforms[form],
+        def = jsonforms[form],
         clinic = null;
 
     if (!def) {
@@ -365,7 +365,7 @@ exports.data_record_merge = function (head, req) {
         headers = req.headers.Host.split(":"),
         host = headers[0],
         port = headers[1] || "",
-        def = smsforms[form],
+        def = jsonforms[form],
         appdb = require('duality/core').getDBURL(req),
         old_data_record = null,
         path = appdb,
