@@ -130,70 +130,44 @@ var generateFieldData = function(field) {
 
 };
 
+// take json-forms field object and return bool
+var hasTextformsSupport = function(field) {
+    var tiny = field.labels.tiny;
+    return typeof tiny === 'string' || typeof tiny === 'object';
+};
+
 var convert = function(content) {
+
     var result = {};
+
     _.each(content, function(type) {
-        var r = result[type.meta.code] = {
-            fields: [],
-            examples: {
-                data: {
-                    muvuku: [],
-                    textforms: []
-                },
-                messages: {
-                    muvuku: '',
-                    textforms: ''
-                }
+        var r = result[type.meta.code] = type;
+        r.data_record_merge = getUpdatePath(type.meta.code);
+        r.examples = {
+            data: {
+                muvuku: [],
+                textforms: []
+            },
+            messages: {
+                muvuku: [],
+                textforms: []
             }
         };
 
-        if(type.meta.label) {
-            r.title = type.meta.label;
-        }
-
-        r.data_record_merge = getUpdatePath(type.meta.code);
-
         _.each(type.fields, function(val, key) {
+            // check for some required attributes
             if (!val.labels) {
                 throw new Error(
                     'Field must have labels: ' + JSON.stringify(val));
             }
-            var field = {
-                key: key,
-                labels: val.labels,
-                type: val.type
-            };
-            if (val.required) {
-                field.required = true;
-            }
-            if (val.list) {
-                field.type = 'select';
-                field.list = val.list;
-            }
-            // map months
-            if (val.validate && val.validate.is_numeric_month) {
-                field.type = 'month';
-                field.list = undefined;
-            }
-            // map years
-            if (val.validate && val.validate.is_numeric_year) {
-                field.type = 'year';
-                field.list = undefined;
-            }
-            // turn boolean into select form
-            if (val.type === 'boolean') {
-                field.type = 'select';
-                field.list = [[0,{en: 'False'}],[1,{en: 'True'}]];
-            }
-            r.fields.push(field);
 
             // add muvuku example data
             var example_data = generateFieldData(val);
             r.examples.data.muvuku.push(example_data);
 
-            var tiny = val.labels.tiny;
             // if tiny labels then add textforms data as well
-            if (tiny) {
+            if (hasTextformsSupport(val)) {
+                var tiny = val.labels.tiny;
                 // textforms include the label with the data values. tiny can
                 // be a locale object or string.
                 if (typeof tiny === 'string') {
@@ -207,7 +181,6 @@ var convert = function(content) {
                     }
                 }
             };
-
         });
 
         // combine muvuku example data into message
