@@ -66,11 +66,11 @@ exports.parse = function (form, def, doc, format) {
 
         // replace tiny labels with field keys
         for (var k in msg_data) {
-            for (var k in def.fields) {
-                var field = def.fields[k],
+            for (var j in def.fields) {
+                var field = def.fields[j],
                     tiny = utils.localizedString(field.labels.tiny, doc.locale);
                 if (tiny.toLowerCase() === k) {
-                    form_data[k] = msg_data[k];
+                    form_data[j] = msg_data[k];
                     break;
                 }
             }

@@ -13,31 +13,50 @@ exports.parseNum = function (raw) {
 
 exports.parseField = function (field, raw, prev) {
     switch (field.type) {
-        case 'number':
         case 'integer':
+            // store months as integers
+            if (field.validate && field.validate.is_numeric_month)
+                return exports.parseNum(raw);
+            // resolve integer to list value since it has more meaning.
+            // TODO we don't have locale data inside this function so calling
+            // localizedString does nothing.
+            if (field.list) {
+                for (var i in field.list) {
+                    var item = field.list[i];
+                    if (item[0] == raw) { // loose typing
+                        return utils.localizedString(item[1]);
+                    }
+                }
+                utils.logger.error('Option not available for '+raw+' in list.');
+                utils.logger.error(field.list);
+            }
             return exports.parseNum(raw);
         case 'string':
             if (raw === undefined) { return; }
-            return raw === "" ? null : utils.localizedString(raw);
-        case 'year':
-            return raw;
-        case 'month':
-            return raw;
+            if (raw === "") { return null; }
+            // resolve string to list value since it has more meaning.
+            // TODO we don't have locale data inside this function so calling
+            // localizedString does nothing.
+            if (field.list) {
+                for (var i in field.list) {
+                    var item = field.list[i];
+                    if (item[0] === raw) {
+                        return utils.localizedString(item[1]);
+                    }
+                }
+                utils.logger.error('Option not available for '+raw+' in list.');
+                utils.logger.error(field.list);
+            }
+            return utils.localizedString(raw);
         case 'date':
-            var val = prev || new Date(0);
+            var val = prev || new Date();
             val.setDate(raw);
             return val;
-        case 'select':
-            var val = exports.parseNum(raw);
-            var match = _.find(field.list, function(l) {
-                return l[0] === val;
-            });
-            if (match && match[1]) { return utils.localizedString(match[1]); }
-            utils.logger.error('Option not available for '+val+' in select list.');
-            utils.logger.error(field.list);
-            return val;
+        case 'boolean':
+            return raw;
         default:
-            throw new Error('Unknown field type: ' + field.type);
+            utils.logger.error('Unknown field type: ' + field.type);
+            return raw;
     }
 };
 

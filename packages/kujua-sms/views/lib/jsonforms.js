@@ -6,35 +6,45 @@ exports['TEST'] = {
     meta: {code: "TEST", label: 'Test Monthly Report'},
     fields: {
         facility_id: {
-            labels: 'Health Facility Identifier', type: 'string', required: true},
+            labels: 'Health Facility Identifier',
+            type: 'string',
+            required: true
+        },
          year: {
-             labels: 'Report Year', type: 'year', required: true},
+             labels: 'Report Year',
+             type: 'integer',
+             validate: {is_numeric_year: true},
+             required: true
+         },
          month: {
-             labels: 'Report Month', type: 'month'},
+             labels: 'Report Month',
+             type: 'integer',
+             validate: {is_numeric_month: true},
+         },
          'quantity_dispensed.la_6x1': {
-             labels: 'LA 6x1: Dispensed total', type: 'number'},
+             labels: 'LA 6x1: Dispensed total', type: 'integer'},
          'quantity_dispensed.la_6x2': {
-             labels: 'LA 6x2: Dispensed total', type: 'number'},
+             labels: 'LA 6x2: Dispensed total', type: 'integer'},
          'quantity_dispensed.cotrimoxazole': {
-             labels: 'Cotrimoxazole: Dispensed total', type: 'number'},
+             labels: 'Cotrimoxazole: Dispensed total', type: 'integer'},
          'quantity_dispensed.zinc': {
-             labels: 'Zinc: Dispensed total', type: 'number'},
+             labels: 'Zinc: Dispensed total', type: 'integer'},
          'quantity_dispensed.ors': {
-             labels: 'ORS: Dispensed total', type: 'number'},
+             labels: 'ORS: Dispensed total', type: 'integer'},
          'quantity_dispensed.eye_ointment': {
-             labels: 'Eye Ointment: Dispensed total', type: 'number'},
+             labels: 'Eye Ointment: Dispensed total', type: 'integer'},
          'days_stocked_out.la_6x1': {
-             labels: 'LA 6x1: Days stocked out', type: 'number'},
+             labels: 'LA 6x1: Days stocked out', type: 'integer'},
          'days_stocked_out.la_6x2': {
-             labels: 'LA 6x2: Days stocked out', type: 'number'},
+             labels: 'LA 6x2: Days stocked out', type: 'integer'},
          'days_stocked_out.cotrimoxazole': {
-             labels: 'Cotrimoxazole: Days stocked out', type: 'number'},
+             labels: 'Cotrimoxazole: Days stocked out', type: 'integer'},
          'days_stocked_out.zinc': {
-             labels: 'Zinc: Days stocked out', type: 'number'},
+             labels: 'Zinc: Days stocked out', type: 'integer'},
          'days_stocked_out.ors': {
-             labels: 'ORS: Days stocked out', type: 'number'},
+             labels: 'ORS: Days stocked out', type: 'integer'},
          'days_stocked_out.eye_ointment': {
-             labels: 'Eye Ointment: Days stocked out', type: 'number'}
+             labels: 'Eye Ointment: Days stocked out', type: 'integer'}
     },
     autoreply: "Zikomo!",
     data_record_merge: "/:form/data_record/merge/:year/:month/:clinic_id",

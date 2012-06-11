@@ -63,7 +63,7 @@ var getCallbackBody = function(phone, doc, form_data) {
 
     for (var k in def.fields) {
         var field = def.fields[k];
-        smsparser.merge(form, field.key.split('.'), body, form_data, doc.format);
+        smsparser.merge(form, k.split('.'), body, form_data, doc.format);
     }
 
     var errors = validate.validate(def, form_data);

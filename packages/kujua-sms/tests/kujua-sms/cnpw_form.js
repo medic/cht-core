@@ -1,5 +1,5 @@
 var smsparser = require('views/lib/smsparser'),
-    smsforms = require('views/lib/smsforms');
+    jsonforms = require('views/lib/jsonforms');
 
 exports.cnpw_example_data = function (test) {
 
@@ -12,7 +12,7 @@ exports.cnpw_example_data = function (test) {
     test.expect(2);
 
     var form = smsparser.getForm(doc.message);
-    var obj = smsparser.parse(form, smsforms['CNPW'], doc);
+    var obj = smsparser.parse(form, jsonforms['CNPW'], doc);
     var expectedObj = {
         week_number: 2,
         weeks_duration: 3,

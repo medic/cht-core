@@ -1,5 +1,5 @@
 var smsparser = require('views/lib/smsparser'),
-    smsforms = require('views/lib/smsforms');
+    jsonforms = require('views/lib/jsonforms');
 
 
 exports.valid_message = function(test) {
@@ -9,7 +9,7 @@ exports.valid_message = function(test) {
             "message":"1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4",
             "type":"sms_message",
             "form":"TEST"},
-        def = smsforms[doc.form],
+        def = jsonforms[doc.form],
         data = smsparser.parse('TEST', def, doc);
 
     test.same(data, {
@@ -43,7 +43,7 @@ exports.blank_message = function(test) {
             "message":"",
             "type":"sms_message",
             "form":""},
-        def = smsforms[doc.form],
+        def = jsonforms[doc.form],
         data = smsparser.parse("", def, doc);
     test.same({}, data);
     test.done();
@@ -55,7 +55,7 @@ exports.form_not_found = function(test) {
             "message":"1!X0X0!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4",
             "type":"sms_message",
             "form":"X0X0"},
-        def = smsforms[doc.form],
+        def = jsonforms[doc.form],
         data = smsparser.parse('X0X0', def, doc);
     test.same({}, data);
     test.done();
@@ -68,7 +68,7 @@ exports.wrong_field_type = function(test) {
             "message":"1!TEST!facility#2011#11#zzzz#2#3#4#5#6#9#8#7#6#5#4",
             "type":"sms_message",
             "form":"TEST"},
-        def = smsforms[doc.form],
+        def = jsonforms[doc.form],
         data = smsparser.parse('TEST', def, doc);
     
     test.same(data, {
@@ -103,7 +103,7 @@ exports.missing_fields = function(test) {
             "message":"1!TEST!facility#2011#11#1#2#3",
             "type":"sms_message",
             "form":"TEST"},
-        def = smsforms[doc.form],
+        def = jsonforms[doc.form],
         data = smsparser.parse('TEST', def, doc);
 
     test.same(data, {
@@ -138,7 +138,7 @@ exports.extra_fields = function(test) {
             "message":"1!TEST!facility#2011#11#1#2#3#1#1#1#1#1#1#1#1#1#1#####77#",
             "type":"sms_message",
             "form":"TEST"},
-        def = smsforms[doc.form],
+        def = jsonforms[doc.form],
         data = smsparser.parse('TEST', def, doc);
 
     test.same(data, {

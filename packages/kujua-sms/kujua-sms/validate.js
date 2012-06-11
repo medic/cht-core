@@ -3,9 +3,9 @@ var _ = require('underscore')._;
 exports.validate = function(form_definition, form_data) {
     var missing_fields = [], orig_key, key, data;
 
-    _.each(form_definition.fields, function(field) {
-        orig_key = field.key;
-        key = field.key.split('.');
+    _.each(form_definition.fields, function(field, k) {
+        orig_key = k;
+        key = k.split('.');
         data = form_data;
 
         while(key.length > 1) {

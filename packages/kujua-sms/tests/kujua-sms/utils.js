@@ -1,5 +1,5 @@
 var utils = require('kujua-sms/utils'),
-    smsforms = require('views/lib/smsforms');
+    jsonforms = require('views/lib/jsonforms');
 
 exports.getLabels = function(test) {
     test.expect(1);

@@ -1,9 +1,9 @@
 var smsparser = require('views/lib/smsparser'),
-    smsforms = require('views/lib/smsforms');
+    jsonforms = require('views/lib/jsonforms');
 
 
 exports.msbr_example_data = function (test) {
-    var def = smsforms['MSBR'];
+    var def = jsonforms['MSBR'];
     var doc = {
         sent_timestamp: '1-13-12 15:35',
         from: '+15551212',

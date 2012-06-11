@@ -1,5 +1,4 @@
-var smsparser = require('views/lib/smsparser'),
-    smsforms = require('views/lib/smsforms');
+var smsparser = require('views/lib/smsparser');
 
 exports.junk_example_data = function (test) {
 
