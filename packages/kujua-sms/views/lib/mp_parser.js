@@ -1,5 +1,6 @@
 var utils = require('kujua-utils'),
-    _ = require('underscore')._;
+    _ = require('underscore')._,
+    moment = require('moment');
 
 exports.parseNum = function (raw) {
     if (raw === void 0) {
@@ -17,9 +18,9 @@ exports.parseField = function (field, raw, prev) {
             // store months as integers
             if (field.validate && field.validate.is_numeric_month)
                 return exports.parseNum(raw);
-            // resolve integer to list value since it has more meaning.
+            // store list value since it has more meaning.
             // TODO we don't have locale data inside this function so calling
-            // localizedString does nothing.
+            // localizedString does not resole locale.
             if (field.list) {
                 for (var i in field.list) {
                     var item = field.list[i];
@@ -34,9 +35,9 @@ exports.parseField = function (field, raw, prev) {
         case 'string':
             if (raw === undefined) { return; }
             if (raw === "") { return null; }
-            // resolve string to list value since it has more meaning.
+            // store list value since it has more meaning.
             // TODO we don't have locale data inside this function so calling
-            // localizedString does nothing.
+            // localizedString does not resole locale.
             if (field.list) {
                 for (var i in field.list) {
                     var item = field.list[i];
@@ -49,11 +50,12 @@ exports.parseField = function (field, raw, prev) {
             }
             return utils.localizedString(raw);
         case 'date':
-            var val = prev || new Date();
-            val.setDate(raw);
-            return val;
+            if (!raw) { return null; }
+            // YYYY-MM-DD assume muvuku format for now
+            // store in milliseconds since Epoch
+            return moment(raw, 'YYYY-MM-DD').valueOf();
         case 'boolean':
-            return raw;
+            return exports.parseNum(raw);
         default:
             utils.logger.error('Unknown field type: ' + field.type);
             return raw;

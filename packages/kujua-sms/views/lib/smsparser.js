@@ -10,7 +10,7 @@ var utils = require('kujua-utils'),
  * @api private
  */
 exports.isTextformsFormat = function(msg) {
-    return msg.match(new RegExp('^\\s*[A-Z]{4}\\s+\\w+.*#')) !== null;
+    return msg.match(new RegExp('^\\s*[\\w]{4}\\s+[\\w]+\\s+.+')) !== null;
 };
 
 /**
@@ -21,7 +21,7 @@ exports.isTextformsFormat = function(msg) {
  * @api private
  */
 exports.isMuvukuFormat = function(msg) {
-    return msg.match(new RegExp('^\\s*\\d+![A-Z]{4}!')) !== null;
+    return msg.match(new RegExp('^\\s*\\d+![\\w]{4}!.+')) !== null;
 };
 
 /**
