@@ -163,8 +163,13 @@
      */
 
     var clearInlineEditor = function () {
+        var $input;
         if ($.spreadsheet.edit_inline_input) {
-            $($.spreadsheet.edit_inline_input).remove();
+            $input = $($.spreadsheet.edit_inline_input);
+            if ($.fn.tooltip) {
+              $input.tooltip('hide');
+            }
+            $input.remove();
             delete $.spreadsheet.edit_inline_input;
             delete $.spreadsheet.edit_inline_td;
         }
