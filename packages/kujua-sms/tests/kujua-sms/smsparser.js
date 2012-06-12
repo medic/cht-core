@@ -166,3 +166,67 @@ exports.extra_fields = function(test) {
     
     test.done();
 };
+
+exports.parse_date_field = function(test) {
+    test.expect(2);
+
+    var doc = {
+        message: "1!0000!2012-03-12"
+    };
+
+    var def = {
+        fields: {
+            testdate: {
+                type: 'date',
+                labels: {
+                    short: 'testdate',
+                    tiny: 'TDATE'
+                }
+            }
+        }
+    };
+
+    var data = smsparser.parse('0000', def, doc);
+    test.same(data, {testdate: 1331528400000});
+
+    doc = {
+        message: "0000 TDATE 2012-03-12"
+    };
+
+    data = smsparser.parse('0000', def, doc);
+    test.same(data, {testdate: 1331528400000});
+
+    test.done();
+};
+
+exports.parse_boolean_field = function(test) {
+    test.expect(1);
+    var doc = {
+        message: "1!0000!1"
+    };
+    var def = {
+        fields: {
+            testbool: {
+                type: 'boolean',
+                labels: 'testbool'
+            }
+        }
+    };
+    var data = smsparser.parse('0000', def, doc);
+    test.same(data, {testbool: 1});
+    test.done();
+};
+
+exports.smsformats = function(test) {
+    test.expect(4);
+
+    test.same(true, smsparser.isTextformsFormat("0000 ABC 123-123-123"));
+
+    test.same(true, smsparser.isTextformsFormat("abcd foo1 123-abc-123"));
+
+    test.same(true, smsparser.isMuvukuFormat("1!0000!1"));
+
+    test.same(true, smsparser.isMuvukuFormat("1!abcd!0"));
+
+    test.done();
+};
