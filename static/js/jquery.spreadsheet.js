@@ -101,22 +101,57 @@
         return tbody;
     };
 
+    var createValidation = function (column) {
+        var validation = column.validation;
+
+        if (_.isFunction(validation)) {
+            return validation;
+        } else if (_.isString(validation)) {
+            if (validation === 'phone') {
+                column.validationHint = 'Phone number: +12345678901';
+                return function(v) {
+                    return /^\s*\+\d{11}\s*$/.test(v);
+                }
+            } else if (validation === 'notblank') {
+                column.validationHint = 'Value required';
+                return function(v) {
+                    return /\w/.test(v);
+                }
+            } else if (validation === 'integer') {
+                column.validationHint = 'Numbers only';
+                return function(v) {
+                    return /^\s*\d+\s*$/.test(v);
+                }
+            } else {
+                return undefined;
+            }
+        }
+    };
 
     var createRow = function (columns, doc) {
         var tr = $('<tr/>');
         tr.data('_id', doc._id);
         tr.append('<th class="handle"><div class="control"><a class="btn btn-mini btn-danger delete-row" href="#"><i class="icon-trash"></i></a></div></th>');
         _.each(columns, function (c) {
-            var p = getProperty(doc, c.property);
+            var p = getProperty(doc, c.property),
+                td,
+                validation = createValidation(c);
+
+
+            // validation only available for "normal" cells
             if (typeof c.createCellHandler === 'function') {
-               var td = c.createCellHandler(c, p);
+               td = c.createCellHandler(c, p);
             } else {
-               var td = $('<td/>').text(p === undefined ? '': p.toString());
+               td = $('<td/>');
+               td.data({
+                   'editSelectionHandler': _.isFunction(c.editSelectionHandler) ? c.editSelectionHandler : undefined,
+                   'property': c.property,
+                   'validation': validation,
+                   'validation-hint': c.validationHint
+               });
+               setValue(td, p, { silent: true });
             }
-            if (typeof c.editSelectionHandler === 'function') {
-                td.data('editSelectionHandler', c.editSelectionHandler);
-            }
-            td.data('property', c.property);
+
             tr.append(td);
         });
         return tr;
@@ -165,13 +200,26 @@
      * provided td element
      */
     var editInline = function (td, clear_value) {
-        var offset = $(td).offset();
-        var input = $('<input class="edit-inline" type="text" />').css({
+        var input,
+            $td = $(td),
+            offset = $td.offset(),
+            validation = $td.data('validation'),
+            validationHint = $td.data('validation-hint');
+
+        // if no validation fn provided, it's always valid
+        validation = validation || function() { return true; }
+
+        input = $('<input class="edit-inline" type="text" />').css({
             height: ($(td).outerHeight() - 3) + 'px',
             minWidth: ($(td).outerWidth() - 1) + 'px',
             position: 'absolute',
             top: offset.top,
             left: offset.left
+        });
+        input.on('focus keyup mouseup blur', function() {
+            var $this = $(this),
+                valid = validation.call(this, $(this).val());
+            $this.toggleClass('invalid-value', !valid);
         });
         if (clear_value) {
             input.val('');
@@ -179,9 +227,16 @@
         else {
             input.val($(td).text());
         }
-        $(td).parents('table').after(input);
+
+        if (validationHint) {
+            input.attr('title', validationHint);
+            if ($.fn.tooltip) {
+                input.tooltip();
+            }
+        }
+        $td.parents('table').after(input);
         $.spreadsheet.edit_inline_input = $(input)[0];
-        $.spreadsheet.edit_inline_td = $(td)[0];
+        $.spreadsheet.edit_inline_td = $td[0];
         return input.focus();
     };
 
@@ -249,9 +304,22 @@
      * and fires a change event
      */
 
-    var setValue = function (td, val) {
-        $(td).text(val);
-        $(td).trigger('change');
+    var setValue = function (td, val, options) {
+        var $td = $(td),
+            options = options || {},
+            validation = $td.data('validation');
+
+        _.defaults(options, {
+            silent: false // whether to trigger an event
+        });
+
+        if (_.isFunction(validation)) {
+            $td.toggleClass('error', !validation(val));
+        }
+        $td.text(val);
+        if (!options.silent) {
+            $td.trigger('change');
+        }
         return td;
     };
 
