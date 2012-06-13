@@ -12,7 +12,7 @@ exports.msbg_example_data = function (test) {
 
     test.expect(2);
 
-    var obj = smsparser.parse('MSBG', def, doc);
+    var obj = smsparser.parse(def, doc);
     var expectedObj = {
         case_year: '2012',
         case_month: '1',
@@ -30,7 +30,7 @@ exports.msbg_example_data = function (test) {
 
     test.same(obj, expectedObj);
 
-    var arr = smsparser.parseArray('MSBG', def, doc);
+    var arr = smsparser.parseArray(def, doc);
     var expectedArr = ['1-16-12 15:35', '+15551212', '2012', '1', 12345678901, 123, 456, 789, 123, 456, 789, 123, 456, 789];
 
     test.same(arr, expectedArr);

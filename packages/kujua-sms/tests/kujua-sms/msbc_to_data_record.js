@@ -17,7 +17,6 @@ var example = {
        sent_timestamp: "1-19-12 18:45",
        sent_to: "+15551212",
        type: "sms_message",
-       format: "muvuku",
        locale: "en",
        form: "MSBC"
     },
@@ -59,8 +58,8 @@ var expected_callback = {
         refid: "abcdef",
         errors: [],
         tasks: [],
-        cref_year: "2012",
-        cref_month: "1",
+        cref_year: 2012,
+        cref_month: 1,
         cref_day: 16,
         cref_rc: "abcdef",
         cref_ptype: "Autre",
@@ -73,7 +72,6 @@ var expected_callback = {
         cref_agent: "eee"
     }
 };
-
 
 /*
  * STEP 1:
@@ -108,7 +106,7 @@ exports.msbc1_to_record = function (test) {
 
     var resp_body = JSON.parse(resp[1].body);
     delete resp_body.callback.data.reported_date;
-    
+
     test.same(
         resp_body.callback.options.path,
         baseURL + "/MSBC/data_record/add/refid/abcdef");

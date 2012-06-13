@@ -17,7 +17,6 @@ var example = {
        sent_timestamp: "10-01-11 18:45",
        sent_to: "+15551212",
        type: "sms_message",
-       format: "muvuku",
        locale: "en",
        form: "MSBB"
     },

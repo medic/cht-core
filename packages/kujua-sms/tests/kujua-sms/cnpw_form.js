@@ -12,7 +12,7 @@ exports.cnpw_example_data = function (test) {
     test.expect(2);
 
     var form = smsparser.getForm(doc.message);
-    var obj = smsparser.parse(form, jsonforms['CNPW'], doc);
+    var obj = smsparser.parse(jsonforms['CNPW'], doc);
     var expectedObj = {
         week_number: 2,
         weeks_duration: 3,
@@ -24,7 +24,7 @@ exports.cnpw_example_data = function (test) {
 
     test.same(obj, expectedObj);
 
-    var arr = smsparser.parseArray('CNPW', null, doc);
+    var arr = smsparser.parseArray(jsonforms['CNPW'], doc);
     var expectedArr = ['2-1-12 15:35', '+13125551212', 2, 3, 99, 0, 5, 1]
 
     test.same(arr, expectedArr);

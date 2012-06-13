@@ -11,11 +11,11 @@ exports.junk_example_data = function (test) {
     test.expect(2);
 
     var form = smsparser.getForm(doc.message);
-    var obj = smsparser.parse(form, null, doc);
+    var obj = smsparser.parse(null, doc);
     var expectedObj = {};
     test.same(obj, expectedObj);
 
-    var arr = smsparser.parseArray(form, null, doc);
+    var arr = smsparser.parseArray(null, doc);
     var expectedArr = [];
     test.same(arr, expectedArr);
 

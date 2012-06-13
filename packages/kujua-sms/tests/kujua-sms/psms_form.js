@@ -11,7 +11,7 @@ exports.psms_example_data = function (test) {
     };
 
     var form = smsparser.getForm(doc.message);
-    var obj = smsparser.parse(form, def, doc);
+    var obj = smsparser.parse(def, doc);
 
     test.same(obj, {
         facility_id: 'facility',
@@ -35,7 +35,7 @@ exports.psms_example_data = function (test) {
         }
     });
 
-    var arr = smsparser.parseArray('TEST', def, doc);
+    var arr = smsparser.parseArray(def, doc);
     test.same(
         arr,
         ['12-11-11 15:00', '+15551212', 'facility', '2011', '11', 1, 2, 3, 4, 5, 6, 9, 8, 7, 6, 5, 4]

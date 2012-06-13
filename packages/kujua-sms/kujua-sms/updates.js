@@ -19,11 +19,11 @@ var _ = require('underscore')._,
 var getRefID = function(form, form_data) {
     switch(form) {
         case 'MSBC':
-            return form_data.cref_rc[0];
+            return form_data.cref_rc;
         case 'MSBB':
-            return form_data.ref_rc[0];
+            return form_data.ref_rc;
         case 'MSBR':
-            return form_data.ref_rc[0];
+            return form_data.ref_rc;
     }
 };
 
@@ -63,7 +63,7 @@ var getCallbackBody = function(phone, doc, form_data) {
 
     for (var k in def.fields) {
         var field = def.fields[k];
-        smsparser.merge(form, k.split('.'), body, form_data, doc.format);
+        smsparser.merge(form, k.split('.'), body, form_data);
     }
 
     var errors = validate.validate(def, form_data);
@@ -72,7 +72,7 @@ var getCallbackBody = function(phone, doc, form_data) {
         body.errors = errors;
     }
 
-    if(form_data.extra_fields) {
+    if(form_data._extra_fields) {
         body.errors.push({code: "extra_fields"});
     }
 
@@ -139,7 +139,7 @@ var parseSentTimestamp = function(str) {
 var getRespBody = function(doc, req) {
     var form = doc.form,
         def = jsonforms[form],
-        form_data = smsparser.parse(form, def, doc, 1),
+        form_data = smsparser.parse(def, doc),
         baseURL = require('duality/core').getBaseURL(),
         headers = req.headers.Host.split(":"),
         host = headers[0],
@@ -205,7 +205,6 @@ exports.getRespBody = getRespBody;
 exports.add_sms = function (doc, req) {
     return [null, getRespBody(_.extend(req.form, {
         type: "sms_message",
-        format: smsparser.getSMSFormat(req.form.message),
         locale: (req.query && req.query.locale) || 'en',
         form: smsparser.getForm(req.form.message)
     }), req)];

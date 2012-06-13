@@ -2,6 +2,8 @@ var smsparser = require('views/lib/smsparser'),
     jsonforms = require('views/lib/jsonforms');
 
 exports.msbb_example_data = function (test) {
+    test.expect(2);
+
     var def = jsonforms['MSBB'];
     var doc = {
         sent_timestamp: '2-1-12 15:35',
@@ -9,9 +11,7 @@ exports.msbb_example_data = function (test) {
         message: '1!MSBB!2012#2#1#12345678901#1111#bbbbbbbbbbbbbbbbbbbb#22#15#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
     };
 
-    test.expect(3);
-
-    var obj = smsparser.parse('MSBB', def, doc);
+    var obj = smsparser.parse(def, doc);
     var expectedObj = {
         ref_year: 2012,
         ref_month: 2,
@@ -26,11 +26,6 @@ exports.msbb_example_data = function (test) {
 
     test.same(obj, expectedObj);
 
-    var arr = smsparser.parseArray('MSBB', def, doc);
-    var expectedArr = ['2-1-12 15:35', '+13125551212', '2012', '2', 1, 12345678901, '1111', 'bbbbbbbbbbbbbbbbbbbb', 22, 'Autres', 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc']
-
-    test.same(arr, expectedArr);
-
     msbb_example_data_with_only_required_fields(test);
 };
 
@@ -42,7 +37,7 @@ var msbb_example_data_with_only_required_fields = function (test) {
         message: '1!MSBB!2012#1#24###bbbbbb'
     };
 
-    var obj = smsparser.parse('MSBB', def, doc);
+    var obj = smsparser.parse(def, doc);
     var expectedObj = {
         ref_year: '2012',
         ref_month: '1',

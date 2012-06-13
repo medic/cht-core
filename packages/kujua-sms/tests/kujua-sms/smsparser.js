@@ -10,7 +10,7 @@ exports.valid_message = function(test) {
             "type":"sms_message",
             "form":"TEST"},
         def = jsonforms[doc.form],
-        data = smsparser.parse('TEST', def, doc);
+        data = smsparser.parse(def, doc);
 
     test.same(data, {
         "facility_id": "facility",
@@ -37,18 +37,6 @@ exports.valid_message = function(test) {
     test.done();
 };
 
-exports.blank_message = function(test) {
-    test.expect(1);
-    var doc = {
-            "message":"",
-            "type":"sms_message",
-            "form":""},
-        def = jsonforms[doc.form],
-        data = smsparser.parse("", def, doc);
-    test.same({}, data);
-    test.done();
-};
-
 exports.form_not_found = function(test) {
     test.expect(1);
     var doc = {
@@ -56,21 +44,21 @@ exports.form_not_found = function(test) {
             "type":"sms_message",
             "form":"X0X0"},
         def = jsonforms[doc.form],
-        data = smsparser.parse('X0X0', def, doc);
+        data = smsparser.parse(def, doc);
     test.same({}, data);
     test.done();
 };
 
 exports.wrong_field_type = function(test) {
     test.expect(1);
-    
+
     var doc = {
             "message":"1!TEST!facility#2011#11#zzzz#2#3#4#5#6#9#8#7#6#5#4",
             "type":"sms_message",
             "form":"TEST"},
         def = jsonforms[doc.form],
-        data = smsparser.parse('TEST', def, doc);
-    
+        data = smsparser.parse(def, doc);
+
     test.same(data, {
         "facility_id": "facility",
         "year": "2011",
@@ -104,7 +92,7 @@ exports.missing_fields = function(test) {
             "type":"sms_message",
             "form":"TEST"},
         def = jsonforms[doc.form],
-        data = smsparser.parse('TEST', def, doc);
+        data = smsparser.parse(def, doc);
 
     test.same(data, {
         "facility_id": "facility",
@@ -127,24 +115,24 @@ exports.missing_fields = function(test) {
             "eye_ointment": undefined
         }
     });
-    
+
     test.done();
 };
 
 exports.extra_fields = function(test) {
     test.expect(1);
-    
+
     var doc = {
             "message":"1!TEST!facility#2011#11#1#2#3#1#1#1#1#1#1#1#1#1#1#####77#",
             "type":"sms_message",
             "form":"TEST"},
         def = jsonforms[doc.form],
-        data = smsparser.parse('TEST', def, doc);
+        data = smsparser.parse(def, doc);
 
     test.same(data, {
         "facility_id": "facility",
-        "year": "2011",
-        "month": "11",
+        "year": 2011,
+        "month": 11,
         "quantity_dispensed": {
             "la_6x1": 1,
             "la_6x2": 2,
@@ -161,9 +149,9 @@ exports.extra_fields = function(test) {
             "ors": 1,
             "eye_ointment": 1
         },
-        "extra_fields": true
+        "_extra_fields": true
     });
-    
+
     test.done();
 };
 
@@ -186,14 +174,14 @@ exports.parse_date_field = function(test) {
         }
     };
 
-    var data = smsparser.parse('0000', def, doc);
+    var data = smsparser.parse(def, doc);
     test.same(data, {testdate: 1331528400000});
 
     doc = {
         message: "0000 TDATE 2012-03-12"
     };
 
-    data = smsparser.parse('0000', def, doc);
+    data = smsparser.parse(def, doc);
     test.same(data, {testdate: 1331528400000});
 
     test.done();
@@ -212,21 +200,72 @@ exports.parse_boolean_field = function(test) {
             }
         }
     };
-    var data = smsparser.parse('0000', def, doc);
+    var data = smsparser.parse(def, doc);
     test.same(data, {testbool: 1});
     test.done();
 };
 
-exports.smsformats = function(test) {
-    test.expect(4);
+exports.smsformats_unstructured = function(test) {
+    test.expect(3);
 
-    test.same(true, smsparser.isTextformsFormat("0000 ABC 123-123-123"));
+    var docs = [
+        { message: "testing one two three." },
+        { message: "HELP ME" },
+        { message: ""} // blank message
+    ];
 
-    test.same(true, smsparser.isTextformsFormat("abcd foo1 123-abc-123"));
+    for (var i in docs) {
+        var doc = docs[i],
+            form = smsparser.getForm(doc.message),
+            def = jsonforms[form];
+        // assert parsing fails
+        test.same({}, smsparser.parse(def, doc));
+    }
 
-    test.same(true, smsparser.isMuvukuFormat("1!0000!1"));
+    test.done();
+};
 
-    test.same(true, smsparser.isMuvukuFormat("1!abcd!0"));
+exports.smsformats_structured_but_no_form = function(test) {
+    test.expect(2);
+
+    var docs = [
+        {message: "1!0000!1"},
+        {message: "0000 ABC 123-123-123"}
+    ];
+
+    for (var i in docs) {
+        var doc = docs[i],
+            form = smsparser.getForm(doc.message),
+            def = jsonforms[form];
+        // assert parsing fails
+        test.same({}, smsparser.parse(def, doc));
+    }
+
+    test.done();
+};
+
+exports.smsformats_textforms_only_one_field = function(test) {
+    test.expect(1);
+
+    var doc = {
+        message: "CNPW WKN2"
+    };
+
+    var form = smsparser.getForm(doc.message);
+    var def = jsonforms[form];
+
+    var data = smsparser.parse(def, doc);
+
+    var expect = {
+        aes_cases: undefined,
+        afp_cases: undefined,
+        msl_cases: undefined,
+        nnt_cases: undefined,
+        week_number: 2,
+        weeks_duration: undefined
+    };
+
+    test.same(expect, data);
 
     test.done();
 };

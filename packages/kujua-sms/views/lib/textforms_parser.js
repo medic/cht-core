@@ -243,17 +243,25 @@ TextForms.prototype = {
  * since it does not belong to the TextForms format
  * but is just a convention to identify the message.
  *
- * @param {Object} doc - sms_message document
+ * @param {Object|String} doc - sms_message document or sms message string
  * @returns {Object|{}} - A parsed object of the sms message or an empty
  * object if parsing fails.
  *
  * @api public
  */
 exports.parse = function(doc) {
-    var t = new TextForms();
-    var message = doc.message.match(new RegExp('^\\s*\\w+\\s+(.*)'))[1];
+    var t = new TextForms(),
+        msg = doc.message ? doc.message : doc;
 
-    return t.parse(message).result();
+    if (!msg)
+        return {};
+
+    var match = msg.match(new RegExp('^\\s*\\w+\\s+(.*)'));
+
+    if (match === null)
+        return {};
+
+    return t.parse(match[1]).result();
 };
 
 /**
@@ -262,17 +270,18 @@ exports.parse = function(doc) {
  * @api public
  */
 exports.parseArray = function(doc) {
+
     var obj = exports.parse(doc);
-    
+
     var arr = [];
     for (key in obj) {
         arr.push(obj[key]);
     }
-    
+
     // The fields sent_timestamp and from are set by the gateway, so they are
     // not included in the raw sms message and added manually.
     arr.unshift(doc.from);
     arr.unshift(doc.sent_timestamp);
-    
+
     return arr;
 };

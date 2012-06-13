@@ -2,66 +2,6 @@ var utils = require('kujua-utils'),
     _ = require('underscore')._,
     moment = require('moment');
 
-exports.parseNum = function (raw) {
-    if (raw === void 0) {
-        return undefined;
-    } else if (!isFinite(raw) || raw === "") {
-        return null;
-    } else {
-        return Number(raw);
-    }
-};
-
-exports.parseField = function (field, raw, prev) {
-    switch (field.type) {
-        case 'integer':
-            // store months as integers
-            if (field.validate && field.validate.is_numeric_month)
-                return exports.parseNum(raw);
-            // store list value since it has more meaning.
-            // TODO we don't have locale data inside this function so calling
-            // localizedString does not resole locale.
-            if (field.list) {
-                for (var i in field.list) {
-                    var item = field.list[i];
-                    if (item[0] == raw) { // loose typing
-                        return utils.localizedString(item[1]);
-                    }
-                }
-                utils.logger.error('Option not available for '+raw+' in list.');
-                utils.logger.error(field.list);
-            }
-            return exports.parseNum(raw);
-        case 'string':
-            if (raw === undefined) { return; }
-            if (raw === "") { return null; }
-            // store list value since it has more meaning.
-            // TODO we don't have locale data inside this function so calling
-            // localizedString does not resole locale.
-            if (field.list) {
-                for (var i in field.list) {
-                    var item = field.list[i];
-                    if (item[0] === raw) {
-                        return utils.localizedString(item[1]);
-                    }
-                }
-                utils.logger.error('Option not available for '+raw+' in list.');
-                utils.logger.error(field.list);
-            }
-            return utils.localizedString(raw);
-        case 'date':
-            if (!raw) { return null; }
-            // YYYY-MM-DD assume muvuku format for now
-            // store in milliseconds since Epoch
-            return moment(raw, 'YYYY-MM-DD').valueOf();
-        case 'boolean':
-            return exports.parseNum(raw);
-        default:
-            utils.logger.error('Unknown field type: ' + field.type);
-            return raw;
-    }
-};
-
 var zip = function (a, b) {
     var zipped = [];
     var len = Math.max(a.length, b.length);
@@ -78,7 +18,7 @@ var zip = function (a, b) {
  * If key already exists, only assign value.
  *
  * @param {Object} obj - object in which value is assigned to key
- * @param {String} key - key in dot notation (e.g. some.thing.else)
+ * @param {Array} key  - key in dot notation (e.g. some.thing.else)
  * @param {String} val - value to be assigned to the generated key
  */
 var createDeepKey = function(obj, key, val) {
@@ -97,18 +37,16 @@ var createDeepKey = function(obj, key, val) {
 /**
  * @param {Object} def - jsonforms form definition
  * @param {Object} doc - sms_message document
- * @param {Number} format - if 1 then include labels in value
  * @returns {Object|{}} - A parsed object of the sms message or an empty
  * object if parsing fails.
  *
  * @api public
  */
-exports.parse = function(def, doc, format) {
+exports.parse = function(def, doc) {
     var parts = doc.message.split('#'),
         header = parts[0].split('!'),
         name = header[1],
-        vals = parts.slice(1),
-        format = format ? format : 0;
+        vals = parts.slice(1);
 
     vals.unshift(header[2]);
 
@@ -134,10 +72,11 @@ exports.parse = function(def, doc, format) {
 
         // ignore extra form data that has no matching field definition.
         if (!field) {
-            obj.extra_fields = true;
+            obj._extra_fields = true;
             return obj;
         }
 
+        /* deprecating format param
         if (format === 1) {
             // include label in array
             result = [
@@ -148,7 +87,9 @@ exports.parse = function(def, doc, format) {
             result = exports.parseField(field, val, obj[field._key]);
         }
 
-        createDeepKey(obj, field._key.split('.'), result);
+        createDeepKey(obj, field._key.split('.'), val);
+        */
+        obj[field._key] = val;
         return obj;
     }, {});
 };
@@ -163,29 +104,13 @@ exports.parseArray = function(def, doc) {
 
     var obj = exports.parse(def, doc);
 
-    if(!def || !def.fields) {
-        return [];
-    }
+    if (!def || !def.fields) { return []; }
 
     // collect field keys into array
-    var keys = [];
-    for (var k in def.fields) {
-        if (keys.indexOf(k) === -1) {
-            keys.push(k);
-        }
-    }
-
     var arr = [];
-    for (var k = 0; k < keys.length; k++) {
-        var key = keys[k].split('.');
-        var result = obj;
-
-        while(key.length > 0) {
-            result = result[key.shift()];
-        }
-
-        arr.push(result);
-    }
+    for (var k in def.fields) {
+        arr.push(obj[k]);
+    };
 
     // The fields sent_timestamp and from are set by the gateway, so they are
     // not included in the raw sms message and added manually.
