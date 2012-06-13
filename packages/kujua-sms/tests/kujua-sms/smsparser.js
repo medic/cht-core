@@ -188,7 +188,7 @@ exports.parse_date_field = function(test) {
 };
 
 exports.parse_boolean_field = function(test) {
-    test.expect(1);
+    test.expect(2);
     var doc = {
         message: "1!0000!1"
     };
@@ -201,7 +201,14 @@ exports.parse_boolean_field = function(test) {
         }
     };
     var data = smsparser.parse(def, doc);
-    test.same(data, {testbool: 1});
+    test.same(data, {testbool: true});
+
+    doc = {
+        message: "1!0000!0"
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {testbool: false});
+
     test.done();
 };
 
