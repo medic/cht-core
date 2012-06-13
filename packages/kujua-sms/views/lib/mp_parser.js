@@ -1,6 +1,5 @@
 var utils = require('kujua-utils'),
-    _ = require('underscore')._,
-    moment = require('moment');
+    _ = require('underscore')._;
 
 var zip = function (a, b) {
     var zipped = [];
