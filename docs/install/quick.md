@@ -6,10 +6,8 @@ including SMSSync, over a local wifi network.
 ## Download Couchbase
 
 * Go here
-[http://www.couchbase.org/get/couchbase-single/2.0](http://www.couchbase.org/get/couchbase-single/2.0)
-* Click the Download button under Developer Preview to the right
-* Click the right link for your operating system, use the `.zip` file if
-you are on OSX, `.exe` on Windows.
+[Couchbase Single Server Mirror](https://medicmobile.s3.amazonaws.com/couchbase-single-server-2.0.0-dev-preview/index.html)
+* Click the right link for your operating system
 * Open the install file and follow the instructions.
 
 ## Create Admin User

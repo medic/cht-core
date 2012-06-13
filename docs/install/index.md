@@ -16,8 +16,7 @@ easy to install on Windows, Linux or Mac OSX.
 
 ### Step 1: Download 
 
-* Click the **Download** button on [Couchbase Single Server 2.0 Preview](http://www.couchbase.org/get/couchbase-single/2.0)
-* Choose the right file for your operating system, if you are using Windows for example, download the .exe file.
+* Choose the right file for your operating system on [Couchbase Single Server 2.0 Preview](https://medicmobile.s3.amazonaws.com/couchbase-single-server-2.0.0-dev-preview/index.html)
 * Launch or extract the package file and follow the instructions for your operating system to install Couchbase Single Server.
 
 *Note* this guide refers to *CouchDB* and *Couchbase Single Server* synonymously.
