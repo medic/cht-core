@@ -140,17 +140,19 @@
 
             // validation only available for "normal" cells
             if (typeof c.createCellHandler === 'function') {
-               td = c.createCellHandler(c, p);
+                td = c.createCellHandler(c, p);
             } else {
-               td = $('<td/>');
-               td.data({
-                   'editSelectionHandler': _.isFunction(c.editSelectionHandler) ? c.editSelectionHandler : undefined,
-                   'property': c.property,
-                   'validation': validation,
-                   'validation-hint': c.validationHint
-               });
-               setValue(td, p, { silent: true });
+                td = $('<td/>');
+                td.data({
+                    'validation': validation,
+                    'validation-hint': c.validationHint
+                });
+                setValue(td, p, { silent: true });
             }
+            td.data({
+                'editSelectionHandler': _.isFunction(c.editSelectionHandler) ? c.editSelectionHandler : undefined,
+                'property': c.property,
+            });
 
             tr.append(td);
         });
