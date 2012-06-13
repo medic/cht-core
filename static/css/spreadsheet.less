@@ -66,6 +66,17 @@ input.edit-inline {
     outline: none;
     .drop-shadow(2px, 2px, 5px, 0.3);
     z-index: 1030;
+    &.invalid-value {
+      border-color: #b94a49;
+      &:before {
+        font-family: 'FontAwesome';
+        color: lighten(#b94a48, 10%);
+        font-size: 18px;
+        line-height: 29px;
+        content: '\f06a';
+        float: right;
+      }
+    }
 }
 #spreadsheet_select {
     z-index: 1020;
