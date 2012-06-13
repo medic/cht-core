@@ -119,14 +119,22 @@ var getCallbackPath = function(phone, form, form_data) {
  */
 var parseSentTimestamp = function(str) {
     if(!str) { return; }
-    var match = str.match(/(\d{2})-(\d{2}|\d{1})-(\d{2})\s(\d{2}):(\d{2})/);
+    var match = str.match(/(\d{1,2})-(\d{1,2})-(\d{2})\s(\d{1,2}):(\d{2})(:(\d{2}))?/),
+        ret,
+        year;
     if (match) {
-        var ret = new Date();
+        ret = new Date();
+
+        year = ret.getFullYear();
+        year -= year % 100; // round to nearest 100
+        ret.setYear(year + parseInt(match[3], 10)); // works until 2100
+
         ret.setMonth(parseInt(match[1],10) - 1);
-        ret.setYear('20'+match[3]); //HACK for two-digit year
-        ret.setDate(match[2]);
-        ret.setHours(match[4]);
+        ret.setDate(parseInt(match[2], 10));
+        ret.setHours(parseInt(match[4], 10));
         ret.setMinutes(match[5]);
+        ret.setSeconds(match[7] || 0);
+        ret.setMilliseconds(0);
         return ret.getTime();
     }
 };
