@@ -1,12 +1,4 @@
 (function ($) {
-
-    /**
-     * Holds editor state etc.
-     */
-
-    $.spreadsheet = {};
-
-
     /**
      * Creates a thead element for the given unique key list.
      */
@@ -151,7 +143,7 @@
             }
             td.data({
                 'editSelectionHandler': _.isFunction(c.editSelectionHandler) ? c.editSelectionHandler : undefined,
-                'property': c.property,
+                'property': c.property
             });
 
             tr.append(td);
@@ -165,15 +157,16 @@
      */
 
     var clearInlineEditor = function () {
-        var $input;
-        if ($.spreadsheet.edit_inline_input) {
-            $input = $($.spreadsheet.edit_inline_input);
+        var $input,
+            $table = $(this);
+        if ($table.data('spreadsheet:edit-inline-input')) {
+            $input = $($table.data('spreadsheet:edit-inline-input'));
             if ($.fn.tooltip) {
               $input.tooltip('hide');
             }
             $input.remove();
-            delete $.spreadsheet.edit_inline_input;
-            delete $.spreadsheet.edit_inline_td;
+            $table.data('spreadsheet:edit-inline-input', undefined);
+            $table.data('spreadsheet:edit-inline-td', undefined);
         }
     };
 
@@ -184,21 +177,24 @@
      */
 
     var completeInlineEditor = function () {
-        var input = $.spreadsheet.edit_inline_input;
-        var td = $.spreadsheet.edit_inline_td;
+        var $table = $(this),
+            input = $table.data('spreadsheet:edit-inline-input'),
+            td = $table.data('spreadsheet:edit-inline-td');
         if (td && input) {
             setValue(td, $(input).val());
         }
-        clearInlineEditor();
+        clearInlineEditor.call(this);
     };
 
     var editCell = function (td, clear_value) {
-        if (!td) { return; }
-        clearInlineEditor();
+        if (!td) {
+            return;
+        }
+        clearInlineEditor.call(this);
         if (typeof $(td).data('editSelectionHandler') === 'function') {
             $(td).data('editSelectionHandler')(td, setValue);
         } else {
-            editInline(td, clear_value);
+            editInline.call(this, td, clear_value);
         }
     };
 
@@ -207,7 +203,8 @@
      * provided td element
      */
     var editInline = function (td, clear_value) {
-        var input,
+        var $input,
+            $table = $(this),
             $td = $(td),
             offset = $td.offset(),
             validation = $td.data('validation'),
@@ -216,35 +213,34 @@
         // if no validation fn provided, it's always valid
         validation = validation || function() { return true; }
 
-        input = $('<input class="edit-inline" type="text" />').css({
-            height: ($(td).outerHeight() - 3) + 'px',
-            minWidth: ($(td).outerWidth() - 1) + 'px',
+        $input = $('<input class="edit-inline" type="text" />').css({
+            height: ($td.outerHeight() - 3) + 'px',
+            minWidth: ($td.outerWidth() - 1) + 'px',
             position: 'absolute',
             top: offset.top,
             left: offset.left
         });
-        input.on('focus keyup mouseup blur', function() {
-            var $this = $(this),
-                valid = validation.call(this, $(this).val());
-            $this.toggleClass('invalid-value', !valid);
+        $input.on('focus keyup mouseup blur', function() {
+            var valid = validation.call($input, $input.val());
+            $input.toggleClass('invalid-value', !valid);
         });
         if (clear_value) {
-            input.val('');
+            $input.val('');
         }
         else {
-            input.val($(td).text());
+            $input.val($(td).text());
         }
 
         if (validationHint) {
-            input.attr('title', validationHint);
+            $input.attr('title', validationHint);
             if ($.fn.tooltip) {
-                input.tooltip();
+                $input.tooltip();
             }
         }
-        $td.parents('table').after(input);
-        $.spreadsheet.edit_inline_input = $(input)[0];
-        $.spreadsheet.edit_inline_td = $td[0];
-        return input.focus();
+        $td.parents('table').after($input);
+        $table.data('spreadsheet:edit-inline-input', $input[0]);
+        $table.data('spreadsheet:edit-inline-td', $td[0]);
+        return $input.focus();
     };
 
 
@@ -254,40 +250,41 @@
      */
 
     var select = function (td) {
-        var div = $('#spreadsheet_select');
-        var reselect = false;
+        var div = $('#spreadsheet_select'),
+            reselect = false,
+            $td = $(td),
+            $table = $(this);
         if (!div.length) {
             // previously unselected - this was causing some strange
             // problems with highlight positioning until the next
             // selection change, so force another selection change now
             reselect = true;
             div = $('<div id="spreadsheet_select" />');
-            $(td).parents('table').after(div);
+            $td.parents('table').after(div);
         }
-        var offset = $(td).offset();
+        var offset = $td.offset();
         div.css({
-            width: $(td).outerWidth() - 3,
-            height: $(td).outerHeight() - 3,
+            width: $td.outerWidth() - 3,
+            height: $td.outerHeight() - 3,
             top: offset.top,
             left: offset.left,
             position: 'absolute'
         });
 
-        if (td === $.spreadsheet.selected_td) {
+        if (td === $table.data('spreadsheet:selected-td')) {
             // already selected
             return;
         }
-        $.spreadsheet.selected_td = $(td)[0];
-        $.spreadsheet.select_div = div;
+        $table.data('spreadsheet:selected-td', $td[0]);
+        $table.data('spreadsheet:select-div', div);
 
-        var table = $($.spreadsheet.selected_td).parents('table');
-        $.spreadsheet.current_table = table;
+        $table.data('spreadsheet:current-table', $table);
 
         if (reselect) {
-            select(td);
+            select.call(this, td);
         }
 
-        table.trigger('selectionChange');
+        $table.trigger('selectionChange');
     };
 
 
@@ -296,13 +293,13 @@
      */
 
     var clearSelection = function () {
-        var table = $($.spreadsheet.selected_td).parents('table');
-        if ($.spreadsheet.select_div) {
-            $($.spreadsheet.select_div).remove();
-            delete $.spreadsheet.select_div;
-            delete $.spreadsheet.selected_td;
+        var $table = $(this);
+        if ($table.data('spreadsheet:select-div')) {
+            $($table.data('spreadsheet:select-div')).remove();
+            $table.data('spreadsheet:select-div', undefined);
+            $table.data('spreadsheet:selected-td', undefined);
         }
-        table.trigger('selectionChange');
+        $table.trigger('selectionChange');
     };
 
 
@@ -491,28 +488,38 @@
 
     // adds .active class to thead th for columns and first th element of rows
     // that are in range or selected
-    var updateActiveMarkers = function (table) {
-        var ths = $('thead th', table);
+    var updateActiveMarkers = function () {
+        var ec,
+            sc,
+            trs,
+            pos,
+            selected,
+            sr,
+            er,
+            c,
+            r,
+            $table = $(this),
+            ths = $('thead th', $table);
         ths.removeClass('active');
         $('th.handle').removeClass('active');
 
-        if ($.spreadsheet.range_tds) {
-            var sc = $.spreadsheet.range_start_col;
-            var ec = $.spreadsheet.range_end_col;
-            for (var c = sc; c <= ec; c++) {
+        if ($table.data('spreadsheet:range-tds')) {
+            sc = $table.data('spreadsheet:range-start-col');
+            ec = $table.data('spreadsheet:range-end-col');
+            for (c = sc; c <= ec; c++) {
                 $(ths[c + 1]).addClass('active');
             }
-            var trs = $('tbody tr', table);
-            var sr = $.spreadsheet.range_start_row;
-            var er = $.spreadsheet.range_end_row;
-            for (var r = sr; r <= er; r++) {
+            trs = $('tbody tr', $table);
+            sr = $table.data('spreadsheet:range-start-row;')
+            er = $table.data('spreadsheet:range-end-row;')
+            for (r = sr; r <= er; r++) {
                 $('th.handle', trs[r]).addClass('active');
             }
         }
         else {
-            var selected = $.spreadsheet.selected_td;
+            selected = $table.data('spreadsheet:selected-td');
             if (selected) {
-                var pos = getCellPosition(table, selected);
+                pos = getCellPosition($table, selected);
                 $(ths[pos.column + 1]).addClass('active');
             }
             if (selected) {
@@ -522,44 +529,51 @@
     };
 
 
-    var setRangeElements = function (table, start_td, end_td) {
-        var start = getCellPosition(table, start_td);
-        var end = getCellPosition(table, end_td);
-        return setRange(table, start.column, start.row, end.column, end.row);
+    var setRangeElements = function (start_td, end_td) {
+        var $table = $(this),
+          start = getCellPosition($table, start_td),
+          end = getCellPosition($table, end_td);
+        return setRange.call($table, start.column, start.row, end.column, end.row);
     };
 
-    var setRange = function (table, start_col, start_row, end_col, end_row) {
-        $('td.range', table).removeClass('range');
-        var sc = Math.min(start_col, end_col);
-        var ec = Math.max(start_col, end_col);
-        var sr = Math.min(start_row, end_row);
-        var er = Math.max(start_row, end_row);
+    var setRange = function (start_col, start_row, end_col, end_row) {
+        var c,
+            cell,
+            r,
+            sc = Math.min(start_col, end_col),
+            ec = Math.max(start_col, end_col),
+            sr = Math.min(start_row, end_row),
+            er = Math.max(start_row, end_row),
+            $table = $(this);
 
-        $.spreadsheet.range_tds = [];
-        $.spreadsheet.range_start_col = sc;
-        $.spreadsheet.range_end_col = ec;
-        $.spreadsheet.range_start_row = sr;
-        $.spreadsheet.range_end_row = er;
+        $('td.range', $table).removeClass('range');
 
-        for (var c = sc; c <= ec; c++) {
-            for (var r = sr; r <= er; r++) {
-                var cell = getCellAt(table, r, c);
+        $table.data('spreadsheet:range-tds', []);
+        $table.data('spreadsheet:range-start-col', sc);
+        $table.data('spreadsheet:range-end-col', ec);
+        $table.data('spreadsheet:range-start-row', sr);
+        $table.data('spreadsheet:range-end-row', er);
+
+        for (c = sc; c <= ec; c++) {
+            for (r = sr; r <= er; r++) {
+                cell = getCellAt($table, r, c);
                 $(cell).addClass('range');
-                $.spreadsheet.range_tds.push(cell);
+                $table.data('spreadsheet:range-tds').push(cell);
             }
         }
-        table.trigger('rangeChange');
+        $table.trigger('rangeChange');
     };
 
 
-    var clearRange = function (table) {
-        $('td.range', table).removeClass('range');
-        delete $.spreadsheet.range_tds;
-        delete $.spreadsheet.range_start_col;
-        delete $.spreadsheet.range_end_col;
-        delete $.spreadsheet.range_start_row;
-        delete $.spreadsheet.range_end_row;
-        table.trigger('rangeChange');
+    var clearRange = function () {
+        var $table = $(this);
+        $('td.range', $table).removeClass('range');
+        $table.data('spreadsheet:range-tds', undefined);
+        $table.data('spreadsheet:range-start-col', undefined);
+        $table.data('spreadsheet:range-end-col', undefined);
+        $table.data('spreadsheet:range-start-row', undefined);
+        $table.data('spreadsheet:range-end-row', undefined);
+        $table.trigger('rangeChange');
     };
 
 
@@ -572,24 +586,25 @@
      * Handles user interaction with the table
      */
 
-    var bindTableEvents = function (table, options) {
-        $(table).bind('rangeChange', function () {
-            updateActiveMarkers(table);
+    var bindTableEvents = function (options) {
+        var $table = $(this);
+        $table.bind('rangeChange', function () {
+            updateActiveMarkers.call($table);
         });
-        $(table).bind('selectionChange', function () {
-            clearRange(table);
-            updateActiveMarkers(table);
+        $table.bind('selectionChange', function () {
+            clearRange.call($table);
+            updateActiveMarkers.call($table);
 
-            if (!$.spreadsheet.selected_td) {
-                completeInlineEditor();
+            if (!$table.data('spreadsheet:selected-td')) {
+                completeInlineEditor.call($table);
             }
-            if ($.spreadsheet.edit_inline_td) {
-                if ($.spreadsheet.edit_inline_td != $.spreadsheet.selected_td) {
-                    completeInlineEditor();
+            if ($table.data('spreadsheet:edit-inline-td')) {
+                if ($table.data('spreadsheet:edit-inline-td') != $table.data('spreadsheet:selected-td')) {
+                    completeInlineEditor.call($table);
                 }
             }
             // scroll page to make new selection visible
-            var s = $($.spreadsheet.selected_td);
+            var s = $($table.data('spreadsheet:selected-td'));
             if (s.length) {
                 var offset = s.offset();
                 var scroll_y = $(window).scrollTop();
@@ -612,70 +627,70 @@
                 }
             }
         });
-        $(table).bind('change', function (ev) {
+        $table.bind('change', function (ev) {
             // re-select td to make sure select box is properly resized.
-            if ($.spreadsheet.selected_td) {
-                select($.spreadsheet.selected_td);
+            if ($table.data('spreadsheet:selected-td')) {
+                select.call($table, $table.data('spreadsheet:selected-td'));
             }
             // update row counter
-            $('.row-counter', table).text(options.data.length + ' rows');
+            $('.row-counter', $table).text(options.data.length + ' rows');
         });
-        $(table).on('mousedown', 'thead th', function (ev) {
-            var ths = $('thead th', table);
-            var trs = $('tbody tr', table);
+        $table.on('mousedown', 'thead th', function (ev) {
+            var ths = $('thead th', $table);
+            var trs = $('tbody tr', $table);
 
             for (var i = 1; i < ths.length; i++) {
                 if (this === ths[i]) {
                     // select whole column
-                    setRange(table, i - 1, 0, i - 1, trs.length);
+                    setRange.call($table, i - 1, 0, i - 1, trs.length);
                 }
             }
         });
-        $(table).on('mousedown', 'tbody th.handle', function (ev) {
+        $table.on('mousedown', 'tbody th.handle', function (ev) {
             var this_tr = $(this).parent()[0];
             var tds = $('td', this_tr);
-            var trs = $('tbody tr', table);
+            var trs = $('tbody tr', $table);
 
             for (var i = 0; i < trs.length; i++) {
                 if (this_tr === trs[i]) {
                     // select whole row
-                    setRange(table, 0, i, tds.length - 1, i);
+                    setRange.call($table, 0, i, tds.length - 1, i);
                 }
             }
         });
-        $(table).on('mousedown', 'td', function (ev) {
-            $('td.active', table).removeClass('active');
-            var pos = getCellPosition(table, this);
-            $.spreadsheet.start_column = pos.column;
+        $table.on('mousedown', 'td', function (ev) {
+            $('td.active', $table).removeClass('active');
+            var pos = getCellPosition($table, this);
+            $table.data('spreadsheet:start-column', pos.column);
             if (ev.shiftKey) {
-                setRangeElements(table, $.spreadsheet.selected_td, this);
+                setRangeElements.call($table, $table.data('spreadsheet:selected-td'), this);
             } else {
-                select(this);
+                select.call($table, this);
             }
         });
-        $(table).on('mouseover', 'tbody td', function (ev) {
+        $table.on('mouseover', 'tbody td', function (ev) {
             ev.preventDefault();
-            if ($.spreadsheet.left_btn_down && $.spreadsheet.selected_td) {
+            if ($table.data('spreadsheet:left-btn-down') && $table.data('spreadsheet:selected-td')) {
                 // left mouse button pressed and move started on table
-                setRangeElements(table, $.spreadsheet.selected_td, this);
+                setRangeElements.call($table, $table.data('spreadsheet:selected-td'), this);
             }
             return false;
         });
-        $(table).on('change', 'tr', function (ev) {
+        $table.on('change', 'tr', function (ev) {
             // TODO: don't save on every cell change, use a timeout and
             // wait until a different tr is selected if possible
             // TODO: check if doc has actually changed values
             var tr = $(this);
             saveDoc(tr, options);
         });
-        $(table).on('change', 'td', function (ev) {
+        $table.on('change', 'td', function (ev) {
             // update doc value in spreadsheet data array
-            var tr = $(this).parent();
-            var doc = getDoc(tr, options);
+            var tr = $(this).parent(),
+                doc = getDoc(tr, options);
             // TODO: coerce value to correct type depending on options
             setProperty(doc, $(this).data('property'), $(this).text());
         });
-        $(table).on('click', 'tbody th', function (ev) {
+        $table.on('click', 'tbody th', function (ev) {
             console.log(['click', ev.which]);
             if (ev.which === 3) { // right mouse button
 
@@ -684,44 +699,47 @@
                 ev.stopImmediatePropagation();
             }
         });
-        $(table).on('click', 'tbody .delete-row', function (ev) {
+        $table.on('click', 'tbody .delete-row', function (ev) {
               var deleted,
                   row = $(this).parents('tr'),
                   index = row.index();
               row.trigger('change');
               row.detach();
         });
-        $(table).on('click', '.spreadsheet-actions .add-row-btn', function (ev) {
+        $table.on('click', '.spreadsheet-actions .add-row-btn', function (ev) {
             ev.preventDefault();
-            addRow(table, options);
+            addRow($table, options);
             return false;
         });
     };
 
 
     var bindDocumentEvents = function () {
-        if ($.spreadsheet.document_bound) {
+        var $table = $(this);
+        if ($table.data('spreadsheet:bound')) {
             // only bind these event handlers once
             return;
         }
         // keep track of left btn, since ev.which is unreliable inside
         // mouseover events (FF seems to think it's always pressed)
-        $.spreadsheet.left_btn_down = false;
+        $table.data('spreadsheet:left-btn-down', false);
         $(document).mousedown(function (ev) {
             if (ev.which === 1) {
-                $.spreadsheet.left_btn_down = true;
+                $table.data('spreadsheet:left-btn-down', true);
             }
         });
         $(document).mouseup(function (ev) {
             if (ev.which === 1) {
-                $.spreadsheet.left_btn_down = false;
+                $table.data('spreadsheet:left-btn-down', false);
             }
         });
         $(document).bind('cut', function (ev) {
-            var td = $.spreadsheet.selected_td;
+            var td = $table.data('spreadsheet:selected-td'),
+                textarea,
+                val;
             if (td) {
-                var val = $(td).text();
-                var textarea = $($.spreadsheet.clipboard_textarea);
+                val = $(td).text();
+                textarea = $table.data('spreadsheet:clipboard-textarea');
                 textarea.val(val).focus().select();
                 setTimeout(function () {
                     textarea.val('');
@@ -730,12 +748,15 @@
             }
         });
         $(document).bind('copy', function (ev) {
+            var td,
+                textarea,
+                val;
             // TODO: copy cell ranges
             if (ev.target.tagName !== 'INPUT') {
-                var td = $.spreadsheet.selected_td;
+                td = $table.data('spreadsheet:selected-td');
                 if (td) {
-                    var val = $(td).text();
-                    var textarea = $($.spreadsheet.clipboard_textarea);
+                    val = $(td).text();
+                    textarea = $table.data('spreadsheet:clipboard-textarea');
                     textarea.val(val).focus().select();
                     setTimeout(function () {
                         textarea.val('');
@@ -746,10 +767,10 @@
         $(document).bind('paste', function (ev) {
             // TODO: paste cell ranges
             if (ev.target.tagName !== 'INPUT') {
-                $($.spreadsheet.clipboard_textarea).val('').focus();
+                $table.data('spreadsheet:clipboard-textarea').val('').focus();
                 setTimeout(function () {
-                    var val = $($.spreadsheet.clipboard_textarea).val();
-                    var td = $.spreadsheet.selected_td;
+                    var val = $($table.data('spreadsheet:clipboard-textarea')).val(),
+                        td = $table.data('spreadsheet:selected-td');
                     if (td) {
                         setValue(td, val);
                     }
@@ -757,22 +778,21 @@
             }
         });
         $(document).on('dblclick', '#spreadsheet_select', function (ev) {
-            var td = $.spreadsheet.selected_td;
-            editCell(td);
+            var td = $table.data('spreadsheet:selected-td');
+            editCell.call($table, td);
         });
         $(document).click(function (ev) {
-            var el = $(ev.target);
-            var input = $.spreadsheet.edit_inline_input;
-            var select_div = $.spreadsheet.select_div;
-            var table = $.spreadsheet.current_table;
+            var el = $(ev.target),
+              input = $table.data('spreadsheet:edit-inline-input'),
+              select_div = $table.data('spreadsheet:select-div'),
+              table = $table.data('spreadsheet:current-table');
             if (!el.is('td', table) && !el.is(input) && !el.is(select_div)) {
-                clearSelection();
+                clearSelection.call(this);
             }
         });
         $(document).keydown(function (ev) {
-            var table = $.spreadsheet.current_table,
-                selected = $.spreadsheet.selected_td,
-                input = $.spreadsheet.edit_inline_input,
+            var selected = $table.data('spreadsheet:selected-td'),
+                input = $table.data('spreadsheet:edit-inline-input'),
                 cell,
                 col,
                 pos,
@@ -780,7 +800,7 @@
                 key = ev.which;
 
             if (key === 27)  { /* ESC */
-                clearInlineEditor();
+                clearInlineEditor.call($table);
             }
             else if (key === 16)  { /* SHIFT */            return; }
             else if (key === 17)  { /* CTRL */             return; }
@@ -793,56 +813,56 @@
                 if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
-                pos = getCellPosition(table, selected);
-                cell = getCellAt(table, pos.row - 1, pos.column)
+                pos = getCellPosition($table, selected);
+                cell = getCellAt($table, pos.row - 1, pos.column)
                 if (cell) {
                     ev.preventDefault();
-                    $.spreadsheet.start_column = pos.column;
-                    select(cell);
+                    $table.data('spreadsheet:start-column', pos.column);
+                    select.call($table, cell);
                 }
             }
             else if (key === 40)  { /* DOWN */
                 if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
-                pos = getCellPosition(table, selected);
-                cell = getCellAt(table, pos.row + 1, pos.column)
+                pos = getCellPosition($table, selected);
+                cell = getCellAt($table, pos.row + 1, pos.column)
                 if (cell) {
                     ev.preventDefault();
-                    $.spreadsheet.start_column = pos.column;
-                    select(cell);
+                    $table.data('spreadsheet:start-column', pos.column);
+                    select.call($table, cell);
                 }
             }
             else if (key === 37)  { /* LEFT */
                 if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
-                pos = getCellPosition(table, selected);
-                cell = getCellAt(table, pos.row, pos.column - 1)
+                pos = getCellPosition($table, selected);
+                cell = getCellAt($table, pos.row, pos.column - 1)
                 if (cell) {
                     ev.preventDefault();
-                    $.spreadsheet.start_column = pos.column - 1;
-                    select(cell);
+                    $table.data('spreadsheet:start-column', pos.column - 1);
+                    select.call($table, cell);
                 }
             }
             else if (key === 39)  { /* RIGHT */
                 if (!selected || ev.target.tagName === 'INPUT') {
                     return;
                 }
-                pos = getCellPosition(table, selected);
-                cell = getCellAt(table, pos.row, pos.column + 1)
+                pos = getCellPosition.call($table, selected);
+                cell = getCellAt($table, pos.row, pos.column + 1)
                 if (cell) {
                     ev.preventDefault();
-                    $.spreadsheet.start_column = pos.column + 1;
-                    select(cell);
+                    $table.data('spreadsheet:start-column', pos.column + 1);
+                    select.call($table, cell);
                 }
             }
             else if (key === 46)  { /* DEL */
                 if (ev.target.tagName === 'INPUT') {
                     return;
                 }
-                if ($.spreadsheet.range_tds) {
-                    _.each($.spreadsheet.range_tds, function (td) {
+                if ($table.data('spreadsheet:range-tds')) {
+                    _.each($table.data('spreadsheet:range-tds'), function (td) {
                         // clear value of selected td
                         setValue(td, '');
                     });
@@ -858,11 +878,11 @@
                 }
                 if (ev.target.tagName !== 'INPUT' || ev.target === input) {
                     ev.preventDefault();
-                    pos = getCellPosition(table, selected);
+                    pos = getCellPosition($table, selected);
                     offset = ev.shiftKey ? -1 : 1;
-                    cell = getCellAt(table, pos.row, pos.column + offset)
+                    cell = getCellAt($table, pos.row, pos.column + offset)
                     if (cell) {
-                        select(cell);
+                        select.call($table, cell);
                     }
                 }
             }
@@ -871,20 +891,20 @@
                     return;
                 }
                 if (ev.target === input) {
-                    completeInlineEditor();
-                    pos = getCellPosition(table, selected);
-                    col = $.spreadsheet.start_column;
+                    completeInlineEditor.call($table);
+                    pos = getCellPosition($table, selected);
+                    col = $table.data('spreadsheet:start-column');
                     if (col === undefined) {
                         col = pos.column;
                     }
-                    cell = getCellAt(table, pos.row + 1, col)
+                    cell = getCellAt($table, pos.row + 1, col)
                     // move to cell below if possible
                     if (cell) {
-                        select(cell);
+                        select.call($table, cell);
                     }
                 }
                 else if (selected && ev.target.tagName !== 'INPUT') {
-                    editCell(selected);
+                    editCell.call($table, selected);
                 }
             }
             else if (ev.target.tagName !== 'INPUT') {
@@ -892,11 +912,11 @@
                     return;
                 }
                 if (!ev.altKey && !ev.ctrlKey) {
-                    editCell(selected, true);
+                    editCell.call($table, selected, true);
                 }
             }
         });
-        $.spreadsheet.document_bound = true;
+        $table.data('spreadsheet:bound', true);
     };
 
 
@@ -905,6 +925,12 @@
      */
 
     $.fn.spreadsheet = function (options) {
+        var $table = $(this),
+            table,
+            tbody,
+            textarea,
+            thead;
+
         _.defaults(options, {
             create: $.noop,
             data: [],
@@ -915,13 +941,13 @@
             throw new Error('You must define some columns');
         }
 
-        var table = $('<table class="spreadsheet"></table>');
-        var thead = createHeadings(options.columns);
-        var tbody = createBody(options.columns, options.data);
+        table = $('<table class="spreadsheet"></table>');
+        thead = createHeadings(options.columns);
+        tbody = createBody(options.columns, options.data);
 
         table.append(thead).append(tbody);
-        $(this).html(table);
-        $(this).append(
+        $table.html(table);
+        $table.append(
             '<div class="spreadsheet-actions">' +
                 '<a href="#" class="btn add-row-btn">' +
                     '<i class="icon-plus-sign"></i> Add row' +
@@ -930,12 +956,12 @@
             '</div>'
         );
 
-        var textarea = $('<textarea id="spreadsheet_clipboard"></textarea>');
-        $.spreadsheet.clipboard_textarea = textarea;
-        $(this).after(textarea);
+        textarea = $('<textarea id="spreadsheet_clipboard"></textarea>');
+        $table.data('spreadsheet:clipboard', textarea);
+        $table.after(textarea);
 
-        bindDocumentEvents();
-        bindTableEvents(this, options);
+        bindDocumentEvents.call(this);
+        bindTableEvents.call(this, options);
         $('.row-counter', this).text(options.data.length + ' rows');
 
         return this;
