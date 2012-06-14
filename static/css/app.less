@@ -1,5 +1,6 @@
 @import "bootstrap/less/bootstrap.less";
 @import "packages/kujua-branding/css/base.less";
+@import "elements.less";
 
 // avoid header bug to bypass rewrite and directly access attachment
 @baseFontPath: "../../../bootstrap/font/";
@@ -66,9 +67,9 @@ body {
   .scroll;
   width: 580px;
 }
-// override bootstrap for inner tables 
+// override bootstrap for inner tables
 .table-striped .form-data {
-  thead tr th, 
+  thead tr th,
   tbody tr td {
     background-color: #fff;
   }
@@ -145,7 +146,7 @@ body {
   .icon-ok.pending {
     color: @blue;
   }
-  // Specifying width for each column since the rows are their own tables.  
+  // Specifying width for each column since the rows are their own tables.
   .reported-date {
     width: 100px;
   }
@@ -175,13 +176,14 @@ body {
     position: relative;
   }
   .row-controls {
-    padding: 20px;
+    padding: 10px 5px 5px;
     position: absolute;
-    top: -10px;
-    right: 45px;
+    top: -9px;
+    left: -36px;
+    background: #f5f5f5;
+    .bordered(#ddd, transparent, darken(#ddd, 10%), #ddd);
+    .border-radius(0, 0, 4px, 4px);
     .hide;
-    padding: 15px 50px;
-    width: 50px;
     form {
       margin: 0;
       padding: 0;
