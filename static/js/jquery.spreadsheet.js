@@ -108,9 +108,9 @@
             return validation;
         } else if (_.isString(validation)) {
             if (validation === 'phone') {
-                column.validationHint = 'Phone number: +12345678901';
+                column.validationHint = 'Phone number: +225588881111';
                 return function(v) {
-                    return /^\s*\+\d{11}\s*$/.test(v);
+                    return /^\s*\+\d{11,12}\s*$/.test(v);
                 }
             } else if (validation === 'notblank') {
                 column.validationHint = 'Value required';
