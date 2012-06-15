@@ -2,6 +2,12 @@ var jsDump = require('jsDump'),
     _ = require('underscore')._,
     settings = require('settings/root');
 
+exports.getUserLocale = function(req) {
+    if (req.query.locale)
+        return req.query.locale;
+    return req.userCtx ? req.userCtx.locale : undefined;
+};
+
 /*
  * Resolve language string object based on fallback or specified locale.
  *
