@@ -77,7 +77,7 @@ var expected_callback = {
  * Run add_sms and expect a callback to add a clinic to a data record which
  * contains all the information from the SMS.
  **/
-exports.msbc1_to_record = function (test) {
+exports.msbr_to_record = function (test) {
 
     test.expect(26);
 
