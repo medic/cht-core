@@ -1,3 +1,4 @@
+@import "elements.less";
 @import "bootstrap/less/bootstrap.less";
 @import "packages/kujua-branding/css/base.less";
 
@@ -66,9 +67,9 @@ body {
   .scroll;
   width: 580px;
 }
-// override bootstrap for inner tables 
+// override bootstrap for inner tables
 .table-striped .form-data {
-  thead tr th, 
+  thead tr th,
   tbody tr td {
     background-color: #fff;
   }
@@ -122,6 +123,9 @@ body {
     padding: 8px;
     line-height: 18px;
   }
+  .data-record > table.table-bordered {
+    .rounded(0);
+  }
   .span12 .wrap {
     padding: 10px 20px;
   }
@@ -145,7 +149,8 @@ body {
   .icon-ok.pending {
     color: @blue;
   }
-  // Specifying width for each column since the rows are their own tables.  
+  // Specifying width for each column since the rows are their own tables.
+
   .reported-date {
     width: 100px;
   }
