@@ -150,7 +150,6 @@ body {
     color: @blue;
   }
   // Specifying width for each column since the rows are their own tables.
-
   .reported-date {
     width: 100px;
   }
@@ -180,20 +179,18 @@ body {
     position: relative;
   }
   .row-controls {
-    padding: 20px;
+    padding: 5px;
     position: absolute;
-    top: -10px;
-    right: 45px;
+    top: -9px;
+    left: -75px;
+    background: #f5f5f5;
+    .bordered(#ddd, transparent, darken(#ddd, 10%), #ddd);
+    .border-radius(0, 0, 4px, 4px);
     .hide;
-    padding: 15px 50px;
-    width: 50px;
     form {
       margin: 0;
       padding: 0;
-    }
-    .delete {
-      color: @red;
-      font-size: 1.5em;
+      display: inline;
     }
   }
   .extended .close {
@@ -318,4 +315,12 @@ table.spreadsheet .dropdown-menu {
 
 .facilities_msg {
     padding: 10px 20px;
+}
+
+.modal-header .close {
+  border: none;
+  background: none;
+}
+.modal-body {
+  min-height: 300px;
 }
