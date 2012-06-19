@@ -44,6 +44,7 @@
   onUpdate: (clinic) ->
     record = _.extend({}, @data)
     record.related_entities?.clinic = clinic
+    record.reported_date = new Date(record.reported_date).getTime()
     delete record._key
     $(document).trigger('save-record', record)
     @$el.find('.modal').modal('hide')

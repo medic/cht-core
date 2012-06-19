@@ -59,6 +59,7 @@
       if ((_ref = record.related_entities) != null) {
         _ref.clinic = clinic;
       }
+      record.reported_date = new Date(record.reported_date).getTime();
       delete record._key;
       $(document).trigger('save-record', record);
       this.$el.find('.modal').modal('hide');
