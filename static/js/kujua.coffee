@@ -28,6 +28,7 @@
     @
   select: ->
     @parent.trigger('update', @model.get('value'))
+    false
 )
 
 @Kujua.ClinicsView = Backbone.View.extend(
