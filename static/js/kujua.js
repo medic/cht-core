@@ -36,7 +36,8 @@
       return this;
     },
     select: function() {
-      return this.parent.trigger('update', this.model.get('value'));
+      this.parent.trigger('update', this.model.get('value'));
+      return false;
     }
   });
 
