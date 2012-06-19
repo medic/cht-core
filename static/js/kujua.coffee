@@ -46,6 +46,7 @@
     record.related_entities?.clinic = clinic
     record.reported_date = new Date(record.reported_date).getTime()
     delete record._key
+    delete record.fields
     $(document).trigger('save-record', record)
     @$el.find('.modal').modal('hide')
     @remove()

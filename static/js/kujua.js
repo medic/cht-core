@@ -61,6 +61,7 @@
       }
       record.reported_date = new Date(record.reported_date).getTime();
       delete record._key;
+      delete record.fields;
       $(document).trigger('save-record', record);
       this.$el.find('.modal').modal('hide');
       return this.remove();
