@@ -469,16 +469,17 @@ exports.tasks_pending = function (head, req) {
         host = headers[0],
         port = headers[1] || "",
         respBody,
-        row = [];
-
-        respBody = {
-            payload: {
-                success: true,
-                task: "send",
-                secret: "",
-                messages: []
-            }
-        };
+        row,
+        includeDoc,
+        doc;
+    respBody = {
+        payload: {
+            success: true,
+            task: "send",
+            secret: "",
+            messages: []
+        }
+    };
 
     while (row = getRow()) {
         doc = row.doc;

@@ -87,7 +87,12 @@ var getCallbackBody = function(phone, doc, form_data) {
  * @returns {String} - Path for callback
  * @api private
  */
-var getCallbackPath = function(phone, form, form_data) {
+var getCallbackPath = function(phone, form, form_data, def) {
+    // if the definition has use-sentinel true, shortcut
+    if (def && def['use-sentinel']) {
+        return '/_db';
+    }
+
     var path = '';
 
     switch(form) {
@@ -192,6 +197,8 @@ var getRespBody = function(doc, req) {
 
     if (def.autoreply) {
         resp.payload.messages[0].message = def.autoreply;
+    } else if (def['use-sentinel']) {
+        delete resp.payload;
     }
 
     // provide callback for next part of record creation.
