@@ -10,16 +10,12 @@ combination with unstructured or structured SMS messages to collect data.
 
 ## Install CouchDB
 
-Kujua requires **CouchDB version 1.2 or higher**.  We are currently using the
-Couchbase Single Server binaries.  Couchbase provides CouchDB packages that are
-easy to install on Windows, Linux or Mac OSX.
+Kujua requires **CouchDB version 1.2**.
 
 ### Step 1: Download 
 
-* Choose the right file for your operating system on [Couchbase Single Server 2.0 Preview](https://medicmobile.s3.amazonaws.com/couchbase-single-server-2.0.0-dev-preview/index.html)
-* Launch or extract the package file and follow the instructions for your operating system to install Couchbase Single Server.
-
-*Note* this guide refers to *CouchDB* and *Couchbase Single Server* synonymously.
+* Choose the right package for your operating system on [CouchDB Site](https://couchdb.apache.org)
+* Launch or extract the package file and follow the instructions for your operating system to install CouchDB.
 
 ### Step 2: Create Admin User
 
@@ -70,7 +66,7 @@ it.
 
 ## Install Kujua
 
-Since Kujua is just a CouchApp the easiest way to install it by replicating
+Since Kujua is just a CouchApp the easiest way to install is by replicating
 from another instance of CouchDB.
 
 ### Step 1: Replicate 
