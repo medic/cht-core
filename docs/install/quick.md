@@ -3,11 +3,9 @@
 This document should help you quickly get Kujua software components installed,
 including SMSSync, over a local wifi network.
 
-## Download Couchbase
+## Download CouchDB
 
-* Go here
-[Couchbase Single Server Mirror](https://medicmobile.s3.amazonaws.com/couchbase-single-server-2.0.0-dev-preview/index.html)
-* Click the right link for your operating system
+* Go to [couchdb.org](http://couchdb.apache.org] and download the right file for your operating system
 * Open the install file and follow the instructions.
 
 ## Create Admin User
@@ -51,6 +49,6 @@ for the gateway so your root password is not compromised.
 
 ## Send a test SMS to the Gateway
 
-* Send the following message to the gateway: `1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4`
+* Send the following message to the gateway: `1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4`
 * Verify that the message was forwarded and is parsed correctly by Kujua, by checking the Records and Downloads sections.
 
