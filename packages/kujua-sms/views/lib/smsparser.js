@@ -189,12 +189,12 @@ exports.getForm = function(msg) {
 
     // muvuku
     if (msg.split('!').length === 3) {
-        return msg.split('!')[1];
+        return msg.split('!')[1].toUpperCase();
     }
     // textforms with 4 char form code prefix
-    var match = msg.match(new RegExp('^\\s*([\\w]{4})\\s+.+'));
+    var match = msg.match(new RegExp('^\\s*([\\w]{3})\\s+.+'));
     if (match !== null && match.length === 2) {
-        return match[1];
+        return match[1].toUpperCase();
     }
 };
 
