@@ -50,7 +50,7 @@ exports.rules = [
         }
     },
     {
-        from: '/CNPW/data_record/merge/:phone/:wkn',
+        from: '/VPD/data_record/merge/:phone/:wkn',
         to: '_list/data_record_merge/data_record_by_phone_and_wkn',
         query: {
             startkey: [':phone', ':wkn'],

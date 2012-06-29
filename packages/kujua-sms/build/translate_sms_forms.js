@@ -44,8 +44,8 @@ module.exports = {
 // based on the fields to query for an existing record.
 var getUpdatePath = function(form) {
 
-    if(form === 'CNPW') {
-        return '/:form/data_record/merge/:from/:week_number';
+    if(form === 'VPD') {
+        return '/:form/data_record/merge/:from/:week';
     }
 
     if(form === 'PSMM') {
