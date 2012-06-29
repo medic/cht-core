@@ -241,11 +241,12 @@ var messages = {
     },
     error: {
         en: "There was a problem with your message, please try to resend. If you continue to have this problem please contact your supervisor.",
+        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला",
         fr: "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur."
     },
     success: {
         en: 'Data received, thank you.',
-        ne: 'सुचना जान सकेन',
+        ne: 'डाटा प्राप्त भयो, धन्यवाद',
         fr: 'Merci, votre formulaire a été bien reçu.'
     }
 };
