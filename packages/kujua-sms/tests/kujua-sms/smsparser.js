@@ -255,7 +255,7 @@ exports.smsformats_textforms_only_one_field = function(test) {
     test.expect(1);
 
     var doc = {
-        message: "CNPW WKN2"
+        message: "VPD WKN2"
     };
 
     var form = smsparser.getForm(doc.message);
@@ -264,12 +264,13 @@ exports.smsformats_textforms_only_one_field = function(test) {
     var data = smsparser.parse(def, doc);
 
     var expect = {
-        aes_cases: undefined,
+        id: undefined,
+        week: 2,
+        year: undefined,
         afp_cases: undefined,
-        msl_cases: undefined,
         nnt_cases: undefined,
-        week_number: 2,
-        weeks_duration: undefined
+        msl_cases: undefined,
+        aes_cases: undefined
     };
 
     test.same(expect, data);
