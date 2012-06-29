@@ -12,12 +12,12 @@ var updates = require('kujua-sms/updates'),
 var example = {
     sms_message: {
        from: "+13125551212",
-       message: 'CNPW WKN2# WKS 3# AFP 99# NNT 0# MSL 5# AES01',
+       message: 'VPD WKN2# WKS 3# AFP 99# NNT 0# MSL 5# AES01',
        sent_timestamp: '01-19-12 18:45',
        sent_to: "+15551212",
        type: "sms_message",
        locale: "en",
-       form: "CNPW"
+       form: "VPD"
     },
     clinic: {
         "_id": "4a6399c98ff78ac7da33b639ed60f458",
@@ -48,7 +48,7 @@ var example = {
 var expected_callback = {
     data: {
         type: "data_record",
-        form: "CNPW",
+        form: "VPD",
         related_entities: {
             clinic: null
         },
@@ -56,8 +56,7 @@ var expected_callback = {
         from: "+13125551212",
         errors: [],
         tasks: [],
-        week_number: 2,
-        weeks_duration: 3,
+        week: 2,
         afp_cases: 99,
         nnt_cases: 0,
         msl_cases: 5,
@@ -73,14 +72,14 @@ var expected_callback = {
  * contains all the information from the SMS.
  *
  */
-exports.cnpw_to_record = function (test) {
+exports.vpd_to_record = function (test) {
 
     test.expect(11);
 
     // Data parsed from a gateway POST
     var data = {
         from: '+13125551212',
-        message: 'CNPW WKN2# WKS 3# AFP 99# NNT 0# MSL 5# AES01',
+        message: 'VPD WKN2# WKS 3# AFP 99# NNT 0# MSL 5# AES01',
         sent_timestamp: '01-19-12 18:45',
         sent_to: '+15551212'
     };
@@ -115,13 +114,13 @@ exports.cnpw_to_record = function (test) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/CNPW/data_record/add/clinic/%2B13125551212");
+        baseURL + "/VPD/data_record/add/clinic/%2B13125551212");
 
     test.same(
         resp_body.callback.data,
         expected_callback.data);
 
-    step2(test, helpers.nextRequest(resp_body, 'CNPW'));
+    step2(test, helpers.nextRequest(resp_body, 'VPD'));
 
 };
 
@@ -150,7 +149,7 @@ var step2 = function(test, req) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + '/CNPW/data_record/merge/%2B13125551212/2');
+        baseURL + '/VPD/data_record/merge/%2B13125551212/2');
 
     test.same(
         resp_body.callback.data.related_entities,
@@ -158,7 +157,7 @@ var step2 = function(test, req) {
 
     test.same(resp_body.callback.data.errors, []);
 
-    step3(test, helpers.nextRequest(resp_body, 'CNPW'));
+    step3(test, helpers.nextRequest(resp_body, 'VPD'));
 
 };
 

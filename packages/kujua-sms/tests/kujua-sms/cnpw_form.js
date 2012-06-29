@@ -1,21 +1,22 @@
 var smsparser = require('views/lib/smsparser'),
     jsonforms = require('views/lib/jsonforms');
 
-exports.cnpw_example_data = function (test) {
+exports.vpd_example_data = function (test) {
 
     var doc = {
         sent_timestamp: '2-1-12 15:35',
         from: '+13125551212',
-        message: 'CNPW WKN2# WKS 3# AFP 99# NNT 0# MSL 5# AES01'
+        message: 'VPD WKN2# WKS 3# AFP 99# NNT 0# MSL 5# AES01'
     };
 
     test.expect(2);
 
     var form = smsparser.getForm(doc.message);
-    var obj = smsparser.parse(jsonforms['CNPW'], doc);
+    var obj = smsparser.parse(jsonforms['VPD'], doc);
     var expectedObj = {
-        week_number: 2,
-        weeks_duration: 3,
+        id: undefined,
+        week: 2,
+        year: undefined,
         afp_cases: 99,
         nnt_cases: 0,
         msl_cases: 5,
@@ -24,7 +25,7 @@ exports.cnpw_example_data = function (test) {
 
     test.same(obj, expectedObj);
 
-    var arr = smsparser.parseArray(jsonforms['CNPW'], doc);
+    var arr = smsparser.parseArray(jsonforms['VPD'], doc);
     var expectedArr = ['2-1-12 15:35', '+13125551212', 2, 3, 99, 0, 5, 1]
 
     test.same(arr, expectedArr);
