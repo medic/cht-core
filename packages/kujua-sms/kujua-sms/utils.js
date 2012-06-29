@@ -245,6 +245,7 @@ var messages = {
     },
     success: {
         en: 'Data received, thank you.',
+        ne: 'सुचना जान सकेन',
         fr: 'Merci, votre formulaire a été bien reçu.'
     }
 };
