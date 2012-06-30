@@ -113,10 +113,10 @@ exports.data_records_by_district_form_and_reported_date = {
     }
 };
 
-exports.data_record_by_phone_and_wkn = {
+exports.data_record_by_phone_and_week = {
     map: function(doc) {
         if (doc.type === 'data_record') {
-            emit([doc.from, doc.wkn, doc._id], doc);
+            emit([doc.from, doc.week, doc._id], doc);
         }
     }
 };
