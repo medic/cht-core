@@ -87,7 +87,7 @@ var expected_callback = {
  * Run add_sms and expect a callback to add a clinic to a data record which
  * contains all the information from the SMS.
  **/
-exports.psms_to_record = function (test) {
+exports.test_to_record = function (test) {
 
     test.expect(25);
 
@@ -168,7 +168,7 @@ var step2_1 = function(test, req) {
 
     var resp_body = JSON.parse(resp.body);
 
-    test.same(resp_body.callback.data.errors, [{"code":"facility_not_found","message":"Clinic not found."}]);
+    test.same(resp_body.callback.data.errors, [{"code":"facility_not_found","message":"Facility not found."}]);
 
     step2_2(test, req);
     

@@ -49,7 +49,7 @@ var getUpdatePath = function(form) {
     }
 
     if(form === 'PSMM') {
-        return '/:form/data_record/merge/:monthly_year/:monthly_month/:clinic_id';
+        return '/:form/data_record/merge/:monthly_year/:monthly_month/:facility_id';
     }
 
     return '';

@@ -33,6 +33,14 @@ exports.rules = [
         }
     },
     {
+        from: '/:form/data_record/add/facility/:phone',
+        to: '_list/data_record/facility_by_phone',
+        query: {
+            startkey: [':phone'],
+            endkey: [':phone',{}]
+        }
+    },
+    {
         from: '/:form/data_record/add/health_center/:phone',
         to: '_list/data_record/clinic_by_parent_phone',
         query: {
@@ -54,15 +62,16 @@ exports.rules = [
         to: '_list/data_record_merge/data_record_by_phone_and_week',
         query: {
             startkey: [':phone', ':week'],
-            endkey: [':phone', ':week', {}]
+            endkey: [':phone', ':week', {}],
+            form: 'VPD'
         }
     },
     {
-        from: '/:form/data_record/merge/:year/:month/:clinic_id',
+        from: '/:form/data_record/merge/:year/:month/:facility_id',
         to: '_list/data_record_merge/data_record_by_year_month_and_clinic_id',
         query: {
-            startkey: [':year', ':month', ':clinic_id'],
-            endkey: [':year', ':month', ':clinic_id', {}]
+            startkey: [':year', ':month', ':facility_id'],
+            endkey: [':year', ':month', ':facility_id', {}]
         }
     },
 ];

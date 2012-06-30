@@ -127,12 +127,14 @@ exports.data_record_by_phone_and_week = {
 
 exports.facility_by_phone = {
     map: function (doc) {
-        if (doc.type === 'clinic') {
-            emit([doc.contact.phone, 'clinic'], doc);
-        } else if (doc.type === 'health_center') {
-            emit([doc.contact.phone, 'health_center'], doc);
-        } else if (doc.type === 'district_hospital') {
-            emit([doc.contact.phone, 'district_hospital'], doc);
+        if (doc.contact && doc.type) {
+            if (doc.type === 'clinic') {
+                emit([doc.contact.phone, 'clinic'], doc);
+            } else if (doc.type === 'health_center') {
+                emit([doc.contact.phone, 'health_center'], doc);
+            } else if (doc.type === 'district_hospital') {
+                emit([doc.contact.phone, 'district_hospital'], doc);
+            }
         }
     }
 };
@@ -275,7 +277,7 @@ exports.sms_message_by_sent_timestamp = {
         if (doc.type === 'data_record') {
             var sms = doc.sms_message;
             if(sms) {
-                emit([sms.sent_timestamp, sms.form, sms.from], null);                
+                emit([sms.sent_timestamp, sms.form, sms.from], null);
             }
         }
     }

@@ -23,7 +23,11 @@
               <td class="contact-name">
                 {#related_entities}
                 {?clinic.contact.name}{clinic.contact.name}
-                {:else}<i class="icon-question-sign icon-large"></i>
+                {:else}
+                  {?health_center.contact.name}{health_center.contact.name}
+                  {:else}
+                  <i class="icon-question-sign icon-large"></i>
+                  {/health_center.contact.name}
                 {/clinic.contact.name}
                 {/related_entities}
               </td>
@@ -42,7 +46,12 @@
                 {#related_entities}
                   {?clinic.parent.name}
                   <i>{clinic.parent.name}</i>
-                  {:else}<i class="icon-question-sign icon-large"></i>
+                  {:else}
+                    {?health_center.name}
+                    <i>{health_center.name}</i>
+                    {:else}
+                    <i class="icon-question-sign icon-large"></i>
+                    {/health_center.name}
                   {/clinic.parent.name}
                 {/related_entities}
               </td>

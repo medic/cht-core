@@ -238,7 +238,7 @@ var messages = {
         ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला"
     },
     facility_not_found: {
-        en: "Clinic not found."
+        en: "Facility not found."
     },
     recipient_not_found: {
         en: 'Could not find referral recipient.'
