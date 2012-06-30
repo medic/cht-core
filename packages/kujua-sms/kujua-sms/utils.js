@@ -30,7 +30,7 @@ exports.strings = {
         fr: "Nom et Prénoms"
     },
     "related_entities.clinic.parent.name": {
-        en: "Health Center",
+        en: "VDC",
         fr: "Arrondissement"
     },
     "related_entities.clinic.parent.parent.name": {
@@ -38,7 +38,7 @@ exports.strings = {
         fr: "District"
     },
     "related_entities.clinic.name": {
-        en: "Clinic",
+        en: "CHW",
         fr: "Villages"
     },
     from: {
