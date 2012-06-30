@@ -217,18 +217,18 @@ var getReferralTask = function(form, record) {
  * @param {Object} req - kanso request object
  * @param {String} form - jsonforms key string
  * @param {Object} record - record
- * @param {Object} clinic - clinic facility object
+ * @param {Object} facility - facility object
  *
  * @returns {String} - path for callback
  *
  * @api private
  */
-var getCallbackPath = function(req, form, record, clinic) {
+var getCallbackPath = function(req, form, record, facility) {
     var appdb = require('duality/core').getDBURL(req),
         baseURL = require('duality/core').getBaseURL(),
         path = appdb;
 
-    if(!clinic || !form || !record || !jsonforms[form]) {
+    if(!facility || !form || !record || !jsonforms[form]) {
         return path;
     }
 
@@ -249,7 +249,8 @@ var getCallbackPath = function(req, form, record, clinic) {
     }
 
     return baseURL + updateURL
-        .replace(':clinic_id', clinic._id)
+        .replace(':clinic_id', facility._id)
+        .replace(':facility_id', facility._id)
         .replace(':form', encodeURIComponent(form));
 
 };
@@ -266,10 +267,9 @@ var json_headers = {
 
 
 /*
- * Second step of adding a data record for an incoming SMS.
- * This adds the clinic to the data record data and
- * returns the necessary callback information for
- * creating the data record.
+ * Second step of adding a data record for an incoming SMS.  This adds the
+ * related data to the record and returns the necessary callback information
+ * for creating the data record.
  *
  * @param {Object} head
  * @param {Object} req
@@ -288,7 +288,7 @@ exports.data_record = function (head, req) {
         port = headers[1] || "",
         appdb = require('duality/core').getDBURL(req),
         def = jsonforms[form],
-        clinic = null;
+        facility  = null;
 
     if (!def) {
         var err = {code: 'form_not_found', form: form};
@@ -296,15 +296,17 @@ exports.data_record = function (head, req) {
         addError(record, err);
     }
 
-    /* Add clinic to task */
+    /* Add facility to task */
     var row = {};
     while (row = getRow()) {
-        clinic = record.related_entities.clinic = row.value;
+        if (row.value.type) {
+            facility = record.related_entities[row.value.type] = row.value;
+        }
         break;
     }
 
-    /* Can't do much without a clinic */
-    if (!clinic) {
+    /* Can't do much without a facility */
+    if (!facility) {
         var err = {code: 'facility_not_found'};
         err.message = utils.getMessage(err);
         addError(record, err);
@@ -329,7 +331,7 @@ exports.data_record = function (head, req) {
             options: {
                 host: host,
                 port: port,
-                path: getCallbackPath(req, form, record, clinic),
+                path: getCallbackPath(req, form, record, facility),
                 method: "POST",
                 headers: _.clone(json_headers)},
             data: record}};
