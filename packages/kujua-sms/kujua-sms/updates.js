@@ -102,6 +102,8 @@ var getCallbackPath = function(phone, form, form_data) {
                       .replace('%2', encodeURIComponent(phone));
             break;
         case 'VPD':
+        case 'NYAA':
+        case 'NYAB':
             path = '/%1/data_record/add/facility/%2'
                       .replace('%1', encodeURIComponent(form))
                       .replace('%2', encodeURIComponent(phone));

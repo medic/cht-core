@@ -29,11 +29,23 @@ exports.strings = {
         en: "Name",
         fr: "Nom et Prénoms"
     },
+    "related_entities.health_center.contact.name": {
+        en: "Name",
+        fr: "Nom et Prénoms"
+    },
     "related_entities.clinic.parent.name": {
         en: "VDC",
         fr: "Arrondissement"
     },
+    "related_entities.health_center.name": {
+        en: "VDC",
+        fr: "Arrondissement"
+    },
     "related_entities.clinic.parent.parent.name": {
+        en: "District",
+        fr: "District"
+    },
+    "related_entities.health_center.parent.name": {
         en: "District",
         fr: "District"
     },
@@ -48,6 +60,9 @@ exports.strings = {
     sent_timestamp: {
         en: 'Sent Timestamp',
         fr: 'Date envoyé'
+    },
+    daysoverdue: {
+        en: 'Days since patient visit'
     }
 };
 
