@@ -234,7 +234,7 @@
         if (validationHint) {
             $input.attr('title', validationHint);
             if ($.fn.tooltip) {
-                $input.tooltip();
+                $input.tooltip({'trigger':'focus'});
             }
         }
         $td.parents('table').after($input);
@@ -691,7 +691,6 @@
             setProperty(doc, $(this).data('property'), $(this).text());
         });
         $table.on('click', 'tbody th', function (ev) {
-            console.log(['click', ev.which]);
             if (ev.which === 3) { // right mouse button
 
                 // disable actual context-menu
@@ -700,11 +699,13 @@
             }
         });
         $table.on('click', 'tbody .delete-row', function (ev) {
-              var deleted,
-                  row = $(this).parents('tr'),
-                  index = row.index();
-              row.trigger('change');
-              row.detach();
+            var deleted,
+                row = $(this).parents('tr'),
+                index = row.index();
+            row.trigger('change');
+            row.detach();
+            // update row counter
+            $('.row-counter', $table).text(options.data.length - 1 + ' rows');
         });
         $table.on('click', '.spreadsheet-actions .add-row-btn', function (ev) {
             ev.preventDefault();
