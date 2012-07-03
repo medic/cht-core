@@ -234,7 +234,7 @@
         if (validationHint) {
             $input.attr('title', validationHint);
             if ($.fn.tooltip) {
-                $input.tooltip();
+                $input.tooltip({'trigger':'focus'});
             }
         }
         $td.parents('table').after($input);
