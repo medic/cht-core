@@ -699,6 +699,7 @@
             }
         });
         $table.on('click', 'tbody .delete-row', function (ev) {
+            ev.preventDefault();
             var deleted,
                 row = $(this).parents('tr'),
                 index = row.index();
