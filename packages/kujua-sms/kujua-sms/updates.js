@@ -174,7 +174,13 @@ var getRespBody = function(doc, req) {
     if (!doc.message || !doc.message.trim()) {
         errormsg = utils.getMessage('error', doc.locale);
     } else if (!form || !def) {
-        errormsg = utils.getMessage({code:'form_not_found', form: form}, doc.locale)
+        if (form === undefined) {
+            errormsg = utils.getMessage(
+                        {code:'form_not_found', form: 'undefined'}, doc.locale);
+        } else {
+            errormsg = utils.getMessage(
+                        {code:'form_not_found', form: form}, doc.locale);
+        }
     }
 
     if (errormsg) {
