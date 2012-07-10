@@ -88,7 +88,7 @@ var expected_callback = {
  * Run add_sms and expect a callback to add a clinic to a data record which
  * contains all the information from the SMS.
  */
-exports.psms_to_record_with_auth = function (test) {
+exports.test_to_record_with_auth = function (test) {
 
     test.expect(5);
 

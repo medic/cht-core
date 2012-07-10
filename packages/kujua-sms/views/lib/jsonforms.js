@@ -21,6 +21,17 @@ exports['TEST'] = {
              type: 'integer',
              validate: {is_numeric_month: true},
          },
+         misoprostol_administered: {
+            type: "boolean",
+            labels: {
+               short: {
+                  en: "Misoprostol?"
+               },
+               description: {
+                  en: "Was misoprostol administered?"
+               }
+            }
+         },
          'quantity_dispensed.la_6x1': {
              labels: 'LA 6x1: Dispensed total', type: 'integer'},
          'quantity_dispensed.la_6x2': {

@@ -90,7 +90,13 @@ exports.parseField = function (field, raw) {
             // store in milliseconds since Epoch
             return moment(raw, 'YYYY-MM-DD').valueOf();
         case 'boolean':
-            return parseNum(raw) === 1;
+            var val = parseNum(raw);
+            if (val === 1)
+                return true;
+            if (val === 0)
+                return false;
+            // if we can't parse a number then return null
+            return null;
         default:
             utils.logger.error('Unknown field type: ' + field.type);
             return raw;
