@@ -20,6 +20,20 @@ exports['TEST'] = {
              labels: 'Report Month',
              type: 'integer',
              validate: {is_numeric_month: true},
+             list: [
+                [ 1, { "en": "January" } ],
+                [ 2, { "en": "February" } ],
+                [ 3, { "en": "March" } ],
+                [ 4, { "en": "April" } ],
+                [ 5, { "en": "May" } ],
+                [ 6, { "en": "June" } ],
+                [ 7, { "en": "July" } ],
+                [ 8, { "en": "August" } ],
+                [ 9, { "en": "September" } ],
+                [ 10, { "en": "October" } ],
+                [ 11, { "en": "November" } ],
+                [ 12, { "en": "December" } ]
+             ]
          },
          misoprostol_administered: {
             type: "boolean",
