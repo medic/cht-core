@@ -90,6 +90,7 @@ exports.parseField = function (field, raw) {
             // store in milliseconds since Epoch
             return moment(raw, 'YYYY-MM-DD').valueOf();
         case 'boolean':
+            if (raw === undefined) { return; }
             var val = parseNum(raw);
             if (val === 1)
                 return true;
@@ -141,17 +142,14 @@ exports.parse = function (def, doc) {
                 var field = def.fields[j],
                     tiny = utils.localizedString(field.labels.tiny, doc.locale);
                 if (tiny.toLowerCase() === k) {
-                    form_data[j] = msg_data[k];
+                    // parse field types and resolve dot notation keys
+                    msg_data[j] = exports.parseField(field, msg_data[k]);
+                    createDeepKey(form_data, j.split('.'), msg_data[j]);
                     break;
                 }
             }
         }
 
-        // parse field types and resolve dot notation keys
-        for (var k in def.fields) {
-            form_data[k] = exports.parseField(def.fields[k], form_data[k]);
-            createDeepKey(form_data, k.split('.'), form_data[k]);
-        }
     }
 
     // pass along some system generated fields

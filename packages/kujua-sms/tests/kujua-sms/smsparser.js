@@ -166,6 +166,44 @@ exports.extra_fields = function(test) {
     test.done();
 };
 
+exports.textforms_random_ordering = function(test) {
+    test.expect(1);
+
+    var doc = { message: 'TEST CDT 33 #HFI foobar# ZDT 999 #RPY 2012' },
+        def = jsonforms['TEST'],
+        data = smsparser.parse(def, doc);
+
+    test.same(data, {
+        "facility_id": "foobar",
+        "year": 2012,
+        "quantity_dispensed": {
+            "cotrimoxazole": 33,
+            "zinc": 999,
+        }
+    });
+
+    test.done();
+};
+
+exports.textforms_without_hash_delim = function(test) {
+    test.expect(1);
+
+    var doc = { message: 'TEST CDT 33 HFI foobar ZDT 999 RPY 2012' },
+        def = jsonforms['TEST'],
+        data = smsparser.parse(def, doc);
+
+    test.same(data, {
+        "facility_id": "foobar",
+        "year": 2012,
+        "quantity_dispensed": {
+            "cotrimoxazole": 33,
+            "zinc": 999,
+        }
+    });
+
+    test.done();
+};
+
 exports.parse_date_field = function(test) {
     test.expect(2);
 
@@ -265,24 +303,11 @@ exports.smsformats_structured_but_no_form = function(test) {
 exports.smsformats_textforms_only_one_field = function(test) {
     test.expect(1);
 
-    var doc = {
-        message: "VPD WKN2"
-    };
-
-    var form = smsparser.getForm(doc.message);
-    var def = jsonforms[form];
-
-    var data = smsparser.parse(def, doc);
-
-    var expect = {
-        id: undefined,
-        week: 2,
-        year: undefined,
-        afp_cases: undefined,
-        nnt_cases: undefined,
-        msl_cases: undefined,
-        aes_cases: undefined
-    };
+    var doc = { message: "VPD WKN2" },
+        form = smsparser.getForm(doc.message),
+        def = jsonforms[form],
+        data = smsparser.parse(def, doc),
+        expect = { week: 2 };
 
     test.same(expect, data);
 

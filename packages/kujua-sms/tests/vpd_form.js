@@ -14,9 +14,7 @@ exports.vpd_example_data = function (test) {
     var form = smsparser.getForm(doc.message);
     var obj = smsparser.parse(jsonforms['VPD'], doc);
     var expectedObj = {
-        id: undefined,
         week: 2,
-        year: undefined,
         afp_cases: 99,
         nnt_cases: 0,
         msl_cases: 5,
