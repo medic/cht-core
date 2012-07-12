@@ -60,7 +60,13 @@ exports.data_records_xml = function (head, req) {
         filename = dh_name + '_' + form + '_data_records.xml',
         locale = req.query.locale || 'en', //TODO get from session
         // extra doc fields we want to export not in form
-        keys = ['reported_date', 'from'];
+        keys = [
+            'reported_date',
+            'from',
+            ['related_entities', ['clinic', ['contact', ['name']]]],
+            ['related_entities', ['clinic', ['name']]],
+            ['related_entities', ['clinic', ['parent', ['name']]]]
+        ];
 
     start({code: 200, headers: {
         'Content-Type': 'application/vnd.ms-excel; charset=utf-8',
