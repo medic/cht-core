@@ -29,11 +29,23 @@ exports.strings = {
         en: "Name",
         fr: "Nom et Prénoms"
     },
+    "related_entities.health_center.contact.name": {
+        en: "Name",
+        fr: "Nom et Prénoms"
+    },
     "related_entities.clinic.parent.name": {
         en: "Clinic",
         fr: "Arrondissement"
     },
+    "related_entities.health_center.name": {
+        en: "Clinic",
+        fr: "Arrondissement"
+    },
     "related_entities.clinic.parent.parent.name": {
+        en: "District",
+        fr: "District"
+    },
+    "related_entities.health_center.parent.name": {
         en: "District",
         fr: "District"
     },
@@ -48,6 +60,9 @@ exports.strings = {
     sent_timestamp: {
         en: 'Sent Timestamp',
         fr: 'Date envoyé'
+    },
+    daysoverdue: {
+        en: 'Days since patient visit'
     }
 };
 
@@ -145,10 +160,12 @@ var getValues = exports.getValues = function(doc, keys) {
                     values = values.concat(getValues(d, key[1]));
                 }
             } else {
-                values.push(doc[key]);
+                if (doc[key] !== undefined)
+                    values.push(doc[key]);
             }
         } else if (typeof doc[key] !== 'object' || doc[key] === null) {
-            values.push(doc[key]);
+            if (doc[key] !== undefined)
+                values.push(doc[key]);
         } else if (typeof doc[key] === 'object') {
             _keys.shift();
             values = values.concat(getValues(doc[key], _keys));
@@ -660,6 +677,7 @@ var arrayToCSV = exports.arrayToCSV = function(arr, delimiter) {
 var arrayToXML = exports.arrayToXML = function(arr, format) {
     var rows = [],
         format = format;
+
 
     for (var r = 0; r < arr.length; r++) {
         var row = arr[r],

@@ -44,7 +44,7 @@ module.exports = {
 // based on the fields to query for an existing record.
 var getUpdatePath = function(form) {
 
-    if(form === 'VPD') {
+    if( ['VPD', 'NYAA', 'NYAB'].indexOf(form) !== -1 ) {
         return '/:form/data_record/merge/:from/:week';
     }
 

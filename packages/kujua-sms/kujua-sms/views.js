@@ -32,6 +32,11 @@ exports.data_records_valid_by_district_and_form = {
                     && (!doc.errors || doc.errors.length === 0)) {
                 var dh = doc.related_entities.clinic.parent.parent;
                 emit([dh._id, doc.form, dh.name], 1);
+            } else if (doc.related_entities.health_center
+                    && doc.related_entities.health_center.parent
+                    && (!doc.errors || doc.errors.length === 0)) {
+                var dh = doc.related_entities.health_center.parent;
+                emit([dh._id, doc.form, dh.name], 1);
             } else if (!doc.errors || doc.errors.length === 0) {
                 emit([null, doc.form, null], 1);
             }

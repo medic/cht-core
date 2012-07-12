@@ -12,7 +12,7 @@ var updates = require('kujua-sms/updates'),
 var example = {
     sms_message: {
        from: "+13125551212",
-       message: '1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
+       message: '1!TEST!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4',
        sent_timestamp: '01-19-12 18:45',
        sent_to: "+15551212",
        type: "sms_message",
@@ -76,7 +76,8 @@ var expected_callback = {
         quantity_dispensed: example.quantity_dispensed,
         facility_id:"facility",
         month: '11',
-        year: '2011'
+        year: '2011',
+        misoprostol_administered: false
     }
 };
 
@@ -94,7 +95,7 @@ exports.test_to_record = function (test) {
     // Data parsed from a gateway POST
     var data = {
         from: '+13125551212',
-        message: '1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
+        message: '1!TEST!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4',
         sent_timestamp: '01-19-12 18:45',
         sent_to: '+15551212'
     };

@@ -38,7 +38,12 @@
                 {#related_entities}
                   {?clinic.parent.parent.name}
                   <i>{clinic.parent.parent.name}</i>
-                  {:else}<i class="icon-question-sign icon-large"></i>
+                  {:else}
+                    {?health_center.parent.name}
+                    <i>{health_center.parent.name}</i>
+                    {:else}
+                    <i class="icon-question-sign icon-large"></i>
+                    {/health_center.parent.name}
                   {/clinic.parent.parent.name}
                 {/related_entities}
               </td>

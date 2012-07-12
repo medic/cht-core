@@ -13,7 +13,7 @@ var _ = require('underscore')._,
 exports.data_records_csv = function (head, req) {
     var form  = req.query.form,
         dh_name = req.query.dh_name,
-        filename = dh_name + '_' + form + '_data_records.csv',
+        filename = dh_name.replace(' ','') + '_' + form + '_data_records.csv',
         locale = req.query.locale || 'en', //TODO get from session
         delimiter = locale === 'fr' ? '";"' : null,
         keys = [
@@ -57,7 +57,7 @@ exports.data_records_csv = function (head, req) {
 exports.data_records_xml = function (head, req) {
     var form  = req.query.form,
         dh_name = req.query.dh_name,
-        filename = dh_name + '_' + form + '_data_records.xml',
+        filename = dh_name.replace(' ','') + '_' + form + '_data_records.xml',
         locale = req.query.locale || 'en', //TODO get from session
         // extra doc fields we want to export not in form
         keys = [

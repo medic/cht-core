@@ -90,3 +90,17 @@ exports.responses_empty_message_fr = function (test) {
     test.same(respBody, expectedResp);
     test.done();
 };
+
+exports.responses_undefined_form = function (test) {
+    test.expect(1);
+    var req = {headers:{ "Host": window.location.host }};
+    var msg = 'Foo',
+        doc = {
+            "from":"+15551212",
+            "message":"' + msg + '"},
+            // form is undefined
+        respBody = JSON.parse(updates.getRespBody(doc, req)),
+        expectedResp = JSON.parse('{"payload":{"success":true,"task":"send","messages":[{"to":"+15551212","message":"The report sent \'undefined\' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor."}]}}');
+    test.same(respBody, expectedResp);
+    test.done();
+};

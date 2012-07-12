@@ -88,7 +88,7 @@ var step1_with_extra_fields = function(test) {
 
     var data = {
         from: '+13125551212',
-        message: "1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4#123",
+        message: "1!TEST!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4#123",
         sent_timestamp: '01-19-12 18:45',
         sent_to: '+15551212'
     };

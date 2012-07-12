@@ -58,12 +58,12 @@ exports.rules = [
         }
     },
     {
-        from: '/VPD/data_record/merge/:phone/:week',
+        from: '/:form/data_record/merge/:phone/:week',
         to: '_list/data_record_merge/data_record_by_phone_and_week',
         query: {
             startkey: [':phone', ':week'],
             endkey: [':phone', ':week', {}],
-            form: 'VPD'
+            form: ':form'
         }
     },
     {
