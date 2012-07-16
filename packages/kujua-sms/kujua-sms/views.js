@@ -66,7 +66,7 @@ exports.data_records_by_district = {
  * Views needed to filter data records on
  * data records page.
  */
- 
+
 exports.data_records_by_district_and_reported_date = {
     map: function(doc) {
         if (doc.type === 'data_record') {
@@ -249,12 +249,14 @@ exports.clinic_by_refid = {
 
 exports.tasks_pending = {
     map: function (doc) {
-        if (doc.tasks && doc.tasks.length) {
-            for (var i in doc.tasks) {
-                if (doc.tasks[i].state === 'pending') {
-                    emit([doc.reported_date, doc.refid]);
-                }
-            }
+        var has_pending,
+            tasks = doc.tasks || [];
+
+        has_pending = tasks.some(function(task) {
+            return task.state === 'pending';
+        });
+        if (has_pending) {
+            emit([doc.reported_date, doc.refid]);
         }
     }
 };

@@ -420,41 +420,51 @@ exports.tasks_pending = function (head, req) {
 
     var newDocs = [],
         appdb = require('duality/core').getDBURL(req),
+        doc,
         headers = req.headers.Host.split(":"),
+        includeDoc,
         host = headers[0],
         port = headers[1] || "",
+        respBody,
+        row = [];
+
         respBody = {
             payload: {
                 success: true,
                 task: "send",
                 secret: "",
-                messages: []}};
+                messages: []
+            }
+        };
 
-    var row = [];
     while (row = getRow()) {
-        var doc = row.doc;
+        doc = row.doc;
 
         // update state attribute for the bulk update callback
         // don't process tasks that have no to field since we can't send a
         // message and we don't want to mark the task as sent.  TODO have
         // better support in the gateway for tasks so the gateway can verify
         // that it processed the task successfully.
-        for (var i in doc.tasks) {
-            var task = doc.tasks[i];
+        includeDoc = false;
+        _.each(doc.tasks, function(task) {
             if (task.state === 'pending') {
-                for (var j in task.messages) {
-                    var msg = task.messages[j];
+                _.each(task.messages, function(msg) {
                     // if to: field is defined then append messages
                     if (msg.to) {
                         task.state = 'sent';
+                        task.timestamp = new Date().getTime();
+
                         // append outgoing message data payload for smsssync
                         respBody.payload.messages.push(msg);
+                        includeDoc = true;
                     }
-                }
+                });
             }
-        }
+        });
 
-        newDocs.push(doc);
+        if (includeDoc) {
+            newDocs.push(doc);
+        }
     }
 
     if (newDocs.length) {
