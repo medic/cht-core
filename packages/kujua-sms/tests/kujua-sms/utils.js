@@ -207,7 +207,7 @@ exports.getLabels_msbr = function(test) {
 };
 
 exports.getValues_no_clinic = function(test) {
-    test.expect(1);
+    test.expect(2);
     var keys = [
         "reported_date",
         "from",
@@ -254,7 +254,8 @@ exports.getValues_no_clinic = function(test) {
         reported_date: 1331643982002,
         from: "+13125551212",
         facility_id: "facility",
-        related_entitites: {
+        related_entities: {
+            clinic: null,
             health_center: {
                 name: "Health Center One",
                 type: "health_center",
@@ -266,14 +267,87 @@ exports.getValues_no_clinic = function(test) {
         }
     };
 
-    test.same(
-        utils.getValues(example_doc, keys),
-        [
+    // catch case where getValues returns extra undefined value for deep keys
+    var actual = utils.getValues(example_doc, keys),
+        expected = [
             1331643982002,
             "+13125551212",
-            "facility"
-        ]
+            "facility",
+            null,
+            null,
+            null,
+            null
+        ];
+
+    test.same(actual.length, expected.length);
+    test.same(actual, expected);
+    test.done();
+};
+
+exports.getValuesUnits = function(test) {
+    test.expect(7);
+
+    var keys1 = ['foo', 'bar', 'baz'],
+        doc1 = {foo: 1, bar: 2, baz: 3};
+    test.same(
+        utils.getValues(doc1, keys1),
+        [1, 2, 3]
     );
+
+    // check falsey values correctly pass through
+    var keys1p1 = ['foo', 'bar', 'baz'],
+        doc1p1 = {foo: 1, bar: 0, baz: false};
+    test.same(
+        utils.getValues(doc1p1, keys1p1),
+        [1, 0, false]
+    );
+
+    var keys2 = [['foo', ['bar', ['baz']]]],
+        doc2 = {foo: { bar: { baz: 3}}};
+    test.same(
+        utils.getValues(doc2, keys2),
+        [3]
+    );
+
+    // return single null value for array based key with broken path
+    var keys2p1 = [['foo', ['bar', ['baz']]]],
+        doc2p1 = {foo: { giraffe: { baz: 3}}};
+    test.same(
+        utils.getValues(doc2p1, keys2p1),
+        [null]
+    );
+
+    // return null values for keys when sub-object is null
+    var keys2p2 = [
+        'foo',
+        ['animals', ['narwhal', ['weight']]],
+        ['animals', ['narwhal', ['horns']]]
+    ];
+    var doc2p2 = {
+        animals: { narwhal: null },
+        foo: 'bar'
+    };
+    test.same(
+        utils.getValues(doc2p2, keys2p2),
+        ['bar', null, null]
+    );
+
+    // return values for array of sub-object keys
+    var keys3 = [['foo', ['bar', 'baz']]],
+        doc3 = {foo: { bar: 1, baz: 2}};
+    test.same(
+        utils.getValues(doc3, keys3),
+        [1 ,2]
+    );
+
+    // return null for array of sub-object key that is undefined
+    var keys4 = [['foo', ['bar', 'giraffe']]],
+        doc4 = {foo: { bar: 1, baz: 2}};
+    test.same(
+        utils.getValues(doc4, keys4),
+        [1, null]
+    );
+
     test.done();
 };
 

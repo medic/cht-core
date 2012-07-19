@@ -140,40 +140,61 @@ exports.getLabels = function(keys, form, locale) {
     return labels;
 };
 
+
 /*
  * Get an array of values from the doc by the keys from the given keys array.
+ * Supports deep keys, like:
+ *
+ *  ['foo', 'bar', 'baz']
+ *  ['foo', ['bar', ['baz']]]
+ *  ['foo', ['bar', 'baz']]
  *
  * @param Object doc - data record document
- * @param Array keys - keys we want to resolve labels for
+ * @param Array keys - keys we want values for
  *
- * @return Array  - values from doc in the same order as keys
+ * @return Array  - values from doc in the same order as keys, return null if
+ * the key cannot be resolved.
  */
 var getValues = exports.getValues = function(doc, keys) {
-    var values = [],
-        _keys = _.clone(keys);
-
-    _.each(_keys, function(key) {
-        if(_.isArray(key)) {
-            if(typeof doc[key[0]] === 'object') {
-                var d = doc[key[0]];
-                if (_.isArray(key[1])) {
-                    values = values.concat(getValues(d, key[1]));
+    var ret = [];
+    if (!_.isObject(doc)) return ret;
+    if (keys === undefined) return ret;
+    if (!_.isArray(keys)) {
+        doc[keys] !== undefined ? ret.push(doc[keys]) : ret.push(null);
+    }
+    if (_.isArray(keys)) {
+        for (var i in keys) {
+            var key = keys[i];
+            if (_.isArray(key)) {
+                // key is array so we are look for object on doc matching first
+                // array element and recurse.
+                if (doc[key[0]] === null) {
+                    ret = ret.concat([null]);
+                    continue;
+                } else if (typeof doc[key[0]] === 'object') {
+                    // recurse using sub-object and array wrapped key to signify 
+                    // sub-object parsing.
+                    ret = ret.concat(getValues(doc[key[0]], [key[1]]));
+                } else if (doc[key[0]] !== undefined) {
+                    // looks like array points to list of values
+                    ret = ret.concat(getValues(doc, key));
+                    //ret = doc[key[0]] ? ret.concat(doc[key[0]]) : ret.concat(null);
+                } else {
+                    // no sub-object or value match in sub object, continue.
+                    ret = ret.concat([null]);
+                    continue;
                 }
             } else {
-                if (doc[key] !== undefined)
-                    values.push(doc[key]);
+                // if not array assume normal scalar key and look for match
+                // if key points to object
+                ret = ret.concat(getValues(doc, key));
             }
-        } else if (typeof doc[key] !== 'object' || doc[key] === null) {
-            if (doc[key] !== undefined)
-                values.push(doc[key]);
-        } else if (typeof doc[key] === 'object') {
-            _keys.shift();
-            values = values.concat(getValues(doc[key], _keys));
         }
-    });
+    }
 
-    return values;
+    return ret;
 };
+
 
 /*
  * Get an array of keys from the form.
