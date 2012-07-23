@@ -38,6 +38,7 @@
         "coffee-script-precompiler": null,
         "less-precompiler": null,
         "bootstrap-fontawesome": null,
+        "kanso-config": null,
         "kujua-branding": null,
         "kujua-sms": null,
         "kujua-utils": null,
