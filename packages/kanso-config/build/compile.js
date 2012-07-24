@@ -4,17 +4,20 @@ module.exports = {
     lib = doc.lib;
     config = settings['kanso-config'] || {};
     showId = config.showId || 'config';
+    documentId = config.documentId || 'config.js';
     key = config.keyKey || 'key';
     value = config.valueKey || 'value';
     values = config.valuesKey || 'values';
     data = config.dataKey || 'kanso-config';
+    path = config.path || 'config.js';
     if (lib != null) {
+      lib.shows = lib.shows || '';
       lib.shows += "exports['" + showId + "'] = function(doc, req) {\n" +
         "  return {\n" +
         "    body: \"\\n\" +\n" +
         "    \"(function($) {\\n\" +\n" +
         "    \"  var config,\\n\" +\n    \"      values;\\n\" +\n" +
-        "    \"  values = \" + JSON.stringify(doc['" + values + "']) + \" || [];\\n\" +\n" +
+        "    \"  values = \" + JSON.stringify(doc && doc['" + values + "']) + \" || [];\\n\" +\n" +
         "    \"  config = values.reduce(function(memo, value) {\\n\" +\n" +
         "    \"    memo[value['" + key + "']] = value['" + value + "'];\\n\" +\n" +
         "    \"    return memo;\\n\" +\n" +
@@ -28,6 +31,13 @@ module.exports = {
         "    headers: { 'Content-Type': 'text/javascript' }\n" +
         "  }\n" +
         "};";
+
+
+      lib.rewrites = lib.rewrites || 'module.exports = [];';
+      lib.rewrites += "module.exports.unshift({" +
+        "  from: '/" + path + "'," +
+        "  to: '_show/" + showId + "/" + documentId + "'" +
+        " });";
     }
     return callback(null, doc);
   }

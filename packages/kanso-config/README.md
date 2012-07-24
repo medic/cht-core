@@ -29,17 +29,19 @@ This is the default configuration:
   "valueKey": "value",
   "valuesKey": "values",
   "dataKey": "kanso-config",
-  "showId": "config"
+  "showId": "config",
+  "documentId": "config.js",
+  "path": "config.js"
 }
 ```
 
 Include the generated config file into your HTML page:
 
 ```
- <script src="{baseURL}/../_show/$showId/config.js" type="text/javascript"></script>
+ <script src="{baseURL}/config.js" type="text/javascript"></script>
 ```
 
-This will read a document with the id `config.js` and the following structure:
+This will read a document with the id `config.js` (change this by updating `documentId`) and the following structure:
 ```
 {
   _id: 'config.js'
