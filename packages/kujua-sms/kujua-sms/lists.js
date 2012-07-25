@@ -11,11 +11,16 @@ var _ = require('underscore')._,
 
 
 exports.data_records_csv = function (head, req) {
-    var form  = req.query.form,
-        dh_name = req.query.dh_name,
+    var labels,
+        query = req.query,
+        form  = query.form,
+        kansoconfig = JSON.parse(query.kansoconfig),
+        dh_name = query.dh_name,
         filename = dh_name.replace(' ','') + '_' + form + '_data_records.csv',
-        locale = req.query.locale || 'en', //TODO get from session
+        locale = query.locale || 'en', //TODO get from session
         delimiter = locale === 'fr' ? '";"' : null,
+        rows,
+        values,
         keys = [
             'reported_date',
             'from',
@@ -33,10 +38,10 @@ exports.data_records_csv = function (head, req) {
     keys.push.apply(keys, utils.getFormKeys(form));
 
     // fetch labels for all keys
-    var labels = utils.getLabels(keys, form, locale);
-
-    var row = [],
-        values;
+    labels = utils.getLabels(keys, form, locale);
+    labels = _.map(labels, function(label) {
+      return kansoconfig[label] || label;
+    });
 
     send('\uFEFF');
     send(utils.arrayToCSV([labels], delimiter) + '\n');
@@ -55,10 +60,15 @@ exports.data_records_csv = function (head, req) {
 };
 
 exports.data_records_xml = function (head, req) {
-    var form  = req.query.form,
-        dh_name = req.query.dh_name,
+    var query = req.query,
+        form  = query.form,
+        dh_name = query.dh_name,
+        kansoconfig = JSON.parse(query.kansoconfig),
         filename = dh_name.replace(' ','') + '_' + form + '_data_records.xml',
-        locale = req.query.locale || 'en', //TODO get from session
+        locale = query.locale || 'en', //TODO get from session
+        rows,
+        values,
+        labels,
         // extra doc fields we want to export not in form
         keys = [
             'reported_date',
@@ -78,6 +88,9 @@ exports.data_records_xml = function (head, req) {
 
     // fetch labels for all keys
     var labels = utils.getLabels(keys, form, locale);
+    labels = _.map(labels, function(label) {
+      return kansoconfig[label] || label;
+    });
 
     var row = [],
         values;

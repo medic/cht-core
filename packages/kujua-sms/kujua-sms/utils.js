@@ -34,11 +34,11 @@ exports.strings = {
         fr: "Nom et Prénoms"
     },
     "related_entities.clinic.parent.name": {
-        en: "Clinic",
+        en: "Health Center",
         fr: "Arrondissement"
     },
     "related_entities.health_center.name": {
-        en: "Clinic",
+        en: "Health Center",
         fr: "Arrondissement"
     },
     "related_entities.clinic.parent.parent.name": {
@@ -50,7 +50,7 @@ exports.strings = {
         fr: "District"
     },
     "related_entities.clinic.name": {
-        en: "CHW",
+        en: "Clinic",
         fr: "Villages"
     },
     from: {
@@ -172,7 +172,7 @@ var getValues = exports.getValues = function(doc, keys) {
                     ret = ret.concat([null]);
                     continue;
                 } else if (typeof doc[key[0]] === 'object') {
-                    // recurse using sub-object and array wrapped key to signify 
+                    // recurse using sub-object and array wrapped key to signify
                     // sub-object parsing.
                     ret = ret.concat(getValues(doc[key[0]], [key[1]]));
                 } else if (doc[key[0]] !== undefined) {

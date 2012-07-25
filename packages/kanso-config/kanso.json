@@ -1,6 +1,6 @@
 {
     "name": "kanso-config",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "categories": ["build-tools"],
     "description": "Compile configuration properties in database to an includable config object, with a simple extraction API.",
     "url": "https://github.com/wombleton/kanso-config",
