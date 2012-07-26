@@ -17,7 +17,8 @@ module.exports = {
         "    body: \"\\n\" +\n" +
         "    \"(function($) {\\n\" +\n" +
         "    \"  var config,\\n\" +\n    \"      values;\\n\" +\n" +
-        "    \"  values = \" + (doc && doc['" + values + "']) + \" || [];\\n\" +\n" +
+        "    \"  values = \" + JSON.stringify(doc && doc['" + values + "']) + \" || [];\\n\" +\n" +
+        "    \"  values = values === values.toString() ? eval(values) : values;\\n\" + \n" +
         "    \"  config = values.reduce(function(memo, value) {\\n\" +\n" +
         "    \"    memo[value['" + key + "']] = value['" + value + "'];\\n\" +\n" +
         "    \"    return memo;\\n\" +\n" +
