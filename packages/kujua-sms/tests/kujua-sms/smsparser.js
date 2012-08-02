@@ -303,11 +303,15 @@ exports.smsformats_structured_but_no_form = function(test) {
 exports.smsformats_textforms_only_one_field = function(test) {
     test.expect(1);
 
-    var doc = { message: "VPD WKN2" },
+    var doc = { message: 'TEST CDT33' },
         form = smsparser.getForm(doc.message),
         def = jsonforms[form],
         data = smsparser.parse(def, doc),
-        expect = { week: 2 };
+        expect = {
+          "quantity_dispensed": {
+            "cotrimoxazole": 33,
+          }
+        };
 
     test.same(expect, data);
 
