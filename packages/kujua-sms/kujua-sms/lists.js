@@ -500,7 +500,7 @@ exports.tasks_pending = function (head, req) {
     }
 
     // pass through Authorization header
-    if(req.headers.Authorization) {
+    if(req.headers.Authorization && respBody.callback) {
         respBody.callback.options.headers.Authorization = req.headers.Authorization;
     }
 

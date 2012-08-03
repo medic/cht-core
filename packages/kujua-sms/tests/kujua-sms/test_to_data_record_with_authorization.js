@@ -90,7 +90,7 @@ var expected_callback = {
  */
 exports.test_to_record_with_auth = function (test) {
 
-    test.expect(5);
+    test.expect(6);
 
     // Data parsed from a gateway POST
     var data = {
@@ -267,8 +267,9 @@ var step4 = function(test) {
 
     var resp_body = JSON.parse(resp.body);
 
-    test.same(resp_body.callback.options.headers.Authorization,
-        "Basic cm9vdDpwYXNzd29yZA==");
+    // there is no callback since there is no tasks
+    test.same(resp_body.callback, undefined);
+    test.same(resp_body.payload.success, true);
 
     test.done();
 
