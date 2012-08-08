@@ -42,7 +42,8 @@ exports['TEST'] = {
                 [ 10, { "en": "October" } ],
                 [ 11, { "en": "November" } ],
                 [ 12, { "en": "December" } ]
-             ]
+             ],
+             required: true
          },
          misoprostol_administered: {
             type: 'boolean',

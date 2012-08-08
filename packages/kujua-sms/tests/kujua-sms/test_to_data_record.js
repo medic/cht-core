@@ -148,7 +148,7 @@ exports.test_to_record = function (test) {
         resp_body.callback.data,
         expected_callback.data);
     
-    step2_1(test, helpers.nextRequest(resp_body, 'TEST'));
+    facility_missing_error(test, helpers.nextRequest(resp_body, 'TEST'));
 
 };
 
@@ -156,10 +156,9 @@ exports.test_to_record = function (test) {
 /*
  * STEP 2:
  * 
- * Run data_record/add/clinic and expect a callback to
- * check if the same data record already exists with missing clinic.
+ * Run data_record/add/clinic and expect a response to contain facility error.
  */
-var step2_1 = function(test, req) {
+var facility_missing_error = function(test, req) {
     
     var clinic = example.clinic;
 
@@ -169,20 +168,20 @@ var step2_1 = function(test, req) {
 
     var resp_body = JSON.parse(resp.body);
 
-    test.same(resp_body.callback.data.errors, [{"code":"facility_not_found","message":"Facility not found."}]);
+    test.same(
+        resp_body.callback.data.errors, 
+        [{"code":"facility_not_found","message":"Facility not found."}]
+    );
 
-    step2_2(test, req);
-    
+    uses_update_path(test, req);
 };
 
 
 /*
- * STEP 2:
- * 
  * Run data_record/add/clinic and expect a callback to
  * check if the same data record already exists with existing clinic.
  */
-var step2_2 = function(test, req) {
+var uses_update_path = function(test, req) {
 
     var clinic = example.clinic;
 
@@ -207,15 +206,15 @@ var step2_2 = function(test, req) {
 
     test.same(resp_body.callback.data.errors, []);
 
-    step3_1(test, helpers.nextRequest(resp_body, 'TEST'),
-        step3_2, [test, helpers.nextRequest(resp_body, 'TEST')]);
+    record_exists_case(test, helpers.nextRequest(resp_body, 'TEST'),
+        record_does_not_exist_case, [test, helpers.nextRequest(resp_body, 'TEST')]);
 
 };
 
 
 
 /**
- * STEP 3, CASE 1: A data record already exists.
+ * CASE 1: A data record already exists.
  *
  * Run data_record/merge/year/month/clinic_id and expect a callback to update
  * the data record with the new data.
@@ -226,7 +225,7 @@ var step2_2 = function(test, req) {
  * @param {Array} args      - Args for last callback
  * @api private
  */
-var step3_1 = function(test, req, finish, args) {
+var record_exists_case = function(test, req, finish, args) {
 
     var viewdata = {rows: [
         {
@@ -277,14 +276,12 @@ var step3_1 = function(test, req, finish, args) {
 
 
 /**
- * STEP 3, CASE 2:
- *
- * A data record does not exist.
+ * CASE 2: A data record does not exist.
  *
  * Run data_record/merge/year/month/clinic_id and expect a callback to create a
  * new data record.
  */
-var step3_2 = function(test, req) {
+var record_does_not_exist_case = function(test, req) {
 
     var viewdata = {rows: []};
 

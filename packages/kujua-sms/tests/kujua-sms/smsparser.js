@@ -185,6 +185,9 @@ exports.textforms_random_ordering = function(test) {
     test.done();
 };
 
+// hashes are required to parse textform messages so this parses the first
+// field and the rest of the message as the value. CDT is a number so parsing
+// that fails and returns null as the value.
 exports.textforms_without_hash_delim = function(test) {
     test.expect(1);
 
@@ -193,11 +196,8 @@ exports.textforms_without_hash_delim = function(test) {
         data = smsparser.parse(def, doc);
 
     test.same(data, {
-        "facility_id": "foobar",
-        "year": 2012,
         "quantity_dispensed": {
-            "cotrimoxazole": 33,
-            "zinc": 999,
+            "cotrimoxazole": null
         }
     });
 
