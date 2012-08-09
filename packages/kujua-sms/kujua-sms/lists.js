@@ -14,8 +14,8 @@ exports.data_records_csv = function (head, req) {
     var labels,
         query = req.query,
         form  = query.form,
-        kansoconfig = JSON.parse(query.kansoconfig),
-        dh_name = query.dh_name,
+        kansoconfig = query.kansoconfig ? JSON.parse(query.kansoconfig) : {},
+        dh_name = query.dh_name ? query.dh_name : 'null',
         filename = dh_name.replace(' ','') + '_' + form + '_data_records.csv',
         locale = query.locale || 'en', //TODO get from session
         delimiter = locale === 'fr' ? '";"' : null,
@@ -62,8 +62,8 @@ exports.data_records_csv = function (head, req) {
 exports.data_records_xml = function (head, req) {
     var query = req.query,
         form  = query.form,
-        dh_name = query.dh_name,
-        kansoconfig = JSON.parse(query.kansoconfig),
+        dh_name = query.dh_name ? query.dh_name : 'null',
+        kansoconfig = query.kansoconfig ? JSON.parse(query.kansoconfig) : {},
         filename = dh_name.replace(' ','') + '_' + form + '_data_records.xml',
         locale = query.locale || 'en', //TODO get from session
         rows,
