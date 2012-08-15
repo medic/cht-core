@@ -49,16 +49,21 @@ var localizedString = exports.localizedString = function(strings, locales) {
 
 };
 
+exports.capitalize = function (str) {
+    return str.replace( /(^|\s)([a-z])/g , function(m,p1,p2){ 
+        return p1+p2.toUpperCase(); 
+    });
+};
+
 exports.prettyMonth = function (month, full) {
     var months_short = new Array(
         'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
         'Sep', 'Oct', 'Nov', 'Dec');
     var months_full = _.map(exports.months(), function(month) { return month[1]; });
 
-    if (full) {
+    if (full)
         return months_full[month];
-    }
-    
+
     return months_short[month];
 };
 
