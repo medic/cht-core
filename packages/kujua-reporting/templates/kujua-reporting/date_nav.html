@@ -1,0 +1,36 @@
+<ul class="pills">
+  <li class="title">
+    <h3>Show Reports From:</h3>
+  </li>
+  {#date_nav}
+    <li{?active} class="active"{/active}>
+      <a href="{baseURL}/reporting/{_id}?{query_params}">{text}</a>
+    </li>
+  {/date_nav}
+  <li>
+    <a href="#" class="change_time_unit_link">Change time unit</a>
+
+    <div class="change_time_unit_menu umenu">
+      <!-- div class="umenu-item">
+          <div class="umenu-inner">
+            <a href="{baseURL}/reporting/{_id}?time_unit=week">Week</a>
+          </div>
+      </div-->      
+      <div class="umenu-item">
+          <div class="umenu-inner">
+            <a href="{baseURL}/reporting/{_id}?time_unit=month">Month</a>
+          </div>
+      </div>      
+      <div class="umenu-item">
+          <div class="umenu-inner">
+            <a href="{baseURL}/reporting/{_id}?time_unit=quarter">Quarter</a>
+          </div>
+      </div>      
+      <div class="umenu-item">
+          <div class="umenu-inner">
+            <a href="{baseURL}/reporting/{_id}?time_unit=year">Year</a>
+          </div>
+      </div>      
+    </div>
+  </li>
+</ul>

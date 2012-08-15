@@ -1,0 +1,53 @@
+{?rows}
+  {#rows}
+      <tr class="facility-link">
+        <td class="facility-name">
+          <a href="{baseURL}/facilities/{id}"><div class="arrow"></div><div class="name">{name}</div></a>
+        </td>
+        <td class="valid-percent"><em>{valid_percent}%</em> <span class="mini-pie"></span></td>
+      </tr>
+      <tr class="data-records-list">
+        <td colspan="2" class="data-records">
+        <div>
+        <table>
+        <thead>
+          <tr>
+            <th>Report Period</th>
+            <th>Reporter</th>
+            <th>Reporting SMS</th>
+            <th class="status-column">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+        {#records fid=id}
+        <tr>
+          <td class="period">
+            {?.id}
+              <a href="{baseURL}/records/{.id}">{name}</a>
+            {:else}
+              <a href="{url}">{name}</a>
+            {/.id}
+          </td>
+          <td class="reporter">{reporter}</td>
+          <td class="phone">{reporting_phone}</td>
+          <td class="status">
+            <p><span class="{^not_submitted}{?is_valid}success{:else}important{/is_valid}{/not_submitted}"
+              >&middot;</span></p>
+          </td>
+        </tr>
+        {/records}
+        </tbody>
+        </table>
+        </div>
+        </td>
+      </tr>
+  {/rows}
+{:else}
+  {#doc}
+    <tr>
+      <td colspan="4">
+        No reporting units found. Please <a href="{baseURL}/add/clinic?health_center={_id}">create</a> one.
+      </td>
+    </tr>
+  {/doc}
+{/rows}
