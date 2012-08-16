@@ -2,6 +2,7 @@ var utils = require('kujua-reporting/utils'),
     moment = require('moment').moment;
 
 exports['reporting.getRows - three months'] = function (test) {
+    test.expect(1);
     var q = { startmonth: '2011-10', months: 3 },
         dates = utils.getDates(q);
 
@@ -60,64 +61,65 @@ exports['reporting.getRows - three months'] = function (test) {
                 "Example clinic 10"
             ],
             "value": 1
-        }];
+        }
+    ];
 
-        var reports = [
-            {
-                "id": "d346ca",
-                "key": [
-                    2011,
-                    7,
-                    "325710",
-                    "947322",
-                    "b3cb78"
-                ],
-                "value": {
-                    "district_hospital": "Zomba",
-                    "health_center": "Chamba",
-                    "clinic": "Example clinic 1",
-                    "reporter": "Example reporter",
-                    "reporting_phone": "0123456789",
-                    "is_valid": true
-                }
-            },
-            {
-                "id": "d3916d",
-                "key": [
-                    2011,
-                    7,
-                    "325710",
-                    "947322",
-                    "b3d96d"
-                ],
-                "value": {
-                    "district_hospital": "Zomba",
-                    "health_center": "Chamba",
-                    "clinic": "Example clinic 2",
-                    "reporter": "Example reporter",
-                    "reporting_phone": "0123456789",
-                    "is_valid": false
-                }
-            },
-            {
-                "id": "d3ece6",
-                "key": [
-                    2011,
-                    7,
-                    "325710",
-                    "947322",
-                    "b3e84e"
-                ],
-                "value": {
-                    "district_hospital": "Zomba",
-                    "health_center": "Chamba",
-                    "clinic": "Example clinic 3",
-                    "reporter": "Example reporter",
-                    "reporting_phone": "0123456789",
-                    "is_valid": true
-                }
+    var reports = [
+        {
+            "id": "d346ca",
+            "key": [
+                2011,
+                7,
+                "325710",
+                "947322",
+                "b3cb78"
+            ],
+            "value": {
+                "district_hospital": "Zomba",
+                "health_center": "Chamba",
+                "clinic": "Example clinic 1",
+                "reporter": "Example reporter",
+                "reporting_phone": "0123456789",
+                "errors": []
             }
-        ];
+        },
+        {
+            "id": "d3916d",
+            "key": [
+                2011,
+                7,
+                "325710",
+                "947322",
+                "b3d96d"
+            ],
+            "value": {
+                "district_hospital": "Zomba",
+                "health_center": "Chamba",
+                "clinic": "Example clinic 2",
+                "reporter": "Example reporter",
+                "reporting_phone": "0123456789",
+                "errors": []
+            }
+        },
+        {
+            "id": "d3ece6",
+            "key": [
+                2011,
+                7,
+                "325710",
+                "947322",
+                "b3e84e"
+            ],
+            "value": {
+                "district_hospital": "Zomba",
+                "health_center": "Chamba",
+                "clinic": "Example clinic 3",
+                "reporter": "Example reporter",
+                "reporting_phone": "0123456789",
+                "errors": []
+            }
+        }
+    ];
     var rows = utils.getRows(facilities, reports, dates);
 
     var expected = [
@@ -275,6 +277,8 @@ exports['reporting.getRows - three months'] = function (test) {
 
 exports['reporting.getRowsHC - three months'] = function (test) {
 
+    test.expect(59);
+
     var q = { startmonth: '2011-10', months: 3 },
         dates = utils.getDates(q);
 
@@ -294,7 +298,7 @@ exports['reporting.getRowsHC - three months'] = function (test) {
                 "clinic": "Example clinic 9",
                 "reporter": "Example reporter",
                 "reporting_phone": "0123456789",
-                "is_valid": false
+                "errors": ["doh"]
             }
         },
         {
@@ -312,7 +316,7 @@ exports['reporting.getRowsHC - three months'] = function (test) {
                 "clinic": "Example clinic 9",
                 "reporter": "Example reporter",
                 "reporting_phone": "0123456789",
-                "is_valid": false
+                "errors": ["doh"]
             }
         },
         {
@@ -330,7 +334,7 @@ exports['reporting.getRowsHC - three months'] = function (test) {
                 "clinic": "Example clinic 10",
                 "reporter": "Example reporter",
                 "reporting_phone": "0123456789",
-                "is_valid": false
+                "errors": ["doh"]
             }
         }
     ];
@@ -342,151 +346,94 @@ exports['reporting.getRowsHC - three months'] = function (test) {
         {"key":["325710","947f3d","b433ab","Zomba","Chipini","Example clinic 12"],"value":1}
     ]};
 
-    debugger;
     var rows = utils.getRowsHC(facilities, reports, dates);
 
-    test.same(rows, [
-        {
-            "id": "b433ab",
-            "name": "Example clinic 12",
-            "records": [
-                {
-                    "month": 9,
-                    "month_pp": "October",
-                    "year": 2011,
-                    "name": "October 2011",
-                    "not_submitted": true
-                },
-                {
-                    "month": 8,
-                    "month_pp": "September",
-                    "year": 2011,
-                    "name": "September 2011",
-                    "not_submitted": true
-                },
-                {
-                    "month": 7,
-                    "month_pp": "August",
-                    "year": 2011,
-                    "name": "August 2011",
-                    "not_submitted": true
-                }
-            ],
-            "valid": 0,
-            "valid_percent": 0
-        },
-        {
-            "id": "b43333",
-            "name": "Example clinic 11",
-            "records": [
-                {
-                    "month": 9,
-                    "month_pp": "October",
-                    "year": 2011,
-                    "name": "October 2011",
-                    "not_submitted": true
-                },
-                {
-                    "month": 8,
-                    "month_pp": "September",
-                    "year": 2011,
-                    "name": "September 2011",
-                    "not_submitted": true
-                },
-                {
-                    "month": 7,
-                    "month_pp": "August",
-                    "year": 2011,
-                    "name": "August 2011",
-                    "not_submitted": true
-                }
-            ],
-            "valid": 0,
-            "valid_percent": 0
-        },
-        {
-            "id": "b42ffc",
-            "name": "Example clinic 10",
-            "records": [
-                {
-                    "month": 9,
-                    "month_pp": "October",
-                    "year": 2011,
-                    "name": "October 2011",
-                    "not_submitted": true
-                },
-                {
-                    "id": "d5aeb8",
-                    "clinic": {
-                        "id": "b42ffc",
-                        "name": "Example clinic 10"
-                    },
-                    "month": 8,
-                    "month_pp": "September",
-                    "year": 2011,
-                    "name": "September 2011",
-                    "reporter": "Example reporter",
-                    "reporting_phone": "0123456789",
-                    "is_valid": false,
-                    "week_number": undefined
-                },
-                {
-                    "month": 7,
-                    "month_pp": "August",
-                    "year": 2011,
-                    "name": "August 2011",
-                    "not_submitted": true
-                }
-            ],
-            "valid": 0,
-            "valid_percent": 0
-        },
-        {
-            "id": "b42c21",
-            "name": "Example clinic 9",
-            "records": [
-                {
-                    "month": 9,
-                    "month_pp": "October",
-                    "year": 2011,
-                    "name": "October 2011",
-                    "not_submitted": true
-                },
-                {
-                    "id": "d56884",
-                    "clinic": {
-                        "id": "b42c21",
-                        "name": "Example clinic 9"
-                    },
-                    "month": 8,
-                    "month_pp": "September",
-                    "year": 2011,
-                    "name": "September 2011",
-                    "reporter": "Example reporter",
-                    "reporting_phone": "0123456789",
-                    "is_valid": false,
-                    "week_number": undefined
-                },
-                {
-                    "id": "d56252",
-                    "clinic": {
-                        "id": "b42c21",
-                        "name": "Example clinic 9"
-                    },
-                    "month": 7,
-                    "month_pp": "August",
-                    "year": 2011,
-                    "name": "August 2011",
-                    "reporter": "Example reporter",
-                    "reporting_phone": "0123456789",
-                    "is_valid": false,
-                    "week_number": undefined
-                }
-            ],
-            "valid": 0,
-            "valid_percent": 0
-        }
-    ]);
+    // we should have data on 4 facilities
+    test.same(rows.length, 4);
+
+    // Example clinic 12 checks
+    test.same(rows[0].name, "Example clinic 12");
+    test.same(rows[0].id, "b433ab");
+    test.same(rows[0].valid, 0);
+    test.same(rows[0].valid_percent, 0);
+
+    test.same(rows[0].records[0].month, 9);
+    test.same(rows[0].records[0].year, 2011);
+    test.same(rows[0].records[0].not_submitted, true);
+
+    test.same(rows[0].records[1].month, 8);
+    test.same(rows[0].records[1].year, 2011);
+    test.same(rows[0].records[1].not_submitted, true);
+
+    test.same(rows[0].records[2].month, 7);
+    test.same(rows[0].records[2].year, 2011);
+    test.same(rows[0].records[2].not_submitted, true);
+
+    // Example clinic 11 checks
+    test.same(rows[1].name, "Example clinic 11");
+    test.same(rows[1].id, "b43333");
+    test.same(rows[1].valid, 0);
+    test.same(rows[1].valid_percent, 0);
+
+    test.same(rows[1].records[0].month, 9);
+    test.same(rows[1].records[0].year, 2011);
+    test.same(rows[1].records[0].not_submitted, true);
+
+    test.same(rows[1].records[1].month, 8);
+    test.same(rows[1].records[1].year, 2011);
+    test.same(rows[1].records[1].not_submitted, true);
+
+    test.same(rows[1].records[2].month, 7);
+    test.same(rows[1].records[2].year, 2011);
+    test.same(rows[1].records[2].not_submitted, true);
+
+    // Example clinic 10 checks
+    test.same(rows[2].name, "Example clinic 10");
+    test.same(rows[2].id, "b42ffc");
+    test.same(rows[2].valid, 0);
+    test.same(rows[2].valid_percent, 0);
+
+    test.same(rows[2].records[0].month, 9);
+    test.same(rows[2].records[0].year, 2011);
+    test.same(rows[2].records[0].not_submitted, true);
+
+    test.same(rows[2].records[1].month, 8);
+    test.same(rows[2].records[1].year, 2011);
+    test.same(rows[2].records[1].not_submitted, undefined);
+    test.same(rows[2].records[1].id, "d5aeb8");
+    // errors causes is_valid flag to be false
+    test.same(rows[2].records[1].is_valid, false);
+
+    test.same(rows[2].records[2].month, 7);
+    test.same(rows[2].records[2].year, 2011);
+    test.same(rows[2].records[2].not_submitted, true);
+
+
+    // Example clinic 9 checks
+    test.same(rows[3].name, "Example clinic 9");
+    test.same(rows[3].id, "b42c21");
+    test.same(rows[3].valid, 0);
+    test.same(rows[3].valid_percent, 0);
+
+    test.same(rows[3].records[0].month, 9);
+    test.same(rows[3].records[0].year, 2011);
+    test.same(rows[3].records[0].not_submitted, true);
+
+    // month 8 is submitted for clinic 9
+    test.same(rows[3].records[1].month, 8);
+    test.same(rows[3].records[1].year, 2011);
+    test.same(rows[3].records[1].not_submitted, undefined);
+    test.same(rows[3].records[1].id, "d56884");
+    // errors causes is_valid flag to be false
+    test.same(rows[3].records[1].is_valid, false);
+
+    // month 7 is submitted for clinic 9
+    test.same(rows[3].records[2].month, 7);
+    test.same(rows[3].records[2].year, 2011);
+    test.same(rows[3].records[2].not_submitted, undefined);
+    test.same(rows[3].records[2].id, "d56252");
+    // errors causes is_valid flag to be false
+    test.same(rows[3].records[1].is_valid, false);
 
     test.done();
 };
@@ -512,7 +459,7 @@ exports['reporting.getTotals - single health center, three months'] = function (
                 "clinic": "Example clinic 9",
                 "reporter": "Example reporter",
                 "reporting_phone": "0123456789",
-                "is_valid": false
+                "errors": ["doh"]
             }
         },
         {
@@ -530,7 +477,7 @@ exports['reporting.getTotals - single health center, three months'] = function (
                 "clinic": "Example clinic 9",
                 "reporter": "Example reporter",
                 "reporting_phone": "0123456789",
-                "is_valid": false
+                "errors": ["doh"]
             }
         },
         {
@@ -548,7 +495,7 @@ exports['reporting.getTotals - single health center, three months'] = function (
                 "clinic": "Example clinic 10",
                 "reporter": "Example reporter",
                 "reporting_phone": "0123456789",
-                "is_valid": false
+                "errors": ["doh"]
             }
         }
     ];
@@ -650,7 +597,7 @@ exports['process not submitted records, missing two months'] = function (test){
                     "name": "Example clinic 48"
                 },
                 "month": 8, // data record is zero indexed
-                "month_pp": "September",
+                "month_pp": "September 2011",
                 "year": 2011,
                 "reporter": "Example reporter",
                 "reporting_phone": "0123456789"
@@ -666,17 +613,18 @@ exports['process not submitted records, missing two months'] = function (test){
     test.strictEqual(rows[0].records.length, 3);
 
     /* new records should have been added in the right order */
-    test.strictEqual(rows[0].records[0].month, 10);
-    test.strictEqual(rows[0].records[1].month, 9);
-    test.strictEqual(rows[0].records[2].month, 8);
+    test.strictEqual(rows[0].records[0].month, 9);
+    test.strictEqual(rows[0].records[1].month, 8);
+    test.strictEqual(rows[0].records[2].month, 7);
 
     /*
      * not_submitted property should be set to true on non-existing records and
      * undefined otherwise.
      * */
     test.strictEqual(rows[0].records[0].not_submitted, true);
-    test.strictEqual(rows[0].records[1].not_submitted, true);
-    test.strictEqual(rows[0].records[2].not_submitted, undefined);
+    // submitted record does not have a not_submitted property
+    test.strictEqual(rows[0].records[1].not_submitted, undefined);
+    test.strictEqual(rows[0].records[2].not_submitted, true);
 
     test.done();
 };

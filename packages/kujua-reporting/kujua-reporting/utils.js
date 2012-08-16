@@ -5,8 +5,8 @@ var _ = require('underscore')._,
 
 exports.isClinic = function(doc) {
     if (!doc) { return undefined; }
-    return doc.type === 'clinic';    
-};
+    return doc.type === 'clinic';
+}
 
 exports.isHealthCenter = function(doc) {
     if (!doc) { return undefined; }
@@ -16,6 +16,20 @@ exports.isHealthCenter = function(doc) {
 exports.isDistrictHospital = function(doc) {
     if (!doc) { return undefined; }
     return doc.type === 'district_hospital';
+};
+
+var isValid = function(report) {
+    if (!report)
+        return false
+
+    if (_.isArray(report.errors) && report.errors.length === 0)
+        return true
+
+    // if we have no errors property then assume report is valid
+    if (typeof report.errors === 'undefined')
+        return true
+
+    return false
 };
 
 exports.viewHeading = function (view) {
@@ -415,7 +429,7 @@ var getReportingUrl = exports.getReportingUrl = function(id, dates) {
  * Return rows array of stats on health centers for a district hospital.
  *
  * facilities and reports are data as returned from couchdb. dates is the
- * structure returned from getDates.
+ * structure returned from getDates used to render analytics.
  *
  * facilities is already filtered by shows.getViewChildFacilities to only
  * include child data from the facility we are querying.
@@ -424,7 +438,8 @@ exports.getRows = function(facilities, reports, dates) {
     var rows = [];
     var time_unit_reports = timeUnitReport(reports[0]);
 
-    if (facilities.rows) { facilities = facilities.rows; }
+    if (facilities.rows)
+        facilities = facilities.rows;
 
     var saved = {};
     _.each(facilities, function(f) {
@@ -458,18 +473,32 @@ exports.getRows = function(facilities, reports, dates) {
     _.each(rows, function(row) {
         _.each(reports, function(report) {
             if (report.key[3] === row.id) {
-                row.records.unshift({
+                var is_valid = isValid(report.value);
+                var formatted_record = {
                     id: report.id,
-                    is_valid: report.value.is_valid,
-                    name: getName(report.value)
-                });
-                row.valid += report.value.is_valid ? 1 : 0;
+                    clinic: {
+                        id: report.key[4],
+                        name: report.value.clinic
+                    },
+                    month: report.key[1],
+                    month_pp: utils.prettyMonth(report.key[1], true),
+                    year: report.key[0],
+                    reporter: report.value.reporter,
+                    reporting_phone: report.value.reporting_phone,
+                    is_valid: is_valid,
+                    week_number: report.value.week_number
+                };
+                formatted_record.name = getName(formatted_record);
+                row.records.unshift(formatted_record);
+                row.valid += is_valid ? 1 : 0;
             }
         });
 
         row.valid_percent = Math.round(
             row.valid/(totalReportsDue(dates, time_unit_reports) * row.clinics.length) * 100);
     });
+
+    processNotSubmitted(rows, dates);
 
     return _.sortBy(rows, function (r) { return r.valid_percent; });
 };
@@ -492,7 +521,7 @@ exports.getRowsHC = function(facilities, reports, dates) {
         var id = f.key[2];
         var name = f.key[2+3]; //name is three elements over
 
-        if(!saved[id]) { saved[id] = 1; }
+        if (!saved[id]) { saved[id] = 1; }
         else { continue; }
 
         row = {
@@ -510,6 +539,7 @@ exports.getRowsHC = function(facilities, reports, dates) {
     _.each(rows, function(row) {
         _.each(reports, function(report) {
             if (report.key[4] === row.id) {
+                var is_valid = isValid(report.value);
                 var formatted_record = {
                     id: report.id,
                     clinic: {
@@ -520,12 +550,12 @@ exports.getRowsHC = function(facilities, reports, dates) {
                     year: report.key[0],
                     reporter: report.value.reporter,
                     reporting_phone: report.value.reporting_phone,
-                    is_valid: report.value.is_valid,
+                    is_valid: is_valid,
                     week_number: report.value.week_number
                 };
                 formatted_record.name = getName(formatted_record);
                 row.records.unshift(formatted_record);
-                row.valid += report.value.is_valid ? 1 : 0;
+                row.valid += is_valid ? 1 : 0;
             }
 
             row.valid_percent = Math.round(row.valid/totalReportsDue(dates, time_unit_reports) * 100);
@@ -547,6 +577,8 @@ var processNotSubmitted = exports.processNotSubmitted = function(rows, dates) {
 
     _.each(rows, function(row) {
         var pat = function(str) {
+            if (!str)
+                return '';
             if(str.toString().length < 2) {
                 return '0' + str;
             } else {
@@ -562,12 +594,12 @@ var processNotSubmitted = exports.processNotSubmitted = function(rows, dates) {
             }
         };
 
-        var startdate = nextMonth(dates.list[0]),
+        var startdate = dates.list[0],
             enddate = dates.list[dates.list.length-1],
             recorded_time_frames = _.map(row.records, recordByTime),
             date = startdate.clone();
 
-        while (date > enddate) {
+        while (date >= enddate) {
 
             var extra = {},
                 url = duality.getBaseURL() + '/add/data_record?clinic=' + row.id,
