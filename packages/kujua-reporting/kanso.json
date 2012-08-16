@@ -21,6 +21,7 @@
         "duality": ">=0.0.18",
         "dust": null,
         "kujua-utils": null,
+        "kujua-branding": null,
         "kanso-config": null
     }
 }

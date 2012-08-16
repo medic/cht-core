@@ -1,0 +1,325 @@
+.incomplete, .not_submitted, .complete {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.incomplete .percent, .incomplete .highlight {
+    color: @red;
+}
+
+.complete .percent, .complete .highlight {
+    color: @green;
+}
+
+.not_submitted .percent, .not_submitted .highlight {
+    color: @grey;
+}
+
+#totals h3 {
+    font-size: 1em;
+    text-align: center;
+    color: @grey;
+    .droid;
+    font-weight: 300;
+    margin: .5em;
+}
+
+#totals {
+    h4 {
+        font-size: 4em;
+        text-align: center;
+        margin-top: 1.6em;
+        padding-top: .85em;
+    }
+    .col1 h4 {
+        background: url('../kujua-reporting/img/icon-hospital.png') no-repeat center top;
+    }
+    .col2 h4 {
+        background: url('../kujua-reporting/img/icon-bag.png') no-repeat center top;
+    }
+    .col4 h4 {
+        background: url('../kujua-reporting/img/icon-form.png') no-repeat center top;
+    }
+    .col5 h4 {
+        background: url('../kujua-reporting/img/icon-warn.png') no-repeat center top;
+    }
+    .totals-hc {
+        .col1 h4 {
+            background: url('../kujua-reporting/img/icon-bag.png') no-repeat center top;
+        }
+        .col2 h4 {
+            background: url('../kujua-reporting/img/icon-complete.png') no-repeat center top;
+        }
+        .col4 h4 {
+            background: url('../kujua-reporting/img/icon-warn.png') no-repeat center top;
+        }
+        .col5 h4 {
+            background: url('../kujua-reporting/img/icon-form.png') no-repeat center top;
+        }
+    }
+}
+
+#totals .chart {
+    height: 300px;
+}
+
+#totals {
+    border-bottom: 1px solid @lightgrey;
+    margin-top: -20px;
+    min-width: 940px;
+}
+
+#date-nav {
+    margin: 1em auto 0 auto;
+    width: 60em;
+    height: 4em;
+}
+
+#date-nav .title h3 {
+    color: @grey;
+    .droidItalic;
+    font-size: 1.12em;
+    font-weight: normal;
+}
+
+#date-nav .title h3:before { 
+    font-style: normal;
+    font-size: 1.65em;
+    content: "c"; 
+    margin-right: .35em;
+    vertical-align: middle;
+}
+
+#stats {
+    background-color:#fff;
+    @shadow: inset 0 1px 3px rgba(0,0,0,.1), 0 3px 8px #cecece;
+    /*@shadow: 0 3px 8px #cecece;*/
+    .box-shadow(@shadow);
+    border-top: 3px solid black;
+    min-width: 940px;
+}
+
+#stats table {
+    margin-bottom: 0;
+    .border-radius(0);
+}
+
+#stats table tr, 
+#stats table td {
+    .border-radius(0);
+}
+
+#stats th {
+    background-color: #fff;
+}
+
+#stats {
+    td, th { 
+        padding: 15px 0 15px 50px;
+        border-left: none;
+        border-right: none;
+        font-size: 1.1em;
+    }
+    th {
+        padding: 30px 0 30px 50px;
+        font-size: 1.25em;
+        color: @grey;
+    }
+    .first-column {
+        width: 40%;
+    }
+    .first-column-hc {
+        width: 67%;
+    }
+    .status-column {
+        width: 20%;
+    }
+}
+
+#stats th {
+}
+
+.stats-meta > div {
+    padding: 1.25em;
+}
+
+.stats-meta h2 {
+    color: #a8a8a8;
+    line-height: 1.23em;
+}
+
+#content .pagination {
+    margin-left: auto;
+    margin-right: auto;
+    width: 26em;
+}
+
+.pills {
+    margin-bottom: 0;
+}
+
+.pills .title {
+    margin-right: 1em;
+}
+
+#content .field .content {
+    margin-left: 0;
+    min-width: 0;
+}
+
+#content .field {
+    padding: 1em 0 0 0;
+}
+
+#content .field .label label {
+    margin-right: 1em;
+}
+
+#content .field .content .inner span {
+    padding-top: .675em;
+    display: block;
+}
+
+#reporting-data {
+    .period,
+    .reporter {
+        .droidBoldItalic;
+    }
+    .status p {
+        font-size: 8em;
+        color: @grey;
+        position: relative;
+        span {
+            position: absolute;
+            top: -5px;
+            left: 8px;
+        }
+        .important {
+            color: @red;
+        }
+        .success {
+            color: @green;
+        }
+    }
+}
+
+#reporting-data .phone {
+    font-family: Georgia, serif;
+    font-weight: normal;
+}
+
+#reporting-data .period a {
+    color: @gold;
+    font-weight: bold;
+}
+
+#reporting-data .period a,
+#reporting-data .reporter {
+    font-style: italic;
+}
+
+#reporting-data .not-valid {
+    color: red;
+    font-weight: bold;
+}
+
+#reporting-data .valid {
+    color: @green;
+    font-weight: bold;
+}
+
+#reporting-data {
+    .data-records {
+        padding: 0;
+        td, th {
+            padding: 20px 0 20px 50px;
+        }
+        th {
+            border: none;
+            color: #afafaf;
+        }
+        table {
+            margin: 0;
+        }
+        tr:nth-child(odd) td{
+            background-color:#ebebeb;
+        }
+    }
+}
+
+#reporting-data {
+    .facility-name {
+        .droidItalic;
+    }
+    .valid-reports {
+        .droid;
+        color: @grey;
+        em {
+            .droidBold;
+            color: black;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+    }
+    .valid-percent em {
+        font-style: normal;
+        font-weight: bold;
+        font-size: 1.3em;
+        margin-left: 1em;
+        display: block;
+        float: left;
+        min-width: 52px;
+    }
+    .valid-percent .mini-pie {
+        display: block;
+        float: left;
+        margin-left: 18px;
+        margin-top: -2px;
+    }
+    .valid-percent .mini-pie.iconic {
+        margin-top: 4px;
+    }    
+    .facility-name {
+        a {
+            .droidBold;
+            color: @aqua;
+        }
+        .facility-clinics {
+            border-left: 1px solid #CCC;
+            padding-left: .5em;
+            margin-left: .25em;
+            color: @grey;
+        }
+    }
+}
+.clinic-data #reporting-data .valid-percent em {
+    margin-left: 2em;
+}
+.clinic-data #reporting-data .valid-percent .mini-pie {
+    right: 335px;
+}
+
+.pagination .month {
+  display: none;
+  list-style-type: none;
+  float: left;
+}
+
+.facility-link a .name {
+  display: inline-block;
+}
+
+.facility-link a .arrow {
+  background-image: url('../kujua-reporting/img/arrow-closed.png');
+  margin-right: 10px;
+  width: 9px;
+  height: 11px;
+  display: inline-block;
+}
+
+.facility-link.expanded a .arrow {
+  background-image: url('../kujua-reporting/img/arrow-open.png');
+  margin-right: 10px;
+  width: 11px;
+  height: 9px;
+}

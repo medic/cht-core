@@ -15,3 +15,9 @@ Include the Raphael graphics library in your base template before `modules.js` i
 ```
 <script src="{baseURL}/static/kujua-reporting/raphael.js" type="text/javascript"></script>
 ```
+
+Include styles in your `app.less` file:
+
+```
+@import "packages/kujua-reporting/css/base.less";
+```
