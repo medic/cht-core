@@ -188,11 +188,20 @@ exports.getUserDistrict = function(userCtx) {
  * @returns {String}
  * @api public
  */
-exports.titleize = function (str) {
-    return (str || '').toLowerCase().replace(/_+/g, ' ').replace(
+var titleize = exports.titleize = function (str) {
+    return (str || '').toLowerCase().replace(/[-_]+/g, ' ').replace(
         /(?:^|\s+)\w/g, function (m) {
             return m.toUpperCase();
         }
     );
 };
 
+exports.updateTopNav = function(key, title) {
+    title = title || titleize(key);
+    $('.page-header h1').text($.kansoconfig(title));
+    $('.navbar .nav > *').removeClass('active');
+    $('.navbar .nav .' + key).addClass('active');
+    $('.page-header .controls').hide();
+    $('.page-header .container').attr('class','container');
+    $('body > .container div').filter(':first').attr('class','content');
+};

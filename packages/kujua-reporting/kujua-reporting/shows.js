@@ -1,5 +1,6 @@
 var db = require('db'),
     utils = require('./utils'),
+    kutils = require('kujua-utils'),
     appname = require('settings/root').name,
     duality = require('duality/core'),
     events = require('duality/events'),
@@ -250,6 +251,7 @@ var facilityReporting = function() {
             data_template = 'kujua-reporting/facility_data.html',
             getReportingData = utils.getRows;
 
+
         if (utils.isHealthCenter(doc)) {
             template = 'kujua-reporting/facility_hc.html';
             data_template = 'kujua-reporting/facility_data_hc.html';
@@ -257,8 +259,12 @@ var facilityReporting = function() {
         }
 
         events.once('afterResponse', function() {
+
             var appdb = db.use(duality.getDBURL()),
                 setup = $.kansoconfig('kujua-reporting', true);
+
+            kutils.updateTopNav('analytics');
+
             if(!setup) {
                 data_record_time_unit = 'week';
             } else {
@@ -269,7 +275,8 @@ var facilityReporting = function() {
                     data_record_time_unit = 'month';
                 }
             }
-            // override for cdc nepal, TODO solve time unit problem
+
+            // override for cdc nepal, TODO solve time unit config problem
             data_record_time_unit = 'week';
 
             dates = utils.getDates(req.query, data_record_time_unit);
@@ -281,6 +288,19 @@ var facilityReporting = function() {
                 );
             }
 
+            // render header
+            $('.page-header .container').html(
+                templates.render('kujua-reporting/page_header_body.html', req, {
+                    doc: doc,
+                    is_health_center: (doc.type === 'health_center'),
+                    parentURL: parentURL
+                })
+            );
+
+            $('.page-header .container').addClass('reporting');
+            $('body > .container .content').filter(':first').attr('class','content-reporting');
+
+            // render date nav
             $('#date-nav .row').html(
                 templates.render('kujua-reporting/date_nav.html', req, {
                     date_nav: utils.getDateNav(dates, data_record_time_unit),
@@ -290,8 +310,7 @@ var facilityReporting = function() {
 
             getViewChildFacilities(doc, function(facilities) {
                 getViewReports(doc, dates, function(reports) {
-                    var totals = utils.getTotals(
-                                    facilities, reports, dates);
+                    var totals = utils.getTotals(facilities, reports, dates);
                     renderReportingTotals(totals, doc);
                     rows = getReportingData(
                                 facilities, reports, dates, doc);
@@ -309,11 +328,9 @@ var facilityReporting = function() {
                         var color = Raphael.hsb(val/300, .75, .85);
 
                         if (val === 0) {
-                            paper.addClass('iconic');
-                            paper.addClass('x-alt');
+                            paper.addClass('icon-remove-sign');
                         } else if (val == 100) {
-                            paper.addClass('iconic');
-                            paper.addClass('check-alt');
+                            paper.addClass('icon-ok-sign');
                         } else {
                             var chart = charts.pie(
                                 [val, 100 - val],
@@ -354,9 +371,6 @@ var facilityReporting = function() {
                         };
                     };
 
-                    $('.siblings-menu').bind(
-                        'mousedown', openLinkMenu('#umenu')
-                    );
                     $('.change_time_unit_link').bind(
                         'mousedown', openLinkMenu('.change_time_unit_menu')
                     );
@@ -368,7 +382,7 @@ var facilityReporting = function() {
                     renderRelatedFacilities(req, doc);
 
                     getViewSiblingFacilities(doc, function(data) {
-                        $(".umenu.siblings").html(
+                        $('.controls .dropdown-menu').html(
                             templates.render(
                                 'kujua-reporting/siblings-umenu-item.html', req, {
                                     rows: data.rows

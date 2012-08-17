@@ -1,0 +1,29 @@
+{#doc}
+{>"kujua-reporting/page_header.html"/}
+{<controls}
+  <div class="pull-right">
+    <ul class="nav nav-pills pull-right">
+      <li class="dropdown">
+        <a class="dropdown-toggle"
+           data-toggle="dropdown"
+           href="#"><b class="caret"></b>
+        </a>
+        <ul class="dropdown-menu">
+          <!-- links -->
+        </ul>
+      </li>
+    </ul>
+  </div>
+  <div class="pull-left">
+  {?is_health_center}
+    <a class="btn back" href="{baseURL}/{parentURL}">
+      &lt; {parent.name}
+    </a>
+  {:else}
+    <a class="btn back" href="{baseURL}/reporting">
+      &lt; All Districts
+    </a>
+  {/is_health_center}
+  </div>
+{/controls}
+{/doc}

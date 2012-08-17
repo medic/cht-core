@@ -61,6 +61,7 @@
 
 #totals .chart {
     height: 300px;
+    margin-left: 4em;
 }
 
 #totals {
@@ -82,10 +83,9 @@
     font-weight: normal;
 }
 
-#date-nav .title h3:before { 
+#date-nav .title .icon-time { 
     font-style: normal;
     font-size: 1.65em;
-    content: "c"; 
     margin-right: .35em;
     vertical-align: middle;
 }
@@ -134,9 +134,16 @@
     .status-column {
         width: 20%;
     }
-}
-
-#stats th {
+    .mini-pie {
+      font-size: 2em;
+      margin-top: 5px;
+    }
+    .mini-pie.icon-remove-sign {
+      color: @red;
+    }
+    .mini-pie.icon-ok-sign {
+      color: @green;
+    }
 }
 
 .stats-meta > div {
@@ -152,14 +159,6 @@
     margin-left: auto;
     margin-right: auto;
     width: 26em;
-}
-
-.pills {
-    margin-bottom: 0;
-}
-
-.pills .title {
-    margin-right: 1em;
 }
 
 #content .field .content {
@@ -245,12 +244,11 @@
             background-color:#ebebeb;
         }
     }
-}
 
-#reporting-data {
     .facility-name {
         .droidItalic;
     }
+
     .valid-reports {
         .droid;
         color: @grey;
@@ -276,9 +274,6 @@
         margin-left: 18px;
         margin-top: -2px;
     }
-    .valid-percent .mini-pie.iconic {
-        margin-top: 4px;
-    }    
     .facility-name {
         a {
             .droidBold;
@@ -291,10 +286,23 @@
             color: @grey;
         }
     }
+
 }
+
+.page-header {
+    .controls .nav {
+        margin-bottom: 0;
+    }
+    .reporting h1 {
+        text-align: center;
+        margin-right: 3em;
+    }
+}
+
 .clinic-data #reporting-data .valid-percent em {
     margin-left: 2em;
 }
+
 .clinic-data #reporting-data .valid-percent .mini-pie {
     right: 335px;
 }
