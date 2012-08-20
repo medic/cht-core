@@ -389,7 +389,7 @@ var totalReportsDue = function(dates, time_unit_reports) {
 
 // TODO use kanso-config to specify the property name to determine if a report
 // is weekly or monthly.
-var timeUnitReport = function(report) {
+var getReportTimeUnit = function(report) {
     return report && report.week_number ? 'week' : 'month';
 };
 
@@ -436,7 +436,7 @@ var getReportingUrl = exports.getReportingUrl = function(id, dates) {
  */
 exports.getRows = function(facilities, reports, dates) {
     var rows = [];
-    var time_unit_reports = timeUnitReport(reports[0]);
+    var time_unit_reports = getReportTimeUnit(reports[0].value);
 
     if (facilities.rows)
         facilities = facilities.rows;
@@ -510,7 +510,7 @@ exports.getRows = function(facilities, reports, dates) {
  */
 exports.getRowsHC = function(facilities, reports, dates) {
     var rows = [];
-    var time_unit_reports = timeUnitReport(reports[0]);
+    var time_unit_reports = getReportTimeUnit(reports[0].value);
 
     // if data is coming straight from sometimes
     if (facilities.rows) { facilities = facilities.rows; }
@@ -639,6 +639,7 @@ var processNotSubmitted = exports.processNotSubmitted = function(rows, dates) {
 
 
 exports.getTotals = function(facilities, reports, dates) {
+
     var t = {
         clinics: {},
         health_centers: {},
@@ -649,8 +650,10 @@ exports.getTotals = function(facilities, reports, dates) {
         incomplete_percent: 0,
         not_submitted: 0,
         not_submitted_percent: 0,
-        expected_reports: 0};
-    var time_unit_reports = timeUnitReport(reports[0]);
+        expected_reports: 0
+    };
+
+    var time_unit_reports = getReportTimeUnit(reports[0].value);
 
     if (facilities.rows) { facilities = facilities.rows; }
 

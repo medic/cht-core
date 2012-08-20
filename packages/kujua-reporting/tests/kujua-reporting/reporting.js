@@ -285,13 +285,7 @@ exports['reporting.getRowsHC - three months'] = function (test) {
     var reports = [
         {
             "id": "d56252",
-            "key": [
-                2011,
-                7,
-                "325710",
-                "947f3d",
-                "b42c21"
-            ],
+            "key": [ 2011, 7, "325710", "947f3d", "b42c21" ],
             "value": {
                 "district_hospital": "Zomba",
                 "health_center": "Chipini",
@@ -351,7 +345,7 @@ exports['reporting.getRowsHC - three months'] = function (test) {
     // we should have data on 4 facilities
     test.same(rows.length, 4);
 
-    // Example clinic 12 checks
+    // Example clinic 12
     test.same(rows[0].name, "Example clinic 12");
     test.same(rows[0].id, "b433ab");
     test.same(rows[0].valid, 0);
@@ -369,7 +363,7 @@ exports['reporting.getRowsHC - three months'] = function (test) {
     test.same(rows[0].records[2].year, 2011);
     test.same(rows[0].records[2].not_submitted, true);
 
-    // Example clinic 11 checks
+    // Example clinic 11
     test.same(rows[1].name, "Example clinic 11");
     test.same(rows[1].id, "b43333");
     test.same(rows[1].valid, 0);
@@ -387,7 +381,7 @@ exports['reporting.getRowsHC - three months'] = function (test) {
     test.same(rows[1].records[2].year, 2011);
     test.same(rows[1].records[2].not_submitted, true);
 
-    // Example clinic 10 checks
+    // Example clinic 10
     test.same(rows[2].name, "Example clinic 10");
     test.same(rows[2].id, "b42ffc");
     test.same(rows[2].valid, 0);
@@ -409,7 +403,7 @@ exports['reporting.getRowsHC - three months'] = function (test) {
     test.same(rows[2].records[2].not_submitted, true);
 
 
-    // Example clinic 9 checks
+    // Example clinic 9
     test.same(rows[3].name, "Example clinic 9");
     test.same(rows[3].id, "b42c21");
     test.same(rows[3].valid, 0);
@@ -438,21 +432,70 @@ exports['reporting.getRowsHC - three months'] = function (test) {
     test.done();
 };
 
+exports['reporting.getTotals - months time unit, weekly data record'] = function (test) {
+    test.expect(1);
+    var q = { startmonth: '2012-08', months: 3 },
+        dates = utils.getDates(q, 'week');
+
+    var reports = [
+        {
+            "id": "d56252",
+            "key": [ 2012, 31, "325710", "947f3d", "b42c21" ],
+            "value": {
+                "district_hospital": "Zomba",
+                "health_center": "Chipini",
+                "clinic": "Example clinic 9",
+                "reporter": "Example reporter",
+                "reporting_phone": "0123456789",
+                "is_valid": true,
+                "week_number": 31
+            }
+        }
+    ];
+
+    var facilities = {
+        "rows":[
+            {"key":["325710","947f3d","b42c21","Zomba","Chipini","Example clinic 9"],"value":1},
+            {"key":["325710","947f3d","b42ffc","Zomba","Chipini","Example clinic 10"],"value":1}
+        ]
+    };
+
+    var totals = utils.getTotals(facilities, reports, dates);
+
+    test.same(totals, {
+        "clinics": {
+            "b42c21": "Example clinic 9",
+            "b42ffc": "Example clinic 10"
+        },
+        "health_centers": {
+            "947f3d": "Chipini"
+        },
+        "district_hospitals": {
+            "325710": "Zomba"
+        },
+        "complete": 1,
+        "complete_percent": 4,
+        "incomplete": 0,
+        "incomplete_percent": 0,
+        "not_submitted": 25,
+        "not_submitted_percent": 96,
+        "expected_reports": 26,
+        "submitted": 1
+    });
+    test.done();
+
+};
+
 exports['reporting.getTotals - single health center, three months'] = function (test) {
 
+    test.expect(1);
     var q = { startmonth: '2011-10', months: 3 },
         dates = utils.getDates(q);
 
     var reports = [
         {
             "id": "d56252",
-            "key": [
-                2011,
-                7,
-                "325710",
-                "947f3d",
-                "b42c21"
-            ],
+            "key": [ 2011, 7, "325710", "947f3d", "b42c21" ],
             "value": {
                 "district_hospital": "Zomba",
                 "health_center": "Chipini",
@@ -464,13 +507,7 @@ exports['reporting.getTotals - single health center, three months'] = function (
         },
         {
             "id": "d56884",
-            "key": [
-                2011,
-                8,
-                "325710",
-                "947f3d",
-                "b42c21"
-            ],
+            "key": [ 2011, 8, "325710", "947f3d", "b42c21" ],
             "value": {
                 "district_hospital": "Zomba",
                 "health_center": "Chipini",
