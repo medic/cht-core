@@ -246,7 +246,7 @@ var facilityReporting = function() {
         var dates = utils.getDates(req.query),
             facilities = {},
             rows = [],
-            data_record_time_unit,
+            reporting_freq,
             template = 'kujua-reporting/facility.html',
             data_template = 'kujua-reporting/facility_data.html',
             getReportingData = utils.getRows;
@@ -266,20 +266,20 @@ var facilityReporting = function() {
             kutils.updateTopNav('analytics');
 
             if(!setup) {
-                data_record_time_unit = 'week';
+                reporting_freq = 'week';
             } else {
                 var data_record_type = setup.data_record_type;
                 if (types.data_records[data_record_type].fields.week_number) {
-                    data_record_time_unit = 'week';
+                    reporting_freq = 'week';
                 } else {
-                    data_record_time_unit = 'month';
+                    reporting_freq = 'month';
                 }
             }
 
             // override for cdc nepal, TODO solve time unit config problem
-            data_record_time_unit = 'week';
+            reporting_freq = 'week';
 
-            dates = utils.getDates(req.query, data_record_time_unit);
+            dates = utils.getDates(req.query, reporting_freq);
 
             if (utils.isHealthCenter(doc)) {
                 var parentURL = utils.getReportingUrl(doc.parent._id, dates);
@@ -303,7 +303,7 @@ var facilityReporting = function() {
             // render date nav
             $('#date-nav .row').html(
                 templates.render('kujua-reporting/date_nav.html', req, {
-                    date_nav: utils.getDateNav(dates, data_record_time_unit),
+                    date_nav: utils.getDateNav(dates, reporting_freq),
                     _id: doc._id
                 })
             );

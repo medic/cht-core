@@ -432,10 +432,65 @@ exports['reporting.getRowsHC - three months'] = function (test) {
     test.done();
 };
 
-exports['reporting.getTotals - months time unit, weekly data record'] = function (test) {
+exports['reporting.getTotals - weekly time unit and frequency'] = function (test) {
+    test.expect(1);
+    var q = { startweek: '2012-34', weeks: 3, time_unit: 'week' },
+        reporting_freq = 'week',
+        dates = utils.getDates(q, reporting_freq);
+
+    var reports = [
+        {
+            "id": "d56252",
+            "key": [ 2012, 33, "325710", "947f3d", "b42c21" ],
+            "value": {
+                "district_hospital": "Zomba",
+                "health_center": "Chipini",
+                "clinic": "Example clinic 9",
+                "reporter": "Example reporter",
+                "reporting_phone": "0123456789",
+                "is_valid": true,
+                "week_number": 33
+            }
+        }
+    ];
+
+    var facilities = {
+        "rows":[
+            {"key":["325710","947f3d","b42c21","Zomba","Chipini","Example clinic 9"],"value":1},
+            {"key":["325710","947f3d","b42ffc","Zomba","Chipini","Example clinic 10"],"value":1}
+        ]
+    };
+
+    var totals = utils.getTotals(facilities, reports, dates);
+
+    test.same(totals, {
+        "clinics": {
+            "b42c21": "Example clinic 9",
+            "b42ffc": "Example clinic 10"
+        },
+        "health_centers": {
+            "947f3d": "Chipini"
+        },
+        "district_hospitals": {
+            "325710": "Zomba"
+        },
+        "complete": 1,
+        "complete_percent": 17,
+        "incomplete": 0,
+        "incomplete_percent": 0,
+        "not_submitted": 5,
+        "not_submitted_percent": 83,
+        "expected_reports": 6,
+        "submitted": 1
+    });
+    test.done();
+};
+
+exports['reporting.getTotals - months time unit, weekly report frequency'] = function (test) {
     test.expect(1);
     var q = { startmonth: '2012-08', months: 3 },
-        dates = utils.getDates(q, 'week');
+        reporting_freq = 'week',
+        dates = utils.getDates(q, reporting_freq);
 
     var reports = [
         {
@@ -746,12 +801,13 @@ exports['dateToMonthStr - should return non-zero indexed string.'] = function(te
 exports['getDates'] = function (test) {
     var now, date, dates;
 
-    // selected/reporting time unit is week and data record time unit is week
+    // selected/reporting time unit and reporting freq is week
     dates = utils.getDates({time_unit: 'week'}, 'week');
     test.equal(dates.list.length, 3);
     test.equal(dates.time_unit, 'week');
+    test.equal(dates.reporting_freq, 'week');
 
-    // selected/reporting time unit is month and data record time unit is week
+    // selected/reporting time unit is month and reporting freq is week
     // and startmonth is not given about 13 weeks = 3 months
     now = new Date();
     date = moment(now);
@@ -760,7 +816,7 @@ exports['getDates'] = function (test) {
     test.equal(dates.list[0].toString(), now.toString());
     test.equal(dates.list[12].toString(), date.subtract('weeks', 12).native().toString());
 
-    // selected/reporting time unit is month and data record time unit is week
+    // selected/reporting time unit is month and reporting freq is week
     // and startmonth is given
     date = new Date(2011, 3, 2);
     dates = utils.getDates({time_unit: 'month', startmonth: (date.getFullYear() + '-' + (date.getMonth() + 1))}, 'week');
@@ -768,25 +824,25 @@ exports['getDates'] = function (test) {
     test.equal(dates.list[0].toString(), date.toString());
     test.equal(dates.list[12].toString(), moment(date).subtract('weeks', 12).native().toString());
     
-    // selected/reporting time unit is quarter and data record time unit is week
+    // selected/reporting time unit is quarter and reporting freq is week
     dates = utils.getDates({time_unit: 'quarter'}, 'week');
     test.equal(dates.list.length, 26);
     
-    // selected/reporting time unit is year and data record time unit is week
+    // selected/reporting time unit is year and reporting freq is week
     dates = utils.getDates({time_unit: 'year'}, 'week');
     test.equal(dates.list.length, 104);
     
-    // selected/reporting time unit is week and but data record time unit is not given
+    // selected/reporting time unit is week and but reporting freq is not given
     dates = utils.getDates({time_unit: 'week'});
     test.equal(dates.list.length, 3);
     test.equal(dates.time_unit, 'month');
     
-    // selected/reporting time unit is week and data record time unit is month
+    // selected/reporting time unit is week and reporting freq is month
     dates = utils.getDates({time_unit: 'week'}, 'month');
     test.equal(dates.list.length, 3);
     test.equal(dates.time_unit, 'month');
     
-    // selected/reporting time unit is month and data record time unit is month
+    // selected/reporting time unit is month and reporting freq is month
     now = new Date();
     dates = utils.getDates({time_unit: 'month'}, 'month');
     test.equal(dates.list.length, 3);
@@ -795,31 +851,32 @@ exports['getDates'] = function (test) {
     test.equal(dates.list[1].toString(), new Date(now.getFullYear(), now.getMonth() - 1, 2).toString());
     test.equal(dates.list[2].toString(), new Date(now.getFullYear(), now.getMonth() - 2, 2).toString());
     
-    // selected/reporting time unit is month and data record time unit is month and months is 6
+    // selected/reporting time unit is month and reporting freq is month and months is 6
     dates = utils.getDates({time_unit: 'month', months: 6}, 'month');
     test.equal(dates.list.length, 6);
     
-    // selected/reporting time unit is month and data record time unit is month and startmonth is two months ago
+    // selected/reporting time unit is month and reporting freq is month and startmonth is two months ago
     date = new Date(2011, 3, 2);
     dates = utils.getDates({time_unit: 'month', startmonth: (date.getFullYear() + '-' + (date.getMonth() + 1))}, 'month');
     test.equal(dates.list[0].toString(), date.toString());
     
-    // selected/reporting time unit is quarter and data record time unit is month
+    // selected/reporting time unit is quarter and reporting freq is month
     dates = utils.getDates({time_unit: 'quarter'}, 'month');
     test.equal(dates.list.length, 6);
     
-    // selected/reporting time unit is quarter and data record time unit is month and quarters is 3
+    // selected/reporting time unit is quarter and reporting freq is month and quarters is 3
     now = new Date()
     dates = utils.getDates({time_unit: 'quarter', quarters: 3}, 'month');
     test.equal(dates.list.length, 9);
     test.equal(dates.list[0].toString(), new Date(now.getFullYear(), now.getMonth(), 2).toString());
     test.equal(dates.list[8].toString(), new Date(now.getFullYear(), now.getMonth() - 8, 2).toString());
-    
-    // selected/reporting time unit is year and data record time unit is month
-    dates = utils.getDates({time_unit: 'year'}, 'month');
+
+    // selected/reporting time unit is year, return 24 months
+    dates = utils.getDates({time_unit: 'year'});
     test.equal(dates.list.length, 24);
-    
-    // selected/reporting time unit is not given and data record time unit is month
+
+    // selected/reporting time unit is not given and reporting freq is month,
+    // return 3 months
     dates = utils.getDates({}, 'month');
     test.equal(dates.list.length, 3);
 

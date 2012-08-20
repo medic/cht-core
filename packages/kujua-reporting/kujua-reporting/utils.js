@@ -170,12 +170,13 @@ exports.dateToYearStr = function(date) {
  * and creates an object representing the date navigation for the reporting
  * pages.
  */
-exports.getDateNav = function (dates, data_record_time_unit) {
-    var time_unit = dates.time_unit;
+exports.getDateNav = function (dates) {
+    var time_unit = dates.time_unit,
+        reporting_freq = dates.reporting_freq;
 
     // we can only select week as reporting time unit
     // if the data record is supplied weekly
-    if(time_unit === 'week' && (!data_record_time_unit || data_record_time_unit !== 'week')) {
+    if(time_unit === 'week' && (!reporting_freq || reporting_freq !== 'week')) {
         time_unit = 'month';
     }
 
@@ -233,23 +234,23 @@ exports.getDateNav = function (dates, data_record_time_unit) {
  * moment/Date objects and strings for generating queries and navigation.
  *
  * @param {Object} q - parsed request params.
- * @param {String} data_record_time_unit - 'week' or 'month' default is month.
+ * @param {String} reporting_freq - 'week' or 'month' default is month.
  * @api public
  */
-exports.getDates = function (q, data_record_time_unit) {
+exports.getDates = function (q, reporting_freq) {
     var now = moment(),
         selected_time_unit = q.time_unit || 'month',
         dates = {},
         list = [];
 
-    if (typeof data_record_time_unit === 'undefined')
-        data_record_time_unit = 'month';
+    if (typeof reporting_freq === 'undefined')
+        reporting_freq = 'month';
 
-    var step = data_record_time_unit + 's';
+    var step = reporting_freq + 's';
 
     // we can only select week as reporting time unit
     // if the data record is supplied weekly
-    if(selected_time_unit === 'week' && data_record_time_unit !== 'week') {
+    if(selected_time_unit === 'week' && reporting_freq !== 'week') {
         selected_time_unit = 'month';
     }
 
@@ -280,7 +281,7 @@ exports.getDates = function (q, data_record_time_unit) {
                 date = moment(new Date(yearnum, monthnum, 2)),
                 range = _.range(months);
 
-            if(data_record_time_unit === 'week') {
+            if(reporting_freq === 'week') {
                 if(!q.startmonth || q.startmonth === exports.dateToMonthStr(now)) {
                     date = now;
                 }
@@ -309,7 +310,7 @@ exports.getDates = function (q, data_record_time_unit) {
                 date = moment(new Date(yearnum, monthnum, 2)),
                 range = _.range(quarters * 3);
 
-            if(data_record_time_unit === 'week') {
+            if(reporting_freq === 'week') {
                 if(!q.startquarter || q.startquarter === exports.dateToQuarterStr(now)) {
                     date = now;
                 }
@@ -336,7 +337,7 @@ exports.getDates = function (q, data_record_time_unit) {
                 date = moment(new Date(parseInt(startyear, 10), monthnum, 2)),
                 range = _.range(years * 12);
 
-            if(data_record_time_unit  === 'week') {
+            if(reporting_freq  === 'week') {
                 if(!q.startyear || q.startyear === exports.dateToMonthStr(now)) {
                     date = now;
                 }
@@ -360,37 +361,32 @@ exports.getDates = function (q, data_record_time_unit) {
         now: now,
         list: list,
         time_unit: selected_time_unit,
-        data_record_time_unit: data_record_time_unit
+        reporting_freq: reporting_freq
     });
 
     return dates;
 };
 
-var totalReportsDue = function(dates, time_unit_reports) {
+var totalReportsDue = function(dates) {
+
     var startdate = nextMonth(dates.list[0]),
-        enddate = dates.list[dates.list.length-1];
+        enddate = dates.list[dates.list.length-1],
+        result = 0;
 
     if(dates.time_unit === 'week') {
         var multiply = { weeks: 1, months: 4.348, quarters: 13, years: 52.17 };
-        var result = Math.round(dates[dates.time_unit + 's'] * multiply[dates.time_unit + 's']);
+        result = Math.round(dates[dates.time_unit + 's'] * multiply[dates.time_unit + 's']);
     } else {
         var multiply = { months: 1, quarters: 3, years: 12 };
-        var result = dates[dates.time_unit + 's'] * multiply[dates.time_unit + 's'];        
+        result = dates[dates.time_unit + 's'] * multiply[dates.time_unit + 's'];
         //var result = getWeek(startdate) + Math.abs((startdate.getFullYear() -
         //    enddate.getFullYear()) * 52) - enddate.getWeek();
+        if(dates.reporting_freq === 'week')
+            return Math.round(result * 4.348);
     }
 
-    if(time_unit_reports === 'week') {
-        result = Math.round(result * 4.348);
-    }
 
     return result;
-};
-
-// TODO use kanso-config to specify the property name to determine if a report
-// is weekly or monthly.
-var getReportTimeUnit = function(report) {
-    return report && report.week_number ? 'week' : 'month';
 };
 
 /*
@@ -404,7 +400,7 @@ exports.getReportingViewArgs = function (dates) {
         enddate = dates.list[dates.list.length-1],
         startkey, endkey;
 
-    if(dates.data_record_time_unit === 'week') {
+    if(dates.reporting_freq === 'week') {
         startkey = [startdate.year(), getWeek(startdate)];
         endkey = [enddate.year(), getWeek(enddate)];
     } else {
@@ -435,8 +431,8 @@ var getReportingUrl = exports.getReportingUrl = function(id, dates) {
  * include child data from the facility we are querying.
  */
 exports.getRows = function(facilities, reports, dates) {
-    var rows = [];
-    var time_unit_reports = getReportTimeUnit(reports[0].value);
+    var rows = [],
+        reporting_freq = dates.reporting_freq;
 
     if (facilities.rows)
         facilities = facilities.rows;
@@ -495,7 +491,7 @@ exports.getRows = function(facilities, reports, dates) {
         });
 
         row.valid_percent = Math.round(
-            row.valid/(totalReportsDue(dates, time_unit_reports) * row.clinics.length) * 100);
+            row.valid/(totalReportsDue(dates) * row.clinics.length) * 100);
     });
 
     processNotSubmitted(rows, dates);
@@ -510,7 +506,6 @@ exports.getRows = function(facilities, reports, dates) {
  */
 exports.getRowsHC = function(facilities, reports, dates) {
     var rows = [];
-    var time_unit_reports = getReportTimeUnit(reports[0].value);
 
     // if data is coming straight from sometimes
     if (facilities.rows) { facilities = facilities.rows; }
@@ -558,7 +553,7 @@ exports.getRowsHC = function(facilities, reports, dates) {
                 row.valid += is_valid ? 1 : 0;
             }
 
-            row.valid_percent = Math.round(row.valid/totalReportsDue(dates, time_unit_reports) * 100);
+            row.valid_percent = Math.round(row.valid/totalReportsDue(dates) * 100);
         });
     });
 
@@ -573,7 +568,7 @@ exports.getRowsHC = function(facilities, reports, dates) {
 var processNotSubmitted = exports.processNotSubmitted = function(rows, dates) {
 
     // assume monthly by default
-    var weekly_reports = (dates.data_record_time_unit === 'week');
+    var weekly_reports = (dates.reporting_freq === 'week');
 
     _.each(rows, function(row) {
         var pat = function(str) {
@@ -653,8 +648,6 @@ exports.getTotals = function(facilities, reports, dates) {
         expected_reports: 0
     };
 
-    var time_unit_reports = getReportTimeUnit(reports[0].value);
-
     if (facilities.rows) { facilities = facilities.rows; }
 
     for (var i in facilities) {
@@ -673,7 +666,7 @@ exports.getTotals = function(facilities, reports, dates) {
     t.submitted = t.complete + t.incomplete;
 
     // TODO does not account for clinic added dates
-    t.expected_reports = Object.keys(t.clinics).length * totalReportsDue(dates, time_unit_reports);
+    t.expected_reports = Object.keys(t.clinics).length * totalReportsDue(dates);
 
     t.not_submitted = t.expected_reports - t.submitted;
     t.not_submitted_percent = Math.round(
