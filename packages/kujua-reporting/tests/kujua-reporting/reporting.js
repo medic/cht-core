@@ -2,7 +2,7 @@ var utils = require('kujua-reporting/utils'),
     moment = require('moment').moment;
 
 exports['reporting.getRows - three months'] = function (test) {
-    test.expect(1);
+    test.expect(8);
     var q = { startmonth: '2011-10', months: 3 },
         dates = utils.getDates(q);
 
@@ -120,157 +120,127 @@ exports['reporting.getRows - three months'] = function (test) {
             }
         }
     ];
-    var rows = utils.getRows(facilities, reports, dates);
 
     var expected = [
-        {
-            "id": "b42ffc",
-            "name": "Example clinic 10",
-            "records": [
-                {
-                    "month": 9,
-                    "month_pp": "October",
-                    "year": 2011,
-                    "name": "October 2011",
-                    "not_submitted": true
-                },
-                {
-                    "month": 8,
-                    "month_pp": "September",
-                    "year": 2011,
-                    "name": "September 2011",
-                    "not_submitted": true
-                },
-                {
-                    "month": 7,
-                    "month_pp": "August",
-                    "year": 2011,
-                    "name": "August 2011",
-                    "not_submitted": true
-                }
-            ],
-            "valid": 0,
-            "valid_percent": 0
-        },
-        {
-            "id": "b42c21",
-            "name": "Example clinic 9",
-            "records": [
-                {
-                    "month": 9,
-                    "month_pp": "October",
-                    "year": 2011,
-                    "name": "October 2011",
-                    "not_submitted": true
-                },
-                {
-                    "month": 8,
-                    "month_pp": "September",
-                    "year": 2011,
-                    "name": "September 2011",
-                    "not_submitted": true
-                },
-                {
-                    "month": 7,
-                    "month_pp": "August",
-                    "year": 2011,
-                    "name": "August 2011",
-                    "not_submitted": true
-                }
-            ],
-            "valid": 0,
-            "valid_percent": 0
-        },
-        {
-            "id": "b40cd2",
-            "name": "Example clinic 6",
-            "records": [
-                {
-                    "month": 9,
-                    "month_pp": "October",
-                    "year": 2011,
-                    "name": "October 2011",
-                    "not_submitted": true
-                },
-                {
-                    "month": 8,
-                    "month_pp": "September",
-                    "year": 2011,
-                    "name": "September 2011",
-                    "not_submitted": true
-                },
-                {
-                    "month": 7,
-                    "month_pp": "August",
-                    "year": 2011,
-                    "name": "August 2011",
-                    "not_submitted": true
-                }
-            ],
-            "valid": 0,
-            "valid_percent": 0
-        },
-        {
-            "id": "b3fddd",
-            "name": "Example clinic 5",
-            "records": [
-                {
-                    "month": 9,
-                    "month_pp": "October",
-                    "year": 2011,
-                    "name": "October 2011",
-                    "not_submitted": true
-                },
-                {
-                    "month": 8,
-                    "month_pp": "September",
-                    "year": 2011,
-                    "name": "September 2011",
-                    "not_submitted": true
-                },
-                {
-                    "month": 7,
-                    "month_pp": "August",
-                    "year": 2011,
-                    "name": "August 2011",
-                    "not_submitted": true
-                }
-            ],
-            "valid": 0,
-            "valid_percent": 0
-        },
-        {
-            "id": "b3f150",
-            "name": "Example clinic 4",
-            "records": [
-                {
-                    "month": 9,
-                    "month_pp": "October",
-                    "year": 2011,
-                    "name": "October 2011",
-                    "not_submitted": true
-                },
-                {
-                    "month": 8,
-                    "month_pp": "September",
-                    "year": 2011,
-                    "name": "September 2011",
-                    "not_submitted": true
-                },
-                {
-                    "month": 7,
-                    "month_pp": "August",
-                    "year": 2011,
-                    "name": "August 2011",
-                    "not_submitted": true
-                }
-            ],
-            "valid": 0,
-            "valid_percent": 0
-        }
+      {
+        "id": "947f3d",
+        "name": "Chipini",
+        "records": [
+          {
+            "year": 2011,
+            "not_submitted": true,
+            "url": "/kujua/_design/kujua-base/_rewrite/add/data_record?clinic=947f3d&month=9",
+            "month": 9,
+            "name": "October 2011"
+          },
+          {
+            "year": 2011,
+            "not_submitted": true,
+            "url": "/kujua/_design/kujua-base/_rewrite/add/data_record?clinic=947f3d&month=8",
+            "month": 8,
+            "name": "September 2011"
+          },
+          {
+            "year": 2011,
+            "not_submitted": true,
+            "url": "/kujua/_design/kujua-base/_rewrite/add/data_record?clinic=947f3d&month=7",
+            "month": 7,
+            "name": "August 2011"
+          }
+        ],
+        "clinics": [
+          "b42c21",
+          "b42ffc"
+        ],
+        "valid": 0,
+        "valid_percent": 0,
+        "url": "reporting/947f3d?startmonth=2011-10&months=3&time_unit=month"
+      },
+      {
+        "id": "947322",
+        "name": "Chamba",
+        "records": [
+          {
+            "year": 2011,
+            "not_submitted": true,
+            "url": "/kujua/_design/kujua-base/_rewrite/add/data_record?clinic=947322&month=9",
+            "month": 9,
+            "name": "October 2011"
+          },
+          {
+            "year": 2011,
+            "not_submitted": true,
+            "url": "/kujua/_design/kujua-base/_rewrite/add/data_record?clinic=947322&month=8",
+            "month": 8,
+            "name": "September 2011"
+          },
+          {
+            "id": "d346ca",
+            "clinic": {
+              "id": "b3cb78",
+              "name": "Example clinic 1"
+            },
+            "month": 7,
+            "month_pp": "August",
+            "year": 2011,
+            "reporter": "Example reporter",
+            "reporting_phone": "0123456789",
+            "is_valid": true,
+            "name": "August 2011",
+            "week_number": undefined
+          },
+          {
+            "id": "d3916d",
+            "clinic": {
+              "id": "b3d96d",
+              "name": "Example clinic 2"
+            },
+            "month": 7,
+            "month_pp": "August",
+            "year": 2011,
+            "reporter": "Example reporter",
+            "reporting_phone": "0123456789",
+            "is_valid": true,
+            "name": "August 2011",
+            "week_number": undefined
+          },
+          {
+            "id": "d3ece6",
+            "clinic": {
+              "id": "b3e84e",
+              "name": "Example clinic 3"
+            },
+            "month": 7,
+            "month_pp": "August",
+            "year": 2011,
+            "reporter": "Example reporter",
+            "reporting_phone": "0123456789",
+            "is_valid": true,
+            "name": "August 2011",
+            "week_number": undefined
+          }
+        ],
+        "clinics": [
+          "b3f150",
+          "b3fddd",
+          "b40cd2"
+        ],
+        "valid": 3,
+        "valid_percent": 33,
+        "url": "reporting/947322?startmonth=2011-10&months=3&time_unit=month"
+      }
     ];
 
-    test.same(rows, expected);
+    var rows = utils.getRows(facilities, reports, dates);
+
+    test.same(rows.length, expected.length);
+    test.same(rows[0], expected[0]);
+    test.same(rows[1].records[0], expected[1].records[0]);
+    test.same(rows[1].records[1], expected[1].records[1]);
+    test.same(rows[1].records[2], expected[1].records[2]);
+    test.same(rows[1].records[3], expected[1].records[3]);
+    test.same(rows[1].records[4], expected[1].records[4]);
+    test.same(rows[1], expected[1]);
     test.done();
 };
 
