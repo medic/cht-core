@@ -251,6 +251,7 @@ var facilityReporting = function() {
             data_template = 'kujua-reporting/facility_data.html',
             getReportingData = utils.getRows;
 
+        var isAdmin = kutils.isUserAdmin(req.userCtx);
 
         if (utils.isHealthCenter(doc)) {
             template = 'kujua-reporting/facility_hc.html';
@@ -264,6 +265,14 @@ var facilityReporting = function() {
                 setup = $.kansoconfig('kujua-reporting', true);
 
             kutils.updateTopNav('analytics');
+
+            if (!isAdmin) {
+                return $('#reporting-data').html(
+                    templates.render("403.html", req, {
+                        doc: doc
+                    })
+                );
+            }
 
             if(!setup) {
                 reporting_freq = 'week';
