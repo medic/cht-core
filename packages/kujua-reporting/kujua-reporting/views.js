@@ -1,4 +1,15 @@
 
+exports.facilities_by_type = {
+    map: function (doc) {
+        if (doc.type === 'clinic' ||
+            doc.type === 'health_center' ||
+            doc.type === 'district_hospital' ||
+            doc.type === 'national_office') {
+                emit([doc.type, doc._id, doc.name], 1);
+        }
+    }
+};
+
 exports.facilities_by_parent = {
     map: function (doc) {
         if (doc.type === 'clinic' ||
@@ -54,5 +65,35 @@ exports.data_records_by_year_week_facility = {
             is_valid: is_valid,
             week_number: doc.week_number || doc.week // hack
         });
+    }
+};
+
+exports.data_records_by_year_month_facility = {
+    map: function (doc) {
+        if (doc.type.match(/data_record/)) {
+            var dh_id = doc.related_entities.clinic.parent.parent._id;
+            var hc_id = doc.related_entities.clinic.parent._id;
+            var cl_id = doc.related_entities.clinic._id;
+            var key = [doc.year, doc.month, dh_id, hc_id, cl_id];
+
+            /*
+            if(doc.week_number) {
+                key[1] = doc.week_number;
+            }
+            */
+
+            emit(
+                key,
+                {
+                    district_hospital: doc.related_entities.clinic.parent.parent.name,
+                    health_center: doc.related_entities.clinic.parent.name,
+                    clinic: doc.related_entities.clinic.name,
+                    reporter: doc.reported_by.name,
+                    reporting_phone: doc.reporting_phone,
+                    is_valid: doc.is_valid,
+                    week_number: doc.week_number
+                }
+            );
+        }
     }
 };

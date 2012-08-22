@@ -100,8 +100,7 @@ var renderRelatedFacilities = function(req, doc, selector) {
         var p = d.related_entities ? d.related_entities.clinic : d.parent;
         if(p) {
             related.push({
-                title: utils.viewHeading(p.type),
-                url: '/facilities/' + [p._id], //TODO fix facility detail links
+                title: $.kansoconfig(utils.viewHeading(p.type)),
                 name: p.name
             });
             if (p.parent) { appendRelated(p); }
@@ -164,18 +163,18 @@ var renderReportingTotals = function(totals, doc) {
             popup.uPopup('destroy', function () {
                 popup = null;
             });
-        }        
+        }
     };
-    
+
     var closePopupIfOutside = function (ev) {
         var toElementIsSvgPath = $(ev.toElement).parents('svg').length > 0;
         var toElementIsPopup = $(ev.toElement).parents('.upopup').length > 0;
-        
+
         if(!toElementIsSvgPath && !toElementIsPopup) {
             closePopup();
         }
     };
-    
+
     var drawPopup = function (ev, elt, selector) {
         var inner_elt = $('#popup-' + selector);
 
@@ -189,7 +188,7 @@ var renderReportingTotals = function(totals, doc) {
                 cssClasses: 'upopup-square'
             });
         }
-        
+
         $('.upopup').unbind('mouseout');
         $('.upopup').bind('mouseout', closePopupIfOutside);
 
@@ -200,10 +199,10 @@ var renderReportingTotals = function(totals, doc) {
             $(elt).next('text').find('tspan').text()
         );
     };
-    
+
     $('body').bind('click', closePopup);
     $('svg').bind('mouseout', closePopupIfOutside);
-    
+
     $('svg circle').each(function(i, c) {
         $(c).mousemove(function (ev) {
             var selector;
@@ -290,24 +289,26 @@ var facilityReporting = function() {
 
             dates = utils.getDates(req.query, reporting_freq);
 
+            var parentURL = '';
             if (utils.isHealthCenter(doc)) {
-                var parentURL = utils.getReportingUrl(doc.parent._id, dates);
-                $('.health_center .back').attr(
-                    'href', duality.getBaseURL() + '/' + parentURL
-                );
+                parentURL = utils.getReportingUrl(doc.parent._id, dates);
             }
 
             // render header
             $('.page-header .container').html(
                 templates.render('kujua-reporting/page_header_body.html', req, {
                     doc: doc,
-                    is_health_center: (doc.type === 'health_center'),
                     parentURL: parentURL
                 })
             );
-
             $('.page-header .container').addClass('reporting');
             $('body > .container .content').filter(':first').attr('class','content-reporting');
+
+            // position siblings menu
+            var offset = $('.controls .facilities').offset();
+            offset.left = $('.page-header .title').width() +
+                          $('.page-header .title').offset().left + 5;
+            $('.controls .facilities').offset(offset);
 
             // render date nav
             $('#date-nav .row').html(
@@ -330,6 +331,7 @@ var facilityReporting = function() {
                             doc: doc
                         })
                     );
+
                     $('#reporting-data .valid-percent').each(function(i, el) {
                         var val = parseInt($(el).text().replace(/%/,''), 10);
                         var paper = $(el).children('.mini-pie');
@@ -363,7 +365,7 @@ var facilityReporting = function() {
                     $('.facility-link:first').addClass('expanded');
                     $('.data-records-list div').hide().first().show();
 
-                    var openLinkMenu = function(selector) {
+                    /*var openLinkMenu = function(selector) {
                         return function (ev) {
                             var elt = $(selector);
                             if (!elt.parents('.upopup')[0]) {
@@ -383,15 +385,17 @@ var facilityReporting = function() {
                     $('.change_time_unit_link').bind(
                         'mousedown', openLinkMenu('.change_time_unit_menu')
                     );
+
                     $('.change_time_unit_link').click(function(ev) {
                         ev.stopPropagation();
                         ev.preventDefault();
                     });
+                    */
 
                     renderRelatedFacilities(req, doc);
 
                     getViewSiblingFacilities(doc, function(data) {
-                        $('.controls .dropdown-menu').html(
+                        $('.controls .facilities .dropdown-menu').html(
                             templates.render(
                                 'kujua-reporting/siblings-umenu-item.html', req, {
                                     rows: data.rows
@@ -404,11 +408,7 @@ var facilityReporting = function() {
 
         return {
             title: doc.name,
-            content: templates.render(template, req, {
-                doc: doc,
-                type_header: utils.viewHeading(doc.type),
-                doc_raw: JSON.stringify(doc, null, 4)
-            })
+            content: templates.render(template, req, {doc: doc})
         };
     };
 };

@@ -1,8 +1,7 @@
 {#doc}
 {>"kujua-reporting/page_header.html"/}
-{<controls}
-  <div class="pull-right">
-    <ul class="nav nav-pills pull-right">
+{<controls_r}
+    <ul class="nav nav-pills pull-right facilities">
       <li class="dropdown">
         <a class="dropdown-toggle"
            data-toggle="dropdown"
@@ -13,17 +12,12 @@
         </ul>
       </li>
     </ul>
-  </div>
-  <div class="pull-left">
-  {?is_health_center}
+{/controls_r}
+{<controls_l}
+  {?parentURL}
     <a class="btn back" href="{baseURL}/{parentURL}">
-      &lt; {parent.name}
+      <i class="icon-arrow-left" /> {parent.name}
     </a>
-  {:else}
-    <a class="btn back" href="{baseURL}/reporting">
-      &lt; All Districts
-    </a>
-  {/is_health_center}
-  </div>
-{/controls}
+  {/parentURL}
+{/controls_l}
 {/doc}

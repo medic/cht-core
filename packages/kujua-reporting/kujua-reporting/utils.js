@@ -36,11 +36,11 @@ exports.viewHeading = function (view) {
 
     switch (view) {
         case 'clinic':
-            return 'Reporting Unit';
+            return 'Clinic';
         case 'health_center':
-            return 'District';
+            return 'Health Center';
         case 'district_hospital':
-            return 'Field Office';
+            return 'District Hospital';
         case 'national_office':
             return 'National Office';
     }
