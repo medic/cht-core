@@ -8,10 +8,10 @@ duality_events.on('init', function () {
     console.log('kujua-reporting init');
 
     var db = require('db').current(),
-        q = {};
-
-    q['startkey'] = ['district_hospital'];
-    q['endkey'] = ['district_hospital', {}];
+        q = {
+            startkey: ['district_hospital'],
+            endkey: ['district_hospital', {}]
+        };
 
     db.getView(ddoc, 'facilities_by_type', q, function(err, data) {
 
