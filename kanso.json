@@ -1,6 +1,6 @@
 {
     "name": "kujua-base",
-    "version": "0.1.11-cdc-nepal",
+    "version": "0.1.11-nyaya",
     "description": "Provide access to your SMS form data.",
     "loglevel": "info",
     "load": "lib/app",
@@ -40,7 +40,6 @@
         "bootstrap-fontawesome": null,
         "kanso-config": null,
         "kujua-branding": null,
-        "kujua-reporting": null,
         "kujua-sms": null,
         "kujua-utils": null,
         "jsDump": null,
