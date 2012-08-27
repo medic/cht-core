@@ -1,0 +1,115 @@
+{#doc}
+  <div id="totals">
+    <div class="row-fluid totals-hc">
+      <div class="span2 col1">
+        <h4>0</h4>
+        <h3>Reporting Units</h3>
+      </div>
+      <div class="span2 col2">
+        <h4>0</h4>
+        <h3>Completed Reports</h3>
+      </div>
+      <div class="span3 chart col3"></div>
+      <div class="span2 col4">
+        <h4>0</h4>
+        <h3>Incompleted Reports</h3>
+      </div>
+      <div class="span2 last col5">
+        <h4>0</h4>
+        <h3>Reports Pending</h3>
+      </div>
+    </div>
+  </div>
+  <div id="date-nav">
+    <div class="row">
+    </div>
+  </div>
+  <div id="stats">
+    <div class="row">
+      <div class="span9">
+          <table class="table table-striped clinic-data">
+            <thead>
+              <tr>
+                <th class="first-column-hc">Reporting Unit Name</th>
+                <th class="reporting-rate">Reporting Rate</th>
+              </tr>
+            </thead>
+            <tbody id="reporting-data">
+              <tr><td colspan="4">Loading...</td></tr>
+            </tbody>
+          </table>
+      </div>
+      <div class="span3 stats-meta">
+          <div><h2>{name} <br />District</h2></div>
+          <div>
+          <h3>HSA Supervisor</h3><!--TODO add title for contact? {contact.title}//-->
+           <strong>{contact.name}</strong></br>
+           {contact.phone}<br />
+           <!--{location.name}<br />
+           {location.lat},{location.lon}<br />
+           {#location.tags}<span class="label">{label}</span> {/location.tags}<br />//-->
+          </address>
+          </div>
+          <div id="facilities_related">
+          </div>
+          <div id="umenu" class="umenu siblings"></div>
+      </div>
+    </div>
+  </div>
+  <div class="hide">
+    <div id="popup-base">
+      </div>
+      <div id="popup-incomplete">
+        <span class="iconic x-frag">
+        </span>
+        <span class="incomplete">
+            <span class="percent">
+                0%
+            </span>
+            <span class="count">
+                0
+            </span>
+            Reports
+            <span class="highlight">
+                Incomplete
+            </span>
+        </span>
+     </span>
+      </div>
+      <div id="popup-not_submitted">
+        <span class="iconic x-alt">
+        </span>
+        <span class="not_submitted">
+            <span class="percent">
+                0%
+            </span>
+            <span class="count">
+                0
+            </span>
+            Reports
+            <span class="highlight">
+               Not Submitted 
+            </span>
+        </span>
+      </div>
+      <div id="popup-complete">
+        <span class="iconic check-alt">
+        </span>
+        <span class="complete">
+            <span class="percent">
+                0%
+            </span>
+            <span class="count">
+                0
+            </span>
+            Reports
+            <span class="highlight">
+                Complete
+            </span>
+        </span>
+      </div>
+  </div>
+  {>"kujua-reporting/page_footer.html"/}
+
+{/doc}
+

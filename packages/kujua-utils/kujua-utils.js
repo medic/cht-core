@@ -49,16 +49,21 @@ var localizedString = exports.localizedString = function(strings, locales) {
 
 };
 
+exports.capitalize = function (str) {
+    return str.replace( /(^|\s)([a-z])/g , function(m,p1,p2){ 
+        return p1+p2.toUpperCase(); 
+    });
+};
+
 exports.prettyMonth = function (month, full) {
     var months_short = new Array(
         'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
         'Sep', 'Oct', 'Nov', 'Dec');
     var months_full = _.map(exports.months(), function(month) { return month[1]; });
 
-    if (full) {
+    if (full)
         return months_full[month];
-    }
-    
+
     return months_short[month];
 };
 
@@ -183,11 +188,20 @@ exports.getUserDistrict = function(userCtx) {
  * @returns {String}
  * @api public
  */
-exports.titleize = function (str) {
-    return (str || '').toLowerCase().replace(/_+/g, ' ').replace(
+var titleize = exports.titleize = function (str) {
+    return (str || '').toLowerCase().replace(/[-_]+/g, ' ').replace(
         /(?:^|\s+)\w/g, function (m) {
             return m.toUpperCase();
         }
     );
 };
 
+exports.updateTopNav = function(key, title) {
+    title = title || titleize(key);
+    $('.page-header h1').text($.kansoconfig(title));
+    $('.navbar .nav > *').removeClass('active');
+    $('.navbar .nav .' + key).addClass('active');
+    $('.page-header .controls').hide();
+    $('.page-header .container').attr('class','container');
+    $('body > .container div').filter(':first').attr('class','content');
+};
