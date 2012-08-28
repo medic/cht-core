@@ -1,12 +1,19 @@
 {
   "_id": "config.js",
-  "_rev":"3-815a7c727d2834c304b6eb39f2baf848",
+  "_rev":"7-4d4833a40da227effe54ee534342281f",
   "values": [
     { "key": "District Hospital", "value": "District" },
     { "key": "District Hospitals", "value": "Districts" },
-    { "key": "Health Center", "value": "CHWL" },
-    { "key": "Health Centers", "value": "CHWLs" },
-    { "key": "Clinic", "value": "FCHV" },
-    { "key": "Clinics", "value": "FCHVs" }
+    { "key": "District Hospital Name", "value": "Name" },
+    { "key": "Health Center", "value": "VDC" },
+    { "key": "Health Centers", "value": "VDCs" },
+    { "key": "Health Center Name", "value": "VDC Name" },
+    { "key": "Health Center Contact Name", "value": "CHWL Name" },
+    { "key": "Health Center Contact Phone", "value": "Contact Phone" },
+    { "key": "Clinic", "value": "CHW" },
+    { "key": "Clinics", "value": "CHWs" },
+    { "key": "Clinic Contact Name", "value": "CHW Name" },
+    { "key": "Clinic Contact Phone", "value": "Contact Phone" },
+    { "key": "RC Code", "value": "Ward #" }
   ]
 }
