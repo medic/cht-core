@@ -1,6 +1,6 @@
 {
     "name": "kujua-base",
-    "version": "0.1.11-nyaya",
+    "version": "0.1.12-nyaya",
     "description": "Provide access to your SMS form data.",
     "loglevel": "info",
     "load": "lib/app",
