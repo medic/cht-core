@@ -1,9 +1,9 @@
 var _ = require('underscore')._;
 
-exports.validate = function(form_definition, form_data) {
+exports.validate = function(def, form_data) {
     var missing_fields = [], orig_key, key, data;
 
-    _.each(form_definition.fields, function(field, k) {
+    _.each(def.fields, function(field, k) {
         orig_key = k;
         key = k.split('.');
         data = form_data;
@@ -25,6 +25,25 @@ exports.validate = function(form_definition, form_data) {
 
     if (!_.isEmpty(missing_fields)) {
         return [{code: 'missing_fields', fields: missing_fields}];
+    }
+
+    if (def.validations) {
+
+        var errors = [];
+
+        for (var k in def.validations) {
+            var ret = eval('('+def.validations[k]+')()');
+            // assume string/error message if not object
+            if (ret && !_.isObject(ret)) {
+                errors.push({code:'form_invalid', message: ret});
+            } else if (ret) {
+                errors.push(ret);
+            }
+        };
+
+        if (errors.length !== 0) {
+            return errors;
+        }
     }
 
     return [];
