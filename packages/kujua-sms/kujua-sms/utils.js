@@ -258,22 +258,22 @@ exports.isReferralForm = function(form) {
 var messages = {
     missing_fields: {
         en: "Missing fields: %(fields).",
-        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला"
+        ne: "तपाईले फारम पूरा भर्नुभएन। कृपया पुरा गरेर फेरि पठाउन प्रयास गर्नुहोला।"
     },
     extra_fields: {
         en: "Extra fields.",
-        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला"
+        ne: "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
     },
     form_not_found: {
         en: "The report sent '%(form)' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
         fr: "Le formulaire envoyé '%(form)' n'est pas reconnu. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur.",
-        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला"
+        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
     },
     /* form_invalid is placeholder until we do proper form validation */
     form_invalid: {
         en: "The report sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
         fr: "Le formulaire envoyé '%(form)' n'est pas complet. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur.",
-        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला"
+        ne: "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
     },
     facility_not_found: {
         en: "Facility not found."
@@ -284,7 +284,7 @@ var messages = {
     error: {
         en: "There was a problem with your message, please try to resend. If you continue to have this problem please contact your supervisor.",
         fr: "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur.",
-        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला"
+        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
     },
     success: {
         en: 'Data received, thank you.',
