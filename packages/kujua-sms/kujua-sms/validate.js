@@ -35,7 +35,11 @@ exports.validate = function(def, form_data) {
             var ret = eval('('+def.validations[k]+')()');
             // assume string/error message if not object
             if (ret && !_.isObject(ret)) {
-                errors.push({code:'form_invalid', message: ret});
+                errors.push({
+                    code: 'form_invalid',
+                    form: def.meta.code,
+                    message: ret
+                });
             } else if (ret) {
                 errors.push(ret);
             }
