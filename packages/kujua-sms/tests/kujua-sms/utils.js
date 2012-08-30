@@ -70,8 +70,10 @@ var example_doc = {
 };
 
 exports.getLabels = function(test) {
-    test.expect(1);
+    test.expect(2);
     var keys = [
+        'reported_date',
+        'from',
         'facility_id',
         [
             'related_entities', [
@@ -116,12 +118,13 @@ exports.getLabels = function(test) {
             ]
         ]
     ];
-    
-    var locale = 'en';
-    
+
+    // english locale
     test.same(
-        utils.getLabels(keys, 'TEST', locale),
+        utils.getLabels(keys, 'TEST', 'en'),
         [
+            'Reported Date',
+            'From',
             'Health Facility Identifier',
             'Clinic Contact Name',
             'District Hospital Name',
@@ -131,78 +134,23 @@ exports.getLabels = function(test) {
             'LA 6x2: Days stocked out'
         ]
     );
-    
-    test.done();
-};
 
-exports.getLabels_msbr = function(test) {
-    test.expect(1);
-    var keys = [
-      "reported_date",
-      "from",
-      [
-         "related_entities",
-         [
-            "clinic",
-            [
-               "contact",
-               [
-                  "name"
-               ]
-            ]
-         ]
-      ],
-      [
-         "related_entities",
-         [
-            "clinic",
-            [
-               "name"
-            ]
-         ]
-      ],
-      [
-         "related_entities",
-         [
-            "clinic",
-            [
-               "parent",
-               [
-                  "name"
-               ]
-            ]
-         ]
-      ],
-      "ref_year",
-      "ref_month",
-      "ref_day",
-      "ref_rc",
-      "ref_hour",
-      "ref_name",
-      "ref_age",
-      "ref_reason",
-      "ref_reason_other"
-    ];
-    
+    // french locale
     test.same(
-        utils.getLabels(keys, 'MSBR', 'fr'),
+        utils.getLabels(keys, 'TEST', 'fr'),
         [
             "Date envoyé",
             "Envoyé par",
-            'Nom et Prénoms',
-            'Villages',
-            'Arrondissement',
-            "Année",
-            "Mois",
-            "Jour",
-            "Code du RC",
-            "Heure de départ",
-            "Nom",
-            "Age",
-            "Motif référence",
-            "Si 'autre', précisez motif référence"
+            "Health Facility Identifier",
+            "Personne-ressource Clinique",
+            "Nom de l'hôpital de district",
+            "Villages",
+            "Nom du centre de santé",
+            "LA 6x1: Days stocked out",
+            "LA 6x2: Days stocked out"
         ]
     );
+
     test.done();
 };
 

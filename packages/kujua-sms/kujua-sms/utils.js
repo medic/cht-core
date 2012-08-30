@@ -31,31 +31,31 @@ exports.strings = {
     },
     "related_entities.clinic.contact.name": {
         en: "Clinic Contact Name",
-        fr: "Nom et Prénoms"
+        fr: "Personne-ressource Clinique"
     },
     "related_entities.clinic.parent.name": {
         en: "Health Center Name",
-        fr: "Arrondissement"
+        fr: "Nom du centre de santé"
     },
     "related_entities.clinic.parent.contact.name": {
         en: "Health Center Contact Name",
-        fr: "Nom et Prénoms"
+        fr: "Nom de la santé Contact Center"
     },
     "related_entities.clinic.parent.parent.name": {
         en: "District Hospital Name",
-        fr: "District"
+        fr: "Nom de l'hôpital de district"
     },
     "related_entities.health_center.name": {
         en: "Health Center Name",
-        fr: "Arrondissement"
+        fr: "Nom du centre de santé"
     },
     "related_entities.health_center.contact.name": {
         en: "Health Center Contact Name",
-        fr: "Nom et Prénoms"
+        fr: "Nom de la santé Contact Center"
     },
     "related_entities.health_center.parent.name": {
         en: "District Hospital Name",
-        fr: "District"
+        fr: "Nom de l'hôpital de district"
     },
     from: {
         en: 'From',

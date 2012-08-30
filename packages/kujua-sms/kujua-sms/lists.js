@@ -26,6 +26,7 @@ exports.data_records_csv = function (head, req) {
             'from',
             ['related_entities', ['clinic', ['contact', ['name']]]],
             ['related_entities', ['clinic', ['name']]],
+            ['related_entities', ['clinic', ['parent', ['contact', ['name']]]]],
             ['related_entities', ['clinic', ['parent', ['name']]]]
         ];
 
