@@ -25,33 +25,37 @@ exports.strings = {
         en: 'Reported Date',
         fr: 'Date envoyé'
     },
-    "related_entities.clinic.contact.name": {
-        en: "Name",
-        fr: "Nom et Prénoms"
+    "related_entities.clinic.name": {
+        en: "Clinic Name",
+        fr: "Villages"
     },
-    "related_entities.health_center.contact.name": {
-        en: "Name",
+    "related_entities.clinic.contact.name": {
+        en: "Clinic Contact Name",
         fr: "Nom et Prénoms"
     },
     "related_entities.clinic.parent.name": {
-        en: "Health Center",
+        en: "Health Center Name",
         fr: "Arrondissement"
     },
-    "related_entities.health_center.name": {
-        en: "Health Center",
-        fr: "Arrondissement"
+    "related_entities.clinic.parent.contact.name": {
+        en: "Health Center Contact Name",
+        fr: "Nom et Prénoms"
     },
     "related_entities.clinic.parent.parent.name": {
-        en: "District",
+        en: "District Hospital Name",
         fr: "District"
+    },
+    "related_entities.health_center.name": {
+        en: "Health Center Name",
+        fr: "Arrondissement"
+    },
+    "related_entities.health_center.contact.name": {
+        en: "Health Center Contact Name",
+        fr: "Nom et Prénoms"
     },
     "related_entities.health_center.parent.name": {
-        en: "District",
+        en: "District Hospital Name",
         fr: "District"
-    },
-    "related_entities.clinic.name": {
-        en: "Clinic",
-        fr: "Villages"
     },
     from: {
         en: 'From',

@@ -26,7 +26,10 @@
                 {:else}
                   {?health_center.contact.name}{health_center.contact.name}
                   {:else}
-                  <i class="icon-question-sign icon-large"></i>
+                    {?clinic.parent.contact.name}{clinic.parent.contact.name}
+                    {:else}
+                    <i class="icon-question-sign icon-large"></i>
+                    {/clinic.parent.contact.name}
                   {/health_center.contact.name}
                 {/clinic.contact.name}
                 {/related_entities}

@@ -75,6 +75,7 @@ exports.data_records_xml = function (head, req) {
             'from',
             ['related_entities', ['clinic', ['contact', ['name']]]],
             ['related_entities', ['clinic', ['name']]],
+            ['related_entities', ['clinic', ['parent', ['contact', ['name']]]]],
             ['related_entities', ['clinic', ['parent', ['name']]]]
         ];
 
@@ -315,13 +316,37 @@ exports.data_record = function (head, req) {
         addError(record, err);
     }
 
-    /* Add facility to task */
+    //
+    // setup related_entities
+    //
+    record.related_entities = {
+        clinic: {
+            parent: {
+                parent: {}
+            }
+        }
+    };
+
+    //
+    // Add first matched facility to record
+    //
     var row = {};
     while (row = getRow()) {
-        if (row.value.type) {
-            facility = record.related_entities[row.value.type] = row.value;
+        if (row.value.type === 'clinic') {
+            record.related_entities.clinic = row.value;
+            facility = row.value;
+            break;
         }
-        break;
+        if (row.value.type === 'health_center') {
+            record.related_entities.clinic.parent = row.value;
+            facility = row.value;
+            break;
+        }
+        if (row.value.type === 'district_hospital') {
+            record.related_entities.clinic.parent.parent = row.value;
+            facility = row.value;
+            break;
+        }
     }
 
     /* Can't do much without a facility */

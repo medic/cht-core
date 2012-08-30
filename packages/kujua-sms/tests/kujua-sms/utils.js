@@ -123,10 +123,10 @@ exports.getLabels = function(test) {
         utils.getLabels(keys, 'TEST', locale),
         [
             'Health Facility Identifier',
-            'Name',
-            'District',
-            'Clinic',
-            'Health Center',
+            'Clinic Contact Name',
+            'District Hospital Name',
+            'Clinic Name',
+            'Health Center Name',
             'LA 6x1: Days stocked out',
             'LA 6x2: Days stocked out'
         ]
