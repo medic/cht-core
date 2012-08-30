@@ -10,6 +10,16 @@ var _ = require('underscore')._,
     jsonforms  = require('views/lib/jsonforms');
 
 
+// default properties to export from record
+var EXPORT_KEYS = [
+    'reported_date',
+    'from',
+    ['related_entities', ['clinic', ['contact', ['name']]]],
+    ['related_entities', ['clinic', ['name']]],
+    ['related_entities', ['clinic', ['parent', ['contact', ['name']]]]],
+    ['related_entities', ['clinic', ['parent', ['name']]]]
+];
+
 exports.data_records_csv = function (head, req) {
     var labels,
         query = req.query,
@@ -21,14 +31,7 @@ exports.data_records_csv = function (head, req) {
         delimiter = locale === 'fr' ? '";"' : null,
         rows,
         values,
-        keys = [
-            'reported_date',
-            'from',
-            ['related_entities', ['clinic', ['contact', ['name']]]],
-            ['related_entities', ['clinic', ['name']]],
-            ['related_entities', ['clinic', ['parent', ['contact', ['name']]]]],
-            ['related_entities', ['clinic', ['parent', ['name']]]]
-        ];
+        keys = [];
 
     start({code: 200, headers: {
         'Content-Type': 'text/csv; charset=utf-8',
@@ -36,7 +39,7 @@ exports.data_records_csv = function (head, req) {
     }});
 
     // add form keys from form def
-    keys.push.apply(keys, utils.getFormKeys(form));
+    keys = EXPORT_KEYS.concat(utils.getFormKeys(form));
 
     // fetch labels for all keys
     labels = utils.getLabels(keys, form, locale);
@@ -71,14 +74,7 @@ exports.data_records_xml = function (head, req) {
         values,
         labels,
         // extra doc fields we want to export not in form
-        keys = [
-            'reported_date',
-            'from',
-            ['related_entities', ['clinic', ['contact', ['name']]]],
-            ['related_entities', ['clinic', ['name']]],
-            ['related_entities', ['clinic', ['parent', ['contact', ['name']]]]],
-            ['related_entities', ['clinic', ['parent', ['name']]]]
-        ];
+        keys = [];
 
     start({code: 200, headers: {
         'Content-Type': 'application/vnd.ms-excel; charset=utf-8',
@@ -86,7 +82,7 @@ exports.data_records_xml = function (head, req) {
     }});
 
     // add form keys from form def
-    keys.push.apply(keys, utils.getFormKeys(form));
+    keys = EXPORT_KEYS.concat(utils.getFormKeys(form));
 
     // fetch labels for all keys
     var labels = utils.getLabels(keys, form, locale);
