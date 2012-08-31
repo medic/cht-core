@@ -21,6 +21,30 @@ exports.data_records_by_district_and_form = {
     }
 };
 
+exports.data_records_valid_by_district_form_and_reported_date = {
+    map: function(doc) {
+        if(doc.type === 'data_record') {
+            var jsonforms = require('views/lib/jsonforms'),
+                def = jsonforms[doc.form];
+
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent
+                    && (!doc.errors || doc.errors.length === 0)) {
+                var dh = doc.related_entities.clinic.parent.parent;
+                emit([dh._id, doc.form, dh.name, doc.reported_date], 1);
+            } else if (doc.related_entities.health_center
+                    && doc.related_entities.health_center.parent
+                    && (!doc.errors || doc.errors.length === 0)) {
+                var dh = doc.related_entities.health_center.parent;
+                emit([dh._id, doc.form, dh.name, doc.reported_date], 1);
+            } else if (!doc.errors || doc.errors.length === 0) {
+                emit([null, doc.form, null, doc.reported_date], 1);
+            }
+        }
+    }
+};
+
 // only emit valid records
 exports.data_records_valid_by_district_and_form = {
     map: function(doc) {

@@ -1,6 +1,5 @@
 {
   "_id": "config.js",
-  "_rev":"8-15defa20983e1affaaaa5ac0bd99223a",
   "values": [
     { "key": "District Hospital", "value": "District" },
     { "key": "District Hospitals", "value": "Districts" },
