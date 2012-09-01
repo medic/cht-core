@@ -20,6 +20,10 @@ var EXPORT_KEYS = [
     ['related_entities', ['clinic', ['parent', ['name']]]]
 ];
 
+var formatDate = function(msecs) {
+    return moment(msecs).format('DD, MMM YYYY, HH:mm:ss Z');
+};
+
 exports.data_records_csv = function (head, req) {
     var labels,
         query = req.query,
@@ -54,8 +58,7 @@ exports.data_records_csv = function (head, req) {
         if(row.doc) {
             // add values for each data record to the rows
             values = utils.getValues(row.doc, keys);
-            var m = moment(values[0]);
-            values[0] = m.format('DD, MMM YYYY, HH:mm:ss');
+            values[0] = formatDate(values[0]);
             send(utils.arrayToCSV([values], delimiter) + '\n');
         }
     }
@@ -106,8 +109,7 @@ exports.data_records_xml = function (head, req) {
 
     while (row = getRow()) {
         values = utils.getValues(row.doc, keys);
-        var m = moment(values[0]);
-        values[0] = m.format('DD, MMM YYYY, HH:mm:ss');
+        values[0] = formatDate(values[0]);
         send(utils.arrayToXML([values]));
     }
 
