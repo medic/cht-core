@@ -32,6 +32,8 @@ exports.validate = function(def, form_data) {
         var errors = [];
 
         for (var k in def.validations) {
+            if (typeof def.validations[k] !== 'string')
+                continue;
             var ret = eval('('+def.validations[k]+')()');
             // assume string/error message if not object
             if (ret && !_.isObject(ret)) {

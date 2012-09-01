@@ -45,23 +45,6 @@ var example = {
     },
 };
 
-var expected_callback = {
-    data: {
-        type: "data_record",
-        form: "PSMM",
-        related_entities: {
-            clinic: null
-        },
-        sms_message: example.sms_message,
-        from: "+13125551212",
-        errors: [],
-        tasks: [],
-        facility_id: "facility",
-        month: '2',
-        year: '2011'
-    }
-};
-
 
 /*
  * STEP 1:

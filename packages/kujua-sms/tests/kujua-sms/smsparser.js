@@ -1,46 +1,15 @@
 var smsparser = require('views/lib/smsparser'),
     jsonforms = require('views/lib/jsonforms');
 
-exports.valid_message = function (test) {
+exports.validations_is_numeric_month_stays_numeric = function(test) {
+    test.expect(1);
 
-    var def = jsonforms['TEST'];
-    var doc = {
-        sent_timestamp: '12-11-11 15:00',
-        from: '+15551212',
-        message: '1!TEST!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4'
-    };
+    var doc = { message: "1!TEST!foo#2011#11#" },
+        form = smsparser.getForm(doc.message),
+        def = jsonforms[form],
+        data = smsparser.parse(def, doc);
 
-    var form = smsparser.getForm(doc.message);
-    var obj = smsparser.parse(def, doc);
-
-    test.same(obj, {
-        facility_id: 'facility',
-        year: '2011',
-        month: '11',
-        misoprostol_administered: false,
-        quantity_dispensed: {
-            la_6x1: 1,
-            la_6x2: 2,
-            cotrimoxazole: 3,
-            zinc: 4,
-            ors: 5,
-            eye_ointment: 6
-        },
-        days_stocked_out: {
-            la_6x1: 9,
-            la_6x2: 8,
-            cotrimoxazole: 7,
-            zinc: 6,
-            ors: 5,
-            eye_ointment: 4
-        }
-    });
-
-    var arr = smsparser.parseArray(def, doc);
-    test.same(
-        arr,
-        ['12-11-11 15:00', '+15551212', 'facility', '2011', '11', false, 1, 2, 3, 4, 5, 6, 9, 8, 7, 6, 5, 4]
-    );
+    test.same(11, data.month);
 
     test.done();
 };
@@ -314,6 +283,50 @@ exports.smsformats_textforms_only_one_field = function(test) {
         };
 
     test.same(expect, data);
+
+    test.done();
+};
+
+exports.valid_message = function (test) {
+
+    var def = jsonforms['TEST'];
+    var doc = {
+        sent_timestamp: '12-11-11 15:00',
+        from: '+15551212',
+        message: '1!TEST!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4'
+    };
+
+    var form = smsparser.getForm(doc.message);
+    var obj = smsparser.parse(def, doc);
+
+    test.same(obj, {
+        facility_id: 'facility',
+        year: '2011',
+        month: '11',
+        misoprostol_administered: false,
+        quantity_dispensed: {
+            la_6x1: 1,
+            la_6x2: 2,
+            cotrimoxazole: 3,
+            zinc: 4,
+            ors: 5,
+            eye_ointment: 6
+        },
+        days_stocked_out: {
+            la_6x1: 9,
+            la_6x2: 8,
+            cotrimoxazole: 7,
+            zinc: 6,
+            ors: 5,
+            eye_ointment: 4
+        }
+    });
+
+    var arr = smsparser.parseArray(def, doc);
+    test.same(
+        arr,
+        ['12-11-11 15:00', '+15551212', 'facility', '2011', '11', false, 1, 2, 3, 4, 5, 6, 9, 8, 7, 6, 5, 4]
+    );
 
     test.done();
 };

@@ -50,8 +50,8 @@ var parseNum = function (raw) {
 exports.parseField = function (field, raw) {
     switch (field.type) {
         case 'integer':
-            // store months as integers
-            if (field.validate && field.validate.is_numeric_month)
+            // keep months integers, not their list value.
+            if (field.validations && field.validations.is_numeric_month === true)
                 return parseNum(raw);
             // store list value since it has more meaning.
             // TODO we don't have locale data inside this function so calling

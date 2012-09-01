@@ -154,7 +154,6 @@ var parseSentTimestamp = function(str) {
 var getRespBody = function(doc, req) {
     var form = doc.form,
         def = jsonforms[form],
-        form_data = smsparser.parse(def, doc),
         baseURL = require('duality/core').getBaseURL(),
         headers = req.headers.Host.split(":"),
         host = headers[0],
@@ -199,10 +198,14 @@ var getRespBody = function(doc, req) {
         options: {
             host: host,
             port: port,
-            path: baseURL + getCallbackPath(phone, form, form_data),
             method: "POST",
-            headers: {'Content-Type': 'application/json; charset=utf-8'}},
-        data: getCallbackBody(phone, doc, form_data)};
+            headers: {'Content-Type': 'application/json; charset=utf-8'}
+        }
+    };
+
+    var form_data = smsparser.parse(def, doc);
+    resp.callback.options.path = baseURL + getCallbackPath(phone, form, form_data);
+    resp.callback.data = getCallbackBody(phone, doc, form_data);
 
     if(resp.callback.data.errors.length > 0) {
         resp.payload.messages[0].message = _.map(resp.callback.data.errors, function(err) {

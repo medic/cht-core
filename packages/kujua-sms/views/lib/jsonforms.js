@@ -28,7 +28,7 @@ exports['TEST'] = {
                  tiny: 'RPM'
              },
              type: 'integer',
-             validate: {is_numeric_month: true},
+             validations: {is_numeric_month: true},
              list: [
                 [ 1, { "en": "January" } ],
                 [ 2, { "en": "February" } ],

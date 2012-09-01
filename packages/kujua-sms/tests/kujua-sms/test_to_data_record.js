@@ -155,11 +155,11 @@ exports.test_to_record = function (test) {
 
 /*
  * STEP 2:
- * 
+ *
  * Run data_record/add/clinic and expect a response to contain facility error.
  */
 var facility_missing_error = function(test, req) {
-    
+
     var clinic = example.clinic;
 
     var viewdata = {rows: []};
@@ -169,7 +169,7 @@ var facility_missing_error = function(test, req) {
     var resp_body = JSON.parse(resp.body);
 
     test.same(
-        resp_body.callback.data.errors, 
+        resp_body.callback.data.errors,
         [{"code":"facility_not_found","message":"Facility not found."}]
     );
 
