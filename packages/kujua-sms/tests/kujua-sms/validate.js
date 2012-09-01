@@ -114,3 +114,31 @@ exports.form_data_with_labels = function(test) {
 
     test.done();
 };
+
+/*
+ * Support custom validation function.
+ */
+exports.custom_validations_function = function(test) {
+    test.expect(1);
+    var def = {
+        meta: {
+            code: "FOO"
+        },
+        fields: {
+            foo: {
+                _key: "foo",
+                required: true
+            }
+        },
+        validations: {
+            check1: "function() { " +
+                    "   if (form_data['foo'] !== '3') { return 'Arg.' } " +
+                    "}"
+        }
+    };
+    var data = { foo: 2 },
+        errors = validate.validate(def, data);
+
+    test.same(errors[0], {code:"form_invalid", form:"FOO", message:"Arg."});
+    test.done();
+};
