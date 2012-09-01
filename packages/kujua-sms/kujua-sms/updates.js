@@ -45,6 +45,7 @@ var getCallbackBody = function(phone, doc, form_data) {
         form: form,
         related_entities: {clinic: null},
         errors: [],
+        responses: [],
         tasks: [],
         reported_date: new Date().getTime(),
         // keep message datat part of record
@@ -207,11 +208,15 @@ var getRespBody = function(doc, req) {
     resp.callback.options.path = baseURL + getCallbackPath(phone, form, form_data);
     resp.callback.data = getCallbackBody(phone, doc, form_data);
 
+    // process errors and create payload object for SMSSync replies
     if(resp.callback.data.errors.length > 0) {
         resp.payload.messages[0].message = _.map(resp.callback.data.errors, function(err) {
             return utils.getMessage(err, doc.locale);
         }).join(', ');
     }
+
+    // save responses to record
+    resp.callback.data.responses = resp.payload.messages;
 
     // pass through Authorization header
     if(req.headers.Authorization) {

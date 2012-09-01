@@ -99,9 +99,6 @@
             <tr>
               <td colspan="8">
                 <div class="relative">
-                  <a title="Close" data-dismiss="extended" class="pull-right close">
-                    <i class="icon-remove"></i>
-                  </a>
                   <div class="scroll">
                     {>"data_record_fields.html":fields/}
                   </div>
@@ -115,6 +112,19 @@
                     {>"data_record_errors.html"/}
                   </div>
                   {/errors}
+                  {?responses}
+                  <div class="data-record-responses">
+                    {>"data_record_responses.html"/}
+                  </div>
+                  {/responses}
+                  {?_raw}
+                  <div class="data-record-raw">
+                    <a title="JSON" data-toggle="extended" class="pull-right">
+                      <i class="icon-plus"></i>
+                    </a>
+                    <div class="extended hide"><pre>{_raw}</pre></div>
+                  </div>
+                  {/_raw}
                 </div>
               </td>
             </tr>
