@@ -15,10 +15,10 @@ exports.lists_data_record_csv = function(test) {
         +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
         +'","Recommandations/Conseils","Précisions pour recommandations"'
         +',"Nom de l\'agent de santé"\n'
-        +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss')
+        +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')
         +'","+12229990000","Paul","Clinic 1","Eric","Health Center 1"'
         +',"2012","1","16","","","","","","","","",""\n'
-        +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss')
+        +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')
         +'","+13331110000","Sam","Clinic 2","","","2012","1","16","","","",""'
         +',"","","","",""\n';
 
@@ -96,10 +96,10 @@ exports.lists_data_record_csv_fr = function(test) {
         +';"Nom de la mère ou de l\'accompagnant";"Patient traité pour"'
         +';"Recommandations/Conseils";"Précisions pour recommandations"'
         +';"Nom de l\'agent de santé"\n'
-        +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss')+'"'
+        +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +';"+12229990000";"Paul";"Clinic 1";"Eric";"Health Center 1"'
         +';"2012";"1";"16";"";"";"";"";"";"";"";"";""\n'
-        +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss')+'"'
+        +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +';"+13331110000";"Sam";"Clinic 2";"";"";"2012";"1";"16";"";"";"";""'
         +';"";"";"";"";""\n';
 
