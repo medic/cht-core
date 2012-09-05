@@ -56,6 +56,12 @@ var expected_callback = {
         sms_message: example.sms_message,
         from: "+13125551212",
         errors: [],
+        responses: [
+            {
+                to: "+13125551212",
+                message: "Data received, thank you."
+            }
+        ],
         tasks: [],
         ref_year: "2012",
         ref_month: "1",

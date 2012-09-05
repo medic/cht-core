@@ -71,6 +71,12 @@ var expected_callback = {
         sms_message: example.sms_message,
         from: "+13125551212",
         errors: [],
+        responses: [
+          {
+            to: "+13125551212",
+            message: "Zikomo!"
+          }
+        ],
         tasks: [],
         days_stocked_out: example.days_stocked_out,
         quantity_dispensed: example.quantity_dispensed,

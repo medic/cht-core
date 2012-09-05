@@ -9,7 +9,6 @@ var updates = require('kujua-sms/updates'),
     helpers = require('../../test-helpers/helpers'),
     _ = require('underscore')._;
 
-    
 var example = {
     sms_message: {
        from: "+13125551212",
@@ -57,6 +56,12 @@ var expected_callback = {
         from: "+13125551212",
         refid: "abcdef",
         errors: [],
+        responses: [
+            {
+                to: "+13125551212",
+                message: "Data received, thank you."
+            }
+        ],
         tasks: [],
         ref_year: "2012",
         ref_month: "1",
