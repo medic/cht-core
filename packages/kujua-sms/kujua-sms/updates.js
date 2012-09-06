@@ -3,38 +3,15 @@
  */
 
 var _ = require('underscore')._,
-    logger = require('./utils').logger,
-    smsforms = require('views/lib/smsforms'),
-    smsparser = require('views/lib/smsparser');
+    logger = require('kujua-utils').logger,
+    jsonforms = require('views/lib/jsonforms'),
+    smsparser = require('views/lib/smsparser'),
+    validate = require('./validate'),
+    utils = require('./utils');
 
 
 /**
- * Merge fields from the smsforms definition with
- * the form data received through the SMS into
- * a data record.
- *
- * @param {Array}  key          - key of the field separated by '.'
- * @param {Object} data_record  - record into which the data is merged
- * @param {Object} form_data    - data from the SMS
- *                                to be merged into the data record
- * @api private
- */
-var merge = function(key, data_record, form_data) {
-    if(key.length > 1) {
-        var tmp = key.shift();
-        if(form_data[tmp]) {
-            if(!data_record[tmp]) {
-                data_record[tmp] = {};
-            }
-            merge(key, data_record[tmp], form_data[tmp]);
-        }
-    } else {
-        data_record[key[0]] = form_data[key[0]][0];
-    }
-};
-
-/**
- * @param {String} form - smsforms key string
+ * @param {String} form - jsonforms key string
  * @param {Object} form_data - parsed form data
  * @returns {String} - Referral ID value
  * @api private
@@ -42,28 +19,25 @@ var merge = function(key, data_record, form_data) {
 var getRefID = function(form, form_data) {
     switch(form) {
         case 'MSBC':
-            return form_data.cref_rc[0];
+            return form_data.cref_rc;
         case 'MSBB':
-            return form_data.ref_rc[0];
+            return form_data.ref_rc;
         case 'MSBR':
-            return form_data.ref_rc[0];
+            return form_data.ref_rc;
     }
 };
 
 /**
  * @param {String} phone - phone number of the sending phone (from)
- * @param {String} form - smsforms key string
+ * @param {Object} doc - sms_message doc created from initial POST
  * @param {Object} form_data - parsed form data
  * @returns {Object} - body for callback
  * @api private
  */
-var getCallbackBody = function(phone, form, form_data) {
-    //logger.debug(['getCallbackBody arguments', arguments]);
-
-    var type = 'data_record';
-    if(smsforms[form].data_record_type) {
-        type += '_' + smsforms[form].data_record_type;
-    }
+var getCallbackBody = function(phone, doc, form_data) {
+    var type = 'data_record',
+        form = doc.form,
+        def = jsonforms[form];
 
     var body = {
         type: type,
@@ -71,31 +45,49 @@ var getCallbackBody = function(phone, form, form_data) {
         form: form,
         related_entities: {clinic: null},
         errors: [],
+        responses: [],
         tasks: [],
-        reported_date: new Date().getTime()
+        reported_date: new Date().getTime(),
+        // keep message datat part of record
+        sms_message: doc
     };
 
-    if (smsforms.isReferralForm(form)) {
+    // try to parse timestamp from gateway
+    var ts = parseSentTimestamp(doc.sent_timestamp);
+    if (ts) {
+        body.reported_date = ts;
+    }
+
+    if(utils.isReferralForm(form)) {
         body.refid = getRefID(form, form_data);
     }
 
-    _.each(smsforms[form].fields, function(field) {
-        merge(field.key.split('.'), body, form_data);
-    });
+    for (var k in def.fields) {
+        var field = def.fields[k];
+        smsparser.merge(form, k.split('.'), body, form_data);
+    }
+
+    var errors = validate.validate(def, form_data);
+
+    if(errors.length > 0) {
+        body.errors = errors;
+    }
+
+    if(form_data._extra_fields) {
+        body.errors.push({code: "extra_fields"});
+    }
 
     return body;
 };
 
 /**
  * @param {String} phone - phone number of the sending phone (from)
- * @param {String} form - smsforms key string
+ * @param {String} form - jsonforms key string
  * @param {Object} form_data - parsed form data
  * @returns {String} - Path for callback
  * @api private
  */
 var getCallbackPath = function(phone, form, form_data) {
-    //logger.debug(['updates.getCallbackPath arguments', arguments]);
-
     var path = '';
 
     switch(form) {
@@ -107,6 +99,13 @@ var getCallbackPath = function(phone, form, form_data) {
             break;
         case 'MSBB':
             path = '/%1/data_record/add/health_center/%2'
+                      .replace('%1', encodeURIComponent(form))
+                      .replace('%2', encodeURIComponent(phone));
+            break;
+        case 'VPD':
+        case 'NYAA':
+        case 'NYAB':
+            path = '/%1/data_record/add/facility/%2'
                       .replace('%1', encodeURIComponent(form))
                       .replace('%2', encodeURIComponent(phone));
             break;
@@ -128,14 +127,22 @@ var getCallbackPath = function(phone, form, form_data) {
  */
 var parseSentTimestamp = function(str) {
     if(!str) { return; }
-    var match = str.match(/(\d{2})-(\d{2}|\d{1})-(\d{2})\s(\d{2}):(\d{2})/);
+    var match = str.match(/(\d{1,2})-(\d{1,2})-(\d{2})\s(\d{1,2}):(\d{2})(:(\d{2}))?/),
+        ret,
+        year;
     if (match) {
-        var ret = new Date();
+        ret = new Date();
+
+        year = ret.getFullYear();
+        year -= year % 100; // round to nearest 100
+        ret.setYear(year + parseInt(match[3], 10)); // works until 2100
+
         ret.setMonth(parseInt(match[1],10) - 1);
-        ret.setYear('20'+match[3]); //HACK for two-digit year
-        ret.setDate(match[2]);
-        ret.setHours(match[4]);
+        ret.setDate(parseInt(match[2], 10));
+        ret.setHours(parseInt(match[4], 10));
         ret.setMinutes(match[5]);
+        ret.setSeconds(match[7] || 0);
+        ret.setMilliseconds(0);
         return ret.getTime();
     }
 };
@@ -146,17 +153,14 @@ var parseSentTimestamp = function(str) {
  * 1st phase of tasks_referral doc.
  */
 var getRespBody = function(doc, req) {
-
-    logger.debug(['Request', req]);
     var form = doc.form,
-        def = smsforms[form],
-        form_data = smsparser.parse(form, def, doc, 1),
+        def = jsonforms[form],
         baseURL = require('duality/core').getBaseURL(),
         headers = req.headers.Host.split(":"),
         host = headers[0],
         port = headers[1] || "",
         phone = doc.from, // set by gateway
-        autoreply = smsforms.getResponse('success'),
+        autoreply = utils.getMessage('success', doc.locale),
         errormsg = '',
         resp = {
             //smssync gateway response format
@@ -168,16 +172,20 @@ var getRespBody = function(doc, req) {
                     message: autoreply}]}};
 
     if (!doc.message || !doc.message.trim()) {
-        errormsg = smsforms.getResponse('error', doc.locale);
+        errormsg = utils.getMessage('error', doc.locale);
     } else if (!form || !def) {
-        errormsg = smsforms.getResponse('form_not_found', doc.locale)
-                  .replace('%(form)', form || 'NULL');
+        if (form === undefined) {
+            errormsg = utils.getMessage(
+                        {code:'form_not_found', form: 'undefined'}, doc.locale);
+        } else {
+            errormsg = utils.getMessage(
+                        {code:'form_not_found', form: form}, doc.locale);
+        }
     }
 
     if (errormsg) {
         // TODO integrate with kujua notifications?
         resp.payload.messages[0].message = errormsg;
-        logger.debug(['Response', resp]);
         logger.error({'error':errormsg, 'doc':doc});
         return JSON.stringify(resp);
     }
@@ -191,26 +199,29 @@ var getRespBody = function(doc, req) {
         options: {
             host: host,
             port: port,
-            path: baseURL + getCallbackPath(phone, form, form_data),
             method: "POST",
-            headers: {'Content-Type': 'application/json; charset=utf-8'}},
-        data: getCallbackBody(phone, form, form_data)};
+            headers: {'Content-Type': 'application/json; charset=utf-8'}
+        }
+    };
+
+    var form_data = smsparser.parse(def, doc);
+    resp.callback.options.path = baseURL + getCallbackPath(phone, form, form_data);
+    resp.callback.data = getCallbackBody(phone, doc, form_data);
+
+    // process errors and create payload object for SMSSync replies
+    if(resp.callback.data.errors.length > 0) {
+        resp.payload.messages[0].message = _.map(resp.callback.data.errors, function(err) {
+            return utils.getMessage(err, doc.locale);
+        }).join(', ');
+    }
+
+    // save responses to record
+    resp.callback.data.responses = resp.payload.messages;
 
     // pass through Authorization header
     if(req.headers.Authorization) {
         resp.callback.options.headers.Authorization = req.headers.Authorization;
     }
-
-    // keep sms_message part of record
-    resp.callback.data.sms_message = doc;
-
-    // try to parse timestamp from gateway
-    var ts = parseSentTimestamp(doc.sent_timestamp);
-    if (ts) {
-        resp.callback.data.reported_date = ts;
-    }
-
-    logger.debug(['Response', resp]);
 
     return JSON.stringify(resp);
 };
@@ -223,7 +234,7 @@ exports.getRespBody = getRespBody;
 exports.add_sms = function (doc, req) {
     return [null, getRespBody(_.extend(req.form, {
         type: "sms_message",
-        locale: req.query.locale || 'en',
+        locale: (req.query && req.query.locale) || 'en',
         form: smsparser.getForm(req.form.message)
     }), req)];
 };

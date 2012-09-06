@@ -1,0 +1,104 @@
+{#doc}
+  <div id="totals">
+    <div class="row">
+        <div class="span2 col1">
+          <h4>0</h4>
+          <h3>Districts</h3>
+        </div>
+        <div class="span2 col2">
+          <h4>0</em></h4>
+          <h3>Reporting Units</h3>
+        </div>
+        <div class="span3 chart col3"></div>
+        <div class="span2 col4">
+          <h4>0</h4>
+          <h3>Reports Pending</h3> 
+        </div>
+        <div class="span2 last col5">
+          <h4>0</h4>
+          <h3>Incomplete Reports</h3> 
+        </div>
+    </div>
+  </div>
+  <div id="date-nav">
+    <div class="row">
+      {>"kujua-reporting/date_nav.html"/}
+    </div>
+  </div>
+  <div id="stats">
+    <div class="row">
+      <div class="span12">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th class="first-column">District</th>
+                <th>Reports</th>
+                <th>Reporting Rate</th>
+              </tr>
+            </thead>
+            <tbody id="reporting-data">
+              <tr><td colspan="4">Loading...</td></tr>
+            </tbody>
+          </table>
+      </div>
+    </div>
+  </div>
+  <div class="hide">
+    <div id="popup-base">
+      </div>
+      <div id="popup-incomplete">
+        <span class="iconic x-frag">
+        </span>
+        <span class="incomplete">
+            <span class="percent">
+                0%
+            </span>
+            <span class="count">
+                0
+            </span>
+            Reports
+            <span class="highlight">
+                Incomplete
+            </span>
+        </span>
+     </span>
+      </div>
+      <div id="popup-not_submitted">
+        <span class="iconic x-alt">
+        </span>
+        <span class="not_submitted">
+            <span class="percent">
+                0%
+            </span>
+            <span class="count">
+                0
+            </span>
+            Reports
+            <span class="highlight">
+               Not Submitted 
+            </span>
+        </span>
+      </div>
+      <div id="popup-complete">
+        <span class="iconic check-alt">
+        </span>
+        <span class="complete">
+            <span class="percent">
+                0%
+            </span>
+            <span class="count">
+                0
+            </span>
+            Reports
+            <span class="highlight">
+                Complete
+            </span>
+        </span>
+      </div>
+  </div>
+  <div id="umenu" class="umenu siblings"></div>
+
+
+  {>"kujua-reporting/page_footer.html"/}
+
+{/doc}

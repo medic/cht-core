@@ -16,3 +16,14 @@ exports.headers = function(type, data) {
         "Host": window.location.host
     };
 };
+
+exports.nextRequest = function(resp_body, form) {
+    return {
+        method: resp_body.callback.options.method,
+        body: JSON.stringify(resp_body.callback.data),
+        path: resp_body.callback.options.path,
+        headers: exports.headers(
+                    'json', JSON.stringify(resp_body.callback.data)),
+        query: {form: form} // query.form gets set by rewriter
+    };
+};

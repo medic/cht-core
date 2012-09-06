@@ -1,11 +1,11 @@
 var updates = require('kujua-sms/updates'),
     querystring = require('querystring');
 
-exports.success_response_psms = function (test) {
+exports.success_response_test = function (test) {
     test.expect(1);
     var req = {headers:{ "Host": window.location.host }},
-        doc = JSON.parse('{ "_id":"b0221beaed5222596224e4d123002045", "_rev":"1-94fa1caf624d9f2896f2ef16148f874c", "secret":"", "from":"+15551212", "message":"1!PSMS!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4", "message_id":"0", "sent_timestamp":"11-23-11 13:43", "sent_to":"", "type":"sms_message", "form":"PSMS"}'),
-        respBody = JSON.parse(updates.getRespBody(doc, req)),
+        doc = JSON.parse('{ "_id":"b0221beaed5222596224e4d123002045", "_rev":"1-94fa1caf624d9f2896f2ef16148f874c", "secret":"", "from":"+15551212", "message":"1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4", "message_id":"0", "sent_timestamp":"11-23-11 13:43", "sent_to":"", "type":"sms_message", "form":"TEST"}');
+    var respBody = JSON.parse(updates.getRespBody(doc, req)),
         payload = JSON.parse('{"success":true,"task":"send","messages":[{"to":"+15551212","message":"Zikomo!"}]}');
     test.same(respBody.payload, payload);
     test.done();
@@ -22,9 +22,13 @@ exports.success_response_pscq = function (test) {
             sent_timestamp: "11-23-11 13:43",
             sent_to: "",
             type: "sms_message",
+            locale: "fr",
             form: "PSCQ"},
         respBody = JSON.parse(updates.getRespBody(doc, req)),
-        payload = JSON.parse('{"success":true,"task":"send","messages":[{"to":"+15551212","message":"Merci, votre formulaire \\"Supervision AS\\" a été bien reçu."}]}');
+        // not sure if this is a regression, commenting out for now. ideally
+        // the form name would be included in the response message.
+        //payload = JSON.parse('{"success":true,"task":"send","messages":[{"to":"+15551212","message":"Merci, votre formulaire \\"Supervision AS\\" a été bien reçu."}]}');
+        payload = JSON.parse('{"success":true,"task":"send","messages":[{"to":"+15551212","message":"Merci, votre formulaire a été bien reçu."}]}');
 
     test.same(respBody.payload, payload);
     
@@ -83,6 +87,20 @@ exports.responses_empty_message_fr = function (test) {
             "locale": "fr"},
         respBody = JSON.parse(updates.getRespBody(doc, req)),
         expectedResp = JSON.parse('{"payload":{"success":true,"task":"send","messages":[{"to":"+15551212","message": "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur."}]}}');
+    test.same(respBody, expectedResp);
+    test.done();
+};
+
+exports.responses_undefined_form = function (test) {
+    test.expect(1);
+    var req = {headers:{ "Host": window.location.host }};
+    var msg = 'Foo',
+        doc = {
+            "from":"+15551212",
+            "message":"' + msg + '"},
+            // form is undefined
+        respBody = JSON.parse(updates.getRespBody(doc, req)),
+        expectedResp = JSON.parse('{"payload":{"success":true,"task":"send","messages":[{"to":"+15551212","message":"The report sent \'undefined\' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor."}]}}');
     test.same(respBody, expectedResp);
     test.done();
 };

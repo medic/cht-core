@@ -3,30 +3,59 @@
  */
 
 var jsDump = require('jsDump'),
+    utils = require('kujua-utils'),
     settings = require('settings/root'),
-    smsforms = require('views/lib/smsforms'),
+    jsonforms = require('views/lib/jsonforms'),
     _ = require('underscore')._;
+
+
+/*
+ * return String - Try to return appropriate locale translation for a string,
+ *                 english by default. Support array keys, just concatenate.
+ */
+var _s = function(key, locale) {
+    var key = _.isArray(key) ? arrayToStringNotation(key) : key;
+    if (exports.strings[key]) {
+        return utils.localizedString(exports.strings[key], [locale]);
+    }
+};
 
 exports.strings = {
     reported_date: {
         en: 'Reported Date',
         fr: 'Date envoyé'
     },
+    "related_entities.clinic.name": {
+        en: "Clinic Name",
+        fr: "Villages"
+    },
     "related_entities.clinic.contact.name": {
-        en: "Name",
-        fr: "Nom et Prénoms"
+        en: "Clinic Contact Name",
+        fr: "Personne-ressource Clinique"
     },
     "related_entities.clinic.parent.name": {
-        en: "Health Center",
-        fr: "Arrondissement"
+        en: "Health Center Name",
+        fr: "Nom du centre de santé"
+    },
+    "related_entities.clinic.parent.contact.name": {
+        en: "Health Center Contact Name",
+        fr: "Nom de la santé Contact Center"
     },
     "related_entities.clinic.parent.parent.name": {
-        en: "District",
-        fr: "District"
+        en: "District Hospital Name",
+        fr: "Nom de l'hôpital de district"
     },
-    "related_entities.clinic.name": {
-        en: "Clinic",
-        fr: "Villages"
+    "related_entities.health_center.name": {
+        en: "Health Center Name",
+        fr: "Nom du centre de santé"
+    },
+    "related_entities.health_center.contact.name": {
+        en: "Health Center Contact Name",
+        fr: "Nom de la santé Contact Center"
+    },
+    "related_entities.health_center.parent.name": {
+        en: "District Hospital Name",
+        fr: "Nom de l'hôpital de district"
     },
     from: {
         en: 'From',
@@ -35,34 +64,273 @@ exports.strings = {
     sent_timestamp: {
         en: 'Sent Timestamp',
         fr: 'Date envoyé'
+    },
+    daysoverdue: {
+        en: 'Days since patient visit'
     }
 };
 
-var logger = exports.logger = {
-    levels: {silent:0, error:1, info:2, debug:3},
-    log: function(obj) {
-        if (typeof log !== 'undefined')
-            log(jsDump.parse(obj));
-        if (typeof console !== 'undefined')
-            console.log(obj);
-    },
-    silent: function (obj) {},
-    error: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['error']) {
-            this.log(obj);
+var arrayToStringNotation = function(arr) {
+    var str = _.flatten(arr).join('.');
+    return str;
+};
+
+var arrayDepth = function(arr) {
+    var depth = 0;
+
+    _.each(arr, function(a) {
+        if (_.isArray(a)) {
+            depth++;
+            depth = arrayDepth(a) + depth;
         }
-    },
-    info: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['info']) {
-            this.log(obj);
-        }
-    },
-    debug: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['debug']) {
-            this.log(obj);
+    });
+
+    return depth;
+};
+
+/*
+ * Fetch labels from base strings or jsonform objects, maintaining order in
+ * the returned array.
+ *
+ * @param Array keys - keys we want to resolve labels for
+ * @param String form - form code string
+ * @param String locale - locale string, e.g. 'en', 'fr', 'en-gb'
+ *
+ * @return Array  - form field labels based on jsonforms definition.
+ *
+ * @api private
+ */
+exports.getLabels = function(keys, form, locale) {
+    var def = jsonforms[form],
+        labels = [],
+        form_labels = {};
+
+    if (def) {
+        _.map(def.fields, function (f, key) {
+            var label = exports.getLabel(f.labels);
+            // use the key as label as last resort
+            form_labels[key] = utils.localizedString(label, locale) || key;
+        });
+    }
+
+    var labelsForKeys = function(keys, appendTo) {
+        for (var i in keys) {
+            var _key = keys[i];
+
+            if(_.isArray(_key) && arrayDepth(_key) === 1) {
+                labelsForKeys(_key[1], _key[0] + '.');
+                continue;
+            } else if(_.isArray(_key) && arrayDepth(_key) > 1) {
+                var key = arrayToStringNotation(_key);
+                if (form_labels[key]) {
+                    labels.push(form_labels[key]);
+                } else {
+                    labels.push(_s(key, locale));
+                }
+            } else {
+                var key = (appendTo || '') + _key;
+
+                if (form_labels[key]) {
+                    labels.push(form_labels[key]);
+                } else {
+                    labels.push(_s(key, locale));
+                }
+            }
         }
     }
+
+    labelsForKeys(keys);
+
+    return labels;
 };
+
+
+/*
+ * Get an array of values from the doc by the keys from the given keys array.
+ * Supports deep keys, like:
+ *
+ *  ['foo', 'bar', 'baz']
+ *  ['foo', ['bar', ['baz']]]
+ *  ['foo', ['bar', 'baz']]
+ *
+ * @param Object doc - data record document
+ * @param Array keys - keys we want values for
+ *
+ * @return Array  - values from doc in the same order as keys, return null if
+ * the key cannot be resolved.
+ */
+var getValues = exports.getValues = function(doc, keys) {
+    var ret = [];
+    if (!_.isObject(doc)) return ret;
+    if (keys === undefined) return ret;
+    if (!_.isArray(keys)) {
+        doc[keys] !== undefined ? ret.push(doc[keys]) : ret.push(null);
+    }
+    if (_.isArray(keys)) {
+        for (var i in keys) {
+            var key = keys[i];
+            if (_.isArray(key)) {
+                // key is array so we are look for object on doc matching first
+                // array element and recurse.
+                if (doc[key[0]] === null) {
+                    ret = ret.concat([null]);
+                    continue;
+                } else if (typeof doc[key[0]] === 'object') {
+                    // recurse using sub-object and array wrapped key to signify
+                    // sub-object parsing.
+                    ret = ret.concat(getValues(doc[key[0]], [key[1]]));
+                } else if (doc[key[0]] !== undefined) {
+                    // looks like array points to list of values
+                    ret = ret.concat(getValues(doc, key));
+                    //ret = doc[key[0]] ? ret.concat(doc[key[0]]) : ret.concat(null);
+                } else {
+                    // no sub-object or value match in sub object, continue.
+                    ret = ret.concat([null]);
+                    continue;
+                }
+            } else {
+                // if not array assume normal scalar key and look for match
+                // if key points to object
+                ret = ret.concat(getValues(doc, key));
+            }
+        }
+    }
+
+    return ret;
+};
+
+
+/*
+ * Get an array of keys from the form.
+ * If dot notation is used it will be an array
+ * of arrays.
+ *
+ * @param String form - jsonforms key
+ *
+ * @return Array  - form field keys based on jsonforms definition
+ */
+exports.getFormKeys = function(form) {
+    var keys = {},
+        def = jsonforms[form];
+
+    var getKeys = function(key, hash) {
+        if(key.length > 1) {
+            var tmp = key.shift();
+            if(!hash[tmp]) {
+                hash[tmp] = {};
+            }
+            getKeys(key, hash[tmp]);
+        } else {
+            hash[key[0]] = '';
+        }
+    };
+
+    var hashToArray = function(hash) {
+        var array = [];
+
+        _.each(hash, function(value, key) {
+            if(typeof value === "string") {
+                array.push(key);
+            } else {
+                array.push([key, hashToArray(hash[key])]);
+            }
+        });
+
+        return array;
+    };
+
+    if (def) {
+        for (var k in def.fields) {
+            getKeys(k.split('.'), keys);
+        }
+    }
+
+    return hashToArray(keys);
+};
+
+/**
+ * @param {String} form - jsonforms key string
+ * @returns {Boolean} - Return true if this form is a referral since we need to
+ * do extra work to process a referral form.
+ * @api public
+ */
+exports.isReferralForm = function(form) {
+    return ['MSBR','MSBC','MSBB'].indexOf(form) !== -1;
+};
+
+
+var messages = {
+    missing_fields: {
+        en: "Missing fields: %(fields).",
+        ne: "तपाईले फारम पूरा भर्नुभएन। कृपया पुरा गरेर फेरि पठाउन प्रयास गर्नुहोला।"
+    },
+    extra_fields: {
+        en: "Extra fields.",
+        ne: "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
+    },
+    form_not_found: {
+        en: "The report sent '%(form)' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
+        fr: "Le formulaire envoyé '%(form)' n'est pas reconnu. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur.",
+        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
+    },
+    /* form_invalid is placeholder until we do proper form validation */
+    form_invalid: {
+        en: "The report sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
+        fr: "Le formulaire envoyé '%(form)' n'est pas complet. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur.",
+        ne: "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
+    },
+    facility_not_found: {
+        en: "Facility not found."
+    },
+    recipient_not_found: {
+        en: 'Could not find referral recipient.'
+    },
+    error: {
+        en: "There was a problem with your message, please try to resend. If you continue to have this problem please contact your supervisor.",
+        fr: "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur.",
+        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
+    },
+    success: {
+        en: 'Data received, thank you.',
+        fr: 'Merci, votre formulaire a été bien reçu.',
+        ne: 'डाटा प्राप्त भयो, धन्यवाद'
+    }
+};
+
+/**
+ * @param {String|Object} code - key that maps to messages object, if object
+ *                        is passed in then use 'code' key of that object. This
+ *                        helps support error objects.
+ * @param {String} locale - string that is supported in messages, 'en'.
+ * @returns {String} - localized response message for the key or object
+ * @api public
+ */
+exports.getMessage = function (code, locale) {
+
+    var key = code.code ? code.code : code,
+        msg = utils.localizedString(messages[key], locale);
+
+    if (code.fields && _.isArray(code.fields))
+        return msg.replace('%(fields)', code.fields.join(', '));
+
+    if (code.form && _.isString(code.form))
+        return msg.replace('%(form)', code.form);
+
+    return msg;
+
+};
+
+/**
+ * @param {Object} labels object from JSON forms
+ * @param {String|Array} locales, preferred locale strings
+ * @api public
+ */
+exports.getLabel = function (labels, locales) {
+    if (typeof labels === 'string') { return labels; }
+    // if object use short label by default
+    return labels.short;
+};
+
 
 var entityTable = {
 //  34: "&quot;",       // Quotation mark. Not required
@@ -435,6 +703,7 @@ var arrayToXML = exports.arrayToXML = function(arr, format) {
     var rows = [],
         format = format;
 
+
     for (var r = 0; r < arr.length; r++) {
         var row = arr[r],
             vals = [],
@@ -453,172 +722,4 @@ var arrayToXML = exports.arrayToXML = function(arr, format) {
     return '<Row>' + rows.join('</Row>\n<Row>') + '</Row>';
 };
 
-
-var arrayToStringNotation = function(arr) {
-    var str = _.flatten(arr).join('.');
-    return str;
-};
-
-/*
- * return String - Try to return appropriate locale translation for a string,
- *                 english by default. Support array keys, just concatenate.
- */
-var _s = exports._s = function(key, locale) {
-    var key = _.isArray(key) ? arrayToStringNotation(key) : key;
-    if (exports.strings[key]) {
-        if (exports.strings[key][locale]) {
-            return exports.strings[key][locale];
-        } else if (exports.strings[key]['en']) {
-            return exports.strings[key]['en'];
-        }
-    }
-};
-
-var arrayDepth = function(arr) {
-    var depth = 0;
-    
-    _.each(arr, function(a) {
-        if (_.isArray(a)) {
-            depth++;
-            depth = arrayDepth(a) + depth;
-        }        
-    });
-    
-    return depth;
-};
-
-/*
- * Fetch labels from base strings or smsforms objects, maintaining order in
- * the returned array.
- *
- * @param Array keys - keys we want to resolve labels for
- * @param String form - form code string
- * @param String locale - locale string, e.g. 'en', 'fr', 'en-gb'
- *
- * @return Array  - form field labels based on smsforms definition.
- *
- * @api private
- */
-exports.getLabels = function(keys, form, locale) {
-    var def = smsforms[form],
-        labels = [],
-        form_labels = {};
-
-    if (def) {
-        _.map(def.fields, function (f) {
-            form_labels[f.key] = f.label || f.key;
-        });
-    }
-
-    var labelsForKeys = function(keys, appendTo) {
-        for (var i in keys) {
-            var _key = keys[i];
-
-            if(_.isArray(_key) && arrayDepth(_key) === 1) {
-                labelsForKeys(_key[1], _key[0] + '.');
-                continue;
-            } else if(_.isArray(_key) && arrayDepth(_key) > 1) {
-                var key = arrayToStringNotation(_key);
-                if (form_labels[key]) {
-                    labels.push(form_labels[key]);
-                } else {
-                    labels.push(_s(key, locale));
-                }
-            } else {
-                var key = (appendTo || '') + _key;
-
-                if (form_labels[key]) {
-                    labels.push(form_labels[key]);
-                } else {
-                    labels.push(_s(key, locale));
-                }
-            }
-        }
-    }
-
-    labelsForKeys(keys);
-
-    return labels;
-};
-
-/*
- * Get an array of values from the doc by the keys from the given keys array.
- *
- * @param Object doc - data record document
- * @param Array keys - keys we want to resolve labels for
- *
- * @return Array  - values from doc in the same order as keys
- */
-var getValues = exports.getValues = function(doc, keys) {
-    var values = [],
-        _keys = _.clone(keys);
-
-    _.each(_keys, function(key) {
-        if(_.isArray(key)) {
-            if(typeof doc[key[0]] === 'object') {
-                var d = doc[key[0]];
-                if (_.isArray(key[1])) {
-                    values = values.concat(getValues(d, key[1]));
-                }
-            } else {
-                values.push(doc[key]);
-            }
-        } else if (typeof doc[key] !== 'object') {
-            values.push(doc[key]);
-        } else if (typeof doc[key] === 'object') {
-            _keys.shift();
-            values = values.concat(getValues(doc[key], _keys));
-        }
-    });
-
-    return values;
-};
-
-/*
- * Get an array of keys from the form.
- * If dot notation is used it will be an array
- * of arrays.
- *
- * @param String form - smsforms key
- * 
- * @return Array  - form field keys based on smsforms definition
- */
-exports.getFormKeys = function(form) {
-    var keys = {},
-        def = smsforms[form];
-        
-    var getKeys = function(key, hash) {
-        if(key.length > 1) {
-            var tmp = key.shift();
-            if(!hash[tmp]) {
-                hash[tmp] = {};
-            }
-            getKeys(key, hash[tmp]);
-        } else {
-            hash[key[0]] = '';
-        }            
-    };
-
-    var hashToArray = function(hash) {
-        var array = [];
-        
-        _.each(hash, function(value, key) {
-            if(typeof value === "string") {
-                array.push(key);
-            } else {
-                array.push([key, hashToArray(hash[key])]);
-            }
-        });
-        
-        return array;
-    };
-    
-    if (def) {
-        for (var i in def.fields) {
-            getKeys(def.fields[i].key.split('.'), keys);
-        }
-    }
-    
-    return hashToArray(keys);
-};
 

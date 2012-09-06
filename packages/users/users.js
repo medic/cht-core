@@ -1,12 +1,16 @@
 /**
- * A browser CouchDB library for managing users
+ * ## Users module
+ *
+ * Functions for querying, creating, updating and deleting user documents.
+ *
+ * Functions in this module follow the node.js callback style. The first
+ * argument is an error object (if one occurred), the following arguments are
+ * the results of the operation. The callback is always the last argument to a
+ * function.
  *
  * @module
  */
 
-/**
- * Module dependencies
- */
 
 var db = require('db'),
     sha1 = require('sha1'),
@@ -130,7 +134,7 @@ var createUser = function(username, password, properties, callback) {
     doc._id = 'org.couchdb.user:' + username;
     doc.name = username;
     doc.type = 'user';
-    
+
     _.extend(doc, properties);
 
     db.newUUID(100, function (err, uuid) {
@@ -167,35 +171,32 @@ var createAdmin = function(username, password, callback) {
         processData: false,
         contentType: 'application/json'
     };
-
     db.request(req, callback);
 };
 
 
 /**
- * Sanitize the arguments by allowing to omit the properties and 
+ * Sanitize the arguments by allowing to omit the properties and
  * predefining the roles if they're not set.
  *
- * @name sanitizeArguments(username, password, properties, callback, callback2)
+ * @name sanitizeArguments(username, password, properties, cb, cb2)
  * @param {String} username
  * @param {String} password
  * @param {Hash} properties
- * @param {Function} callback
- * @param {Function} callback2
+ * @param {Function} cb
+ * @param {Function} cb2
  * @api private
  */
 
-var sanitizeArguments = function(username, password, properties, callback, callback2) {
-    if (!callback) {
-        callback = properties;
-        properties = [];
+var sanitizeArguments = function(username, password, properties, cb, cb2) {
+    if (!cb) {
+        cb = properties;
+        properties = {};
     }
-    
     if (!properties.roles) {
         properties.roles = [];
     }
-    
-    callback2(username, password, properties, callback);
+    cb2(username, password, properties, cb);
 };
 
 
@@ -205,9 +206,17 @@ var sanitizeArguments = function(username, password, properties, callback, callb
  * to succeed.
  *
  * @name delete(username, callback)
- * @param {String} username
- * @param {Function} callback
+ * @param {String} username - The username of the user to delete
+ * @param {Function} callback(err,response) - Function called on completion of
+ *     the operation
  * @api public
+ *
+ * ```javascript
+ * users.delete('username', function (err) {
+ *     if (err) // there was an error deleting the user
+ *     else     // success
+ * });
+ * ```
  */
 
 exports.delete = function (username, callback) {
@@ -235,12 +244,21 @@ exports.delete = function (username, callback) {
 
 
 /**
- * Get a single user by username.
+ * Get a single user by username. The third argument to the callback is an info
+ * object which returns the authdb used, and the real id of the user with
+ * "org.couchdb.user:" prefix.
  *
  * @name get(username, callback)
- * @param {String} username
- * @param {Function} callback
+ * @param {String} username - The username of the user to get
+ * @param {Function} callback(err,user,info) - Function called on completion
  * @api public
+ *
+ * ```javascript
+ * users.get('testuser', function (err, doc) {
+ *     if (err) // there was an error fetching the user document
+ *     else     // success
+ * });
+ * ```
  */
 
 exports.get = function(username, callback) {
@@ -263,11 +281,22 @@ exports.get = function(username, callback) {
 
 
 /**
- * Lists users.
+ * List users in the auth database. By default, it will list all users.
+ * By using the optional `q` parameter, you can pass additional options to the
+ * `_all_docs` view for the auth database.
  *
- * @name list(callback)
- * @param {Function} callback
+ * @name list([q], callback)
+ * @param {Object} q - Query parameters (optional)
+ * @param {Function} callback(err,list) - Function called with the resulting
+ *     list (or error)
  * @api public
+ *
+ * ```javascript
+ * users.list(function (err, list) {
+ *     if (err) // there was an error querying the auth database
+ *     else     // success
+ * });
+ * ```
  */
 
 exports.list = function(q, callback) {
@@ -306,21 +335,29 @@ exports.list = function(q, callback) {
 
 /**
  * Creates a new user document with given username and password.
- * If first given role in the properties is _admin, 
- * user will be made admin.
+ * If properties.roles contains '_admin', user will be made admin.
  *
- * @name create(username, password, properties, callback)
- * @param {String} username
- * @param {String} password
- * @param {Hash} properties
- * @param {Function} callback
+ * @name create(username, password, [properties], callback)
+ * @param {String} username - The username of the new user
+ * @param {String} password - The unhashed password for the new user
+ * @param {Object} properties - Additional properties such as roles to extend
+ *     the user document with (optional)
+ * @param {Function} callback(err,response) - Function called on completion or
+ *     error
  * @api public
+ *
+ * ```javascript
+ * users.create('testuser', 'testing', {roles: ['example']}, function (err) {
+ *     if (err) // an error occurred
+ *     else     // successfully created new user
+ * });
+ * ```
  */
 
 exports.create = function (username, password, properties, callback) {
-    sanitizeArguments(username, password, properties, callback, 
+    sanitizeArguments(username, password, properties, callback,
         function(username, password, properties, callback) {
-            if (properties.roles[0] == "_admin") {
+            if (_.indexOf(properties.roles, "_admin") !== -1) {
                 createAdmin(username, password, function (err) {
                     if (err) {
                         return callback(err);
@@ -331,30 +368,39 @@ exports.create = function (username, password, properties, callback) {
             }
             else {
                 createUser(username, password, properties, callback);
-            }        
+            }
     });
 };
 
 
 /**
- * Update the user.
+ * Updates an existing user document. Similar usage to the create function.
  *
  * @name update(username, password, properties, callback)
- * @param {String} username
- * @param {String} password
- * @param {Hash} properties
- * @param {Function} callback
+ * @param {String} username - The username of the new user
+ * @param {String} password - The unhashed password for the new user
+ * @param {Object} properties - Additional properties such as roles to extend
+ *     the user document with (optional)
+ * @param {Function} callback(err,response) - Function called on completion or
+ *     error
  * @api public
+ *
+ * ```javascript
+ * users.update('testuser', 'testing', {roles: ['example']}, function (err) {
+ *     if (err) // an error occurred
+ *     else     // successfully updated user
+ * });
+ * ```
  */
 
 exports.update = function (username, password, properties, callback) {
-    sanitizeArguments(username, password, properties, callback, 
-        function(username, password, properties, callback) {    
+    sanitizeArguments(username, password, properties, callback,
+        function(username, password, properties, callback) {
             exports.get(username, function (err, user, options) {
                 if (err) {
                     return callback(err);
                 }
-                if (properties.roles[0] != "_admin") {
+                if (_.indexOf(properties.roles, "_admin") === -1) {
                     _.extend(user, properties);
                 }
                 if (password) {
@@ -362,9 +408,9 @@ exports.update = function (username, password, properties, callback) {
                 }
 
                 saveUser(options.authdb, user, function (err, user) {
-                    if (properties.roles[0] == "_admin") {
+                    if (_.indexOf(properties.roles, "_admin") !== -1) {
                         createAdmin(username, password, function () {
-                            callback();
+                            callback(null, user);
                         });
                     }
                     else {
@@ -373,7 +419,7 @@ exports.update = function (username, password, properties, callback) {
                                 if (err.status !== 404) {
                                     return callback(err);
                                 }
-                                return callback();
+                                return callback(null, user);
                             }
                             else {
                                 deleteAdmin(username, callback);

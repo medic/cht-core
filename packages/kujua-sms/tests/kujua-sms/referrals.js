@@ -27,10 +27,6 @@ exports.get_recip_phone = function(test) {
     test.done();
 };
 
-// todo exercise the list that checks for pending tasks
-//exports.tasks_pending = function(test) {
-//};
-
 exports.get_recip_phone_no_recipients = function(test) {
 
     // empty parents

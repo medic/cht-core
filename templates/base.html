@@ -1,43 +1,28 @@
-<!doctype html> 
-<html lang="en-us"> 
-  <head> 
+<!doctype html>
+<html lang="en-us">
+  <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title> 
+    <title>{title}</title>
     <link rel="stylesheet" type="text/css" href="{baseURL}/static/css/app.css" />
     <link rel="stylesheet" type="text/css" href="{baseURL}/static/css/spreadsheet.css" />
   </head>
-  <body> 
+  <body>
     <div id="topnav" class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <span class="brand"><a href="{baseURL}/" class="kujua">Kujua</a> Export <span class="version">{settings.version}</span></span>
+          <span class="brand"><a href="{baseURL}/" class="kujua">Kujua</a> <span class="version">{settings.version}</span></span>
           <ul class="nav pull-right">
-            <li class="home"><a href="{baseURL}/"><i class="icon-download-alt"></i> Download</a></li>
+            <li class="sms-forms-data"><a href="{baseURL}/"><i class="icon-download-alt"></i> Export</a></li>
             <li class="records">
               <a href="{baseURL}/data_records">
                 <i class="icon-list"></i> Records</a>
             </li>
-            <!--li class="facilities">
+            <li class="facilities">
               <a href="{baseURL}/facilities">
                 <i class="icon-home"></i> Facilities</a>
-            </li //hiding until ready -->
+            </li>
             <li class="docs"><a href="{baseURL}/docs/"><i class="icon-book"></i> Docs</a></li>
-            <!--li class="admin dropdown">
-              <a class="dropdown-toggle">
-                <i class="icon-cogs"></i> Admin <b class="icon-chevron-down"></b>
-              </a>
-              <ul class="dropdown-menu">
-                <li><a href="{baseURL}/test">Run Tests</a></li>
-                <li class="dropdown">
-                  <a class="dropdown-toggle">Locale <b class="icon-chevron-down"></b></a>
-                    <ul class="dropdown-menu">
-                      <li><a href="{baseURL}/?locale=en">English</a></li>
-                      <li><a href="{baseURL}/?locale=fr">French</a></li> 
-                    </ul>
-                </li>
-              </ul>
-            </li-->
           </ul>
         </div>
       </div>
@@ -46,23 +31,6 @@
       <div class="container">
         <h1 class="pull-left">&nbsp;</h1>
         <div class="controls hide">
-          <button class="btn edit-mode pull-right">
-            <i class="icon-edit icon-large"></i> Edit</button>
-          <!--div class="btn-group pull-right">
-            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-              Limit <span class="caret"></span></a>
-            <ul class="dropdown-menu limits">
-              <li><a href="?limit=11&amp;perPage=10">10</a></li>
-              <li><a href="?limit=26&amp;perPage=25">25</a></li>
-              <li><a href="?limit=51&amp;perPage=50">50</a></li>
-            </ul>
-          </div//-->
-          <div id="district-filter" class="btn-group pull-right hide" style="margin-right: 10px">
-            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-              District <span class="caret"></span></a>
-            <ul class="dropdown-menu district-hospitals">
-            </ul>            
-          </div>
         </div>
       </div>
     </div>
@@ -76,13 +44,19 @@
         <p>&copy; <span id="year"></span> Medic Mobile</p>
       </div>
     </div>
-    <script src="{baseURL}/static/js/jquery-1.7.min.js"></script>
-    <script src="{baseURL}/static/js/json2.js"></script>
-    <script src="{baseURL}/bootstrap/js/bootstrap-modal.js"></script>
-    <script src="{baseURL}/bootstrap/js/bootstrap-typeahead.js"></script>
-    <script src="{baseURL}/static/js/underscore.js"></script>
-    <script src="{baseURL}/static/js/jquery.spreadsheet.js"></script>
-    <script src="{baseURL}/modules.js"></script>
-    <script src="{baseURL}/duality.js"></script>
+    <script src="{baseURL}/static/js/jquery-1.7.min.js" type="text/javascript"></script>
+    <script src="{baseURL}/static/js/json2.js" type="text/javascript"></script>
+    <script src="{baseURL}/bootstrap/js/bootstrap-modal.js" type="text/javascript"></script>
+    <script src="{baseURL}/bootstrap/js/bootstrap-typeahead.js" type="text/javascript"></script>
+    <script src="{baseURL}/bootstrap/js/bootstrap-tooltip.js" type="text/javascript"></script>
+    <script src="{baseURL}/bootstrap/js/bootstrap-dropdown.js" type="text/javascript"></script>
+    <script src="{baseURL}/bootstrap/js/bootstrap-datepicker.js" type="text/javascript"></script>
+    <script src="{baseURL}/static/js/underscore.js" type="text/javascript"></script>
+    <script src="{baseURL}/static/js/jquery.spreadsheet.js" type="text/javascript"></script>
+    <script src="{baseURL}/config.js" type="text/javascript"></script>
+    <script src="{baseURL}/modules.js" type="text/javascript"></script>
+    <script src="{baseURL}/duality.js" type="text/javascript"></script>
+    <script src="{baseURL}/static/js/backbone.js" type="text/javascript"></script>
+    <script src="{baseURL}/static/js/kujua.js" type="text/javascript"></script>
   </body>
 </html>

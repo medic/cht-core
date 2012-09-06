@@ -2,10 +2,11 @@
     "name": "kujua-utils",
     "version": "0.0.1",
     "description": "Utility functions for Kujua.",
-    "modules": "kujua-utils.js",
+    "modules": ["kujua-utils.js", "tests"],
     "dependencies": {
         "modules": null,
         "properties": null,
-        "underscore": null
+        "underscore": null,
+        "db": null
     }
 }

@@ -1,0 +1,140 @@
+@import "elements.less";
+
+// prevents selection
+.no-select () {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+table.spreadsheet {
+  /*border-collapse: collapse;*/
+  border-spacing: 0;
+  border-bottom: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  background: white;
+  width: 100%;
+  overflow: auto;
+
+  th, td {
+    .no-select;
+    border-top: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+    margin: 0;
+    font-size: 14px;
+    font-family: sans-serif;
+    padding: 3px 6px;
+    cursor: default;
+  }
+
+  th {
+    text-align: left;
+    background: #eee;
+  }
+
+  td {
+    color: #333;
+    height: 25px;
+    a {
+      color: #333;
+      &:hover {
+        text-decoration: none;
+        cursor: default;
+      }
+    }
+  }
+
+  tr.saving td {
+    background: #ccc;
+  }
+  .error {
+    background: #fcc;
+  }
+}
+input.edit-inline {
+    color: #333;
+    display: block;
+    border: 2px solid blue;
+    padding: 0 4px;
+    margin: 0;
+    font-size: 14px;
+    font-family: sans-serif;
+    outline: none;
+    .drop-shadow(2px, 2px, 5px, 0.3);
+    z-index: 1030;
+    &.invalid-value {
+      border-color: #b94a49;
+      &:before {
+        font-family: 'FontAwesome';
+        color: lighten(#b94a48, 10%);
+        font-size: 18px;
+        line-height: 29px;
+        content: '\f06a';
+        float: right;
+      }
+    }
+}
+#spreadsheet_select {
+    z-index: 1020;
+    border: 2px solid blue;
+    cursor: default;
+    .no-select;
+}
+#spreadsheet_clipboard {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+}
+
+.spreadsheet-actions {
+    position: relative;
+}
+
+.row-counter {
+    position: absolute;
+    right: 2px;
+    top: 5px;
+    color: #999;
+}
+
+.spreadsheet {
+  td {
+    &.handle {
+      background: #eee;
+    }
+    &.active {
+      background: #ccc;
+    }
+    &.range {
+      background: #eef;
+    }
+  }
+  th {
+    &.handle {
+      width: 32px;
+      padding: 0;
+      .control {
+        visibility: hidden;
+        padding: 6px 6px;
+        margin: -3px 32px -3px -36px;
+        .border-radius(0, 0, 3px, 3px);
+        background: #ccc;
+      }
+      &.active {
+        background: #ccc;
+      }
+    }
+
+  }
+  tr:hover th .control {
+    visibility: visible;
+  }
+  thead th.active {
+    background: #ccc;
+  }
+}
+

@@ -1,7 +1,0 @@
-[
-{"sent_timestamp":"1-18-12 15:00","from":"+15551212","type":"sms_message","message":"1!MSBC!2012#1#16#12345678901#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm","_id":"f40dcbb1fdb88c3de6e4fcfda610295a","form":"MSBC"},
-{"sent_timestamp":"1-18-12 16:00","from":"+15551212","type":"sms_message","message":"1!MSBC!2012#1#16#12345678901#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm","_id":"f40dcbb1fdb88c3de6e4fcfda6103040","form":"MSBC"},
-{"sent_timestamp":"1-18-12 17:00","from":"+15551212","type":"sms_message","message":"1!MSBC!2012#1#16#12345678901#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm","_id":"f40dcbb1fdb88c3de6e4fcfda610384a","form":"MSBC"},
-{"sent_timestamp":"1-18-12 18:00","from":"+15551212","type":"sms_message","message":"1!MSBC!2012#1#16#12345678901#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm","_id":"f40dcbb1fdb88c3de6e4fcfda6104720","form":"MSBC"},
-{"sent_timestamp":"1-18-12 19:00","from":"+15551212","type":"sms_message","message":"1!MSBC!2012#1#16#12345678901#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm","_id":"f40dcbb1fdb88c3de6e4fcfda6105475","form":"MSBC"}
-]

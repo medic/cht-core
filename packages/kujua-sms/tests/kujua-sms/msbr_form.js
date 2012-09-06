@@ -1,9 +1,9 @@
 var smsparser = require('views/lib/smsparser'),
-    smsforms = require('views/lib/smsforms');
+    jsonforms = require('views/lib/jsonforms');
 
 
 exports.msbr_example_data = function (test) {
-    var def = smsforms['MSBR'];
+    var def = jsonforms['MSBR'];
     var doc = {
         sent_timestamp: '1-13-12 15:35',
         from: '+15551212',
@@ -12,7 +12,7 @@ exports.msbr_example_data = function (test) {
 
     test.expect(2);
 
-    var obj = smsparser.parse('MSBR', def, doc);
+    var obj = smsparser.parse(def, doc);
     var expectedObj = {
         ref_year: '2012',
         ref_month: '12',
@@ -30,8 +30,8 @@ exports.msbr_example_data = function (test) {
 
     test.same(obj, expectedObj);
 
-    var arr = smsparser.parseArray('MSBR', def, doc);
-    var expectedArr = ['1-13-12 15:35', '+15551212', '2012', '12', 20, 12345678901, '1111', 'bbbbbbbbbbbbbbbbbbbb', 22, 'Diarrhée grave', 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc']
+    var arr = smsparser.parseArray(def, doc);
+    var expectedArr = ['1-13-12 15:35', '+15551212', '2012', '12', '20', '12345678901', '1111', 'bbbbbbbbbbbbbbbbbbbb', '22', '10', 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc']
 
     test.same(arr, expectedArr);
 

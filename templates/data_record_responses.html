@@ -1,0 +1,28 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>Responses</th>
+    </tr>    
+  </thead>
+  <tbody>
+    {#responses}
+    <tr>
+        <td>
+          <ul>
+            {?error}
+            <!-- legacy errors format //-->
+            <li>{error}</li>
+            {/error}
+            {?message}
+            <li>{message}</li>
+            {:else}
+              {?code}
+              <li>{code}: {fields}</li>
+              {/code}
+            {/message}
+         </ul>
+        </td>
+    </tr>    
+    {/responses}
+  </tbody>
+</table>

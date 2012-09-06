@@ -1,7 +1,7 @@
 {
-    "name": "kujua-export",
-    "version": "0.1.0-pre.1",
-    "description": "Provide easy access to your SMS form data.",
+    "name": "kujua-base",
+    "version": "0.1.15",
+    "description": "Provide access to your SMS form data.",
     "loglevel": "info",
     "load": "lib/app",
     "modules": ["lib"],
@@ -15,9 +15,13 @@
     "duality-contrib-loading": {
         "timeout": 300
     },
+    "coffee-script": {
+      "attachments": ["static/js"],
+      "modules": []
+    },
     "less": {
         "compress": true,
-        "compile": "static/css/app.less",
+        "compile": ["static/css/app.less", "static/css/spreadsheet.less"],
         "remove_from_attachments": true
     },
     "dependencies": {
@@ -31,12 +35,13 @@
         "duality-dust": null,
         "nodeunit": null,
         "nodeunit-testrunner": null,
+        "coffee-script-precompiler": null,
         "less-precompiler": null,
         "bootstrap-fontawesome": null,
+        "kanso-config": null,
         "kujua-branding": null,
         "kujua-sms": null,
         "kujua-utils": null,
-        "kujua-pagination": null,
         "jsDump": null,
         "git-info": null,
         "showdown": null,

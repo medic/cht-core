@@ -52,6 +52,12 @@ var expected_callback = {
         from: "+13125551212",
         refid: "abcdef",
         errors: [],
+        responses: [
+            {
+                to: "+13125551212",
+                message: "Data received, thank you."
+            }
+        ],
         tasks: [],
         ref_year: "2012",
         ref_month: "1",
@@ -60,7 +66,7 @@ var expected_callback = {
         ref_hour: 1111,
         ref_name: "bbb",
         ref_age: 22,
-        ref_reason: "TB dans le rouge",
+        ref_reason: "TB rouge",
         ref_reason_other: "ccc"
     }
 };
@@ -192,7 +198,7 @@ var step2 = function(test, req) {
 
     test.same(
         resp_body.callback.data.tasks[0].messages[0].message,
-        "Année: 2012, Mois: 1, Jour: 24, Code du RC: abcdef, Heure de départ: 1111, Nom: bbb, Age: 22, Motif référence: TB dans le rouge, Si 'autre', précisez motif référence: ccc"
+        "Année: 2012, Mois: 1, Jour: 24, Code du RC: abcdef, Heure de départ: 1111, Nom: bbb, Age: 22, Motif référence: TB rouge, Si 'autre', précisez motif référence: ccc"
     );    
 
     test.done();
