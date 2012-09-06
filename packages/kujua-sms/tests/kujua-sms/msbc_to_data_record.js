@@ -9,7 +9,7 @@ var updates = require('kujua-sms/updates'),
     helpers = require('../../test-helpers/helpers'),
     _ = require('underscore')._;
 
-    
+
 var example = {
     sms_message: {
        from: "+13125551212",
@@ -57,9 +57,15 @@ var expected_callback = {
         from: "+13125551212",
         refid: "abcdef",
         errors: [],
+        responses: [
+          {
+            to: "+13125551212",
+            message: "Data received, thank you."
+          }
+        ],
         tasks: [],
-        cref_year: "2012",
-        cref_month: "1",
+        cref_year: 2012,
+        cref_month: 1,
         cref_day: 16,
         cref_rc: "abcdef",
         cref_ptype: "Autre",
@@ -67,12 +73,11 @@ var expected_callback = {
         cref_age: 31,
         cref_mom: "bbb",
         cref_treated: "ccc",
-        cref_rec: "Référé",
+        cref_rec: "Guéri",
         cref_reason: "ddd",
         cref_agent: "eee"
     }
 };
-
 
 /*
  * STEP 1:
@@ -107,7 +112,7 @@ exports.msbc1_to_record = function (test) {
 
     var resp_body = JSON.parse(resp[1].body);
     delete resp_body.callback.data.reported_date;
-    
+
     test.same(
         resp_body.callback.options.path,
         baseURL + "/MSBC/data_record/add/refid/abcdef");
@@ -194,7 +199,7 @@ var step2 = function(test, req) {
 
     test.same(
         resp_body.callback.data.tasks[0].messages[0].message,
-        "Année: 2012, Mois: 1, Jour: 16, Code du RC: abcdef, Type de patient: Autre, Nom: aaa, Age: 31, Nom de la mère ou de l'accompagnant: bbb, Recommandations/Conseils: Référé, Précisions pour recommandations: ddd, Nom de l'agent de santé: eee"
+        "Année: 2012, Mois: 1, Jour: 16, Code du RC: abcdef, Type de patient: Autre, Nom: aaa, Age: 31, Nom de la mère ou de l'accompagnant: bbb, Recommandations/Conseils: Guéri, Précisions pour recommandations: ddd, Nom de l'agent de santé: eee"
     );    
 
     test.done();

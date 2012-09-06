@@ -1,0 +1,22 @@
+{?rows}
+  {#rows}
+      <tr>
+        <td class="facility-name">
+          <a href="{baseURL}/{url}">
+            {name}
+          </a> <span class="facility-clinics">{clinics.length} reporting units</span>
+        </td>
+        <td class="valid-reports"><em>{valid}</em> Reports</td>
+        <td class="valid-percent"><em>{valid_percent}%</em> <span class="mini-pie"></span></td>
+      </tr>
+  {/rows}
+{:else}
+  {#doc}
+    <tr>
+      <td colspan="3">
+        No districts found.
+        <!--//Please <a href="{baseURL}/add/health_center?district_hospital={_id}">create</a> one. //-->
+      </td>
+    </tr>
+  {/doc}
+{/rows}

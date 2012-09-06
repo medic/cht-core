@@ -13,9 +13,9 @@ var TextForms = function () {
     this.clear();
 
     this._re = {
-        decimal: /\./,
-        boundary: /\s*#\s*/,
-        numeric: /\d+(?:\.(?:\d+)?)?/,
+        decimal: new RegExp('\\.'),
+        boundary: new RegExp('\\s*#\\s*'),
+        numeric: new RegExp('\\d+(?:\\.(?:\\d+)?)?'),
     };
 
     this._re.numeric_only = new RegExp(
@@ -38,7 +38,8 @@ TextForms.prototype = {
      */
     embed_re: function (_regex) {
 
-        return _regex.toString().replace(/^\//, '').replace(/\/$/, '');
+        return _regex.toString().replace(new RegExp('^\\/'), '')
+                .replace(new RegExp('\\/$'), '');
     },
 
     /**
@@ -48,7 +49,7 @@ TextForms.prototype = {
      */
     trim: function (_s) {
 
-        return _s.replace(/^\s+/, '').replace(/\s+$/, '');
+        return _s.replace(new RegExp('^\\s+'), '').replace(new RegExp('\\s+$'), '');
     },
 
     /**
@@ -135,7 +136,7 @@ TextForms.prototype = {
                 either: (i) a value written with an explicit whitespace
                 separator (stored in `other`) or (ii) a value written with
                 an implicit separator (in `numeric`, and never a string). */
-                
+
             var m = fields[i].match(this._re.field);
 
             /* Empty component:
@@ -144,7 +145,7 @@ TextForms.prototype = {
             if (!m) {
                 continue;
             }
-            
+
             /* Capture subgroups:
                 These refer to the `this._re.field` regular expression. */
 
@@ -238,21 +239,29 @@ TextForms.prototype = {
 };
 
 /**
- * Remove the SUR from the beginning of the message
+ * Remove the form code from the beginning of the message
  * since it does not belong to the TextForms format
- * but is just a convention to identify the message. 
+ * but is just a convention to identify the message.
  *
- * @param {Object} doc - sms_message document
+ * @param {Object|String} doc - sms_message document or sms message string
  * @returns {Object|{}} - A parsed object of the sms message or an empty
  * object if parsing fails.
  *
  * @api public
  */
 exports.parse = function(doc) {
-    var t = new TextForms();
-    var message = doc.message.match(new RegExp('SUR(.*)'))[1];
+    var t = new TextForms(),
+        msg = doc.message ? doc.message : doc;
 
-    return t.parse(message).result();
+    if (!msg)
+        return {};
+
+    var match = msg.match(new RegExp('^\\s*\\w+\\s+(.*)'));
+
+    if (match === null)
+        return {};
+
+    return t.parse(match[1]).result();
 };
 
 /**
@@ -261,17 +270,18 @@ exports.parse = function(doc) {
  * @api public
  */
 exports.parseArray = function(doc) {
+
     var obj = exports.parse(doc);
-    
+
     var arr = [];
     for (key in obj) {
         arr.push(obj[key]);
     }
-    
+
     // The fields sent_timestamp and from are set by the gateway, so they are
     // not included in the raw sms message and added manually.
     arr.unshift(doc.from);
     arr.unshift(doc.sent_timestamp);
-    
+
     return arr;
 };

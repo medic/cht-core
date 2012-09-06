@@ -1,3 +1,4 @@
+@import "elements.less";
 @import "bootstrap/less/bootstrap.less";
 @import "packages/kujua-branding/css/base.less";
 
@@ -36,6 +37,12 @@ body {
   background-color: @white;
   padding: 10px;
   margin: 0;
+  .controls input {
+    margin-bottom: 0;
+  }
+  .controls label {
+    display: inline;
+  }
 }
 .version {
   font-weight: bold;
@@ -66,9 +73,9 @@ body {
   .scroll;
   width: 580px;
 }
-// override bootstrap for inner tables 
+// override bootstrap for inner tables
 .table-striped .form-data {
-  thead tr th, 
+  thead tr th,
   tbody tr td {
     background-color: #fff;
   }
@@ -122,6 +129,9 @@ body {
     padding: 8px;
     line-height: 18px;
   }
+  .data-record > table.table-bordered {
+    .rounded(0);
+  }
   .span12 .wrap {
     padding: 10px 20px;
   }
@@ -131,6 +141,10 @@ body {
     li a {
       .hide;
     }
+  }
+  .data-record-raw .icon-plus {
+    font-size: .752em;
+    color: @grayLighter;
   }
   .icon-exclamation-sign {
     font-size: 1.2em;
@@ -145,7 +159,7 @@ body {
   .icon-ok.pending {
     color: @blue;
   }
-  // Specifying width for each column since the rows are their own tables.  
+  // Specifying width for each column since the rows are their own tables.
   .reported-date {
     width: 100px;
   }
@@ -175,20 +189,18 @@ body {
     position: relative;
   }
   .row-controls {
-    padding: 20px;
+    padding: 5px;
     position: absolute;
-    top: -10px;
-    right: 45px;
+    top: -9px;
+    left: -75px;
+    background: #f5f5f5;
+    .bordered(#ddd, transparent, darken(#ddd, 10%), #ddd);
+    .border-radius(0, 0, 4px, 4px);
     .hide;
-    padding: 15px 50px;
-    width: 50px;
     form {
       margin: 0;
       padding: 0;
-    }
-    .delete {
-      color: @red;
-      font-size: 1.5em;
+      display: inline;
     }
   }
   .extended .close {
@@ -247,6 +259,7 @@ body {
   width: 4em;
   margin: 0 auto 20px auto;
 }
+
 .sections {
   display: none;
   border-top: solid 2px @aqua;
@@ -270,15 +283,19 @@ body {
     line-height: 1.4em;
   }
 }
+
 .dropdown-toggle, .zoom:hover {
   cursor: pointer;
 }
+
 .images {
   width: 920px;
 }
+
 code {
   white-space:nowrap;
 }
+
 #duality-contrib-loading {
     background-color: @popcorn;
     /*.border-radius(0 0 5px 5px);*/
@@ -294,6 +311,31 @@ code {
 }
 
 table.spreadsheet {
-    margin: 20px !important;
+    margin: 20px 20px 10px 20px !important;
     width: 900px !important;
+}
+table.spreadsheet .dropdown.open a.dropdown-toggle {
+  color: #333;
+  background-color: inherit;
+  height: 20px;
+}
+table.spreadsheet .dropdown-menu {
+  top: 25px;
+  left: -5px;
+}
+.spreadsheet-actions {
+    margin: 10px 20px;
+    padding-bottom: 20px;
+}
+
+.facilities_msg {
+    padding: 10px 20px;
+}
+
+.modal-header .close {
+  border: none;
+  background: none;
+}
+.modal-body {
+  min-height: 300px;
 }

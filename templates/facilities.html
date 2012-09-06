@@ -1,1 +1,13 @@
+<ul class="nav nav-tabs">
+  <li{?tab.clinics} class="active"{/tab.clinics}>
+    <a href="{baseURL}/facilities/clinics">{Clinics}</a>
+  </li>
+  <li{?tab.health_centers} class="active"{/tab.health_centers}>
+    <a href="{baseURL}/facilities/health_centers">{Health_Centers}</a>
+  </li>
+  <li{?tab.districts} class="active"{/tab.districts}>
+    <a href="{baseURL}/facilities/districts">{Districts}</a>
+  </li>
+</ul>
+
 <div id="facilities"></div>

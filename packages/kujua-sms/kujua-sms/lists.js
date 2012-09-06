@@ -6,23 +6,36 @@ var _ = require('underscore')._,
     utils = require('./utils'),
     strings = utils.strings,
     moment = require('moment'),
-    logger = utils.logger,
-    smsforms = require('views/lib/smsforms');
+    logger = require('kujua-utils').logger,
+    jsonforms  = require('views/lib/jsonforms');
 
+
+// default properties to export from record
+var EXPORT_KEYS = [
+    'reported_date',
+    'from',
+    ['related_entities', ['clinic', ['contact', ['name']]]],
+    ['related_entities', ['clinic', ['name']]],
+    ['related_entities', ['clinic', ['parent', ['contact', ['name']]]]],
+    ['related_entities', ['clinic', ['parent', ['name']]]]
+];
+
+var formatDate = function(msecs) {
+    return moment(msecs).format('DD, MMM YYYY, HH:mm:ss Z');
+};
 
 exports.data_records_csv = function (head, req) {
-    var form  = req.query.form,
-        dh_name = req.query.dh_name,
-        filename = dh_name + '_' + form + '_data_records.csv',
-        locale = req.query.locale || 'en', //TODO get from session
+    var labels,
+        query = req.query,
+        form  = query.form,
+        kansoconfig = query.kansoconfig ? JSON.parse(query.kansoconfig) : {},
+        dh_name = query.dh_name ? query.dh_name : 'null',
+        filename = dh_name.replace(' ','') + '_' + form + '_data_records.csv',
+        locale = query.locale || 'en', //TODO get from session
         delimiter = locale === 'fr' ? '";"' : null,
-        keys = [
-            'reported_date',
-            'from',
-            ['related_entities', ['clinic', ['contact', ['name']]]],
-            ['related_entities', ['clinic', ['name']]],
-            ['related_entities', ['clinic', ['parent', ['name']]]]
-        ];
+        rows,
+        values,
+        keys = [];
 
     start({code: 200, headers: {
         'Content-Type': 'text/csv; charset=utf-8',
@@ -30,33 +43,41 @@ exports.data_records_csv = function (head, req) {
     }});
 
     // add form keys from form def
-    keys.push.apply(keys, utils.getFormKeys(form));
+    keys = EXPORT_KEYS.concat(utils.getFormKeys(form));
 
     // fetch labels for all keys
-    var labels = utils.getLabels(keys, form, locale);
+    labels = utils.getLabels(keys, form, locale);
+    labels = _.map(labels, function(label) {
+      return kansoconfig[label] || label;
+    });
 
-    var row = [],
-        rows = [labels];
+    send('\uFEFF');
+    send(utils.arrayToCSV([labels], delimiter) + '\n');
 
     while (row = getRow()) {
         if(row.doc) {
             // add values for each data record to the rows
-            rows.push(utils.getValues(row.doc, keys));
-            var m = moment(rows[rows.length - 1][0]);
-            rows[rows.length - 1][0] = m.format('DD, MMM YYYY, hh:mm:ss');            
+            values = utils.getValues(row.doc, keys);
+            values[0] = formatDate(values[0]);
+            send(utils.arrayToCSV([values], delimiter) + '\n');
         }
     }
 
-    return '\uFEFF' + utils.arrayToCSV(rows, delimiter);
+    return '';
 };
 
 exports.data_records_xml = function (head, req) {
-    var form  = req.query.form,
-        dh_name = req.query.dh_name,
-        filename = dh_name + '_' + form + '_data_records.xml',
-        locale = req.query.locale || 'en', //TODO get from session
+    var query = req.query,
+        form  = query.form,
+        dh_name = query.dh_name ? query.dh_name : 'null',
+        kansoconfig = query.kansoconfig ? JSON.parse(query.kansoconfig) : {},
+        filename = dh_name.replace(' ','') + '_' + form + '_data_records.xml',
+        locale = query.locale || 'en', //TODO get from session
+        rows,
+        values,
+        labels,
         // extra doc fields we want to export not in form
-        keys = ['reported_date', 'from'];
+        keys = [];
 
     start({code: 200, headers: {
         'Content-Type': 'application/vnd.ms-excel; charset=utf-8',
@@ -64,122 +85,38 @@ exports.data_records_xml = function (head, req) {
     }});
 
     // add form keys from form def
-    keys.push.apply(keys, utils.getFormKeys(form));
+    keys = EXPORT_KEYS.concat(utils.getFormKeys(form));
 
     // fetch labels for all keys
     var labels = utils.getLabels(keys, form, locale);
+    labels = _.map(labels, function(label) {
+      return kansoconfig[label] || label;
+    });
 
     var row = [],
-        rows = [labels];
+        values;
+
+    send('<?xml version="1.0" encoding="UTF-8"?>\n' +
+         '<?mso-application progid="Excel.Sheet"?>\n' +
+         '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
+         ' xmlns:o="urn:schemas-microsoft-com:office:office"\n' +
+         ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n' +
+         ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n' +
+         ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
+         '<Worksheet ss:Name="'+form+'"><Table>');
+
+    send(utils.arrayToXML([labels]));
 
     while (row = getRow()) {
-        rows.push(utils.getValues(row.doc, keys));
-        var m = moment(rows[rows.length - 1][0]);
-        rows[rows.length - 1][0] = m.format('DD, MMM YYYY, hh:mm:ss');
+        values = utils.getValues(row.doc, keys);
+        values[0] = formatDate(values[0]);
+        send(utils.arrayToXML([values]));
     }
 
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' +
-        '<?mso-application progid="Excel.Sheet"?>\n' +
-        '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
-        ' xmlns:o="urn:schemas-microsoft-com:office:office"\n' +
-        ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n' +
-        ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n' +
-        ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
-        '<Worksheet ss:Name="'+form+'"><Table>' +
-        utils.arrayToXML(rows) +
-        '</Table></Worksheet></Workbook>';
-};
+    send('</Table></Worksheet></Workbook>');
 
-exports.deprecate_sms_messages_csv = function (head, req) {
-    var formKey  = req.query.form,
-        def = smsforms[formKey ],
-        filename = def ? formKey  + '_sms_messages.csv': 'unknown_form.csv',
-        locale = req.query.locale || 'en',
-        delimiter = locale === 'fr' ? '";"' : null;
-
-    start({code: 200, headers: {
-        'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': 'attachment; filename=' + filename
-        //'Content-Disposition': 'attachment; filename="testit.csv";'+
-        //  'filename*=UTF-8\'\'testit.csv'
-    }});
-
-    var row, rows = [];
-    while (row = getRow()) {
-        rows.push(row);
-    }
-
-    if (def) {
-        var headings = _.map(def.fields, function (r) {
-            return r.label || r.key;
-        });
-        headings.unshift(strings.from[locale]);
-        headings.unshift(strings.sent_timestamp[locale]);
-
-        var data = _.map(rows, function(r) {
-            return r.value ? r.value : '';
-        });
-        data.unshift(headings);
-        // Prepend BOM for MS Excel compat
-        return '\uFEFF' + utils.arrayToCSV(data, delimiter);
-    }
-
-    // It would be nice to do a 404 page here, but we've already started the
-    // request with a 200 response and test/csv mime type - thanks couch!
-    // At the top of this function the filename is set to unknown_form.csv
-    // when the form def can't be found
     return '';
 };
-
-
-
-exports.deprecated_sms_messages_xml = function (head, req) {
-    var formKey = req.query.form,
-        form = smsforms[formKey],
-        filename = form ? formKey + '_sms_messages.xml': 'unknown_form.xml',
-        locale = req.query.locale || 'en';
-
-    start({code: 200, headers: {
-        'Content-Type': 'application/vnd.ms-excel; charset=utf-8',
-        'Content-Disposition': 'attachment; filename=' + filename
-    }});
-
-    var row, rows = [];
-    while (row = getRow()) {
-        rows.push(row);
-    }
-
-    if (form) {
-        var headings = _.map(form.fields, function (r) {
-            return r.label || r.key;
-        });
-        headings.unshift(strings.from[locale]);
-        headings.unshift(strings.sent_timestamp[locale]);
-
-        var data = _.map(rows, function(r) {
-            return r.value ? r.value : '';
-        });
-        data.unshift(headings);
-        return '<?xml version="1.0" encoding="UTF-8"?>\n' +
-            // tells windows to auto-associate with excel
-            '<?mso-application progid="Excel.Sheet"?>\n' +
-            '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
-            ' xmlns:o="urn:schemas-microsoft-com:office:office"\n' +
-            ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n' +
-            ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n' +
-            ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
-            '<Worksheet ss:Name="'+formKey+'"><Table>' +
-            utils.arrayToXML(data) +
-            '</Table></Worksheet></Workbook>';
-    }
-
-    // It would be nice to do a 404 page here, but we've already started the
-    // request with a 200 response and test/csv mime type - thanks couch!
-    // At the top of this function the filename is set to unknown_form.csv
-    // when the form def can't be found
-    return '';
-};
-
 
 
 /**
@@ -189,6 +126,7 @@ exports.deprecated_sms_messages_xml = function (head, req) {
  * @api private
  */
 var isFromHealthCenter = function(phone, clinic) {
+    if (!clinic.parent || !clinic.parent.contact) { return false; }
     if (phone === clinic.parent.contact.phone) {
         return true;
     }
@@ -207,6 +145,7 @@ var isFromHealthCenter = function(phone, clinic) {
  * @api private
  */
 exports.getRecipientPhone = function(form, phone, clinic) {
+    if (!clinic.parent || !clinic.parent.contact) { return ''; }
     switch (form) {
         case 'MSBR':
             // Clinic -> Health Center
@@ -243,17 +182,17 @@ var getRecipientPhone = exports.getRecipientPhone;
 var getReferralMessage = function(form, phone, clinic, record) {
     var ignore = [],
         message = [];
-    
+
     if(form === "MSBC") {
         if (isFromHealthCenter(phone, clinic)) {
             ignore.push('cref_treated');
         }
     }
-    
+
     var keys = utils.getFormKeys(form);
     var labels = utils.getLabels(keys, form);
     var values = utils.getValues(record, keys);
-    
+
     _.each(keys, function(key) {
         if (ignore.indexOf(key) === -1) {
             message.push(labels.shift() + ': ' + values.shift());
@@ -267,7 +206,7 @@ var getReferralMessage = function(form, phone, clinic, record) {
 };
 
 /**
- * @param {String} form - smsforms form key
+ * @param {String} form - jsonforms form key
  * @param {String} phone - Phone number of where the message is *from*.
  * @param {Object} form_data - parsed form data that includes labels (format:1)
  * @param {Object} clinic - the clinic from the tasks_referral doc
@@ -295,34 +234,44 @@ var getReferralTask = function(form, record) {
 
 /**
  * @param {Object} req - kanso request object
- * @param {String} form - smsforms key string
+ * @param {String} form - jsonforms key string
  * @param {Object} record - record
- * @param {Object} clinic - clinic facility object
+ * @param {Object} facility - facility object
  *
  * @returns {String} - path for callback
  *
  * @api private
  */
-var getCallbackPath = function(req, form, record, clinic) {
+var getCallbackPath = function(req, form, record, facility) {
     var appdb = require('duality/core').getDBURL(req),
         baseURL = require('duality/core').getBaseURL(),
         path = appdb;
 
-    if(!clinic || !form || !record || !smsforms[form]) {
+    if(!facility || !form || !record || !jsonforms[form]) {
         return path;
     }
 
-    if (smsforms.isReferralForm(form) || !smsforms[form].data_record_merge) {
+    if (utils.isReferralForm(form) || !jsonforms[form].data_record_merge) {
         return path;
     }
 
-    path = baseURL + smsforms[form].data_record_merge
-              .replace(':form', encodeURIComponent(form))
-              .replace(':year', encodeURIComponent(record.year))
-              .replace(':month', encodeURIComponent(record.month))
-              .replace(':clinic_id', encodeURIComponent(clinic._id));
+    // parse data_record_merge attribute for field names and replace
+    var matches = jsonforms[form].data_record_merge.match(/(:\w*)/g),
+        updateURL = jsonforms[form].data_record_merge;
 
-    return path;
+    for (var i in matches) {
+        var key = matches[i].replace(':','');
+        if (record[key]) {
+            updateURL = updateURL.replace(
+                            matches[i], encodeURIComponent(record[key]));
+        }
+    }
+
+    return baseURL + updateURL
+        .replace(':clinic_id', facility._id)
+        .replace(':facility_id', facility._id)
+        .replace(':form', encodeURIComponent(form));
+
 };
 
 
@@ -337,10 +286,9 @@ var json_headers = {
 
 
 /*
- * Second step of adding a data record for an incoming SMS.
- * This adds the clinic to the data record data and
- * returns the necessary callback information for
- * creating the data record.
+ * Second step of adding a data record for an incoming SMS.  This adds the
+ * related data to the record and returns the necessary callback information
+ * for creating the data record.
  *
  * @param {Object} head
  * @param {Object} req
@@ -358,41 +306,66 @@ exports.data_record = function (head, req) {
         host = headers[0],
         port = headers[1] || "",
         appdb = require('duality/core').getDBURL(req),
-        def = smsforms[form],
-        clinic = null;
+        def = jsonforms[form],
+        facility  = null;
 
     if (!def) {
-        addError(
-            record,
-            {code: 'form_not_found',
-             message: 'No form definition found for '+ form +'.'});
+        var err = {code: 'form_not_found', form: form};
+        err.message = utils.getMessage(err);
+        addError(record, err);
     }
 
-    /* Add clinic to task */
+    //
+    // setup related_entities
+    //
+    record.related_entities = {
+        clinic: {
+            parent: {
+                parent: {}
+            }
+        }
+    };
+
+    //
+    // Add first matched facility to record
+    //
     var row = {};
     while (row = getRow()) {
-        clinic = record.related_entities.clinic = row.value;
-        break;
+        if (row.value.type === 'clinic') {
+            record.related_entities.clinic = row.value;
+            facility = row.value;
+            break;
+        }
+        if (row.value.type === 'health_center') {
+            record.related_entities.clinic.parent = row.value;
+            facility = row.value;
+            break;
+        }
+        if (row.value.type === 'district_hospital') {
+            record.related_entities.clinic.parent.parent = row.value;
+            facility = row.value;
+            break;
+        }
     }
 
-    /* Can't do much without a clinic */
-    if (!clinic) {
-        var err = {code: 'facility_not_found', message: "Clinic not found."};
+    /* Can't do much without a facility */
+    if (!facility) {
+        var err = {code: 'facility_not_found'};
+        err.message = utils.getMessage(err);
         addError(record, err);
-    } else if (smsforms.isReferralForm(form)) {
+    } else if (utils.isReferralForm(form)) {
         var task = getReferralTask(form, record);
         record.tasks.push(task);
         for (var i in task.messages) {
             var msg = task.messages[i];
             if(!msg.to) {
-                addError(
-                    record,
-                    {code: 'recipient_not_found',
-                     message: 'Could not find referral recipient.'});
+                var err = {code: 'recipient_not_found'};
+                err.message = utils.getMessage(err);
+                addError(record, err);
                 // we don't need redundant error messages
                 break;
-            };
-        };
+            }
+        }
     }
 
     /* Send callback to gateway to check for already existing doc. */
@@ -401,7 +374,7 @@ exports.data_record = function (head, req) {
             options: {
                 host: host,
                 port: port,
-                path: getCallbackPath(req, form, record, clinic),
+                path: getCallbackPath(req, form, record, facility),
                 method: "POST",
                 headers: _.clone(json_headers)},
             data: record}};
@@ -411,7 +384,6 @@ exports.data_record = function (head, req) {
         respBody.callback.options.headers.Authorization = req.headers.Authorization;
     }
 
-    logger.debug(['Response lists.data_record', respBody]);
     return JSON.stringify(respBody);
 };
 
@@ -432,24 +404,22 @@ exports.data_record = function (head, req) {
   */
 exports.data_record_merge = function (head, req) {
     start({code: 200, headers: json_headers});
-    //logger.debug(['data_record_merge arguments', arguments]);
 
     var new_data_record = JSON.parse(req.body),
         form = req.query.form,
         headers = req.headers.Host.split(":"),
         host = headers[0],
         port = headers[1] || "",
-        def = smsforms[form],
+        def = jsonforms[form],
         appdb = require('duality/core').getDBURL(req),
         old_data_record = null,
         path = appdb,
         row = {};
 
     if (!def) {
-        addError(
-            new_data_record,
-            {code: 'form_not_found',
-             message: 'No form definition found for '+ form +'.'});
+        var err = {code: 'form_not_found', form: form};
+        err.message = utils.getMessage(err);
+        addError(new_data_record, err);
     }
 
     while (row = getRow()) {
@@ -457,7 +427,6 @@ exports.data_record_merge = function (head, req) {
         break;
     }
 
-    logger.debug(['old_data_record', old_data_record]);
     if(old_data_record) {
         path += '/' + old_data_record._id;
         new_data_record._id = old_data_record._id;
@@ -480,7 +449,6 @@ exports.data_record_merge = function (head, req) {
         respBody.callback.options.headers.Authorization = req.headers.Authorization;
     }
 
-    logger.debug(['Response lists.data_record_merge', respBody]);
     return JSON.stringify(respBody);
 };
 
@@ -495,41 +463,51 @@ exports.tasks_pending = function (head, req) {
 
     var newDocs = [],
         appdb = require('duality/core').getDBURL(req),
+        doc,
         headers = req.headers.Host.split(":"),
+        includeDoc,
         host = headers[0],
         port = headers[1] || "",
+        respBody,
+        row = [];
+
         respBody = {
             payload: {
                 success: true,
                 task: "send",
                 secret: "",
-                messages: []}};
+                messages: []
+            }
+        };
 
-    var row = [];
     while (row = getRow()) {
-        var doc = row.doc;
+        doc = row.doc;
 
         // update state attribute for the bulk update callback
         // don't process tasks that have no to field since we can't send a
         // message and we don't want to mark the task as sent.  TODO have
         // better support in the gateway for tasks so the gateway can verify
         // that it processed the task successfully.
-        for (var i in doc.tasks) {
-            var task = doc.tasks[i];
+        includeDoc = false;
+        _.each(doc.tasks, function(task) {
             if (task.state === 'pending') {
-                for (var j in task.messages) {
-                    var msg = task.messages[j];
+                _.each(task.messages, function(msg) {
                     // if to: field is defined then append messages
                     if (msg.to) {
                         task.state = 'sent';
+                        task.timestamp = new Date().getTime();
+
                         // append outgoing message data payload for smsssync
                         respBody.payload.messages.push(msg);
+                        includeDoc = true;
                     }
-                }
+                });
             }
-        }
+        });
 
-        newDocs.push(doc);
+        if (includeDoc) {
+            newDocs.push(doc);
+        }
     }
 
     if (newDocs.length) {
@@ -545,6 +523,10 @@ exports.tasks_pending = function (head, req) {
         };
     }
 
-    logger.debug(['Response lists.tasks_pending', respBody]);
+    // pass through Authorization header
+    if(req.headers.Authorization && respBody.callback) {
+        respBody.callback.options.headers.Authorization = req.headers.Authorization;
+    }
+
     return JSON.stringify(respBody);
 };

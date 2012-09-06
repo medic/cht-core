@@ -10,28 +10,43 @@
                     <form action="" method="POST" data-ajax="removeDoc">
                       <input type="hidden" name="_id" value="{_id}" />
                       <input type="hidden" name="_rev" value="{_rev}" />
-                      <a class="submit delete" href="#">
-                        <i class="icon-remove-sign icon-large"></i>
+                      <a class="btn btn-danger btn-mini submit delete" href="#">
+                        <i class="icon-trash icon-large"></i>
                       </a>
                     </form>
+                    <a class="btn btn-secondary btn-mini submit edit" href="#edit_record_form" data-toggle="modal">
+                      <i class="icon-cogs icon-large"></i>
+                    </a>
                   </div>
               </div>
               </td>
               <td class="contact-name">
                 {#related_entities}
                 {?clinic.contact.name}{clinic.contact.name}
-                {:else}<i class="icon-question-sign icon-large"></i>
+                {:else}
+                  {?health_center.contact.name}{health_center.contact.name}
+                  {:else}
+                    {?clinic.parent.contact.name}{clinic.parent.contact.name}
+                    {:else}
+                    <i class="icon-question-sign icon-large"></i>
+                    {/clinic.parent.contact.name}
+                  {/health_center.contact.name}
                 {/clinic.contact.name}
                 {/related_entities}
               </td>
               <td class="phone">
-                {from} 
+                {from}
               </td>
               <td class="related-entities district_hospital">
                 {#related_entities}
                   {?clinic.parent.parent.name}
                   <i>{clinic.parent.parent.name}</i>
-                  {:else}<i class="icon-question-sign icon-large"></i>
+                  {:else}
+                    {?health_center.parent.name}
+                    <i>{health_center.parent.name}</i>
+                    {:else}
+                    <i class="icon-question-sign icon-large"></i>
+                    {/health_center.parent.name}
                   {/clinic.parent.parent.name}
                 {/related_entities}
               </td>
@@ -39,7 +54,12 @@
                 {#related_entities}
                   {?clinic.parent.name}
                   <i>{clinic.parent.name}</i>
-                  {:else}<i class="icon-question-sign icon-large"></i>
+                  {:else}
+                    {?health_center.name}
+                    <i>{health_center.name}</i>
+                    {:else}
+                    <i class="icon-question-sign icon-large"></i>
+                    {/health_center.name}
                   {/clinic.parent.name}
                 {/related_entities}
               </td>
@@ -79,9 +99,6 @@
             <tr>
               <td colspan="8">
                 <div class="relative">
-                  <a title="Close" data-dismiss="extended" class="pull-right close">
-                    <i class="icon-remove"></i>
-                  </a>
                   <div class="scroll">
                     {>"data_record_fields.html":fields/}
                   </div>
@@ -95,6 +112,19 @@
                     {>"data_record_errors.html"/}
                   </div>
                   {/errors}
+                  {?responses}
+                  <div class="data-record-responses">
+                    {>"data_record_responses.html"/}
+                  </div>
+                  {/responses}
+                  {?_raw}
+                  <div class="data-record-raw">
+                    <a title="JSON" data-toggle="extended" class="pull-right">
+                      <i class="icon-plus"></i>
+                    </a>
+                    <div class="extended hide"><pre>{_raw}</pre></div>
+                  </div>
+                  {/_raw}
                 </div>
               </td>
             </tr>

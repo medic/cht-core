@@ -1,37 +1,5 @@
-exports.parseNum = function (raw) {
-    if (!isFinite(raw)) {
-        return null;
-    }
-    return Number(raw);
-};
-
-exports.parseField = function (field, raw, prev) {
-    switch (field.type) {
-        case 'number':
-            return exports.parseNum(raw);
-        case 'string':
-            return raw;
-        case 'year':
-            return raw;
-        case 'month':
-            return raw;
-        case 'date':
-            var val = prev || new Date(0);
-            val.setDate(raw);
-            return val;
-        case 'choice':
-            var val = exports.parseNum(raw);
-            if (val in field.choices)
-                return field.choices[val];
-            if (typeof log !== 'undefined')
-                log('Option not available for '+val+' in choices.');
-            if (typeof console !== 'undefined')
-                console.log('Option not available for '+val+' in choices.');
-            return raw;
-        default:
-            throw new Error('Unknown field type: ' + field.type);
-    }
-};
+var utils = require('kujua-utils'),
+    _ = require('underscore')._;
 
 var zip = function (a, b) {
     var zipped = [];
@@ -49,7 +17,7 @@ var zip = function (a, b) {
  * If key already exists, only assign value.
  *
  * @param {Object} obj - object in which value is assigned to key
- * @param {String} key - key in dot notation (e.g. some.thing.else)
+ * @param {Array} key  - key in dot notation (e.g. some.thing.else)
  * @param {String} val - value to be assigned to the generated key
  */
 var createDeepKey = function(obj, key, val) {
@@ -66,20 +34,18 @@ var createDeepKey = function(obj, key, val) {
 };
 
 /**
- * @param {Object} def - smsforms form definition
+ * @param {Object} def - jsonforms form definition
  * @param {Object} doc - sms_message document
- * @param {Number} format - if 1 then include labels in value
  * @returns {Object|{}} - A parsed object of the sms message or an empty
  * object if parsing fails.
  *
  * @api public
  */
-exports.parse = function(def, doc, format) {
+exports.parse = function(def, doc) {
     var parts = doc.message.split('#'),
         header = parts[0].split('!'),
         name = header[1],
-        vals = parts.slice(1),
-        format = format ? format : 0;
+        vals = parts.slice(1);
 
     vals.unshift(header[2]);
 
@@ -87,64 +53,68 @@ exports.parse = function(def, doc, format) {
         return {};
     }
 
-    var pairs = zip(def.fields, vals);
+    // put field and values into paired array
+    var pairs = zip(
+        // include key value in paired array
+        _.map(def.fields, function(val, key) {
+            var field = def.fields[key];
+            field._key = key;
+            return field;
+        }),
+        vals
+    );
 
     return pairs.reduce(function (obj, v) {
         var field = v[0],
             val = v[1],
             result;
 
+        // ignore extra form data that has no matching field definition.
+        if (!field) {
+            obj._extra_fields = true;
+            return obj;
+        }
+
+        /* deprecating format param
         if (format === 1) {
             // include label in array
             result = [
-                exports.parseField(field, val, obj[field.key]), field.label];
+                exports.parseField(field, val, obj[field._key]),
+                utils.localizedString(field.labels.short) // TODO fix ugly
+            ];
         } else {
-            result = exports.parseField(field, val, obj[field.key]);
+            result = exports.parseField(field, val, obj[field._key]);
         }
 
-        createDeepKey(obj, field.key.split('.'), result);
-
+        createDeepKey(obj, field._key.split('.'), val);
+        */
+        obj[field._key] = val;
         return obj;
     }, {});
 };
 
 /**
- * @param {Object} def - smsforms definition
+ * @param {Object} def - jsonforms form definition
  * @param {Object} doc - sms_message document
  * @returns {Array|[]} - An array of values from the raw sms message
  * @api public
  */
 exports.parseArray = function(def, doc) {
+
     var obj = exports.parse(def, doc);
 
-    var keys = [];
+    if (!def || !def.fields) { return []; }
 
-    if(!def || !def.fields) {
-        return [];
-    }
-
-    for (var i = 0; i < def.fields.length; i++) {
-        if (keys.indexOf(def.fields[i].key) === -1) {
-            keys.push(def.fields[i].key);
-        }
-    }
-
+    // collect field keys into array
     var arr = [];
-    for (var k = 0; k < keys.length; k++) {
-        var key = keys[k].split('.');
-        var result = obj;
-
-        while(key.length > 0) {
-            result = result[key.shift()];
-        }
-
-        arr.push(result);
-    }
+    for (var k in def.fields) {
+        arr.push(obj[k]);
+    };
 
     // The fields sent_timestamp and from are set by the gateway, so they are
     // not included in the raw sms message and added manually.
     arr.unshift(doc.from);
     arr.unshift(doc.sent_timestamp);
-    
+
     return arr;
 };

@@ -1,0 +1,12 @@
+{
+    "name": "coffee-script-precompiler",
+    "version": "1.3.1-kanso.1",
+    "categories": ["build-tools"],
+    "description": "Compiles CoffeeScript modules and attachments to javascript on each push",
+    "url": "https://github.com/nrw/coffee-script-precompiler/",
+    "preprocessors": {
+        "compile": "build/compile",
+        "remove": "build/remove"
+    },
+    "dependencies": {}
+}

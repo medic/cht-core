@@ -1,9 +1,9 @@
 var smsparser = require('views/lib/smsparser'),
-    smsforms = require('views/lib/smsforms');
+    jsonforms = require('views/lib/jsonforms');
 
 
 exports.msbg_example_data = function (test) {
-    var def = smsforms['MSBG'];
+    var def = jsonforms['MSBG'];
     var doc = {
         sent_timestamp: '1-16-12 15:35',
         from: '+15551212',
@@ -12,11 +12,11 @@ exports.msbg_example_data = function (test) {
 
     test.expect(2);
 
-    var obj = smsparser.parse('MSBG', def, doc);
+    var obj = smsparser.parse(def, doc);
     var expectedObj = {
-        monthly_year: '2012',
-        monthly_month: '1',
-        monthly_rc: 12345678901,
+        case_year: '2012',
+        case_month: '1',
+        monthly_rc: "12345678901",
         monthly_cta1: 123,
         monthly_cta2: 456,
         monthly_cta3: 789,
@@ -28,12 +28,9 @@ exports.msbg_example_data = function (test) {
         monthly_ctm3: 789
     };
 
-    //console.log(obj);
-    //console.log(expectedObj);
-
     test.same(obj, expectedObj);
 
-    var arr = smsparser.parseArray('MSBG', def, doc);
+    var arr = smsparser.parseArray(def, doc);
     var expectedArr = ['1-16-12 15:35', '+15551212', '2012', '1', 12345678901, 123, 456, 789, 123, 456, 789, 123, 456, 789];
 
     test.same(arr, expectedArr);
