@@ -1,5 +1,26 @@
 # Release Notes
 
+## 0.1.15
+
+* Saving responses to record and displaying in records screen.
+* Added timezone offset to reported date in exports and data records screen.
+* Added datepicker to filter exports by date.
+* Added support for custom form validation functions
+* Show better error message for other codes like missing_fields
+* Fixed buttons in data records screen
+* Added Kujua Reporting package for easy switching of analytics features
+* Improved test coverage for missing fields, cleaned/fixed up tests.
+* Fixed form parsing for fields defined as sub-objects and boolean parsing.
+* Added cases for sms responses when form is undefined
+* Display tooltip on input element focus in spreadsheet
+* Added delete on facilities spreadsheet
+* Make en/xls default export format
+* Custom labels via config.js configuration doc
+* Support for records to key on any facility
+* Nepalese responses
+* VPD field updates
+* added additional form definitions
+
 ## 0.1.0-pre.4
 
 * Parsing refactor to allow for better unstructured and textforms support, #106, #79
