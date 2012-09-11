@@ -1,0 +1,22 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th class="fields">Fields</th>
+      <th class="values">Values</th>
+    </tr>
+  </thead>
+  <tbody>
+    {#data}
+    <tr>
+      <td>{label}</td>
+      <td>
+        {?isArray}
+          {>"kujua-reporting/data_record_fields.html"/}
+        {:else}
+          {value}
+        {/isArray}            
+      </td>
+    </tr>    
+    {/data}
+  </tbody>
+</table>

@@ -89,6 +89,119 @@ var arrayDepth = function(arr) {
 };
 
 /*
+ * @param {Object} data_record - typically a data record or portion (hash)
+ * @param {String} key - key for field
+ * @param {Object} def - form or field definition
+ * @api private
+*/
+var prettyVal = function(data_record, key, def) {
+
+    if (!data_record || _.isUndefined(key) || _.isUndefined(data_record[key]))
+        return;
+
+    var val  = data_record[key];
+
+    if (!def)
+        return val;
+
+    if (def.fields && def.fields[key]) {
+        def = def.fields[key];
+    }
+
+    switch (def.type) {
+        case 'boolean':
+            if (val === true)
+                return 'True';
+            if (val === false)
+                return 'False';
+        case 'date':
+            if (val) {
+                var m = moment(data_record[key]);
+                return m.format('DD, MMM YYYY');
+            }
+            return;
+        case 'integer':
+            // use list value for month
+            if (def.validate && def.validate.is_numeric_month) {
+                if (def.list) {
+                    for (var i in def.list) {
+                        var item = def.list[i];
+                        if (item[0] === val) {
+                            return utils.localizedString(item[1], locale);
+                        }
+                    }
+                }
+            }
+        default:
+            return val;
+    }
+
+};
+
+// take data record document and return nice formated JSON object
+exports.makeDataRecordReadable = function(doc) {
+    var data_record = doc;
+    var sms_message = data_record.sms_message;
+
+    // causes bug when trying to do update
+    // data_record._raw = JSON.stringify(data_record, null, 2);
+
+    // adding a fields property for ease of rendering code
+    if(data_record.form) {
+        var keys = getFormKeys(data_record.form);
+        var labels = getLabels(keys, data_record.form, 'en');
+        data_record.fields = fieldsToHtml(keys, labels, data_record);
+    }
+
+    if(data_record.reported_date) {
+        var m = moment(data_record.reported_date);
+        data_record.reported_date = m.format('DD, MMM YYYY, HH:mm:ss Z');
+    }
+
+    return data_record;
+};
+
+/*
+ * @api private
+ * */
+var fieldsToHtml = exports.fieldsToHtml = function(keys, labels, data_record, def) {
+
+    if (!def && data_record && data_record.form)
+        def = jsonforms[data_record.form];
+
+    if (_.isString(def))
+        def = jsonforms[def];
+
+    var fields = {
+        headers: [],
+        data: []
+    };
+
+    _.each(keys, function(key) {
+        if(_.isArray(key)) {
+            fields.headers.push({head: utils.titleize(key[0])});
+            fields.data.push(_.extend(
+                fieldsToHtml(key[1], labels, data_record[key[0]], def),
+                {isArray: true}
+            ));
+        } else {
+            var label = labels.shift();
+            fields.headers.push({head: label});
+            if (def && def[key])
+                def = def[key]
+            var v = prettyVal(data_record, key, def);
+            fields.data.push({
+                isArray: false,
+                value: prettyVal(data_record, key, def),
+                label: label
+            });
+        }
+    });
+
+    return fields;
+};
+
+/*
  * Fetch labels from base strings or jsonform objects, maintaining order in
  * the returned array.
  *
@@ -100,7 +213,7 @@ var arrayDepth = function(arr) {
  *
  * @api private
  */
-exports.getLabels = function(keys, form, locale) {
+var getLabels = exports.getLabels = function(keys, form, locale) {
     var def = jsonforms[form],
         labels = [],
         form_labels = {};
@@ -209,7 +322,7 @@ var getValues = exports.getValues = function(doc, keys) {
  *
  * @return Array  - form field keys based on jsonforms definition
  */
-exports.getFormKeys = function(form) {
+var getFormKeys = exports.getFormKeys = function(form) {
     var keys = {},
         def = jsonforms[form];
 

@@ -1,6 +1,7 @@
 var db = require('db'),
     utils = require('./utils'),
     kutils = require('kujua-utils'),
+    sms_utils = require('kujua-sms/utils'),
     appname = require('settings/root').name,
     duality = require('duality/core'),
     events = require('duality/events'),
@@ -55,7 +56,7 @@ var getViewChildFacilities = function(doc, callback) {
         // filter on health center
         startkey.push(doc.parent._id, doc._id);
         endkey.push(doc.parent._id, doc._id, {});
-    } else { 
+    } else {
         throw new Error('Doc not currently supported.');
     }
 
@@ -211,11 +212,10 @@ var renderReportingTotals = function(totals, doc) {
                     selector = label;
                 }
             });
-            
             //drawPopup(ev, c, selector);
         });
     });
-    
+
     $('svg path').each(function(i, s) {
         $(s).mousemove(function (ev) {
             s = $(s);
@@ -231,7 +231,6 @@ var renderReportingTotals = function(totals, doc) {
                     selector = 'complete';
                     break;
             }
-            
             //drawPopup(ev, s, selector);
         });
     });
@@ -239,6 +238,45 @@ var renderReportingTotals = function(totals, doc) {
 };
 
 
+
+//
+// render record details when a row is clicked
+//
+var onRecordClick = function(ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    var id = $(this).attr('rel'),
+        tr = $(ev.target).closest('.data-record'),
+        req = {};
+    // get target el from event context
+    var row = $(tr).next('.data-record-details'),
+        cell = row.children('td'),
+        body = cell.html();
+    if (body === '') {
+        row.show();
+        cell.show();
+        cell.html('<div class="loading">Loading...</div>');
+        var appdb = db.use(duality.getDBURL());
+        appdb.getDoc(id, function(err, resp) {
+            if (err) {
+                var msg = 'Error fetching record with id '+ id +'.  '
+                            + 'Try a refresh or check the database connection. '
+                            + err;
+                kutils.logger.error(msg);
+                return alert(msg);
+            }
+            cell.html(
+                templates.render(
+                    "kujua-reporting/data_records_table.html",
+                    req,
+                    {data_records: sms_utils.makeDataRecordReadable(resp)}
+                )
+            );
+        });
+    } else {
+        row.toggle();
+    }
+};
 
 var facilityReporting = function() {
     return function (doc, req) {
@@ -353,17 +391,22 @@ var facilityReporting = function() {
                         }
                     });
 
-                    $('#reporting-data .facility-link a').click(function(ev) {
+                    $('#reporting-data .facility-link').click(function(ev) {
                         ev.preventDefault();
                         ev.stopPropagation();
-                        $(this).parents('.facility-link')
-                            .toggleClass('expanded')
-                                .next('tr').children('td').children('div')
-                                    .slideToggle();
+                        $(this).toggleClass('expanded')
+                            .next('tr').children('td').children('div')
+                                .slideToggle();
                     });
+
 
                     $('.facility-link:first').addClass('expanded');
                     $('.data-records-list div').hide().first().show();
+
+                    // bind click on rows that have data
+                    $('#reporting-data .data-records .data-record[rel]').click(
+                        onRecordClick
+                    );
 
                     /*var openLinkMenu = function(selector) {
                         return function (ev) {

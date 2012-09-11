@@ -1,8 +1,8 @@
 {?rows}
   {#rows}
-      <tr class="facility-link">
+      <tr class="facility-link" rel="{id}">
         <td class="facility-name">
-          <a href="{baseURL}/facilities/{id}"><div class="arrow"></div><div class="name">{name}</div></a>
+          <div class="arrow"></div><div class="name">{name}</div>
         </td>
         <td class="valid-percent"><em>{valid_percent}%</em> <span class="mini-pie"></span></td>
       </tr>
@@ -20,14 +20,8 @@
         </thead>
         <tbody>
         {#records fid=id}
-        <tr>
-          <td class="period">
-            {?.id}
-              <a href="{baseURL}/records/{.id}">{name}</a>
-            {:else}
-              <a href="{url}">{name}</a>
-            {/.id}
-          </td>
+        <tr {?.id}rel="{.id}"{/.id} class="data-record">
+          <td class="period">{name}</td>
           <td class="reporter">{reporter}</td>
           <td class="phone">{reporting_phone}</td>
           <td class="status">
@@ -35,6 +29,7 @@
               >&middot;</span></p>
           </td>
         </tr>
+        <tr class="hide data-record-details"><td colspan="4"></td></tr>
         {/records}
         </tbody>
         </table>

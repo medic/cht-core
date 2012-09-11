@@ -180,54 +180,45 @@
 }
 
 #reporting-data {
-    .period,
-    .reporter {
-        .droidBoldItalic;
+    .data-record {
+      .period {
+          color: @gold;
+          font-weight: bold;
+      }
+      .period,
+      .reporter {
+          .droidBoldItalic;
+          /* too italics? font-style: italic;*/
+      }
+      .status p {
+          font-size: 8em;
+          color: @grey;
+          position: relative;
+          span {
+              position: absolute;
+              top: -5px;
+              left: 8px;
+          }
+          .important {
+              color: @red;
+          }
+          .success {
+              color: @green;
+          }
+      }
+      .phone {
+          font-family: Georgia, serif;
+          font-weight: normal;
+      }
     }
-    .status p {
-        font-size: 8em;
-        color: @grey;
-        position: relative;
-        span {
-            position: absolute;
-            top: -5px;
-            left: 8px;
-        }
-        .important {
-            color: @red;
-        }
-        .success {
-            color: @green;
-        }
+    .not-valid {
+        color: red;
+        font-weight: bold;
     }
-}
-
-#reporting-data .phone {
-    font-family: Georgia, serif;
-    font-weight: normal;
-}
-
-#reporting-data .period a {
-    color: @gold;
-    font-weight: bold;
-}
-
-#reporting-data .period a,
-#reporting-data .reporter {
-    font-style: italic;
-}
-
-#reporting-data .not-valid {
-    color: red;
-    font-weight: bold;
-}
-
-#reporting-data .valid {
-    color: @green;
-    font-weight: bold;
-}
-
-#reporting-data {
+    .valid {
+        color: @green;
+        font-weight: bold;
+    }
     .data-records {
         padding: 0;
         td, th {
@@ -240,15 +231,41 @@
         table {
             margin: 0;
         }
-        tr:nth-child(odd) td{
+        tr:nth-child(odd) td {
             background-color:#ebebeb;
         }
+        .data-record[rel]:hover {
+            cursor: pointer;
+        }
+        .data-record-details {
+          font-size: .8em;
+          td, th, .loading {
+            padding: 10px 0 10px 60px;
+          }
+          /*.sms-message-data {
+              overflow: auto;
+          }*/
+          > td {
+              padding: 10px;
+          }
+          .data-records-table {
+              /*height: 400px;*/
+              overflow: auto;
+              width: 680px;
+          }
+        }
     }
-
     .facility-name {
         .droidItalic;
+        .droidBold;
+        color: @aqua;
+        .facility-clinics {
+            border-left: 1px solid #CCC;
+            padding-left: .5em;
+            margin-left: .25em;
+            color: @grey;
+        }
     }
-
     .valid-reports {
         .droid;
         color: @grey;
@@ -274,19 +291,25 @@
         margin-left: 18px;
         margin-top: -2px;
     }
-    .facility-name {
-        a {
-            .droidBold;
-            color: @aqua;
-        }
-        .facility-clinics {
-            border-left: 1px solid #CCC;
-            padding-left: .5em;
-            margin-left: .25em;
-            color: @grey;
-        }
+    .facility-link:hover {
+        cursor: pointer;
     }
-
+    .facility-link .name {
+      display: inline-block;
+    }
+    .facility-link .arrow {
+      background-image: url('../kujua-reporting/img/arrow-closed.png');
+      margin-right: 10px;
+      width: 9px;
+      height: 11px;
+      display: inline-block;
+    }
+    .facility-link.expanded .arrow {
+      background-image: url('../kujua-reporting/img/arrow-open.png');
+      margin-right: 10px;
+      width: 11px;
+      height: 9px;
+    }
 }
 
 .page-header {
@@ -299,6 +322,9 @@
     }
 }
 
+.clinic-data {
+    border-right: 1px solid #DDD;
+}
 .clinic-data #reporting-data .valid-percent em {
     margin-left: 2em;
 }
@@ -313,21 +339,3 @@
   float: left;
 }
 
-.facility-link a .name {
-  display: inline-block;
-}
-
-.facility-link a .arrow {
-  background-image: url('../kujua-reporting/img/arrow-closed.png');
-  margin-right: 10px;
-  width: 9px;
-  height: 11px;
-  display: inline-block;
-}
-
-.facility-link.expanded a .arrow {
-  background-image: url('../kujua-reporting/img/arrow-open.png');
-  margin-right: 10px;
-  width: 11px;
-  height: 9px;
-}

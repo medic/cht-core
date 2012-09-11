@@ -437,146 +437,164 @@ exports.fieldsToHtml = function(test) {
         labels = utils.getLabels(keys, 'TEST'),
         data_records = require('lib/data_records');
 
+
+
     var expected = {
-        "headers": [
+      "headers": [
+        {
+          "head": "Health Facility Identifier"
+        },
+        {
+          "head": "Report Year"
+        },
+        {
+          "head": "Report Month"
+        },
+        {
+          "head": "Misoprostol?"
+        },
+        {
+          "head": "Quantity Dispensed"
+        },
+        {
+          "head": "Days Stocked Out"
+        }
+      ],
+      "data": [
+        {
+          "isArray": false,
+          "value": "facility",
+          "label": "Health Facility Identifier"
+        },
+        {
+          "isArray": false,
+          "value": "2011",
+          "label": "Report Year"
+        },
+        {
+          "isArray": false,
+          "value": "11",
+          "label": "Report Month"
+        },
+        {
+          "isArray": false,
+          "value": "False",
+          "label": "Misoprostol?"
+        },
+        {
+          "headers": [
             {
-                "head": "Health Facility Identifier"
+              "head": "LA 6x1: Dispensed total"
             },
             {
-                "head": "Report Year"
+              "head": "LA 6x2: Dispensed total"
             },
             {
-                "head": "Report Month"
+              "head": "Cotrimoxazole: Dispensed total"
             },
             {
-                "head": "Misoprostol?"
+              "head": "Zinc: Dispensed total"
             },
             {
-                "head": "Quantity Dispensed"
+              "head": "ORS: Dispensed total"
             },
             {
-                "head": "Days Stocked Out"
+              "head": "Eye Ointment: Dispensed total"
             }
-        ],
-        "data": [
+          ],
+          "data": [
             {
-                "isArray": false,
-                "value": "facility"
+              "isArray": false,
+              "value": 1,
+              "label": "LA 6x1: Dispensed total"
             },
             {
-                "isArray": false,
-                "value": "2011"
+              "isArray": false,
+              "value": 2,
+              "label": "LA 6x2: Dispensed total"
             },
             {
-                "isArray": false,
-                "value": "11"
+              "isArray": false,
+              "value": 3,
+              "label": "Cotrimoxazole: Dispensed total"
             },
             {
-                "isArray": false,
-                "value": "False"
+              "isArray": false,
+              "value": 4,
+              "label": "Zinc: Dispensed total"
             },
             {
-                "headers": [
-                    {
-                        "head": "LA 6x1: Dispensed total"
-                    },
-                    {
-                        "head": "LA 6x2: Dispensed total"
-                    },
-                    {
-                        "head": "Cotrimoxazole: Dispensed total"
-                    },
-                    {
-                        "head": "Zinc: Dispensed total"
-                    },
-                    {
-                        "head": "ORS: Dispensed total"
-                    },
-                    {
-                        "head": "Eye Ointment: Dispensed total"
-                    }
-                ],
-                "data": [
-                    {
-                        "value": 1,
-                        "isArray": false
-                    },
-                    {
-                        "value": 2,
-                        "isArray": false
-                    },
-                    {
-                        "value": 3,
-                        "isArray": false
-                    },
-                    {
-                        "value": 4,
-                        "isArray": false
-                    },
-                    {
-                        "value": 5,
-                        "isArray": false
-                    },
-                    {
-                        "value": 6,
-                        "isArray": false
-                    }
-                ],
-                "isArray": true
+              "isArray": false,
+              "value": 5,
+              "label": "ORS: Dispensed total"
             },
             {
-                "headers": [
-                    {
-                        "head": "LA 6x1: Days stocked out"
-                    },
-                    {
-                        "head": "LA 6x2: Days stocked out"
-                    },
-                    {
-                        "head": "Cotrimoxazole: Days stocked out"
-                    },
-                    {
-                        "head": "Zinc: Days stocked out"
-                    },
-                    {
-                        "head": "ORS: Days stocked out"
-                    },
-                    {
-                        "head": "Eye Ointment: Days stocked out"
-                    }
-                ],
-                "data": [
-                    {
-                        "value": 9,
-                        "isArray": false
-                    },
-                    {
-                        "value": 8,
-                        "isArray": false
-                    },
-                    {
-                        "value": 7,
-                        "isArray": false
-                    },
-                    {
-                        "value": 6,
-                        "isArray": false
-                    },
-                    {
-                        "value": 5,
-                        "isArray": false
-                    },
-                    {
-                        "value": 4,
-                        "isArray": false
-                    }
-                ],
-                "isArray": true
+              "isArray": false,
+              "value": 6,
+              "label": "Eye Ointment: Dispensed total"
             }
-        ]
+          ],
+          "isArray": true
+        },
+        {
+          "headers": [
+            {
+              "head": "LA 6x1: Days stocked out"
+            },
+            {
+              "head": "LA 6x2: Days stocked out"
+            },
+            {
+              "head": "Cotrimoxazole: Days stocked out"
+            },
+            {
+              "head": "Zinc: Days stocked out"
+            },
+            {
+              "head": "ORS: Days stocked out"
+            },
+            {
+              "head": "Eye Ointment: Days stocked out"
+            }
+          ],
+          "data": [
+            {
+              "isArray": false,
+              "value": 9,
+              "label": "LA 6x1: Days stocked out"
+            },
+            {
+              "isArray": false,
+              "value": 8,
+              "label": "LA 6x2: Days stocked out"
+            },
+            {
+              "isArray": false,
+              "value": 7,
+              "label": "Cotrimoxazole: Days stocked out"
+            },
+            {
+              "isArray": false,
+              "value": 6,
+              "label": "Zinc: Days stocked out"
+            },
+            {
+              "isArray": false,
+              "value": 5,
+              "label": "ORS: Days stocked out"
+            },
+            {
+              "isArray": false,
+              "value": 4,
+              "label": "Eye Ointment: Days stocked out"
+            }
+          ],
+          "isArray": true
+        }
+      ]
     };
 
-    var out = data_records.fieldsToHtml(keys, labels, example_doc);
+    var out = utils.fieldsToHtml(keys, labels, example_doc);
     test.same(expected, out);
     test.done();
 };
