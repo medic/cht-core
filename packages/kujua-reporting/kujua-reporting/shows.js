@@ -370,7 +370,8 @@ var facilityReporting = function() {
                     $('#reporting-data').html(
                         templates.render(data_template, req, {
                             rows: rows,
-                            doc: doc
+                            doc: doc,
+                            'districts': $.kansoconfig('districts')
                         })
                     );
 
@@ -456,7 +457,13 @@ var facilityReporting = function() {
 
         return {
             title: doc.name,
-            content: templates.render(template, req, {doc: doc})
+            content: templates.render(template, req, {
+                doc: doc,
+                'District': 'Field Office',//$.kansoconfig('District'),
+                'Districts': 'Field Offices', //$.kansoconfig('Districts'),
+                'Health_Center': 'District', //$.kansoconfig('Health Center'),
+                'Health_Center_Contact': 'District Contact' //$.kansoconfig('Health Center Contact')
+            })
         };
     };
 };
