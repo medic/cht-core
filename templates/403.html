@@ -1,3 +1,7 @@
 <div style="padding:10px 20px;">
-  <p>Sorry, this account is not authorized, please login.</p>
+  {?msg}
+    <p>{msg}</p>
+  {:else}
+    <p>Sorry, please login with an authorized account.</p>
+  {/msg}
 </div>

@@ -10,11 +10,10 @@ var db = require('db'),
 
 var getViewReports = function(doc, dates, callback) {
     var args = utils.getReportingViewArgs(dates),
-        //view = 'data_records_by_year_month_facility';
-        view = 'data_records_by_year_week_facility';
+        view = 'data_records_by_form_year_month_facility';
 
-    if (dates.time_unit === 'week') {
-        view = 'data_records_by_year_week_facility';
+    if (dates.reporting_freq === 'week') {
+        view = 'data_records_by_form_year_week_facility';
     }
 
     var appdb = db.use(duality.getDBURL());
@@ -26,7 +25,7 @@ var getViewReports = function(doc, dates, callback) {
         }
         // additional filtering for this facility
         var saved_data = [];
-        var idx = doc.type === 'health_center' ? 3 : 2;
+        var idx = doc.type === 'health_center' ? 4 : 3;
         for (var i in data.rows) {
             if (doc._id === data.rows[i].key[idx]) {
                 // keep orig ordering
@@ -283,7 +282,6 @@ var facilityReporting = function() {
         var dates = utils.getDates(req.query),
             facilities = {},
             rows = [],
-            reporting_freq,
             template = 'kujua-reporting/facility.html',
             data_template = 'kujua-reporting/facility_data.html',
             getReportingData = utils.getRows;
@@ -299,33 +297,38 @@ var facilityReporting = function() {
         events.once('afterResponse', function() {
 
             var appdb = db.use(duality.getDBURL()),
-                setup = $.kansoconfig('kujua-reporting', true);
+                setup = $.kansoconfig('kujua-reporting', true),
+                form_config = {};
 
             kutils.updateTopNav('analytics');
 
+            // check that form code is setup in config
+            setup.forms.forEach(function(form) {
+                if (form.code === req.query.form)
+                    form_config = form;
+            });
+
+            // Only admins have access.
             if (!isAdmin) {
-                return $('#reporting-data').html(
+                return $('#content').html(
                     templates.render("403.html", req, {
                         doc: doc
                     })
                 );
             }
 
-            if(!setup) {
-                reporting_freq = 'week';
-            } else {
-                var data_record_type = setup.data_record_type;
-                if (types.data_records[data_record_type].fields.week_number) {
-                    reporting_freq = 'week';
-                } else {
-                    reporting_freq = 'month';
-                }
+            // Make sure form config is valid.
+            if (!form_config.code || !form_config.reporting_freq) {
+                return $('#content').html(
+                    templates.render("500.html", req, {
+                        doc: doc,
+                        msg: 'Please setup config.js with your kujua-reporting '
+                             + 'form code and reporting frequency.'
+                    })
+                );
             }
 
-            // override for cdc nepal, TODO solve time unit config problem
-            reporting_freq = 'week';
-
-            dates = utils.getDates(req.query, reporting_freq);
+            dates = utils.getDates(req.query, form_config.reporting_freq);
 
             var parentURL = '';
             if (utils.isHealthCenter(doc)) {
@@ -351,8 +354,9 @@ var facilityReporting = function() {
             // render date nav
             $('#date-nav .row').html(
                 templates.render('kujua-reporting/date_nav.html', req, {
-                    date_nav: utils.getDateNav(dates, reporting_freq),
-                    _id: doc._id
+                    date_nav: utils.getDateNav(dates, form_config.reporting_freq),
+                    _id: doc._id,
+                    form: dates.form
                 })
             );
 
@@ -441,7 +445,8 @@ var facilityReporting = function() {
                         $('.controls .facilities .dropdown-menu').html(
                             templates.render(
                                 'kujua-reporting/siblings-umenu-item.html', req, {
-                                    rows: data.rows
+                                    rows: data.rows,
+                                    form: req.query.form
                             })
                         );
                     });
