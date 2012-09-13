@@ -1,15 +1,16 @@
 {
   "_id": "config.js",
-  "_rev": "6-c58c9a6ec0bc3290f9db70a3198e3965",
+  "_rev": "11-c49a6ed97f6d5aec0a2f306136602d37",
   "values": [
     { "key": "district", "value": "field office" },
     { "key": "districts", "value": "field offices" },
     { "key": "District", "value": "Field Office" },
     { "key": "Districts", "value": "Field Offices" },
-    { "key": "District Contact Name", "value": "Field Office Contact" },
+    { "key": "District Contact Name", "value": "SMO" },
     { "key": "District Hospital", "value": "Field Office" },
     { "key": "District Hospitals", "value": "Field Offices" },
     { "key": "District Hospital Name", "value": "Name" },
+    { "key": "District Hospital Contact Name", "value": "SMO" },
     { "key": "Health Center", "value": "District" },
     { "key": "Health Centers", "value": "Districts" },
     { "key": "Health Center Name", "value": "District Name" },
@@ -23,12 +24,11 @@
     { "key": "Clinic Name", "value": "Reporting Unit Name" },
     { "key": "Clinic Contact Name", "value": "Reporting Unit Contact Name" },
     { "key": "Clinic Contact Phone", "value": "Reporting Unit Contact Phone" },
-    { "key": "RC Code", "value": "RC Code" },
+    { "key": "RC Code", "value": "RU Code" },
     { "key": "kujua-reporting",
       "value": {
           "forms": [
-            {"code":"VPD", "reporting_freq":"week"},
-            {"code":"TEST", "reporting_freq":"month"}
+            {"code":"VPD", "reporting_freq":"week"}
           ]
       }
     }
