@@ -38,7 +38,7 @@ exports.validate = function(def, form_data) {
             // assume string/error message if not object
             if (ret && !_.isObject(ret)) {
                 errors.push({
-                    code: 'form_invalid',
+                    code: 'form_invalid_custom',
                     form: def.meta.code,
                     message: ret
                 });

@@ -374,7 +374,7 @@ exports.isReferralForm = function(form) {
 
 var messages = {
     missing_fields: {
-        en: "Missing fields: %(fields).",
+        en: "Missing or invalid fields: %(fields).",
         ne: "तपाईले फारम पूरा भर्नुभएन। कृपया पुरा गरेर फेरि पठाउन प्रयास गर्नुहोला।"
     },
     extra_fields: {
@@ -422,6 +422,10 @@ exports.getMessage = function (code, locale) {
 
     var key = code.code ? code.code : code,
         msg = utils.localizedString(messages[key], locale);
+
+    // if custom validation then use the message property of error object
+    if (key === 'form_invalid_custom')
+        return code.message
 
     if (code.fields && _.isArray(code.fields))
         return msg.replace('%(fields)', code.fields.join(', '));
