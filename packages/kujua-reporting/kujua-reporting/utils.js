@@ -19,6 +19,10 @@ exports.isDistrictHospital = function(doc) {
 };
 
 var isValid = function(report) {
+
+    if (typeof report.is_valid !== 'undefined')
+        return report.is_valid
+
     if (!report)
         return false
 
@@ -33,6 +37,9 @@ var isValid = function(report) {
 };
 
 exports.viewHeading = function (view) {
+
+    if (!view)
+        return '';
 
     switch (view) {
         case 'clinic':
