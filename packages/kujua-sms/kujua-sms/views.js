@@ -320,9 +320,9 @@ exports.clinic_by_parent_phone = {
  */
 exports.clinic_by_refid = {
     map: function (doc) {
-        if (doc.type === 'data_record' && doc.refid) {
+        if (doc.type === 'clinic' && doc.contact && doc.contact.rc_code) {
             // need String because rewriter wraps everything in quotes
-            emit([String(doc.refid), doc.reported_date], doc.clinic);
+            emit([String(doc.contact.rc_code)], doc);
         }
     }
 };

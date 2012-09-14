@@ -5,7 +5,15 @@ module.exports =
   onMatch: (change) ->
     { doc } = change
     { from, related_entities } = doc
-    @db.view('kujua-base', 'clinic_by_phone', key: [from], limit: 1, (err, data) =>
+
+    # use reference id to find clinic if defined
+    if doc.refid
+        from = doc.refid
+        view = 'clinic_by_refid'
+    else
+        view = 'clinic_by_phone'
+
+    @db.view('kujua-base', view, key: [from], limit: 1, (err, data) =>
       if err
         @complete(err, false)
       else
@@ -14,6 +22,8 @@ module.exports =
         { _id, _rev } = existing
         if clinic and (clinic._id isnt _id or clinic._rev isnt _rev)
           related_entities.clinic = clinic
+          # remove facility not found errors
+          doc.errors = (e for e in doc.errors when e.code != 'facility_not_found')
           @complete(null, doc)
         else
           @complete(null, false)

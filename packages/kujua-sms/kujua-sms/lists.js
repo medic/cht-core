@@ -318,13 +318,7 @@ exports.data_record = function (head, req) {
     //
     // setup related_entities
     //
-    record.related_entities = {
-        clinic: {
-            parent: {
-                parent: {}
-            }
-        }
-    };
+    record.related_entities = {};
 
     //
     // Add first matched facility to record
@@ -337,12 +331,12 @@ exports.data_record = function (head, req) {
             break;
         }
         if (row.value.type === 'health_center') {
-            record.related_entities.clinic.parent = row.value;
+            record.related_entities.clinic = {parent: row.value};
             facility = row.value;
             break;
         }
         if (row.value.type === 'district_hospital') {
-            record.related_entities.clinic.parent.parent = row.value;
+            record.related_entities.clinic = {parent: { parent: row.value}};
             facility = row.value;
             break;
         }
