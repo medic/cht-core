@@ -3,7 +3,7 @@ _ = require('underscore')
 async = require('async')
 date = require('../date')
 
-tasks = _.compact(_.map(fs.readdirSync('./schedule'), (file) ->
+tasks = _.compact(_.map(fs.readdirSync(__dirname), (file) ->
   try
     require("./#{file}") unless file is 'index.coffee'
   catch e

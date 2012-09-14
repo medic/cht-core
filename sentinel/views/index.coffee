@@ -1,7 +1,7 @@
 fs = require('fs')
 _ = require('underscore')
 
-module.exports = _.reduce(fs.readdirSync('./views'), (memo, file) ->
+module.exports = _.reduce(fs.readdirSync(__dirname), (memo, file) ->
   try
     unless file is 'index.coffee'
       view = require("./#{file}")

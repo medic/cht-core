@@ -2,7 +2,7 @@ _ = require('underscore')
 fs = require('fs')
 Transition = require('./transition')
 
-result = _.reduce(fs.readdirSync('./transitions'), (memo, file) ->
+result = _.reduce(fs.readdirSync(__dirname), (memo, file) ->
   try
     unless _.contains(['index.coffee', 'transition.coffee'], file)
       options = require("./#{file}")
