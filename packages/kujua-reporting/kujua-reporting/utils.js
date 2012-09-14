@@ -516,7 +516,7 @@ exports.getRows = function(facilities, reports, dates) {
 exports.getRowsHC = function(facilities, reports, dates) {
     var rows = [];
 
-    // if data is coming straight from sometimes
+    // convenience
     if (facilities.rows) { facilities = facilities.rows; }
 
     var saved = {};
