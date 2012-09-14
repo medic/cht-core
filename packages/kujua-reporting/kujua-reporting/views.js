@@ -29,11 +29,15 @@ exports.facilities_by_parent = {
 exports.total_clinics_by_facility = {
     map: function (doc) {
         if (doc.type === 'clinic') {
-            var dh_id = doc.parent.parent._id;
-            var hc_id = doc.parent._id;
-            var dh_name = doc.parent.parent.name;
-            var hc_name = doc.parent.name;
-            emit([dh_id, hc_id, doc._id, dh_name, hc_name, doc.name], 1);
+            var dh = doc.parent ? doc.parent.parent : undefined;
+            var dh_id = dh ? dh._id : undefined;
+            var dh_name = dh ? dh.name : undefined;
+            var hc_id = doc.parent ? doc.parent._id : undefined;
+            var hc_name = doc.parent ? doc.parent.name : undefined;
+            var cl_name = doc.name;
+            if (!cl_name)
+                cl_name = doc.contact ? doc.contact.rc_code : undefined;
+            emit([dh_id, hc_id, doc._id, dh_name, hc_name, cl_name], 1);
         }
     },
     reduce: function (keys, values, rereduce) {
