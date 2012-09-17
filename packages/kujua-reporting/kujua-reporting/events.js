@@ -16,7 +16,7 @@ duality_events.on('init', function (ev) {
         };
 
     // we have no forms in the config, nothing to do.
-    if (!setup.forms || setup.forms.length === 0)
+    if (!setup || !setup.forms || setup.forms.length === 0)
         return;
 
     //
