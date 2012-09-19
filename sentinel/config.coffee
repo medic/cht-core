@@ -8,7 +8,10 @@ config =
   ohw_pnc_schedule_days: [1, 3, 7]
   ohw_low_weight_pnc_schedule_days: [1..7]
   ohw_obsolete_anc_reminders_days: 21
-  cdc_send_reminders: false
+  cdc_send_reminders: 
+      VDC: 
+        3: "first reminder yo",
+        4: "SERIOUS REMINDER" 
   id_format: '111111'
 
 key = 'sentinel-configuration'
