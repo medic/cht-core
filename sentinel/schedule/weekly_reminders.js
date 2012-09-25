@@ -29,8 +29,8 @@ function createReminders(form, day, reminder) {
     }
     var recipients = _.pluck(data.rows, 'value');
     _.each(recipients, function(recipient) {
-      var phone = recipient && recipient.contact && recipient.contact.phone;
-      var refid = recipient && recipient.contact && recipient.contact.rc_code;
+      var phone = recipient && recipient.contact && recipient.contact.phone,
+          refid = recipient && recipient.contact && recipient.contact.rc_code;
 
       // we can't setup reminder if clinic has no phone number
       if (!phone) return;
@@ -51,6 +51,7 @@ function createReminders(form, day, reminder) {
         if (!result || (!result.received && !_.include(result.sent, day))) {
           doc = {
             day: day,
+            related_entities: {clinic: recipient},
             related_form: form,
             phone: phone,
             refid: refid,

@@ -200,7 +200,7 @@ exports.updateTopNav = function(key, title) {
     title = title || titleize(key);
     $('.page-header h1').text($.kansoconfig(title));
     $('.navbar .nav > *').removeClass('active');
-    $('.navbar .nav .' + key).addClass('active');
+    if (key) $('.navbar .nav .' + key).addClass('active');
     $('.page-header .controls').hide();
     $('.page-header .container').attr('class','container');
     $('body > .container div').filter(':first').attr('class','content');
