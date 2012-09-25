@@ -1,6 +1,5 @@
 {
   "_id": "config.js",
-  "_rev": "11-c49a6ed97f6d5aec0a2f306136602d37",
   "values": [
     { "key": "district", "value": "field office" },
     { "key": "districts", "value": "field offices" },
