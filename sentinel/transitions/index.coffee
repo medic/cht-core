@@ -7,7 +7,7 @@ result = _.reduce(fs.readdirSync(__dirname), (memo, file) ->
     unless _.contains(['index.coffee', 'transition.coffee'], file)
       options = require("./#{file}")
 
-      key = file.replace(/\.coffee$/, '')
+      key = file.replace(/\.(coffee|js)$/, '')
 
       memo.filters[key] = new Transition(key, options).generateFilter(key)
 

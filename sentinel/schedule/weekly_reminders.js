@@ -6,11 +6,12 @@ var _ = require('underscore'),
   config = require('../config'),
   utils = require('../lib/utils');
 
-function sendReminders(form, day, reminder) {
+function createReminders(form, day, reminder) {
   var epiWeek,
       week,
       lastWeek = date.getDate(),
       year;
+
   // previous CDC week is the previous Sunday
   lastWeek.setDate(lastWeek.getDate() - (lastWeek.getDay() + 1));
 
@@ -26,10 +27,14 @@ function sendReminders(form, day, reminder) {
     var recipients = _.pluck(data.rows, 'value');
     _.each(recipients, function(recipient) {
       var phone = recipient && recipient.contact && recipient.contact.phone;
+      var refid = recipient && recipient.contact && recipient.contact.rc_code;
 
-      db.view('kujua-sentinel', 'cdc_reports', {
+      // we can't setup reminder if clinic has no phone number
+      if (!phone) return;
+
+      db.view('kujua-sentinel', 'weekly_reminders', {
         group: true,
-        key: [form, phone, year, week],
+        key: [form, year, week, phone],
         limit: 1
       }, function(err, data) {
         if (err) {
@@ -44,7 +49,8 @@ function sendReminders(form, day, reminder) {
             day: day,
             related_form: form,
             phone: phone,
-            type: 'cdc_reminder',
+            refid: refid,
+            type: 'weekly_reminder',
             week: week,
             year: year
           };
@@ -56,6 +62,7 @@ function sendReminders(form, day, reminder) {
             if (err) {
               console.error("Could not add reminder: " + err.reason);
             }
+            console.log('created weekly reminder for '+[form,year,week,phone]);
           });
         }
       });
@@ -64,29 +71,34 @@ function sendReminders(form, day, reminder) {
 }
 
 /**
- *  To configure this, set the cdc_send_reminders property to something like this:
+ * Setup reminders for CDC
+ *
+ *
+ *  To configure this, set the send_weekly_reminders property to something like this:
  *  {
  *    "VPD": {
  *      "3": "Last day to submit a timely VPD report for the previous week.",
- *      "4": "VPD report not received on time; please send previous week’s data."
+ *      "4": "VPD report not received on time; please send previous week's data."
  *    }
  *  }
  *
- *  "VPD" is the form to expect; 3 & 4 are different days to send reminders on. The values are the messages to send.
- *  {{week}} and {{year}} will be substituted into the message.
+ *  "VPD" is the form to expect; 3 & 4 are different days to send reminders on.
+ *  The values are the messages to send.  {{week}} and {{year}} will be
+ *  substituted into the message.
  *
  */
 module.exports = function() {
   var day,
-      reminders = config.get('cdc_send_reminders');
+      reminders = config.get('send_weekly_reminders'),
+      testing = true;
 
   if (_.isObject(reminders)) {
     day = date.getDate().getDay();
     _.each(reminders, function(schedule, form) {
       if (_.isObject(schedule)) {
         _.each(schedule, function(reminder, d) {
-          if (day === Number(d)) {
-            sendReminders(form, d, reminder);
+          if (day === Number(d) || testing) {
+            createReminders(form, d, reminder);
           }
         });
       }

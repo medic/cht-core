@@ -19,8 +19,11 @@ completeSetup = (err, ok) ->
   config.load(->
     _.each(transitions, (options, code) ->
       new Transition(code, options).attach()
+      console.log('loaded transition '+code)
     )
     require('./schedule') # start schedule after everything setup
+    console.log('kujua sentinel loaded.') 
+    console.log(JSON.stringify(ok,null,2))
   )
 
 db.getDoc('_design/kujua-sentinel', (err, doc) ->

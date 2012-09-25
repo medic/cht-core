@@ -6,7 +6,6 @@ module.exports = ->
   now = date.getDate()
   overdue = new Date(now.getTime())
   overdue.setDate(overdue.getDate() - 7)
-
   db.view('kujua-sentinel', 'due_tasks', startkey: overdue.getTime(), endkey: now.getTime(), (err, data) ->
     throw JSON.stringify(err) if err
     _.each(data.rows, (row) ->
