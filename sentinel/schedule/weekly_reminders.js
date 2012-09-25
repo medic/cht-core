@@ -6,6 +6,9 @@ var _ = require('underscore'),
   config = require('../config'),
   utils = require('../lib/utils');
 
+/*
+ * Setup reminders for the current week unless they are already setup.
+ */
 function createReminders(form, day, reminder) {
   var epiWeek,
       week,
@@ -44,6 +47,7 @@ function createReminders(form, day, reminder) {
         var doc,
             row = _.first(data.rows),
             result = row && row.value;
+
         if (!result || (!result.received && !_.include(result.sent, day))) {
           doc = {
             day: day,

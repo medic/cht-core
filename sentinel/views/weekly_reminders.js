@@ -5,15 +5,13 @@ module.exports = {
     if (doc.form && doc.week_number && doc.year) {
       phone = doc.related_entities && doc.related_entities.clinic && doc.related_entities.clinic.contact &&
         doc.related_entities.clinic.contact.phone;
-      refid = doc.related_entities && doc.related_entities.clinic && doc.related_entities.clinic.contact &&
-        doc.related_entities.clinic.contact.rc_code;
       if (phone) {
-        emit([doc.form, doc.year, doc.week_number, refid], {
+        emit([doc.form, doc.year, doc.week_number, phone], {
           received: true
         });
       }
     } else if (doc.type === 'weekly_reminder' && doc.related_form && doc.week && doc.year) {
-      emit([doc.related_form, doc.year, doc.week, doc.refid], {
+      emit([doc.related_form, doc.year, doc.week, doc.phone], {
         sent: doc.day
       });
     }
