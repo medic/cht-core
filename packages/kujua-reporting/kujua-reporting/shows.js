@@ -374,8 +374,6 @@ var renderReporting = function (doc, req) {
                     })
                 );
 
-                charts.initPieChart();
-
                 $('#reporting-data .valid-percent').each(function(i, el) {
                     var val = parseInt($(el).text().replace(/%/,''), 10);
                     var paper = $(el).children('.mini-pie');
