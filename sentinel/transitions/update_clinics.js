@@ -27,7 +27,7 @@ module.exports = {
         q = {key:[doc.refid], limit: 1};
     }
 
-    self.db.view('kujua-base', view, q, function(err, data) {
+    self.db.view('kujua-sentinel', view, q, function(err, data) {
 
         if (err) {
             self.complete(err);

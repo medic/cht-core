@@ -15,7 +15,7 @@ tasks = _.compact(_.map(fs.readdirSync(__dirname), (file) ->
 
 check_schedule = ->
   # only send between 9am and 6pm
-  if 9 <= date.getDate().getHours() <= 17 or true
+  if 9 <= date.getDate().getHours() <= 17
     console.log('checking schedule at '+date.getDate())
     async.forEach(tasks, (task) ->
       task()

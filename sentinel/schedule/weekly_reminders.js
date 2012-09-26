@@ -22,7 +22,7 @@ function createReminders(form, day, reminder) {
   week = epiWeek.week;
   year = epiWeek.year;
 
-  db.view('kujua-base', 'clinic_by_phone', function(err, data) {
+  db.view('kujua-sentinel', 'clinic_by_phone', function(err, data) {
     if (err) {
       console.error("Could not run view: " + err.reason);
       return;
@@ -67,7 +67,9 @@ function createReminders(form, day, reminder) {
             if (err) {
               console.error("Could not add reminder: " + err.reason);
             }
-            console.log('created weekly reminder for '+[form,year,week,phone]);
+            console.log(
+              'Created weekly reminder ' + [form,year,week,day,phone,refid]
+            );
           });
         }
       });
@@ -94,15 +96,14 @@ function createReminders(form, day, reminder) {
  */
 module.exports = function() {
   var day,
-      reminders = config.get('send_weekly_reminders'),
-      testing = true;
+      reminders = config.get('send_weekly_reminders');
 
   if (_.isObject(reminders)) {
     day = date.getDate().getDay();
     _.each(reminders, function(schedule, form) {
       if (_.isObject(schedule)) {
         _.each(schedule, function(reminder, d) {
-          if (day === Number(d) || testing) {
+          if (day === Number(d)) {
             createReminders(form, d, reminder);
           }
         });
