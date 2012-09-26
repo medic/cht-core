@@ -277,199 +277,199 @@ var onRecordClick = function(ev) {
     }
 };
 
-var facilityReporting = function() {
-    return function (doc, req) {
-        var dates = utils.getDates(req.query),
-            facilities = {},
-            rows = [],
-            template = 'kujua-reporting/facility.html',
-            data_template = 'kujua-reporting/facility_data.html',
-            getReportingData = utils.getRows;
+var renderReporting = function (doc, req) {
+    var dates = utils.getDates(req.query),
+        facilities = {},
+        rows = [],
+        template = 'kujua-reporting/facility.html',
+        data_template = 'kujua-reporting/facility_data.html',
+        getReportingData = utils.getRows;
 
-        var isAdmin = kutils.isUserAdmin(req.userCtx);
+    var isAdmin = kutils.isUserAdmin(req.userCtx);
 
-        if (utils.isHealthCenter(doc)) {
-            template = 'kujua-reporting/facility_hc.html';
-            data_template = 'kujua-reporting/facility_data_hc.html';
-            getReportingData = utils.getRowsHC;
+    if (utils.isHealthCenter(doc)) {
+        template = 'kujua-reporting/facility_hc.html';
+        data_template = 'kujua-reporting/facility_data_hc.html';
+        getReportingData = utils.getRowsHC;
+    }
+
+    events.once('afterResponse', function() {
+
+        var appdb = db.use(duality.getDBURL()),
+            setup = $.kansoconfig('kujua-reporting', true),
+            form_config = {};
+
+        kutils.updateTopNav('analytics');
+
+        // check that form code is setup in config
+        setup.forms.forEach(function(form) {
+            if (form.code === req.query.form)
+                form_config = form;
+        });
+
+        // Only admins have access.
+        if (!isAdmin) {
+            return $('#content').html(
+                templates.render("403.html", req, {
+                    doc: doc
+                })
+            );
         }
 
-        events.once('afterResponse', function() {
-
-            var appdb = db.use(duality.getDBURL()),
-                setup = $.kansoconfig('kujua-reporting', true),
-                form_config = {};
-
-            kutils.updateTopNav('analytics');
-
-            // check that form code is setup in config
-            setup.forms.forEach(function(form) {
-                if (form.code === req.query.form)
-                    form_config = form;
-            });
-
-            // Only admins have access.
-            if (!isAdmin) {
-                return $('#content').html(
-                    templates.render("403.html", req, {
-                        doc: doc
-                    })
-                );
-            }
-
-            // Make sure form config is valid.
-            if (!form_config.code || !form_config.reporting_freq) {
-                return $('#content').html(
-                    templates.render("500.html", req, {
-                        doc: doc,
-                        msg: 'Please setup config.js with your kujua-reporting '
-                             + 'form code and reporting frequency.'
-                    })
-                );
-            }
-
-            dates = utils.getDates(req.query, form_config.reporting_freq);
-
-            var parentURL = '';
-            if (utils.isHealthCenter(doc)) {
-                parentURL = utils.getReportingUrl(doc.parent._id, dates);
-            }
-
-            // render header
-            $('.page-header .container').html(
-                templates.render('kujua-reporting/page_header_body.html', req, {
+        // Make sure form config is valid.
+        if (!form_config.code || !form_config.reporting_freq) {
+            return $('#content').html(
+                templates.render("500.html", req, {
                     doc: doc,
-                    parentURL: parentURL
+                    msg: 'Please setup config.js with your kujua-reporting '
+                         + 'form code and reporting frequency.'
                 })
             );
-            $('.page-header .container').addClass('reporting');
-            $('body > .container .content').filter(':first').attr('class','content-reporting');
+        }
 
-            // position siblings menu
-            var offset = $('.controls .facilities').offset();
-            offset.left = $('.page-header .title').width() +
-                          $('.page-header .title').offset().left + 5;
-            $('.controls .facilities').offset(offset);
+        dates = utils.getDates(req.query, form_config.reporting_freq);
 
-            // render date nav
-            $('#date-nav .row').html(
-                templates.render('kujua-reporting/date_nav.html', req, {
-                    date_nav: utils.getDateNav(dates, form_config.reporting_freq),
-                    _id: doc._id,
-                    form: dates.form
-                })
-            );
+        var parentURL = '';
+        if (utils.isHealthCenter(doc)) {
+            parentURL = utils.getReportingUrl(doc.parent._id, dates);
+        }
 
-            getViewChildFacilities(doc, function(facilities) {
-                getViewReports(doc, dates, function(reports) {
-                    var totals = utils.getTotals(facilities, reports, dates);
-                    renderReportingTotals(totals, doc);
-                    rows = getReportingData(
-                                facilities, reports, dates, doc);
+        // render header
+        $('.page-header .container').html(
+            templates.render('kujua-reporting/page_header_body.html', req, {
+                doc: doc,
+                parentURL: parentURL
+            })
+        );
+        $('.page-header .container').addClass('reporting');
+        $('body > .container .content').filter(':first').attr('class','content-reporting');
 
-                    $('#reporting-data').html(
-                        templates.render(data_template, req, {
-                            rows: rows,
-                            doc: doc,
-                            'districts': $.kansoconfig('districts')
+        // position siblings menu
+        var offset = $('.controls .facilities').offset();
+        offset.left = $('.page-header .title').width() +
+                      $('.page-header .title').offset().left + 5;
+        $('.controls .facilities').offset(offset);
+
+        // render date nav
+        $('#date-nav .row').html(
+            templates.render('kujua-reporting/date_nav.html', req, {
+                date_nav: utils.getDateNav(dates, form_config.reporting_freq),
+                _id: doc._id,
+                form: dates.form
+            })
+        );
+
+        getViewChildFacilities(doc, function(facilities) {
+            getViewReports(doc, dates, function(reports) {
+                var totals = utils.getTotals(facilities, reports, dates);
+                renderReportingTotals(totals, doc);
+                rows = getReportingData(
+                            facilities, reports, dates, doc);
+
+                $('#reporting-data').html(
+                    templates.render(data_template, req, {
+                        rows: rows,
+                        doc: doc,
+                        'districts': $.kansoconfig('districts')
+                    })
+                );
+
+                charts.initPieChart();
+
+                $('#reporting-data .valid-percent').each(function(i, el) {
+                    var val = parseInt($(el).text().replace(/%/,''), 10);
+                    var paper = $(el).children('.mini-pie');
+                    $(paper).css({'width': '25px', 'height': '25px'});
+                    var color = Raphael.hsb(val/300, .75, .85);
+
+                    if (val === 0) {
+                        paper.addClass('icon-remove-sign');
+                    } else if (val == 100) {
+                        paper.addClass('icon-ok-sign');
+                    } else {
+                        var chart = charts.pie(
+                            [val, 100 - val],
+                            {selector: paper.get(0),
+                             cx: 12,
+                             cy: 12,
+                             radius: 12,
+                             fill: [color, '#CBCBCB']});
+                    }
+                });
+
+                $('#reporting-data .facility-link').click(function(ev) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    $(this).toggleClass('expanded')
+                        .next('tr').children('td').children('div')
+                            .slideToggle();
+                });
+
+
+                $('.facility-link:first').addClass('expanded');
+                $('.data-records-list div').hide().first().show();
+
+                // bind click on rows that have data
+                $('#reporting-data .data-records .data-record[rel]').click(
+                    onRecordClick
+                );
+
+                /*var openLinkMenu = function(selector) {
+                    return function (ev) {
+                        var elt = $(selector);
+                        if (!elt.parents('.upopup')[0]) {
+                            elt.uMenu('create', this, {
+                                vertical: true,
+                                onClick: function (_item_elt) {
+                                    document.location.href = (
+                                        $(_item_elt).find('a').first().attr('href')
+                                    );
+                                    return true;
+                                }
+                            });
+                        }
+                    };
+                };
+
+                $('.change_time_unit_link').bind(
+                    'mousedown', openLinkMenu('.change_time_unit_menu')
+                );
+
+                $('.change_time_unit_link').click(function(ev) {
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                });
+                */
+
+                renderRelatedFacilities(req, doc);
+
+                getViewSiblingFacilities(doc, function(data) {
+                    $('.controls .facilities .dropdown-menu').html(
+                        templates.render(
+                            'kujua-reporting/siblings-umenu-item.html', req, {
+                                rows: data.rows,
+                                form: req.query.form
                         })
                     );
-
-                    $('#reporting-data .valid-percent').each(function(i, el) {
-                        var val = parseInt($(el).text().replace(/%/,''), 10);
-                        var paper = $(el).children('.mini-pie');
-                        $(paper).css({'width': '25px', 'height': '25px'});
-                        var color = Raphael.hsb(val/300, .75, .85);
-
-                        if (val === 0) {
-                            paper.addClass('icon-remove-sign');
-                        } else if (val == 100) {
-                            paper.addClass('icon-ok-sign');
-                        } else {
-                            var chart = charts.pie(
-                                [val, 100 - val],
-                                {selector: paper.get(0),
-                                 cx: 12,
-                                 cy: 12,
-                                 radius: 12,
-                                 fill: [color, '#CBCBCB']});
-                        }
-                    });
-
-                    $('#reporting-data .facility-link').click(function(ev) {
-                        ev.preventDefault();
-                        ev.stopPropagation();
-                        $(this).toggleClass('expanded')
-                            .next('tr').children('td').children('div')
-                                .slideToggle();
-                    });
-
-
-                    $('.facility-link:first').addClass('expanded');
-                    $('.data-records-list div').hide().first().show();
-
-                    // bind click on rows that have data
-                    $('#reporting-data .data-records .data-record[rel]').click(
-                        onRecordClick
-                    );
-
-                    /*var openLinkMenu = function(selector) {
-                        return function (ev) {
-                            var elt = $(selector);
-                            if (!elt.parents('.upopup')[0]) {
-                                elt.uMenu('create', this, {
-                                    vertical: true,
-                                    onClick: function (_item_elt) {
-                                        document.location.href = (
-                                            $(_item_elt).find('a').first().attr('href')
-                                        );
-                                        return true;
-                                    }
-                                });
-                            }
-                        };
-                    };
-
-                    $('.change_time_unit_link').bind(
-                        'mousedown', openLinkMenu('.change_time_unit_menu')
-                    );
-
-                    $('.change_time_unit_link').click(function(ev) {
-                        ev.stopPropagation();
-                        ev.preventDefault();
-                    });
-                    */
-
-                    renderRelatedFacilities(req, doc);
-
-                    getViewSiblingFacilities(doc, function(data) {
-                        $('.controls .facilities .dropdown-menu').html(
-                            templates.render(
-                                'kujua-reporting/siblings-umenu-item.html', req, {
-                                    rows: data.rows,
-                                    form: req.query.form
-                            })
-                        );
-                    });
                 });
             });
         });
+    });
 
-        return {
-            title: doc.name,
-            content: templates.render(template, req, {
-                doc: doc,
-                'District': 'Field Office',//$.kansoconfig('District'),
-                'Districts': 'Field Offices', //$.kansoconfig('Districts'),
-                'Health_Center': 'District', //$.kansoconfig('Health Center'),
-                'Health_Center_Contact': 'District Contact' //$.kansoconfig('Health Center Contact')
-            })
-        };
+    return {
+        title: doc.name,
+        content: templates.render(template, req, {
+            doc: doc,
+            'District': 'Field Office',//$.kansoconfig('District'),
+            'Districts': 'Field Offices', //$.kansoconfig('Districts'),
+            'Health_Center': 'District', //$.kansoconfig('Health Center'),
+            'Health_Center_Contact': 'District Contact' //$.kansoconfig('Health Center Contact')
+        })
     };
 };
 
 /**
  * Reporting rates of a facility
  */
-exports.facility_reporting = facilityReporting();
+exports.facility_reporting = renderReporting;
 
