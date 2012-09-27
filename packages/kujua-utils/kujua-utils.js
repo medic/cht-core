@@ -162,6 +162,10 @@ exports.isUserAdmin = function(userCtx) {
            userCtx.roles.indexOf('_admin') !== -1;
 };
 
+exports.isUserDistrictAdmin = function(userCtx) {
+    return userCtx.roles.indexOf('district_admin') !== -1;
+};
+
 exports.hasPerm = function(userCtx, perm) {
     if (!userCtx || !perm) { return false; }
     switch (perm) {
