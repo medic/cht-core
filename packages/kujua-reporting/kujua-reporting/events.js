@@ -27,11 +27,11 @@ duality_events.on('init', function (ev) {
  */
 var renderNav = function(err, data) {
 
-    session.info(function (err, info) {
+    if (err) {
+        return alert('Create facility data to use analytics.');
+    }
 
-        if (err) {
-            return alert('Create facility data to use analytics.');
-        }
+    session.info(function (err, info) {
 
         var isAdmin = utils.hasPerm(info.userCtx, 'can_edit_any_facility'),
             isDistrictAdmin = utils.hasPerm(info.userCtx, 'can_edit_facility'),
@@ -46,6 +46,7 @@ var renderNav = function(err, data) {
             return;
 
         users.get(info.userCtx.name, function(err, user) {
+
             var district = user.kujua_facility,
                 forms = [];
 
