@@ -814,6 +814,11 @@ var arrayToCSV = exports.arrayToCSV = function(arr, delimiter) {
     return rows.join('\n');
 };
 
+var getTypeForXML = function(val) {
+    return 'String';
+    //return val ? capitalize(typeof val) : 'String';
+};
+
 // SpreadsheetML by default, extend as needed.
 // Based on http://code.google.com/p/php-excel/
 var arrayToXML = exports.arrayToXML = function(arr, format) {
@@ -829,10 +834,10 @@ var arrayToXML = exports.arrayToXML = function(arr, format) {
         for (var v = 0; v < row.length; v++) {
             val = row[v];
             vals.push(
-                '<Cell><Data ss:Type="%s">'.replace(
-                    '%s', (val ? capitalize(typeof val) : 'String')) +
-                htmlEntities(val) +
-                '</Data></Cell>');
+                '<Cell><Data ss:Type="%s">'.replace('%s', getTypeForXML(val))
+                + htmlEntities(val)
+                + '</Data></Cell>'
+            );
         }
         rows.push(vals.join(''));
     }
