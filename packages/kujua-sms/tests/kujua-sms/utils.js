@@ -233,7 +233,7 @@ exports.getValues_no_clinic = function(test) {
 };
 
 exports.getValuesUnits = function(test) {
-    test.expect(7);
+    test.expect(8);
 
     var keys1 = ['foo', 'bar', 'baz'],
         doc1 = {foo: 1, bar: 2, baz: 3};
@@ -248,6 +248,14 @@ exports.getValuesUnits = function(test) {
     test.same(
         utils.getValues(doc1p1, keys1p1),
         [1, 0, false]
+    );
+
+    // check true values correctly pass through
+    var keys1p2 = ['foo', 'bar', 'baz'],
+        doc1p2 = {foo: 1, bar: 0, baz: true};
+    test.same(
+        utils.getValues(doc1p2, keys1p2),
+        [1, 0, true]
     );
 
     var keys2 = [['foo', ['bar', ['baz']]]],
