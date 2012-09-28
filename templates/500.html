@@ -1,7 +1,10 @@
 <div style="padding:10px 20px;">
   {?msg}
     <p>{msg}</p>
+    {?err}
+    <pre>{err}</pre>
+    {/err}
   {:else}
-    <p>Sorry, something is broken, please contact your supervisor if the problem persists.</p>
+    <p>Internal error, please contact your supervisor if the problem persists.</p>
   {/msg}
 </div>
