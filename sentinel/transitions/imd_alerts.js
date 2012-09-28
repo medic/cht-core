@@ -4,7 +4,7 @@ module.exports = {
   onMatch: function(change) {
     var doc = change.doc,
         clinic = doc.related_entities.clinic,
-        clinicName = clinic.name,
+        clinicName = clinic ? clinic.name : '',
         parent = clinic.parent,
         phone,
         phones = [],
@@ -23,12 +23,14 @@ module.exports = {
       parent = parent.parent;
     }
 
-    self.addMessage(doc, phones, self.i18n("CDC outbreak report at VDC {{vdc}} Ward {{ward}} Location {{location}} from {{clinicName}}: AFP {{afp}}, MSL {{msl}}. Patient contact: {{patientPhone}}", {
-      vdc: doc.vdc,
+    self.addMessage(doc, phones, self.i18n(
+        "CDC Outbreak Report: Unit ID: {{refid}}, Ward: {{ward}}, "
+        + "Location: {{location}}, AFP: {{afp}}, MSL: {{msl}}, "
+        + "Patient Contact: {{patientPhone}}", {
+      refid: doc.refid,
       ward: doc.ward,
       location: doc.location,
       patientPhone: doc.phone_number,
-      clinicName: clinicName,
       afp: doc.afp_present,
       msl: doc.msl_present
     }));
