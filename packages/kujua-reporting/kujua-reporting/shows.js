@@ -303,6 +303,12 @@ var renderReporting = function (doc, req) {
     }
 
     events.once('afterResponse', function() {
+        if (!isAdmin && !isDistrictAdmin) {
+            // not logged in or roles is not setup right
+            return $('#content').html(
+                templates.render("403.html", req, {})
+            );
+        }
         users.get(req.userCtx.name, function(err, user) {
 
             if (err) {
@@ -315,7 +321,9 @@ var renderReporting = function (doc, req) {
                 renderPage();
             } else {
                 return $('#content').html(
-                    templates.render("403.html", req, {doc: doc})
+                    templates.render(
+                        "500.html", req, {msg: 'District is not defined.'}
+                    )
                 );
             }
         });
