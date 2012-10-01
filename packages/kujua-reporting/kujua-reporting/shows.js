@@ -103,7 +103,7 @@ var renderRelatedFacilities = function(req, doc, selector) {
     var related = [];
     var appendRelated = function(d) {
         var p = d.related_entities ? d.related_entities.clinic : d.parent;
-        if(p) {
+        if(p && p.name) {
             related.push({
                 title: $.kansoconfig(utils.viewHeading(p.type)),
                 name: p.name
