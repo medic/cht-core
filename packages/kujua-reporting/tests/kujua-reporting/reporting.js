@@ -3,7 +3,7 @@ var utils = require('kujua-reporting/utils'),
 
 exports['reporting.getRows - three months'] = function (test) {
     test.expect(8);
-    var q = { startmonth: '2011-10', months: 3 },
+    var q = {startmonth:'2011-10', months:3, form:'TEST'},
         dates = utils.getDates(q);
 
     var facilities = [
@@ -68,6 +68,7 @@ exports['reporting.getRows - three months'] = function (test) {
         {
             "id": "d346ca",
             "key": [
+                'TEST',
                 2011,
                 7,
                 "325710",
@@ -86,6 +87,7 @@ exports['reporting.getRows - three months'] = function (test) {
         {
             "id": "d3916d",
             "key": [
+                'TEST',
                 2011,
                 7,
                 "325710",
@@ -104,6 +106,7 @@ exports['reporting.getRows - three months'] = function (test) {
         {
             "id": "d3ece6",
             "key": [
+                'TEST',
                 2011,
                 7,
                 "325710",
@@ -154,7 +157,7 @@ exports['reporting.getRows - three months'] = function (test) {
         ],
         "valid": 0,
         "valid_percent": 0,
-        "url": "reporting/947f3d?startmonth=2011-10&months=3&time_unit=month"
+        "url": "reporting/TEST/947f3d?startmonth=2011-10&months=3&time_unit=month"
       },
       {
         "id": "947322",
@@ -227,7 +230,7 @@ exports['reporting.getRows - three months'] = function (test) {
         ],
         "valid": 3,
         "valid_percent": 33,
-        "url": "reporting/947322?startmonth=2011-10&months=3&time_unit=month"
+        "url": "reporting/TEST/947322?startmonth=2011-10&months=3&time_unit=month"
       }
     ];
 
@@ -249,13 +252,13 @@ exports['reporting.getRowsHC - three months'] = function (test) {
 
     test.expect(59);
 
-    var q = { startmonth: '2011-10', months: 3 },
+    var q = {startmonth:'2011-10', months:3, form:'TEST'},
         dates = utils.getDates(q);
 
     var reports = [
         {
             "id": "d56252",
-            "key": [ 2011, 7, "325710", "947f3d", "b42c21" ],
+            "key": [ 'TEST', 2011, 7, "325710", "947f3d", "b42c21" ],
             "value": {
                 "district_hospital": "Zomba",
                 "health_center": "Chipini",
@@ -268,6 +271,7 @@ exports['reporting.getRowsHC - three months'] = function (test) {
         {
             "id": "d56884",
             "key": [
+                'TEST',
                 2011,
                 8,
                 "325710",
@@ -286,6 +290,7 @@ exports['reporting.getRowsHC - three months'] = function (test) {
         {
             "id": "d5aeb8",
             "key": [
+                'TEST',
                 2011,
                 8,
                 "325710",
@@ -404,7 +409,7 @@ exports['reporting.getRowsHC - three months'] = function (test) {
 
 exports['reporting.getTotals - weekly time unit and frequency'] = function (test) {
     test.expect(1);
-    var q = { startweek: '2012-34', weeks: 3, time_unit: 'week' },
+    var q = {startweek:'2012-34', weeks:3, time_unit:'week', form:'TEST'},
         reporting_freq = 'week',
         dates = utils.getDates(q, reporting_freq);
 
@@ -458,7 +463,7 @@ exports['reporting.getTotals - weekly time unit and frequency'] = function (test
 
 exports['reporting.getTotals - months time unit, weekly report frequency'] = function (test) {
     test.expect(1);
-    var q = { startmonth: '2012-08', months: 3 },
+    var q = {startmonth: '2012-08', months: 3, form:'TEST'},
         reporting_freq = 'week',
         dates = utils.getDates(q, reporting_freq);
 
@@ -514,7 +519,7 @@ exports['reporting.getTotals - months time unit, weekly report frequency'] = fun
 exports['reporting.getTotals - single health center, three months'] = function (test) {
 
     test.expect(1);
-    var q = { startmonth: '2011-10', months: 3 },
+    var q = {startmonth:'2011-10', months:3, form:'TEST'},
         dates = utils.getDates(q);
 
     var reports = [
@@ -596,7 +601,7 @@ exports['reporting.getTotals - single health center, three months'] = function (
 };
 
 exports['getDates list - specify startmonth'] = function (test){
-    var q = { startmonth: '2011-8', months: 3 };
+    var q = {startmonth:'2011-8', months:3, form:'TEST'};
     var dates = utils.getDates(q);
     test.expect(4);
     test.strictEqual(dates.list.length, 3);
@@ -623,7 +628,7 @@ exports['getDates list - no params'] = function (test){
 };
 
 exports['getDates list - 12 months'] = function (test){
-    var q = { startmonth: '2011-8', months: 12 };
+    var q = {startmonth:'2011-8', months:12, form:'TEST'};
     var dates = utils.getDates(q);
     test.expect(13);
     test.strictEqual(dates.list.length, 12);
@@ -645,7 +650,7 @@ exports['getDates list - 12 months'] = function (test){
 exports['process not submitted records, missing two months'] = function (test){
 
     // startmonth query param month string is not zero indexed
-    var q = { startmonth: '2011-10', months: 3 };
+    var q = {startmonth:'2011-10', months:3, form:'TEST'};
     var dates = utils.getDates(q);
 
     var rows = [{
@@ -702,10 +707,10 @@ exports['process not submitted records, missing two months'] = function (test){
 exports['req.query params to view params with no startmonth'] = function(test) {
     test.expect(3);
     var now = new Date();
-    var q = {months: 1};
+    var q = {months: 1, form: 'TEST'};
     var expect = {
-        startkey: [now.getFullYear(),now.getMonth()+1],
-        endkey: [now.getFullYear(), now.getMonth()],
+        startkey: ['TEST', now.getFullYear(),now.getMonth()+1],
+        endkey: ['TEST', now.getFullYear(), now.getMonth()],
         descending: true
     };
     var dates = utils.getDates(q);
@@ -725,10 +730,10 @@ exports['req.query params to view params with no startmonth'] = function(test) {
  */
 exports['req.query params to view params when startmonth is January'] = function(test) {
     test.expect(3);
-    var q = {months: 1, startmonth: '2011-1'};
+    var q = {months:1, startmonth:'2011-1', form:'TEST'};
     var expect = {
-        startkey: [2011,1],
-        endkey: [2011, 0],
+        startkey: ['TEST', 2011,1],
+        endkey: ['TEST', 2011, 0],
         descending: true
     };
     var dates = utils.getDates(q);
@@ -748,10 +753,10 @@ exports['req.query params to view params when startmonth is January'] = function
  */
 exports['req.query params to view params when startmonth is August and 6 months prior'] = function(test) {
     test.expect(3);
-    var reqQuery = {startmonth:'2011-8', months:'6'};
+    var reqQuery = {startmonth:'2011-8', months:'6', form:'TEST'};
     var expect = {
-        startkey: [2011,8],
-        endkey: [2011, 2],
+        startkey: ['TEST', 2011,8],
+        endkey: ['TEST', 2011, 2],
         descending: true
     };
     var dates = utils.getDates(reqQuery);
