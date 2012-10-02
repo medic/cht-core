@@ -11,9 +11,8 @@ module.exports = {
         self = this;
 
     // ignore transition if doc has errors/is not valid
-    if (doc.errors && doc.errors.length !== 0) {
-        return;
-    }
+    if (doc.errors && doc.errors.length !== 0)
+        return self.complete(null, false);
 
     while (parent) {
       phone = parent.contact && parent.contact.phone;
