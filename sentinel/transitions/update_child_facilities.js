@@ -12,8 +12,6 @@ module.exports = {
         , q = {startkey:[doc._id], endkey:[doc._id, {}], include_docs:true}
         , self = this;
 
-    var k = [doc.name, doc.type, doc._id];
-
     if (doc.type !== 'health_center' && doc.type !== 'district_hospital')
         return self.complete(null, false);
 
