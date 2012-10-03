@@ -20,7 +20,6 @@
     @model.bind('change', @render, @)
     @model.bind('destroy', @remove, @)
   render: ->
-    debugger
     { contact, name } = @model.get('value')
     { phone, rc_code } = contact
     if not name
