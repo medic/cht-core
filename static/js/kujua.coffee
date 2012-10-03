@@ -20,10 +20,17 @@
     @model.bind('change', @render, @)
     @model.bind('destroy', @remove, @)
   render: ->
+    debugger
     { contact, name } = @model.get('value')
-    { phone } = contact
+    { phone, rc_code } = contact
+    if not name
+        name = ''
+    if not rc_code
+        rc_code = ''
+    if not phone
+        phone = 'undefined'
     @$el.html("""
-      <a href="#">#{name} (#{phone})</a>
+      <a href="#">#{name} #{rc_code} (#{phone})</a>
     """)
     @
   select: ->
