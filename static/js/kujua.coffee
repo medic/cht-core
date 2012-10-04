@@ -42,12 +42,17 @@
     @data = options.data
     { @_id, @_rev } = @data
     @make()
-    $('.container > .content').append(@el)
+    div = $('.container > .content > .clinics-view')
+    if (div.length)
+        div.replaceWith(@el)
+    else
+        $('.container > .content').append(@el)
     @clinics = new Kujua.ClinicList()
     @clinics.bind('reset', @addAll, @)
     @render()
     @clinics.fetch()
     @bind('update', @onUpdate, @)
+  className: 'clinics-view'
   onUpdate: (clinic) ->
     record = _.extend({}, @data)
     record.related_entities?.clinic = clinic
