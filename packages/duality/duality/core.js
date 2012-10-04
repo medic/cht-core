@@ -236,9 +236,8 @@ exports.init = function () {
             var href = $(this).attr('href');
             var rel = $(this).attr('rel');
 
-            if (/#[A-Za-z_\-:\.]+/.test(href)) {
-                exports._in_page = true;
-                // in-page anchor
+            exports._in_page = /#[A-Za-z_\-:\.]+/.test(href);
+            if (exports._in_page) { // in-page anchor
                 return;
             }
             if(typeof(console) !== 'undefined')
