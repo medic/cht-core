@@ -1,6 +1,7 @@
 var jsDump = require('jsDump'),
     _ = require('underscore')._,
     settings = require('settings/root'),
+    users = require('users'),
     cookies = require('cookies');
 
 
@@ -183,10 +184,20 @@ exports.hasPerm = function(userCtx, perm) {
     }
 };
 
-exports.getUserDistrict = function(userCtx) {
+exports.getUserDistrict = function(userCtx, callback) {
+    var district = '';
     if (userCtx.kujua_facility)
-        return userCtx.kujua_facility;
-    return cookies.readBrowserCookies()['kujua_facility'];
+        district = userCtx.kujua_facility;
+    else
+        district = cookies.readBrowserCookies()['kujua_facility'];
+    if (!district) {
+        users.get(userCtx.name, function(err, user) {
+            if (err) return callback(err);
+            callback(null, user.kujua_facility);
+        });
+    } else {
+        callback(null, district);
+    }
 };
 
 /**
