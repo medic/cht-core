@@ -92,16 +92,24 @@ exports.logger = {
     log: function(obj) {
         if (typeof(console) !== 'undefined') {
             console.log(obj);
-        } else if (typeof(log) !== 'undefined') {
-            log(obj);
+        }
+        if (typeof(log) !== 'undefined') {
+            if (_.isObject(obj))
+                log(JSON.stringify(obj));
+            else
+                log(obj);
         }
     },
     log_error: function(obj) {
         if (typeof(console) !== 'undefined') {
             console.error(obj);
-        } else if (typeof(log) !== 'undefined') {
-            log('ERROR');
-            log(obj);
+        }
+        if (typeof(log) !== 'undefined') {
+            log('Kujua ERROR:');
+            if (_.isObject(obj))
+                log(JSON.stringify(obj));
+            else
+                log(obj);
         }
     },
     silent: function (obj) {},

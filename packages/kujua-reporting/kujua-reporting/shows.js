@@ -312,8 +312,8 @@ var renderReporting = function (doc, req) {
         users.get(req.userCtx.name, function(err, user) {
 
             if (err) {
-                console.error('Failed to retreive user info: '+err.reason);
-                return;
+                return kutils.logger.error(
+                    'Failed to retreive user info: '+err.reason);
             }
 
             userDistrict = user.kujua_facility;
@@ -416,7 +416,7 @@ var renderReports = function(err, facilities) {
 
     getViewReports(doc, dates, function(err, reports) {
         if (err) {
-            console.error(err);
+            kutils.logger.error(err);
         }
         var totals = utils.getTotals(facilities, reports, dates);
         renderReportingTotals(totals, doc);

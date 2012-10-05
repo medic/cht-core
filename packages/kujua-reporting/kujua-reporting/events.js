@@ -20,12 +20,12 @@ duality_events.on('init', function (ev) {
      */
     session.info(function (err, info) {
 
+        if (err)
+            kutils.logger.error('Failed to retreive session info: '+err.reason);
+
         var isAdmin = kutils.hasPerm(info.userCtx, 'can_edit_any_facility'),
             isDistrictAdmin = kutils.hasPerm(info.userCtx, 'can_edit_facility'),
             setup = $.kansoconfig('kujua-reporting', true);
-
-        if (err)
-            console.error('Failed to retreive session info: '+err.reason);
 
         if (!setup || !setup.forms || setup.forms.length === 0) return;
 
@@ -34,8 +34,8 @@ duality_events.on('init', function (ev) {
         users.get(info.userCtx.name, function(err, user) {
 
             if (err) {
-                console.error('Failed to retreive user  info: '+err.reason);
-                return;
+                return kutils.logger.error(
+                    'Failed to retreive user  info: '+err.reason);
             }
 
             var district = user.kujua_facility,
@@ -49,8 +49,8 @@ duality_events.on('init', function (ev) {
             db.getView(ddoc, 'facilities_by_type', q, function(err, data) {
 
                 if (err) {
-                    console.error('Failed to retreive facility data: '+err.reason);
-                    return;
+                    return kutils.logger.error(
+                        'Failed to retreive facility data: '+err.reason);
                 }
 
                 // associate each form from config.js with a list of facilities
