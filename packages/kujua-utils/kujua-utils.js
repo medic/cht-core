@@ -1,6 +1,8 @@
 var jsDump = require('jsDump'),
     _ = require('underscore')._,
-    settings = require('settings/root');
+    settings = require('settings/root'),
+    cookies = require('cookies');
+
 
 exports.getUserLocale = function(req) {
     if (req.query.locale)
@@ -182,7 +184,9 @@ exports.hasPerm = function(userCtx, perm) {
 };
 
 exports.getUserDistrict = function(userCtx) {
-    return userCtx.kujua_facility;
+    if (userCtx.kujua_facility)
+        return userCtx.kujua_facility;
+    return cookies.readBrowserCookies()['kujua_facility'];
 };
 
 /**
