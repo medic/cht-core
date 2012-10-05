@@ -33,7 +33,7 @@
     """)
     @
   select: ->
-    @parent.trigger('update', @model.get('value'))
+    @parent.trigger('update', @model.get('doc'))
     false
 )
 
