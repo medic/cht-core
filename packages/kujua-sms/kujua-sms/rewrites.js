@@ -18,13 +18,6 @@ exports.rules = [
         to: '_list/data_records_xml/data_records_valid_by_district_form_and_reported_date'
     },
     {
-        from: '/clinics.json',
-        to: '_view/clinic_by_phone',
-        query: {
-            include_docs: 'true'
-        }
-    },
-    {
         from: '/:form/data_record/add/clinic/:phone',
         to: '_list/data_record/clinic_by_phone',
         query: {

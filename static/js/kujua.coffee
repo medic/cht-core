@@ -20,7 +20,7 @@
     @model.bind('change', @render, @)
     @model.bind('destroy', @remove, @)
   render: ->
-    { contact, name } = @model.get('value')
+    { contact, name } = @model.get('doc')
     { phone, rc_code } = contact
     if not name
         name = ''
@@ -43,11 +43,13 @@
     { @_id, @_rev } = @data
     @make()
     div = $('.container > .content > .clinics-view')
-    if (div.length)
+    if div.length
         div.replaceWith(@el)
     else
         $('.container > .content').append(@el)
     @clinics = new Kujua.ClinicList()
+    if options.url 
+        @clinics.url = options.url
     @clinics.bind('reset', @addAll, @)
     @render()
     @clinics.fetch()
