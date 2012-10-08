@@ -19,6 +19,10 @@ exports.isDistrictHospital = function(doc) {
 };
 
 var isValid = function(report) {
+
+    if (typeof report.is_valid !== 'undefined')
+        return report.is_valid
+
     if (!report)
         return false
 
@@ -33,6 +37,9 @@ var isValid = function(report) {
 };
 
 exports.viewHeading = function (view) {
+
+    if (!view)
+        return '';
 
     switch (view) {
         case 'clinic':
@@ -358,6 +365,7 @@ exports.getDates = function (q, reporting_freq) {
     }
 
     _.extend(dates, {
+        form: q.form,
         now: now,
         list: list,
         time_unit: selected_time_unit,
@@ -390,9 +398,9 @@ var totalReportsDue = function(dates) {
 };
 
 /*
- * Return an object that is used to query data records in a date range. Note,
- * startkey is not inclusive, hence the call to nextMonth so the requested date
- * range is included in the view results.
+ * Return the query param object used to query the data records view in a date
+ * range. Note, startkey is not inclusive, hence the call to nextMonth so the
+ * requested date range is included in the view results.
  */
 exports.getReportingViewArgs = function (dates) {
 
@@ -401,11 +409,11 @@ exports.getReportingViewArgs = function (dates) {
         startkey, endkey;
 
     if(dates.reporting_freq === 'week') {
-        startkey = [startdate.year(), getWeek(startdate)];
-        endkey = [enddate.year(), getWeek(enddate)];
+        startkey = [dates.form, startdate.year(), getWeek(startdate)];
+        endkey = [dates.form, enddate.year(), getWeek(enddate)];
     } else {
-        startkey = [startdate.year(), startdate.month()];
-        endkey = [enddate.year(), enddate.month()];
+        startkey = [dates.form, startdate.year(), startdate.month()];
+        endkey = [dates.form, enddate.year(), enddate.month()];
     }
 
     return {
@@ -416,9 +424,10 @@ exports.getReportingViewArgs = function (dates) {
 };
 
 var getReportingUrl = exports.getReportingUrl = function(id, dates) {
-    return 'reporting/' + id + '?start' + dates.time_unit + '=' +
-        dates['start' + dates.time_unit] + '&' + dates.time_unit + 's=' +
-        dates[dates.time_unit + 's'] + '&time_unit=' + dates.time_unit;
+    return 'reporting/' + dates.form + '/' + id + '?start' + dates.time_unit
+            + '=' + dates['start' + dates.time_unit] + '&' + dates.time_unit
+            + 's=' + dates[dates.time_unit + 's'] + '&time_unit='
+            + dates.time_unit;
 };
 
 /**
@@ -468,17 +477,17 @@ exports.getRows = function(facilities, reports, dates) {
     // find the matching facility and populate row.clinic array
     _.each(rows, function(row) {
         _.each(reports, function(report) {
-            if (report.key[3] === row.id) {
+            if (report.key[4] === row.id) {
                 var is_valid = isValid(report.value);
                 var formatted_record = {
                     id: report.id,
                     clinic: {
-                        id: report.key[4],
+                        id: report.key[5],
                         name: report.value.clinic
                     },
-                    month: report.key[1],
-                    month_pp: utils.prettyMonth(report.key[1], true),
-                    year: report.key[0],
+                    month: report.key[2],
+                    month_pp: utils.prettyMonth(report.key[2], true),
+                    year: report.key[1],
                     reporter: report.value.reporter,
                     reporting_phone: report.value.reporting_phone,
                     is_valid: is_valid,
@@ -507,7 +516,7 @@ exports.getRows = function(facilities, reports, dates) {
 exports.getRowsHC = function(facilities, reports, dates) {
     var rows = [];
 
-    // if data is coming straight from sometimes
+    // convenience
     if (facilities.rows) { facilities = facilities.rows; }
 
     var saved = {};
@@ -533,16 +542,16 @@ exports.getRowsHC = function(facilities, reports, dates) {
     // find the matching facility and populate row.records array.
     _.each(rows, function(row) {
         _.each(reports, function(report) {
-            if (report.key[4] === row.id) {
+            if (report.key[5] === row.id) {
                 var is_valid = isValid(report.value);
                 var formatted_record = {
                     id: report.id,
                     clinic: {
-                        id: report.key[4],
+                        id: report.key[5],
                         name: report.value.clinic},
-                    month: report.key[1],
-                    month_pp: utils.prettyMonth(report.key[1], true),
-                    year: report.key[0],
+                    month: report.key[2],
+                    month_pp: utils.prettyMonth(report.key[2], true),
+                    year: report.key[1],
                     reporter: report.value.reporter,
                     reporting_phone: report.value.reporting_phone,
                     is_valid: is_valid,

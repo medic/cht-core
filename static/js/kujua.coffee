@@ -20,14 +20,20 @@
     @model.bind('change', @render, @)
     @model.bind('destroy', @remove, @)
   render: ->
-    { contact, name } = @model.get('value')
-    { phone } = contact
+    { contact, name } = @model.get('doc')
+    { phone, rc_code } = contact
+    if not name
+        name = ''
+    if not rc_code
+        rc_code = ''
+    if not phone
+        phone = 'undefined'
     @$el.html("""
-      <a href="#">#{name} (#{phone})</a>
+      <a href="#">#{name} #{rc_code} (#{phone})</a>
     """)
     @
   select: ->
-    @parent.trigger('update', @model.get('value'))
+    @parent.trigger('update', @model.get('doc'))
     false
 )
 
@@ -36,12 +42,19 @@
     @data = options.data
     { @_id, @_rev } = @data
     @make()
-    $('.container > .content').append(@el)
+    div = $('.container > .content > .clinics-view')
+    if div.length
+        div.replaceWith(@el)
+    else
+        $('.container > .content').append(@el)
     @clinics = new Kujua.ClinicList()
+    if options.url 
+        @clinics.url = options.url
     @clinics.bind('reset', @addAll, @)
     @render()
     @clinics.fetch()
     @bind('update', @onUpdate, @)
+  className: 'clinics-view'
   onUpdate: (clinic) ->
     record = _.extend({}, @data)
     record.related_entities?.clinic = clinic

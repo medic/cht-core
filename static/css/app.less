@@ -1,6 +1,7 @@
 @import "elements.less";
 @import "bootstrap/less/bootstrap.less";
 @import "packages/kujua-branding/css/base.less";
+@import "packages/kujua-reporting/css/base.less";
 
 // avoid header bug to bypass rewrite and directly access attachment
 @baseFontPath: "../../../bootstrap/font/";
@@ -99,6 +100,9 @@ body {
   select {
     margin-bottom: 0;
   }
+}
+.navbar .nav > li.hide {
+  display: none;
 }
 .navbar, .brand {
   font-weight: normal;

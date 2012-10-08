@@ -949,14 +949,22 @@
 
         table.append(thead).append(tbody);
         $table.html(table);
-        $table.append(
-            '<div class="spreadsheet-actions">' +
-                '<a href="#" class="btn add-row-btn">' +
-                    '<i class="icon-plus-sign"></i> Add row' +
-                '</a>' +
-                '<span class="row-counter"></span>' +
-            '</div>'
-        );
+
+        if (options.lockRows) {
+            $table.append(
+                '<div class="spreadsheet-actions">' +
+                '</div>'
+            );
+        } else {
+            $table.append(
+                '<div class="spreadsheet-actions">' +
+                    '<a href="#" class="btn add-row-btn">' +
+                        '<i class="icon-plus-sign"></i> Add row' +
+                    '</a>' +
+                    '<span class="row-counter"></span>' +
+                '</div>'
+            );
+        }
 
         textarea = $('<textarea id="spreadsheet_clipboard"></textarea>');
         $table.data('spreadsheet:clipboard', textarea);

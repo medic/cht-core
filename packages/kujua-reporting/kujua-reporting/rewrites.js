@@ -1,6 +1,6 @@
 exports.rules = [
     {
-      from: '/reporting/:id', 
+      from: '/reporting/:form/:id',
       to: '_show/facility_reporting/:id',
       method: 'GET'
     }

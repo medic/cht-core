@@ -1,4 +1,14 @@
-<li class="analytics">
-  <a href="{baseURL}/reporting/{id}">
-    <i class="icon-bar-chart"></i> Analytics</a>
+<li class="dropdown analytics">
+    <a class="dropdown-toggle"
+       data-toggle="dropdown"
+       href="#">
+       <i class="icon-bar-chart"></i> Analytics <b class="caret"></b>
+    </a>
+    <ul class="dropdown-menu">
+      {#forms}
+        {#districts}
+        <li><a href="{baseURL}/reporting/{code}/{id}">{code} :: {name}</a></li>
+        {/districts}
+      {/forms}
+    </ul>
 </li>

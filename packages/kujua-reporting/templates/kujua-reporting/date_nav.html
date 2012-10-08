@@ -4,7 +4,7 @@
   </li>
   {#date_nav}
     <li{?active} class="active"{/active}>
-      <a href="{baseURL}/reporting/{_id}?{query_params}">{text}</a>
+      <a href="{baseURL}/reporting/{form}/{_id}?{query_params}">{text}</a>
     </li>
   {/date_nav}
   <li class="dropdown">
@@ -15,10 +15,10 @@
           <b class="caret"></b>
         </a>
       <ul class="dropdown-menu">
-        <li><a href="{baseURL}/reporting/{_id}?time_unit=week">Week</a></li>
-        <li><a href="{baseURL}/reporting/{_id}?time_unit=month">Month</a></li>
-        <li><a href="{baseURL}/reporting/{_id}?time_unit=quarter">Quarter</a></li>
-        <li><a href="{baseURL}/reporting/{_id}?time_unit=year">Year</a></li>
+        <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=week">Week</a></li>
+        <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=month">Month</a></li>
+        <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=quarter">Quarter</a></li>
+        <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=year">Year</a></li>
       </ul>
   </li>
 </ul>

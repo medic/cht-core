@@ -139,6 +139,6 @@ exports.custom_validations_function = function(test) {
     var data = { foo: 2 },
         errors = validate.validate(def, data);
 
-    test.same(errors[0], {code:"form_invalid", form:"FOO", message:"Arg."});
+    test.same(errors[0], {code:"form_invalid_custom", form:"FOO", message:"Arg."});
     test.done();
 };

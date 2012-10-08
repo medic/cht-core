@@ -1,6 +1,9 @@
 var jsDump = require('jsDump'),
     _ = require('underscore')._,
-    settings = require('settings/root');
+    settings = require('settings/root'),
+    users = require('users'),
+    cookies = require('cookies');
+
 
 exports.getUserLocale = function(req) {
     if (req.query.locale)
@@ -89,16 +92,24 @@ exports.logger = {
     log: function(obj) {
         if (typeof(console) !== 'undefined') {
             console.log(obj);
-        } else if (typeof(log) !== 'undefined') {
-            log(obj);
+        }
+        if (typeof(log) !== 'undefined') {
+            if (_.isObject(obj))
+                log(JSON.stringify(obj));
+            else
+                log(obj);
         }
     },
     log_error: function(obj) {
         if (typeof(console) !== 'undefined') {
             console.error(obj);
-        } else if (typeof(log) !== 'undefined') {
-            log('ERROR');
-            log(obj);
+        }
+        if (typeof(log) !== 'undefined') {
+            log('Kujua ERROR:');
+            if (_.isObject(obj))
+                log(JSON.stringify(obj));
+            else
+                log(obj);
         }
     },
     silent: function (obj) {},
@@ -162,6 +173,10 @@ exports.isUserAdmin = function(userCtx) {
            userCtx.roles.indexOf('_admin') !== -1;
 };
 
+exports.isUserDistrictAdmin = function(userCtx) {
+    return userCtx.roles.indexOf('district_admin') !== -1;
+};
+
 exports.hasPerm = function(userCtx, perm) {
     if (!userCtx || !perm) { return false; }
     switch (perm) {
@@ -177,8 +192,20 @@ exports.hasPerm = function(userCtx, perm) {
     }
 };
 
-exports.getUserDistrict = function(userCtx) {
-    return userCtx.kujua_facility;
+exports.getUserDistrict = function(userCtx, callback) {
+    var district = '';
+    if (userCtx.kujua_facility)
+        district = userCtx.kujua_facility;
+    else
+        district = cookies.readBrowserCookies()['kujua_facility'];
+    if (!district) {
+        users.get(userCtx.name, function(err, user) {
+            if (err) return callback(err);
+            callback(null, user.kujua_facility);
+        });
+    } else {
+        callback(null, district);
+    }
 };
 
 /**
@@ -200,7 +227,7 @@ exports.updateTopNav = function(key, title) {
     title = title || titleize(key);
     $('.page-header h1').text($.kansoconfig(title));
     $('.navbar .nav > *').removeClass('active');
-    $('.navbar .nav .' + key).addClass('active');
+    if (key) $('.navbar .nav .' + key).addClass('active');
     $('.page-header .controls').hide();
     $('.page-header .container').attr('class','container');
     $('body > .container div').filter(':first').attr('class','content');

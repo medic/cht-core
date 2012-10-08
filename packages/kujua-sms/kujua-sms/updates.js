@@ -58,9 +58,8 @@ var getCallbackBody = function(phone, doc, form_data) {
         body.reported_date = ts;
     }
 
-    if(utils.isReferralForm(form)) {
-        body.refid = getRefID(form, form_data);
-    }
+    if (def.reference_field)
+        body.refid = form_data[def.reference_field];
 
     for (var k in def.fields) {
         var field = def.fields[k];
@@ -87,7 +86,12 @@ var getCallbackBody = function(phone, doc, form_data) {
  * @returns {String} - Path for callback
  * @api private
  */
-var getCallbackPath = function(phone, form, form_data) {
+var getCallbackPath = function(phone, form, form_data, def) {
+    // if the definition has use-sentinel true, shortcut
+    if (def && def['use-sentinel']) {
+        return '/_db';
+    }
+
     var path = '';
 
     switch(form) {
@@ -192,7 +196,9 @@ var getRespBody = function(doc, req) {
 
     if (def.autoreply) {
         resp.payload.messages[0].message = def.autoreply;
-    }
+    }// else if (def['use-sentinel']) {
+     //   delete resp.payload;
+   // }
 
     // provide callback for next part of record creation.
     resp.callback = {

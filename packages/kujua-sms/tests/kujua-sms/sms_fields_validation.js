@@ -145,7 +145,7 @@ var step1_with_errors = function(test) {
 
     test.same(resp_body.payload.success, true);
     test.same(resp_body.payload.messages[0].message,
-        "Missing fields: year, month.");
+        "Missing or invalid fields: year, month.");
 
     test.same(resp_body.callback.data.errors[0],
         {code: "missing_fields", fields: ["year","month"]});

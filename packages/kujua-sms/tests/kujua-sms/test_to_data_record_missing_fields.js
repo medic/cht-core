@@ -60,7 +60,7 @@ var expected_callback = {
         responses: [
           {
             to: "+13125551212",
-            message: "Missing fields: year, month."
+            message: "Missing or invalid fields: year, month."
           }
         ],
         tasks: [],
@@ -110,7 +110,7 @@ exports.test_to_record_missing_fields = function (test) {
         baseURL + "/TEST/data_record/add/clinic/%2B13125551212");
 
     test.same(resp_body.payload.messages[0].message,
-        "Missing fields: year, month.");
+        "Missing or invalid fields: year, month.");
 
     test.same(
         resp_body.callback.data.errors,
