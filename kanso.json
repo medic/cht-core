@@ -42,7 +42,6 @@
         "kujua-branding": ">=0.0.2",
         "kujua-sms": null,
         "kujua-utils": null,
-        "kujua-reporting": null,
         "jsDump": null,
         "git-info": null,
         "showdown": null,
