@@ -139,7 +139,7 @@ exports.test_to_record_with_auth = function (test) {
 /*
  * STEP 2:
  *
- * Run data_record/add/clinic and expect a callback to
+ * Run data_record/add/facility and expect a callback to
  * check if the same data record already exists.
  */
 var step2 = function(test, req) {

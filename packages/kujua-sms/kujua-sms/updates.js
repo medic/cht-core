@@ -13,18 +13,16 @@ var _ = require('underscore')._,
 /**
  * @param {String} form - jsonforms key string
  * @param {Object} form_data - parsed form data
- * @returns {String} - Referral ID value
+ * @returns {String} - Reporting Unit ID value
  * @api private
  */
 var getRefID = function(form, form_data) {
-    switch(form) {
-        case 'MSBC':
-            return form_data.cref_rc;
-        case 'MSBB':
-            return form_data.ref_rc;
-        case 'MSBR':
-            return form_data.ref_rc;
-    }
+    var def = jsonforms[form];
+
+    if (!def || !def.facility_reference)
+        return;
+
+    return form_data[def.facility_reference];
 };
 
 /**
@@ -58,8 +56,8 @@ var getCallbackBody = function(phone, doc, form_data) {
         body.reported_date = ts;
     }
 
-    if (def.reference_field)
-        body.refid = form_data[def.reference_field];
+    if (def.facility_reference)
+        body.refid = form_data[def.facility_reference];
 
     for (var k in def.fields) {
         var field = def.fields[k];
@@ -87,39 +85,31 @@ var getCallbackBody = function(phone, doc, form_data) {
  * @api private
  */
 var getCallbackPath = function(phone, form, form_data, def) {
-    // if the definition has use-sentinel true, shortcut
-    if (def && def['use-sentinel']) {
+
+    def = def ? def : jsonforms[form];
+
+    // if the definition has use-sentinel:true, shortcut
+    if (def && def['use-sentinel'])
         return '/_db';
+
+    // exception hack
+    if (form === 'MSBB') {
+        return '/%1/data_record/add/health_center/%2'
+                  .replace('%1', encodeURIComponent(form))
+                  .replace('%2', encodeURIComponent(phone));
     }
 
-    var path = '';
-
-    switch(form) {
-        case 'MSBC':
-            path = '/%1/data_record/add/refid/%2'
-                      .replace('%1', encodeURIComponent(form))
-                      .replace('%2', encodeURIComponent(
-                          getRefID(form, form_data)));
-            break;
-        case 'MSBB':
-            path = '/%1/data_record/add/health_center/%2'
-                      .replace('%1', encodeURIComponent(form))
-                      .replace('%2', encodeURIComponent(phone));
-            break;
-        case 'VPD':
-        case 'NYAA':
-        case 'NYAB':
-            path = '/%1/data_record/add/facility/%2'
-                      .replace('%1', encodeURIComponent(form))
-                      .replace('%2', encodeURIComponent(phone));
-            break;
-        default:
-            path = '/%1/data_record/add/clinic/%2'
-                      .replace('%1', encodeURIComponent(form))
-                      .replace('%2', encodeURIComponent(phone));
+    if (def.facility_reference) {
+        return '/%1/data_record/add/refid/%2'
+                  .replace('%1', encodeURIComponent(form))
+                  .replace('%2', encodeURIComponent(
+                      getRefID(form, form_data)));
     }
 
-    return path;
+    // find a match with a facility's phone number
+    return '/%1/data_record/add/facility/%2'
+                .replace('%1', encodeURIComponent(form))
+                .replace('%2', encodeURIComponent(phone));
 };
 
 /*
@@ -154,7 +144,7 @@ var parseSentTimestamp = function(str) {
 /*
  * Return Ushahidi SMSSync compatible response message.  Supports custom
  * auto-reply message in the form definition. Also uses callbacks to create
- * 1st phase of tasks_referral doc.
+ * 1st phase of doc creation.
  */
 var getRespBody = function(doc, req) {
     var form = doc.form,
@@ -211,7 +201,7 @@ var getRespBody = function(doc, req) {
     };
 
     var form_data = smsparser.parse(def, doc);
-    resp.callback.options.path = baseURL + getCallbackPath(phone, form, form_data);
+    resp.callback.options.path = baseURL + getCallbackPath(phone, form, form_data, def);
     resp.callback.data = getCallbackBody(phone, doc, form_data);
 
     // process errors and create payload object for SMSSync replies

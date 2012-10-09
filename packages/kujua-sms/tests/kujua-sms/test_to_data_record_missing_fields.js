@@ -107,7 +107,7 @@ exports.test_to_record_missing_fields = function (test) {
     
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/TEST/data_record/add/clinic/%2B13125551212");
+        baseURL + "/TEST/data_record/add/facility/%2B13125551212");
 
     test.same(resp_body.payload.messages[0].message,
         "Missing or invalid fields: year, month.");

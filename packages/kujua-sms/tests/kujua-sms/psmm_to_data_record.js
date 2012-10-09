@@ -94,7 +94,7 @@ exports.psmm_to_record = function (test) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/PSMM/data_record/add/clinic/%2B13125551212");
+        baseURL + "/PSMM/data_record/add/facility/%2B13125551212");
 
     step2_1(test, helpers.nextRequest(resp_body, 'PSMM'));
 
@@ -104,7 +104,7 @@ exports.psmm_to_record = function (test) {
 /*
  * STEP 1:
  *
- * Run data_record/add/clinic and expect a callback to
+ * Run data_record/add/facility and expect a callback to
  * check if the same data record already exists with existing clinic.
  */
 var step2_1 = function(test, req) {

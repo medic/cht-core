@@ -71,7 +71,7 @@ exports.sms_fields_validation = function (test) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/TEST/data_record/add/clinic/%2B13125551212");
+        baseURL + "/TEST/data_record/add/facility/%2B13125551212");
 
     step1_with_extra_fields(test);
 
@@ -152,7 +152,7 @@ var step1_with_errors = function(test) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/TEST/data_record/add/clinic/%2B13125551212");
+        baseURL + "/TEST/data_record/add/facility/%2B13125551212");
 
     step2_with_errors(test, helpers.nextRequest(resp_body, 'TEST'));
 
@@ -162,7 +162,7 @@ var step1_with_errors = function(test) {
 /*
  * STEP 2 WITH ERRORS:
  *
- * Run data_record/add/clinic and expect a callback to
+ * Run data_record/add/facility and expect a callback to
  * check if the same data record already exists when
  * there were errors in the add_sms function.
  *

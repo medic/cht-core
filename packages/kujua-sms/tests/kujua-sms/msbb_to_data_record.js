@@ -147,7 +147,7 @@ exports.msbb_to_record = function (test) {
 /*
  * STEP 2:
  *
- * Run data_record/add/clinic and expect a callback to
+ * Run data_record/add/facility and expect a callback to
  * check if the same data record already exists.
  */
 var step2 = function(test, req) {
@@ -268,7 +268,7 @@ var step1_with_only_required_fields_defined = function(test) {
 /*
  * STEP 2 WITH ONLY REQUIRED FIELDS:
  *
- * Run data_record/add/clinic and expect a callback to
+ * Run data_record/add/facility and expect a callback to
  * check if the same data record already exists.
  */
 var step2_with_only_required_fields_defined = function(test, req) {
@@ -342,7 +342,7 @@ var step1_with_extra_fields_defined = function(test) {
 /*
  * STEP 2 WITH EXTRA FIELDS:
  *
- * Run data_record/add/clinic and expect a callback to
+ * Run data_record/add/facility and expect a callback to
  * check if the same data record already exists.
  */
 var step2_with_extra_fields_defined = function(test, req) {

@@ -8,9 +8,18 @@
   parse: (response) ->
     response.rows
   url: ->
-    'clinics.json'
+    'facilities.json'
 )
 
+getFacilityDesc = (doc) ->
+  { contact, name } = doc
+  if contact
+      parts = [name, contact.name, contact.rc_code, contact.phone]
+  else 
+      parts = [name]
+  desc = (str for str in parts when str isnt undefined or '')
+  desc.join(', ')
+  
 @Kujua.ClinicView = Backbone.View.extend(
   tagName: 'li'
   events:
@@ -20,16 +29,12 @@
     @model.bind('change', @render, @)
     @model.bind('destroy', @remove, @)
   render: ->
-    { contact, name } = @model.get('doc')
-    { phone, rc_code } = contact
-    if not name
-        name = ''
-    if not rc_code
-        rc_code = ''
-    if not phone
-        phone = 'undefined'
+    doc = @model.get('doc')
+    if (doc.type is 'district_hospital') 
+        return @
+    desc = getFacilityDesc(doc)
     @$el.html("""
-      <a href="#">#{name} #{rc_code} (#{phone})</a>
+      <a href="#">#{desc}</a>
     """)
     @
   select: ->
@@ -70,7 +75,10 @@
     , @)
   render: ->
     { _id, _rev, related_entities } = @data
-    clinic_name = related_entities?.clinic?.name or 'No Clinic'
+    facility_desc = getFacilityDesc(
+                        related_entities?.clinic or 
+                        related_entities?.health_center or 
+                        {name:'Undefined'})
     @$el.html("""
       <form id="#{_id}" action="" method="POST" class="hide modal fade">
         <div class="modal-header">
@@ -80,7 +88,7 @@
         <div class="modal-body">
           <div class="btn-group">
             <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-              Clinic: #{clinic_name}
+              Facility: #{facility_desc}
               <span class="caret"></span>
             </a>
             <ul class="dropdown-menu">
@@ -90,7 +98,7 @@
       </form>
     """)
     @$list = @$('ul')
-    @$clinic_name = @$('a.dropdown-toggle')
+    @$facility_desc = @$('a.dropdown-toggle')
     @$el.find('.modal').modal('show')
     @
 )

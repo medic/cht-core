@@ -112,7 +112,7 @@ exports.msbr_to_record = function (test) {
     
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/MSBR/data_record/add/clinic/%2B13125551212");
+        baseURL + "/MSBR/data_record/add/facility/%2B13125551212");
 
     _.each([
         'ref_year', 'ref_month', 'ref_day', 'ref_rc',
@@ -149,7 +149,7 @@ exports.msbr_to_record = function (test) {
 //
 // STEP 2:
 //
-// Run data_record/add/clinic and expect a callback to
+// Run data_record/add/facility and expect a callback to
 // check if the same data record already exists.
 //
 var step2 = function(test, req) {
