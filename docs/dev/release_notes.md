@@ -2,30 +2,30 @@
 
 ## 0.1.17
 
-Renamed `reference_field` property on forms to `facility_reference`.
-Allow phone number to match on any facility type not just clinics.
+* Renamed `reference_field` property on forms to `facility_reference`.
+* Allow phone number to match on any facility type not just clinics.
 
 ## 0.1.16
 
-Tell user to login on 403 template.
-Added record detail to analytics screen expand div.
-Added configuration entries for reporting rates/analytics.
-Made labels more configurable.
-Added Kujua Sentinel support for reminders and alerts.
-Updated spreadsheet columns to use config for labels.
-Added support for form_invalid_custom error codes.
-Introduced `reference_field` on forms.
-Fixed kujua reporting views to better handle undefined clinic object in facility data.
-Make it clear in HC reporting screen that contact name/phone is undefined.
-Use `__dirname` in sentinel so it can be launched from any directory.
-Added page for reminder logs.
-Fixed district filtering support.
-Added lockRows option to spreadsheet.
-Fixed bug in XML spreadsheet output where true boolean value shows as 0.
-Added support in sentinel to update children when a facility is edited.
-Fixed bug on delete and editRow modal window.
-Hide all nav items except docs when logged out.
-Removed console references and added JSON.stringify to logger call.
+* Tell user to login on 403 template.
+* Added record detail to analytics screen expand div.
+* Added configuration entries for reporting rates/analytics.
+* Made labels more configurable.
+* Added Kujua Sentinel support for reminders and alerts.
+* Updated spreadsheet columns to use config for labels.
+* Added support for form_invalid_custom error codes.
+* Introduced `reference_field` on forms.
+* Fixed kujua reporting views to better handle undefined clinic object in facility data.
+* Make it clear in HC reporting screen that contact name/phone is undefined.
+* Use `__dirname` in sentinel so it can be launched from any directory.
+* Added page for reminder logs.
+* Fixed district filtering support.
+* Added lockRows option to spreadsheet.
+* Fixed bug in XML spreadsheet output where true boolean value shows as 0.
+* Added support in sentinel to update children when a facility is edited.
+* Fixed bug on delete and editRow modal window.
+* Hide all nav items except docs when logged out.
+* Removed console references and added JSON.stringify to logger call.
 
 ## 0.1.15
 
