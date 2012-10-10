@@ -144,7 +144,7 @@ var isFromHealthCenter = function(phone, clinic) {
  *
  * @api private
  */
-exports.getRecipientPhone = function(form, phone, clinic) {
+exports.old_getRecipientPhone = function(form, phone, clinic) {
     if (!clinic.parent || !clinic.parent.contact) { return ''; }
     switch (form) {
         case 'MSBR':
@@ -167,7 +167,7 @@ exports.getRecipientPhone = function(form, phone, clinic) {
             return '';
     }
 };
-var getRecipientPhone = exports.getRecipientPhone;
+var old_getRecipientPhone = exports.old_getRecipientPhone;
 
 /**
  * @param {String} form
@@ -179,19 +179,19 @@ var getRecipientPhone = exports.getRecipientPhone;
  *
  * @api private
  */
-var getReferralMessage = function(form, phone, clinic, record) {
+var old_getReferralMessage = function(form, phone, clinic, record) {
     var ignore = [],
-        message = [];
+        message = [],
+        keys = utils.getFormKeys(form),
+        labels = utils.getLabels(keys, form),
+        values = utils.getValues(record, keys);
+
 
     if(form === "MSBC") {
         if (isFromHealthCenter(phone, clinic)) {
             ignore.push('cref_treated');
         }
     }
-
-    var keys = utils.getFormKeys(form);
-    var labels = utils.getLabels(keys, form);
-    var values = utils.getValues(record, keys);
 
     _.each(keys, function(key) {
         if (ignore.indexOf(key) === -1) {
@@ -215,21 +215,35 @@ var getReferralMessage = function(form, phone, clinic, record) {
  *
  * @api private
  */
-var getReferralTask = function(form, record) {
+var old_getReferralTask = function(form, record) {
     var phone = record.from,
         form_data = record.form_data,
         clinic = record.related_entities.clinic,
-        to = getRecipientPhone(form, phone, clinic),
         task = {
-            type: 'referral',
             state: 'pending',
             messages: [{
-                to: to,
-                message: getReferralMessage(form, phone, clinic, record)
+                to: old_getRecipientPhone(form, phone, clinic),
+                message: old_getReferralMessage(form, phone, clinic, record)
             }]
         };
 
     return task;
+};
+var getMessagesTask = function(form, record) {
+    var def = jsonforms[form],
+        phone = record.from,
+        clinic = record.related_entities.clinic,
+        keys = utils.getFormKeys(form),
+        labels = utils.getLabels(keys, form),
+        values = utils.getValues(record, keys),
+        task = {
+            state: 'pending',
+            messages: []
+        };
+    if (typeof def.messages_task === 'string')
+        task.messages.push(eval('('+def.messages_task+')()'));
+    if (task.messages.length > 0)
+        return task;
 };
 
 /**
@@ -325,6 +339,8 @@ exports.data_record = function (head, req) {
     //
     var row = {};
     while (row = getRow()) {
+        log('row is\n');
+        log(JSON.stringify(row,null,2));
         if (row.value.type === 'clinic') {
             record.related_entities.clinic = row.value;
             facility = row.value;
@@ -347,17 +363,21 @@ exports.data_record = function (head, req) {
         var err = {code: 'facility_not_found'};
         err.message = utils.getMessage(err);
         addError(record, err);
-    } else if (utils.isReferralForm(form)) {
-        var task = getReferralTask(form, record);
-        record.tasks.push(task);
-        for (var i in task.messages) {
-            var msg = task.messages[i];
-            if(!msg.to) {
-                var err = {code: 'recipient_not_found'};
-                err.message = utils.getMessage(err);
-                addError(record, err);
-                // we don't need redundant error messages
-                break;
+    }
+    if (def.messages_task) {
+        var task = getMessagesTask(form, record);
+        if (task) {
+            record.tasks.push(task);
+            for (var i in task.messages) {
+                var msg = task.messages[i];
+                // check task fields are defined
+                if(!msg.to) {
+                    var err = {code: 'recipient_not_found'};
+                    err.message = utils.getMessage(err);
+                    addError(record, err);
+                    // we don't need redundant error messages
+                    break;
+                }
             }
         }
     }
