@@ -109,10 +109,10 @@ exports.msbr_to_record = function (test) {
 
     var resp_body = JSON.parse(resp[1].body);
     delete resp_body.callback.data.reported_date;
-    
+
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/MSBR/data_record/add/facility/%2B13125551212");
+        baseURL + "/MSBR/data_record/add/refid/abcdef");
 
     _.each([
         'ref_year', 'ref_month', 'ref_day', 'ref_rc',

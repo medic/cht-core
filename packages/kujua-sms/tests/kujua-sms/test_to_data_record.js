@@ -87,6 +87,20 @@ var expected_callback = {
     }
 };
 
+/* improve messages function to better handle dot notation keys. */
+var expected_tasks = [
+    {
+      "state": "pending",
+      "messages": [
+        {
+          "to": "+14155551212",
+          "message": "Health Facility Identifier: facility, Report Year: 2011, Report Month: 11, Misoprostol?: false, LA 6x1: Dispensed total: 1, LA 6x2: Dispensed total: 2"
+        }
+      ]
+    }
+];
+
+
 
 /*
  * STEP 1:
@@ -96,7 +110,7 @@ var expected_callback = {
  **/
 exports.test_to_record = function (test) {
 
-    test.expect(25);
+    test.expect(26);
 
     // Data parsed from a gateway POST
     var data = {
@@ -176,8 +190,40 @@ var facility_missing_error = function(test, req) {
 
     test.same(
         resp_body.callback.data.errors,
-        [{"code":"facility_not_found","message":"Facility not found."}]
+        [
+            {
+                "code":"facility_not_found",
+                "message":"Facility not found."
+            },
+            {
+                "code":"recipient_not_found",
+                "message":"Could not find referral recipient."
+            }
+        ]
     );
+
+    messages_task_result(test, req);
+};
+
+/*
+ * Check messages task result.
+ */
+var messages_task_result = function(test, req) {
+
+    var clinic = example.clinic;
+
+    var viewdata = {rows: [
+        {
+            "key": ["+13125551212"],
+            "value": clinic
+        }
+    ]};
+
+    var resp = fakerequest.list(lists.data_record, viewdata, req);
+
+    var resp_body = JSON.parse(resp.body);
+
+    test.same(resp_body.callback.data.tasks, expected_tasks);
 
     uses_update_path(test, req);
 };
@@ -273,7 +319,7 @@ var record_exists_case = function(test, req, finish, args) {
         {clinic: example.clinic});
 
     test.same(resp_body.callback.data.errors, []);
-    test.same(resp_body.callback.data.tasks, []);
+    test.same(resp_body.callback.data.tasks, expected_tasks);
 
     if (typeof finish === 'function') {
         finish.apply(this, args);

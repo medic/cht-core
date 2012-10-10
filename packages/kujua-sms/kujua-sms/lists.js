@@ -229,6 +229,16 @@ var old_getReferralTask = function(form, record) {
 
     return task;
 };
+/*
+ * Setup context and run eval on `messages_task` property on form.
+ *
+ * @param {String} form - jsonforms form key
+ * @param {Object} record - Data record object
+ *
+ * @returns {Object|undefined} - the task object or undefined if we have no
+ *                               messages/nothing to send.
+ *
+ */
 var getMessagesTask = function(form, record) {
     var def = jsonforms[form],
         phone = record.from,

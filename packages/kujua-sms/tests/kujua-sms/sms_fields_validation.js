@@ -224,7 +224,20 @@ var step3_with_errors = function(test, req) {
         resp_body.callback.options.method,
         "PUT");
 
-    test.same(resp_body.callback.data.tasks, []);
+    test.same(
+        resp_body.callback.data.tasks,
+        [
+            {
+                "state":"pending",
+                "messages":[
+                    {
+                        "to":"+14155551212",
+                        "message":"Health Facility Identifier: a, Report Year: null, Report Month: null, Misoprostol?: null, LA 6x1: Dispensed total: null, LA 6x2: Dispensed total: null"
+                    }
+                ]
+            }
+        ]
+    );
 
     test.same(resp_body.callback.data.errors[0],
         {code: "missing_fields", fields: ["year", "month"]});

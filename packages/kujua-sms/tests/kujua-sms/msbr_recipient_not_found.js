@@ -108,7 +108,7 @@ exports.msbr_recipient_not_found = function (test) {
     
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/MSBR/data_record/add/facility/%2B13125551212");
+        baseURL + "/MSBR/data_record/add/refid/abcdef");
 
     _.each([
         'ref_year', 'ref_month', 'ref_day', 'ref_rc',

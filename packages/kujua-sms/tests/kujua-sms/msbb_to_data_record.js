@@ -63,16 +63,15 @@ var expected_callback = {
             }
         ],
         tasks: [],
-        ref_year: "2012",
-        ref_month: "1",
+        ref_year: 2012,
+        ref_month: 1,
         ref_day: 24,
         ref_rc: "abcdef",
         ref_hour: 1111,
         ref_name: "bbbbbb",
         ref_age: 22,
         ref_reason: "Autres",
-        ref_reason_other: "cccccc",
-        refid: "abcdef"
+        ref_reason_other: "cccccc"
     }
 };
 
