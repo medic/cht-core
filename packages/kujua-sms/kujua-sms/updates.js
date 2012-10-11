@@ -161,6 +161,9 @@ var getRespBody = function(doc, req) {
     if (!doc.message || !doc.message.trim()) {
         errormsg = utils.getMessage('error', doc.locale);
     } else if (!form || !def) {
+        logger.error('Form not found: '+form);
+        logger.error('doc is:');
+        logger.error(JSON.stringify(doc,null,2));
         if (form === undefined) {
             errormsg = utils.getMessage(
                         {code:'form_not_found', form: 'undefined'}, doc.locale);

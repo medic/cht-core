@@ -349,8 +349,6 @@ exports.data_record = function (head, req) {
     //
     var row = {};
     while (row = getRow()) {
-        log('row is\n');
-        log(JSON.stringify(row,null,2));
         if (row.value.type === 'clinic') {
             record.related_entities.clinic = row.value;
             facility = row.value;
