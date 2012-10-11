@@ -119,7 +119,7 @@ exports.msbb_to_record = function (test) {
     
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/MSBB/data_record/add/health_center/%2B13125551212");
+        baseURL + "/MSBB/data_record/add/facility/%2B13125551212");
 
     _.each([
         'ref_year', 'ref_month', 'ref_day', 'ref_rc', 'ref_hour',
@@ -233,7 +233,7 @@ var step1_with_only_required_fields_defined = function(test) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/MSBB/data_record/add/health_center/%2B13125551212");
+        baseURL + "/MSBB/data_record/add/facility/%2B13125551212");
     
     _.each([
         'ref_year', 'ref_month', 'ref_day', 'ref_name'
@@ -327,7 +327,7 @@ var step1_with_extra_fields_defined = function(test) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/MSBB/data_record/add/health_center/%2B13125551212");
+        baseURL + "/MSBB/data_record/add/facility/%2B13125551212");
     
     test.same(
         resp_body.callback.data.errors,
