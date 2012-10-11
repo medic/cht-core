@@ -1,5 +1,11 @@
 # Release Notes
 
+## 0.1.18
+
+Fixed bug in records screen where 1 row was not getting rendered until a scroll.
+Refactored messaging, supporting messages_task in json forms.
+Added extra logging when a form is not defined.
+
 ## 0.1.17
 
 * Renamed `reference_field` property on forms to `facility_reference`.
