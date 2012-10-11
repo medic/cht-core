@@ -5,6 +5,8 @@
 * Fixed bug in records screen where 1 row was not getting rendered until a scroll.
 * Refactored messaging, supporting messages_task in json forms.
 * Added extra logging when a form is not defined.
+* Fixed bug where non-districts showing up in districts filter.
+* Keep Kujua Reporting files in-tact so it can be activated with config.
 
 ## 0.1.17
 
