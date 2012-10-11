@@ -81,6 +81,8 @@ exports.data_records_by_district = {
                     && doc.related_entities.clinic.parent
                     && doc.related_entities.clinic.parent.parent) {
                 var dh = doc.related_entities.clinic.parent.parent;
+                if (dh.type !== 'district_hospital')
+                    return;
                 emit([dh._id, dh.name], null);
             }
         }
