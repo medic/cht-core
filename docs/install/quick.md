@@ -25,7 +25,7 @@ Click the "Fix This" link in the bottom right.  And create a user:
 ## Replicate Kujua (dev):
 
 * Navigate to the Replicator screen in Futon 
-* **Remote**: http://mandric.iriscouch.com/kujua-base
+* **Remote**: http://medic.iriscouch.com/kujua-base
 * **Local**: kujua
 * Wait for replication to complete, should be less than 5 minutes.
 
