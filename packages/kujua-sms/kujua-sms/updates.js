@@ -92,13 +92,6 @@ var getCallbackPath = function(phone, form, form_data, def) {
     if (def && def['use-sentinel'])
         return '/_db';
 
-    // exception hack
-    if (form === 'MSBB') {
-        return '/%1/data_record/add/health_center/%2'
-                  .replace('%1', encodeURIComponent(form))
-                  .replace('%2', encodeURIComponent(phone));
-    }
-
     if (def.facility_reference) {
         return '/%1/data_record/add/refid/%2'
                   .replace('%1', encodeURIComponent(form))
