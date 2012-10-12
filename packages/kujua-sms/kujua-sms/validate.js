@@ -1,5 +1,8 @@
 var _ = require('underscore')._;
 
+/*
+ *  return array of errors or empty array.
+ */
 exports.validate = function(def, form_data) {
     var missing_fields = [], orig_key, key, data;
 
