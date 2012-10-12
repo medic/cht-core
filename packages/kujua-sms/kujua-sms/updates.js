@@ -52,27 +52,22 @@ var getCallbackBody = function(phone, doc, form_data) {
 
     // try to parse timestamp from gateway
     var ts = parseSentTimestamp(doc.sent_timestamp);
-    if (ts) {
+    if (ts)
         body.reported_date = ts;
+
+    if (def) {
+        if (def.facility_reference)
+            body.refid = form_data[def.facility_reference];
+
+        for (var k in def.fields) {
+            var field = def.fields[k];
+            smsparser.merge(form, k.split('.'), body, form_data);
+        }
+        body.errors = validate.validate(def, form_data);
     }
 
-    if (def.facility_reference)
-        body.refid = form_data[def.facility_reference];
-
-    for (var k in def.fields) {
-        var field = def.fields[k];
-        smsparser.merge(form, k.split('.'), body, form_data);
-    }
-
-    var errors = validate.validate(def, form_data);
-
-    if(errors.length > 0) {
-        body.errors = errors;
-    }
-
-    if(form_data._extra_fields) {
+    if (form_data && form_data._extra_fields)
         body.errors.push({code: "extra_fields"});
-    }
 
     return body;
 };
@@ -92,7 +87,13 @@ var getCallbackPath = function(phone, form, form_data, def) {
     if (def && def['use-sentinel'])
         return '/_db';
 
-    if (def.facility_reference) {
+    if (!form) {
+        // find a match with a facility's phone number
+        return '/data_record/add/facility/%2'
+                    .replace('%2', encodeURIComponent(phone));
+    }
+
+    if (def && def.facility_reference) {
         return '/%1/data_record/add/refid/%2'
                   .replace('%1', encodeURIComponent(form))
                   .replace('%2', encodeURIComponent(
@@ -141,6 +142,7 @@ var parseSentTimestamp = function(str) {
  */
 var getRespBody = function(doc, req) {
     var form = doc.form,
+        form_data = null,
         def = jsonforms[form],
         baseURL = require('duality/core').getBaseURL(),
         headers = req.headers.Host.split(":"),
@@ -159,32 +161,24 @@ var getRespBody = function(doc, req) {
                     message: autoreply}]}};
 
     if (!doc.message || !doc.message.trim()) {
-        errormsg = utils.getMessage('error', doc.locale);
-    } else if (!form || !def) {
-        logger.error('Form not found: '+form);
-        logger.error('doc is:');
-        logger.error(JSON.stringify(doc,null,2));
-        if (form === undefined) {
-            errormsg = utils.getMessage(
-                        {code:'form_not_found', form: 'undefined'}, doc.locale);
-        } else {
-            errormsg = utils.getMessage(
-                        {code:'form_not_found', form: form}, doc.locale);
-        }
+        errormsg = utils.getMessage('empty', doc.locale);
     }
 
     if (errormsg) {
         // TODO integrate with kujua notifications?
         resp.payload.messages[0].message = errormsg;
-        logger.error({'error':errormsg, 'doc':doc});
+        logger.error({'error':errormsg, 'doc':doc, 'resp':resp});
         return JSON.stringify(resp);
     }
 
-    if (def.autoreply) {
-        resp.payload.messages[0].message = def.autoreply;
-    }// else if (def['use-sentinel']) {
-     //   delete resp.payload;
-   // }
+    if (!def) {
+        // this defines the message is unstructured
+        form = undefined;
+    } else {
+        form_data = smsparser.parse(def, doc);
+        if (def.autoreply)
+            resp.payload.messages[0].message = def.autoreply;
+    }
 
     // provide callback for next part of record creation.
     resp.callback = {
@@ -196,7 +190,6 @@ var getRespBody = function(doc, req) {
         }
     };
 
-    var form_data = smsparser.parse(def, doc);
     resp.callback.options.path = baseURL + getCallbackPath(phone, form, form_data, def);
     resp.callback.data = getCallbackBody(phone, doc, form_data);
 

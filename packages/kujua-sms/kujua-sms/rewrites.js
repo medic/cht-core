@@ -26,6 +26,14 @@ exports.rules = [
         }
     },
     {
+        from: '/data_record/add/facility/:phone',
+        to: '_list/data_record/facility_by_phone',
+        query: {
+            startkey: [':phone'],
+            endkey: [':phone',{}]
+        }
+    },
+    {
         from: '/:form/data_record/add/facility/:phone',
         to: '_list/data_record/facility_by_phone',
         query: {

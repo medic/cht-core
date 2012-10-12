@@ -275,7 +275,7 @@ var getCallbackPath = function(req, form, record, facility) {
         return path;
     }
 
-    if (utils.isReferralForm(form) || !jsonforms[form].data_record_merge) {
+    if (!jsonforms[form].data_record_merge) {
         return path;
     }
 
@@ -301,7 +301,7 @@ var getCallbackPath = function(req, form, record, facility) {
 
 var addError = function(obj, error) {
     obj.errors.push(error);
-    logger.error(error);
+    logger.error({'obj':obj, 'error':error});
 };
 
 var json_headers = {
@@ -333,7 +333,7 @@ exports.data_record = function (head, req) {
         def = jsonforms[form],
         facility  = null;
 
-    if (!def) {
+    if (form && !def) {
         var err = {code: 'form_not_found', form: form};
         err.message = utils.getMessage(err);
         addError(record, err);
@@ -372,7 +372,8 @@ exports.data_record = function (head, req) {
         err.message = utils.getMessage(err);
         addError(record, err);
     }
-    if (def.messages_task) {
+
+    if (def && def.messages_task) {
         var task = getMessagesTask(form, record);
         if (task) {
             record.tasks.push(task);

@@ -361,17 +361,6 @@ var getFormKeys = exports.getFormKeys = function(form) {
     return hashToArray(keys);
 };
 
-/**
- * @param {String} form - jsonforms key string
- * @returns {Boolean} - Return true if this form is a referral since we need to
- * do extra work to process a referral form.
- * @api public
- */
-exports.isReferralForm = function(form) {
-    return ['MSBR','MSBC','MSBB'].indexOf(form) !== -1;
-};
-
-
 var messages = {
     missing_fields: {
         en: "Missing or invalid fields: %(fields).",
@@ -402,6 +391,9 @@ var messages = {
         en: "There was a problem with your message, please try to resend. If you continue to have this problem please contact your supervisor.",
         fr: "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur.",
         ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
+    },
+    empty : {
+        en: "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor."
     },
     success: {
         en: 'Data received, thank you.',
