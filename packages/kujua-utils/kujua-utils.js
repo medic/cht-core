@@ -107,7 +107,7 @@ exports.logger = {
         if (typeof(log) !== 'undefined') {
             log('Kujua ERROR:');
             if (_.isObject(obj))
-                log(JSON.stringify(obj));
+                log(JSON.stringify(obj,null,2));
             else
                 log(obj);
         }
