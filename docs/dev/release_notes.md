@@ -4,9 +4,13 @@
 
 * Fixed bug in records screen where 1 row was not getting rendered until a scroll.
 * Refactored messaging, supporting `messages_task` in json forms.
-* Added extra logging when a form is not defined.
 * Fixed bug where non-districts showing up in districts filter.
 * Keep Kujua Reporting files in-tact so it can be activated with config.
+* Added validations, messages and ref id labels to forms on gateway testing doc.
+* Added autocomplete=off to error missing phone form in records screen.
+* Added css for pointer hover to icon-exclamation-sign.
+* Renamed `use-sentinel` to `use_sentinel` to be consistent in JSON forms.
+* Added basic unstructured message support.
 
 ## 0.1.17
 
