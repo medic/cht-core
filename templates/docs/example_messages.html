@@ -10,6 +10,13 @@
   {?value.facility_reference}
   <span class="label">ref field: {value.facility_reference}</span>
   {/value.facility_reference}
+  {?value.validations}
+  <span class="label">validations: 
+  {#value.validations}
+  {.}
+  {/value.validations}
+  </span>
+  {/value.validations}
 </h3>
   {#value.examples}
     {#messages}
