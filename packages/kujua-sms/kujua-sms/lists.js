@@ -251,7 +251,7 @@ var getMessagesTask = function(form, record) {
             messages: []
         };
     if (typeof def.messages_task === 'string')
-        task.messages.push(eval('('+def.messages_task+')()'));
+        task.messages = task.messages.concat(eval('('+def.messages_task+')()'));
     if (task.messages.length > 0)
         return task;
 };
