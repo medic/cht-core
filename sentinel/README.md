@@ -1,6 +1,6 @@
 # Kujua Sentinel
 
-Sentinel is required for certain forms that have the `use-sentinel` property
+Sentinel is required for certain forms that have the `use_sentinel` property
 set to true.
 
 ## Configuration

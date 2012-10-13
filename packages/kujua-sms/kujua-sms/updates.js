@@ -83,8 +83,8 @@ var getCallbackPath = function(phone, form, form_data, def) {
 
     def = def ? def : jsonforms[form];
 
-    // if the definition has use-sentinel:true, shortcut
-    if (def && def['use-sentinel'])
+    // if the definition has use_sentinel:true, shortcut
+    if (def && def.use_sentinel)
         return '/_db';
 
     if (!form) {

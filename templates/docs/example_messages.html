@@ -1,10 +1,20 @@
 <div class="example-form">
 {#iter:forms}
-  <h3>{value.title} <small>{key}</small></h3>
+<h3>{value.title} <small>{key}</small>
+  {?value.use_sentinel}
+  <span class="label">sentinel</span>
+  {/value.use_sentinel}
+  {?value.messages_task}
+  <span class="label label-info">messages</span>
+  {/value.messages_task}
+  {?value.facility_reference}
+  <span class="label">ref field: {value.facility_reference}</span>
+  {/value.facility_reference}
+</h3>
   {#value.examples}
     {#messages}
-    <dl><dt>Muvuku Example</dt><dd><code>{muvuku}</code></dd></dl>
-    {?textforms}<dl><dt>Textforms</dt><dd><code>{textforms}</code></dd></dl>{/textforms}
+    <dl><dt>Muvuku example</dt><dd><code>{muvuku}</code></dd></dl>
+    {?textforms}<dl><dt>Textforms example</dt><dd><code>{textforms}</code></dd></dl>{/textforms}
     {/messages}
   {/value.examples}
 {/iter}
