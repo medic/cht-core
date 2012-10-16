@@ -385,7 +385,7 @@ var messages = {
         en: "Facility not found."
     },
     recipient_not_found: {
-        en: 'Could not find referral recipient.'
+        en: 'Could not find message recipient.'
     },
     error: {
         en: "There was a problem with your message, please try to resend. If you continue to have this problem please contact your supervisor.",
