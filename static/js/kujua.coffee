@@ -62,8 +62,12 @@ getFacilityDesc = (doc) ->
   className: 'clinics-view'
   onUpdate: (clinic) ->
     record = _.extend({}, @data)
-    record.related_entities?.clinic = clinic
-    record.reported_date = new Date(record.reported_date).getTime()
+    if not record.related_entities.clinic
+        record.related_entities.clinic = {}
+    if clinic.type is 'health_center'
+        record.related_entities?.clinic.parent = clinic
+    else
+        record.related_entities?.clinic = clinic
     delete record._key
     delete record.fields
     $(document).trigger('save-record', record)
