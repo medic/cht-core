@@ -221,6 +221,16 @@ exports.facility_by_phone = {
     }
 };
 
+exports.facility_by_parent = {
+    map: function (doc) {
+        if (doc.type === 'clinic'
+            || doc.type === 'health_center'
+            || doc.type === 'district_hospital') {
+            emit([doc.parent._id, doc.name, doc.type], true);
+        }
+    }
+};
+
 /*
  * Get clinic based on phone number
  */

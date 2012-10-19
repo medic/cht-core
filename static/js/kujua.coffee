@@ -65,7 +65,7 @@ getFacilityDesc = (doc) ->
     if not record.related_entities.clinic
         record.related_entities.clinic = {}
     if clinic.type is 'health_center'
-        record.related_entities?.clinic.parent = clinic
+        record.related_entities.clinic = {parent: clinic}
     else
         record.related_entities?.clinic = clinic
     delete record._key
