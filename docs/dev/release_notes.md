@@ -11,6 +11,8 @@
 * Added css for pointer hover to icon-exclamation-sign.
 * Renamed `use-sentinel` to `use_sentinel` to be consistent in JSON forms.
 * Added basic unstructured message support.
+* Fixed bug in records during edit row function where reported date get munged.
+* Added spreadsheet feature so children get updated when a parent facility is changed.
 
 ## 0.1.17
 
