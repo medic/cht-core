@@ -1,6 +1,11 @@
 # Gateway Testing
 
-## Setup
+## Supported Forms
+
+The following is a list of supported forms and example messages supported by
+each form. You can use these examples during your tests.
+
+## Testing Setup
 
 1. Install the gateway and bind it to an instance of Kujua, see the install doc.
 
@@ -9,12 +14,7 @@ SMS message clients, a google voice account can help with this.
 
 3. Modify the facility data with the phone numbers as contacts.
 
-## Supported Forms
-
-The following is a list of supported forms and example messages supported by
-each form. You can use these examples during your tests.
-
-## Referral Tests
+## Message Tests
 
 ### MSBR Referral
 
