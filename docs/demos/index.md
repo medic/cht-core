@@ -25,8 +25,8 @@ Part 2-2: Data Collection, Forms and Alerts
 
 ## Hosted Playground
 
-* Kujua: <a href="https://mandric.iriscouch.com/demo5/_design/kujua-base/_rewrite/">https://mandric.iriscouch.com/demo5/_design/kujua-base/_rewrite/</a>
-* Phoney: <a href="https://mandric.iriscouch.com/demo5/_design/kujua-phoney/_rewrite/">https://mandric.iriscouch.com/demo5/_design/kujua-phoney/_rewrite/</a>
+* Kujua: <a href="https://mandric.iriscouch.com/demo5/_design/kujua-base/_rewrite/">https://mandric.iriscouch.com/demo5/\_design/kujua-base/\_rewrite/</a>
+* Phoney: <a href="https://mandric.iriscouch.com/demo5/_design/kujua-phoney/_rewrite/">https://mandric.iriscouch.com/demo5/\_design/kujua-phoney/\_rewrite/</a>
 * admin/4b20ab
 * damak/ccGPx5
 
