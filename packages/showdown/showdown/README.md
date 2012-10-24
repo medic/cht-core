@@ -1,10 +1,10 @@
-
 NOTE -- Showdown on GitHub
 ==========================
 
-Please note that I, Corey, am not the author of Showdown. Rather, I found it
-some time back at <http://attacklab.net/showdown/> and wanted to see it
-available on GitHub.
+**Please note** that I, Corey, am not the author of Showdown. Rather, I found it
+some time back at <http://attacklab.net/showdown/>
+(website removed, see: <http://wayback.archive.org/web/*/http://attacklab.net/showdown>)
+and wanted to see it available on GitHub.
 
 All credit and praise for authoring this library should go to John Fraser.
 
@@ -16,7 +16,7 @@ Showdown, at least as it exists on GitHub.
 
 Apologies for any confusion or perceived misinformation.
 
-Cheers,  
+Cheers,<br/>
 Corey
 
 
@@ -32,6 +32,19 @@ Original Markdown Copyright (c) 2004-2005 John Gruber
 Redistributable under a BSD-style open source license.
 See license.txt for more information.
 
+
+Quick Example
+-------------
+
+```  js
+var Showdown = require('showdown');
+var converter = new Showdown.converter();
+
+converter.makeHtml('#hello markdown!');
+
+// <h1 id="hellomarkdown">hello, markdown</h1>
+
+```
 
 What's it for?
 --------------
@@ -177,17 +190,38 @@ In most cases, Showdown's output is identical to that of Perl Markdown v1.0.2b7.
     Showdown won't.  But still, don't do that.
 
 
+Tests
+---------------------------
+A suite of tests is available which require node.js.  Once node is installed, run the following command from the project root to install the development dependencies:
+
+    npm install --dev
+
+Once installed the tests can be run from the project root using:
+
+    mocha test/run.js
+
+New test cases can easily be added.  Create a markdown file (ending in `.md`) which contains the markdown to test.  Create a `.html` file of the exact same name.  It will automatically be tested when the tests are executed with `mocha`.
+
+
 Credits
 ---------------------------
 
   * Origins
-    * [John Fraser](http://http://attacklab.net/):  
+    * [John Fraser](http://attacklab.net/):<br/>
       Author of Showdown
-    * [John Gruber](http://daringfireball.net/projects/markdown/):  
+    * [John Gruber](http://daringfireball.net/projects/markdown/):<br/>
       Author of Markdown
   * Maintenance
-    * [Corey Innis](http://github.com/coreyti):  
+    * [Corey Innis](http://github.com/coreyti):<br/>
       GitHub project maintainer
-    * [Remy Sharp](http://remysharp.com/):  
+    * [Remy Sharp](http://remysharp.com/):<br/>
       CommonJS-compatibility and more
+    * [Roger Braun](https://github.com/rogerbraun):<br/>
+      Github-style code blocks
+    * [Dominic Tarr](https://github.com/dominictarr):<br/>
+      Documentation
+    * [Cat Chen](https://github.com/CatChen):<br/>
+      Export fix
+    * [Titus Stone](https://github.com/tstone):<br/>
+      Mocha tests + bug fixes
 

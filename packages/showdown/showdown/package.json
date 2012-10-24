@@ -1,17 +1,25 @@
 {
     "name": "showdown",
-    "version": "0.0.1",
+    "version": "0.2.0",
     "author": "John Fraser",
     "contributors": [
         "John Gruber",
         "John Fraser",
         "Corey Innis",
         "Remy Sharp",
-        "Konstantin Käfer"
+        "Konstantin Käfer",
+        "Roger Braun",
+        "Dominic Tarr",
+        "Cat Chen",
+        "Titus Stone"
     ],
     "repository": {
         "type": "git",
         "url": "https://github.com/coreyti/showdown.git"
+    },
+    "devDependencies": {
+        "mocha": "*",
+        "should": "*"
     },
     "licenses": [{ "type": "BSD" }],
     "main": "./src/showdown"
