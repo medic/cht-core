@@ -41,7 +41,7 @@ exports.responses_form_not_found = function (test) {
     var msg = '1!0000!2012#2#20#foo#bar',
         doc = {
             "from":"+15551212",
-            "message":"' + msg + '",
+            "message": msg,
             "form":"0000"},
         respBody = JSON.parse(updates.getRespBody(doc, req)),
         expectedResp = JSON.parse('{"payload":{"success":true,"task":"send","messages":[{"to":"+15551212","message":"The report sent \'0000\' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor."}]}}');
@@ -55,7 +55,7 @@ exports.responses_form_not_found_fr = function (test) {
     var msg = '1!0000!2012#2#20#foo#bar',
         doc = {
             "from":"+15551212",
-            "message":"' + msg + '",
+            "message": msg,
             "locale": "fr",
             "form":"0000"},
         respBody = JSON.parse(updates.getRespBody(doc, req)),
@@ -97,8 +97,9 @@ exports.responses_undefined_form = function (test) {
     var msg = 'Foo',
         doc = {
             "from":"+15551212",
-            "message":"' + msg + '"},
-            // form is undefined
+            "message": msg
+        },
+        // form is undefined
         respBody = JSON.parse(updates.getRespBody(doc, req)),
         expectedResp = JSON.parse('{"payload":{"success":true,"task":"send","messages":[{"to":"+15551212","message":"The report sent \'undefined\' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor."}]}}');
     test.same(respBody, expectedResp);
