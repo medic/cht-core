@@ -1,4 +1,5 @@
-var _ = require('underscore')._;
+var _ = require('underscore')._,
+    logger = require('kujua-utils').logger;
 
 /*
  *  return array of errors or empty array.
@@ -16,6 +17,12 @@ exports.validate = function(def, form_data) {
         }
 
         key = key[0];
+
+        if (!data) {
+            if (!!field.required)
+                missing_fields.push(orig_key);
+            return;
+        }
 
         if(
             ((_.isUndefined(data[key]) || _.isNull(data[key])) && !!field.required) ||

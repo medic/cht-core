@@ -381,6 +381,10 @@ var messages = {
         fr: "Le formulaire envoyé '%(form)' n'est pas complet. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur.",
         ne: "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
     },
+    // system message as opposed to client response
+    form_not_found_sys: {
+        en: "Form '%(form)' not found."
+    },
     facility_not_found: {
         en: "Facility not found."
     },
@@ -392,11 +396,28 @@ var messages = {
         fr: "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur.",
         ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
     },
+    empty_sys : {
+        en: "Message appears empty."
+    },
     empty : {
-        en: "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor."
+        en: "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor.",
+        fr: "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur.",
+        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
     },
     success: {
         en: 'Data received, thank you.',
+        fr: 'Merci, votre formulaire a été bien reçu.',
+        ne: 'डाटा प्राप्त भयो, धन्यवाद'
+    },
+    form_received: {
+        en: 'Your form submission was received, thank you.',
+        fr: 'Merci, votre formulaire a été bien reçu.',
+        ne: 'डाटा प्राप्त भयो, धन्यवाद'
+    },
+    sms_received: {
+        en: 'SMS message received; it will be reviewed shortly. If you were'
+            + ' trying to submit a text form, please enter a correct form code'
+            + ' and try again.',
         fr: 'Merci, votre formulaire a été bien reçu.',
         ne: 'डाटा प्राप्त भयो, धन्यवाद'
     }

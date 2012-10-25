@@ -17,7 +17,9 @@
             <li>{message}</li>
             {:else}
               {?code}
-              <li>{code}: {fields}</li>
+              <li>{code}: 
+                {#fields} {.} {/fields}
+                </li>
               {/code}
             {/message}
          </ul>

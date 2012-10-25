@@ -60,7 +60,7 @@ var expected_callback = {
         responses: [
           {
             to: "+13125551212",
-            message: "Data received, thank you."
+            message: "Your form submission was received, thank you."
           }
         ],
         tasks: [],

@@ -197,7 +197,7 @@ var facility_missing_error = function(test, req) {
             },
             {
                 "code":"recipient_not_found",
-                "message":"Could not find referral recipient."
+                "message":"Could not find message recipient."
             }
         ]
     );

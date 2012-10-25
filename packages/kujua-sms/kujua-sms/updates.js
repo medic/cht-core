@@ -33,12 +33,11 @@ var getRefID = function(form, form_data) {
  * @api private
  */
 var getCallbackBody = function(phone, doc, form_data) {
-    var type = 'data_record',
-        form = doc.form,
+    var form = doc.form,
         def = jsonforms[form];
 
     var body = {
-        type: type,
+        type: 'data_record',
         from: phone,
         form: form,
         related_entities: {clinic: null},
@@ -46,7 +45,7 @@ var getCallbackBody = function(phone, doc, form_data) {
         responses: [],
         tasks: [],
         reported_date: new Date().getTime(),
-        // keep message datat part of record
+        // keep message data part of record
         sms_message: doc
     };
 
@@ -64,10 +63,25 @@ var getCallbackBody = function(phone, doc, form_data) {
             smsparser.merge(form, k.split('.'), body, form_data);
         }
         body.errors = validate.validate(def, form_data);
+    } else {
+        body.errors.push({
+            code: 'form_not_found_sys',
+            message: utils.getMessage('form_not_found_sys', doc.locale)
+                        .replace('%(form)', encodeURIComponent(doc.form))
+        });
     }
 
     if (form_data && form_data._extra_fields)
         body.errors.push({code: "extra_fields"});
+
+    if (!doc.message || !doc.message.trim()) {
+        body.errors.push({
+            code: 'empty_sys',
+            message: utils.getMessage('empty_sys', doc.locale)
+        });
+        logger.error("Message looks empty");
+        logger.error(doc);
+    }
 
     return body;
 };
@@ -136,9 +150,66 @@ var parseSentTimestamp = function(str) {
 };
 
 /*
+ * @param {Object} doc - data_record object as returned from getCallbackBody
+ * @returns {Object} - smssync gateway response payload json object
+ * @api private
+ *
+ * Form validation errors are included in doc.errors.
+ * Always limit outgoing message to 160 chars and only send one message.
+ *
+ */
+var getSMSResponse = function(doc) {
+
+    var locale = doc.sms_message.locale,
+        msg = utils.getMessage('sms_received', locale),
+        def = doc.form && jsonforms[doc.form],
+        res = {
+            success: true,
+            task: "send",
+            messages: [{
+                to: doc.from,
+                message: msg
+            }]
+        };
+
+    // looks like we parsed a form ok
+    if (def && doc.errors.length === 0)
+        msg = utils.getMessage('form_received', locale);
+
+    // we have a custom success autoreply
+    if (def && def.autoreply)
+        msg = def.autoreply;
+
+    // handle validation errors
+    doc.errors.forEach(function(err) {
+        // default
+        msg = utils.getMessage(err, locale);
+        // special overrides where we want the system message to be different
+        // from the client side message
+        if (err.code === 'form_not_found_sys') {
+            msg = utils.getMessage('form_not_found', locale)
+                    .replace('%(form)', doc.form);
+        }
+        if (err.code === 'empty_sys')
+            msg = utils.getMessage('empty', locale);
+    });
+
+    if (msg.length > 160)
+        msg = msg.substr(0,160-3) + '...';
+
+    res.messages[0].message = msg;
+
+    return res;
+
+};
+
+/*
  * Return Ushahidi SMSSync compatible response message.  Supports custom
  * auto-reply message in the form definition. Also uses callbacks to create
- * 1st phase of doc creation.
+ * record.
+ *
+ * Always try to create records for every message recieved.
+ *
  */
 var getRespBody = function(doc, req) {
     var form = doc.form,
@@ -149,36 +220,11 @@ var getRespBody = function(doc, req) {
         host = headers[0],
         port = headers[1] || "",
         phone = doc.from, // set by gateway
-        autoreply = utils.getMessage('success', doc.locale),
         errormsg = '',
-        resp = {
-            //smssync gateway response format
-            payload: {
-                success: true,
-                task: "send",
-                messages: [{
-                    to: phone,
-                    message: autoreply}]}};
+        resp = {};
 
-    if (!doc.message || !doc.message.trim()) {
-        errormsg = utils.getMessage('empty', doc.locale);
-    }
-
-    if (errormsg) {
-        // TODO integrate with kujua notifications?
-        resp.payload.messages[0].message = errormsg;
-        logger.error({'error':errormsg, 'doc':doc, 'resp':resp});
-        return JSON.stringify(resp);
-    }
-
-    if (!def) {
-        // this defines the message is unstructured
-        form = undefined;
-    } else {
+    if (form && def)
         form_data = smsparser.parse(def, doc);
-        if (def.autoreply)
-            resp.payload.messages[0].message = def.autoreply;
-    }
 
     // provide callback for next part of record creation.
     resp.callback = {
@@ -190,15 +236,9 @@ var getRespBody = function(doc, req) {
         }
     };
 
-    resp.callback.options.path = baseURL + getCallbackPath(phone, form, form_data, def);
+    resp.callback.options.path = baseURL + getCallbackPath(phone, def && form, form_data, def);
     resp.callback.data = getCallbackBody(phone, doc, form_data);
-
-    // process errors and create payload object for SMSSync replies
-    if(resp.callback.data.errors.length > 0) {
-        resp.payload.messages[0].message = _.map(resp.callback.data.errors, function(err) {
-            return utils.getMessage(err, doc.locale);
-        }).join(', ');
-    }
+    resp.payload = getSMSResponse(resp.callback.data);
 
     // save responses to record
     resp.callback.data.responses = resp.payload.messages;

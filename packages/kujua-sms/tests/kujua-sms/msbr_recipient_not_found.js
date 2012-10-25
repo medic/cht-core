@@ -55,7 +55,7 @@ var expected_callback = {
         responses: [
             {
                 to: "+13125551212",
-                message: "Data received, thank you."
+                message: "Your form submission was received, thank you."
             }
         ],
         tasks: [],
@@ -178,7 +178,7 @@ var step2 = function(test, req) {
     test.same(
         resp_body.callback.data.errors,
         [{code: 'recipient_not_found',
-         message: 'Could not find referral recipient.'}]);
+         message: 'Could not find message recipient.'}]);
 
     // the sms_message should not be affected
     test.same(
