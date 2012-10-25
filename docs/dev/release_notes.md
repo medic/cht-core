@@ -14,6 +14,8 @@
 * Fixed bug in records during edit row function where reported date get munged.
 * Added spreadsheet feature so children get updated when a parent facility is changed.
 * Fixed bug where using wrong label on main analytics screen.
+* Always create records, even on empty or unstructured messages.
+* SMS response messaging refactor.
 
 ## 0.1.17
 
