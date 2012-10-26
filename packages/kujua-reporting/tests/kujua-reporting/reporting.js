@@ -1,6 +1,11 @@
 var utils = require('kujua-reporting/utils'),
     moment = require('moment').moment;
 
+var db = require('db').current().guessCurrent();
+var getBaseURL = function(url) {
+    return '/'+db.db+'/_design/'+db.design_doc+'/_rewrite/'+url;
+};
+
 exports['reporting.getRows - three months'] = function (test) {
     test.expect(8);
     var q = {startmonth:'2011-10', months:3, form:'TEST'},
@@ -132,21 +137,21 @@ exports['reporting.getRows - three months'] = function (test) {
           {
             "year": 2011,
             "not_submitted": true,
-            "url": "/kujua/_design/kujua-base/_rewrite/add/data_record?clinic=947f3d&month=9",
+            "url": getBaseURL('add/data_record?clinic=947f3d&month=9'),
             "month": 9,
             "name": "October 2011"
           },
           {
             "year": 2011,
             "not_submitted": true,
-            "url": "/kujua/_design/kujua-base/_rewrite/add/data_record?clinic=947f3d&month=8",
+            "url": getBaseURL('add/data_record?clinic=947f3d&month=8'),
             "month": 8,
             "name": "September 2011"
           },
           {
             "year": 2011,
             "not_submitted": true,
-            "url": "/kujua/_design/kujua-base/_rewrite/add/data_record?clinic=947f3d&month=7",
+            "url": getBaseURL('add/data_record?clinic=947f3d&month=7'),
             "month": 7,
             "name": "August 2011"
           }
@@ -166,14 +171,14 @@ exports['reporting.getRows - three months'] = function (test) {
           {
             "year": 2011,
             "not_submitted": true,
-            "url": "/kujua/_design/kujua-base/_rewrite/add/data_record?clinic=947322&month=9",
+            "url": getBaseURL('add/data_record?clinic=947322&month=9'),
             "month": 9,
             "name": "October 2011"
           },
           {
             "year": 2011,
             "not_submitted": true,
-            "url": "/kujua/_design/kujua-base/_rewrite/add/data_record?clinic=947322&month=8",
+            "url": getBaseURL('add/data_record?clinic=947322&month=8'),
             "month": 8,
             "name": "September 2011"
           },
