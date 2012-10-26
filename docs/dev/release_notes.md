@@ -16,6 +16,7 @@
 * Fixed bug where using wrong label on main analytics screen.
 * Always create records, even on empty or unstructured messages.
 * SMS response messaging refactor, added response messages to gateway testing doc.
+* Fixed hard coded URL paths in reporting tests.
 
 ## 0.1.17
 
