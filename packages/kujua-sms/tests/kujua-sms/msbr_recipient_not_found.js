@@ -177,7 +177,7 @@ var step2 = function(test, req) {
     // error check
     test.same(
         resp_body.callback.data.errors,
-        [{code: 'recipient_not_found',
+        [{code: 'recipient_not_found_sys',
          message: 'Could not find message recipient.'}]);
 
     // the sms_message should not be affected

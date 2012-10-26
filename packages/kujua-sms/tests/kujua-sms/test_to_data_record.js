@@ -196,7 +196,7 @@ var facility_missing_error = function(test, req) {
                 "message":"Facility not found."
             },
             {
-                "code":"recipient_not_found",
+                "code":"recipient_not_found_sys",
                 "message":"Could not find message recipient."
             }
         ]

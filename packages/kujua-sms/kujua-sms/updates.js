@@ -62,26 +62,19 @@ var getCallbackBody = function(phone, doc, form_data) {
             var field = def.fields[k];
             smsparser.merge(form, k.split('.'), body, form_data);
         }
-        body.errors = validate.validate(def, form_data);
-    } else {
-        body.errors.push({
-            code: 'form_not_found_sys',
-            message: utils.getMessage('form_not_found_sys', doc.locale)
-                        .replace('%(form)', encodeURIComponent(doc.form))
+        var errors = validate.validate(def, form_data);
+        errors.forEach(function(err) {
+            utils.addError(body, err);
         });
+    } else {
+        utils.addError(body, 'form_not_found_sys');
     }
 
     if (form_data && form_data._extra_fields)
-        body.errors.push({code: "extra_fields"});
+        utils.addError(body, 'extra_fields');
 
-    if (!doc.message || !doc.message.trim()) {
-        body.errors.push({
-            code: 'empty_sys',
-            message: utils.getMessage('empty_sys', doc.locale)
-        });
-        logger.error("Message looks empty");
-        logger.error(doc);
-    }
+    if (!doc.message || !doc.message.trim())
+        utils.addError(body, 'empty_sys');
 
     return body;
 };

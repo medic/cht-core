@@ -299,11 +299,6 @@ var getCallbackPath = function(req, form, record, facility) {
 };
 
 
-var addError = function(obj, error) {
-    obj.errors.push(error);
-    logger.error({'obj':obj, 'error':error});
-};
-
 var json_headers = {
     'Content-Type': 'application/json; charset=utf-8'
 };
@@ -333,11 +328,8 @@ exports.data_record = function (head, req) {
         def = jsonforms[form],
         facility  = null;
 
-    if (form && !def) {
-        var err = {code: 'form_not_found', form: form};
-        err.message = utils.getMessage(err);
-        addError(record, err);
-    }
+    if (form && !def)
+        utils.addError(record, 'form_not_found');
 
     //
     // setup related_entities
@@ -367,11 +359,8 @@ exports.data_record = function (head, req) {
     }
 
     /* Can't do much without a facility */
-    if (!facility) {
-        var err = {code: 'facility_not_found'};
-        err.message = utils.getMessage(err);
-        addError(record, err);
-    }
+    if (!facility)
+        utils.addError(record, 'facility_not_found');
 
     if (def && def.messages_task) {
         var task = getMessagesTask(form, record);
@@ -381,9 +370,7 @@ exports.data_record = function (head, req) {
                 var msg = task.messages[i];
                 // check task fields are defined
                 if(!msg.to) {
-                    var err = {code: 'recipient_not_found'};
-                    err.message = utils.getMessage(err);
-                    addError(record, err);
+                    utils.addError(record, 'recipient_not_found_sys');
                     // we don't need redundant error messages
                     break;
                 }
@@ -439,11 +426,8 @@ exports.data_record_merge = function (head, req) {
         path = appdb,
         row = {};
 
-    if (!def) {
-        var err = {code: 'form_not_found', form: form};
-        err.message = utils.getMessage(err);
-        addError(new_data_record, err);
-    }
+    if (!def)
+        utils.addError(new_data_record, 'form_not_found');
 
     while (row = getRow()) {
         old_data_record = row.value;

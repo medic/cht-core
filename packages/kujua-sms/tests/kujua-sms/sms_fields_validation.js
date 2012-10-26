@@ -109,7 +109,9 @@ var step1_with_extra_fields = function(test) {
     test.same(resp_body.payload.messages[0].message,
         "Extra fields.");
 
-    test.same(resp_body.callback.data.errors[0], {code: "extra_fields"});
+    test.same(
+        resp_body.callback.data.errors[0],
+        {code: "extra_fields", message:"Extra fields."});
 
     step1_with_errors(test);
 
@@ -148,7 +150,12 @@ var step1_with_errors = function(test) {
         "Missing or invalid fields: year, month.");
 
     test.same(resp_body.callback.data.errors[0],
-        {code: "missing_fields", fields: ["year","month"]});
+        {
+            code: "missing_fields",
+            fields: ["year","month"],
+            message: "Missing or invalid fields: year, month."
+        }
+    );
 
     test.same(
         resp_body.callback.options.path,
@@ -182,7 +189,12 @@ var step2_with_errors = function(test, req) {
     var resp_body = JSON.parse(resp.body);
 
     test.same(resp_body.callback.data.errors[0],
-        {code: "missing_fields", fields: ["year","month"]});
+        {
+            code: "missing_fields",
+            fields: ["year","month"],
+            message: "Missing or invalid fields: year, month."
+        }
+    );
 
     step3_with_errors(test, helpers.nextRequest(resp_body, 'TEST'));
 };
@@ -240,7 +252,12 @@ var step3_with_errors = function(test, req) {
     );
 
     test.same(resp_body.callback.data.errors[0],
-        {code: "missing_fields", fields: ["year", "month"]});
+        {
+            code: "missing_fields",
+            fields: ["year","month"],
+            message: "Missing or invalid fields: year, month."
+        }
+    );
 
     var body = JSON.parse(req.body);
     body.errors = [];

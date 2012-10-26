@@ -6,6 +6,7 @@ var jsDump = require('jsDump'),
     utils = require('kujua-utils'),
     settings = require('settings/root'),
     jsonforms = require('views/lib/jsonforms'),
+    logger = require('kujua-utils').logger,
     _ = require('underscore')._;
 
 
@@ -388,13 +389,8 @@ var messages = {
     facility_not_found: {
         en: "Facility not found."
     },
-    recipient_not_found: {
+    recipient_not_found_sys: {
         en: 'Could not find message recipient.'
-    },
-    error: {
-        en: "There was a problem with your message, please try to resend. If you continue to have this problem please contact your supervisor.",
-        fr: "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur.",
-        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
     },
     empty_sys : {
         en: "Message appears empty."
@@ -403,11 +399,6 @@ var messages = {
         en: "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor.",
         fr: "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur.",
         ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
-    },
-    success: {
-        en: 'Data received, thank you.',
-        fr: 'Merci, votre formulaire a été bien reçu.',
-        ne: 'डाटा प्राप्त भयो, धन्यवाद'
     },
     form_received: {
         en: 'Your form submission was received, thank you.',
@@ -421,6 +412,46 @@ var messages = {
         fr: 'Merci, votre formulaire a été bien reçu.',
         ne: 'डाटा प्राप्त भयो, धन्यवाद'
     }
+};
+
+/*
+ * Append error to data record if it doesn't already exist. we don't need
+ * redundant errors. Error objects should always have a code and message
+ * attributes.
+ *
+ * @param {Object} record - data record
+ * @param {String|Object} error - error object or code matching key in messages
+ *
+ * @returns undefined
+ */
+exports.addError = function(record, error) {
+
+    if (!record || !error) return;
+
+    error = typeof error === 'string' ? {code:error, message:''} : error;
+
+    for (var i in record.errors) {
+        var e = record.errors[i];
+        if (error.code === e.code)
+            return; // already exists on the record
+    }
+
+    var locale = record.sms_message && record.sms_message.locale && 'en',
+        form = record.form && record.sms_message && record.sms_message.form;
+
+    if (!error.message)
+        error.message = exports.getMessage(error, locale)
+
+    record.errors.push(error);
+    logger.error(error);
+    logger.error(record);
+};
+
+/*
+ *  @returns {Object} messages object
+ */
+exports.getMessagesObject = function() {
+    return messages;
 };
 
 /**

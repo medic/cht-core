@@ -56,7 +56,11 @@ var expected_callback = {
         },
         sms_message: example.sms_message,
         from: "+13125551212",
-        errors: [{"code":"missing_fields","fields":["year","month"]}],
+        errors: [{
+            code: "missing_fields",
+            fields: ["year","month"],
+            message: "Missing or invalid fields: year, month."
+        }],
         responses: [
           {
             to: "+13125551212",
