@@ -57,5 +57,5 @@ for the gateway so your root password is not compromised.
 
 ## Send a test SMS to the Gateway
 
-* Use some of the examples in the [gateway testing doc](../testing/gateway) to verify messages are being displayed and parsed correctly in Kujua.
+* Use some of the examples in the [gateway testing doc](../testing) to verify messages are being displayed and parsed correctly in Kujua.
 
