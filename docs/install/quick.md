@@ -5,12 +5,12 @@ including SMSSync, over a local wifi network.
 
 ## Download CouchDB
 
-* Go to [couchdb.org](http://couchdb.apache.org] and download the right file for your operating system
+* Go to [couchdb.apache.org](http://couchdb.apache.org) and download the right file for your operating system
 * Open the install file and follow the instructions.
 
 ## Create Admin User
 
-After Couchbase installs it should bring up the [built-in admin tool](http://localhost:5984/_utils) (Futon).
+After CouchDB installs it should bring up the [built-in admin tool](http://localhost:5984/_utils) (Futon).
 Click the "Fix This" link in the bottom right.  And create a user:
 
 * **Username**: root
@@ -18,16 +18,24 @@ Click the "Fix This" link in the bottom right.  And create a user:
 
 ## Configure CouchDB 
 
+### Listen to all networks
+
 * Navigate to **Configuration** section in Futon
 * Scroll to **http** section
 * Change `bind_address` to `0.0.0.0`
+
+### Require Valid User
+
+* Click **Configuration** in the right column in Futon.
+* Click the `false` value in the **couch\_httpd\_auth** section.  
+* Replace the `false` text with `true` and press the enter key to save the config.
 
 ## Replicate Kujua (dev):
 
 * Navigate to the Replicator screen in Futon 
 * **Remote**: http://medic.iriscouch.com/kujua-base
 * **Local**: kujua
-* Wait for replication to complete, should be less than 5 minutes.
+* Wait for replication to complete, should take less than a minute on a decent connection.
 
 ## Download SMSSync to device:
 
@@ -49,6 +57,5 @@ for the gateway so your root password is not compromised.
 
 ## Send a test SMS to the Gateway
 
-* Send the following message to the gateway: `1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4`
-* Verify that the message was forwarded and is parsed correctly by Kujua, by checking the Records and Downloads sections.
+* Use some of the examples in the [gateway testing doc](../testing/gateway) to verify messages are being displayed and parsed correctly in Kujua.
 
