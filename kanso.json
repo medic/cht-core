@@ -2,6 +2,22 @@
     "name": "kujua-base",
     "version": "0.1.22-pre",
     "description": "Provide access to your SMS form data.",
+    "long_description" : "Kujua is a ....",
+    "url": "https://github.com/medic/kujua",
+    "categories": ["cdc", "nepal"],
+    "icons": {
+        "16": "static/img/promo/icon_16.png",
+        "48": "static/img/promo/icon_48.png",
+        "96": "static/img/promo/icon_96.png",
+        "128": "static/img/promo/icon_128.png"
+    },
+    "promo_images": {
+        "small": "static/img/promo/promo_small.png"
+    },
+    "screenshots": [
+        "static/img/promo/screenshot1.png"
+    ],
+
     "loglevel": "info",
     "load": "lib/app",
     "modules": ["lib"],
