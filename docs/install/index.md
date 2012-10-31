@@ -151,7 +151,7 @@ clipboard or notepad.  You will need it when you configure the Gateway Sync URL 
 ## Install SMSSync
 
 At the time of this writing we are using a modified version of [SMSSync by
-Ushahidi](http://smssync.ushahidi.com/) as the gateway; your device needs to run Android version 2.2 or higher.
+Ushahidi](http://smssync.ushahidi.com/) 1.1.9 as the gateway; your device needs to run Android version 2.2 or higher.
 
 ### Step 1: Allow Installation of non-Market Applications 
 
@@ -162,8 +162,7 @@ Ushahidi](http://smssync.ushahidi.com/) as the gateway; your device needs to run
 
 ### Step 2: Download SMSSync to Device
 
-
-* Copy this link address: [SMSSync 1.1.9-kujua.2](https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-kujua3-debug.apk)\*
+* Copy this link address: [SMSSync 1.1.9-kujua.3](https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-kujua3-debug.apk)\*
 * Send the URL to the device either through SMS, email or other 
 means, then open it in your Android browser.  You can type it manually into the
 address bar too.
@@ -177,7 +176,7 @@ address bar too.
 [md5](gateway/SMSSync-kujua3-debug.apk.md5),
 [sha](gateway/SMSSync-kujua3-debug.apk.sha)
 
-*Note* We also include a copy with Kujua available locally in case you do not have internet access at the time of install. [SMSSync 1.1.9-kujua.2](gateway/SMSSync-kujua3-debug.apk)
+*Note* We also include a copy with Kujua available locally in case you do not have internet access at the time of install. [SMSSync 1.1.9-kujua.3](gateway/SMSSync-kujua3-debug.apk)
 
 ### Step 3: Install SMSSync on Device
 
