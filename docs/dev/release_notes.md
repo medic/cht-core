@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.1.19
+
+* Fixed wifi lock bug in SMSSync #54.
+* Updated docs with new SMSSync build instructions
+
 ## 0.1.18
 
 * Fixed bug in records screen where 1 row was not getting rendered until a scroll.
@@ -17,7 +22,6 @@
 * Always create records, even on empty or unstructured messages.
 * SMS response messaging refactor, added response messages to gateway testing doc.
 * Fixed hard coded URL paths in reporting tests.
-* Fixed wifi lock bug in SMSSync #54.
 
 ## 0.1.17
 
