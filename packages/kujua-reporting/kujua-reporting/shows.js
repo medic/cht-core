@@ -129,9 +129,9 @@ var renderReportingTotals = function(totals, doc) {
                         break;
                 case 1: $(el).text(totals.complete);
                         break;
-                case 2: $(el).text(totals.incomplete);
+                case 2: $(el).text(totals.not_submitted);
                         break;
-                case 3: $(el).text(totals.not_submitted);
+                case 3: $(el).text(totals.incomplete);
                         break;
             }
         });
