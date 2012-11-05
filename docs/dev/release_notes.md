@@ -4,6 +4,7 @@
 
 * Fixed wifi lock bug in SMSSync #54.
 * Updated docs with new SMSSync build instructions
+* Fixed labels names and stat placement on Health Center and District reporting screens.
 
 ## 0.1.18
 
