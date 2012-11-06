@@ -330,8 +330,31 @@ table.spreadsheet .dropdown-menu {
     padding-bottom: 20px;
 }
 
+.spreadsheet-help {
+  color: @grayLight;
+  .icon-question-sign {
+    &:after { content:" Help" }
+    .pull-right;
+    padding-right: 20px;
+    margin-top: -45px;
+    font-style: normal;
+    &:hover { cursor: pointer; }
+  }
+  ul {
+    margin: 0;
+    padding: 0 0 0 150px;
+    display: none;
+  }
+  li {
+   margin: 0;
+   padding: 0 10px 0 0;
+   display: inline;
+   list-style-type: none;
+  }
+}
+
 .facilities_msg {
-    padding: 10px 20px;
+  padding: 10px 20px;
 }
 
 .modal-header .close {

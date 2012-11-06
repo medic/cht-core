@@ -931,7 +931,8 @@
             table,
             tbody,
             textarea,
-            thead;
+            thead,
+            help;
 
         _.defaults(options, {
             create: $.noop,
@@ -939,16 +940,28 @@
             remove: $.noop,
             save: $.noop
         })
+
         if (!options.columns) {
             throw new Error('You must define some columns');
         }
+
+        help = '<div class="spreadsheet-help">'
+            + '<i class="icon-question-sign"></i>'
+            + '<ul>'
+            + '<li><b>Double click</b> or enter key to edit a cell.</li>'
+            + '<li><b>Enter</b> key to save.</li>'
+            + '<li><b>Escape</b> key for undo.</li>'
+            + '<li><b>Tab</b> cycles through cells.</li>'
+            + '</ul>'
+            + '</div>';
 
         table = $('<table class="spreadsheet"></table>');
         thead = createHeadings(options.columns);
         tbody = createBody(options.columns, options.data);
 
         table.append(thead).append(tbody);
-        $table.html(table);
+        $table.append(help);
+        $table.append(table);
 
         if (options.lockRows) {
             $table.append(
@@ -965,6 +978,7 @@
                 '</div>'
             );
         }
+
 
         textarea = $('<textarea id="spreadsheet_clipboard"></textarea>');
         $table.data('spreadsheet:clipboard', textarea);
