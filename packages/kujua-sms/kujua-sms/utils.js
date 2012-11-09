@@ -363,8 +363,8 @@ var getFormKeys = exports.getFormKeys = function(form) {
 };
 
 //
-// system messsage are prefixed with 'sys.' and not used mainly internally to
-// kujua, i.e. not sent as sms messages to reporting units.
+// system messsage are prefixed with 'sys.' and mainly used for kujua admins, 
+// not for sms responses to reporting units.
 //
 var messages = {
     'sys.recipient_not_found': {
