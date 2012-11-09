@@ -389,6 +389,9 @@ var messages = {
     facility_not_found: {
         en: "Facility not found."
     },
+    facility_not_found_sys: {
+        en: "Facility not found."
+    },
     recipient_not_found_sys: {
         en: 'Could not find message recipient.'
     },

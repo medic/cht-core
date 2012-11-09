@@ -77,8 +77,10 @@ var getDataRecord = exports.getDataRecord = function(doc, form_data) {
     if (form_data && form_data._extra_fields)
         utils.addError(record, 'extra_fields');
 
-    if (!doc.message || !doc.message.trim())
+    if (!doc.message || !doc.message.trim()) {
         utils.addError(record, 'empty_sys');
+        utils.addError(record, 'empty');
+    }
 
     return record;
 };
@@ -170,25 +172,24 @@ var getSMSResponse = function(doc) {
         };
 
     // looks like we parsed a form ok
-    if (def && doc.errors.length === 0)
-        msg = utils.getMessage('form_received', locale);
-
-    // we have a custom success autoreply
-    if (def && def.autoreply)
-        msg = def.autoreply;
+    if (def) {
+        if (doc.errors.length === 0) {
+            if (def.autoreply) {
+                // we have a custom success autoreply
+                msg = def.autoreply;
+            } else {
+                msg = utils.getMessage('form_received', locale);
+            }
+        }
+    }
 
     // handle validation errors
     doc.errors.forEach(function(err) {
-        // default
-        msg = utils.getMessage(err, locale);
-        // special overrides where we want the system message to be different
-        // from the client side message
-        if (err.code === 'form_not_found_sys') {
-            msg = utils.getMessage('form_not_found', locale)
+        // don't send system errors to the client
+        if (err.code && err.code.substr(err.code.length - 4) !== '_sys') {
+            msg = utils.getMessage(err, locale)
                     .replace('%(form)', doc.form);
         }
-        if (err.code === 'empty_sys')
-            msg = utils.getMessage('empty', locale);
     });
 
     if (msg.length > 160)
@@ -322,6 +323,9 @@ exports.updateRecord = function(doc, request) {
 
     resp.payload = getSMSResponse(doc);
     doc.responses = resp.payload.messages;
+
+    log('response');
+    log(JSON.stringify(resp,null,2));
 
     return [doc, JSON.stringify(resp)];
 };

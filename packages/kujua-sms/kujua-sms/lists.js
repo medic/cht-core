@@ -329,7 +329,7 @@ exports.data_record = function (head, req) {
 
     /* Can't do much without a facility */
     if (!facility)
-        utils.addError(record, 'facility_not_found');
+        utils.addError(record, 'facility_not_found_sys');
 
     var respBody = {
         callback: {
