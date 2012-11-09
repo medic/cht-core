@@ -329,7 +329,7 @@ exports.data_record = function (head, req) {
 
     /* Can't do much without a facility */
     if (!facility)
-        utils.addError(record, 'facility_not_found_sys');
+        utils.addError(record, 'sys.facility_not_found');
 
     var respBody = {
         callback: {
@@ -386,7 +386,7 @@ exports.data_record_merge = function (head, req) {
         row = {};
 
     if (!def)
-        utils.addError(new_data_record, 'form_not_found');
+        utils.addError(new_data_record, 'sys.form_not_found');
 
     while (row = getRow()) {
         old_data_record = row.value;

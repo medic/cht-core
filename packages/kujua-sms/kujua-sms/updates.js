@@ -50,10 +50,8 @@ var getDataRecord = exports.getDataRecord = function(doc, form_data) {
         sms_message: doc
     };
 
-    if (form && !def) {
-        utils.addError(record, 'form_not_found_sys');
-        utils.addError(record, 'form_not_found');
-    }
+    if (form && !def)
+        utils.addError(record, 'sys.form_not_found');
 
     // try to parse timestamp from gateway
     var ts = parseSentTimestamp(doc.sent_timestamp);
@@ -77,10 +75,8 @@ var getDataRecord = exports.getDataRecord = function(doc, form_data) {
     if (form_data && form_data._extra_fields)
         utils.addError(record, 'extra_fields');
 
-    if (!doc.message || !doc.message.trim()) {
-        utils.addError(record, 'empty_sys');
-        utils.addError(record, 'empty');
-    }
+    if (!doc.message || !doc.message.trim())
+        utils.addError(record, 'sys.empty');
 
     return record;
 };
@@ -172,23 +168,23 @@ var getSMSResponse = function(doc) {
         };
 
     // looks like we parsed a form ok
-    if (def) {
-        if (doc.errors.length === 0) {
-            if (def.autoreply) {
-                // we have a custom success autoreply
-                msg = def.autoreply;
-            } else {
-                msg = utils.getMessage('form_received', locale);
-            }
-        }
-    }
+    if (def && doc.errors.length === 0)
+        msg = utils.getMessage('form_received', locale);
 
-    // handle validation errors
+    // we have a custom success autoreply
+    if (def && def.autoreply)
+        msg = def.autoreply;
+
+    // handle errors -> response
     doc.errors.forEach(function(err) {
-        // don't send system errors to the client
-        if (err.code && err.code.substr(err.code.length - 4) !== '_sys') {
-            msg = utils.getMessage(err, locale)
-                    .replace('%(form)', doc.form);
+        if (err.code && err.code.substr(0,4) === 'sys.') {
+            // sys.foo errors have foo equivalent
+            msg = utils.getMessage(err.code.replace('sys.',''), locale)
+                    .replace('%(form)', doc.form)
+                    .replace('%(fields)', err.fields);
+        } else {
+            // default
+            msg = utils.getMessage(err, locale);
         }
     });
 
@@ -313,7 +309,7 @@ exports.updateRecord = function(doc, request) {
                 var msg = task.messages[i];
                 // check task fields are defined
                 if(!msg.to) {
-                    utils.addError(record, 'recipient_not_found_sys');
+                    utils.addError(record, 'sys.recipient_not_found');
                     // we don't need redundant error messages
                     break;
                 }

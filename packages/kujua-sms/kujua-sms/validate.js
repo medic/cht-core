@@ -33,9 +33,8 @@ exports.validate = function(def, form_data) {
         }
     });
 
-    if (!_.isEmpty(missing_fields)) {
-        return [{code: 'missing_fields', fields: missing_fields}];
-    }
+    if (!_.isEmpty(missing_fields))
+        return [{code: 'sys.missing_fields', fields: missing_fields}];
 
     if (def.validations) {
 
@@ -48,7 +47,7 @@ exports.validate = function(def, form_data) {
             // assume string/error message if not object
             if (ret && !_.isObject(ret)) {
                 errors.push({
-                    code: 'form_invalid_custom',
+                    code: 'sys.form_invalid_custom',
                     form: def.meta.code,
                     message: ret
                 });

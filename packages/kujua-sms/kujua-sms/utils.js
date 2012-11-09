@@ -362,7 +362,17 @@ var getFormKeys = exports.getFormKeys = function(form) {
     return hashToArray(keys);
 };
 
+//
+// system messsage are prefixed with 'sys.' and not used mainly internally to
+// kujua, i.e. not sent as sms messages to reporting units.
+//
 var messages = {
+    'sys.recipient_not_found': {
+        en: 'Could not find message recipient.'
+    },
+    'sys.missing_fields': {
+        en: "Missing or invalid fields: %(fields).",
+    },
     missing_fields: {
         en: "Missing or invalid fields: %(fields).",
         ne: "तपाईले फारम पूरा भर्नुभएन। कृपया पुरा गरेर फेरि पठाउन प्रयास गर्नुहोला।"
@@ -370,6 +380,9 @@ var messages = {
     extra_fields: {
         en: "Extra fields.",
         ne: "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
+    },
+    'sys.form_not_found': {
+        en: "Form '%(form)' not found."
     },
     form_not_found: {
         en: "The form sent '%(form)' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
@@ -382,20 +395,13 @@ var messages = {
         fr: "Le formulaire envoyé '%(form)' n'est pas complet. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur.",
         ne: "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
     },
-    // system message as opposed to client response
-    form_not_found_sys: {
-        en: "Form '%(form)' not found."
+    'sys.facility_not_found': {
+        en: "Facility not found."
     },
     facility_not_found: {
         en: "Facility not found."
     },
-    facility_not_found_sys: {
-        en: "Facility not found."
-    },
-    recipient_not_found_sys: {
-        en: 'Could not find message recipient.'
-    },
-    empty_sys : {
+    'sys.empty': {
         en: "Message appears empty."
     },
     empty : {
@@ -429,6 +435,8 @@ var messages = {
  */
 exports.addError = function(record, error) {
 
+    logger.debug('calling addError');
+    logger.debug(arguments);
     if (!record || !error) return;
 
     error = typeof error === 'string' ? {code:error, message:''} : error;
@@ -443,12 +451,14 @@ exports.addError = function(record, error) {
         form = record.form && record.sms_message && record.sms_message.form;
 
     if (!error.message)
-        error.message = exports.getMessage(error, locale)
+        error.message = exports.getMessage(error, locale);
 
-    if (record.errors)
-        record.errors.push(error);
-    else
-        record.errors = [error];
+    // replace placeholder strings
+    error.message
+        .replace('%(fields)', error.fields && error.fields.join(', '))
+        .replace('%(form)', form);
+
+    record.errors ? record.errors.push(error) : record.errors = [error];
 
     logger.error(error);
     logger.error(record);
@@ -472,10 +482,12 @@ exports.getMessagesObject = function() {
 exports.getMessage = function (code, locale) {
 
     var key = code.code ? code.code : code,
-        msg = utils.localizedString(messages[key], locale);
+        msg = code.message ? code.message : utils.localizedString(messages[key], locale);
 
+    return msg;
+    /*
     // if custom validation then use the message property of error object
-    if (key === 'form_invalid_custom')
+    if (key === 'sys.form_invalid_custom')
         return code.message
 
     if (code.fields && _.isArray(code.fields))
@@ -485,6 +497,7 @@ exports.getMessage = function (code, locale) {
         return msg.replace('%(form)', code.form);
 
     return msg;
+    */
 
 };
 
