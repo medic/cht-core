@@ -29,16 +29,17 @@ var getRefID = function(form, form_data) {
  * @param {String} phone - phone number of the sending phone (from)
  * @param {Object} doc - sms_message doc created from initial POST
  * @param {Object} form_data - parsed form data
- * @returns {Object} - body for callback
+ * @returns {Object} - data record
  * @api private
  */
-var getCallbackBody = function(phone, doc, form_data) {
+var getDataRecord = exports.getDataRecord = function(doc, form_data) {
     var form = doc.form,
         def = jsonforms[form];
 
-    var body = {
+    var record = {
+        _id: req.uuid,
         type: 'data_record',
-        from: phone,
+        from: doc.from,
         form: form,
         related_entities: {clinic: null},
         errors: [],
@@ -49,34 +50,37 @@ var getCallbackBody = function(phone, doc, form_data) {
         sms_message: doc
     };
 
+    if (form && !def) {
+        utils.addError(record, 'form_not_found_sys');
+        utils.addError(record, 'form_not_found');
+    }
+
     // try to parse timestamp from gateway
     var ts = parseSentTimestamp(doc.sent_timestamp);
     if (ts)
-        body.reported_date = ts;
+        record.reported_date = ts;
 
     if (def) {
         if (def.facility_reference)
-            body.refid = form_data[def.facility_reference];
+            record.refid = form_data[def.facility_reference];
 
         for (var k in def.fields) {
             var field = def.fields[k];
-            smsparser.merge(form, k.split('.'), body, form_data);
+            smsparser.merge(form, k.split('.'), record, form_data);
         }
         var errors = validate.validate(def, form_data);
         errors.forEach(function(err) {
-            utils.addError(body, err);
+            utils.addError(record, err);
         });
-    } else {
-        utils.addError(body, 'form_not_found_sys');
     }
 
     if (form_data && form_data._extra_fields)
-        utils.addError(body, 'extra_fields');
+        utils.addError(record, 'extra_fields');
 
     if (!doc.message || !doc.message.trim())
-        utils.addError(body, 'empty_sys');
+        utils.addError(record, 'empty_sys');
 
-    return body;
+    return record;
 };
 
 /**
@@ -143,7 +147,7 @@ var parseSentTimestamp = function(str) {
 };
 
 /*
- * @param {Object} doc - data_record object as returned from getCallbackBody
+ * @param {Object} doc - data_record object as returned from getDataRecord
  * @returns {Object} - smssync gateway response payload json object
  * @api private
  *
@@ -197,65 +201,127 @@ var getSMSResponse = function(doc) {
 };
 
 /*
- * Return Ushahidi SMSSync compatible response message.  Supports custom
- * auto-reply message in the form definition. Also uses callbacks to create
- * record.
- *
- * Always try to create records for every message recieved.
- *
+ * Create intial/stub data record. Return Ushahidi SMSSync compatible callback
+ * response to update facility data in next response.
  */
-var getRespBody = function(doc, req) {
-    var form = doc.form,
-        form_data = null,
-        def = jsonforms[form],
+var req = {};
+exports.add_sms = function(doc, request) {
+
+    req = request;
+
+    var sms_message = {
+        type: "sms_message",
+        locale: (req.query && req.query.locale) || 'en',
+        form: smsparser.getForm(req.form.message)
+    };
+    doc = _.extend(req.form, sms_message);
+
+    var form_data = null,
+        def = jsonforms[doc.form],
         baseURL = require('duality/core').getBaseURL(),
         headers = req.headers.Host.split(":"),
-        host = headers[0],
-        port = headers[1] || "",
-        phone = doc.from, // set by gateway
-        errormsg = '',
         resp = {};
 
-    if (form && def)
+    if (doc.form && def)
         form_data = smsparser.parse(def, doc);
 
     // provide callback for next part of record creation.
     resp.callback = {
         options: {
-            host: host,
-            port: port,
+            host: headers[0],
+            port: headers[1] || "",
             method: "POST",
-            headers: {'Content-Type': 'application/json; charset=utf-8'}
-        }
+            headers: {'Content-Type': 'application/json; charset=utf-8'},
+            path: baseURL
+                    + getCallbackPath(doc.from, def && doc.form, form_data, def)
+        },
+        data: {uuid: req.uuid}
     };
 
-    resp.callback.options.path = baseURL + getCallbackPath(phone, def && form, form_data, def);
-    resp.callback.data = getCallbackBody(phone, doc, form_data);
-    resp.payload = getSMSResponse(resp.callback.data);
-
-    // save responses to record
-    resp.callback.data.responses = resp.payload.messages;
+    // TODO move to final update
 
     // pass through Authorization header
     if(req.headers.Authorization) {
         resp.callback.options.headers.Authorization = req.headers.Authorization;
     }
 
-    return JSON.stringify(resp);
+    var record = getDataRecord(doc, form_data);
+
+    log('getRespBody');
+    log(JSON.stringify(record,null,2));
+    log(JSON.stringify(resp,null,2));
+
+    return [record, JSON.stringify(resp)];
 };
-exports.getRespBody = getRespBody;
 
 /*
- * Parse an sms message and if we discover a supported format save a data
- * record.
+ * Setup context and run eval on `messages_task` property on form.
+ *
+ * @param {String} form - jsonforms form key
+ * @param {Object} record - Data record object
+ *
+ * @returns {Object|undefined} - the task object or undefined if we have no
+ *                               messages/nothing to send.
+ *
  */
-exports.add_sms = function (doc, req) {
-    return [null, getRespBody(_.extend(req.form, {
-        type: "sms_message",
-        locale: (req.query && req.query.locale) || 'en',
-        form: smsparser.getForm(req.form.message)
-    }), req)];
+var getMessagesTask = function(record) {
+    var def = jsonforms[record.form],
+        phone = record.from,
+        clinic = record.related_entities.clinic,
+        keys = utils.getFormKeys(record.form),
+        labels = utils.getLabels(keys, record.form),
+        values = utils.getValues(record, keys),
+        task = {
+            state: 'pending',
+            messages: []
+        };
+    if (typeof def.messages_task === 'string')
+        task.messages = task.messages.concat(eval('('+def.messages_task+')()'));
+    if (task.messages.length > 0)
+        return task;
 };
 
-exports.add = function (doc, req) {
+/*
+ * Update data record. Create/update attributes on existing doc and
+ * send sms response.
+ */
+exports.updateRecord = function(doc, request) {
+
+    log('updateRecord');
+    log(JSON.stringify(doc,null,2));
+    log(JSON.stringify(request,null,2));
+
+    req = request;
+    var data = JSON.parse(req.body),
+        def = jsonforms[doc.form],
+        resp = {};
+
+    for (var k in data) {
+        if (doc[k] && doc[k].length) {
+            doc[k].concat(data[k]);
+        } else {
+            doc[k] = data[k];
+        }
+    }
+
+    if (def && def.messages_task) {
+        var task = getMessagesTask(doc);
+        if (task) {
+            record.tasks.push(task);
+            for (var i in task.messages) {
+                var msg = task.messages[i];
+                // check task fields are defined
+                if(!msg.to) {
+                    utils.addError(record, 'recipient_not_found_sys');
+                    // we don't need redundant error messages
+                    break;
+                }
+            }
+        }
+    }
+
+    resp.payload = getSMSResponse(doc);
+    doc.responses = resp.payload.messages;
+
+    return [doc, JSON.stringify(resp)];
 };

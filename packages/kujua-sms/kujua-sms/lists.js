@@ -229,32 +229,6 @@ var old_getReferralTask = function(form, record) {
 
     return task;
 };
-/*
- * Setup context and run eval on `messages_task` property on form.
- *
- * @param {String} form - jsonforms form key
- * @param {Object} record - Data record object
- *
- * @returns {Object|undefined} - the task object or undefined if we have no
- *                               messages/nothing to send.
- *
- */
-var getMessagesTask = function(form, record) {
-    var def = jsonforms[form],
-        phone = record.from,
-        clinic = record.related_entities.clinic,
-        keys = utils.getFormKeys(form),
-        labels = utils.getLabels(keys, form),
-        values = utils.getValues(record, keys),
-        task = {
-            state: 'pending',
-            messages: []
-        };
-    if (typeof def.messages_task === 'string')
-        task.messages = task.messages.concat(eval('('+def.messages_task+')()'));
-    if (task.messages.length > 0)
-        return task;
-};
 
 /**
  * @param {Object} req - kanso request object
@@ -307,7 +281,7 @@ var json_headers = {
 /*
  * Second step of adding a data record for an incoming SMS.  This adds the
  * related data to the record and returns the necessary callback information
- * for creating the data record.
+ * to update the data record.
  *
  * @param {Object} head
  * @param {Object} req
@@ -319,22 +293,17 @@ var json_headers = {
 exports.data_record = function (head, req) {
     start({code: 200, headers: json_headers});
 
-    var record = JSON.parse(req.body),
+    log('data_record');
+    log(JSON.stringify(head,null,2));
+    log(JSON.stringify(req,null,2));
+
+    var _id = JSON.parse(req.body).uuid,
+        record = {related_entities: {}},
         form = req.query.form,
         headers = req.headers.Host.split(":"),
-        host = headers[0],
-        port = headers[1] || "",
-        appdb = require('duality/core').getDBURL(req),
+        baseURL = require('duality/core').getBaseURL(),
         def = jsonforms[form],
         facility  = null;
-
-    if (form && !def)
-        utils.addError(record, 'form_not_found');
-
-    //
-    // setup related_entities
-    //
-    record.related_entities = {};
 
     //
     // Add first matched facility to record
@@ -362,32 +331,19 @@ exports.data_record = function (head, req) {
     if (!facility)
         utils.addError(record, 'facility_not_found');
 
-    if (def && def.messages_task) {
-        var task = getMessagesTask(form, record);
-        if (task) {
-            record.tasks.push(task);
-            for (var i in task.messages) {
-                var msg = task.messages[i];
-                // check task fields are defined
-                if(!msg.to) {
-                    utils.addError(record, 'recipient_not_found_sys');
-                    // we don't need redundant error messages
-                    break;
-                }
-            }
-        }
-    }
-
-    /* Send callback to gateway to check for already existing doc. */
     var respBody = {
         callback: {
             options: {
-                host: host,
-                port: port,
-                path: getCallbackPath(req, form, record, facility),
-                method: "POST",
-                headers: _.clone(json_headers)},
-            data: record}};
+                host: headers[0],
+                port: headers[1] || "",
+                //path: getCallbackPath(req, form, record, facility),
+                path: baseURL + '/data_record/update/' + _id,
+                method: "PUT",
+                headers: _.clone(json_headers)
+            },
+            data: record
+        }
+    };
 
     // pass through Authorization header
     if(req.headers.Authorization) {
@@ -415,6 +371,9 @@ exports.data_record = function (head, req) {
 exports.data_record_merge = function (head, req) {
     start({code: 200, headers: json_headers});
 
+    log('data_record_merge');
+    log(JSON.stringify(head,null,2));
+    log(JSON.stringify(req,null,2));
     var new_data_record = JSON.parse(req.body),
         form = req.query.form,
         headers = req.headers.Host.split(":"),
@@ -467,6 +426,10 @@ exports.data_record_merge = function (head, req) {
  */
 exports.tasks_pending = function (head, req) {
     start({code: 200, headers: json_headers});
+
+    log('tasks_pending');
+    log(JSON.stringify(head,null,2));
+    log(JSON.stringify(req,null,2));
 
     var newDocs = [],
         appdb = require('duality/core').getDBURL(req),

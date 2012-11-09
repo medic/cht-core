@@ -442,7 +442,11 @@ exports.addError = function(record, error) {
     if (!error.message)
         error.message = exports.getMessage(error, locale)
 
-    record.errors.push(error);
+    if (record.errors)
+        record.errors.push(error);
+    else
+        record.errors = [error];
+
     logger.error(error);
     logger.error(record);
 };
