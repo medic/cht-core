@@ -321,12 +321,13 @@ exports.updateRelated = function(doc, request) {
     if (def && def.messages_task) {
         var task = getMessagesTask(doc);
         if (task) {
-            record.tasks.push(task);
+            doc.tasks = doc.tasks ? doc.tasks : [];
+            doc.tasks.push(task);
             for (var i in task.messages) {
                 var msg = task.messages[i];
                 // check task fields are defined
                 if(!msg.to) {
-                    utils.addError(record, 'sys.recipient_not_found');
+                    utils.addError(doc, 'sys.recipient_not_found');
                     // we don't need redundant error messages
                     break;
                 }

@@ -139,3 +139,51 @@ exports.add_sms_check_resp_body = function (test) {
     test.same(resp, expResp);
     test.done();
 };
+
+exports.update_related_and_tasks = function (test) {
+    test.expect(3);
+    var req = {
+        headers: {"Host": window.location.host},
+        body: JSON.stringify({
+            related_entities: {
+                clinic: {
+                    "contact": {
+                        "name": "Sam Jones",
+                        "phone": "+13125551212"
+                    },
+                    "parent": {
+                        "contact": {
+                            "name": "Neal Young",
+                            "phone": "+17085551212"
+                        },
+                        "parent": {
+                            "contact": {
+                                "name": "Bernie Mac",
+                                "phone": "+14155551212"
+                            }
+                        }
+                    }
+                }
+            }
+        })
+    };
+
+    // mockup of doc fetched by couchdb during update
+    var doc = {form:'TEST', year: 2012, month: 3};
+    var ret = updates.updateRelated(doc, req);
+    var tasks = [
+        {
+          "state": "pending",
+          "messages": [
+            {
+              "to": "+14155551212",
+              "message": "Health Facility Identifier: null, Report Year: 2012, Report Month: 3, Misoprostol?: null, LA 6x1: Dispensed total: null, LA 6x2: Dispensed total: null"
+            }
+          ]
+        }
+    ];
+    test.same(ret[0].tasks[0].messages[0].to, "+14155551212");
+    test.same(ret[0].tasks[0].state, 'pending');
+    test.same(tasks, ret[0].tasks);
+    test.done();
+}
