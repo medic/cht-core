@@ -210,6 +210,33 @@ var getSMSResponse = function(doc) {
 };
 
 /*
+ * Setup context and run eval on `messages_task` property on form.
+ *
+ * @param {String} form - jsonforms form key
+ * @param {Object} record - Data record object
+ *
+ * @returns {Object|undefined} - the task object or undefined if we have no
+ *                               messages/nothing to send.
+ *
+ */
+var getMessagesTask = function(record) {
+    var def = jsonforms[record.form],
+        phone = record.from,
+        clinic = record.related_entities.clinic,
+        keys = utils.getFormKeys(record.form),
+        labels = utils.getLabels(keys, record.form),
+        values = utils.getValues(record, keys),
+        task = {
+            state: 'pending',
+            messages: []
+        };
+    if (typeof def.messages_task === 'string')
+        task.messages = task.messages.concat(eval('('+def.messages_task+')()'));
+    if (task.messages.length > 0)
+        return task;
+};
+
+/*
  * Create intial/stub data record. Return Ushahidi SMSSync compatible callback
  * response to update facility data in next response.
  */
@@ -268,32 +295,6 @@ exports.add_sms = function(doc, request) {
     return [doc, JSON.stringify(resp)];
 };
 
-/*
- * Setup context and run eval on `messages_task` property on form.
- *
- * @param {String} form - jsonforms form key
- * @param {Object} record - Data record object
- *
- * @returns {Object|undefined} - the task object or undefined if we have no
- *                               messages/nothing to send.
- *
- */
-var getMessagesTask = function(record) {
-    var def = jsonforms[record.form],
-        phone = record.from,
-        clinic = record.related_entities.clinic,
-        keys = utils.getFormKeys(record.form),
-        labels = utils.getLabels(keys, record.form),
-        values = utils.getValues(record, keys),
-        task = {
-            state: 'pending',
-            messages: []
-        };
-    if (typeof def.messages_task === 'string')
-        task.messages = task.messages.concat(eval('('+def.messages_task+')()'));
-    if (task.messages.length > 0)
-        return task;
-};
 
 /*
  * Update data record related entities and create message tasks.
