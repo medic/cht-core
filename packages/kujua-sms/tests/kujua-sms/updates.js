@@ -5,22 +5,15 @@ var updates = require('kujua-sms/updates'),
 
 exports.assert_month_is_integer = function(test) {
     test.expect(1);
-
-    // Data parsed from a http POST
-    var parsed_form = {
-        message: '1!TEST!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4',
-    };
-
-    // request object
     var req = {
-        headers: { Host: window.location.host },
-        body: querystring.stringify(parsed_form),
-        form: parsed_form
+        headers: { "Host": window.location.host },
+        uuid: "13f58b9c648b9a997248cba27aa00fdf",
+        form: {
+            "from":"+888",
+            "message": '1!TEST!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4'
+        }
     };
-
-    var resp = fakerequest.update(updates.add_sms, parsed_form, req),
-        resp_body = JSON.parse(resp[1].body);
-
-    test.same(11, resp_body.callback.data.month);
+    var doc = updates.add_sms(null, req)[0];
+    test.same(11, doc.month);
     test.done();
 };

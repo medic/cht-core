@@ -19,7 +19,7 @@ exports.missing_fields_errors = function(test) {
         hij: 3
     };
     errors = validate.validate(form_definition, form_data);
-    test.same(errors[0], {code: 'missing_fields', fields: ['def']});
+    test.same(errors[0], {code: 'sys.missing_fields', fields: ['def']});
     test.done();
 };
 
@@ -75,7 +75,7 @@ exports.nested_fields_missing = function(test) {
         def: { xyz: 3 }
     }
     errors = validate.validate(form_definition, form_data);
-    test.same(errors[0], {code: "missing_fields", fields: ["def.hij"]});
+    test.same(errors[0], {code: "sys.missing_fields", fields: ["def.hij"]});
     test.done();
 
 };
@@ -110,7 +110,7 @@ exports.form_data_with_labels = function(test) {
         }
     }
     var errors = validate.validate(form_definition, form_data);
-    test.same(errors[0], {code: "missing_fields", fields: ["def.hij"]});
+    test.same(errors[0], {code: "sys.missing_fields", fields: ["def.hij"]});
 
     test.done();
 };
@@ -139,6 +139,6 @@ exports.custom_validations_function = function(test) {
     var data = { foo: 2 },
         errors = validate.validate(def, data);
 
-    test.same(errors[0], {code:"form_invalid_custom", form:"FOO", message:"Arg."});
+    test.same(errors[0], {code:"sys.form_invalid_custom", form:"FOO", message:"Arg."});
     test.done();
 };
