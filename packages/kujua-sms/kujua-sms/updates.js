@@ -120,14 +120,21 @@ var getCallbackPath = function(phone, form, form_data, def) {
  * reported_date.  Particularly useful when re-importing data from gateway to
  * maintain accurate reported_date field.
  *
- * return unix timestamp string or undefined
+ * return unix timestamp integer or undefined
  */
 var parseSentTimestamp = function(str) {
+
     if(!str) { return; }
-    var match = str.match(/(\d{1,2})-(\d{1,2})-(\d{2})\s(\d{1,2}):(\d{2})(:(\d{2}))?/),
+
+    // smssync 1.1.9 format
+    var match1 = str.match(/(\d{1,2})-(\d{1,2})-(\d{2})\s(\d{1,2}):(\d{2})(:(\d{2}))?/),
         ret,
         year;
-    if (match) {
+
+    // smssync 2.0 format
+    var match2 = str.match(/(\d{13})/);
+
+    if (match1) {
         ret = new Date();
 
         year = ret.getFullYear();
@@ -140,6 +147,11 @@ var parseSentTimestamp = function(str) {
         ret.setMinutes(match[5]);
         ret.setSeconds(match[7] || 0);
         ret.setMilliseconds(0);
+        return ret.getTime();
+    }
+
+    if (match2) {
+        ret = new Date(Number(match2[1]));
         return ret.getTime();
     }
 };
@@ -204,6 +216,8 @@ var getSMSResponse = function(doc) {
 var req = {};
 exports.add_sms = function(doc, request) {
 
+    logger.log('add_sms');
+    logger.log(arguments);
     req = request;
 
     var sms_message = {
@@ -244,9 +258,8 @@ exports.add_sms = function(doc, request) {
 
     var record = getDataRecord(doc, form_data);
 
-    log('getRespBody');
-    log(JSON.stringify(record,null,2));
-    log(JSON.stringify(resp,null,2));
+    logger.log(JSON.stringify(record,null,2));
+    logger.log(JSON.stringify(resp,null,2));
 
     return [record, JSON.stringify(resp)];
 };
@@ -284,9 +297,9 @@ var getMessagesTask = function(record) {
  */
 exports.updateRecord = function(doc, request) {
 
-    log('updateRecord');
-    log(JSON.stringify(doc,null,2));
-    log(JSON.stringify(request,null,2));
+    logger.log('updateRecord');
+    logger.log(JSON.stringify(doc,null,2));
+    logger.log(JSON.stringify(request,null,2));
 
     req = request;
     var data = JSON.parse(req.body),
@@ -320,8 +333,8 @@ exports.updateRecord = function(doc, request) {
     resp.payload = getSMSResponse(doc);
     doc.responses = resp.payload.messages;
 
-    log('response');
-    log(JSON.stringify(resp,null,2));
+    logger.log('response');
+    logger.log(JSON.stringify(resp,null,2));
 
     return [doc, JSON.stringify(resp)];
 };

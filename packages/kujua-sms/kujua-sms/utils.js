@@ -454,7 +454,7 @@ exports.addError = function(record, error) {
         error.message = exports.getMessage(error, locale);
 
     // replace placeholder strings
-    error.message
+    error.message = error.message
         .replace('%(fields)', error.fields && error.fields.join(', '))
         .replace('%(form)', form);
 
