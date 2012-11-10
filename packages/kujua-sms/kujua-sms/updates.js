@@ -193,7 +193,7 @@ var getSMSResponse = function(doc) {
             // sys.foo errors have foo equivalent
             msg = utils.getMessage(err.code.replace('sys.',''), locale)
                     .replace('%(form)', doc.form)
-                    .replace('%(fields)', err.fields);
+                    .replace('%(fields)', err.fields && err.fields.join(', '));
         } else {
             // default
             msg = utils.getMessage(err, locale);
@@ -257,6 +257,10 @@ exports.add_sms = function(doc, request) {
     }
 
     var record = getDataRecord(doc, form_data);
+
+    // send sms response to gateway
+    resp.payload = getSMSResponse(record);
+    record.responses = resp.payload.messages;
 
     logger.log(JSON.stringify(record,null,2));
     logger.log(JSON.stringify(resp,null,2));
@@ -329,9 +333,6 @@ exports.updateRecord = function(doc, request) {
             }
         }
     }
-
-    resp.payload = getSMSResponse(doc);
-    doc.responses = resp.payload.messages;
 
     logger.log('response');
     logger.log(JSON.stringify(resp,null,2));

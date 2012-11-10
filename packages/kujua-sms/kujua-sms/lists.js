@@ -299,7 +299,7 @@ exports.data_record = function (head, req) {
 
     var _id = JSON.parse(req.body).uuid,
         record = {related_entities: {}},
-        form = req.query.form,
+        form = req.query && req.query.form,
         headers = req.headers.Host.split(":"),
         baseURL = require('duality/core').getBaseURL(),
         def = jsonforms[form],
