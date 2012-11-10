@@ -225,16 +225,16 @@ exports.add_sms = function(doc, request) {
         locale: (req.query && req.query.locale) || 'en',
         form: smsparser.getForm(req.form.message)
     };
-    doc = _.extend(req.form, sms_message);
+    sms_message = _.extend(req.form, sms_message);
 
     var form_data = null,
-        def = jsonforms[doc.form],
+        def = jsonforms[sms_message.form],
         baseURL = require('duality/core').getBaseURL(),
         headers = req.headers.Host.split(":"),
         resp = {};
 
-    if (doc.form && def)
-        form_data = smsparser.parse(def, doc);
+    if (sms_message.form && def)
+        form_data = smsparser.parse(def, sms_message);
 
     // provide callback for next part of record creation.
     resp.callback = {
@@ -244,7 +244,7 @@ exports.add_sms = function(doc, request) {
             method: "POST",
             headers: {'Content-Type': 'application/json; charset=utf-8'},
             path: baseURL
-                    + getCallbackPath(doc.from, def && doc.form, form_data, def)
+                    + getCallbackPath(sms_message.from, def && sms_message.form, form_data, def)
         },
         data: {uuid: req.uuid}
     };
@@ -256,16 +256,16 @@ exports.add_sms = function(doc, request) {
         resp.callback.options.headers.Authorization = req.headers.Authorization;
     }
 
-    var record = getDataRecord(doc, form_data);
+    doc = getDataRecord(sms_message, form_data);
 
     // send sms response to gateway
-    resp.payload = getSMSResponse(record);
-    record.responses = resp.payload.messages;
+    resp.payload = getSMSResponse(doc);
+    doc.responses = resp.payload.messages;
 
-    logger.log(JSON.stringify(record,null,2));
+    logger.log(JSON.stringify(doc,null,2));
     logger.log(JSON.stringify(resp,null,2));
 
-    return [record, JSON.stringify(resp)];
+    return [doc, JSON.stringify(resp)];
 };
 
 /*
@@ -296,12 +296,11 @@ var getMessagesTask = function(record) {
 };
 
 /*
- * Update data record. Create/update attributes on existing doc and
- * send sms response.
+ * Update data record related entities and create message tasks.
  */
-exports.updateRecord = function(doc, request) {
+exports.updateRelated = function(doc, request) {
 
-    logger.log('updateRecord');
+    logger.log('updateRelated');
     logger.log(JSON.stringify(doc,null,2));
     logger.log(JSON.stringify(request,null,2));
 

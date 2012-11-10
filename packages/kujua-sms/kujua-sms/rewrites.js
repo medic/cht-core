@@ -35,7 +35,7 @@ exports.rules = [
     },
     {
         from: '/data_record/update/:id',
-        to: '_update/updateRecord/:id',
+        to: '_update/updateRelated/:id',
         method: 'PUT'
     },
     {
