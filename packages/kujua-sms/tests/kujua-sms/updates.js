@@ -140,6 +140,9 @@ exports.add_sms_check_resp_body = function (test) {
     test.done();
 };
 
+//
+// use TEST form to create tasks on a document.
+//
 exports.update_related_and_tasks = function (test) {
     test.expect(3);
     var req = {
@@ -184,6 +187,52 @@ exports.update_related_and_tasks = function (test) {
     ];
     test.same(ret[0].tasks[0].messages[0].to, "+14155551212");
     test.same(ret[0].tasks[0].state, 'pending');
-    test.same(tasks, ret[0].tasks);
+    test.same(ret[0].tasks, tasks);
+    test.done();
+}
+
+//
+// this doc is missing the district level of facility so we should add an error
+//
+exports.update_related_add_error = function (test) {
+    test.expect(2);
+    var req = {
+        headers: {"Host": window.location.host},
+        body: JSON.stringify({
+            related_entities: {
+                clinic: {
+                    "contact": {
+                        "name": "Sam Jones",
+                        "phone": "+13125551212"
+                    },
+                    "parent": {
+                        "contact": {
+                            "name": "Neal Young",
+                            "phone": "+17085551212"
+                        }
+                    }
+                }
+            }
+        })
+    };
+
+    // mockup of doc fetched by couchdb during update
+    var doc = {
+        form:'TEST',
+        year: 2012,
+        month: 3,
+        errors: [{
+            "code":"facility_not_found",
+            "message":"Facility not found."
+        }]
+    };
+
+    var ret = updates.updateRelated(doc, req);
+    var newError = {
+        "code":"sys.recipient_not_found",
+        "message":"Could not find message recipient."
+    };
+    test.same(ret[0].errors[0], doc.errors[0]);
+    test.same(ret[0].errors[1], newError);
     test.done();
 }
