@@ -33,8 +33,7 @@ trimmed at 160 characters before being sent.
 #### Unstructured message not textforms
 
 * message: "foo"
-* response: `form_not_found`
-
+* response: `sms_received`
 
 #### Unstructured message possibly textforms
 
