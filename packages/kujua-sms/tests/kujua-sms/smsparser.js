@@ -330,3 +330,280 @@ exports.valid_message = function (test) {
 
     test.done();
 };
+
+exports.junk_example_data = function (test) {
+
+    var doc = {
+        sent_timestamp: '2-1-12 15:35',
+        from: '+13125551212',
+        message: 'xox+o123'
+    };
+
+    test.expect(2);
+
+    var form = smsparser.getForm(doc.message);
+    var obj = smsparser.parse(null, doc);
+    var expectedObj = {};
+    test.same(obj, expectedObj);
+
+    var arr = smsparser.parseArray(null, doc);
+    var expectedArr = [];
+    test.same(arr, expectedArr);
+
+    test.done();
+};
+
+exports.msbb_example_data = function (test) {
+    test.expect(2);
+
+    var def = jsonforms['MSBB'];
+    var doc = {
+        sent_timestamp: '2-1-12 15:35',
+        from: '+13125551212',
+        message: '1!MSBB!2012#2#1#12345678901#1111#bbbbbbbbbbbbbbbbbbbb#22#15#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+    };
+
+    var obj = smsparser.parse(def, doc);
+    var expectedObj = {
+        ref_year: 2012,
+        ref_month: 2,
+        ref_day: 1,
+        ref_rc: '12345678901',
+        ref_hour: 1111,
+        ref_name: 'bbbbbbbbbbbbbbbbbbbb',
+        ref_age: 22,
+        ref_reason: 'Autres',
+        ref_reason_other: 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+    };
+
+    test.same(obj, expectedObj);
+
+    msbb_example_data_with_only_required_fields(test);
+};
+
+var msbb_example_data_with_only_required_fields = function (test) {
+    var def = jsonforms['MSBB'];
+    var doc = {
+        sent_timestamp: '2-1-12 15:35',
+        from: '+13125551212',
+        message: '1!MSBB!2012#1#24###bbbbbb'
+    };
+
+    var obj = smsparser.parse(def, doc);
+    var expectedObj = {
+        ref_year: '2012',
+        ref_month: '1',
+        ref_day: 24,
+        ref_rc: null,
+        ref_hour: null,
+        ref_name: 'bbbbbb',
+        ref_age: undefined,
+        ref_reason: undefined,
+        ref_reason_other: undefined
+    };
+
+    test.same(obj, expectedObj);
+    
+    test.done();
+};
+
+
+exports.msbc_example_data = function (test) {
+    var def = jsonforms['MSBC'];
+    var doc = {
+        sent_timestamp: '1-13-12 15:35',
+        from: '+15551212',
+        message: '1!MSBC!2012#1#16#12345678901#5#abcdefghijklmnopqrst#31#bcdefghijklmnopqrstu#cdefghijklmnopqrstuv#5#defghijklmnopqrstuvw#efghijklmnopqrstuvwxyzabcdefghijklm'
+    };
+
+    test.expect(2);
+
+    var obj = smsparser.parse(def, doc);
+    var expectedObj = {
+        cref_year: '2012',
+        cref_month: '1',
+        cref_day: 16,
+        cref_rc: "12345678901",
+        cref_ptype: 'Autre',
+        cref_name: 'abcdefghijklmnopqrst',
+        cref_age: 31,
+        cref_mom: 'bcdefghijklmnopqrstu',
+        cref_treated: 'cdefghijklmnopqrstuv',
+        cref_rec: 'Guéri',
+        cref_reason: 'defghijklmnopqrstuvw',
+        cref_agent: 'efghijklmnopqrstuvwxyzabcdefghijklm'
+    };
+
+
+    test.same(obj, expectedObj);
+
+    var arr = smsparser.parseArray(def, doc);
+    var expectedArr = ["1-13-12 15:35","+15551212","2012","1","16","12345678901","5","abcdefghijklmnopqrst","31","bcdefghijklmnopqrstu","cdefghijklmnopqrstuv","5","defghijklmnopqrstuvw","efghijklmnopqrstuvwxyzabcdefghijklm"]
+
+    test.same(arr, expectedArr);
+
+    test.done();
+};
+
+
+exports.msbg_example_data = function (test) {
+    var def = jsonforms['MSBG'];
+    var doc = {
+        sent_timestamp: '1-16-12 15:35',
+        from: '+15551212',
+        message: '1!MSBG!2012#1#12345678901#123#456#789#123#456#789#123#456#789'
+    };
+
+    test.expect(2);
+
+    var obj = smsparser.parse(def, doc);
+    var expectedObj = {
+        case_year: '2012',
+        case_month: '1',
+        monthly_rc: "12345678901",
+        monthly_cta1: 123,
+        monthly_cta2: 456,
+        monthly_cta3: 789,
+        monthly_sro1: 123,
+        monthly_sro2: 456,
+        monthly_sro3: 789,
+        monthly_ctm1: 123,
+        monthly_ctm2: 456,
+        monthly_ctm3: 789
+    };
+
+    test.same(obj, expectedObj);
+
+    var arr = smsparser.parseArray(def, doc);
+    var expectedArr = ['1-16-12 15:35', '+15551212', '2012', '1', 12345678901, 123, 456, 789, 123, 456, 789, 123, 456, 789];
+
+    test.same(arr, expectedArr);
+
+    test.done();
+};
+
+
+exports.msbm_example_data = function (test) {
+    var def = jsonforms['MSBM'];
+    var doc = {
+        sent_timestamp: '1-16-12 19:35',
+        from: '+15551212',
+        message: '1!MSBM!2012#1#16#12345678901#123#456#789#123#456#789#123#456#123#456'
+    };
+
+    test.expect(2);
+
+    var obj = smsparser.parse(def, doc);
+    var expectedObj = {
+        med_year: '2012',
+        med_month: '1',
+        med_day: 16,
+        med_rc: 12345678901,
+        med_cta_a: 123,
+        med_cta_c: 456,
+        med_tdr_a: 789,
+        med_tdr_c: 123,
+        med_ctm_a: 456,
+        med_ctm_c: 789,
+        med_sro_a: 123,
+        med_sro_c: 456,
+        med_para_a: 123,
+        med_para_c: 456 
+    };
+
+    //console.log(obj);
+    //console.log(expectedObj);
+
+    test.same(obj, expectedObj);
+
+    var arr = smsparser.parseArray(def, doc);
+    var expectedArr = ['1-16-12 19:35', '+15551212', '2012', '1', 16, 12345678901, 123, 456, 789, 123, 456, 789, 123, 456, 123, 456];
+
+    test.same(arr, expectedArr);
+
+    test.done();
+};
+
+
+exports.msbp_example_data = function (test) {
+    var def = jsonforms['MSBP'];
+    var doc = {
+        sent_timestamp: '1-16-12 19:35',
+        from: '+15551212',
+        message: '1!MSBP!2012#1#16#12345678901#123#456#789#123#456#789#123#456#789#123#456#789#123#456#789#123'
+    };
+
+    test.expect(2);
+
+    var obj = smsparser.parse(def, doc);
+    var expectedObj = {
+        case_year: '2012',
+        case_month: '1',
+        case_day: 16,
+        case_rc: 12345678901,
+        case_pec_m: 123,
+        case_pec_f: 456,
+        case_urg_m: 789,
+        case_urg_f: 123,
+        case_tdr: 456,
+        case_palu_m: 789,
+        case_palu_f: 123,
+        case_dia_m: 456,
+        case_dia_f: 789,
+        case_pneu_m: 123,
+        case_pneu_f: 456,
+        case_mal_m: 789,
+        case_mal_f: 123,
+        case_rev: 456,
+        case_vad: 789,
+        case_edu: 123
+    };
+
+    //console.log(obj);
+    //console.log(expectedObj);
+
+    test.same(obj, expectedObj);
+
+    var arr = smsparser.parseArray(def, doc);
+    var expectedArr = ['1-16-12 19:35', '+15551212', '2012', '1', 16, 12345678901, 123, 456, 789, 123, 456, 789, 123, 456, 789, 123, 456, 789, 123, 456, 789, 123];
+
+    test.same(arr, expectedArr);
+
+    test.done();
+};
+
+exports.msbr_example_data = function (test) {
+    var def = jsonforms['MSBR'];
+    var doc = {
+        sent_timestamp: '1-13-12 15:35',
+        from: '+15551212',
+        message: '1!MSBR!2012#12#20#12345678901#1111#bbbbbbbbbbbbbbbbbbbb#22#10#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+    };
+
+    test.expect(2);
+
+    var obj = smsparser.parse(def, doc);
+    var expectedObj = {
+        ref_year: '2012',
+        ref_month: '12',
+        ref_day: 20,
+        ref_rc: 12345678901,
+        ref_hour: '1111',
+        ref_name: 'bbbbbbbbbbbbbbbbbbbb',
+        ref_age: 22,
+        ref_reason: 'Diarrhée grave',
+        ref_reason_other: 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+    };
+
+    //console.log(obj);
+    //console.log(expectedObj);
+
+    test.same(obj, expectedObj);
+
+    var arr = smsparser.parseArray(def, doc);
+    var expectedArr = ['1-13-12 15:35', '+15551212', '2012', '12', '20', '12345678901', '1111', 'bbbbbbbbbbbbbbbbbbbb', '22', '10', 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc']
+
+    test.same(arr, expectedArr);
+
+    test.done();
+};
