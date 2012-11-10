@@ -7,7 +7,6 @@ exports.assert_month_is_integer = function(test) {
     test.expect(1);
     var req = {
         headers: { "Host": window.location.host },
-        uuid: "13f58b9c648b9a997248cba27aa00fdf",
         form: {
             "from":"+888",
             "message": '1!TEST!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4'

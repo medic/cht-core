@@ -8,23 +8,22 @@ var updates = require('kujua-sms/updates'),
 
 
 // exmaple couchdb update request from smssync
-var req_example_junk = {
-    headers: {"Host": window.location.host},
-    uuid: "13f58b9c648b9a997248cba27aa00fdf",
-    form: {
-        "secret":"",
-        "from":"+888",
-        "message":"hmm this is test",
-        "message_id":"886",
-        "sent_timestamp":"1352399720000",
-        "sent_to":""
-    }
-};
-
 
 // check returned doc from add_sms update function
 exports.add_sms_check_doc = function (test) {
     test.expect(6);
+    var req = {
+        headers: {"Host": window.location.host},
+        uuid: "13f58b9c648b9a997248cba27aa00fdf",
+        form: {
+            "secret":"",
+            "from":"+888",
+            "message":"hmm this is test",
+            "message_id":"886",
+            "sent_timestamp":"1352399720000",
+            "sent_to":""
+        }
+    };
     var expDoc = {
         "_id":"13f58b9c648b9a997248cba27aa00fdf",
         "type":"data_record",
@@ -58,7 +57,7 @@ exports.add_sms_check_doc = function (test) {
         }
     };
 
-    var doc = updates.add_sms(null, req_example_junk)[0];
+    var doc = updates.add_sms(null, req)[0];
 
     test.same(doc, expDoc);
     test.same(doc.reported_date, expDoc.reported_date);
@@ -72,6 +71,18 @@ exports.add_sms_check_doc = function (test) {
 // check returned resp from add_sms update function
 exports.add_sms_check_resp = function (test) {
     test.expect(7);
+    var req = {
+        headers: {"Host": window.location.host},
+        uuid: "13f58b9c648b9a997248cba27aa00fdf",
+        form: {
+            "secret":"",
+            "from":"+888",
+            "message":"hmm this is test",
+            "message_id":"886",
+            "sent_timestamp":"1352399720000",
+            "sent_to":""
+        }
+    };
     var expResp = {};
     expResp.callback = {
         "options": {
@@ -96,7 +107,7 @@ exports.add_sms_check_resp = function (test) {
       ]
     };
 
-    var ret = updates.add_sms(null, req_example_junk);
+    var ret = updates.add_sms(null, req);
     resp = JSON.parse(ret[1]);
 
     test.same(resp.callback.options, expResp.callback.options);
@@ -150,7 +161,6 @@ exports.payload_success = function (test) {
     test.expect(1);
     var req = {
         headers: { "Host": window.location.host },
-        uuid: "13f58b9c648b9a997248cba27aa00fdf",
         form: {
             "from":"+888",
             "message":"1!TEST!facility#2012#4#1#222#333#444#555#666#777#888#999#111#222#333#444"
@@ -175,7 +185,6 @@ exports.payload_form_not_found = function (test) {
     test.expect(1);
     var req = {
         headers: { "Host": window.location.host },
-        uuid: "13f58b9c648b9a997248cba27aa00fdf",
         form: {
             "from":"+888",
             "message":"foo bar baz"
@@ -200,7 +209,6 @@ exports.payload_form_not_found_muvuku = function (test) {
     test.expect(1);
     var req = {
         headers: { "Host": window.location.host },
-        uuid: "13f58b9c648b9a997248cba27aa00fdf",
         form: {
             "from":"+888",
             "message": '1!0000!2012#2#20#foo#bar'
@@ -225,7 +233,6 @@ exports.payload_form_not_found_fr = function (test) {
     test.expect(1);
     var req = {
         headers: { "Host": window.location.host },
-        uuid: "13f58b9c648b9a997248cba27aa00fdf",
         form: {
             "from":"+888",
             "message": '1!0000!2012#2#20#foo#bar'
@@ -253,7 +260,6 @@ exports.payload_empty_message = function (test) {
     test.expect(1);
     var req = {
         headers: { "Host": window.location.host },
-        uuid: "13f58b9c648b9a997248cba27aa00fdf",
         form: {
             "from":"+888",
             "message": ''
@@ -278,7 +284,6 @@ exports.responses_empty_message_fr = function (test) {
     test.expect(1);
     var req = {
         headers: { "Host": window.location.host },
-        uuid: "13f58b9c648b9a997248cba27aa00fdf",
         form: {
             "from":"+888",
             "message": ''
@@ -307,7 +312,6 @@ exports.payload_one_word = function (test) {
     test.expect(1);
     var req = {
         headers: { "Host": window.location.host },
-        uuid: "13f58b9c648b9a997248cba27aa00fdf",
         form: {
             "from":"+888",
             "message": 'foo'
@@ -332,7 +336,6 @@ exports.payload_missing_fields = function (test) {
     test.expect(1);
     var req = {
         headers: { "Host": window.location.host },
-        uuid: "13f58b9c648b9a997248cba27aa00fdf",
         form: {
             "from":"+888",
             "message": 'test 123',
