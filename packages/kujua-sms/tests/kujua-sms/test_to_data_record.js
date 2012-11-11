@@ -184,12 +184,14 @@ var messages_task_result = function(test, req) {
 
     var clinic = example.clinic;
 
-    var viewdata = {rows: [
-        {
-            "key": ["+13125551212"],
-            "value": clinic
-        }
-    ]};
+    var viewdata = {
+        rows: [
+            {
+                "key": ["+13125551212"],
+                "value": clinic
+            }
+        ]
+    };
 
     var resp = fakerequest.list(lists.data_record, viewdata, req);
 
