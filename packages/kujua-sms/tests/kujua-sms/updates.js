@@ -94,6 +94,7 @@ exports.sms_message_attr_on_doc = function(test) {
 
 exports.add_sms_check_resp_body = function (test) {
     test.expect(7);
+    // smssync post
     var req = {
         headers: {"Host": window.location.host},
         uuid: "13f58b9c648b9a997248cba27aa00fdf",
@@ -103,6 +104,7 @@ exports.add_sms_check_resp_body = function (test) {
             "sent_timestamp":"1352399720000"
         }
     };
+    // updates.add_sms generates a callback and payload
     var expResp = {};
     expResp.callback = {
         "options": {
@@ -194,7 +196,7 @@ exports.update_related_and_tasks = function (test) {
 //
 // this doc is missing the district level of facility so we should add an error
 //
-exports.update_related_add_error = function (test) {
+exports.update_related_and_recipient_missing = function (test) {
     test.expect(2);
     var req = {
         headers: {"Host": window.location.host},
@@ -222,7 +224,7 @@ exports.update_related_add_error = function (test) {
         year: 2012,
         month: 3,
         errors: [{
-            "code":"facility_not_found",
+            "code":"sys.facility_not_found",
             "message":"Facility not found."
         }]
     };

@@ -244,7 +244,7 @@ var req = {};
 exports.add_sms = function(doc, request) {
 
     logger.log('add_sms');
-    logger.log(arguments);
+    logger.log(JSON.stringify(arguments,null,2));
     req = request;
 
     var sms_message = {
@@ -289,9 +289,6 @@ exports.add_sms = function(doc, request) {
     resp.payload = getSMSResponse(doc);
     doc.responses = resp.payload.messages;
 
-    logger.log(JSON.stringify(doc,null,2));
-    logger.log(JSON.stringify(resp,null,2));
-
     return [doc, JSON.stringify(resp)];
 };
 
@@ -302,8 +299,7 @@ exports.add_sms = function(doc, request) {
 exports.updateRelated = function(doc, request) {
 
     logger.log('updateRelated');
-    logger.log(JSON.stringify(doc,null,2));
-    logger.log(JSON.stringify(request,null,2));
+    logger.log(JSON.stringify(arguments,null,2));
 
     req = request;
     var data = JSON.parse(req.body),
@@ -334,9 +330,6 @@ exports.updateRelated = function(doc, request) {
             }
         }
     }
-
-    logger.log('response');
-    logger.log(JSON.stringify(resp,null,2));
 
     return [doc, JSON.stringify(resp)];
 };

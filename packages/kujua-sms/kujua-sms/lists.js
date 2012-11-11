@@ -294,8 +294,7 @@ exports.data_record = function (head, req) {
     start({code: 200, headers: json_headers});
 
     log('data_record');
-    log(JSON.stringify(head,null,2));
-    log(JSON.stringify(req,null,2));
+    log(JSON.stringify(arguments,null,2));
 
     var _id = JSON.parse(req.body).uuid,
         record = {related_entities: {}},
@@ -371,9 +370,9 @@ exports.data_record = function (head, req) {
 exports.data_record_merge = function (head, req) {
     start({code: 200, headers: json_headers});
 
-    log('data_record_merge');
-    log(JSON.stringify(head,null,2));
-    log(JSON.stringify(req,null,2));
+    logger.log('data_record_merge');
+    logger.log(JSON.stringify(arguments,null,2));
+
     var new_data_record = JSON.parse(req.body),
         form = req.query.form,
         headers = req.headers.Host.split(":"),
@@ -427,9 +426,8 @@ exports.data_record_merge = function (head, req) {
 exports.tasks_pending = function (head, req) {
     start({code: 200, headers: json_headers});
 
-    log('tasks_pending');
-    log(JSON.stringify(head,null,2));
-    log(JSON.stringify(req,null,2));
+    logger.log('tasks_pending');
+    logger.log(JSON.stringify(arguments,null,2));
 
     var newDocs = [],
         appdb = require('duality/core').getDBURL(req),
