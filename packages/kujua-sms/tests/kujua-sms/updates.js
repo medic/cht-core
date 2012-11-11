@@ -238,3 +238,66 @@ exports.update_related_and_recipient_missing = function (test) {
     test.same(ret[0].errors[1], newError);
     test.done();
 }
+
+exports.extra_fields = function(test) {
+
+    test.expect(4);
+    var req = {
+        headers: {"Host": window.location.host},
+        uuid: "13f58b9c648b9a997248cba27aa00fdf",
+        form: {
+            from:"+888",
+            message: "1!TEST!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4#123",
+            sent_timestamp:"1352399720000"
+        }
+    };
+
+    var resp = fakerequest.update(updates.add_sms, null, req);
+        resp_body = JSON.parse(resp[1].body),
+        doc = resp[0];
+
+    test.same(resp_body.payload.success, true);
+    test.same(resp_body.payload.messages[0].message, "Extra fields.");
+    test.same(doc.errors.length, 1);
+    test.same(
+        doc.errors[0],
+        {code: "extra_fields", message:"Extra fields."}
+    );
+
+    test.done();
+
+};
+
+exports.missing_fields = function(test) {
+
+    test.expect(3);
+
+    var req = {
+        headers: {"Host": window.location.host},
+        form: {
+            from:"+888",
+            message: "1!TEST!foo"
+        }
+    };
+
+    var resp = fakerequest.update(updates.add_sms, null, req);
+        resp_body = JSON.parse(resp[1].body),
+        doc = resp[0];
+
+    test.same(resp_body.payload.success, true);
+    test.same(
+        resp_body.payload.messages[0].message,
+        "Missing or invalid fields: year, month."
+    );
+    test.same(doc.errors[0],
+        {
+            code: "sys.missing_fields",
+            fields: ["year","month"],
+            message: "Missing or invalid fields: year, month."
+        }
+    );
+
+    test.done();
+
+};
+
