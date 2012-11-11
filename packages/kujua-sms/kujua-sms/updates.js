@@ -131,21 +131,21 @@ var parseSentTimestamp = function(str) {
         ret,
         year;
 
-    // smssync 2.0 format
-    var match2 = str.match(/(\d{13})/);
+    // smssync 2.0 format (ms since epoch)
+    var match2 = str.match(/(\d{13,})/);
 
     if (match1) {
         ret = new Date();
 
         year = ret.getFullYear();
         year -= year % 100; // round to nearest 100
-        ret.setYear(year + parseInt(match[3], 10)); // works until 2100
+        ret.setYear(year + parseInt(match1[3], 10)); // works until 2100
 
-        ret.setMonth(parseInt(match[1],10) - 1);
-        ret.setDate(parseInt(match[2], 10));
-        ret.setHours(parseInt(match[4], 10));
-        ret.setMinutes(match[5]);
-        ret.setSeconds(match[7] || 0);
+        ret.setMonth(parseInt(match1[1],10) - 1);
+        ret.setDate(parseInt(match1[2], 10));
+        ret.setHours(parseInt(match1[4], 10));
+        ret.setMinutes(match1[5]);
+        ret.setSeconds(match1[7] || 0);
         ret.setMilliseconds(0);
         return ret.getTime();
     }

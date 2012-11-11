@@ -10,31 +10,19 @@ var updates = require('kujua-sms/updates'),
 
 
 function process(timestamp) {
-    var data,
-        req,
-        resp,
-        resp_body;
 
-    data = {
-        from: '+13125551212',
-        message: "1!TEST!facility#2011",
-        sent_timestamp: timestamp,
-        sent_to: '+15551212'
+    var req = {
+        headers: {"Host": window.location.host},
+        form: {
+            "from":"+888",
+            "message":"hmm this is test",
+            "sent_timestamp": timestamp
+        }
     };
 
-    req = {
-        uuid: '14dc3a5aa6',
-        method: "POST",
-        headers: helpers.headers("url", querystring.stringify(data)),
-        body: querystring.stringify(data),
-        form: data
-    };
+    var resp = fakerequest.update(updates.add_sms, null, req);
 
-    resp = fakerequest.update(updates.add_sms, data, req);
-
-    resp_body = JSON.parse(resp[1].body);
-
-    return new Date(resp_body.callback.data.reported_date);
+    return new Date(resp[0].reported_date);
 }
 
 exports.timestamp_parsing_without_seconds = function (test) {
@@ -61,5 +49,13 @@ exports.timestamp_parsing_with_seconds = function (test) {
 
     test.equals(reported_date.getMilliseconds(), 0);
     test.equals(reported_date.getSeconds(), 59);
+    test.done();
+};
+exports.ms_since_epoch = function (test) {
+    var time = '1352659197736';
+    var reported_date = process(time);
+
+    test.equals(reported_date.getMilliseconds(), 736);
+    test.equals(reported_date.getSeconds(), 57);
     test.done();
 };
