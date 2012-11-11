@@ -103,3 +103,112 @@ exports.data_record_facility_found = function (test) {
     test.same(JSON.stringify(expectedBody), resp.body);
     test.done();
 };
+
+exports.tasks_pending_callback = function(test) {
+    test.expect(3);
+    var req = {
+        headers: {"Host": window.location.host}
+    };
+
+    var tasks = [{
+      "state": "pending",
+      "messages": [
+        {
+          "to": "+123",
+          "message": "Bam"
+        }
+      ]
+    }];
+
+    var viewdata = {
+        rows: [
+            {
+                "doc": { _id: '0b5586', tasks: tasks }
+            }
+        ]
+    };
+
+    var expResp = {};
+    expResp.callback = {
+        options:{
+            "host":"localhost",
+            "port":"5984",
+            "path": baseURL + "/_db/_bulk_docs",
+            "method":"POST",
+            "headers":{
+                "Content-Type":"application/json; charset=utf-8"
+            }
+        },
+        data:{
+            "docs":[{
+                _id: '0b5586',
+                tasks:[{
+                    "state":"sent",
+                    "messages":[
+                        {
+                            "to": "+123",
+                            "message": "Bam"
+                        }
+                    ]
+                }]
+            }]
+        }
+    };
+
+    var resp = fakerequest.list(lists.tasks_pending, viewdata, req);
+    var resp_body = JSON.parse(resp.body);
+
+    // remove timestamp for this test
+    delete resp_body.callback.data.docs[0].tasks[0].timestamp;
+
+    test.same(expResp.callback.data, resp_body.callback.data);
+    test.same(expResp.callback.options, resp_body.callback.options);
+    test.same(expResp.callback, resp_body.callback);
+    test.done();
+};
+
+exports.tasks_pending_payload = function(test) {
+
+    test.expect(1);
+    var req = {
+        headers: {"Host": window.location.host}
+    };
+
+    var expResp = {};
+
+    expResp.payload = {
+        "success":true,
+        "task":"send",
+        "secret":"",
+        "messages":[
+            {
+                "to":"+333",
+                "message":"Bar"
+            }
+        ]
+    };
+
+    var tasks = [
+        {
+          "state": "pending",
+          "messages": [
+            {
+              "to": "+333",
+              "message": "Bar"
+            }
+          ]
+        }
+    ];
+
+    var viewdata = {
+        rows: [{
+            "doc": { _id: '0b5586', tasks: tasks }
+        }]
+    };
+
+    var resp = fakerequest.list(lists.tasks_pending, viewdata, req);
+    var resp_body = JSON.parse(resp.body);
+
+    test.same(expResp.payload, resp_body.payload);
+    test.done();
+};
