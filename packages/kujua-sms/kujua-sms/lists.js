@@ -326,7 +326,6 @@ exports.data_record = function (head, req) {
         }
     }
 
-    /* Can't do much without a facility */
     if (!facility)
         utils.addError(record, 'sys.facility_not_found');
 
@@ -431,16 +430,15 @@ exports.tasks_pending = function (head, req) {
 
     var newDocs = [],
         appdb = require('duality/core').getDBURL(req),
-        doc,
         headers = req.headers.Host.split(":"),
         includeDoc,
         host = headers[0],
         port = headers[1] || "",
-        respBody,
         row,
         includeDoc,
         doc;
-    respBody = {
+
+    var respBody = {
         payload: {
             success: true,
             task: "send",
