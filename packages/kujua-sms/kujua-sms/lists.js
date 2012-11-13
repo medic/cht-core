@@ -353,11 +353,9 @@ exports.data_record = function (head, req) {
 
 
 /*
- * Third step of adding a data record for an incoming SMS.
- * If a data record for the year/month/clinic already exists
- * this merges the data and sends a callback to update it,
- * if no data record exists, it sends a callback to create
- * a new data record.
+ * If a data record for the year/month/clinic already exists this merges the
+ * data and sends a callback to update it, if no data record exists, it sends a
+ * callback to create a new data record.
  *
  * @param {Object} head
  * @param {Object} req
