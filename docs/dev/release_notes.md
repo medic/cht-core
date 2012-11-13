@@ -2,11 +2,11 @@
 
 ## 0.1.20
 
-HTTP callbacks refactor, now records are created on first HTTP POST.
-Tests refactor, replaced some redundant/large tests with more specific ones.
-Error handling refactor, now clients should not get system messages.
-Updated JSON forms to include Carlos Slim test forms.
-SMSSync 2.0 support: parsing of new timestamp format.
+* HTTP callbacks refactor, now records are created on first HTTP POST.
+* Tests refactor, replaced some redundant/large tests with more specific ones.
+* Error handling refactor, now clients should not get system messages.
+* Updated JSON forms to include Carlos Slim test forms.
+* SMSSync 2.0 support: parsing of new timestamp format.
 
 ## 0.1.19
 
