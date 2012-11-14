@@ -7,6 +7,7 @@
 * Error handling refactor, now clients should not get system messages.
 * Updated JSON forms to include Carlos Slim test forms.
 * SMSSync 2.0 support: parsing of new timestamp format.
+* Use 'null' form key in filters to find records without a form definition.
 
 ## 0.1.19
 
