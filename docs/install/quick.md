@@ -41,8 +41,8 @@ Click the "Fix This" link in the bottom right.  And create a user:
 
 Send one of these links to your device:
 
-* Local Network: `http://local-ip-address:5984/kujua/_design/kujua-base/_rewrite/docs/install/gateway/SMSSync-kujua3-debug.apk`
-* Internet: `https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-kujua3-debug.apk`
+* Local Network: `http://local-ip-address:5984/kujua/_design/kujua-base/_rewrite/docs/install/gateway/SMSSync-hcb1-debug.apk`
+* Internet: `https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-hcb1-debug.apk`
 
 Then open it in the browser on your device and then run the `.apk` file to complete the install.
 
