@@ -7,7 +7,7 @@
 * Error handling refactor, now clients should not get system messages.
 * Updated JSON forms to include Carlos Slim test forms.
 * SMSSync 2.0 support: parsing of new timestamp format.
-* Bundled SMSSync 2.0.1-hcb (http-callbacks) build.
+* Bundled SMSSync 2.0.1-hcb ([http-callbacks](https://github.com/mandric/SMSSync/wiki/HTTP-Callbacks)) build.
 * 'null' form key in filters to find records without a form definition.
 
 **Upgrade Notes**
