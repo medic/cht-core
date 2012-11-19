@@ -162,7 +162,7 @@ Ushahidi](http://smssync.ushahidi.com/) 2.0.1 as the gateway; your device needs 
 
 ### Step 2: Download SMSSync to Device
 
-* Copy this link address: [SMSSync 2.0.1-hcb.1](https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-hcb1-debug.apk)\*
+* Copy this link address: [SMSSync 2.0.1-hcb.4](https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-hcb4-debug.apk)\*
 * Send the URL to the device either through SMS, email or other 
 means, then open it in your Android browser.  You can type it manually into the
 address bar too.
@@ -173,10 +173,10 @@ address bar too.
 ![Browser Loading](img/browser_loading.png)
 
 \* Checksums: 
-[md5](gateway/SMSSync-hcb1-debug.apk.md5),
-[sha](gateway/SMSSync-hcb1-debug.apk.sha)
+[md5](gateway/SMSSync-hcb4-debug.apk.md5),
+[sha](gateway/SMSSync-hcb4-debug.apk.sha)
 
-*Note* We also include a copy with Kujua available locally in case you do not have internet access at the time of install. [SMSSync 2.0.1-hcb.1](gateway/SMSSync-hcb1-debug.apk)
+*Note* We also include a copy with Kujua available locally in case you do not have internet access at the time of install. [SMSSync 2.0.1-hcb.4](gateway/SMSSync-hcb4-debug.apk)
 
 ### Step 3: Install SMSSync on Device
 
