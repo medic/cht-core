@@ -8,7 +8,12 @@
 * Updated JSON forms to include Carlos Slim test forms.
 * SMSSync 2.0 support: parsing of new timestamp format.
 * Bundled SMSSync 2.0.1-hcb (http-callbacks) build.
-* Use 'null' form key in filters to find records without a form definition.
+* 'null' form key in filters to find records without a form definition.
+
+**Upgrade Notes**
+
+* Kujua is backwards compatible with old gateway but if you upgrade your
+  gateway you will also need to upgrade your Kujua, because of the new timestamp format.
 
 ## 0.1.19
 
