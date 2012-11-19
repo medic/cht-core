@@ -12,8 +12,11 @@
 
 **Upgrade Notes**
 
-* Kujua is backwards compatible with old gateway but if you upgrade your
-  gateway you will also need to upgrade your Kujua, because of the new timestamp format.
+* If you upgrade the gateway without upgrading Kujua the timestamps from the
+  messages will not get parsed.  So messages will get a timestamp assigned to
+  them by Kujua, which does not reflect the time the actual report/message was
+  sent.
+  
 
 ## 0.1.19
 
