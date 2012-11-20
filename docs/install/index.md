@@ -148,6 +148,7 @@ clipboard or notepad.  You will need it when you configure the Gateway Sync URL 
 
 ![Verify Kujua](img/verify_kujua.png)
 
+
 ## Install SMSSync
 
 At the time of this writing we are using a modified version of [SMSSync by
@@ -162,23 +163,56 @@ Ushahidi](http://smssync.ushahidi.com/) 2.0.1 as the gateway; your device needs 
 
 ### Step 2: Download SMSSync to Device
 
-* Copy this link address: [SMSSync 2.0.1-hcb.4](https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-hcb4-debug.apk)\*
-* Send the URL to the device either through SMS, email or other 
-means, then open it in your Android browser.  You can type it manually into the
-address bar too.
-* Choose **Accept** when Android prompts you to download.  The file is approximately 200KB and should download to your SD Card pretty quickly.
+Now you need to get SMSsync installed on the device, you have a few options.
+If you installed Kujua on your local network then SMSSync is available locally
+otherwise you can use the internet (hosted) link.  
 
-![Select Link in SMS](img/sms_select_link.png)
-![Select Action](img/select_action.png)
-![Browser Loading](img/browser_loading.png)
+#### Choose one to download SMSSync
 
-\* Checksums: 
+* <a class="btn btn-primary" href="gateway/SMSSync-hcb4-debug.apk">Local SMSSync</a> or 
+<a class="btn btn-primary" href="https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-hcb4-debug.apk">Hosted SMSSync</a>
+
+The file is approximately 840KB and should transfer quickly.  
+
+Checksums: 
 [md5](gateway/SMSSync-hcb4-debug.apk.md5),
 [sha](gateway/SMSSync-hcb4-debug.apk.sha)
 
-*Note* We also include a copy with Kujua available locally in case you do not have internet access at the time of install. [SMSSync 2.0.1-hcb.4](gateway/SMSSync-hcb4-debug.apk)
+### Step 3: Transfer SMSSync to the device
 
-### Step 3: Install SMSSync on Device
+Choose a method to send a link or the actual file to the device. 
+
+#### Via Email
+
+If you have internet access you can email it to yourself and then check your email
+on the device and download it. 
+
+* Email the `.apk` file as an attachment to yourself.
+* On the device open your email program, download the attachment and open it.
+  Android will prompt you through the install steps.
+
+#### Via SMS 
+
+If SMS is activated on the device you can also send a link via SMS to
+the device.  
+
+* Copy one of the above links.
+* Paste it into your SMS client and send it to the device.
+* Click on the link when the SMS message appears on the device.
+* Choose **Accept** when Android prompts you to download.  
+    
+#### Via mounted USB or Firewire device
+
+You can mount the device onto your computer and copy the `.apk` file to the SD
+card.
+
+* Plug the Android device into your laptop
+* A new device should appear in your explorer window.
+* Copy the `.apk` file to the device's storage.
+* Then browse to the storage area on the device and open the `.apk` file.
+
+
+### Step 4: Install SMSSync on Device
 
 * Open your browser and go to settings
 * Choose the **More** option
