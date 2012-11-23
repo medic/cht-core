@@ -169,14 +169,14 @@ otherwise you can use the internet (hosted) link.
 
 #### Choose one to download SMSSync
 
-* <a class="btn btn-primary" href="gateway/SMSSync-hcb4-debug.apk">Local SMSSync</a> or 
-<a class="btn btn-primary" href="https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-hcb4-debug.apk">Hosted SMSSync</a>
+* <a class="btn btn-primary" href="gateway/SMSSync-hcb5-debug.apk">Local SMSSync</a> or 
+<a class="btn btn-primary" href="https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-hcb5-debug.apk">Hosted SMSSync</a>
 
 The file is approximately 840KB and should transfer quickly.  
 
 Checksums: 
-[md5](gateway/SMSSync-hcb4-debug.apk.md5),
-[sha](gateway/SMSSync-hcb4-debug.apk.sha)
+[md5](gateway/SMSSync-hcb5-debug.apk.md5),
+[sha](gateway/SMSSync-hcb5-debug.apk.sha)
 
 ### Step 3: Transfer SMSSync to the device
 
