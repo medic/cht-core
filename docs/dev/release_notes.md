@@ -14,8 +14,8 @@
 
 * If you upgrade the gateway without upgrading Kujua the timestamps from the
   messages will not get parsed.  So messages will get a timestamp assigned to
-  them by Kujua, which does not reflect the time the actual report/message was
-  sent.
+  them by Kujua, which reflect the time the record was created in Kujua rather
+  than the actual time the report/message was sent.
   
 
 ## 0.1.19
