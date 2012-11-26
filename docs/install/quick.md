@@ -39,10 +39,9 @@ Click the "Fix This" link in the bottom right.  And create a user:
 
 ## Download SMSSync to device:
 
-Send one of these links to your device:
+Navigate your mobile device to this page or send this file your device:
 
-* Local Network: `http://local-ip-address:5984/kujua/_design/kujua-base/_rewrite/docs/install/gateway/SMSSync-hcb1-debug.apk`
-* Internet: `https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-hcb1-debug.apk`
+* <a class="btn btn-primary" href="gateway/SMSSync-hcb5-debug.apk">Download SMSSync</a>
 
 Then open it in the browser on your device and then run the `.apk` file to complete the install.
 
