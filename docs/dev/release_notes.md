@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.1.21
+
+* Fixed bug: regression from error handling refactor where assigning a record a new
+  facility did not clear `facility_not_found` errors.
+
 ## 0.1.20
 
 * HTTP callbacks refactor, now records are created on first HTTP POST.
