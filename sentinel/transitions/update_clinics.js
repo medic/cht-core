@@ -64,7 +64,7 @@ module.exports = {
                 var new_errors = [];
                 for (var i in doc.errors) {
                     var e = doc.errors[i];
-                    if (e.code !== 'facility_not_found')
+                    if (e.code !== 'sys.facility_not_found')
                         new_errors.push(e);
                 }
                 doc.errors = new_errors;
