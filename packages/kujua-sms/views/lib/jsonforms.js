@@ -141,6 +141,7 @@ exports['TEST'] = {
     },
     autoreply: "Zikomo!",
     data_record_merge: "/:form/data_record/merge/:year/:month/:clinic_id",
+    facility_reference: "facility_id",
     /*
      * messages_task is a function returns array of message objects,
      * e.g: [{to: '+123', message: 'foo'},...]
