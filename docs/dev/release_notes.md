@@ -4,6 +4,7 @@
 
 * Fixed bug: regression from error handling refactor where assigning a record a new
   facility did not clear `facility_not_found` errors.
+* Fixed bug: months based reporting valid value was not being passed through view.
 
 ## 0.1.20
 
