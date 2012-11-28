@@ -484,20 +484,19 @@ exports.getMessage = function (code, locale) {
     var key = code.code ? code.code : code,
         msg = code.message ? code.message : utils.localizedString(messages[key], locale);
 
-    return msg;
-    /*
     // if custom validation then use the message property of error object
-    if (key === 'sys.form_invalid_custom')
-        return code.message
+    if (key === 'form_invalid_custom')
+        return utils.localizedString(messages['form_invalid'], locale);
 
+    /*
     if (code.fields && _.isArray(code.fields))
         return msg.replace('%(fields)', code.fields.join(', '));
 
     if (code.form && _.isString(code.form))
         return msg.replace('%(form)', code.form);
+    */
 
     return msg;
-    */
 
 };
 
