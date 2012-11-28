@@ -88,7 +88,7 @@ exports.data_records_by_form_year_month_facility = {
         if (doc.type && !doc.type.match(/data_record/))
             return;
 
-        if (!doc.month || !doc.form)
+        if (!(doc.month || doc.form))
             return;
 
         var utils = require('views/lib/kujua-reporting'),
@@ -96,7 +96,8 @@ exports.data_records_by_form_year_month_facility = {
             dh = facilities[0],
             hc = facilities[1],
             cl = facilities[2],
-            key = [doc.form, doc.year, doc.month, dh._id, hc._id, cl._id];
+            key = [doc.form, doc.year, doc.month, dh._id, hc._id, cl._id],
+            is_valid = (doc.errors && doc.errors.length === 0);
 
         emit(
             key,
@@ -106,7 +107,7 @@ exports.data_records_by_form_year_month_facility = {
                 clinic: cl.name,
                 reporter: utils.getReporterName(facilities.reverse(), doc.from),
                 reporting_phone: doc.from,
-                is_valid: doc.is_valid,
+                is_valid: is_valid,
                 month: doc.month
             }
         );
