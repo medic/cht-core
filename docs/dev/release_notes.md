@@ -7,6 +7,7 @@
 * Fixed bug: months based reporting valid value was not being passed through view.
 * Fixed regression: returning `form_invalid` response when `form_invalid_custom` error is found.
 * Fixed NYAA form custom validation.
+* Added ability to do bulk deletes and facility updates.
 
 ## 0.1.20
 
