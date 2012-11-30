@@ -139,10 +139,18 @@ var prettyVal = function(data_record, key, def) {
 
 };
 
+// reverse makeDataRecordReadable munge. ;\
+exports.makeDataRecordOriginal = function(doc) {
+      var rdo = doc.reported_date_orig;
+      delete doc.reported_date_orig;
+      delete doc.fields;
+      doc.reported_date = rdo;
+      return doc;
+};
+
 // take data record document and return nice formated JSON object
 exports.makeDataRecordReadable = function(doc) {
     var data_record = doc;
-    var sms_message = data_record.sms_message;
 
     // causes bug when trying to do update
     // data_record._raw = JSON.stringify(data_record, null, 2);
@@ -155,8 +163,10 @@ exports.makeDataRecordReadable = function(doc) {
     }
 
     if(data_record.reported_date) {
+        var rd = data_record.reported_date;
         var m = moment(data_record.reported_date);
         data_record.reported_date = m.format('DD, MMM YYYY, HH:mm:ss Z');
+        data_record.reported_date_orig = rd;
     }
 
     return data_record;
