@@ -243,8 +243,6 @@ var getMessagesTask = function(record) {
 var req = {};
 exports.add_sms = function(doc, request) {
 
-    logger.log('add_sms');
-    logger.log(JSON.stringify(arguments,null,2));
     req = request;
 
     var sms_message = {
@@ -276,18 +274,26 @@ exports.add_sms = function(doc, request) {
         data: {uuid: req.uuid}
     };
 
-    // TODO move to final update
-
     // pass through Authorization header
     if(req.headers.Authorization) {
         resp.callback.options.headers.Authorization = req.headers.Authorization;
     }
 
+    // creates base record
     doc = getDataRecord(sms_message, form_data);
 
-    // send sms response to gateway
+    // smssync-compat sms response
     resp.payload = getSMSResponse(doc);
+
+    // save response to record
     doc.responses = resp.payload.messages;
+
+    // by default related entities are null so also include errors on the
+    // record.
+    doc.errors.push({
+        code: "sys.facility_not_found",
+        message: utils.getMessage("sys.facility_not_found", sms_message.locale)
+    });
 
     return [doc, JSON.stringify(resp)];
 };
@@ -297,9 +303,6 @@ exports.add_sms = function(doc, request) {
  * Update data record related entities and create message tasks.
  */
 exports.updateRelated = function(doc, request) {
-
-    logger.log('updateRelated');
-    logger.log(JSON.stringify(arguments,null,2));
 
     req = request;
     var data = JSON.parse(req.body),
@@ -329,6 +332,17 @@ exports.updateRelated = function(doc, request) {
                 }
             }
         }
+    }
+
+    var new_errors = [];
+    // remove errors if we have a clinic
+    if (doc.related_entities.clinic && doc.related_entities.clinic !== null) {
+        for (var i in doc.errors) {
+            var err = doc.errors[i];
+            if (err.code !== "sys.facility_not_found")
+                new_errors.push(err);
+        };
+        doc.errors = new_errors;
     }
 
     return [doc, JSON.stringify(resp)];
