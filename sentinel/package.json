@@ -7,6 +7,7 @@
     "coffee-script": "latest",
     "epi-week": "latest",
     "felix-couchdb": "latest",
+    "moment": "latest",
     "mustache": "latest",
     "optimist": "latest",
     "underscore": "latest"

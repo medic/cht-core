@@ -1,9 +1,9 @@
 module.exports = {
   map: function(doc) {
     var tasks = doc.scheduled_tasks || [];
-    tasks.forEach(function(task, idx) {
+    tasks.forEach(function(task, index) {
       if (task.due)
-        emit(task.due, { _id: doc._id, _rev: doc._rev, index: idx })
+        emit(task.due, index);
     });
   }
-}
+};
