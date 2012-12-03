@@ -5,13 +5,13 @@ var async = require('async'),
     date = require('../date');
 
 module.exports = function(callback) {
-    var m = moment(date.getDate()),
-        overdue = m.clone().subtract('days', 7);
+    var now = moment(date.getDate()),
+        overdue = now.clone().subtract('days', 7);
 
     db.view('kujua-sentinel', 'due_tasks', {
         include_docs: true,
-        endkey: now.getTime(),
-        startkey: overdue.getTime()
+        endkey: now.valueOf(),
+        startkey: overdue.valueOf()
     }, function(err, result) {
         if (err) {
             callback(err);
@@ -26,7 +26,7 @@ module.exports = function(callback) {
 
                 if (toDo && toDo.due === due) {
                     tasks.push({
-                        messages: toDo.messages
+                        messages: toDo.messages,
                         state: 'pending'
                     });
                 }
