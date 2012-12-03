@@ -7,17 +7,17 @@ var fs = require('fs'),
 
 tasks = _.compact(_.map(fs.readdirSync(__dirname), function(file) {
     try {
-        if (/^index\./.test(file)) {
+        if (!/^index\./.test(file)) {
             console.log('Loading task ' + file);
             require('./' + file);
         }
     } catch(e) {
         console.error(e); // carry on ...
     }
-});
+}));
 
 function sendable(m) {
-    return m.hour() >= 8 && m.hour() <= 17;
+    return m.hours() >= 8 && m.hours() <= 17;
 }
 
 function checkSchedule() {
@@ -30,6 +30,7 @@ function checkSchedule() {
             if (e) {
                 console.error('Error running tasks: ' + e);
             }
+            reschedule();
         });
     } else {
         reschedule();
@@ -39,8 +40,10 @@ function checkSchedule() {
 function reschedule() {
     var now = moment(),
         heartbeat = now.clone().add('hours', 1).minutes(0).seconds(0).milliseconds(0),
-        duration = moment.duration(heartbeat.getTime() - now.getTime());
+        duration = moment.duration(heartbeat.valueOf() - now.valueOf());
 
     console.log('Checking schedule in ' + duration.humanize() + '...');
     setTimeout(checkSchedule, duration.asMilliseconds());
 }
+
+checkSchedule();
