@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    config = require('../config'),
     date = require('../date'),
     ids = require('../lib/ids'),
     moment = require('moment'),
