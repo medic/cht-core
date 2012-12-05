@@ -12,7 +12,7 @@ module.exports =
   getOHWRegistration: (patient_id, callback) ->
     db.view('kujua-sentinel', 'ohw_registered_patients', key: patient_id, limit: 1, (err, data) =>
       if err
-        callback(err, null)
+        callback(err)
       else
         registration = data.rows?[0]?.value
         callback(null, registration)
@@ -49,12 +49,14 @@ module.exports =
 
     { due, message, phone } = options
 
+    due = due.getTime() if due instanceof Date
+
     delete options.message
     delete options.due
     delete options.phone
 
     task =
-      due: due.getTime()
+      due: due
       messages: [
         to: phone
         message: message
