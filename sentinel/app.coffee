@@ -4,7 +4,8 @@ util = require('util')
 db = require('./db')
 config = require('./config')
 
-{ filters, transitions, Transition } = require('./transitions')
+transitions = require('./transitions')
+filters = transitions.filters
 
 views = _.reduce(require('./views'), (memo, view, key) ->
   memo[key] =
@@ -17,12 +18,9 @@ completeSetup = (err, ok) ->
   throw err if err
 
   config.load(->
-    _.each(transitions, (options, code) ->
-      new Transition(code, options).attach()
-      console.log('loaded transition '+code)
-    )
+    transitions.attach()
     require('./schedule') # start schedule after everything setup
-    console.log('kujua sentinel loaded.') 
+    console.log('kujua sentinel loaded.')
     console.log(JSON.stringify(ok,null,2))
   )
 
