@@ -44,6 +44,13 @@ module.exports =
     _.extend(task, options)
 
     doc.tasks.push(task)
+  updateScheduledMessage: (doc, options = {}) ->
+    { message, type } = options
+    msg = _.find(doc.scheduled_tasks, (task) ->
+      task.type is type
+    )
+    message = _.first(msg
+    msg?.messages[0].message = message
   addScheduledMessage: (doc, options = {}) ->
     doc.scheduled_tasks ?= []
 
