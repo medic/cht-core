@@ -22,29 +22,27 @@ module.exports = {
 
             if (err) {
                 callback(err);
-            } else {
-                if (registration) {
-                    utils.addMessage(doc, clinicPhone, i18n("Thank you, {{clinic_name}}. ANC counseling visit for {{patient_name}} has been recorded.", {
-                        clinic_name: clinicName,
-                        patient_name: patientName
-                    }));
-                    horizon = moment(date.getDate()).add('days', config.get('ohw_obsolete_anc_reminders_days'));
-                    changed = utils.obsoleteScheduledMessages(registration, 'anc_visit', horizon.valueOf());
-                    if (changed) {
-                        db.saveDoc(registration, function(err) {
-                            callback(err, true);
-                        });
-                    } else {
-                        callback(null, true);
-                    }
-                } else if (clinicPhone) {
-                    utils.addMessage(doc, clinicPhone, i18n("No patient with id '{{patient_id}}' found.", {
-                        patient_id: doc.patient_id
-                    }));
-                    callback(null, true);
+            } else if (registration) {
+                utils.addMessage(doc, clinicPhone, i18n("Thank you, {{clinic_name}}. ANC counseling visit for {{patient_name}} has been recorded.", {
+                    clinic_name: clinicName,
+                    patient_name: patientName
+                }));
+                horizon = moment(date.getDate()).add('days', config.get('ohw_obsolete_anc_reminders_days'));
+                changed = utils.obsoleteScheduledMessages(registration, 'anc_visit', horizon.valueOf());
+                if (changed) {
+                    db.saveDoc(registration, function(err) {
+                        callback(err, true);
+                    });
                 } else {
-                    callback(null, false);
+                    callback(null, true);
                 }
+            } else if (clinicPhone) {
+                utils.addMessage(doc, clinicPhone, i18n("No patient with id '{{patient_id}}' found.", {
+                    patient_id: doc.patient_id
+                }));
+                callback(null, true);
+            } else {
+                callback(null, false);
             }
         });
     }
