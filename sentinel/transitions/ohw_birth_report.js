@@ -37,7 +37,7 @@ module.exports = {
 
                 _.extend(registration, {
                     child_outcome: doc.outcome_child,
-                    child_birth_weight: doc.birth_weight
+                    child_birth_weight: doc.birth_weight,
                     child_birth_date: reportedDate.subtract('days', doc.days_since_delivery).valueOf()
                 });
                 utils.clearScheduledMessages(registration, 'anc_visit', 'miso_reminder', 'upcoming_delivery', 'pnc_visit', 'outcome_request');
