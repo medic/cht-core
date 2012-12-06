@@ -5,8 +5,6 @@ var config = require('../config'),
     db;
 
 module.exports = {
-    form: 'OANC',
-    requiredFields: 'related_entities.clinic',
     onMatch: function(change, callback) {
         var clinicName,
             clinicPhone,

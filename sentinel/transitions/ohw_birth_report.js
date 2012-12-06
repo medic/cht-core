@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    db,
     config = require('../config'),
     date = require('../date'),
     ids = require('../lib/ids'),
@@ -6,8 +7,6 @@ var _ = require('underscore'),
     utils = require('../lib/utils');
 
 module.exports = {
-    form: 'OBIR',
-    requiredFields: 'related_entities.clinic patient_id',
     onMatch: function(change, callback) {
         var clinicName,
             clinicPhone,

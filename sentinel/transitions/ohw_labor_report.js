@@ -2,8 +2,6 @@ var _ = require('underscore'),
     utils = require('../lib/utils');
 
 module.exports = {
-    form: 'OLAB',
-    requiredFields: 'related_entities.clinic patient_id',
     onMatch: function(change, callback) {
         var doc = change.doc,
             clinicName,

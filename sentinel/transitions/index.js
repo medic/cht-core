@@ -22,12 +22,18 @@ _.each(fs.readdirSync(__dirname), function(file) {
 });
 
 module.exports = {
-    attach: function() {
+    attach: function(design) {
         db = db || require('../db');
 
         _.each(transitions, function(transition, key) {
             var queue,
                 stream;
+
+            // don't attach if it doesn't have a filter
+            if (!design.filters || !design.filters[key]) {
+                console.warn("MISSING " + key + " filter, skipping transition!");
+                return;
+            }
 
             queue = async.queue(function(change, callback) {
                 transition.onMatch(change, function(err, complete) {

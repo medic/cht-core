@@ -4,14 +4,12 @@ var _ = require('underscore'),
     config = require('../config'),
     ids = require('../lib/ids'),
     utils = require('../lib/utils'),
-    i18n = require('../i18n'),
-    self;
+    i18n = require('../i18n');
 
 module.exports = {
-    form: 'ORPT',
-    requiredFields: 'related_entities.clinic !patient_identifiers',
     onMatch: function(change, callback) {
-        var doc = change.doc;
+        var doc = change.doc,
+            self = module.exports;
 
         doc.patient_identifiers = doc.patient_identifiers || [];
 
@@ -37,7 +35,8 @@ module.exports = {
 
     },
     setId: function(doc, callback) {
-        var id = ids.generate(doc.patient_name);
+        var id = ids.generate(doc.patient_name),
+            self = module.exports;
 
         utils.getOHWRegistration(id, function(err, found) {
             if (err) {
@@ -114,5 +113,3 @@ module.exports = {
         });
     }
 };
-
-self = module.exports;

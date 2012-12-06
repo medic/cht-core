@@ -3,8 +3,6 @@ var _ = require('underscore'),
     db;
 
 module.exports = {
-    form: 'OPNC',
-    requiredFields: 'related_entities.clinic',
     onMatch: function(change, callback) {
         var clinicName,
             clinicPhone,

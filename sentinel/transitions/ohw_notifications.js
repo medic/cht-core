@@ -2,8 +2,6 @@ var db,
     utils = require('../lib/utils');
 
 module.exports = {
-    form: 'ONOT',
-    requiredFields: 'related_entities.clinic patient_id',
     onMatch: function(change, callback) {
         var doc = doc.change,
             clinicPhone = utils.getClinicPhone(doc),

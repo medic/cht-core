@@ -4,8 +4,6 @@ var _ = require('underscore'),
     utils = require('../lib/utils');
 
 module.exports = {
-    form: 'ODGR',
-    requiredFields: 'patient_id related_entities.clinic',
     onMatch: function(change, callback) {
         var doc = change.doc,
             clinicName,

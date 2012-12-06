@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    db;
+var _ = require('underscore');
 
 /**
  * Update clinic data on new data records, use refid for clinic lookup otherwise
@@ -10,17 +9,15 @@ var _ = require('underscore'),
  * good place to get phone numbers from.
  */
 module.exports = {
-    form: '*',
-    requiredFields: 'form related_entities !related_entities.clinic',
+    db: require('../db'),
     onMatch: function(change, callback) {
         var self = module.exports,
             doc = change.doc,
             q = {
+                include_docs: true,
                 limit: 1
             },
             view;
-
-        db = db || require('../db');
 
         if (doc.refid) { // use reference id to find clinic if defined
             q.key = [ doc.refid ];
@@ -32,7 +29,7 @@ module.exports = {
             return callback(null, false);
         }
 
-        db.view('kujua-sentinel', view, q, function(err, data) {
+        self.db.view('kujua-sentinel', view, q, function(err, data) {
             var clinic,
                 existing,
                 row;
@@ -42,7 +39,7 @@ module.exports = {
             }
 
             row = _.first(data.rows);
-            clinic = row && row.value;
+            clinic = row && row.doc;
             existing = doc.related_entities.clinic || {};
 
             if (!clinic) {
@@ -58,7 +55,7 @@ module.exports = {
 
             if (clinic.contact.phone !== doc.from) {
                 clinic.contact.phone = doc.from;
-                db.saveDoc(clinic, function(err, ok) {
+                self.db.saveDoc(clinic, function(err, ok) {
                     if (err) {
                         console.log("Error updating clinic: " + JSON.stringify(err, null, 2));
                         return callback(err);
