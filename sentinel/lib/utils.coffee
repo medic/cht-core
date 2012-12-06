@@ -49,8 +49,8 @@ module.exports =
     msg = _.find(doc.scheduled_tasks, (task) ->
       task.type is type
     )
-    message = _.first(msg
-    msg?.messages[0].message = message
+    target = _.first(msg?.messages)
+    target?.message = message
   addScheduledMessage: (doc, options = {}) ->
     doc.scheduled_tasks ?= []
 
