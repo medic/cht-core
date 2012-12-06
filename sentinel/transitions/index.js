@@ -3,7 +3,6 @@ var _ = require('underscore'),
     fs = require('fs'),
     path = require('path'),
     db,
-    filters = {},
     transitions = {},
     queue;
 
@@ -12,9 +11,8 @@ _.each(fs.readdirSync(__dirname), function(file) {
         key = path.basename(file, path.extname(file));
 
     try {
-        if (path.extname(file) === '.js' && file !== 'index.js') {
+        if (file !== 'index.js') {
             transition = require('./' + key);
-            filters[key] = generateFilter(key, transition);
             transitions[key] = transition;
         }
     } catch(e) {
@@ -53,8 +51,7 @@ module.exports = {
             });
             console.log('Listening for changes for the ' + key + ' transition.');
         });
-    },
-    filters: filters
+    }
 }
 
 function finalize(key, change, callback) {
@@ -68,57 +65,4 @@ function finalize(key, change, callback) {
         }
         callback();
     });
-}
-
-function generateFilter(code, options) {
-    return (function(doc) {
-        var form = '__FORM__',
-            fields = '__REQUIRED_FIELDS__';
-
-        doc.transitions = doc.transitions || [];
-
-        // if it's already gone through this transition, filter it out
-        if (doc.transitions.indexOf('__CODE__') >= 0) {
-            return false;
-        // transition's form has to match, or be *
-        } else if (form !== '*' && doc.form !== form) {
-            return false;
-        }
-
-        // simple object truthiness test
-        function test(obj, fields) {
-            var field,
-                result;
-
-            if (!Array.isArray(fields)) {
-                fields = fields.split('.')
-            }
-            field = fields.shift();
-            if (obj && obj[field] && fields.length) {
-                return test(obj[field], fields);
-            } else {
-                return !!(obj && obj[field]);
-            }
-        }
-
-        if (fields === '') {
-            fields = []
-        } else {
-            fields = fields.split(' ')
-        }
-
-        return fields.every(function(field) {
-            var negate = field.indexOf('!') === 0,
-                field = field.replace(/^!/, '');
-
-            if (negate) {
-                return !test(doc, field);
-            } else {
-                return test(doc, field);
-            }
-        });
-    }).toString()
-      .replace(/'__FORM__'/g, "'" + (options.form || '') + "'")
-      .replace(/'__CODE__'/g, "'" + code + "'")
-      .replace(/'__REQUIRED_FIELDS__'/g, "'" + options.requiredFields + "'")
 }
