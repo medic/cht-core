@@ -1,0 +1,15 @@
+{
+    "name": "properties",
+    "version": "0.0.12",
+    "categories": ["build-tools"],
+    "description": "Loads exported properties from a CommonJS module and adds them to a design doc, optionally proxying list, show and update functions so they maintain the scope of the original module.",
+    "preprocessors": {
+        "queue": "build/queue"
+    },
+    "postprocessors": {
+        "load": "build/load"
+    },
+    "dependencies": {
+        "modules": ">=0.0.12"
+    }
+}

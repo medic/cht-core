@@ -1,0 +1,11 @@
+{
+    "name": "kujua-sentinel",
+    "version": "0.0.1",
+    "description": "Kujua Sentinel",
+    "modules": ["lib"],
+    "load": "lib/index",
+    "dependencies": {
+        "modules": null,
+        "properties": null
+    }
+}
