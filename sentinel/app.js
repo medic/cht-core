@@ -3,13 +3,13 @@ var _ = require('underscore'),
     config = require('./config'),
     transitions = require('./transitions');
 
-function completeSetup(err, ok) {
+function completeSetup(err, design) {
     if (err) {
         console.error(JSON.stringify(err));
         process.exit(1);
     } else {
         config.load(function() {
-            transitions.attach();
+            transitions.attach(design);
             require('./schedule');
             console.log('Kujua Sentinel startup complete.');
         });
@@ -22,7 +22,9 @@ db.getDoc('_design/kujua-sentinel', function(err, doc) {
 
     if (err) {
         if (err.error === 'not_found') {
-            db.saveDesign('kujua-sentinel', base, completeSetup);
+            db.saveDesign('kujua-sentinel', base, function(err, ok) {
+                completeSetup(err, base);
+            });
         } else {
             console.error("Could not find design document: " + err.reason);
         }
@@ -31,10 +33,12 @@ db.getDoc('_design/kujua-sentinel', function(err, doc) {
             return key.substring(0, 1) === '_' || JSON.stringify(base[key]) === JSON.stringify(doc[key]);
         });
         if (matches) {
-            completeSetup();
+            completeSetup(null, doc);
         } else {
             _.extend(doc, base);
-            db.saveDoc(doc, completeSetup);
+            db.saveDoc(doc, function(err, ok) {
+                completeSetup(err, doc);
+            });
         }
     }
 });
