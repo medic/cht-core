@@ -1,24 +1,11 @@
 var _ = require('underscore'),
+    fakedb = require('../fake-db'),
     transition = require('../../transitions/update_clinics'),
-    db = require('../../db'),
     phone = '+34567890123';
 
-exports.tearDown = function(callback) {
-    db.view('kujua-sentinel', 'clinic_by_refid', {
-        include_docs: true,
-        limit: 1,
-        key: [ '1000' ]
-    }, function(err, result) {
-        var row = _.first(result.rows),
-            clinic = row && row.doc;
-
-        if (clinic) {
-            clinic.contact.phone = phone;
-            db.saveDoc(clinic, callback);
-        } else {
-            callback();
-        }
-    });
+exports.setUp = function(callback) {
+    transition.db = fakedb;
+    callback();
 }
 
 exports['should update clinic by phone'] = function(test) {
