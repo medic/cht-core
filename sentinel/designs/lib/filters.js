@@ -50,3 +50,11 @@ exports.ohw_registration = function(doc) {
         doc.related_entities.clinic &&
         (!doc.patient_identifiers || doc.patient_identifiers.length === 0);
 };
+
+exports.twilio_message = function(doc) {
+    var tasks = doc.tasks || [];
+
+    return tasks.some(function(task) {
+        return task.state === 'pending';
+    });
+};
