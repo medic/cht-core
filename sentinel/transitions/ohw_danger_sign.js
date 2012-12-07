@@ -1,16 +1,14 @@
 var _ = require('underscore'),
-    db,
     i18n = require('../i18n'),
     utils = require('../lib/utils');
 
 module.exports = {
+    db: require('../db'),
     onMatch: function(change, callback) {
         var doc = change.doc,
             clinicName,
             clinicPhone,
             parentPhone = utils.getParentPhone(doc);
-
-        db = db || require('../db');
 
         clinicPhone = utils.getClinicPhone(doc);
         clinicName = utils.getClinicName(doc);
@@ -29,7 +27,7 @@ module.exports = {
                 utils.updateScheduledMessage(registration, {
                     message: i18n("Greetings, {{clinic_name}}. {{patient_name}} is due to deliver soon. This pregnancy has been flagged as high-risk.", {
                         clinic_name: clinicName,
-                        patient_name: patientName
+                        patient_name: registration.patient_name
                     }),
                     type: 'upcoming_delivery'
                 });
@@ -37,10 +35,10 @@ module.exports = {
                     utils.addMessage(doc, parentPhone, i18n("{{clinic_name}} has reported danger sign {{danger_sign}} is present in {{patient_name}}. Please follow up.", {
                         clinic_name: clinicName,
                         danger_sign: doc.danger_sign,
-                        patient_name: doc.patient_name
+                        patient_name: registration.patient_name
                     }));
                 }
-                db.saveDoc(registration, function(err) {
+                module.exports.db.saveDoc(registration, function(err) {
                     callback(err, true);
                 });
 
