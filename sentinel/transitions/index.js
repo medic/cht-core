@@ -41,7 +41,7 @@ module.exports = {
                         callback(err);
                     } else {
                         if (complete) {
-                            finalize(key, change, callback);
+                            finalize(change, callback);
                         } else {
                             callback();
                         }
@@ -63,12 +63,21 @@ module.exports = {
 function finalize(key, change, callback) {
     var doc = change.doc;
 
-    doc.transitions = doc.transitions || [];
-    doc.transitions.push(key);
-    db.saveDoc(doc, function(err, result) {
+    db.getDoc(doc._id, function(err, existing) {
         if (err) {
             console.log(JSON.stringify(err));
+            callback(err);
+        } else {
+            if (JSON.stringify(existing) !== JSON.stringify(doc)) {
+                db.saveDoc(doc, function(err, result) {
+                    if (err) {
+                        console.log(JSON.stringify(err));
+                    }
+                    callback(err);
+                });
+            } else {
+                callback();
+            }
         }
-        callback();
     });
 }
