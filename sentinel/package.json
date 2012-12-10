@@ -10,6 +10,7 @@
         "moment": "latest",
         "mustache": "latest",
         "optimist": "latest",
+        "request": "latest",
         "underscore": "latest"
     },
     "devDependencies": {

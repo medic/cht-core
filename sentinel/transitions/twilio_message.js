@@ -1,5 +1,6 @@
 var config = require('../config'),
     request = require('request'),
+    fromNumber = config.get('twilio_number') || '+15037664982',
     twilioSid = config.get('twilio_sid'),
     twilioToken = config.get('twilio_token'),
     auth = twilioSid && twilioToken ? 'Basic ' + new Buffer(twilioSid + ':' + twilioToken).toString('base64') : false;
@@ -7,7 +8,8 @@ var config = require('../config'),
 module.exports = {
     db: require('../db'),
     onMatch: function(change, callback) {
-        var doc = change.doc;
+        var doc = change.doc,
+            original = JSON.stringify(doc);
 
         if (auth) {
             async.map(doc.tasks, function(task, taskCallback) {
@@ -27,6 +29,10 @@ module.exports = {
                             if (err) {
                                 message.twilioResponse = err;
                                 messageCallback(err);
+                            } else if (Math.floor(res.statusCode) !== 2) {
+                                err = JSON.parse(body)
+                                message.twilioResponse = err;
+                                messageCallback(err);
                             } else {
                                 message.twilioResponse = JSON.parse(body);
                                 messageCallback();
@@ -35,24 +41,25 @@ module.exports = {
                     }, function(err) {
                         if (err) {
                             console.error(JSON.stringify(err));
-                            taskCallback(null, task);
                         } else {
                             task.state = 'sent';
                             task.timestamp = Date.now();
-                            taskCallback(null, task);
                         }
+                        taskCallback(null, task);
                     });
                 } else {
                     taskCallback(null, task);
                 }
             }, function(err, tasks) {
+                if (err) {
+                    return callback(err);
+                }
                 doc.tasks = tasks;
-                db.saveDoc(doc, function(err) {
-                    callback(err, true);
-                });
+                callback(null, true);
             });
         } else {
             callback(null, false);
         }
-    }
+    },
+    repeatable: true
 };
