@@ -1,16 +1,16 @@
 var config = require('../config'),
     i18n = require('../i18n'),
+    date = require('../date'),
     moment = require('moment'),
-    utils = require('../lib/utils'),
-    db;
+    utils = require('../lib/utils');
 
 module.exports = {
+    db: require('../db'),
     onMatch: function(change, callback) {
         var clinicName,
             clinicPhone,
-            doc = change.doc;
-
-        db = db || require('../db');
+            doc = change.doc,
+            self = module.exports;
 
         clinicPhone = utils.getClinicPhone(doc);
         clinicName = utils.getClinicName(doc);
@@ -23,12 +23,12 @@ module.exports = {
             } else if (registration) {
                 utils.addMessage(doc, clinicPhone, i18n("Thank you, {{clinic_name}}. ANC counseling visit for {{patient_name}} has been recorded.", {
                     clinic_name: clinicName,
-                    patient_name: patientName
+                    patient_name: registration.patient_name
                 }));
                 horizon = moment(date.getDate()).add('days', config.get('ohw_obsolete_anc_reminders_days'));
                 changed = utils.obsoleteScheduledMessages(registration, 'anc_visit', horizon.valueOf());
                 if (changed) {
-                    db.saveDoc(registration, function(err) {
+                    self.db.saveDoc(registration, function(err) {
                         callback(err, true);
                     });
                 } else {

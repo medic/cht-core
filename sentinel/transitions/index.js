@@ -2,7 +2,7 @@ var _ = require('underscore'),
     async = require('async'),
     fs = require('fs'),
     path = require('path'),
-    db,
+    db = require('../db'),
     transitions = {},
     queue;
 
@@ -23,8 +23,6 @@ _.each(fs.readdirSync(__dirname), function(file) {
 
 module.exports = {
     attach: function(design) {
-        db = db || require('../db');
-
         _.each(transitions, function(transition, key) {
             var queue,
                 stream;

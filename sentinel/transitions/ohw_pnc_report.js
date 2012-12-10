@@ -1,14 +1,14 @@
 var _ = require('underscore'),
     utils = require('../lib/utils'),
-    db;
+    i18n = require('../i18n');
 
 module.exports = {
+    db: require('../db'),
     onMatch: function(change, callback) {
         var clinicName,
             clinicPhone,
-            doc = change.doc;
-
-        db = db || require('../db');
+            doc = change.doc,
+            self = module.exports;
 
         clinicPhone = utils.getClinicPhone(doc);
         clinicName = utils.getClinicName(doc);
@@ -34,7 +34,7 @@ module.exports = {
                         }));
                     }
                     registration.child_weight = doc.child_weight;
-                    db.saveDoc(registration, function(err) {
+                    self.db.saveDoc(registration, function(err) {
                         callback(err, true);
                     });
                 } else if (clinicPhone) {

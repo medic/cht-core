@@ -4,7 +4,7 @@ var _ = require('underscore'),
   epi = require('epi-week'),
   i18n = require('../i18n'),
   config = require('../config'),
-  utils = require('../lib/utils')
+  utils = require('../lib/utils'),
   async = require('async'),
   moment = require('moment');
 
@@ -12,7 +12,7 @@ var _ = require('underscore'),
  * Setup reminders for the current week unless they are already setup.
  */
 function createReminders(options, callback) {
-    var date = options.date,
+    var day = options.day,
         form = options.form,
         reminder = options.reminder,
       epiWeek,
@@ -130,7 +130,7 @@ module.exports = function(callback) {
             }
         });
     }
-    async.forEach(items, function(items, cb) {
+    async.forEach(items, function(item, cb) {
         createReminders(item, cb);
     }, function(err) {
         callback(err);

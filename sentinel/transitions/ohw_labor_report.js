@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    utils = require('../lib/utils');
+    utils = require('../lib/utils'),
+    i18n = require('../i18n');
 
 module.exports = {
     onMatch: function(change, callback) {
@@ -18,7 +19,7 @@ module.exports = {
                 callback(err);
             } else if (registration) {
                 parentPhone = utils.getParentPhone(registration);
-                highRisk = _.first(registration.danger_signs) != null;
+                highRisk = !!_.first(registration.danger_signs);
 
                 if (highRisk) {
                     utils.addMessage(doc, clinicPhone, i18n("Thank you {{clinic_name}}. This pregnancy is high-risk. Call nearest health worker or SBA.", {

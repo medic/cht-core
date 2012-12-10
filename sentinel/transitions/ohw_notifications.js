@@ -1,13 +1,14 @@
 var db,
-    utils = require('../lib/utils');
+    utils = require('../lib/utils'),
+    i18n = require('../i18n');
 
 module.exports = {
+    db: require('../db'),
     onMatch: function(change, callback) {
         var doc = doc.change,
             clinicPhone = utils.getClinicPhone(doc),
-            clinicName = utils.getClinicName(doc);
-
-        db = db || require('../db');
+            clinicName = utils.getClinicName(doc),
+            self = module.exports;
 
         utils.getOHWRegistration(doc.patient_id, function(err, registration) {
             if (err) {
@@ -28,7 +29,7 @@ module.exports = {
                 }
                 registration.muted = !doc.notifications;
 
-                db.saveDoc(registration, function(err) {
+                self.db.saveDoc(registration, function(err) {
                     callback(err, true);
                 });
             } else if (clinicPhone) {

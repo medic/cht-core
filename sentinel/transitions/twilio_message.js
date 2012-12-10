@@ -1,4 +1,5 @@
-var config = require('../config'),
+var async = require('async'),
+    config = require('../config'),
     request = require('request'),
     fromNumber = config.get('twilio_number') || '+15037664982',
     twilioSid = config.get('twilio_sid'),
@@ -29,7 +30,7 @@ module.exports = {
                             if (err) {
                                 message.twilioResponse = err;
                                 messageCallback(err);
-                            } else if (Math.floor(res.statusCode) !== 2) {
+                            } else if (Math.floor(res.statusCode / 100) !== 2) {
                                 err = JSON.parse(body)
                                 message.twilioResponse = err;
                                 messageCallback(err);

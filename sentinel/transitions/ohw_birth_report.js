@@ -1,19 +1,19 @@
 var _ = require('underscore'),
-    db,
     config = require('../config'),
     date = require('../date'),
+    i18n = require('../i18n'),
     ids = require('../lib/ids'),
     moment = require('moment'),
     utils = require('../lib/utils');
 
 module.exports = {
+    db: require('../db'),
     onMatch: function(change, callback) {
         var clinicName,
             clinicPhone,
             doc = change.doc,
-            reportedDate;
-
-        db = db || require('../db');
+            reportedDate,
+            self = module.exports;
 
         clinicPhone = utils.getClinicPhone(doc);
         clinicName = utils.getClinicName(doc);
@@ -63,7 +63,7 @@ module.exports = {
                     }));
                     self.scheduleReminders(registration, clinicName, clinicPhone, config.get('ohw_low_weight_pnc_schedule_days'));
                 }
-                db.saveDoc(registration, function(err) {
+                self.db.saveDoc(registration, function(err) {
                     callback(err);
                 });
             } else if (clinicPhone) {
@@ -97,5 +97,3 @@ module.exports = {
         });
     }
 };
-
-self = module.exports;
