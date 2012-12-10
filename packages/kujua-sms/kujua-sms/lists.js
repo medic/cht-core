@@ -279,9 +279,9 @@ var json_headers = {
 
 
 /*
- * Second step of adding a data record for an incoming SMS.  This adds the
- * related data to the record and returns the necessary callback information
- * to update the data record.
+ * Second step of adding a data record for an incoming SMS.  This function
+ * returns the necessary callback information to update the data record with
+ * facility data.
  *
  * @param {Object} head
  * @param {Object} req
@@ -367,9 +367,6 @@ exports.data_record = function (head, req) {
 exports.data_record_merge = function (head, req) {
     start({code: 200, headers: json_headers});
 
-    logger.log('data_record_merge');
-    logger.log(JSON.stringify(arguments,null,2));
-
     var new_data_record = JSON.parse(req.body),
         form = req.query.form,
         headers = req.headers.Host.split(":"),
@@ -422,9 +419,6 @@ exports.data_record_merge = function (head, req) {
  */
 exports.tasks_pending = function (head, req) {
     start({code: 200, headers: json_headers});
-
-    logger.log('tasks_pending');
-    logger.log(JSON.stringify(arguments,null,2));
 
     var newDocs = [],
         appdb = require('duality/core').getDBURL(req),

@@ -3,22 +3,13 @@
         <table class="table table-bordered table-striped">
         <tbody>
             <tr class="main">
+              <td class="select-row">
+                <input type="checkbox" name="select-row-checkbox" />
+              </td>
               <td class="reported-date">
                 <div class="relative">
                 {reported_date}
-                  <div class="row-controls">
-                    <form action="" method="POST" data-ajax="removeDoc">
-                      <input type="hidden" name="_id" value="{_id}" />
-                      <input type="hidden" name="_rev" value="{_rev}" />
-                      <a class="btn btn-danger btn-mini submit delete" href="#">
-                        <i class="icon-trash icon-large"></i>
-                      </a>
-                    </form>
-                    <a class="btn btn-secondary btn-mini submit edit" href="#edit_record_form" data-toggle="modal">
-                      <i class="icon-cogs icon-large"></i>
-                    </a>
-                  </div>
-              </div>
+                </div>
               </td>
               <td class="contact-name">
                 {#related_entities}

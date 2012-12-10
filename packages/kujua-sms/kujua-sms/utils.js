@@ -139,10 +139,18 @@ var prettyVal = function(data_record, key, def) {
 
 };
 
+// reverse makeDataRecordReadable munge. ;\
+exports.makeDataRecordOriginal = function(doc) {
+      var rdo = doc.reported_date_orig;
+      delete doc.reported_date_orig;
+      delete doc.fields;
+      doc.reported_date = rdo;
+      return doc;
+};
+
 // take data record document and return nice formated JSON object
 exports.makeDataRecordReadable = function(doc) {
     var data_record = doc;
-    var sms_message = data_record.sms_message;
 
     // causes bug when trying to do update
     // data_record._raw = JSON.stringify(data_record, null, 2);
@@ -155,8 +163,10 @@ exports.makeDataRecordReadable = function(doc) {
     }
 
     if(data_record.reported_date) {
+        var rd = data_record.reported_date;
         var m = moment(data_record.reported_date);
         data_record.reported_date = m.format('DD, MMM YYYY, HH:mm:ss Z');
+        data_record.reported_date_orig = rd;
     }
 
     return data_record;
@@ -387,13 +397,13 @@ var messages = {
     form_not_found: {
         en: "The form sent '%(form)' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
         fr: "Le formulaire envoyé '%(form)' n'est pas reconnu. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur.",
-        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
+        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
     },
     /* form_invalid is placeholder until we do proper form validation */
     form_invalid: {
         en: "The form sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
         fr: "Le formulaire envoyé '%(form)' n'est pas complet. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur.",
-        ne: "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
+        ne: "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
     },
     'sys.facility_not_found': {
         en: "Facility not found."
@@ -407,7 +417,7 @@ var messages = {
     empty : {
         en: "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor.",
         fr: "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur.",
-        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला। यो समस्या दोहोरीरहेमा सामुदायिक स्वास्थय निर्देशकलाई खबर गर्नुहोला।"
+        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
     },
     form_received: {
         en: 'Your form submission was received, thank you.',

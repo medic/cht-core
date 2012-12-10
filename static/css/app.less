@@ -165,17 +165,20 @@ body {
     color: @blue;
   }
   // Specifying width for each column since the rows are their own tables.
+  .select-row {
+    width: 10px;
+  }
   .reported-date {
-    width: 100px;
+    width: 90px;
   }
   .contact-name {
-    width: 100px;
+    width: 90px;
   }
   .phone {
-    width: 100px;
+    width: 90px;
   }
   .related-entities {
-    width: 100px;
+    width: 90px;
   }
   .sms-message {
     width: 100px;
@@ -188,25 +191,10 @@ body {
     white-space: nowrap;
   }
   .errors {
-    width: 30px;
+    width: 15px;
   }
   .relative {
     position: relative;
-  }
-  .row-controls {
-    padding: 5px;
-    position: absolute;
-    top: -9px;
-    left: -75px;
-    background: #f5f5f5;
-    .bordered(#ddd, transparent, darken(#ddd, 10%), #ddd);
-    .border-radius(0, 0, 4px, 4px);
-    .hide;
-    form {
-      margin: 0;
-      padding: 0;
-      display: inline;
-    }
   }
   .extended .close {
     position: absolute;

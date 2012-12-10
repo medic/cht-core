@@ -7,6 +7,10 @@
 * Fixed bug: months based reporting valid value was not being passed through view.
 * Fixed regression: returning `form_invalid` response when `form_invalid_custom` error is found.
 * Fixed NYAA form custom validation.
+* Added ability to do bulk deletes and facility updates.
+* Fixed bug where record is created as valid if callback request is not
+  completed due to disconnection or phone running out of battery. Records are
+  initialized as invalid.
 
 ## 0.1.20
 

@@ -61,16 +61,17 @@ getFacilityDesc = (doc) ->
     @bind('update', @onUpdate, @)
   className: 'clinics-view'
   onUpdate: (clinic) ->
-    record = _.extend({}, @data)
-    if not record.related_entities.clinic
-        record.related_entities.clinic = {}
-    if clinic.type is 'health_center'
-        record.related_entities.clinic = {parent: clinic}
-    else
-        record.related_entities?.clinic = clinic
-    delete record._key
-    delete record.fields
-    $(document).trigger('save-record', record)
+    @data.forEach((record) ->
+        if not record.related_entities.clinic
+            record.related_entities.clinic = {}
+        if clinic.type is 'health_center'
+            record.related_entities.clinic = {parent: clinic}
+        else
+            record.related_entities?.clinic = clinic
+        delete record._key
+        delete record.fields
+    )
+    $(document).trigger('update-facilities', {docs:@data})
     @$el.find('.modal').modal('hide')
     @remove()
   addAll: ->
