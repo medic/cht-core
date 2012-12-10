@@ -41,7 +41,7 @@ module.exports = {
                         callback(err);
                     } else {
                         if (complete) {
-                            finalize(change, callback);
+                            finalize(key, change, callback);
                         } else {
                             callback();
                         }
@@ -49,12 +49,19 @@ module.exports = {
                 });
             }, 1);
             stream = db.changesStream({
-                filter: 'kujua-sentinel/' + key,
-                include_docs: true
+                filter: 'kujua-sentinel/' + key
             });
             stream.on('data', function(change) {
-                if (key === 'ohw_anc_report') debugger;
-                queue.push(change);
+                if (!change.deleted) {
+                    db.getDoc(change.id, function(err, doc) {
+                        if (!err && doc) {
+                            if (transition.repeatable || !_.contains(doc.transitions || [], key)) {
+                                change.doc = doc;
+                                queue.push(change);
+                            }
+                        }
+                    });
+                }
             });
             console.log('Listening for changes for the ' + key + ' transition.');
         });
@@ -64,7 +71,7 @@ module.exports = {
 function finalize(key, change, callback) {
     var doc = change.doc;
 
-    doc.transitions = doc.transition || [];
+    doc.transitions = doc.transitions || [];
     doc.transitions.push(key);
     doc.transitions = _.unique(doc.transitions);
 
