@@ -1,6 +1,7 @@
 var config,
     db = require('./db'),
-    key = 'sentinel-configuration';
+    key = 'sentinel-configuration',
+    _ = require('underscore');
 
 config = {
     ohw_anc_reminder_schedule_weeks: [16, 24, 32, 36],
@@ -19,19 +20,17 @@ config = {
     id_format: '111111'
 };
 
-function fetchConfig(callback, count) {
-    count = count || 0;
-
+function fetchConfig(callback) {
     db.getDoc(key, function(err, doc) {
-        if (err && count === 0) {
+        if (err && err.reason === 'not_found') {
             db.saveDoc(key, config, function() {
-                fetchConfig(callback, count++);
+                fetchConfig(callback);
             });
             console.log('created config ' + key)
         } else if (err) {
             callback(err);
         } else {
-            config = doc;
+            _.extend(config, doc);
             console.log('loading config ' + key);
             console.log(JSON.stringify(config, null, 2))
             callback()

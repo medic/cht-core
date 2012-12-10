@@ -1,7 +1,6 @@
 var _ = require('underscore'),
     db = require('./db'),
-    config = require('./config'),
-    transitions = require('./transitions');
+    config = require('./config');
 
 function completeSetup(err, design) {
     if (err) {
@@ -9,7 +8,7 @@ function completeSetup(err, design) {
         process.exit(1);
     } else {
         config.load(function() {
-            transitions.attach(design);
+            require('./transitions').attach(design);
             require('./schedule');
             console.log('Kujua Sentinel startup complete.');
         });
