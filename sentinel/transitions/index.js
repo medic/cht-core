@@ -53,6 +53,7 @@ module.exports = {
                 include_docs: true
             });
             stream.on('data', function(change) {
+                if (key === 'ohw_anc_report') debugger;
                 queue.push(change);
             });
             console.log('Listening for changes for the ' + key + ' transition.');
@@ -62,6 +63,10 @@ module.exports = {
 
 function finalize(key, change, callback) {
     var doc = change.doc;
+
+    doc.transitions = doc.transition || [];
+    doc.transitions.push(key);
+    doc.transitions = _.unique(doc.transitions);
 
     db.getDoc(doc._id, function(err, existing) {
         if (err) {
