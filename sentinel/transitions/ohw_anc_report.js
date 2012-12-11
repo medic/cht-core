@@ -16,16 +16,18 @@ module.exports = {
         clinicName = utils.getClinicName(doc);
         utils.getOHWRegistration(doc.patient_id, function(err, registration) {
             var changed,
-                horizon;
+                horizon = moment(date.getDate()).add('days', config.get('ohw_obsolete_anc_reminders_days'));
 
             if (err) {
                 callback(err);
             } else if (registration) {
-                utils.addMessage(doc, clinicPhone, i18n("Thank you, {{clinic_name}}. ANC counseling visit for {{patient_name}} has been recorded.", {
-                    clinic_name: clinicName,
-                    patient_name: registration.patient_name
-                }));
-                horizon = moment(date.getDate()).add('days', config.get('ohw_obsolete_anc_reminders_days'));
+                utils.addMessage(doc, {
+                    phone: clinicPhone,
+                    message: i18n("Thank you, {{clinicName}}. ANC counseling visit for {{patient_id}} has been recorded.", {
+                        clinicName: clinicName,
+                        patient_id: doc.patient_id
+                    })
+                });
                 changed = utils.obsoleteScheduledMessages(registration, 'anc_visit', horizon.valueOf());
                 if (changed) {
                     self.db.saveDoc(registration, function(err) {
@@ -35,9 +37,12 @@ module.exports = {
                     callback(null, true);
                 }
             } else if (clinicPhone) {
-                utils.addMessage(doc, clinicPhone, i18n("No patient with id '{{patient_id}}' found.", {
-                    patient_id: doc.patient_id
-                }));
+                utils.addMessage(doc, {
+                    phone: clinicPhone,
+                    messages: i18n("No patient with id '{{patient_id}}' found.", {
+                        patient_id: doc.patient_id
+                    })
+                });
                 callback(null, true);
             } else {
                 callback(null, false);
