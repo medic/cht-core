@@ -19,29 +19,27 @@ module.exports = {
             } else if (registration) {
                 utils.addMessage(doc, {
                     phone: clinicPhone,
-                    message: i18n("Thank you. Danger sign {{danger_sign}} has been recorded for {{patient_name}}.", {
-                        danger_sign: doc.danger_sign,
-                        patient_name: doc.patient_name
+                    message: i18n("Thank you. Danger sign {{danger_sign}} has been recorded.", {
+                        danger_sign: doc.danger_sign
                     })
                 });
 
                 registration.danger_signs = _.uniq(_.union(registration.danger_signs || [], [doc.danger_sign]));
 
                 utils.updateScheduledMessage(registration, {
-                    message: i18n("Greetings, {{clinic_name}}. {{patient_name}} is due to deliver soon. This pregnancy has been flagged as high-risk.", {
-                        clinic_name: clinicName,
-                        patient_name: registration.patient_name
+                    message: i18n("Greetings, {{clinicName}}. {{patient_id}} is due to deliver soon. This pregnancy has been flagged as high-risk.", {
+                        clinicName: clinicName
                     }),
                     type: 'upcoming_delivery'
                 });
                 if (parentPhone) {
                     utils.addMessage(doc, {
                         phone: parentPhone,
-                        message: i18n("{{clinic_name}} has reported danger sign {{danger_sign}} is present " +
-                                      "in {{patient_name}}. Please follow up.", {
-                            clinic_name: clinicName,
+                        message: i18n("{{clinicName}} has reported danger sign {{danger_sign}} is present " +
+                                      "in {{patient_id}}. Please follow up.", {
+                            clinicName: clinicName,
                             danger_sign: doc.danger_sign,
-                            patient_name: registration.patient_name
+                            patient_id: doc.patient_id
                         })
                     });
                 }

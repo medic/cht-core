@@ -23,8 +23,8 @@ exports.ohw_birth_report = function(doc) {
         doc.related_entities.clinic;
 };
 
-exports.ohw_danger_sign = function(doc) {
-    return doc.form === 'ODGR' &&
+exports.ohw_emergency_report = function(doc) {
+    return doc.form === 'OEMR' &&
         doc.patient_id &&
         doc.related_entities &&
         doc.related_entities.clinic;
