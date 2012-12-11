@@ -2,10 +2,12 @@ var _ = require('underscore'),
     transition = require('../../transitions/ohw_danger_sign'),
     fakedb = require('../fake-db'),
     utils = require('../../lib/utils'),
-    registration;
+    registration,
+    _getOHWRegistration;
 
 exports.setUp = function(callback) {
     transition.db = fakedb;
+    _getOHWRegistration = utils.getOHWRegistration;
     utils.getOHWRegistration = function(id, callback) {
         if (id === 'fake') {
             registration = false;
@@ -21,6 +23,10 @@ exports.setUp = function(callback) {
         }
         callback(null, registration);
     };
+    callback();
+};
+exports.tearDown = function(callback) {
+    utils.getOHWRegistration = _getOHWRegistration;
     callback();
 };
 

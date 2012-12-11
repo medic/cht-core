@@ -27,21 +27,19 @@ module.exports =
     _.find(scheduled_tasks, (task) ->
       task.type is type
     )
-  addMessage: (doc, phones, message, options = {}) ->
+  addMessage: (doc, options = {}) ->
+    { phone, message } = options
     doc.tasks ?= []
 
     task =
       messages: [ ]
       state: 'pending'
 
-    phones = [phones] unless _.isArray(phones)
-    _.each(phones, (phone) ->
-      task.messages.push(
-        to: phone
-        message: message
-      )
+    task.messages.push(
+      to: phone
+      message: message
     )
-    _.extend(task, options)
+    _.extend(task, _.omit(options, 'phone', 'message'))
 
     doc.tasks.push(task)
   updateScheduledMessage: (doc, options = {}) ->

@@ -17,5 +17,8 @@
         "kanso": "latest",
         "nodeunit": "latest"
     },
-    "version": "0.0.1"
+    "version": "0.0.1",
+    "scripts": {
+        "test": "SENTINEL_TEST=true nodeunit test/unit"
+    }
 }

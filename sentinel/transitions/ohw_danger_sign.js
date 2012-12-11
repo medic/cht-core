@@ -17,10 +17,13 @@ module.exports = {
             if (err) {
                 callback(err);
             } else if (registration) {
-                utils.addMessage(doc, clinicPhone, i18n("Thank you. Danger sign {{danger_sign}} has been recorded for {{patient_name}}.", {
-                    danger_sign: doc.danger_sign,
-                    patient_name: doc.patient_name
-                }));
+                utils.addMessage(doc, {
+                    phone: clinicPhone,
+                    message: i18n("Thank you. Danger sign {{danger_sign}} has been recorded for {{patient_name}}.", {
+                        danger_sign: doc.danger_sign,
+                        patient_name: doc.patient_name
+                    })
+                });
 
                 registration.danger_signs = _.uniq(_.union(registration.danger_signs || [], [doc.danger_sign]));
 
@@ -32,20 +35,27 @@ module.exports = {
                     type: 'upcoming_delivery'
                 });
                 if (parentPhone) {
-                    utils.addMessage(doc, parentPhone, i18n("{{clinic_name}} has reported danger sign {{danger_sign}} is present in {{patient_name}}. Please follow up.", {
-                        clinic_name: clinicName,
-                        danger_sign: doc.danger_sign,
-                        patient_name: registration.patient_name
-                    }));
+                    utils.addMessage(doc, {
+                        phone: parentPhone,
+                        message: i18n("{{clinic_name}} has reported danger sign {{danger_sign}} is present " +
+                                      "in {{patient_name}}. Please follow up.", {
+                            clinic_name: clinicName,
+                            danger_sign: doc.danger_sign,
+                            patient_name: registration.patient_name
+                        })
+                    });
                 }
                 module.exports.db.saveDoc(registration, function(err) {
                     callback(err, true);
                 });
 
             } else if (clinicPhone) {
-                utils.addMessage(doc, clinicPhone, i18n("No patient with id '{{patient_id}}' found.", {
-                    patient_id: doc.patient_id
-                }));
+                utils.addMessage(doc, {
+                    phone: clinicPhone,
+                    message: i18n("No patient with id '{{patient_id}}' found.", {
+                        patient_id: doc.patient_id
+                    })
+                });
                 callback(null, true);
             } else {
                 callback(null, false);
