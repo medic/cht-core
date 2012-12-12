@@ -49,7 +49,6 @@ exports['adds acknowledgement'] = function(test) {
     transition.onMatch({
         doc: doc
     }, function(err, complete) {
-        debugger;
         test.ok(doc.tasks);
         test.equals(doc.tasks.length, 1);
         test.ok(_.first(_.first(doc.tasks).messages).message.indexOf('ANC') >= 0);
