@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    transition = require('../../transitions/ohw_danger_sign'),
+    transition = require('../../transitions/ohw_emergency_report'),
     fakedb = require('../fake-db'),
     utils = require('../../lib/utils'),
     registration,
