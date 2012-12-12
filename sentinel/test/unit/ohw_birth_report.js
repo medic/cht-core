@@ -189,7 +189,6 @@ exports['sets two pnc reminders with normal weight'] = function(test) {
     transition.onMatch({
         doc: doc
     }, function(err, complete) {
-        debugger;
         var reminders = utils.filterScheduledMessages(registration, 'pnc_visit');
 
         test.equals(reminders.length, 2);
@@ -221,7 +220,6 @@ exports['sets four pnc reminders with yellow weight'] = function(test) {
     transition.onMatch({
         doc: doc
     }, function(err, complete) {
-        debugger;
         var reminders = utils.filterScheduledMessages(registration, 'pnc_visit');
 
         test.equals(reminders.length, 4);
