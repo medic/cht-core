@@ -12,7 +12,7 @@ module.exports =
   getOHWRegistration: (patient_id, callback) ->
     db.view('kujua-sentinel', 'ohw_registered_patients', key: patient_id, limit: 1, (err, data) =>
       if err
-        callback(err, null)
+        callback(err)
       else
         registration = data.rows?[0]?.value
         callback(null, registration)
@@ -27,34 +27,41 @@ module.exports =
     _.find(scheduled_tasks, (task) ->
       task.type is type
     )
-  addMessage: (doc, phones, message, options = {}) ->
+  addMessage: (doc, options = {}) ->
+    { phone, message } = options
     doc.tasks ?= []
 
     task =
       messages: [ ]
       state: 'pending'
 
-    phones = [phones] unless _.isArray(phones)
-    _.each(phones, (phone) ->
-      task.messages.push(
-        to: phone
-        message: message
-      )
+    task.messages.push(
+      to: phone
+      message: message
     )
-    _.extend(task, options)
+    _.extend(task, _.omit(options, 'phone', 'message'))
 
     doc.tasks.push(task)
+  updateScheduledMessage: (doc, options = {}) ->
+    { message, type } = options
+    msg = _.find(doc.scheduled_tasks, (task) ->
+      task.type is type
+    )
+    target = _.first(msg?.messages)
+    target?.message = message
   addScheduledMessage: (doc, options = {}) ->
     doc.scheduled_tasks ?= []
 
     { due, message, phone } = options
+
+    due = due.getTime() if due instanceof Date
 
     delete options.message
     delete options.due
     delete options.phone
 
     task =
-      due: due.getTime()
+      due: due
       messages: [
         to: phone
         message: message

@@ -9,73 +9,71 @@ var _ = require('underscore');
  * good place to get phone numbers from.
  */
 module.exports = {
-  required_fields: 'form related_entities !related_entities.clinic',
-  onMatch: function(change) {
-    var doc = change.doc
-        , q = { key:[doc.from], limit: 1}
-        , view = 'clinic_by_phone'
-        , self = this;
+    db: require('../db'),
+    onMatch: function(change, callback) {
+        var self = module.exports,
+            doc = change.doc,
+            q = {
+                include_docs: true,
+                limit: 1
+            },
+            view;
 
-    if (!doc.refid && !doc.from) {
-        self.complete(null, false);
-        return;
-    }
-
-    // use reference id to find clinic if defined
-    if (doc.refid) {
-        view = 'clinic_by_refid';
-        q = {key:[doc.refid], limit: 1};
-    }
-
-    self.db.view('kujua-sentinel', view, q, function(err, data) {
-
-        if (err) {
-            self.complete(err);
-            return;
+        if (doc.refid) { // use reference id to find clinic if defined
+            q.key = [ doc.refid ];
+            view = 'clinic_by_refid';
+        } else if (doc.from) {
+            q.key = [ doc.from ];
+            view = 'clinic_by_phone';
+        } else {
+            return callback(null, false);
         }
 
-        var row = _.first(data.rows),
-            clinic = row && row.value,
+        self.db.view('kujua-sentinel', view, q, function(err, data) {
+            var clinic,
+                existing,
+                row;
+
+            if (err) {
+                return callback(err);
+            }
+
+            row = _.first(data.rows);
+            clinic = row && row.doc;
             existing = doc.related_entities.clinic || {};
 
-        if (!clinic) {
-            self.complete(null, false);
-            return;
-        }
+            if (!clinic) {
+                return callback(null, false);
+            }
 
-        // reporting phone stayed the same and clinic data is up to date
-        if (doc.from === clinic.contact.phone &&
-            clinic._id === existing._id &&
-            clinic._rev === existing._rev) {
-                self.complete(null, false);
-                return;
-        }
+            // reporting phone stayed the same and clinic data is up to date
+            if (doc.from === clinic.contact.phone &&
+                clinic._id === existing._id &&
+                clinic._rev === existing._rev) {
+                    return callback(null, false);
+            }
 
-        clinic.contact.phone = doc.from;
-        doc.related_entities.clinic = clinic;
-        self.db.saveDoc(clinic, function(err, ok) {
-          if (err) {
-              console.error(JSON.stringify(err,null,2));
-              //not sure why this throws, but causes sentinel to die, bad.
-              //self.complete(err);
-              return;
-          } else {
-                // remove facility not found errors
-                var new_errors = [];
-                for (var i in doc.errors) {
-                    var e = doc.errors[i];
-                    if (e.code !== 'sys.facility_not_found')
-                        new_errors.push(e);
-                }
-                doc.errors = new_errors;
-                doc.related_entities.clinic._id = ok.id;
-                doc.related_entities.clinic._rev = ok.rev;
-                self.complete(null, doc);
-                return;
-          }
+            if (clinic.contact.phone !== doc.from) {
+                clinic.contact.phone = doc.from;
+                self.db.saveDoc(clinic, function(err, ok) {
+                    if (err) {
+                        console.log("Error updating clinic: " + JSON.stringify(err, null, 2));
+                        return callback(err);
+                    }
+                    self.setClinic(doc, clinic, callback);
+                });
+            } else {
+                self.setClinic(doc, clinic, callback);
+            }
         });
+    },
+    setClinic: function(doc, clinic, callback) {
+        doc.related_entities.clinic = clinic;
 
-    });
-
-  }
+        // remove facility not found errors
+        doc.errors = _.reject(doc.errors, function(error) {
+            return error.code === 'sys.facility_not_found';
+        });
+        callback(null, true);
+    }
 }
