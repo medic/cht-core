@@ -5,7 +5,7 @@ var db,
 module.exports = {
     db: require('../db'),
     onMatch: function(change, callback) {
-        var doc = doc.change,
+        var doc = change.doc,
             clinicPhone = utils.getClinicPhone(doc),
             clinicName = utils.getClinicName(doc),
             self = module.exports;
@@ -15,17 +15,21 @@ module.exports = {
                 callback(err);
             } else if (registration) {
                 if (doc.notifications) {
-                    utils.unmuteScheduledMessage(registration);
-                    utils.addMessage(doc, clinicPhone, i18n("Thank you, {{clinic_name}}. Notifications for {{patient_name}} have been turned on.", {
-                        clinic_name: clinicName,
-                        patient_name: registration.patient_name
-                    }));
+                    utils.unmuteScheduledMessages(registration);
+                    utils.addMessage(doc, {
+                        phone: clinicPhone,
+                        message: i18n("Thank you. Notifications for {{patient_id}} have been turned on.", {
+                            patient_id: doc.patient_id
+                        })
+                    });
                 } else {
-                    utils.unmuteScheduledMessage(registration);
-                    utils.addMessage(doc, clinicPhone, i18n("Thank you, {{clinic_name}}. Notifications for {{patient_name}} have been turned off.", {
-                        clinic_name: clinicName,
-                        patient_name: registration.patient_name
-                    }));
+                    utils.muteScheduledMessages(registration);
+                    utils.addMessage(doc, {
+                        phone: clinicPhone,
+                        message: i18n("Thank you. All notifications for {{patient_id}} have been turned off.", {
+                            patient_id: doc.patient_id
+                        })
+                    });
                 }
                 registration.muted = !doc.notifications;
 
@@ -33,9 +37,12 @@ module.exports = {
                     callback(err, true);
                 });
             } else if (clinicPhone) {
-                utils.addMessage(doc, clinicPhone, i18n("No patient with id '{{patient_id}}' found.", {
-                    patient_id: doc.patient_id
-                }));
+                utils.addMessage(doc, {
+                    message: clinicPhone,
+                    phone: i18n("No patient with id '{{patient_id}}' found.", {
+                        patient_id: doc.patient_id
+                    })
+                });
                 callback(null, true);
             } else {
                 callback(null, false);
