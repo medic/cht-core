@@ -10,7 +10,7 @@ tasks = _.compact(_.map(fs.readdirSync(__dirname), function(file) {
     try {
         if (!/^index\./.test(file)) {
             console.log('Loading task ' + file);
-            require('./' + file);
+            return require('./' + file);
         }
     } catch(e) {
         console.error(e); // carry on ...
