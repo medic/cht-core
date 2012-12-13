@@ -22,25 +22,28 @@ _.each(fs.readdirSync(__dirname), function(file) {
     }
 });
 
+// create a queue to handle the changes, calling the onMatch of the transitions one by one
+queue = async.queue(function(job, callback) {
+    var transition = job.transition,
+        key = job.key,
+        change = job.change;
+    transition.onMatch(change, function(err, complete) {
+        if (err || complete) {
+            finalize({
+                key: key,
+                change: change,
+                err: err
+            }, callback);
+        } else {
+            callback();
+        }
+    });
+}, 1);
+
 module.exports = {
     attachTransition: function(transition, key) {
-        var queue,
-            stream;
+        var stream;
 
-        // create a queue to handle the changes, calling the onMatch of the transitions one by one
-        queue = async.queue(function(change, callback) {
-            transition.onMatch(change, function(err, complete) {
-                if (err || complete) {
-                    finalize({
-                        key: key,
-                        change: change,
-                        err: err
-                    }, callback);
-                } else {
-                    callback();
-                }
-            });
-        }, 1);
 
         db.view('kujua-sentinel', 'last_valid_seq', {
             key: key
@@ -63,7 +66,13 @@ module.exports = {
                         if (!err && doc) {
                             if (transition.repeatable || !transitions[key] || !transitions[key].ok) {
                                 change.doc = doc;
-                                queue.push(change);
+                                if (key !== 'twilio_message')
+                                    debugger;
+                                queue.push({
+                                    change: change,
+                                    key: key,
+                                    transition: transition
+                                });
                             }
                         }
                     });
@@ -113,9 +122,13 @@ function finalize(options, callback) {
             console.log(JSON.stringify(err));
             callback(err);
         } else {
-            if (JSON.stringify(existing) !== JSON.stringify(doc)) {
+            if (JSON.stringify(_.omit(existing, '_rev')) !== JSON.stringify(_.omit(doc, '_rev'))) {
                 db.saveDoc(doc, function(err, result) {
                     if (err) {
+                        doc;
+                        change;
+                        existing;
+                        debugger;
                         console.log(JSON.stringify(err));
                     }
                     callback(err);
