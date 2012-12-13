@@ -3,7 +3,7 @@ exports.due_tasks = {
         var tasks = doc.scheduled_tasks || [];
 
         tasks.forEach(function(task, index) {
-            if (task.due) {
+            if (task.due && task.state === 'scheduled') {
                 emit(task.due, index);
             }
         });
