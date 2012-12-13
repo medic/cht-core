@@ -21,8 +21,9 @@ config = {
 };
 
 function fetchConfig(callback) {
+    debugger;
     db.getDoc(key, function(err, doc) {
-        if (err && err.reason === 'not_found') {
+        if (err && err.error === 'not_found') {
             db.saveDoc(key, config, function() {
                 fetchConfig(callback);
             });
@@ -32,7 +33,7 @@ function fetchConfig(callback) {
         } else {
             _.extend(config, doc);
             console.log('loading config ' + key);
-            console.log(JSON.stringify(config, null, 2))
+            //console.log(JSON.stringify(config, null, 2))
             callback()
         }
     });
