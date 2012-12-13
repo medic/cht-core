@@ -1,2 +1,4 @@
 .kansorc
 .DS_Store
+sentinel/settings.js
+sentinel/Procfile

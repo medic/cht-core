@@ -219,29 +219,34 @@ body {
 }
 .tasks-data_record {
 
-  .tasks-state-cancelled {
-    .label;
-  }
   .tasks-state-cancelled:before {
     content: "Cancelled";
   }
-  .tasks-state-scheduled,
-  .tasks-state-pending {
-    .label;
-    .label-info;
+  .tasks-state-muted:before {
+    content: "Muted";
   }
   .tasks-state-pending:before {
     content: "Pending";
-  }
-  .tasks-state-sent {
-    .label;
-    .label-success;
   }
   .tasks-state-sent:before {
     content: "Sent";
   }
   .tasks-state-scheduled:before {
     content: "Scheduled";
+  }
+  .tasks-state-cancelled,
+  .tasks-state-muted,
+  .tasks-state-scheduled,
+  .tasks-state-sent,
+  .tasks-state-pending {
+    .label;
+    .label-info;
+  }
+  .tasks-state-muted {
+    .opacity(50);
+  }
+  .tasks-state-sent {
+    .label-success;
   }
   .tasks-type {
     color: @grayLight;
