@@ -14,7 +14,7 @@ module.exports = {
             if (err) {
                 callback(err);
             } else if (registration) {
-                if (String(doc.notifications) === '1') {
+                if (/^On$/i.test(String(doc.notifications))) {
                     utils.unmuteScheduledMessages(registration);
                     utils.addMessage(doc, {
                         phone: clinicPhone,
