@@ -8,6 +8,7 @@ module.exports = function(callback) {
     var now = moment(date.getDate()),
         overdue = now.clone().subtract('days', 7);
 
+
     db.view('kujua-sentinel', 'due_tasks', {
         include_docs: true,
         endkey: now.valueOf(),
@@ -22,7 +23,7 @@ module.exports = function(callback) {
                     index = row.value,
                     scheduled = doc.scheduled_tasks || [],
                     tasks = doc.tasks || [],
-                    toDo = scheduled.splice(index, 1);
+                    toDo = scheduled.splice(index, 1)[0];
 
                 if (toDo && toDo.due === due) {
                     tasks.push({
@@ -30,7 +31,9 @@ module.exports = function(callback) {
                         state: 'pending'
                     });
                 }
-                db.saveDoc(cb);
+                db.saveDoc(doc, function(err) {
+                    cb(err);
+                });
             }, function(err) {
                 callback(err);
             });
