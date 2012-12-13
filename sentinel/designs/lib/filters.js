@@ -48,7 +48,7 @@ exports.ohw_registration = function(doc) {
     return doc.form === 'ORPT' &&
         doc.related_entities &&
         doc.related_entities.clinic &&
-        (!doc.patient_identifiers || doc.patient_identifiers.length === 0);
+        !doc.patient_id;
 };
 
 exports.twilio_message = function(doc) {

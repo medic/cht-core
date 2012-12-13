@@ -70,12 +70,8 @@ exports.weekly_reminders = {
 
 exports.ohw_registered_patients = {
     map: function(doc) {
-        var ids = doc.patient_identifiers || [];
-
-        if (doc.form === 'ORPT') {
-            ids.forEach(function(id) {
-                emit(id, null);
-            });
+        if (doc.form === 'ORPT' && doc.patient_id) {
+            emit(doc.patient_id, null);
         }
     }
 };

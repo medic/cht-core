@@ -10,11 +10,11 @@ module.exports =
     doc.related_entities?.clinic?.parent?.contact?.phone
   # fetches the registration and then calls the callback with (err, registration)
   getOHWRegistration: (patient_id, callback) ->
-    db.view('kujua-sentinel', 'ohw_registered_patients', key: patient_id, limit: 1, (err, data) =>
+    db.view('kujua-sentinel', 'ohw_registered_patients', key: patient_id, include_docs: true, limit: 1, (err, data) =>
       if err
         callback(err)
       else
-        registration = data.rows?[0]?.value
+        registration = _.first(data.rows)?.doc
         callback(null, registration)
     )
   filterScheduledMessages: (doc, type) ->
