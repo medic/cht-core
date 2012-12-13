@@ -48,10 +48,10 @@ module.exports = {
         });
     },
     addAcknowledgement: function(doc) {
-        var visit = utils.findScheduledMessage(doc, 'anc_visit'),
-            duration = moment.duration(visit.due - moment().valueOf());
+        var visit = utils.findScheduledMessage(doc, 'anc_visit');
 
         if (visit) {
+            var duration = moment.duration(visit.due - moment().valueOf());
             utils.addMessage(doc, {
                 phone: doc.from,
                 message: i18n("Thank you for registering {{serial_number}}. " +

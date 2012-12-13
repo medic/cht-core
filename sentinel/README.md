@@ -5,7 +5,7 @@ set to true.
 
 ## Configuration
 
-Copy `.env-example` to `.env` and modify for your database settings.
+Copy `settings-example.js` to `settings.js` and modify for your database settings.
 
 A default configuration is also generated from `config.coffee` and saved at
 `db/sentinel-configuration` you can make your configuration changes to this

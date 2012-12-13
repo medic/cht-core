@@ -169,6 +169,34 @@ exports.makeDataRecordReadable = function(doc) {
         data_record.reported_date_orig = rd;
     }
 
+    if(data_record.tasks) {
+        for (var i in data_record.tasks) {
+            var t = data_record.tasks[i];
+            if (t.due) {
+                var m = moment(t.due);
+                t.due = m.format('DD, MMM YYYY, HH:mm:ss Z');
+            }
+            if (t.timestamp) {
+                var m = moment(t.timestamp);
+                t.timestamp= m.format('DD, MMM YYYY, HH:mm:ss Z');
+            }
+        }
+    }
+
+    if(data_record.scheduled_tasks) {
+        for (var i in data_record.scheduled_tasks) {
+            var t = data_record.scheduled_tasks[i];
+            if (t.due) {
+                var m = moment(t.due);
+                t.due = m.format('DD, MMM YYYY, HH:mm:ss Z');
+            }
+            if (t.timestamp) {
+                var m = moment(t.timestamp);
+                t.timestamp= m.format('DD, MMM YYYY, HH:mm:ss Z');
+            }
+        }
+    }
+
     return data_record;
 };
 

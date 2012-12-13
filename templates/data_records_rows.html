@@ -102,6 +102,12 @@
                   <div>
                     {>"data_record_tasks.html"/}
                   </div>
+                  {:else}
+                    {?scheduled_tasks}
+                    <div>
+                      {>"data_record_tasks.html"/}
+                    </div>
+                    {/scheduled_tasks}
                   {/tasks}
                   {?errors}
                   <div class="data-record-errors">
