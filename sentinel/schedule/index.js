@@ -3,6 +3,7 @@ var fs = require('fs'),
     async = require('async'),
     date = require('../date'),
     moment = require('moment'),
+    config = require('../config'),
     tasks;
 
 tasks = _.compact(_.map(fs.readdirSync(__dirname), function(file) {
@@ -17,7 +18,10 @@ tasks = _.compact(_.map(fs.readdirSync(__dirname), function(file) {
 }));
 
 function sendable(m) {
-    return m.hours() >= 8 && m.hours() <= 17;
+    var after = config.get('schedule_morning_hours') || 8,
+        until = config.get('schedule_evening_hours') || 17;
+
+    return m.hours() >= after && m.hours() <= until;
 }
 
 function checkSchedule() {
