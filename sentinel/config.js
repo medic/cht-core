@@ -21,7 +21,6 @@ config = {
 };
 
 function fetchConfig(callback) {
-    debugger;
     db.getDoc(key, function(err, doc) {
         if (err && err.error === 'not_found') {
             db.saveDoc(key, config, function() {
