@@ -261,6 +261,25 @@ exports.add_sms = function(doc, request) {
     if (sms_message.form && def)
         form_data = smsparser.parse(def, sms_message);
 
+    // creates base record
+    doc = getDataRecord(sms_message, form_data);
+
+    // smssync-compat sms response
+    resp.payload = getSMSResponse(doc);
+
+    // save response to record
+    doc.responses = resp.payload.messages;
+
+    // by default related entities are null so also include errors on the
+    // record.
+    doc.errors.push({
+        code: "sys.facility_not_found",
+        message: utils.getMessage("sys.facility_not_found", sms_message.locale)
+    });
+
+    if (def && def.use_sentinel)
+        return [doc, JSON.stringify(resp)];
+
     // provide callback for next part of record creation.
     resp.callback = {
         options: {
@@ -278,22 +297,6 @@ exports.add_sms = function(doc, request) {
     if(req.headers.Authorization) {
         resp.callback.options.headers.Authorization = req.headers.Authorization;
     }
-
-    // creates base record
-    doc = getDataRecord(sms_message, form_data);
-
-    // smssync-compat sms response
-    resp.payload = getSMSResponse(doc);
-
-    // save response to record
-    doc.responses = resp.payload.messages;
-
-    // by default related entities are null so also include errors on the
-    // record.
-    doc.errors.push({
-        code: "sys.facility_not_found",
-        message: utils.getMessage("sys.facility_not_found", sms_message.locale)
-    });
 
     return [doc, JSON.stringify(resp)];
 };
