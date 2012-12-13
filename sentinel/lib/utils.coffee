@@ -85,11 +85,11 @@ module.exports =
     )
   unmuteScheduledMessages: (doc) ->
     doc.scheduled_tasks ?= []
-    doc.scheduled_tasks = _.compact(_.map(doc.scheduled_tasks, (task) ->
-      if new Date(task.due) > new Date() and task.state is 'muted'
+    doc.scheduled_tasks = _.filter(doc.scheduled_tasks, (task) ->
+      if task.state is 'muted'
         task.state = 'scheduled'
-        task
-    ))
+      new Date(task.due) > Date.now()
+    )
   muteScheduledMessages: (doc) ->
     doc.scheduled_tasks ?= []
     doc.scheduled_tasks = _.map(doc.scheduled_tasks, (task) ->
