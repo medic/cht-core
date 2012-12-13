@@ -38,8 +38,8 @@ module.exports = {
                 });
             } else if (clinicPhone) {
                 utils.addMessage(doc, {
-                    message: clinicPhone,
-                    phone: i18n("No patient with id '{{patient_id}}' found.", {
+                    phone: clinicPhone,
+                    message: i18n("No patient with id '{{patient_id}}' found.", {
                         patient_id: doc.patient_id
                     })
                 });
