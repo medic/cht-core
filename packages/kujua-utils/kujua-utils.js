@@ -32,6 +32,8 @@ var localizedString = exports.localizedString = function(strings, locales) {
 
     if (_.isString(strings)) { return strings; }
 
+    if (_.isNumber(strings)) { return strings.toString(); }
+
     // search for locale
     for (var i in locales) {
         var locale = locales[i];

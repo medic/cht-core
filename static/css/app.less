@@ -216,12 +216,16 @@ body {
   .reached-last-record {
     color: @grayLight;
   }
+}
+.tasks-data_record {
+
   .tasks-state-cancelled {
     .label;
   }
   .tasks-state-cancelled:before {
     content: "Cancelled";
   }
+  .tasks-state-scheduled,
   .tasks-state-pending {
     .label;
     .label-info;
@@ -235,6 +239,9 @@ body {
   }
   .tasks-state-sent:before {
     content: "Sent";
+  }
+  .tasks-state-scheduled:before {
+    content: "Scheduled";
   }
   .tasks-type {
     color: @grayLight;
