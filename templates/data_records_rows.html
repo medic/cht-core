@@ -11,7 +11,7 @@
                 {reported_date}
                 </div>
               </td>
-              <td class="contact-name">
+              <td class="contact-info">
                 {#related_entities}
                 {?clinic.contact.name}{clinic.contact.name}
                 {:else}
@@ -24,11 +24,9 @@
                   {/health_center.contact.name}
                 {/clinic.contact.name}
                 {/related_entities}
+                <span class="from">{from}</span>
               </td>
-              <td class="phone">
-                {from}
-              </td>
-              <td class="related-entities district_hospital">
+              <td class="facility">
                 {#related_entities}
                   {?clinic.parent.parent.name}
                   <i>{clinic.parent.parent.name}</i>
@@ -39,10 +37,6 @@
                     <i class="icon-question-sign icon-large"></i>
                     {/health_center.parent.name}
                   {/clinic.parent.parent.name}
-                {/related_entities}
-              </td>
-              <td class="related-entities health_center">
-                {#related_entities}
                   {?clinic.parent.name}
                   <i>{clinic.parent.name}</i>
                   {:else}
@@ -52,19 +46,18 @@
                     <i class="icon-question-sign icon-large"></i>
                     {/health_center.name}
                   {/clinic.parent.name}
-                {/related_entities}
-              </td>
-              <td class="related-entities clinic">
-                {#related_entities}
                   {?clinic.name}
                   <i>{clinic.name}</i>
                   {:else}
-                  {?clinic.contact.rc_code}
-                  <i>{clinic.contact.rc_code}</i>
-                  {:else}
                     <i class="icon-question-sign icon-large" title="No clinic name."></i>
-                  {/clinic.contact.rc_code}
                   {/clinic.name}
+                {/related_entities}
+              </td>
+              <td class="rc-code">
+                {#related_entities}
+                  {?clinic.contact.rc_code}
+                  <i class="rc-code">{clinic.contact.rc_code}</i>
+                  {/clinic.contact.rc_code}
                 {/related_entities}
               </td>
               <td class="sms-message">
