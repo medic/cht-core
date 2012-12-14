@@ -1,5 +1,12 @@
 # Release Notes
 
+## 0.1.22
+
+* Major improvements in scheduled reminder support in Sentinel.
+* Support for Twilio in Sentinel.
+* Added counters to show sent/scheduled messages in records rows.
+* Displaying scheduled tasks in records expanded view.
+
 ## 0.1.21
 
 * Fixed bug: regression from error handling refactor where assigning a record a new
