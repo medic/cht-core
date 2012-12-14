@@ -277,8 +277,12 @@ exports.add_sms = function(doc, request) {
         message: utils.getMessage("sys.facility_not_found", sms_message.locale)
     });
 
-    if (def && def.use_sentinel)
+    if (def && def.use_sentinel) {
+        // reset payload since sentinel deals with responses/messages
+        resp = {payload: {success: true}};
+        delete doc.responses;
         return [doc, JSON.stringify(resp)];
+    }
 
     // provide callback for next part of record creation.
     resp.callback = {
