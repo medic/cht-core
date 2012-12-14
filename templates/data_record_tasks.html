@@ -8,15 +8,6 @@
     <tr>
         <td>
           <table>
-            <thead>
-              <tr>
-                <th>State</th>
-                <th>When</th>
-                <th>Type</th>
-                <th>To</th>
-                <th>Message</th>
-              </tr>
-            </thead>
             <tbody>
         {#tasks}
           <tr data-tasks-idx={@idx}{.}{/idx}" class="task">
@@ -25,7 +16,6 @@
               {?timestamp}{timestamp}{/timestamp}
               {?due}{due}{/due}
             </td>
-            <td class="tasks-state-type">{type}</td>
           {#messages}
             <td class="to">{?to}{to}
               {:else}
@@ -53,7 +43,6 @@
               {?timestamp}{timestamp}{/timestamp}
               {?due}{due}{/due}
             </td>
-            <td class="tasks-state-type">{type}</td>
           {#messages}
             <td class="to">{?to}{to}
               {:else}
