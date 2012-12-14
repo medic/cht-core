@@ -6,6 +6,7 @@
 * Support for Twilio in Sentinel.
 * Added counters to show sent/scheduled messages in records rows.
 * Displaying scheduled tasks in records expanded view.
+* Minor refactor of records screen, organized columns a little cleaner.
 
 ## 0.1.21
 
