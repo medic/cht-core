@@ -5,7 +5,9 @@
     { "key": "districts", "value": "field offices" },
     { "key": "District", "value": "Field Office" },
     { "key": "Districts", "value": "Field Offices" },
+    { "key": "District Name", "value": "District Name" },
     { "key": "District Contact Name", "value": "SMO" },
+    { "key": "District Contact Phone", "value": "SMO Phone" },
     { "key": "District Hospital", "value": "Field Office" },
     { "key": "District Hospitals", "value": "Field Offices" },
     { "key": "District Hospital Name", "value": "Name" },
@@ -21,9 +23,11 @@
     { "key": "Clinic", "value": "Reporting Unit" },
     { "key": "Clinics", "value": "Reporting Units" },
     { "key": "Clinic Name", "value": "Reporting Unit Name" },
+    { "key": "Clinic Contact", "value": "Reporting Unit" },
     { "key": "Clinic Contact Name", "value": "Reporting Unit Contact Name" },
     { "key": "Clinic Contact Phone", "value": "Reporting Unit Contact Phone" },
     { "key": "RC Code", "value": "RU Code" },
+    { "key": "Facility", "value": "Facility" },
     { "key": "kujua-reporting",
       "value": {
           "forms": [
