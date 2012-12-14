@@ -78,12 +78,12 @@
                 {?errors}
                 <i class="icon-exclamation-sign icon-large"></i>
                 {:else}
-                  {?tasks}
-                  {#tasks}
                   <i class="{state} icon-ok icon-large"></i>
-                  {/tasks}
-                  {:else}
-                  <i class="icon-ok icon-large"></i>
+                  {?tasks}
+                  <span class="label label-success">{tasks.length}</span>
+                  {?scheduled_tasks}
+                  <span class="label label-info">{scheduled_tasks.length}</span>
+                  {/scheduled_tasks}
                   {/tasks}
                 {/errors}
               </td>
