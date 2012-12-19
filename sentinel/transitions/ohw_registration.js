@@ -81,9 +81,9 @@ module.exports = {
             if (due > now) {
                 utils.addScheduledMessage(doc, {
                     due: due.valueOf(),
-                    message: i18n('Greetings, {{clinicName}}. {{patient_id}} is due for an ANC visit this week.', {
+                    message: i18n('Greetings, {{clinicName}}. {{serial_number}} is due for an ANC visit this week.', {
                         clinicName: clinicName,
-                        patient_id: doc.patient_id
+                        serial_number: doc.serial_number
                     }),
                     number: i + 1,
                     phone: doc.from,
@@ -93,27 +93,27 @@ module.exports = {
         });
         utils.addScheduledMessage(doc, {
             due: lmp.clone().add('weeks', config.get('ohw_miso_reminder_weeks')).valueOf(),
-            message: i18n("Greetings, {{clinicName}}. It's now {{patient_id}}'s 8th month of pregnancy. If you haven't given Miso, please distribute. Make birth plan now. Thank you!", {
+            message: i18n("Greetings, {{clinicName}}. It's now {{serial_number}}'s 8th month of pregnancy. If you haven't given Miso, please distribute. Make birth plan now. Thank you!", {
                 clinicName: clinicName,
-                patient_id: doc.patient_id
+                serial_number: doc.serial_number
             }),
             phone: doc.from,
             type: 'miso_reminder'
         });
         utils.addScheduledMessage(doc, {
             due: lmp.clone().add('weeks', config.get('ohw_upcoming_delivery_weeks')).valueOf(),
-            message: i18n("Greetings, {{clinicName}}. {{patient_id}} is due to deliver soon.", {
+            message: i18n("Greetings, {{clinicName}}. {{serial_number}} is due to deliver soon.", {
                 clinicName: clinicName,
-                patient_id: doc.patient_id
+                serial_number: doc.serial_number
             }),
             phone: doc.from,
             type: 'upcoming_delivery'
         });
         utils.addScheduledMessage(doc, {
             due: lmp.clone().add('weeks', config.get('ohw_miso_reminder_weeks')).valueOf(),
-            message: i18n("Greetings, {{clinicName}}. Please submit the birth report for {{patient_id}}.", {
+            message: i18n("Greetings, {{clinicName}}. Please submit the birth report for {{serial_number}}.", {
                 clinicName: clinicName,
-                patient_id: doc.patient_id
+                serial_number: doc.serial_number
             }),
             phone: doc.from,
             type: 'outcome_request'
