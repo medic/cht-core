@@ -15,7 +15,8 @@ var TextForms = function () {
     this._re = {
         decimal: new RegExp('\\.'),
         boundary: new RegExp('\\s*#\\s*'),
-        numeric: new RegExp('\\d+(?:\\.(?:\\d+)?)?'),
+        // values with leading 0 are not numeric
+        numeric: new RegExp('[1-9]+(?:\\.(?:\\d+)?)?')
     };
 
     this._re.numeric_only = new RegExp(

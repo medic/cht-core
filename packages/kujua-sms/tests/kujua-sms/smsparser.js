@@ -230,6 +230,37 @@ exports.parse_boolean_field = function(test) {
     test.done();
 };
 
+exports.parse_string_field_leading_zero = function(test) {
+    test.expect(2);
+
+    // textforms
+    var doc = {
+        message: "0000 foo 012345"
+    };
+    var def = {
+        fields: {
+            foo: {
+                type: 'string',
+                labels: {
+                    short: 'foo',
+                    tiny: 'foo'
+                }
+            }
+        }
+    };
+    var data = smsparser.parse(def, doc);
+    test.same(data, {foo: "012345"});
+
+    // muvuku
+    doc = {
+        message: "1!0000!012345"
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {foo: "012345"});
+
+    test.done();
+};
+
 exports.smsformats_unstructured = function(test) {
     test.expect(3);
 
