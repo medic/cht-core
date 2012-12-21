@@ -19,8 +19,9 @@ module.exports = {
             } else if (registration) {
                 utils.addMessage(doc, {
                     phone: clinicPhone,
-                    message: i18n("Thank you. Danger sign {{danger_sign}} has been recorded.", {
-                        danger_sign: doc.danger_sign
+                    message: i18n("Thank you. Danger sign {{danger_sign}} has been recorded for {{serial_number}}.", {
+                        danger_sign: doc.danger_sign,
+                        serial_number: registration.serial_number
                     })
                 });
 
@@ -35,11 +36,10 @@ module.exports = {
                 if (parentPhone) {
                     utils.addMessage(doc, {
                         phone: parentPhone,
-                        message: i18n("{{clinicName}} has reported danger sign {{danger_sign}} is present " +
-                                      "in {{patient_id}}. Please follow up.", {
+                        message: i18n("{{clinicName}} has reported danger sign {{danger_sign}} is present in {{serial_number}}. Please follow up.", {
                             clinicName: clinicName,
                             danger_sign: doc.danger_sign,
-                            patient_id: doc.patient_id
+                            serial_number: registration.serial_number
                         })
                     });
                 }
