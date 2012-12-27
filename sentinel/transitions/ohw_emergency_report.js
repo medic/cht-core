@@ -29,27 +29,71 @@ var handleOnMatch = function(change, callback) {
             return callback(null, true);
         }
 
-        if (doc.labor_danger === 'no') {
+        if (doc.anc_labor_pnc !== 'In labor' && doc.labor_danger === 'No') {
             //todo/update messaging
             utils.addMessage(doc, {
                 phone: clinicPhone,
                 message: i18n("Thank you, {{clinicName}}. No danger sign for {{serial_number}} has been recorded.", {
                     clinicName: clinicName,
-                    danger_sign: doc.danger_sign,
                     serial_number: registration.serial_number
                 })
             });
             return callback(null, true);
         }
 
-        utils.addMessage(doc, {
-            phone: clinicPhone,
-            message: i18n("Thank you, {{clinicName}}. Danger sign for {{serial_number}} has been recorded.", {
-                clinicName: clinicName,
-                danger_sign: doc.danger_sign,
-                serial_number: registration.serial_number
-            })
-        });
+        if (doc.anc_labor_pnc !== 'In labor') {
+            utils.addMessage(doc, {
+                phone: clinicPhone,
+                message: i18n("Thank you, {{clinicName}}. Danger sign for {{serial_number}} has been recorded.", {
+                    clinicName: clinicName,
+                    serial_number: registration.serial_number
+                })
+            });
+            if (doc.advice_received === 'No') {
+                utils.addMessage(doc, {
+                    phone: parentPhone || '',
+                    message: i18n(
+                        "{{clinicName}} has reported a danger sign for {{patient_id}}. Please follow up with her and provide necessary assistance immediately.", {
+                        clinicName: clinicName,
+                        patient_id: doc.patient_id
+                    })
+                });
+            }
+        }
+
+        if (doc.anc_labor_pnc === 'In labor') {
+            var msg = "Thank you {{clinicName}}. Labor report for"
+                + " {{serial_number}} has been recorded. Please submit the"
+                + " birth outcome report after delivery.";
+
+            var msg2 = "{{clinicName}} has reported a labor. Please follow up"
+                + " with her and provide necessary assistance immediately.";
+
+            if (doc.labor_danger === 'Yes') {
+                msg = "Thank you {{clinicName}}. Labor report and danger sign"
+                    + " for {{serial_number}} has been recorded. Please submit the"
+                    + " birth outcome report after delivery.";
+                msg2 = "{{clinicName}} has reported a danger sign during labor."
+                    + " Please follow up with her and provide necessary"
+                    + " assistance immediately.";
+            }
+
+            utils.addMessage(doc, {
+                phone: clinicPhone,
+                message: i18n(msg, {
+                    clinicName: clinicName,
+                    serial_number: registration.serial_number
+                })
+            });
+
+            if (doc.advice_received === 'No') {
+                utils.addMessage(doc, {
+                    phone: parentPhone || '',
+                    message: i18n(msg2, {clinicName: clinicName})
+                });
+            }
+
+        }
 
         /* deprecated
          * utils.updateScheduledMessage(registration, {
@@ -62,17 +106,6 @@ var handleOnMatch = function(change, callback) {
             callback(err, true);
         });
         */
-
-        if (doc.advice_received === 'no') {
-            utils.addMessage(doc, {
-                phone: parentPhone || '',
-                message: i18n(
-                    "{{clinicName}} has reported a danger sign for {{patient_id}}. Please follow up with her and provide necessary assistance immediately.", {
-                    clinicName: clinicName,
-                    patient_id: doc.patient_id
-                })
-            });
-        }
 
         callback(null, true);
 

@@ -14,7 +14,7 @@ exports.setUp = function(callback) {
         } else {
             registration = {
                 patient_id: "123",
-                serial_number: "abc",
+                serial_number: "ABC",
                 scheduled_tasks: [
                     {
                         messages: [ { message: 'x' } ],
@@ -64,8 +64,8 @@ exports['ANC danger sign with advice response'] = function(test) {
     var doc = {
         patient_id: '123',
         anc_labor_pnc: 'ANC',
-        labor_danger: 'yes',
-        advice_received: 'yes',
+        labor_danger: 'Yes',
+        advice_received: 'Yes',
         related_entities: {
             clinic: {
                 name: 'Clinic 2',
@@ -87,7 +87,7 @@ exports['ANC danger sign with advice response'] = function(test) {
             message = (_.first(task.messages) || {}).message;
         test.ok(complete);
         test.ok(registration);
-        test.same(message, "Thank you, Clinic 2. Danger sign for abc has been recorded.");
+        test.same(message, "Thank you, Clinic 2. Danger sign for ABC has been recorded.");
         // no message to health facility if advice was received
         test.equal(doc.tasks.length, 1);
         test.done();
@@ -99,8 +99,8 @@ exports['ANC danger sign and no advice response'] = function(test) {
     var doc = {
         patient_id: '123',
         anc_labor_pnc: 'ANC',
-        labor_danger: 'yes',
-        advice_received: 'no',
+        labor_danger: 'Yes',
+        advice_received: 'No',
         related_entities: {
             clinic: {
                 name: 'Clinic 2',
@@ -116,7 +116,7 @@ exports['ANC danger sign and no advice response'] = function(test) {
         }
     };
 
-    var msg1 = "Thank you, Clinic 2. Danger sign for abc has been recorded.";
+    var msg1 = "Thank you, Clinic 2. Danger sign for ABC has been recorded.";
 
     var msg2 = "Clinic 2 has reported a danger sign for 123. Please follow up "
         + "with her and provide necessary assistance immediately.";
@@ -144,8 +144,8 @@ exports['ANC no danger and no advice sign'] = function(test) {
     var doc = {
         patient_id: '123',
         anc_labor_pnc: 'ANC',
-        labor_danger: 'no',
-        advice_received: 'no',
+        labor_danger: 'No',
+        advice_received: 'No',
         related_entities: {
             clinic: {
                 name: 'Clinic 2',
@@ -161,7 +161,7 @@ exports['ANC no danger and no advice sign'] = function(test) {
         }
     };
 
-    var msg1 = "Thank you, Clinic 2. No danger sign for abc has been recorded.";
+    var msg1 = "Thank you, Clinic 2. No danger sign for ABC has been recorded.";
 
     transition.onMatch({
         doc: doc
@@ -173,6 +173,132 @@ exports['ANC no danger and no advice sign'] = function(test) {
         test.same(doc.tasks[0].messages[0].message, msg1);
         test.same(doc.tasks[0].messages[0].to, 'clinic');
         test.same(doc.tasks[0].state, 'pending');
+        test.done();
+    });
+};
+
+exports['Labor with no danger sign or advice response'] = function(test) {
+    test.expect(9);
+    var doc = {
+        patient_id: '123',
+        anc_labor_pnc: 'In labor',
+        labor_danger: 'No',
+        advice_received: 'No',
+        related_entities: {
+            clinic: {
+                name: 'Clinic 2',
+                contact: {
+                    phone: 'clinic',
+                },
+                parent: {
+                    contact: {
+                        phone: 'parent'
+                    }
+                }
+            }
+        }
+    };
+
+    var msg1 = "Thank you Clinic 2. Labor report for ABC has been recorded. Please submit the birth outcome report after delivery.";
+
+    var msg2 = "Clinic 2 has reported a labor. Please follow up with her and provide necessary assistance immediately.";
+
+    transition.onMatch({
+        doc: doc
+    }, function(err, complete) {
+        test.ok(complete);
+        test.equal(doc.tasks.length, 2);
+        // check clinic response
+        test.same(doc.tasks[0].messages[0].message, msg1);
+        test.same(doc.tasks[0].messages[0].to, 'clinic');
+        test.same(doc.tasks[0].state, 'pending');
+        // check health facility response
+        test.same(doc.tasks[1].messages[0].message, msg2);
+        test.same(doc.tasks[1].messages[0].to, 'parent');
+        test.same(doc.tasks[1].state, 'pending');
+        test.ok(registration);
+        test.done();
+    });
+};
+
+exports['Labor with danger sign and no advice response'] = function(test) {
+    test.expect(9);
+    var doc = {
+        patient_id: '123',
+        anc_labor_pnc: 'In labor',
+        labor_danger: 'Yes',
+        advice_received: 'No',
+        related_entities: {
+            clinic: {
+                name: 'Clinic 2',
+                contact: {
+                    phone: 'clinic',
+                },
+                parent: {
+                    contact: {
+                        phone: 'parent'
+                    }
+                }
+            }
+        }
+    };
+
+    var msg1 = "Thank you Clinic 2. Labor report and danger sign for ABC has been recorded. Please submit the birth outcome report after delivery.";
+
+    var msg2 = "Clinic 2 has reported a danger sign during labor. Please follow up with her and provide necessary assistance immediately.";
+
+    transition.onMatch({
+        doc: doc
+    }, function(err, complete) {
+        test.ok(complete);
+        test.equal(doc.tasks.length, 2);
+        // check clinic response
+        test.same(doc.tasks[0].messages[0].message, msg1);
+        test.same(doc.tasks[0].messages[0].to, 'clinic');
+        test.same(doc.tasks[0].state, 'pending');
+        // check health facility response
+        test.same(doc.tasks[1].messages[0].message, msg2);
+        test.same(doc.tasks[1].messages[0].to, 'parent');
+        test.same(doc.tasks[1].state, 'pending');
+        test.ok(registration);
+        test.done();
+    });
+};
+
+exports['Labor with danger sign and advice response'] = function(test) {
+    test.expect(6);
+    var doc = {
+        patient_id: '123',
+        anc_labor_pnc: 'In labor',
+        labor_danger: 'Yes',
+        advice_received: 'Yes',
+        related_entities: {
+            clinic: {
+                name: 'Clinic 2',
+                contact: {
+                    phone: 'clinic',
+                },
+                parent: {
+                    contact: {
+                        phone: 'parent'
+                    }
+                }
+            }
+        }
+    };
+
+    var msg1 = "Thank you Clinic 2. Labor report and danger sign for ABC has been recorded. Please submit the birth outcome report after delivery.";
+
+    transition.onMatch({
+        doc: doc
+    }, function(err, complete) {
+        test.ok(complete);
+        test.equal(doc.tasks.length, 1);
+        // check clinic response
+        test.same(doc.tasks[0].messages[0].message, msg1);
+        test.same(doc.tasks[0].messages[0].to, 'clinic');
+        test.same(doc.tasks[0].state, 'pending');
+        test.ok(registration);
         test.done();
     });
 };
