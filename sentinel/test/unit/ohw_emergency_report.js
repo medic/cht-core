@@ -30,7 +30,7 @@ exports.tearDown = function(callback) {
     callback();
 };
 
-exports['responds to invalid patient'] = function(test) {
+exports['invalid patient response'] = function(test) {
     var doc = {
         patient_id: 'fake',
         related_entities: {
@@ -46,13 +46,10 @@ exports['responds to invalid patient'] = function(test) {
     }, function(err, complete) {
         var task = _.first(doc.tasks),
             message;
-
         test.ok(complete);
-
         test.ok(task);
         message = (_.first(task.messages) || {}).message;
-        test.ok(message.indexOf('fake') > 0);
-
+        test.same(message, "No patient with id 'fake' found.")
         test.done();
     });
 };
