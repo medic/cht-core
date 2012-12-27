@@ -48,9 +48,10 @@ exports.tearDown = function(callback) {
 }
 
 exports['mutes messages'] = function(test) {
+    test.expect(4);
     var doc = {
         patient_id: 'abc',
-        notifications: false
+        notifications: 'off'
     };
     transition.onMatch({
         doc: doc
@@ -68,14 +69,16 @@ exports['mutes messages'] = function(test) {
 };
 
 exports['unmutes messages; discards old ones'] = function(test) {
+    test.expect(4);
     var doc = {
         patient_id: 'muteme',
-        notifications: true
+        notifications: 'on'
     };
 
     _.each(registration.scheduled_tasks, function(task) {
         task.state = 'muted';
     });
+
     transition.onMatch({
         doc: doc
     }, function(err, complete) {

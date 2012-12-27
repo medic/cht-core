@@ -92,7 +92,7 @@ exports['adds scheduled messages'] = function(test) {
         // all scheduled messages have patient_id
         test.ok(_.all(doc.scheduled_tasks, function(task) {
             var message = _.first(task.messages).message;
-            return message.indexOf(doc.patient_id) >= 0 && message.indexOf('qq') >= 0;
+            return message.indexOf(doc.serial_number) >= 0 && message.indexOf('qq') >= 0;
         }));
         test.done();
     });
