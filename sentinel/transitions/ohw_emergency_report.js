@@ -6,7 +6,9 @@ var handleOnMatch = function(change, callback) {
     var doc = change.doc,
         clinicName,
         clinicPhone,
-        parentPhone = utils.getParentPhone(doc);
+        parentPhone = utils.getParentPhone(doc),
+        msg,
+        msg2;
 
     clinicPhone = utils.getClinicPhone(doc);
     clinicName = utils.getClinicName(doc);
@@ -62,20 +64,20 @@ var handleOnMatch = function(change, callback) {
         }
 
         if (doc.anc_labor_pnc === 'In labor') {
-            var msg = "Thank you {{clinicName}}. Labor report for"
-                + " {{serial_number}} has been recorded. Please submit the"
-                + " birth outcome report after delivery.";
+            msg = "Thank you {{clinicName}}. Labor report for" +
+                " {{serial_number}} has been recorded. Please submit the" +
+                " birth outcome report after delivery.";
 
-            var msg2 = "{{clinicName}} has reported a labor. Please follow up"
-                + " with her and provide necessary assistance immediately.";
+            msg2 = "{{clinicName}} has reported a labor. Please follow up" +
+                " with her and provide necessary assistance immediately.";
 
             if (doc.labor_danger === 'Yes') {
-                msg = "Thank you {{clinicName}}. Labor report and danger sign"
-                    + " for {{serial_number}} has been recorded. Please submit the"
-                    + " birth outcome report after delivery.";
-                msg2 = "{{clinicName}} has reported a danger sign during labor."
-                    + " Please follow up with her and provide necessary"
-                    + " assistance immediately.";
+                msg = "Thank you {{clinicName}}. Labor report and danger sign" +
+                    " for {{serial_number}} has been recorded. Please submit the" +
+                    " birth outcome report after delivery.";
+                msg2 = "{{clinicName}} has reported a danger sign during labor." +
+                    " Please follow up with her and provide necessary" +
+                    " assistance immediately.";
             }
 
             utils.addMessage(doc, {

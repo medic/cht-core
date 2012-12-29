@@ -95,8 +95,12 @@ exports['ANC danger sign with advice response'] = function(test) {
 };
 
 exports['ANC danger sign and no advice response'] = function(test) {
+    var doc,
+        msg1,
+        msg2;
+
     test.expect(9);
-    var doc = {
+    doc = {
         patient_id: '123',
         anc_labor_pnc: 'ANC',
         labor_danger: 'Yes',
@@ -116,10 +120,10 @@ exports['ANC danger sign and no advice response'] = function(test) {
         }
     };
 
-    var msg1 = "Thank you, Clinic 2. Danger sign for ABC has been recorded.";
+    msg1 = "Thank you, Clinic 2. Danger sign for ABC has been recorded.";
 
-    var msg2 = "Clinic 2 has reported a danger sign for 123. Please follow up "
-        + "with her and provide necessary assistance immediately.";
+    msg2 = "Clinic 2 has reported a danger sign for 123. Please follow up " +
+        "with her and provide necessary assistance immediately.";
 
     transition.onMatch({
         doc: doc
@@ -185,8 +189,11 @@ exports['PNC danger sign and no advice response'] = function(test) {
 };
 
 exports['ANC no danger and no advice sign'] = function(test) {
+    var doc,
+        msg1;
+
     test.expect(6);
-    var doc = {
+    doc = {
         patient_id: '123',
         anc_labor_pnc: 'ANC',
         labor_danger: 'No',
@@ -206,7 +213,7 @@ exports['ANC no danger and no advice sign'] = function(test) {
         }
     };
 
-    var msg1 = "Thank you, Clinic 2. No danger sign for ABC has been recorded.";
+    msg1 = "Thank you, Clinic 2. No danger sign for ABC has been recorded.";
 
     transition.onMatch({
         doc: doc
@@ -223,8 +230,12 @@ exports['ANC no danger and no advice sign'] = function(test) {
 };
 
 exports['Labor with no danger sign or advice response'] = function(test) {
+    var doc,
+        msg1,
+        msg2;
+
     test.expect(9);
-    var doc = {
+    doc = {
         patient_id: '123',
         anc_labor_pnc: 'In labor',
         labor_danger: 'No',
@@ -244,9 +255,9 @@ exports['Labor with no danger sign or advice response'] = function(test) {
         }
     };
 
-    var msg1 = "Thank you Clinic 2. Labor report for ABC has been recorded. Please submit the birth outcome report after delivery.";
+    msg1 = "Thank you Clinic 2. Labor report for ABC has been recorded. Please submit the birth outcome report after delivery.";
 
-    var msg2 = "Clinic 2 has reported a labor. Please follow up with her and provide necessary assistance immediately.";
+    msg2 = "Clinic 2 has reported a labor. Please follow up with her and provide necessary assistance immediately.";
 
     transition.onMatch({
         doc: doc
@@ -267,8 +278,12 @@ exports['Labor with no danger sign or advice response'] = function(test) {
 };
 
 exports['Labor with danger sign and no advice response'] = function(test) {
+    var doc,
+        msg1,
+        msg2;
+
     test.expect(9);
-    var doc = {
+    doc = {
         patient_id: '123',
         anc_labor_pnc: 'In labor',
         labor_danger: 'Yes',
@@ -288,9 +303,9 @@ exports['Labor with danger sign and no advice response'] = function(test) {
         }
     };
 
-    var msg1 = "Thank you Clinic 2. Labor report and danger sign for ABC has been recorded. Please submit the birth outcome report after delivery.";
+    msg1 = "Thank you Clinic 2. Labor report and danger sign for ABC has been recorded. Please submit the birth outcome report after delivery.";
 
-    var msg2 = "Clinic 2 has reported a danger sign during labor. Please follow up with her and provide necessary assistance immediately.";
+    msg2 = "Clinic 2 has reported a danger sign during labor. Please follow up with her and provide necessary assistance immediately.";
 
     transition.onMatch({
         doc: doc
@@ -311,8 +326,11 @@ exports['Labor with danger sign and no advice response'] = function(test) {
 };
 
 exports['Labor with danger sign and advice response'] = function(test) {
+    var doc,
+        msg1;
+
     test.expect(6);
-    var doc = {
+    doc = {
         patient_id: '123',
         anc_labor_pnc: 'In labor',
         labor_danger: 'Yes',
@@ -332,7 +350,7 @@ exports['Labor with danger sign and advice response'] = function(test) {
         }
     };
 
-    var msg1 = "Thank you Clinic 2. Labor report and danger sign for ABC has been recorded. Please submit the birth outcome report after delivery.";
+    msg1 = "Thank you Clinic 2. Labor report and danger sign for ABC has been recorded. Please submit the birth outcome report after delivery.";
 
     transition.onMatch({
         doc: doc

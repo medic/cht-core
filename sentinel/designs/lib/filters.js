@@ -51,6 +51,13 @@ exports.ohw_registration = function(doc) {
         !doc.patient_id;
 };
 
+exports.ohw_counseling = function(doc) {
+    return doc.form === 'OAPC' &&
+        doc.patient_id &&
+        doc.related_entities &&
+        doc.related_entities.clinic;
+};
+
 exports.twilio_message = function(doc) {
     var tasks = doc.tasks || [];
 

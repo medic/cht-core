@@ -48,10 +48,11 @@ module.exports = {
         });
     },
     addAcknowledgement: function(doc) {
-        var visit = utils.findScheduledMessage(doc, 'anc_visit');
+        var duration,
+            visit = utils.findScheduledMessage(doc, 'anc_visit');
 
         if (visit) {
-            var duration = moment.duration(visit.due - moment().valueOf());
+            duration = moment.duration(visit.due - moment().valueOf());
             utils.addMessage(doc, {
                 phone: doc.from,
                 message: i18n("Thank you for registering {{serial_number}}. " +
@@ -76,6 +77,7 @@ module.exports = {
         var clinicName = utils.getClinicName(doc),
             now = moment(date.getDate());
 
+        // anc schedule reminders
         _.each(config.get('ohw_anc_reminder_schedule_weeks'), function(offset, i) {
             var due = lmp.clone().add('weeks', offset);
             if (due > now) {
@@ -91,6 +93,8 @@ module.exports = {
                 });
             }
         });
+
+        // misoprostol reminder
         utils.addScheduledMessage(doc, {
             due: lmp.clone().add('weeks', config.get('ohw_miso_reminder_weeks')).valueOf(),
             message: i18n("Greetings, {{clinicName}}. It's now {{serial_number}}'s 8th month of pregnancy. If you haven't given Miso, please distribute. Make birth plan now. Thank you!", {
@@ -100,6 +104,8 @@ module.exports = {
             phone: doc.from,
             type: 'miso_reminder'
         });
+
+        // upcoming delivery reminder
         utils.addScheduledMessage(doc, {
             due: lmp.clone().add('weeks', config.get('ohw_upcoming_delivery_weeks')).valueOf(),
             message: i18n("Greetings, {{clinicName}}. {{serial_number}} is due to deliver soon.", {
@@ -109,14 +115,27 @@ module.exports = {
             phone: doc.from,
             type: 'upcoming_delivery'
         });
+
+        // outcome request reminder
         utils.addScheduledMessage(doc, {
-            due: lmp.clone().add('weeks', config.get('ohw_miso_reminder_weeks')).valueOf(),
+            due: lmp.clone().add('weeks', config.get('ohw_outcome_request_weeks')).valueOf(),
             message: i18n("Greetings, {{clinicName}}. Please submit the birth report for {{serial_number}}.", {
                 clinicName: clinicName,
                 serial_number: doc.serial_number
             }),
             phone: doc.from,
             type: 'outcome_request'
+        });
+
+        // counseling reminder
+        utils.addScheduledMessage(doc, {
+            due: lmp.clone().add('weeks', 15).valueOf(),
+            message: i18n('Greetings, {{clinicName}}. This is a reminder to submit your counseling report for {{serial_number}}.', {
+                clinicName: clinicName,
+                serial_number: doc.serial_number
+            }),
+            phone: doc.from,
+            type: 'counseling_reminder'
         });
     }
 };

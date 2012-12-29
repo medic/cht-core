@@ -11,19 +11,14 @@ module.exports = {
             self = module.exports;
 
         utils.getOHWRegistration(doc.patient_id, function(err, registration) {
+            var mute;
+
             if (err) {
                 callback(err);
             } else if (registration) {
-                if (/^On$/i.test(String(doc.notifications))) {
-                    utils.unmuteScheduledMessages(registration);
-                    utils.addMessage(doc, {
-                        phone: clinicPhone,
-                        message: i18n("Thank you. Notifications for {{patient_id}} have been turned on.", {
-                            patient_id: doc.patient_id
-                        })
-                    });
-                    registration.muted = false;
-                } else {
+                mute = !/^On$/i.test(String(doc.notifications));
+
+                if (mute) {
                     utils.muteScheduledMessages(registration);
                     utils.addMessage(doc, {
                         phone: clinicPhone,
@@ -31,8 +26,16 @@ module.exports = {
                             patient_id: doc.patient_id
                         })
                     });
-                    registration.muted = true;
+                } else {
+                    utils.unmuteScheduledMessages(registration);
+                    utils.addMessage(doc, {
+                        phone: clinicPhone,
+                        message: i18n("Thank you. Notifications for {{patient_id}} have been turned on.", {
+                            patient_id: doc.patient_id
+                        })
+                    });
                 }
+                registration.muted = mute;
 
                 self.db.saveDoc(registration, function(err) {
                     callback(err, true);
