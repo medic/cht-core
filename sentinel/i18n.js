@@ -1,17 +1,19 @@
-var db = require('./db'),
+var async = require('async'),
+    db = require('./db'),
     mustache = require('mustache'),
     _ = require('underscore'),
     defaults,
-    key = 'sentinel-translations',
-    values = {};
+    translationsKey = 'sentinel-translations',
+    values = {},
+    queue;
 
 function fetchConfig() {
-    db.getDoc(key, function(err, doc) {
+    db.getDoc(translationsKey, function(err, doc) {
         if (err && err.error === 'not_found') {
             doc = {
                 keys: defaults
             };
-            db.saveDoc(key, doc, function(err) {
+            db.saveDoc(translationsKey, doc, function(err) {
                 if (err) {
                     console.log("Could not initialize translations. Exiting.");
                     process.exit(1);
@@ -32,6 +34,31 @@ function fetchConfig() {
 }
 
 fetchConfig();
+
+// queue adds keys to the translationsDoc if they're not present, one at a time with a FIX_ME property
+queue = async.queue(function(key, callback) {
+    db.getDoc(translationsKey, function(err, doc) {
+        var existing;
+
+        if (err) {
+            console.log(JSON.stringify(err));
+        } else {
+            existing = _.find(doc.keys, function(value) {
+                return value.key === key;
+            });
+            if (existing) {
+                callback();
+            } else {
+                doc.keys.push({
+                    value: key,
+                    key: key,
+                    FIX_ME: true
+                });
+                db.saveDoc(doc, callback);
+            }
+        }
+    });
+}, 1);
 
 defaults = [
   {
@@ -137,6 +164,16 @@ module.exports = function(key, context) {
 
     context = context || {};
 
-    s = values[key] || key;
+    if (key in values) {
+        s = values[key];
+        console.log("key '" + key + "' found!");
+    } else {
+        s = key;
+        values[key] = key;
+        queue.push(key);
+        console.log("key '" + key + "' added to queue!");
+    }
+
     return mustache.to_html(s, context);
 };
+
