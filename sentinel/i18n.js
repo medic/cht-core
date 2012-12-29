@@ -3,7 +3,7 @@ var db = require('./db'),
     _ = require('underscore'),
     defaults,
     key = 'sentinel-translations',
-    values;
+    values = {};
 
 function fetchConfig() {
     db.getDoc(key, function(err, doc) {
