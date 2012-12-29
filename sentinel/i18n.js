@@ -3,7 +3,7 @@ var db = require('./db'),
     _ = require('underscore'),
     defaults,
     key = 'sentinel-translations',
-    values;
+    values = {};
 
 function fetchConfig() {
     db.getDoc(key, function(err, doc) {
@@ -14,6 +14,7 @@ function fetchConfig() {
             db.saveDoc(key, doc, function(err) {
                 if (err) {
                     console.log("Could not initialize translations. Exiting.");
+                    console.log(err);
                     process.exit(1);
                 } else {
                     fetchConfig();
@@ -21,12 +22,17 @@ function fetchConfig() {
             });
         } else if (err) {
             console.log("Could not initialize translations. Exiting.");
+            console.log(err);
             process.exit(1);
         } else {
             values = _.reduce(doc.keys, function(memo, translation) {
                 memo[translation.key] = translation.value;
                 return memo;
             });
+            for (var i in doc.keys) {
+                var pair = doc.keys[i];
+                values[pair.key] = pair.value;
+            }
         }
     });
 }
