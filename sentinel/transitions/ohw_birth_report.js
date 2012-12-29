@@ -29,7 +29,7 @@ module.exports = {
             var birthDate,
                 parentPhone = utils.getParentPhone(registration),
                 msg = "No patient with id '{{patient_id}}' found.",
-                config;
+                conf;
 
             if (err) {
                 return callback(err);
@@ -59,13 +59,13 @@ module.exports = {
             } else if (doc.birth_weight === 'Green') {
                 msg = "Thank you, {{clinicName}}. Birth outcome report for"
                     + " {{serial_number}} has been recorded.";
-                config = config.get('ohw_pnc_schedule_days');
+                conf = config.get('ohw_pnc_schedule_days');
             } else {
                 msg = "Thank you, {{clinicName}}. Birth outcome report"
                     + " for {{serial_number}} has been recorded. The Baby"
                     + " is LBW. Please refer the mother and baby to"
                     + " the health post immediately.";
-                config = config.get('ohw_low_weight_pnc_schedule_days');
+                conf = config.get('ohw_low_weight_pnc_schedule_days');
             }
             utils.addMessage(doc, {
                 phone: clinicPhone,
@@ -75,7 +75,7 @@ module.exports = {
                 })
             });
             self.scheduleReminders(
-                registration, clinicName, clinicPhone, config
+                registration, clinicName, clinicPhone, conf
             );
             self.db.saveDoc(registration, function(err) {
                 callback(err, true);
