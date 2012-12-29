@@ -66,8 +66,6 @@ module.exports = {
                         if (!err && doc) {
                             if (transition.repeatable || !transitions[key] || !transitions[key].ok) {
                                 change.doc = doc;
-                                if (key !== 'twilio_message')
-                                    debugger;
                                 queue.push({
                                     change: change,
                                     key: key,
@@ -125,10 +123,6 @@ function finalize(options, callback) {
             if (JSON.stringify(_.omit(existing, '_rev')) !== JSON.stringify(_.omit(doc, '_rev'))) {
                 db.saveDoc(doc, function(err, result) {
                     if (err) {
-                        doc;
-                        change;
-                        existing;
-                        debugger;
                         console.log(JSON.stringify(err));
                     }
                     callback(err);
