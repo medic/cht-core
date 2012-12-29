@@ -83,11 +83,12 @@ exports['adds scheduled messages'] = function(test) {
         doc: doc
     }, function(err, complete) {
         test.ok(doc.scheduled_tasks);
-        test.equals(doc.scheduled_tasks.length, 7);
+        test.equals(doc.scheduled_tasks.length, 8);
         test.equals(utils.filterScheduledMessages(doc, 'anc_visit').length, 4);
         test.equals(utils.filterScheduledMessages(doc, 'miso_reminder').length, 1);
         test.equals(utils.filterScheduledMessages(doc, 'upcoming_delivery').length, 1);
         test.equals(utils.filterScheduledMessages(doc, 'outcome_request').length, 1);
+        test.equals(utils.filterScheduledMessages(doc, 'counseling_reminder').length, 1);
         test.equals(utils.filterScheduledMessages(doc, 'blargle margle').length, 0);
         // all scheduled messages have patient_id
         test.ok(_.all(doc.scheduled_tasks, function(task) {
