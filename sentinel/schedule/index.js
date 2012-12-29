@@ -32,7 +32,7 @@ function checkSchedule() {
             task(callback);
         }, function(e) {
             if (e) {
-                console.error('Error running tasks: ' + e);
+                console.error('Error running tasks: ' + JSON.stringify(e));
             }
             reschedule();
         });
