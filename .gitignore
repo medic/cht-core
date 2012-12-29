@@ -2,3 +2,4 @@
 .DS_Store
 sentinel/settings.js
 sentinel/Procfile
+npm-debug.log
