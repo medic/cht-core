@@ -61,6 +61,44 @@ exports['responds to invalid patient'] = function(test) {
     });
 };
 
+exports['response for normal weight (green) and outcome'] = function(test) {
+    test.expect(3);
+    var doc = {
+        outcome_mother: 'Alive and Well',
+        outcome_child: 'Alive and Well',
+        birth_weight: 'Green',
+        days_since_delivery: 1,
+        patient_id: 'good',
+        related_entities: {
+            clinic: {
+                contact: {
+                    phone: 'clinic'
+                },
+                name: 'qq',
+                parent: {
+                    contact: {
+                        phone: 'parent'
+                    }
+                }
+            }
+        }
+    };
+    transition.onMatch({
+        doc: doc
+    }, function(err, complete) {
+        var message;
+
+        test.ok(complete);
+
+        test.equal(doc.tasks.length, 1);
+        message = _.first(_.first(doc.tasks).messages).message;
+
+        test.same(message, "Thank you, qq. Birth outcome report for ABC has been recorded.");
+
+        test.done();
+    });
+};
+
 exports['responds to low weight (red) report with advice'] = function(test) {
     test.expect(3);
     var doc = {
@@ -144,43 +182,6 @@ exports['responds to low weight (yellow) report with advice'] = function(test) {
 };
 
 
-exports['response for normal weight and outcome'] = function(test) {
-    test.expect(3);
-    var doc = {
-        outcome_mother: 'Alive and Well',
-        outcome_child: 'Alive and Well',
-        birth_weight: 'Green',
-        days_since_delivery: 1,
-        patient_id: 'good',
-        related_entities: {
-            clinic: {
-                contact: {
-                    phone: 'clinic'
-                },
-                name: 'qq',
-                parent: {
-                    contact: {
-                        phone: 'parent'
-                    }
-                }
-            }
-        }
-    };
-    transition.onMatch({
-        doc: doc
-    }, function(err, complete) {
-        var message;
-
-        test.ok(complete);
-
-        test.equal(doc.tasks.length, 1);
-        message = _.first(_.first(doc.tasks).messages).message;
-
-        test.same(message, "Thank you, qq. Birth outcome report for ABC has been recorded.");
-
-        test.done();
-    });
-};
 
 exports['response for normal outcome but no weight reported'] = function(test) {
     test.expect(3);
