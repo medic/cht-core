@@ -22,6 +22,7 @@ module.exports = {
                             patient_id: doc.patient_id
                         })
                     });
+                    registration.muted = false;
                 } else {
                     utils.muteScheduledMessages(registration);
                     utils.addMessage(doc, {
@@ -30,8 +31,8 @@ module.exports = {
                             patient_id: doc.patient_id
                         })
                     });
+                    registration.muted = true;
                 }
-                registration.muted = !doc.notifications;
 
                 self.db.saveDoc(registration, function(err) {
                     callback(err, true);
