@@ -43,6 +43,7 @@ module.exports = {
             }
 
             _.extend(registration, {
+                mother_outcome: doc.outcome_mother,
                 child_outcome: doc.outcome_child,
                 child_birth_weight: doc.birth_weight,
                 child_birth_date: reportedDate.subtract('days', doc.days_since_delivery).valueOf()
@@ -53,20 +54,33 @@ module.exports = {
                 'pnc_visit', 'outcome_request'
             );
 
+            msg = "Thank you, {{clinicName}}. Birth outcome report for"
+                + " {{serial_number}} has been recorded.";
+
+            var msg_lbw = "Thank you, {{clinicName}}. Birth outcome report"
+                + " for {{serial_number}} has been recorded. The Baby"
+                + " is LBW. Please refer the mother and baby to"
+                + " the health post immediately.";
+
+            var msg_sick_child = "Thank you, {{clinicName}}. Birth outcome report for"
+                + " {{serial_number}} has been recorded. If danger sign,"
+                + " please call health worker immediately and fill in"
+                + " the emergency report.";
+
             if (doc.outcome_child === 'Alive and Sick') {
-                msg = "Thank you, {{clinicName}}. Birth outcome report for"
-                    + " {{serial_number}} has been recorded.";
-            } else if (doc.birth_weight === 'Green') {
-                msg = "Thank you, {{clinicName}}. Birth outcome report for"
-                    + " {{serial_number}} has been recorded.";
+                msg = msg_sick_child;
+            }
+            if (doc.birth_weight === 'Green') {
                 conf = config.get('ohw_pnc_schedule_days');
-            } else {
-                msg = "Thank you, {{clinicName}}. Birth outcome report"
-                    + " for {{serial_number}} has been recorded. The Baby"
-                    + " is LBW. Please refer the mother and baby to"
-                    + " the health post immediately.";
+            } else if (doc.birth_weight === 'Yellow' || doc.birth_weight === 'Red') {
+                msg = msg_lbw;
                 conf = config.get('ohw_low_weight_pnc_schedule_days');
             }
+            if (doc.outcome_mother === 'Deceased') {
+                msg = msg.replace('mother and baby', 'baby');
+                conf = null;
+            }
+
             utils.addMessage(doc, {
                 phone: clinicPhone,
                 message: i18n(msg, {
@@ -74,9 +88,13 @@ module.exports = {
                     serial_number: registration.serial_number
                 })
             });
-            self.scheduleReminders(
-                registration, clinicName, clinicPhone, conf
-            );
+
+            if (conf) {
+                self.scheduleReminders(
+                    registration, clinicName, clinicPhone, conf
+                );
+            }
+
             self.db.saveDoc(registration, function(err) {
                 callback(err, true);
             });
