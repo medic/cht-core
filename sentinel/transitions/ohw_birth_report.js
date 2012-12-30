@@ -27,54 +27,77 @@ module.exports = {
 
         utils.getOHWRegistration(doc.patient_id, function(err, registration) {
             var birthDate,
-                parentPhone;
+                parentPhone = utils.getParentPhone(registration),
+                msg = "No patient with id '{{patient_id}}' found.",
+                conf;
 
             if (err) {
-                callback(err);
-            } else if (registration) {
-                parentPhone = utils.getParentPhone(registration);
-
-                _.extend(registration, {
-                    child_outcome: doc.outcome_child,
-                    child_birth_weight: doc.birth_weight,
-                    child_birth_date: reportedDate.subtract('days', doc.days_since_delivery).valueOf()
-                });
-                utils.clearScheduledMessages(registration, 'anc_visit', 'miso_reminder', 'upcoming_delivery', 'pnc_visit', 'outcome_request');
-
-                if (registration.child_birth_weight === 'Green') {
-                    utils.addMessage(doc, {
-                        phone: clinicPhone,
-                        message: i18n("Thank you, {{clinicName}}. Birth report has been recorded.", {
-                            clinicName: clinicName
-                        })
-                    });
-                    self.scheduleReminders(registration, clinicName, clinicPhone, config.get('ohw_pnc_schedule_days'));
-                } else {
-                    utils.addMessage(doc, {
-                        phone: clinicPhone,
-                        message: i18n("Thank you, {{clinicName}}. This child is low birth weight. " +
-                                      "Provide extra thermal protection for baby, feed the baby every two hours, " +
-                                      "visit the family every day to check the baby for the first week, watch for " +
-                                      "signs of breathing difficulty. Refer danger signs immediately to health facility.", {
-                            clinicName: clinicName
-                        })
-                    });
-                    self.scheduleReminders(registration, clinicName, clinicPhone, config.get('ohw_low_weight_pnc_schedule_days'));
-                }
-                self.db.saveDoc(registration, function(err) {
-                    callback(err, true);
-                });
-            } else if (clinicPhone) {
+                return callback(err);
+            }
+            if (!registration) {
                 utils.addMessage(doc, {
                     phone: clinicPhone,
-                    message: i18n("No patient with id '{{patient_id}}' found.", {
-                        patient_id: doc.patient_id
-                    })
+                    message: i18n(msg, {patient_id: doc.patient_id})
                 });
-                callback(null, true);
-            } else {
-                callback(null, false);
+                return callback(null, true);
             }
+
+            _.extend(registration, {
+                mother_outcome: doc.outcome_mother,
+                child_outcome: doc.outcome_child,
+                child_birth_weight: doc.birth_weight,
+                child_birth_date: reportedDate.subtract('days', doc.days_since_delivery).valueOf()
+            });
+
+            utils.clearScheduledMessages(
+                registration, 'anc_visit', 'miso_reminder', 'upcoming_delivery',
+                'pnc_visit', 'outcome_request'
+            );
+
+            msg = "Thank you, {{clinicName}}. Birth outcome report for"
+                + " {{serial_number}} has been recorded.";
+
+            var msg_lbw = "Thank you, {{clinicName}}. Birth outcome report"
+                + " for {{serial_number}} has been recorded. The Baby"
+                + " is LBW. Please refer the mother and baby to"
+                + " the health post immediately.";
+
+            var msg_sick_child = "Thank you, {{clinicName}}. Birth outcome report for"
+                + " {{serial_number}} has been recorded. If danger sign,"
+                + " please call health worker immediately and fill in"
+                + " the emergency report.";
+
+            if (doc.outcome_child === 'Alive and Sick') {
+                msg = msg_sick_child;
+            }
+            if (doc.birth_weight === 'Green') {
+                conf = config.get('ohw_pnc_schedule_days');
+            } else if (doc.birth_weight === 'Yellow' || doc.birth_weight === 'Red') {
+                msg = msg_lbw;
+                conf = config.get('ohw_low_weight_pnc_schedule_days');
+            }
+            if (doc.outcome_mother === 'Deceased') {
+                msg = msg.replace('mother and baby', 'baby');
+                conf = null;
+            }
+
+            utils.addMessage(doc, {
+                phone: clinicPhone,
+                message: i18n(msg, {
+                    clinicName: clinicName,
+                    serial_number: registration.serial_number
+                })
+            });
+
+            if (conf) {
+                self.scheduleReminders(
+                    registration, clinicName, clinicPhone, conf
+                );
+            }
+
+            self.db.saveDoc(registration, function(err) {
+                callback(err, true);
+            });
         });
     },
     scheduleReminders: function(doc, clinicName, clinicPhone, days) {

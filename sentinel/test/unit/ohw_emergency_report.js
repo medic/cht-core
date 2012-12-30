@@ -143,6 +143,51 @@ exports['ANC danger sign and no advice response'] = function(test) {
     });
 };
 
+exports['PNC danger sign and no advice response'] = function(test) {
+    test.expect(9);
+    var doc = {
+        patient_id: '123',
+        anc_labor_pnc: 'PNC',
+        labor_danger: 'Yes',
+        advice_received: 'No',
+        related_entities: {
+            clinic: {
+                name: 'Clinic 2',
+                contact: {
+                    phone: 'clinic',
+                },
+                parent: {
+                    contact: {
+                        phone: 'parent'
+                    }
+                }
+            }
+        }
+    };
+
+    var msg1 = "Thank you, Clinic 2. Danger sign for ABC has been recorded.";
+
+    var msg2 = "Clinic 2 has reported a danger sign for 123. Please follow up "
+        + "with her and provide necessary assistance immediately.";
+
+    transition.onMatch({
+        doc: doc
+    }, function(err, complete) {
+        test.ok(complete);
+        test.equal(doc.tasks.length, 2);
+        // check clinic response
+        test.same(doc.tasks[0].messages[0].message, msg1);
+        test.same(doc.tasks[0].messages[0].to, 'clinic');
+        test.same(doc.tasks[0].state, 'pending');
+        // check health facility response
+        test.same(doc.tasks[1].messages[0].message, msg2);
+        test.same(doc.tasks[1].messages[0].to, 'parent');
+        test.same(doc.tasks[1].state, 'pending');
+        test.ok(registration);
+        test.done();
+    });
+};
+
 exports['ANC no danger and no advice sign'] = function(test) {
     var doc,
         msg1;

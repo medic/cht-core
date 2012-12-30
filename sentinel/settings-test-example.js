@@ -4,6 +4,6 @@ module.exports = {
   host: 'localhost',
   port: 5984,
   db: 'kujua-test',
-  username: 'root',
-  password: '123qwe'
+  username: 'admin',
+  password: 'admin'
 }

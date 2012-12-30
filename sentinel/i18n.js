@@ -16,6 +16,7 @@ function fetchConfig() {
             db.saveDoc(translationsKey, doc, function(err) {
                 if (err) {
                     console.log("Could not initialize translations. Exiting.");
+                    console.log(err);
                     process.exit(1);
                 } else {
                     fetchConfig();
@@ -23,12 +24,17 @@ function fetchConfig() {
             });
         } else if (err) {
             console.log("Could not initialize translations. Exiting.");
+            console.log(err);
             process.exit(1);
         } else {
             values = _.reduce(doc.keys, function(memo, translation) {
                 memo[translation.key] = translation.value;
                 return memo;
             });
+            for (var i in doc.keys) {
+                var pair = doc.keys[i];
+                values[pair.key] = pair.value;
+            }
         }
     });
 }
@@ -166,12 +172,10 @@ module.exports = function(key, context) {
 
     if (key in values) {
         s = values[key];
-        console.log("key '" + key + "' found!");
     } else {
         s = key;
         values[key] = key;
         queue.push(key);
-        console.log("key '" + key + "' added to queue!");
     }
 
     return mustache.to_html(s, context);
