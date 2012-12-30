@@ -14,26 +14,38 @@ module.exports = function(callback) {
         endkey: now.valueOf(),
         startkey: overdue.valueOf()
     }, function(err, result) {
+        var objs;
+
         if (err) {
             callback(err);
         } else {
-            async.forEachSeries(result.rows, function(row, cb) {
-                var due = row.key,
-                    doc = row.doc,
-                    index = row.value,
-                    scheduled = doc.scheduled_tasks || [],
-                    tasks = doc.tasks || [],
-                    toDo = scheduled.splice(index, 1)[0];
+            objs = _.reduce(result.rows, function(memo, row) {
+                memo[row.id] = memo[row.id] || {
+                    due: row.key,
+                    doc: row.doc,
+                    tasks: []
+                };
+                memo[row.id].tasks.push(row.value);
+                return memo;
+            }, {});
 
-                if (toDo && toDo.due === due) {
-                    tasks.push({
-                        messages: toDo.messages,
+            async.forEachSeries(_.keys(objs), function(id, cb) {
+                var obj = objs[id],
+                    doc = obj.doc,
+                    due = obj.due,
+                    tasks = obj.tasks;
+
+                doc.scheduled_tasks = _.reject(doc.scheduled_tasks || [], function(task) {
+                    return task.due === due;
+                });
+                doc.tasks = doc.tasks || [];
+                _.each(tasks, function(task) {
+                    doc.tasks.push({
+                        messages: task.messages,
                         state: 'pending'
                     });
-                }
-                db.saveDoc(doc, function(err) {
-                    cb(err);
                 });
+                db.saveDoc(doc, cb);
             }, function(err) {
                 callback(err);
             });

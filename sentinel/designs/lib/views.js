@@ -4,7 +4,7 @@ exports.due_tasks = {
 
         tasks.forEach(function(task, index) {
             if (task.due && task.state === 'scheduled') {
-                emit(task.due, index);
+                emit(task.due, task);
             }
         });
     }

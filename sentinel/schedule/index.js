@@ -28,7 +28,7 @@ function checkSchedule() {
     var m = moment(date.getDate());
 
     if (sendable(m)) {
-        async.forEach(tasks, function(task, callback) {
+        async.forEachSeries(tasks, function(task, callback) {
             task(callback);
         }, function(e) {
             if (e) {
