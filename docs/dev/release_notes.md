@@ -4,9 +4,25 @@
 
 * Major improvements in scheduled reminder support in Sentinel.
 * Support for Twilio in Sentinel.
-* Added counters to show sent/scheduled messages in records rows.
-* Displaying scheduled tasks in records expanded view.
-* Minor refactor of records screen, organized columns a little cleaner.
+* Minor refactor of records screen:
+    * added counters to show sent/scheduled messages in records rows.
+    * displaying scheduled tasks in records expanded view
+    * added RC Code column
+    * combined facility data into one column
+    * improved contact info column, made more prominent by moving clinic 
+      contact info and phone together and into second column.
+* Removed auto-reply messages from form submission that use sentinel/scheduler
+  so only one response is sent on a new form submission.
+* Fixed bug: Only update records of type 'data_record' on records screen
+* Preserve css (expando visibility) when row is replaced in records.
+* Use serial_number instead of patient_id for ohw_registration.
+* Fixed bug in textforms parser where 01234 was parsed as 1234 and added test.
+* Fixed unit tests for ONOT and ORPT form updates.
+* Fixed/Added tests for ohw emergency report (OEMR) responses.
+* Added PNC test for ohw emergency report (OEMR).
+* Fixed ohw notifications transition to set correct muted value.
+* Fixed OHW birth report (OBIR) logic and added tests.
+
 
 ## 0.1.21
 
