@@ -49,19 +49,23 @@ module.exports = {
     },
     addAcknowledgement: function(doc) {
         var duration,
-            visit = utils.findScheduledMessage(doc, 'anc_visit');
+            visit = utils.findScheduledMessage(doc, 'anc_visit'),
+            clinicName = utils.getClinicName(doc);
 
         if (visit) {
             duration = moment.duration(visit.due - moment().valueOf());
             utils.addMessage(doc, {
                 phone: doc.from,
-                message: i18n("Thank you for registering {{serial_number}}. " +
-                             "Patient ID is {{patient_id}}. ANC visit {{number}} is in {{weeks}} weeks.", {
-                    number: visit.number,
-                    patient_id: doc.patient_id,
-                    serial_number: doc.serial_number,
-                    weeks: Math.round(duration.asWeeks())
-                })
+                message: i18n(
+                    "Thank you {{clinicName}} for registering {{serial_number}}."
+                    + " Patient ID is {{patient_id}}. ANC visit is needed in"
+                    + " {{weeks}} weeks.", {
+                        clinicName: clinicName,
+                        patient_id: doc.patient_id,
+                        serial_number: doc.serial_number,
+                        weeks: Math.round(duration.asWeeks())
+                    }
+                )
             });
         } else {
             utils.addMessage(doc, {

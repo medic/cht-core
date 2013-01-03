@@ -98,3 +98,33 @@ exports['adds scheduled messages'] = function(test) {
         test.done();
     });
 }
+
+exports['response for positive registration with LMP of 5'] = function(test) {
+    test.expect(3);
+    var doc = {
+        serial_number: 'abc',
+        last_menstrual_period: 5,
+        related_entities: {
+            clinic: {
+                name: 'qq'
+            }
+        }
+    };
+    transition.onMatch({
+        doc: doc
+    }, function(err, complete) {
+
+        test.ok(complete);
+        test.equal(doc.tasks.length, 1);
+        var patient_id = doc.patient_id;
+        var message = _.first(_.first(doc.tasks).messages).message;
+
+        test.same(
+            message,
+            'Thank you qq for registering abc. Patient ID is '+ patient_id
+            + '. ANC visit is needed in 11 weeks.'
+        );
+
+        test.done();
+    });
+}
