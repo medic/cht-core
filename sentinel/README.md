@@ -18,4 +18,4 @@ document and save it as part of the project source files.
 
 ## Run Tests
 
-`test/tests.sh`
+`npm test`
