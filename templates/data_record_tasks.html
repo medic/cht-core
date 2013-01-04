@@ -12,10 +12,11 @@
         {#tasks}
           <tr data-tasks-idx={@idx}{.}{/idx}" class="task">
             <td><span class="tasks-state-{state}"></span></td>
-            <td class="tasks-state-when">
-              {?timestamp}{timestamp}{/timestamp}
-              {?due}{due}{/due}
+            {?timestamp}
+            <td class="tasks-state-timestamp">
+              {timestamp}
             </td>
+            {/timestamp}
           {#messages}
             <td class="to">{?to}{to}
               {:else}
@@ -39,10 +40,16 @@
         {#scheduled_tasks}
           <tr data-scheduled-tasks-idx={@idx}{.}{/idx}" class="scheduled-task">
             <td><span class="tasks-state-{state}"></span></td>
-            <td class="tasks-state-when">
-              {?timestamp}{timestamp}{/timestamp}
-              {?due}{due}{/due}
+            {?timestamp}
+            <td class="tasks-state-timestamp">
+              {timestamp}
             </td>
+            {/timestamp}
+            {?due}
+            <td class="tasks-state-due">
+              {due}
+            </td>
+            {/due}
           {#messages}
             <td class="to">{?to}{to}
               {:else}
