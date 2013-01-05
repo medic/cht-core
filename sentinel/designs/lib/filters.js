@@ -4,18 +4,6 @@ exports.update_clinics = function(doc) {
         !doc.related_entities.clinic;
 };
 
-exports.ohw_anc_report = function(doc) {
-    return doc.form === 'OANC' &&
-        doc.related_entities &&
-        doc.related_entities.clinic;
-};
-
-exports.ohw_pnc_report = function(doc) {
-    return doc.form === 'OPNC' &&
-        doc.related_entities &&
-        doc.related_entities.clinic;
-};
-
 exports.ohw_birth_report = function(doc) {
     return doc.form === 'OBIR' &&
         doc.patient_id &&

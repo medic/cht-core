@@ -18,14 +18,15 @@ module.exports = {
             var changed,
                 horizon = moment(date.getDate()).add('days', config.get('ohw_obsolete_anc_reminders_days'));
 
-            if (err) {
-                callback(err);
-            } else if (registration) {
+            if (err)
+                return callback(err);
+
+            if (registration) {
                 utils.addMessage(doc, {
                     phone: clinicPhone,
-                    message: i18n("Thank you, {{clinicName}}. ANC counseling visit for {{patient_id}} has been recorded.", {
+                    message: i18n("Thank you, {{clinicName}}. ANC Visit for {{serial_number}} has been recorded.", {
                         clinicName: clinicName,
-                        patient_id: doc.patient_id
+                        serial_number: registration.serial_number
                     })
                 });
                 changed = utils.obsoleteScheduledMessages(registration, 'anc_visit', horizon.valueOf());

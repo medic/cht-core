@@ -11,6 +11,7 @@ _.each(fs.readdirSync(__dirname), function(file) {
     var transition,
         key = path.basename(file, path.extname(file));
 
+    console.log('reading file '+key);
     try {
         if (file !== 'index.js') {
             transition = require('./' + key);
@@ -27,6 +28,8 @@ queue = async.queue(function(job, callback) {
     var transition = job.transition,
         key = job.key,
         change = job.change;
+
+    console.log('loading queue '+key);
     transition.onMatch(change, function(err, complete) {
         if (err || complete) {
             finalize({
@@ -43,7 +46,6 @@ queue = async.queue(function(job, callback) {
 module.exports = {
     attachTransition: function(transition, key) {
         var stream;
-
 
         db.view('kujua-sentinel', 'last_valid_seq', {
             key: key
