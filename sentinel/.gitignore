@@ -1,3 +1,4 @@
 /node_modules/
 .env
 settings.js
+settings-test.js
