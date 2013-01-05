@@ -1,6 +1,7 @@
 {
     "name": "events",
     "version": "0.0.1",
+    "categories": ["node.js", "utils"],
     "modules": "events.js",
     "dependencies": {
         "modules": ">=0.0.8"
