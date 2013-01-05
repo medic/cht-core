@@ -92,19 +92,18 @@ exports.set_called = false;
 exports.unknown_target = false;
 
 
-if (typeof window !== 'undefined') {
-    if (!window.console) {
-        // console.log is going to cause errors, just stub the functions
-        // for now. TODO: add logging utility for IE?
-        window.console = {
-            log: function () {},
-            error: function () {},
-            info: function () {},
-            warn: function () {}
-        };
-    }
-    var console = window.console;
-}
+// console.log is going to cause errors, just stub the functions
+// for now. TODO: add logging utility for IE?
+var console = {
+    log: function () {},
+    error: function () {},
+    info: function () {},
+    warn: function () {}
+};
+
+// reassign console if in the browser
+if (typeof window !== 'undefined' && window.console)
+    console = window.console;
 
 
 /**
@@ -240,8 +239,7 @@ exports.init = function () {
             if (exports._in_page) { // in-page anchor
                 return;
             }
-            if(typeof(console) !== 'undefined')
-                console.log('no in-page anchor');
+            console.log('no in-page anchor');
             if (href && exports.isAppURL(href) && rel !== 'external') {
                 var url = exports.appPath(href);
                 ev.preventDefault();
