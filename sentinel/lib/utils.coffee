@@ -3,11 +3,11 @@ _ = require('underscore')
 
 module.exports =
   getClinicPhone: (doc) ->
-    doc.related_entities?.clinic?.contact?.phone
+    doc?.related_entities?.clinic?.contact?.phone
   getClinicName: (doc) ->
-    doc.related_entities?.clinic?.name or 'health volunteer'
+    doc?.related_entities?.clinic?.name or 'health volunteer'
   getParentPhone: (doc) ->
-    doc.related_entities?.clinic?.parent?.contact?.phone
+    doc?.related_entities?.clinic?.parent?.contact?.phone
   # fetches the registration and then calls the callback with (err, registration)
   getOHWRegistration: (patient_id, callback) ->
     db.view('kujua-sentinel', 'ohw_registered_patients', key: patient_id, include_docs: true, limit: 1, (err, data) =>
