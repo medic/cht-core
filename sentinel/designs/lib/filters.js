@@ -18,13 +18,6 @@ exports.ohw_emergency_report = function(doc) {
         doc.related_entities.clinic;
 };
 
-exports.ohw_labor_report = function(doc) {
-    return doc.form === 'OLAB' &&
-        doc.patient_id &&
-        doc.related_entities &&
-        doc.related_entities.clinic;
-};
-
 exports.ohw_notifications = function(doc) {
     return doc.form === 'ONOT' &&
         doc.patient_id &&
