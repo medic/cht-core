@@ -82,8 +82,10 @@ module.exports =
     size_before isnt size_after
   clearScheduledMessages: (doc, types...) ->
     doc.scheduled_tasks ?= []
-    doc.scheduled_tasks = _.reject(doc.scheduled_tasks, (task) ->
-      _.include(types, task.type)
+    doc.scheduled_tasks = _.filter(doc.scheduled_tasks, (task) ->
+      if _.contains(types, task.type)
+        task.state = 'cleared'
+      task
     )
   unmuteScheduledMessages: (doc) ->
     doc.scheduled_tasks ?= []
