@@ -78,18 +78,40 @@ module.exports = {
         }
     },
     scheduleReminders: function(doc, lmp, expected) {
-        var clinicName = utils.getClinicName(doc),
+        var clinicContactName = utils.getClinicContactName(doc),
             now = moment(date.getDate());
 
-        // anc schedule reminders
+        // anc schedule reminders weeks
         _.each(config.get('ohw_anc_reminder_schedule_weeks'), function(offset, i) {
             var due = lmp.clone().add('weeks', offset);
             if (due > now) {
                 utils.addScheduledMessage(doc, {
                     due: due.valueOf(),
-                    message: i18n('Greetings, {{clinicName}}. {{serial_number}} is due for an ANC visit this week.', {
-                        clinicName: clinicName,
+                    message: i18n('Greetings, {{contact_name}}. {{serial_number}} is due for an ANC visit this week.', {
+                        contact_name: clinicContactName,
                         serial_number: doc.serial_number
+                    }),
+                    number: i + 1,
+                    phone: doc.from,
+                    type: 'anc_visit'
+                });
+            }
+        });
+
+        // anc schedule reminders days
+        // data can be a number or an object like { days: 39, message: 'foo' }
+        _.each(config.get('ohw_anc_reminder_schedule_days'), function(data, i) {
+
+            var msg = data.message ||
+                'Greetings, {{contact_name}}. {{serial_number}} is due for an ANC visit soon.';
+            var due = lmp.clone().add('days', data.days || data);
+            if (due > now) {
+                utils.addScheduledMessage(doc, {
+                    due: due.valueOf(),
+                    message: i18n(msg, {
+                        contact_name: clinicContactName,
+                        serial_number: doc.serial_number,
+                        patient_id: doc.patient_id
                     }),
                     number: i + 1,
                     phone: doc.from,
@@ -101,8 +123,8 @@ module.exports = {
         // misoprostol reminder
         utils.addScheduledMessage(doc, {
             due: lmp.clone().add('weeks', config.get('ohw_miso_reminder_weeks')).valueOf(),
-            message: i18n("Greetings, {{clinicName}}. It's now {{serial_number}}'s 8th month of pregnancy. If you haven't given Miso, please distribute. Make birth plan now. Thank you!", {
-                clinicName: clinicName,
+            message: i18n("Greetings, {{contact_name}}. It's now {{serial_number}}'s 8th month of pregnancy. If you haven't given Miso, please distribute. Make birth plan now. Thank you!", {
+                contact_name: clinicContactName,
                 serial_number: doc.serial_number
             }),
             phone: doc.from,
@@ -112,8 +134,8 @@ module.exports = {
         // upcoming delivery reminder
         utils.addScheduledMessage(doc, {
             due: lmp.clone().add('weeks', config.get('ohw_upcoming_delivery_weeks')).valueOf(),
-            message: i18n("Greetings, {{clinicName}}. {{serial_number}} is due to deliver soon.", {
-                clinicName: clinicName,
+            message: i18n("Greetings, {{contact_name}}. {{serial_number}} is due to deliver soon.", {
+                contact_name: clinicContactName,
                 serial_number: doc.serial_number
             }),
             phone: doc.from,
@@ -123,8 +145,8 @@ module.exports = {
         // outcome request reminder
         utils.addScheduledMessage(doc, {
             due: lmp.clone().add('weeks', config.get('ohw_outcome_request_weeks')).valueOf(),
-            message: i18n("Greetings, {{clinicName}}. Please submit the birth report for {{serial_number}}.", {
-                clinicName: clinicName,
+            message: i18n("Greetings, {{contact_name}}. Please submit the birth report for {{serial_number}}.", {
+                contact_name: clinicContactName,
                 serial_number: doc.serial_number
             }),
             phone: doc.from,
@@ -134,8 +156,8 @@ module.exports = {
         // counseling reminder
         utils.addScheduledMessage(doc, {
             due: lmp.clone().add('weeks', 15).valueOf(),
-            message: i18n('Greetings, {{clinicName}}. This is a reminder to submit your counseling report for {{serial_number}}.', {
-                clinicName: clinicName,
+            message: i18n('Greetings, {{contact_name}}. This is a reminder to submit your counseling report for {{serial_number}}.', {
+                contact_name: clinicContactName,
                 serial_number: doc.serial_number
             }),
             phone: doc.from,

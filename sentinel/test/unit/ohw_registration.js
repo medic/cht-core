@@ -75,7 +75,9 @@ exports['adds scheduled messages'] = function(test) {
         last_menstrual_period: 1,
         related_entities: {
             clinic: {
-                name: 'qq'
+                contact: {
+                    name: 'qq'
+                }
             }
         }
     };
@@ -83,8 +85,8 @@ exports['adds scheduled messages'] = function(test) {
         doc: doc
     }, function(err, complete) {
         test.ok(doc.scheduled_tasks);
-        test.equals(doc.scheduled_tasks.length, 8);
-        test.equals(utils.filterScheduledMessages(doc, 'anc_visit').length, 4);
+        test.equals(doc.scheduled_tasks.length, 12);
+        test.equals(utils.filterScheduledMessages(doc, 'anc_visit').length, 8);
         test.equals(utils.filterScheduledMessages(doc, 'miso_reminder').length, 1);
         test.equals(utils.filterScheduledMessages(doc, 'upcoming_delivery').length, 1);
         test.equals(utils.filterScheduledMessages(doc, 'outcome_request').length, 1);

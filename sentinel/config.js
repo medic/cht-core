@@ -5,6 +5,7 @@ var config,
 
 config = {
     ohw_anc_reminder_schedule_weeks: [16, 24, 32, 36],
+    ohw_anc_reminder_schedule_days: [81, 83, 91, 105],
     ohw_miso_reminder_weeks: 32,
     ohw_upcoming_delivery_weeks: 37,
     ohw_outcome_request_weeks: 41,

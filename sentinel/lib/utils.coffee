@@ -6,6 +6,8 @@ module.exports =
     doc?.related_entities?.clinic?.contact?.phone
   getClinicName: (doc) ->
     doc?.related_entities?.clinic?.name or 'health volunteer'
+  getClinicContactName: (doc) ->
+    doc?.related_entities?.clinic?.contact?.name or 'health volunteer'
   getParentPhone: (doc) ->
     doc?.related_entities?.clinic?.parent?.contact?.phone
   # fetches the registration and then calls the callback with (err, registration)
