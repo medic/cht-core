@@ -11,7 +11,7 @@ config = {
     ohw_outcome_request_weeks: [41],
     ohw_pnc_schedule_days: [1, 3, 7],
     ohw_low_weight_pnc_schedule_days: [1, 2, 3, 4, 5, 6, 7],
-    ohw_obsolete_anc_reminders_days: [21],
+    ohw_obsolete_anc_reminders_days: 21,
     send_weekly_reminders: {
         VPD: {
             3: "Last day to submit a timely VPD report for the previous week.",
