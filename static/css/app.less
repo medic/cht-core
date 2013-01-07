@@ -246,19 +246,26 @@ body {
   .tasks-state-scheduled:before {
     content: "Scheduled";
   }
+  .tasks-state-cleared:before {
+    content: "Cleared";
+  }
   .tasks-state-cancelled,
   .tasks-state-muted,
   .tasks-state-scheduled,
   .tasks-state-sent,
+  .tasks-state-cleared,
   .tasks-state-pending {
     .label;
-    .label-info;
   }
+  .tasks-state-scheduled,
   .tasks-state-muted {
-    .opacity(50);
+    .label-info;
   }
   .tasks-state-sent {
     .label-success;
+  }
+  .tasks-state-muted {
+    .opacity(50);
   }
   .tasks-type {
     color: @grayLight;
