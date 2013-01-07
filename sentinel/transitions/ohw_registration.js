@@ -94,7 +94,7 @@ module.exports = {
                 return console.error('addMessage failed.', options);
 
             var time_key = options.time_key || 'days',
-                offset = options['time_key'] || options,
+                offset = options[time_key] || options,
                 number = options.number || null,
                 type = options.type || 'anc_visit',
                 message = options.message ||
@@ -103,7 +103,7 @@ module.exports = {
 
             var due = lmp.clone().add(time_key, offset);
 
-            if (due > now)
+            if (due < now)
                 return;
 
             utils.addScheduledMessage(doc, {
