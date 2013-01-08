@@ -38,12 +38,19 @@ exports.setUp = function(callback) {
                 {
                     messages: [ { message: 'x' } ],
                     state: 'scheduled',
-                    type: 'counseling_reminder'
+                    type: 'upcoming_delivery'
                 },
                 {
                     messages: [ { message: 'x' } ],
                     state: 'scheduled',
-                    type: 'upcoming_delivery'
+                    type: 'counseling_reminder',
+                    due: now.clone().add('days', 10).valueOf()
+                },
+                {
+                    messages: [ { message: 'x' } ],
+                    state: 'scheduled',
+                    type: 'counseling_reminder',
+                    due: now.clone().add('days', 30).valueOf()
                 }
             ]
         };
@@ -85,6 +92,7 @@ exports['ANC acknowledgement'] = function(test) {
 };
 
 exports['ANC obsoletes old scheduled reminders'] = function(test) {
+    test.expect(5);
     var doc = {
         patient_id: '123',
         anc_pnc: 'ANC'
@@ -92,14 +100,12 @@ exports['ANC obsoletes old scheduled reminders'] = function(test) {
     transition.onMatch({
         doc: doc
     }, function(err, complete) {
-        test.ok(registration.scheduled_tasks);
-        test.equals(registration.scheduled_tasks.length, 5);
-        test.ok(_.all(doc.scheduled_tasks, function(task) {
-            if (task.messages[0] === 'keep me')
-                return task.state === 'scheduled';
-            else if (task.type === 'anc_visit')
-                return task.state === 'obsoleted';
-        }));
+        var st = registration.scheduled_tasks;
+        test.ok(st);
+        test.equals(st.length, 6);
+        test.equals(st[0].state, 'scheduled');
+        test.equals(st[1].state, 'cleared');
+        test.equals(st[2].state, 'cleared');
         test.done();
     });
 };
@@ -130,8 +136,8 @@ exports['PNC normal acknowledgement'] = function(test) {
     });
 };
 
-exports['PNC clears counseling_reminder task from registration'] = function(test) {
-    test.expect(3);
+exports['PNC clears obsolete counseling_reminder task from registration'] = function(test) {
+    test.expect(5);
     var doc = {
         patient_id: '123',
         anc_pnc: 'PNC',
@@ -146,17 +152,15 @@ exports['PNC clears counseling_reminder task from registration'] = function(test
     transition.onMatch({
         doc: doc
     }, function(err, complete) {
+        var st = registration.scheduled_tasks;
         test.equal(doc.tasks.length, 1);
         test.ok(registration);
-        test.ok(_.all(registration.scheduled_tasks, function(task) {
-            if (task.type === 'counseling_reminder')
-                return task.state === 'cleared';
-            else
-                return true;
-        }));
+        test.equals(st.length, 6);
+        test.equals(st[4].state, 'cleared');
+        test.equals(st[5].state, 'scheduled');
 
         //
-        // obsoletes upcoming_delivery?
+        // clears upcoming_delivery?
         // Should PNC report clear 'counseling_reminder' alerts even if
         // outcome_request is not cleared?  Should we send outcome_request
         // response in that case?

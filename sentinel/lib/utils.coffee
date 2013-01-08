@@ -78,8 +78,8 @@ module.exports =
     doc.scheduled_tasks = _.filter(doc.scheduled_tasks, (task) ->
       if type is task.type and task.due < before
           changed = true
-          task.state = 'obsoleted'
-      task
+          task.state = 'cleared'
+      task;
     )
     changed
   clearScheduledMessages: (doc, types...) ->

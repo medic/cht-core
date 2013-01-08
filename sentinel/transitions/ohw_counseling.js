@@ -64,7 +64,9 @@ module.exports = {
                 if (doc.weight === 'Yellow' || doc.weight === 'Red')
                     msg = msgs.pnc_low;
 
-                utils.clearScheduledMessages(registration, 'counseling_reminder');
+                var changed = utils.obsoleteScheduledMessages(
+                    registration, 'counseling_reminder', horizon.valueOf()
+                );
 
             } else if (doc.anc_pnc === 'ANC') {
                 utils.obsoleteScheduledMessages(
