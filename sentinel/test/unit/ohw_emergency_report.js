@@ -19,6 +19,10 @@ exports.setUp = function(callback) {
                     {
                         messages: [ { message: 'x' } ],
                         type: 'upcoming_delivery'
+                    },
+                    {
+                        messages: [ { message: 'x' } ],
+                        type: 'upcoming_delivery'
                     }
                 ]
             };

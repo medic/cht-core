@@ -29,8 +29,7 @@ module.exports = {
         utils.getOHWRegistration(doc.patient_id, function(err, registration) {
             var birthDate,
                 parentPhone = utils.getParentPhone(registration),
-                msg = "No patient with id '{{patient_id}}' found.",
-                conf;
+                msg = "No patient with id '{{patient_id}}' found.";
 
             if (err) {
                 return callback(err);
@@ -52,7 +51,7 @@ module.exports = {
 
             utils.clearScheduledMessages(
                 registration, 'anc_visit', 'miso_reminder', 'upcoming_delivery',
-                'pnc_visit', 'outcome_request'
+                'outcome_request'
             );
 
             msg = "Thank you, {{clinicName}}. Birth outcome report for"
@@ -81,7 +80,10 @@ module.exports = {
             }
             if (doc.outcome_mother === 'Deceased') {
                 msg = msg.replace('mother and baby', 'baby');
-                conf = null;
+                // clear all other reminders
+                utils.clearScheduledMessages(
+                    registration, 'counseling_reminder_lbw', 'counseling_reminder'
+                );
             }
 
             utils.addMessage(doc, {
@@ -93,35 +95,9 @@ module.exports = {
                 })
             });
 
-            if (conf) {
-                self.scheduleReminders(
-                    registration, clinicContactName, clinicPhone, conf
-                );
-            }
-
             self.db.saveDoc(registration, function(err) {
                 callback(err, true);
             });
-        });
-    },
-    scheduleReminders: function(doc, contactName, clinicPhone, days) {
-        var now = moment(date.getDate()),
-            birth = moment(doc.child_birth_date);
-
-        _.each(days, function(day) {
-            var marker = birth.clone().add('days', day);
-
-            if (marker > now) {
-                utils.addScheduledMessage(doc, {
-                    due: marker.valueOf(),
-                    message: i18n("Greetings, {{contact_name}}. {{patient_id}} is due for a PNC visit soon.", {
-                        contact_name: contactName,
-                        patient_id: doc.patient_id
-                    }),
-                    phone: clinicPhone,
-                    type: 'pnc_visit'
-                });
-            }
         });
     }
 };

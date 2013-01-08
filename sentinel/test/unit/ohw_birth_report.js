@@ -354,7 +354,7 @@ exports['clear schedule for deceased mother, normal outcome child'] = function(t
 
         test.ok(complete);
         test.ok(registration);
-        test.ok(_.all(doc.scheduled_tasks, function(task) {
+        test.ok(_.all(registration.scheduled_tasks, function(task) {
             return task.state === 'cleared';
         }));
 
@@ -391,7 +391,7 @@ exports['clear schedule for deceased mother, low weight (yellow) child'] = funct
 
         test.ok(complete);
         test.ok(registration);
-        test.ok(_.all(doc.scheduled_tasks, function(task) {
+        test.ok(_.all(registration.scheduled_tasks, function(task) {
             return task.state === 'cleared';
         }));
 

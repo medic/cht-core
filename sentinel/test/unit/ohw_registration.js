@@ -128,7 +128,7 @@ exports['response for positive registration with LMP of 5'] = function(test) {
         test.same(
             message,
             'Thank you qq for registering abc. Patient ID is '+ patient_id
-            + '. ANC visit is needed in 6 weeks.'
+            + '. ANC visit is needed in 7 weeks.'
         );
 
         test.done();
