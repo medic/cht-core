@@ -144,6 +144,7 @@ exports.makeDataRecordOriginal = function(doc) {
       var rdo = doc.reported_date_orig;
       delete doc.reported_date_orig;
       delete doc.fields;
+      delete  doc.scheduled_tasks_count;
       doc.reported_date = rdo;
       return doc;
 };
@@ -184,8 +185,11 @@ exports.makeDataRecordReadable = function(doc) {
     }
 
     if(data_record.scheduled_tasks) {
+        data_record.scheduled_tasks_count = 0;
         for (var i in data_record.scheduled_tasks) {
             var t = data_record.scheduled_tasks[i];
+            if (t.state === 'scheduled')
+                data_record.scheduled_tasks_count += 1;
             if (t.due) {
                 var m = moment(t.due);
                 t.due = m.format('DD, MMM YYYY, HH:mm:ss Z');
