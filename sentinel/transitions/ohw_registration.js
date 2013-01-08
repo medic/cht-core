@@ -50,6 +50,7 @@ module.exports = {
     addAcknowledgement: function(doc) {
         var duration,
             visit = utils.findScheduledMessage(doc, 'anc_visit'),
+            clinicContactName = utils.getClinicContactName(doc),
             clinicName = utils.getClinicName(doc);
 
         if (visit) {
@@ -57,10 +58,11 @@ module.exports = {
             utils.addMessage(doc, {
                 phone: doc.from,
                 message: i18n(
-                    "Thank you {{clinicName}} for registering {{serial_number}}."
+                    "Thank you {{contact_name}} for registering {{serial_number}}."
                     + " Patient ID is {{patient_id}}. ANC visit is needed in"
                     + " {{weeks}} weeks.", {
-                        clinicName: clinicName,
+                        clinic_name: clinicName,
+                        contact_name: clinicContactName,
                         patient_id: doc.patient_id,
                         serial_number: doc.serial_number,
                         weeks: Math.round(duration.asWeeks())
@@ -95,8 +97,6 @@ module.exports = {
 
             var time_key = options.time_key || 'days',
                 offset = options[time_key] || options,
-                number = options.number || null,
-                type = options.type || 'anc_visit',
                 message = options.message ||
                     'Greetings, {{contact_name}}. {{serial_number}} is due for a'
                     + ' visit soon.';
@@ -114,21 +114,22 @@ module.exports = {
                     serial_number: doc.serial_number,
                     patient_id: doc.patient_id
                 }),
-                number: number,
+                group: options.group,
                 phone: doc.from,
-                type: type
+                type: options.type
             });
 
         };
 
         // anc schedule reminders weeks
-        _.each(config.get('ohw_anc_reminder_schedule_weeks'), function(data, i) {
-            if (parseInt(data,10))
+        _.each(config.get('ohw_reminder_schedule_weeks'), function(data, i) {
+            if (_.isNumber(data))
                 data = {weeks: data};
             addMessage(
                 _.extend({
                     time_key: 'weeks',
-                    number: i + 1,
+                    group: data.group,
+                    type: data.type || 'anc_visit',
                     message: 'Greetings, {{contact_name}}. {{serial_number}} is'
                         + ' due for an ANC visit this week.'
                 }, data)
@@ -136,12 +137,13 @@ module.exports = {
         });
 
         // anc schedule reminders days
-        _.each(config.get('ohw_anc_reminder_schedule_days'), function(data, i) {
-            if (parseInt(data,10))
+        _.each(config.get('ohw_reminder_schedule_days'), function(data, i) {
+            if (_.isNumber(data))
                 data = {days: data};
             addMessage(
                 _.extend({
-                    number: i + 1,
+                    group: data.group,
+                    type: data.type || 'anc_visit',
                     message: 'Greetings, {{contact_name}}. {{serial_number}} is'
                         + ' due for an ANC visit this week.'
                 }, data)
@@ -151,13 +153,14 @@ module.exports = {
 
         // misoprostol reminder
         _.each(config.get('ohw_miso_reminder_days'), function(data, i) {
-            if (parseInt(data,10))
+            if (_.isNumber(data))
                 data = {days: data};
             var msg = "Greetings, {{contact_name}}. It's now {{serial_number}}'s 8th "
                 + "month of pregnancy. If you haven't given Miso, please "
                 + "distribute. Make birth plan now. Thank you!";
             addMessage(
                 _.extend({
+                    group: data.group,
                     type: 'miso_reminder',
                     message: msg
                 }, data)
@@ -165,13 +168,13 @@ module.exports = {
         });
 
         // upcoming delivery reminder
-        _.each(config.get('ohw_upcoming_delivery_weeks'), function(data, i) {
-            if (parseInt(data,10))
-                data = {weeks: data};
+        _.each(config.get('ohw_upcoming_delivery_days'), function(data, i) {
+            if (_.isNumber(data))
+                data = {days: data};
             var msg = "Greetings, {{contact_name}}. {{serial_number}} is due to deliver soon.";
             addMessage(
                 _.extend({
-                    time_key: 'weeks',
+                    group: data.group,
                     type: 'upcoming_delivery',
                     message: msg
                 }, data)
@@ -180,12 +183,13 @@ module.exports = {
 
         // outcome request reminder
         _.each(config.get('ohw_outcome_request_weeks'), function(data, i) {
-            if (parseInt(data,10))
+            if (_.isNumber(data))
                 data = {weeks: data};
             var msg = "Greetings, {{contact_name}}. Please submit the birth"
                 + " report for {{serial_number}}.";
             addMessage(
                 _.extend({
+                    group: data.group,
                     time_key: 'weeks',
                     type: 'outcome_request',
                     message: msg
@@ -195,12 +199,13 @@ module.exports = {
 
         // outcome request reminder (days)
         _.each(config.get('ohw_outcome_request_days'), function(data, i) {
-            if (parseInt(data,10))
+            if (_.isNumber(data))
                 data = {days: data};
             var msg = "Greetings, {{contact_name}}. Please submit the birth"
                 + " report for {{serial_number}}.";
             addMessage(
                 _.extend({
+                    group: data.group,
                     type: 'outcome_request',
                     message: msg
                 }, data)
@@ -209,16 +214,21 @@ module.exports = {
 
         // counseling reminder
         _.each(config.get('ohw_counseling_reminder_days'), function(data, i) {
-            if (parseInt(data,10))
+            if (_.isNumber(data))
                 data = {days: data};
             var msg = 'Greetings, {{contact_name}}. This is a reminder to'
-                + 'submit your counseling report for {{serial_number}}.';
+                + ' submit your counseling report for {{serial_number}}.';
             addMessage(
                 _.extend({
+                    group: data.group,
                     type: 'counseling_reminder',
                     message: msg
                 }, data)
             );
         });
+
+        // sort by due date
+        doc.scheduled_tasks = _.sortBy(doc.scheduled_tasks, 'due');
+
     }
 };

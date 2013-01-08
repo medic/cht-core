@@ -10,6 +10,7 @@ module.exports = {
         var doc = change.doc,
             self = module.exports,
             clinicName = utils.getClinicName(doc),
+            clinicContactName = utils.getClinicContactName(doc),
             clinicPhone = utils.getClinicPhone(doc);
 
         var msgs = {
@@ -51,11 +52,10 @@ module.exports = {
             }
 
             var msg = msgs.default,
-                changed,
                 horizon = moment(date.getDate()).add(
-                    'days', config.get('ohw_obsolete_anc_reminders_days'));
+                    'days', config.get('ohw_obsolete_reminders_days')
+                );
 
-            utils.clearScheduledMessages(registration, 'counseling_reminder');
 
             if (doc.anc_pnc === 'PNC') {
 
@@ -64,8 +64,10 @@ module.exports = {
                 if (doc.weight === 'Yellow' || doc.weight === 'Red')
                     msg = msgs.pnc_low;
 
+                utils.clearScheduledMessages(registration, 'counseling_reminder');
+
             } else if (doc.anc_pnc === 'ANC') {
-                changed = utils.obsoleteScheduledMessages(
+                utils.obsoleteScheduledMessages(
                     registration, 'anc_visit', horizon.valueOf()
                 );
                 msg = msgs.anc;

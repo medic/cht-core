@@ -4,14 +4,30 @@ var config,
     _ = require('underscore');
 
 config = {
-    ohw_anc_reminder_schedule_weeks: [16, 24, 32, 36],
-    ohw_anc_reminder_schedule_days: [81, 83, 91, 105],
-    ohw_miso_reminder_weeks: [32],
-    ohw_upcoming_delivery_weeks: [37],
-    ohw_outcome_request_weeks: [41],
-    ohw_pnc_schedule_days: [1, 3, 7],
-    ohw_low_weight_pnc_schedule_days: [1, 2, 3, 4, 5, 6, 7],
-    ohw_obsolete_anc_reminders_days: 21,
+    ohw_reminder_schedule_days: [
+        { days: 81, group: 1 },
+        { days: 83, group: 1 },
+        { days: 105, group: 2 },
+        { days: 137, group: 2 },
+        { days: 139, group: 2 },
+        { days: 193, group: 3 },
+        { days: 195, group: 3 },
+        { days: 203, group: 3 },
+        { days: 221, group: 4 },
+        { days: 223, group: 4 },
+        { days: 231, group: 4 },
+        { days: 315, type: 'counseling_reminder_lbw'}
+    ],
+    ohw_miso_reminder_days: [193],
+    ohw_upcoming_delivery_days: [252, 273],
+    ohw_outcome_request_days: [283],
+    ohw_counseling_reminder_days: [
+        { days: 282, group: 1},
+        { days: 285, group: 1},
+        { days: 295, group: 2},
+        { days: 309, group: 2}
+    ],
+    ohw_obsolete_reminders_days: 21,
     send_weekly_reminders: {
         VPD: {
             3: "Last day to submit a timely VPD report for the previous week.",

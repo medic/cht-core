@@ -18,8 +18,36 @@ exports.setUp = function(callback) {
                 serial_number: "ABC",
                 scheduled_tasks: [
                     {
-                        messages: [ { message: 'x' } ],
-                        type: 'upcoming_delivery'
+                        messages: [ { message: 'foo' } ],
+                        type: 'upcoming_delivery',
+                        state: 'scheduled'
+                    },
+                    {
+                        messages: [ { message: 'foo' } ],
+                        type: 'upcoming_delivery',
+                        state: 'scheduled'
+                    },
+                    {
+                        messages: [ { message: 'foo' } ],
+                        type: 'outcome_request',
+                        state: 'scheduled'
+                    },
+                    {
+                        messages: [ { message: 'foo' } ],
+                        type: 'counseling_reminder',
+                        group: '1',
+                        state: 'scheduled'
+                    },
+                    {
+                        messages: [ { message: 'foo' } ],
+                        type: 'counseling_reminder',
+                        group: '1',
+                        state: 'scheduled'
+                    },
+                    {
+                        messages: [ { message: 'foo' } ],
+                        type: 'counseling_reminder_lbw',
+                        state: 'scheduled'
                     }
                 ]
             };
@@ -173,9 +201,7 @@ exports['response for normal outcome but low weight (yellow)'] = function(test) 
         test.ok(complete);
 
         test.equal(doc.tasks.length, 1);
-
-        message = _.first(_.first(doc.tasks).messages).message;
-        test.same(message, message_exp);
+        test.same(doc.tasks[0].messages[0].message, message_exp);
 
         test.done();
     });
@@ -211,8 +237,10 @@ exports['response for deceased mother and normal outcome child'] = function(test
         test.ok(complete);
 
         test.equal(doc.tasks.length, 1);
-        message = _.first(_.first(doc.tasks).messages).message;
-        test.same(message, "Thank you, qq. Birth outcome report for ABC has been recorded.");
+        test.same(
+            doc.tasks[0].messages[0].message,
+            "Thank you, qq. Birth outcome report for ABC has been recorded."
+        );
 
         test.done();
     });
@@ -247,9 +275,8 @@ exports['response for deceased mother and healthy but low weight (yellow) child'
         test.ok(complete);
 
         test.equal(doc.tasks.length, 1);
-        message = _.first(_.first(doc.tasks).messages).message;
         test.same(
-            message,
+            doc.tasks[0].messages[0].message,
             "Thank you, qq. Birth outcome report for ABC has been recorded. The"
             + " Baby is LBW. Please refer the baby to the health post immediately."
         )
@@ -288,9 +315,8 @@ exports['response for deceased mother and healthy but low weight (red) child'] =
         test.ok(complete);
 
         test.equal(doc.tasks.length, 1);
-        message = _.first(_.first(doc.tasks).messages).message;
         test.same(
-            message,
+            doc.tasks[0].messages[0].message,
             "Thank you, qq. Birth outcome report for ABC has been recorded. The"
             + " Baby is LBW. Please refer the baby to the health post immediately."
         )
@@ -310,9 +336,9 @@ exports['clear schedule for deceased mother, normal outcome child'] = function(t
         related_entities: {
             clinic: {
                 contact: {
-                    phone: 'clinic'
+                    phone: 'clinic',
+                    name: 'qq'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -328,7 +354,9 @@ exports['clear schedule for deceased mother, normal outcome child'] = function(t
 
         test.ok(complete);
         test.ok(registration);
-        test.equals(registration.scheduled_tasks.length, 0);
+        test.ok(_.all(doc.scheduled_tasks, function(task) {
+            return task.state === 'cleared';
+        }));
 
         test.done();
     });
@@ -363,20 +391,22 @@ exports['clear schedule for deceased mother, low weight (yellow) child'] = funct
 
         test.ok(complete);
         test.ok(registration);
-        test.equals(registration.scheduled_tasks.length, 0);
+        test.ok(_.all(doc.scheduled_tasks, function(task) {
+            return task.state === 'cleared';
+        }));
 
         test.done();
     });
 };
 
 exports['clear schedule for deceased mother, low weight (red) child'] = function(test) {
-    test.expect(3);
+    test.expect(4);
     var doc = {
         outcome_mother: 'Deceased',
         outcome_child: 'Alive and Well',
         birth_weight: 'Red',
         days_since_delivery: 1,
-        patient_id: 'good',
+        patient_id: 'foo',
         related_entities: {
             clinic: {
                 contact: {
@@ -398,14 +428,18 @@ exports['clear schedule for deceased mother, low weight (red) child'] = function
 
         test.ok(complete);
         test.ok(registration);
-        test.equals(registration.scheduled_tasks.length, 0);
+        // queued response for chw/fchv
+        test.equal(doc.tasks.length, 1);
+        test.ok(_.all(doc.scheduled_tasks, function(task) {
+            return task.state === 'cleared';
+        }));
 
         test.done();
     });
 };
 
-exports['response for deceased mother and sick but normal weight child'] = function(test) {
-    test.expect(3);
+exports['response/cleared schedule for deceased mother and sick but normal weight child'] = function(test) {
+    test.expect(4);
     var doc = {
         outcome_mother: 'Deceased',
         outcome_child: 'Alive and Sick',
@@ -433,20 +467,22 @@ exports['response for deceased mother and sick but normal weight child'] = funct
         test.ok(complete);
 
         test.equal(doc.tasks.length, 1);
-        message = _.first(_.first(doc.tasks).messages).message;
         test.same(
-            message,
+            doc.tasks[0].messages[0].message,
             "Thank you, qq. Birth outcome report for ABC has been recorded."
             + " If danger sign, please call health worker immediately and fill"
             + " in the emergency report."
         )
+        test.ok(_.all(doc.scheduled_tasks, function(task) {
+            return task.state === 'cleared';
+        }));
 
         test.done();
     });
 };
 
-exports['response for deceased mother and sick and low weight (yellow) child'] = function(test) {
-    test.expect(3);
+exports['response and cleared tasks for deceased mother and sick and low weight (yellow) child'] = function(test) {
+    test.expect(4);
     var doc = {
         outcome_mother: 'Deceased',
         outcome_child: 'Alive and Sick',
@@ -474,20 +510,22 @@ exports['response for deceased mother and sick and low weight (yellow) child'] =
         test.ok(complete);
 
         test.equal(doc.tasks.length, 1);
-        message = _.first(_.first(doc.tasks).messages).message;
         test.same(
-            message,
+            doc.tasks[0].messages[0].message,
             "Thank you, qq. Birth outcome report for ABC has been recorded."
             + " The Baby is LBW. Please refer the baby to the health post"
             + " immediately."
-        )
+        );
+        test.ok(_.all(doc.scheduled_tasks, function(task) {
+            return task.state === 'cleared';
+        }));
 
         test.done();
     });
 };
 
-exports['response for deceased mother and sick and low weight (red) child'] = function(test) {
-    test.expect(3);
+exports['response/cleared task for deceased mother and sick and low weight (red) child'] = function(test) {
+    test.expect(4);
     var doc = {
         outcome_mother: 'Deceased',
         outcome_child: 'Alive and Sick',
@@ -515,13 +553,15 @@ exports['response for deceased mother and sick and low weight (red) child'] = fu
         test.ok(complete);
 
         test.equal(doc.tasks.length, 1);
-        message = _.first(_.first(doc.tasks).messages).message;
         test.same(
-            message,
+            doc.tasks[0].messages[0].message,
             "Thank you, qq. Birth outcome report for ABC has been recorded."
             + " The Baby is LBW. Please refer the baby to the health post"
             + " immediately."
-        )
+        );
+        test.ok(_.all(doc.scheduled_tasks, function(task) {
+            return task.state === 'cleared';
+        }));
 
         test.done();
     });
@@ -558,7 +598,10 @@ exports['response for normal outcome but no weight reported'] = function(test) {
 
         test.equal(doc.tasks.length, 1);
         message = _.first(_.first(doc.tasks).messages).message;
-        test.same(message, "Thank you, qq. Birth outcome report for ABC has been recorded.");
+        test.same(
+            message,
+            "Thank you, qq. Birth outcome report for ABC has been recorded."
+        );
 
         test.done();
     });
@@ -645,7 +688,7 @@ exports['response for sick baby'] = function(test) {
     });
 };
 
-exports['updates registration with weight, birth date'] = function(test) {
+exports['outcome report updates registration with weight, birth date'] = function(test) {
     var doc = {
         outcome_mother: 'Alive and Well',
         outcome_child: 'Alive and Well',
@@ -681,7 +724,8 @@ exports['updates registration with weight, birth date'] = function(test) {
     });
 };
 
-exports['sets two pnc reminders with normal weight'] = function(test) {
+exports['outcome report with normal weight removes lbw reminders'] = function(test) {
+    test.expect(3);
     var doc = {
         outcome_child: 'Alive and Well',
         birth_weight: 'Green',
@@ -704,15 +748,25 @@ exports['sets two pnc reminders with normal weight'] = function(test) {
     transition.onMatch({
         doc: doc
     }, function(err, complete) {
-        var reminders = utils.filterScheduledMessages(registration, 'pnc_visit');
 
-        test.equals(reminders.length, 2);
-
+        test.equals(
+            utils.filterScheduledMessages(registration, 'counseling_reminder')[0].state,
+            'scheduled'
+        );
+        test.equals(
+            utils.filterScheduledMessages(registration, 'counseling_reminder')[1].state,
+            'scheduled'
+        );
+        test.equals(
+            utils.filterScheduledMessages(registration, 'counseling_reminder_lbw')[0].state,
+            'cleared'
+        );
         test.done();
     });
 };
 
-exports['sets four pnc reminders with yellow weight'] = function(test) {
+exports['outcome with low weight has lbw reminders'] = function(test) {
+    test.expect(1);
     var doc = {
         outcome_child: 'Alive and Well',
         birth_weight: 'Yellow',
@@ -735,9 +789,11 @@ exports['sets four pnc reminders with yellow weight'] = function(test) {
     transition.onMatch({
         doc: doc
     }, function(err, complete) {
-        var reminders = utils.filterScheduledMessages(registration, 'pnc_visit');
 
-        test.equals(reminders.length, 4);
+        test.equals(
+            utils.filterScheduledMessages(registration, 'counseling_reminder_lbw')[0].state,
+            'scheduled'
+        );
 
         test.done();
     });

@@ -20,24 +20,29 @@ exports.setUp = function(callback) {
                 {
                     messages: [ { message: 'keep me' } ],
                     type: 'anc_visit',
+                    state: 'scheduled',
                     due: now.clone().add('days', 22).valueOf()
                 },
                 {
                     messages: [ { message: 'x' } ],
                     type: 'anc_visit',
+                    state: 'scheduled',
                     due: now.clone().add('days', 20).valueOf()
                 },
                 {
                     messages: [ { message: 'x' } ],
                     type: 'anc_visit',
+                    state: 'scheduled',
                     due: now.clone().subtract('days', 3).valueOf()
                 },
                 {
                     messages: [ { message: 'x' } ],
+                    state: 'scheduled',
                     type: 'counseling_reminder'
                 },
                 {
                     messages: [ { message: 'x' } ],
+                    state: 'scheduled',
                     type: 'upcoming_delivery'
                 }
             ]
@@ -88,8 +93,13 @@ exports['ANC obsoletes old scheduled reminders'] = function(test) {
         doc: doc
     }, function(err, complete) {
         test.ok(registration.scheduled_tasks);
-        test.equals(registration.scheduled_tasks.length, 2);
-        test.equals(_.first(_.first(registration.scheduled_tasks).messages).message, 'keep me');
+        test.equals(registration.scheduled_tasks.length, 5);
+        test.ok(_.all(doc.scheduled_tasks, function(task) {
+            if (task.messages[0] === 'keep me')
+                return task.state === 'scheduled';
+            else if (task.type === 'anc_visit')
+                return task.state === 'obsoleted';
+        }));
         test.done();
     });
 };
@@ -120,11 +130,11 @@ exports['PNC normal acknowledgement'] = function(test) {
     });
 };
 
-exports['ANC removes counseling_reminder task from registration'] = function(test) {
+exports['PNC clears counseling_reminder task from registration'] = function(test) {
     test.expect(3);
     var doc = {
         patient_id: '123',
-        anc_pnc: 'ANC',
+        anc_pnc: 'PNC',
         related_entities: {
             clinic: {
                 contact: {
@@ -137,10 +147,24 @@ exports['ANC removes counseling_reminder task from registration'] = function(tes
         doc: doc
     }, function(err, complete) {
         test.equal(doc.tasks.length, 1);
-        test.equals(utils.filterScheduledMessages(registration, 'counseling_reminder').length, 0);
+        test.ok(registration);
+        test.ok(_.all(registration.scheduled_tasks, function(task) {
+            if (task.type === 'counseling_reminder')
+                return task.state === 'cleared';
+            else
+                return true;
+        }));
 
-        // doesn't touch upcoming delivery
-        test.equals(utils.filterScheduledMessages(registration, 'upcoming_delivery').length, 1);
+        //
+        // obsoletes upcoming_delivery?
+        // Should PNC report clear 'counseling_reminder' alerts even if
+        // outcome_request is not cleared?  Should we send outcome_request
+        // response in that case?
+        //
+        //test.ok(_.all(registration.scheduled_tasks, function(task) {
+        //    if (task.type === 'upcoming_delivery')
+        //        return task.state === 'obsoleted';
+        //}));
         test.done();
     });
 };

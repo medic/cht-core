@@ -17,6 +17,7 @@ module.exports = {
 
         clinicPhone = utils.getClinicPhone(doc);
         clinicName = utils.getClinicName(doc);
+        clinicContactName = utils.getClinicContactName(doc);
 
         if (date.isSynthetic()) {
             reportedDate = moment(date.getDate());
@@ -71,10 +72,12 @@ module.exports = {
                 msg = msg_sick_child;
             }
             if (doc.birth_weight === 'Green') {
-                conf = config.get('ohw_pnc_schedule_days');
-            } else if (doc.birth_weight === 'Yellow' || doc.birth_weight === 'Red') {
+                utils.clearScheduledMessages(
+                    registration, 'counseling_reminder_lbw'
+                );
+            }
+            if (doc.birth_weight === 'Yellow' || doc.birth_weight === 'Red') {
                 msg = msg_lbw;
-                conf = config.get('ohw_low_weight_pnc_schedule_days');
             }
             if (doc.outcome_mother === 'Deceased') {
                 msg = msg.replace('mother and baby', 'baby');
@@ -85,13 +88,14 @@ module.exports = {
                 phone: clinicPhone,
                 message: i18n(msg, {
                     clinicName: clinicName,
+                    contact_name: clinicContactName,
                     serial_number: registration.serial_number
                 })
             });
 
             if (conf) {
                 self.scheduleReminders(
-                    registration, clinicName, clinicPhone, conf
+                    registration, clinicContactName, clinicPhone, conf
                 );
             }
 
@@ -100,7 +104,7 @@ module.exports = {
             });
         });
     },
-    scheduleReminders: function(doc, clinicName, clinicPhone, days) {
+    scheduleReminders: function(doc, contactName, clinicPhone, days) {
         var now = moment(date.getDate()),
             birth = moment(doc.child_birth_date);
 
@@ -110,8 +114,8 @@ module.exports = {
             if (marker > now) {
                 utils.addScheduledMessage(doc, {
                     due: marker.valueOf(),
-                    message: i18n("Greetings, {{clinicName}}. {{patient_id}} is due for a PNC visit today.", {
-                        clinicName: clinicName,
+                    message: i18n("Greetings, {{contact_name}}. {{patient_id}} is due for a PNC visit soon.", {
+                        contact_name: contactName,
                         patient_id: doc.patient_id
                     }),
                     phone: clinicPhone,
