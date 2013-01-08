@@ -4,14 +4,14 @@ var _ = require('underscore'),
 
 var handleOnMatch = function(change, callback) {
     var doc = change.doc,
-        clinicName,
+        clinicContactName,
         clinicPhone,
         parentPhone = utils.getParentPhone(doc),
         msg,
         msg2;
 
     clinicPhone = utils.getClinicPhone(doc);
-    clinicName = utils.getClinicName(doc);
+    clinicContactName = utils.getClinicContactName(doc);
 
     utils.getOHWRegistration(doc.patient_id, function(err, registration) {
 
@@ -35,8 +35,8 @@ var handleOnMatch = function(change, callback) {
             //todo/update messaging
             utils.addMessage(doc, {
                 phone: clinicPhone,
-                message: i18n("Thank you, {{clinicName}}. No danger sign for {{serial_number}} has been recorded.", {
-                    clinicName: clinicName,
+                message: i18n("Thank you, {{contact_name}}. No danger sign for {{serial_number}} has been recorded.", {
+                    contact_name: clinicContactName,
                     serial_number: registration.serial_number
                 })
             });
@@ -46,8 +46,8 @@ var handleOnMatch = function(change, callback) {
         if (doc.anc_labor_pnc !== 'In labor') {
             utils.addMessage(doc, {
                 phone: clinicPhone,
-                message: i18n("Thank you, {{clinicName}}. Danger sign for {{serial_number}} has been recorded.", {
-                    clinicName: clinicName,
+                message: i18n("Thank you, {{contact_name}}. Danger sign for {{serial_number}} has been recorded.", {
+                    contact_name: clinicContactName,
                     serial_number: registration.serial_number
                 })
             });
@@ -55,8 +55,8 @@ var handleOnMatch = function(change, callback) {
                 utils.addMessage(doc, {
                     phone: parentPhone || '',
                     message: i18n(
-                        "{{clinicName}} has reported a danger sign for {{patient_id}}. Please follow up with her and provide necessary assistance immediately.", {
-                        clinicName: clinicName,
+                        "{{contact_name}} has reported a danger sign for {{patient_id}}. Please follow up with her and provide necessary assistance immediately.", {
+                        contact_name: clinicContactName,
                         patient_id: doc.patient_id
                     })
                 });
@@ -64,18 +64,18 @@ var handleOnMatch = function(change, callback) {
         }
 
         if (doc.anc_labor_pnc === 'In labor') {
-            msg = "Thank you {{clinicName}}. Labor report for" +
+            msg = "Thank you {{contact_name}}. Labor report for" +
                 " {{serial_number}} has been recorded. Please submit the" +
                 " birth outcome report after delivery.";
 
-            msg2 = "{{clinicName}} has reported a labor. Please follow up" +
+            msg2 = "{{contact_name}} has reported a labor. Please follow up" +
                 " with her and provide necessary assistance immediately.";
 
             if (doc.labor_danger === 'Yes') {
-                msg = "Thank you {{clinicName}}. Labor report and danger sign" +
+                msg = "Thank you {{contact_name}}. Labor report and danger sign" +
                     " for {{serial_number}} has been recorded. Please submit the" +
                     " birth outcome report after delivery.";
-                msg2 = "{{clinicName}} has reported a danger sign during labor." +
+                msg2 = "{{contact_name}} has reported a danger sign during labor." +
                     " Please follow up with her and provide necessary" +
                     " assistance immediately.";
             }
@@ -83,7 +83,7 @@ var handleOnMatch = function(change, callback) {
             utils.addMessage(doc, {
                 phone: clinicPhone,
                 message: i18n(msg, {
-                    clinicName: clinicName,
+                    contact_name: clinicContactName,
                     serial_number: registration.serial_number
                 })
             });
@@ -91,7 +91,7 @@ var handleOnMatch = function(change, callback) {
             if (doc.advice_received === 'No') {
                 utils.addMessage(doc, {
                     phone: parentPhone || '',
-                    message: i18n(msg2, {clinicName: clinicName})
+                    message: i18n(msg2, {contact_name: clinicContactName})
                 });
             }
 

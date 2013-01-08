@@ -71,6 +71,7 @@ exports['ANC danger sign with advice response'] = function(test) {
                 name: 'Clinic 2',
                 contact: {
                     phone: 'clinic',
+                    name: 'Paul'
                 },
                 parent: {
                     contact: {
@@ -87,7 +88,7 @@ exports['ANC danger sign with advice response'] = function(test) {
             message = (_.first(task.messages) || {}).message;
         test.ok(complete);
         test.ok(registration);
-        test.same(message, "Thank you, Clinic 2. Danger sign for ABC has been recorded.");
+        test.same(message, "Thank you, Paul. Danger sign for ABC has been recorded.");
         // no message to health facility if advice was received
         test.equal(doc.tasks.length, 1);
         test.done();
@@ -107,9 +108,9 @@ exports['ANC danger sign and no advice response'] = function(test) {
         advice_received: 'No',
         related_entities: {
             clinic: {
-                name: 'Clinic 2',
                 contact: {
                     phone: 'clinic',
+                    name: 'Paul'
                 },
                 parent: {
                     contact: {
@@ -120,9 +121,9 @@ exports['ANC danger sign and no advice response'] = function(test) {
         }
     };
 
-    msg1 = "Thank you, Clinic 2. Danger sign for ABC has been recorded.";
+    msg1 = "Thank you, Paul. Danger sign for ABC has been recorded.";
 
-    msg2 = "Clinic 2 has reported a danger sign for 123. Please follow up " +
+    msg2 = "Paul has reported a danger sign for 123. Please follow up " +
         "with her and provide necessary assistance immediately.";
 
     transition.onMatch({
@@ -155,6 +156,7 @@ exports['PNC danger sign and no advice response'] = function(test) {
                 name: 'Clinic 2',
                 contact: {
                     phone: 'clinic',
+                    name: 'Paul'
                 },
                 parent: {
                     contact: {
@@ -165,9 +167,9 @@ exports['PNC danger sign and no advice response'] = function(test) {
         }
     };
 
-    var msg1 = "Thank you, Clinic 2. Danger sign for ABC has been recorded.";
+    var msg1 = "Thank you, Paul. Danger sign for ABC has been recorded.";
 
-    var msg2 = "Clinic 2 has reported a danger sign for 123. Please follow up "
+    var msg2 = "Paul has reported a danger sign for 123. Please follow up "
         + "with her and provide necessary assistance immediately.";
 
     transition.onMatch({
@@ -203,6 +205,7 @@ exports['ANC no danger and no advice sign'] = function(test) {
                 name: 'Clinic 2',
                 contact: {
                     phone: 'clinic',
+                    name: 'Paul'
                 },
                 parent: {
                     contact: {
@@ -213,7 +216,7 @@ exports['ANC no danger and no advice sign'] = function(test) {
         }
     };
 
-    msg1 = "Thank you, Clinic 2. No danger sign for ABC has been recorded.";
+    msg1 = "Thank you, Paul. No danger sign for ABC has been recorded.";
 
     transition.onMatch({
         doc: doc
@@ -245,6 +248,7 @@ exports['Labor with no danger sign or advice response'] = function(test) {
                 name: 'Clinic 2',
                 contact: {
                     phone: 'clinic',
+                    name: 'Paul'
                 },
                 parent: {
                     contact: {
@@ -255,9 +259,9 @@ exports['Labor with no danger sign or advice response'] = function(test) {
         }
     };
 
-    msg1 = "Thank you Clinic 2. Labor report for ABC has been recorded. Please submit the birth outcome report after delivery.";
+    msg1 = "Thank you Paul. Labor report for ABC has been recorded. Please submit the birth outcome report after delivery.";
 
-    msg2 = "Clinic 2 has reported a labor. Please follow up with her and provide necessary assistance immediately.";
+    msg2 = "Paul has reported a labor. Please follow up with her and provide necessary assistance immediately.";
 
     transition.onMatch({
         doc: doc
@@ -293,6 +297,7 @@ exports['Labor with danger sign and no advice response'] = function(test) {
                 name: 'Clinic 2',
                 contact: {
                     phone: 'clinic',
+                    name: 'Paul'
                 },
                 parent: {
                     contact: {
@@ -303,9 +308,9 @@ exports['Labor with danger sign and no advice response'] = function(test) {
         }
     };
 
-    msg1 = "Thank you Clinic 2. Labor report and danger sign for ABC has been recorded. Please submit the birth outcome report after delivery.";
+    msg1 = "Thank you Paul. Labor report and danger sign for ABC has been recorded. Please submit the birth outcome report after delivery.";
 
-    msg2 = "Clinic 2 has reported a danger sign during labor. Please follow up with her and provide necessary assistance immediately.";
+    msg2 = "Paul has reported a danger sign during labor. Please follow up with her and provide necessary assistance immediately.";
 
     transition.onMatch({
         doc: doc
@@ -340,6 +345,7 @@ exports['Labor with danger sign and advice response'] = function(test) {
                 name: 'Clinic 2',
                 contact: {
                     phone: 'clinic',
+                    name: 'Paul'
                 },
                 parent: {
                     contact: {
@@ -350,7 +356,7 @@ exports['Labor with danger sign and advice response'] = function(test) {
         }
     };
 
-    msg1 = "Thank you Clinic 2. Labor report and danger sign for ABC has been recorded. Please submit the birth outcome report after delivery.";
+    msg1 = "Thank you Paul. Labor report and danger sign for ABC has been recorded. Please submit the birth outcome report after delivery.";
 
     transition.onMatch({
         doc: doc
