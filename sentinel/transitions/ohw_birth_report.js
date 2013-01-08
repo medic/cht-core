@@ -9,14 +9,13 @@ var _ = require('underscore'),
 module.exports = {
     db: require('../db'),
     onMatch: function(change, callback) {
-        var clinicName,
+        var clinicContactName,
             clinicPhone,
             doc = change.doc,
             reportedDate,
             self = module.exports;
 
         clinicPhone = utils.getClinicPhone(doc);
-        clinicName = utils.getClinicName(doc);
         clinicContactName = utils.getClinicContactName(doc);
 
         if (date.isSynthetic()) {
@@ -54,15 +53,19 @@ module.exports = {
                 'outcome_request'
             );
 
-            msg = "Thank you, {{clinicName}}. Birth outcome report for"
+            msg = "Thank you, {{contact_name}}. Birth outcome report for"
                 + " {{serial_number}} has been recorded.";
 
-            var msg_lbw = "Thank you, {{clinicName}}. Birth outcome report"
+            var msg_lbw = "Thank you, {{contact_name}}. Birth outcome report"
                 + " for {{serial_number}} has been recorded. The Baby"
                 + " is LBW. Please refer the mother and baby to"
                 + " the health post immediately.";
 
-            var msg_sick_child = "Thank you, {{clinicName}}. Birth outcome report for"
+            var msg_lbw = "Thank you, {{contact_name}}. Birth outcome report"
+                + " for {{serial_number}} has been recorded. The Baby is LBW."
+                + " Please refer the mother and baby to the health post immediately.";
+
+            var msg_sick_child = "Thank you, {{contact_name}}. Birth outcome report for"
                 + " {{serial_number}} has been recorded. If danger sign,"
                 + " please call health worker immediately and fill in"
                 + " the emergency report.";
@@ -79,17 +82,19 @@ module.exports = {
                 msg = msg_lbw;
             }
             if (doc.outcome_mother === 'Deceased') {
+                msg += " Please submit the Start/Stop Notifications form.";
                 msg = msg.replace('mother and baby', 'baby');
                 // clear all other reminders
                 utils.clearScheduledMessages(
                     registration, 'counseling_reminder_lbw', 'counseling_reminder'
                 );
             }
+            if (!doc.outcome_mother && !doc.outcome_child && !doc.birth_weight)
+                msg += " Please complete necessary protocol.";
 
             utils.addMessage(doc, {
                 phone: clinicPhone,
                 message: i18n(msg, {
-                    clinicName: clinicName,
                     contact_name: clinicContactName,
                     serial_number: registration.serial_number
                 })

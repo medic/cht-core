@@ -100,9 +100,9 @@ exports['response for normal weight and outcome'] = function(test) {
         related_entities: {
             clinic: {
                 contact: {
-                    phone: 'clinic'
+                    phone: 'clinic',
+                    name: 'qq'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -137,9 +137,9 @@ exports['response for normal outcome but low weight (red)'] = function(test) {
         related_entities: {
             clinic: {
                 contact: {
-                    phone: 'clinic'
+                    phone: 'clinic',
+                    name: 'qq'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -178,9 +178,9 @@ exports['response for normal outcome but low weight (yellow)'] = function(test) 
         related_entities: {
             clinic: {
                 contact: {
-                    phone: 'clinic'
+                    phone: 'clinic',
+                    name: 'qq'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -218,9 +218,9 @@ exports['response for deceased mother and normal outcome child'] = function(test
         related_entities: {
             clinic: {
                 contact: {
-                    phone: 'clinic'
+                    phone: 'clinic',
+                    name: 'qq'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -240,6 +240,7 @@ exports['response for deceased mother and normal outcome child'] = function(test
         test.same(
             doc.tasks[0].messages[0].message,
             "Thank you, qq. Birth outcome report for ABC has been recorded."
+            + " Please submit the Start/Stop Notifications form."
         );
 
         test.done();
@@ -256,9 +257,9 @@ exports['response for deceased mother and healthy but low weight (yellow) child'
         related_entities: {
             clinic: {
                 contact: {
-                    phone: 'clinic'
+                    phone: 'clinic',
+                    name: 'qq'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -277,8 +278,9 @@ exports['response for deceased mother and healthy but low weight (yellow) child'
         test.equal(doc.tasks.length, 1);
         test.same(
             doc.tasks[0].messages[0].message,
-            "Thank you, qq. Birth outcome report for ABC has been recorded. The"
-            + " Baby is LBW. Please refer the baby to the health post immediately."
+            "Thank you, qq. Birth outcome report for ABC has been recorded."
+            + " The Baby is LBW. Please refer the baby to the health post"
+            + " immediately. Please submit the Start/Stop Notifications form."
         )
 
         test.done();
@@ -296,9 +298,9 @@ exports['response for deceased mother and healthy but low weight (red) child'] =
         related_entities: {
             clinic: {
                 contact: {
-                    phone: 'clinic'
+                    phone: 'clinic',
+                    name: 'qq'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -317,8 +319,9 @@ exports['response for deceased mother and healthy but low weight (red) child'] =
         test.equal(doc.tasks.length, 1);
         test.same(
             doc.tasks[0].messages[0].message,
-            "Thank you, qq. Birth outcome report for ABC has been recorded. The"
-            + " Baby is LBW. Please refer the baby to the health post immediately."
+            "Thank you, qq. Birth outcome report for ABC has been recorded."
+            + " The Baby is LBW. Please refer the baby to the health post"
+            + " immediately. Please submit the Start/Stop Notifications form."
         )
 
         test.done();
@@ -373,9 +376,9 @@ exports['clear schedule for deceased mother, low weight (yellow) child'] = funct
         related_entities: {
             clinic: {
                 contact: {
-                    phone: 'clinic'
+                    phone: 'clinic',
+                    name: 'qq'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -410,9 +413,9 @@ exports['clear schedule for deceased mother, low weight (red) child'] = function
         related_entities: {
             clinic: {
                 contact: {
+                    name: 'qq',
                     phone: 'clinic'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -448,9 +451,9 @@ exports['response/cleared schedule for deceased mother and sick but normal weigh
         related_entities: {
             clinic: {
                 contact: {
+                    name: 'qq',
                     phone: 'clinic'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -471,7 +474,7 @@ exports['response/cleared schedule for deceased mother and sick but normal weigh
             doc.tasks[0].messages[0].message,
             "Thank you, qq. Birth outcome report for ABC has been recorded."
             + " If danger sign, please call health worker immediately and fill"
-            + " in the emergency report."
+            + " in the emergency report. Please submit the Start/Stop Notifications form."
         )
         test.ok(_.all(doc.scheduled_tasks, function(task) {
             return task.state === 'cleared';
@@ -491,9 +494,9 @@ exports['response and cleared tasks for deceased mother and sick and low weight 
         related_entities: {
             clinic: {
                 contact: {
+                    name: 'qq',
                     phone: 'clinic'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -514,7 +517,7 @@ exports['response and cleared tasks for deceased mother and sick and low weight 
             doc.tasks[0].messages[0].message,
             "Thank you, qq. Birth outcome report for ABC has been recorded."
             + " The Baby is LBW. Please refer the baby to the health post"
-            + " immediately."
+            + " immediately. Please submit the Start/Stop Notifications form."
         );
         test.ok(_.all(doc.scheduled_tasks, function(task) {
             return task.state === 'cleared';
@@ -534,9 +537,9 @@ exports['response/cleared task for deceased mother and sick and low weight (red)
         related_entities: {
             clinic: {
                 contact: {
+                    name: 'qq',
                     phone: 'clinic'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -557,7 +560,7 @@ exports['response/cleared task for deceased mother and sick and low weight (red)
             doc.tasks[0].messages[0].message,
             "Thank you, qq. Birth outcome report for ABC has been recorded."
             + " The Baby is LBW. Please refer the baby to the health post"
-            + " immediately."
+            + " immediately. Please submit the Start/Stop Notifications form."
         );
         test.ok(_.all(doc.scheduled_tasks, function(task) {
             return task.state === 'cleared';
@@ -578,9 +581,9 @@ exports['response for normal outcome but no weight reported'] = function(test) {
         related_entities: {
             clinic: {
                 contact: {
+                    name: 'qq',
                     phone: 'clinic'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -607,48 +610,6 @@ exports['response for normal outcome but no weight reported'] = function(test) {
     });
 };
 
-exports['response for deceased mother low weight child'] = function(test) {
-    test.expect(3);
-    var doc = {
-        outcome_mother: 'Deceased',
-        outcome_child: 'Alive and Well',
-        birth_weight: 'Yellow',
-        days_since_delivery: 1,
-        patient_id: 'good',
-        related_entities: {
-            clinic: {
-                contact: {
-                    phone: 'clinic'
-                },
-                name: 'qq',
-                parent: {
-                    contact: {
-                        phone: 'parent'
-                    }
-                }
-            }
-        }
-    };
-    transition.onMatch({
-        doc: doc
-    }, function(err, complete) {
-
-        var message;
-        var message_exp = "Thank you, qq. Birth outcome report for ABC has been"
-            + " recorded. The Baby is LBW. Please refer the baby to the health"
-            + " post immediately.";
-
-        test.ok(complete);
-
-        test.equal(doc.tasks.length, 1);
-        message = _.first(_.first(doc.tasks).messages).message;
-
-        test.same(message, message_exp);
-
-        test.done();
-    });
-};
-
 exports['response for sick baby'] = function(test) {
     test.expect(3);
     var doc = {
@@ -658,9 +619,9 @@ exports['response for sick baby'] = function(test) {
         related_entities: {
             clinic: {
                 contact: {
+                    name: 'qq',
                     phone: 'clinic'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -688,6 +649,117 @@ exports['response for sick baby'] = function(test) {
     });
 };
 
+exports['response for deceased baby and no other fields'] = function(test) {
+    test.expect(3);
+    var doc = {
+        outcome_child: 'Deceased',
+        days_since_delivery: 1,
+        patient_id: 'good',
+        related_entities: {
+            clinic: {
+                contact: {
+                    name: 'qq',
+                    phone: 'clinic'
+                },
+                parent: {
+                    contact: {
+                        phone: 'parent'
+                    }
+                }
+            }
+        }
+    };
+    transition.onMatch({
+        doc: doc
+    }, function(err, complete) {
+        var message;
+        var message_exp = "Thank you, qq. Birth outcome report for ABC has been recorded."
+
+        test.ok(complete);
+
+        test.equal(doc.tasks.length, 1);
+        message = _.first(_.first(doc.tasks).messages).message;
+
+        test.same(message, message_exp);
+
+        test.done();
+    });
+};
+
+exports['response for deceased mother and no other fields'] = function(test) {
+    test.expect(3);
+    var doc = {
+        outcome_mother: 'Deceased',
+        days_since_delivery: 1,
+        patient_id: 'good',
+        related_entities: {
+            clinic: {
+                contact: {
+                    name: 'qq',
+                    phone: 'clinic'
+                },
+                parent: {
+                    contact: {
+                        phone: 'parent'
+                    }
+                }
+            }
+        }
+    };
+    transition.onMatch({
+        doc: doc
+    }, function(err, complete) {
+        var message;
+        var message_exp = "Thank you, qq. Birth outcome report for ABC has been recorded."
+            + " Please submit the Start/Stop Notifications form.";
+
+        test.ok(complete);
+
+        test.equal(doc.tasks.length, 1);
+        message = _.first(_.first(doc.tasks).messages).message;
+
+        test.same(message, message_exp);
+
+        test.done();
+    });
+};
+
+exports['response for deceased mother and no other fields'] = function(test) {
+    test.expect(3);
+    var doc = {
+        patient_id: 'good',
+        related_entities: {
+            clinic: {
+                contact: {
+                    name: 'qq',
+                    phone: 'clinic'
+                },
+                parent: {
+                    contact: {
+                        phone: 'parent'
+                    }
+                }
+            }
+        }
+    };
+    transition.onMatch({
+        doc: doc
+    }, function(err, complete) {
+        var message;
+        var message_exp = "Thank you, qq. Birth outcome report for ABC has been recorded."
+            + " Please complete necessary protocol.";
+
+        test.ok(complete);
+
+        test.equal(doc.tasks.length, 1);
+        message = _.first(_.first(doc.tasks).messages).message;
+
+        test.same(message, message_exp);
+
+        test.done();
+    });
+};
+
 exports['outcome report updates registration with weight, birth date'] = function(test) {
     var doc = {
         outcome_mother: 'Alive and Well',
@@ -698,9 +770,9 @@ exports['outcome report updates registration with weight, birth date'] = functio
         related_entities: {
             clinic: {
                 contact: {
+                    name: 'qq',
                     phone: 'clinic'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -734,9 +806,9 @@ exports['outcome report with normal weight removes lbw reminders'] = function(te
         related_entities: {
             clinic: {
                 contact: {
+                    name: 'qq',
                     phone: 'clinic'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
@@ -775,9 +847,9 @@ exports['outcome with low weight has lbw reminders'] = function(test) {
         related_entities: {
             clinic: {
                 contact: {
+                    name: 'qq',
                     phone: 'clinic'
                 },
-                name: 'qq',
                 parent: {
                     contact: {
                         phone: 'parent'
