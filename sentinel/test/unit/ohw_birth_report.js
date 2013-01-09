@@ -786,7 +786,7 @@ exports['outcome report updates registration with weight, birth date'] = functio
     });
 };
 
-exports['outcome report with normal weight adds reminders'] = function(test) {
+exports['add schedule for outcome report with normal weight'] = function(test) {
     test.expect(2);
     var doc = {
         outcome_child: 'Alive and Well',
@@ -819,7 +819,7 @@ exports['outcome report with normal weight adds reminders'] = function(test) {
     });
 };
 
-exports['add lbw reminder for low weight birth outcome'] = function(test) {
+exports['add lbw schedule for low weight birth outcome'] = function(test) {
     test.expect(2);
     var doc = {
         outcome_child: 'Alive and Well',
@@ -845,7 +845,6 @@ exports['add lbw reminder for low weight birth outcome'] = function(test) {
     }, function(err, complete) {
 
         var reminders = utils.filterScheduledMessages(registration, 'counseling_reminder');
-        console.log(JSON.stringify(reminders,null,2));
 
         test.equals(reminders.length, 6);
         test.ok(_.all(reminders, function(task) {

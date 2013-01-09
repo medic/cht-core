@@ -129,9 +129,10 @@ module.exports = {
             if (marker > now) {
                 utils.addScheduledMessage(doc, {
                     due: marker.valueOf(),
-                    message: i18n(msg, {
+                    message: i18n(data.message || msg, {
                         contact_name: contactName,
-                        patient_id: doc.patient_id
+                        patient_id: doc.patient_id,
+                        serial_number: doc.serial_number
                     }),
                     phone: clinicPhone,
                     group: data.group,
