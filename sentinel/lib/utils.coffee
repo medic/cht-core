@@ -75,11 +75,19 @@ module.exports =
   obsoleteScheduledMessages: (doc, type, before) ->
     doc.scheduled_tasks ?= []
     changed = false
+    by_group = false
     doc.scheduled_tasks = _.filter(doc.scheduled_tasks, (task) ->
-      if type is task.type and task.due < before
-          changed = true
-          task.state = 'cleared'
-      task;
+      if type is task.type and (task.due < before or by_group)
+          if task.state is 'cleared'
+              return task
+          if by_group and task.group is by_group
+              changed = true
+              task.state = 'cleared'
+          else if not by_group
+              changed = true
+              task.state = 'cleared'
+              by_group = task.group
+      return task;
     )
     changed
   clearScheduledMessages: (doc, types...) ->

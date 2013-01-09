@@ -18,22 +18,32 @@ exports.setUp = function(callback) {
             serial_number: "FOO",
             scheduled_tasks: [
                 {
-                    messages: [ { message: 'keep me' } ],
+                    messages: [ { message: 'x' } ],
                     type: 'anc_visit',
-                    state: 'scheduled',
-                    due: now.clone().add('days', 22).valueOf()
+                    state: 'cleared',
+                    group: 1,
+                    due: now.clone().add('days', 3).valueOf()
+                },
+                {
+                    messages: [ { message: 'x' } ],
+                    type: 'anc_visit',
+                    state: 'cleared',
+                    group: 1,
+                    due: now.clone().add('days', 7).valueOf()
                 },
                 {
                     messages: [ { message: 'x' } ],
                     type: 'anc_visit',
                     state: 'scheduled',
-                    due: now.clone().add('days', 20).valueOf()
+                    group: 2,
+                    due: now.clone().subtract('days', 15).valueOf()
                 },
                 {
                     messages: [ { message: 'x' } ],
                     type: 'anc_visit',
                     state: 'scheduled',
-                    due: now.clone().subtract('days', 3).valueOf()
+                    group: 3,
+                    due: now.clone().add('days', 17).valueOf()
                 },
                 {
                     messages: [ { message: 'x' } ],
@@ -42,15 +52,38 @@ exports.setUp = function(callback) {
                 },
                 {
                     messages: [ { message: 'x' } ],
-                    state: 'scheduled',
+                    state: 'cleared',
                     type: 'counseling_reminder',
+                    group: 1,
                     due: now.clone().add('days', 10).valueOf()
+                },
+                {
+                    messages: [ { message: 'x' } ],
+                    state: 'cleared',
+                    type: 'counseling_reminder',
+                    group: 1,
+                    due: now.clone().add('days', 12).valueOf()
                 },
                 {
                     messages: [ { message: 'x' } ],
                     state: 'scheduled',
                     type: 'counseling_reminder',
-                    due: now.clone().add('days', 30).valueOf()
+                    group: 2,
+                    due: now.clone().add('days', 14).valueOf()
+                },
+                {
+                    messages: [ { message: 'x' } ],
+                    state: 'scheduled',
+                    type: 'counseling_reminder',
+                    group: 2,
+                    due: now.clone().add('days', 24).valueOf()
+                },
+                {
+                    messages: [ { message: 'x' } ],
+                    state: 'scheduled',
+                    type: 'counseling_reminder',
+                    group: 3,
+                    due: now.clone().add('days', 24).valueOf()
                 }
             ]
         };
@@ -91,8 +124,7 @@ exports['ANC acknowledgement'] = function(test) {
     });
 };
 
-exports['ANC obsoletes old scheduled reminders'] = function(test) {
-    test.expect(5);
+exports['ANC report clears group 2 reminders'] = function(test) {
     var doc = {
         patient_id: '123',
         anc_pnc: 'ANC'
@@ -102,14 +134,14 @@ exports['ANC obsoletes old scheduled reminders'] = function(test) {
     }, function(err, complete) {
         var st = registration.scheduled_tasks;
         test.ok(st);
-        test.equals(st.length, 6);
-        test.equals(st[0].state, 'scheduled');
+        test.equals(st.length, 10);
+        test.equals(st[0].state, 'cleared');
         test.equals(st[1].state, 'cleared');
         test.equals(st[2].state, 'cleared');
+        test.equals(st[3].state, 'scheduled');
         test.done();
     });
 };
-
 
 exports['PNC normal acknowledgement'] = function(test) {
     test.expect(3);
@@ -136,8 +168,7 @@ exports['PNC normal acknowledgement'] = function(test) {
     });
 };
 
-exports['PNC clears obsolete counseling_reminder task from registration'] = function(test) {
-    test.expect(5);
+exports['PNC clears group 2 counseling_reminder reminders'] = function(test) {
     var doc = {
         patient_id: '123',
         anc_pnc: 'PNC',
@@ -155,9 +186,12 @@ exports['PNC clears obsolete counseling_reminder task from registration'] = func
         var st = registration.scheduled_tasks;
         test.equal(doc.tasks.length, 1);
         test.ok(registration);
-        test.equals(st.length, 6);
-        test.equals(st[4].state, 'cleared');
-        test.equals(st[5].state, 'scheduled');
+        test.equals(st.length, 10);
+        test.equals(st[5].state, 'cleared');
+        test.equals(st[6].state, 'cleared');
+        test.equals(st[7].state, 'cleared');
+        test.equals(st[8].state, 'cleared');
+        test.equals(st[9].state, 'scheduled');
 
         //
         // clears upcoming_delivery?
