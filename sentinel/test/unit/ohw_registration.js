@@ -86,13 +86,13 @@ exports['adds scheduled messages'] = function(test) {
         doc: doc
     }, function(err, complete) {
         test.ok(doc.scheduled_tasks);
-        test.equals(doc.scheduled_tasks.length, 20);
+        test.equals(doc.scheduled_tasks.length, 15);
         test.equals(utils.filterScheduledMessages(doc, 'anc_visit').length, 11);
         test.equals(utils.filterScheduledMessages(doc, 'miso_reminder').length, 1);
         test.equals(utils.filterScheduledMessages(doc, 'upcoming_delivery').length, 2);
         test.equals(utils.filterScheduledMessages(doc, 'outcome_request').length, 1);
-        test.equals(utils.filterScheduledMessages(doc, 'counseling_reminder').length, 4);
-        test.equals(utils.filterScheduledMessages(doc, 'counseling_reminder_lbw').length, 1);
+        test.equals(utils.filterScheduledMessages(doc, 'counseling_reminder').length, 0);
+        test.equals(utils.filterScheduledMessages(doc, 'counseling_reminder_lbw').length, 0);
         test.equals(utils.filterScheduledMessages(doc, 'blargle margle').length, 0);
         // all scheduled messages have patient_id
         test.ok(_.all(doc.scheduled_tasks, function(task) {
@@ -128,7 +128,7 @@ exports['response for positive registration with LMP of 5'] = function(test) {
         test.same(
             message,
             'Thank you qq for registering abc. Patient ID is '+ patient_id
-            + '. ANC visit is needed in 7 weeks.'
+            + '. ANC visit is needed in 6 weeks.'
         );
 
         test.done();

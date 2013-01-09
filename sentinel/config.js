@@ -15,17 +15,24 @@ config = {
         { days: 203, group: 3 },
         { days: 221, group: 4 },
         { days: 223, group: 4 },
-        { days: 231, group: 4 },
-        { days: 315, type: 'counseling_reminder_lbw'}
+        { days: 231, group: 4 }
     ],
     ohw_miso_reminder_days: [193],
     ohw_upcoming_delivery_days: [252, 273],
     ohw_outcome_request_days: [283],
     ohw_counseling_reminder_days: [
-        { days: 282, group: 1},
-        { days: 285, group: 1},
-        { days: 295, group: 2},
-        { days: 309, group: 2}
+        { days: 2, group: 1},
+        { days: 5, group: 1},
+        { days: 6, group: 2},
+        { days: 9, group: 2}
+    ],
+    ohw_counseling_reminder_lbw_days: [
+        { days: 2, group: 1},
+        { days: 5, group: 1},
+        { days: 6, group: 2},
+        { days: 9, group: 2},
+        { days: 13, group: 3},
+        { days: 20, group: 3}
     ],
     ohw_obsolete_reminders_days: 21,
     send_weekly_reminders: {

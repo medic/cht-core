@@ -212,21 +212,6 @@ module.exports = {
             );
         });
 
-        // counseling reminder
-        _.each(config.get('ohw_counseling_reminder_days'), function(data, i) {
-            if (_.isNumber(data))
-                data = {days: data};
-            var msg = 'Greetings, {{contact_name}}. This is a reminder to'
-                + ' submit your counseling report for {{serial_number}}.';
-            addMessage(
-                _.extend({
-                    group: data.group,
-                    type: 'counseling_reminder',
-                    message: msg
-                }, data)
-            );
-        });
-
         // sort by due date
         doc.scheduled_tasks = _.sortBy(doc.scheduled_tasks, 'due');
 

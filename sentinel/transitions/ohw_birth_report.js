@@ -26,13 +26,13 @@ module.exports = {
         reportedDate.startOf('day');
 
         utils.getOHWRegistration(doc.patient_id, function(err, registration) {
-            var birthDate,
-                parentPhone = utils.getParentPhone(registration),
-                msg = "No patient with id '{{patient_id}}' found.";
+            var parentPhone = utils.getParentPhone(registration),
+                msg = "No patient with id '{{patient_id}}' found.",
+                conf = 'ohw_counseling_reminder_days';
 
-            if (err) {
+            if (err)
                 return callback(err);
-            }
+
             if (!registration) {
                 utils.addMessage(doc, {
                     phone: clinicPhone,
@@ -74,16 +74,20 @@ module.exports = {
                 msg = msg_sick_child;
             }
             if (doc.birth_weight === 'Green') {
+
                 utils.clearScheduledMessages(
                     registration, 'counseling_reminder_lbw'
                 );
             }
             if (doc.birth_weight === 'Yellow' || doc.birth_weight === 'Red') {
                 msg = msg_lbw;
+                conf = 'ohw_counseling_reminder_lbw_days';
             }
             if (doc.outcome_mother === 'Deceased') {
                 msg += " Please submit the Start/Stop Notifications form.";
                 msg = msg.replace('mother and baby', 'baby');
+                conf = null;
+
                 // clear all other reminders
                 utils.clearScheduledMessages(
                     registration, 'counseling_reminder_lbw', 'counseling_reminder'
@@ -100,9 +104,40 @@ module.exports = {
                 })
             });
 
+            if (conf) {
+                self.scheduleReminders(
+                    registration, clinicContactName, clinicPhone, conf
+                );
+            }
+
             self.db.saveDoc(registration, function(err) {
-                callback(err, true);
-            });
+                 callback(err, true);
+             });
+         });
+    },
+    scheduleReminders: function(doc, contactName, clinicPhone, conf) {
+        var now = moment(date.getDate()),
+            birth = moment(doc.child_birth_date),
+            msg = 'Greetings, {{contact_name}}. This is a reminder to'
+                + ' submit your counseling report for {{serial_number}}.',
+            conf = config.get(conf);
+
+        _.each(conf, function(data, i) {
+            if (_.isNumber(data))
+                data = {days: data};
+            var marker = birth.clone().add('days', data.days);
+            if (marker > now) {
+                utils.addScheduledMessage(doc, {
+                    due: marker.valueOf(),
+                    message: i18n(msg, {
+                        contact_name: contactName,
+                        patient_id: doc.patient_id
+                    }),
+                    phone: clinicPhone,
+                    group: data.group,
+                    type: 'counseling_reminder'
+                });
+            }
         });
     }
 };
