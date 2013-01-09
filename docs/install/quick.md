@@ -41,7 +41,7 @@ Click the "Fix This" link in the bottom right.  And create a user:
 
 Navigate your mobile device to this page or send this file your device:
 
-* <a class="btn btn-primary" href="gateway/SMSSync-hcb7-debug.apk">Download SMSSync</a>
+* <a class="btn btn-primary" href="gateway/SMSSync-hcb8-debug.apk">Download SMSSync</a>
 
 Then open it in the browser on your device and then run the `.apk` file to complete the install.
 

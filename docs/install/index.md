@@ -165,17 +165,17 @@ to run Android version 1.7 or higher.
 
 ### Step 2: Download SMSSync to Device
 
-* <a class="btn btn-primary" href="gateway/SMSSync-hcb7-debug.apk">Download SMSSync</a>
+* <a class="btn btn-primary" href="gateway/SMSSync-hcb8-debug.apk">Download SMSSync</a>
 
 The file is approximately 840KB and should transfer quickly.  
 
 Checksums: 
-[md5](gateway/SMSSync-hcb7-debug.apk.md5),
-[sha](gateway/SMSSync-hcb7-debug.apk.sha)
+[md5](gateway/SMSSync-hcb8-debug.apk.md5),
+[sha](gateway/SMSSync-hcb8-debug.apk.sha)
 
 Alternative links:
 
-* [https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-hcb7-debug.apk](https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-hcb7-debug.apk)
+* [https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-hcb8-debug.apk](https://medic.s3.amazonaws.com/downloads/gateway/SMSSync-hcb8-debug.apk)
 
 ### Step 3: Transfer SMSSync to the device
 
