@@ -54,7 +54,7 @@ module.exports = {
             clinicName = utils.getClinicName(doc);
 
         if (visit) {
-            duration = moment.duration(visit.due - moment().valueOf());
+            duration = moment.duration(visit.due - moment(date.getDate()).valueOf());
             utils.addMessage(doc, {
                 phone: doc.from,
                 message: i18n(
