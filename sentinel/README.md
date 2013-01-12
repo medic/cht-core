@@ -3,6 +3,10 @@
 Sentinel is required for certain forms that have the `use_sentinel` property
 set to true.
 
+## Install
+
+Get node deps with  `npm install`.
+
 ## Configuration
 
 Copy `settings-example.js` to `settings.js` and `settings-test.js` and modify
