@@ -49,8 +49,8 @@ module.exports = {
             });
 
             utils.clearScheduledMessages(
-                registration, 'anc_visit', 'miso_reminder', 'upcoming_delivery',
-                'outcome_request'
+                registration, ['anc_visit', 'miso_reminder', 'upcoming_delivery',
+                'outcome_request']
             );
 
             msg = "Thank you, {{contact_name}}. Birth outcome report for"
@@ -90,7 +90,7 @@ module.exports = {
 
                 // clear all other reminders
                 utils.clearScheduledMessages(
-                    registration, 'counseling_reminder_lbw', 'counseling_reminder'
+                    registration, ['counseling_reminder_lbw', 'counseling_reminder']
                 );
             }
             if (!doc.outcome_mother && !doc.outcome_child && !doc.birth_weight)
