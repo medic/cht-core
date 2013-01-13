@@ -1,4 +1,6 @@
 var db = require('../db'),
+    moment = require('moment'),
+    config = require('../config'),
     _ = require('underscore');
 
 module.exports = {
@@ -102,26 +104,49 @@ module.exports = {
       _.extend(task, options);
       doc.scheduled_tasks.push(task);
   },
-  obsoleteScheduledMessages: function(doc, type, before) {
-      doc.scheduled_tasks = doc.scheduled_tasks || [];
+  obsoleteScheduledMessages: function(doc, type, reported_date, before) {
       var changed = false,
-          by_group = false;
-      doc.scheduled_tasks = _.filter(doc.scheduled_tasks, function(task) {
-          if (type === task.type && (task.due < before || by_group)) {
-              if (task.state === 'cleared')
-                  return task;
-              if (by_group && task.group === by_group) {
-                  changed = true;
-                  task.state = 'cleared';
-              } else if (!by_group) {
-                  changed = true;
-                  task.state = 'cleared';
-                  by_group = task.group;
-              }
+          group;
+
+      if (!doc || !doc.scheduled_tasks || !reported_date || !type)
+          return changed;
+
+      // setup window to look for tasks based on before value
+      if (!before) {
+           before = moment(reported_date).add(
+               'days', config.get('ohw_obsolete_reminders_days') || 21
+           ).valueOf();
+      }
+
+      // find group
+      // scheduled_tasks should be sorted by due date
+      for (var i in doc.scheduled_tasks) {
+          var task = doc.scheduled_tasks[i];
+          if (type === task.type
+                  && task.state === 'scheduled'
+                  && task.due >= reported_date
+                  && task.due <= before) {
+              group = task.group;
+              break;
           }
-          return task;
-      });
+      };
+
+      // clear tasks types that were due before reported date, also clear if
+      // the same type and group.
+      for (var i in doc.scheduled_tasks) {
+          var task = doc.scheduled_tasks[i];
+          if (type === task.type && task.due <= reported_date) {
+              task.state = 'cleared';
+              changed = true;
+          }
+          if (type === task.type && task.group === group) {
+              task.state = 'cleared';
+              changed = true;
+          }
+      };
+
       return changed;
+
   },
   clearScheduledMessages: function(doc, types) {
       types = _.isArray(types) ? types : [types];

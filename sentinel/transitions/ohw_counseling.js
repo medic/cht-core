@@ -51,11 +51,7 @@ module.exports = {
                 return callback(null, true);
             }
 
-            var msg = msgs.default,
-                horizon = moment(date.getDate()).add(
-                    'days', config.get('ohw_obsolete_reminders_days')
-                );
-
+            var msg = msgs.default;
 
             if (doc.anc_pnc === 'PNC') {
 
@@ -65,12 +61,12 @@ module.exports = {
                     msg = msgs.pnc_low;
 
                 var changed = utils.obsoleteScheduledMessages(
-                    registration, 'counseling_reminder', horizon.valueOf()
+                    registration, 'counseling_reminder', doc.reported_date
                 );
 
             } else if (doc.anc_pnc === 'ANC') {
                 utils.obsoleteScheduledMessages(
-                    registration, 'anc_visit', horizon.valueOf()
+                    registration, 'anc_visit', doc.reported_date
                 );
                 msg = msgs.anc;
             }
