@@ -161,6 +161,7 @@ exports['ANC report right now clears group 1'] = function(test) {
 };
 
 exports['ANC report right now clears group 1'] = function(test) {
+    test.expect(3);
     var doc = {
         reported_date: new Date().valueOf(),
         patient_id: '123',
@@ -172,17 +173,17 @@ exports['ANC report right now clears group 1'] = function(test) {
         var st = registration.scheduled_tasks;
         test.ok(st);
         test.equals(st.length, 12);
-        test.equals(st[0].state, 'cleared');
-        test.equals(st[1].state, 'cleared');
-        test.equals(st[2].state, 'scheduled');
-        test.equals(st[3].state, 'scheduled');
-        test.equals(st[4].state, 'scheduled');
-        test.equals(st[5].state, 'scheduled');
+        test.ok(_.all(registration.scheduled_tasks, function(task) {
+            if (task.type === 'anc_visit' && task.group === 1)
+                return task.state === 'cleared';
+            return task.state !== 'cleared';
+        }));
         test.done();
     });
 };
 
 exports['ANC report in 14 days clears group 1 and 2'] = function(test) {
+    test.expect(3);
     var doc = {
         reported_date: moment(new Date()).add('days', 14).valueOf(),
         patient_id: '123',
@@ -194,12 +195,11 @@ exports['ANC report in 14 days clears group 1 and 2'] = function(test) {
         var st = registration.scheduled_tasks;
         test.ok(st);
         test.equals(st.length, 12);
-        test.equals(st[0].state, 'cleared');
-        test.equals(st[1].state, 'cleared');
-        test.equals(st[2].state, 'cleared');
-        test.equals(st[3].state, 'scheduled');
-        test.equals(st[4].state, 'scheduled');
-        test.equals(st[5].state, 'scheduled');
+        test.ok(_.all(registration.scheduled_tasks, function(task) {
+            if (task.type === 'anc_visit' && [1,2].indexOf(task.group) !== -1)
+                return task.state === 'cleared';
+            return task.state !== 'cleared';
+        }));
         test.done();
     });
 };
@@ -230,6 +230,7 @@ exports['PNC normal acknowledgement'] = function(test) {
 };
 
 exports['PNC report now clears group 1'] = function(test) {
+    test.expect(4);
     var doc = {
         reported_date: new Date().valueOf(),
         patient_id: '123',
@@ -249,11 +250,13 @@ exports['PNC report now clears group 1'] = function(test) {
         test.equal(doc.tasks.length, 1);
         test.ok(registration);
         test.equals(st.length, 12);
-        test.equals(st[7].state, 'cleared');
-        test.equals(st[8].state, 'cleared');
-        test.equals(st[9].state, 'scheduled');
-        test.equals(st[10].state, 'scheduled');
-        test.equals(st[11].state, 'scheduled');
+        test.ok(_.all(registration.scheduled_tasks, function(task) {
+            if (task.type === 'counseling_reminder' && task.group === 1) {
+                return task.state === 'cleared';
+            } else if (task.state) {
+                return task.state !== 'cleared';
+            }
+        }));
 
         //
         // clears upcoming_delivery?
@@ -271,6 +274,7 @@ exports['PNC report now clears group 1'] = function(test) {
 
 
 exports['PNC report in 36 days clears all counseling reminders'] = function(test) {
+    test.expect(4);
     var doc = {
         reported_date: moment(new Date()).add('days', 36).valueOf(),
         patient_id: '123',
@@ -290,22 +294,13 @@ exports['PNC report in 36 days clears all counseling reminders'] = function(test
         test.equal(doc.tasks.length, 1);
         test.ok(registration);
         test.equals(st.length, 12);
-        test.equals(st[7].state, 'cleared');
-        test.equals(st[8].state, 'cleared');
-        test.equals(st[9].state, 'cleared');
-        test.equals(st[10].state, 'cleared');
-        test.equals(st[11].state, 'cleared');
-
-        //
-        // clears upcoming_delivery?
-        // Should PNC report clear 'counseling_reminder' alerts even if
-        // outcome_request is not cleared?  Should we send outcome_request
-        // response in that case?
-        //
-        //test.ok(_.all(registration.scheduled_tasks, function(task) {
-        //    if (task.type === 'upcoming_delivery')
-        //        return task.state === 'obsoleted';
-        //}));
+        test.ok(_.all(registration.scheduled_tasks, function(task) {
+            if (task.type === 'counseling_reminder') {
+                return task.state === 'cleared';
+            } else if (task.state) {
+                return task.state !== 'cleared';
+            }
+        }));
         test.done();
     });
 };
