@@ -4,6 +4,7 @@ var _ = require('underscore'),
     path = require('path'),
     db = require('../db'),
     transitions = {},
+    date = require('../date'),
     queue;
 
 // read all files in this directory and use every one except index.js as a transition
@@ -67,7 +68,14 @@ module.exports = {
 
                         if (!err && doc) {
                             if (transition.repeatable || !transitions[key] || !transitions[key].ok) {
+
+                                // modify reported_date if we are running in
+                                // synthetic date mode
+                                if (doc.reported_date && date.isSynthetic())
+                                    doc.reported_date = date.getTimestamp();
+
                                 change.doc = doc;
+
                                 queue.push({
                                     change: change,
                                     key: key,
