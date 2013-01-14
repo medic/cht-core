@@ -12,18 +12,10 @@ module.exports = {
         var clinicContactName,
             clinicPhone,
             doc = change.doc,
-            reportedDate,
             self = module.exports;
 
         clinicPhone = utils.getClinicPhone(doc);
         clinicContactName = utils.getClinicContactName(doc);
-
-        if (date.isSynthetic()) {
-            reportedDate = moment(date.getDate());
-        } else {
-            reportedDate = moment(doc.reported_date);
-        }
-        reportedDate.startOf('day');
 
         utils.getOHWRegistration(doc.patient_id, function(err, registration) {
             var parentPhone = utils.getParentPhone(registration),
@@ -45,7 +37,9 @@ module.exports = {
                 mother_outcome: doc.outcome_mother,
                 child_outcome: doc.outcome_child,
                 child_birth_weight: doc.birth_weight,
-                child_birth_date: reportedDate.subtract('days', doc.days_since_delivery).valueOf()
+                child_birth_date: moment(doc.reported_date)
+                    .startOf('day')
+                    .subtract('days', doc.days_since_delivery).valueOf()
             });
 
             utils.clearScheduledMessages(
