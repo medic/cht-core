@@ -17,7 +17,15 @@
     "screenshots": [
         "static/img/promo/screenshot1.png"
     ],
-
+    "settings_schema" : {
+        "description": "Kujua Settings",
+        "type": "object",
+        "properties": {
+            "google_analytics_code": {
+                "type": "string"
+            }
+        }
+    },
     "loglevel": "info",
     "load": "lib/app",
     "modules": ["lib"],
