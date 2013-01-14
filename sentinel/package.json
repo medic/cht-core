@@ -10,7 +10,8 @@
         "mustache": "latest",
         "optimist": "latest",
         "request": "latest",
-        "underscore": "latest"
+        "underscore": "latest",
+        "url": "latest"
     },
     "devDependencies": {
         "kanso": "latest",

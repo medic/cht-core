@@ -48,6 +48,7 @@
         "compile": ["static/css/app.less", "static/css/spreadsheet.less"],
         "remove_from_attachments": true
     },
+    "node_module_folder" : "sentinel",
     "dependencies": {
         "modules": null,
         "properties": null,
@@ -73,6 +74,7 @@
         "couch-fakerequest": null,
         "users": null,
         "cookies": null,
-        "moment": null
+        "moment": null,
+        "kanso-gardener": null
     }
 }
