@@ -46,3 +46,7 @@ exports.twilio_message = function(doc) {
         return task.state === 'pending';
     });
 };
+
+exports.config_doc = function(doc) {
+    return doc._id === 'sentinel-configuration';
+};

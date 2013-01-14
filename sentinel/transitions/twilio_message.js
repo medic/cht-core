@@ -1,16 +1,16 @@
 var async = require('async'),
     config = require('../config'),
-    request = require('request'),
-    fromNumber = config.get('twilio_number') || '+15037664982',
-    twilioSid = config.get('twilio_sid'),
-    twilioToken = config.get('twilio_token'),
-    auth = twilioSid && twilioToken ? 'Basic ' + new Buffer(twilioSid + ':' + twilioToken).toString('base64') : false;
+    request = require('request');
 
 module.exports = {
     db: require('../db'),
     onMatch: function(change, callback) {
         var doc = change.doc,
-            original = JSON.stringify(doc);
+            original = JSON.stringify(doc),
+            fromNumber = config.get('twilio_number') || '+15037664982',
+            twilioSid = config.get('twilio_sid'),
+            twilioToken = config.get('twilio_token'),
+            auth = twilioSid && twilioToken ? 'Basic ' + new Buffer(twilioSid + ':' + twilioToken).toString('base64') : false;
 
         if (auth) {
             async.map(doc.tasks, function(task, taskCallback) {
