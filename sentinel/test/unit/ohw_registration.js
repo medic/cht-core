@@ -107,7 +107,7 @@ exports['response for positive registration with LMP of 5'] = function(test) {
     test.expect(3);
     var doc = {
         serial_number: 'abc',
-        last_menstrual_period: 5,
+        last_menstrual_period: 6,
         related_entities: {
             clinic: {
                 contact: {

@@ -11,16 +11,18 @@ module.exports = {
     onMatch: function(change, callback) {
         var clinicContactName,
             clinicPhone,
+            parentPhone,
             doc = change.doc,
             self = module.exports;
 
         clinicPhone = utils.getClinicPhone(doc);
         clinicContactName = utils.getClinicContactName(doc);
+        parentPhone = utils.getParentPhone(doc);
 
         utils.getOHWRegistration(doc.patient_id, function(err, registration) {
-            var parentPhone = utils.getParentPhone(registration),
                 msg = "No patient with id '{{patient_id}}' found.",
-                conf = 'ohw_counseling_reminder_days';
+                conf = 'ohw_counseling_reminder_days',
+                proximity = config.get('ohw_birth_report_within_days');
 
             if (err)
                 return callback(err);
@@ -29,6 +31,34 @@ module.exports = {
                 utils.addMessage(doc, {
                     phone: clinicPhone,
                     message: i18n(msg, {patient_id: doc.patient_id})
+                });
+                return callback(null, true);
+            }
+
+            // if OBIR is submitted more than 45 days before EDD then ignore
+            // and send alert to health facility. it's likely a mistake.
+            if (moment(doc.reported_date).add('days', proximity).valueOf()
+                < registration.expected_date) {
+                var msg1 = '{{contact_name}} has submitted a birth outcome report'
+                    + ' for {{patient_id}}. Her EDD is > 45 days away.'
+                    + ' Please confirm with {{contact_name}} that the report'
+                    + ' is valid.';
+                var msg2 = 'Thank you, {{contact_name}}. Birth outcome report'
+                    + ' for {{serial_number}} has been recorded. Please'
+                    + ' complete necessary protocol.';
+                utils.addMessage(doc, {
+                    phone: parentPhone,
+                    message: i18n(msg1, {
+                        contact_name: clinicContactName,
+                        patient_id: registration.patient_id
+                    })
+                });
+                utils.addMessage(doc, {
+                    phone: clinicPhone,
+                    message: i18n(msg2, {
+                        contact_name: clinicContactName,
+                        serial_number: registration.serial_number
+                    })
                 });
                 return callback(null, true);
             }
