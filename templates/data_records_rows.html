@@ -92,16 +92,15 @@
                     {>"data_record_fields.html":fields/}
                   </div>
                   {?tasks}
-                  <div>
+                  <div class="data-record-tasks">
                     {>"data_record_tasks.html"/}
                   </div>
-                  {:else}
-                    {?scheduled_tasks}
-                    <div>
-                      {>"data_record_tasks.html"/}
-                    </div>
-                    {/scheduled_tasks}
                   {/tasks}
+                  {?scheduled_tasks}
+                  <div class="data-record-scheduled-tasks">
+                    {>"data_record_scheduled_tasks.html"/}
+                  </div>
+                  {/scheduled_tasks}
                   {?errors}
                   <div class="data-record-errors">
                     {>"data_record_errors.html"/}

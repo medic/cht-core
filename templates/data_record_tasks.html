@@ -1,4 +1,4 @@
-<table class="table tasks-{type}" data-tasks-idx="{@idx}{.}{/idx}">
+<table class="table tasks-{type}">
   <thead>
     <tr>
       <th class="tasks-messages">Messages</th>
@@ -10,7 +10,7 @@
           <table>
             <tbody>
         {#tasks}
-          <tr data-tasks-idx={@idx}{.}{/idx}" class="task">
+          <tr data-tasks-idx="{@idx}{.}{/idx}" class="task relative">
             <td><span class="tasks-state-{state}"></span></td>
             {?timestamp}
             <td class="tasks-state-timestamp">
@@ -33,43 +33,10 @@
               </form>
               {/to}
             </td>
-            <td>{message}</td>
+            <td colspan="2">{message}</td>
           {/messages}
           </tr>
         {/tasks}
-        {#scheduled_tasks}
-          <tr data-scheduled-tasks-idx={@idx}{.}{/idx}" class="scheduled-task">
-            <td><span class="tasks-state-{state}"></span></td>
-            {?timestamp}
-            <td class="tasks-state-timestamp">
-              {timestamp}
-            </td>
-            {/timestamp}
-            {?due}
-            <td class="tasks-state-due">
-              {due}
-            </td>
-            {/due}
-          {#messages}
-            <td class="to">{?to}{to}
-              {:else}
-              <i class="error-missing-phone icon-exclamation-sign" title="Missing phone"></i>
-              <form action="" method="POST" class="hide form-inline" autocomplete="off">
-                <span class="control-group">
-                  <input type="hidden" name="_id" value="{_id}" />
-                  <input type="hidden" name="_rev" value="{_rev}" />
-                  <input type="hidden" name="idx" value="{@idx}{.}{/idx}" />
-                  <input class="span2" type="text" data-provide="typeahead" name="phone" />
-                  <button type="submit" class="btn">Submit</button>
-                  <p class="help-block">e.g. +22995960001</p>
-                </span>
-              </form>
-              {/to}
-            </td>
-            <td>{message}</td>
-          {/messages}
-          </tr>
-        {/scheduled_tasks}
           </tbody>
           </table>
         </td>

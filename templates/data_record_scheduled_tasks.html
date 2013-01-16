@@ -1,0 +1,83 @@
+<table class="table tasks-{type}">
+  <thead>
+    <tr>
+      <th class="tasks-messages">Schedule</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+{#scheduled_tasks_by_group}
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="group-header">
+          <div class="wrap">
+            {?group}{group}{:else}Group{/group}
+            <div class="btn-group">
+              <a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">
+                <i class="icon-large icon-cog"></i>
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Edit Schedule</a></li>
+                <li><a href="#">Add Row</a></li>
+              </ul>
+            </div>
+          </div>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>
+        <table>
+          <tbody>
+            {#rows}
+            <tr data-tasks-idx="{_idx}" class="task">
+              <td><span class="tasks-state-{state}"></span></td>
+              {?timestamp}
+              <td class="tasks-state-timestamp">
+                {timestamp}
+              </td>
+              {/timestamp}
+              {?due}
+              <td class="tasks-state-due">
+                {due}
+              </td>
+              {/due}
+              {#messages}
+                <td class="to">{?to}{to}
+                  {:else}
+                  <i class="error-missing-phone icon-exclamation-sign" title="Missing phone"></i>
+                  <form action="" method="POST" class="hide form-inline" autocomplete="off">
+                    <span class="control-group">
+                      <input type="hidden" name="_id" value="{_id}" />
+                      <input type="hidden" name="_rev" value="{_rev}" />
+                      <input type="hidden" name="idx" value="{@idx}{.}{/idx}" />
+                      <input class="span2" type="text" data-provide="typeahead" name="phone" />
+                      <button type="submit" class="btn">Submit</button>
+                      <p class="help-block">e.g. +22995960001</p>
+                    </span>
+                  </form>
+                  {/to}
+                </td>
+                <td class="message">
+                    {message}
+                </td>
+                </td>
+              {/messages}
+            </tr>
+            {/rows}
+        </tbody>
+      </table>
+      </td>
+      </tr>
+    </tbody>
+  </table>
+{/scheduled_tasks_by_group}
+</td>
+</tr>
+</tbody>
+</table>
+

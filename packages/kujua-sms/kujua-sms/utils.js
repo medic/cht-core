@@ -145,11 +145,18 @@ exports.makeDataRecordOriginal = function(doc) {
       delete doc.reported_date_orig;
       delete doc.fields;
       delete  doc.scheduled_tasks_count;
+      delete  doc.scheduled_tasks_by_group;
       doc.reported_date = rdo;
       return doc;
 };
 
-// take data record document and return nice formated JSON object
+/*
+ * Take data record document and return nice formated JSON object.
+ *
+ * NOTE: Any properties you add to the doc/record here need to be removed in
+ * makeDataRecordOriginal.
+ *
+ */
 exports.makeDataRecordReadable = function(doc) {
     var data_record = doc;
 
@@ -186,8 +193,11 @@ exports.makeDataRecordReadable = function(doc) {
 
     if(data_record.scheduled_tasks) {
         data_record.scheduled_tasks_count = 0;
+        data_record.scheduled_tasks_by_group = [];
+        var groups = {};
         for (var i in data_record.scheduled_tasks) {
             var t = data_record.scheduled_tasks[i];
+            // format timestamp
             if (t.state === 'scheduled')
                 data_record.scheduled_tasks_count += 1;
             if (t.due) {
@@ -198,6 +208,22 @@ exports.makeDataRecordReadable = function(doc) {
                 var m = moment(t.timestamp);
                 t.timestamp= m.format('DD, MMM YYYY, HH:mm:ss Z');
             }
+
+            // setup scheduled groups
+            var group_name = t.type;
+            if (t.group)
+                group_name += ":"+t.group;
+            if (!groups[group_name]) {
+                groups[group_name] = {
+                    group: group_name,
+                    rows: []
+                };
+            }
+            t._idx = i;
+            groups[group_name].rows.push(t);
+        }
+        for (var k in groups) {
+            data_record.scheduled_tasks_by_group.push(groups[k]);
         }
     }
 
