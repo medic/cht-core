@@ -14,15 +14,19 @@
         <th class="group-header">
           <div class="wrap">
             {?group}{group}{:else}Group{/group}
-            <div class="btn-group">
+            <div class="btn-group menu">
               <a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">
                 <i class="icon-large icon-cog"></i>
                 <span class="caret"></span>
               </a>
               <ul class="dropdown-menu">
-                <li><a href="#">Edit Schedule</a></li>
-                <li><a href="#">Add Row</a></li>
+                <li><a href="#" class="edit">Edit Schedule</a></li>
+                <li><a href="#" class="add">Add Row</a></li>
               </ul>
+            </div>
+            <div class="btn-group submit">
+              <a href="#" class="btn btn-mini btn-primary">Save</a>
+              <a href="#" class="btn btn-mini cancel">Cancel</a>
             </div>
           </div>
         </th>
@@ -35,21 +39,37 @@
           <tbody>
             {#rows}
             <tr data-tasks-idx="{_idx}" class="task">
-              <td><span class="tasks-state-{state}"></span></td>
+              <td class="tasks-state">
+                <div class="wrap">
+                  <span class="label tasks-state-{state}"></span>
+                  <div class="btn-group">
+                    <a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">
+                      <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                      <li><a href="#"><span class="tasks-state-scheduled"></span></a></li>
+                      <li><a href="#"><span class="tasks-state-pending"></span></a></li>
+                      <li><a href="#"><span class="tasks-state-cleared"></span></a></li>
+                      <li><a href="#"><span class="tasks-state-cancelled"></span></a></li>
+                      <li><a href="#"><span class="tasks-state-muted"></span></a></li>
+                    </ul>
+                  </div>
+                </div>
+              </td>
               {?timestamp}
-              <td class="tasks-state-timestamp">
+              <td class="tasks-timestamp">
                 {timestamp}
               </td>
               {/timestamp}
               {?due}
-              <td class="tasks-state-due">
+              <td class="tasks-due">
                 {due}
               </td>
               {/due}
               {#messages}
-                <td class="to">{?to}{to}
+                <td class="tasks-to">{?to}{to}
                   {:else}
-                  <i class="error-missing-phone icon-exclamation-sign" title="Missing phone"></i>
+                  <i class="tasks-error error-missing-phone icon-exclamation-sign" title="Missing phone"></i>
                   <form action="" method="POST" class="hide form-inline" autocomplete="off">
                     <span class="control-group">
                       <input type="hidden" name="_id" value="{_id}" />
@@ -62,7 +82,7 @@
                   </form>
                   {/to}
                 </td>
-                <td class="message">
+                <td class="tasks-message">
                     {message}
                 </td>
                 </td>

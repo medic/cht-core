@@ -266,6 +266,9 @@ body {
     .tasks-state-sent {
       .label-success;
     }
+    .tasks-state-cancelled {
+      .label-warning;
+    }
     .tasks-state-muted {
       .opacity(50);
     }
@@ -280,15 +283,36 @@ body {
         padding-left:20px;
       }
     }
-    .group-header .wrap {
-      line-height: 20px;
-      .btn-group {
-        display: none;
-        .pull-right;
-        .btn .caret {
-          margin-top: 5px;
-          margin-left: 2px;
+    .group-header {
+      .wrap {
+        line-height: 20px;
+      }
+    }
+    .btn-group {
+      display: none;
+      .pull-right;
+      .btn .caret {
+        margin-top: 5px;
+        margin-left: 2px;
+      }
+      &.submit {
+        .btn-primary {
+          margin-right: 10px;
         }
+      }
+    }
+    .tasks-state {
+      .btn-group .dropdown-toggle {
+        padding-left: 4px;
+        padding-right: 5px;
+      }
+    }
+    .edit-mode {
+      .group-header .submit {
+        display: block;
+      }
+      .tasks-state .btn-group {
+        display: block;
       }
     }
   }
