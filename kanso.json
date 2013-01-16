@@ -1,6 +1,6 @@
 {
     "name": "kujua-base",
-    "version": "0.1.22-pre",
+    "version": "0.1.22-pre2",
     "description": "Provide access to your SMS form data.",
     "long_description" : "Kujua is a ....",
     "url": "https://github.com/medic/kujua",
@@ -21,8 +21,91 @@
         "description": "Kujua Settings",
         "type": "object",
         "properties": {
-            "google_analytics_code": {
-                "type": "string"
+            "id_format": {
+                "type": "string",
+                "default": "111111"
+            },
+            "ohw_counseling_reminder_days": {
+                "title": "OWH counseling reminder days",      
+                "type": "array",
+                "items": {        
+                    "type": "object",        
+                    "order": ["days", "group"],       
+                    "required": ["days", "group"],        
+                    "properties": {          
+                        "days": {            
+                            "type": "number",            
+                            "title": "Days"          
+                        },          
+                        "group": {            
+                            "type": "number",            
+                            "title": "Group"          
+                        }
+                    }
+                }
+            },
+            "ohw_counseling_reminder_lbw_days" : {
+                "title": "ohw counseling reminder lbw days",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "order": ["days", "group"],
+                    "required": ["days", "group"],
+                    "properties": {
+                        "days": {
+                            "type": "number",
+                            "title": "Days"
+                        },
+                        "group": {
+                            "type": "number",
+                            "title": "Group"
+                        }
+                    }
+                }
+            },
+            "ohw_miso_reminder_days" : {
+                "title": "ohw miso reminder days",
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            },
+            "ohw_obsolete_reminders_days" : {
+                "type": "number",
+                "default": 21
+            },
+            "ohw_outcome_request_days" : {
+                "title": "ohw outcome request days",
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            },
+            "ohw_reminder_schedule_days" : {
+                "title": "ohw reminder schedule days",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "order": ["days", "group"],
+                    "required": ["days", "group"],
+                    "properties": {
+                        "days": {
+                            "type": "number",
+                            "title": "Days"
+                        },
+                        "group": {
+                            "type": "number",
+                            "title": "Group"
+                        }
+                    }
+                }
+            },
+            "ohw_upcoming_delivery_days" : {
+                "title": "ohw upcoming delivery days",
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
             }
         }
     },
