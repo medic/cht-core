@@ -211,6 +211,11 @@
 
     place: function(){
       var offset = this.component ? this.component.offset() : this.$element.offset();
+      // kujua hack to display calendar widget aligned right
+      if (this.$element.hasClass('pull-right')) {
+          offset.left -= 230;
+          this.widget.addClass('pull-right');
+      }
       this.widget.css({
         top: offset.top + this.height,
         left: offset.left
