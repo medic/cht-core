@@ -25,7 +25,7 @@
               </ul>
             </div>
             <div class="btn-group submit">
-              <a href="#" class="btn btn-mini btn-primary">Save</a>
+              <a href="#" class="btn btn-mini btn-primary save">Save</a>
               <a href="#" class="btn btn-mini cancel">Cancel</a>
             </div>
           </div>
@@ -41,17 +41,18 @@
             <tr data-tasks-idx="{_idx}" class="task">
               <td class="tasks-state">
                 <div class="wrap">
-                  <span class="label tasks-state-{state}"></span>
+                  <span 
+                    data-save-val="{state}" 
+                    data-orig-val="" 
+                    class="label tasks-state-{state}"></span>
                   <div class="btn-group">
                     <a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">
                       <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
-                      <li><a href="#"><span class="tasks-state-scheduled"></span></a></li>
-                      <li><a href="#"><span class="tasks-state-pending"></span></a></li>
-                      <li><a href="#"><span class="tasks-state-cleared"></span></a></li>
-                      <li><a href="#"><span class="tasks-state-cancelled"></span></a></li>
-                      <li><a href="#"><span class="tasks-state-muted"></span></a></li>
+                      <li><a data-state="scheduled" href="#"><span class="tasks-state-scheduled"></span></a></li>
+                      <li><a data-state="cleared" href="#"><span class="tasks-state-cleared"></span></a></li>
+                      <li><a data-state="muted" href="#"><span class="tasks-state-muted"></span></a></li>
                     </ul>
                   </div>
                 </div>
