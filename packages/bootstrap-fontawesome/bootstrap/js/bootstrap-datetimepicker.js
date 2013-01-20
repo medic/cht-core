@@ -174,6 +174,7 @@
         this._date = new Date(newDate);
       }
       this.set();
+      if (!this._date) return;
       this.viewDate = UTCDate(this._date.getUTCFullYear(), this._date.getUTCMonth(), 1, 0, 0, 0, 0);
       this.fillDate();
       this.fillTime();
@@ -251,6 +252,7 @@
           this._date = this.parseDate(dateStr);
         }
       }
+      if (!this._date) return;
       this.viewDate = UTCDate(this._date.getUTCFullYear(), this._date.getUTCMonth(), 1, 0, 0, 0, 0);
       this.fillDate();
       this.fillTime();
@@ -715,6 +717,7 @@
 
     formatDate: function(d) {
       return this.format.replace(formatReplacer, function(match) {
+        if (d === null) return '';
         var methodName, property, rv, len = match.length;
         if (match === 'ms')
           len = 1;
@@ -846,8 +849,10 @@
           if (expanded && expanded.length) {
             var collapseData = expanded.data('collapse');
             if (collapseData && collapseData.transitioning) return;
-            expanded.collapse('hide');
-            closed.collapse('show')
+            expanded.collapse ?  expanded.collapse('hide') : expanded.hide();
+            expanded.removeClass('in');
+            closed.collapse ? closed.collapse('show') : closed.show();
+            closed.addClass('in');
             $this.find('i').toggleClass(self.timeIcon + ' ' + self.dateIcon);
             self.$element.find('.add-on i').toggleClass(self.timeIcon + ' ' + self.dateIcon);
           }

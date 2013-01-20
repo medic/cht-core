@@ -288,31 +288,92 @@ body {
         line-height: 20px;
       }
     }
-    .btn-group {
-      display: none;
-      .pull-right;
-      .btn .caret {
-        margin-top: 5px;
-        margin-left: 2px;
-      }
-      &.submit {
-        .btn-primary {
-          margin-right: 10px;
-        }
-      }
-    }
     .tasks-state {
       .btn-group .dropdown-toggle {
         padding-left: 4px;
         padding-right: 5px;
       }
     }
+    .tasks-state {
+      .wrap {
+        float: right;
+        margin-right: 5px;
+      }
+    }
+    #new-task-template {
+      display: none;
+    }
+    .read-mode,
+    .edit-mode {
+      .btn-group {
+        display: none;
+        .pull-right;
+        .btn .caret {
+          margin-top: 5px;
+          margin-left: 2px;
+        }
+        &.menu {
+          display: block;
+        }
+        &.submit {
+          .btn-primary {
+            margin-right: 10px;
+          }
+        }
+      }
+      .add-row-controls {
+        td {
+          text-align: center;
+        }
+      }
+    }
+    .read-mode {
+      .control-group {
+        display: none;
+      }
+      .val {
+        display: block;
+      }
+      .add-row-controls {
+        display: none;
+      }
+    }
     .edit-mode {
       .group-header .submit {
         display: block;
       }
-      .tasks-state .btn-group {
+      .val {
+        display: none;
+      }
+      .tasks-state {
+        .control-group {
+          float: right;
+          width: 20px;
+        }
+        .btn-group {
+          display: block;
+          &.menu {
+            display: none;
+          }
+        }
+      }
+      .control-group {
         display: block;
+      }
+      .add-row-controls {
+        display: table-row;
+      }
+      .tasks-state {
+        width: 90px;
+      }
+      .tasks-due {
+        width: 190px;
+      }
+      .tasks-to {
+        width: 135px;
+      }
+      .tasks-message textarea {
+        width: 100%;
       }
     }
   }

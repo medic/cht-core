@@ -202,12 +202,16 @@ exports.makeDataRecordReadable = function(doc) {
                 data_record.scheduled_tasks_count += 1;
             if (t.due) {
                 var m = moment(t.due);
+                t._due_ts = t.due;
                 t.due = m.format('DD, MMM YYYY, HH:mm:ss Z');
             }
+            /* not needed?
             if (t.timestamp) {
                 var m = moment(t.timestamp);
+                t._timestamp_ts = t.timestamp;
                 t.timestamp= m.format('DD, MMM YYYY, HH:mm:ss Z');
             }
+            */
 
             // setup scheduled groups
             var group_name = t.type;
@@ -219,10 +223,17 @@ exports.makeDataRecordReadable = function(doc) {
                     rows: []
                 };
             }
+            //
+            // Warning: _idx is used on frontend during save.
+            //
             t._idx = i;
             groups[group_name].rows.push(t);
         }
         for (var k in groups) {
+            // sort by due date ascending
+            groups[k].rows.sort(function(l,r) {
+                if (l._due_ts && r._due_ts) return l._due_ts > r._due_ts;
+            });
             data_record.scheduled_tasks_by_group.push(groups[k]);
         }
     }
