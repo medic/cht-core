@@ -300,6 +300,15 @@ body {
         margin-right: 5px;
       }
     }
+    .tasks-removal-pending {
+      display: none;
+    }
+    .tasks-removal {
+      text-align: center;
+      p {
+        .well;
+      }
+    }
     #new-task-template {
       display: none;
     }
@@ -321,24 +330,35 @@ body {
           }
         }
       }
-      .add-row-controls {
-        td {
-          text-align: center;
+      .row-controls {
+        text-align: center;
+        font-size: 1.25em;
+        border-left: 0;
+        width: 10px;
+        .remove {
+          color: @red;
+        }
+        a {
+          display: block;
+          margin: 3px;
         }
       }
     }
     .read-mode {
+      .row-controls {
+        display: none;
+      }
       .control-group {
         display: none;
       }
       .val {
         display: block;
       }
-      .add-row-controls {
-        display: none;
-      }
     }
     .edit-mode {
+      .row-controls {
+        display: table-cell;
+      }
       .group-header .submit {
         display: block;
       }
@@ -360,9 +380,6 @@ body {
       .control-group {
         display: block;
       }
-      .add-row-controls {
-        display: table-row;
-      }
       .tasks-state {
         width: 90px;
       }
@@ -373,7 +390,7 @@ body {
         width: 135px;
       }
       .tasks-message textarea {
-        width: 100%;
+        width: 95%;
       }
     }
   }

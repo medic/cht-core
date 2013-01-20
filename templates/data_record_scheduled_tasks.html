@@ -93,18 +93,16 @@
                 </div>
               </td>
               {/messages}
-            </tr>
-            {/rows}
-            <tr class="add-row-controls">
-              <td colspan="4">
-                <a class="btn btn-mini add-new" href="#">
-                  <i class="icon-plus"></i>
+              <td class="row-controls">
+                <a class="remove" href="#">
+                  <i class="icon-remove-sign"></i>
                 </a>
-                <a class="btn btn-mini remove-new" href="#">
-                  <i class="icon-minus"></i>
+                <a class="add-new" href="#">
+                  <i class="icon-plus-sign"></i>
                 </a>
               </td>
             </tr>
+            {/rows}
             <tr id="new-task-template" class="task">
               <td class="tasks-state">
                 <div class="btn-group">
@@ -152,6 +150,14 @@
                     <textarea />
                   </div>
                 </div>
+              </td>
+              <td class="row-controls">
+                <a class="remove" href="#">
+                  <i class="icon-remove-sign"></i>
+                </a>
+                <a class="add-new" href="#">
+                  <i class="icon-plus-sign"></i>
+                </a>
               </td>
             </tr>
         </tbody>

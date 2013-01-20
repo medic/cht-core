@@ -197,6 +197,10 @@ exports.makeDataRecordReadable = function(doc) {
         var groups = {};
         for (var i in data_record.scheduled_tasks) {
             var t = data_record.scheduled_tasks[i];
+
+            // avoid crash if item is falsey
+            if (!t) continue;
+
             // format timestamp
             if (t.state === 'scheduled')
                 data_record.scheduled_tasks_count += 1;
