@@ -72,13 +72,13 @@
                 <i class="icon-exclamation-sign icon-large"></i>
                 {:else}
                   <i class="{state} icon-ok icon-large"></i>
-                  {?tasks}
-                  <span class="label label-success">{tasks.length}</span>
-                  {?scheduled_tasks}
-                  <span class="label label-info">{scheduled_tasks_count}</span>
-                  {/scheduled_tasks}
-                  {/tasks}
                 {/errors}
+                {?tasks}
+                <span class="label label-success">{tasks.length}</span>
+                {/tasks}
+                {?scheduled_tasks}
+                <span class="label label-info">{scheduled_tasks_count}</span>
+                {/scheduled_tasks}
               </td>
             </tr>
           </tbody>
