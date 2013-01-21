@@ -91,16 +91,6 @@
                   <div class="scroll">
                     {>"data_record_fields.html":fields/}
                   </div>
-                  {?tasks}
-                  <div class="data-record-tasks">
-                    {>"data_record_tasks.html"/}
-                  </div>
-                  {/tasks}
-                  {?scheduled_tasks}
-                  <div class="data-record-scheduled-tasks">
-                    {>"data_record_scheduled_tasks.html"/}
-                  </div>
-                  {/scheduled_tasks}
                   {?errors}
                   <div class="data-record-errors">
                     {>"data_record_errors.html"/}
@@ -111,6 +101,16 @@
                     {>"data_record_responses.html"/}
                   </div>
                   {/responses}
+                  {?tasks}
+                  <div class="data-record-tasks">
+                    {>"data_record_tasks.html"/}
+                  </div>
+                  {/tasks}
+                  {?scheduled_tasks}
+                  <div class="data-record-scheduled-tasks">
+                    {>"data_record_scheduled_tasks.html"/}
+                  </div>
+                  {/scheduled_tasks}
                   {?_raw}
                   <div class="data-record-raw">
                     <a title="JSON" data-toggle="extended" class="pull-right">
