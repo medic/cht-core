@@ -89,7 +89,7 @@ var httpData = function (xhr, type, s) {
 
 function onComplete(options, callback) {
     return function (req) {
-        var resp;
+        var resp = {};
         var ctype = req.getResponseHeader('Content-Type');
         if (ctype === 'application/json' || ctype === 'text/json') {
             try {
