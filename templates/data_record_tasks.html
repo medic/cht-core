@@ -13,10 +13,15 @@
           <tr data-tasks-idx="{@idx}{.}{/idx}" class="task relative">
             <td><span class="tasks-state-{state}"></span></td>
             {?timestamp}
-            <td class="tasks-state-timestamp">
-              {timestamp}
+            <td class="tasks-timestamp">
+              {_timestamp}
             </td>
             {/timestamp}
+            {?due}
+            <td class="tasks-due">
+              {_due}
+            </td>
+            {/due}
           {#messages}
             <td class="to">{?to}{to}
               {:else}
