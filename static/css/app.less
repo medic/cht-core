@@ -38,11 +38,21 @@ body {
   background-color: @white;
   padding: 10px;
   margin: 0;
-  .controls input {
-    margin-bottom: 0;
-  }
-  .controls label {
-    display: inline;
+  .controls {
+    input {
+      margin-bottom: 0;
+    }
+    label {
+      display: inline;
+    }
+    .records-filter {
+      margin-right: 10px;
+      .hide;
+    }
+    .search-query {
+      width: 60px;
+      padding-left: 10px;
+    }
   }
 }
 .page-header.navbar-fixed-top {
