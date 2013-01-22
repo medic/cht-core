@@ -28,9 +28,16 @@
 </div>
 <div id="patient-id-filter" class="records-filter btn-group pull-right">
   <div class="input-append">
-    <input type="text" class="search-query" placeholder="Patient ID">
-    <a type="submit" class="btn">
-      <i class="icon-search"></i>
-    </a>
+    <form action="" method="get">
+      <input 
+        name="patient_id" 
+        value="{query.patient_id}" 
+        type="text" 
+        class="search-query" 
+        placeholder="Patient ID" />
+      <a type="submit" class="btn" href="#">
+        <i class="icon-search"></i>
+      </a>
+  </form>
   </div>
 </div>

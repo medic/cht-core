@@ -187,6 +187,30 @@ exports.data_records_by_district_form_valid_and_reported_date = {
     }
 };
 
+exports.data_records_by_patient_id_and_reported_date = {
+    map: function(doc) {
+        if (doc.type === 'data_record') {
+            if (doc.patient_id)
+                emit([doc.patient_id, doc.reported_date, doc._id], doc);
+        }
+    }
+};
+
+exports.data_records_by_district_patient_id_and_reported_date = {
+    map: function(doc) {
+        var dh = {_id: null};
+        if (doc.type === 'data_record') {
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent) {
+                dh = doc.related_entities.clinic.parent.parent;
+            }
+            if (doc.patient_id)
+                emit([dh._id, doc.patient_id, doc.reported_date, doc._id], doc);
+        }
+    }
+};
+
 exports.data_records_by_reported_date = {
     map: function(doc) {
         if (doc.type === 'data_record') {
