@@ -1,6 +1,6 @@
 {
     "name": "kujua-base",
-    "version": "0.1.22-pre2",
+    "version": "0.1.23-pre",
     "description": "Provide access to your SMS form data.",
     "long_description" : "Kujua is a ....",
     "url": "https://github.com/medic/kujua",
