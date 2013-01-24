@@ -16,6 +16,7 @@ exports.setUp = function(callback) {
             registration = {
                 patient_id: "123",
                 serial_number: "ABC",
+                expected_date: 1381208400000, // Oct 08 2013 00:00:00 GMT-0500
                 scheduled_tasks: [
                     {
                         messages: [ { message: 'foo' } ],
@@ -75,6 +76,7 @@ exports['response for invalid patient'] = function(test) {
 exports['response for normal weight and outcome'] = function(test) {
     test.expect(3);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Alive and Well',
         outcome_child: 'Alive and Well',
         birth_weight: 'Green',
@@ -113,6 +115,7 @@ exports['response for normal weight and outcome'] = function(test) {
 exports['response for normal outcome but low weight (red)'] = function(test) {
     test.expect(3);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Alive and Well',
         outcome_child: 'Alive and Well',
         birth_weight: 'Red',
@@ -154,6 +157,7 @@ exports['response for normal outcome but low weight (red)'] = function(test) {
 exports['response for normal outcome but low weight (yellow)'] = function(test) {
     test.expect(3);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Alive and Well',
         outcome_child: 'Alive and Well',
         birth_weight: 'Yellow',
@@ -193,6 +197,7 @@ exports['response for normal outcome but low weight (yellow)'] = function(test) 
 exports['response for deceased mother and normal outcome child'] = function(test) {
     test.expect(3);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Deceased',
         outcome_child: 'Alive and Well',
         birth_weight: 'Green',
@@ -233,6 +238,7 @@ exports['response for deceased mother and normal outcome child'] = function(test
 exports['response for deceased mother and healthy but low weight (yellow) child'] = function(test) {
     test.expect(3);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Deceased',
         birth_weight: 'Yellow',
         days_since_delivery: 1,
@@ -273,6 +279,7 @@ exports['response for deceased mother and healthy but low weight (yellow) child'
 exports['response for deceased mother and healthy but low weight (red) child'] = function(test) {
     test.expect(3);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Deceased',
         outcome_child: 'Alive and Well',
         birth_weight: 'Red',
@@ -314,6 +321,7 @@ exports['response for deceased mother and healthy but low weight (red) child'] =
 exports['no pnc schedule for deceased mother, normal outcome child'] = function(test) {
     test.expect(3);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Deceased',
         outcome_child: 'Alive and Well',
         birth_weight: 'Green',
@@ -351,6 +359,7 @@ exports['no pnc schedule for deceased mother, normal outcome child'] = function(
 exports['no pnc schedule for deceased mother, low weight (yellow) child'] = function(test) {
     test.expect(3);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Deceased',
         outcome_child: 'Alive and Well',
         birth_weight: 'Yellow',
@@ -388,6 +397,7 @@ exports['no pnc schedule for deceased mother, low weight (yellow) child'] = func
 exports['no pnc schedule for deceased mother, low weight (red) child'] = function(test) {
     test.expect(4);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Deceased',
         outcome_child: 'Alive and Well',
         birth_weight: 'Red',
@@ -427,6 +437,7 @@ exports['no pnc schedule for deceased mother, low weight (red) child'] = functio
 exports['response/no pnc schedule for deceased mother and sick but normal weight child'] = function(test) {
     test.expect(4);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Deceased',
         outcome_child: 'Alive and Sick',
         birth_weight: 'Green',
@@ -470,6 +481,7 @@ exports['response/no pnc schedule for deceased mother and sick but normal weight
 exports['response/no pnc schedule for deceased mother and sick and low weight (yellow) child'] = function(test) {
     test.expect(4);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Deceased',
         outcome_child: 'Alive and Sick',
         birth_weight: 'Yellow',
@@ -513,6 +525,7 @@ exports['response/no pnc schedule for deceased mother and sick and low weight (y
 exports['response/cleared task for deceased mother and sick and low weight (red) child'] = function(test) {
     test.expect(4);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Deceased',
         outcome_child: 'Alive and Sick',
         birth_weight: 'Red',
@@ -557,6 +570,7 @@ exports['response/cleared task for deceased mother and sick and low weight (red)
 exports['response for normal outcome but no weight reported'] = function(test) {
     test.expect(3);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Alive and Well',
         outcome_child: 'Alive and Well',
         days_since_delivery: 1,
@@ -596,6 +610,7 @@ exports['response for normal outcome but no weight reported'] = function(test) {
 exports['response for sick baby'] = function(test) {
     test.expect(3);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_child: 'Alive and Sick',
         days_since_delivery: 1,
         patient_id: 'good',
@@ -635,6 +650,7 @@ exports['response for sick baby'] = function(test) {
 exports['response for deceased baby and no other fields'] = function(test) {
     test.expect(3);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_child: 'Deceased',
         days_since_delivery: 1,
         patient_id: 'good',
@@ -672,6 +688,7 @@ exports['response for deceased baby and no other fields'] = function(test) {
 exports['response/no schedule for deceased mother and no other fields'] = function(test) {
     test.expect(4);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Deceased',
         days_since_delivery: 1,
         patient_id: 'good',
@@ -713,6 +730,7 @@ exports['response/no schedule for deceased mother and no other fields'] = functi
 exports['response/no schedule for deceased mother and no other fields'] = function(test) {
     test.expect(4);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         patient_id: 'good',
         related_entities: {
             clinic: {
@@ -752,6 +770,7 @@ exports['response/no schedule for deceased mother and no other fields'] = functi
 
 exports['outcome report updates registration with weight, birth date'] = function(test) {
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_mother: 'Alive and Well',
         outcome_child: 'Alive and Well',
         birth_weight: 'Green',
@@ -774,13 +793,15 @@ exports['outcome report updates registration with weight, birth date'] = functio
     transition.onMatch({
         doc: doc
     }, function(err, complete) {
-        var today = moment();
+        var reported = moment(1380108400000);
 
         test.ok(complete);
-
         test.equal(registration.child_outcome, 'Alive and Well');
         test.equal(registration.child_birth_weight, 'Green');
-        test.equal(registration.child_birth_date, today.startOf('day').subtract('days', 1).valueOf());
+        test.equal(
+            registration.child_birth_date,
+            reported.startOf('day').subtract('days', 1).valueOf()
+        );
 
         test.done();
     });
@@ -789,6 +810,7 @@ exports['outcome report updates registration with weight, birth date'] = functio
 exports['add schedule for outcome report with normal weight'] = function(test) {
     test.expect(2);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_child: 'Alive and Well',
         birth_weight: 'Green',
         days_since_delivery: 1,
@@ -822,6 +844,7 @@ exports['add schedule for outcome report with normal weight'] = function(test) {
 exports['add lbw schedule for low weight birth outcome'] = function(test) {
     test.expect(2);
     var doc = {
+        reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
         outcome_child: 'Alive and Well',
         birth_weight: 'Yellow',
         days_since_delivery: 1,
@@ -855,4 +878,86 @@ exports['add lbw schedule for low weight birth outcome'] = function(test) {
     });
 };
 
+// at time of this writing default value for ohw_birth_report_within_days is 45
+exports['birth report fails proximity check sets up right messages'] = function(test) {
+    test.expect(6);
+    var doc = {
+        reported_date: 1371208400000, // Jun 14 2013 06:13:20 GMT-0500
+        patient_id: 'good',
+        related_entities: {
+            clinic: {
+                contact: {
+                    name: 'qq',
+                    phone: 'clinic'
+                },
+                parent: {
+                    contact: {
+                        phone: 'parent'
+                    }
+                }
+            }
+        }
+    };
+    transition.onMatch({
+        doc: doc
+    }, function(err, complete) {
+        var msg1 = 'qq has submitted a birth outcome report'
+            + ' for 123. Her EDD is > 45 days away.'
+            + ' Please confirm with qq that the report'
+            + ' is valid.';
+        var msg2 = 'Thank you, qq. Birth outcome report'
+            + ' for ABC has been recorded. Please'
+            + ' complete necessary protocol.';
 
+        test.ok(complete);
+        test.equal(doc.tasks.length, 2);
+        test.equal(
+            doc.tasks[0].messages[0].message,
+            msg1
+        );
+        test.equal(
+            doc.tasks[0].messages[0].to,
+            'parent'
+        );
+        test.equal(
+            doc.tasks[1].messages[0].message,
+            msg2
+        );
+        test.equal(
+            doc.tasks[1].messages[0].to,
+            'clinic'
+        );
+        test.done();
+
+    });
+};
+
+exports['birth report fails proximity check not change schedule'] = function(test) {
+    test.expect(2);
+    var doc = {
+        reported_date: 1371208400000, // Jun 14 2013 06:13:20 GMT-0500
+        patient_id: 'good',
+        related_entities: {
+            clinic: {
+                contact: {
+                    name: 'qq',
+                    phone: 'clinic'
+                },
+                parent: {
+                    contact: {
+                        phone: 'parent'
+                    }
+                }
+            }
+        }
+    };
+    transition.onMatch({
+        doc: doc
+    }, function(err, complete) {
+        test.equals(registration.scheduled_tasks.length, 3);
+        test.ok(_.all(registration.scheduled_tasks, function(task) {
+            return task.state === 'scheduled';
+        }));
+        test.done();
+    });
+};

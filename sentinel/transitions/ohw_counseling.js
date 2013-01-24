@@ -9,7 +9,6 @@ module.exports = {
     onMatch: function(change, callback) {
         var doc = change.doc,
             self = module.exports,
-            clinicName = utils.getClinicName(doc),
             clinicContactName = utils.getClinicContactName(doc),
             clinicPhone = utils.getClinicPhone(doc);
 
@@ -17,19 +16,19 @@ module.exports = {
 
             not_found: "No patient with id '{{patient_id}}' found.",
 
-            default: "Thank you, {{clinic_name}}. Counseling visit for"
+            default: "Thank you, {{contact_name}}. Counseling visit for"
                 + " {{serial_number}} has been recorded. Please complete"
                 + " necessary protocol.",
 
-            pnc_low: "Thank you, {{clinic_name}}! PNC Visit has been"
+            pnc_low: "Thank you, {{contact_name}}! PNC Visit has been"
                 + " recorded for {{serial_number}}. The baby is of low"
                 + " birth weight. Please refer to health facility"
                 + " immediately.",
 
-            pnc_normal: 'Thank you, {{clinic_name}}! PNC Visit has been'
+            pnc_normal: 'Thank you, {{contact_name}}! PNC Visit has been'
                 + ' recorded for {{serial_number}}.',
 
-            anc: "Thank you, {{clinic_name}}. ANC Visit for {{serial_number}}"
+            anc: "Thank you, {{contact_name}}. ANC Visit for {{serial_number}}"
                 + " has been recorded."
 
         };
@@ -74,7 +73,7 @@ module.exports = {
             utils.addMessage(doc, {
                 phone: clinicPhone,
                 message: i18n(msg, {
-                    clinic_name: clinicName,
+                    contact_name: clinicContactName,
                     serial_number: registration.serial_number
                 })
             });

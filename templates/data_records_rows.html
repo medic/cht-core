@@ -8,7 +8,7 @@
               </td>
               <td class="reported-date">
                 <div class="relative">
-                {reported_date}
+                {_reported_date}
                 </div>
               </td>
               <td class="contact-info">
@@ -72,13 +72,13 @@
                 <i class="icon-exclamation-sign icon-large"></i>
                 {:else}
                   <i class="{state} icon-ok icon-large"></i>
-                  {?tasks}
-                  <span class="label label-success">{tasks.length}</span>
-                  {?scheduled_tasks}
-                  <span class="label label-info">{scheduled_tasks_count}</span>
-                  {/scheduled_tasks}
-                  {/tasks}
                 {/errors}
+                {?tasks}
+                <span class="label label-success">{tasks.length}</span>
+                {/tasks}
+                {?scheduled_tasks}
+                <span class="label label-info">{scheduled_tasks_count}</span>
+                {/scheduled_tasks}
               </td>
             </tr>
           </tbody>
@@ -91,17 +91,6 @@
                   <div class="scroll">
                     {>"data_record_fields.html":fields/}
                   </div>
-                  {?tasks}
-                  <div>
-                    {>"data_record_tasks.html"/}
-                  </div>
-                  {:else}
-                    {?scheduled_tasks}
-                    <div>
-                      {>"data_record_tasks.html"/}
-                    </div>
-                    {/scheduled_tasks}
-                  {/tasks}
                   {?errors}
                   <div class="data-record-errors">
                     {>"data_record_errors.html"/}
@@ -112,6 +101,16 @@
                     {>"data_record_responses.html"/}
                   </div>
                   {/responses}
+                  {?tasks}
+                  <div class="data-record-tasks">
+                    {>"data_record_tasks.html"/}
+                  </div>
+                  {/tasks}
+                  {?scheduled_tasks}
+                  <div class="data-record-scheduled-tasks">
+                    {>"data_record_scheduled_tasks.html"/}
+                  </div>
+                  {/scheduled_tasks}
                   {?_raw}
                   <div class="data-record-raw">
                     <a title="JSON" data-toggle="extended" class="pull-right">

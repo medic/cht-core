@@ -35,6 +35,7 @@ config = {
         { days: 20, group: 3}
     ],
     ohw_obsolete_reminders_days: 21,
+    ohw_birth_report_within_days: 45,
     send_weekly_reminders: {
         VPD: {
             3: "Last day to submit a timely VPD report for the previous week.",

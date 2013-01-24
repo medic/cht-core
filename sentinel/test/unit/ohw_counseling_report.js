@@ -119,9 +119,9 @@ exports['ANC acknowledgement'] = function(test) {
         related_entities: {
             clinic: {
                 contact: {
-                    phone: '123'
-                },
-                name: 'qqq'
+                    phone: '123',
+                    name: 'qqq'
+                }
             }
         }
     };
@@ -212,7 +212,9 @@ exports['PNC normal acknowledgement'] = function(test) {
         weight: 'Green',
         related_entities: {
             clinic: {
-                name: 'qqq'
+                contact: {
+                    name: 'qqq'
+                }
             }
         }
     };

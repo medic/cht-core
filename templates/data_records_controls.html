@@ -3,24 +3,47 @@
     <i class="icon-edit icon-large"></i> Edit <span class="caret"></span></a>
   <ul class="dropdown-menu">
     <li><a href="#" class="edit-update">Update Facility</a></li>
+    <li><a href="#" class="mark-invalid">Mark Invalid</a></li>
+    <li><a href="#" class="clear-invalid">Clear Invalid</a></li>
     <li><a href="#" class="edit-delete">Delete</a></li>
   </ul>
 </div>
-<div id="valid-filter" class="records-filter btn-group pull-right hide" style="margin-right: 10px">
+<div id="valid-filter" class="records-filter btn-group pull-right">
   <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
     Valid <span class="caret"></span></a>
   <ul class="dropdown-menu valid">
   </ul>
 </div>
-<div id="form-filter" class="records-filter btn-group pull-right hide" style="margin-right: 10px">
+<div id="form-filter" class="records-filter btn-group pull-right">
   <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
     Form <span class="caret"></span></a>
   <ul class="dropdown-menu forms">
   </ul>
 </div>
-<div id="district-filter" class="records-filter btn-group pull-right hide" style="margin-right: 10px">
+<div id="clinics-filter" class="records-filter btn-group pull-right">
+  <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+    Clinics <span class="caret"></span></a>
+  <ul class="dropdown-menu clinics">
+  </ul>
+</div>
+<div id="district-filter" class="records-filter btn-group pull-right">
   <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
     District <span class="caret"></span></a>
   <ul class="dropdown-menu district-hospitals">
   </ul>
+</div>
+<div id="patient-id-filter" class="records-filter btn-group pull-right">
+  <div class="input-append">
+    <form action="" method="get">
+      <input 
+        name="patient_id" 
+        value="{query.patient_id}" 
+        type="text" 
+        class="search-query" 
+        placeholder="Patient ID" />
+      <a type="submit" class="btn" href="#">
+        <i class="icon-search"></i>
+      </a>
+  </form>
+  </div>
 </div>

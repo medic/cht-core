@@ -48,11 +48,21 @@ body {
   background-color: @white;
   padding: 10px;
   margin: 0;
-  .controls input {
-    margin-bottom: 0;
-  }
-  .controls label {
-    display: inline;
+  .controls {
+    input {
+      margin-bottom: 0;
+    }
+    label {
+      display: inline;
+    }
+    .records-filter {
+      margin-right: 10px;
+      .hide;
+    }
+    .search-query {
+      width: 60px;
+      padding-left: 10px;
+    }
   }
 }
 .page-header.navbar-fixed-top {
@@ -102,7 +112,7 @@ body {
 .table-striped.extended tbody tr td {
   background-color: #fff;
 }
-#loader li {
+#loader > ul li {
   list-style-type: none;
   padding: 10px 0 0 20px;
 }
@@ -152,8 +162,11 @@ body {
   .data-record > table.table-bordered {
     .rounded(0);
   }
-  .span12 .wrap {
+  .span12 > .wrap {
     padding: 10px 20px;
+    > table thead th {
+      text-align: center;
+    }
   }
   .pager {
     text-align: right;
@@ -218,7 +231,11 @@ body {
     z-index: 100;
     font-size: 1em;
   }
+  .icon-large {
+    vertical-align: middle;
+  }
   .errors {
+    vertical-align: middle;
     text-align: center;
     padding-left: 4px;
     padding-right: 4px;
@@ -227,8 +244,13 @@ body {
     width: 1em;
     margin: 0 auto 20px auto;
   }
-  .data-record .main:hover {
-    cursor: pointer;
+  .data-record .main {
+    &:hover {
+      cursor: pointer;
+    }
+    > td {
+      vertical-align: middle;
+    }
   }
   .warning {
     background-color: @warningBackground;
@@ -236,59 +258,176 @@ body {
   .reached-last-record {
     color: @grayLight;
   }
-}
-.tasks-data_record {
-
-  .tasks-state-timestamp,
-  .tasks-state-due {
-    width: 100px;
-  }
-  .tasks-state-cancelled:before {
-    content: "Cancelled";
-  }
-  .tasks-state-muted:before {
-    content: "Muted";
-  }
-  .tasks-state-pending:before {
-    content: "Pending";
-  }
-  .tasks-state-sent:before {
-    content: "Sent";
-  }
-  .tasks-state-scheduled:before {
-    content: "Scheduled";
-  }
-  .tasks-state-cleared:before {
-    content: "Cleared";
-  }
-  .tasks-state-cancelled,
-  .tasks-state-muted,
-  .tasks-state-scheduled,
-  .tasks-state-sent,
-  .tasks-state-cleared,
-  .tasks-state-pending {
-    .label;
-  }
-  .tasks-state-pending,
-  .tasks-state-scheduled,
-  .tasks-state-muted {
-    .label-info;
-  }
-  .tasks-state-sent {
-    .label-success;
-  }
-  .tasks-state-muted {
-    .opacity(50);
-  }
-  .tasks-type {
-    color: @grayLight;
-  }
-  .tasks-referral {
-    .error-missing-phone {
-      cursor: pointer;
+  .scheduled-tasks-data_record,
+  .tasks-data_record {
+    .tasks-state-timestamp,
+    .tasks-state-due {
+      width: 100px;
     }
-    .to .help-block {
-      padding-left:20px;
+    .tasks-state-cancelled:before {
+      content: "Cancelled";
+    }
+    .tasks-state-muted:before {
+      content: "Muted";
+    }
+    .tasks-state-pending:before {
+      content: "Pending";
+    }
+    .tasks-state-sent:before {
+      content: "Sent";
+    }
+    .tasks-state-scheduled:before {
+      content: "Scheduled";
+    }
+    .tasks-state-cleared:before {
+      content: "Cleared";
+    }
+    .tasks-state-cancelled,
+    .tasks-state-muted,
+    .tasks-state-scheduled,
+    .tasks-state-sent,
+    .tasks-state-cleared,
+    .tasks-state-pending {
+      .label;
+    }
+    .tasks-state-pending,
+    .tasks-state-scheduled,
+    .tasks-state-muted {
+      .label-info;
+    }
+    .tasks-state-sent {
+      .label-success;
+    }
+    .tasks-state-cancelled {
+      .label-warning;
+    }
+    .tasks-state-muted {
+      .opacity(50);
+    }
+    .tasks-type {
+      color: @grayLight;
+    }
+    .tasks-referral {
+      .error-missing-phone {
+        cursor: pointer;
+      }
+      .to .help-block {
+        padding-left:20px;
+      }
+    }
+    .group-header {
+      .wrap {
+        line-height: 20px;
+      }
+    }
+    .tasks-state {
+      .btn-group .dropdown-toggle {
+        padding-left: 4px;
+        padding-right: 5px;
+      }
+    }
+    .tasks-state {
+      .wrap {
+        float: right;
+        margin-right: 5px;
+      }
+    }
+    .tasks-removal-pending {
+      display: none;
+    }
+    .tasks-removal {
+      text-align: center;
+      p {
+        .well;
+        padding: 9px;
+      }
+    }
+    #new-task-template {
+      display: none;
+    }
+    .read-mode,
+    .edit-mode {
+      .btn-group {
+        display: none;
+        .pull-right;
+        .btn .caret {
+          margin-top: 5px;
+          margin-left: 2px;
+        }
+        &.menu {
+          display: block;
+        }
+        &.submit {
+          .btn-primary {
+            margin-right: 10px;
+          }
+        }
+      }
+      .row-controls {
+        text-align: center;
+        font-size: 1.25em;
+        border-left: 0;
+        width: 10px;
+        .remove {
+          color: @red;
+        }
+        a {
+          display: block;
+          margin: 3px;
+        }
+      }
+      .tasks-message .control-group {
+        margin-bottom: 0;
+      }
+    }
+    .read-mode {
+      .row-controls {
+        display: none;
+      }
+      .control-group {
+        display: none;
+      }
+      .val {
+        display: block;
+      }
+    }
+    .edit-mode {
+      .row-controls {
+        display: table-cell;
+      }
+      .group-header .submit {
+        display: block;
+      }
+      .val {
+        display: none;
+      }
+      .tasks-state {
+        .control-group {
+          float: right;
+          width: 20px;
+        }
+        .btn-group {
+          display: block;
+          &.menu {
+            display: none;
+          }
+        }
+      }
+      .control-group {
+        display: block;
+      }
+      .tasks-state {
+        width: 90px;
+      }
+      .tasks-due {
+        width: 190px;
+      }
+      .tasks-to {
+        width: 135px;
+      }
+      .tasks-message textarea {
+        width: 95%;
+      }
     }
   }
 }
@@ -395,4 +534,10 @@ table.spreadsheet .dropdown-menu {
 }
 .modal-body {
   min-height: 300px;
+}
+#mark-invalid .modal-body {
+  min-height: 70px;
+  textarea {
+    width: 98%;
+  }
 }

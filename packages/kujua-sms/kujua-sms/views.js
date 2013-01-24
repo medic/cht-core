@@ -93,6 +93,28 @@ exports.data_records_by_district = {
     }
 };
 
+exports.data_records_by_district_and_clinic = {
+    map: function(doc) {
+        var dh = {_id: null},
+            cl = {_id: null};
+        if(doc.type === 'data_record') {
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent) {
+                dh = doc.related_entities.clinic.parent.parent;
+                cl = doc.related_entities.clinic;
+                cl.contact = doc.related_entities.clinic.contact || {};
+                if (dh.type !== 'district_hospital') return;
+                emit([dh._id, cl._id, cl.name, cl.contact.name], null);
+            }
+        }
+    },
+
+    reduce: function(key, doc) {
+        return true;
+    }
+};
+
 
 
 /*
@@ -183,6 +205,158 @@ exports.data_records_by_district_form_valid_and_reported_date = {
             }
             var valid = (!doc.errors || doc.errors.length === 0);
             emit([dh._id, doc.form, valid, doc.reported_date, doc._id], doc);
+        }
+    }
+};
+
+exports.data_records_by_patient_id_and_reported_date = {
+    map: function(doc) {
+        if (doc.type === 'data_record') {
+            if (doc.patient_id)
+                emit([doc.patient_id, doc.reported_date, doc._id], doc);
+        }
+    }
+};
+
+exports.data_records_by_district_patient_id_and_reported_date = {
+    map: function(doc) {
+        var dh = {_id: null};
+        if (doc.type === 'data_record') {
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent) {
+                dh = doc.related_entities.clinic.parent.parent;
+            }
+            if (doc.patient_id)
+                emit([dh._id, doc.patient_id, doc.reported_date, doc._id], doc);
+        }
+    }
+};
+
+exports.data_records_by_district_clinic_and_reported_date = {
+    map: function(doc) {
+        var dh = {_id: null},
+            cl = {_id: null};
+        if (doc.type === 'data_record') {
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent) {
+                dh = doc.related_entities.clinic.parent.parent;
+                cl = doc.related_entities.clinic;
+            }
+            emit([dh._id, cl._id, doc.reported_date, doc._id], doc);
+        }
+    }
+};
+
+exports.data_records_by_clinic_and_reported_date = {
+    map: function(doc) {
+        var cl = {_id: null};
+        if (doc.type === 'data_record') {
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent) {
+                cl = doc.related_entities.clinic;
+            }
+            emit([cl._id, doc.reported_date, doc._id], doc);
+        }
+    }
+};
+
+exports.data_records_by_district_clinic_form_and_reported_date = {
+    map: function(doc) {
+        var dh = {_id: null},
+            cl = {_id: null};
+        if (doc.type === 'data_record') {
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent) {
+                dh = doc.related_entities.clinic.parent.parent;
+                cl = doc.related_entities.clinic;
+            }
+            emit([dh._id, cl._id, doc.reported_date, doc._id], doc);
+        }
+    }
+};
+
+exports.data_records_by_clinic_form_and_reported_date = {
+    map: function(doc) {
+        var cl = {_id: null};
+        if (doc.type === 'data_record') {
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent) {
+                cl = doc.related_entities.clinic;
+            }
+            emit([cl._id, doc.form, doc.reported_date, doc._id], doc);
+        }
+    }
+};
+
+exports.data_records_by_district_clinic_valid_and_reported_date = {
+    map: function(doc) {
+        var dh = {_id: null},
+            cl = {_id: null};
+        if (doc.type === 'data_record') {
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent) {
+                dh = doc.related_entities.clinic.parent.parent;
+                cl = doc.related_entities.clinic;
+            }
+            var valid = (!doc.errors || doc.errors.length === 0);
+            emit([dh._id, cl._id, valid, doc.reported_date, doc._id], doc);
+        }
+    }
+};
+
+exports.data_records_by_clinic_valid_and_reported_date = {
+    map: function(doc) {
+        var dh = {_id: null},
+            cl = {_id: null};
+        if (doc.type === 'data_record') {
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent) {
+                dh = doc.related_entities.clinic.parent.parent;
+                cl = doc.related_entities.clinic;
+            }
+            var valid = (!doc.errors || doc.errors.length === 0);
+            emit([cl._id, valid, doc.reported_date, doc._id], doc);
+        }
+    }
+};
+
+exports.data_records_by_district_clinic_form_valid_and_reported_date = {
+    map: function(doc) {
+        var dh = {_id: null},
+            cl = {_id: null};
+        if (doc.type === 'data_record') {
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent) {
+                dh = doc.related_entities.clinic.parent.parent;
+                cl = doc.related_entities.clinic;
+            }
+            var valid = (!doc.errors || doc.errors.length === 0);
+            emit([dh._id, cl._id, doc.form, valid, doc.reported_date, doc._id], doc);
+        }
+    }
+};
+
+exports.data_records_by_clinic_form_valid_and_reported_date = {
+    map: function(doc) {
+        var dh = {_id: null},
+            cl = {_id: null};
+        if (doc.type === 'data_record') {
+            if (doc.related_entities.clinic
+                    && doc.related_entities.clinic.parent
+                    && doc.related_entities.clinic.parent.parent) {
+                dh = doc.related_entities.clinic.parent.parent;
+                cl = doc.related_entities.clinic;
+            }
+            var valid = (!doc.errors || doc.errors.length === 0);
+            emit([cl._id, doc.form, valid, doc.reported_date, doc._id], doc);
         }
     }
 };

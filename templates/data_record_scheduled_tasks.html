@@ -1,0 +1,172 @@
+<table class="table tasks-{type}">
+  <thead>
+    <tr>
+      <th class="tasks-messages">Schedule</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+{#scheduled_tasks_by_group}
+  <table class="table read-mode">
+    <thead>
+      <tr>
+        <th class="group-header">
+          <div class="wrap">
+            {?group}{group}{:else}Group{/group}
+            <div class="btn-group menu">
+              <a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">
+                <i class="icon-large icon-cog"></i>
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li><a href="#" class="edit">Edit Schedule</a></li>
+              </ul>
+            </div>
+            <div class="btn-group submit">
+              <a href="#" class="btn btn-mini btn-primary save">Save</a>
+              <a href="#" class="btn btn-mini cancel">Cancel</a>
+            </div>
+          </div>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>
+        <table>
+          <tbody>
+            {#rows}
+            <tr data-tasks-idx="{_idx}" class="task">
+              <td class="tasks-state">
+                <div class="control-group">
+                  <div class="btn-group">
+                    <a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">
+                      <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                      <li><a data-state="scheduled" href="#"><span class="tasks-state-scheduled"></span></a></li>
+                      <li><a data-state="cleared" href="#"><span class="tasks-state-cleared"></span></a></li>
+                      <li><a data-state="muted" href="#"><span class="tasks-state-muted"></span></a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="wrap">
+                  <span 
+                    data-save-val="{state}" 
+                    data-orig-val="" 
+                    class="label tasks-state-{state}"></span>
+                </div>
+              </td>
+              <td class="tasks-due">
+                <div data-orig-val="{_due_ts}" class="val">{due}</div>
+                <div class="control-group">
+                <div class="input-append datepicker control">
+                    <input 
+                      class="input-medium" 
+                      placeholder="dd-mm-yyyy hh:mm"
+                      data-format="dd-MM-yyyy hh:mm"
+                      type="text" />
+                    <span class="add-on">
+                      <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                    </span>
+                </div>
+                </div>
+              </td>
+              {#messages}
+              <td class="tasks-to">
+                <div class="val">{to}</div>
+                <div class="control-group">
+                  <div class="control">
+                    <input value="{to}" class="span2" type="text" data-provide="typeahead" name="phone" />
+                  </div>
+                </div>
+              </td>
+              <td class="tasks-message">
+                <div class="val">{message}</div>
+                <div class="control-group">
+                  <div class="control">
+                    <textarea>{message}</textarea>
+                  </div>
+                </div>
+              </td>
+              {/messages}
+              <td class="row-controls">
+                <a class="remove" href="#">
+                  <i class="icon-remove-sign"></i>
+                </a>
+                <a class="add-new" href="#">
+                  <i class="icon-plus-sign"></i>
+                </a>
+              </td>
+            </tr>
+            {/rows}
+            <tr id="new-task-template" class="task">
+              <td class="tasks-state">
+                <div class="btn-group">
+                  <a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">
+                    <span class="caret"></span>
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li><a data-state="scheduled" href="#"><span class="tasks-state-scheduled"></span></a></li>
+                    <li><a data-state="cleared" href="#"><span class="tasks-state-cleared"></span></a></li>
+                    <li><a data-state="muted" href="#"><span class="tasks-state-muted"></span></a></li>
+                  </ul>
+                </div>
+                <div class="wrap">
+                  <span 
+                    data-save-val="scheduled" 
+                    data-orig-val="scheduled" 
+                    class="label tasks-state-scheduled"></span>
+                </div>
+              </td>
+              <td class="tasks-due">
+                <div class="control-group">
+                <div class="input-append datepicker control">
+                    <input 
+                      class="input-medium" 
+                      placeholder="dd-mm-yyyy hh:mm"
+                      data-format="dd-MM-yyyy hh:mm"
+                      type="text">
+                    </input>
+                    <span class="add-on">
+                      <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                    </span>
+                </div>
+                </div>
+              </td>
+              <td class="tasks-to">
+                <div class="control-group">
+                  <div class="control">
+                    <input class="span2" type="text" data-provide="typeahead" name="phone" />
+                  </div>
+                </div>
+              </td>
+              <td class="tasks-message">
+                <div class="control-group">
+                  <div class="control">
+                    <textarea />
+                  </div>
+                </div>
+              </td>
+              <td class="row-controls">
+                <a class="remove" href="#">
+                  <i class="icon-remove-sign"></i>
+                </a>
+                <a class="add-new" href="#">
+                  <i class="icon-plus-sign"></i>
+                </a>
+              </td>
+            </tr>
+        </tbody>
+      </table>
+      </td>
+      </tr>
+    </tbody>
+  </table>
+{/scheduled_tasks_by_group}
+</td>
+</tr>
+</tbody>
+</table>
+

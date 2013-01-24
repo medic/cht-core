@@ -1,11 +1,16 @@
 //if passed in a timestamp as part of running it, set it on process.env
-var argv = require('optimist').argv,
-    timestamp = argv._[0],
-    ts,
-    start_ts;
+var DATE_RE = /(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?/,
+    start_ts,
+    ts;
 
-if (timestamp) {
-  var matches =  String(timestamp).match(/(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?/);
+if (process.env.SENTINEL_TEST) {
+    settings = require('./settings-test');
+} else {
+    settings = require('./settings');
+}
+
+if (settings.synthetic_date) {
+  var matches =  String(settings.synthetic_date).match(DATE_RE);
   if (matches) {
       var fullmatch = matches[0],
           year = matches[1],

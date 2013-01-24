@@ -7,7 +7,8 @@ var jsDump = require('jsDump'),
     settings = require('settings/root'),
     jsonforms = require('views/lib/jsonforms'),
     logger = require('kujua-utils').logger,
-    _ = require('underscore')._;
+    _ = require('underscore')._,
+    moment = require('moment');
 
 
 /*
@@ -141,15 +142,26 @@ var prettyVal = function(data_record, key, def) {
 
 // reverse makeDataRecordReadable munge. ;\
 exports.makeDataRecordOriginal = function(doc) {
-      var rdo = doc.reported_date_orig;
-      delete doc.reported_date_orig;
+      delete doc._reported_date;
       delete doc.fields;
       delete  doc.scheduled_tasks_count;
-      doc.reported_date = rdo;
+      delete  doc.scheduled_tasks_by_group;
+      if (doc.tasks) {
+          for (var i in doc.tasks) {
+              delete doc.tasks[i]._due;
+              delete doc.tasks[i]._timestamp;
+          }
+      }
       return doc;
 };
 
-// take data record document and return nice formated JSON object
+/*
+ * Take data record document and return nice formated JSON object.
+ *
+ * NOTE: Any properties you add to the doc/record here need to be removed in
+ * makeDataRecordOriginal.
+ *
+ */
 exports.makeDataRecordReadable = function(doc) {
     var data_record = doc;
 
@@ -164,10 +176,8 @@ exports.makeDataRecordReadable = function(doc) {
     }
 
     if(data_record.reported_date) {
-        var rd = data_record.reported_date;
         var m = moment(data_record.reported_date);
-        data_record.reported_date = m.format('DD, MMM YYYY, HH:mm:ss Z');
-        data_record.reported_date_orig = rd;
+        data_record._reported_date = m.format('DD, MMM YYYY, HH:mm:ss ZZ');
     }
 
     if(data_record.tasks) {
@@ -175,29 +185,64 @@ exports.makeDataRecordReadable = function(doc) {
             var t = data_record.tasks[i];
             if (t.due) {
                 var m = moment(t.due);
-                t.due = m.format('DD, MMM YYYY, HH:mm:ss Z');
+                t._due = m.format('DD, MMM YYYY, HH:mm:ss ZZ');
             }
             if (t.timestamp) {
                 var m = moment(t.timestamp);
-                t.timestamp= m.format('DD, MMM YYYY, HH:mm:ss Z');
+                t._timestamp= m.format('DD, MMM YYYY, HH:mm:ss ZZ');
             }
         }
     }
 
     if(data_record.scheduled_tasks) {
         data_record.scheduled_tasks_count = 0;
+        data_record.scheduled_tasks_by_group = [];
+        var groups = {};
         for (var i in data_record.scheduled_tasks) {
-            var t = data_record.scheduled_tasks[i];
+            var t = data_record.scheduled_tasks[i],
+                copy = _.clone(t);
+
+            // avoid crash if item is falsey
+            if (!t) continue;
+
+            // format timestamp
             if (t.state === 'scheduled')
                 data_record.scheduled_tasks_count += 1;
             if (t.due) {
+                copy._due_ts = t.due;
                 var m = moment(t.due);
-                t.due = m.format('DD, MMM YYYY, HH:mm:ss Z');
+                copy.due = m.format('DD, MMM YYYY, HH:mm:ss ZZ');
             }
+            /* not needed?
             if (t.timestamp) {
                 var m = moment(t.timestamp);
+                t._timestamp_ts = t.timestamp;
                 t.timestamp= m.format('DD, MMM YYYY, HH:mm:ss Z');
             }
+            */
+
+            // setup scheduled groups
+            var group_name = t.type;
+            if (t.group)
+                group_name += ":"+t.group;
+            if (!groups[group_name]) {
+                groups[group_name] = {
+                    group: group_name,
+                    rows: []
+                };
+            }
+            //
+            // Warning: _idx is used on frontend during save.
+            //
+            copy._idx = i;
+            groups[group_name].rows.push(copy);
+        }
+        for (var k in groups) {
+            // sort by due date ascending
+            groups[k].rows.sort(function(l,r) {
+                if (l._due_ts && r._due_ts) return l._due_ts > r._due_ts;
+            });
+            data_record.scheduled_tasks_by_group.push(groups[k]);
         }
     }
 
