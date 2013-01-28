@@ -17,98 +17,6 @@
     "screenshots": [
         "static/img/promo/screenshot1.png"
     ],
-    "settings_schema" : {
-        "description": "Kujua Settings",
-        "type": "object",
-        "properties": {
-            "id_format": {
-                "type": "string",
-                "default": "111111"
-            },
-            "ohw_counseling_reminder_days": {
-                "title": "OWH counseling reminder days",      
-                "type": "array",
-                "items": {        
-                    "type": "object",        
-                    "order": ["days", "group"],       
-                    "required": ["days", "group"],        
-                    "properties": {          
-                        "days": {            
-                            "type": "number",            
-                            "title": "Days"          
-                        },          
-                        "group": {            
-                            "type": "number",            
-                            "title": "Group"          
-                        }
-                    }
-                }
-            },
-            "ohw_counseling_reminder_lbw_days" : {
-                "title": "ohw counseling reminder lbw days",
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "order": ["days", "group"],
-                    "required": ["days", "group"],
-                    "properties": {
-                        "days": {
-                            "type": "number",
-                            "title": "Days"
-                        },
-                        "group": {
-                            "type": "number",
-                            "title": "Group"
-                        }
-                    }
-                }
-            },
-            "ohw_miso_reminder_days" : {
-                "title": "ohw miso reminder days",
-                "type": "array",
-                "items": {
-                    "type": "number"
-                }
-            },
-            "ohw_obsolete_reminders_days" : {
-                "type": "number",
-                "default": 21
-            },
-            "ohw_outcome_request_days" : {
-                "title": "ohw outcome request days",
-                "type": "array",
-                "items": {
-                    "type": "number"
-                }
-            },
-            "ohw_reminder_schedule_days" : {
-                "title": "ohw reminder schedule days",
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "order": ["days", "group"],
-                    "required": ["days", "group"],
-                    "properties": {
-                        "days": {
-                            "type": "number",
-                            "title": "Days"
-                        },
-                        "group": {
-                            "type": "number",
-                            "title": "Group"
-                        }
-                    }
-                }
-            },
-            "ohw_upcoming_delivery_days" : {
-                "title": "ohw upcoming delivery days",
-                "type": "array",
-                "items": {
-                    "type": "number"
-                }
-            }
-        }
-    },
     "loglevel": "info",
     "load": "lib/app",
     "modules": ["lib"],
@@ -159,5 +67,348 @@
         "cookies": null,
         "moment": null,
         "kanso-gardener": null
+    },
+    "settings_schema" : {
+        "description": "Kujua Settings",
+        "type": "object",
+        "properties": {
+            "id_format": {
+                "title": "Patient ID format",
+                "type": "string",
+                "default": "1111"
+            },
+            "ohw_counseling_reminder_days": {
+                "title": "Counseling reminder days",      
+                "type": "array",
+                "default": [
+                    {
+                      "days": 2,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is in need of a PNC visit tomorrow. Thank you!",
+                      "type": "counseling_reminder",
+                      "group": "1"
+                    },
+                    {
+                      "days": 5,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is past due for a PNC visit. Please visit the mother and report immediately. Thank you!",
+                      "type": "counseling_reminder",
+                      "group": "1"
+                    },
+                    {
+                      "days": 6,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is in need of a PNC visit tomorrow. Thank you!",
+                      "type": "counseling_reminder",
+                      "group": "2"
+                    },
+                    {
+                      "days": 9,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is past due for a PNC visit. Please visit the mother and report immediately. Thank you!",
+                      "type": "counseling_reminder",
+                      "group": "2"
+                    },
+                    {
+                      "days": 12,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is past due for a PNC visit. Please visit the mother and report immediately. Thank you!",
+                      "type": "counseling_reminder",
+                      "group": "2"
+                    },
+                    {
+                      "days": 29,
+                      "message": "Greetings, {{contact_name}}. Record for {{serial_number}} has been deactivated. No further notifications regarding this patient will be sent.",
+                      "type": "counseling_reminder"
+                    }
+                ],
+                "items": {
+                    "type": "object",        
+                    "order": ["days", "message", "type", "group"],       
+                    "required": ["days", "message", "type", "group"],        
+                    "properties": {          
+                        "days": {
+                            "type": "number",
+                            "title": "Days"
+                        },
+                        "message": {
+                            "type": "string",
+                            "title": "Message"
+                        },
+                        "type": {
+                            "type": "string",
+                            "title": "Type",
+                            "enum":[
+                                "anc_visit",
+                                "miso_reminder",
+                                "upcoming_delivery",
+                                "outcome_request",
+                                "counseling_reminder"
+                            ]
+                        },
+                        "group": {
+                            "type": "string",            
+                            "title": "Group",     
+                            "enum": [ "1","2","3","4","5" ]
+                        }
+                    }
+                }
+            },
+            "ohw_counseling_reminder_lbw_days" : {
+                "title": "Counseling reminder LBW days",
+                "type": "array",
+                "default": [
+                    {
+                      "days": 2,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is in need of a PNC visit tomorrow. Thank you!",
+                      "type": "counseling_reminder",
+                      "group": "1"
+                    },
+                    {
+                      "days": 5,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is past due for a PNC visit. Please visit the mother and report immediately. Thank you!",
+                      "type": "counseling_reminder",
+                      "group": "1"
+                    },
+                    {
+                      "days": 6,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is in need of a PNC visit tomorrow. Thank you!",
+                      "type": "counseling_reminder",
+                      "group": "2"
+                    },
+                    {
+                      "days": 9,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is past due for a PNC visit. Please visit the mother and report immediately. Thank you!",
+                      "type": "counseling_reminder",
+                      "group": "2"
+                    },
+                    {
+                      "days": 12,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is past due for a PNC visit. Please visit the mother and report immediately. Thank you!",
+                      "type": "counseling_reminder",
+                      "group": "2"
+                    },
+                    {
+                      "days": 29,
+                      "message": "Greetings, {{contact_name}}. Record for {{serial_number}} has been deactivated. No further notifications regarding this patient will be sent.",
+                      "type": "counseling_reminder"
+                    }
+                ],
+                "items": {
+                    "type": "object",        
+                    "order": ["days", "message", "type", "group"],       
+                    "required": ["days", "message", "type"],        
+                    "properties": {          
+                        "days": {
+                            "type": "number",
+                            "title": "Days"
+                        },
+                        "message": {
+                            "type": "string",
+                            "title": "Message",
+                            "je:hint": "textarea"
+                        },
+                        "type": {
+                            "type": "string",
+                            "title": "Type"
+                        },
+                        "group": {
+                            "type": "number",            
+                            "title": "Group"          
+                        }
+                    }
+                }
+            },
+            "ohw_miso_reminder_days" : {
+                "title": "Miso reminder days",
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            },
+            "ohw_obsolete_reminders_days" : {
+                "type": "number",
+                "default": 30
+            },
+            "ohw_outcome_request_days" : {
+                "title": "ohw outcome request days",
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            },
+            "ohw_reminder_schedule_days" : {
+                "title": "ohw reminder schedule days",
+                "type": "array",
+                "default": [
+                    {
+                      "days": 81,
+                      "message": "Greetings,{{contact_name}}. {{serial_number}} is due for an ANC visit in three days.Please visit her and remind her to visit the health facility.",
+                      "type": "anc_visit",
+                      "group": "1"
+                    },
+                    {
+                      "days": 83,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is due for an ANC visit tomorrow. Please visit her and remind her to visit the health facility.",
+                      "type": "anc_visit",
+                      "group": "1"
+                    },
+                    {
+                      "days": 91,
+                      "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
+                      "type": "anc_visit",
+                      "group": "1"
+                    },
+                    {
+                      "days": 98,
+                      "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
+                      "type": "anc_visit",
+                      "group": "1"
+                    },
+                    {
+                      "days": 105,
+                      "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
+                      "type": "anc_visit",
+                      "group": "1"
+                    },
+                    {
+                      "days": 137,
+                      "message": "Greetings,{{contact_name}}. {{serial_number }} is due for an ANC visit in three days.Please visit her and remind her to visit the health facility.",
+                      "type": "anc_visit",
+                      "group": "2"
+                    },
+                    {
+                      "days": 139,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is due for an ANC visit tomorrow. Please visit her and remind her to visit the health facility.",
+                      "type": "anc_visit",
+                      "group": "2"
+                    },
+                    {
+                      "days": 147,
+                      "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
+                      "type": "anc_visit",
+                      "group": "2"
+                    },
+                    {
+                      "days": 154,
+                      "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
+                      "type": "anc_visit",
+                      "group": "2"
+                    },
+                    {
+                      "days": 161,
+                      "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
+                      "type": "anc_visit",
+                      "group": "2"
+                    },
+                    {
+                      "days": 193,
+                      "message": "Greetings,{{contact_name}}. {{serial_number }} is due for an ANC visit in three days.Please visit her and remind her to visit the health facility.",
+                      "type": "anc_visit",
+                      "group": "3"
+                    },
+                    {
+                      "days": 193,
+                      "message": "Greetings, {{contact_name}}. It's now {{serial_number}}'s 8th month of pregnancy. If you haven't given Miso, please distribute. Make birth plan now. Thank you!.",
+                      "type": "miso_reminder"
+                    },
+                    {
+                      "days": 195,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is due for an ANC visit tomorrow. Please visit her and remind her to visit the health facility.",
+                      "type": "anc_visit",
+                      "group": "3"
+                    },
+                    {
+                      "days": 203,
+                      "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
+                      "type": "anc_visit",
+                      "group": "3"
+                    },
+                    {
+                      "days": 210,
+                      "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
+                      "type": "anc_visit",
+                      "group": "3"
+                    },
+                    {
+                      "days": 217,
+                      "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
+                      "type": "anc_visit",
+                      "group": "3"
+                    },
+                    {
+                      "days": 221,
+                      "message": "Greetings,{{contact_name}}. {{serial_number }} is due for an ANC visit in three days.Please visit her and remind her to visit the health facility.",
+                      "type": "anc_visit",
+                      "group": "4"
+                    },
+                    {
+                      "days": 223,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is due for an ANC visit tomorrow. Please visit her and remind her to visit the health facility.",
+                      "type": "anc_visit",
+                      "group": "4"
+                    },
+                    {
+                      "days": 231,
+                      "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
+                      "type": "anc_visit",
+                      "group": "4"
+                    },
+                    {
+                      "days": 238,
+                      "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
+                      "type": "anc_visit",
+                      "group": "4"
+                    },
+                    {
+                      "days": 245,
+                      "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
+                      "type": "anc_visit",
+                      "group": "4"
+                    },
+                    {
+                      "days": 252,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is due to deliver in a month.",
+                      "type": "upcoming_delivery"
+                    },
+                    {
+                      "days": 273,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}} is due to deliver in a week.",
+                      "type": "upcoming_delivery"
+                    },
+                    {
+                      "days": 283,
+                      "message": "Greetings, {{contact_name}}. {{serial_number}}'s baby is overdue. Please visit the mother immediately and submit the birth report if baby has been delivered.",
+                      "type": "outcome_request"
+                    }
+                ],
+                "items": {
+                    "type": "object",        
+                    "order": ["days", "message", "type", "group"],       
+                    "required": ["days", "message", "type"],        
+                    "properties": {          
+                        "days": {
+                            "type": "number",
+                            "title": "Days"
+                        },
+                        "message": {
+                            "type": "string",
+                            "title": "Message",
+                            "je:hint": "textarea"
+                        },
+                        "type": {
+                            "type": "string",
+                            "title": "Type"
+                        },
+                        "group": {
+                            "type": "number",            
+                            "title": "Group"          
+                        }
+                    }
+                }
+            },
+            "ohw_upcoming_delivery_days" : {
+                "title": "ohw upcoming delivery days",
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            }
+        }
     }
 }
