@@ -18,9 +18,13 @@ function refresh() {
           synth_start_date = new Date(start_date.valueOf());
           synth_start_date.setFullYear(year, month -1, day);
           synth_start_date.setHours(hours, minutes, 0, 0);
+          return;
       }
     }
+    start_date = new Date();
+    synth_start_date = undefined;
 }
+
 // allows us to apply a delta to a timestamp when we run sentinel in synthetic
 // time mode
 function getTimestamp() {
