@@ -122,6 +122,7 @@ module.exports = {
       // scheduled_tasks should be sorted by due date
       for (var i in doc.scheduled_tasks) {
           var task = doc.scheduled_tasks[i];
+          if (!task) continue; // in case of null task
           if (type === task.type
                   && task.state === 'scheduled'
                   && task.due >= reported_date
@@ -135,6 +136,7 @@ module.exports = {
       // the same type and group.
       for (var i in doc.scheduled_tasks) {
           var task = doc.scheduled_tasks[i];
+          if (!task) continue; // in case of null task
           if (type === task.type && task.due <= reported_date) {
               task.state = 'cleared';
               changed = true;
