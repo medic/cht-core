@@ -85,31 +85,31 @@
                       "days": 2,
                       "message": "Greetings, {{contact_name}}. {{serial_number}} is in need of a PNC visit tomorrow. Thank you!",
                       "type": "counseling_reminder",
-                      "group": "1"
+                      "group": 1
                     },
                     {
                       "days": 5,
                       "message": "Greetings, {{contact_name}}. {{serial_number}} is past due for a PNC visit. Please visit the mother and report immediately. Thank you!",
                       "type": "counseling_reminder",
-                      "group": "1"
+                      "group": 1
                     },
                     {
                       "days": 6,
                       "message": "Greetings, {{contact_name}}. {{serial_number}} is in need of a PNC visit tomorrow. Thank you!",
                       "type": "counseling_reminder",
-                      "group": "2"
+                      "group": 2
                     },
                     {
                       "days": 9,
                       "message": "Greetings, {{contact_name}}. {{serial_number}} is past due for a PNC visit. Please visit the mother and report immediately. Thank you!",
                       "type": "counseling_reminder",
-                      "group": "2"
+                      "group": 2
                     },
                     {
                       "days": 12,
                       "message": "Greetings, {{contact_name}}. {{serial_number}} is past due for a PNC visit. Please visit the mother and report immediately. Thank you!",
                       "type": "counseling_reminder",
-                      "group": "2"
+                      "group": 2
                     },
                     {
                       "days": 29,
@@ -120,7 +120,7 @@
                 "items": {
                     "type": "object",        
                     "order": ["days", "message", "type", "group"],       
-                    "required": ["days", "message", "type", "group"],        
+                    "required": ["days", "message", "type"],        
                     "properties": {          
                         "days": {
                             "type": "number",
@@ -142,9 +142,9 @@
                             ]
                         },
                         "group": {
-                            "type": "string",            
+                            "type": "number",            
                             "title": "Group",     
-                            "enum": [ "1","2","3","4","5" ]
+                            "enum": [ 1,2,3,4,5 ]
                         }
                     }
                 }
@@ -157,31 +157,31 @@
                       "days": 2,
                       "message": "Greetings, {{contact_name}}. {{serial_number}} is in need of a PNC visit tomorrow. Thank you!",
                       "type": "counseling_reminder",
-                      "group": "1"
+                      "group": 1
                     },
                     {
                       "days": 5,
                       "message": "Greetings, {{contact_name}}. {{serial_number}} is past due for a PNC visit. Please visit the mother and report immediately. Thank you!",
                       "type": "counseling_reminder",
-                      "group": "1"
+                      "group": 1
                     },
                     {
                       "days": 6,
                       "message": "Greetings, {{contact_name}}. {{serial_number}} is in need of a PNC visit tomorrow. Thank you!",
                       "type": "counseling_reminder",
-                      "group": "2"
+                      "group": 2
                     },
                     {
                       "days": 9,
                       "message": "Greetings, {{contact_name}}. {{serial_number}} is past due for a PNC visit. Please visit the mother and report immediately. Thank you!",
                       "type": "counseling_reminder",
-                      "group": "2"
+                      "group": 2
                     },
                     {
                       "days": 12,
                       "message": "Greetings, {{contact_name}}. {{serial_number}} is past due for a PNC visit. Please visit the mother and report immediately. Thank you!",
                       "type": "counseling_reminder",
-                      "group": "2"
+                      "group": 2
                     },
                     {
                       "days": 29,
@@ -209,7 +209,8 @@
                         },
                         "group": {
                             "type": "number",            
-                            "title": "Group"          
+                            "title": "Group",       
+                            "enum": [1,2,3,4,5]
                         }
                     }
                 }
@@ -241,67 +242,67 @@
                       "days": 81,
                       "message": "Greetings,{{contact_name}}. {{serial_number}} is due for an ANC visit in three days.Please visit her and remind her to visit the health facility.",
                       "type": "anc_visit",
-                      "group": "1"
+                      "group": 1
                     },
                     {
                       "days": 83,
                       "message": "Greetings, {{contact_name}}. {{serial_number}} is due for an ANC visit tomorrow. Please visit her and remind her to visit the health facility.",
                       "type": "anc_visit",
-                      "group": "1"
+                      "group": 1
                     },
                     {
                       "days": 91,
                       "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
                       "type": "anc_visit",
-                      "group": "1"
+                      "group": 1
                     },
                     {
                       "days": 98,
                       "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
                       "type": "anc_visit",
-                      "group": "1"
+                      "group": 1
                     },
                     {
                       "days": 105,
                       "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
                       "type": "anc_visit",
-                      "group": "1"
+                      "group": 1
                     },
                     {
                       "days": 137,
                       "message": "Greetings,{{contact_name}}. {{serial_number }} is due for an ANC visit in three days.Please visit her and remind her to visit the health facility.",
                       "type": "anc_visit",
-                      "group": "2"
+                      "group": 2
                     },
                     {
                       "days": 139,
                       "message": "Greetings, {{contact_name}}. {{serial_number}} is due for an ANC visit tomorrow. Please visit her and remind her to visit the health facility.",
                       "type": "anc_visit",
-                      "group": "2"
+                      "group": 2
                     },
                     {
                       "days": 147,
                       "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
                       "type": "anc_visit",
-                      "group": "2"
+                      "group": 2
                     },
                     {
                       "days": 154,
                       "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
                       "type": "anc_visit",
-                      "group": "2"
+                      "group": 2
                     },
                     {
                       "days": 161,
                       "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
                       "type": "anc_visit",
-                      "group": "2"
+                      "group": 2
                     },
                     {
                       "days": 193,
                       "message": "Greetings,{{contact_name}}. {{serial_number }} is due for an ANC visit in three days.Please visit her and remind her to visit the health facility.",
                       "type": "anc_visit",
-                      "group": "3"
+                      "group": 3
                     },
                     {
                       "days": 193,
@@ -312,55 +313,55 @@
                       "days": 195,
                       "message": "Greetings, {{contact_name}}. {{serial_number}} is due for an ANC visit tomorrow. Please visit her and remind her to visit the health facility.",
                       "type": "anc_visit",
-                      "group": "3"
+                      "group": 3
                     },
                     {
                       "days": 203,
                       "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
                       "type": "anc_visit",
-                      "group": "3"
+                      "group": 3
                     },
                     {
                       "days": 210,
                       "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
                       "type": "anc_visit",
-                      "group": "3"
+                      "group": 3
                     },
                     {
                       "days": 217,
                       "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
                       "type": "anc_visit",
-                      "group": "3"
+                      "group": 3
                     },
                     {
                       "days": 221,
                       "message": "Greetings,{{contact_name}}. {{serial_number }} is due for an ANC visit in three days.Please visit her and remind her to visit the health facility.",
                       "type": "anc_visit",
-                      "group": "4"
+                      "group": 4
                     },
                     {
                       "days": 223,
                       "message": "Greetings, {{contact_name}}. {{serial_number}} is due for an ANC visit tomorrow. Please visit her and remind her to visit the health facility.",
                       "type": "anc_visit",
-                      "group": "4"
+                      "group": 4
                     },
                     {
                       "days": 231,
                       "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
                       "type": "anc_visit",
-                      "group": "4"
+                      "group": 4
                     },
                     {
                       "days": 238,
                       "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
                       "type": "anc_visit",
-                      "group": "4"
+                      "group": 4
                     },
                     {
                       "days": 245,
                       "message": "Greetings, {{contact_name}}. ANC visit for {{serial_number}} is past due. Please visit her immediately.",
                       "type": "anc_visit",
-                      "group": "4"
+                      "group": 4
                     },
                     {
                       "days": 252,
@@ -398,7 +399,8 @@
                         },
                         "group": {
                             "type": "number",            
-                            "title": "Group"          
+                            "title": "Group",
+                            "enum": [1,2,3,4,5]
                         }
                     }
                 }
@@ -425,7 +427,11 @@
             "synthetic_date" : {
                 "title": "Synthetic date",
                 "description": "Only modify this if you are testing the scheduler and want to simulate a specific date. e.g. 201304121200",
-                "type": "integer"
+                "type": "string",
+                "minLength":12,
+                "maxLength":12,
+                "pattern": "[0-9]+"
+
             }
         }
     }
