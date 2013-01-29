@@ -29,6 +29,7 @@ function checkSchedule() {
 
     if (sendable(m)) {
         async.forEachSeries(tasks, function(task, callback) {
+            console.log('Running task', task);
             task(callback);
         }, function(e) {
             if (e) {
