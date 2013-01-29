@@ -14,11 +14,11 @@ if (process.env.COUCH_URL) {
 		settings.username = unamepass[0];
 		settings.password = unamepass[1];
 	}
-} else if (process.env.SENTINEL_TEST) {
-    settings = require('./settings-test');
 } else {
-    settings = require('./settings');
+    console.log('Please include a COUCH_URL in your environment variables.');
+    process.exit(1);
 }
+
 var client = couchdb.createClient(
     settings.port,
     settings.host,
