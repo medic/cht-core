@@ -27,9 +27,9 @@ function sendable(m) {
 function checkSchedule() {
     var m = moment(date.getDate());
 
+    console.log('Checking sendable window', m._d);
     if (sendable(m)) {
         async.forEachSeries(tasks, function(task, callback) {
-            console.log('Running task', task);
             task(callback);
         }, function(e) {
             if (e) {
