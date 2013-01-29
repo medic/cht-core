@@ -42,7 +42,8 @@ config = {
             4: "VPD report not received on time; please send previous week's data."
         }
     },
-    id_format: '111111'
+    id_format: '111111',
+    synthetic_date: null
 };
 
 db.info(function(err, info) {
@@ -61,6 +62,7 @@ db.info(function(err, info) {
             if (change.doc) {
                 console.log("Updating configuration ...");
                 _.extend(config, change.doc);
+                require('./date').refresh();
                 console.log("New configuration: " + JSON.stringify(config, null, 2));
             } else {
                 console.warn("Unable to update configuration due to: " + JSON.stringify(change));
