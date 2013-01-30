@@ -173,6 +173,18 @@ exports.makeDataRecordReadable = function(doc) {
         var keys = getFormKeys(data_record.form);
         var labels = getLabels(keys, data_record.form, 'en');
         data_record.fields = fieldsToHtml(keys, labels, data_record);
+        if (data_record.patient_id && keys.indexOf('patient_id') === -1) {
+            // hack to include patient ID in fields rendering when not present
+            // in form but exists on doc.
+            data_record.fields.data.unshift({
+                isArray: false,
+                label: 'Patient ID',
+                value: data_record.patient_id
+            });
+            data_record.fields.headers.unshift({
+                head: "Patient ID"
+            });
+        }
     }
 
     if(data_record.reported_date) {
