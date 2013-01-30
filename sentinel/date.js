@@ -1,9 +1,10 @@
-var start_date, synth_start_date;
+var DATE_RE = /(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?/,
+    sd = require('./config').get('synthetic_date'),
+    start_date = new Date(),
+    synth_start_date = undefined;
 
-function refresh() {
-    console.log('refreshing date vars');
-    var DATE_RE = /(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?/,
-        sd = require('./config').get('synthetic_date');
+console.log('loading date.js');
+function load() {
     if (sd) {
       var matches =  String(sd).match(DATE_RE);
       if (matches) {
@@ -14,15 +15,12 @@ function refresh() {
               // default hours to noon so catches send window
               hours = matches[4] || 12,
               minutes = matches[5] || 0;
-          start_date = new Date();
           synth_start_date = new Date(start_date.valueOf());
           synth_start_date.setFullYear(year, month -1, day);
           synth_start_date.setHours(hours, minutes, 0, 0);
           return;
       }
     }
-    start_date = new Date();
-    synth_start_date = undefined;
 }
 
 // allows us to apply a delta to a timestamp when we run sentinel in synthetic
@@ -49,7 +47,6 @@ function getDate() {
 module.exports = {
     getDate: getDate,
     getTimestamp: getTimestamp,
-    isSynthetic: isSynthetic,
-    refresh: refresh
+    isSynthetic: isSynthetic
 };
-refresh();
+load();

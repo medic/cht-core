@@ -21,6 +21,8 @@ function sendable(m) {
     var after = config.get('schedule_morning_hours') || 8,
         until = config.get('schedule_evening_hours') || 17;
 
+    console.log('m.hours() >= after', m.hours() >= after);
+    console.log('m.hours() <= until', m.hours() <= until);
     return m.hours() >= after && m.hours() <= until;
 }
 

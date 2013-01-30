@@ -60,10 +60,8 @@ db.info(function(err, info) {
         });
         stream.on('data', function(change) {
             if (change.doc) {
-                console.log("Updating configuration ...");
-                _.extend(config, change.doc);
-                require('./date').refresh();
-                console.log("New configuration: " + JSON.stringify(config, null, 2));
+                console.log("New configuration, restarting process...");
+                process.exit();
             } else {
                 console.warn("Unable to update configuration due to: " + JSON.stringify(change));
             }

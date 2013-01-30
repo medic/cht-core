@@ -9,6 +9,11 @@ module.exports = function(callback) {
         overdue = now.clone().subtract('days', 7);
 
 
+    console.log('finding due_tasks');
+    console.log('now is', now._d);
+    console.log('overdue is', overdue._d);
+    console.log('now.valueOf() is', now.valueOf());
+    console.log('overdue.valueOf() is', overdue.valueOf());
     db.view('kujua-sentinel', 'due_tasks', {
         include_docs: true,
         endkey: now.valueOf(),
