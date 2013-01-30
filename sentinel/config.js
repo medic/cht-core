@@ -43,6 +43,8 @@ config = {
         }
     },
     id_format: '111111',
+    schedule_morning_hours: 8,
+    schedule_evening_hours: 17,
     synthetic_date: null
 };
 
