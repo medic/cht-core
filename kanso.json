@@ -20,7 +20,7 @@
     "loglevel": "info",
     "load": "lib/app",
     "modules": ["lib"],
-    "attachments": ["static", "docs"],
+    "attachments": ["static"],
     "dust": {
         "templates": "templates"
     },
