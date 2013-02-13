@@ -47,6 +47,9 @@ module.exports = {
                         })
                     });
                 }
+                utils.addError(doc, {
+                    message: i18n(msgs.not_found, {patient_id: doc.patient_id})
+                });
                 return callback(null, true);
             }
 

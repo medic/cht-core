@@ -20,7 +20,8 @@ module.exports = {
         parentPhone = utils.getParentPhone(doc);
 
         utils.getOHWRegistration(doc.patient_id, function(err, registration) {
-                msg = "No patient with id '{{patient_id}}' found.",
+
+            var msg = "No patient with id '{{patient_id}}' found.",
                 conf = 'ohw_counseling_reminder_days',
                 proximity = config.get('ohw_birth_report_within_days');
 
@@ -30,6 +31,9 @@ module.exports = {
             if (!registration) {
                 utils.addMessage(doc, {
                     phone: clinicPhone,
+                    message: i18n(msg, {patient_id: doc.patient_id})
+                });
+                utils.addError(doc, {
                     message: i18n(msg, {patient_id: doc.patient_id})
                 });
                 return callback(null, true);

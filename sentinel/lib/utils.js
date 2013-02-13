@@ -72,6 +72,21 @@ module.exports = {
       _.extend(task, _.omit(options, 'phone', 'message'));
       doc.tasks.push(task);
   },
+  addError: function(doc, options) {
+      if (!doc || !options || !options.message) return;
+      // set default code
+      if (!options.code) options.code = 'not_found';
+
+      var error = {code: options.code, message: options.message};
+
+      for (var i in doc.errors) {
+          var e = doc.errors[i];
+          // already exists on the record
+          if (error.code === e.code) return;
+      }
+
+      doc.errors ? doc.errors.push(error) : doc.errors = [error];
+  },
   updateScheduledMessage: function(doc, options) {
       if (!options || !options.message || !options.type)
           return;

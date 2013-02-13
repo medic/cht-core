@@ -19,15 +19,20 @@ var handleOnMatch = function(change, callback) {
             return callback(err);
         }
 
+        msg = i18n("No patient with id '{{patient_id}}' found.", {
+            patient_id: doc.patient_id
+        });
+
         if (!registration) {
             if (clinicPhone) {
                 utils.addMessage(doc, {
                     phone: clinicPhone,
-                    message: i18n("No patient with id '{{patient_id}}' found.", {
-                        patient_id: doc.patient_id
-                    })
+                    message: msg,
                 });
             }
+            utils.addError(doc, {
+                message: msg
+            });
             return callback(null, true);
         }
 
