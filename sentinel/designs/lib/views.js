@@ -1,3 +1,12 @@
+exports.serial_numbers_by_clinic_and_reported_date = {
+    map: function(doc) {
+        if (!doc.serial_number || !doc.reported_date
+            || !doc.related_entities || !doc.related_entities.clinic) return;
+        var cl_id = doc.related_entities.clinic._id;
+        emit([doc.serial_number, cl_id, doc.reported_date],null);
+    }
+};
+
 exports.due_tasks = {
     map: function(doc) {
         var tasks = doc.scheduled_tasks || [];
