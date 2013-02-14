@@ -7,16 +7,21 @@ var _ = require('underscore'),
     i18n = require('../i18n');
 
 module.exports = {
+    db: require('../db'),
     onMatch: function(change, callback) {
         var doc = change.doc,
             self = module.exports;
 
         self.setId(doc, function() {
-            var expected,
-                lmp,
-                weeks = Number(doc.last_menstrual_period);
+            self.validate(doc, function(err) {
 
-            if (_.isNumber(weeks)) {
+                // validation failed, finalize transition
+                if (err) return callback(null, true);
+
+                var expected,
+                    lmp,
+                    weeks = Number(doc.last_menstrual_period);
+
                 lmp = moment(date.getDate()).startOf('day').startOf('week').subtract('weeks', weeks);
                 expected = lmp.clone().add('weeks', 40);
                 _.extend(doc, {
@@ -26,11 +31,49 @@ module.exports = {
                 self.scheduleReminders(doc, lmp, expected);
                 self.addAcknowledgement(doc);
                 callback(null, true);
-            } else {
-                callback(null, false);
-            }
+            });
         });
 
+    },
+    checkSerialNumber: function(doc, callback) {
+        // registrations that have the same serial number within an hour
+        // should be rejected.
+        if (!doc.serial_number) return callback('Serial number missing');
+
+        var self = module.exports,
+            view = 'serial_numbers_by_clinic_and_reported_date',
+            q = {startkey:[], endkey:[]};
+
+        q.startkey[0] = doc.serial_number;
+        q.startkey[1] = doc.related_entities.clinic._id;
+        q.startkey[2] = moment(date.getDate()).subtract('hours',1).valueOf();
+        q.endkey[0] = q.startkey[0];
+        q.endkey[1] = q.startkey[1];
+        q.endkey[2] = doc.reported_date;
+
+        self.db.view('kujua-sentinel', view, q, function(err, data) {
+            if (err) return callback(err);
+            if (data.rows.length <= 1) return callback();
+            utils.addError(doc, {
+                message: 'Reporter duplicated serial number within an hour.'
+            });
+            utils.addMessage(doc, {
+                phone: doc.from,
+                message: i18n("{{serial_number}} is already registered. Please enter a new serial number and submit registration form again.", {
+                    serial_number: doc.serial_number
+                })
+            });
+            callback("Duplicate serial number");
+        });
+    },
+    validate: function(doc, callback) {
+        var self = module.exports,
+            weeks = Number(doc.last_menstrual_period);
+        if (!_.isNumber(weeks)) return callback('Failed to parse LMP.');
+        self.checkSerialNumber(doc, function(err) {
+            if (!err) return callback();
+            callback(err);
+        });
     },
     setId: function(doc, callback) {
         var id = ids.generate(doc.serial_number),
