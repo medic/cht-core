@@ -75,7 +75,7 @@ module.exports = {
   addError: function(doc, options) {
       if (!doc || !options || !options.message) return;
       // set default code
-      if (!options.code) options.code = 'not_found';
+      if (!options.code) options.code = 'invalid_report';
 
       var error = {code: options.code, message: options.message};
 
