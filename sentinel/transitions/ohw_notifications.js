@@ -1,6 +1,7 @@
 var db,
     utils = require('../lib/utils'),
-    i18n = require('../i18n');
+    i18n = require('../i18n'),
+    mustache = require('mustache');
 
 module.exports = {
     db: require('../db'),
@@ -11,7 +12,8 @@ module.exports = {
             self = module.exports;
 
         utils.getOHWRegistration(doc.patient_id, function(err, registration) {
-            var mute;
+            var mute,
+                msg = "No patient with id '{{patient_id}}' found.";
 
             if (err) return callback(err);
 
@@ -19,15 +21,11 @@ module.exports = {
                 if (clinicPhone) {
                     utils.addMessage(doc, {
                         phone: clinicPhone,
-                        message: i18n("No patient with id '{{patient_id}}' found.", {
-                            patient_id: doc.patient_id
-                        })
+                        message: i18n(msg, { patient_id: doc.patient_id })
                     });
                 }
                 utils.addError(doc, {
-                    message: i18n("No patient with id '{{patient_id}}' found.", {
-                        patient_id: doc.patient_id
-                    })
+                    message: mustache.to_html(msg, { patient_id: doc.patient_id })
                 });
                 return callback(null, true);
             }

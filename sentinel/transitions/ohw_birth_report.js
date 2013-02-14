@@ -2,6 +2,7 @@ var _ = require('underscore'),
     config = require('../config'),
     date = require('../date'),
     i18n = require('../i18n'),
+    mustache = require('mustache'),
     ids = require('../lib/ids'),
     moment = require('moment'),
     utils = require('../lib/utils');
@@ -34,7 +35,7 @@ module.exports = {
                     message: i18n(msg, {patient_id: doc.patient_id})
                 });
                 utils.addError(doc, {
-                    message: i18n(msg, {patient_id: doc.patient_id})
+                    message: mustache.to_html(msg, {patient_id: doc.patient_id})
                 });
                 return callback(null, true);
             }

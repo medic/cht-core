@@ -1,5 +1,6 @@
 var _ = require('underscore'),
     i18n = require('../i18n'),
+    mustache = require('mustache'),
     utils = require('../lib/utils');
 
 var handleOnMatch = function(change, callback) {
@@ -31,7 +32,7 @@ var handleOnMatch = function(change, callback) {
                 });
             }
             utils.addError(doc, {
-                message: msg
+                message: mustache.to_html(msg, { patient_id: doc.patient_id })
             });
             return callback(null, true);
         }

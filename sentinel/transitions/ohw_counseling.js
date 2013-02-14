@@ -1,5 +1,6 @@
 var config = require('../config'),
     i18n = require('../i18n'),
+    mustache = require('mustache'),
     date = require('../date'),
     moment = require('moment'),
     utils = require('../lib/utils');
@@ -48,7 +49,9 @@ module.exports = {
                     });
                 }
                 utils.addError(doc, {
-                    message: i18n(msgs.not_found, {patient_id: doc.patient_id})
+                    message: mustache.to_html(msgs.not_found, {
+                        patient_id: doc.patient_id
+                    })
                 });
                 return callback(null, true);
             }
