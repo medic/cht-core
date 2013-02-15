@@ -4,7 +4,8 @@ var _ = require('underscore'),
     config = require('../config'),
     ids = require('../lib/ids'),
     utils = require('../lib/utils'),
-    i18n = require('../i18n');
+    i18n = require('../i18n'),
+    mustache = require('mustache');
 
 module.exports = {
     db: require('../db'),
@@ -36,8 +37,7 @@ module.exports = {
 
     },
     checkSerialNumber: function(doc, callback) {
-        // registrations that have the same serial number within an hour
-        // should be rejected.
+        // serial number should remain unique for a year
         if (!doc.serial_number) return callback('Serial number missing');
 
         var self = module.exports,
@@ -46,7 +46,7 @@ module.exports = {
 
         q.startkey[0] = doc.serial_number;
         q.startkey[1] = doc.related_entities.clinic._id;
-        q.startkey[2] = moment(date.getDate()).subtract('hours',1).valueOf();
+        q.startkey[2] = moment(date.getDate()).subtract('months',12).valueOf();
         q.endkey[0] = q.startkey[0];
         q.endkey[1] = q.startkey[1];
         q.endkey[2] = doc.reported_date;
@@ -55,7 +55,10 @@ module.exports = {
             if (err) return callback(err);
             if (data.rows.length <= 1) return callback();
             utils.addError(doc, {
-                message: 'Reporter duplicated serial number within an hour.'
+                message: mustache.to_html(
+                    'Duplicate record found; {{serial_number}} already registered within 12 months.',
+                    { serial_number: doc.serial_number }
+                )
             });
             utils.addMessage(doc, {
                 phone: doc.from,
