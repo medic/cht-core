@@ -52,6 +52,7 @@ var checkDuplicateVals = function(callback) {
     var msg = "Two or more of the ANC forms you sent are identical. A health"
         + " facility staff will call you soon to confirm the validity of the"
         + " forms.";
+
     var dups = function(row) {
         var keys = [
            "anc_pnc",
@@ -73,6 +74,8 @@ var checkDuplicateVals = function(callback) {
     var opts = {
         doc: new_doc,
         patient_id: registration.patient_id,
+        time_key: 'days',
+        time_val: 4,
         filter: dups
     };
     utils.checkDuplicates(opts, function(err) {
