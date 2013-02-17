@@ -43,13 +43,23 @@ module.exports = {
             return callback(msg);
         }
         var opts = {
-            doc:doc,
+            doc: doc,
             time_key: 'months',
             time_val: 12,
-            type:'serial_number'
+            serial_number: doc.serial_number
         };
-        utils.handleDuplicates(opts, function(err) {
-            if (err) return callback(err);
+        utils.checkDuplicates(opts, function(err) {
+            if (err) {
+                utils.addMessage(doc, {
+                    phone: doc.from,
+                    message: i18n(
+                        "'{{serial_number}}' is already registered. Please enter a new"
+                        + " serial number and submit registration form again.", {
+                        serial_number: doc.serial_number
+                    })
+                });
+                return callback(err);
+            }
             callback();
         });
 

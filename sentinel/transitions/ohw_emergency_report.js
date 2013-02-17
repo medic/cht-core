@@ -92,8 +92,18 @@ var validate = function(doc, callback) {
         var opts = {
             doc:doc, time_key:'hours', time_val:24, patient_id: registration.patient_id
         };
-        utils.handleDuplicates(opts, function(err) {
-            if (err) return callback(err);
+        utils.checkDuplicates(opts, function(err) {
+            if (err) {
+                utils.addMessage(doc, {
+                    phone: doc.from,
+                    message: i18n(
+                        "'{{patient_id}}' is already registered. Please enter a new"
+                        + " serial number and submit registration form again.", {
+                        patient_id: registration.patient_id
+                    })
+                });
+                return callback(err);
+            }
             return callback();
         });
     });

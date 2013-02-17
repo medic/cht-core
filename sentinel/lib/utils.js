@@ -118,7 +118,7 @@ var getMatchingRecordsBySerialNumber = function(options, callback) {
     });
 };
 
-var handleDuplicates = function(options, callback) {
+var checkDuplicates = function(options, callback) {
 
     // check for duplicate
     var fn = getMatchingRecordsBySerialNumber;
@@ -129,17 +129,13 @@ var handleDuplicates = function(options, callback) {
     var doc = options.doc;
     var id_val = options.serial_number || options.patient_id;
 
-    var msg = "Duplicate record found; '{{id_val}}' already registered"
+    var msg = "Duplicate found for '{{id_val}}'; was already reported"
           + ' within ' + options.time_val + ' ' + options.time_key + '.';
-    var resp_msg = "'{{id_val}}' is already registered. Please enter a new"
-          + " serial number and submit registration form again.";
     msg = mustache.to_html(msg, { id_val: id_val });
-    resp_msg = i18n(resp_msg, { id_val: id_val })
 
     fn(options, function(err, data) {
         if (data.rows && data.rows.length <= 1) return callback();
         addError(doc, { code: 'duplicate_record', message: msg });
-        addMessage(doc, { phone: doc.from, message: resp_msg });
         callback(msg);
     });
 };
@@ -290,5 +286,5 @@ module.exports = {
   getOHWRegistration: getOHWRegistration,
   getMatchingRecordsBySerialNumber: getMatchingRecordsBySerialNumber,
   getMatchingRecordsByPatientID: getMatchingRecordsByPatientID,
-  handleDuplicates: handleDuplicates,
+  checkDuplicates: checkDuplicates,
 }
