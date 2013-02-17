@@ -9,16 +9,20 @@ var _ = require('underscore'),
     registration;
 
 
-var addAdvice = function() {
+var addAlerts = function() {
     var doc = new_doc;
+
     if (doc.anc_labor_pnc !== 'In labor') return;
+
     var msg = "{{contact_name}} has reported a labor. Please follow up"
         + " with her and provide necessary assistance immediately.";
+
     if (doc.labor_danger === 'Yes') {
         msg = "{{contact_name}} has reported a danger sign during labor." +
             " Please follow up with her and provide necessary" +
             " assistance immediately.";
     }
+
     if (doc.advice_received === 'No') {
         utils.addMessage(doc, {
             phone: utils.getParentPhone(doc) || '',
@@ -160,7 +164,7 @@ var handleOnMatch = function(change, callback) {
         // validation failed, finalize transition
         if (err) return callback(null, true);
         addResponse();
-        addAdvice();
+        addAlerts();
         callback(null, true);
     });
 };
