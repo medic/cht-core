@@ -6,6 +6,13 @@ var db = require('../db'),
     mustache = require('mustache'),
     i18n = require('../i18n');
 
+var getClinicID = function(doc) {
+  return doc &&
+    doc.related_entities &&
+    doc.related_entities.clinic &&
+    doc.related_entities.clinic._id;
+};
+
 var addMessage = function(doc, options) {
     var options = options || {},
         phone = options.phone,
@@ -52,89 +59,70 @@ var getOHWRegistration = function(patient_id, callback) {
     });
 };
 
-var getMatchingRecordsByPatientID = function(options, callback) {
-    // form code, patient id, clinic id should remain unique for a given
-    // time frame
+var getMatchingRecords = function(options, callback) {
 
     var options = options || {},
-        doc = options.doc;
+        doc = options.doc,
+        patient_id = options.patient_id,
+        serial_number = options.serial_number,
+        time_val = options.time_val,
+        time_key = options.time_key,
+        clinic_id = getClinicID(doc);
 
-    if (!doc) return callback('Missing doc option.');
-    if (!doc.patient_id) return callback('Missing patient id on doc.');
-    if (!doc.form) return callback('Missing form code on doc.');
-    if (!options.time_key) return callback('Missing time key value in options.');
-    if (!options.time_val) return callback('Missing time value in options.');
+    if (!doc
+        || (!patient_id && !serial_number)
+        || !doc.form)
+        return callback('Missing required argument for match query.');
 
     var view = 'patient_ids_by_form_clinic_and_reported_date',
-        q = {startkey:[], endkey:[]};
+        q = {startkey:[], endkey:[], include_docs:true};
+
+    if (serial_number)
+        view = 'serial_numbers_by_form_clinic_and_reported_date';
 
     q.startkey[0] = doc.form;
-    q.startkey[1] = doc.patient_id;
-    q.startkey[2] = doc.related_entities.clinic._id;
-    q.startkey[3] = moment(date.getDate()).subtract(
-        options.time_key, options.time_val
-    ).valueOf();
-    q.endkey[0] = q.startkey[0];
-    q.endkey[1] = q.startkey[1];
-    q.endkey[2] = q.startkey[2];
-    q.endkey[3] = doc.reported_date;
-
-    db.view('kujua-sentinel', view, q, function(err, data) {
-        if (err) return callback(err);
-        callback(null, data);
-    });
-};
-
-var getMatchingRecordsBySerialNumber = function(options, callback) {
-    // form code, serial number, clinic id should remain unique for a given
-    // time frame
-    var options = options || {},
-        doc = options.doc;
-
-    if (!doc) return callback('Missing doc option.');
-    if (!doc.serial_number) return callback('Missing serial number on doc.');
-    if (!doc.form) return callback('Missing form code on doc.');
-    if (!options.time_key) return callback('Missing time key value in options.');
-    if (!options.time_val) return callback('Missing time value in options.');
-
-    var view = 'serial_numbers_by_form_clinic_and_reported_date',
-        q = {startkey:[], endkey:[]};
-
-    q.startkey[0] = doc.form;
-    q.startkey[1] = doc.serial_number;
-    q.startkey[2] = doc.related_entities.clinic._id;
-    q.startkey[3] = moment(date.getDate()).subtract(
-        options.time_key, options.time_val
-    ).valueOf();
+    q.startkey[1] = patient_id || serial_number;
+    q.startkey[2] = clinic_id;
 
     q.endkey[0] = q.startkey[0];
     q.endkey[1] = q.startkey[1];
     q.endkey[2] = q.startkey[2];
-    q.endkey[3] = doc.reported_date;
+
+    // filtering view by time is optional
+    if (time_key && time_val) {
+        q.startkey[3] = moment(date.getDate()).subtract(
+                time_key, time_val
+        ).valueOf();
+        q.endkey[3] = doc.reported_date;
+    } else {
+        q.endkey[3] = {};
+    }
 
     db.view('kujua-sentinel', view, q, function(err, data) {
         if (err) return callback(err);
-        callback(null, data);
+        if (options.filter)
+            return callback(null, _.filter(data.rows, options.filter));
+        callback(null, data.rows);
     });
 };
 
 var checkDuplicates = function(options, callback) {
 
-    // check for duplicate
-    var fn = getMatchingRecordsBySerialNumber;
-    if (options.patient_id) fn = getMatchingRecordsByPatientID;
-    if (!options.time_key) options.time_key = 'months';
-    if (!options.time_val) options.time_key = 12;
+    //if (!options.time_key) options.time_key = 'months';
+    //if (!options.time_val) options.time_key = 12;
 
-    var doc = options.doc;
-    var id_val = options.serial_number || options.patient_id;
+    var doc = options.doc,
+        id_val = options.serial_number || options.patient_id;
 
-    var msg = "Duplicate found for '{{id_val}}'; was already reported"
-          + ' within ' + options.time_val + ' ' + options.time_key + '.';
+    var msg = "Duplicate record found for '{{id_val}}'; was already reported"
+
+    if (options.time_val && options.time_key)
+          msg += ' within ' + options.time_val + ' ' + options.time_key;
+
     msg = mustache.to_html(msg, { id_val: id_val });
 
-    fn(options, function(err, data) {
-        if (data.rows && data.rows.length <= 1) return callback();
+    getMatchingRecords(options, function(err, data) {
+        if (data && data.length <= 1) return callback();
         addError(doc, { code: 'duplicate_record', message: msg });
         callback(msg);
     });
@@ -281,10 +269,10 @@ module.exports = {
           return task;
       });
   },
+  getClinicID: getClinicID,
   addMessage: addMessage,
   addError: addError,
   getOHWRegistration: getOHWRegistration,
-  getMatchingRecordsBySerialNumber: getMatchingRecordsBySerialNumber,
-  getMatchingRecordsByPatientID: getMatchingRecordsByPatientID,
-  checkDuplicates: checkDuplicates,
+  getMatchingRecords: getMatchingRecords,
+  checkDuplicates: checkDuplicates
 }

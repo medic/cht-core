@@ -1,14 +1,16 @@
 var _ = require('underscore'),
-    i18n = require('../i18n'),
     mustache = require('mustache'),
+    async = require('async'),
+    i18n = require('../i18n'),
     utils = require('../lib/utils'),
-    parentPhone,
+    new_doc,
     clinicPhone,
+    clinicContactName,
     registration;
 
 
-var addAdvice = function(doc) {
-    if (!registration) return;
+var addAdvice = function() {
+    var doc = new_doc;
     if (doc.anc_labor_pnc !== 'In labor') return;
     var msg = "{{contact_name}} has reported a labor. Please follow up"
         + " with her and provide necessary assistance immediately.";
@@ -19,14 +21,24 @@ var addAdvice = function(doc) {
     }
     if (doc.advice_received === 'No') {
         utils.addMessage(doc, {
-            phone: parentPhone || '',
+            phone: utils.getParentPhone(doc) || '',
             message: i18n(msg2, {contact_name: clinicContactName})
         });
     }
 };
 
-var addResponse = function(doc) {
-    if (!registration) return;
+var addResponse = function() {
+    var doc = new_doc;
+    if (doc.anc_labor_pnc !== 'In labor' && doc.labor_danger === 'No') {
+        utils.addMessage(doc, {
+            phone: clinicPhone,
+            message: i18n("Thank you, {{contact_name}}. No danger sign for {{serial_number}} has been recorded.", {
+                contact_name: clinicContactName,
+                serial_number: registration.serial_number
+            })
+        });
+        return;
+    }
     if (doc.anc_labor_pnc === 'In labor') {
         msg = "Thank you {{contact_name}}. Labor report for" +
             " {{serial_number}} has been recorded. Please submit the" +
@@ -56,7 +68,7 @@ var addResponse = function(doc) {
         });
         if (doc.advice_received === 'No') {
             utils.addMessage(doc, {
-                phone: parentPhone || '',
+                phone: utils.getParentPhone(doc) || '',
                 message: i18n(
                     "{{contact_name}} has reported a danger sign for {{patient_id}}. Please follow up with her and provide necessary assistance immediately.", {
                     contact_name: clinicContactName,
@@ -67,72 +79,88 @@ var addResponse = function(doc) {
     }
 };
 
-var validate = function(doc, callback) {
+var checkRegistration = function(callback) {
+    var msg = "No patient with id '{{patient_id}}' found.";
+    var doc = new_doc;
     utils.getOHWRegistration(doc.patient_id, function(err, data) {
-
-        if (err) return callback(err);
-
-        registration = data;
-
-        var msg = "No patient with id '{{patient_id}}' found.";
-
-        if (!registration) {
-            if (clinicPhone) {
-                utils.addMessage(doc, {
-                    phone: clinicPhone,
-                    message: i18n(msg, { patient_id: doc.patient_id })
-                });
-            }
+        if (err || !data) {
             utils.addError(doc, {
-                message: mustache.to_html(msg, { patient_id: doc.patient_id })
+                message: mustache.to_html(msg, {
+                    patient_id: doc.patient_id
+                })
             });
             return callback(msg);
         }
-
-        var opts = {
-            doc:doc, time_key:'hours', time_val:24, patient_id: registration.patient_id
-        };
-        utils.checkDuplicates(opts, function(err) {
-            if (err) {
-                utils.addMessage(doc, {
-                    phone: doc.from,
-                    message: i18n(
-                        "'{{patient_id}}' is already registered. Please enter a new"
-                        + " serial number and submit registration form again.", {
-                        patient_id: registration.patient_id
-                    })
-                });
-                return callback(err);
-            }
-            return callback();
-        });
+        registration = data;
+        return callback();
     });
 };
 
+var checkTimePassed = function(callback) {
+    var msg = "Two or more of the danger reports you sent are identical. A"
+        + " health facility staff will call you soon to confirm the validity of"
+        + " the forms.";
+    var opts = {
+        doc: new_doc,
+        time_key: 'hours',
+        time_val: 24,
+        patient_id: registration.patient_id
+    };
+    utils.checkDuplicates(opts, function(err) {
+        if (err) return callback(msg);
+        return callback();
+    });
+};
+
+var checkLaborUnique = function(callback) {
+    var msg = "Two or more of the labor reports you sent are identical. A"
+        + " health facility staff will call you soon to confirm the validity of"
+        + " the forms.";
+    var opts = {
+        doc: new_doc,
+        patient_id: registration.patient_id,
+        filter: function(row) { return row.doc.anc_labor_pnc === 'In labor'; }
+    };
+    utils.checkDuplicates(opts, function(err) {
+        if (err) return callback(msg);
+        return callback();
+    });
+};
+
+var validate = function(callback) {
+
+    var doc = new_doc,
+        validations;
+
+    if (doc.anc_labor_pnc === 'In labor')
+        validations = [checkRegistration, checkLaborUnique];
+    else
+        validations = [checkRegistration, checkTimePassed];
+
+    async.series(validations, function(err) {
+        if (!err) return callback();
+        utils.addMessage(doc, {
+            phone: clinicPhone,
+            message: i18n(err, {
+                patient_id: doc.patient_id || registration.patient_id
+            })
+        });
+        return callback(err);
+    });
+
+};
+
 var handleOnMatch = function(change, callback) {
-    var doc = change.doc,
-        msg,
-        msg2;
 
-    parentPhone = utils.getParentPhone(doc);
-    clinicPhone = utils.getClinicPhone(doc);
-    clinicContactName = utils.getClinicContactName(doc);
+    new_doc = change.doc;
+    clinicPhone = utils.getClinicPhone(change.doc);
+    clinicContactName = utils.getClinicContactName(change.doc);
 
-    validate(doc, function(err) {
+    validate(function(err) {
         // validation failed, finalize transition
         if (err) return callback(null, true);
-        if (doc.anc_labor_pnc !== 'In labor' && doc.labor_danger === 'No') {
-            utils.addMessage(doc, {
-                phone: clinicPhone,
-                message: i18n("Thank you, {{contact_name}}. No danger sign for {{serial_number}} has been recorded.", {
-                    contact_name: clinicContactName,
-                    serial_number: registration.serial_number
-                })
-            });
-            return callback(null, true);
-        }
-        addResponse(doc);
-        addAdvice(doc);
+        addResponse();
+        addAdvice();
         callback(null, true);
     });
 };
