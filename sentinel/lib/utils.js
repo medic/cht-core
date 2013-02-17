@@ -114,7 +114,7 @@ var checkDuplicates = function(options, callback) {
     var doc = options.doc,
         id_val = options.serial_number || options.patient_id;
 
-    var msg = "Duplicate record found for '{{id_val}}'; was already reported"
+    var msg = "Duplicate record found; '{{id_val}}' was already reported";
 
     if (options.time_val && options.time_key)
           msg += ' within ' + options.time_val + ' ' + options.time_key;
