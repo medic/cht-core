@@ -4,8 +4,7 @@ var _ = require('underscore'),
     config = require('../config'),
     ids = require('../lib/ids'),
     utils = require('../lib/utils'),
-    i18n = require('../i18n'),
-    mustache = require('mustache');
+    i18n = require('../i18n');
 
 module.exports = {
     db: require('../db'),
@@ -13,16 +12,15 @@ module.exports = {
         var doc = change.doc,
             self = module.exports;
 
-        self.setId(doc, function() {
-            self.validate(doc, function(err) {
+        self.validate(doc, function(err) {
 
-                // validation failed, finalize transition
-                if (err) return callback(null, true);
+            // validation failed, finalize transition
+            if (err) return callback(null, true);
 
+            self.setId(doc, function() {
                 var expected,
                     lmp,
                     weeks = Number(doc.last_menstrual_period);
-
                 lmp = moment(date.getDate()).startOf('day').startOf('week').subtract('weeks', weeks);
                 expected = lmp.clone().add('weeks', 40);
                 _.extend(doc, {
@@ -36,47 +34,25 @@ module.exports = {
         });
 
     },
-    checkSerialNumber: function(doc, callback) {
-        // serial number should remain unique for a year
-        if (!doc.serial_number) return callback('Serial number missing');
-
-        var self = module.exports,
-            view = 'serial_numbers_by_clinic_and_reported_date',
-            q = {startkey:[], endkey:[]};
-
-        q.startkey[0] = doc.serial_number;
-        q.startkey[1] = doc.related_entities.clinic._id;
-        q.startkey[2] = moment(date.getDate()).subtract('months',12).valueOf();
-        q.endkey[0] = q.startkey[0];
-        q.endkey[1] = q.startkey[1];
-        q.endkey[2] = doc.reported_date;
-
-        self.db.view('kujua-sentinel', view, q, function(err, data) {
-            if (err) return callback(err);
-            if (data.rows.length <= 1) return callback();
-            utils.addError(doc, {
-                message: mustache.to_html(
-                    'Duplicate record found; {{serial_number}} already registered within 12 months.',
-                    { serial_number: doc.serial_number }
-                )
-            });
-            utils.addMessage(doc, {
-                phone: doc.from,
-                message: i18n("{{serial_number}} is already registered. Please enter a new serial number and submit registration form again.", {
-                    serial_number: doc.serial_number
-                })
-            });
-            callback("Duplicate serial number");
-        });
-    },
     validate: function(doc, callback) {
-        var self = module.exports,
-            weeks = Number(doc.last_menstrual_period);
-        if (!_.isNumber(weeks)) return callback('Failed to parse LMP.');
-        self.checkSerialNumber(doc, function(err) {
-            if (!err) return callback();
-            callback(err);
+        var weeks = Number(doc.last_menstrual_period);
+        if (!_.isNumber(weeks)) {
+            var msg = 'Failed to parse LMP.';
+            utils.addError(doc, { message: msg });
+            // TODO add message/response for reporter here
+            return callback(msg);
+        }
+        var opts = {
+            doc:doc,
+            time_key: 'months',
+            time_val: 12,
+            type:'serial_number'
+        };
+        utils.handleDuplicates(opts, function(err) {
+            if (err) return callback(err);
+            callback();
         });
+
     },
     setId: function(doc, callback) {
         var id = ids.generate(doc.serial_number),
@@ -138,8 +114,7 @@ module.exports = {
         // }
         function addMessage(options) {
 
-            if (!options)
-                return console.error('addMessage failed.', options);
+            if (!options) return console.error('addMessage failed.', options);
 
             var time_key = options.time_key || 'days',
                 offset = options[time_key] || options,

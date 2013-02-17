@@ -1,7 +1,151 @@
 var db = require('../db'),
     moment = require('moment'),
     config = require('../config'),
-    _ = require('underscore');
+    date = require('../date'),
+    _ = require('underscore'),
+    mustache = require('mustache'),
+    i18n = require('../i18n');
+
+var addMessage = function(doc, options) {
+    var options = options || {},
+        phone = options.phone,
+        message = options.message;
+    doc.tasks = doc.tasks || [];
+
+    var task = {
+        messages: [],
+        state: 'pending'
+    };
+    task.messages.push({to: phone, message: message});
+    _.extend(task, _.omit(options, 'phone', 'message'));
+    doc.tasks.push(task);
+};
+
+var addError = function(doc, options) {
+    if (!doc || !options || !options.message) return;
+    // set default code
+    if (!options.code) options.code = 'invalid_report';
+
+    var error = {code: options.code, message: options.message};
+
+    for (var i in doc.errors) {
+        var e = doc.errors[i];
+        // already exists on the record
+        if (error.code === e.code) return;
+    }
+
+    doc.errors ? doc.errors.push(error) : doc.errors = [error];
+};
+
+var getOHWRegistration = function(patient_id, callback) {
+    var q = {
+        key: patient_id,
+        include_docs: true,
+        limit: 1
+    };
+    db.view('kujua-sentinel', 'ohw_registered_patients', q, function(err, data) {
+        if (err)
+            return callback(err);
+        var row = _.first(data.rows),
+            registration = row && row.doc;
+        callback(null, registration);
+    });
+};
+
+var getMatchingRecordsByPatientID = function(options, callback) {
+    // form code, patient id, clinic id should remain unique for a given
+    // time frame
+
+    var options = options || {},
+        doc = options.doc;
+
+    if (!doc) return callback('Missing doc option.');
+    if (!doc.patient_id) return callback('Missing patient id on doc.');
+    if (!doc.form) return callback('Missing form code on doc.');
+    if (!options.time_key) return callback('Missing time key value in options.');
+    if (!options.time_val) return callback('Missing time value in options.');
+
+    var view = 'patient_ids_by_form_clinic_and_reported_date',
+        q = {startkey:[], endkey:[]};
+
+    q.startkey[0] = doc.form;
+    q.startkey[1] = doc.patient_id;
+    q.startkey[2] = doc.related_entities.clinic._id;
+    q.startkey[3] = moment(date.getDate()).subtract(
+        options.time_key, options.time_val
+    ).valueOf();
+    q.endkey[0] = q.startkey[0];
+    q.endkey[1] = q.startkey[1];
+    q.endkey[2] = q.startkey[2];
+    q.endkey[3] = doc.reported_date;
+
+    db.view('kujua-sentinel', view, q, function(err, data) {
+        if (err) return callback(err);
+        callback(null, data);
+    });
+};
+
+var getMatchingRecordsBySerialNumber = function(options, callback) {
+    // form code, serial number, clinic id should remain unique for a given
+    // time frame
+    var options = options || {},
+        doc = options.doc;
+
+    if (!doc) return callback('Missing doc option.');
+    if (!doc.serial_number) return callback('Missing serial number on doc.');
+    if (!doc.form) return callback('Missing form code on doc.');
+    if (!options.time_key) return callback('Missing time key value in options.');
+    if (!options.time_val) return callback('Missing time value in options.');
+
+    var view = 'serial_numbers_by_form_clinic_and_reported_date',
+        q = {startkey:[], endkey:[]};
+
+    q.startkey[0] = doc.form;
+    q.startkey[1] = doc.serial_number;
+    q.startkey[2] = doc.related_entities.clinic._id;
+    q.startkey[3] = moment(date.getDate()).subtract(
+        options.time_key, options.time_val
+    ).valueOf();
+
+    q.endkey[0] = q.startkey[0];
+    q.endkey[1] = q.startkey[1];
+    q.endkey[2] = q.startkey[2];
+    q.endkey[3] = doc.reported_date;
+
+    db.view('kujua-sentinel', view, q, function(err, data) {
+        if (err) return callback(err);
+        callback(null, data);
+    });
+};
+
+var handleDuplicates = function(options, callback) {
+
+  // check for duplicate
+  var fn = getMatchingRecordsBySerialNumber;
+  if (options.type === 'patient_id') fn = getMatchingRecordsByPatientID;
+  if (options.type) delete options.type;
+  if (!options.time_key) options.time_key = 'months';
+  if (!options.time_val) options.time_key = 12;
+
+  var msg = "Duplicate record found; '{{serial_number}}' already registered"
+        + ' within ' + options.time_val + ' ' + options.time_key + '.';
+  var resp_msg = "'{{serial_number}}' is already registered. Please enter a new"
+        + " serial number and submit registration form again.";
+
+  fn(options, function(err, data) {
+      if (data.rows && data.rows.length <= 1) return callback();
+      var doc = options.doc;
+      msg = mustache.to_html(msg, {
+        serial_number: doc.serial_number
+      });
+      addError(doc, { code: 'duplicate_record', message: msg });
+      addMessage(doc, {
+          phone: doc.from,
+          message: i18n(resp_msg, { serial_number: doc.serial_number })
+      });
+      callback(msg);
+  });
+};
 
 module.exports = {
   getClinicPhone: function(doc) {
@@ -31,21 +175,6 @@ module.exports = {
         doc.related_entities.clinic.parent.contact &&
         doc.related_entities.clinic.parent.contact.phone;
   },
-
-  getOHWRegistration: function(patient_id, callback) {
-      var q = {
-          key: patient_id,
-          include_docs: true,
-          limit: 1
-      };
-      db.view('kujua-sentinel', 'ohw_registered_patients', q, function(err, data) {
-          if (err)
-              return callback(err);
-          var row = _.first(data.rows),
-              registration = row && row.doc;
-          callback(null, registration);
-      });
-  },
   filterScheduledMessages: function(doc, type) {
       var scheduled_tasks = doc && doc.scheduled_tasks;
       return _.filter(scheduled_tasks, function(task) {
@@ -57,35 +186,6 @@ module.exports = {
       return _.find(scheduled_tasks, function(task) {
           return task.type === type;
       });
-  },
-  addMessage: function(doc, options) {
-      var options = options || {},
-          phone = options.phone,
-          message = options.message;
-      doc.tasks = doc.tasks || [];
-
-      var task = {
-          messages: [],
-          state: 'pending'
-      };
-      task.messages.push({to: phone, message: message});
-      _.extend(task, _.omit(options, 'phone', 'message'));
-      doc.tasks.push(task);
-  },
-  addError: function(doc, options) {
-      if (!doc || !options || !options.message) return;
-      // set default code
-      if (!options.code) options.code = 'invalid_report';
-
-      var error = {code: options.code, message: options.message};
-
-      for (var i in doc.errors) {
-          var e = doc.errors[i];
-          // already exists on the record
-          if (error.code === e.code) return;
-      }
-
-      doc.errors ? doc.errors.push(error) : doc.errors = [error];
   },
   updateScheduledMessage: function(doc, options) {
       if (!options || !options.message || !options.type)
@@ -187,5 +287,11 @@ module.exports = {
           task.state = 'muted';
           return task;
       });
-  }
+  },
+  addMessage: addMessage,
+  addError: addError,
+  getOHWRegistration: getOHWRegistration,
+  getMatchingRecordsBySerialNumber: getMatchingRecordsBySerialNumber,
+  getMatchingRecordsByPatientID: getMatchingRecordsByPatientID,
+  handleDuplicates: handleDuplicates,
 }
