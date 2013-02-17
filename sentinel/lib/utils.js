@@ -120,31 +120,28 @@ var getMatchingRecordsBySerialNumber = function(options, callback) {
 
 var handleDuplicates = function(options, callback) {
 
-  // check for duplicate
-  var fn = getMatchingRecordsBySerialNumber;
-  if (options.type === 'patient_id') fn = getMatchingRecordsByPatientID;
-  if (options.type) delete options.type;
-  if (!options.time_key) options.time_key = 'months';
-  if (!options.time_val) options.time_key = 12;
+    // check for duplicate
+    var fn = getMatchingRecordsBySerialNumber;
+    if (options.patient_id) fn = getMatchingRecordsByPatientID;
+    if (!options.time_key) options.time_key = 'months';
+    if (!options.time_val) options.time_key = 12;
 
-  var msg = "Duplicate record found; '{{serial_number}}' already registered"
-        + ' within ' + options.time_val + ' ' + options.time_key + '.';
-  var resp_msg = "'{{serial_number}}' is already registered. Please enter a new"
-        + " serial number and submit registration form again.";
+    var doc = options.doc;
+    var id_val = options.serial_number || options.patient_id;
 
-  fn(options, function(err, data) {
-      if (data.rows && data.rows.length <= 1) return callback();
-      var doc = options.doc;
-      msg = mustache.to_html(msg, {
-        serial_number: doc.serial_number
-      });
-      addError(doc, { code: 'duplicate_record', message: msg });
-      addMessage(doc, {
-          phone: doc.from,
-          message: i18n(resp_msg, { serial_number: doc.serial_number })
-      });
-      callback(msg);
-  });
+    var msg = "Duplicate record found; '{{id_val}}' already registered"
+          + ' within ' + options.time_val + ' ' + options.time_key + '.';
+    var resp_msg = "'{{id_val}}' is already registered. Please enter a new"
+          + " serial number and submit registration form again.";
+    msg = mustache.to_html(msg, { id_val: id_val });
+    resp_msg = i18n(resp_msg, { id_val: id_val })
+
+    fn(options, function(err, data) {
+        if (data.rows && data.rows.length <= 1) return callback();
+        addError(doc, { code: 'duplicate_record', message: msg });
+        addMessage(doc, { phone: doc.from, message: resp_msg });
+        callback(msg);
+    });
 };
 
 module.exports = {

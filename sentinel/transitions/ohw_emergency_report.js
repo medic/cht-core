@@ -8,6 +8,7 @@ var _ = require('underscore'),
 
 
 var addAdvice = function(doc) {
+    if (!registration) return;
     if (doc.anc_labor_pnc !== 'In labor') return;
     var msg = "{{contact_name}} has reported a labor. Please follow up"
         + " with her and provide necessary assistance immediately.";
@@ -25,6 +26,7 @@ var addAdvice = function(doc) {
 };
 
 var addResponse = function(doc) {
+    if (!registration) return;
     if (doc.anc_labor_pnc === 'In labor') {
         msg = "Thank you {{contact_name}}. Labor report for" +
             " {{serial_number}} has been recorded. Please submit the" +
@@ -84,11 +86,11 @@ var validate = function(doc, callback) {
             utils.addError(doc, {
                 message: mustache.to_html(msg, { patient_id: doc.patient_id })
             });
-            return callback(err);
+            return callback(msg);
         }
 
         var opts = {
-            doc:doc, time_key:'hours', time_val:24, type:'patient_id'
+            doc:doc, time_key:'hours', time_val:24, patient_id: registration.patient_id
         };
         utils.handleDuplicates(opts, function(err) {
             if (err) return callback(err);
@@ -99,7 +101,6 @@ var validate = function(doc, callback) {
 
 var handleOnMatch = function(change, callback) {
     var doc = change.doc,
-        clinicContactName,
         msg,
         msg2;
 
