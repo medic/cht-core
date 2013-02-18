@@ -8,8 +8,9 @@ var _ = require('underscore'),
     ids = require('../lib/ids'),
     utils = require('../lib/utils'),
     db = require('../db'),
-    clinicPhone,
     clinicContactName,
+    registration,
+    clinicPhone,
     parentPhone,
     new_doc;
 

@@ -6,10 +6,10 @@ var async = require('async'),
     date = require('../date'),
     utils = require('../lib/utils'),
     db = require('../db'),
-    new_doc,
-    registration,
     clinicContactName,
-    clinicPhone;
+    registration,
+    clinicPhone,
+    new_doc;
 
 var checkRegistration = function(callback) {
     var msg = "No patient with id '{{patient_id}}' found.";

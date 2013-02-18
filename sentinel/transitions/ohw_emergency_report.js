@@ -3,10 +3,10 @@ var _ = require('underscore'),
     async = require('async'),
     i18n = require('../i18n'),
     utils = require('../lib/utils'),
-    new_doc,
-    clinicPhone,
     clinicContactName,
-    registration;
+    registration,
+    clinicPhone,
+    new_doc;
 
 
 var addAlerts = function() {
