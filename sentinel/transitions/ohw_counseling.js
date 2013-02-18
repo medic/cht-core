@@ -53,6 +53,8 @@ var checkDuplicateVals = function(callback) {
         + " facility staff will call you soon to confirm the validity of the"
         + " forms.";
 
+    if (new_doc.anc_pnc === 'PNC') msg.replace(/ANC/g, 'PNC');
+
     var dups = function(row) {
         var keys = [
            "anc_pnc",
