@@ -148,30 +148,6 @@ var addResponses = function() {
 
 };
 
-var validate = function(callback) {
-
-    var doc = new_doc,
-        validations = [
-            checkRegistration,
-            checkDuplicateVals,
-            checkEDDProximity
-        ];
-
-    //if (doc.anc_pnc === 'ANC')
-    //    validations.push(checkANCTimePassed);
-
-    async.series(validations, function(err) {
-        if (!err) return callback();
-        utils.addMessage(doc, {
-            phone: clinicPhone,
-            message: i18n(err, {
-                patient_id: doc.patient_id || registration.patient_id
-            })
-        });
-        return callback(err);
-    });
-
-};
 
 var updateSchedule = function() {
 
@@ -240,6 +216,31 @@ var scheduleReminders = function(config_key) {
         }
 
     });
+};
+
+var validate = function(callback) {
+
+    var doc = new_doc,
+        validations = [
+            checkRegistration,
+            checkDuplicateVals,
+            checkEDDProximity
+        ];
+
+    //if (doc.anc_pnc === 'ANC')
+    //    validations.push(checkANCTimePassed);
+
+    async.series(validations, function(err) {
+        if (!err) return callback();
+        utils.addMessage(doc, {
+            phone: clinicPhone,
+            message: i18n(err, {
+                patient_id: doc.patient_id || registration.patient_id
+            })
+        });
+        return callback(err);
+    });
+
 };
 
 var handleMatch = function(change, callback) {
