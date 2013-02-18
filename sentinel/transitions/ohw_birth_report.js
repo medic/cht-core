@@ -250,7 +250,6 @@ var handleMatch = function(change, callback) {
     parentPhone = utils.getParentPhone(new_doc);
 
     validate(function(err) {
-        console.log('validate returned err', err);
         // validation failed, finalize transition
         if (err) return callback(null, true);
         addResponses();
