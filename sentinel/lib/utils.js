@@ -1,10 +1,10 @@
-var db = require('../db'),
+var _ = require('underscore'),
+    mustache = require('mustache'),
     moment = require('moment'),
     config = require('../config'),
+    i18n = require('../i18n'),
     date = require('../date'),
-    _ = require('underscore'),
-    mustache = require('mustache'),
-    i18n = require('../i18n');
+    db = require('../db');
 
 var getClinicID = function(doc) {
   return doc &&
