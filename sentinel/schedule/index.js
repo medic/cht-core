@@ -9,7 +9,6 @@ var fs = require('fs'),
 tasks = _.compact(_.map(fs.readdirSync(__dirname), function(file) {
     try {
         if (!/^index\./.test(file)) {
-            console.log('Loading task ' + file);
             return require('./' + file);
         }
     } catch(e) {
@@ -21,15 +20,12 @@ function sendable(m) {
     var after = config.get('schedule_morning_hours') || 8,
         until = config.get('schedule_evening_hours') || 17;
 
-    console.log('m.hours() >= after', m.hours() >= after);
-    console.log('m.hours() <= until', m.hours() <= until);
     return m.hours() >= after && m.hours() <= until;
 }
 
 function checkSchedule() {
     var m = moment(date.getDate());
 
-    console.log('Checking sendable window', m._d);
     if (sendable(m)) {
         async.forEachSeries(tasks, function(task, callback) {
             task(callback);
@@ -49,7 +45,6 @@ function reschedule() {
         heartbeat = now.clone().add('hours', 1).minutes(0).seconds(0).milliseconds(0),
         duration = moment.duration(heartbeat.valueOf() - now.valueOf());
 
-    console.log('Checking schedule in ' + duration.humanize() + '...');
     setTimeout(checkSchedule, duration.asMilliseconds());
 }
 

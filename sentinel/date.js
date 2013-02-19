@@ -3,7 +3,6 @@ var DATE_RE = /(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?/,
     start_date = new Date(),
     synth_start_date = undefined;
 
-console.log('loading date.js');
 function load() {
     if (sd) {
       var matches =  String(sd).match(DATE_RE);
@@ -37,9 +36,6 @@ function isSynthetic() {
     return false;
 }
 function getDate() {
-    console.log('getDate()');
-    console.log('start_date is', start_date);
-    console.log('synth_start_date is',synth_start_date);
     if (synth_start_date)
         return new Date(synth_start_date.valueOf());
     return new Date();
