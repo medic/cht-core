@@ -13,15 +13,22 @@ var addResponses = function() {
     var doc = new_doc,
         mute = !/^On$/i.test(String(doc.notifications));
 
-    var msg = "Thank you. All notifications for {{patient_id}} have been"
-        + " turned off.";
+    var msg = "Thank you, {{contact_name}}. Record for {{serial_number}}"
+        + " has been deactivated per your report. No further notifications"
+        + " regarding this patient will be sent.";
 
-    if (!mute)
-        msg = "Thank you. Notifications for {{patient_id}} have been turned on.";
+    if (!mute) {
+        msg = "Thank you, {{contact_name}}. Record for {{serial_number}}"
+            + " has been reactivated. Notifications regarding this"
+            + " patient will resume.";
+    }
 
     utils.addMessage(doc, {
         phone: clinicPhone,
-        message: i18n(msg, {patient_id: doc.patient_id})
+        message: i18n(msg, {
+            serial_number: registration.serial_number,
+            contact_name: clinicContactName
+        })
     });
 }
 
@@ -30,10 +37,16 @@ var updateSchedule = function() {
     var doc = new_doc,
         mute = !/^On$/i.test(String(doc.notifications));
 
-    if (mute)
-        utils.muteScheduledMessages(registration);
-    else
+    if (mute) {
+        //utils.muteScheduledMessages(registration);
+        utils.addError(doc, {
+            message: mustache.to_html('Need to confirm deactivation.', {
+                patient_id: doc.patient_id
+            })
+        });
+    } else {
         utils.unmuteScheduledMessages(registration);
+    }
 
 };
 
