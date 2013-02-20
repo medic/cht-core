@@ -11,11 +11,29 @@ var _ = require('underscore'),
     clinicContactName,
     registration,
     clinicPhone,
-    parentPhone,
+    grandparentPhone,
     new_doc;
 
+//
+// if you changes to these strings make sure they are correctly paired with a
+// translation in the sentinel-translation config doc
+//
+var msgs = {
+    normal: 'Thank you, {{contact_name}}. Birth outcome report for {{serial_number}} has been recorded.',
+    normal_with_proto: 'Thank you, {{contact_name}}. Birth outcome report for {{serial_number}} has been recorded. Please complete necessary protocol.',
+    lbw: 'Thank you, {{contact_name}}. Birth outcome report for {{serial_number}} has been recorded. The Baby is LBW. Please refer the mother and baby to the health post immediately.',
+    onot_reminder: 'Thank you, {{contact_name}}. Birth outcome report for {{serial_number}} has been recorded. Please submit the Start/Stop Notifications form.',
+    lbw_and_onot: 'Thank you, {{contact_name}}. Birth outcome report for {{serial_number}} has been recorded. The Baby is LBW. Please refer the baby to the health post immediately. Please submit the Start/Stop Notifications form.',
+    warning_and_onot: 'Thank you, {{contact_name}}. Birth outcome report for {{serial_number}} has been recorded. If danger sign, please call health worker immediately and fill in the emergency report. Please submit the Start/Stop Notifications form.',
+    warning: 'Thank you, {{contact_name}}. Birth outcome report for {{serial_number}} has been recorded. If danger sign, please call health worker immediately and fill in the emergency report.',
+    edd_warn: 'Thank you, {{contact_name}}. You just submitted a birth outcome report for {{serial_number}}. Her EDD is >45 days away. A health worker will call you to confrim the validity of the record soon.',
+    edd_warn_facility: '{{contact_name}} has submitted a birth outcome report for {{patient_id}}. Her EDD is > 45 days away. Please confirm with {{contact_name}} that the report is valid.',
+    dup: 'Two or more of the birth outcome reports you sent are identical. A health facility staff will call you soon to confirm the validity of the forms.',
+    not_found: "No patient with id '{{patient_id}}' found."
+};
+
 var checkRegistration = function(callback) {
-    var msg = "No patient with id '{{patient_id}}' found.";
+    var msg = msgs.not_found;
     var doc = new_doc;
     utils.getOHWRegistration(doc.patient_id, function(err, data) {
         if (err || !data) {
@@ -32,9 +50,7 @@ var checkRegistration = function(callback) {
 };
 
 var checkDuplicateVals = function(callback) {
-    var msg = "Two or more of the birth outcome reports you sent are identical."
-        + " A health facility staff will call you soon to confirm the validity"
-        + " of the forms."
+    var msg = msgs.dup;
 
     var dups = function(row) {
         var keys = [
@@ -73,32 +89,29 @@ var checkEDDProximity = function(callback) {
     var doc = new_doc,
         proximity = config.get('ohw_birth_report_within_days');
 
-    var msg1 = '{{contact_name}} has submitted a birth outcome report'
-        + ' for {{patient_id}}. Her EDD is > 45 days away.'
-        + ' Please confirm with {{contact_name}} that the report'
-        + ' is valid.';
-
-    var msg2 = 'Thank you, {{contact_name}}. Birth outcome report'
-        + ' for {{serial_number}} has been recorded. Please'
-        + ' complete necessary protocol.';
-
-    var clinicMsg = i18n(msg2, {
+    var msg = i18n(msgs.edd_warn, {
         contact_name: clinicContactName,
         serial_number: registration.serial_number
     });
 
-    // If OBIR is submitted more than 45 days before EDD include alert to
-    // health facility.
+    // if submitted more than 45 days before EDD include alert
     if (moment(doc.reported_date).add('days', proximity).valueOf()
         < registration.expected_date) {
-        utils.addMessage(doc, {
-            phone: parentPhone,
-            message: i18n(msg1, {
-                contact_name: clinicContactName,
-                patient_id: registration.patient_id
+        utils.addError(doc, {
+            message: mustache.to_html('Sent > 45 days from EDD', {
+                patient_id: doc.patient_id
             })
         });
-        return callback(clinicMsg);
+        if (grandparentPhone) {
+                utils.addMessage(doc, {
+                    phone: grandparentPhone,
+                    message: i18n(msgs.edd_warn_facility, {
+                        contact_name: clinicContactName,
+                        patient_id: registration.patient_id
+                    })
+                });
+                return callback(msg);
+        }
     }
     callback();
 };
@@ -107,45 +120,61 @@ var addResponses = function() {
 
     var doc = new_doc;
 
-    var msg = "Thank you, {{contact_name}}. Birth outcome report for"
-        + " {{serial_number}} has been recorded.";
-
-    var msg_lbw = "Thank you, {{contact_name}}. Birth outcome report"
-        + " for {{serial_number}} has been recorded. The Baby"
-        + " is LBW. Please refer the mother and baby to"
-        + " the health post immediately.";
-
-    var msg_lbw = "Thank you, {{contact_name}}. Birth outcome report"
-        + " for {{serial_number}} has been recorded. The Baby is LBW."
-        + " Please refer the mother and baby to the health post immediately.";
-
-    var msg_sick_child = "Thank you, {{contact_name}}. Birth outcome report for"
-        + " {{serial_number}} has been recorded. If danger sign,"
-        + " please call health worker immediately and fill in"
-        + " the emergency report.";
-
-    if (doc.outcome_child === 'Alive and Sick') {
-        msg = msg_sick_child;
+    function finalize(msg) {
+        utils.addMessage(doc, {
+            phone: clinicPhone,
+            message: i18n(msg, {
+                contact_name: clinicContactName,
+                serial_number: registration.serial_number
+            })
+        });
     }
 
-    if (doc.birth_weight !== 'Green')
-        msg = msg_lbw;
+    if (doc.outcome_child === 'Alive and Well'
+            && doc.outcome_mother === 'Alive and Well'
+            && doc.birth_weight === 'Green')
+        return finalize(msgs.normal);
 
-    if (doc.outcome_mother === 'Deceased') {
-        msg += " Please submit the Start/Stop Notifications form.";
-        msg = msg.replace('mother and baby', 'baby');
-    }
+    if (doc.outcome_child === 'Alive and Well'
+            && doc.outcome_mother === 'Alive and Well'
+            && doc.birth_weight !== 'Green')
+        return finalize(msgs.lbw);
 
-    if (!doc.outcome_mother && !doc.outcome_child && !doc.birth_weight)
-        msg += " Please complete necessary protocol.";
+    if (doc.outcome_child === 'Alive and Well'
+            && doc.outcome_mother === 'Deceased'
+            && doc.birth_weight === 'Green')
+        return finalize(msgs.onot_reminder);
 
-    utils.addMessage(doc, {
-        phone: clinicPhone,
-        message: i18n(msg, {
-            contact_name: clinicContactName,
-            serial_number: registration.serial_number
-        })
-    });
+    if (doc.outcome_child === 'Alive and Well'
+            && doc.outcome_mother === 'Deceased'
+            && doc.birth_weight !== 'Green')
+        return finalize(msgs.lbw_and_onot);
+
+    if (doc.outcome_child === 'Alive and Sick'
+            && doc.outcome_mother === 'Deceased'
+            && doc.birth_weight === 'Green')
+        return finalize(msgs.warning_and_onot);
+
+    if (doc.outcome_child === 'Alive and Sick'
+            && doc.outcome_mother === 'Deceased'
+            && doc.birth_weight !== 'Green')
+        return finalize(msgs.lbw_and_onot);
+
+    if (doc.outcome_child !== 'Deceased'
+            && doc.birth_weight !== 'Green')
+        return finalize(msgs.lbw);
+
+    if (doc.outcome_child === 'Alive and Sick'
+            || doc.outcome_mother === 'Alive and Sick')
+        return finalize(msgs.warning);
+
+    if (doc.outcome_child === 'Deceased')
+        return finalize(msgs.normal);
+
+    if (doc.outcome_mother === 'Deceased')
+        return finalize(msgs.onot_reminder);
+
+    finalize(msgs.normal_with_proto);
 
 };
 
@@ -249,7 +278,7 @@ var handleMatch = function(change, callback) {
     new_doc = change.doc,
     clinicPhone = utils.getClinicPhone(new_doc);
     clinicContactName = utils.getClinicContactName(new_doc);
-    parentPhone = utils.getParentPhone(new_doc);
+    grandparentPhone= utils.getGrandparentPhone(new_doc);
 
     validate(function(err) {
         // validation failed, finalize transition
