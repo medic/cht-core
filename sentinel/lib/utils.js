@@ -156,6 +156,14 @@ module.exports = {
         doc.related_entities.clinic.parent.contact &&
         doc.related_entities.clinic.parent.contact.phone;
   },
+  getGrandparentPhone: function(doc) {
+      return doc.related_entities &&
+        doc.related_entities.clinic &&
+        doc.related_entities.clinic.parent &&
+        doc.related_entities.clinic.parent.parent &&
+        doc.related_entities.clinic.parent.parent.contact &&
+        doc.related_entities.clinic.parent.parent.contact.phone;
+  },
   filterScheduledMessages: function(doc, type) {
       var scheduled_tasks = doc && doc.scheduled_tasks;
       return _.filter(scheduled_tasks, function(task) {
