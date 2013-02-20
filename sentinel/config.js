@@ -68,6 +68,14 @@ db.info(function(err, info) {
                 console.warn("Unable to update configuration due to: " + JSON.stringify(change));
             }
         });
+        stream.on('error', function(err) {
+            console.log('Changes stream error',err);
+            process.exit(1);
+        });
+        stream.on('end', function(err) {
+            console.log('Changes stream ended',err);
+            process.exit(1);
+        });
     }
 });
 

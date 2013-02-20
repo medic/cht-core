@@ -86,6 +86,14 @@ module.exports = {
                     });
                 }
             });
+            stream.on('error', function(err) {
+                console.log('Changes stream error',err);
+                process.exit(1);
+            });
+            stream.on('end', function(err) {
+                console.log('Changes stream ended',err);
+                process.exit(1);
+            });
             console.log('Listening for changes for the ' + key + ' transition from sequence number ' + since);
         });
     },
