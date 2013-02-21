@@ -28,27 +28,8 @@ var checkRegistration = function(callback) {
     });
 };
 
-var checkANCTimePassed = function(callback) {
+var checkDups = function(callback) {
 
-    var msg = "Two or more of the ANC forms you sent are identical. A health"
-        + " facility staff will call you soon to confirm the validity of the"
-        + " forms.";
-
-    var opts = {
-        doc: new_doc,
-        time_key: 'days',
-        time_val: 4,
-        patient_id: registration.patient_id
-    };
-
-    utils.checkDuplicates(opts, function(err) {
-        if (err) return callback(msg);
-        return callback();
-    });
-
-};
-
-var checkDuplicateVals = function(callback) {
     var msg = "Two or more of the ANC forms you sent are identical. A health"
         + " facility staff will call you soon to confirm the validity of the"
         + " forms.";
@@ -89,10 +70,7 @@ var checkDuplicateVals = function(callback) {
 var validate = function(callback) {
 
     var doc = new_doc,
-        validations = [checkRegistration, checkDuplicateVals];
-
-    //if (doc.anc_pnc === 'ANC')
-    //    validations.push(checkANCTimePassed);
+        validations = [checkRegistration, checkDups];
 
     async.series(validations, function(err) {
         if (!err) return callback();
@@ -121,6 +99,8 @@ var handleMatch = function(change, callback) {
             processANC();
         else if (new_doc.anc_pnc === 'PNC')
             processPNC();
+        else
+            processOther();
 
         // save registration/schedule doc changes and finalize transition
         db.saveDoc(registration, function(err) {
@@ -168,6 +148,22 @@ var processPNC = function() {
         })
     });
 };
+
+var processOther = function() {
+
+    var msg = 'Thank you, {{contact_name}}. Counseling visit for'
+        + ' {{serial_number}} has been recorded. Please complete necessary'
+        + ' protocol.';
+
+    utils.addMessage(new_doc, {
+        phone: clinicPhone,
+        message: i18n(msg, {
+            contact_name: clinicContactName,
+            serial_number: registration.serial_number
+        })
+    });
+};
+
 
 module.exports = {
     onMatch: handleMatch
