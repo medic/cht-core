@@ -28,7 +28,7 @@ var msgs = {
     warning: 'Thank you, {{contact_name}}. Birth outcome report for {{serial_number}} has been recorded. If danger sign, please call health worker immediately and fill in the emergency report.',
     edd_warn: 'Thank you, {{contact_name}}. You just submitted a birth outcome report for {{serial_number}}. Her EDD is >45 days away. A health worker will call you to confrim the validity of the record soon.',
     edd_warn_facility: '{{contact_name}} has submitted a birth outcome report for {{patient_id}}. Her EDD is > 45 days away. Please confirm with {{contact_name}} that the report is valid.',
-    dup: 'Two or more of the birth outcome reports you sent are identical. A health facility staff will call you soon to confirm the validity of the forms.',
+    dup: 'The birth outcome report you sent appears to be a duplicate. A health facility staff will call you soon to confirm the validity of the forms.',
     not_found: "No patient with id '{{patient_id}}' found."
 };
 
@@ -49,39 +49,27 @@ var checkRegistration = function(callback) {
     });
 };
 
-var checkDuplicateVals = function(callback) {
+var checkDups = function(callback) {
+
     var msg = msgs.dup;
 
-    var dups = function(row) {
-        var keys = [
-            "days_since_delivery",
-            "birth_site",
-            "incentive_received",
-            "reporter_present",
-            "persons_present",
-            "outcome_mother",
-            "outcome_child",
-            "birth_weight",
-            "chlorhexidine_applied",
-            "misoprostol_administered"
-       ];
-       for (var i in keys) {
-           var k = keys[i];
-           if (row.doc[k] !== new_doc[k]) return false;
-       };
-       return true;
+    var onlyValid = function(row) {
+        // only valid records count as dups
+        if (row.doc.errors.length > 0) return false;
+        return true;
     };
+
     var opts = {
         doc: new_doc,
         patient_id: registration.patient_id,
-        //time_key: 'days',
-        //time_val: 4,
-        filter: dups
+        filter: onlyValid
     };
+
     utils.checkDuplicates(opts, function(err) {
         if (err) return callback(msg);
-        return callback();
+        callback();
     });
+
 };
 
 var checkEDDProximity = function(callback) {
@@ -253,7 +241,7 @@ var validate = function(callback) {
     var doc = new_doc,
         validations = [
             checkRegistration,
-            checkDuplicateVals,
+            checkDups,
             checkEDDProximity
         ];
 
