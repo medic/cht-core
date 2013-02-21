@@ -6,6 +6,10 @@ var _ = require('underscore'),
     utils = require('../lib/utils'),
     i18n = require('../i18n');
 
+var msgs = {
+    duplicate: "{{serial_number}} is already registered. A health facility staff will call you soon to confirm the validity of the form."
+};
+
 module.exports = {
     db: require('../db'),
     onMatch: function(change, callback) {
@@ -52,9 +56,7 @@ module.exports = {
             if (err) {
                 utils.addMessage(doc, {
                     phone: doc.from,
-                    message: i18n(
-                        "'{{serial_number}}' is already registered. Please enter a new"
-                        + " serial number and submit registration form again.", {
+                    message: i18n(msgs.duplicate, {
                         serial_number: doc.serial_number
                     })
                 });
