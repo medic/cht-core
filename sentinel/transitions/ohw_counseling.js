@@ -30,7 +30,7 @@ var checkRegistration = function(callback) {
 
 var checkDups = function(callback) {
 
-    var msg = "Two or more of the ANC forms you sent are identical. A health"
+    var msg = "The ANC report you sent appears to be a duplicate. A health"
         + " facility staff will call you soon to confirm the validity of the"
         + " forms.";
 
