@@ -1,6 +1,6 @@
 var _ = require('underscore')._,
     duality = require('duality/core'),
-    moment = require('moment').moment,
+    moment = require('moment'),
     utils = require('kujua-utils');
 
 exports.isClinic = function(doc) {
@@ -130,7 +130,11 @@ exports.dateToWeekStr = function (date) {
  * and human readable.  eg, Date(2011, 9) -> "2011-10"
  */
 exports.dateToMonthStr = function (date) {
-    date = date.native();
+    // assume date is moment if not date object
+    if (!date.valueOf)
+        throw Error('require valid moment or date object.')
+    if (!date.getMonth)
+        date = new Date(date.valueOf());
     var month = date.getMonth(); // zero indexed
     if (month === 0) {
         return date.getFullYear() + '-1';
