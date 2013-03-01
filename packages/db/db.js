@@ -855,9 +855,8 @@ DB.prototype.changes = function (/*optional*/q, callback) {
             data: data
         };
         var cb = function (err, data) {
-            if (err) return callback(err);
             var result = callback.apply(this, arguments);
-            if (result !== false) {
+            if (result !== false && data) {
                 getChanges(data.last_seq);
             }
         }
