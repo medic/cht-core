@@ -77,30 +77,28 @@ var checkEDDProximity = function(callback) {
     var doc = new_doc,
         proximity = config.get('ohw_birth_report_within_days');
 
-    var msg = i18n(msgs.edd_warn, {
-        contact_name: clinicContactName,
-        serial_number: registration.serial_number
-    });
-
     // if submitted more than 45 days before EDD include alert
     if (moment(doc.reported_date).add('days', proximity).valueOf()
         < registration.expected_date) {
+
         utils.addError(doc, {
             message: mustache.to_html('Sent > 45 days from EDD', {
                 patient_id: doc.patient_id
             })
         });
+
         if (grandparentPhone) {
-                utils.addMessage(doc, {
-                    phone: grandparentPhone,
-                    message: i18n(msgs.edd_warn_facility, {
-                        contact_name: clinicContactName,
-                        patient_id: registration.patient_id
-                    })
-                });
-                return callback(msg);
+            utils.addMessage(doc, {
+                phone: grandparentPhone,
+                message: i18n(msgs.edd_warn_facility, {
+                    contact_name: clinicContactName,
+                    patient_id: registration.patient_id
+                })
+            });
         }
+        return callback(msgs.edd_warn);
     }
+
     callback();
 };
 
