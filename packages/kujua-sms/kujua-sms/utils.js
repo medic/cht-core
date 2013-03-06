@@ -155,6 +155,50 @@ exports.makeDataRecordOriginal = function(doc) {
       return doc;
 };
 
+var formatDate = function(timestamp) {
+    return moment(timestamp).format('DD, MMM YYYY, HH:mm:ss ZZ');
+};
+
+/*
+ * With some forms like ORPT (patient registration), we add additional data to
+ * it based on other form submissions.  Form data from other reports is used to
+ * create these fields and it is useful to show these new fields in the data
+ * records screen/render even though they are not defined in the form.
+ *
+ */
+var includeNonFormFields = function(doc, form_keys) {
+
+    var fields = [
+        { key:'mother_outcome', label: 'Mother Outcome'},
+        { key:'child_birth_outcome', label: 'Child Birth Outcome'},
+        { key:'child_birth_weight', label: 'Child Birth Weight'},
+        { key:'child_birth_date', label: 'Child Birth Date', format: formatDate},
+        { key:'expected_date', label: 'Expected Date', format: formatDate},
+        { key:'patient_id', label:'Patient ID'}
+    ];
+
+    _.each(fields, function(obj) {
+        var key = obj.key,
+            label = obj.label,
+            format = obj.format;
+
+        // Only include the property if we find it on the doc and not as a form
+        // key since then it would be duplicated.
+        if (!doc[key] || form_keys.indexOf(key) !== -1) return;
+
+        doc.fields.data.unshift({
+            isArray: false,
+            label: label,
+            value: format ? format(doc[key]) : doc[key]
+        });
+
+        doc.fields.headers.unshift({
+            head: label
+        });
+
+    });
+};
+
 /*
  * Take data record document and return nice formated JSON object.
  *
@@ -173,36 +217,18 @@ exports.makeDataRecordReadable = function(doc) {
         var keys = getFormKeys(data_record.form);
         var labels = getLabels(keys, data_record.form, 'en');
         data_record.fields = fieldsToHtml(keys, labels, data_record);
-        if (data_record.patient_id && keys.indexOf('patient_id') === -1) {
-            // hack to include patient ID in fields rendering when not present
-            // in form but exists on doc.
-            data_record.fields.data.unshift({
-                isArray: false,
-                label: 'Patient ID',
-                value: data_record.patient_id
-            });
-            data_record.fields.headers.unshift({
-                head: "Patient ID"
-            });
-        }
+        includeNonFormFields(data_record, keys);
     }
 
     if(data_record.reported_date) {
-        var m = moment(data_record.reported_date);
-        data_record._reported_date = m.format('DD, MMM YYYY, HH:mm:ss ZZ');
+        data_record._reported_date = formatDate(data_record.reported_date);
     }
 
     if(data_record.tasks) {
         for (var i in data_record.tasks) {
             var t = data_record.tasks[i];
-            if (t.due) {
-                var m = moment(t.due);
-                t._due = m.format('DD, MMM YYYY, HH:mm:ss ZZ');
-            }
-            if (t.timestamp) {
-                var m = moment(t.timestamp);
-                t._timestamp= m.format('DD, MMM YYYY, HH:mm:ss ZZ');
-            }
+            if (t.due) t._due = formatDate(t.due);
+            if (t.timestamp) t._timestamp = formatDate(t.timestamp);
         }
     }
 
@@ -222,16 +248,8 @@ exports.makeDataRecordReadable = function(doc) {
                 data_record.scheduled_tasks_count += 1;
             if (t.due) {
                 copy._due_ts = t.due;
-                var m = moment(t.due);
-                copy.due = m.format('DD, MMM YYYY, HH:mm:ss ZZ');
+                copy.due = formatDate(t.due);
             }
-            /* not needed?
-            if (t.timestamp) {
-                var m = moment(t.timestamp);
-                t._timestamp_ts = t.timestamp;
-                t.timestamp= m.format('DD, MMM YYYY, HH:mm:ss Z');
-            }
-            */
 
             // setup scheduled groups
             var group_name = t.type;
