@@ -205,7 +205,7 @@ var scheduleReminders = function(config_key) {
 
     var doc = new_doc,
         now = moment(date.getDate()),
-        birth = moment(doc.child_birth_date),
+        birth = moment(registration.child_birth_date),
         msg = 'Greetings, {{contact_name}}. This is a reminder to'
             + ' submit your counseling report for {{serial_number}}.',
         conf = config.get(config_key);
@@ -218,12 +218,12 @@ var scheduleReminders = function(config_key) {
         var marker = birth.clone().add('days', data.days);
 
         if (marker > now) {
-            utils.addScheduledMessage(doc, {
+            utils.addScheduledMessage(registration, {
                 due: marker.valueOf(),
                 message: i18n(data.message || msg, {
-                    contact_name: contactName,
+                    contact_name: clinicContactName,
                     patient_id: doc.patient_id || registration.patient_id,
-                    serial_number: doc.serial_number
+                    serial_number: registration.serial_number
                 }),
                 phone: clinicPhone,
                 group: data.group,
