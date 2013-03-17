@@ -47,7 +47,10 @@ module.exports = {
 }
 
 function generate_full_command(package_folder) {
-    return npm_cmd + ' ' + package_folder;
+    //return npm_cmd + ' ' + package_folder;
+    return 'mv '+ package_folder + ' package &&'
+        + ' tar czf kujua-sentinel-0.0.1.tgz package &&'
+        + ' mv package ' + package_folder;
 }
 
 
