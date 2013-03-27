@@ -40,6 +40,7 @@
         "remove_from_attachments": true
     },
     "node_module_folder" : "sentinel",
+    "dependencies_included" : true,
     "dependencies": {
         "modules": null,
         "properties": null,
@@ -66,7 +67,7 @@
         "users": null,
         "cookies": null,
         "moment": null,
-        "kanso-gardener": null
+        "kanso-gardener": "0.0.2"
     },
     "settings_schema" : {
         "description": "Kujua Settings",
@@ -78,7 +79,7 @@
                 "default": "1111"
             },
             "ohw_counseling_reminder_days": {
-                "title": "Counseling reminder days",      
+                "title": "Counseling reminder days",
                 "type": "array",
                 "default": [
                     {
@@ -118,10 +119,10 @@
                     }
                 ],
                 "items": {
-                    "type": "object",        
-                    "order": ["days", "message", "type", "group"],       
-                    "required": ["days", "message", "type"],        
-                    "properties": {          
+                    "type": "object",
+                    "order": ["days", "message", "type", "group"],
+                    "required": ["days", "message", "type"],
+                    "properties": {
                         "days": {
                             "type": "number",
                             "title": "Days"
@@ -142,8 +143,8 @@
                             ]
                         },
                         "group": {
-                            "type": "number",            
-                            "title": "Group",     
+                            "type": "number",
+                            "title": "Group",
                             "enum": [ 1,2,3,4,5 ]
                         }
                     }
@@ -190,10 +191,10 @@
                     }
                 ],
                 "items": {
-                    "type": "object",        
-                    "order": ["days", "message", "type", "group"],       
-                    "required": ["days", "message", "type"],        
-                    "properties": {          
+                    "type": "object",
+                    "order": ["days", "message", "type", "group"],
+                    "required": ["days", "message", "type"],
+                    "properties": {
                         "days": {
                             "type": "number",
                             "title": "Days"
@@ -208,8 +209,8 @@
                             "title": "Type"
                         },
                         "group": {
-                            "type": "number",            
-                            "title": "Group",       
+                            "type": "number",
+                            "title": "Group",
                             "enum": [1,2,3,4,5]
                         }
                     }
@@ -380,10 +381,10 @@
                     }
                 ],
                 "items": {
-                    "type": "object",        
-                    "order": ["days", "message", "type", "group"],       
-                    "required": ["days", "message", "type"],        
-                    "properties": {          
+                    "type": "object",
+                    "order": ["days", "message", "type", "group"],
+                    "required": ["days", "message", "type"],
+                    "properties": {
                         "days": {
                             "type": "number",
                             "title": "Days"
@@ -398,7 +399,7 @@
                             "title": "Type"
                         },
                         "group": {
-                            "type": "number",            
+                            "type": "number",
                             "title": "Group",
                             "enum": [1,2,3,4,5]
                         }

@@ -1,6 +1,6 @@
 {
     "name": "kanso-gardener",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "categories": ["build-tools"],
     "description": "Attach a npm module to your couchapp to be installed and run by a gardener.",
     "url": "https://github.com/kanso/kanso-gardener",
