@@ -8,9 +8,15 @@ var path = require('path'),
 module.exports = {
     run : function(root, path_loc, kanso_json, doc, callback) {
         var folder_name = 'node_module';
+        var dependencies_included = false;
+
         if (kanso_json.node_module_folder) {
             folder_name = kanso_json.node_module_folder;
         }
+        if (kanso_json.dependencies_included) {
+            dependencies_included = true;
+        }
+
         var working_folder_name = folder_name + '_working';
 
         var src_folder = path.join(root, folder_name),
@@ -22,7 +28,7 @@ module.exports = {
                 copy_node_dir(src_folder, package_folder, callback);
             },
             function(callback) {
-                read_package_json(package_folder, kanso_json, callback);
+                read_package_json(package_folder, kanso_json, dependencies_included, callback);
             },
             function(package_json, callback) {
                 generated_package_json = package_json;
@@ -41,16 +47,13 @@ module.exports = {
         ], function(err, doc) {
             clean_up(package_folder, expected_tgz_name,  function(err2) {
                 callback(err, doc);
-            })
+            });
         });
     }
-}
+};
 
 function generate_full_command(package_folder) {
-    //return npm_cmd + ' ' + package_folder;
-    return 'mv '+ package_folder + ' package &&'
-        + ' tar czf kujua-sentinel-0.0.1.tgz package &&'
-        + ' mv package ' + package_folder;
+    return npm_cmd + ' ' + package_folder;
 }
 
 
@@ -73,25 +76,25 @@ function sane_package_json(kanso_json) {
     var package_json = _.extend({}, kanso_json);
     _.each(['_id',
             'minify',
-            'dependencies', 
-            'load', 
-            'modules', 
-            'attachments', 
-            'dust', 
-            'duality', 
-            'coffee-script', 
-            'less', 
-            'bundledDependencies'], 
+            'dependencies',
+            'load',
+            'modules',
+            'attachments',
+            'dust',
+            'duality',
+            'coffee-script',
+            'less',
+            'bundledDependencies'],
     function(field) {
         if (package_json[field]) delete package_json[field];
-    })
+    });
     return package_json;
 }
 
-function read_package_json(package_folder, kanso_json, callback) {
+function read_package_json(package_folder, kanso_json, dependencies_included, callback) {
     var package_json = path.join(package_folder, 'package.json');
     var sane_defaults = sane_package_json(kanso_json);
-    console.log(package_json);
+
     fs.readFile(package_json, function(err, content) {
         if (err && err.code !== 'ENOENT') return  callback(err);
         var json = {};
@@ -99,6 +102,14 @@ function read_package_json(package_folder, kanso_json, callback) {
             json = JSON.parse(content);
         }
         var p_json = _.defaults(json, sane_defaults);
+
+        if (dependencies_included) {
+            p_json.bundledDependencies = _.keys(p_json.dependencies);
+
+            delete p_json.dependencies;
+            delete p_json.devDependencies;
+        }
+
         callback(null, p_json);
     });
 }
@@ -135,7 +146,7 @@ function generate_tgz(package_folder, callback) {
 function attach_tgz(tgz_name, doc, callback) {
     fs.readFile(tgz_name, function (err, content) {
         if (err) return callback(err);
-        
+
         if (!doc._attachments) {
             doc._attachments = {};
         }
@@ -144,7 +155,7 @@ function attach_tgz(tgz_name, doc, callback) {
             'data': content.toString('base64')
         };
         callback(null, doc);
-    });    
+    });
 }
 
 
