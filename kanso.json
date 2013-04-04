@@ -1,6 +1,6 @@
 {
     "name": "kujua-base",
-    "version": "0.2.10",
+    "version": "0.2.11",
     "description": "SMS data collection designed for rural environments",
     "long_description" : "Kujua is a web based SMS data collection and analytics tool focused on community health care workers in the developing world. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones in remote and rural environments.",
     "url": "https://github.com/medic/kujua",
