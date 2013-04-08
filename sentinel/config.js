@@ -42,7 +42,10 @@ config = {
             4: "VPD report not received on time; please send previous week's data."
         }
     },
-    id_format: '111111'
+    id_format: '111111',
+    schedule_morning_hours: 8,
+    schedule_evening_hours: 17,
+    synthetic_date: null
 };
 
 db.info(function(err, info) {
@@ -59,12 +62,19 @@ db.info(function(err, info) {
         });
         stream.on('data', function(change) {
             if (change.doc) {
-                console.log("Updating configuration ...");
-                _.extend(config, change.doc);
-                console.log("New configuration: " + JSON.stringify(config, null, 2));
+                console.log("New configuration, restarting process...");
+                process.exit();
             } else {
                 console.warn("Unable to update configuration due to: " + JSON.stringify(change));
             }
+        });
+        stream.on('error', function(err) {
+            console.log('Changes stream error',err);
+            process.exit(1);
+        });
+        stream.on('end', function(err) {
+            console.log('Changes stream ended',err);
+            process.exit(1);
         });
     }
 });

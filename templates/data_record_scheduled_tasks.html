@@ -16,11 +16,13 @@
             {?group}{group}{:else}Group{/group}
             <div class="btn-group menu">
               <a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">
-                <i class="icon-large icon-cog"></i>
                 <span class="caret"></span>
               </a>
               <ul class="dropdown-menu">
-                <li><a href="#" class="edit">Edit Schedule</a></li>
+                <li><a href="#" class="edit">Edit Group</a></li>
+                <li><a href="#" data-state-val="cleared" class="update">Clear Group</a></li>
+                <li><a href="#" data-state-val="muted" class="update">Mute Group</a></li>
+                <li><a href="#" data-state-val="scheduled" class="update">Schedule Group</a></li>
               </ul>
             </div>
             <div class="btn-group submit">

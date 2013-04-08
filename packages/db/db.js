@@ -120,7 +120,7 @@ function onComplete(options, callback) {
         if (req.status === 200 || req.status === 201 || req.status === 202) {
             callback(null, resp);
         }
-        else if (resp.error || resp.reason) {
+        else if (resp && (resp.error || resp.reason)) {
             var err = new Error(resp.reason || resp.error);
             err.error = resp.error;
             err.reason = resp.reason;
@@ -856,7 +856,7 @@ DB.prototype.changes = function (/*optional*/q, callback) {
         };
         var cb = function (err, data) {
             var result = callback.apply(this, arguments);
-            if (result !== false) {
+            if (result !== false && data) {
                 getChanges(data.last_seq);
             }
         }

@@ -61,30 +61,38 @@ module.exports = {
             });
             stream.on('data', function(change) {
                 // ignore documents that have been deleted; there's nothing to update
-                if (!change.deleted) {
-                    // get the latest document
-                    db.getDoc(change.id, function(err, doc) {
-                        var transitions = doc.transitions || {};
+                if (change.deleted) return;
 
-                        if (!err && doc) {
-                            if (transition.repeatable || !transitions[key] || !transitions[key].ok) {
+                // get the latest document
+                db.getDoc(change.id, function(err, doc) {
+                    var transitions = doc.transitions || {};
 
-                                // modify reported_date if we are running in
-                                // synthetic date mode
-                                if (doc.reported_date && date.isSynthetic())
-                                    doc.reported_date = date.getTimestamp();
+                    if (!err && doc) {
+                        if (transition.repeatable || !transitions[key] || !transitions[key].ok) {
 
-                                change.doc = doc;
+                            // modify reported_date if we are running in
+                            // synthetic date mode
+                            if (doc.reported_date && date.isSynthetic())
+                                doc.reported_date = date.getTimestamp();
 
-                                queue.push({
-                                    change: change,
-                                    key: key,
-                                    transition: transition
-                                });
-                            }
+                            change.doc = doc;
+
+                            queue.push({
+                                change: change,
+                                key: key,
+                                transition: transition
+                            });
                         }
-                    });
-                }
+                    }
+                });
+            });
+            stream.on('error', function(err) {
+                console.log('Changes stream error',err);
+                process.exit(1);
+            });
+            stream.on('end', function(err) {
+                console.log('Changes stream ended',err);
+                process.exit(1);
             });
             console.log('Listening for changes for the ' + key + ' transition from sequence number ' + since);
         });

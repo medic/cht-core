@@ -6,17 +6,25 @@ var _ = require('underscore'),
     utils = require('../lib/utils'),
     i18n = require('../i18n');
 
+var msgs = {
+    duplicate: "{{serial_number}} is already registered. A health facility staff will call you soon to confirm the validity of the form."
+};
+
 module.exports = {
+    db: require('../db'),
     onMatch: function(change, callback) {
         var doc = change.doc,
             self = module.exports;
 
-        self.setId(doc, function() {
-            var expected,
-                lmp,
-                weeks = Number(doc.last_menstrual_period);
+        self.validate(doc, function(err) {
 
-            if (_.isNumber(weeks)) {
+            // validation failed, finalize transition
+            if (err) return callback(null, true);
+
+            self.setId(doc, function() {
+                var expected,
+                    lmp,
+                    weeks = Number(doc.last_menstrual_period);
                 lmp = moment(date.getDate()).startOf('day').startOf('week').subtract('weeks', weeks);
                 expected = lmp.clone().add('weeks', 40);
                 _.extend(doc, {
@@ -26,9 +34,35 @@ module.exports = {
                 self.scheduleReminders(doc, lmp, expected);
                 self.addAcknowledgement(doc);
                 callback(null, true);
-            } else {
-                callback(null, false);
+            });
+        });
+
+    },
+    validate: function(doc, callback) {
+        var weeks = Number(doc.last_menstrual_period);
+        if (!_.isNumber(weeks)) {
+            var msg = 'Failed to parse LMP.';
+            utils.addError(doc, { message: msg });
+            // TODO add message/response for reporter here
+            return callback(msg);
+        }
+        var opts = {
+            doc: doc,
+            time_key: 'months',
+            time_val: 12,
+            serial_number: doc.serial_number
+        };
+        utils.checkDuplicates(opts, function(err) {
+            if (err) {
+                utils.addMessage(doc, {
+                    phone: doc.from,
+                    message: i18n(msgs.duplicate, {
+                        serial_number: doc.serial_number
+                    })
+                });
+                return callback(err);
             }
+            callback();
         });
 
     },
@@ -92,8 +126,7 @@ module.exports = {
         // }
         function addMessage(options) {
 
-            if (!options)
-                return console.error('addMessage failed.', options);
+            if (!options) return console.error('addMessage failed.', options);
 
             var time_key = options.time_key || 'days',
                 offset = options[time_key] || options,

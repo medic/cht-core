@@ -9,7 +9,6 @@ var fs = require('fs'),
 tasks = _.compact(_.map(fs.readdirSync(__dirname), function(file) {
     try {
         if (!/^index\./.test(file)) {
-            console.log('Loading task ' + file);
             return require('./' + file);
         }
     } catch(e) {
@@ -46,7 +45,6 @@ function reschedule() {
         heartbeat = now.clone().add('hours', 1).minutes(0).seconds(0).milliseconds(0),
         duration = moment.duration(heartbeat.valueOf() - now.valueOf());
 
-    console.log('Checking schedule in ' + duration.humanize() + '...');
     setTimeout(checkSchedule, duration.asMilliseconds());
 }
 

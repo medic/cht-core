@@ -13,11 +13,26 @@ html, body {
 }
 
 body {
-  padding-top: 40px;
+
+}
+
+/* Temp fix for dashboard z-index woes */
+#dashboard-topbar {
+  z-index: 2000;
+}
+
+#topnav {
+  margin-bottom: 0;
+  top: 25px;
+}
+
+#topnav .navbar-inner {
+  border-top-right-radius: 0px;
+  border-top-left-radius: 0px;
 }
 
 .content {
-  margin-top: 60px;
+  margin-top: 135px;
   border-top: solid 3px black;
   background-color: @white;
   @shadow: inset 0 1px 3px rgba(0,0,0,.1), 0 3px 8px #cecece;
@@ -53,11 +68,15 @@ body {
       width: 60px;
       padding-left: 10px;
     }
+    .edit-mode .dropdown-menu {
+      left: auto;
+      right: 0;
+    }
   }
 }
 .page-header.navbar-fixed-top {
-  top: 40px;
-  z-index: 999;  /* allow dropdowns to show */
+  top: 65px;
+  z-index: 998;  /* allow dropdowns to show */
 }
 
 .version {
@@ -335,24 +354,27 @@ body {
     #new-task-template {
       display: none;
     }
-    .read-mode,
-    .edit-mode {
-      .btn-group {
-        display: none;
-        .pull-right;
-        .btn .caret {
-          margin-top: 5px;
-          margin-left: 2px;
-        }
-        &.menu {
-          display: block;
-        }
-        &.submit {
-          .btn-primary {
-            margin-right: 10px;
-          }
+    .btn-group {
+      display: none;
+      .pull-right;
+      .btn .caret {
+        margin-top: 5px;
+      }
+      &.menu {
+        display: block;
+      }
+      &.submit {
+        .btn-primary {
+          margin-right: 10px;
         }
       }
+      .dropdown-menu {
+       left: auto;
+       right: 0;
+      }
+    }
+    .read-mode,
+    .edit-mode {
       .row-controls {
         text-align: center;
         font-size: 1.25em;
@@ -426,30 +448,6 @@ body {
   margin: 0 auto 20px auto;
 }
 
-.sections {
-  display: none;
-  border-top: solid 2px @aqua;
-  background-color: @lightaqua;
-  padding: 10px;
-  margin: 20px;
-  ul {
-    padding: 0;
-    margin: 0;
-  }
-  ul > li {
-    list-style: none;
-  }
-  li {
-    font-weight: bold;
-  }
-  .subhead {
-    font-size: 1em;
-    font-weight: normal;
-    padding-left: 10px;
-    line-height: 1.4em;
-  }
-}
-
 .dropdown-toggle, .zoom:hover {
   cursor: pointer;
 }
@@ -457,7 +455,6 @@ body {
 .images {
   width: 920px;
 }
-
 
 #duality-contrib-loading {
     background-color: @popcorn;
@@ -523,9 +520,6 @@ table.spreadsheet .dropdown-menu {
   background: none;
 }
 .modal-body {
-  min-height: 300px;
-}
-#mark-invalid .modal-body {
   min-height: 70px;
   textarea {
     width: 98%;

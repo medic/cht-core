@@ -1,120 +1,180 @@
 var _ = require('underscore'),
+    mustache = require('mustache'),
+    async = require('async'),
     i18n = require('../i18n'),
-    utils = require('../lib/utils');
+    utils = require('../lib/utils'),
+    clinicContactName,
+    registration,
+    clinicPhone,
+    parentPhone,
+    grandparentPhone,
+    new_doc;
 
-var handleOnMatch = function(change, callback) {
-    var doc = change.doc,
-        clinicContactName,
-        clinicPhone,
-        parentPhone = utils.getParentPhone(doc),
-        msg,
-        msg2;
+var msgs = {
+    danger: "Thank you, {{contact_name}}. Danger sign for {{serial_number}} has been recorded.",
+    no_danger: "Thank you, {{contact_name}}. No danger sign for {{serial_number}} has been recorded.",
+    labor: "Thank you {{contact_name}}. Labor report for {{serial_number}} has been recorded. Please submit the birth outcome report after delivery.",
+    labor_and_danger: "Thank you {{contact_name}}. Labor report and danger sign for {{serial_number}} has been recorded. Please submit the birth outcome report after delivery.",
+    other: "Thank you, {{contact_name}}. Counseling visit for {{serial_number}} has been recorded. Please complete necessary protocol.",
+    not_found: "No patient with id '{{patient_id}}' found.",
+    dup_labor: "The labor report you sent appears to be a duplicate. A health facility staff will call you soon to confirm the validity of the forms.",
+    dup_danger: "The danger sign report you sent appears to be a duplicate. A health facility staff will call you soon to confirm the validity of the forms.",
+    alerts: {
+        default: "{{contact_name}} has reported a danger sign for {{patient_id}}. Please follow up with her and provide necessary assistance immediately.",
+        labor: "{{contact_name}} has reported a labor. Please follow up with her and provide necessary assistance immediately.",
+        danger_labor: "{{contact_name}} has reported a danger sign during labor. Please follow up with her and provide necessary assistance immediately."
+    }
+};
 
-    clinicPhone = utils.getClinicPhone(doc);
-    clinicContactName = utils.getClinicContactName(doc);
+var addAlerts = function() {
+    var doc = new_doc,
+        phones = [parentPhone, grandparentPhone];
 
-    utils.getOHWRegistration(doc.patient_id, function(err, registration) {
-
-        if (err) {
-            return callback(err);
-        }
-
-        if (!registration) {
-            if (clinicPhone) {
-                utils.addMessage(doc, {
-                    phone: clinicPhone,
-                    message: i18n("No patient with id '{{patient_id}}' found.", {
-                        patient_id: doc.patient_id
-                    })
-                });
-            }
-            return callback(null, true);
-        }
-
-        if (doc.anc_labor_pnc !== 'In labor' && doc.labor_danger === 'No') {
-            //todo/update messaging
+    function finalize(msg) {
+        phones.forEach(function(phone) {
+            if (!phone) return;
             utils.addMessage(doc, {
-                phone: clinicPhone,
-                message: i18n("Thank you, {{contact_name}}. No danger sign for {{serial_number}} has been recorded.", {
-                    contact_name: clinicContactName,
-                    serial_number: registration.serial_number
-                })
-            });
-            return callback(null, true);
-        }
-
-        if (doc.anc_labor_pnc !== 'In labor') {
-            utils.addMessage(doc, {
-                phone: clinicPhone,
-                message: i18n("Thank you, {{contact_name}}. Danger sign for {{serial_number}} has been recorded.", {
-                    contact_name: clinicContactName,
-                    serial_number: registration.serial_number
-                })
-            });
-            if (doc.advice_received === 'No') {
-                utils.addMessage(doc, {
-                    phone: parentPhone || '',
-                    message: i18n(
-                        "{{contact_name}} has reported a danger sign for {{patient_id}}. Please follow up with her and provide necessary assistance immediately.", {
-                        contact_name: clinicContactName,
-                        patient_id: doc.patient_id
-                    })
-                });
-            }
-        }
-
-        if (doc.anc_labor_pnc === 'In labor') {
-            msg = "Thank you {{contact_name}}. Labor report for" +
-                " {{serial_number}} has been recorded. Please submit the" +
-                " birth outcome report after delivery.";
-
-            msg2 = "{{contact_name}} has reported a labor. Please follow up" +
-                " with her and provide necessary assistance immediately.";
-
-            if (doc.labor_danger === 'Yes') {
-                msg = "Thank you {{contact_name}}. Labor report and danger sign" +
-                    " for {{serial_number}} has been recorded. Please submit the" +
-                    " birth outcome report after delivery.";
-                msg2 = "{{contact_name}} has reported a danger sign during labor." +
-                    " Please follow up with her and provide necessary" +
-                    " assistance immediately.";
-            }
-
-            utils.addMessage(doc, {
-                phone: clinicPhone,
+                phone: phone,
                 message: i18n(msg, {
                     contact_name: clinicContactName,
-                    serial_number: registration.serial_number
+                    serial_number: registration.serial_number,
+                    patient_id: doc.patient_id
                 })
             });
+        });
+    }
 
-            if (doc.advice_received === 'No') {
-                utils.addMessage(doc, {
-                    phone: parentPhone || '',
-                    message: i18n(msg2, {contact_name: clinicContactName})
-                });
-            }
+    if ((doc.anc_labor_pnc === 'PNC' || doc.anc_labor_pnc === 'ANC')
+        && doc.labor_danger === 'Yes'
+        && doc.advice_received === 'No')
+            return finalize(msgs.alerts.default);
 
+    if (doc.anc_labor_pnc === 'In labor'
+        && doc.labor_danger === 'No'
+        && doc.advice_received === 'No')
+            return finalize(msgs.alerts.labor);
+
+    if (doc.anc_labor_pnc === 'In labor'
+        && doc.labor_danger === 'Yes'
+        && doc.advice_received === 'No')
+            return finalize(msgs.alerts.danger_labor);
+
+};
+
+var addResponse = function() {
+    var doc = new_doc;
+
+    function finalize(msg) {
+        utils.addMessage(doc, {
+            phone: clinicPhone,
+            message: i18n(msg, {
+                contact_name: clinicContactName,
+                serial_number: registration.serial_number,
+                patient_id: doc.patient_id
+            })
+        });
+    };
+
+    if ((doc.anc_labor_pnc === 'PNC' || doc.anc_labor_pnc === 'ANC')
+        && doc.labor_danger === 'Yes')
+        return finalize(msgs.danger);
+
+    if ((doc.anc_labor_pnc === 'PNC' || doc.anc_labor_pnc === 'ANC')
+        && doc.labor_danger === 'No')
+        return finalize(msgs.no_danger);
+
+    if (doc.anc_labor_pnc === 'In labor' && doc.labor_danger === 'No')
+        return finalize(msgs.labor);
+
+    if (doc.anc_labor_pnc === 'In labor' && doc.labor_danger === 'Yes')
+        return finalize(msgs.labor_and_danger);
+
+    return finalize(msgs.other);
+
+};
+
+var checkRegistration = function(callback) {
+    var msg = msgs.not_found;
+    var doc = new_doc;
+    utils.getOHWRegistration(doc.patient_id, function(err, data) {
+        if (err || !data) {
+            utils.addError(doc, {
+                message: mustache.to_html(msg, {
+                    patient_id: doc.patient_id
+                })
+            });
+            return callback(msg);
         }
+        registration = data;
+        return callback();
+    });
+};
 
-        /* deprecated
-         * utils.updateScheduledMessage(registration, {
-            message: i18n("Greetings, {{clinicName}}. {{patient_id}} is due to deliver soon. This pregnancy has been flagged as high-risk.", {
-                clinicName: clinicName
-            }),
-            type: 'upcoming_delivery'
-        });
-        module.exports.db.saveDoc(registration, function(err) {
-            callback(err, true);
-        });
-        */
+var checkTimePassed = function(callback) {
+    var opts = {
+        doc: new_doc,
+        time_key: 'hours',
+        time_val: 24,
+        patient_id: registration.patient_id
+    };
+    utils.checkDuplicates(opts, function(err) {
+        if (err) return callback(msgs.dup_danger);
+        return callback();
+    });
+};
 
+var checkLaborUnique = function(callback) {
+    var opts = {
+        doc: new_doc,
+        patient_id: registration.patient_id,
+        filter: function(row) { return row.doc.anc_labor_pnc === 'In labor'; }
+    };
+    utils.checkDuplicates(opts, function(err) {
+        if (err) return callback(msgs.dup_labor);
+        return callback();
+    });
+};
+
+var validate = function(callback) {
+
+    var doc = new_doc,
+        validations;
+
+    if (doc.anc_labor_pnc === 'In labor')
+        validations = [checkRegistration, checkLaborUnique];
+    else
+        validations = [checkRegistration, checkTimePassed];
+
+    async.series(validations, function(err) {
+        if (!err) return callback();
+        utils.addMessage(doc, {
+            phone: clinicPhone,
+            message: i18n(err, {
+                patient_id: doc.patient_id || registration.patient_id
+            })
+        });
+        return callback(err);
+    });
+
+};
+
+var handleOnMatch = function(change, callback) {
+
+    new_doc = change.doc;
+    clinicPhone = utils.getClinicPhone(change.doc);
+    parentPhone = utils.getParentPhone(change.doc);
+    grandparentPhone = utils.getGrandparentPhone(change.doc);
+    clinicContactName = utils.getClinicContactName(change.doc);
+
+    validate(function(err) {
+        // validation failed, finalize transition
+        if (err) return callback(null, true);
+        addResponse();
+        addAlerts();
         callback(null, true);
-
     });
 };
 
 module.exports = {
-    db: require('../db'),
     onMatch: handleOnMatch
 };

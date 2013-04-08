@@ -1,7 +1,132 @@
-var db = require('../db'),
+var _ = require('underscore'),
+    mustache = require('mustache'),
     moment = require('moment'),
     config = require('../config'),
-    _ = require('underscore');
+    i18n = require('../i18n'),
+    date = require('../date'),
+    db = require('../db');
+
+var getClinicID = function(doc) {
+  return doc &&
+    doc.related_entities &&
+    doc.related_entities.clinic &&
+    doc.related_entities.clinic._id;
+};
+
+var addMessage = function(doc, options) {
+    var options = options || {},
+        phone = options.phone,
+        message = options.message;
+    doc.tasks = doc.tasks || [];
+
+    var task = {
+        messages: [],
+        state: 'pending'
+    };
+    task.messages.push({to: phone, message: message});
+    _.extend(task, _.omit(options, 'phone', 'message'));
+    doc.tasks.push(task);
+};
+
+var addError = function(doc, options) {
+    if (!doc || !options || !options.message) return;
+    // set default code
+    if (!options.code) options.code = 'invalid_report';
+
+    var error = {code: options.code, message: options.message};
+
+    for (var i in doc.errors) {
+        var e = doc.errors[i];
+        // already exists on the record
+        if (error.code === e.code) return;
+    }
+
+    doc.errors ? doc.errors.push(error) : doc.errors = [error];
+};
+
+var getOHWRegistration = function(patient_id, callback) {
+    var q = {
+        key: patient_id,
+        include_docs: true,
+        limit: 1
+    };
+    db.view('kujua-sentinel', 'ohw_registered_patients', q, function(err, data) {
+        if (err)
+            return callback(err);
+        var row = _.first(data.rows),
+            registration = row && row.doc;
+        callback(null, registration);
+    });
+};
+
+var getMatchingRecords = function(options, callback) {
+
+    var options = options || {},
+        doc = options.doc,
+        patient_id = options.patient_id,
+        serial_number = options.serial_number,
+        time_val = options.time_val,
+        time_key = options.time_key,
+        clinic_id = getClinicID(doc);
+
+    if (!doc
+        || (!patient_id && !serial_number)
+        || !doc.form)
+        return callback('Missing required argument for match query.');
+
+    var view = 'patient_ids_by_form_clinic_and_reported_date',
+        q = {startkey:[], endkey:[], include_docs:true};
+
+    if (serial_number)
+        view = 'serial_numbers_by_form_clinic_and_reported_date';
+
+    q.startkey[0] = doc.form;
+    q.startkey[1] = patient_id || serial_number;
+    q.startkey[2] = clinic_id;
+
+    q.endkey[0] = q.startkey[0];
+    q.endkey[1] = q.startkey[1];
+    q.endkey[2] = q.startkey[2];
+
+    // filtering view by time is optional
+    if (time_key && time_val) {
+        q.startkey[3] = moment(date.getDate()).subtract(
+                time_key, time_val
+        ).valueOf();
+        q.endkey[3] = doc.reported_date;
+    } else {
+        q.endkey[3] = {};
+    }
+
+    db.view('kujua-sentinel', view, q, function(err, data) {
+        if (err) return callback(err);
+        if (options.filter)
+            return callback(null, _.filter(data.rows, options.filter));
+        callback(null, data.rows);
+    });
+};
+
+var checkDuplicates = function(options, callback) {
+
+    //if (!options.time_key) options.time_key = 'months';
+    //if (!options.time_val) options.time_key = 12;
+
+    var doc = options.doc,
+        id_val = options.serial_number || options.patient_id;
+
+    var msg = "Duplicate record found; '{{id_val}}' was already reported";
+
+    if (options.time_val && options.time_key)
+          msg += ' within ' + options.time_val + ' ' + options.time_key;
+
+    msg = mustache.to_html(msg, { id_val: id_val });
+
+    getMatchingRecords(options, function(err, data) {
+        if (data && data.length <= 1) return callback();
+        addError(doc, { code: 'duplicate_record', message: msg });
+        callback(msg);
+    });
+};
 
 module.exports = {
   getClinicPhone: function(doc) {
@@ -31,20 +156,13 @@ module.exports = {
         doc.related_entities.clinic.parent.contact &&
         doc.related_entities.clinic.parent.contact.phone;
   },
-
-  getOHWRegistration: function(patient_id, callback) {
-      var q = {
-          key: patient_id,
-          include_docs: true,
-          limit: 1
-      };
-      db.view('kujua-sentinel', 'ohw_registered_patients', q, function(err, data) {
-          if (err)
-              return callback(err);
-          var row = _.first(data.rows),
-              registration = row && row.doc;
-          callback(null, registration);
-      });
+  getGrandparentPhone: function(doc) {
+      return doc.related_entities &&
+        doc.related_entities.clinic &&
+        doc.related_entities.clinic.parent &&
+        doc.related_entities.clinic.parent.parent &&
+        doc.related_entities.clinic.parent.parent.contact &&
+        doc.related_entities.clinic.parent.parent.contact.phone;
   },
   filterScheduledMessages: function(doc, type) {
       var scheduled_tasks = doc && doc.scheduled_tasks;
@@ -57,20 +175,6 @@ module.exports = {
       return _.find(scheduled_tasks, function(task) {
           return task.type === type;
       });
-  },
-  addMessage: function(doc, options) {
-      var options = options || {},
-          phone = options.phone,
-          message = options.message;
-      doc.tasks = doc.tasks || [];
-
-      var task = {
-          messages: [],
-          state: 'pending'
-      };
-      task.messages.push({to: phone, message: message});
-      _.extend(task, _.omit(options, 'phone', 'message'));
-      doc.tasks.push(task);
   },
   updateScheduledMessage: function(doc, options) {
       if (!options || !options.message || !options.type)
@@ -122,6 +226,7 @@ module.exports = {
       // scheduled_tasks should be sorted by due date
       for (var i in doc.scheduled_tasks) {
           var task = doc.scheduled_tasks[i];
+          if (!task) continue; // in case of null task
           if (type === task.type
                   && task.state === 'scheduled'
                   && task.due >= reported_date
@@ -135,6 +240,7 @@ module.exports = {
       // the same type and group.
       for (var i in doc.scheduled_tasks) {
           var task = doc.scheduled_tasks[i];
+          if (!task) continue; // in case of null task
           if (type === task.type && task.due <= reported_date) {
               task.state = 'cleared';
               changed = true;
@@ -170,5 +276,11 @@ module.exports = {
           task.state = 'muted';
           return task;
       });
-  }
+  },
+  getClinicID: getClinicID,
+  addMessage: addMessage,
+  addError: addError,
+  getOHWRegistration: getOHWRegistration,
+  getMatchingRecords: getMatchingRecords,
+  checkDuplicates: checkDuplicates
 }

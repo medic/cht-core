@@ -9,10 +9,13 @@ Get node deps with  `npm install`.
 
 ## Configuration
 
-Copy `settings-example.js` to `settings.js` and `settings-test.js` and modify
-for your database settings.
+Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 
-A default configuration is also generated from `config.js` and saved at
+```
+export COUCH_URL='http://root:123qwe@localhost:5984/kujua-base'
+```
+
+A configuration will be generated from `config.js` and saved at
 `db/sentinel-configuration` you can make your configuration changes to this
 document and save it as part of the project source files.
 
