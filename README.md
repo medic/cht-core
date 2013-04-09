@@ -1,28 +1,74 @@
+## Dependencies
 
-## Install
+### Node and CouchDB
 
-1. Clone the repo as usual then do `git submodule init && git submodule update` to
-get a copy of `json-forms`.  
+Assuming you have [Nodejs](http://nodejs.org) and [CouchDB](http://couchdb.apache.org) installed.
 
-2. Run `kanso push` to build/install the couchapp.
+### Kanso
+
+[Kanso](http://kan.so) is required to build and deploy Kujua.
+
+```
+npm install kanso -g
+```
+
+### Gardener
+
+Kujua is bundled with a node application, called Sentinel, they work together.
+Sentinel listens to the changes feed and does various things, like schedule
+management.  Sentinel is built using
+[kanso-gardener](https://github.com/kanso/kanso-gardener) and attached to the
+design doc then unpacked and monitored by
+[gardener](https://github.com/garden20/gardener). 
+
+You will also need gardener:
+
+```
+npm install gardener -g
+```
+
+## Deploy
+
+Deploy the couchapp:
+
+```
+git clone https://github.com/medic/kujua
+cd kujua
+git submodule init
+git submodule update
+kanso push http://admin:pass@localhost:5984
+```
+
+Start gardener:
+
+```
+gardener http://admin:pass@localhost:5984/kujua-base
+```
 
 ## Configure
 
-Optionally configure your app with:
+Optionally customize your app:
 
 ```
-curl -X POST http://localhost:5984/yourdb -d @config.js -H "Content-Type: application/json"
+cp config-example.js config.js
+vi config.js #modify config
 ```
 
-See `config-example.js` for an example.
+Install your config:
 
-## Kujua Reporting
+```
+curl -X POST http://admin:pass@localhost:5984/kujua-base -d @config.js \
+     -H "Content-Type: application/json"
+```
 
-To enable the kujua reporting (analytics) module, see `packages/kujua-reporting/README.md`.
 
-## Sentinel
+### Analytics
 
-Sentinel is a optional node process that updates records, schedules reminders and does
-other stuff that just a browser and Couch cannot. See `sentinel/README.md` for
-more information.
+To enable the reporting analytics module, see 
+[packages/kujua-reporting/README.md](packages/kujua-reporting/README.md).
+
+### Sentinel
+
+See [sentinel/README.md](sentinel/README.md) for more information about
+configuring Sentinel.
 
