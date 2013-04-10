@@ -7,8 +7,8 @@ var path = require('path'),
 
 module.exports = {
     run : function(root, path_loc, kanso_json, doc, callback) {
-        var folder_name = 'node_module';
-        var dependencies_included = false;
+        var folder_name = 'node_module',
+            dependencies_included = false;
 
         if (kanso_json.node_module_folder) {
             folder_name = kanso_json.node_module_folder;
@@ -18,6 +18,8 @@ module.exports = {
         }
 
         var working_folder_name = folder_name + '_working';
+        root = _.isString(root) ? root : '';
+        folder_name = _.isString(folder_name) ? folder_name : '';
 
         var src_folder = path.join(root, folder_name),
             package_folder = path.join(root, working_folder_name),
