@@ -1,5 +1,5 @@
 var utils = require('kujua-reporting/utils'),
-    moment = require('moment').moment;
+    moment = require('moment');
 
 var db = require('db').current().guessCurrent();
 var getBaseURL = function(url) {
@@ -610,9 +610,9 @@ exports['getDates list - specify startmonth'] = function (test){
     var dates = utils.getDates(q);
     test.expect(4);
     test.strictEqual(dates.list.length, 3);
-    test.same(dates.list[0].native(), new Date(2011,7,2));
-    test.same(dates.list[1].native(), new Date(2011,6,2));
-    test.same(dates.list[2].native(), new Date(2011,5,2));
+    test.same(dates.list[0].valueOf(), new Date(2011,7,2).valueOf());
+    test.same(dates.list[1].valueOf(), new Date(2011,6,2).valueOf());
+    test.same(dates.list[2].valueOf(), new Date(2011,5,2).valueOf());
     test.done()
 };
 
@@ -626,9 +626,9 @@ exports['getDates list - no params'] = function (test){
         new Date(now.getFullYear(), now.getMonth()-2, 2)];
     test.expect(4);
     test.strictEqual(dates.list.length, 3);
-    test.same(dates.list[0].native(), expected[0]);
-    test.same(dates.list[1].native(), expected[1]);
-    test.same(dates.list[2].native(), expected[2]);
+    test.same(dates.list[0].valueOf(), expected[0].valueOf());
+    test.same(dates.list[1].valueOf(), expected[1].valueOf());
+    test.same(dates.list[2].valueOf(), expected[2].valueOf());
     test.done();
 };
 
@@ -637,18 +637,18 @@ exports['getDates list - 12 months'] = function (test){
     var dates = utils.getDates(q);
     test.expect(13);
     test.strictEqual(dates.list.length, 12);
-    test.same(dates.list[0].native(), new Date(2011,7,2));
-    test.same(dates.list[1].native(), new Date(2011,6,2));
-    test.same(dates.list[2].native(), new Date(2011,5,2));
-    test.same(dates.list[3].native(), new Date(2011,4,2));
-    test.same(dates.list[4].native(), new Date(2011,3,2));
-    test.same(dates.list[5].native(), new Date(2011,2,2));
-    test.same(dates.list[6].native(), new Date(2011,1,2));
-    test.same(dates.list[7].native(), new Date(2011,0,2));
-    test.same(dates.list[8].native(), new Date(2010,11,2));
-    test.same(dates.list[9].native(), new Date(2010,10,2));
-    test.same(dates.list[10].native(), new Date(2010,9,2));
-    test.same(dates.list[11].native(), new Date(2010,8,2));
+    test.same(dates.list[0].valueOf(), new Date(2011,7,2).valueOf());
+    test.same(dates.list[1].valueOf(), new Date(2011,6,2).valueOf());
+    test.same(dates.list[2].valueOf(), new Date(2011,5,2).valueOf());
+    test.same(dates.list[3].valueOf(), new Date(2011,4,2).valueOf());
+    test.same(dates.list[4].valueOf(), new Date(2011,3,2).valueOf());
+    test.same(dates.list[5].valueOf(), new Date(2011,2,2).valueOf());
+    test.same(dates.list[6].valueOf(), new Date(2011,1,2).valueOf());
+    test.same(dates.list[7].valueOf(), new Date(2011,0,2).valueOf());
+    test.same(dates.list[8].valueOf(), new Date(2010,11,2).valueOf());
+    test.same(dates.list[9].valueOf(), new Date(2010,10,2).valueOf());
+    test.same(dates.list[10].valueOf(), new Date(2010,9,2).valueOf());
+    test.same(dates.list[11].valueOf(), new Date(2010,8,2).valueOf());
     test.done()
 };
 
@@ -773,92 +773,150 @@ exports['req.query params to view params when startmonth is August and 6 months 
 };
 
 exports['dateToMonthStr - should return non-zero indexed string.'] = function(test) {
+    test.expect(1);
     var date = moment(new Date(2011, 9));
     test.strictEqual(utils.dateToMonthStr(date), '2011-10');
     test.done();
 };
 
-exports['getDates'] = function (test) {
-    var now, date, dates;
-
+exports['getDates - week/week'] = function (test) {
     // selected/reporting time unit and reporting freq is week
-    dates = utils.getDates({time_unit: 'week'}, 'week');
+    test.expect(3);
+    var dates = utils.getDates({time_unit: 'week'}, 'week');
     test.equal(dates.list.length, 3);
     test.equal(dates.time_unit, 'week');
     test.equal(dates.reporting_freq, 'week');
+    test.done();
+}
 
+exports['getDates - month/week'] = function (test) {
+    test.expect(3);
     // selected/reporting time unit is month and reporting freq is week
     // and startmonth is not given about 13 weeks = 3 months
-    now = new Date();
-    date = moment(now);
-    dates = utils.getDates({time_unit: 'month'}, 'week');
+    var now = new Date();
+    var date = moment(now);
+    var dates = utils.getDates({time_unit: 'month'}, 'week');
     test.equal(dates.list.length, 13);
-    test.equal(dates.list[0].toString(), now.toString());
-    test.equal(dates.list[12].toString(), date.subtract('weeks', 12).native().toString());
+    test.equal(dates.list[0].valueOf(), now.valueOf());
+    test.equal(dates.list[12].valueOf(), date.subtract('weeks', 12).valueOf());
+    test.done();
+}
 
+exports['getDates - month/week/startmonth'] = function (test) {
+    test.expect(3);
     // selected/reporting time unit is month and reporting freq is week
     // and startmonth is given
-    date = new Date(2011, 3, 2);
-    dates = utils.getDates({time_unit: 'month', startmonth: (date.getFullYear() + '-' + (date.getMonth() + 1))}, 'week');
+    var now = new Date();
+    var date = new Date(2011, 3, 2);
+    var dates = utils.getDates({time_unit: 'month', startmonth: (date.getFullYear() + '-' + (date.getMonth() + 1))}, 'week');
     test.equal(dates.list.length, 13);
-    test.equal(dates.list[0].toString(), date.toString());
-    test.equal(dates.list[12].toString(), moment(date).subtract('weeks', 12).native().toString());
-    
+    test.equal(dates.list[0].valueOf(), date.valueOf());
+    test.equal(dates.list[12].valueOf(), moment(date).subtract('weeks', 12).valueOf());
+    test.done();
+}
+
+exports['getDates - quarter/week'] = function (test) {
+    test.expect(1);
     // selected/reporting time unit is quarter and reporting freq is week
-    dates = utils.getDates({time_unit: 'quarter'}, 'week');
+    var now = new Date();
+    var dates = utils.getDates({time_unit: 'quarter'}, 'week');
     test.equal(dates.list.length, 26);
-    
+    test.done();
+}
+
+exports['getDates - year/week'] = function (test) {
+    test.expect(1);
     // selected/reporting time unit is year and reporting freq is week
-    dates = utils.getDates({time_unit: 'year'}, 'week');
+    var now = new Date();
+    var dates = utils.getDates({time_unit: 'year'}, 'week');
     test.equal(dates.list.length, 104);
-    
+    test.done();
+}
+
+exports['getDates - time_unit:week only'] = function (test) {
+    test.expect(2);
     // selected/reporting time unit is week and but reporting freq is not given
-    dates = utils.getDates({time_unit: 'week'});
+    var now = new Date();
+    var dates = utils.getDates({time_unit: 'week'});
     test.equal(dates.list.length, 3);
     test.equal(dates.time_unit, 'month');
-    
+    test.done();
+}
+
+exports['getDates - week/month'] = function (test) {
+    test.expect(2);
     // selected/reporting time unit is week and reporting freq is month
-    dates = utils.getDates({time_unit: 'week'}, 'month');
+    var now = new Date();
+    var dates = utils.getDates({time_unit: 'week'}, 'month');
     test.equal(dates.list.length, 3);
     test.equal(dates.time_unit, 'month');
-    
+    test.done();
+}
+
+exports['getDates - month/month'] = function (test) {
+    test.expect(5);
     // selected/reporting time unit is month and reporting freq is month
-    now = new Date();
-    dates = utils.getDates({time_unit: 'month'}, 'month');
+    var now = new Date();
+    var dates = utils.getDates({time_unit: 'month'}, 'month');
     test.equal(dates.list.length, 3);
     test.equal(dates.time_unit, 'month');
-    test.equal(dates.list[0].toString(), new Date(now.getFullYear(), now.getMonth(), 2).toString());
-    test.equal(dates.list[1].toString(), new Date(now.getFullYear(), now.getMonth() - 1, 2).toString());
-    test.equal(dates.list[2].toString(), new Date(now.getFullYear(), now.getMonth() - 2, 2).toString());
-    
+    test.equal(dates.list[0].valueOf(), new Date(now.getFullYear(), now.getMonth(), 2).valueOf());
+    test.equal(dates.list[1].valueOf(), new Date(now.getFullYear(), now.getMonth() - 1, 2).valueOf());
+    test.equal(dates.list[2].valueOf(), new Date(now.getFullYear(), now.getMonth() - 2, 2).valueOf());
+    test.done();
+}
+
+exports['getDates - month/month months:6'] = function (test) {
+    test.expect(1);
     // selected/reporting time unit is month and reporting freq is month and months is 6
-    dates = utils.getDates({time_unit: 'month', months: 6}, 'month');
+    var dates = utils.getDates({time_unit: 'month', months: 6}, 'month');
     test.equal(dates.list.length, 6);
-    
-    // selected/reporting time unit is month and reporting freq is month and startmonth is two months ago
-    date = new Date(2011, 3, 2);
-    dates = utils.getDates({time_unit: 'month', startmonth: (date.getFullYear() + '-' + (date.getMonth() + 1))}, 'month');
-    test.equal(dates.list[0].toString(), date.toString());
-    
+    test.done();
+}
+
+exports['getDates - month/month startmonth:2 months ago'] = function (test) {
+    test.expect(1);
+    // selected/reporting time unit is month and reporting freq is month and
+    // startmonth is two months ago
+    var date = new Date(2011, 3, 2);
+    var dates = utils.getDates({time_unit: 'month', startmonth: (date.getFullYear() + '-' + (date.getMonth() + 1))}, 'month');
+    test.equal(dates.list[0].valueOf(), date.valueOf());
+    test.done();
+}
+
+exports['getDates - quarter/month'] = function (test) {
+    test.expect(1);
     // selected/reporting time unit is quarter and reporting freq is month
-    dates = utils.getDates({time_unit: 'quarter'}, 'month');
+    var dates = utils.getDates({time_unit: 'quarter'}, 'month');
     test.equal(dates.list.length, 6);
-    
+    test.done();
+}
+
+exports['getDates - quarter/month, quarters:3'] = function (test) {
+    test.expect(3);
     // selected/reporting time unit is quarter and reporting freq is month and quarters is 3
-    now = new Date()
-    dates = utils.getDates({time_unit: 'quarter', quarters: 3}, 'month');
+    var now = new Date();
+    var dates = utils.getDates({time_unit: 'quarter', quarters: 3}, 'month');
     test.equal(dates.list.length, 9);
-    test.equal(dates.list[0].toString(), new Date(now.getFullYear(), now.getMonth(), 2).toString());
-    test.equal(dates.list[8].toString(), new Date(now.getFullYear(), now.getMonth() - 8, 2).toString());
+    test.equal(dates.list[0].valueOf(), new Date(now.getFullYear(), now.getMonth(), 2).valueOf());
+    test.equal(dates.list[8].valueOf(), new Date(now.getFullYear(), now.getMonth() - 8, 2).valueOf());
+    test.done();
+}
 
+exports['getDates - time_unit:year'] = function (test) {
+    test.expect(1);
     // selected/reporting time unit is year, return 24 months
-    dates = utils.getDates({time_unit: 'year'});
+    var dates = utils.getDates({time_unit: 'year'});
     test.equal(dates.list.length, 24);
+    test.done();
+}
 
+exports['getDates - month, no reporting freq'] = function (test) {
+    test.expect(1);
     // selected/reporting time unit is not given and reporting freq is month,
     // return 3 months
-    dates = utils.getDates({}, 'month');
+    var dates = utils.getDates({}, 'month');
     test.equal(dates.list.length, 3);
-
     test.done();
-};
+}
+
