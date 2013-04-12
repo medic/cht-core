@@ -54,7 +54,7 @@ exports.data_records_by_form_year_week_facility = {
         if (doc.type && !doc.type.match(/data_record/))
             return;
 
-        if (!(doc.week_number || doc.week || doc.form))
+        if (!(doc.week_number || doc.week) || !doc.form)
             return;
 
         var utils = require('views/lib/kujua-reporting'),
@@ -62,9 +62,17 @@ exports.data_records_by_form_year_week_facility = {
             dh = facilities[0],
             hc = facilities[1],
             cl = facilities[2],
-            week_number = doc.week_number || doc.week, // hackish?
-            key = [doc.form, doc.year, week_number, dh._id, hc._id, cl._id],
+            week_number = parseInt(doc.week_number || doc.week, 10),
             is_valid = (doc.errors && doc.errors.length === 0);
+
+        var key = [
+            doc.form,
+            parseInt(doc.year, 10),
+            week_number,
+            dh._id,
+            hc._id,
+            cl._id
+        ];
 
         emit(key, {
             district_hospital: dh.name,
@@ -88,7 +96,7 @@ exports.data_records_by_form_year_month_facility = {
         if (doc.type && !doc.type.match(/data_record/))
             return;
 
-        if (!(doc.month || doc.form))
+        if (!doc.month || !doc.form)
             return;
 
         var utils = require('views/lib/kujua-reporting'),
@@ -96,8 +104,16 @@ exports.data_records_by_form_year_month_facility = {
             dh = facilities[0],
             hc = facilities[1],
             cl = facilities[2],
-            key = [doc.form, doc.year, doc.month, dh._id, hc._id, cl._id],
             is_valid = (doc.errors && doc.errors.length === 0);
+
+        var key = [
+            doc.form,
+            parseInt(doc.year, 10),
+            parseInt(doc.month, 10),
+            dh._id,
+            hc._id,
+            cl._id
+        ];
 
         emit(
             key,
@@ -108,7 +124,7 @@ exports.data_records_by_form_year_month_facility = {
                 reporter: utils.getReporterName(facilities.reverse(), doc.from),
                 reporting_phone: doc.from,
                 is_valid: is_valid,
-                month: doc.month
+                month: parseInt(doc.month, 10)
             }
         );
     }
