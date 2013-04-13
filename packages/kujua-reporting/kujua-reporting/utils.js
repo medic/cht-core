@@ -67,7 +67,7 @@ var getName = exports.getName = function(doc) {
     if (doc.week_number)
         return 'Week ' + doc.week_number + ', ' + doc.year;
 
-    if (doc.month) {
+    if (typeof doc.month !== 'undefined') {
         var m = doc.month_pp ? doc.month_pp : utils.prettyMonth(doc.month, true);
         return m + ' ' + doc.year;
     }
@@ -83,15 +83,11 @@ var getWeek = function(date) {
 
 // take a moment or date object and return the month number
 var getMonth = function(date) {
-    if(date._m)
-        return date.month();
     return moment(date).month();
 };
 
 // take a moment or date object and return the full year number
 var getYear = function(date) {
-    if(date._m)
-        return date.year();
     return moment(date).year();
 };
 
@@ -100,8 +96,6 @@ var getYear = function(date) {
  * the month previous to it
  */
 var nextMonth = exports.nextMonth = function(date) {
-    if(date._m)
-        return date.add('months', 1);
     return moment(date).add('months', 1);
 };
 
@@ -111,9 +105,7 @@ var nextMonth = exports.nextMonth = function(date) {
  */
 
 var prevMonth = exports.prevMonth = function (date) {
-    if (date._d) // date is already a moment object
-        return date.subtract('months', 1).native();
-    return moment(date.getTime()).subtract('months', 1).native();
+    return moment(date).subtract('months', 1).native();
 };
 
 
@@ -122,7 +114,7 @@ var prevMonth = exports.prevMonth = function (date) {
  * and human readable.  eg, Date(2011, 2, 1) -> "2011-6"
  */
 exports.dateToWeekStr = function (date) {
-    return date.year() + '-' + getWeek(date);
+    return moment(date).year() + '-' + getWeek(date);
 };
 
 /**
@@ -130,18 +122,14 @@ exports.dateToWeekStr = function (date) {
  * and human readable.  eg, Date(2011, 9) -> "2011-10"
  */
 exports.dateToMonthStr = function (date) {
-    // assume date is moment if not date object
-    if (!date.valueOf)
-        throw Error('require valid moment or date object.')
-    if (!date.getMonth)
-        date = new Date(date.valueOf());
-    var month = date.getMonth(); // zero indexed
+    date = moment(date);
+    var month = date.month(); // zero indexed
     if (month === 0) {
-        return date.getFullYear() + '-1';
+        return date.year() + '-1';
     } else if (month === 11) {
-        return date.getFullYear() + '-12';
+        return date.year() + '-12';
     }
-    return date.getFullYear() + '-' + (date.getMonth()+1);
+    return date.year() + '-' + (date.month()+1);
 };
 
 /**
@@ -173,7 +161,7 @@ exports.dateToQuarterStr = function(date) {
  * and human readable.  eg, Date(2011, 9) -> "2011"
  */
 exports.dateToYearStr = function(date) {
-    return date.format('YYYY');
+    return moment(date).format('YYYY');
 };
 
 /**
@@ -241,8 +229,8 @@ exports.getDateNav = function (dates) {
 
 
 /**
- * Parses the date params from the HTTP request params and returns relevant
- * moment/Date objects and strings for generating queries and navigation.
+ * Parses params from the HTTP request and returns object used throughout
+ * reporting rates interface.
  *
  * @param {Object} q - parsed request params.
  * @param {String} reporting_freq - 'week' or 'month' default is month.
@@ -288,7 +276,8 @@ exports.getDates = function (q, reporting_freq) {
             var months = (q.months ? parseInt(q.months, 10) : 3),
                 startmonth = q.startmonth || exports.dateToMonthStr(now),
                 yearnum = startmonth.split('-')[0],
-                monthnum = startmonth.split('-')[1]-1,
+                // previous month with zero-indexed js month is -2
+                monthnum = startmonth.split('-')[1]-2,
                 date = moment(new Date(yearnum, monthnum, 2)),
                 range = _.range(months);
 
@@ -296,6 +285,8 @@ exports.getDates = function (q, reporting_freq) {
                 if(!q.startmonth || q.startmonth === exports.dateToMonthStr(now)) {
                     date = now;
                 }
+                monthnum = startmonth.split('-')[1]-1,
+                date = moment(new Date(yearnum, monthnum, 2)),
                 range = _.range(Math.round(months * 4.348))
             }
 
@@ -315,9 +306,9 @@ exports.getDates = function (q, reporting_freq) {
             var quarters = (q.quarters ? parseInt(q.quarters, 10) : 2),
                 startquarter = q.startquarter || exports.dateToQuarterStr(now),
                 startmonth = q.startmonth || exports.dateToMonthStr(now),
-                monthnum = startmonth.split('-')[1]-1,
                 yearnum = startquarter.split('-')[0],
-                quarternum = startquarter.split('-')[1]-1,
+                // previous month with zero-indexed js month is -2
+                monthnum = startmonth.split('-')[1]-2,
                 date = moment(new Date(yearnum, monthnum, 2)),
                 range = _.range(quarters * 3);
 
@@ -343,7 +334,8 @@ exports.getDates = function (q, reporting_freq) {
         case 'year':
             var years = (q.years ? parseInt(q.years, 10) : 2),
                 startmonth = q.startmonth || exports.dateToMonthStr(now),
-                monthnum = startmonth.split('-')[1]-1,
+                // previous month with zero-indexed js month is -2
+                monthnum = startmonth.split('-')[1]-2,
                 startyear = q.startyear || exports.dateToYearStr(now),
                 date = moment(new Date(parseInt(startyear, 10), monthnum, 2)),
                 range = _.range(years * 12);
@@ -408,16 +400,18 @@ var totalReportsDue = function(dates) {
  */
 exports.getReportingViewArgs = function (dates) {
 
-    var startdate = nextMonth(dates.list[0]),
+    var startdate = dates.list[0],
         enddate = dates.list[dates.list.length-1],
-        startkey, endkey;
+        startkey,
+        endkey;
 
     if(dates.reporting_freq === 'week') {
         startkey = [dates.form, startdate.year(), getWeek(startdate)];
         endkey = [dates.form, enddate.year(), getWeek(enddate)];
     } else {
-        startkey = [dates.form, startdate.year(), startdate.month()];
-        endkey = [dates.form, enddate.year(), enddate.month()];
+        startdate = nextMonth(startdate);
+        startkey = [dates.form, startdate.year(), startdate.month()+1];
+        endkey = [dates.form, enddate.year(), enddate.month()+1];
     }
 
     return {
@@ -611,7 +605,7 @@ var processNotSubmitted = exports.processNotSubmitted = function(rows, dates) {
 
             var extra = {},
                 url = duality.getBaseURL() + '/add/data_record?clinic=' + row.id,
-                val = weekly_reports ? getWeek(date) : getMonth(date);
+                val = weekly_reports ? getWeek(date) : getMonth(date)+1;
 
             var empty_report = {
                 year: getYear(date),

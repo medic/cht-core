@@ -55,16 +55,21 @@ var localizedString = exports.localizedString = function(strings, locales) {
 };
 
 exports.capitalize = function (str) {
-    return str.replace( /(^|\s)([a-z])/g , function(m,p1,p2){ 
-        return p1+p2.toUpperCase(); 
+    return str.replace( /(^|\s)([a-z])/g , function(m,p1,p2){
+        return p1+p2.toUpperCase();
     });
 };
 
 exports.prettyMonth = function (month, full) {
-    var months_short = new Array(
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
-        'Sep', 'Oct', 'Nov', 'Dec');
-    var months_full = _.map(exports.months(), function(month) { return month[1]; });
+    var months_short = {
+        1:'Jan', 2:'Feb', 3:'Mar', 4:'Apr', 5:'May', 6:'Jun', 7:'Jul', 8:'Aug',
+        9:'Sep', 10:'Oct', 11:'Nov', 12:'Dec'
+    };
+    var months_full = {
+        1:'January', 2:'February', 3:'March', 4:'April', 5:'May', 6:'June',
+        7:'July', 8:'August', 9:'September', 10:'October', 11:'November',
+        12:'December'
+    };
 
     if (full)
         return months_full[month];
@@ -72,7 +77,8 @@ exports.prettyMonth = function (month, full) {
     return months_short[month];
 };
 
-exports.months = function () {
+//unused?
+var months = function () {
     return [
         [0, 'January'],
         [1, 'February'],

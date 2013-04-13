@@ -6,6 +6,331 @@ var getBaseURL = function(url) {
     return '/'+db.db+'/_design/'+db.design_doc+'/_rewrite/'+url;
 };
 
+/****************************
+ * utils.dateToMonthStr
+ */
+exports['utils.dateToMonthStr - return non-zero indexed string.'] = function(test) {
+    test.expect(1);
+    var date = new Date(2011, 9);
+    test.strictEqual(utils.dateToMonthStr(date), '2011-10');
+    test.done();
+};
+
+exports['utils.dateToMonthStr - accepts moment or Date'] = function(test) {
+    test.expect(2);
+    var date = moment(new Date(2011, 9));
+    test.strictEqual(utils.dateToMonthStr(date), '2011-10');
+    date = new Date(2011, 9);
+    test.strictEqual(utils.dateToMonthStr(date), '2011-10');
+    test.done();
+};
+
+exports['utils.dateToWeekStr - accepts moment or Date'] = function(test) {
+    //todo
+    test.expect(0);
+    test.done();
+};
+
+/****************************
+ * utils.getDates
+ *
+ * Check list property on dates object.  It should have a list of dates
+ * that corresponds to the records we are querying for. The list begins with
+ * the previous/last month.
+ */
+exports['getDates list - no query params'] = function (test) {
+    var q = {};
+    var now = moment();
+    var copy = moment(new Date(now.year(), now.month(), 2));
+    var dates = utils.getDates(q);
+    var expected = [
+        copy.clone().subtract('months',1),
+        copy.clone().subtract('months',2),
+        copy.clone().subtract('months',3)
+    ];
+    test.expect(4);
+    test.strictEqual(dates.list.length, 3);
+    test.same(dates.list[0].valueOf(), expected[0].valueOf());
+    test.same(dates.list[1].valueOf(), expected[1].valueOf());
+    test.same(dates.list[2].valueOf(), expected[2].valueOf());
+    test.done();
+};
+
+
+/*
+ *  reporting_freq: month
+ *  query string: {startmonth:'2011-8', months:3}
+ */
+exports['getDates list - month/startmonth/months:3'] = function (test){
+    var q = {startmonth:'2011-8', months:3};
+    var dates = utils.getDates(q);
+    test.expect(4);
+    test.strictEqual(dates.list.length, 3);
+    //js date months are zero-indexed
+    test.same(dates.list[0].valueOf(), new Date(2011,6,2).valueOf());
+    test.same(dates.list[1].valueOf(), new Date(2011,5,2).valueOf());
+    test.same(dates.list[2].valueOf(), new Date(2011,4,2).valueOf());
+    test.done()
+};
+
+/*
+ *  reporting_freq: month
+ *  query string: {startmonth:'2011-8', months:12}
+ */
+exports['getDates list - month/startmonth/months:12'] = function (test){
+    var q = {startmonth:'2011-8', months:12};
+    var dates = utils.getDates(q);
+    test.expect(3);
+    test.strictEqual(dates.list.length, 12);
+    test.same(dates.list[0].valueOf(), new Date(2011,6,2).valueOf());
+    test.same(dates.list[11].valueOf(), new Date(2010,7,2).valueOf());
+    test.done()
+};
+
+/*
+ *  reporting_freq: week
+ *  query string: {time_unit: 'week'}
+ */
+exports['getDates - week/week'] = function (test) {
+    test.expect(3);
+    var dates = utils.getDates({time_unit: 'week'}, 'week');
+    test.equal(dates.list.length, 3);
+    test.equal(dates.time_unit, 'week');
+    test.equal(dates.reporting_freq, 'week');
+    test.done();
+}
+
+/*
+ *  reporting_freq: week
+ *  query string: {time_unit: 'month'}
+ */
+exports['getDates - week/month'] = function (test) {
+    test.expect(3);
+    var now = new Date();
+    var date = moment(new Date(now.getFullYear(), now.getMonth(), 2));
+    var dates = utils.getDates({time_unit: 'month'}, 'week');
+    test.equal(dates.list.length, 13);
+    test.equal(dates.list[0].valueOf(), date.valueOf());
+    test.equal(dates.list[12].valueOf(), date.subtract('weeks', 12).valueOf());
+    test.done();
+}
+
+/*
+ *  reporting_freq: week
+ *  query string: {time_unit: 'month', startmonth: '2011-4'}
+ */
+exports['getDates - week/month/startmonth'] = function (test) {
+    test.expect(3);
+    var date = moment(new Date(2011, 3, 2));
+    var q = {time_unit: 'month', startmonth: '2011-4'};
+    var dates = utils.getDates(q, 'week');
+    test.equal(dates.list.length, 13);
+    test.equal(dates.list[0].valueOf(), date.valueOf());
+    test.equal(dates.list[12].valueOf(), date.subtract('weeks', 12).valueOf());
+    test.done();
+}
+
+/*
+ *  reporting_freq: week
+ *  query string: {time_unit: 'quarter'}
+ */
+exports['getDates - week/quarter'] = function (test) {
+    test.expect(1);
+    var now = new Date();
+    var dates = utils.getDates({time_unit: 'quarter'}, 'week');
+    test.equal(dates.list.length, 26);
+    test.done();
+}
+
+/*
+ *  reporting_freq: week
+ *  query string: {time_unit: 'year'}
+ */
+exports['getDates - week/year'] = function (test) {
+    test.expect(1);
+    var now = new Date();
+    var dates = utils.getDates({time_unit: 'year'}, 'week');
+    test.equal(dates.list.length, 104);
+    test.done();
+}
+
+/*
+ *  query string: {time_unit: 'week'}
+ *  week time units can't be represented with monthly reports
+ */
+exports['getDates - time_unit:week'] = function (test) {
+    test.expect(2);
+    var now = new Date();
+    var dates = utils.getDates({time_unit: 'week'});
+    test.equal(dates.list.length, 3);
+    test.equal(dates.time_unit, 'month');
+    test.done();
+}
+
+/*
+ *  reporting_freq: month
+ *  query string: {time_unit: 'week'}
+ *  week time units can't be represented with monthly reports
+ */
+exports['getDates - month/time_unit:week'] = function (test) {
+    test.expect(2);
+    var now = new Date();
+    var dates = utils.getDates({time_unit: 'week'}, 'month');
+    test.equal(dates.list.length, 3);
+    test.equal(dates.time_unit, 'month');
+    test.done();
+}
+
+/*
+ *  reporting_freq: month
+ *  query string: {time_unit: 'month'}
+ */
+exports['getDates - month/month'] = function (test) {
+    test.expect(5);
+    var now = moment(new Date());
+    var copy = moment(new Date(now.year(), now.month(), 2));
+    var dates = utils.getDates({time_unit: 'month'}, 'month');
+    test.equal(dates.list.length, 3);
+    test.equal(dates.time_unit, 'month');
+    test.equal(dates.list[0].valueOf(), copy.clone().subtract('months',1).valueOf());
+    test.equal(dates.list[1].valueOf(), copy.clone().subtract('months',2).valueOf());
+    test.equal(dates.list[2].valueOf(), copy.clone().subtract('months',3).valueOf());
+    test.done();
+}
+
+/*
+ *  reporting_freq: month
+ *  query string: {time_unit: 'month', month: 6}
+ */
+exports['getDates - month/month/months:6'] = function (test) {
+    test.expect(1);
+    var dates = utils.getDates({time_unit: 'month', months: 6}, 'month');
+    test.equal(dates.list.length, 6);
+    test.done();
+}
+
+/*
+ *  reporting_freq: month
+ *  query string: {time_unit: 'quarter'}
+ */
+exports['getDates - month/quarter'] = function (test) {
+    test.expect(1);
+    var dates = utils.getDates({time_unit: 'quarter'}, 'month');
+    test.equal(dates.list.length, 6);
+    test.done();
+}
+
+/*
+ *  reporting_freq: month
+ *  query string: {time_unit: 'quarter', quarters: 3}
+ */
+exports['getDates - month/quarter/quarters:3'] = function (test) {
+    test.expect(3);
+    // selected/reporting time unit is quarter and reporting freq is month and quarters is 3
+    var now = moment(new Date());
+    var copy = moment(new Date(now.year(), now.month(), 2));
+    var dates = utils.getDates({time_unit: 'quarter', quarters: 3}, 'month');
+    test.equal(dates.list.length, 9);
+    test.equal(dates.list[0].valueOf(), copy.clone().subtract('months',1).valueOf());
+    test.equal(dates.list[8].valueOf(), copy.clone().subtract('months',9).valueOf());
+    test.done();
+}
+
+/*
+ *  reporting_freq: month
+ *  query string: {time_unit: 'year'}
+ */
+exports['getDates - time_unit:year'] = function (test) {
+    test.expect(1);
+    // selected/reporting time unit is year, return 24 months
+    var dates = utils.getDates({time_unit: 'year'});
+    test.equal(dates.list.length, 24);
+    test.done();
+}
+
+/*
+ *  reporting_freq: month
+ *  query string: {}
+ */
+exports['getDates - month, no reporting freq'] = function (test) {
+    test.expect(1);
+    var dates = utils.getDates({}, 'month');
+    test.equal(dates.list.length, 3);
+    test.done();
+}
+
+/****************************
+ * utils.getReportingViewArgs
+ *
+ *  query: {months: 1}
+ *
+ *  example view params for Apr 2013:
+ *    {
+ *      "startkey": [ "TEST", 2013, 4 ],
+ *      "endkey": [ "TEST", 2013, 3 ],
+ *      "descending": true
+ *    }
+ *
+ *  descending is true so we are fetching latest records first, startkey is not
+ *  included in results, results begin with previous or last month. also
+ *  remember js is using zero-indexed month and reports/view results are
+ *  1-indexed months.
+ *
+ */
+exports['utils.getReportingViewArgs -- no startmonth'] = function(test) {
+    test.expect(3);
+    var now = moment();
+    var end = now.clone().subtract('months',1);
+    var expect = {
+        startkey: ['TEST', now.year(), now.month()+1],
+        endkey: ['TEST', end.year(), end.month()+1],
+        descending: true
+    };
+    var q = {months: 1, form: 'TEST'};
+    var dates = utils.getDates(q);
+    var args = utils.getReportingViewArgs(dates);
+
+    test.same(args.startkey, expect.startkey);
+    test.same(args.endkey, expect.endkey);
+    test.same(args.descending, expect.descending);
+    test.done();
+};
+
+exports['utils.getReportingViewArgs -- startmonth is January'] = function(test) {
+    test.expect(3);
+    var q = {months:1, startmonth:'2011-1', form:'TEST'};
+    var expect = {
+        startkey: ['TEST', 2011, 1],
+        endkey: ['TEST', 2010, 12],
+        descending: true
+    };
+    var dates = utils.getDates(q);
+    var args = utils.getReportingViewArgs(dates);
+    test.same(args.startkey, expect.startkey);
+    test.same(args.endkey, expect.endkey);
+    test.same(args.descending, expect.descending);
+    test.done();
+};
+
+exports['utils.getReportingViewArgs -- startmonth is August and 6 months prior'] = function(test) {
+    test.expect(3);
+    var q = {startmonth:'2011-8', months:'6', form:'TEST'};
+    var expect = {
+        startkey: ['TEST', 2011, 8],
+        endkey: ['TEST', 2011, 2],
+        descending: true
+    };
+    var dates = utils.getDates(q);
+    var args = utils.getReportingViewArgs(dates);
+    test.same(args.startkey, expect.startkey);
+    test.same(args.endkey, expect.endkey);
+    test.same(args.descending, expect.descending);
+    test.done();
+};
+
+/****************************
+ * reporting.getRows
+ */
 exports['reporting.getRows - three months'] = function (test) {
     test.expect(8);
     var q = {startmonth:'2011-10', months:3, form:'TEST'},
@@ -13,58 +338,23 @@ exports['reporting.getRows - three months'] = function (test) {
 
     var facilities = [
         {
-            "key": [
-                "325710",
-                "947322",
-                "b3f150",
-                "Zomba",
-                "Chamba",
-                "Example clinic 4"
-            ],
+            "key": [ "325710", "947322", "b3f150", "Zomba", "Chamba", "Example clinic 4" ],
             "value": 1
         },
         {
-            "key": [
-                "325710",
-                "947322",
-                "b3fddd",
-                "Zomba",
-                "Chamba",
-                "Example clinic 5"
-            ],
+            "key": [ "325710", "947322", "b3fddd", "Zomba", "Chamba", "Example clinic 5" ],
             "value": 1
         },
         {
-            "key": [
-                "325710",
-                "947322",
-                "b40cd2",
-                "Zomba",
-                "Chamba",
-                "Example clinic 6"
-            ],
+            "key": [ "325710", "947322", "b40cd2", "Zomba", "Chamba", "Example clinic 6" ],
             "value": 1
         },
         {
-            "key": [
-                "325710",
-                "947f3d",
-                "b42c21",
-                "Zomba",
-                "Chipini",
-                "Example clinic 9"
-            ],
+            "key": [ "325710", "947f3d", "b42c21", "Zomba", "Chipini", "Example clinic 9" ],
             "value": 1
         },
         {
-            "key": [
-                "325710",
-                "947f3d",
-                "b42ffc",
-                "Zomba",
-                "Chipini",
-                "Example clinic 10"
-            ],
+            "key": [ "325710", "947f3d", "b42ffc", "Zomba", "Chipini", "Example clinic 10" ],
             "value": 1
         }
     ];
@@ -72,14 +362,7 @@ exports['reporting.getRows - three months'] = function (test) {
     var reports = [
         {
             "id": "d346ca",
-            "key": [
-                'TEST',
-                2011,
-                7,
-                "325710",
-                "947322",
-                "b3cb78"
-            ],
+            "key": [ 'TEST', 2011, 7, "325710", "947322", "b3cb78" ],
             "value": {
                 "district_hospital": "Zomba",
                 "health_center": "Chamba",
@@ -91,14 +374,7 @@ exports['reporting.getRows - three months'] = function (test) {
         },
         {
             "id": "d3916d",
-            "key": [
-                'TEST',
-                2011,
-                7,
-                "325710",
-                "947322",
-                "b3d96d"
-            ],
+            "key": [ 'TEST', 2011, 7, "325710", "947322", "b3d96d" ],
             "value": {
                 "district_hospital": "Zomba",
                 "health_center": "Chamba",
@@ -110,14 +386,7 @@ exports['reporting.getRows - three months'] = function (test) {
         },
         {
             "id": "d3ece6",
-            "key": [
-                'TEST',
-                2011,
-                7,
-                "325710",
-                "947322",
-                "b3e84e"
-            ],
+            "key": [ 'TEST', 2011, 7, "325710", "947322", "b3e84e" ],
             "value": {
                 "district_hospital": "Zomba",
                 "health_center": "Chamba",
@@ -139,27 +408,24 @@ exports['reporting.getRows - three months'] = function (test) {
             "not_submitted": true,
             "url": getBaseURL('add/data_record?clinic=947f3d&month=9'),
             "month": 9,
-            "name": "October 2011"
+            "name": "September 2011"
           },
           {
             "year": 2011,
             "not_submitted": true,
             "url": getBaseURL('add/data_record?clinic=947f3d&month=8'),
             "month": 8,
-            "name": "September 2011"
+            "name": "August 2011"
           },
           {
             "year": 2011,
             "not_submitted": true,
             "url": getBaseURL('add/data_record?clinic=947f3d&month=7'),
             "month": 7,
-            "name": "August 2011"
+            "name": "July 2011"
           }
         ],
-        "clinics": [
-          "b42c21",
-          "b42ffc"
-        ],
+        "clinics": [ "b42c21", "b42ffc" ],
         "valid": 0,
         "valid_percent": 0,
         "url": "reporting/TEST/947f3d?startmonth=2011-10&months=3&time_unit=month"
@@ -173,14 +439,14 @@ exports['reporting.getRows - three months'] = function (test) {
             "not_submitted": true,
             "url": getBaseURL('add/data_record?clinic=947322&month=9'),
             "month": 9,
-            "name": "October 2011"
+            "name": "September 2011"
           },
           {
             "year": 2011,
             "not_submitted": true,
             "url": getBaseURL('add/data_record?clinic=947322&month=8'),
             "month": 8,
-            "name": "September 2011"
+            "name": "August 2011"
           },
           {
             "id": "d346ca",
@@ -189,12 +455,12 @@ exports['reporting.getRows - three months'] = function (test) {
               "name": "Example clinic 1"
             },
             "month": 7,
-            "month_pp": "August",
+            "month_pp": "July",
             "year": 2011,
             "reporter": "Example reporter",
             "reporting_phone": "0123456789",
             "is_valid": true,
-            "name": "August 2011",
+            "name": "July 2011",
             "week_number": undefined
           },
           {
@@ -204,12 +470,12 @@ exports['reporting.getRows - three months'] = function (test) {
               "name": "Example clinic 2"
             },
             "month": 7,
-            "month_pp": "August",
+            "month_pp": "July",
             "year": 2011,
             "reporter": "Example reporter",
             "reporting_phone": "0123456789",
             "is_valid": true,
-            "name": "August 2011",
+            "name": "July 2011",
             "week_number": undefined
           },
           {
@@ -219,12 +485,12 @@ exports['reporting.getRows - three months'] = function (test) {
               "name": "Example clinic 3"
             },
             "month": 7,
-            "month_pp": "August",
+            "month_pp": "July",
             "year": 2011,
             "reporter": "Example reporter",
             "reporting_phone": "0123456789",
             "is_valid": true,
-            "name": "August 2011",
+            "name": "July 2011",
             "week_number": undefined
           }
         ],
@@ -252,6 +518,9 @@ exports['reporting.getRows - three months'] = function (test) {
     test.done();
 };
 
+/****************************
+ * reporting.getRowsHC
+ */
 
 exports['reporting.getRowsHC - three months'] = function (test) {
 
@@ -275,14 +544,7 @@ exports['reporting.getRowsHC - three months'] = function (test) {
         },
         {
             "id": "d56884",
-            "key": [
-                'TEST',
-                2011,
-                8,
-                "325710",
-                "947f3d",
-                "b42c21"
-            ],
+            "key": [ 'TEST', 2011, 8, "325710", "947f3d", "b42c21" ],
             "value": {
                 "district_hospital": "Zomba",
                 "health_center": "Chipini",
@@ -294,14 +556,7 @@ exports['reporting.getRowsHC - three months'] = function (test) {
         },
         {
             "id": "d5aeb8",
-            "key": [
-                'TEST',
-                2011,
-                8,
-                "325710",
-                "947f3d",
-                "b42ffc"
-            ],
+            "key": [ 'TEST', 2011, 8, "325710", "947f3d", "b42ffc" ],
             "value": {
                 "district_hospital": "Zomba",
                 "health_center": "Chipini",
@@ -412,6 +667,137 @@ exports['reporting.getRowsHC - three months'] = function (test) {
     test.done();
 };
 
+/*
+ *  query: {startmonth:'2011-10', months:3},
+ *  3 records that begin with previous month (9)
+ */
+exports['reporting.getRowsHC - rows are 1-indexed months'] = function (test) {
+
+    test.expect(3);
+
+    var q = {startmonth:'2011-10', months:3},
+        dates = utils.getDates(q),
+        reports = [];
+
+    var facilities = {
+        "rows":[
+            {"key":["325710","947f3d","b42c21","Zomba","Chipini","Example clinic 9"],"value":1}
+        ]
+    };
+
+    var rows = utils.getRowsHC(facilities, reports, dates);
+
+    test.same(rows[0].records[0].month, 9);
+    test.same(rows[0].records[1].month, 8);
+    test.same(rows[0].records[2].month, 7);
+    test.done();
+};
+
+exports['reporting.getRowsHC - rows are 1-indexed weeks'] = function (test) {
+
+    test.expect(2);
+
+    var q = {startmonth:'2011-3'},
+        dates = utils.getDates(q, 'week'),
+        reports = [];
+
+    var facilities = {
+        "rows":[
+            {"key":["325710","947f3d","b42c21","Zomba","Chipini","Example clinic 9"],"value":1}
+        ]
+    };
+
+    var rows = utils.getRowsHC(facilities, reports, dates);
+
+    test.same(rows[0].records[0].week_number, 9);
+    test.same(rows[0].records[8].week_number, 1);
+    test.done();
+};
+
+/****************************
+ * utils.processNotSubmitted
+ */
+exports['utils.processNotSubmitted -- check january'] = function (test) {
+    test.expect(6);
+
+    var q = {startmonth:'2011-1', months:3, form:'TEST'},
+        dates = utils.getDates(q);
+
+    var rows = [{
+        "id": "89436d0828ead00d7745d0ed580d0455",
+        "name": "Example clinic 48",
+        "records": []
+    }];
+
+    utils.processNotSubmitted(rows, dates);
+
+    test.strictEqual(rows[0].records[0].month, 12);
+    test.strictEqual(rows[0].records[0].name, "December 2010");
+
+    test.strictEqual(rows[0].records[1].month, 11);
+    test.strictEqual(rows[0].records[1].name, "November 2010");
+
+    test.strictEqual(rows[0].records[2].month, 10);
+    test.strictEqual(rows[0].records[2].name, "October 2010");
+    test.done()
+};
+
+exports['utils.processNotSubmitted -- missing two months'] = function (test){
+
+    test.expect(7);
+
+    var q = {startmonth:'2011-10', months:3, form:'TEST'};
+    var dates = utils.getDates(q);
+
+    var rows = [{
+        "id": "89436d0828ead00d7745d0ed580d0455",
+        "name": "Example clinic 48",
+        "records": [
+            {
+                "id": "89436d0828ead00d7745d0ed58566ad4",
+                "clinic": {
+                    "id": "89436d0828ead00d7745d0ed580d0455",
+                    "name": "Example clinic 48"
+                },
+                "month": 9,
+                "month_pp": "September 2011",
+                "year": 2011,
+                "reporter": "Example reporter",
+                "reporting_phone": "0123456789"
+            }
+        ]
+    }];
+
+    utils.processNotSubmitted(rows, dates);
+
+    // there should only be a total of three records after processing
+    test.strictEqual(rows[0].records.length, 3);
+
+    /* new records should have been added in the right order */
+    test.strictEqual(rows[0].records[0].month, 9);
+    test.strictEqual(rows[0].records[1].month, 8);
+    test.strictEqual(rows[0].records[2].month, 7);
+
+    /*
+     * not_submitted property should be set to true on non-existing records and
+     * undefined otherwise.  submitted record does not have a not_submitted
+     * property
+     * */
+    test.strictEqual(rows[0].records[0].not_submitted, undefined);
+    test.strictEqual(rows[0].records[1].not_submitted, true);
+    test.strictEqual(rows[0].records[2].not_submitted, true);
+
+    test.done();
+};
+
+/****************************
+ * reporting.getTotals
+ * combines the above to get reporting rate numbers
+ */
+
+/*
+ *  query: {startweek:'2012-34', weeks:3, time_unit:'week', form:'TEST'},
+ */
 exports['reporting.getTotals - weekly time unit and frequency'] = function (test) {
     test.expect(1);
     var q = {startweek:'2012-34', weeks:3, time_unit:'week', form:'TEST'},
@@ -554,13 +940,7 @@ exports['reporting.getTotals - single health center, three months'] = function (
         },
         {
             "id": "d5aeb8",
-            "key": [
-                2011,
-                8,
-                "325710",
-                "947f3d",
-                "b42ffc"
-            ],
+            "key": [ 2011, 8, "325710", "947f3d", "b42ffc" ],
             "value": {
                 "district_hospital": "Zomba",
                 "health_center": "Chipini",
@@ -604,319 +984,4 @@ exports['reporting.getTotals - single health center, three months'] = function (
     });
     test.done();
 };
-
-exports['getDates list - specify startmonth'] = function (test){
-    var q = {startmonth:'2011-8', months:3, form:'TEST'};
-    var dates = utils.getDates(q);
-    test.expect(4);
-    test.strictEqual(dates.list.length, 3);
-    test.same(dates.list[0].valueOf(), new Date(2011,7,2).valueOf());
-    test.same(dates.list[1].valueOf(), new Date(2011,6,2).valueOf());
-    test.same(dates.list[2].valueOf(), new Date(2011,5,2).valueOf());
-    test.done()
-};
-
-exports['getDates list - no params'] = function (test){
-    var q = {};
-    var now = new Date();
-    var dates = utils.getDates(q);
-    var expected = [
-        new Date(now.getFullYear(), now.getMonth(), 2),
-        new Date(now.getFullYear(), now.getMonth()-1, 2),
-        new Date(now.getFullYear(), now.getMonth()-2, 2)];
-    test.expect(4);
-    test.strictEqual(dates.list.length, 3);
-    test.same(dates.list[0].valueOf(), expected[0].valueOf());
-    test.same(dates.list[1].valueOf(), expected[1].valueOf());
-    test.same(dates.list[2].valueOf(), expected[2].valueOf());
-    test.done();
-};
-
-exports['getDates list - 12 months'] = function (test){
-    var q = {startmonth:'2011-8', months:12, form:'TEST'};
-    var dates = utils.getDates(q);
-    test.expect(13);
-    test.strictEqual(dates.list.length, 12);
-    test.same(dates.list[0].valueOf(), new Date(2011,7,2).valueOf());
-    test.same(dates.list[1].valueOf(), new Date(2011,6,2).valueOf());
-    test.same(dates.list[2].valueOf(), new Date(2011,5,2).valueOf());
-    test.same(dates.list[3].valueOf(), new Date(2011,4,2).valueOf());
-    test.same(dates.list[4].valueOf(), new Date(2011,3,2).valueOf());
-    test.same(dates.list[5].valueOf(), new Date(2011,2,2).valueOf());
-    test.same(dates.list[6].valueOf(), new Date(2011,1,2).valueOf());
-    test.same(dates.list[7].valueOf(), new Date(2011,0,2).valueOf());
-    test.same(dates.list[8].valueOf(), new Date(2010,11,2).valueOf());
-    test.same(dates.list[9].valueOf(), new Date(2010,10,2).valueOf());
-    test.same(dates.list[10].valueOf(), new Date(2010,9,2).valueOf());
-    test.same(dates.list[11].valueOf(), new Date(2010,8,2).valueOf());
-    test.done()
-};
-
-exports['process not submitted records, missing two months'] = function (test){
-
-    // startmonth query param month string is not zero indexed
-    var q = {startmonth:'2011-10', months:3, form:'TEST'};
-    var dates = utils.getDates(q);
-
-    var rows = [{
-        "id": "89436d0828ead00d7745d0ed580d0455",
-        "name": "Example clinic 48",
-        "records": [
-            {
-                "id": "89436d0828ead00d7745d0ed58566ad4",
-                "clinic": {
-                    "id": "89436d0828ead00d7745d0ed580d0455",
-                    "name": "Example clinic 48"
-                },
-                "month": 8, // data record is zero indexed
-                "month_pp": "September 2011",
-                "year": 2011,
-                "reporter": "Example reporter",
-                "reporting_phone": "0123456789"
-            }
-        ]
-    }];
-
-    test.expect(7);
-
-    utils.processNotSubmitted(rows, dates);
-
-    // there should only be a total of three records after processing
-    test.strictEqual(rows[0].records.length, 3);
-
-    /* new records should have been added in the right order */
-    test.strictEqual(rows[0].records[0].month, 9);
-    test.strictEqual(rows[0].records[1].month, 8);
-    test.strictEqual(rows[0].records[2].month, 7);
-
-    /*
-     * not_submitted property should be set to true on non-existing records and
-     * undefined otherwise.
-     * */
-    test.strictEqual(rows[0].records[0].not_submitted, true);
-    // submitted record does not have a not_submitted property
-    test.strictEqual(rows[0].records[1].not_submitted, undefined);
-    test.strictEqual(rows[0].records[2].not_submitted, true);
-
-    test.done();
-};
-
-/*
- *  e.g. Aug 2011 with no startmonth:
- *
- *  query string:
- *   ?months=1
- *  view parameters:
- *   ?startkey=[2011,8]&endkey=[2011,7]&descending=true
- */
-exports['req.query params to view params with no startmonth'] = function(test) {
-    test.expect(3);
-    var now = new Date();
-    var q = {months: 1, form: 'TEST'};
-    var expect = {
-        startkey: ['TEST', now.getFullYear(),now.getMonth()+1],
-        endkey: ['TEST', now.getFullYear(), now.getMonth()],
-        descending: true
-    };
-    var dates = utils.getDates(q);
-    var args = utils.getReportingViewArgs(dates);
-    test.same(args.startkey, expect.startkey);
-    test.same(args.endkey, expect.endkey);
-    test.same(args.descending, expect.descending);
-    test.done();
-};
-
-/* Selecting January:
- *
- *  query string:
- *   ?startmonth=2011-1&months=1
- *  view parameters:
- *   ?startkey=[2011,1]&endkey=[2011,0]&descending=true
- */
-exports['req.query params to view params when startmonth is January'] = function(test) {
-    test.expect(3);
-    var q = {months:1, startmonth:'2011-1', form:'TEST'};
-    var expect = {
-        startkey: ['TEST', 2011,1],
-        endkey: ['TEST', 2011, 0],
-        descending: true
-    };
-    var dates = utils.getDates(q);
-    var args = utils.getReportingViewArgs(dates);
-    test.same(args.startkey, expect.startkey);
-    test.same(args.endkey, expect.endkey);
-    test.same(args.descending, expect.descending);
-    test.done();
-};
-
-/* Selecting August and 6 months prior:
- *
- *  query string:
- *   ?startmonth=2011-8&months=6
- *  view parameters:
- *   ?startkey=[2011,8]&endkey=[2011,2]&descending=true
- */
-exports['req.query params to view params when startmonth is August and 6 months prior'] = function(test) {
-    test.expect(3);
-    var reqQuery = {startmonth:'2011-8', months:'6', form:'TEST'};
-    var expect = {
-        startkey: ['TEST', 2011,8],
-        endkey: ['TEST', 2011, 2],
-        descending: true
-    };
-    var dates = utils.getDates(reqQuery);
-    var args = utils.getReportingViewArgs(dates);
-    test.same(args.startkey, expect.startkey);
-    test.same(args.endkey, expect.endkey);
-    test.same(args.descending, expect.descending);
-    test.done();
-};
-
-exports['dateToMonthStr - should return non-zero indexed string.'] = function(test) {
-    test.expect(1);
-    var date = moment(new Date(2011, 9));
-    test.strictEqual(utils.dateToMonthStr(date), '2011-10');
-    test.done();
-};
-
-exports['getDates - week/week'] = function (test) {
-    // selected/reporting time unit and reporting freq is week
-    test.expect(3);
-    var dates = utils.getDates({time_unit: 'week'}, 'week');
-    test.equal(dates.list.length, 3);
-    test.equal(dates.time_unit, 'week');
-    test.equal(dates.reporting_freq, 'week');
-    test.done();
-}
-
-exports['getDates - month/week'] = function (test) {
-    test.expect(3);
-    // selected/reporting time unit is month and reporting freq is week
-    // and startmonth is not given about 13 weeks = 3 months
-    var now = new Date();
-    var date = moment(now);
-    var dates = utils.getDates({time_unit: 'month'}, 'week');
-    test.equal(dates.list.length, 13);
-    test.equal(dates.list[0].valueOf(), now.valueOf());
-    test.equal(dates.list[12].valueOf(), date.subtract('weeks', 12).valueOf());
-    test.done();
-}
-
-exports['getDates - month/week/startmonth'] = function (test) {
-    test.expect(3);
-    // selected/reporting time unit is month and reporting freq is week
-    // and startmonth is given
-    var now = new Date();
-    var date = new Date(2011, 3, 2);
-    var dates = utils.getDates({time_unit: 'month', startmonth: (date.getFullYear() + '-' + (date.getMonth() + 1))}, 'week');
-    test.equal(dates.list.length, 13);
-    test.equal(dates.list[0].valueOf(), date.valueOf());
-    test.equal(dates.list[12].valueOf(), moment(date).subtract('weeks', 12).valueOf());
-    test.done();
-}
-
-exports['getDates - quarter/week'] = function (test) {
-    test.expect(1);
-    // selected/reporting time unit is quarter and reporting freq is week
-    var now = new Date();
-    var dates = utils.getDates({time_unit: 'quarter'}, 'week');
-    test.equal(dates.list.length, 26);
-    test.done();
-}
-
-exports['getDates - year/week'] = function (test) {
-    test.expect(1);
-    // selected/reporting time unit is year and reporting freq is week
-    var now = new Date();
-    var dates = utils.getDates({time_unit: 'year'}, 'week');
-    test.equal(dates.list.length, 104);
-    test.done();
-}
-
-exports['getDates - time_unit:week only'] = function (test) {
-    test.expect(2);
-    // selected/reporting time unit is week and but reporting freq is not given
-    var now = new Date();
-    var dates = utils.getDates({time_unit: 'week'});
-    test.equal(dates.list.length, 3);
-    test.equal(dates.time_unit, 'month');
-    test.done();
-}
-
-exports['getDates - week/month'] = function (test) {
-    test.expect(2);
-    // selected/reporting time unit is week and reporting freq is month
-    var now = new Date();
-    var dates = utils.getDates({time_unit: 'week'}, 'month');
-    test.equal(dates.list.length, 3);
-    test.equal(dates.time_unit, 'month');
-    test.done();
-}
-
-exports['getDates - month/month'] = function (test) {
-    test.expect(5);
-    // selected/reporting time unit is month and reporting freq is month
-    var now = new Date();
-    var dates = utils.getDates({time_unit: 'month'}, 'month');
-    test.equal(dates.list.length, 3);
-    test.equal(dates.time_unit, 'month');
-    test.equal(dates.list[0].valueOf(), new Date(now.getFullYear(), now.getMonth(), 2).valueOf());
-    test.equal(dates.list[1].valueOf(), new Date(now.getFullYear(), now.getMonth() - 1, 2).valueOf());
-    test.equal(dates.list[2].valueOf(), new Date(now.getFullYear(), now.getMonth() - 2, 2).valueOf());
-    test.done();
-}
-
-exports['getDates - month/month months:6'] = function (test) {
-    test.expect(1);
-    // selected/reporting time unit is month and reporting freq is month and months is 6
-    var dates = utils.getDates({time_unit: 'month', months: 6}, 'month');
-    test.equal(dates.list.length, 6);
-    test.done();
-}
-
-exports['getDates - month/month startmonth:2 months ago'] = function (test) {
-    test.expect(1);
-    // selected/reporting time unit is month and reporting freq is month and
-    // startmonth is two months ago
-    var date = new Date(2011, 3, 2);
-    var dates = utils.getDates({time_unit: 'month', startmonth: (date.getFullYear() + '-' + (date.getMonth() + 1))}, 'month');
-    test.equal(dates.list[0].valueOf(), date.valueOf());
-    test.done();
-}
-
-exports['getDates - quarter/month'] = function (test) {
-    test.expect(1);
-    // selected/reporting time unit is quarter and reporting freq is month
-    var dates = utils.getDates({time_unit: 'quarter'}, 'month');
-    test.equal(dates.list.length, 6);
-    test.done();
-}
-
-exports['getDates - quarter/month, quarters:3'] = function (test) {
-    test.expect(3);
-    // selected/reporting time unit is quarter and reporting freq is month and quarters is 3
-    var now = new Date();
-    var dates = utils.getDates({time_unit: 'quarter', quarters: 3}, 'month');
-    test.equal(dates.list.length, 9);
-    test.equal(dates.list[0].valueOf(), new Date(now.getFullYear(), now.getMonth(), 2).valueOf());
-    test.equal(dates.list[8].valueOf(), new Date(now.getFullYear(), now.getMonth() - 8, 2).valueOf());
-    test.done();
-}
-
-exports['getDates - time_unit:year'] = function (test) {
-    test.expect(1);
-    // selected/reporting time unit is year, return 24 months
-    var dates = utils.getDates({time_unit: 'year'});
-    test.equal(dates.list.length, 24);
-    test.done();
-}
-
-exports['getDates - month, no reporting freq'] = function (test) {
-    test.expect(1);
-    // selected/reporting time unit is not given and reporting freq is month,
-    // return 3 months
-    var dates = utils.getDates({}, 'month');
-    test.equal(dates.list.length, 3);
-    test.done();
-}
 

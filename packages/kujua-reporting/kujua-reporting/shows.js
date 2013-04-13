@@ -9,6 +9,13 @@ var db = require('db'),
     charts = require('./ui/charts'),
     templates = require('duality/templates');
 
+var facility_doc
+    , _req
+    , dates
+    , isAdmin
+    , isDistrictAdmin
+    , userDistrict;
+
 var getViewReports = function(doc, dates, callback) {
     var args = utils.getReportingViewArgs(dates),
         view = 'data_records_by_form_year_month_facility';
@@ -281,13 +288,6 @@ var onRecordClick = function(ev) {
         row.toggle();
     }
 };
-
-var facility_doc
-    , _req
-    , dates
-    , isAdmin
-    , isDistrictAdmin
-    , userDistrict;
 
 var renderReporting = function (doc, req) {
 
