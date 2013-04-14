@@ -368,7 +368,7 @@ exports.data_record_merge = function (head, req) {
     start({code: 200, headers: json_headers});
 
     var new_data_record = JSON.parse(req.body),
-        form = req.query.form,
+        form = req.query && req.query.form,
         headers = req.headers.Host.split(":"),
         host = headers[0],
         port = headers[1] || "",

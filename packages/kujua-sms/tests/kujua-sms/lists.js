@@ -131,7 +131,7 @@ exports.tasks_pending_callback = function(test) {
     var expResp = {};
     expResp.callback = {
         options:{
-            "host":"localhost",
+            "host": host,
             "port":"5984",
             "path": baseURL + "/_db/_bulk_docs",
             "method":"POST",
@@ -217,58 +217,36 @@ exports.data_records_merge = function(test) {
 
     var req = {
         headers: {"Host": window.location.host},
-        form: 'TEST'
+        query: {form: 'ZZZZ'},
+        body: '{}'
     };
 
-    var viewdata = {rows: [
-        {
+    var viewdata = {
+        rows: [{
             key: ["%2B13125551212", "2", "777399c98ff78ac7da33b639ed60f422"],
             value: {
                 _id: "777399c98ff78ac7da33b639ed60f422",
-                _rev: "484399c98ff78ac7da33b639ed60f923",
+                _rev: "1-484399c98ff78ac7da33b639ed60f923",
                 facility_id: "a",
                 year: "b"
             }
-        }
-    ]};
+        }],
+    };
 
     var resp = fakerequest.list(lists.data_record_merge, viewdata, req);
     var resp_body = JSON.parse(resp.body);
 
     test.same(
         resp_body.callback.data._rev,
-        "484399c98ff78ac7da33b639ed60f923");
+        "1-484399c98ff78ac7da33b639ed60f923");
 
     test.same(
         resp_body.callback.options.path,
-        appdb + "/777399c98ff78ac7da33b639ed60f422");
+        baseURL + "/_db/777399c98ff78ac7da33b639ed60f422");
 
     test.same(
         resp_body.callback.options.method,
         "PUT");
-
-    test.same(
-        resp_body.callback.data.tasks,
-        [
-            {
-                "state":"pending",
-                "messages":[
-                    {
-                        "to":"+14155551212",
-                        "message":"Health Facility Identifier: a, Report Year: null, Report Month: null, Misoprostol?: null, LA 6x1: Dispensed total: null, LA 6x2: Dispensed total: null"
-                    }
-                ]
-            }
-        ]
-    );
-
-    test.same(resp_body.callback.data.errors[0],
-        {
-            code: "missing_fields",
-            fields: ["year","month"],
-            message: "Missing or invalid fields: year, month."
-        }
-    );
 
     var body = JSON.parse(req.body);
     body.errors = [];
