@@ -193,13 +193,14 @@ exports.update_related_and_tasks = function (test) {
     test.done();
 }
 
-//
-// this doc is missing the district level of facility so we should add an error
-//
+/*
+ * this doc is missing the district level of facility so we should still have a
+ * message recipient not found error.
+ */
 exports.update_related_and_recipient_missing = function (test) {
-    test.expect(2);
+    test.expect(1);
     var req = {
-        headers: {"Host": window.location.host},
+        headers: {"Host": host},
         body: JSON.stringify({
             related_entities: {
                 clinic: {
@@ -234,8 +235,7 @@ exports.update_related_and_recipient_missing = function (test) {
         "code":"sys.recipient_not_found",
         "message":"Could not find message recipient."
     };
-    test.same(ret[0].errors[0], doc.errors[0]);
-    test.same(ret[0].errors[1], newError);
+    test.same(ret[0].errors[0], newError);
     test.done();
 }
 
@@ -258,7 +258,7 @@ exports.extra_fields = function(test) {
 
     test.same(resp_body.payload.success, true);
     test.same(resp_body.payload.messages[0].message, "Extra fields.");
-    test.same(doc.errors.length, 1);
+    test.same(doc.errors.length, 2);
     test.same(
         doc.errors[0],
         {code: "extra_fields", message:"Extra fields."}

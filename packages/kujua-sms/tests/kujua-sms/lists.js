@@ -215,8 +215,10 @@ exports.tasks_pending_payload = function(test) {
 
 exports.data_records_merge = function(test) {
 
+    test.expect(5);
+
     var req = {
-        headers: {"Host": window.location.host},
+        headers: {"Host": host},
         query: {form: 'ZZZZ'},
         body: '{}'
     };
@@ -244,9 +246,7 @@ exports.data_records_merge = function(test) {
         resp_body.callback.options.path,
         baseURL + "/_db/777399c98ff78ac7da33b639ed60f422");
 
-    test.same(
-        resp_body.callback.options.method,
-        "PUT");
+    test.same(resp_body.callback.options.method, "PUT");
 
     var body = JSON.parse(req.body);
     body.errors = [];

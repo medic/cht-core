@@ -59,7 +59,7 @@ forms are reported.  Here is an example `config.js` document:
       "value": {
           "forms": [
             {"code":"VPD", "reporting_freq":"week"},
-            {"code":"TEST", "reporting_freq":"month"}
+            {"code":"ZZZZ", "reporting_freq":"month"}
           ]
       }
     }
