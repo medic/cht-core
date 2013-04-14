@@ -293,9 +293,6 @@ var json_headers = {
 exports.data_record = function (head, req) {
     start({code: 200, headers: json_headers});
 
-    log('data_record');
-    log(JSON.stringify(arguments,null,2));
-
     var _id = JSON.parse(req.body).uuid,
         record = {related_entities: {}},
         form = req.query && req.query.form,

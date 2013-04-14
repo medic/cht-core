@@ -1,8 +1,14 @@
 var lists = require('kujua-sms/lists'),
     fakerequest = require('couch-fakerequest'),
-    baseURL = require('duality/core').getBaseURL(),
-    host = window.location.host.split(':')[0],
-    port = window.location.host.split(':')[1] || '';
+    baseURL = require('duality/core').getBaseURL();
+
+var host = function() {
+    return window.location.host.split(':')[0];
+};
+
+var port = function() {
+    return window.location.host.split(':')[1] || '';
+};
 
 var uuid = "13f58b9c648b9a997248cba27aa00fdf";
 
@@ -38,12 +44,13 @@ exports.data_record_facility_not_found = function (test) {
         headers: {"Host": window.location.host},
         body: JSON.stringify({uuid: uuid})
     };
+
     var resp = fakerequest.list(lists.data_record, viewdata, req);
     var expRespBody = {
         callback:{
             "options":{
-                "host": host,
-                "port": port,
+                "host": host(),
+                "port": port(),
                 "path": baseURL + "/data_record/update/" + uuid,
                 "method":"PUT",
                 "headers":{
@@ -83,8 +90,8 @@ exports.data_record_facility_found = function (test) {
     var expectedBody = {
         callback:{
             "options":{
-                "host": host,
-                "port": port,
+                "host": host(),
+                "port": port(),
                 "path": baseURL  + "/data_record/update/" + uuid,
                 "method":"PUT",
                 "headers":{
@@ -131,8 +138,8 @@ exports.tasks_pending_callback = function(test) {
     var expResp = {};
     expResp.callback = {
         options:{
-            "host": host,
-            "port":"5984",
+            "host": host(),
+            "port": port(),
             "path": baseURL + "/_db/_bulk_docs",
             "method":"POST",
             "headers":{
@@ -218,7 +225,7 @@ exports.data_records_merge = function(test) {
     test.expect(5);
 
     var req = {
-        headers: {"Host": host},
+        headers: {"Host": window.location.host},
         query: {form: 'ZZZZ'},
         body: '{}'
     };
