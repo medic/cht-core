@@ -13,10 +13,39 @@ var getClinicID = function(doc) {
     doc.related_entities.clinic._id;
 };
 
+/*
+ *
+ * Apply phone number filters defined in configuration file.
+ *
+ * Example:
+ *
+ * "outgoing_phone_filters": [
+ *      {
+ *          "match": "\\+997",
+ *          "replace": ""
+ *      }
+ * ]
+ */
+var applyPhoneFilters = function(phone)  {
+    if (!phone) return phone;
+    var filters = config.get('outgoing_phone_filters') || [];
+    _.each(filters, function(filter) {
+        // only supporting match and replace options for now
+        if (!filter || typeof filter.match === undefined) return;
+        if (typeof filter.replace === undefined) return;
+        var regex = RegExp(filter.match),
+            replace = filter.replace;
+        if (phone.match(regex))
+            phone = phone.replace(regex, replace);
+    });
+    return phone;
+}
+
 var addMessage = function(doc, options) {
     var options = options || {},
-        phone = options.phone,
+        phone = applyPhoneFilters(options.phone),
         message = options.message;
+
     doc.tasks = doc.tasks || [];
 
     var task = {
@@ -189,7 +218,7 @@ module.exports = {
       var options = options || {},
           due = options.due,
           message = options.message,
-          phone = options.phone;
+          phone = applyPhoneFilters(options.phone);
       doc.scheduled_tasks = doc.scheduled_tasks || [];
       if (due instanceof Date)
           due = due.getTime();
