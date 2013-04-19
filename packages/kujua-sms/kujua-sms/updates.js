@@ -13,16 +13,19 @@ var _ = require('underscore')._,
 /**
  * @param {String} form - jsonforms key string
  * @param {Object} form_data - parsed form data
- * @returns {String} - Reporting Unit ID value
+ * @returns {String} - Reporting Unit ID value (case insensitive)
  * @api private
  */
 var getRefID = function(form, form_data) {
-    var def = jsonforms[form];
+    var def = jsonforms[form],
+        val;
 
     if (!def || !def.facility_reference)
         return;
 
-    return form_data[def.facility_reference];
+    val = form_data && form_data[def.facility_reference];
+
+    return val && val.toUpperCase();
 };
 
 /**
@@ -60,7 +63,7 @@ var getDataRecord = exports.getDataRecord = function(doc, form_data) {
 
     if (def) {
         if (def.facility_reference)
-            record.refid = form_data[def.facility_reference];
+            record.refid = getRefID(form, form_data);
 
         for (var k in def.fields) {
             var field = def.fields[k];

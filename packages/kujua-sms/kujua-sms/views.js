@@ -437,7 +437,8 @@ exports.clinic_by_refid = {
     map: function (doc) {
         if (doc.type === 'clinic' && doc.contact && doc.contact.rc_code) {
             // need String because rewriter wraps everything in quotes
-            emit([String(doc.contact.rc_code)], doc);
+            // keep refid case-insenstive since data is usually coming from SMS
+            emit([String(doc.contact.rc_code).toUpperCase()], doc);
         }
     }
 };
