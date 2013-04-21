@@ -30,10 +30,6 @@
     "duality-contrib-loading": {
         "timeout": 300
     },
-    "coffee-script": {
-      "attachments": ["static/js"],
-      "modules": []
-    },
     "less": {
         "compress": true,
         "compile": ["static/css/app.less", "static/css/spreadsheet.less"],
@@ -52,7 +48,6 @@
         "duality-dust": null,
         "nodeunit": null,
         "nodeunit-testrunner": null,
-        "coffee-script-precompiler": null,
         "less-precompiler": null,
         "bootstrap-fontawesome": null,
         "kanso-config": null,
