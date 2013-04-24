@@ -1,0 +1,12 @@
+{
+    "name": "duality-dust",
+    "version": "0.0.2",
+    "categories": ["duality", "templating"],
+    "description": "Provides an interface to the dust templating library which is synchronous and adds baseURL and other values to the context automatically.",
+    "modules": "duality",
+    "dependencies": {
+        "modules": null,
+        "duality": null,
+        "dust": null
+    }
+}

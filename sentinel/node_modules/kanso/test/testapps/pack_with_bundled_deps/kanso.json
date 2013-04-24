@@ -1,0 +1,13 @@
+{
+    "name": "pack_with_bundled_deps",
+    "version": "0.0.1",
+    "description": "test package",
+    "modules": ["example.js"],
+    "dependencies": {
+        "modules": null,
+        "bundledpkg": null
+    },
+    "bundledDependencies": [
+        "packages/bundledpkg"
+    ]
+}

@@ -1,0 +1,8 @@
+{
+    "name": "postpkg",
+    "description": "package with a postprocessor",
+    "version": "0.0.1",
+    "postprocessors": {
+        "add_name": "build/add_property"
+    }
+}

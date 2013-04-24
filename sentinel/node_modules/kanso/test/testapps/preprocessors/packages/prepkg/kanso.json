@@ -1,0 +1,8 @@
+{
+    "name": "prepkg",
+    "description": "package with a preprocessor",
+    "version": "0.0.1",
+    "preprocessors": {
+        "add_name": "build/add_name"
+    }
+}

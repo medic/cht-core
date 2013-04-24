@@ -1,0 +1,5 @@
+{
+    "name": "bundledpkg",
+    "version": "0.0.1",
+    "description": "test bundled dependency package"
+}

@@ -1,0 +1,4 @@
+exports.commands = {
+    'foo': {},
+    'bar': {}
+};

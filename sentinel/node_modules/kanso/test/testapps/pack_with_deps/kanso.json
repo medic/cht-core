@@ -1,0 +1,9 @@
+{
+    "name": "pack_with_deps",
+    "version": "0.0.1",
+    "description": "test package",
+    "attachments": ["index.html"],
+    "dependencies": {
+        "attachments": null
+    }
+}

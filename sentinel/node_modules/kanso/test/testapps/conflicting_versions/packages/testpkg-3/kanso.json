@@ -1,0 +1,5 @@
+{
+    "name": "testpkg-3",
+    "version": "0.0.1",
+    "description": "tests dependencies that have conflicting versions of packages"
+}

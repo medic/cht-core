@@ -1,0 +1,9 @@
+{
+    "name": "conflicting-versions",
+    "version": "0.0.1",
+    "description": "tests dependencies that have conflicting versions of packages",
+    "dependencies": {
+        "testpkg-1": null,
+        "testpkg-2": null
+    }
+}

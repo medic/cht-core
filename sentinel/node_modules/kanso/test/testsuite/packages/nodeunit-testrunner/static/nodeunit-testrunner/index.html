@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"> 
+  <head> 
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> 
+    <title>Test Suite</title> 
+    <link rel="stylesheet" href="static/nodeunit-testrunner/css/nodeunit.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="static/nodeunit-testrunner/css/testrunner.css" type="text/css" media="screen" />
+  </head> 
+  <body> 
+    <h1 id="nodeunit-header">Test Suite</h1>
+
+    <div id="main">
+    </div>
+
+    <script src="static/nodeunit-testrunner/js/jquery-1.5.2.min.js"></script>
+    <script src="static/nodeunit-testrunner/js/json2.js"></script>
+    <script>
+        // get baseURL value
+        var baseURL = '';
+        var re = new RegExp('(.*\\/_rewrite).*$');
+        var match = re.exec(window.location.pathname);
+        if (match) {
+            baseURL = match[1];
+        }
+
+        $.getScript(baseURL + '/modules.js', function (data, textStatus) {
+            require('nodeunit-testrunner/ui').init(baseURL);
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+{
+    "name": "url",
+    "version": "0.2.6",
+    "categories": ["node.js", "utils"],
+    "description": "Functions for manipulating and parsing URL strings. Based on the Node.js url module.",
+    "modules": "url.js",
+    "dependencies": {
+        "modules": null,
+        "underscore": null,
+        "path": null,
+        "querystring": null
+    }
+}

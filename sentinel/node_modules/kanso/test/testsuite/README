@@ -1,0 +1,16 @@
+Kanso Test Suite App
+--------------------
+
+This app contains tests for the CommonJS modules used in Kanso.
+These modules need to run both in CouchDB and in the browser
+(depending on the module and the capabilities of the client).
+
+To run the tests, push the app to the CouchDB instance you'd like
+to test against and visit the app's rewrite URL. From here you can
+run each module individually or all tests together.
+
+Tests are in the tests directory of this app, and are written using
+nodeunit. To add a new test module simply create a new commonjs module
+in the tests directory and export the test functions you'd like to be
+run. This app will detect it's presence and add it to the list of
+available test modules automatically the next time it is pushed.

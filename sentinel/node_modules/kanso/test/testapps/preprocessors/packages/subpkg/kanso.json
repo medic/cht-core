@@ -1,0 +1,8 @@
+{
+    "name": "subpkg",
+    "description": "Sub-package including a package with a preprocessor",
+    "version": "0.0.1",
+    "dependencies": {
+        "prepkg": null
+    }
+}

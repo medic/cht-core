@@ -1,0 +1,18 @@
+{
+    "name": "nodeunit",
+    "version": "0.5.3",
+    "categories": ["testing"],
+    "maintainers": [
+        {
+            "name": "Caolan McMahon",
+            "url": "http://caolanmcmahon.com"
+        }
+    ],
+    "url": "http://github.com/caolan/nodeunit",
+    "modules": "nodeunit.js",
+    "dependencies": {
+        "modules": null,
+        "async": null
+    },
+    "description": "Easy unit testing framework designed to work in both node.js and the browser. Excellent handling of asynchronous tests, with assertions based on node's assert module."
+}

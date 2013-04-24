@@ -1,0 +1,9 @@
+{
+    "name": "intersecting-versions",
+    "version": "0.0.1",
+    "description": "tests dependencies that have intersecting versions of packages",
+    "dependencies": {
+        "testpkg-4": null,
+        "testpkg-5": null
+    }
+}

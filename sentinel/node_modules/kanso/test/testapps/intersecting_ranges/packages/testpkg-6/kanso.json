@@ -1,0 +1,5 @@
+{
+    "name": "testpkg-6",
+    "version": "0.0.2",
+    "description": "tests dependencies that have intersecting versions of packages"
+}

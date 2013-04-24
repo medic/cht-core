@@ -1,0 +1,10 @@
+{
+    "name": "path",
+    "version": "0.2.6",
+    "categories": ["node.js"],
+    "description": "Utility functions for manipulating and parsing paths, based on the Node.js path module",
+    "modules": "path.js",
+    "dependencies": {
+        "modules": null
+    }
+}

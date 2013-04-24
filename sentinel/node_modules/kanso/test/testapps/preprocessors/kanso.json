@@ -1,0 +1,8 @@
+{
+    "name": "root",
+    "description": "Preprocessor test app",
+    "version": "0.0.1",
+    "dependencies": {
+        "subpkg": null
+    }
+}
