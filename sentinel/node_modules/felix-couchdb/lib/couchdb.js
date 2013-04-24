@@ -188,7 +188,9 @@ exports.createClient = function(port, host, user, pass, maxListeners, secure) {
       i,
       n;
 
-    request.setMaxListeners(maxListeners);
+    if (!isNaN(maxListeners)) {
+        request.setMaxListeners(maxListeners);
+    }
 
     request.on('error', onError);
     request.on('close', onClose);
