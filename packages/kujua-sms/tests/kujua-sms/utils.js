@@ -606,3 +606,15 @@ exports.fieldsToHtml = function(test) {
     test.same(expected, out);
     test.done();
 };
+
+exports.messages_invalid_custom = function (test) {
+    test.expect(1);
+    var err = {code:"sys.form_invalid_custom", form:"FOO", message:"Arg."};
+
+    var resp = "The form sent '%(form)' was not properly completed. "
+        + "Please complete it and resend. If this problem persists "
+        + "contact your supervisor."
+
+    test.same(utils.getMessage(err.code.replace('sys.','')), resp);
+    test.done();
+};

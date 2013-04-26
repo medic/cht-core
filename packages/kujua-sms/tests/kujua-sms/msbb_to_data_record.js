@@ -75,12 +75,7 @@ var expected_doc = {
       "message": "Facility not found."
     }
   ],
-  "responses": [
-    {
-      "to": "+13125551212",
-      "message": "Your form submission was received, thank you."
-    }
-  ],
+  "responses": [],
   "tasks": [],
   "reported_date": 1317512700000,
   "sms_message": {
