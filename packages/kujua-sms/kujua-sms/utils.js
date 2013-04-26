@@ -480,7 +480,7 @@ var getFormKeys = exports.getFormKeys = function(form) {
 };
 
 //
-// system messsage are prefixed with 'sys.' and mainly used for kujua admins, 
+// system messsage are prefixed with 'sys.' and only used for kujua admins,
 // not for sms responses to reporting units.
 //
 var messages = {
@@ -515,9 +515,6 @@ var messages = {
     'sys.facility_not_found': {
         en: "Facility not found."
     },
-    facility_not_found: {
-        en: "Facility not found."
-    },
     'sys.empty': {
         en: "Message appears empty."
     },
@@ -537,7 +534,32 @@ var messages = {
             + ' and try again.',
         fr: 'Merci, votre formulaire a été bien reçu.',
         ne: 'डाटा प्राप्त भयो, धन्यवाद'
+    },
+    reporting_unit_not_found : {
+        en: "Reporting Unit ID is incorrect. Please correct and submit a complete report again.",
+        ne: " रिपोर्टिङ् युनिटको आइ.डि मिलेन। कृपया सहि आइ.डि राखेर पुरा रिपोर्ट फेरि पठाउनुहोला।"
     }
+};
+
+/*
+ * @param {Object} record - data record
+ * @param {String|Object} error - error object or code matching key in messages
+ *
+ * @returns boolean
+ */
+exports.hasError = function(record, error) {
+
+    if (!record || !error) return;
+
+    error = typeof error === 'string' ? {code:error, message:''} : error;
+
+    for (var i in record.errors) {
+        var e = record.errors[i];
+        if (error.code === e.code) return true;
+    }
+
+    return false;
+
 };
 
 /*
@@ -552,8 +574,6 @@ var messages = {
  */
 exports.addError = function(record, error) {
 
-    logger.debug('calling addError');
-    logger.debug(arguments);
     if (!record || !error) return;
 
     error = typeof error === 'string' ? {code:error, message:''} : error;
@@ -578,7 +598,6 @@ exports.addError = function(record, error) {
     record.errors ? record.errors.push(error) : record.errors = [error];
 
     logger.error(error);
-    logger.error(record);
 };
 
 /*

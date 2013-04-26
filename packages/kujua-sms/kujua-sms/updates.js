@@ -25,7 +25,10 @@ var getRefID = function(form, form_data) {
 
     val = form_data && form_data[def.facility_reference];
 
-    return val && val.toUpperCase();
+    if (val && typeof val.toUpperCase === 'function')
+        return val.toUpperCase();
+
+    return val;
 };
 
 /**
@@ -170,7 +173,7 @@ var parseSentTimestamp = function(str) {
  */
 var getSMSResponse = function(doc) {
 
-    var locale = doc.sms_message.locale,
+    var locale = doc.sms_message && doc.sms_message.locale,
         msg = utils.getMessage('sms_received', locale),
         def = doc.form && jsonforms[doc.form],
         res = {
@@ -194,19 +197,30 @@ var getSMSResponse = function(doc) {
     doc.errors.forEach(function(err) {
         if (err.code && err.code.substr(0,4) === 'sys.') {
             // sys.foo errors have foo equivalent
-            msg = utils.getMessage(err.code.replace('sys.',''), locale)
+            var m = utils.getMessage(err.code.replace('sys.',''), locale)
                     .replace('%(form)', doc.form)
                     .replace('%(fields)', err.fields && err.fields.join(', '));
+            if (m) msg = m; // only assign if exists
         } else {
             // default
             msg = utils.getMessage(err, locale);
         }
     });
 
+    // if we have no facility and it is required then include error response
+    if (def && def.facility_required) {
+        if (utils.hasError(doc, 'sys.facility_not_found'))
+            msg = utils.getMessage('reporting_unit_not_found', locale);
+    }
+
+
     if (msg.length > 160)
         msg = msg.substr(0,160-3) + '...';
 
-    res.messages[0].message = msg;
+    if (msg)
+        res.messages[0].message = msg;
+    else
+        res = {success: true};
 
     return res;
 
@@ -259,19 +273,13 @@ exports.add_sms = function(doc, request) {
         def = jsonforms[sms_message.form],
         baseURL = require('duality/core').getBaseURL(),
         headers = req.headers.Host.split(":"),
-        resp = {};
+        resp = {payload: {success: true}};
 
     if (sms_message.form && def)
         form_data = smsparser.parse(def, sms_message);
 
     // creates base record
     doc = getDataRecord(sms_message, form_data);
-
-    // smssync-compat sms response
-    resp.payload = getSMSResponse(doc);
-
-    // save response to record
-    doc.responses = resp.payload.messages;
 
     // by default related entities are null so also include errors on the
     // record.
@@ -286,6 +294,7 @@ exports.add_sms = function(doc, request) {
         delete doc.responses;
         return [doc, JSON.stringify(resp)];
     }
+
 
     // provide callback for next part of record creation.
     resp.callback = {
@@ -305,12 +314,13 @@ exports.add_sms = function(doc, request) {
         resp.callback.options.headers.Authorization = req.headers.Authorization;
     }
 
+    // create doc and send response
     return [doc, JSON.stringify(resp)];
 };
 
 
 /*
- * Update data record related entities and create message tasks.
+ * Update data record properties and create message tasks.
  */
 exports.updateRelated = function(doc, request) {
 
@@ -318,6 +328,8 @@ exports.updateRelated = function(doc, request) {
     var data = JSON.parse(req.body),
         def = jsonforms[doc.form],
         resp = {};
+
+    doc.related_entities = doc.related_entities || {clinic: null};
 
     for (var k in data) {
         if (doc[k] && doc[k].length) {
@@ -337,7 +349,7 @@ exports.updateRelated = function(doc, request) {
                 // check task fields are defined
                 if(!msg.to) {
                     utils.addError(doc, 'sys.recipient_not_found');
-                    // we don't need redundant error messages
+                    // resolve one error at a time.
                     break;
                 }
             }
@@ -345,6 +357,7 @@ exports.updateRelated = function(doc, request) {
     }
 
     var new_errors = [];
+
     // remove errors if we have a clinic
     if (doc.related_entities.clinic && doc.related_entities.clinic !== null) {
         for (var i in doc.errors) {
@@ -354,6 +367,12 @@ exports.updateRelated = function(doc, request) {
         };
         doc.errors = new_errors;
     }
+
+    // smssync-compat sms response
+    resp.payload = getSMSResponse(doc);
+
+    // save response to record
+    doc.responses = resp.payload.messages;
 
     return [doc, JSON.stringify(resp)];
 };
