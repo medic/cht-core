@@ -2,8 +2,8 @@
 // Example, mainly used for tests. Typically forms are defined in the JSON
 // format and converted during the build process to be referenced from these
 // exports.
-exports['TEST'] = {
-    meta: {code: "TEST", label: 'Test Monthly Report'},
+exports['YYYY'] = {
+    meta: {code: "YYYY", label: 'Test Monthly Report'},
     fields: {
         facility_id: {
             labels: {
@@ -151,9 +151,50 @@ exports['TEST'] = {
     messages_task: "function() {var msg = [], ignore = [], dh_ph = clinic && clinic.parent && clinic.parent.parent && clinic.parent.parent.contact && clinic.parent.parent.contact.phone; keys.forEach(function(key) { if (ignore.indexOf(key) === -1) { msg.push(labels.shift() + ': ' + values.shift()); } else { labels.shift(); values.shift(); } }); return {to:dh_ph, message:msg.join(', ')}; }",
     examples: {
          messages: {
-             muvuku: '1!TEST!facility#2012#4#1#222#333#444#555#666#777#888#999#111#222#333#444',
-             textforms: 'TEST HFI facility#RPY 2012#RPM 4#MSP 1#L1T 222# L2T 333#CDT 444#ZDT 555#ODT 666#EOT 777#L10 888#L20 999#CDO 111#ZDO 222#ODO 333#EDO 444'
+             muvuku: '1!YYYY!facility#2012#4#1#222#333#444#555#666#777#888#999#111#222#333#444',
+             textforms: 'YYYY HFI facility#RPY 2012#RPM 4#MSP 1#L1T 222# L2T 333#CDT 444#ZDT 555#ODT 666#EOT 777#L10 888#L20 999#CDO 111#ZDO 222#ODO 333#EDO 444'
          }
      }
 };
 
+exports['YYYZ'] = {
+    meta: {code: "YYYZ", label: 'Test Form - Required fields'},
+    fields: {
+        one: {
+            labels: {
+                short: 'One'
+            },
+            type: 'string',
+            required: true
+        },
+        two: {
+            labels: {
+                short: 'Two'
+            },
+            type: 'string',
+            required: true
+        }
+    }
+};
+
+exports['YYYX'] = {
+    meta: {code: "YYYX", label: 'Test Form - Required Facility'},
+    fields: {
+        id: {
+            labels: {
+                short: 'ID'
+            },
+            type: 'string',
+            required: true
+        },
+        foo: {
+            labels: {
+                short: 'Foo'
+            },
+            type: 'string',
+            required: true
+        }
+    },
+    facility_reference: "id",
+    facility_required: true
+};

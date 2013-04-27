@@ -13,12 +13,12 @@ var updates = require('kujua-sms/updates'),
 var example = {
     sms_message: {
        from: "+13125551212",
-       message: '1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
+       message: '1!YYYY!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
        sent_timestamp: "1-19-12 18:45",
        sent_to: "+15551212",
        type: "sms_message",
        locale: "en",
-       form: "TEST"
+       form: "YYYY"
     },
     clinic: {
         "_id": "4a6399c98ff78ac7da33b639ed60f458",
@@ -65,7 +65,7 @@ var example = {
 var expected_callback = {
     data: {
         type: "data_record",
-        form: "TEST",
+        form: "YYYY",
         related_entities: {
             clinic: null
         },
@@ -95,7 +95,7 @@ exports.test_to_record_with_auth = function (test) {
     // Data parsed from a gateway POST
     var data = {
         from: '+13125551212',
-        message: '1!TEST!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
+        message: '1!YYYY!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
         sent_timestamp: '1-19-12 18:45',
         sent_to: '+15551212'
     };
@@ -104,7 +104,7 @@ exports.test_to_record_with_auth = function (test) {
     // rewriter.
     var req = {
         uuid: '14dc3a5aa6',
-        query: {form: 'TEST'},
+        query: {form: 'YYYY'},
         method: "POST",
         headers: _.extend(helpers.headers("url", querystring.stringify(data)), {
             "Authorization": "Basic cm9vdDpwYXNzd29yZA=="
@@ -129,7 +129,7 @@ exports.test_to_record_with_auth = function (test) {
                     'json', JSON.stringify(resp_body.callback.data)), {
                         "Authorization": "Basic cm9vdDpwYXNzd29yZA=="
                     }),
-        query: {form: 'TEST'} // query.form gets set by rewriter
+        query: {form: 'YYYY'} // query.form gets set by rewriter
     };
 
     step2(test, next_req);
@@ -170,7 +170,7 @@ var step2 = function(test, req) {
                     'json', JSON.stringify(resp_body.callback.data)), {
                         "Authorization": "Basic cm9vdDpwYXNzd29yZA=="
                     }),
-        query: {form: 'TEST'} // query.form gets set by rewriter
+        query: {form: 'YYYY'} // query.form gets set by rewriter
     };
 
     step3_1(test, next_req);
@@ -260,7 +260,7 @@ var step4 = function(test) {
                     'json', ''), {
                         "Authorization": "Basic cm9vdDpwYXNzd29yZA=="
                     }),
-        query: {form: 'TEST'}
+        query: {form: 'YYYY'}
     };
 
     var resp = fakerequest.list(lists.tasks_pending, viewdata, next_req);

@@ -7,7 +7,7 @@ exports.missing_fields_errors = function(test) {
     test.expect(1);
     var form, form_definition, form_data, errors;
 
-    form = "TEST";
+    form = "YYYY";
     form_definition = {
         fields: {
             "abc": {_key: "abc", labels: "abcabc", required: true},

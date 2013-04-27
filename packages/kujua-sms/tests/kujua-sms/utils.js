@@ -6,7 +6,7 @@ var example_doc = {
     "_rev": "2-03adf0258d78fbbd831d35193c53ce0f",
     "type": "data_record",
     "from": "+13125551212",
-    "form": "TEST",
+    "form": "YYYY",
     "related_entities": {
         "clinic": {
             "_id": "4a6399c98ff78ac7da33b639ed60f458",
@@ -59,12 +59,12 @@ var example_doc = {
     },
     "sms_message": {
         "from": "+13125551212",
-        "message": "1!TEST!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4",
+        "message": "1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4",
         "sent_timestamp": "1-19-12 18:45",
         "sent_to": "+15551212",
         "type": "sms_message",
         "locale": "en",
-        "form": "TEST"
+        "form": "YYYY"
     },
     "reported_date": 1331643982002
 };
@@ -121,7 +121,7 @@ exports.getLabels = function(test) {
 
     // english locale
     test.same(
-        utils.getLabels(keys, 'TEST', 'en'),
+        utils.getLabels(keys, 'YYYY', 'en'),
         [
             'Reported Date',
             'From',
@@ -137,7 +137,7 @@ exports.getLabels = function(test) {
 
     // french locale
     test.same(
-        utils.getLabels(keys, 'TEST', 'fr'),
+        utils.getLabels(keys, 'YYYY', 'fr'),
         [
             "Date envoyé",
             "Envoyé par",
@@ -407,7 +407,7 @@ exports.getValues = function(test) {
 exports.getFormKeys = function(test) {
     test.expect(1);
     test.same(
-        utils.getFormKeys('TEST'),
+        utils.getFormKeys('YYYY'),
         [
             'facility_id',
             'year',
@@ -441,8 +441,8 @@ exports.getFormKeys = function(test) {
 
 exports.fieldsToHtml = function(test) {
     test.expect(1);
-    var keys = utils.getFormKeys('TEST'),
-        labels = utils.getLabels(keys, 'TEST'),
+    var keys = utils.getFormKeys('YYYY'),
+        labels = utils.getLabels(keys, 'YYYY'),
         data_records = require('lib/data_records');
 
 

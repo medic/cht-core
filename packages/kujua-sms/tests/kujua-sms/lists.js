@@ -226,7 +226,7 @@ exports.data_records_merge = function(test) {
 
     var req = {
         headers: {"Host": window.location.host},
-        query: {form: 'ZZZZ'},
+        query: {form: 'YYYY'},
         body: '{}'
     };
 

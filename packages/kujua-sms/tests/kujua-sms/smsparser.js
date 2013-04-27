@@ -4,7 +4,7 @@ var smsparser = require('views/lib/smsparser'),
 exports.validations_is_numeric_month_stays_numeric = function(test) {
     test.expect(1);
 
-    var doc = { message: "1!TEST!foo#2011#11#" },
+    var doc = { message: "1!YYYY!foo#2011#11#" },
         form = smsparser.getForm(doc.message),
         def = jsonforms[form],
         data = smsparser.parse(def, doc);
@@ -30,9 +30,9 @@ exports.wrong_field_type = function(test) {
     test.expect(1);
 
     var doc = {
-            "message":"1!TEST!facility#2011#11#yyyyy#zzzz#2#3#4#5#6#9#8#7#6#5#4",
+            "message":"1!YYYY!facility#2011#11#yyyyy#zzzz#2#3#4#5#6#9#8#7#6#5#4",
             "type":"sms_message",
-            "form":"TEST"},
+            "form":"YYYY"},
         def = jsonforms[doc.form],
         data = smsparser.parse(def, doc);
 
@@ -66,9 +66,9 @@ exports.missing_fields = function(test) {
     test.expect(1);
     
     var doc = {
-            "message":"1!TEST!facility#2011#11#1#1#2#3",
+            "message":"1!YYYY!facility#2011#11#1#1#2#3",
             "type":"sms_message",
-            "form":"TEST"},
+            "form":"YYYY"},
         def = jsonforms[doc.form],
         data = smsparser.parse(def, doc);
 
@@ -102,9 +102,9 @@ exports.extra_fields = function(test) {
     test.expect(1);
 
     var doc = {
-            "message":"1!TEST!facility#2011#11#0#1#2#3#1#1#1#1#1#1#1#1#1#1#####77#",
+            "message":"1!YYYY!facility#2011#11#0#1#2#3#1#1#1#1#1#1#1#1#1#1#####77#",
             "type":"sms_message",
-            "form":"TEST"},
+            "form":"YYYY"},
         def = jsonforms[doc.form],
         data = smsparser.parse(def, doc);
 
@@ -138,8 +138,8 @@ exports.extra_fields = function(test) {
 exports.textforms_random_ordering = function(test) {
     test.expect(1);
 
-    var doc = { message: 'TEST CDT 33 #HFI foobar# ZDT 999 #RPY 2012' },
-        def = jsonforms['TEST'],
+    var doc = { message: 'YYYY CDT 33 #HFI foobar# ZDT 999 #RPY 2012' },
+        def = jsonforms['YYYY'],
         data = smsparser.parse(def, doc);
 
     test.same(data, {
@@ -160,8 +160,8 @@ exports.textforms_random_ordering = function(test) {
 exports.textforms_without_hash_delim = function(test) {
     test.expect(1);
 
-    var doc = { message: 'TEST CDT 33 HFI foobar ZDT 999 RPY 2012' },
-        def = jsonforms['TEST'],
+    var doc = { message: 'YYYY CDT 33 HFI foobar ZDT 999 RPY 2012' },
+        def = jsonforms['YYYY'],
         data = smsparser.parse(def, doc);
 
     test.same(data, {
@@ -303,7 +303,7 @@ exports.smsformats_structured_but_no_form = function(test) {
 exports.smsformats_textforms_only_one_field = function(test) {
     test.expect(1);
 
-    var doc = { message: 'TEST CDT33' },
+    var doc = { message: 'YYYY CDT33' },
         form = smsparser.getForm(doc.message),
         def = jsonforms[form],
         data = smsparser.parse(def, doc),
@@ -320,11 +320,11 @@ exports.smsformats_textforms_only_one_field = function(test) {
 
 exports.valid_message = function (test) {
 
-    var def = jsonforms['TEST'];
+    var def = jsonforms['YYYY'];
     var doc = {
         sent_timestamp: '12-11-11 15:00',
         from: '+15551212',
-        message: '1!TEST!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4'
+        message: '1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4'
     };
 
     var form = smsparser.getForm(doc.message);
