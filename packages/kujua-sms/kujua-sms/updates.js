@@ -207,12 +207,18 @@ var getSMSResponse = function(doc) {
         }
     });
 
-    // if we have no facility and it is required then include error response
+    /*
+     * If we have no facility and it is required then include error response
+     * otherwise if facility is not required and that is only error, then form
+     * is valid.
+     */
     if (def && def.facility_required) {
         if (utils.hasError(doc, 'sys.facility_not_found'))
             msg = utils.getMessage('reporting_unit_not_found', locale);
+    } else if (def && doc.errors.length === 1) {
+        if (utils.hasError(doc, 'sys.facility_not_found'))
+            msg = utils.getMessage('form_received', locale);
     }
-
 
     if (msg.length > 160)
         msg = msg.substr(0,160-3) + '...';
