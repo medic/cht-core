@@ -1,6 +1,24 @@
 var smsparser = require('views/lib/smsparser'),
     jsonforms = require('views/lib/jsonforms');
 
+exports.get_form = function(test) {
+    test.expect(3);
+
+    var msg = 'YYYY CDT33',
+        form = smsparser.getForm(msg);
+    test.same('YYYY',form);
+
+    msg = 'YYYY-CDT33',
+    form = smsparser.getForm(msg);
+    test.same('YYYY',form);
+
+    msg = 'ZZZ!CDT33',
+    form = smsparser.getForm(msg);
+    test.same('ZZZ',form);
+
+    test.done();
+};
+
 exports.validations_is_numeric_month_stays_numeric = function(test) {
     test.expect(1);
 
@@ -154,10 +172,10 @@ exports.textforms_random_ordering = function(test) {
     test.done();
 };
 
-// hashes are required to parse textform messages so this parses the first
-// field and the rest of the message as the value. CDT is a number so parsing
-// that fails and returns null as the value.
 exports.textforms_without_hash_delim = function(test) {
+    // hashes are required to parse textform messages so this parses the first
+    // field and the rest of the message as the value. CDT is a number so parsing
+    // that fails and returns null as the value.
     test.expect(1);
 
     var doc = { message: 'YYYY CDT 33 HFI foobar ZDT 999 RPY 2012' },

@@ -207,7 +207,7 @@ exports.getForm = function(msg) {
         return msg.split('!')[1].toUpperCase();
     }
     // textforms
-    var match = msg.match(new RegExp('^\\s*([\\w]+)\\s+.+'));
+    var match = msg.match(new RegExp('^\\s*([\\w]+)\\W+.+'));
     if (match !== null && match.length === 2) {
         return match[1].toUpperCase();
     }
