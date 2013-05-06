@@ -1,7 +1,8 @@
 
-// Example, mainly used for tests. Typically forms are defined in the JSON
-// format and converted during the build process to be referenced from these
-// exports.
+//
+// Forms for tests, YYY* form code space is reserved for test forms.
+//
+
 exports['YYYY'] = {
     meta: {code: "YYYY", label: 'Test Monthly Report'},
     fields: {
@@ -162,17 +163,26 @@ exports['YYYZ'] = {
     fields: {
         one: {
             labels: {
-                short: 'One'
+                short: 'One',
+                tiny: 'one'
             },
             type: 'string',
             required: true
         },
         two: {
             labels: {
-                short: 'Two'
+                short: 'Two',
+                tiny: 'two'
             },
             type: 'string',
             required: true
+        },
+        birthdate: {
+             labels: {
+                 short: 'Birth Date',
+                 tiny: 'BIR'
+             },
+             type: 'date'
         }
     }
 };

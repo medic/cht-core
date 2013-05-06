@@ -16,7 +16,8 @@ var TextForms = function () {
         decimal: new RegExp('\\.'),
         boundary: new RegExp('\\s*#\\s*'),
         // values with leading 0 are not numeric
-        numeric: new RegExp('[1-9]+(?:\\.(?:\\d+)?)?')
+        numeric: new RegExp('[^0][0-9]+(?:\\.(?:\\d+)?)?'),
+        date: new RegExp('[\\d]{4}[-/][\\d]{1,2}[-/][\\d]{1,2}')
     };
 
     this._re.numeric_only = new RegExp(
@@ -24,8 +25,10 @@ var TextForms = function () {
     );
 
     this._re.field = new RegExp(
-        '\\s*([A-Za-z_\\.\\*\\-.]+)(' +
-            this.embed_re(this._re.numeric) + ')?(?:\\s+(.+))?'
+        '\\s*([A-Za-z_\\.\\*\\-.]+)'
+        + '\\s*(' + this.embed_re(this._re.date) + ')?'
+        + '\\s*(' + this.embed_re(this._re.numeric) + ')?'
+        + '\\s*(.+)?'
     );
 };
 
@@ -82,6 +85,8 @@ TextForms.prototype = {
                 return parseInt(_value, 10);
             case 'numeric':
                 return parseFloat(_value);
+            case 'date':
+                return new Date(_value).valueOf();
             default:
                 break;
         }
@@ -150,7 +155,10 @@ TextForms.prototype = {
             /* Capture subgroups:
                 These refer to the `this._re.field` regular expression. */
 
-            var key = m[1], numeric = m[2], other = m[3];
+            var key = m[1],
+                date = m[2],
+                numeric = m[3],
+                other = m[4];
 
             /* Whitespace-only value of `other`?:
                 Interpret as non-match, preventing pair formation (below). */
@@ -208,6 +216,8 @@ TextForms.prototype = {
                     this.set_result(key, this.format_as('numeric', numeric));
                 }
 
+            } else if (date !== undefined) {
+                this.set_result(key, this.format_as('date', date));
             } else {
 
                 /* Store string as-is */
@@ -240,29 +250,17 @@ TextForms.prototype = {
 };
 
 /**
- * Remove the form code from the beginning of the message
- * since it does not belong to the TextForms format
- * but is just a convention to identify the message.
- *
- * @param {Object|String} doc - sms_message document or sms message string
+ * @param {Object|String} msg - sms_message document or sms message string
  * @returns {Object|{}} - A parsed object of the sms message or an empty
  * object if parsing fails.
  *
  * @api public
  */
-exports.parse = function(doc) {
-    var t = new TextForms(),
-        msg = doc.message ? doc.message : doc;
-
-    if (!msg)
-        return {};
-
-    var match = msg.match(new RegExp('^\\s*\\w+\\s+(.*)'));
-
-    if (match === null)
-        return {};
-
-    return t.parse(match[1]).result();
+exports.parse = function(msg) {
+    if (!msg) return {};
+    msg = msg.message ? msg.message : msg;
+    var t = new TextForms();
+    return t.parse(msg).result();
 };
 
 /**

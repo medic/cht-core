@@ -1,5 +1,4 @@
 var utils = require('kujua-utils'),
-    moment = require('moment'),
     mp_parser = require('./mp_parser'),
     textforms_parser = require('./textforms_parser');
 
@@ -88,7 +87,7 @@ exports.parseField = function (field, raw) {
             if (!raw) { return null; }
             // YYYY-MM-DD assume muvuku format for now
             // store in milliseconds since Epoch
-            return moment(raw, 'YYYY-MM-DD').valueOf();
+            return new Date(raw).valueOf();
         case 'boolean':
             if (raw === undefined) { return; }
             var val = parseNum(raw);
@@ -133,8 +132,20 @@ exports.parse = function (def, doc) {
         }
 
     } else {
-        // parse textforms format
-        msg_data = textforms_parser.parse(doc);
+
+        /*
+         * Parse textforms format
+         *
+         * Remove the form code from the beginning of the message since it does
+         * not belong to the TextForms format but is just a convention to
+         * identify the message.
+         */
+        var msg = doc.message ? doc.message : doc,
+            code = def && def.meta && def.meta.code;
+
+        msg = msg.replace(new RegExp('^\\s*'+code+'\\W*','i'),'')
+
+        msg_data = textforms_parser.parse(msg);
 
         // replace tiny labels with field keys for textforms
         for (var k in msg_data) {

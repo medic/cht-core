@@ -58,13 +58,13 @@ exports.wrong_field_type = function(test) {
             "eye_ointment": 4
         }
     });
-    
+
     test.done();
 };
 
 exports.missing_fields = function(test) {
     test.expect(1);
-    
+
     var doc = {
             "message":"1!YYYY!facility#2011#11#1#1#2#3",
             "type":"sms_message",
@@ -173,6 +173,81 @@ exports.textforms_without_hash_delim = function(test) {
     test.done();
 };
 
+exports.textforms_numeric = function(test) {
+    test.expect(1);
+
+    var doc = { message: 'YYYY CDT 33# ZDT 999 #RPY2012' },
+        def = jsonforms['YYYY'],
+        data = smsparser.parse(def, doc);
+
+    test.same(data, {
+        quantity_dispensed: {
+            cotrimoxazole: 33,
+            zinc: 999
+        },
+        year: 2012
+    });
+    test.done();
+};
+
+exports.textforms_numeric_no_spaces = function(test) {
+    test.expect(1);
+
+    var doc = { message: 'YYYY CDT33#ZDT999#RPY2012' },
+        def = jsonforms['YYYY'],
+        data = smsparser.parse(def, doc);
+
+    test.same(data, {
+        quantity_dispensed: {
+            cotrimoxazole: 33,
+            zinc: 999
+        },
+        year: 2012
+    });
+    test.done();
+};
+
+exports.textforms_w_numeric_string = function(test) {
+    test.expect(3);
+
+    var doc = { message: 'YYYY CDT33#HFI001#ZDT999#RPY2012' },
+        def = jsonforms['YYYY'],
+        data = smsparser.parse(def, doc);
+
+    test.same(data, {
+        facility_id: '001',
+        quantity_dispensed: {
+            cotrimoxazole: 33,
+            zinc: 999
+        },
+        year: 2012
+    });
+
+    doc = { message: 'YYYY CDT33#HFI01ach#ZDT999#RPY2012' },
+    data = smsparser.parse(def, doc);
+
+    test.same(data, {
+        facility_id: '01ach',
+        quantity_dispensed: {
+            cotrimoxazole: 33,
+            zinc: 999
+        },
+        year: 2012
+    });
+
+    doc = { message: 'YYYY CDT33#ZDT999#RPY2012' },
+    data = smsparser.parse(def, doc);
+
+    test.same(data, {
+        quantity_dispensed: {
+            cotrimoxazole: 33,
+            zinc: 999
+        },
+        year: 2012
+    });
+    test.done();
+};
+
 exports.parse_date_field = function(test) {
     test.expect(2);
 
@@ -193,14 +268,38 @@ exports.parse_date_field = function(test) {
     };
 
     var data = smsparser.parse(def, doc);
-    test.same(data, {testdate: 1331528400000});
+    test.same(data, {testdate: 1331510400000});
+
 
     doc = {
         message: "0000 TDATE 2012-03-12"
     };
 
     data = smsparser.parse(def, doc);
-    test.same(data, {testdate: 1331528400000});
+    test.same(data, {testdate: 1331510400000});
+
+
+    test.done();
+};
+
+exports.parse_date_field_yyyz = function(test) {
+    test.expect(2);
+
+    var doc = {
+        message: "1!YYYZ!##2012-03-12"
+    };
+
+    var def = jsonforms['YYYZ'];
+
+    var data = smsparser.parse(def, doc);
+    test.same(data, {one:null, two:null, birthdate: 1331510400000});
+
+    doc = {
+        message: "YYYZ BIR2012-03-12"
+    };
+
+    data = smsparser.parse(def, doc);
+    test.same(data, {birthdate: 1331510400000});
 
     test.done();
 };
