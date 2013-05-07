@@ -32,10 +32,8 @@ npm install gardener -g
 Deploy the couchapp:
 
 ```
-git clone https://github.com/medic/kujua
+git clone --recursive https://github.com/medic/kujua
 cd kujua
-git submodule init
-git submodule update
 kanso push http://admin:pass@localhost:5984
 ```
 
@@ -51,7 +49,7 @@ Optionally customize your app:
 
 ```
 cp config-example.js config.js
-vi config.js #modify config
+vi config.js 
 ```
 
 Install your config:
