@@ -25,10 +25,10 @@ var TextForms = function () {
     );
 
     this._re.field = new RegExp(
-        '\\s*([A-Za-z_\\.\\*\\-.]+)'
-        + '\\s*(' + this.embed_re(this._re.date) + ')?'
-        + '\\s*(' + this.embed_re(this._re.numeric) + ')?'
-        + '\\s*(.+)?'
+        '\\s*([A-Za-z_\\.\\*.]+)'
+        + '[\\s-!]*(' + this.embed_re(this._re.date) + ')?'
+        + '[\\s-!]*(' + this.embed_re(this._re.numeric) + ')?'
+        + '[\\s-!]*(.+)?'
     );
 };
 

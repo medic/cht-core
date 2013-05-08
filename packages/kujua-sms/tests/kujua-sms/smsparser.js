@@ -3,15 +3,18 @@ var smsparser = require('views/lib/smsparser'),
 
 exports.get_form = function(test) {
     test.expect(3);
+    var msg, form;
 
-    var msg = 'YYYY CDT33',
-        form = smsparser.getForm(msg);
+    msg = 'YYYY CDT33';
+    form = smsparser.getForm(msg);
     test.same('YYYY',form);
 
+    // arbitrary delimiter
     msg = 'YYYY-CDT33',
     form = smsparser.getForm(msg);
     test.same('YYYY',form);
 
+    // arbitrary delimiter
     msg = 'ZZZ!CDT33',
     form = smsparser.getForm(msg);
     test.same('ZZZ',form);
@@ -148,6 +151,42 @@ exports.extra_fields = function(test) {
             "eye_ointment": 1
         },
         "_extra_fields": true
+    });
+
+    test.done();
+};
+
+exports.textforms_bang_delimited_keyval = function(test) {
+    test.expect(1);
+
+    var doc = { message: 'YYYY#HFI!foobar#ZDT!999#RPY!!2012' },
+        def = jsonforms['YYYY'],
+        data = smsparser.parse(def, doc);
+
+    test.same(data, {
+        "facility_id": "foobar",
+        "year": 2012,
+        "quantity_dispensed": {
+            "zinc": 999
+        }
+    });
+
+    test.done();
+};
+
+exports.textforms_dash_delimited_keyval = function(test) {
+    test.expect(1);
+
+    var doc = { message: 'YYYY#HFI-foobar#ZDT-999#RPY--2012' },
+        def = jsonforms['YYYY'],
+        data = smsparser.parse(def, doc);
+
+    test.same(data, {
+        "facility_id": "foobar",
+        "year": 2012,
+        "quantity_dispensed": {
+            "zinc": 999
+        }
     });
 
     test.done();
