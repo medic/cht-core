@@ -333,11 +333,7 @@ var renderReporting = function (doc, req) {
     return {
         title: doc.name,
         content: templates.render(template, req, {
-            doc: doc,
-            'District': 'Field Office',//$.kansoconfig('District'),
-            'Districts': 'Field Offices', //$.kansoconfig('Districts'),
-            'Health_Center': 'District', //$.kansoconfig('Health Center'),
-            'Health_Center_Contact': 'District Contact' //$.kansoconfig('Health Center Contact')
+            doc: doc
         })
     };
 };
@@ -399,6 +395,16 @@ var renderPage = function() {
 
 }
 
+var renderLabels = function() {
+    // e.g.
+    // $('[data-label="Health Center"]').text($.kansoconfig('Health Center'));
+    $('[data-label]').each(function (i, el) {
+        var $el = $(el),
+            val = $el.attr('data-label');
+        $el.text($.kansoconfig(val));
+    });
+};
+
 var renderReports = function(err, facilities) {
 
     var doc = facility_doc
@@ -425,10 +431,11 @@ var renderReports = function(err, facilities) {
         $('#reporting-data').html(
             templates.render(data_template, req, {
                 rows: rows,
-                doc: doc,
-                'districts': $.kansoconfig('districts')
+                doc: doc
             })
         );
+
+        renderLabels();
 
         $('#reporting-data .valid-percent').each(function(i, el) {
             var val = parseInt($(el).text().replace(/%/,''), 10);
