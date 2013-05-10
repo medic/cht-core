@@ -48,36 +48,38 @@ config = {
     synthetic_date: null
 };
 
-db.info(function(err, info) {
-    var stream;
+function setupListener() {
+    db.info(function(err, info) {
+        var stream;
 
-    if (err) {
-        console.error("Could not attach changes stream: " + JSON.stringify(err));
-        process.exit(1);
-    } else {
-        stream = db.changesStream({
-            filter: 'kujua-sentinel/config_doc',
-            include_docs: true,
-            since: info.update_seq
-        });
-        stream.on('data', function(change) {
-            if (change.doc) {
-                console.log("New configuration, restarting process...");
-                process.exit();
-            } else {
-                console.warn("Unable to update configuration due to: " + JSON.stringify(change));
-            }
-        });
-        stream.on('error', function(err) {
-            console.log('Changes stream error',err);
+        if (err) {
+            console.error("Could not attach changes stream: " + JSON.stringify(err));
             process.exit(1);
-        });
-        stream.on('end', function(err) {
-            console.log('Changes stream ended',err);
-            process.exit(1);
-        });
-    }
-});
+        } else {
+            stream = db.changesStream({
+                filter: 'kujua-sentinel/config_docs',
+                since: info.update_seq
+            });
+            stream.on('data', function(change) {
+                if (change.id) {
+                    console.log("Configuration change: ", change.id);
+                    console.log("restarting process...");
+                    process.exit();
+                } else {
+                    console.warn("Unable to update configuration due to: " + JSON.stringify(change));
+                }
+            });
+            stream.on('error', function(err) {
+                console.log('Changes stream error',err);
+                process.exit(1);
+            });
+            stream.on('end', function(err) {
+                console.log('Changes stream ended',err);
+                process.exit(1);
+            });
+        }
+    });
+};
 
 function fetchConfig(callback) {
     db.getDoc(key, function(err, doc) {
@@ -101,5 +103,6 @@ module.exports = {
     get: function(key) {
         return config[key];
     },
-    load: fetchConfig
+    load: fetchConfig,
+    listen: setupListener
 };

@@ -10,6 +10,7 @@ function completeSetup(err, design) {
         config.load(function() {
             require('./transitions').attach(design);
             require('./schedule');
+            config.listen();
             console.log('Kujua Sentinel startup complete.');
         });
     }

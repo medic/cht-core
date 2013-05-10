@@ -47,6 +47,10 @@ exports.twilio_message = function(doc) {
     });
 };
 
-exports.config_doc = function(doc) {
-    return doc._id === 'sentinel-configuration';
+exports.config_docs = function(doc) {
+    if (doc._id === 'sentinel-configuration')
+        return true;
+    if (doc._id === 'sentinel-translations')
+        return true;
+    return false;
 };
