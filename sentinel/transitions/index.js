@@ -31,6 +31,7 @@ queue = async.queue(function(job, callback) {
         change = job.change;
 
     console.log('loading queue '+key);
+
     transition.onMatch(change, function(err, complete) {
         if (err || complete) {
             finalize({
@@ -48,41 +49,47 @@ module.exports = {
     attachTransition: function(transition, key) {
         var stream;
 
-        db.view('kujua-sentinel', 'last_valid_seq', {
-            key: key
-        }, function(err, data) {
-            var row = _.first(data.rows),
-                since = row && row.value && row.value.seq || 0;
+        db.info(function(err, data) {
+
+            if (err)
+                return console.error('attachTransition failed', err);
+
+            var since = data.update_seq;
 
             // get a stream of changes from the database
             stream = db.changesStream({
                 since: since,
                 filter: 'kujua-sentinel/' + key
             });
+
             stream.on('data', function(change) {
                 // ignore documents that have been deleted; there's nothing to update
                 if (change.deleted) return;
 
                 // get the latest document
                 db.getDoc(change.id, function(err, doc) {
+
                     var transitions = doc.transitions || {};
 
-                    if (!err && doc) {
-                        if (transition.repeatable || !transitions[key] || !transitions[key].ok) {
+                    if (err)
+                        return console.error('sentinel getDoc failed', err);
+                    if (!doc)
+                        return console.error('sentinel getDoc failed');
 
-                            // modify reported_date if we are running in
-                            // synthetic date mode
-                            if (doc.reported_date && date.isSynthetic())
-                                doc.reported_date = date.getTimestamp();
+                    if (transition.repeatable || !transitions[key] || !transitions[key].ok) {
 
-                            change.doc = doc;
+                        // modify reported_date if we are running in
+                        // synthetic date mode
+                        if (doc.reported_date && date.isSynthetic())
+                            doc.reported_date = date.getTimestamp();
 
-                            queue.push({
-                                change: change,
-                                key: key,
-                                transition: transition
-                            });
-                        }
+                        change.doc = doc;
+
+                        queue.push({
+                            change: change,
+                            key: key,
+                            transition: transition
+                        });
                     }
                 });
             });
@@ -96,6 +103,7 @@ module.exports = {
             });
             console.log('Listening for changes for the ' + key + ' transition from sequence number ' + since);
         });
+
     },
     // Attach a transition to a stream of changes from the database.
     attach: function(design) {
@@ -123,13 +131,11 @@ function finalize(options, callback) {
     doc.transitions = doc.transitions || {};
     if (err) {
         doc.transitions[key] = {
-            ok: false,
-            seq: change.seq - 1
+            ok: false
         };
     } else {
         doc.transitions[key] = {
-            ok: true,
-            seq: change.seq
+            ok: true
         };
     }
 
