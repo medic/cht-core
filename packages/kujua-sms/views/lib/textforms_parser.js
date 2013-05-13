@@ -108,7 +108,10 @@ TextForms.prototype = {
         if (this._result[key] === undefined) {
 
             /* Single pair result */
-            this._result[key] = _value;
+            if (_value && _value.values instanceof Array)
+                this._result[key] = _value.values.join('');
+            else
+                this._result[key] = _value;
 
         } else if (this._result[key] instanceof Array) {
 

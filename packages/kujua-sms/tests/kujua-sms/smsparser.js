@@ -386,6 +386,37 @@ exports.parse_boolean_field = function(test) {
     test.done();
 };
 
+exports.parse_string_field_mixed = function(test) {
+    test.expect(2);
+
+    // textforms
+    var doc = {
+        message: "0000 foo 16A"
+    };
+    var def = {
+        fields: {
+            foo: {
+                type: 'string',
+                labels: {
+                    short: 'foo',
+                    tiny: 'foo'
+                }
+            }
+        }
+    };
+    var data = smsparser.parse(def, doc);
+    test.same(data, {foo: "16A"});
+
+    // muvuku
+    doc = {
+        message: "1!0000!16A"
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {foo: "16A"});
+
+    test.done();
+};
+
 exports.parse_string_field_leading_zero = function(test) {
     test.expect(2);
 
