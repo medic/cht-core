@@ -48,6 +48,15 @@ config = {
     synthetic_date: null
 };
 
+function reload() {
+    // Hack until figure out a better way to reload config data in all the
+    // calling contexts.  Added 2 sec wait so gardener doesn't think the
+    // process is broken and exits.
+    setTimeout(function() {
+        process.exit(0);
+    }, 2000);
+};
+
 function setupListener() {
     db.info(function(err, info) {
         var stream;
@@ -64,7 +73,7 @@ function setupListener() {
                 if (change.id) {
                     console.log("Configuration change: ", change.id);
                     console.log("restarting process...");
-                    process.exit();
+                    reload();
                 } else {
                     console.warn("Unable to update configuration due to: " + JSON.stringify(change));
                 }
@@ -97,7 +106,7 @@ function fetchConfig(callback) {
             callback()
         }
     });
-}
+};
 
 module.exports = {
     get: function(key) {
