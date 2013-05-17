@@ -3,7 +3,9 @@
 Reporting rates Kanso package for use with Kujua. Supports weekly and monthly
 timed reports.
 
-## Form Requirements
+## Usage Requirements
+
+### Form Definiton
 
 The form definition must include a `year` field and one of the following:
 `week_number`, `week` or `month`.  The month or week field type must be
@@ -53,7 +55,7 @@ Example `fields` object for a supported form:
 }
 ```
 
-### Config Entry
+### Config.js Entry
 
 Kujua Reporting requires an associated `config.js` entry.  You need to specify
 what forms you want to provide reporting rates for and what frequency those
