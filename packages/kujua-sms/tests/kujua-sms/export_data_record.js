@@ -158,3 +158,73 @@ exports.lists_data_record_csv_fr = function(test) {
 
     test.done()
 };
+
+exports.lists_data_record_csv_skip_header_row = function(test) {
+
+    test.expect(1);
+
+    // the first char is the BOM
+    var expected = '\uFEFF'
+        +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
+        +',"+12229990000","Paul","Clinic 1","Eric","Health Center 1"'
+        +',"2012","1","16","","","","","","","","",""\n'
+        +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
+        +',"+13331110000","Sam","Clinic 2","","","2012","1","16","","","",""'
+        +',"","","","",""\n';
+
+    // mockup the view data
+    var viewdata = {rows: [
+        {
+            "key": ["MSBC", 1331503842461],
+            "value": 1,
+            "doc": {
+                _id: 'abc123z',
+                related_entities: {
+                    clinic: {
+                        name:"Clinic 1",
+                        contact: { name:"Paul", phone: ""},
+                        parent: {
+                            name: "Health Center 1",
+                            contact: { name: "Eric" },
+                            parent: { name: "District 1" }}}},
+                reported_date: 1331503842461,
+                from: '+12229990000',
+                cref_year: '2012',
+                cref_month: "1",
+                cref_day: 16
+            }
+        },
+        {
+            "key": ["MSBC", 1331503850000],
+            "value": 1,
+            "doc": {
+                _id: 'ssdk23z',
+                related_entities: {
+                    clinic: {
+                        name:"Clinic 2",
+                        contact: {name:"Sam", phone: ""},
+                        parent: {
+                            name: "",
+                            contact: { name:""},
+                            parent: { name: "District 2" }}}},
+                reported_date: 1331503850000,
+                from: '+13331110000',
+                cref_year: '2012',
+                cref_month: "1",
+                cref_day: 16}
+        }
+    ]};
+
+    var req = {
+        //locale is passed in to request
+        query: {form: 'MSBC', skip_header_row: '1'},
+        method: "GET"
+    };
+
+    debugger;
+    var resp = fakerequest.list(lists.data_records_csv, viewdata, req);
+
+    test.same(expected, resp.body);
+
+    test.done()
+};

@@ -52,7 +52,9 @@ exports.data_records_csv = function (head, req) {
     });
 
     send('\uFEFF');
-    send(utils.arrayToCSV([labels], delimiter) + '\n');
+
+    if (!query.skip_header_row)
+        send(utils.arrayToCSV([labels], delimiter) + '\n');
 
     while (row = getRow()) {
         if(row.doc) {
