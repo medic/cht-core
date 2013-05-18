@@ -221,7 +221,6 @@ exports.lists_data_record_csv_skip_header_row = function(test) {
         method: "GET"
     };
 
-    debugger;
     var resp = fakerequest.list(lists.data_records_csv, viewdata, req);
 
     test.same(expected, resp.body);
