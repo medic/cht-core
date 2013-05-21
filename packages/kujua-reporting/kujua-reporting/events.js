@@ -40,11 +40,16 @@ duality_events.on('init', function (ev) {
 
             var district = user.kujua_facility,
                 forms = [],
+                districts = [],
                 q = {
                     startkey: ['district_hospital'],
                     endkey: ['district_hospital', {}],
                     group: true
                 };
+
+            setup.forms.forEach(function(form) {
+                forms.push({code: form.code});
+            });
 
             db.getView(ddoc, 'facilities_by_type', q, function(err, data) {
 
@@ -53,23 +58,23 @@ duality_events.on('init', function (ev) {
                         'Failed to retreive facility data: '+err.reason);
                 }
 
-                // associate each form from config.js with a list of facilities
-                setup.forms.forEach(function(form) {
-                    var f = {code: form.code, districts: []};
-                    data.rows.forEach(function(row) {
-                        if (isAdmin)
-                            f.districts.push({id:row.key[1], name:row.key[2]});
-                        else if (isDistrictAdmin && row.key[1] === district)
-                            f.districts.push({id:row.key[1], name:row.key[2]});
-                    });
-                    forms.push(f);
+                data.rows.forEach(function(row) {
+                    if (isAdmin)
+                        districts.push({id:row.key[1], name:row.key[2]});
+                    else if (isDistrictAdmin && row.key[1] === district)
+                        districts.push({id:row.key[1], name:row.key[2]});
                 });
 
                 $('#topnav .nav .records').after(
-                    templates.render('kujua-reporting/top_nav.html', {}, {forms:forms})
+                    templates.render('kujua-reporting/top_nav.html', {}, {
+                        forms:forms,
+                        districts: districts,
+                        labels: kutils.getConfigLabels()
+                    })
                 );
 
             });
+
         });
     });
 

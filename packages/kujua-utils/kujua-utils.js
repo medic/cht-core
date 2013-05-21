@@ -240,3 +240,17 @@ exports.updateTopNav = function(key, title) {
     $('.page-header .container').attr('class','container');
     $('body > .container div').filter(':first').attr('class','content');
 };
+
+
+exports.getConfigLabels = function() {
+    if (!$ || !$.kansoconfig) return {};
+    return {
+      'Clinic': $.kansoconfig('Clinic'),
+      'Clinic_Contact': $.kansoconfig('Clinic Contact'),
+      'Health_Center': $.kansoconfig('Health Center'),
+      'RC_Code': $.kansoconfig('RC Code'),
+      'Facility': $.kansoconfig('Facility'),
+      'District': $.kansoconfig('District')
+    }
+}
+

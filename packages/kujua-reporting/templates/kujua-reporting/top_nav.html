@@ -5,9 +5,13 @@
        <i class="icon-bar-chart"></i> Reporting Rates<b class="caret"></b>
     </a>
     <ul class="dropdown-menu">
+      {?districts}
+      {:else}
+        <li><a href="{baseURL}/facilities/districts">Add {labels.District} facility data</a></li>
+      {/districts}
       {#forms}
         {#districts}
-        <li><a href="{baseURL}/reporting/{code}/{id}">{code} :: {name}</a></li>
+          <li><a href="{baseURL}/reporting/{code}/{id}">{code} :: {name}</a></li>
         {/districts}
       {/forms}
     </ul>
