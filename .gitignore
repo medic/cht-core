@@ -4,3 +4,6 @@ sentinel/settings.js
 sentinel/settings-test.js
 sentinel/Procfile
 npm-debug.log
+
+logs
+config.js
