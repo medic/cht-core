@@ -1,6 +1,6 @@
 {
     "name": "duality",
-    "version": "0.0.18",
+    "version": "0.0.19",
     "categories": ["frameworks", "duality"],
     "description": "The central part of the Duality framework. Implements the CouchDB design doc API in the browser and handles the dispatching of URLs",
     "modules": "duality",
