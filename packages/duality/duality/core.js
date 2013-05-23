@@ -196,7 +196,7 @@ exports.init = function () {
     if (window.history && history.pushState) {
         exports.history_support = true;
 
-        $('form').live('submit', function (ev) {
+        $(document).on('submit', 'form', function (ev) {
             var action = $(this).attr('action');
             var method = $(this).attr('method').toUpperCase();
 
@@ -231,7 +231,7 @@ exports.init = function () {
             return false;
         });
 
-        $('a').live('click', function (ev) {
+        $(document).on('click', 'a', function (ev) {
             var href = $(this).attr('href');
             var rel = $(this).attr('rel');
 
