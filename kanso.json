@@ -37,6 +37,9 @@
     },
     "node_module_folder" : "sentinel",
     "dependencies_included" : true,
+    "bundledDependencies": [
+        "packages/underscore"
+    ],
     "dependencies": {
         "modules": null,
         "properties": null,
