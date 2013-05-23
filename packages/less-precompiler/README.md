@@ -55,6 +55,12 @@ To enable compression of the output, add the `compress` flag and set it to `true
   }
 ```
 
+The output will additionally be compressed if you kanso push with the --minify flag, eg
+
+```
+kanso push app --minify
+```
+
 
 ### Include paths
 

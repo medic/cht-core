@@ -63,7 +63,7 @@ function compileLess(doc, project_path, f, compress, callback) {
 module.exports = function (root, _path, settings, doc, callback) {
     var filenames = Object.keys(doc._less_compile);
     async.forEachLimit(filenames, 5, function (f, cb) {
-        var compress = doc._less_compile[f].compress;
+        var compress = doc._less_compile[f].compress || settings.minify ;
         var att_path = doc._less_compile[f].att_path;
         compileLess(doc, _path, f, compress, function (err, css) {
             if (err) {
