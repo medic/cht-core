@@ -312,6 +312,9 @@ body {
     .tasks-state-cleared,
     .tasks-state-pending {
       .label;
+      &:empty {
+        display: inherit;
+      }
     }
     .tasks-state-pending,
     .tasks-state-scheduled,
