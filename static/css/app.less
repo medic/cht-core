@@ -1,5 +1,5 @@
 @import "elements.less";
-@import "bootstrap/less/bootstrap.less";
+@import "bootstrap/bootstrap.less";
 @import "packages/kujua-branding/css/base.less";
 @import "packages/kujua-reporting/css/base.less";
 
@@ -53,6 +53,9 @@ body {
   background-color: @white;
   padding: 10px;
   margin: 0;
+    h1 {
+        font-size: 24px;
+    }
   .controls {
     input {
       margin-bottom: 0;
@@ -308,13 +311,13 @@ body {
     .tasks-state-pending,
     .tasks-state-scheduled,
     .tasks-state-muted {
-      .label-info;
+        .label-info;
     }
     .tasks-state-sent {
-      .label-success;
+        .label-success;
     }
     .tasks-state-cancelled {
-      .label-warning;
+        .label-warning;
     }
     .tasks-state-muted {
       .opacity(50);
