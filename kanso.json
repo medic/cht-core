@@ -63,8 +63,7 @@
         "couch-fakerequest": null,
         "users": null,
         "cookies": null,
-        "moment": null,
-        "kanso-gardener": null
+        "moment": null
     },
     "settings_schema" : {
         "description": "Kujua Settings",
