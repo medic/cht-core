@@ -1,0 +1,19 @@
+{
+    "name": "underscore-string",
+    "version": "2.0.0",
+    "categories": ["utils"],
+    "maintainers": [
+        {
+            "name": "Esa-Matti Suuronen",
+            "url": "http://esa-matti.suuronen.org/"
+        }
+    ],
+    "url": "http://epeli.github.com/underscore.string/",
+    "modules": "underscore-string.js",
+    "modules_attachment": false,
+    "dependencies": {
+        "modules": ">=0.0.8",
+        "underscore": ">=1.2.1"
+    },
+    "description": "Underscore.string is JavaScript library for comfortable manipulation with strings, extension for Underscore.js inspired by Prototype.js, Right.js, Underscore and beautiful Ruby language. Underscore.string provides you several useful functions: capitalize, clean, includes, count, escapeHTML, unescapeHTML, insert, splice, startsWith, endsWith, titleize, trim, truncate and so on."
+}
