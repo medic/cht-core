@@ -2,7 +2,8 @@
  * List functions to be exported from the design doc.
  */
 
-var _ = require('underscore')._,
+var _ = require('underscore'),
+    _s = require('underscore-string'),
     utils = require('./utils'),
     strings = utils.strings,
     moment = require('moment'),
@@ -24,18 +25,31 @@ var formatDate = function(msecs) {
     return moment(msecs).format('DD, MMM YYYY, HH:mm:ss Z');
 };
 
+function getFilename(form, name, type) {
+    var filename;
+
+    filename = _s.sprintf('%s_data_records.%s', form, type);
+
+    if (name !== 'null') {
+        name = name.replace(' ', '');
+        filename = name + '_' + filename;
+    }
+    return filename;
+}
+
 exports.data_records_csv = function (head, req) {
     var labels,
         query = req.query,
         form  = query.form,
         kansoconfig = query.kansoconfig ? JSON.parse(query.kansoconfig) : {},
         dh_name = query.dh_name ? query.dh_name : 'null',
-        filename = dh_name.replace(' ','') + '_' + form + '_data_records.csv',
+        filename = getFilename(form, dh_name, 'csv'),
         locale = query.locale || 'en', //TODO get from session
         delimiter = locale === 'fr' ? '";"' : null,
         rows,
         values,
         keys = [];
+
 
     start({code: 200, headers: {
         'Content-Type': 'text/csv; charset=utf-8',
@@ -73,7 +87,7 @@ exports.data_records_xml = function (head, req) {
         form  = query.form,
         dh_name = query.dh_name ? query.dh_name : 'null',
         kansoconfig = query.kansoconfig ? JSON.parse(query.kansoconfig) : {},
-        filename = dh_name.replace(' ','') + '_' + form + '_data_records.xml',
+        filename = getFilename(form, dh_name, 'xml'),
         locale = query.locale || 'en', //TODO get from session
         rows,
         values,
