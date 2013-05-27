@@ -284,12 +284,20 @@ body {
     width: 1em;
     margin: 0 auto 20px auto;
   }
-  .data-record .main {
-    &:hover {
-      cursor: pointer;
+  .data-record {
+    pre {
+        padding: 2px 4px;
+        margin-bottom: 0;
+        white-space: inherit;
+        display: inline-block;
     }
-    > td {
-      vertical-align: middle;
+    .main {
+        &:hover {
+          cursor: pointer;
+        }
+        > td {
+          vertical-align: middle;
+        }
     }
   }
   .warning {
