@@ -155,8 +155,9 @@ exports.makeDataRecordOriginal = function(doc) {
       return doc;
 };
 
-var formatDate = function(timestamp) {
-    return moment(timestamp).format('DD, MMM YYYY, HH:mm:ss ZZ');
+function formatDate(timestamp, format) {
+    format = format || 'DD, MMM YYYY, HH:mm:ss ZZ';
+    return moment(timestamp).format(format);
 };
 
 /*
@@ -220,8 +221,9 @@ exports.makeDataRecordReadable = function(doc) {
         includeNonFormFields(data_record, keys);
     }
 
-    if(data_record.reported_date) {
-        data_record._reported_date = formatDate(data_record.reported_date);
+    if (data_record.reported_date) {
+        data_record._reported_date = formatDate(data_record.reported_date, 'MMM DD HH:mm');
+        data_record._reported_date_full = formatDate(data_record.reported_date);
     }
 
     if(data_record.tasks) {
