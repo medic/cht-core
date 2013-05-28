@@ -187,6 +187,31 @@ loadDeps(settings.dependencies);
 exports._rewrites = _.flatten(exports._rewrites);
 
 
+exports.handleUrl = function(ev, href, rel) {
+    exports._in_page = /#[A-Za-z_\-:\.]+/.test(href);
+    if (exports._in_page) { // in-page anchor
+        return;
+    }
+    console.log('no in-page anchor');
+    if (href && exports.isAppURL(href) && rel !== 'external') {
+        var url = exports.appPath(href);
+        ev.preventDefault();
+        var match = exports.matchURL('GET', url);
+        if (/^_show\//.test(match.to) ||
+            /^_list\//.test(match.to) ||
+            /^_update\//.test(match.to)) {
+            exports.setURL('GET', url, {});
+        }
+        else {
+            // unknown rewrite target, don't create history entry
+            // but open in a new window since the new page probably
+            // doesn't have pushstate support and will break the back
+            // button
+            window.open(exports.getBaseURL() + url);
+        }
+        return false;
+    }
+};
 /**
  * Called by duality.js once the design doc has been loaded.
  */
@@ -232,32 +257,9 @@ exports.init = function () {
         });
 
         $('a').live('click', function (ev) {
-            var href = $(this).attr('href');
-            var rel = $(this).attr('rel');
+            var $this = $(this);
 
-            exports._in_page = /#[A-Za-z_\-:\.]+/.test(href);
-            if (exports._in_page) { // in-page anchor
-                return;
-            }
-            console.log('no in-page anchor');
-            if (href && exports.isAppURL(href) && rel !== 'external') {
-                var url = exports.appPath(href);
-                ev.preventDefault();
-                var match = exports.matchURL('GET', url);
-                if (/^_show\//.test(match.to) ||
-                    /^_list\//.test(match.to) ||
-                    /^_update\//.test(match.to)) {
-                    exports.setURL('GET', url, {});
-                }
-                else {
-                    // unknown rewrite target, don't create history entry
-                    // but open in a new window since the new page probably
-                    // doesn't have pushstate support and will break the back
-                    // button
-                    window.open(exports.getBaseURL() + url);
-                }
-                return false;
-            }
+            exports.handleUrl(ev, $this.attr('href'), $this.attr('rel'));
         });
 
         window.onpopstate = function (ev) {
