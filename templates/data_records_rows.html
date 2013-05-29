@@ -79,7 +79,7 @@
                   <i class="{state} icon-ok icon-large"></i>
                 {/errors}
                 {?tasks}
-                <span class="label label-success">{tasks.length}</span>
+                <span class="label label-{tasks_class}" title="{tasks_title}">{tasks.length}</span>
                 {/tasks}
                 {?scheduled_tasks}
                 <span class="label label-info">{scheduled_tasks_count}</span>
