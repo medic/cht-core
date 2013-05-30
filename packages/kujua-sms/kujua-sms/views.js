@@ -100,7 +100,12 @@ exports.data_records_by_district_and_clinic = {
                 cl = doc.related_entities.clinic;
                 cl.contact = doc.related_entities.clinic.contact || {};
                 if (dh.type !== 'district_hospital') return;
-                emit([dh._id, cl._id, cl.name, cl.contact.name], null);
+                emit([
+                    dh._id,
+                    cl._id,
+                    cl.name,
+                    cl.contact.name || cl.contact.rc_code || cl.contact.phone
+                ], null);
             }
         }
     },

@@ -52,6 +52,7 @@
         "nodeunit": null,
         "nodeunit-testrunner": null,
         "less-precompiler": null,
+        "select2": null,
         "kanso-config": null,
         "kujua-branding": ">=0.0.2",
         "kujua-sms": null,
