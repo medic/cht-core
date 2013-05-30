@@ -15,7 +15,10 @@ if (process.env.COUCH_URL) {
 		settings.password = unamepass[1];
 	}
 } else {
-    console.log('Please include a COUCH_URL in your environment variables.');
+    console.log(
+        "Please define a COUCH_URL in your environment e.g. \n"
+        + " export COUCH_URL='http://root:123qwe@localhost:5984/kujua-base'"
+    );
     process.exit(1);
 }
 
