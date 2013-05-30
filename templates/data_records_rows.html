@@ -1,5 +1,41 @@
       {#data_records}
       <div class="data-record" rel="{_id}" data-key="{_key}">
+        {?kujua_message}
+        <table class="table table-bordered table-striped">
+        <tbody>
+            <tr class="main">
+              <td class="select-row">
+              </td>
+              <td class="reported-date">
+                  <div class="relative" title="{_reported_date_full}">
+                      {_reported_date}
+                  </div>
+              </td>
+              <td colspan="5">Outgoing message</td>
+              <td class="errors">
+                {?tasks}
+                <span class="label label-{tasks_class}" title="{tasks_title}">{tasks.length}</span>
+                {/tasks}
+              </td>
+            </tr>
+        </tbody>
+        </table>
+        <table class="table table-bordered table-striped hide extended">
+          <tbody>
+            <tr>
+              <td colspan="8">
+                <div class="relative">
+                  {?tasks}
+                  <div class="data-record-tasks">
+                    {>"data_record_tasks.html"/}
+                  </div>
+                  {/tasks}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+          </table>
+        {:else}
         <table class="table table-bordered table-striped">
         <tbody>
             <tr class="main">
@@ -131,5 +167,6 @@
             </tr>
           </tbody>
           </table>
+        {/kujua_message}
         </div>
         {/data_records}
