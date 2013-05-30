@@ -1,30 +1,23 @@
-<table class="table">
-  <thead>
-    <tr>
-      <th>Errors</th>
-    </tr>    
-  </thead>
-  <tbody>
-    {#errors}
-    <tr>
-        <td>
-          <ul>
-            {?error}
-            <!-- legacy errors format //-->
-            <li>{error}</li>
-            {/error}
-            {?message}
-            <li>{message}</li>
-            {:else}
-              {?code}
-              <li>{code}: 
-                {#fields} {.} {/fields}
-                </li>
-              {/code}
-            {/message}
-         </ul>
-        </td>
-    </tr>    
-    {/errors}
-  </tbody>
-</table>
+<div class="row-fluid">
+  <div class="span12">
+    <b>Errors</b>
+  </div>
+</div>
+{#errors}
+<div class="row-fluid">
+  <div class="span12 alert alert-danger">
+    {?error}
+      <!-- legacy errors format //-->
+      {error}
+    {/error}
+    {?message}
+      {message}
+    {:else}
+      {?code}
+        {code}: 
+        {#fields} {.} {/fields}
+      {/code}
+    {/message}
+  </div>
+</div>    
+{/errors}
