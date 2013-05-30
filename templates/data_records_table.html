@@ -1,40 +1,34 @@
 <div id="data-records">
   <div class="span12">
     <div class="wrap wrap-rows">
-      <table>
-        {?data_records}
-        <thead>
-          <tr>
-            <th class="select-row">
-              <input type="checkbox" name="select-all-rows" />
-            </th>
-            <th class="reported-date">
-              Reported Date
-            </th>
-            <th class="contact-info">
-              {From}
-            </th>
-            <th class="facility">
-              {Facility}
-            </th>
-            <th class="rc-code">
-              {RC_Code}
-            </th>
-            <th class="sms-message">
-              Message
-            </th>
-            <th class="add-message"></th>
-            <th class="icons"></th>
-          </tr>
-        </thead>
-        <tbody>
-        {:else}
-          <tr>
-            <td colspan="8">No records found.</td>
-          </tr>
-        {/data_records}
-        </tbody>
-      </table>
+      {?data_records}
+      <div class="records-head row-fluid">
+          <div class="select-row span1">
+            <input type="checkbox" name="select-all-rows" />
+          </div>
+          <div class="reported-date span2">
+            Reported Date
+          </div>
+          <div class="contact-info span2">
+            {From}
+          </div>
+          <div class="facility span2">
+            {Facility}
+          </div>
+          <div class="rc-code span1">
+            {RC_Code}
+          </div>
+          <div class="sms-message span3">
+            Message
+          </div>
+          <div class="add-message span1"></div>
+          <div class="icons span1"></div>
+      </div>
+      {:else}
+      <div class="alert alert-info">
+        No records found.
+      </div>
+      {/data_records}
       {?data_records}
         {>"data_records_rows.html"/}
       {/data_records}
