@@ -60,9 +60,9 @@ curl -X POST http://admin:pass@localhost:5984/kujua-base -d @config.js \
 ```
 
 
-### Analytics
+### Reporting Rates
 
-To enable the reporting analytics module, see 
+To enable the reporting rates module, see 
 [packages/kujua-reporting/README.md](packages/kujua-reporting/README.md).
 
 ### Sentinel
