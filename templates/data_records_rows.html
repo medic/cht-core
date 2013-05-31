@@ -1,24 +1,18 @@
 {#data_records}
-<div class="data-record" rel="{_id}" data-key="{_key}">
+<div class="data-record {^kujua_message}clickable{/kujua_message}" rel="{_id}" data-key="{_key}">
   {?kujua_message}
-  <div class="main row-fluid">
-    <div class="select-row span1"></div>
+  <div class="message row-fluid">
+    <div class="select-row span1">
+    </div>
     <div class="reported-date span1" title="{_reported_date_full}">
       {_reported_date}
     </div>
-    <div class="span9">Outgoing message</div>
-    <div class="span1 errors">
-      {?tasks}
-      <span class="label label-{tasks_class}" title="{tasks_title}">{tasks.length}</span>
-      {/tasks}
+    <div class="contact-info span2">
+      {tasks[0].messages[0].to}
     </div>
-  </div>
-  <div class="hide extended">
-      {?tasks}
-      <div class="data-record-tasks">
-        {>"data_record_tasks.html"/}
-      </div>
-      {/tasks}
+    <div class="span4">
+      {tasks[0].messages[0].message}
+    </div>
   </div>
   {:else}
   <div class="main row-fluid">
