@@ -7,7 +7,7 @@ var jsDump = require('jsDump'),
     settings = require('settings/root'),
     jsonforms = require('views/lib/jsonforms'),
     logger = require('kujua-utils').logger,
-    _ = require('underscore')._,
+    _ = require('underscore'),
     moment = require('moment');
 
 
@@ -143,6 +143,9 @@ var prettyVal = function(data_record, key, def) {
 // reverse makeDataRecordReadable munge. ;\
 exports.makeDataRecordOriginal = function(doc) {
       delete doc._reported_date;
+      delete doc._reported_date_full;
+      delete doc._tasks_class;
+      delete doc._tasks_title;
       delete doc.fields;
       delete  doc.scheduled_tasks_count;
       delete  doc.scheduled_tasks_by_group;
@@ -226,7 +229,24 @@ exports.makeDataRecordReadable = function(doc) {
         data_record._reported_date_full = formatDate(data_record.reported_date);
     }
 
-    if(data_record.tasks) {
+    if (data_record.tasks) {
+        var states = _.pluck(data_record.tasks, 'state'),
+            clazz = 'success',
+            label = 'Message(s) sent';
+
+        if (_.contains(states, 'scheduled')) {
+            clazz = 'info';
+            label = 'Message(s) scheduled';
+        }
+
+        if (_.contains(states, 'pending')) {
+            clazz = 'info';
+            label = 'Message(s) pending';
+        }
+
+        data_record._tasks_title = label;
+        data_record._tasks_class = clazz;
+
         for (var i in data_record.tasks) {
             var t = data_record.tasks[i];
             if (t.due) t._due = formatDate(t.due);
