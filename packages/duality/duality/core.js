@@ -257,8 +257,8 @@ exports.init = function () {
         });
 
         $(document).on('click', 'a', function (ev) {
-            var href = $(this).attr('href');
-            var rel = $(this).attr('rel');
+            var $this = $(this);
+
             exports.handleUrl(ev, $this.attr('href'), $this.attr('rel'));
         });
 
