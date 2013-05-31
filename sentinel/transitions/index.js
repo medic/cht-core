@@ -24,7 +24,13 @@ _.each(fs.readdirSync(__dirname), function(file) {
     }
 });
 
-// create a queue to handle the changes, calling the onMatch of the transitions one by one
+/*
+ * create a queue to handle the changes, calling the onMatch of the transitions
+ * one by one (concurrency of 1).
+ *
+ * The onMatch handler should execute callback() to ignore/skip the transition
+ * entirely, and callback(err) or callback(null, true) to save the transition.
+ */
 queue = async.queue(function(job, callback) {
     var transition = job.transition,
         key = job.key,
@@ -73,6 +79,7 @@ module.exports = {
 
                     if (err)
                         return console.error('sentinel getDoc failed', err);
+
                     if (!doc)
                         return console.error('sentinel getDoc failed');
 
@@ -129,6 +136,7 @@ function finalize(options, callback) {
         doc = change.doc;
 
     doc.transitions = doc.transitions || {};
+
     if (err) {
         doc.transitions[key] = {
             ok: false
@@ -139,21 +147,27 @@ function finalize(options, callback) {
         };
     }
 
+    db.saveDoc(doc, function(err, result) {
+        if (err) {
+            console.log(JSON.stringify(err));
+        }
+        callback(err);
+    });
+
+    /*
+     * not necessary? saveDoc should return conflict if not correct rev
+     * otherwise we shouldn't force overwrite changes?
+     *
     db.getDoc(doc._id, function(err, existing) {
         if (err) {
             console.log(JSON.stringify(err));
             callback(err);
         } else {
             if (JSON.stringify(_.omit(existing, '_rev')) !== JSON.stringify(_.omit(doc, '_rev'))) {
-                db.saveDoc(doc, function(err, result) {
-                    if (err) {
-                        console.log(JSON.stringify(err));
-                    }
-                    callback(err);
-                });
             } else {
                 callback();
             }
         }
     });
+    */
 }
