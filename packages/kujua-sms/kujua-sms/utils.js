@@ -140,22 +140,28 @@ var prettyVal = function(data_record, key, def) {
 
 };
 
+function filterObject(obj) {
+    var keys = Array.prototype.slice(arguments, 1);
+
+    _.each(_.keys(obj), function(key) {
+        if (key !== '_id' && key !== '_rev' && key.indexOf('_') === 0) {
+            keys.push(key);
+        }
+    });
+    return _.omit(obj, keys);
+}
+
 // reverse makeDataRecordReadable munge. ;\
 exports.makeDataRecordOriginal = function(doc) {
-      delete doc._reported_date;
-      delete doc._reported_date_full;
-      delete doc._tasks_class;
-      delete doc._tasks_title;
-      delete doc.fields;
-      delete  doc.scheduled_tasks_count;
-      delete  doc.scheduled_tasks_by_group;
-      if (doc.tasks) {
-          for (var i in doc.tasks) {
-              delete doc.tasks[i]._due;
-              delete doc.tasks[i]._timestamp;
-          }
-      }
-      return doc;
+    doc = filterObject(doc, 'fields', 'scheduled_tasks_count', 'scheduled_tasks_by_group');
+
+    if (doc.tasks) {
+        doc.tasks = _.map(doc.tasks, function(task) {
+            return filterObject(task);
+        });
+    }
+
+    return doc;
 };
 
 function formatDate(timestamp, format) {
