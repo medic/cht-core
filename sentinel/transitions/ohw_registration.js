@@ -52,7 +52,7 @@ module.exports = {
             time_val: 12,
             serial_number: doc.serial_number
         };
-        utils.checkDuplicates(opts, function(err) {
+        utils.checkOHWDuplicates(opts, function(err) {
             if (err) {
                 utils.addMessage(doc, {
                     phone: doc.from,

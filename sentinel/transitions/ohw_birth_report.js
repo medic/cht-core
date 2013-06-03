@@ -65,7 +65,7 @@ var checkDups = function(callback) {
         filter: onlyValid
     };
 
-    utils.checkDuplicates(opts, function(err) {
+    utils.checkOHWDuplicates(opts, function(err) {
         if (err) return callback(msg);
         callback();
     });

@@ -117,7 +117,7 @@ var checkTimePassed = function(callback) {
         time_val: 24,
         patient_id: registration.patient_id
     };
-    utils.checkDuplicates(opts, function(err) {
+    utils.checkOHWDuplicates(opts, function(err) {
         if (err) return callback(msgs.dup_danger);
         return callback();
     });
@@ -129,7 +129,7 @@ var checkLaborUnique = function(callback) {
         patient_id: registration.patient_id,
         filter: function(row) { return row.doc.anc_labor_pnc === 'In labor'; }
     };
-    utils.checkDuplicates(opts, function(err) {
+    utils.checkOHWDuplicates(opts, function(err) {
         if (err) return callback(msgs.dup_labor);
         return callback();
     });

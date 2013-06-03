@@ -88,7 +88,7 @@ var getOHWRegistration = function(patient_id, callback) {
     });
 };
 
-var getMatchingRecords = function(options, callback) {
+var getOHWMatchingRecords = function(options, callback) {
 
     var options = options || {},
         doc = options.doc,
@@ -135,7 +135,7 @@ var getMatchingRecords = function(options, callback) {
     });
 };
 
-var checkDuplicates = function(options, callback) {
+var checkOHWDuplicates = function(options, callback) {
 
     //if (!options.time_key) options.time_key = 'months';
     //if (!options.time_val) options.time_key = 12;
@@ -150,7 +150,7 @@ var checkDuplicates = function(options, callback) {
 
     msg = mustache.to_html(msg, { id_val: id_val });
 
-    getMatchingRecords(options, function(err, data) {
+    getOHWMatchingRecords(options, function(err, data) {
         if (data && data.length <= 1) return callback();
         addError(doc, { code: 'duplicate_record', message: msg });
         callback(msg);
@@ -310,6 +310,6 @@ module.exports = {
   addMessage: addMessage,
   addError: addError,
   getOHWRegistration: getOHWRegistration,
-  getMatchingRecords: getMatchingRecords,
-  checkDuplicates: checkDuplicates
+  getOHWMatchingRecords: getOHWMatchingRecords,
+  checkOHWDuplicates: checkOHWDuplicates
 }
