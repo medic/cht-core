@@ -147,27 +147,21 @@ function finalize(options, callback) {
         };
     }
 
-    db.saveDoc(doc, function(err, result) {
-        if (err) {
-            console.log(JSON.stringify(err));
-        }
-        callback(err);
-    });
-
-    /*
-     * not necessary? saveDoc should return conflict if not correct rev
-     * otherwise we shouldn't force overwrite changes?
-     *
     db.getDoc(doc._id, function(err, existing) {
         if (err) {
             console.log(JSON.stringify(err));
             callback(err);
         } else {
             if (JSON.stringify(_.omit(existing, '_rev')) !== JSON.stringify(_.omit(doc, '_rev'))) {
+                db.saveDoc(doc, function(err, result) {
+                    if (err) {
+                        console.log(JSON.stringify(err));
+                    }
+                    callback(err);
+                });
             } else {
                 callback();
             }
         }
     });
-    */
 }
