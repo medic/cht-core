@@ -72,6 +72,10 @@ defaults = [
     value: "This is a reminder to submit your report for week {{week}} of {{year}}. Thank you!"
   },
   {
+    key: 'Your form submission was received, thank you.',
+    value: 'Your form submission was received, thank you.'
+  },
+  {
     key: "You have not yet submitted your report for week {{week}} of {{year}}. Please do so as soon as possible. Thanks!",
     value: "You have not yet submitted your report for week {{week}} of {{year}}. Please do so as soon as possible. Thanks!"
   },
