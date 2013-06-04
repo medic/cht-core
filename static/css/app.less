@@ -198,7 +198,21 @@ body {
         .rounded(2px);
         border: 1px solid @grayLighter;
         box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-        padding: 8px 8px 3px;
+
+        .main, .message, .extended {
+            padding: 8px 8px 3px;
+        }
+
+        .main, .message {
+            > div {
+                display: block;
+                min-height: 30px;
+                .box-sizing(border-box);
+                float: left;
+                margin-left: 2.127659574468085%;
+                padding-top: 3px;
+            }
+        }
 
         .select-row {
             width: 2.382978723404255%;
@@ -207,35 +221,43 @@ body {
                 margin-top: 0;
             }
         }
+        .direction-icon {
+            width: 2.382978723404255%;
+        }
         .reported-date {
             width: 10.382978723404255%;
         }
         .contact-info {
-            width: 17.893617021276595%;
-        }
-        .facility {
-            width: 14.893617021276595%;
-            display: block;
-            display: block;
+            white-space: nowrap;
+            overflow: auto;
+            width: 28.893617021276595%;
         }
         .rc-code {
             display: block;
         }
-        .sms-message {
-            overflow: auto;
-            white-space: nowrap;
-            pre {
-                padding: 2px 4px;
-                margin-bottom: 0;
-                white-space: inherit;
-                display: inline-block;
+        .main, .message {
+            .sms-message {
+                overflow: auto;
+                white-space: nowrap;
+                width: 28.382978723404255%;
+                padding-top: 1px;
+                pre {
+                    padding: 2px 4px;
+                    margin-bottom: 0;
+                    white-space: inherit;
+                    display: inline-block;
+                }
             }
         }
+
         .add-message {
-            width: 3.382978723404255%;
+            width: 4.382978723404255%;
         }
         .icons {
             display: block;
+        }
+        .errors {
+            width: 7.382978723404255%;
         }
     }
     .pager {
@@ -442,103 +464,6 @@ body {
             }
         }
     }
-}
-#mata-records {
-  table {
-    margin-bottom: 0;
-    width: 100%;
-  }
-  table thead th {
-    vertical-align: bottom;
-    text-align: left;
-    padding: 8px;
-    line-height: 18px;
-  }
-  .data-record > table.table-bordered {
-    .rounded(0);
-  }
-  .span12 > .wrap {
-    padding: 10px 20px;
-    > table thead th {
-      text-align: center;
-    }
-  }
-  .select-row {
-    width: 10px;
-  }
-  .reported-date {
-    width: 100px;
-  }
-  .contact-info {
-    width: 130px;
-  }
-  .facility {
-    width: 140px;
-  }
-  .rc-code {
-    width: 60px;
-  }
-  .sms-message {
-    width: 280px;
-  }
-  .sms-message > div {
-    width: 270px;
-    margin: 0;
-    padding: 10px 0;
-    overflow: auto;
-    white-space: nowrap;
-  }
-  .add-message {
-    width: 20px;
-  }
-  .icons {
-    width: 70px;
-  }
-  .relative {
-    position: relative;
-  }
-  .extended .close {
-    position: absolute;
-    top: -9px;
-    right: -5px;
-    z-index: 100;
-    font-size: 1em;
-  }
-  .icon-large {
-    vertical-align: middle;
-  }
-  .errors {
-    vertical-align: middle;
-    text-align: center;
-    padding-left: 4px;
-    padding-right: 4px;
-  }
-  .reached-last-record {
-    width: 1em;
-    margin: 0 auto 20px auto;
-  }
-  .data-record {
-    pre {
-        padding: 2px 4px;
-        margin-bottom: 0;
-        white-space: inherit;
-        display: inline-block;
-    }
-    .main {
-        &:hover {
-          cursor: pointer;
-        }
-        > td {
-          vertical-align: middle;
-        }
-    }
-  }
-  .warning {
-    background-color: @warningBackground;
-  }
-  .reached-last-record {
-    color: @grayLight;
-  }
 }
 
 .ajax-loader {

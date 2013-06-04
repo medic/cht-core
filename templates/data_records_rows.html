@@ -1,94 +1,86 @@
 {#data_records}
-<div class="data-record {^kujua_message}clickable{/kujua_message}" rel="{_id}" data-key="{_key}">
+<div class="data-record" rel="{_id}" data-key="{_key}">
   {?kujua_message}
   <div class="message row-fluid">
-    <div class="select-row span1">
+    <div class="select-row">
+      <input type="checkbox" name="select-row-checkbox" />
     </div>
-    <div class="reported-date span1" title="{_reported_date_full}">
+    <div class="reported-date" title="{_reported_date_full}">
       {_reported_date}
     </div>
-    <div class="contact-info span2">
+    <div class="contact-info">
       {tasks[0].messages[0].to}
     </div>
-    <div class="span4">
-      {tasks[0].messages[0].message}
+    <div class="direction-icon">
+      <div class="label label-info">
+        <i class="icon-reply"></i>
+      </div>
+    </div>
+    <div class="sms-message">
+      <pre>
+        {tasks[0].messages[0].message}
+      </pre>
     </div>
   </div>
   {:else}
-  <div class="main row-fluid">
-    <div class="select-row span1">
+  <div class="main row-fluid {^kujua_message}clickable{/kujua_message}">
+    <div class="select-row">
       <input type="checkbox" name="select-row-checkbox" />
     </div>
-    <div class="reported-date span1" title="{_reported_date_full}">
+    <div class="reported-date" title="{_reported_date_full}">
       {_reported_date}
     </div>
-    <div class="contact-info span2">
-      {#related_entities}
-      {?clinic.contact.name}{clinic.contact.name}
-      {:else}
-        {?health_center.contact.name}{health_center.contact.name}
-        {:else}
-          {?clinic.parent.contact.name}{clinic.parent.contact.name}
-          {:else}
-          <i class="icon-question-sign icon-large"></i>
-          {/clinic.parent.contact.name}
-        {/health_center.contact.name}
-      {/clinic.contact.name}
-      {/related_entities}
-      <span class="from">{from}</span>
-    </div>
-    <div class="facility span2">
+    <div class="contact-info">
       {#related_entities}
         {?clinic.parent.parent.name}
-        <i>{clinic.parent.parent.name}</i>
+          <i>{clinic.parent.parent.name}</i>
+          <i class="icon-double-angle-right"></i>
         {:else}
           {?health_center.parent.name}
-          <i>{health_center.parent.name}</i>
-          {:else}
-          <i class="icon-question-sign icon-large"></i>
+            <i>{health_center.parent.name}</i>
+            <i class="icon-double-angle-right"></i>
           {/health_center.parent.name}
         {/clinic.parent.parent.name}
         {?clinic.parent.name}
-        <i>{clinic.parent.name}</i>
+          <i>{clinic.parent.name}</i>
+          <i class="icon-double-angle-right"></i>
         {:else}
           {?health_center.name}
-          <i>{health_center.name}</i>
-          {:else}
-          <i class="icon-question-sign icon-large"></i>
+            <i>{health_center.name}</i>
+            <i class="icon-double-angle-right"></i>
           {/health_center.name}
         {/clinic.parent.name}
         {?clinic.name}
-        <i>{clinic.name}</i>
+          <i>{clinic.name}</i>
         {:else}
           <i class="icon-question-sign icon-large" title="No clinic name."></i>
         {/clinic.name}
       {/related_entities}
     </div>
-    <div class="rc-code span1">
-      {#related_entities}
-        {?clinic.contact.rc_code}
-        <i class="rc-code">{clinic.contact.rc_code}</i>
-        {/clinic.contact.rc_code}
-      {/related_entities}
+    <div class="direction-icon">
+      {?form}
+        {?errors}
+          <div class="label label-important" title="Invalid form">
+            <i class="icon-inbox"></i>
+          </div>
+        {:else}
+          <div class="label label-success">
+            <i class="icon-inbox"></i>
+          </div>
+        {/errors}
+      {/form}
     </div>
-    <div class="sms-message span3">
+    <div class="sms-message">
       {#sms_message}
           <pre>{message}</pre>
       {/sms_message}
     </div>
-    <div class="add-message span1">
-        <button class="btn btn-small">
+    <div class="add-message">
+        <button class="btn btn-mini">
             <i class="icon-comments-alt"></i>
         </button>
     </div>
-    <div class="errors span1">
-      {?form}
-      {?errors}
-      <i class="icon-exclamation-sign icon-large"></i>
-      {:else}
-        <i class="{state} icon-ok icon-large"></i>
-      {/errors}
-      {/form}
+    <div class="errors">
       {?tasks}
       <span class="label label-{_tasks_class}" title="{_tasks_title}">{tasks.length}</span>
       {/tasks}

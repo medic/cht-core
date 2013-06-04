@@ -1,33 +1,10 @@
 <div id="data-records">
   <div class="span12">
     <div class="wrap wrap-rows">
-      {?data_records}
-      <div class="records-head row-fluid">
-          <div class="select-row span1">
-            <input type="checkbox" name="select-all-rows" />
-          </div>
-          <div class="reported-date span2">
-            Reported Date
-          </div>
-          <div class="contact-info span2">
-            {From}
-          </div>
-          <div class="facility span2">
-            {Facility}
-          </div>
-          <div class="rc-code span1">
-            {RC_Code}
-          </div>
-          <div class="sms-message span3">
-            Message
-          </div>
-          <div class="add-message span1"></div>
-          <div class="icons span1"></div>
-      </div>
-      {:else}
-      <div class="alert alert-info">
-        No records found.
-      </div>
+      {^data_records}
+        <div class="alert alert-info">
+          No records found.
+        </div>
       {/data_records}
       {?data_records}
         {>"data_records_rows.html"/}
