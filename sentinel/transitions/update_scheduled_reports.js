@@ -25,6 +25,7 @@ var handleMatch = function(change, callback) {
         // remove duplicates and replace latest with new_doc
         var found_target,
             docs = [];
+
         _.each(rows, function(row) {
             var doc = row.doc;
             if (doc._id === new_doc._id) {
