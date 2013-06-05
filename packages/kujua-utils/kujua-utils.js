@@ -113,7 +113,7 @@ exports.logger = {
             console.error(obj);
         }
         if (typeof(log) !== 'undefined') {
-            log('Kujua ERROR:');
+            log('Kujua Lite ERROR:');
             if (_.isObject(obj))
                 log(JSON.stringify(obj,null,2));
             else

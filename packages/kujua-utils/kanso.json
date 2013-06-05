@@ -1,7 +1,7 @@
 {
     "name": "kujua-utils",
     "version": "0.0.1",
-    "description": "Utility functions for Kujua.",
+    "description": "Utility functions for Kujua Lite.",
     "modules": ["kujua-utils.js", "tests"],
     "dependencies": {
         "modules": null,

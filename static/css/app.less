@@ -190,7 +190,7 @@ body {
     cursor: pointer;
 }
 #data-records {
-    .wrap {
+    .wrap-rows {
         padding: 10px;
     }
     .data-record {
@@ -199,11 +199,12 @@ body {
         border: 1px solid @grayLighter;
         box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 
-        .main, .message, .extended {
-            padding: 8px 8px 3px;
+        .extended {
+            padding: 8px 20px 3px;
         }
 
         .main, .message {
+            padding: 8px 8px 3px;
             > div {
                 display: block;
                 min-height: 30px;
