@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var http = require('http'),
-    db_name = 'kujua-base',
+    db_name = 'kujua-lite',
     username = 'root',
     password = 'password',
     auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
@@ -10,13 +10,13 @@ var request = function(verb, path, data, callback) {
     if(!callback) {
         callback = data;
     }
-    
+
     var options = {
         host: 'endor.iriscouch.com',
         port: 80,
-        path: '/kujua-base' + path,
+        path: '/kujua-lite' + path,
         method: verb,
-        headers: { 
+        headers: {
             'Content-Type': 'application/json',
             'Authorization': auth
         }
@@ -39,12 +39,12 @@ var request = function(verb, path, data, callback) {
     r.on('error', function(err) {
         if (err) { console.log('request error.', err); }
     });
-    
+
     if(verb !== 'GET') {
         options.headers['Content-Length'] = data.length;
         r.write(data);
     }
-    
+
     r.end();
 }
 
