@@ -1,7 +1,7 @@
 {#data_records}
 <div class="data-record" rel="{_id}" data-key="{_key}">
   {?kujua_message}
-  <div class="message row-fluid">
+  <div class="message row-fluid clickable">
     <div class="select-row">
       <input type="checkbox" name="select-row-checkbox" />
     </div>
@@ -22,8 +22,58 @@
       </pre>
     </div>
   </div>
+  <div class="hide extended">
+    <div class="row-fluid">
+      <div class="span1">
+        <b>From:</b>
+      </div>
+      <div class="span5">
+        {sent_by}
+      </div>
+      <div class="span1">
+        <b>To:</b>
+      </div>
+      <div class="span5">
+        {#related_entities}
+          {?clinic.contact.rc_code}
+            {clinic.contact.rc_code}
+
+            <i class="icon-bookmark"></i>
+          {/clinic.contact.rc_code}
+          {?clinic.contact.phone}
+            {clinic.contact.phone}
+
+            <i class="icon-mobile-phone"></i>
+          {/clinic.contact.phone}
+          {?clinic.parent.parent.name}
+            <i>{clinic.parent.parent.name}</i>
+            <i class="icon-double-angle-right"></i>
+          {:else}
+            {?health_center.parent.name}
+              <i>{health_center.parent.name}</i>
+              <i class="icon-double-angle-right"></i>
+            {/health_center.parent.name}
+          {/clinic.parent.parent.name}
+          {?clinic.parent.name}
+            <i>{clinic.parent.name}</i>
+            <i class="icon-double-angle-right"></i>
+          {:else}
+            {?health_center.name}
+              <i>{health_center.name}</i>
+              <i class="icon-double-angle-right"></i>
+            {/health_center.name}
+          {/clinic.parent.name}
+          {?clinic.name}
+            <i>{clinic.name}</i>
+          {:else}
+            <i class="icon-question-sign icon-large" title="No clinic name."></i>
+          {/clinic.name}
+        {/related_entities}
+      </div>
+    </div>
+  </div>
   {:else}
-  <div class="main row-fluid {^kujua_message}clickable{/kujua_message}">
+  <div class="main row-fluid clickable">
     <div class="select-row">
       <input type="checkbox" name="select-row-checkbox" />
     </div>
@@ -68,6 +118,10 @@
             <i class="icon-inbox"></i>
           </div>
         {/errors}
+      {:else}
+          <div class="label label-success">
+            <i class="icon-inbox"></i>
+          </div>
       {/form}
     </div>
     <div class="sms-message">
@@ -90,6 +144,48 @@
     </div>
   </div>
   <div class="hide extended">
+    <div class="row-fluid">
+      <div class="span1">
+        <b>From:</b>
+      </div>
+      <div class="span11">
+        {#related_entities}
+          {?clinic.contact.rc_code}
+            {clinic.contact.rc_code}
+
+            <i class="icon-bookmark"></i>
+          {/clinic.contact.rc_code}
+          {?clinic.contact.phone}
+            {clinic.contact.phone}
+
+            <i class="icon-mobile-phone"></i>
+          {/clinic.contact.phone}
+          {?clinic.parent.parent.name}
+            <i>{clinic.parent.parent.name}</i>
+            <i class="icon-double-angle-right"></i>
+          {:else}
+            {?health_center.parent.name}
+              <i>{health_center.parent.name}</i>
+              <i class="icon-double-angle-right"></i>
+            {/health_center.parent.name}
+          {/clinic.parent.parent.name}
+          {?clinic.parent.name}
+            <i>{clinic.parent.name}</i>
+            <i class="icon-double-angle-right"></i>
+          {:else}
+            {?health_center.name}
+              <i>{health_center.name}</i>
+              <i class="icon-double-angle-right"></i>
+            {/health_center.name}
+          {/clinic.parent.name}
+          {?clinic.name}
+            <i>{clinic.name}</i>
+          {:else}
+            <i class="icon-question-sign icon-large" title="No clinic name."></i>
+          {/clinic.name}
+        {/related_entities}
+      </div>
+    </div>
     <div class="scroll">
       {>"data_record_fields.html":fields/}
     </div>
