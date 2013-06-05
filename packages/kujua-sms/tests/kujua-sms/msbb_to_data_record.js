@@ -54,7 +54,7 @@ var expected_callback = {
       "headers": {
         "Content-Type": "application/json; charset=utf-8"
       },
-      "path": "/kujua-base/_design/kujua-base/_rewrite/MSBB/data_record/add/facility/%2B13125551212"
+      "path": "/kujua-lite/_design/kujua-lite/_rewrite/MSBB/data_record/add/facility/%2B13125551212"
     },
     "data": {
       "uuid": "14dc3a5aa6"
