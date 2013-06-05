@@ -67,6 +67,21 @@
         "cookies": null,
         "moment": null
     },
+    "user_data": {
+        "db_prefix": false,
+        "available_roles" : ["kujua-user"],
+        "schema": {
+            "descripton": "Kujua Lite",
+            "type": "object",
+            "properties": {
+                "facility_id": {
+                    "title": "Facility Id",
+                    "type": "string",
+                    "je:hint": "autocomplete"
+                }
+            }
+        }
+    },
     "settings_schema" : {
         "description": "Kujua Settings",
         "type": "object",
