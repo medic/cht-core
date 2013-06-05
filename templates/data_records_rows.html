@@ -151,15 +151,20 @@
       <div class="span11">
         {#related_entities}
           {?clinic.contact.rc_code}
-            {clinic.contact.rc_code}
+            <div class="label">
+              <i class="icon-bookmark"></i>
 
-            <i class="icon-bookmark"></i>
+              {clinic.contact.rc_code}
+            </div>
           {/clinic.contact.rc_code}
           {?clinic.contact.phone}
-            {clinic.contact.phone}
+            <div class="label">
+              <i class="icon-mobile-phone"></i>
 
-            <i class="icon-mobile-phone"></i>
+              {clinic.contact.phone}
+            </div>
           {/clinic.contact.phone}
+          <div>
           {?clinic.parent.parent.name}
             <i>{clinic.parent.parent.name}</i>
             <i class="icon-double-angle-right"></i>
@@ -183,6 +188,7 @@
           {:else}
             <i class="icon-question-sign icon-large" title="No clinic name."></i>
           {/clinic.name}
+          </div>
         {/related_entities}
       </div>
     </div>
