@@ -6,7 +6,7 @@ Assuming you have [Nodejs](http://nodejs.org) and [CouchDB](http://couchdb.apach
 
 ### Kanso
 
-[Kanso](http://kan.so) is required to build and deploy Kujua.
+[Kanso](http://kan.so) is required to build and deploy Kujua Lite.
 
 ```
 npm install kanso -g
@@ -14,7 +14,7 @@ npm install kanso -g
 
 ### Gardener
 
-Kujua is bundled with a node application, called Sentinel, they work together.
+Kujua Lite is bundled with a node application, called Sentinel, they work together.
 Sentinel listens to the changes feed and does various things, like schedule
 management.  Sentinel is built using
 [kanso-gardener](https://github.com/kanso/kanso-gardener) and attached to the
