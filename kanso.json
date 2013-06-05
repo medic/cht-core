@@ -69,7 +69,7 @@
     },
     "user_data": {
         "db_prefix": false,
-        "available_roles" : ["kujua-user"],
+        "available_roles" : ["kujua-user","national_admin","district_admin"],
         "schema": {
             "descripton": "Kujua Lite",
             "type": "object",
@@ -83,6 +83,40 @@
         }
     },
     "settings_schema" : {
+        "description": "Kujua Settings",
+        "type": "object",
+        "properties": {
+            "reported_date_format": {
+               "type": "string",
+               "title": "Reported Date Format",
+               "default": "MMM hh:mm"
+            },
+            "facility_labels": {
+              "title": "Facility labels",
+              "type": "object",
+              "order": ["level1", "level2", "level3"],
+              "required": ["level1", "level2", "level3"],
+              "properties": {
+                 "level1": {
+                    "type": "string",
+                    "title": "Level 1",
+                    "default": "District"
+                 },
+                 "level2": {
+                    "type": "string",
+                    "title": "Level 2",
+                    "default": "Clinic"
+                 },
+                 "level3": {
+                    "type": "string",
+                    "title": "Level 3",
+                    "default": "DHW"
+                 }
+              }
+            }
+        }
+    },
+    "settings_schema_schedules" : {
         "description": "Kujua Settings",
         "type": "object",
         "properties": {
