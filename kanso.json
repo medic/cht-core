@@ -83,7 +83,7 @@
         }
     },
     "settings_schema" : {
-        "description": "Kujua Settings",
+        "description": "Kujua Lite Settings",
         "type": "object",
         "properties": {
             "reported_date_format": {
@@ -117,7 +117,7 @@
         }
     },
     "settings_schema_schedules" : {
-        "description": "Kujua Settings",
+        "description": "Kujua Lite Settings",
         "type": "object",
         "properties": {
             "id_format": {
