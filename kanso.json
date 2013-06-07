@@ -105,12 +105,12 @@
                  "level2": {
                     "type": "string",
                     "title": "Level 2",
-                    "default": "Clinic"
+                    "default": "Health Center"
                  },
                  "level3": {
                     "type": "string",
                     "title": "Level 3",
-                    "default": "DHW"
+                    "default": "CHW"
                  }
               }
             }
