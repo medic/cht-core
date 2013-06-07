@@ -46,6 +46,20 @@ dust.helpers.tap = function(input, chunk, context) {
     return output;
 };
 
+dust.helpers.tapObject = dust.helpers.tapArray = function(input, chunk, context) {
+    // return given input if there is no dust reference to resolve
+    var output = input;
+
+    // dust compiles a string/reference such as {foo} to function,
+    chunk.tap(function(data) {
+        output = data;
+        return '';
+    }).render(input, context).untap();
+
+    return output || [];
+};
+
+
 /**
  * Add helpers. Will override any existing helpers by the given names.
  * @param {Object} helpers
