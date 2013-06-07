@@ -15,9 +15,17 @@ var handleMatch = function(change, callback) {
     new_doc = change.doc;
     var self = module.exports;
 
+    // only process record after callbacks with gateway are done, do nothing
+    // otherwise. hackish for now since validation and responses are still
+    // processed in couchapp with callbacks.
+    if (new_doc.responses && new_doc.responses.length === 0) {
+        // do nothing
+        return callback();
+    }
+
     getDuplicates(function(err, rows) {
 
-        // only one record in duplicates, nothing to do, mark complete
+        // only one record in duplicates, mark transition complete
         if (rows && rows.length === 1) {
             return callback(null, true);
         }
@@ -82,7 +90,7 @@ var getDuplicates = function(callback) {
         q.endkey = [doc.form, doc.year, doc.month, clinic_id, {}];
         view = 'data_records_by_form_year_month_clinic_id_and_reported_date';
     } else {
-        return;
+        return callback();
     }
 
     self.db.view('kujua-sentinel', view, q, function(err, data) {
