@@ -203,62 +203,70 @@ body {
             padding: 8px 20px 3px;
         }
 
-        .main, .message {
+        .message {
             padding: 8px 8px 3px;
             > div {
                 display: block;
                 min-height: 30px;
                 .box-sizing(border-box);
                 float: left;
-                margin-left: 2.127659574468085%;
+                margin-left: 2%;
+                &:first-child {
+                    margin-left: 1%;
+                }
                 padding-top: 3px;
             }
         }
 
         .select-row {
-            width: 2.382978723404255%;
+            width: 2%;
             text-align: center;
             input {
                 margin-top: 0;
             }
         }
         .direction-icon {
-            width: 2.382978723404255%;
+            width: 2%;
         }
         .reported-date {
-            width: 10.382978723404255%;
+            width: 10%;
         }
         .contact-info {
             white-space: nowrap;
             overflow: auto;
-            width: 28.893617021276595%;
+            width: 20%;
         }
-        .rc-code {
-            display: block;
-        }
-        .main, .message {
-            .sms-message {
-                overflow: auto;
-                white-space: nowrap;
-                width: 28.382978723404255%;
-                padding-top: 1px;
-                pre {
-                    padding: 2px 4px;
-                    margin-bottom: 0;
-                    white-space: inherit;
-                    display: inline-block;
-                }
+
+        .msg {
+            overflow: auto;
+            white-space: nowrap;
+            padding-top: 1px;
+            pre {
+                padding: 2px 4px;
+                margin-bottom: 0;
+                white-space: inherit;
+                display: inline-block;
             }
         }
 
+        .incoming-message .msg {
+            width: 47%;
+        }
+
+        .incoming-form .msg {
+            width: 40%;
+        }
+
+        .outgoing-message .msg {
+            width: 53%;
+        }
+
         .add-message {
-            width: 4.382978723404255%;
+            width: 4%;
         }
+
         .icons {
-            display: block;
-        }
-        .errors {
-            width: 7.382978723404255%;
+            width: 5%;
         }
     }
     .pager {

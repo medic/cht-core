@@ -153,7 +153,7 @@ function filterObject(obj) {
 
 // reverse makeDataRecordReadable munge. ;\
 exports.makeDataRecordOriginal = function(doc) {
-    doc = filterObject(doc, 'fields', 'scheduled_tasks_count', 'scheduled_tasks_by_group');
+    doc = filterObject(doc, 'fields', 'scheduled_tasks_by_group');
 
     if (doc.tasks) {
         doc.tasks = _.map(doc.tasks, function(task) {
@@ -219,9 +219,6 @@ var includeNonFormFields = function(doc, form_keys) {
 exports.makeDataRecordReadable = function(doc) {
     var data_record = doc;
 
-    // causes bug when trying to do update
-    // data_record._raw = JSON.stringify(data_record, null, 2);
-
     // adding a fields property for ease of rendering code
     if(data_record.form) {
         var keys = getFormKeys(data_record.form);
@@ -230,38 +227,7 @@ exports.makeDataRecordReadable = function(doc) {
         includeNonFormFields(data_record, keys);
     }
 
-    if (data_record.reported_date) {
-        data_record._reported_date = formatDate(data_record.reported_date, 'MMM DD HH:mm');
-        data_record._reported_date_full = formatDate(data_record.reported_date);
-    }
-
-    if (data_record.tasks) {
-        var states = _.pluck(data_record.tasks, 'state'),
-            clazz = 'success',
-            label = 'Message(s) sent';
-
-        if (_.contains(states, 'scheduled')) {
-            clazz = 'info';
-            label = 'Message(s) scheduled';
-        }
-
-        if (_.contains(states, 'pending')) {
-            clazz = 'info';
-            label = 'Message(s) pending';
-        }
-
-        data_record._tasks_title = label;
-        data_record._tasks_class = clazz;
-
-        for (var i in data_record.tasks) {
-            var t = data_record.tasks[i];
-            if (t.due) t._due = formatDate(t.due);
-            if (t.timestamp) t._timestamp = formatDate(t.timestamp);
-        }
-    }
-
     if(data_record.scheduled_tasks) {
-        data_record.scheduled_tasks_count = 0;
         data_record.scheduled_tasks_by_group = [];
         var groups = {};
         for (var i in data_record.scheduled_tasks) {
@@ -272,8 +238,6 @@ exports.makeDataRecordReadable = function(doc) {
             if (!t) continue;
 
             // format timestamp
-            if (t.state === 'scheduled')
-                data_record.scheduled_tasks_count += 1;
             if (t.due) {
                 copy._due_ts = t.due;
                 copy.due = formatDate(t.due);

@@ -1,0 +1,113 @@
+<div class="message incoming-form row-fluid clickable">
+  <div class="select-row">
+    <input type="checkbox" name="select-row-checkbox" />
+  </div>
+  <div class="direction-icon">
+    {?errors}
+      <div class="label label-important" title="Invalid form">
+        <i class="icon-inbox"></i>
+      </div>
+    {:else}
+      <div class="label label-success">
+        <i class="icon-inbox"></i>
+      </div>
+    {/errors}
+  </div>
+  <div class="contact-info">
+    {@contact entities="{related_entities}" from="{from}"/}
+  </div>
+  <div class="msg">
+    <i>{@formName form="{form}"/}</i>
+  </div>
+  <div class="icons">
+    {?tasks}
+      <span class="label label-{@taskClass tasks="{tasks}"/}" title="{@taskMessage tasks="{tasks}"/}">{tasks.length}</span>
+    {/tasks}
+    {?scheduled_tasks}
+    <span class="label label-info" title="{@countByState array="{scheduled_tasks}" state="scheduled"/} scheduled messages">
+      {@countByState array="{scheduled_tasks}" state="scheduled"/}
+    </span>
+    {/scheduled_tasks}
+  </div>
+  <div class="add-message">
+      <button class="btn btn-mini">
+          <i class="icon-comment-alt"></i>
+      </button>
+  </div>
+  <div class="reported-date" title="{@formatDate timestamp="{reported_date}"/}">
+    {@formatDate timestamp="{reported_date}" format="MMM DD HH:mm"/}
+  </div>
+</div>
+<div class="hide extended">
+  <div class="row-fluid">
+    <div class="span1">
+      <b>From:</b>
+    </div>
+    <div class="span11">
+      {#related_entities}
+        {?clinic.contact.rc_code}
+          <div class="label">
+            <i class="icon-bookmark"></i>
+
+            {clinic.contact.rc_code}
+          </div>
+        {/clinic.contact.rc_code}
+        {?clinic.contact.phone}
+          <div class="label">
+            <i class="icon-mobile-phone"></i>
+
+            {clinic.contact.phone}
+          </div>
+        {/clinic.contact.phone}
+        <div>
+        {?clinic.parent.parent.name}
+          <i>{clinic.parent.parent.name}</i>
+          <i class="icon-double-angle-right"></i>
+        {:else}
+          {?health_center.parent.name}
+            <i>{health_center.parent.name}</i>
+            <i class="icon-double-angle-right"></i>
+          {/health_center.parent.name}
+        {/clinic.parent.parent.name}
+        {?clinic.parent.name}
+          <i>{clinic.parent.name}</i>
+          <i class="icon-double-angle-right"></i>
+        {:else}
+          {?health_center.name}
+            <i>{health_center.name}</i>
+            <i class="icon-double-angle-right"></i>
+          {/health_center.name}
+        {/clinic.parent.name}
+        {?clinic.name}
+          <i>{clinic.name}</i>
+        {:else}
+          <i class="icon-question-sign icon-large" title="No clinic name."></i>
+        {/clinic.name}
+        </div>
+      {/related_entities}
+    </div>
+  </div>
+  <div class="scroll">
+    {>"data_record_fields.html":fields/}
+  </div>
+  {?errors}
+  <div class="data-record-errors">
+    {>"data_record_errors.html"/}
+  </div>
+  {/errors}
+  {?responses}
+  <div class="data-record-responses">
+    {>"data_record_responses.html"/}
+  </div>
+  {/responses}
+  {?tasks}
+  <div class="data-record-tasks">
+    {>"data_record_tasks.html"/}
+  </div>
+  {/tasks}
+  {?scheduled_tasks}
+  <div class="data-record-scheduled-tasks">
+    {>"data_record_scheduled_tasks.html"/}
+  </div>
+  {/scheduled_tasks}
+</div>

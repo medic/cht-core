@@ -18,12 +18,12 @@
             <td><span class="tasks-state-{state}"></span></td>
             {?timestamp}
             <td class="tasks-timestamp">
-              {_timestamp}
+              {@formatDate timestamp="{timestamp}"/}
             </td>
             {/timestamp}
             {?due}
             <td class="tasks-due">
-              {_due}
+              {@formatDate timestamp="{due}"/}
             </td>
             {/due}
           {#messages}
