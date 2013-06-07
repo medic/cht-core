@@ -202,20 +202,33 @@ body {
         margin-bottom: 10px;
         .rounded(2px);
         border: 1px solid @grayLighter;
-        box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        box-shadow: 1px 1px 3px rgba(0,0,0,0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+
+        background-color: #fff;
 
         &.highlight {
-            background-color: @warningBackground;
-            border: 1px solid @grayLight;
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+            border: 1px solid darken(@grayLighter, 10%);
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.6), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+            background-color: lighten(@warningBackground, 5%);
         }
 
         .extended {
             padding: 8px 20px 3px;
+            display: none;
+        }
+
+        &.expanded {
+            .message {
+                background-image: url(../img/subtle-pattern.png);
+            }
+            .extended {
+                display: block;
+            }
         }
 
         .message {
             padding: 8px 8px 3px;
+            .box-sizing(border-box);
             > div {
                 display: block;
                 min-height: 30px;
