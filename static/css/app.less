@@ -204,6 +204,12 @@ body {
         border: 1px solid @grayLighter;
         box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 
+        &.highlight {
+            background-color: @warningBackground;
+            border: 1px solid @grayLight;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+        }
+
         .extended {
             padding: 8px 20px 3px;
         }
@@ -245,13 +251,15 @@ body {
         .msg {
             overflow: auto;
             white-space: nowrap;
-            padding-top: 1px;
             pre {
                 padding: 2px 4px;
                 margin-bottom: 0;
                 white-space: inherit;
                 display: inline-block;
             }
+        }
+        .message > div.msg {
+            padding-top: 1px;
         }
 
         .incoming-message .msg {
