@@ -7,6 +7,10 @@
         </div>
       {/data_records}
       {?data_records}
+        <div class="btn-group">
+          <button class="btn btn-link" data-action="select-all">Select All</button>
+          <button class="btn btn-link" data-action="unselect-all">Unselect All</button>
+        </div>
         {>"data_records_rows.html"/}
       {/data_records}
     </div>

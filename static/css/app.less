@@ -108,9 +108,7 @@ body {
 }
 .scroll {
   overflow: auto;
-  width: 880px;
-  padding: 0 0 1em 0;
-  margin: 0;
+  margin: 0 0 1em 0;
   position: relative;
 }
 .scroll-short {
@@ -204,66 +202,111 @@ body {
         border: 1px solid @grayLighter;
         box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 
-        .extended {
-            padding: 8px 20px 3px;
+        background-color: @grayLighter;
+
+        &.highlight {
+            border: 1px solid darken(@grayLighter, 10%);
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+            background-color: lighten(@warningBackground, 5%);
+            #gradient > .vertical(#f8f8f8, #ccc);
         }
 
-        .main, .message {
+        .extended {
+            padding: 8px 20px;
+            display: none;
+            background-color: #f8f8f8;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1) inset;
+
+            .inset {
+                padding: 20px;
+            }
+
+            > .row-fluid {
+                background-color: #fff;
+                margin-bottom: 1em;
+                box-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+            }
+            .table {
+                margin-bottom: 0;
+            }
+        }
+
+        &.expanded {
+            .message {
+                background-image: url(../img/subtle-pattern.png);
+            }
+            .extended {
+                display: block;
+            }
+        }
+
+        .message {
             padding: 8px 8px 3px;
+            .box-sizing(border-box);
             > div {
                 display: block;
                 min-height: 30px;
                 .box-sizing(border-box);
                 float: left;
-                margin-left: 2.127659574468085%;
+                margin-left: 2%;
+                &:first-child {
+                    margin-left: 1%;
+                }
                 padding-top: 3px;
             }
         }
 
         .select-row {
-            width: 2.382978723404255%;
+            width: 2%;
             text-align: center;
             input {
                 margin-top: 0;
             }
         }
         .direction-icon {
-            width: 2.382978723404255%;
+            width: 2%;
         }
         .reported-date {
-            width: 10.382978723404255%;
+            width: 10%;
         }
         .contact-info {
             white-space: nowrap;
             overflow: auto;
-            width: 28.893617021276595%;
+            width: 20%;
         }
-        .rc-code {
-            display: block;
-        }
-        .main, .message {
-            .sms-message {
-                overflow: auto;
-                white-space: nowrap;
-                width: 28.382978723404255%;
-                padding-top: 1px;
-                pre {
-                    padding: 2px 4px;
-                    margin-bottom: 0;
-                    white-space: inherit;
-                    display: inline-block;
-                }
+
+        .msg {
+            overflow: auto;
+            white-space: nowrap;
+            pre {
+                padding: 2px 4px;
+                margin-bottom: 0;
+                white-space: inherit;
+                display: inline-block;
             }
+        }
+        .message > div.msg {
+            padding-top: 1px;
+        }
+
+        .incoming-message .msg {
+            width: 47%;
+        }
+
+        .incoming-form .msg {
+            width: 40%;
+        }
+
+        .outgoing-message .msg {
+            width: 53%;
         }
 
         .add-message {
-            width: 4.382978723404255%;
+            width: 4%;
         }
+
         .icons {
-            display: block;
-        }
-        .errors {
-            width: 7.382978723404255%;
+            width: 5%;
         }
     }
     .pager {
@@ -294,6 +337,9 @@ body {
 
     .scheduled-tasks-data_record,
     .tasks-data_record {
+        > tbody > tr> td {
+            border-top: none;
+        }
         .tasks-state-timestamp,
         .tasks-state-due {
             width: 100px;
@@ -474,6 +520,12 @@ body {
             }
         }
     }
+}
+
+.reached-last-record {
+    color: @grayLight;
+    width: 1em;
+    margin: 0 auto 20px auto;
 }
 
 .ajax-loader {
