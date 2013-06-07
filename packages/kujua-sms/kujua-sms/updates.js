@@ -98,10 +98,6 @@ var getCallbackPath = function(phone, form, form_data, def) {
 
     def = def ? def : jsonforms[form];
 
-    // if the definition has use_sentinel:true, shortcut
-    if (def && def.use_sentinel)
-        return '/_db';
-
     if (!form) {
         // find a match with a facility's phone number
         return '/data_record/add/facility/%2'
