@@ -1,54 +1,46 @@
 <table class="table tasks-{type}">
   <thead>
     <tr>
-      <th class="group-header tasks-messages">
-        <div class="wrap">
-          Messages
-        </div>
+      <th class="group-header tasks-messages" colspan="20">
+        Messages
       </th>
     </tr>
   </thead>
   <tbody>
-    <tr>
-        <td>
-          <table class="table table-striped">
-            <tbody>
-        {#tasks}
-          <tr data-tasks-idx="{@idx}{.}{/idx}" class="task relative">
-            <td><span class="tasks-state-{state}"></span></td>
-            {?timestamp}
-            <td class="tasks-timestamp">
-              {@formatDate timestamp="{timestamp}"/}
-            </td>
-            {/timestamp}
-            {?due}
-            <td class="tasks-due">
-              {@formatDate timestamp="{due}"/}
-            </td>
-            {/due}
-          {#messages}
-            <td class="to">{?to}{to}
-              {:else}
-              <i class="error-missing-phone icon-exclamation-sign" title="Missing phone"></i>
-              <form action="" method="POST" class="hide form-inline" autocomplete="off">
-                <span class="control-group">
-                  <input type="hidden" name="_id" value="{_id}" />
-                  <input type="hidden" name="_rev" value="{_rev}" />
-                  <input type="hidden" name="idx" value="{@idx}{.}{/idx}" />
-                  <input class="span2" type="text" data-provide="typeahead" name="phone" />
-                  <button type="submit" class="btn">Submit</button>
-                  <p class="help-block">e.g. +22995960001</p>
-                </span>
-              </form>
-              {/to}
-            </td>
-            <td colspan="2">{message}</td>
-          {/messages}
-          </tr>
-        {/tasks}
-          </tbody>
-          </table>
-        </td>
-    </tr>    
+    {#tasks}
+    <tr data-tasks-idx="{@idx}{.}{/idx}" class="task relative">
+      <td><span class="tasks-state-{state}"></span></td>
+      {?timestamp}
+      <td class="tasks-timestamp">
+        {@formatDate timestamp="{timestamp}"/}
+      </td>
+      {/timestamp}
+      {?due}
+      <td class="tasks-due">
+        {@formatDate timestamp="{due}"/}
+      </td>
+      {/due}
+      {#messages}
+      <td class="to">
+        {?to}
+          {to}
+        {:else}
+        <i class="error-missing-phone icon-exclamation-sign" title="Missing phone"></i>
+        <form action="" method="POST" class="hide form-inline" autocomplete="off">
+          <span class="control-group">
+            <input type="hidden" name="_id" value="{_id}" />
+            <input type="hidden" name="_rev" value="{_rev}" />
+            <input type="hidden" name="idx" value="{@idx}{.}{/idx}" />
+            <input class="span2" type="text" data-provide="typeahead" name="phone" />
+            <button type="submit" class="btn">Submit</button>
+            <p class="help-block">e.g. +22995960001</p>
+          </span>
+        </form>
+        {/to}
+      </td>
+      <td colspan="2">{message}</td>
+      {/messages}
+    </tr>
+    {/tasks}
   </tbody>
 </table>

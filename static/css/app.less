@@ -108,9 +108,7 @@ body {
 }
 .scroll {
   overflow: auto;
-  width: 880px;
-  padding: 0 0 1em 0;
-  margin: 0;
+  margin: 0 0 1em 0;
   position: relative;
 }
 .scroll-short {
@@ -214,12 +212,23 @@ body {
         }
 
         .extended {
-            margin: 8px 20px;
-            padding: 10px;
+            padding: 8px 20px;
             display: none;
-            border: 1px solid #bbb;
             background-color: #f8f8f8;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1) inset;
+
+            .inset {
+                padding: 20px;
+            }
+
+            > .row-fluid {
+                background-color: #fff;
+                margin-bottom: 1em;
+                box-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+            }
+            .table {
+                margin-bottom: 0;
+            }
         }
 
         &.expanded {
@@ -328,6 +337,9 @@ body {
 
     .scheduled-tasks-data_record,
     .tasks-data_record {
+        > tbody > tr> td {
+            border-top: none;
+        }
         .tasks-state-timestamp,
         .tasks-state-due {
             width: 100px;
@@ -508,6 +520,12 @@ body {
             }
         }
     }
+}
+
+.reached-last-record {
+    color: @grayLight;
+    width: 1em;
+    margin: 0 auto 20px auto;
 }
 
 .ajax-loader {

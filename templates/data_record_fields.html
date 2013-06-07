@@ -1,22 +1,22 @@
-<table class="table table-bordered">
+<table class="table">
   <thead>
     <tr>
-        {#headers}
-            <th>{head}</th>
-        {/headers}
+      {#headers}
+      <th>{head}</th>
+      {/headers}
     </tr>    
   </thead>
   <tbody>
     <tr>
-        {#data}
-          <td>
-            {?isArray}
-              {>"data_record_fields.html"/}
-            {:else}
-              {value}
-            {/isArray}            
-          </td>
-        {/data}
+      {#data}
+      <td>
+        {?isArray}
+          {>"data_record_fields.html"/}
+        {:else}
+          {value}
+        {/isArray}            
+      </td>
+      {/data}
     </tr>    
   </tbody>
 </table>
