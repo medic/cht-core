@@ -202,19 +202,24 @@ body {
         margin-bottom: 10px;
         .rounded(2px);
         border: 1px solid @grayLighter;
-        box-shadow: 1px 1px 3px rgba(0,0,0,0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+        box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 
-        background-color: #fff;
+        background-color: @grayLighter;
 
         &.highlight {
             border: 1px solid darken(@grayLighter, 10%);
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.6), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.6);
             background-color: lighten(@warningBackground, 5%);
+            #gradient > .vertical(#f8f8f8, #ccc);
         }
 
         .extended {
-            padding: 8px 20px 3px;
+            margin: 8px 20px;
+            padding: 10px;
             display: none;
+            border: 1px solid #bbb;
+            background-color: #f8f8f8;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1) inset;
         }
 
         &.expanded {
