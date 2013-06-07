@@ -1,22 +1,22 @@
 <div class="row-fluid">
-  <div class="span12">
+  <div class="inset span12">
     <b>Responses</b>
+    {#responses}
+    <div class="row-fluid">
+      <div class="span12 alert alert-info">
+        {?error}
+          <!-- legacy errors format //-->
+          {error}
+        {/error}
+        {?message}
+          {message}
+        {:else}
+          {?code}
+            {code}: {fields}
+          {/code}
+        {/message}
+      </div>
+    </div>    
+    {/responses}
   </div>
 </div>
-{#responses}
-<div class="row-fluid">
-  <div class="span12 alert alert-info">
-    {?error}
-      <!-- legacy errors format //-->
-      {error}
-    {/error}
-    {?message}
-      {message}
-    {:else}
-      {?code}
-        {code}: {fields}
-      {/code}
-    {/message}
-  </div>
-</div>    
-{/responses}
