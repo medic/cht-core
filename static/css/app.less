@@ -226,13 +226,8 @@ body {
             }
         }
 
-        &.highlight {
-            border: 1px solid darken(@dataRecordBackground, 10%);
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.6);
-            #gradient > .vertical(@dataRecordBackground, @dataRecordBackgroundHighlight);
-        }
-
         &.expanded {
+            border: 1px solid #bbb;
             .message {
                 background: darken(@grayLighter, 10%);
                 border-bottom: 1px solid @grayLight;
@@ -246,6 +241,12 @@ body {
             .extended {
                 display: block;
             }
+        }
+
+        &.highlight {
+            border: 1px solid darken(@dataRecordBackground, 10%);
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+            #gradient > .vertical(@dataRecordBackground, @dataRecordBackgroundHighlight);
         }
 
         .message {
@@ -304,11 +305,11 @@ body {
         }
 
         .incoming-message .msg {
-            width: 47%;
+            width: 37%;
         }
 
         .incoming-form .msg {
-            width: 40%;
+            width: 37%;
         }
 
         .outgoing-message .msg {
@@ -320,7 +321,7 @@ body {
         }
 
         .icons {
-            width: 5%;
+            width: 8%;
         }
     }
     .pager {
@@ -330,9 +331,11 @@ body {
             .hide;
         }
     }
-    .data-record-raw .icon-plus {
-        font-size: .752em;
-        color: @grayLighter;
+    .data-record-raw {
+        pre {
+            margin: 0;
+            color: @grayLight;
+        }
     }
     .icon-exclamation-sign {
         font-size: 1.2em;

@@ -15,6 +15,14 @@
       <pre>{message}</pre>
     {/sms_message}
   </div>
+  <div class="icons">
+    {?tasks}
+      <span class="label label-{@taskClass tasks="{tasks}"/}" title="{@taskMessage tasks="{tasks}"/}">
+        {tasks.length}
+        {@taskIcon tasks="{tasks}"/}
+      </span>
+    {/tasks}
+  </div> 
   <div class="add-message">
     <button class="btn btn-mini">
       <i class="icon-comment-alt"></i>
@@ -50,7 +58,7 @@
         {?clinic.name}
           {clinic.name}
         {:else}
-        <i class="icon-question-sign icon-large" title="No clinic name."></i>
+          From: {from}
         {/clinic.name}
         {?clinic.contact.rc_code}
           <b>[{clinic.contact.rc_code}]</b>
@@ -65,9 +73,8 @@
         {/clinic.contact.phone}
         </div>
       {/related_entities}
-
       {^related_entities}
-        {from}
+        From: {from}
       {/related_entities}
      </div>
   </div>

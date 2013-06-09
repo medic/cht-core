@@ -5,11 +5,11 @@
   <div class="direction-icon">
     {?errors}
       <div class="label label-important" title="Invalid form">
-        <i class="icon-inbox"></i>
+        <i class="icon-file-alt"></i>
       </div>
     {:else}
       <div class="label label-success">
-        <i class="icon-inbox"></i>
+        <i class="icon-file-alt"></i>
       </div>
     {/errors}
   </div>
@@ -21,11 +21,15 @@
   </div>
   <div class="icons">
     {?tasks}
-      <span class="label label-{@taskClass tasks="{tasks}"/}" title="{@taskMessage tasks="{tasks}"/}">{tasks.length}</span>
+      <span class="label label-{@taskClass tasks="{tasks}"/}" title="{@taskMessage tasks="{tasks}"/}">
+        {tasks.length}
+        {@taskIcon tasks="{tasks}"/}
+      </span>
     {/tasks}
     {?scheduled_tasks}
     <span class="label label-info" title="{@countByState array="{scheduled_tasks}" state="scheduled"/} scheduled messages">
       {@countByState array="{scheduled_tasks}" state="scheduled"/}
+      <i class="icon-bell"></i>
     </span>
     {/scheduled_tasks}
   </div>
@@ -64,7 +68,7 @@
         {?clinic.name}
           {clinic.name}
         {:else}
-        <i class="icon-question-sign icon-large" title="No clinic name."></i>
+          From: {from}
         {/clinic.name}
         {?clinic.contact.rc_code}
           <b>[{clinic.contact.rc_code}]</b>
@@ -79,9 +83,8 @@
         {/clinic.contact.phone}
         </div>
       {/related_entities}
-
       {^related_entities}
-        {from}
+        From: {from}
       {/related_entities}
     </div>
   </div>
@@ -108,4 +111,9 @@
     {>"data_record_scheduled_tasks.html"/}
   </div>
   {/scheduled_tasks}
+  {#sms_message}
+    <div class="row-fluid data-record-raw">
+      <pre>{message}</pre>
+    </div>
+  {/sms_message}
 </div>
