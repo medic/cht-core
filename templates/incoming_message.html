@@ -26,82 +26,59 @@
 </div>
 <div class="extended">
   <div class="row-fluid">
-    <div class="span1">
-      <b>From:</b>
-    </div>
-    <div class="span11">
+    <div class="inset span12">
       {#related_entities}
-        {?clinic.contact.rc_code}
-          <div class="label">
-            <i class="icon-bookmark"></i>
-
-            {clinic.contact.rc_code}
-          </div>
-        {/clinic.contact.rc_code}
-        {?clinic.contact.phone}
-          <div class="label">
-            <i class="icon-mobile-phone"></i>
-
-            {clinic.contact.phone}
-          </div>
-        {/clinic.contact.phone}
         <div>
         {?clinic.parent.parent.name}
-          <i>{clinic.parent.parent.name}</i>
+          {clinic.parent.parent.name}
           <i class="icon-double-angle-right"></i>
         {:else}
           {?health_center.parent.name}
-            <i>{health_center.parent.name}</i>
+            {health_center.parent.name}
             <i class="icon-double-angle-right"></i>
           {/health_center.parent.name}
         {/clinic.parent.parent.name}
         {?clinic.parent.name}
-          <i>{clinic.parent.name}</i>
+          {clinic.parent.name}
           <i class="icon-double-angle-right"></i>
         {:else}
           {?health_center.name}
-            <i>{health_center.name}</i>
+            {health_center.name}
             <i class="icon-double-angle-right"></i>
           {/health_center.name}
         {/clinic.parent.name}
         {?clinic.name}
-          <i>{clinic.name}</i>
+          {clinic.name}
         {:else}
-          <i class="icon-question-sign icon-large" title="No clinic name."></i>
+        <i class="icon-question-sign icon-large" title="No clinic name."></i>
         {/clinic.name}
+        {?clinic.contact.rc_code}
+          <b>[{clinic.contact.rc_code}]</b>
+        {/clinic.contact.rc_code}
+        </div>
+        <div>
+        {?clinic.contact.name}
+          {clinic.contact.name}
+        {/clinic.contact.name}
+        {?clinic.contact.phone}
+          {clinic.contact.phone}
+        {/clinic.contact.phone}
         </div>
       {/related_entities}
-    </div>
+
+      {^related_entities}
+        {from}
+      {/related_entities}
+     </div>
   </div>
-  <div class="scroll">
-    {>"data_record_fields.html":fields/}
-  </div>
-  {?errors}
-  <div class="data-record-errors">
-    {>"data_record_errors.html"/}
-  </div>
-  {/errors}
   {?responses}
-  <div class="data-record-responses">
+  <div class="row-fluid data-record-responses">
     {>"data_record_responses.html"/}
   </div>
   {/responses}
   {?tasks}
-  <div class="data-record-tasks">
+  <div class="row-fluid data-record-tasks">
     {>"data_record_tasks.html"/}
   </div>
   {/tasks}
-  {?scheduled_tasks}
-  <div class="data-record-scheduled-tasks">
-    {>"data_record_scheduled_tasks.html"/}
-  </div>
-  {/scheduled_tasks}
-  {?_raw}
-  <div class="data-record-raw">
-    <a title="JSON" data-toggle="extended" class="pull-right">
-      <i class="icon-plus"></i>
-    </a>
-    <div class="extended hide"><pre>{_raw}</pre></div>
-  </div>
-  {/_raw}
 </div>

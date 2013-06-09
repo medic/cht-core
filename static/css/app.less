@@ -204,17 +204,12 @@ body {
 
         background-color: @grayLighter;
 
-        &.highlight {
-            border: 1px solid darken(@grayLighter, 10%);
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.6);
-            background-color: lighten(@warningBackground, 5%);
-            #gradient > .vertical(#f8f8f8, #ccc);
-        }
+        @dataRecordBackground: #d6ebff;
+        @dataRecordBackgroundHighlight: #adc2ff;
 
         .extended {
             padding: 8px 20px;
             display: none;
-            background-color: #f8f8f8;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1) inset;
 
             .inset {
@@ -231,9 +226,22 @@ body {
             }
         }
 
+        &.highlight {
+            border: 1px solid darken(@dataRecordBackground, 10%);
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+            #gradient > .vertical(@dataRecordBackground, @dataRecordBackgroundHighlight);
+        }
+
         &.expanded {
             .message {
-                background-image: url(../img/subtle-pattern.png);
+                background: darken(@grayLighter, 10%);
+                border-bottom: 1px solid @grayLight;
+            }
+            &.highlight {
+                .message {
+                    background: @dataRecordBackgroundHighlight;
+                    border-bottom: 1px solid spin(@dataRecordBackgroundHighlight, 20);
+                }
             }
             .extended {
                 display: block;
@@ -265,6 +273,12 @@ body {
         }
         .direction-icon {
             width: 2%;
+            .label {
+                padding: 4px 6px;
+                min-width: 16px;
+                font-size: 14px;
+                text-align: center;
+            }
         }
         .reported-date {
             width: 10%;
