@@ -26,10 +26,17 @@ Example `fields` object for a supported form:
         ],
         "list": [
            [
-              2012,
+              1,
               {
                  "fr": "2012",
                  "en": "2012"
+              }
+           ],
+           [
+              2,
+              {
+                 "fr": "2013",
+                 "en": "2013"
               }
            ],
            ...
@@ -54,6 +61,8 @@ Example `fields` object for a supported form:
     }
 }
 ```
+
+Note: the keys for the year list begin with 1 because of known issue in Muvuku.
 
 ### Config.js Entry
 

@@ -62,7 +62,7 @@ var checkDups = function(callback) {
         time_val: 4,
         filter: dups
     };
-    utils.checkDuplicates(opts, function(err) {
+    utils.checkOHWDuplicates(opts, function(err) {
         if (err) return callback(msg);
         return callback();
     });

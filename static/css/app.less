@@ -331,11 +331,19 @@ body {
             .hide;
         }
     }
-    .data-record-raw {
-        pre {
-            margin: 0;
-            color: @grayLight;
+    .data-record-revisions {
+      .nav {
+        margin: 5px auto;
+        width: 7em;
+        .disabled {
+          color: @grayLight;
         }
+      }
+      .revision {
+        clear: both;
+      }
+      text-align: center;
+      color: @grayLight;
     }
     .icon-exclamation-sign {
         font-size: 1.2em;

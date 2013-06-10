@@ -4,6 +4,14 @@ exports.update_clinics = function(doc) {
         !doc.related_entities.clinic;
 };
 
+exports.update_scheduled_reports = function(doc) {
+    return doc.form &&
+        doc.year &&
+        (doc.month || doc.week || doc.week_number) &&
+        doc.related_entities &&
+        doc.related_entities.clinic;
+};
+
 exports.ohw_birth_report = function(doc) {
     return doc.form === 'OBIR' &&
         doc.patient_id &&
