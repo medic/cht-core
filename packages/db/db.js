@@ -31,8 +31,8 @@
 
 
 var events = require('events'),
-    _ = require('underscore')._;
-
+    _ = require('underscore'),
+    cache = {};
 
 /**
  * Tests if running in the browser
@@ -255,9 +255,17 @@ exports.stringifyQuery = function (query) {
  */
 
 exports.request = function (options, callback) {
-    options.complete = onComplete(options, callback);
-    options.dataType = 'json';
-    $.ajax(options);
+    var key = JSON.stringify(options);
+
+    if (!cache[key] || /^\/?_/.test(options.url)) {
+        cache[key] = true;
+        setTimeout(function() {
+            delete cache[key];
+        }, 400);
+        options.complete = onComplete(options, callback);
+        options.dataType = 'json';
+        $.ajax(options);
+    }
 };
 
 
