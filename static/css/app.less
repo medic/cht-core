@@ -176,8 +176,24 @@ body {
 .navbar, .brand {
   font-weight: normal;
 }
-.navbar .brand a.kujua {
-  .kujua;
+.navbar {
+  .brand {
+    color: @white;
+    .kujua {
+      .kujua;
+    }
+    .lite {
+      font-size: .578em;
+      position: absolute;
+      top: 1px;
+    }
+    a {
+      color: @white;
+      &:hover {
+        text-decoration: none;
+      }
+    }
+  }
 }
 .navbar .brand a.kujua:hover {
   background:none;
