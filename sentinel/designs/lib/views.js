@@ -124,3 +124,44 @@ exports.last_valid_seq = {
         }, { ok: true, seq: 0 });
     }
 };
+
+exports.data_records_by_form_year_week_clinic_id_and_reported_date = {
+    map: function (doc) {
+        if (doc.type === 'data_record'
+                && doc.related_entities
+                && doc.related_entities.clinic
+                && doc.year
+                && (doc.week || doc.week_number)
+                && doc.form
+                && doc.reported_date) {
+            emit([
+                doc.form,
+                doc.year,
+                doc.week || doc.week_number,
+                doc.related_entities.clinic._id,
+                doc.reported_date
+            ], null);
+        }
+    }
+};
+
+exports.data_records_by_form_year_month_clinic_id_and_reported_date = {
+    map: function (doc) {
+        if (doc.type === 'data_record'
+                && doc.related_entities
+                && doc.related_entities.clinic
+                && doc.year
+                && doc.month
+                && doc.form
+                && doc.reported_date) {
+            emit([
+                doc.form,
+                doc.year,
+                doc.month,
+                doc.related_entities.clinic._id,
+                doc.reported_date
+            ], null);
+        }
+    }
+};
+

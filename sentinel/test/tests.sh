@@ -10,8 +10,8 @@ do
   DIR="$( cd -P "$( dirname "$SOURCE"  )" && pwd )"
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-#NODEUNIT="node $DIR/../node_modules/nodeunit/bin/nodeunit --reporter=minimal "
-NODEUNIT="node --debug-brk $DIR/../node_modules/nodeunit/bin/nodeunit --reporter=minimal "
+NODEUNIT="node $DIR/../node_modules/nodeunit/bin/nodeunit --reporter=minimal "
+#NODEUNIT="node --debug-brk $DIR/../node_modules/nodeunit/bin/nodeunit --reporter=minimal "
 
 cd $DIR
 $NODEUNIT unit
