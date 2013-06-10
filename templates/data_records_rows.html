@@ -111,17 +111,11 @@
                     {>"data_record_scheduled_tasks.html"/}
                   </div>
                   {/scheduled_tasks}
-                  {?_raw}
-                  <div class="data-record-raw">
-                    <a title="JSON" data-toggle="extended" class="pull-right">
-                      <i class="icon-plus"></i>
-                    </a>
-                    <div class="extended hide"><pre>{_raw}</pre></div>
-                  </div>
-                  {/_raw}
+                  {?isAdmin}
                   <div class="data-record-revisions">
                     {>"data_record_revisions.html"/}
                   </div>
+                  {/isAdmin}
                 </div>
               </td>
             </tr>
