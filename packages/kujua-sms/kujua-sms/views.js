@@ -21,6 +21,50 @@ exports.data_records_by_district_and_form = {
     }
 };
 
+exports.data_records = {
+    map: function(doc) {
+        var objectpath = require('views/lib/objectpath'),
+            clinicId,
+            districtId,
+            form = doc.form || 'null',
+            valid;
+
+        if (doc.type === 'data_record') {
+            clinicId = objectpath.get(doc, 'related_entities.clinic._id');
+            districtId = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
+            valid = !doc.errors || doc.errors.length === 0;
+
+            emit([doc.reported_date], 1);
+            emit([valid, doc.reported_date], 1);
+
+            emit([form, doc.reported_date], 1);
+            emit([valid, form, doc.reported_date], 1);
+
+            if (clinicId) {
+                emit([clinicId, doc.reported_date], 1);
+                emit([valid, clinicId, doc.reported_date], 1);
+
+                emit([clinicId, form, doc.reported_date], 1);
+                emit([valid, clinicId, form, doc.reported_date], 1);
+            }
+            if (districtId) {
+                emit([districtId, doc.reported_date], 1);
+                emit([valid, districtId, doc.reported_date], 1);
+
+                emit([districtId, form, doc.reported_date], 1);
+                emit([valid, districtId, form, doc.reported_date], 1);
+            }
+            if (clinicId && districtId) {
+                emit([districtId, clinicId, doc.reported_date], 1);
+                emit([valid, districtId, clinicId, doc.reported_date], 1);
+
+                emit([districtId, clinicId, form, doc.reported_date], 1);
+                emit([valid, districtId, clinicId, form, doc.reported_date], 1);
+            }
+        }
+    }
+};
+
 exports.data_records_valid_by_district_form_and_reported_date = {
     map: function(doc) {
         if(doc.type === 'data_record') {
@@ -42,6 +86,9 @@ exports.data_records_valid_by_district_form_and_reported_date = {
                 emit([null, doc.form, null, doc.reported_date], 1);
             }
         }
+    },
+    reduce: function(key, counts) {
+        return sum(counts);
     }
 };
 
