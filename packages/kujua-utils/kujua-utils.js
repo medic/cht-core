@@ -186,17 +186,21 @@ exports.isUserDistrictAdmin = function(userCtx) {
 };
 
 exports.hasPerm = function(userCtx, perm) {
-    if (!userCtx || !perm) { return false; }
-    switch (perm) {
-        case 'can_edit_facility':
-            return _.indexOf(userCtx.roles, '_admin') !== -1 ||
-                   _.indexOf(userCtx.roles, 'national_admin') !== -1 ||
-                   _.indexOf(userCtx.roles, 'district_admin') !== -1;
-        case 'can_edit_any_facility':
-            return _.indexOf(userCtx.roles, '_admin') !== -1 ||
-                   _.indexOf(userCtx.roles, 'national_admin') !== -1;
-        default:
-            return false;
+    var permissions = {
+         can_edit_facility: ['national_admin', 'district_admin'],
+         can_edit_any_facility: ['national_admin']
+    };
+
+    if (!userCtx || !perm) {
+        return false;
+    }
+
+    if (permissions[perm]) {
+        // admins can do anything
+        return _.intersection(userCtx.roles, ['_admin'].concat(permissions[perm])).length > 0;
+    } else {
+        // if permission doesn't exist, it is always false
+        return false;
     }
 };
 
