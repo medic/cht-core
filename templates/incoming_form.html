@@ -111,12 +111,16 @@
     {>"data_record_scheduled_tasks.html"/}
   </div>
   {/scheduled_tasks}
-  {#sms_message}
-    <div class="row-fluid data-record-raw">
-      <pre>{message}</pre>
+  {@hasPermission permission="can_view_sms_message"}
+    {#sms_message}
+      <div class="row-fluid data-record-raw">
+        <pre>{message}</pre>
+      </div>
+    {/sms_message}
+  {/hasPermission}
+  {@hasPermission permission="can_view_revisions"}
+    <div class="data-record-revisions">
+      {>"data_record_revisions.html"/}
     </div>
-  {/sms_message}
-  <div class="data-record-revisions">
-    {>"data_record_revisions.html"/}
-  </div>
+  {/hasPermission}
 </div>

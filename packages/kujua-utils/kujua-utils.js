@@ -187,8 +187,10 @@ exports.isUserDistrictAdmin = function(userCtx) {
 
 exports.hasPerm = function(userCtx, perm) {
     var permissions = {
-         can_edit_facility: ['national_admin', 'district_admin'],
-         can_edit_any_facility: ['national_admin']
+        can_edit_facility: ['national_admin', 'district_admin'],
+        can_edit_any_facility: ['national_admin'],
+        can_view_revisions: [],
+        can_view_sms_message: []
     };
 
     if (!userCtx || !perm) {
