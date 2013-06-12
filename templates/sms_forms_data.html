@@ -1,7 +1,9 @@
 {?forms}
 {#forms}
     <div class="row form-row">
-        <h3 class="span5 offset1">{title}</h3>
+      <h3 class="span5 offset1">
+        {title} <div class="label label-faded">{form}</div>
+      </h3>
         <div class="span2"><label>{total} total</label></div>
         <div class="span4">
             <form class="form-inline" method="get">
@@ -20,7 +22,7 @@
     {#districts}
         <div class="row district-form-row">
             <h4 class="offset2 span4">
-                {form}{?isAdmin}/{dh_name}{/isAdmin}
+                {?isAdmin}{dh_name}{/isAdmin}
             </h4>
             <div class="span2"><label>{total} records</label></div>
             <div class="span4">
