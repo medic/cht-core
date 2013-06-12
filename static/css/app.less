@@ -14,6 +14,29 @@ html, body {
 }
 
 body {
+    &.loading {
+        &:before {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.1);
+            content: '';
+            z-index: 100000;
+        }
+        &:after {
+            position: fixed;
+            top: 25%;
+            left: 49%;
+            color: @grayLight;
+            content: '\f110';
+            font-family: FontAwesome;
+            font-size: 72px;
+            .icon-spin;
+            z-index: 100000;
+        }
+    }
 
 }
 
