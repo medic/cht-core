@@ -17,7 +17,7 @@
     {@contact entities="{related_entities}" from="{from}"/}
   </div>
   <div class="msg">
-    <div class="label">{form}</div>
+    <span class="label">{form}</span>
 
     <i>{@formName form="{form}"/}</i>
   </div>
@@ -73,7 +73,7 @@
           From: {from}
         {/clinic.name}
         {?clinic.contact.rc_code}
-          <div class="label">{clinic.contact.rc_code}</div>
+          <span class="label">{clinic.contact.rc_code}</span>
         {/clinic.contact.rc_code}
         </div>
         <div>

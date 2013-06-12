@@ -92,7 +92,7 @@ function onComplete(options, callback) {
         var resp = {};
         var ctype = req.getResponseHeader('Content-Type');
 
-        $(document.body).removeClass('loading');
+        //$(document.body).removeClass('loading');
 
         if (ctype === 'application/json' || ctype === 'text/json') {
             try {
@@ -262,7 +262,7 @@ exports.request = function (options, callback) {
 
     if (!requestCache[key] || /^\/?_/.test(options.url)) {
         // removed in onComplete
-        $(document.body).addClass('loading');
+        //$(document.body).addClass('loading');
         requestCache[key] = true;
         setTimeout(function() {
             delete requestCache[key];
