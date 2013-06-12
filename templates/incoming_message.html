@@ -78,6 +78,11 @@
       {/related_entities}
      </div>
   </div>
+  {?errors}
+  <div class="row-fluid data-record-errors">
+    {>"data_record_errors.html"/}
+  </div>
+  {/errors}
   {?responses}
   <div class="row-fluid data-record-responses">
     {>"data_record_responses.html"/}
