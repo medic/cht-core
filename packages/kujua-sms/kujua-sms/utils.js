@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Utility functions for Kujua
  */
 
@@ -25,7 +25,8 @@ var _s = function(key, locale) {
 exports.strings = {
     reported_date: {
         en: 'Reported Date',
-        fr: 'Date envoyé'
+        fr: 'Date envoyé',
+        es: 'Fecha de envío'
     },
     "related_entities.clinic.name": {
         en: "Clinic Name",
@@ -61,11 +62,13 @@ exports.strings = {
     },
     from: {
         en: 'From',
-        fr: 'Envoyé par'
+        fr: 'Envoyé par',
+        es: 'De'
     },
     sent_timestamp: {
         en: 'Sent Timestamp',
-        fr: 'Date envoyé'
+        fr: 'Date',
+        es: 'Fecha'
     },
     daysoverdue: {
         en: 'Days since patient visit'
@@ -477,58 +480,79 @@ var getFormKeys = exports.getFormKeys = function(form) {
 //
 var messages = {
     'sys.recipient_not_found': {
-        en: 'Could not find message recipient.'
+        en: 'Could not find message recipient.',
+        fr: 'Le recipient du message n\'a pas été trouvé.',
+        es: 'No se encontro destinatario para el mensaje.'
     },
     'sys.missing_fields': {
         en: "Missing or invalid fields: %(fields).",
+        fr: "Champs invalides ou manquants: %(fields).",
+        es: "Campo invalido o faltante: %(fields)."
     },
     missing_fields: {
         en: "Missing or invalid fields: %(fields).",
+        fr: "Champs invalides ou manquants: %(fields).",
+        es: "Campo invalido o faltante: %(fields).",
         ne: "तपाईले फारम पूरा भर्नुभएन। कृपया पुरा गरेर फेरि पठाउन प्रयास गर्नुहोला।"
     },
     extra_fields: {
         en: "Extra fields.",
+        fr: "Champs additionels.",
+        es: "Campos extra.",
         ne: "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
     },
     'sys.form_not_found': {
-        en: "Form '%(form)' not found."
+        en: "Form '%(form)' not found.",
+        fr: "Formulaire '%(form)' non trouvé",
+        es: "Forma no encontrada."
     },
     form_not_found: {
         en: "The form sent '%(form)' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
-        fr: "Le formulaire envoyé '%(form)' n'est pas reconnu. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur.",
+        fr: "Le formulaire envoyé '%(form)' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
+        es: "No se reconocio el reporte enviado '%(form)'. Por favor intente de nuevo. Si el problema persiste, informe al director.",
         ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
     },
     /* form_invalid is placeholder until we do proper form validation */
     form_invalid: {
         en: "The form sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
-        fr: "Le formulaire envoyé '%(form)' n'est pas complet. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur.",
+        fr: "Le formulaire envoyé '%(form)' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
+        es: "No se completo el reporte '%(form)'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
         ne: "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
     },
     'sys.facility_not_found': {
-        en: "Facility not found."
+        en: "Facility not found.",
+        fr: "Établissement non trouvé.",
+        es: "No se encontro a la unidad de salud."
     },
     'sys.empty': {
-        en: "Message appears empty."
+        en: "Message appears empty.",
+        fr: "Le message recu est vide.",
+        es: "El mensaje esta en blanco."
     },
     empty : {
         en: "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor.",
-        fr: "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur.",
+        fr: "Nous avons des troubles avec votre message, SVP renvoyer. Si vous continuez à avoir des problèmes contactez votre superviseur.",
+        es: "El mensaje esta en blanco, por favor reenvielo. Si encuentra un problema, informe al director.",
         ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
     },
     form_received: {
         en: 'Your form submission was received, thank you.',
         fr: 'Merci, votre formulaire a été bien reçu.',
+        es: 'Recibimos su reporte, muchas gracias.',
         ne: 'डाटा प्राप्त भयो, धन्यवाद'
     },
     sms_received: {
         en: 'SMS message received; it will be reviewed shortly. If you were'
             + ' trying to submit a text form, please enter a correct form code'
             + ' and try again.',
-        fr: 'Merci, votre formulaire a été bien reçu.',
+        fr: 'Merci, votre message a été bien reçu.',
+        es: 'Recibimos tu mensaje, lo procesaremos pronto. Si querias mandar un reporte, intentalo nuevamente en el formato adecuado.',
         ne: 'डाटा प्राप्त भयो, धन्यवाद'
     },
     reporting_unit_not_found : {
         en: "Reporting Unit ID is incorrect. Please correct and submit a complete report again.",
+        fr: 'Établissement non trouvé, svp corriger et renvoyer',
+        es: 'No encontramos a su centro de salud. Por favor corrijalo y reenvie el reporte.',
         ne: " रिपोर्टिङ् युनिटको आइ.डि मिलेन। कृपया सहि आइ.डि राखेर पुरा रिपोर्ट फेरि पठाउनुहोला।"
     }
 };
