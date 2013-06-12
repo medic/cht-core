@@ -26,7 +26,7 @@ exports.data_records = {
         var objectpath = require('views/lib/objectpath'),
             clinicId,
             districtId,
-            form = doc.form || 'null',
+            form = doc.form,
             valid;
 
         if (doc.type === 'data_record') {
@@ -37,29 +37,61 @@ exports.data_records = {
             emit([doc.reported_date], 1);
             emit([valid, doc.reported_date], 1);
 
-            emit([form, doc.reported_date], 1);
-            emit([valid, form, doc.reported_date], 1);
+            if (form) {
+                emit([form, doc.reported_date], 1);
+                emit([valid, form, doc.reported_date], 1);
+
+                emit(['*', doc.reported_date], 1);
+                emit([valid, '*', doc.reported_date], 1);
+            } else {
+                emit(['null_form', doc.reported_date], 1);
+                emit([valid, 'null_form', doc.reported_date], 1);
+            }
 
             if (clinicId) {
                 emit([clinicId, doc.reported_date], 1);
                 emit([valid, clinicId, doc.reported_date], 1);
 
-                emit([clinicId, form, doc.reported_date], 1);
-                emit([valid, clinicId, form, doc.reported_date], 1);
+                if (form) {
+                    emit([clinicId, form, doc.reported_date], 1);
+                    emit([valid, clinicId, form, doc.reported_date], 1);
+
+                    emit([clinicId, '*', doc.reported_date], 1);
+                    emit([valid, clinicId, '*', doc.reported_date], 1);
+                } else {
+                    emit([clinicId, 'null_form', doc.reported_date], 1);
+                    emit([valid, clinicId, 'null_form', doc.reported_date], 1);
+                }
             }
             if (districtId) {
                 emit([districtId, doc.reported_date], 1);
                 emit([valid, districtId, doc.reported_date], 1);
 
-                emit([districtId, form, doc.reported_date], 1);
-                emit([valid, districtId, form, doc.reported_date], 1);
+                if (form) {
+                    emit([districtId, form, doc.reported_date], 1);
+                    emit([valid, districtId, form, doc.reported_date], 1);
+
+                    emit([districtId, '*', doc.reported_date], 1);
+                    emit([valid, districtId, '*', doc.reported_date], 1);
+                } else {
+                    emit([districtId, 'null_form', doc.reported_date], 1);
+                    emit([valid, districtId, 'null_form', doc.reported_date], 1);
+                }
             }
             if (clinicId && districtId) {
                 emit([districtId, clinicId, doc.reported_date], 1);
                 emit([valid, districtId, clinicId, doc.reported_date], 1);
 
-                emit([districtId, clinicId, form, doc.reported_date], 1);
-                emit([valid, districtId, clinicId, form, doc.reported_date], 1);
+                if (form) {
+                    emit([districtId, clinicId, form, doc.reported_date], 1);
+                    emit([valid, districtId, clinicId, form, doc.reported_date], 1);
+
+                    emit([districtId, clinicId, '*', doc.reported_date], 1);
+                    emit([valid, districtId, clinicId, '*', doc.reported_date], 1);
+                } else {
+                    emit([districtId, clinicId, 'null_form', doc.reported_date], 1);
+                    emit([valid, districtId, clinicId, 'null_form', doc.reported_date], 1);
+                }
             }
         }
     }
