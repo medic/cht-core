@@ -351,7 +351,7 @@ exports.form_not_found_response = function(test) {
         test.same(resp.payload.task, 'send');
         test.same(
             resp.payload.messages[0].message,
-            "The form sent 'FOO' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor."
+            "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again."
         );
         test.done();
     }
@@ -389,7 +389,7 @@ exports.payload_form_not_found_muvuku = function (test) {
         test.same(resp.payload.messages[0].to, "+888");
         test.same(
             resp.payload.messages[0].message,
-            "The form sent '0000' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor."
+            "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again."
         );
         test.done();
     }
@@ -429,7 +429,7 @@ exports.form_not_found_fr_responses = function (test) {
         test.same(resp.payload.messages[0].to, "+888");
         test.same(
             resp.payload.messages[0].message,
-            "Le formulaire envoyé '0000' n'est pas reconnu. SVP remplissez le au complet et essayez de le renvoyer. Si ce problème persiste contactez votre superviseur."
+            'Merci, votre message a été bien reçu.'
         );
         test.done();
     }
@@ -505,7 +505,7 @@ exports.empty_message_resonses_fr = function (test) {
         test.same(resp.payload.messages[0].to, "+888");
         test.same(
             resp.payload.messages[0].message,
-            "Nous avons des troubles avec votre message, SVP essayez de le renvoyer. Si vous continuer à avoir des problèmes contactez votre superviseur."
+            "Nous avons des troubles avec votre message, SVP renvoyer. Si vous continuez à avoir des problèmes contactez votre superviseur."
         );
         test.done();
     }
