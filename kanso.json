@@ -65,8 +65,7 @@
         "underscore-string": null,
         "users": null,
         "cookies": null,
-        "moment": null,
-        "kanso-gardener": null
+        "moment": null
     },
     "user_data": {
         "db_prefix": false,
