@@ -3,6 +3,7 @@
 sentinel/settings.js
 sentinel/settings-test.js
 sentinel/Procfile
+sentinel_working
 npm-debug.log
 
 logs

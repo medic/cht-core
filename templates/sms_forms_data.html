@@ -1,24 +1,48 @@
-<ul>
 {?forms}
 {#forms}
-<li class="form">
-<h3>{title}</h3>
-<h4><small>{form}{?isAdmin}/{dh_name}{/isAdmin}</small></h4>
-  <h4>{total} total</h4>
-      <form method="get">
-        <select name="format">
-          <option value="{baseURL}/{form}/data_records.xml?{q}">Excel (English)</option>
-          <option value="{baseURL}/{form}/data_records.csv?{q}">CSV (English)</option>
-          <option value="{baseURL}/{form}/data_records.xml?locale=fr&amp;{q}">Excel (French)</option>
-          <option value="{baseURL}/{form}/data_records.csv?locale=fr&amp;{q}">CSV (French)</a></li>
-        </select>
-        <button class="btn btn-primary" type="submit">
-          <i class="icon-arrow-down icon-large"></i>
-        </button>
-      </form>
-</li>
+    <div class="row form-row">
+      <h3 class="span5 offset1">
+        {title} <div class="label label-faded">{form}</div>
+      </h3>
+        <div class="span2"><label>{total} total</label></div>
+        <div class="span4">
+            <form class="form-inline" method="get">
+                <select name="format">
+                    <option value="{baseURL}/form_data_records.xml?{q}">Excel (English)</option>
+                    <option value="{baseURL}/form_data_records.csv?{q}">CSV (English)</option>
+                    <option value="{baseURL}/form_data_records.xml?locale=fr&amp;{q}">Excel (French)</option>
+                    <option value="{baseURL}/form_data_records.csv?locale=fr&amp;{q}">CSV (French)</a></li>
+                </select>
+                <button class="btn btn-primary" type="submit">
+                    <i class="icon-arrow-down icon-large"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    {#districts}
+        <div class="row district-form-row">
+            <h4 class="offset2 span4">
+                {?isAdmin}{dh_name}{/isAdmin}
+            </h4>
+            <div class="span2"><label>{total} records</label></div>
+            <div class="span4">
+                <form class="form-inline" method="get">
+                    <select name="format">
+                        <option value="{baseURL}/{form}/data_records.xml?{q}">Excel (English)</option>
+                        <option value="{baseURL}/{form}/data_records.csv?{q}">CSV (English)</option>
+                        <option value="{baseURL}/{form}/data_records.xml?locale=fr&amp;{q}">Excel (French)</option>
+                        <option value="{baseURL}/{form}/data_records.csv?locale=fr&amp;{q}">CSV (French)</a></li>
+                    </select>
+                    <button class="btn btn-primary" type="submit">
+                        <i class="icon-arrow-down icon-large"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    {/districts}
 {/forms}
 {:else}
-<li>No data is available, please login or contact your supervisor.</li>
+<div span="span12">
+    No data is available, please login or contact your supervisor.
+</div>
 {/forms}
-</ul>

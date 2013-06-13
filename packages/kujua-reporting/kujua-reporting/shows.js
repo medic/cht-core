@@ -375,7 +375,7 @@ var renderPage = function() {
     // render header
     $('.page-header .container').html(
         templates.render('kujua-reporting/page_header_body.html', req, {
-            doc: doc,
+            doc: _.extend({}, doc, form_config),
             parentURL: parentURL
         })
     );

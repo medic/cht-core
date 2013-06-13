@@ -56,8 +56,11 @@ var getDataRecord = exports.getDataRecord = function(doc, form_data) {
         sms_message: doc
     };
 
-    if (form && !def)
-        utils.addError(record, 'sys.form_not_found');
+    // if form is undefined we treat as a regular message
+    if (form && !def) {
+        delete record.form;
+        //utils.addError(record, 'sys.form_not_found');
+    }
 
     // try to parse timestamp from gateway
     var ts = parseSentTimestamp(doc.sent_timestamp);

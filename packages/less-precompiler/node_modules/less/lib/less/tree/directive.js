@@ -1,8 +1,7 @@
 (function (tree) {
 
-tree.Directive = function (name, value, features) {
+tree.Directive = function (name, value) {
     this.name = name;
-    this.features = features && new(tree.Value)(features);
 
     if (Array.isArray(value)) {
         this.ruleset = new(tree.Ruleset)([], value);
@@ -13,11 +12,9 @@ tree.Directive = function (name, value, features) {
 };
 tree.Directive.prototype = {
     toCSS: function (ctx, env) {
-        var features = this.features ? ' ' + this.features.toCSS(env) : '';
-
         if (this.ruleset) {
             this.ruleset.root = true;
-            return this.name + features + (env.compress ? '{' : ' {\n  ') +
+            return this.name + (env.compress ? '{' : ' {\n  ') +
                    this.ruleset.toCSS(ctx, env).trim().replace(/\n/g, '\n  ') +
                                (env.compress ? '}': '\n}\n');
         } else {
@@ -25,11 +22,14 @@ tree.Directive.prototype = {
         }
     },
     eval: function (env) {
-        this.features = this.features && this.features.eval(env);
-        env.frames.unshift(this);
-        this.ruleset = this.ruleset && this.ruleset.eval(env);
-        env.frames.shift();
-        return this;
+        var evaldDirective = this;
+        if (this.ruleset) {
+            env.frames.unshift(this);
+            evaldDirective = new(tree.Directive)(this.name);
+            evaldDirective.ruleset = this.ruleset.eval(env);
+            env.frames.shift();
+        }
+        return evaldDirective;
     },
     variable: function (name) { return tree.Ruleset.prototype.variable.call(this.ruleset, name) },
     find: function () { return tree.Ruleset.prototype.find.apply(this.ruleset, arguments) },

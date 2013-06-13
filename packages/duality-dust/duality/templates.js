@@ -4,6 +4,7 @@
 
 var utils = require('duality/utils'),
     dust = require('dust'),
+    _ = require('underscore'),
     flashmessages;
 
 try {
@@ -22,6 +23,50 @@ dust.optimizers.format = function (ctx, node) {
     return node;
 };
 
+dust.helpers.tap = function(input, chunk, context) {
+    // return given input if there is no dust reference to resolve
+    var output = input;
+    // dust compiles a string/reference such as {foo} to function,
+    if (typeof input === "function") {
+        // just a plain function (a.k.a anonymous functions) in the context, not a dust `body` function created by the dust compiler
+        if (input.isFunction === true) {
+            output = input();
+        } else {
+            output = '';
+            chunk.tap(function(data) {
+                output += data;
+                return '';
+            }).render(input, context).untap();
+
+            if (output === '') {
+                output = false;
+            }
+        }
+    }
+    return output;
+};
+
+dust.helpers.tapObject = dust.helpers.tapArray = function(input, chunk, context) {
+    // return given input if there is no dust reference to resolve
+    var output = input;
+
+    // dust compiles a string/reference such as {foo} to function,
+    chunk.tap(function(data) {
+        output = data;
+        return '';
+    }).render(input, context).untap();
+
+    return output || [];
+};
+
+
+/**
+ * Add helpers. Will override any existing helpers by the given names.
+ * @param {Object} helpers
+ */
+exports.addHelpers = function(helpers) {
+    _.extend(dust.helpers, helpers);
+}
 
 /**
  * Synchronously render dust template and return result, automatically adding

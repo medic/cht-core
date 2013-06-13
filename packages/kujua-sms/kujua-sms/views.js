@@ -21,6 +21,82 @@ exports.data_records_by_district_and_form = {
     }
 };
 
+exports.data_records = {
+    map: function(doc) {
+        var objectpath = require('views/lib/objectpath'),
+            clinicId,
+            districtId,
+            form = doc.form,
+            valid;
+
+        if (doc.type === 'data_record') {
+            clinicId = objectpath.get(doc, 'related_entities.clinic._id');
+            districtId = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
+            valid = !doc.errors || doc.errors.length === 0;
+
+            emit([doc.reported_date], 1);
+            emit([valid, doc.reported_date], 1);
+
+            if (form) {
+                emit([form, doc.reported_date], 1);
+                emit([valid, form, doc.reported_date], 1);
+
+                emit(['*', doc.reported_date], 1);
+                emit([valid, '*', doc.reported_date], 1);
+            } else {
+                emit(['null_form', doc.reported_date], 1);
+                emit([valid, 'null_form', doc.reported_date], 1);
+            }
+
+            if (clinicId) {
+                emit([clinicId, doc.reported_date], 1);
+                emit([valid, clinicId, doc.reported_date], 1);
+
+                if (form) {
+                    emit([clinicId, form, doc.reported_date], 1);
+                    emit([valid, clinicId, form, doc.reported_date], 1);
+
+                    emit([clinicId, '*', doc.reported_date], 1);
+                    emit([valid, clinicId, '*', doc.reported_date], 1);
+                } else {
+                    emit([clinicId, 'null_form', doc.reported_date], 1);
+                    emit([valid, clinicId, 'null_form', doc.reported_date], 1);
+                }
+            }
+            if (districtId) {
+                emit([districtId, doc.reported_date], 1);
+                emit([valid, districtId, doc.reported_date], 1);
+
+                if (form) {
+                    emit([districtId, form, doc.reported_date], 1);
+                    emit([valid, districtId, form, doc.reported_date], 1);
+
+                    emit([districtId, '*', doc.reported_date], 1);
+                    emit([valid, districtId, '*', doc.reported_date], 1);
+                } else {
+                    emit([districtId, 'null_form', doc.reported_date], 1);
+                    emit([valid, districtId, 'null_form', doc.reported_date], 1);
+                }
+            }
+            if (clinicId && districtId) {
+                emit([districtId, clinicId, doc.reported_date], 1);
+                emit([valid, districtId, clinicId, doc.reported_date], 1);
+
+                if (form) {
+                    emit([districtId, clinicId, form, doc.reported_date], 1);
+                    emit([valid, districtId, clinicId, form, doc.reported_date], 1);
+
+                    emit([districtId, clinicId, '*', doc.reported_date], 1);
+                    emit([valid, districtId, clinicId, '*', doc.reported_date], 1);
+                } else {
+                    emit([districtId, clinicId, 'null_form', doc.reported_date], 1);
+                    emit([valid, districtId, clinicId, 'null_form', doc.reported_date], 1);
+                }
+            }
+        }
+    }
+};
+
 exports.data_records_valid_by_district_form_and_reported_date = {
     map: function(doc) {
         if(doc.type === 'data_record') {
@@ -42,29 +118,27 @@ exports.data_records_valid_by_district_form_and_reported_date = {
                 emit([null, doc.form, null, doc.reported_date], 1);
             }
         }
+    },
+    reduce: function(key, counts) {
+        return sum(counts);
     }
 };
 
 // only emit valid records
 exports.data_records_valid_by_district_and_form = {
     map: function(doc) {
-        if(doc.type === 'data_record') {
-            var jsonforms = require('views/lib/jsonforms'),
-                def = jsonforms[doc.form];
+        if (doc.type === 'data_record') {
+            var objectpath = require('views/lib/objectpath'),
+                dh;
 
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent
-                    && (!doc.errors || doc.errors.length === 0)) {
-                var dh = doc.related_entities.clinic.parent.parent;
-                emit([dh._id, doc.form, dh.name], 1);
-            } else if (doc.related_entities.health_center
-                    && doc.related_entities.health_center.parent
-                    && (!doc.errors || doc.errors.length === 0)) {
-                var dh = doc.related_entities.health_center.parent;
-                emit([dh._id, doc.form, dh.name], 1);
-            } else if (!doc.errors || doc.errors.length === 0) {
-                emit([null, doc.form, null], 1);
+            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent') || objectpath.get(doc, 'related_entities.health_center.parent');
+
+            if (!doc.errors || doc.errors.length === 0) {
+                if (dh) {
+                    emit([dh._id, doc.form, dh.name], 1);
+                } else {
+                    emit([null, doc.form, null], 1);
+                }
             }
         }
     },

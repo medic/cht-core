@@ -1,125 +1,13 @@
-      {#data_records}
-      <div class="data-record" rel="{_id}" data-key="{_key}">
-        <table class="table table-bordered table-striped">
-        <tbody>
-            <tr class="main">
-              <td class="select-row">
-                <input type="checkbox" name="select-row-checkbox" />
-              </td>
-              <td class="reported-date">
-                <div class="relative">
-                {_reported_date}
-                </div>
-              </td>
-              <td class="contact-info">
-                {#related_entities}
-                {?clinic.contact.name}{clinic.contact.name}
-                {:else}
-                  {?health_center.contact.name}{health_center.contact.name}
-                  {:else}
-                    {?clinic.parent.contact.name}{clinic.parent.contact.name}
-                    {:else}
-                    <i class="icon-question-sign icon-large"></i>
-                    {/clinic.parent.contact.name}
-                  {/health_center.contact.name}
-                {/clinic.contact.name}
-                {/related_entities}
-                <span class="from">{from}</span>
-              </td>
-              <td class="facility">
-                {#related_entities}
-                  {?clinic.parent.parent.name}
-                  <i>{clinic.parent.parent.name}</i>
-                  {:else}
-                    {?health_center.parent.name}
-                    <i>{health_center.parent.name}</i>
-                    {:else}
-                    <i class="icon-question-sign icon-large"></i>
-                    {/health_center.parent.name}
-                  {/clinic.parent.parent.name}
-                  {?clinic.parent.name}
-                  <i>{clinic.parent.name}</i>
-                  {:else}
-                    {?health_center.name}
-                    <i>{health_center.name}</i>
-                    {:else}
-                    <i class="icon-question-sign icon-large"></i>
-                    {/health_center.name}
-                  {/clinic.parent.name}
-                  {?clinic.name}
-                  <i>{clinic.name}</i>
-                  {:else}
-                    <i class="icon-question-sign icon-large" title="No clinic name."></i>
-                  {/clinic.name}
-                {/related_entities}
-              </td>
-              <td class="rc-code">
-                {#related_entities}
-                  {?clinic.contact.rc_code}
-                  <i class="rc-code">{clinic.contact.rc_code}</i>
-                  {/clinic.contact.rc_code}
-                {/related_entities}
-              </td>
-              <td class="sms-message">
-                <div>
-                {#sms_message}
-                  <a href="#" class="extend">{message}</a>
-                {/sms_message}
-                </div>
-              </td>
-              <td class="errors">
-                {?errors}
-                <i class="icon-exclamation-sign icon-large"></i>
-                {:else}
-                  <i class="{state} icon-ok icon-large"></i>
-                {/errors}
-                {?tasks}
-                <span class="label label-success">{tasks.length}</span>
-                {/tasks}
-                {?scheduled_tasks}
-                <span class="label label-info">{scheduled_tasks_count}</span>
-                {/scheduled_tasks}
-              </td>
-            </tr>
-          </tbody>
-          </table>
-          <table class="table table-bordered table-striped hide extended">
-          <tbody>
-            <tr>
-              <td colspan="8">
-                <div class="relative">
-                  <div class="scroll">
-                    {>"data_record_fields.html":fields/}
-                  </div>
-                  {?errors}
-                  <div class="data-record-errors">
-                    {>"data_record_errors.html"/}
-                  </div>
-                  {/errors}
-                  {?responses}
-                  <div class="data-record-responses">
-                    {>"data_record_responses.html"/}
-                  </div>
-                  {/responses}
-                  {?tasks}
-                  <div class="data-record-tasks">
-                    {>"data_record_tasks.html"/}
-                  </div>
-                  {/tasks}
-                  {?scheduled_tasks}
-                  <div class="data-record-scheduled-tasks">
-                    {>"data_record_scheduled_tasks.html"/}
-                  </div>
-                  {/scheduled_tasks}
-                  {?isAdmin}
-                  <div class="data-record-revisions">
-                    {>"data_record_revisions.html"/}
-                  </div>
-                  {/isAdmin}
-                </div>
-              </td>
-            </tr>
-          </tbody>
-          </table>
-        </div>
-        {/data_records}
+{#data_records}
+<div class="data-record" rel="{_id}" data-key="{_key}">
+  {?kujua_message}
+    {>"outgoing_message.html"/}
+  {:else}
+    {?form}
+      {>"incoming_form.html"/}
+    {:else}
+      {>"incoming_message.html"/}
+    {/form}
+  {/kujua_message}
+</div>
+{/data_records}

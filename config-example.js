@@ -24,6 +24,7 @@
     { "key": "Clinics", "value": "Reporting Units" },
     { "key": "Clinic Name", "value": "Reporting Unit Name" },
     { "key": "Clinic Contact", "value": "Reporting Unit" },
+    { "key": "From", "value": "From" },
     { "key": "Clinic Contact Name", "value": "Reporting Unit Contact Name" },
     { "key": "Clinic Contact Phone", "value": "Reporting Unit Contact Phone" },
     { "key": "RC Code", "value": "RU Code" },

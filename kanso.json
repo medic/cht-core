@@ -1,8 +1,8 @@
 {
-    "name": "kujua-base",
-    "version": "0.2.45",
-    "description": "SMS data collection designed for rural environments",
-    "long_description" : "Kujua is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
+    "name": "kujua-lite",
+    "version": "0.3.0-beta",
+    "description": "SMS data collection designed for rural environments (Beta Version)",
+    "long_description" : "Kujua Lite is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
     "url": "https://github.com/medic/kujua",
     "categories": ["health", "sms"],
     "icons": {
@@ -37,6 +37,9 @@
     },
     "node_module_folder" : "sentinel",
     "dependencies_included" : true,
+    "bundledDependencies": [
+        "packages/underscore"
+    ],
     "dependencies": {
         "modules": null,
         "properties": null,
@@ -49,7 +52,6 @@
         "nodeunit": null,
         "nodeunit-testrunner": null,
         "less-precompiler": null,
-        "bootstrap-fontawesome": null,
         "select2": null,
         "kanso-config": null,
         "kujua-branding": ">=0.0.2",
@@ -60,13 +62,62 @@
         "git-info": null,
         "showdown": null,
         "couch-fakerequest": null,
+        "underscore-string": null,
         "users": null,
         "cookies": null,
-        "moment": null,
-        "kanso-gardener": null
+        "moment": null
+    },
+    "user_data": {
+        "db_prefix": false,
+        "available_roles" : ["kujua-user","national_admin","district_admin","kujua_gateway"],
+        "schema": {
+            "descripton": "Kujua Lite",
+            "type": "object",
+            "properties": {
+                "facility_id": {
+                    "title": "Facility Id",
+                    "type": "string",
+                    "je:hint": "autocomplete"
+                }
+            }
+        }
     },
     "settings_schema" : {
-        "description": "Kujua Settings",
+        "description": "Kujua Lite Settings",
+        "type": "object",
+        "properties": {
+            "reported_date_format": {
+               "type": "string",
+               "title": "Reported Date Format",
+               "default": "MMM hh:mm"
+            },
+            "facility_labels": {
+              "title": "Facility labels",
+              "type": "object",
+              "order": ["level1", "level2", "level3"],
+              "required": ["level1", "level2", "level3"],
+              "properties": {
+                 "level1": {
+                    "type": "string",
+                    "title": "Level 1",
+                    "default": "District"
+                 },
+                 "level2": {
+                    "type": "string",
+                    "title": "Level 2",
+                    "default": "Health Center"
+                 },
+                 "level3": {
+                    "type": "string",
+                    "title": "Level 3",
+                    "default": "CHW"
+                 }
+              }
+            }
+        }
+    },
+    "settings_schema_schedules" : {
+        "description": "Kujua Lite Settings",
         "type": "object",
         "properties": {
             "id_format": {

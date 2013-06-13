@@ -7,7 +7,7 @@ var jsDump = require('jsDump'),
     settings = require('settings/root'),
     jsonforms = require('views/lib/jsonforms'),
     logger = require('kujua-utils').logger,
-    _ = require('underscore')._,
+    _ = require('underscore'),
     moment = require('moment');
 
 
@@ -143,23 +143,33 @@ var prettyVal = function(data_record, key, def) {
 
 };
 
+function filterObject(obj) {
+    var keys = Array.prototype.slice(arguments, 1);
+
+    _.each(_.keys(obj), function(key) {
+        if (key !== '_id' && key !== '_rev' && key.indexOf('_') === 0) {
+            keys.push(key);
+        }
+    });
+    return _.omit(obj, keys);
+}
+
 // reverse makeDataRecordReadable munge. ;\
 exports.makeDataRecordOriginal = function(doc) {
-      delete doc._reported_date;
-      delete doc.fields;
-      delete  doc.scheduled_tasks_count;
-      delete  doc.scheduled_tasks_by_group;
-      if (doc.tasks) {
-          for (var i in doc.tasks) {
-              delete doc.tasks[i]._due;
-              delete doc.tasks[i]._timestamp;
-          }
-      }
-      return doc;
+    doc = filterObject(doc, 'fields', 'scheduled_tasks_by_group');
+
+    if (doc.tasks) {
+        doc.tasks = _.map(doc.tasks, function(task) {
+            return filterObject(task);
+        });
+    }
+
+    return doc;
 };
 
-var formatDate = function(timestamp) {
-    return moment(timestamp).format('DD, MMM YYYY, HH:mm:ss ZZ');
+function formatDate(timestamp, format) {
+    format = format || 'DD, MMM YYYY, HH:mm:ss ZZ';
+    return moment(timestamp).format(format);
 };
 
 /*
@@ -212,9 +222,6 @@ var includeNonFormFields = function(doc, form_keys) {
 exports.makeDataRecordReadable = function(doc) {
     var data_record = doc;
 
-    // causes bug when trying to do update
-    // data_record._raw = JSON.stringify(data_record, null, 2);
-
     // adding a fields property for ease of rendering code
     if(data_record.form) {
         var keys = getFormKeys(data_record.form);
@@ -223,20 +230,7 @@ exports.makeDataRecordReadable = function(doc) {
         includeNonFormFields(data_record, keys);
     }
 
-    if(data_record.reported_date) {
-        data_record._reported_date = formatDate(data_record.reported_date);
-    }
-
-    if(data_record.tasks) {
-        for (var i in data_record.tasks) {
-            var t = data_record.tasks[i];
-            if (t.due) t._due = formatDate(t.due);
-            if (t.timestamp) t._timestamp = formatDate(t.timestamp);
-        }
-    }
-
     if(data_record.scheduled_tasks) {
-        data_record.scheduled_tasks_count = 0;
         data_record.scheduled_tasks_by_group = [];
         var groups = {};
         for (var i in data_record.scheduled_tasks) {
@@ -247,8 +241,6 @@ exports.makeDataRecordReadable = function(doc) {
             if (!t) continue;
 
             // format timestamp
-            if (t.state === 'scheduled')
-                data_record.scheduled_tasks_count += 1;
             if (t.due) {
                 copy._due_ts = t.due;
                 copy.due = formatDate(t.due);

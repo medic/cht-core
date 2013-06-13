@@ -1,28 +1,22 @@
-<table class="table">
-  <thead>
-    <tr>
-      <th>Responses</th>
-    </tr>    
-  </thead>
-  <tbody>
+<div class="row-fluid">
+  <div class="inset span12">
+    <b>Responses</b>
     {#responses}
-    <tr>
-        <td>
-          <ul>
-            {?error}
-            <!-- legacy errors format //-->
-            <li>{error}</li>
-            {/error}
-            {?message}
-            <li>{message}</li>
-            {:else}
-              {?code}
-              <li>{code}: {fields}</li>
-              {/code}
-            {/message}
-         </ul>
-        </td>
-    </tr>    
+    <div class="row-fluid">
+      <div class="span12 alert alert-info">
+        {?error}
+          <!-- legacy errors format //-->
+          {error}
+        {/error}
+        {?message}
+          {message}
+        {:else}
+          {?code}
+            {code}: {fields}
+          {/code}
+        {/message}
+      </div>
+    </div>    
     {/responses}
-  </tbody>
-</table>
+  </div>
+</div>

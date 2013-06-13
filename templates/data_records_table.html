@@ -1,41 +1,16 @@
 <div id="data-records">
   <div class="span12">
     <div class="wrap wrap-rows">
-      <table>
-        {?data_records}
-        <thead>
-          <tr>
-            <th class="select-row">
-              <input type="checkbox" name="select-all-rows" />
-            </th>
-            <th class="reported-date">
-              Reported Date
-            </th>
-            <th class="contact-info">
-              {Clinic_Contact}
-            </th>
-            <th class="facility">
-              {Facility}
-            </th>
-            <th class="rc-code">
-              {RC_Code}
-            </th>
-            <th class="sms-message">
-              Message
-            </th>
-            <th class="icons">
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-        {:else}
-          <tr>
-            <td colspan="8">No records found.</td>
-          </tr>
-        {/data_records}
-        </tbody>
-      </table>
+      {^data_records}
+        <div class="alert alert-info">
+          No records found.
+        </div>
+      {/data_records}
       {?data_records}
+        <div class="btn-group">
+          <button class="btn btn-link" data-action="select-all">Select All</button>
+          <button class="btn btn-link" data-action="unselect-all">Unselect All</button>
+        </div>
         {>"data_records_rows.html"/}
       {/data_records}
     </div>

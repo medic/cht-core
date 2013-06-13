@@ -31,8 +31,8 @@
 
 
 var events = require('events'),
-    _ = require('underscore')._;
-
+    _ = require('underscore'),
+    requestCache = {};
 
 /**
  * Tests if running in the browser
@@ -91,6 +91,9 @@ function onComplete(options, callback) {
     return function (req) {
         var resp = {};
         var ctype = req.getResponseHeader('Content-Type');
+
+        //$(document.body).removeClass('loading');
+
         if (ctype === 'application/json' || ctype === 'text/json') {
             try {
                 resp = httpData(req, "json");
@@ -255,9 +258,19 @@ exports.stringifyQuery = function (query) {
  */
 
 exports.request = function (options, callback) {
-    options.complete = onComplete(options, callback);
-    options.dataType = 'json';
-    $.ajax(options);
+    var key = JSON.stringify(options);
+
+    if (!requestCache[key] || /^\/?_/.test(options.url)) {
+        // removed in onComplete
+        //$(document.body).addClass('loading');
+        requestCache[key] = true;
+        setTimeout(function() {
+            delete requestCache[key];
+        }, 400);
+        options.complete = onComplete(options, callback);
+        options.dataType = 'json';
+        $.ajax(options);
+    }
 };
 
 

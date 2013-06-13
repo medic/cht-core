@@ -1,0 +1,127 @@
+<div class="message incoming-form row-fluid clickable">
+  <div class="select-row">
+    <input type="checkbox" name="select-row-checkbox" />
+  </div>
+  <div class="direction-icon">
+    {?errors}
+      <div class="label label-important" title="Invalid form">
+        <i class="icon-file-alt"></i>
+      </div>
+    {:else}
+      <div class="label label-success">
+        <i class="icon-file-alt"></i>
+      </div>
+    {/errors}
+  </div>
+  <div class="contact-info">
+    {@contact entities="{related_entities}" from="{from}"/}
+  </div>
+  <div class="msg">
+    <i>{@formName form="{form}"/}</i>
+    <span class="label label-faded">{form}</span>
+  </div>
+  <div class="icons">
+    {?tasks}
+      <span class="label label-{@taskClass tasks="{tasks}"/}" title="{@taskMessage tasks="{tasks}"/}">
+        {tasks.length}
+        {@taskIcon tasks="{tasks}"/}
+      </span>
+    {/tasks}
+    {?scheduled_tasks}
+    <span class="label label-info" title="{@countByState array="{scheduled_tasks}" state="scheduled"/} scheduled messages">
+      {@countByState array="{scheduled_tasks}" state="scheduled"/}
+      <i class="icon-bell"></i>
+    </span>
+    {/scheduled_tasks}
+  </div>
+  <div class="add-message">
+      <button class="btn btn-mini">
+          <i class="icon-comment-alt"></i>
+      </button>
+  </div>
+  <div class="reported-date" title="{@formatDate timestamp="{reported_date}"/}">
+    {@formatDate timestamp="{reported_date}" format="MMM DD HH:mm"/}
+  </div>
+</div>
+<div class="extended">
+  <div class="row-fluid">
+    <div class="inset span12">
+      {#related_entities}
+        <div>
+        {?clinic.parent.parent.name}
+          {clinic.parent.parent.name}
+          <i class="icon-double-angle-right"></i>
+        {:else}
+          {?health_center.parent.name}
+            {health_center.parent.name}
+            <i class="icon-double-angle-right"></i>
+          {/health_center.parent.name}
+        {/clinic.parent.parent.name}
+        {?clinic.parent.name}
+          {clinic.parent.name}
+          <i class="icon-double-angle-right"></i>
+        {:else}
+          {?health_center.name}
+            {health_center.name}
+            <i class="icon-double-angle-right"></i>
+          {/health_center.name}
+        {/clinic.parent.name}
+        {?clinic.name}
+          {clinic.name}
+        {:else}
+          From: {from}
+        {/clinic.name}
+        {?clinic.contact.rc_code}
+          <span class="label">{clinic.contact.rc_code}</span>
+        {/clinic.contact.rc_code}
+        </div>
+        <div>
+        {?clinic.contact.name}
+          {clinic.contact.name}
+        {/clinic.contact.name}
+        {?clinic.contact.phone}
+          {clinic.contact.phone}
+        {/clinic.contact.phone}
+        </div>
+      {/related_entities}
+      {^related_entities}
+        From: {from}
+      {/related_entities}
+    </div>
+  </div>
+  <div class="row-fluid scroll">
+    {>"data_record_fields.html":fields/}
+  </div>
+  {?errors}
+  <div class="row-fluid data-record-errors">
+    {>"data_record_errors.html"/}
+  </div>
+  {/errors}
+  {?responses}
+  <div class="row-fluid data-record-responses">
+    {>"data_record_responses.html"/}
+  </div>
+  {/responses}
+  {?tasks}
+  <div class="row-fluid data-record-tasks">
+    {>"data_record_tasks.html"/}
+  </div>
+  {/tasks}
+  {?scheduled_tasks}
+  <div class="row-fluid data-record-scheduled-tasks">
+    {>"data_record_scheduled_tasks.html"/}
+  </div>
+  {/scheduled_tasks}
+  {@hasPermission permission="can_view_sms_message"}
+    {#sms_message}
+      <div class="row-fluid data-record-raw">
+        <pre>{message}</pre>
+      </div>
+    {/sms_message}
+  {/hasPermission}
+  {@hasPermission permission="can_view_revisions"}
+    <div class="data-record-revisions">
+      {>"data_record_revisions.html"/}
+    </div>
+  {/hasPermission}
+</div>

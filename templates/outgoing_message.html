@@ -1,0 +1,28 @@
+<div class="message outgoing-message row-fluid clickable">
+  <div class="select-row">
+    <input type="checkbox" name="select-row-checkbox" />
+  </div>
+  <div class="direction-icon">
+    <div class="label label-info">
+      <i class="icon-envelope-alt"></i>
+    </div>
+  </div>
+  <div class="contact-info">
+    To: {tasks[0].messages[0].to}
+  </div>
+  <div class="msg">
+    <pre>
+      {tasks[0].messages[0].message}
+    </pre>
+  </div>
+  <div class="reported-date" title="{@formatDate timestamp="{reported_date}"/}">
+    {@formatDate timestamp="{reported_date}" format="MMM DD HH:mm"/}
+  </div>
+</div>
+<div class="extended">
+  <div class="row-fluid">
+    <div class="inset span12">
+      <b>Sent by</b> {sent_by}
+    </div>
+  </div>
+</div>
