@@ -1,7 +1,7 @@
 {
     "name": "kujua-lite",
-    "version": "0.3.0",
-    "description": "SMS data collection designed for rural environments",
+    "version": "0.3.0-beta",
+    "description": "SMS data collection designed for rural environments (Beta Version)",
     "long_description" : "Kujua Lite is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
     "url": "https://github.com/medic/kujua",
     "categories": ["health", "sms"],
