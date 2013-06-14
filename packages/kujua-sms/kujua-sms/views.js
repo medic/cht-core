@@ -60,21 +60,19 @@ exports.contacts = {
 
 exports.data_records_by_district_and_form = {
     map: function(doc) {
-        if(doc.type === 'data_record') {
-            var jsonforms = require('views/lib/jsonforms'),
-                def = jsonforms[doc.form];
+        var objectpath = require('views/lib/objectpath'),
+            dh;
 
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                var dh = doc.related_entities.clinic.parent.parent;
+        if(doc.type === 'data_record') {
+            dh = objectpath.get(doc, 'doc.related_entities.clinic.parent.parent');
+
+            if (dh) {
                 emit([dh._id, doc.form, dh.name], 1);
             } else {
                 emit([null, doc.form, null], 1);
             }
         }
     },
-
     reduce: function(key, counts) {
         return sum(counts);
     }
@@ -158,20 +156,17 @@ exports.data_records = {
 
 exports.data_records_valid_by_district_form_and_reported_date = {
     map: function(doc) {
-        if(doc.type === 'data_record') {
-            var jsonforms = require('views/lib/jsonforms'),
-                def = jsonforms[doc.form];
+        var objectpath = require('views/lib/objectpath'),
+            dh;
 
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent
-                    && (!doc.errors || doc.errors.length === 0)) {
-                var dh = doc.related_entities.clinic.parent.parent;
-                emit([dh._id, doc.form, dh.name, doc.reported_date], 1);
-            } else if (doc.related_entities.health_center
-                    && doc.related_entities.health_center.parent
-                    && (!doc.errors || doc.errors.length === 0)) {
-                var dh = doc.related_entities.health_center.parent;
+        if(doc.type === 'data_record') {
+            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent');
+
+            if (!dh) {
+                dh = objectpath.get(doc, 'related_entities.health_center.parent');
+            }
+
+            if (dh && (!doc.errors || doc.errors.length === 0)) {
                 emit([dh._id, doc.form, dh.name, doc.reported_date], 1);
             } else if (!doc.errors || doc.errors.length === 0) {
                 emit([null, doc.form, null, doc.reported_date], 1);
@@ -185,11 +180,11 @@ exports.data_records_valid_by_district_form_and_reported_date = {
 
 // only emit valid records
 exports.data_records_valid_by_district_and_form = {
-    map: function(doc) {
-        if (doc.type === 'data_record') {
-            var objectpath = require('views/lib/objectpath'),
-                dh;
+     map: function(doc) {
+        var objectpath = require('views/lib/objectpath'),
+            dh;
 
+        if (doc.type === 'data_record') {
             dh = objectpath.get(doc, 'related_entities.clinic.parent.parent') || objectpath.get(doc, 'related_entities.health_center.parent');
 
             if (!doc.errors || doc.errors.length === 0) {
@@ -201,7 +196,6 @@ exports.data_records_valid_by_district_and_form = {
             }
         }
     },
-
     reduce: function(key, counts) {
         return sum(counts);
     }
@@ -209,13 +203,13 @@ exports.data_records_valid_by_district_and_form = {
 
 exports.data_records_by_district = {
     map: function(doc) {
-        if(doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                var dh = doc.related_entities.clinic.parent.parent;
-                if (dh.type !== 'district_hospital')
-                    return;
+        var objectpath = require('views/lib/objectpath'),
+            dh;
+
+        if (doc.type === 'data_record') {
+            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent');
+
+            if (dh && dh.type === 'district_hospital') {
                 emit([dh._id, dh.name], null);
             }
         }
@@ -228,26 +222,21 @@ exports.data_records_by_district = {
 
 exports.data_records_by_district_and_clinic = {
     map: function(doc) {
-        var dh = {_id: null},
-            cl = {_id: null};
-        if(doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                dh = doc.related_entities.clinic.parent.parent;
-                cl = doc.related_entities.clinic;
-                cl.contact = doc.related_entities.clinic.contact || {};
-                if (dh.type !== 'district_hospital') return;
-                emit([
-                    dh._id,
-                    cl._id,
-                    cl.name,
-                    cl.contact.name || cl.contact.rc_code || cl.contact.phone
-                ], null);
+        var objectpath = require('views/lib/objectpath'),
+            dh,
+            cl,
+            contact;
+
+        if (doc.type === 'data_record') {
+            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent');
+            cl = objectpath.get(doc, 'related_entities.clinic');
+            contact = objectpath.get(doc, 'related_entities.clinic.contact') || {};
+
+            if (dh && dh.type === 'district_hospital') {
+                emit([dh._id, cl._id, cl.name, contact.name || contact.rc_code || contact.phone], null);
             }
         }
     },
-
     reduce: function(key, doc) {
         return true;
     }
@@ -263,62 +252,17 @@ exports.data_records_by_district_and_clinic = {
 // by district
 exports.data_records_by_district_and_reported_date = {
     map: function(doc) {
+        var objectpath = require('views/lib/objectpath'),
+            dh;
+
         if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                var dh = doc.related_entities.clinic.parent.parent;
+            dh = objectpath.get(doc, 'doc.related_entities.clinic.parent.parent');
+
+            if (dh) {
                 emit([dh._id, doc.reported_date, doc._id], doc);
             } else {
                 emit([null, doc.reported_date, doc._id], doc);
             }
-        }
-    }
-};
-
-exports.data_records_by_form_and_reported_date = {
-    map: function(doc) {
-        if (doc.type === 'data_record') {
-            emit([doc.form, doc.reported_date, doc._id], doc);
-        }
-    }
-};
-
-exports.data_records_by_district_form_and_reported_date = {
-    map: function(doc) {
-        if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                var dh = doc.related_entities.clinic.parent.parent;
-                emit([dh._id, doc.form, doc.reported_date, doc._id], doc);
-            } else {
-                emit([null, doc.form, doc.reported_date, doc._id], doc);
-            }
-        }
-    }
-};
-
-exports.data_records_by_valid_and_reported_date = {
-    map: function(doc) {
-        if (doc.type === 'data_record') {
-            var valid = (!doc.errors || doc.errors.length === 0);
-            emit([valid, doc.reported_date, doc._id], doc);
-        }
-    }
-};
-
-exports.data_records_by_district_valid_and_reported_date = {
-    map: function(doc) {
-        var dh = {_id: null};
-        if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                dh = doc.related_entities.clinic.parent.parent;
-            }
-            var valid = (!doc.errors || doc.errors.length === 0);
-            emit([dh._id, valid, doc.reported_date, doc._id], doc);
         }
     }
 };
@@ -328,21 +272,6 @@ exports.data_records_by_form_valid_and_reported_date = {
         if (doc.type === 'data_record') {
             var valid = (!doc.errors || doc.errors.length === 0);
             emit([doc.form, valid, doc.reported_date, doc._id], doc);
-        }
-    }
-};
-
-exports.data_records_by_district_form_valid_and_reported_date = {
-    map: function(doc) {
-        var dh = {_id: null};
-        if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                dh = doc.related_entities.clinic.parent.parent;
-            }
-            var valid = (!doc.errors || doc.errors.length === 0);
-            emit([dh._id, doc.form, valid, doc.reported_date, doc._id], doc);
         }
     }
 };
@@ -358,151 +287,13 @@ exports.data_records_by_patient_id_and_reported_date = {
 
 exports.data_records_by_district_patient_id_and_reported_date = {
     map: function(doc) {
-        var dh = {_id: null};
-        if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                dh = doc.related_entities.clinic.parent.parent;
-            }
-            if (doc.patient_id)
-                emit([dh._id, doc.patient_id, doc.reported_date, doc._id], doc);
-        }
-    }
-};
+        var objectpath = require('views/lib/objectpath'),
+            dh;
 
-exports.data_records_by_district_clinic_and_reported_date = {
-    map: function(doc) {
-        var dh = {_id: null},
-            cl = {_id: null};
-        if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                dh = doc.related_entities.clinic.parent.parent;
-                cl = doc.related_entities.clinic;
-            }
-            emit([dh._id, cl._id, doc.reported_date, doc._id], doc);
-        }
-    }
-};
+        if (doc.type === 'data_record' && doc.patient_id) {
+            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent') || { _id: null };
 
-exports.data_records_by_clinic_and_reported_date = {
-    map: function(doc) {
-        var cl = {_id: null};
-        if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                cl = doc.related_entities.clinic;
-            }
-            emit([cl._id, doc.reported_date, doc._id], doc);
-        }
-    }
-};
-
-exports.data_records_by_district_clinic_form_and_reported_date = {
-    map: function(doc) {
-        var dh = {_id: null},
-            cl = {_id: null};
-        if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                dh = doc.related_entities.clinic.parent.parent;
-                cl = doc.related_entities.clinic;
-            }
-            emit([dh._id, cl._id, doc.reported_date, doc._id], doc);
-        }
-    }
-};
-
-exports.data_records_by_clinic_form_and_reported_date = {
-    map: function(doc) {
-        var cl = {_id: null};
-        if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                cl = doc.related_entities.clinic;
-            }
-            emit([cl._id, doc.form, doc.reported_date, doc._id], doc);
-        }
-    }
-};
-
-exports.data_records_by_district_clinic_valid_and_reported_date = {
-    map: function(doc) {
-        var dh = {_id: null},
-            cl = {_id: null};
-        if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                dh = doc.related_entities.clinic.parent.parent;
-                cl = doc.related_entities.clinic;
-            }
-            var valid = (!doc.errors || doc.errors.length === 0);
-            emit([dh._id, cl._id, valid, doc.reported_date, doc._id], doc);
-        }
-    }
-};
-
-exports.data_records_by_clinic_valid_and_reported_date = {
-    map: function(doc) {
-        var dh = {_id: null},
-            cl = {_id: null};
-        if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                dh = doc.related_entities.clinic.parent.parent;
-                cl = doc.related_entities.clinic;
-            }
-            var valid = (!doc.errors || doc.errors.length === 0);
-            emit([cl._id, valid, doc.reported_date, doc._id], doc);
-        }
-    }
-};
-
-exports.data_records_by_district_clinic_form_valid_and_reported_date = {
-    map: function(doc) {
-        var dh = {_id: null},
-            cl = {_id: null};
-        if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                dh = doc.related_entities.clinic.parent.parent;
-                cl = doc.related_entities.clinic;
-            }
-            var valid = (!doc.errors || doc.errors.length === 0);
-            emit([dh._id, cl._id, doc.form, valid, doc.reported_date, doc._id], doc);
-        }
-    }
-};
-
-exports.data_records_by_clinic_form_valid_and_reported_date = {
-    map: function(doc) {
-        var dh = {_id: null},
-            cl = {_id: null};
-        if (doc.type === 'data_record') {
-            if (doc.related_entities.clinic
-                    && doc.related_entities.clinic.parent
-                    && doc.related_entities.clinic.parent.parent) {
-                dh = doc.related_entities.clinic.parent.parent;
-                cl = doc.related_entities.clinic;
-            }
-            var valid = (!doc.errors || doc.errors.length === 0);
-            emit([cl._id, doc.form, valid, doc.reported_date, doc._id], doc);
-        }
-    }
-};
-
-exports.data_records_by_reported_date = {
-    map: function(doc) {
-        if (doc.type === 'data_record') {
-            emit([doc.reported_date, doc._id], doc);
+            emit([dh._id, doc.patient_id, doc.reported_date, doc._id], doc);
         }
     }
 };
@@ -535,9 +326,7 @@ exports.facility_by_phone = {
 
 exports.facility_by_parent = {
     map: function (doc) {
-        if (doc.type === 'clinic'
-            || doc.type === 'health_center'
-            || doc.type === 'district_hospital') {
+        if (doc.type === 'clinic' || doc.type === 'health_center' || doc.type === 'district_hospital') {
             emit([doc.parent._id, doc.name, doc.type], true);
         }
     }
@@ -559,11 +348,11 @@ exports.clinic_by_phone = {
  */
 exports.clinic_by_parent_phone = {
     map: function (doc) {
-        if (doc.type === 'clinic'
-                && doc.parent
-                && doc.parent.contact
-                && doc.parent.contact.phone) {
-            emit([doc.parent.contact.phone], doc);
+        var objectpath = require('views/lib/objectpath'),
+            phone = objectpath.get(doc, 'parent.contact.phone');
+
+        if (doc.type === 'clinic' && phone) {
+            emit([phone], doc);
         }
     }
 };
