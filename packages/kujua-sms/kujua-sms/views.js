@@ -1,4 +1,63 @@
 
+exports.contacts = {
+    map: function(doc) {
+        var objectpath = require('views/lib/objectpath'),
+            district,
+            facility;
+
+        function getName(doc) {
+            return doc.name + ', ' + (doc.contact.name || doc.contact.rc_code || doc.contact.phone);
+        }
+
+        if (doc.type === 'district_hospital') {
+            emit([null, doc.name], {
+                id: doc._id,
+                type: doc.type,
+                text: getName(doc)
+            });
+        } else if (doc.type === 'health_center') {
+            district = objectpath.get(doc, 'parent');
+
+            if (district) {
+                emit([district._id, doc.name], {
+                    id: doc._id,
+                    type: doc.type,
+                    text: getName(doc)
+                });
+            }
+            emit([null, doc.name], {
+                id: doc._id,
+                type: doc.type,
+                text: getName(doc)
+            });
+        } else if (doc.type === 'clinic') {
+            facility = objectpath.get(doc, 'parent');
+            if (facility) {
+                emit([facility._id, doc.name], {
+                    id: doc._id,
+                    type: doc.type,
+                    text: getName(doc)
+                });
+            }
+
+            district = objectpath.get(doc, 'parent.parent');
+            if (district) {
+                emit([district._id, doc.name], {
+                    id: doc._id,
+                    type: doc.type,
+                    text: getName(doc)
+                });
+            }
+
+            emit([null, doc.name], {
+                id: doc._id,
+                type: doc.type,
+                text: getName(doc)
+            });
+        }
+    }
+};
+
 exports.data_records_by_district_and_form = {
     map: function(doc) {
         var objectpath = require('views/lib/objectpath'),
@@ -23,12 +82,14 @@ exports.data_records = {
     map: function(doc) {
         var objectpath = require('views/lib/objectpath'),
             clinicId,
+            centerId,
             districtId,
             form = doc.form,
             valid;
 
         if (doc.type === 'data_record') {
             clinicId = objectpath.get(doc, 'related_entities.clinic._id');
+            centerId = objectpath.get(doc, 'related_entities.clinic.parent._id');
             districtId = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
             valid = !doc.errors || doc.errors.length === 0;
 
@@ -61,6 +122,21 @@ exports.data_records = {
                     emit([valid, clinicId, 'null_form', doc.reported_date], 1);
                 }
             }
+            if (centerId) {
+                emit([centerId, doc.reported_date], 1);
+                emit([valid, centerId, doc.reported_date], 1);
+
+                if (form) {
+                    emit([centerId, form, doc.reported_date], 1);
+                    emit([valid, centerId, form, doc.reported_date], 1);
+
+                    emit([centerId, '*', doc.reported_date], 1);
+                    emit([valid, centerId, '*', doc.reported_date], 1);
+                } else {
+                    emit([centerId, 'null_form', doc.reported_date], 1);
+                    emit([valid, centerId, 'null_form', doc.reported_date], 1);
+                }
+            }
             if (districtId) {
                 emit([districtId, doc.reported_date], 1);
                 emit([valid, districtId, doc.reported_date], 1);
@@ -89,6 +165,21 @@ exports.data_records = {
                 } else {
                     emit([districtId, clinicId, 'null_form', doc.reported_date], 1);
                     emit([valid, districtId, clinicId, 'null_form', doc.reported_date], 1);
+                }
+            }
+            if (centerId && districtId) {
+                emit([districtId, centerId, doc.reported_date], 1);
+                emit([valid, districtId, centerId, doc.reported_date], 1);
+
+                if (form) {
+                    emit([districtId, centerId, form, doc.reported_date], 1);
+                    emit([valid, districtId, centerId, form, doc.reported_date], 1);
+
+                    emit([districtId, centerId, '*', doc.reported_date], 1);
+                    emit([valid, districtId, centerId, '*', doc.reported_date], 1);
+                } else {
+                    emit([districtId, centerId, 'null_form', doc.reported_date], 1);
+                    emit([valid, districtId, centerId, 'null_form', doc.reported_date], 1);
                 }
             }
         }
