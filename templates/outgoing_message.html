@@ -23,6 +23,15 @@
   <div class="row-fluid">
     <div class="inset span12">
       <b>Sent by</b> {sent_by}
+      <p class="pull-right">
+      <span class="tasks-state-{tasks[0].state}">{tasks[0].state}</span>
+        <span>{@formatDate timestamp="{tasks[0].timestamp}" format="MMM DD HH:mm"/}</span>
+      </p>
+    </div>
+  </div>
+  <div class="row-fluid">
+    <div class="msg-full inset">
+      <pre>{tasks[0].messages[0].message}</pre>
     </div>
   </div>
 </div>
