@@ -1,4 +1,63 @@
 
+exports.contacts = {
+    map: function(doc) {
+        var objectpath = require('views/lib/objectpath'),
+            district,
+            facility;
+
+        function getName(doc) {
+            return doc.name + ', ' + (doc.contact.name || doc.contact.rc_code || doc.contact.phone);
+        }
+
+        if (doc.type === 'district_hospital') {
+            emit([null, doc.name], {
+                id: doc._id,
+                type: doc.type,
+                text: getName(doc)
+            });
+        } else if (doc.type === 'health_center') {
+            district = objectpath.get(doc, 'parent');
+
+            if (district) {
+                emit([district._id, doc.name], {
+                    id: doc._id,
+                    type: doc.type,
+                    text: getName(doc)
+                });
+            }
+            emit([null, doc.name], {
+                id: doc._id,
+                type: doc.type,
+                text: getName(doc)
+            });
+        } else if (doc.type === 'clinic') {
+            facility = objectpath.get(doc, 'parent');
+            if (facility) {
+                emit([facility._id, doc.name], {
+                    id: doc._id,
+                    type: doc.type,
+                    text: getName(doc)
+                });
+            }
+
+            district = objectpath.get(doc, 'parent.parent');
+            if (district) {
+                emit([district._id, doc.name], {
+                    id: doc._id,
+                    type: doc.type,
+                    text: getName(doc)
+                });
+            }
+
+            emit([null, doc.name], {
+                id: doc._id,
+                type: doc.type,
+                text: getName(doc)
+            });
+        }
+    }
+};
+
 exports.data_records_by_district_and_form = {
     map: function(doc) {
         if(doc.type === 'data_record') {
