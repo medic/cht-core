@@ -3,57 +3,64 @@ exports.contacts = {
     map: function(doc) {
         var objectpath = require('views/lib/objectpath'),
             district,
-            facility;
+            facility,
+            name,
+            nameKey;
 
         function getName(doc) {
             return doc.name + ', ' + (doc.contact.name || doc.contact.rc_code || doc.contact.phone);
         }
 
-        if (doc.type === 'district_hospital') {
-            emit([null, doc.name], {
+        if (~['district_hospital', 'health_center', 'clinic'].indexOf(doc.type)) {
+            name = getName(doc);
+            nameKey = name.toLowerCase();
+
+            emit([null, nameKey], {
                 id: doc._id,
                 type: doc.type,
-                text: getName(doc)
+                text: name
+            });
+        }
+
+        if (doc.type === 'district_hospital') {
+            emit([doc._id, nameKey], {
+                id: doc._id,
+                type: doc.type,
+                text: name
             });
         } else if (doc.type === 'health_center') {
             district = objectpath.get(doc, 'parent');
 
             if (district) {
-                emit([district._id, doc.name], {
+                emit([district._id, nameKey], {
                     id: doc._id,
                     type: doc.type,
-                    text: getName(doc)
+                    text: name
                 });
             }
-            emit([null, doc.name], {
+            emit([doc._id, nameKey], {
                 id: doc._id,
                 type: doc.type,
-                text: getName(doc)
+                text: name
             });
         } else if (doc.type === 'clinic') {
             facility = objectpath.get(doc, 'parent');
             if (facility) {
-                emit([facility._id, doc.name], {
+                emit([facility._id, nameKey], {
                     id: doc._id,
                     type: doc.type,
-                    text: getName(doc)
+                    text: name
                 });
             }
 
             district = objectpath.get(doc, 'parent.parent');
             if (district) {
-                emit([district._id, doc.name], {
+                emit([district._id, nameKey], {
                     id: doc._id,
                     type: doc.type,
-                    text: getName(doc)
+                    text: name
                 });
             }
-
-            emit([null, doc.name], {
-                id: doc._id,
-                type: doc.type,
-                text: getName(doc)
-            });
         }
     }
 };
