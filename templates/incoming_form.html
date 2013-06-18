@@ -114,8 +114,12 @@
   {/scheduled_tasks}
   {@hasPermission permission="can_view_sms_message"}
     {#sms_message}
-      <div class="row-fluid data-record-raw">
-        <pre>{message}</pre>
+      <div class="row-fluid data-record-sms-message">
+        <div class="row-fluid">
+          <div class="span12 inset">
+            <pre>{message}</pre>
+          </div>
+        </div>
       </div>
     {/sms_message}
   {/hasPermission}

@@ -1,22 +1,26 @@
-<table class="table">
-  <thead>
-    <tr>
-      {#headers}
-      <th>{head}</th>
-      {/headers}
-    </tr>    
-  </thead>
-  <tbody>
-    <tr>
-      {#data}
-      <td>
-        {?isArray}
-          {>"data_record_fields.html"/}
-        {:else}
-          {value}
-        {/isArray}            
-      </td>
-      {/data}
-    </tr>    
-  </tbody>
-</table>
+<div class="row-fluid">
+  <div class="span12 inset">
+    <table class="table">
+      <thead>
+        <tr>
+          {#headers}
+          <th>{head}</th>
+          {/headers}
+        </tr>    
+      </thead>
+      <tbody>
+        <tr>
+          {#data}
+          <td>
+            {?isArray}
+              {>"data_record_fields.html"/}
+            {:else}
+              {value}
+            {/isArray}            
+          </td>
+          {/data}
+        </tr>    
+      </tbody>
+    </table>
+  </div>
+</div>
