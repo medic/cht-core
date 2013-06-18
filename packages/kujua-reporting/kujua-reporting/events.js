@@ -20,26 +20,28 @@ duality_events.on('init', function (ev) {
      */
     session.info(function (err, info) {
 
-        if (err)
+        if (err) {
             kutils.logger.error('Failed to retreive session info: '+err.reason);
+        }
 
         var isAdmin = kutils.hasPerm(info.userCtx, 'can_edit_any_facility'),
             isDistrictAdmin = kutils.hasPerm(info.userCtx, 'can_edit_facility'),
             setup = $.kansoconfig('kujua-reporting', true);
 
-        if (!setup || !setup.forms || setup.forms.length === 0) return;
+        if (!setup || !setup.forms || setup.forms.length === 0) {
+            return;
+        }
 
-        if (!isAdmin && !isDistrictAdmin) return;
+        if (!isAdmin && !isDistrictAdmin) {
+            return;
+        }
 
         users.get(info.userCtx.name, function(err, user) {
-
             if (err) {
-                return kutils.logger.error(
-                    'Failed to retreive user  info: '+err.reason);
+                return kutils.logger.error('Failed to retreive user  info: '+err.reason);
             }
 
             var district = user.kujua_facility,
-                forms = [],
                 districts = [],
                 q = {
                     startkey: ['district_hospital'],
@@ -47,34 +49,7 @@ duality_events.on('init', function (ev) {
                     group: true
                 };
 
-            setup.forms.forEach(function(form) {
-                forms.push({code: form.code});
-            });
-
-            db.getView(ddoc, 'facilities_by_type', q, function(err, data) {
-
-                if (err) {
-                    return kutils.logger.error(
-                        'Failed to retreive facility data: '+err.reason);
-                }
-
-                data.rows.forEach(function(row) {
-                    if (isAdmin)
-                        districts.push({id:row.key[1], name:row.key[2]});
-                    else if (isDistrictAdmin && row.key[1] === district)
-                        districts.push({id:row.key[1], name:row.key[2]});
-                });
-
-                $('#topnav .nav .records').after(
-                    templates.render('kujua-reporting/top_nav.html', {}, {
-                        forms:forms,
-                        districts: districts,
-                        labels: kutils.getConfigLabels()
-                    })
-                );
-
-            });
-
+            $('#topnav .nav .records').after(templates.render('kujua-reporting/top_nav.html', {}, {}));
         });
     });
 
