@@ -382,6 +382,8 @@ function renderPage() {
 
     if (utils.isHealthCenter(doc)) {
         parentURL = utils.getReportingUrl(doc.parent._id, dates);
+    } else if (utils.isDistrictHospital(doc)) {
+        parentURL = 'reporting';
     }
 
     // render header
