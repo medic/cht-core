@@ -16,7 +16,7 @@
 {<controls_l}
   {?parentURL}
     <a class="btn back" href="{baseURL}/{parentURL}">
-      <i class="icon-arrow-left" /> {parent.name}
+      <i class="icon-arrow-left" /> {#parent}{?.name}{.name}{:else}{@translate value="Reporting Rates"/}{/.name}{/parent}
     </a>
   {/parentURL}
 {/controls_l}
