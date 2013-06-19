@@ -87,42 +87,34 @@
       {^related_entities}
         From: {from}
       {/related_entities}
+      {#sms_message}
+        <p><pre>{message}</pre></p>
+      {/sms_message}
     </div>
   </div>
   <div class="row-fluid scroll">
     {>"data_record_fields.html":fields/}
   </div>
-  {?errors}
-  <div class="row-fluid data-record-errors">
-    {>"data_record_errors.html"/}
-  </div>
-  {/errors}
-  {?responses}
-  <div class="row-fluid data-record-responses">
-    {>"data_record_responses.html"/}
-  </div>
-  {/responses}
   {?tasks}
   <div class="row-fluid data-record-tasks">
     {>"data_record_tasks.html"/}
   </div>
   {/tasks}
+  {?responses}
+  <div class="row-fluid data-record-responses">
+    {>"data_record_responses.html"/}
+  </div>
+  {/responses}
   {?scheduled_tasks}
   <div class="row-fluid data-record-scheduled-tasks">
     {>"data_record_scheduled_tasks.html"/}
   </div>
   {/scheduled_tasks}
-  {@hasPermission permission="can_view_sms_message"}
-    {#sms_message}
-      <div class="row-fluid data-record-sms-message">
-        <div class="row-fluid">
-          <div class="span12 inset">
-            <pre>{message}</pre>
-          </div>
-        </div>
-      </div>
-    {/sms_message}
-  {/hasPermission}
+  {?errors}
+  <div class="row-fluid data-record-errors">
+    {>"data_record_errors.html"/}
+  </div>
+  {/errors}
   {@hasPermission permission="can_view_revisions"}
     <div class="data-record-revisions">
       {>"data_record_revisions.html"/}

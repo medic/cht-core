@@ -25,17 +25,22 @@
 </div>
 <div class="extended">
   <div class="row-fluid">
-    <div class="inset span12">
+    <div class="inset span12 msg-full">
       <b>Sent by</b> {sent_by}
+    {#tasks}
       <p class="pull-right">
-      <span class="tasks-state-{tasks[0].state}">{tasks[0].state}</span>
-        <span>{@formatDate timestamp="{tasks[0].timestamp}" format="MMM DD HH:mm"/}</span>
+        <span class="tasks-state-{state}">{state}</span>
+        {?timestamp}
+        <span class="tasks-timestamp">
+          {@formatDate timestamp="{timestamp}"/}
+        </span>
+        {/timestamp}
       </p>
-    </div>
-  </div>
-  <div class="row-fluid">
-    <div class="msg-full inset">
-      <pre>{tasks[0].messages[0].message}</pre>
+      {#messages}
+        <p>To: {to}</p>
+        <pre>{message}</pre>
+      {/messages}
+    {/tasks}
     </div>
   </div>
 </div>

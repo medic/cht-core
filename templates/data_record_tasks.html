@@ -11,7 +11,6 @@
       <tbody>
         {#tasks}
         <tr data-tasks-idx="{@idx}{.}{/idx}" class="task relative">
-          <td><span class="tasks-state-{state}"></span></td>
           {?timestamp}
           <td class="tasks-timestamp">
             {@formatDate timestamp="{timestamp}"/}
@@ -42,6 +41,7 @@
           </td>
           <td colspan="2">{message}</td>
           {/messages}
+          <td><span class="pull-right tasks-state-{state}"></span></td>
         </tr>
         {/tasks}
       </tbody>
