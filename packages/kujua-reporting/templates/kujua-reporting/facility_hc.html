@@ -50,6 +50,11 @@
         {/contact.name}
         {?contact.phone}
           {contact.phone}
+          <span class="add-message">
+            <button class="btn btn-primary btn-mini" data-phone="{contact.phone}">
+              <i class="icon-comment-alt"></i>
+            </button>
+          </span>
         {:else}
             Undefined phone
         {/contact.phone}
