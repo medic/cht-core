@@ -7,7 +7,8 @@ var db = require('db'),
     events = require('duality/events'),
     users = require('users'),
     charts = require('./ui/charts'),
-    templates = require('duality/templates');
+    templates = require('duality/templates'),
+    jsonforms = require('views/lib/jsonforms');
 
 var facility_doc
     , _req
@@ -356,7 +357,7 @@ function renderPage() {
     kutils.updateTopNav('reporting_rates');
 
     if (!doc) {
-        return renderDistrictChoice();
+        return renderDistrictChoice(appdb, setup);
     }
 
     // check that form code is setup in config
@@ -403,9 +404,17 @@ function renderPage() {
     getViewChildFacilities(doc, renderReports);
 }
 
-function renderDistrictChoice() {
-    var appdb = db.use(duality.getDBURL()),
-        setup = $.kansoconfig('kujua-reporting', true);
+function renderDistrictChoice(appdb, setup) {
+    var forms;
+
+    forms = _.map(setup.forms, function(form) {
+        var def = jsonforms[form.code],
+            formName = kutils.localizedString((def && def.meta && def.meta.label) || 'Unknown');
+
+        return _.extend(form, {
+            formName: formName
+        });
+    });
 
     appdb.getView(appname, 'facilities_by_type', {
         startkey: ['district_hospital'],
@@ -430,7 +439,7 @@ function renderDistrictChoice() {
         });
 
         $('#content').html(templates.render("reporting_district_choice.html", {}, {
-            forms: setup.forms,
+            forms: forms,
             districts: districts
         }));
     });
