@@ -1,68 +1,71 @@
 {#doc}
-  <div id="totals">
-    <div class="row-fluid totals-hc">
-      <div class="span2 col1">
-        <h4>0</h4>
-        <h3 data-label="Clinics"></h3>
-      </div>
-      <div class="span2 col2">
-        <h4>0</h4>
-        <h3>Completed Reports</h3>
-      </div>
-      <div class="span3 chart col3"></div>
-      <div class="span2 col4">
-        <h4>0</h4>
-        <h3>Reports Missing</h3>
-      </div>
-      <div class="span2 last col5">
-        <h4>0</h4>
-        <h3>Invalid Reports</h3>
-      </div>
+<div id="totals">
+  <div class="row-fluid totals-hc">
+    <div class="span2 col1">
+      <h4>0</h4>
+      <h3 data-label="Clinics"></h3>
+    </div>
+    <div class="span2 col2">
+      <h4>0</h4>
+      <h3>Completed Reports</h3>
+    </div>
+    <div class="span3 chart col3"></div>
+    <div class="span2 col4">
+      <h4>0</h4>
+      <h3>Reports Missing</h3>
+    </div>
+    <div class="span2 last col5">
+      <h4>0</h4>
+      <h3>Invalid Reports</h3>
     </div>
   </div>
-  <div id="date-nav">
-    <div class="row">
-    </div>
+</div>
+<div id="date-nav">
+  <div class="row">
   </div>
-  <div id="stats">
-    <div class="row">
-      <div class="span9">
-          <table class="table table-striped clinic-data">
-            <thead>
-              <tr>
-                <th class="first-column-hc"><span data-label="Clinic"></span> Name</th>
-                <th class="reporting-rate">Reporting Rate</th>
-              </tr>
-            </thead>
-            <tbody id="reporting-data">
-              <tr><td colspan="4">Loading...</td></tr>
-            </tbody>
-          </table>
-      </div>
-      <div class="span3 stats-meta">
-        <div><h2>{name} <br /><span data-label="Health Center"></span></h2></div>
-          <div>
-           <h3 data-label="Health Center Contact"></h3><!--TODO add title for contact? {contact.title}//-->
-           {?contact.name}
-           <strong>{contact.name}</strong></br>
-           {:else}
-           <strong>Undefined name</strong></br>
-           {/contact.name}
-           {?contact.phone}
-           {contact.phone}<br />
-           {:else}
-           Undefined phone<br />
-           {/contact.phone}
-           <!--{location.name}<br />
-           {location.lat},{location.lon}<br />
-           {#location.tags}<span class="label">{label}</span> {/location.tags}<br />//-->
-          </address>
-          </div>
-          <div id="facilities_related">
-          </div>
-          <div id="umenu" class="umenu siblings"></div>
-      </div>
+</div>
+<div id="stats">
+  <div class="row">
+    <div class="span9">
+      <table class="table table-striped clinic-data">
+        <thead>
+          <tr>
+            <th class="first-column-hc"><span data-label="Clinic"></span> Name</th>
+            <th class="reporting-rate">Reporting Rate</th>
+          </tr>
+        </thead>
+        <tbody id="reporting-data">
+          <tr><td colspan="4">Loading...</td></tr>
+        </tbody>
+      </table>
     </div>
+    <div class="span3 stats-meta">
+      <div><h2>{name} <br /><span data-label="Health Center"></span></h2></div>
+      <div>
+        <h3 data-label="Health Center Contact"></h3><!--TODO add title for contact? {contact.title}//-->
+        {?contact.name}
+          <strong>{contact.name}</strong></br>
+        {:else}
+          <strong>Undefined name</strong></br>
+        {/contact.name}
+        {?contact.phone}
+          {contact.phone}
+          <span class="add-message">
+            <button class="btn btn-primary btn-mini" data-phone="{contact.phone}">
+              <i class="icon-comment-alt"></i>
+            </button>
+          </span>
+        {:else}
+            Undefined phone
+        {/contact.phone}
+        <br />
+      </address>
+    </div>
+    <div id="facilities_related">
+    </div>
+    <div id="umenu" class="umenu siblings"></div>
+  </div>
+</div>
   </div>
   <div class="hide">
     <div id="popup-base">
