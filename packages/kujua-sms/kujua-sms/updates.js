@@ -171,7 +171,6 @@ var parseSentTimestamp = function(str) {
  *
  */
 var getSMSResponse = function(doc) {
-
     var locale = doc.sms_message && doc.sms_message.locale,
         msg = utils.getMessage('sms_received', locale),
         def = doc.form && jsonforms[doc.form],
@@ -185,12 +184,16 @@ var getSMSResponse = function(doc) {
         };
 
     // looks like we parsed a form ok
-    if (def && doc.errors.length === 0)
-        msg = utils.getMessage('form_received', locale);
+    if (def) {
+        if (doc.errors.length === 0) {
+            msg = utils.getMessage('form_received', locale);
+        }
 
-    // we have a custom success autoreply
-    if (def && def.autoreply)
-        msg = def.autoreply;
+        // we have a custom success autoreply
+        if (def.autoreply) {
+            msg = def.autoreply;
+        }
+    }
 
     // handle errors -> response
     doc.errors.forEach(function(err) {
@@ -199,7 +202,9 @@ var getSMSResponse = function(doc) {
             var m = utils.getMessage(err.code.replace('sys.',''), locale)
                     .replace('%(form)', doc.form)
                     .replace('%(fields)', err.fields && err.fields.join(', '));
-            if (m) msg = m; // only assign if exists
+            if (m) {
+                msg = m; // only assign if exists
+            }
         } else {
             // default
             msg = utils.getMessage(err, locale);
@@ -211,25 +216,37 @@ var getSMSResponse = function(doc) {
      * otherwise if facility is not required and that is only error, then form
      * is valid.
      */
-    if (def && def.facility_required) {
-        if (utils.hasError(doc, 'sys.facility_not_found'))
-            msg = utils.getMessage('reporting_unit_not_found', locale);
-    } else if (def && doc.errors.length === 1) {
-        if (utils.hasError(doc, 'sys.facility_not_found'))
-            msg = utils.getMessage('form_received', locale);
+    if (def) {
+        if (def.facility_required) {
+            if (utils.hasError(doc, 'sys.facility_not_found')) {
+                msg = utils.getMessage('reporting_unit_not_found', locale);
+            }
+        } else if (doc.errors.length === 1) {
+            if (utils.hasError(doc, 'sys.facility_not_found')) {
+                msg = utils.getMessage('form_received', locale);
+            }
+        }
+    } else {
+        // filter out facility not found
+        doc.errors = _.reject(doc.errors, function(err) {
+            return 'sys.facility_not_found' === err.code;
+        });
     }
 
-    if (msg.length > 160)
+    if (msg.length > 160) {
         msg = msg.substr(0,160-3) + '...';
+    }
 
-    if (msg)
+    if (msg) {
         res.messages[0].message = msg;
-    else
-        res = {success: true};
+    } else {
+        res = {
+            success: true
+        };
+    }
 
     return res;
-
-};
+}
 
 /*
  * Setup context and run eval on `messages_task` property on form.
