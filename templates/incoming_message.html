@@ -76,21 +76,24 @@
       {^related_entities}
         From: {from}
       {/related_entities}
+      {#sms_message}
+        <p><pre>{message}</pre></p>
+      {/sms_message}
      </div>
   </div>
-  {?errors}
-  <div class="row-fluid data-record-errors">
-    {>"data_record_errors.html"/}
-  </div>
-  {/errors}
-  {?responses}
-  <div class="row-fluid data-record-responses">
-    {>"data_record_responses.html"/}
-  </div>
-  {/responses}
   {?tasks}
   <div class="row-fluid data-record-tasks">
     {>"data_record_tasks.html"/}
   </div>
   {/tasks}
+  {?responses}
+  <div class="row-fluid data-record-responses">
+    {>"data_record_responses.html"/}
+  </div>
+  {/responses}
+  {?errors}
+  <div class="row-fluid data-record-errors">
+    {>"data_record_errors.html"/}
+  </div>
+  {/errors}
 </div>
