@@ -1,18 +1,6 @@
 <li class="dropdown analytics">
-    <a class="dropdown-toggle"
-       data-toggle="dropdown"
-       href="#">
-       <i class="icon-bar-chart"></i> Reporting Rates<b class="caret"></b>
-    </a>
-    <ul class="dropdown-menu">
-      {?districts}
-      {:else}
-        <li><a href="{baseURL}/facilities/districts">Add {labels.District} facility data</a></li>
-      {/districts}
-      {#forms}
-        {#districts}
-          <li><a href="{baseURL}/reporting/{code}/{id}">{code} <i class="icon-map-marker"></i> {name}</a></li>
-        {/districts}
-      {/forms}
-    </ul>
+  <a class="dropdown-toggle" href="{baseURL}/reporting">
+    <i class="icon-bar-chart"></i>
+    Reporting Rates
+  </a>
 </li>

@@ -289,14 +289,14 @@ var onRecordClick = function(ev) {
     }
 };
 
-var renderReporting = function (doc, req) {
-
+function renderReporting(doc, req) {
     var template = 'kujua-reporting/facility.html';
+
     _req = req;
-    facility_doc = doc;
-    dates = utils.getDates(req.query);
     isAdmin = kutils.isUserAdmin(req.userCtx);
     isDistrictAdmin = kutils.isUserDistrictAdmin(req.userCtx);
+    facility_doc = doc;
+    dates = utils.getDates(req.query);
 
     if (utils.isHealthCenter(doc)) {
         template = 'kujua-reporting/facility_hc.html';
@@ -312,8 +312,7 @@ var renderReporting = function (doc, req) {
         users.get(req.userCtx.name, function(err, user) {
 
             if (err) {
-                return kutils.logger.error(
-                    'Failed to retreive user info: '+err.reason);
+                return kutils.logger.error('Failed to retreive user info: '+err.reason);
             }
 
             userDistrict = user.kujua_facility;
@@ -329,34 +328,44 @@ var renderReporting = function (doc, req) {
         });
     });
 
-    // TODO fix show when $.kansoconfig is not available
-    return {
-        title: doc.name,
-        content: templates.render(template, req, {
-            doc: doc
-        })
-    };
+    if (doc) {
+        // TODO fix show when $.kansoconfig is not available
+        return {
+            title: doc.name,
+            content: templates.render(template, req, {
+                doc: doc
+            })
+        };
+    } else {
+        return {
+            title: "Reporting",
+            content: templates.render("loader.html", req, {})
+        }
+    }
+
 };
 
-var renderPage = function() {
-
+function renderPage() {
     var appdb = db.use(duality.getDBURL()),
         setup = $.kansoconfig('kujua-reporting', true),
         doc = facility_doc,
-        form_config = {},
+        form_config,
         parentURL = '',
         req = _req;
 
-    kutils.updateTopNav('analytics');
+    kutils.updateTopNav('reporting_rates');
+
+    if (!doc) {
+        return renderDistrictChoice();
+    }
 
     // check that form code is setup in config
-    setup.forms.forEach(function(form) {
-        if (form.code === req.query.form)
-            form_config = form;
+    form_config = _.findWhere(setup.forms, {
+        code: req.query.form
     });
 
     // Make sure form config is valid.
-    if (!form_config.code || !form_config.reporting_freq) {
+    if (!form_config || !form_config.code || !form_config.reporting_freq) {
         return $('#content').html(
             templates.render("500.html", req, {
                 doc: doc,
@@ -392,6 +401,39 @@ var renderPage = function() {
     );
 
     getViewChildFacilities(doc, renderReports);
+}
+
+function renderDistrictChoice() {
+    var appdb = db.use(duality.getDBURL()),
+        setup = $.kansoconfig('kujua-reporting', true);
+
+    appdb.getView(appname, 'facilities_by_type', {
+        startkey: ['district_hospital'],
+        endkey: ['district_hospital', {}],
+        group: true
+    }, function(err, data) {
+        var districts = _.compact(_.map(data.rows, function(row) {
+            if (isAdmin || (isDistrictAdmin && row.key[1] === userDistrict)) {
+                return {
+                    id: row.key[1],
+                    name: row.key[2]
+                };
+            }
+        }));
+
+        districts.sort(function(a, b) {
+            if (a.name === b.name) {
+                return 0;
+            } else {
+                return a.name < b.name ? -1 : 1;
+            }
+        });
+
+        $('#content').html(templates.render("reporting_district_choice.html", {}, {
+            forms: setup.forms,
+            districts: districts
+        }));
+    });
 
 }
 
@@ -474,33 +516,6 @@ var renderReports = function(err, facilities) {
         $('#reporting-data .data-records .data-record[rel]').click(
             onRecordClick
         );
-
-        /*var openLinkMenu = function(selector) {
-            return function (ev) {
-                var elt = $(selector);
-                if (!elt.parents('.upopup')[0]) {
-                    elt.uMenu('create', this, {
-                        vertical: true,
-                        onClick: function (_item_elt) {
-                            document.location.href = (
-                                $(_item_elt).find('a').first().attr('href')
-                            );
-                            return true;
-                        }
-                    });
-                }
-            };
-        };
-
-        $('.change_time_unit_link').bind(
-            'mousedown', openLinkMenu('.change_time_unit_menu')
-        );
-
-        $('.change_time_unit_link').click(function(ev) {
-            ev.stopPropagation();
-            ev.preventDefault();
-        });
-        */
 
         renderRelatedFacilities(req, doc);
 

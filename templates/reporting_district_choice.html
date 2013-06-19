@@ -1,0 +1,34 @@
+<div class="wrap">
+  <div class="row-fluid">
+    <div class="span12">
+      {?districts}
+        <table class="table table-striped districts">
+          <thead>
+            <tr>
+              <th>District</th>
+              <th>Forms</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#districts}
+            <tr>
+              <td class="name">{name}</td>
+              <td>
+                {#forms}
+                  <a href="{baseURL}/reporting/{code}/{id}" class="btn">
+                    <i class="icon-bar-chart"></i>
+
+                    {code}
+                  </a>
+                {/forms}
+              </td>
+            </tr>
+            {/districts}
+          </tbody>
+        </table>
+      {:else}
+        <a href="{baseURL}/facilities/districts" class="btn btn-block btn-large btn-primary">Add {@translate value="District"/} facility data</a>
+      {/districts}
+    </div>
+  </div>
+</div>
