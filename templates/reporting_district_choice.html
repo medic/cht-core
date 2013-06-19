@@ -1,0 +1,31 @@
+<div class="row-fluid">
+  <div class="span12">
+    <h3>View Reports for ...</h3>
+    {?districts}
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>District</th>
+            <th>Forms</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#districts}
+          <tr>
+            <td>{name}</td>
+            <td>
+              {#forms}
+                <a href="{baseURL}/reporting/{code}/{id}" class="btn btn-link">
+                    {code}
+                </a>
+              {/forms}
+            </td>
+          </tr>
+          {/districts}
+        </tbody>
+      </table>
+    {:else}
+      <a href="{baseURL}/facilities/districts" class="btn btn-block btn-large btn-primary">Add {@translate value="District"/} facility data</a>
+    {/districts}
+  </div>
+</div>
