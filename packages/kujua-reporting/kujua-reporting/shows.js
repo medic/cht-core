@@ -51,11 +51,12 @@ var getViewReports = function(doc, dates, callback) {
  * facility doc and get related facility data.
  */
 var getViewChildFacilities = function(doc, callback) {
-
     var startkey = [],
         endkey = [],
         view = 'total_clinics_by_facility',
-        args = {group: true};
+        args = {
+            group: true
+        };
 
     if (doc.type === 'district_hospital') {
         // filter on district
@@ -257,13 +258,14 @@ var renderReportingTotals = function(totals, doc) {
 var onRecordClick = function(ev) {
     ev.preventDefault();
     ev.stopPropagation();
-    var id = $(this).attr('rel'),
-        tr = $(ev.target).closest('.data-record'),
+    var $tr = $(ev.currentTarget),
+        id = $tr.attr('rel'),
         req = {};
     // get target el from event context
-    var row = $(tr).next('.data-record-details'),
+    var row = $tr.next('.data-record-details'),
         cell = row.children('td'),
         body = cell.html();
+
     if (body === '') {
         row.show();
         cell.show();
@@ -510,11 +512,15 @@ var renderReports = function(err, facilities) {
         });
 
         $('#reporting-data .facility-link').click(function(ev) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            $(this).toggleClass('expanded')
-                .next('tr').children('td').children('div')
+            if ($(ev.target).closest('button').length === 0) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                $(this).toggleClass('expanded')
+                    .next('tr')
+                    .children('td')
+                    .children('div')
                     .slideToggle();
+            }
         });
 
 
@@ -522,9 +528,11 @@ var renderReports = function(err, facilities) {
         $('.data-records-list div').hide().first().show();
 
         // bind click on rows that have data
-        $('#reporting-data .data-records .data-record[rel]').click(
-            onRecordClick
-        );
+        $('#reporting-data .data-records .data-record[rel]').click(function(e) {
+            if ($(e.target).closest('button').length === 0) {
+                onRecordClick(e);
+            }
+        });
 
         renderRelatedFacilities(req, doc);
 

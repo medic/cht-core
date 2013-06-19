@@ -522,6 +522,7 @@ exports.getRowsHC = function(facilities, reports, dates) {
         var f = facilities[i];
         var id = f.key[2];
         var name = f.key[2+3]; //name is three elements over
+        var phone = f.key[6];
 
         if (!saved[id]) { saved[id] = 1; }
         else { continue; }
@@ -529,6 +530,7 @@ exports.getRowsHC = function(facilities, reports, dates) {
         row = {
             id: id,
             name: name,
+            phone: phone,
             records: [],
             valid: 0,
             valid_percent: 0
@@ -546,7 +548,8 @@ exports.getRowsHC = function(facilities, reports, dates) {
                     id: report.id,
                     clinic: {
                         id: report.key[5],
-                        name: report.value.clinic},
+                        name: report.value.clinic,
+                    },
                     month: report.key[2],
                     month_pp: utils.prettyMonth(report.key[2], true),
                     year: report.key[1],

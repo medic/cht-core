@@ -2,7 +2,17 @@
   {#rows}
   <tr class="facility-link" rel="{id}">
     <td class="facility-name">
-      <div class="arrow"></div><div class="name">{name}</div>
+      <div class="arrow"></div>
+      <div class="name">
+        {name}
+        {?phone}
+        <span class="add-message">
+          <button class="btn btn-primary btn-mini" data-phone="{phone}">
+            <i class="icon-comment-alt"></i>
+          </button>
+        </span>
+        {/phone}
+      </div>
     </td>
     <td class="valid-percent"><em>{valid_percent}%</em> <span class="mini-pie"></span></td>
   </tr>
@@ -23,10 +33,20 @@
             <tr {?.id}rel="{.id}"{/.id} class="data-record">
               <td class="period">{name}</td>
               <td class="reporter">{reporter}</td>
-              <td class="phone">{reporting_phone}</td>
+              <td class="phone">
+                {?reporting_phone}
+                  {reporting_phone}
+                  <span class="add-message">
+                    <button class="btn btn-primary btn-mini" data-phone="{phone}" data-doc="{.id}">
+                      <i class="icon-reply"></i>
+                    </button>
+                  </span>
+                {/reporting_phone}
+              </td>
               <td class="status">
-                <p><span class="{^not_submitted}{?is_valid}success{:else}important{/is_valid}{/not_submitted}"
-                  >&middot;</span></p>
+                <p>
+                  <span class="{^not_submitted}{?is_valid}success{:else}important{/is_valid}{/not_submitted}">&middot;</span>
+                </p>
               </td>
             </tr>
             <tr class="hide data-record-details"><td colspan="4"></td></tr>
