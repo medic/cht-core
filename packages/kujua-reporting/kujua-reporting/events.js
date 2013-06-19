@@ -41,14 +41,6 @@ duality_events.on('init', function (ev) {
                 return kutils.logger.error('Failed to retreive user  info: '+err.reason);
             }
 
-            var district = user.kujua_facility,
-                districts = [],
-                q = {
-                    startkey: ['district_hospital'],
-                    endkey: ['district_hospital', {}],
-                    group: true
-                };
-
             $('#topnav .nav .records').after(templates.render('kujua-reporting/top_nav.html', {}, {}));
         });
     });
