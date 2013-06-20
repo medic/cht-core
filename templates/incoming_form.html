@@ -46,6 +46,7 @@
 <div class="extended">
   <div class="row-fluid">
     <div class="inset span12">
+      <b>Details</b>
       {#related_entities}
         <div>
         {?clinic.parent.parent.name}
@@ -90,34 +91,34 @@
       {#sms_message}
         <p><pre>{message}</pre></p>
       {/sms_message}
+      {?errors}
+        <div class="row-fluid data-record-errors">
+          {>"data_record_errors.html"/}
+        </div>
+      {/errors}
+      {?responses}
+      <div class="row-fluid data-record-responses">
+        {>"data_record_responses.html"/}
+      </div>
+      {/responses}
+      {?tasks}
+      <div class="row-fluid data-record-tasks">
+        {>"data_record_tasks.html"/}
+      </div>
+      {/tasks}
+      {?scheduled_tasks}
+      <div class="row-fluid data-record-scheduled-tasks">
+        {>"data_record_scheduled_tasks.html"/}
+      </div>
+      {/scheduled_tasks}
     </div>
   </div>
   <div class="row-fluid scroll">
     {>"data_record_fields.html":fields/}
   </div>
-  {?tasks}
-  <div class="row-fluid data-record-tasks">
-    {>"data_record_tasks.html"/}
-  </div>
-  {/tasks}
-  {?responses}
-  <div class="row-fluid data-record-responses">
-    {>"data_record_responses.html"/}
-  </div>
-  {/responses}
-  {?scheduled_tasks}
-  <div class="row-fluid data-record-scheduled-tasks">
-    {>"data_record_scheduled_tasks.html"/}
-  </div>
-  {/scheduled_tasks}
-  {?errors}
-  <div class="row-fluid data-record-errors">
-    {>"data_record_errors.html"/}
-  </div>
-  {/errors}
   {@hasPermission permission="can_view_revisions"}
-    <div class="data-record-revisions">
-      {>"data_record_revisions.html"/}
-    </div>
+  <div class="data-record-revisions">
+    {>"data_record_revisions.html"/}
+  </div>
   {/hasPermission}
 </div>
