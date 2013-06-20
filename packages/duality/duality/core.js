@@ -738,7 +738,7 @@ exports.runShow = function (fn, doc, req) {
         fn: fn
     };
     events.emit('beforeRequest', info, req);
-    var res = fn(doc, req);
+    var res = fn.apply(this, [doc, req]);
 
     // For some reason using instanceof on libmozjs can be return true or false at different times
     if ( ! (res instanceof Object || typeof(res) === 'object')  ) {
