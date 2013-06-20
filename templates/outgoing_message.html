@@ -8,7 +8,7 @@
     </div>
   </div>
   <div class="contact-info">
-    To: {tasks[0].messages[0].to}
+    To: {@contact entities="{related_entities}" to="{tasks[0].messages[0].to}"/}
   </div>
   <div class="msg">
     <pre>
@@ -37,7 +37,46 @@
         {/timestamp}
       </p>
       {#messages}
+        {#related_entities}
+          <div>
+            To: 
+          {?clinic.parent.parent.name}
+            {clinic.parent.parent.name}
+            <i class="icon-double-angle-right"></i>
+          {:else}
+            {?health_center.parent.name}
+              {health_center.parent.name}
+              <i class="icon-double-angle-right"></i>
+            {/health_center.parent.name}
+          {/clinic.parent.parent.name}
+          {?clinic.parent.name}
+            {clinic.parent.name}
+            <i class="icon-double-angle-right"></i>
+          {:else}
+            {?health_center.name}
+              {health_center.name}
+              <i class="icon-double-angle-right"></i>
+            {/health_center.name}
+          {/clinic.parent.name}
+          {?clinic.name}
+            {clinic.name}
+          {/clinic.name}
+          {?clinic.contact.rc_code}
+            <span class="label">{clinic.contact.rc_code}</span>
+          {/clinic.contact.rc_code}
+          </div>
+          <div>
+          {?clinic.contact.name}
+            {clinic.contact.name}
+          {/clinic.contact.name}
+          {?clinic.contact.phone}
+            {clinic.contact.phone}
+          {/clinic.contact.phone}
+          </div>
+        {/related_entities}
+        {^related_entities}
         <p>To: {to}</p>
+        {/related_entities}
         <pre>{message}</pre>
       {/messages}
     {/tasks}
