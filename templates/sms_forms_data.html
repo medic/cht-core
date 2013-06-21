@@ -1,39 +1,65 @@
 {?forms}
+<div class="row-fluid">
+  <form class="form-horizontal controls pull-right">
+    <div class="control-group">
+      <label class="control-label">
+        Date range
+      </label>
+      <div class="controls">
+        <div id="startDate" class="input-append" data-role="datetimepicker">
+          <input class="input-small" placeholder="yyyy-mm-dd" data-format="yyyy-MM-dd" type="text">
+          <span class="add-on">
+            <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+          </span>
+        </div>
+        to
+        <div id="endDate" class="input-append" data-role="datetimepicker">
+          <input class="input-small" placeholder="yyyy-mm-dd" data-format="yyyy-MM-dd" type="text">
+          <span class="add-on">
+            <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label">
+        Export format
+      </label>
+      <div class="controls">
+        <select name="format">
+          <option value="xml">Excel (English)</option>
+          <option value="csv">CSV (English)</option>
+          <option value="xml,fr">Excel (French)</option>
+          <option value="csv,fr">CSV (French)</option>
+        </select>
+      </div>
+    </div>
+  </form>
+</div>
 {#forms}
-    <div class="row form-row">
-      <h3 class="span5 offset1">
+    <div class="row-fluid form-row">
+      <h3 class="span7 offset1">
         {title} <div class="label label-faded">{form}</div>
       </h3>
-        <div class="span2"><label>{total} records</label></div>
-        <div class="span4">
+        <div class="span3"><label>{total} records</label></div>
+        <div class="span1">
             <form class="form-inline" method="get">
-                <select name="format">
-                    <option value="{baseURL}/form_data_records.xml?{q}">Excel (English)</option>
-                    <option value="{baseURL}/form_data_records.csv?{q}">CSV (English)</option>
-                    <option value="{baseURL}/form_data_records.xml?locale=fr&amp;{q}">Excel (French)</option>
-                    <option value="{baseURL}/form_data_records.csv?locale=fr&amp;{q}">CSV (French)</a></li>
-                </select>
-                <button class="btn btn-primary" type="submit">
+              <button class="btn btn-primary" type="submit" data-url="{baseURL}" data-query="{q}">
                     <i class="icon-arrow-down icon-large"></i>
                 </button>
             </form>
         </div>
     </div>
     {#districts}
-        <div class="row district-form-row">
-            <h4 class="offset2 span4">
+        <div class="row-fluid district-form-row">
+            <h4 class="offset2 span6">
                 {?isAdmin}{dh_name}{/isAdmin}
             </h4>
-            <div class="span2"><label>{total} records</label></div>
-            <div class="span4">
+            <div class="span3"><label>{total} records</label></div>
+            <div class="span1">
                 <form class="form-inline" method="get">
-                    <select name="format">
-                        <option value="{baseURL}/{form}/data_records.xml?{q}">Excel (English)</option>
-                        <option value="{baseURL}/{form}/data_records.csv?{q}">CSV (English)</option>
-                        <option value="{baseURL}/{form}/data_records.xml?locale=fr&amp;{q}">Excel (French)</option>
-                        <option value="{baseURL}/{form}/data_records.csv?locale=fr&amp;{q}">CSV (French)</a></li>
-                    </select>
-                    <button class="btn btn-primary" type="submit">
+                    <button class="btn btn-primary" type="submit" data-url="{baseURL}" data-form="{form}" data-query="{q}">
                         <i class="icon-arrow-down icon-large"></i>
                     </button>
                 </form>
@@ -42,7 +68,7 @@
     {/districts}
 {/forms}
 {:else}
-<div span="span12">
-    No data is available, please login or contact your supervisor.
+<div class="span12">
+  No data is available, please login or contact your supervisor.
 </div>
 {/forms}

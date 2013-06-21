@@ -8,6 +8,9 @@
 @baseFontPath: "../../../bootstrap/font/";
 @gridColumns: 12;
 
+@dataRecordBackground: #d6ebff;
+@dataRecordBackgroundHighlight: #adc2ff;
+
 /* background noise */
 html, body {
       background: #ccc url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAmUlEQVQYV12Q2wrEIAxEVaSI+P/f6JMPIkWk1OUEpmwrSEicW/S11n0ch1trOWqM0V3X9erP83S+tbZ55HwBmlF9733DSCmZ2n3fD4HZnNPlnJ3/WisCMXAIIVg1RQ2wQBFlXAADRNUUSykWnosNRB052DJqxAaMokjMX1vLTl+Eqr7OMpKLHP+ZBNDmlpEGMI9jjMdSSxHhB0QBnc28Jnb5AAAAAElFTkSuQmCC);
@@ -189,7 +192,13 @@ body {
         }
     }
     .form-row {
+        #gradient > .vertical(#eee, #ddd);
+        border-bottom: 1px solid #ccc;
+
         margin-top: 15px;
+        h3 {
+            text-shadow: 1px 1px 3px #fff;
+        }
         label {
             text-align: right;
             margin-top: 20px;
@@ -203,6 +212,13 @@ body {
     }
     li {
         list-style: none;
+    }
+
+    form.controls {
+        margin: 20px 20px 0;
+        .control-group {
+            margin-bottom: 10px;
+        }
     }
 }
 
@@ -277,9 +293,6 @@ body {
         box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 
         background-color: @grayLighter;
-
-        @dataRecordBackground: #d6ebff;
-        @dataRecordBackgroundHighlight: #adc2ff;
 
         .extended {
             padding: 8px 20px;
