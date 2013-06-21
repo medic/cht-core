@@ -1,56 +1,29 @@
 
-exports.contacts = {
+exports.contacts_by_id = {
     map: function(doc) {
         var district,
-            facility,
-            name,
-            contact,
-            phone,
-            value;
-
-        function emitKeys(district) {
-            emit([district, name], value);
-            if (phone) {
-                emit([district, phone], value);
-            }
-        }
+            facility;
 
         if (~['district_hospital', 'health_center', 'clinic'].indexOf(doc.type)) {
-            contact = doc.contact;
-            phone = contact && contact.phone;
-            contactName = contact && contact.name;
-            name = (doc.name + ' ' + (contactName || contact.rc_code || phone)).toLowerCase();
-
-            value = {
-                id: doc._id,
-                phone: phone,
-                code: contact && contact.rc_code,
-                name: doc.name,
-                contactName: contactName,
-                type: doc.type
-            };
-
-            emitKeys(null);
-            emit(['__by_id', doc._id], value);
+            emit([null, doc._id], null);
         }
 
         if (doc.type === 'district_hospital') {
-            emit([doc._id, name], value);
+            emit([doc._id, doc._id], null);
         } else if (doc.type === 'health_center') {
             district = doc.parent;
 
             if (district) {
-                emitKeys(district._id);
+                emit([district._id, doc._id], null);
             }
-            emitKeys(doc._id);
         } else if (doc.type === 'clinic') {
             facility = doc.parent;
             if (facility) {
-                emitKeys(facility._id);
+                emit([facility._id, doc._id], null);
 
                 district = facility.parent;
                 if (district) {
-                    emitKeys(district._id);
+                    emit([district._id, doc._id], null);
                 }
             }
         }
