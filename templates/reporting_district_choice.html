@@ -1,34 +1,31 @@
-<div class="wrap">
-  <div class="row-fluid">
-    <div class="span12">
-      {?districts}
-        <table class="table table-striped districts">
-          <thead>
-            <tr>
-              <th>District</th>
-              <th>Forms</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#districts}
-            <tr>
-              <td class="name">{name}</td>
-              <td>
-                {#forms}
-                  <a href="{baseURL}/reporting/{code}/{id}" class="btn">
-                    <i class="icon-bar-chart"></i>
-
-                    {formName}
-                  </a>
-                {/forms}
-              </td>
-            </tr>
-            {/districts}
-          </tbody>
-        </table>
-      {:else}
-        <a href="{baseURL}/facilities/districts" class="btn btn-block btn-large btn-primary">Add {@translate value="District"/} facility data</a>
-      {/districts}
+<div class="row-fluid">
+  <div class="span12">
+    {?districts}
+    {#forms}
+    <div class="header-row row-fluid">
+      <div class="span12">
+        <h3 class="l20">
+          {formName}
+        </h3>
+      </div>
     </div>
+    {#districts}
+    <div class="row-fluid b5 t5">
+      <div class="offset1 span4 lh30">
+        {name}
+      </div>
+      <div class="span6">
+        <a href="{baseURL}/reporting/{code}/{id}" class="btn">
+          <i class="icon-bar-chart"></i>
+
+          View
+        </a>
+      </div>
+    </div>
+    {/districts}
+    {/forms}
+    {:else}
+    <a href="{baseURL}/facilities/districts" class="btn btn-block btn-large btn-primary">Add {@translate value="District"/} facility data</a>
+    {/districts}
   </div>
 </div>
