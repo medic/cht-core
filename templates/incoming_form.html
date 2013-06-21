@@ -21,12 +21,18 @@
     <span class="label label-faded">{form}</span>
   </div>
   <div class="icons">
-    {?tasks}
-      <span class="label label-{@taskClass tasks="{tasks}"/}" title="{@taskMessage tasks="{tasks}"/}">
-        {tasks.length}
-        {@taskIcon tasks="{tasks}"/}
+    {@ifHasState array="{tasks}" state="sent"}
+      <span class="label label-success" title="{@countByState array="{tasks}" state="sent"/} messages sent">
+        {@countByState array="{tasks}" state="sent"/}
+        <i class="icon-envelope"></i>
       </span>
-    {/tasks}
+    {/ifHasState}
+    {@ifHasState array="{tasks}" state="pending"}
+      <span class="label label-info" title="{@countByState array="{tasks}" state="pending"/} messages pending">
+        {@countByState array="{tasks}" state="pending"/}
+        <i class="icon-time"></i>
+      </span>
+    {/ifHasState}
     {?scheduled_tasks}
     <span class="label label-info" title="{@countByState array="{scheduled_tasks}" state="scheduled"/} scheduled messages">
       {@countByState array="{scheduled_tasks}" state="scheduled"/}
