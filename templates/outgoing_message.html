@@ -26,7 +26,7 @@
 <div class="extended">
   <div class="row-fluid">
     <div class="inset span12 msg-full">
-      <b>Sent by</b> {sent_by}
+      Sent by: {sent_by}
     {#tasks}
       <p class="pull-right">
         <span class="tasks-state-{state}">{state}</span>
@@ -39,7 +39,7 @@
       {#messages}
         {#related_entities}
           <div>
-            To: 
+            To:
           {?clinic.parent.parent.name}
             {clinic.parent.parent.name}
             <i class="icon-double-angle-right"></i>
@@ -77,7 +77,7 @@
         {^related_entities}
         <p>To: {to}</p>
         {/related_entities}
-        <pre>{message}</pre>
+        <p><pre>{message}</pre></p>
       {/messages}
     {/tasks}
     </div>
