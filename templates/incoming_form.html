@@ -52,8 +52,8 @@
 <div class="extended">
   <div class="row-fluid">
     <div class="inset span12">
+      <div class="row-fluid data-record-details">
       {#related_entities}
-        <div>
         <b>From:</b>
         {?clinic.parent.parent.name}
           {clinic.parent.parent.name}
@@ -87,7 +87,6 @@
         {?clinic.contact.phone}
           {clinic.contact.phone}
         {/clinic.contact.phone}
-        </div>
       {/related_entities}
       {^related_entities}
         <b>From:</b> {from}
@@ -95,6 +94,7 @@
       {#sms_message}
         <p><pre>{message}</pre></p>
       {/sms_message}
+      </div>
       {?errors}
         <div class="row-fluid data-record-errors">
           {>"data_record_errors.html"/}

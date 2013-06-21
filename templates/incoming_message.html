@@ -41,9 +41,9 @@
 <div class="extended">
   <div class="row-fluid">
     <div class="inset span12">
+      <div class="row-fluid data-record-details">
       {#related_entities}
-        <div>
-        <b>From:</b>
+        <p><b>From:</b>
         {?clinic.parent.parent.name}
           {clinic.parent.parent.name}
           <i class="icon-double-angle-right"></i>
@@ -76,14 +76,15 @@
         {?clinic.contact.phone}
           {clinic.contact.phone}
         {/clinic.contact.phone}
-        </div>
+        </p>
       {/related_entities}
       {^related_entities}
-        <b>From:</b> {from}
+        <p><b>From:</b> {from}</p>
       {/related_entities}
       {#sms_message}
         <p><pre>{message}</pre></p>
       {/sms_message}
+      </div>
       {?responses}
       <div class="row-fluid data-record-responses">
         {>"data_record_responses.html"/}

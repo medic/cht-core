@@ -28,7 +28,6 @@
 <div class="extended">
   <div class="row-fluid">
     <div class="inset span12 msg-full">
-      <b>Sent by:</b> {sent_by}
     {#tasks}
       <p class="pull-right">
         <span class="tasks-state-{state}">{state}</span>
@@ -70,8 +69,9 @@
           </div>
         {/related_entities}
         {^related_entities}
-        <p><b>To:</b> {to}</p>
+        <div><b>To:</b> {to}</div>
         {/related_entities}
+        <p><b>Sent by:</b> {sent_by}</p>
         <p><pre>{message}</pre></p>
       {/messages}
     {/tasks}
