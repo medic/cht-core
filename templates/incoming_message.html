@@ -43,6 +43,7 @@
     <div class="inset span12">
       {#related_entities}
         <div>
+        <b>From:</b>
         {?clinic.parent.parent.name}
           {clinic.parent.parent.name}
           <i class="icon-double-angle-right"></i>
@@ -64,7 +65,7 @@
         {?clinic.name}
           {clinic.name}
         {:else}
-          <b>From:</b> {from}
+          {from}
         {/clinic.name}
         {?clinic.contact.rc_code}
           <span class="label">{clinic.contact.rc_code}</span>
@@ -78,7 +79,7 @@
         </div>
       {/related_entities}
       {^related_entities}
-        From: {from}
+        <b>From:</b> {from}
       {/related_entities}
       {#sms_message}
         <p><pre>{message}</pre></p>
