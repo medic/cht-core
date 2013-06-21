@@ -42,7 +42,7 @@ body {
     }
 
 }
-
+    
 /* Temp fix for dashboard z-index woes */
 #dashboard-topbar {
   z-index: 2000;
@@ -179,8 +179,11 @@ body {
 }
 #forms {
     .district-form-row {
-        font-style: italic;
-        color: #888;
+        border-top: 1px solid #eee;
+        color: #666;
+        h5 {
+            margin-bottom: 0px;
+        }
         label {
             text-align: right;
             margin-top: 9px;
@@ -193,15 +196,18 @@ body {
     }
     .form-row {
         .header-row;
+        h4 {
+            line-height: 30px;
+        }
         label {
             text-align: right;
-            margin-top: 20px;
+            margin-top: 16px;
             cursor: default;
             font-weight: bold;
         }
         form {
             margin-bottom: 0;
-            margin-top: 16px;
+            margin-top: 11px;
         }
     }
     li {
