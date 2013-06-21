@@ -64,13 +64,11 @@
         {?clinic.name}
           {clinic.name}
         {:else}
-          From: {from}
+          <b>From:</b> {from}
         {/clinic.name}
         {?clinic.contact.rc_code}
           <span class="label">{clinic.contact.rc_code}</span>
         {/clinic.contact.rc_code}
-        </div>
-        <div>
         {?clinic.contact.name}
           {clinic.contact.name}
         {/clinic.contact.name}
@@ -85,21 +83,21 @@
       {#sms_message}
         <p><pre>{message}</pre></p>
       {/sms_message}
+      {?responses}
+      <div class="row-fluid data-record-responses">
+        {>"data_record_responses.html"/}
+      </div>
+      {/responses}
+      {?errors}
+      <div class="row-fluid data-record-errors">
+        {>"data_record_errors.html"/}
+      </div>
+      {/errors}
+      {?tasks}
+      <div class="row-fluid data-record-tasks">
+        {>"data_record_tasks.html"/}
+      </div>
+      {/tasks}
      </div>
   </div>
-  {?tasks}
-  <div class="row-fluid data-record-tasks">
-    {>"data_record_tasks.html"/}
-  </div>
-  {/tasks}
-  {?responses}
-  <div class="row-fluid data-record-responses">
-    {>"data_record_responses.html"/}
-  </div>
-  {/responses}
-  {?errors}
-  <div class="row-fluid data-record-errors">
-    {>"data_record_errors.html"/}
-  </div>
-  {/errors}
 </div>
