@@ -19,9 +19,11 @@
   </div> 
   <div class="add-message">
   </div>
-  <div class="reported-date" title="{@formatDate timestamp="{reported_date}"/}">
-    {@formatDate timestamp="{reported_date}" format="MMM DD HH:mm"/}
-  </div>
+  {?tasks[0].timestamp}
+    <div class="timestamp" title="{@formatDate timestamp="{tasks[0].timestamp}"/}">
+      {@formatDate timestamp="{tasks[0].timestamp}" format="MMM DD HH:mm"/}
+    </div>
+  {/tasks[0].timestamp}
 </div>
 <div class="extended">
   <div class="row-fluid">
@@ -30,11 +32,6 @@
     {#tasks}
       <p class="pull-right">
         <span class="tasks-state-{state}">{state}</span>
-        {?timestamp}
-        <span class="tasks-timestamp">
-          {@formatDate timestamp="{timestamp}"/}
-        </span>
-        {/timestamp}
       </p>
       {#messages}
         {#related_entities}
