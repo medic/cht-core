@@ -3,16 +3,13 @@
     <input type="checkbox" name="select-row-checkbox" />
   </div>
   <div class="direction-icon">
-    <div class="label label-success">
-      <i class="icon-envelope-alt"></i>
-    </div>
   </div>
   <div class="contact-info">
     {@contact entities="{related_entities}" from="{from}"/}
   </div>
   <div class="msg">
     {#sms_message}
-      <pre>{message}</pre>
+      <span>{message}</span>
     {/sms_message}
   </div>
   <div class="icons">
@@ -30,8 +27,8 @@
     {/ifHasState}
   </div> 
   <div class="add-message">
-    <button class="btn btn-mini">
-      <i class="icon-comment-alt"></i>
+    <button class="btn btn-mini btn-primary">
+      <i class="icon-reply"></i>
     </button>
   </div>
   <div class="reported-date" title="{@formatDate timestamp="{reported_date}"/}">

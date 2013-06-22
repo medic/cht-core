@@ -3,17 +3,14 @@
     <input type="checkbox" name="select-row-checkbox" />
   </div>
   <div class="direction-icon">
-    <div class="label label-info">
-      <i class="icon-envelope"></i>
-    </div>
   </div>
   <div class="contact-info">
-    To: {@contact entities="{related_entities}" to="{tasks[0].messages[0].to}"/}
+    <b>To:</b> {@contact entities="{related_entities}" to="{tasks[0].messages[0].to}"/}
   </div>
   <div class="msg">
-    <pre>
+    <span>
       {tasks[0].messages[0].message}
-    </pre>
+    </span>
   </div>
   <div class="icons">
   </div> 

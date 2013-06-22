@@ -4,21 +4,14 @@
   </div>
   <div class="direction-icon">
     {?errors}
-      <div class="label label-important" title="Invalid form">
-        <i class="icon-file-alt"></i>
-      </div>
-    {:else}
-      <div class="label label-success">
-        <i class="icon-file-alt"></i>
-      </div>
+      <i class="icon-exclamation-sign"></i>
     {/errors}
   </div>
   <div class="contact-info">
     {@contact entities="{related_entities}" from="{from}"/}
   </div>
   <div class="msg">
-    <i>{@formName form="{form}"/}</i>
-    <span class="label label-faded">{form}</span>
+    <span><i class="icon-file-alt"></i> [{form}] {@formName form="{form}"/}</span>
   </div>
   <div class="icons">
     {@ifHasState array="{tasks}" state="sent"}
@@ -41,8 +34,8 @@
     {/scheduled_tasks}
   </div>
   <div class="add-message">
-      <button class="btn btn-mini">
-          <i class="icon-comment-alt"></i>
+      <button class="btn btn-mini btn-primary">
+        <i class="icon-reply"></i>
       </button>
   </div>
   <div class="reported-date" title="{@formatDate timestamp="{reported_date}"/}">
