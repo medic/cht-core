@@ -1,10 +1,11 @@
 var _ = require('underscore'),
-    mustache = require('mustache'),
+    uuid = require('uuid'),
     moment = require('moment'),
+    mustache = require('mustache'),
     config = require('../config'),
     i18n = require('../i18n'),
     date = require('../date'),
-    db = require('../db');
+    db = require('../db'),
 
 var getClinicID = function(doc) {
   return doc &&
@@ -49,6 +50,7 @@ var addMessage = function(doc, options) {
     doc.tasks = doc.tasks || [];
 
     var task = {
+        uuid: uuid(),
         messages: [],
         state: 'pending'
     };

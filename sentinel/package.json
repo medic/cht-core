@@ -11,7 +11,8 @@
         "optimist": "latest",
         "request": "latest",
         "underscore": "latest",
-        "url": "latest"
+        "url": "latest",
+        "uuid": "latest"
     },
     "devDependencies": {
         "kanso": "latest",
