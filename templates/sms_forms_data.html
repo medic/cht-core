@@ -1,42 +1,3 @@
-{?forms}
-<div class="row-fluid">
-  <form class="form-horizontal controls pull-right">
-    <div class="control-group">
-      <label class="control-label">
-        Date range
-      </label>
-      <div class="controls">
-        <div id="startDate" class="input-append" data-role="datetimepicker">
-          <input class="input-small" placeholder="yyyy-mm-dd" data-format="yyyy-MM-dd" type="text">
-          <span class="add-on">
-            <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
-          </span>
-        </div>
-        to
-        <div id="endDate" class="input-append" data-role="datetimepicker">
-          <input class="input-small" placeholder="yyyy-mm-dd" data-format="yyyy-MM-dd" type="text">
-          <span class="add-on">
-            <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <div class="control-group">
-      <label class="control-label">
-        Export format
-      </label>
-      <div class="controls">
-        <select name="format">
-          <option value="xml">Excel (English)</option>
-          <option value="csv">CSV (English)</option>
-          <option value="xml,fr">Excel (French)</option>
-          <option value="csv,fr">CSV (French)</option>
-        </select>
-      </div>
-    </div>
-  </form>
-</div>
 {#forms}
     <div class="row-fluid form-row">
       <h4 class="span7 offset1">
@@ -66,9 +27,8 @@
             </div>
         </div>
     {/districts}
-{/forms}
 {:else}
-<div class="span12">
+<div class="span12 row-fluid">
   No data is available, please login or contact your supervisor.
 </div>
 {/forms}
