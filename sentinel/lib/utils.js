@@ -5,7 +5,7 @@ var _ = require('underscore'),
     config = require('../config'),
     i18n = require('../i18n'),
     date = require('../date'),
-    db = require('../db'),
+    db = require('../db');
 
 var getClinicID = function(doc) {
   return doc &&
