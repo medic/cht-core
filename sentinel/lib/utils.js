@@ -50,12 +50,14 @@ var addMessage = function(doc, options) {
     doc.tasks = doc.tasks || [];
 
     var task = {
-        uuid: uuid(),
         messages: [],
         state: 'pending'
     };
+
+    message.uuid = uuid();
     task.messages.push({to: phone, message: message});
-    _.extend(task, _.omit(options, 'phone', 'message'));
+
+    _.extend(task, _.omit(options, 'phone', 'message', 'uuid'));
     doc.tasks.push(task);
 };
 
