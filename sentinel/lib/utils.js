@@ -1,6 +1,7 @@
 var _ = require('underscore'),
-    mustache = require('mustache'),
+    uuid = require('uuid'),
     moment = require('moment'),
+    mustache = require('mustache'),
     config = require('../config'),
     i18n = require('../i18n'),
     date = require('../date'),
@@ -52,8 +53,11 @@ var addMessage = function(doc, options) {
         messages: [],
         state: 'pending'
     };
+
+    message.uuid = uuid();
     task.messages.push({to: phone, message: message});
-    _.extend(task, _.omit(options, 'phone', 'message'));
+
+    _.extend(task, _.omit(options, 'phone', 'message', 'uuid'));
     doc.tasks.push(task);
 };
 
