@@ -8,6 +8,8 @@ var db = require('db'),
     users = require('users'),
     charts = require('./ui/charts'),
     templates = require('duality/templates'),
+    muvuku_webapp_url = '/json-forms/_design/json-forms/_rewrite/?_embed_mode=2',
+    url_util = require('url'),
     jsonforms = require('views/lib/jsonforms');
 
 var facility_doc
@@ -335,6 +337,7 @@ function renderReporting(doc, req) {
         // TODO fix show when $.kansoconfig is not available
         return {
             title: doc.name,
+            info: getAppInfo.apply(this),
             content: templates.render(template, req, {
                 doc: doc
             })
@@ -342,6 +345,7 @@ function renderReporting(doc, req) {
     } else {
         return {
             title: "Reporting",
+            info: getAppInfo.apply(this),
             content: templates.render("loader.html", req, {})
         }
     }
@@ -557,6 +561,28 @@ var renderReports = function(err, facilities) {
             });
         }
     });
+}
+
+
+// duplicate code warning!!!!
+var getAppInfo = function() {
+    var info = {
+        muvuku_webapp_url: muvuku_webapp_url
+    };
+    if (this.app_settings && this.app_settings.muvuku_webapp_url) {
+        info.muvuku_webapp_url = this.app_settings.muvuku_webapp_url;
+    }
+    var muvuku = url_util.parse(info.muvuku_webapp_url, true);
+    muvuku.search = null
+    muvuku.query.sync_url = require('duality/core').getBaseURL() + '/add';
+    info.muvuku_webapp_url = url_util.format(muvuku);
+
+    if (this.kanso && this.kanso.git && this.kanso.git.commit) {
+        info.sha = this.kanso.git.commit;
+    }
+
+
+    return info;
 }
 
 /**
