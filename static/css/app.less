@@ -82,7 +82,7 @@ body {
   }
   > .wrap {
     width: 17.6em;
-    margin: 0 auto;
+    margin: 0 auto 20px auto;
     //.pull-right
   }
   .logo {
@@ -142,7 +142,7 @@ body {
 .page-header.navbar-fixed-top {
     top: 65px;
     z-index: 998;  /* allow dropdowns to show */
-    #gradient > .vertical(#eee, #fff);
+    #gradient > .vertical(#eee, #f0f0f0);
     border-bottom: 1px solid #eee;
     box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
 }
@@ -310,10 +310,6 @@ body {
   font-weight: normal;
 }
 .navbar {
-    .navbar-inner {
-       #gradient > .vertical(#ddd, #eee);
-        border-bottom: 1px solid #ddd;
-    }
     .brand {
         padding: 8px 20px;
         .droidBold;
@@ -442,30 +438,15 @@ body {
         }
 
         .msg {
+            width: 38%;
             overflow: auto;
             white-space: nowrap;
-            pre {
-                padding: 2px 4px;
-                margin-bottom: 0;
-                white-space: inherit;
-                display: inline-block;
-                width: 100%;
-                -moz-box-sizing: border-box;
-                box-sizing: border-box;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
             span {
                 display: inline-block;
-                width: 100%;
-                -moz-box-sizing: border-box;
-                box-sizing: border-box;
+                .box-sizing(border-box);
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-        }
-        .msg {
-            width: 34%;
         }
 
         .add-message {
@@ -787,11 +768,15 @@ table.spreadsheet .dropdown-menu {
   background: none;
 }
 .modal-body {
-  min-height: 70px;
-  overflow: visible;
-  textarea {
-    width: 98%;
-  }
+    min-height: 70px;
+    overflow: visible;
+    form, textarea {
+        margin: 0;
+    }
+
+    textarea {
+        width: 98%;
+    }
 }
 .select2-container .select2-choice {
     padding-top: 1px;
@@ -817,4 +802,10 @@ h3 .label {
 .districts .name {
     font-weight: bold;
     line-height: 30px;
+}
+.no-records {
+    color: @grayDark;
+    text-align: center;
+    font-size: @fontSizeLarge;
+    padding: 20px;
 }
