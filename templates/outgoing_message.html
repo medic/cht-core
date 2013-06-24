@@ -15,12 +15,12 @@
   </div>
   <div class="icons">
   </div> 
-  <div class="add-message"></div>
+  <div class="timestamp" title="{@formatDate timestamp="{tasks[0].timestamp}"/}">
   {?tasks[0].timestamp}
-    <div class="timestamp" title="{@formatDate timestamp="{tasks[0].timestamp}"/}">
-      {@formatDate timestamp="{tasks[0].timestamp}" format="MMM DD HH:mm"/}
-    </div>
+    {@formatDate timestamp="{tasks[0].timestamp}" format="MMM DD HH:mm"/}
   {/tasks[0].timestamp}
+  </div>
+  <div class="add-message"></div>
 </div>
 <div class="extended">
   <div class="row-fluid">
