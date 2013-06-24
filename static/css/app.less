@@ -10,6 +10,7 @@
 
 @dataRecordBackground: #d6ebff;
 @dataRecordBackgroundHighlight: #adc2ff;
+@outgoingMessageBackground: #eaf1fb;
 
 /* background noise */
 html, body {
@@ -351,6 +352,13 @@ body {
         padding: 10px;
     }
     .data-record {
+        &.outgoing {
+            background-color: @outgoingMessageBackground;
+            border: 1px solid darken(@outgoingMessageBackground, 6%);
+            &:hover {
+                background-color: darken(@outgoingMessageBackground, 5%);
+            }
+        }
         margin-bottom: 10px;
         .rounded(2px);
         border: 1px solid @grayLighter;
@@ -447,14 +455,9 @@ body {
 
         .msg {
             width: 38%;
-            overflow: auto;
+            overflow: hidden;
             white-space: nowrap;
-            span {
-                display: inline-block;
-                .box-sizing(border-box);
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
+            text-overflow: ellipsis;
         }
 
         .add-message {
