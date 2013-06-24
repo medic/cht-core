@@ -99,7 +99,7 @@ body {
 }
 .page-header {
   background-color: @white;
-  padding: 10px 10px 5px 10px;
+  padding: 8px 10px 7px 10px;
   margin: 0;
     h1 {
         margin-top: 0;
@@ -140,10 +140,11 @@ body {
   }
 }
 .page-header.navbar-fixed-top {
-  top: 65px;
-  z-index: 998;  /* allow dropdowns to show */
-  background: #eee;
-  box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
+    top: 65px;
+    z-index: 998;  /* allow dropdowns to show */
+    #gradient > .vertical(#eee, #fff);
+    border-bottom: 1px solid #eee;
+    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
 }
 
 .version {
@@ -309,6 +310,10 @@ body {
   font-weight: normal;
 }
 .navbar {
+    .navbar-inner {
+       #gradient > .vertical(#ddd, #eee);
+        border-bottom: 1px solid #ddd;
+    }
     .brand {
         padding: 8px 20px;
         .droidBold;
@@ -317,7 +322,7 @@ body {
             vertical-align: super;
         }
         a {
-            color: @grayDark;
+            color: @grayLight;
             &:hover {
                 text-decoration: none;
             }
@@ -422,11 +427,9 @@ body {
         }
         .direction-icon {
             width: 2%;
-            .label {
-                padding: 4px 6px;
-                min-width: 16px;
-                font-size: 14px;
-                text-align: center;
+            .icon-muted {
+                color: #bbb;
+                text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
             }
         }
         .reported-date {
@@ -509,10 +512,11 @@ body {
       color: @grayLight;
     }
     .icon-exclamation-sign {
-        font-size: 1.2em;
+        font-size: @fontSizeLarge;
+        line-height: 24px;
     }
     .icon-question-sign {
-        font-size: 1.2em;
+        font-size: @fontSizeLarge;
         color: @grayLight;
     }
     .icon-ok {

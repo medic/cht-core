@@ -3,6 +3,7 @@
     <input type="checkbox" name="select-row-checkbox" />
   </div>
   <div class="direction-icon">
+    <i class="icon-envelope icon-muted"></i>
   </div>
   <div class="contact-info">
     <b>To:</b> {@contact entities="{related_entities}" to="{tasks[0].messages[0].to}"/}
@@ -14,8 +15,7 @@
   </div>
   <div class="icons">
   </div> 
-  <div class="add-message">
-  </div>
+  <div class="add-message"></div>
   {?tasks[0].timestamp}
     <div class="timestamp" title="{@formatDate timestamp="{tasks[0].timestamp}"/}">
       {@formatDate timestamp="{tasks[0].timestamp}" format="MMM DD HH:mm"/}
