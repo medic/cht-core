@@ -442,30 +442,15 @@ body {
         }
 
         .msg {
+            width: 38%;
             overflow: auto;
             white-space: nowrap;
-            pre {
-                padding: 2px 4px;
-                margin-bottom: 0;
-                white-space: inherit;
-                display: inline-block;
-                width: 100%;
-                -moz-box-sizing: border-box;
-                box-sizing: border-box;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
             span {
                 display: inline-block;
-                width: 100%;
-                -moz-box-sizing: border-box;
-                box-sizing: border-box;
+                .box-sizing(border-box);
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-        }
-        .msg {
-            width: 38%;
         }
 
         .add-message {
