@@ -65,8 +65,6 @@ exports.data_records_csv = function (head, req) {
       return kansoconfig[label] || label;
     });
 
-    send('\uFEFF');
-
     if (!query.skip_header_row)
         send(utils.arrayToCSV([labels], delimiter) + '\n');
 
