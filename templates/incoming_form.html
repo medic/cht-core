@@ -5,13 +5,19 @@
   <div class="direction-icon">
     {?errors}
       <i class="icon-exclamation-sign"></i>
+    {:else}
+      <i class="icon-file-alt icon-muted"></i>
     {/errors}
   </div>
   <div class="contact-info">
     {@contact entities="{related_entities}" from="{from}"/}
   </div>
   <div class="msg">
-    <span><i class="icon-file-alt"></i> [{form}] {@formName form="{form}"/}</span>
+    <label class="label">
+      <i class="icon-file-alt"></i>
+      {form}
+    </label>
+    <span>{@formName form="{form}"/}</span>
   </div>
   <div class="icons">
     {@ifHasState array="{tasks}" state="sent"}
@@ -34,7 +40,7 @@
     {/scheduled_tasks}
   </div>
   <div class="add-message">
-      <button class="btn btn-mini btn-primary">
+      <button class="btn btn-mini">
         <i class="icon-reply"></i>
       </button>
   </div>
