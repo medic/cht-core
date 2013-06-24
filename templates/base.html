@@ -13,7 +13,7 @@
       <div class="navbar-inner">
         <div class="container">
           <a class="brand" href="{baseURL}/">Kujua <span class="lite">Lite</span></a>
-          <span class="version pull-left">{settings.version}</span>
+          <span class="version pull-left" title="{info.sha}">{settings.version}</span>
           <ul class="nav pull-right">
             <li class="activity hide">
               <a href="{baseURL}/">
@@ -65,7 +65,7 @@
         <li>
           <button type="button" class="cancel close">×</button>
           <iframe
-            src="{muvuku_webapp_url}?_embed_mode=2&_sync_url={baseURL}/add"
+            src="{info.muvuku_webapp_url}?_embed_mode=2&_sync_url={baseURL}/add"
           ></iframe>
         </li>
       </ul>
