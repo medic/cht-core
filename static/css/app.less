@@ -66,13 +66,35 @@ body {
   .box-shadow(@shadow);
 }
 #footer {
-  margin: 40px auto;
-  width: 10em;
-  color: @grayLight;
-  .opacity(85);
-  .logo {
+  margin: 30px auto;
+  padding: 10px 0;
+  color: #686868;
+  font-size: .85em;
+  //border-top: 2px solid @grayLighter;
+  .opacity(45);
+  .links {
+    font-size: 1.2em;
+    width: 10em;
+    .pull-left;
+    a {
+      padding-right: 10px;
+    }
+  }
+  > .wrap {
+    width: 17.6em;
     margin: 0 auto;
-    width: 40px;
+    //.pull-right
+  }
+  .logo {
+    //margin: 0 auto;
+    width: 35px;
+    .pull-left;
+  }
+  .copy {
+    //margin: 0 auto;
+    width: 14.4em;
+    padding-top: 10px;
+    .pull-right;
   }
 }
 .page-header {
