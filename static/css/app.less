@@ -54,8 +54,9 @@ body {
 }
 
 #topnav .navbar-inner {
-  border-top-right-radius: 0px;
-  border-top-left-radius: 0px;
+    .active > a {
+        text-shadow: 0 1px 0 darken(@navbarLinkBackgroundActive, 12%);
+    }
 }
 
 .content {
@@ -147,17 +148,18 @@ body {
     box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
 }
 
+@versionTextColor: lighten(@navbarBackground, 5%);
 .version {
     font-weight: bold;
-    color: @grayLighter;
+    color: @versionTextColor;
     font-size: @fontSizeSmall;
     line-height: @navbarHeight;
-    text-shadow: 0 1px 0 rgba(0,0,0,.1), 0 0 30px rgba(0,0,0,.125);
+    text-shadow: 0 1px 0 darken(@navbarBackground, 15%);
     &:before {
         content:"v"
     }
     &:hover {
-        color: @grayLight;
+        color: lighten(@versionTextColor, 5%);
         text-shadow: 0 1px 0 rgba(0,0,0,.5);
     }
 }
@@ -309,6 +311,14 @@ body {
 .navbar, .brand {
   font-weight: normal;
 }
+.nav {
+    .add-message {
+        margin-left: 8px;
+    }
+    .add-record {
+        margin-right: 8px;
+    }
+}
 .navbar {
     .brand {
         padding: 8px 20px;
@@ -317,11 +327,9 @@ body {
             font-size: .578em;
             vertical-align: super;
         }
-        a {
-            color: @grayLight;
-            &:hover {
-                text-decoration: none;
-            }
+        color: lighten(@navbarLinkColor, 10%);
+        &:hover {
+            text-decoration: none;
         }
     }
 }
