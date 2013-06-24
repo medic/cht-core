@@ -1,5 +1,5 @@
 {#data_records}
-<div class="data-record" rel="{_id}" data-key="{_key}">
+<div class="data-record {?kujua_message}outgoing{:else}incoming{/kujua_message}" rel="{_id}" data-key="{_key}">
   {?kujua_message}
     {>"outgoing_message.html"/}
   {:else}
