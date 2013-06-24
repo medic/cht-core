@@ -772,11 +772,15 @@ table.spreadsheet .dropdown-menu {
   background: none;
 }
 .modal-body {
-  min-height: 70px;
-  overflow: visible;
-  textarea {
-    width: 98%;
-  }
+    min-height: 70px;
+    overflow: visible;
+    form, textarea {
+        margin: 0;
+    }
+
+    textarea {
+        width: 98%;
+    }
 }
 .select2-container .select2-choice {
     padding-top: 1px;
