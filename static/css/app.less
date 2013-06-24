@@ -13,7 +13,7 @@
 
 /* background noise */
 html, body {
-      background: @white 
+      background: @white
 }
 
 body {
@@ -42,7 +42,7 @@ body {
     }
 
 }
-    
+
 /* Temp fix for dashboard z-index woes */
 #dashboard-topbar {
   z-index: 2000;
@@ -125,12 +125,20 @@ body {
 }
 
 .version {
-  font-weight: bold;
-  font-size: .567em;
-  color: #000;
-  text-shadow: 0 1px 0 rgba(255,255,255,.1), 0 0 30px rgba(255,255,255,.125);
-  &:before { content:"v" }
+    font-weight: bold;
+    color: @grayLighter;
+    font-size: @fontSizeSmall;
+    line-height: @navbarHeight;
+    text-shadow: 0 1px 0 rgba(0,0,0,.1), 0 0 30px rgba(0,0,0,.125);
+    &:before {
+        content:"v"
+    }
+    &:hover {
+        color: @grayLight;
+        text-shadow: 0 1px 0 rgba(0,0,0,.5);
+    }
 }
+
 #docs-body {
   padding: 20px;
   h2, h3, h4 {
@@ -279,26 +287,20 @@ body {
   font-weight: normal;
 }
 .navbar {
-  .brand {
-    color: @white;
-    .kujua {
-      .kujua;
+    .brand {
+        padding: 8px 20px;
+        .droidBold;
+        .lite {
+            font-size: .578em;
+            vertical-align: super;
+        }
+        a {
+            color: @grayDark;
+            &:hover {
+                text-decoration: none;
+            }
+        }
     }
-    .lite {
-      font-size: .578em;
-      position: absolute;
-      top: 1px;
-    }
-    a {
-      color: @white;
-      &:hover {
-        text-decoration: none;
-      }
-    }
-  }
-}
-.navbar .brand a.kujua:hover {
-  background:none;
 }
 .edit-mode.active {
   .btn-warning;
@@ -426,7 +428,7 @@ body {
                 text-overflow: ellipsis;
             }
             span {
-                display: inline-block;            
+                display: inline-block;
                 width: 100%;
                 -moz-box-sizing: border-box;
                 box-sizing: border-box;
