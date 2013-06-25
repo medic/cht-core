@@ -65,8 +65,6 @@ exports.data_records_csv = function (head, req) {
       return kansoconfig[label] || label;
     });
 
-    send('\uFEFF');
-
     if (!query.skip_header_row)
         send(utils.arrayToCSV([labels], delimiter) + '\n');
 
@@ -339,8 +337,9 @@ exports.data_record = function (head, req) {
         }
     }
 
-    if (!facility)
+    if (!facility && (!def || !def.public_form)) {
         utils.addError(record, 'sys.facility_not_found');
+    }
 
     var respBody = {
         callback: {

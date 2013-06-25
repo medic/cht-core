@@ -1059,4 +1059,18 @@ var arrayToXML = exports.arrayToXML = function(arr, format) {
     return '<Row>' + rows.join('</Row>\n<Row>') + '</Row>';
 };
 
+exports.getFormTitle = function(form) {
+    var def = jsonforms[form],
+        label = def && def.meta && def.meta.label,
+        title;
 
+    if (label) {
+        title = utils.localizedString(label);
+    }
+
+    if (title) {
+        return title;
+    } else {
+        return form || 'Unknown';
+    }
+}
