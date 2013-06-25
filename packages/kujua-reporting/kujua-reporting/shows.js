@@ -356,7 +356,7 @@ function renderPage() {
         parentURL = '',
         req = _req;
 
-    kutils.updateTopNav('analytics');
+    kutils.updateTopNav('reporting_rates');
 
     if (!doc) {
         return renderDistrictChoice(appdb, setup);
