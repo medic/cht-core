@@ -341,7 +341,7 @@ function renderReporting(doc, req) {
         };
     } else {
         return {
-            title: "Reporting",
+            title: "Reporting Rates",
             content: templates.render("loader.html", req, {})
         }
     }
