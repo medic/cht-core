@@ -28,48 +28,42 @@
         <span class="tasks-state-{state}">{state}</span>
       </p>
       {#messages}
+      <div>
+        <b>To:</b>
         {#related_entities}
-          <div>
-            <b>To:</b>
-          {?clinic.parent.parent.name}
-            {clinic.parent.parent.name}
-            <i class="icon-double-angle-right"></i>
-          {:else}
-            {?health_center.parent.name}
-              {health_center.parent.name}
+          {?clinic}
+            {?clinic.parent.parent.name}
+              {clinic.parent.parent.name}
               <i class="icon-double-angle-right"></i>
-            {/health_center.parent.name}
-          {/clinic.parent.parent.name}
-          {?clinic.parent.name}
-            {clinic.parent.name}
-            <i class="icon-double-angle-right"></i>
-          {:else}
-            {?health_center.name}
-              {health_center.name}
+            {/clinic.parent.parent.name}
+            {?clinic.parent.name}
+              {clinic.parent.name}
               <i class="icon-double-angle-right"></i>
-            {/health_center.name}
-          {/clinic.parent.name}
-          {?clinic.name}
-            {clinic.name}
-          {/clinic.name}
-          {?clinic.contact.rc_code}
-            <span class="label">{clinic.contact.rc_code}</span>
-          {/clinic.contact.rc_code}
-          {?clinic.contact.name}
-            {clinic.contact.name}
-          {/clinic.contact.name}
-          {?clinic.contact.phone}
-            {clinic.contact.phone}
-          {/clinic.contact.phone}
-          </div>
+            {/clinic.parent.name}
+            {?clinic.name}
+              {clinic.name}
+            {/clinic.name}
+            {?clinic.contact.rc_code}
+              <span class="label">{clinic.contact.rc_code}</span>
+            {/clinic.contact.rc_code}
+            {?clinic.contact.name}
+              {clinic.contact.name}
+            {/clinic.contact.name}
+            {?clinic.contact.phone}
+              {clinic.contact.phone}
+            {/clinic.contact.phone}
+          {:else}
+            {to}
+          {/clinic}
         {/related_entities}
         {^related_entities}
-        <div><b>To:</b> {to}</div>
+          {to}
         {/related_entities}
+        </div>
         <p><b>Sent by:</b> {sent_by}</p>
         <p><pre>{message}</pre></p>
+      </div>
       {/messages}
     {/tasks}
-    </div>
   </div>
 </div>
