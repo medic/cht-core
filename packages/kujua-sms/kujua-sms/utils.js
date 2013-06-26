@@ -19,6 +19,8 @@ var _s = function(key, locale) {
     var key = _.isArray(key) ? arrayToStringNotation(key) : key;
     if (exports.strings[key]) {
         return utils.localizedString(exports.strings[key], [locale]);
+    } else {
+        return key;
     }
 };
 
@@ -59,6 +61,14 @@ exports.strings = {
     "related_entities.health_center.parent.name": {
         en: "District Hospital Name",
         fr: "Nom de l'hôpital de district"
+    },
+    "tasks.0.messages.0.to": {
+        en: "To",
+        fr: "pour"
+    },
+    "tasks.0.messages.0.message": {
+        en: "Message",
+        fr: "Message"
     },
     from: {
         en: 'From',
@@ -1071,6 +1081,6 @@ exports.getFormTitle = function(form) {
     if (title) {
         return title;
     } else {
-        return form || 'Unknown';
+        return form || 'Messages';
     }
 }

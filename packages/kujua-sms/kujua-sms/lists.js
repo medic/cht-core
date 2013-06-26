@@ -28,6 +28,10 @@ var formatDate = function(msecs) {
 function getFilename(form, name, type) {
     var filename;
 
+    if (form === 'null') {
+        form = 'messages';
+    }
+
     filename = _s.sprintf('%s_data_records.%s', form, type);
 
     if (name !== 'null') {
@@ -35,6 +39,19 @@ function getFilename(form, name, type) {
         filename = name + '_' + filename;
     }
     return filename;
+}
+
+function getKeys(form) {
+    if (form === 'null') {
+        // add message content and to of *first* message
+        keys = [].concat(EXPORT_KEYS);
+        keys.push(['tasks', ['0', ['messages', ['0', ['to']]]]]);
+        keys.push(['tasks', ['0', ['messages', ['0', ['message']]]]]);
+    } else {
+        // add form keys from form def
+        keys = EXPORT_KEYS.concat(utils.getFormKeys(form));
+    }
+    return keys;
 }
 
 exports.data_records_csv = function (head, req) {
@@ -48,16 +65,13 @@ exports.data_records_csv = function (head, req) {
         delimiter = locale === 'fr' ? '";"' : null,
         rows,
         values,
-        keys = [];
+        keys = getKeys(form);
 
 
     start({code: 200, headers: {
         'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': 'attachment; filename=' + filename
     }});
-
-    // add form keys from form def
-    keys = EXPORT_KEYS.concat(utils.getFormKeys(form));
 
     // fetch labels for all keys
     labels = utils.getLabels(keys, form, locale);
@@ -90,16 +104,12 @@ exports.data_records_xml = function (head, req) {
         rows,
         values,
         labels,
-        // extra doc fields we want to export not in form
-        keys = [];
+        keys = getKeys(form);
 
     start({code: 200, headers: {
         'Content-Type': 'application/vnd.ms-excel; charset=utf-8',
         'Content-Disposition': 'attachment; filename=' + filename
     }});
-
-    // add form keys from form def
-    keys = EXPORT_KEYS.concat(utils.getFormKeys(form));
 
     // fetch labels for all keys
     var labels = utils.getLabels(keys, form, locale);
