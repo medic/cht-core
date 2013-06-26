@@ -70,7 +70,7 @@ To enable the reporting rates module, see
 See [sentinel/README.md](sentinel/README.md) for more information about
 configuring Sentinel.
 
-### License & Copyright
+# License & Copyright
 
 Copyright 2013 Medic Mobile, 501(c)(3)  <hello@medicmobile.org>
 
