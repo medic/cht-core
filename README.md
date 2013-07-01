@@ -32,15 +32,15 @@ npm install gardener -g
 Deploy the couchapp:
 
 ```
-git clone --recursive https://github.com/medic/kujua
-cd kujua
-kanso push http://admin:pass@localhost:5984
+git clone --recursive https://github.com/medic/kujua-lite
+cd kujua-lite
+kanso push http://admin:pass@localhost:5984/kujua-lite
 ```
 
 Start gardener:
 
 ```
-gardener http://admin:pass@localhost:5984/kujua-lite
+gardener http://admin:pass@localhost:5984/
 ```
 
 ## Configure
