@@ -32,15 +32,15 @@ npm install gardener -g
 Deploy the couchapp:
 
 ```
-git clone --recursive https://github.com/medic/kujua
-cd kujua
-kanso push http://admin:pass@localhost:5984
+git clone --recursive https://github.com/medic/kujua-lite
+cd kujua-lite
+kanso push http://admin:pass@localhost:5984/kujua-lite
 ```
 
 Start gardener:
 
 ```
-gardener http://admin:pass@localhost:5984/kujua-lite
+gardener http://admin:pass@localhost:5984/
 ```
 
 ## Configure
@@ -70,3 +70,18 @@ To enable the reporting rates module, see
 See [sentinel/README.md](sentinel/README.md) for more information about
 configuring Sentinel.
 
+## License & Copyright
+
+Copyright 2013 Medic Mobile, 501(c)(3)  <hello@medicmobile.org>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

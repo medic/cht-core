@@ -1,5 +1,6 @@
 var jsDump = require('jsDump'),
-    _ = require('underscore')._,
+    _ = require('underscore'),
+    _s = require('underscore-string'),
     settings = require('settings/root'),
     users = require('users'),
     cookies = require('cookies');
@@ -229,21 +230,18 @@ exports.getUserDistrict = function(userCtx, callback) {
  * @returns {String}
  * @api public
  */
-var titleize = exports.titleize = function (str) {
-    return (str || '').toLowerCase().replace(/[-_]+/g, ' ').replace(
-        /(?:^|\s+)\w/g, function (m) {
-            return m.toUpperCase();
-        }
-    );
+exports.titleize = function (s) {
+    return _s.titleize(_s.humanize(s));
 };
 
 exports.updateTopNav = function(key, title) {
-    title = title || titleize(key);
+    title = title || exports.titleize(key);
     $('.page-header h1').text($.kansoconfig(title));
-    $('.navbar .nav > *').removeClass('active');
-    if (key) $('.navbar .nav .' + key).addClass('active');
+    if (key) {
+        $('body').attr('data-page', key);
+    }
     $('.page-header .controls').hide();
-    $('.page-header .container').attr('class','container');
+    $('.page-header .container').attr('class', 'container');
     $('body > .container div').filter(':first').attr('class','content');
 };
 

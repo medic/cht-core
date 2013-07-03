@@ -89,7 +89,7 @@
     margin-top: -2px;
 }
 
-#date-nav .title .icon-time { 
+#date-nav .title .icon-time {
     font-style: normal;
     font-size: 1.65em;
     margin-right: .35em;
@@ -103,6 +103,11 @@
     .box-shadow(@shadow);
     border-top: 3px solid black;
     min-width: 940px;
+    .contact-phone {
+        .add-message {
+            vertical-align: text-bottom;
+        }
+    }
 }
 
 #stats table {
@@ -110,7 +115,7 @@
     .border-radius(0);
 }
 
-#stats table tr, 
+#stats table tr,
 #stats table td {
     .border-radius(0);
 }
@@ -120,7 +125,7 @@
 }
 
 #stats {
-    td, th { 
+    td, th {
         padding: 15px 0 15px 50px;
         border-left: none;
         border-right: none;
@@ -308,27 +313,30 @@
     .facility-link:hover {
         cursor: pointer;
     }
-    .facility-link .name {
-      display: inline-block;
-    }
-    .facility-link .arrow {
-      background-image: url('../kujua-reporting/img/arrow-closed.png');
-      margin-right: 10px;
-      width: 9px;
-      height: 11px;
-      display: inline-block;
-    }
-    .facility-link.expanded .arrow {
-      background-image: url('../kujua-reporting/img/arrow-open.png');
-      margin-right: 10px;
-      width: 11px;
-      height: 9px;
+    .facility-link {
+        .name {
+            display: inline-block;
+        }
+        .name:before {
+            font-family: FontAwesome;
+            content: '\f0da';
+            padding: 2px;
+            color: @grayDark;
+        }
+        &.expanded .name:before {
+            content: '\f0d7';
+            padding: 0;
+        }
+        .add-message {
+            vertical-align: text-bottom;
+        }
     }
 }
 
 .page-header {
     .reporting .controls {
       position: absolute;
+      padding-top: 5px;
     }
     .reporting h1 {
         text-align: center;

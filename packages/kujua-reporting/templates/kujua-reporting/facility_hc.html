@@ -43,18 +43,22 @@
       <div><h2>{name} <br /><span data-label="Health Center"></span></h2></div>
       <div>
         <h3 data-label="Health Center Contact"></h3><!--TODO add title for contact? {contact.title}//-->
+        <div class="contact-name">
         {?contact.name}
-          <strong>{contact.name}</strong></br>
+          <strong>{contact.name}</strong>
         {:else}
-          <strong>Undefined name</strong></br>
+          <strong>Undefined name</strong>
         {/contact.name}
+        </div>
         {?contact.phone}
+        <div class="contact-phone">
           {contact.phone}
           <span class="add-message">
             <button class="btn btn-primary btn-mini" data-phone="{contact.phone}">
-              <i class="icon-comment-alt"></i>
+              <i class="icon-envelope"></i>
             </button>
           </span>
+        </div>
         {:else}
             Undefined phone
         {/contact.phone}

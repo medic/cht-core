@@ -2,17 +2,16 @@
   {#rows}
   <tr class="facility-link" rel="{id}">
     <td class="facility-name">
-      <div class="arrow"></div>
       <div class="name">
         {name}
-        {?phone}
-        <span class="add-message">
-          <button class="btn btn-primary btn-mini" data-phone="{phone}">
-            <i class="icon-comment-alt"></i>
-          </button>
-        </span>
-        {/phone}
       </div>
+      {?phone}
+      <span class="add-message">
+        <button class="btn btn-primary btn-mini" data-phone="{phone}">
+          <i class="icon-envelope"></i>
+        </button>
+      </span>
+      {/phone}
     </td>
     <td class="valid-percent"><em>{valid_percent}%</em> <span class="mini-pie"></span></td>
   </tr>

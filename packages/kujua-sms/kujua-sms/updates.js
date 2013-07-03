@@ -305,10 +305,12 @@ exports.add_sms = function(doc, request) {
 
     // by default related entities are null so also include errors on the
     // record.
-    doc.errors.push({
-        code: "sys.facility_not_found",
-        message: utils.getMessage("sys.facility_not_found", sms_message.locale)
-    });
+    if (!def || !def.public_form) {
+        doc.errors.push({
+            code: "sys.facility_not_found",
+            message: utils.getMessage("sys.facility_not_found", sms_message.locale)
+        });
+    }
 
     if (def && def.use_sentinel) {
         // reset payload since sentinel deals with responses/messages
