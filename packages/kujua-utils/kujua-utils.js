@@ -237,10 +237,11 @@ exports.titleize = function (s) {
 exports.updateTopNav = function(key, title) {
     title = title || exports.titleize(key);
     $('.page-header h1').text($.kansoconfig(title));
-    $('.navbar .nav > *').removeClass('active');
-    if (key) $('.navbar .nav .' + key).addClass('active');
+    if (key) {
+        $('body').attr('data-page', key);
+    }
     $('.page-header .controls').hide();
-    $('.page-header .container').attr('class','container');
+    $('.page-header .container').attr('class', 'container');
     $('body > .container div').filter(':first').attr('class','content');
 };
 

@@ -310,7 +310,7 @@ function renderReporting(doc, req) {
     events.once('afterResponse', function() {
         if (!isAdmin && !isDistrictAdmin) {
             // not logged in or roles is not setup right
-            return $('#content').html(
+            return $('[data-page=reporting_rates] #content').html(
                 templates.render("403.html", req, {})
             );
         }
@@ -324,7 +324,7 @@ function renderReporting(doc, req) {
             if (isAdmin || (isDistrictAdmin && userDistrict)) {
                 renderPage();
             } else {
-                return $('#content').html(
+                return $('[data-page=reporting_rates] #content').html(
                     templates.render(
                         "500.html", req, {msg: 'District is not defined.'}
                     )
@@ -373,7 +373,7 @@ function renderPage() {
 
     // Make sure form config is valid.
     if (!form_config || !form_config.code || !form_config.reporting_freq) {
-        return $('#content').html(
+        return $('[data-page=reporting_rates] #content').html(
             templates.render("500.html", req, {
                 doc: doc,
                 msg: 'Please setup config.js with your kujua-reporting '
@@ -391,7 +391,7 @@ function renderPage() {
     }
 
     // render header
-    $('.page-header .container').html(
+    $('[data-page=reporting_rates] .page-header .container').html(
         templates.render('kujua-reporting/page_header_body.html', req, {
             doc: _.extend({}, doc, form_config),
             parentURL: parentURL
@@ -401,7 +401,7 @@ function renderPage() {
     $('body > .container .content').filter(':first').attr('class','content-reporting');
 
     // render date nav
-    $('#date-nav .row').html(
+    $('[data-page=reporting_rates] #date-nav .row').html(
         templates.render('kujua-reporting/date_nav.html', req, {
             date_nav: utils.getDateNav(dates, form_config.reporting_freq),
             _id: doc._id,
@@ -446,7 +446,7 @@ function renderDistrictChoice(appdb, setup) {
             }
         });
 
-        $('#content').html(templates.render("reporting_district_choice.html", {}, {
+        $('[data-page=reporting_rates] #content').html(templates.render("reporting_district_choice.html", {}, {
             forms: forms,
             districts: districts
         }));
