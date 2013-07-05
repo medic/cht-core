@@ -399,20 +399,21 @@ var totalReportsDue = function(dates) {
  * requested date range is included in the view results.
  */
 exports.getReportingViewArgs = function (dates) {
-
     var startdate = dates.list[0],
         enddate = dates.list[dates.list.length-1],
-        startkey,
-        endkey;
+        startkey = [dates.form, startdate.year()],
+        endkey = [dates.form, startdate.year()];
 
-    if(dates.reporting_freq === 'week') {
-        startkey = [dates.form, startdate.year(), getWeek(startdate)];
-        endkey = [dates.form, enddate.year(), getWeek(enddate)];
+    if (dates.reporting_freq === 'week') {
+        startkey.push(getWeek(startdate));
+        endkey.push(getWeek(enddate));
     } else {
         startdate = nextMonth(startdate);
-        startkey = [dates.form, startdate.year(), startdate.month()+1];
-        endkey = [dates.form, enddate.year(), enddate.month()+1];
+        startkey.push(startdate.month() + 1);
+        endkey.push(enddate.month() + 1);
     }
+    startkey.push({});
+    endkey.push('');
 
     return {
         startkey: startkey,
@@ -428,6 +429,32 @@ var getReportingUrl = exports.getReportingUrl = function(id, dates) {
             + dates.time_unit;
 };
 
+function countValid(rows, dates, forClinics) {
+    _.each(rows, function(row) {
+        var seen = {},
+            count = totalReportsDue(dates);
+
+        if (forClinics) {
+            count *= row.clinics.length;
+        }
+
+        row.valid = 0;
+
+        _.each(row.records, function(record) {
+            var clinicId = record.clinic.id,
+                key = (record.month || record.week_number) + '-' + record.year;
+
+            seen[clinicId] = seen[clinicId] || {};
+            if (!seen[clinicId][key]) {
+                seen[clinicId][key] = true;
+                row.valid += record.is_valid ? 1 : 0;
+            }
+        });
+
+        row.valid_percent = Math.round(row.valid / count * 100);
+    });
+}
+
 /**
  * Return rows array of stats on health centers for a district hospital.
  *
@@ -439,7 +466,8 @@ var getReportingUrl = exports.getReportingUrl = function(id, dates) {
  */
 exports.getRows = function(facilities, reports, dates) {
     var rows = [],
-        reporting_freq = dates.reporting_freq;
+        reporting_freq = dates.reporting_freq,
+        reported = {};
 
     if (facilities.rows)
         facilities = facilities.rows;
@@ -493,13 +521,11 @@ exports.getRows = function(facilities, reports, dates) {
                 };
                 formatted_record.name = getName(formatted_record);
                 row.records.unshift(formatted_record);
-                row.valid += is_valid ? 1 : 0;
             }
         });
-
-        row.valid_percent = Math.round(
-            row.valid/(totalReportsDue(dates) * row.clinics.length) * 100);
     });
+
+    countValid(rows, dates, true);
 
     processNotSubmitted(rows, dates);
 
@@ -560,13 +586,11 @@ exports.getRowsHC = function(facilities, reports, dates) {
                 };
                 formatted_record.name = getName(formatted_record);
                 row.records.unshift(formatted_record);
-                row.valid += is_valid ? 1 : 0;
             }
-
-            row.valid_percent = Math.round(row.valid/totalReportsDue(dates) * 100);
         });
     });
 
+    countValid(rows, dates);
     processNotSubmitted(rows, dates);
 
     return _.sortBy(rows, function (r) { return r.valid_percent; });
