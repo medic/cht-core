@@ -399,17 +399,21 @@ var totalReportsDue = function(dates) {
  * requested date range is included in the view results.
  */
 exports.getReportingViewArgs = function (dates) {
-    var startdate = dates.list[0],
-        enddate = dates.list[dates.list.length-1],
-        startkey = [dates.form, startdate.year()],
-        endkey = [dates.form, startdate.year()];
+    var startdate = _.first(dates.list),
+        enddate = _.last(dates.list),
+        startkey = [dates.form],
+        endkey = [dates.form, enddate.year()];
 
     if (dates.reporting_freq === 'week') {
+        startkey.push(startdate.year());
         startkey.push(getWeek(startdate));
+
         endkey.push(getWeek(enddate));
     } else {
         startdate = nextMonth(startdate);
+        startkey.push(startdate.year());
         startkey.push(startdate.month() + 1);
+
         endkey.push(enddate.month() + 1);
     }
     startkey.push({});

@@ -9,7 +9,7 @@ exports.lists_data_record_csv = function(test) {
     test.expect(1);
 
     // the first char is the BOM
-    var expected = '\uFEFF"Reported Date","From","Clinic Contact Name"'
+    var expected = '"Reported Date","From","Clinic Contact Name"'
         +',"Clinic Name","Health Center Contact Name","Health Center Name"'
         +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
         +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
@@ -90,7 +90,7 @@ exports.lists_data_record_csv_fr = function(test) {
     test.expect(1);
 
     // the first char is the BOM
-    var expected = '\uFEFF"Date envoyé";"Envoyé par";"Personne-ressource Clinique"'
+    var expected = '"Date envoyé";"Envoyé par";"Personne-ressource Clinique"'
         +';"Villages";"Nom de la santé Contact Center";"Nom du centre de santé"'
         +';"Année";"Mois";"Jour";"Code du RC";"Type de patient";"Nom";"Age"'
         +';"Nom de la mère ou de l\'accompagnant";"Patient traité pour"'
@@ -164,8 +164,7 @@ exports.lists_data_record_csv_skip_header_row = function(test) {
     test.expect(1);
 
     // the first char is the BOM
-    var expected = '\uFEFF'
-        +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
+    var expected = '"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +',"+12229990000","Paul","Clinic 1","Eric","Health Center 1"'
         +',"2012","1","16","","","","","","","","",""\n'
         +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
