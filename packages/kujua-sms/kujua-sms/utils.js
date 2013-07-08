@@ -610,7 +610,7 @@ exports.addError = function(record, error) {
             return; // already exists on the record
     }
 
-    var locale = record.sms_message && record.sms_message.locale && 'en',
+    var locale = (record.sms_message && record.sms_message.locale) || 'en',
         form = record.form && record.sms_message && record.sms_message.form;
 
     if (!error.message)
