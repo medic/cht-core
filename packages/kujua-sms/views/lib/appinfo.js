@@ -1,6 +1,10 @@
 var _ = require('underscore'),
     url = require('url');
 
+/**
+ * This has to run in the shows/list/update context for 'this' to work
+ * Specifically, needs patched duality/core.js to have correct context
+ */
 exports.getAppInfo = function() {
     var info,
         muvuku;
