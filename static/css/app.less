@@ -317,32 +317,27 @@ body {
   }
 }
 
-.navbar .nav > li {
-    &.hide {
-        display: none;
-    }
-    > a {
-        text-align: center;
-        min-width: 75px;
-    }
-}
-.navbar, .brand {
-  font-weight: normal;
-}
-.nav {
-    li, a {
-        &:focus {
-            outline: none;
+.navbar {
+    .nav {
+        > li {
+            min-width: 44px;
+            text-align: center;
+            &.hide {
+                display: none;
+            }
+            > a {
+                min-width: 75px;
+            }
+            button {
+                min-width: 40px;
+            }
+        }
+        li, a, button {
+            &:focus {
+                outline: none;
+            }
         }
     }
-    .add-message {
-        margin-left: 8px;
-    }
-    .add-record {
-        margin-right: 8px;
-    }
-}
-.navbar {
     .brand {
         padding: 8px 20px;
         .droidBold;
@@ -356,6 +351,11 @@ body {
         }
     }
 }
+
+.navbar, .brand {
+  font-weight: normal;
+}
+
 .edit-mode.active {
   .btn-warning;
 }
