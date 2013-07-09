@@ -317,8 +317,14 @@ body {
   }
 }
 
-.navbar .nav > li.hide {
-  display: none;
+.navbar .nav > li {
+    &.hide {
+        display: none;
+    }
+    > a {
+        text-align: center;
+        min-width: 75px;
+    }
 }
 .navbar, .brand {
   font-weight: normal;
