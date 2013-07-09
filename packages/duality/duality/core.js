@@ -871,7 +871,7 @@ exports.runUpdate = function (fn, doc, req, cb) {
         fn: fn
     };
     events.emit('beforeRequest', info, req);
-    var val = fn(doc, req);
+    var val = fn.call(this, doc, req);
 
     var res = val ? val[1]: null;
     if ( ! (res instanceof Object  || typeof(res) === 'object') ) {
