@@ -2,9 +2,10 @@
  * Update functions to be exported from the design doc.
  */
 
-var _ = require('underscore')._,
+var _ = require('underscore'),
     logger = require('kujua-utils').logger,
     jsonforms = require('views/lib/jsonforms'),
+    info = require('views/lib/appinfo'),
     smsparser = require('views/lib/smsparser'),
     validate = require('./validate'),
     utils = require('./utils');
@@ -395,8 +396,12 @@ exports.updateRelated = function(doc, request) {
     // smssync-compat sms response
     resp.payload = getSMSResponse(doc);
 
+    var appInfo = info.getAppInfo.call(this);
+
     // save response to record
-    doc.responses = resp.payload.messages;
+    doc.responses = _.filter(resp.payload.messages, function(message) {
+        return message.to !== appInfo.gateway_number;
+    });
 
     return [doc, JSON.stringify(resp)];
 };

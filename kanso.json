@@ -93,6 +93,11 @@
                "title": "Reported Date Format",
                "default": "MMM hh:mm"
             },
+            "gateway_number": {
+               "type": "string",
+               "title": "Gateway Number",
+               "default": "+13125551212"
+            },
             "facility_labels": {
               "title": "Facility labels",
               "type": "object",
