@@ -282,8 +282,8 @@ exports['utils.getReportingViewArgs -- no startmonth'] = function(test) {
     var now = moment();
     var end = now.clone().subtract('months',1);
     var expect = {
-        startkey: ['TEST', now.year(), now.month()+1],
-        endkey: ['TEST', end.year(), end.month()+1],
+        startkey: ['TEST', now.year(), now.month()+1, {}],
+        endkey: ['TEST', end.year(), end.month()+1, ''],
         descending: true
     };
     var q = {months: 1, form: 'TEST'};
@@ -300,8 +300,8 @@ exports['utils.getReportingViewArgs -- startmonth is January'] = function(test) 
     test.expect(3);
     var q = {months:1, startmonth:'2011-1', form:'TEST'};
     var expect = {
-        startkey: ['TEST', 2011, 1],
-        endkey: ['TEST', 2010, 12],
+        startkey: ['TEST', 2011, 1, {}],
+        endkey: ['TEST', 2010, 12, ''],
         descending: true
     };
     var dates = utils.getDates(q);
@@ -316,8 +316,8 @@ exports['utils.getReportingViewArgs -- startmonth is August and 6 months prior']
     test.expect(3);
     var q = {startmonth:'2011-8', months:'6', form:'TEST'};
     var expect = {
-        startkey: ['TEST', 2011, 8],
-        endkey: ['TEST', 2011, 2],
+        startkey: ['TEST', 2011, 8, {}],
+        endkey: ['TEST', 2011, 2, ''],
         descending: true
     };
     var dates = utils.getDates(q);

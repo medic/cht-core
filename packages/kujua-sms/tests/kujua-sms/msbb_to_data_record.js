@@ -77,7 +77,7 @@ var expected_doc = {
   ],
   "responses": [],
   "tasks": [],
-  "reported_date": 1317512700000,
+  "reported_date": new Date(2011, 9, 1, 18, 45).valueOf(),
   "sms_message": {
     "from": "+13125551212",
     "message": "1!MSBB!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc",

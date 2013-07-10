@@ -20,7 +20,7 @@ exports.assert_month_is_integer = function(test) {
 };
 
 exports.assert_timestamp_parsed = function(test)  {
-    test.expect(2);
+    test.expect(1);
     var req = {
         headers: { "Host": window.location.host },
         form: {
@@ -30,15 +30,7 @@ exports.assert_timestamp_parsed = function(test)  {
         }
     };
     var doc = updates.add_sms(null, req)[0];
-    test.same(
-        'Fri Nov 09 2012',
-        new Date(doc.reported_date).toDateString()
-    );
-    test.equal(
-        "16:22",
-        new Date(doc.reported_date)
-            .toTimeString().match(/^16:22/)[0]
-    );
+    test.same('Fri, 09 Nov 2012 22:22:05 GMT', new Date(doc.reported_date).toUTCString());
     test.done();
 };
 

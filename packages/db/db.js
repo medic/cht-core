@@ -867,18 +867,21 @@ DB.prototype.changes = function (/*optional*/q, callback) {
             url: that.url + '/_changes',
             data: data
         };
-        var cb = function (err, data) {
+        exports.request(req, function(err, data) {
             var result = callback.apply(this, arguments);
-            if (result !== false && data) {
+
+            // if there's an error, try again in `heartbeat`
+            if (err) {
+                _.delay(getChanges, q.heartbeat, since);
+            } else if (result !== false && data) {
                 getChanges(data.last_seq);
             }
-        }
-        exports.request(req, cb);
+        });
     }
 
     // use setTimeout to pass control back to the browser briefly to
     // allow the loading spinner to stop on page load
-    setTimeout(function () {
+    _.defer(function () {
         if (q.hasOwnProperty('since')) {
             getChanges(q.since);
         }
@@ -890,7 +893,7 @@ DB.prototype.changes = function (/*optional*/q, callback) {
                 getChanges(info.update_seq);
             });
         }
-    }, 0);
+    });
 };
 
 
