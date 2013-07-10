@@ -357,7 +357,7 @@ function renderReporting(doc, req) {
 
 function renderPage() {
     var appdb = db.use(duality.getDBURL()),
-        setup = $.kansoconfig('kujua-reporting', true),
+        forms = $.kansoconfig('kujua-reporting', true),
         doc = facility_doc,
         form_config,
         parentURL = '',
@@ -366,11 +366,11 @@ function renderPage() {
     kutils.updateTopNav('reporting_rates');
 
     if (!doc) {
-        return renderDistrictChoice(appdb, setup);
+        return renderDistrictChoice(appdb, forms);
     }
 
     // check that form code is setup in config
-    form_config = _.findWhere(setup.forms, {
+    form_config = _.findWhere(forms, {
         code: req.query.form
     });
 
@@ -379,8 +379,7 @@ function renderPage() {
         return $('[data-page=reporting_rates] #content').html(
             templates.render("500.html", req, {
                 doc: doc,
-                msg: 'Please setup config.js with your kujua-reporting '
-                     + 'form code and reporting frequency.'
+                msg: 'Please setup the Kujua Lite application with your kujua-reporting form code and reporting frequency.'
             })
         );
     }
@@ -415,10 +414,8 @@ function renderPage() {
     getViewChildFacilities(doc, renderReports);
 }
 
-function renderDistrictChoice(appdb, setup) {
-    var forms;
-
-    forms = _.map(setup.forms, function(form) {
+function renderDistrictChoice(appdb, forms) {
+    forms = _.map(forms, function(form) {
         var def = jsonforms[form.code],
             formName = kutils.localizedString((def && def.meta && def.meta.label) || 'Unknown');
 
