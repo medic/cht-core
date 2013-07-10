@@ -12,83 +12,121 @@ var _ = require('underscore'),
  * Setup reminders for the current week unless they are already setup.
  */
 function createReminders(options, callback) {
+
+    //console.log('createReminders options',options)
+
     var day = options.day,
         form = options.form,
         reminder = options.reminder,
-      epiWeek,
-      week,
-      lastWeek = moment(date.getDate()),
-      year;
+        epiWeek,
+        week,
+        lastWeek = moment(date.getDate()),
+        year;
 
     // previous CDC week is the previous Sunday
     lastWeek.subtract('weeks', 1);
-
     epiWeek = epi(lastWeek.toDate());
     week = epiWeek.week;
     year = epiWeek.year;
 
-    db.view('kujua-sentinel', 'clinic_by_phone', function(err, data) {
-        var recipients;
-        if (err) {
-            console.error("Could not run view: " + err.reason);
-            callback(err);
-        } else {
-            recipients = _.pluck(data.rows, 'value');
+    function finalize(err) {
+        callback(err);
+    }
 
-            async.forEach(recipients, function(recipient, cb) {
-                var phone = recipient && recipient.contact && recipient.contact.phone,
-                    refid = recipient && recipient.contact && recipient.contact.rc_code;
+    function setupReminder(recipient, callback) {
 
-                // we can't setup reminder if clinic has no phone number
-                if (!phone) {
-                    return cb();
+        var phone = recipient && recipient.contact && recipient.contact.phone,
+            refid = recipient && recipient.contact && recipient.contact.rc_code;
+
+        // we can't setup reminder if clinic has no phone number
+        if (!phone) {
+            console.warn('skipping reminder, missing phone number.', recipient);
+            return callback();
+        }
+
+        function checkDups(callback) {
+            db.view('kujua-sentinel', 'weekly_reminders', {
+                group: true,
+                key: [form, year, week, phone],
+                limit: 1
+            }, function(err, data) {
+
+                if (err) {
+                    return callback(err);
                 }
 
-                db.view('kujua-sentinel', 'weekly_reminders', {
-                    group: true,
-                    key: [form, year, week, phone],
-                    limit: 1
-                }, function(err, data) {
-                    if (err) {
-                        console.error("Could not run view: " + err.reason);
-                        return cb(err);
-                    }
-                    var doc,
-                        row = _.first(data.rows),
-                        result = row && row.value;
+                var doc,
+                    row = _.first(data.rows),
+                    result = row && row.value;
 
-                    if (!result || (!result.received && !_.include(result.sent, day))) {
-                        doc = {
-                            day: day,
-                            related_entities: {clinic: recipient},
-                            related_form: form,
-                            phone: phone,
-                            refid: refid,
-                            type: 'weekly_reminder',
-                            week: week,
-                            year: year
-                        };
-                        utils.addMessage(doc, phone, i18n(reminder, {
-                            week: week,
-                            year: year
-                        }));
-                        db.saveDoc(doc, function(err, ok) {
+                // report was received or reminder already sent
+                if (result && (result.received || _.include(result.sent, day))) {
+                    return callback(null, result);
+                }
 
-                            if (err) {
-                                console.error("Could not add reminder: " + err.reason);
-                            } else {
-                                console.log('Created weekly reminder ' + [form,year,week,day,phone,refid]);
-                            }
-                            cb(err);
-                        });
-                    } else {
-                        cb();
-                    }
-                });
-            }, function(err) {
-                callback(err);
+                callback();
             });
         }
+
+
+        function create(err, dups) {
+
+            if (err) {
+                return callback(err);
+            }
+
+            if (dups) {
+                // skip creation of this reminder
+                return callback();
+            }
+
+            var doc = {
+                day: day,
+                related_entities: {clinic: recipient},
+                related_form: form,
+                phone: phone,
+                refid: refid,
+                type: 'weekly_reminder',
+                week: week,
+                year: year
+            };
+
+            utils.addMessage(doc, {
+                phone: phone,
+                message: i18n(reminder, {
+                    week: week,
+                    year: year
+                })
+            });
+
+            db.saveDoc(doc, function(err, ok) {
+                if (err) {
+                    console.error('Failed to save weekly reminder', err.reason);
+                } else {
+                    console.info('Created weekly reminder', ok.id)
+                }
+                callback(err);
+            });
+
+        }
+
+        checkDups(create);
+
+    }
+
+    // fetch unique list oall clinics
+    db.view('kujua-sentinel', 'clinic_by_phone', {include_docs: true}, function(err, data) {
+
+        if (err) {
+            console.error("Could not run view: " + err.reason);
+            return callback(err);
+        }
+
+        var recipients = _.pluck(data.rows, 'doc');
+
+        // pass recipients to setupReminder in series so we can avoid sending
+        // the same reminder more than once to a phone.
+        async.eachSeries(recipients, setupReminder, finalize);
   });
 }
 
@@ -114,23 +152,31 @@ module.exports = function(callback) {
         reminders = config.get('send_weekly_reminders'),
         items = [];
 
-    if (_.isObject(reminders)) {
-        day = date.getDate().getDay();
-        _.each(reminders, function(schedule, form) {
-            if (_.isObject(schedule)) {
-                _.each(schedule, function(reminder, d) {
-                    if (day === Number(d)) {
-                        items.push({
-                            form: form,
-                            day: d,
-                            reminder: reminder
-                        });
-                    }
-                });
-            }
-        });
+    if (!_.isObject(reminders)) {
+        console.info('skipping weekly_reminders, config not found.');
+        return callback();
     }
+
+    day = date.getDate().getDay();
+    _.each(reminders, function(schedule, form) {
+        console.info('checking reminders for form %s', form);
+        if (_.isObject(schedule)) {
+            _.each(schedule, function(reminder, d) {
+                if (day === Number(d)) {
+                    items.push({
+                        form: form,
+                        day: d,
+                        reminder: reminder
+                    });
+                } else {
+                    console.info('skipped day %s, today is day %s', d, day);
+                }
+            });
+        }
+    });
+
     async.forEach(items, function(item, cb) {
+        console.log('processing reminder %s %s', item.form, item.day);
         createReminders(item, cb);
     }, function(err) {
         callback(err);
