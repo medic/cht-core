@@ -13,7 +13,7 @@ var _ = require('underscore'),
  */
 function createReminders(options, callback) {
 
-    console.log('createReminders options',options)
+    //console.log('createReminders options',options)
 
     var day = options.day,
         form = options.form,
@@ -31,13 +31,11 @@ function createReminders(options, callback) {
     year = epiWeek.year;
 
     function finalize(err) {
-        console.log('finalize');
         callback(err);
     }
 
     function setupReminder(recipient, callback) {
 
-        console.log('setupReminder', recipient);
         var phone = recipient && recipient.contact && recipient.contact.phone,
             refid = recipient && recipient.contact && recipient.contact.rc_code;
 
@@ -48,14 +46,11 @@ function createReminders(options, callback) {
         }
 
         function checkDups(callback) {
-            console.log('checkDups');
             db.view('kujua-sentinel', 'weekly_reminders', {
                 group: true,
                 key: [form, year, week, phone],
                 limit: 1
             }, function(err, data) {
-
-                console.log('weekly_reminders data', JSON.stringify(data));
 
                 if (err) {
                     return callback(err);
@@ -77,14 +72,12 @@ function createReminders(options, callback) {
 
         function create(err, dups) {
 
-            console.log('create');
             if (err) {
                 return callback(err);
             }
 
             if (dups) {
                 // skip creation of this reminder
-                console.log('found dups', dups);
                 return callback();
             }
 
