@@ -555,7 +555,7 @@ var messages = {
             + ' and try again.',
         fr: 'Merci, votre message a été bien reçu.',
         es: 'Recibimos tu mensaje, lo procesaremos pronto. Si querias mandar un reporte, intentalo nuevamente en el formato adecuado.',
-        ne: 'डाटा प्राप्त भयो, धन्यवाद'
+        ne: 'मेसेज प्राप्त भयो। यदि रिपोर्ट पठाउनुभएको हो भने मिलेन; मिलाएर पुन: पठाउनुहोला।'
     },
     reporting_unit_not_found : {
         en: "Reporting Unit ID is incorrect. Please correct and submit a complete report again.",
