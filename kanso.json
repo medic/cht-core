@@ -144,8 +144,8 @@
                         "value": "Contact"
                     },
                     {
-                        "key": "Form",
-                        "value": "Form"
+                        "key": "From",
+                        "value": "From"
                     },
                     {
                         "key": "Village Name",
@@ -198,24 +198,28 @@
                 ]
             },
             "kujua-reporting": {
-                "title": "Reporting Forms",
+                "title": "Scheduled Reports",
                 "type": "array",
                 "items": {
                     "properties": {
                         "code": {
                             "type": "string",
-                            "title": "Code",
+                            "title": "Form Code",
                             "default": ""
                         },
                         "frequency": {
                             "type": "string",
                             "title": "Frequency",
+                            "enum": [ 
+                                "weekly", 
+                                "monthly" 
+                            ],
                             "default": "weekly"
                         }
                     },
                     "type": "object"
                 },
-                "default": [ 
+                "default": [
                     {
                         "code": "ZDIS",
                         "frequency": "weekly"
