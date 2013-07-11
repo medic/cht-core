@@ -18,7 +18,7 @@ exports.getAppInfo = function() {
     }
     muvuku = url.parse(info.muvuku_webapp_url, true);
     muvuku.search = null;
-    muvuku.query.sync_url = require('duality/core').getBaseURL() + '/add';
+    muvuku.query._sync_url = require('duality/core').getBaseURL() + '/add';
     info.muvuku_webapp_url = url.format(muvuku);
 
     _.extend(info, {
