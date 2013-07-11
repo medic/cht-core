@@ -10,7 +10,8 @@ var db = require('db'),
     templates = require('duality/templates'),
     info = require('views/lib/appinfo'),
     url_util = require('url'),
-    jsonforms = require('views/lib/jsonforms');
+    jsonforms = require('views/lib/jsonforms'),
+    appInfo;
 
 var facility_doc
     , _req
@@ -295,8 +296,7 @@ var onRecordClick = function(ev) {
 };
 
 function renderReporting(doc, req) {
-    var template = 'kujua-reporting/facility.html',
-        appInfo;
+    var template = 'kujua-reporting/facility.html';
 
     _req = req;
     isAdmin = kutils.isUserAdmin(req.userCtx);

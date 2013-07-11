@@ -88,4 +88,5 @@ exports.rules = [
             endkey: [':year', ':month', ':facility_id', {}]
         }
     },
+    {from: '/app_settings.json', to: '_show/app_settings' }
 ];
