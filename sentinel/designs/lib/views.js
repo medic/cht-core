@@ -83,7 +83,7 @@ exports.weekly_reminders = {
     };
 
     values.forEach(function(value) {
-      if (value.sent) {
+      if (value.sent && result.sent.indexOf(value.sent) < 0) {
         result.sent.push(value.sent);
       }
       result.received = result.received || !!value.received;
