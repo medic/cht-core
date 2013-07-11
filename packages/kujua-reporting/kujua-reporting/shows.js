@@ -10,8 +10,7 @@ var db = require('db'),
     templates = require('duality/templates'),
     info = require('views/lib/appinfo'),
     url_util = require('url'),
-    jsonforms = require('views/lib/jsonforms'),
-    appInfo;
+    jsonforms = require('views/lib/jsonforms');
 
 var facility_doc
     , _req
@@ -296,7 +295,8 @@ var onRecordClick = function(ev) {
 };
 
 function renderReporting(doc, req) {
-    var template = 'kujua-reporting/facility.html';
+    var template = 'kujua-reporting/facility.html',
+        appInfo = info.getAppInfo.apply(this);
 
     _req = req;
     isAdmin = kutils.isUserAdmin(req.userCtx);
@@ -334,8 +334,6 @@ function renderReporting(doc, req) {
         });
     });
 
-    appInfo = info.getAppInfo.apply(this);
-
     if (doc) {
         // TODO fix show when $.kansoconfig is not available
         return {
@@ -357,7 +355,8 @@ function renderReporting(doc, req) {
 
 function renderPage() {
     var appdb = db.use(duality.getDBURL()),
-        forms = $.kansoconfig('kujua-reporting', true),
+        appInfo = info.getAppInfo(),
+        forms = appInfo['kujua-reporting'],
         doc = facility_doc,
         form_config,
         parentURL = '',
