@@ -414,13 +414,19 @@ function renderPage() {
 }
 
 function renderDistrictChoice(appdb, forms) {
-    forms = _.map(forms, function(form) {
+
+    _.each(forms, function(form, idx) {
         var def = jsonforms[form.code],
             formName = kutils.localizedString((def && def.meta && def.meta.label) || 'Unknown');
 
-        return _.extend(form, {
-            formName: formName
-        });
+
+        if (def) {
+            forms[idx] = _.extend(form, {
+                formName: formName
+            });
+        } else {
+            forms.splice(idx, 1);
+        }
     });
 
     appdb.getView(appname, 'facilities_by_type', {
