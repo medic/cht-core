@@ -1066,7 +1066,7 @@ exports.runList = function (fn, head, req) {
         _send(data);
     };
     events.emit('beforeRequest', info, req);
-    var val = fn(head, req);
+    var val = fn.call(this, head, req);
 
     if (val instanceof Object || typeof(val) === 'object'){
         val = exports.parseResponse(req, val).body;

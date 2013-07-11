@@ -26,9 +26,9 @@ duality_events.on('init', function (ev) {
 
         var isAdmin = kutils.hasPerm(info.userCtx, 'can_edit_any_facility'),
             isDistrictAdmin = kutils.hasPerm(info.userCtx, 'can_edit_facility'),
-            setup = $.kansoconfig('kujua-reporting', true);
+            forms = $.kansoconfig('kujua-reporting', true);
 
-        if (!setup || !setup.forms || setup.forms.length === 0) {
+        if (!forms) {
             return;
         }
 
