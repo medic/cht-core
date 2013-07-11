@@ -451,10 +451,12 @@ function renderDistrictChoice(appdb, forms) {
             }
         });
 
-        $('[data-page=reporting_rates] #content').html(templates.render("reporting_district_choice.html", {}, {
-            forms: forms,
-            districts: districts
-        }));
+        $('[data-page=reporting_rates] #content').html(
+            templates.render("kujua-reporting/reporting_district_choice.html", {}, {
+                forms: forms,
+                districts: districts
+            })
+        );
     });
 
 }
