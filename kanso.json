@@ -207,7 +207,7 @@
                             "title": "Form Code",
                             "default": ""
                         },
-                        "frequency": {
+                        "reporting_freq": {
                             "type": "string",
                             "title": "Frequency",
                             "enum": [ 
