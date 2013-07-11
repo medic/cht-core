@@ -8,7 +8,8 @@ var _ = require('underscore'),
     strings = utils.strings,
     moment = require('moment'),
     logger = require('kujua-utils').logger,
-    jsonforms  = require('views/lib/jsonforms');
+    jsonforms  = require('views/lib/jsonforms'),
+    info = require('views/lib/appinfo');
 
 
 // default properties to export from record
@@ -58,7 +59,7 @@ exports.data_records_csv = function (head, req) {
     var labels,
         query = req.query,
         form  = query.form,
-        kansoconfig = query.kansoconfig ? JSON.parse(query.kansoconfig) : {},
+        appInfo = info.getAppInfo.call(this),
         dh_name = query.dh_name ? query.dh_name : 'null',
         filename = getFilename(form, dh_name, 'csv'),
         locale = query.locale || 'en', //TODO get from session
@@ -76,7 +77,7 @@ exports.data_records_csv = function (head, req) {
     // fetch labels for all keys
     labels = utils.getLabels(keys, form, locale);
     labels = _.map(labels, function(label) {
-      return kansoconfig[label] || label;
+      return appInfo[label] || label;
     });
 
     if (!query.skip_header_row)
@@ -98,7 +99,7 @@ exports.data_records_xml = function (head, req) {
     var query = req.query,
         form  = query.form,
         dh_name = query.dh_name ? query.dh_name : 'null',
-        kansoconfig = query.kansoconfig ? JSON.parse(query.kansoconfig) : {},
+        appInfo = info.getAppInfo.call(this),
         filename = getFilename(form, dh_name, 'xml'),
         locale = query.locale || 'en', //TODO get from session
         rows,
@@ -114,7 +115,7 @@ exports.data_records_xml = function (head, req) {
     // fetch labels for all keys
     var labels = utils.getLabels(keys, form, locale);
     labels = _.map(labels, function(label) {
-      return kansoconfig[label] || label;
+      return appInfo[label] || label;
     });
 
     var row = [],
