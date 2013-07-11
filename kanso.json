@@ -120,6 +120,39 @@
                     }
                 }
             },
+            "kujua-reporting": {
+                "title": "Scheduled Reports",
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "title": "Form Code",
+                            "default": ""
+                        },
+                        "reporting_freq": {
+                            "type": "string",
+                            "title": "Frequency",
+                            "enum": [ 
+                                "weekly", 
+                                "monthly" 
+                            ],
+                            "default": "weekly"
+                        }
+                    },
+                    "type": "object"
+                },
+                "default": [
+                    {
+                        "code": "ZDIS",
+                        "frequency": "weekly"
+                    },
+                    {
+                        "code": "ZSTK",
+                        "frequency": "monthly"
+                    }
+                ]
+            },
             "translations": {
                 "title": "Translations",
                 "type": "array",
@@ -194,39 +227,6 @@
                     {
                         "key": "Phone",
                         "value": "Phone"
-                    }
-                ]
-            },
-            "kujua-reporting": {
-                "title": "Scheduled Reports",
-                "type": "array",
-                "items": {
-                    "properties": {
-                        "code": {
-                            "type": "string",
-                            "title": "Form Code",
-                            "default": ""
-                        },
-                        "reporting_freq": {
-                            "type": "string",
-                            "title": "Frequency",
-                            "enum": [ 
-                                "weekly", 
-                                "monthly" 
-                            ],
-                            "default": "weekly"
-                        }
-                    },
-                    "type": "object"
-                },
-                "default": [
-                    {
-                        "code": "ZDIS",
-                        "frequency": "weekly"
-                    },
-                    {
-                        "code": "ZSTK",
-                        "frequency": "monthly"
                     }
                 ]
             }
