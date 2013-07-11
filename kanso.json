@@ -75,6 +75,11 @@
                     "title": "Facility Id",
                     "type": "string",
                     "je:hint": "autocomplete"
+                },
+                "phone": {
+                    "title": "Phone",
+                    "type": "string",
+                    "je:hint": "autocomplete"
                 }
             }
         }
