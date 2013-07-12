@@ -315,5 +315,11 @@ module.exports = {
   addError: addError,
   getOHWRegistration: getOHWRegistration,
   getOHWMatchingRecords: getOHWMatchingRecords,
-  checkOHWDuplicates: checkOHWDuplicates
+  checkOHWDuplicates: checkOHWDuplicates,
+  /*
+   * Compares two objects ignoring their _rev properties
+   */
+  equalRevisions: function(a, b) {
+      return _.isEqual(_.omit(a, '_rev'), _.omit(b, '_rev'));
+  }
 }
