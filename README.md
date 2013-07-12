@@ -43,23 +43,6 @@ Start gardener:
 gardener http://admin:pass@localhost:5984/
 ```
 
-## Configure
-
-Optionally customize your app:
-
-```
-cp config-example.js config.js
-vi config.js
-```
-
-Install your config:
-
-```
-curl -X POST http://admin:pass@localhost:5984/kujua-lite -d @config.js \
-     -H "Content-Type: application/json"
-```
-
-
 ### Reporting Rates
 
 To enable the reporting rates module, see

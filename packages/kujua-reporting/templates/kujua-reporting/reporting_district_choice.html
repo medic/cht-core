@@ -23,6 +23,11 @@
       </div>
     </div>
     {/districts}
+    {:else}
+    <div class="no-records">
+        <i class="icon-star-empty"></i>
+        No scheduled reports are defined in your settings.
+    </div>
     {/forms}
     {:else}
     <a href="{baseURL}/facilities/districts" class="btn btn-block btn-large btn-primary">Add {@translate value="District"/} facility data</a>
