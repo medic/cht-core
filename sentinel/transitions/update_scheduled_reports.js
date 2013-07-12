@@ -52,14 +52,15 @@ var handleMatch = function(change, callback) {
             docs.push(doc);
         });
 
-        self.db.bulkDocs({docs:docs}, {all_or_nothing: true}, function(err) {
+        self.db.bulkDocs({
+            all_or_nothing: true,
+            docs:docs
+        }, function(err) {
             // cancels transition and marks as incomplete
             if (err) {
                 console.error('error doing bulk save', err);
                 return callback(null, false);
             }
-            // this fails with a conflict first time it runs, but transition
-            // property finalizes when processing the next change
             callback(null, true);
         });
     });
