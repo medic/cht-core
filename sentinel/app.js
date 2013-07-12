@@ -7,7 +7,11 @@ function completeSetup(err, design) {
         console.error(JSON.stringify(err));
         process.exit(1);
     } else {
-        config.load(function() {
+        config.load(function(err) {
+            if (err) {
+                console.error('error loading config', err);
+                process.exit(1);
+            }
             require('./transitions').attach(design);
             require('./schedule');
             config.listen();
@@ -26,7 +30,7 @@ db.getDoc('_design/kujua-sentinel', function(err, doc) {
                 completeSetup(err, base);
             });
         } else {
-            console.error("Could not find design document: " + err.reason);
+            console.error("Could not find design document", err);
         }
     } else {
         matches = _.all(_.keys(base), function(key) {
