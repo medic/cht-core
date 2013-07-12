@@ -1,0 +1,10 @@
+{
+    "name": "kanso-app-settings",
+    "version": "0.0.1",
+    "categories": ["build-tools"],
+    "description": "Maintain the app_settings property on a design doc on a push if it has already been set.",
+    "url": "https://github.com/kanso/kanso-app-settings",
+    "postprocessors": {
+        "cleanup": "build/compile"
+    }
+}
