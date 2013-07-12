@@ -50,7 +50,6 @@
         "nodeunit-testrunner": null,
         "less-precompiler": null,
         "select2": null,
-        "kanso-config": null,
         "kujua-branding": ">=0.0.2",
         "kujua-sms": null,
         "kujua-utils": null,
@@ -75,6 +74,11 @@
                     "title": "Facility Id",
                     "type": "string",
                     "je:hint": "autocomplete"
+                },
+                "phone": {
+                    "title": "Phone",
+                    "type": "string",
+                    "je:hint": "autocomplete"
                 }
             }
         }
@@ -84,42 +88,152 @@
         "type": "object",
         "properties": {
             "muvuku_webapp_url": {
-              "type": "string",
-              "title": "Muvuku Webapp Url",
-              "default": "/json-forms/_design/json-forms/_rewrite/"
+                "type": "string",
+                "title": "Muvuku Webapp Url",
+                "default": "/json-forms/_design/json-forms/_rewrite/"
             },
             "reported_date_format": {
-               "type": "string",
-               "title": "Reported Date Format",
-               "default": "MMM hh:mm"
+                "type": "string",
+                "title": "Reported Date Format",
+                "default": "MMM hh:mm"
             },
             "gateway_number": {
-               "type": "string",
-               "title": "Gateway Number",
-               "default": "+13125551212"
+                "type": "string",
+                "title": "Gateway Number",
+                "default": "+13125551212"
             },
             "facility_labels": {
-              "title": "Facility labels",
-              "type": "object",
-              "order": ["level1", "level2", "level3"],
-              "required": ["level1", "level2", "level3"],
-              "properties": {
-                 "level1": {
-                    "type": "string",
-                    "title": "Level 1",
-                    "default": "District"
-                 },
-                 "level2": {
-                    "type": "string",
-                    "title": "Level 2",
-                    "default": "Health Center"
-                 },
-                 "level3": {
-                    "type": "string",
-                    "title": "Level 3",
-                    "default": "CHW"
-                 }
-              }
+                "title": "Facility labels",
+                "type": "object",
+                "order": ["level1", "level2", "level3"],
+                "required": ["level1", "level2", "level3"],
+                "properties": {
+                    "level1": {
+                        "type": "string",
+                        "title": "Level 1",
+                        "default": "District"
+                    },
+                    "level2": {
+                        "type": "string",
+                        "title": "Level 2",
+                        "default": "Health Center"
+                    },
+                    "level3": {
+                        "type": "string",
+                        "title": "Level 3",
+                        "default": "CHW"
+                    }
+                }
+            },
+            "kujua-reporting": {
+                "title": "Scheduled Reports",
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "title": "Form Code",
+                            "default": ""
+                        },
+                        "reporting_freq": {
+                            "type": "string",
+                            "title": "Frequency",
+                            "enum": [ 
+                                "weekly", 
+                                "monthly" 
+                            ],
+                            "default": "weekly"
+                        }
+                    },
+                    "type": "object"
+                },
+                "default": [
+                    {
+                        "code": "ZDIS",
+                        "frequency": "weekly"
+                    },
+                    {
+                        "code": "ZSTK",
+                        "frequency": "monthly"
+                    }
+                ]
+            },
+            "translations": {
+                "title": "Translations",
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "key": {
+                            "type": "string",
+                            "title": "Key",
+                            "default": ""
+                        },
+                        "value": {
+                            "type": "string",
+                            "title": "Value",
+                            "default": ""
+                        }
+                    },
+                    "type": "object"
+                },
+                "default": [
+                    {
+                        "key": "Contact",
+                        "value": "Contact"
+                    },
+                    {
+                        "key": "From",
+                        "value": "From"
+                    },
+                    {
+                        "key": "Village Name",
+                        "value": "Village Name"
+                    },
+                    {
+                        "key": "Clinic Contact Name",
+                        "value": "Clinic Contact Name"
+                    },
+                    {
+                        "key": "RC Code",
+                        "value": "RC Code"
+                    },
+                    {
+                        "key": "Health Center",
+                        "value": "Health Center"
+                    },
+                    {
+                        "key": "Health Center Name",
+                        "value": "Health Center Name"
+                    },
+                    {
+                        "key": "Health Center Contact Name",
+                        "value": "Health Center Contact Name"
+                    },
+                    {
+                        "key": "Health Center Contact Phone",
+                        "value": "Health Center Contact Phone"
+                    },
+                    {
+                        "key": "District",
+                        "value": "District"
+                    },
+                    {
+                        "key": "District Name",
+                        "value": "District Name"
+                    },
+                    {
+                        "key": "District Contact Name",
+                        "value": "District Contact Name"
+                    },
+                    {
+                        "key": "District Contact Phone",
+                        "value": "District Contact Phone"
+                    },
+                    {
+                        "key": "Phone",
+                        "value": "Phone"
+                    }
+                ]
             }
         }
     },
