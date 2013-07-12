@@ -38,7 +38,7 @@ exports.getAppInfo = function() {
     };
 
     if (app_settings) {
-        gateway = this.app_settings.gateway_number;
+        gateway = app_settings.gateway_number;
 
         info.muvuku_webapp_url = info.muvuku_webapp_url || app_settings.muvuku_webapp_url;
 
