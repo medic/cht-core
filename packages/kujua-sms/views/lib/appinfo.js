@@ -28,7 +28,8 @@ function getSettings() {
  * Specifically, needs patched duality/core.js to have correct context
  */
 exports.getAppInfo = function() {
-    var info,
+    var gateway,
+        info,
         muvuku,
         app_settings = getSettings();
 
@@ -36,14 +37,22 @@ exports.getAppInfo = function() {
         muvuku_webapp_url: '/json-forms/_design/json-forms/_rewrite/?_embed_mode=2'
     };
 
-    _.extend(info, app_settings || {});
+    if (app_settings) {
+        gateway = app_settings.gateway_number;
 
-    if (app_settings && app_settings.muvuku_webapp_url) {
-        info.muvuku_webapp_url = app_settings.muvuku_webapp_url;
+        info.muvuku_webapp_url = info.muvuku_webapp_url || app_settings.muvuku_webapp_url;
+
+        _.extend(info, app_settings);
     }
+
     muvuku = url.parse(info.muvuku_webapp_url, true);
     muvuku.search = null;
-    muvuku.query.sync_url = require('duality/core').getBaseURL() + '/add';
+    muvuku.query._sync_url = require('duality/core').getBaseURL() + '/add';
+
+    if (gateway) {
+        muvuku.query._gateway_num = gateway;
+    }
+
     info.muvuku_webapp_url = url.format(muvuku);
 
     info.sha = this.kanso && this.kanso.git && this.kanso.git.commit;

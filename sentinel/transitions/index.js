@@ -5,6 +5,7 @@ var _ = require('underscore'),
     db = require('../db'),
     transitions = {},
     date = require('../date'),
+    utils = require('../lib/utils'),
     queue;
 
 // read all files in this directory and use every one except index.js as a transition
@@ -137,23 +138,24 @@ function finalize(options, callback) {
 
     doc.transitions = doc.transitions || {};
 
-    if (err) {
-        doc.transitions[key] = {
-            ok: false
-        };
-    } else {
-        doc.transitions[key] = {
-            ok: true
-        };
-    }
+    doc.transitions[key] = {
+        ok: !err
+    };
 
-    db.getDoc(doc._id, function(err, existing) {
+    db.getDoc(doc._id, function(err, latest) {
         if (err) {
             console.log(JSON.stringify(err));
             callback(err);
         } else {
-            if (JSON.stringify(_.omit(existing, '_rev')) !== JSON.stringify(_.omit(doc, '_rev'))) {
-                db.saveDoc(doc, function(err, result) {
+            if (!utils.equalRevisions(doc, latest)) {
+                _.defaults(latest, {
+                    transitions: {}
+                });
+
+                latest.transitions[key] = {
+                    ok: !err
+                };
+                db.saveDoc(latest, function(err, result) {
                     if (err) {
                         console.log(JSON.stringify(err));
                     }
