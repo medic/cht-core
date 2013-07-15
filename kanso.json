@@ -61,7 +61,8 @@
         "underscore-string": null,
         "users": null,
         "cookies": null,
-        "moment": null
+        "moment": null,
+        "kanso-app-settings": null
     },
     "user_data": {
         "db_prefix": false,
@@ -143,9 +144,9 @@
                         "reporting_freq": {
                             "type": "string",
                             "title": "Frequency",
-                            "enum": [ 
-                                "weekly", 
-                                "monthly" 
+                            "enum": [
+                                "weekly",
+                                "monthly"
                             ],
                             "default": "weekly"
                         }
