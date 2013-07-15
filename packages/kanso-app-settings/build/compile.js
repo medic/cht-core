@@ -3,13 +3,18 @@ var couchr = require('couchr');
 module.exports = {
     after: "modules/cleanup",
     run : function(root, path, settings, doc, callback) {
-        var ddoc_url = settings._url + '/_design/' + settings.name;
+        var ddoc_url;
         // for older kanso versions
-        if (!ddoc_url) callback(null, doc);
-        get_doc(ddoc_url, settings, function(err, ddoc) {
-            if (ddoc.app_settings) doc.app_settings = ddoc.app_settings;
-            callback(null, doc);
-        });
+        if (settings._url) {
+            ddoc_url = settings._url + '/_design/' + settings.name;
+            get_doc(ddoc_url, settings, function(err, ddoc) {
+                if (err) return callback(err);
+                if (ddoc.app_settings) doc.app_settings = ddoc.app_settings;
+                callback(null, doc);
+            });
+        } else {
+            return callback(null, doc);
+        }
     }
 }
 
