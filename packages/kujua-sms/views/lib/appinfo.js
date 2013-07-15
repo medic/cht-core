@@ -10,8 +10,7 @@ var _ = require('underscore'),
 function getSettings() {
     if (this.app_settings) {
         return this.app_settings;
-    }
-    if (typeof(window) === 'object' && window.jQuery) {
+    } else if (typeof(window) === 'object' && window.jQuery) {
         return JSON.parse(
             window.jQuery.ajax({
                 type: "GET",
@@ -19,8 +18,9 @@ function getSettings() {
                 async: false //synchronous request
             }).responseText
         );
+    } else {
+        return {};
     }
-    return {};
 }
 
 /**
@@ -31,7 +31,7 @@ exports.getAppInfo = function() {
     var gateway,
         info,
         muvuku,
-        app_settings = getSettings();
+        app_settings = getSettings.call(this);
 
     info = {
         muvuku_webapp_url: '/json-forms/_design/json-forms/_rewrite/?_embed_mode=2'
