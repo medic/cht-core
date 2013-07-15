@@ -847,7 +847,9 @@ DB.prototype.changes = function (/*optional*/q, callback) {
         q = {};
     }
 
-    var that = this;
+    var that = this,
+        defaultDelay = 500,
+        delay = defaultDelay;
 
     q = q || {};
     q.feed = 'longpoll';
@@ -870,11 +872,18 @@ DB.prototype.changes = function (/*optional*/q, callback) {
         exports.request(req, function(err, data) {
             var result = callback.apply(this, arguments);
 
-            // if there's an error, try again in `heartbeat`
+            // if there's an error, try again in `delay` which has exponential backoff
             if (err) {
-                _.delay(getChanges, q.heartbeat, since);
-            } else if (result !== false && data) {
-                getChanges(data.last_seq);
+                _.delay(getChanges, delay, since);
+                // max is twice heartbeat
+                if (delay < 2 * q.heartbeat) {
+                    delay *= 2;
+                }
+            } else {
+                if (result !== false && data) {
+                    getChanges(data.last_seq);
+                }
+                delay = defaultDelay;
             }
         });
     }
