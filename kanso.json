@@ -159,6 +159,24 @@
                     }
                 ]
             },
+            "schedule_morning_hours" : {
+                "title": "Schedule morning hours",
+                "description": "The scheduler only sends messages after this hour, M-F.",
+                "type": "integer",
+                "default": 8
+            },
+            "schedule_evening_hours" : {
+                "title": "Schedule evening hours",
+                "description": "The scheduler only sends messages before this hour, M-F.",
+                "type": "integer",
+                "default": 17
+            },
+            "synthetic_date" : {
+                "title": "Synthetic date",
+                "description": "Only modify this if you are testing the scheduler and want to simulate a specific date. e.g. 201304121200",
+                "type": "string",
+                "pattern": "(^[0-9]{12}$|^$)"
+            },
             "translations": {
                 "title": "Translations",
                 "type": "array",
@@ -236,7 +254,8 @@
                     }
                 ]
             }
-        }
+        },
+        "required": ["facility_labels"]
     },
     "settings_schema_schedules" : {
         "description": "Kujua Lite Settings",
@@ -581,27 +600,6 @@
                 "items": {
                     "type": "number"
                 }
-            },
-            "schedule_morning_hours" : {
-                "title": "Schedule morning hours",
-                "description": "The scheduler only sends messages after this hour, M-F.",
-                "type": "integer",
-                "default": 8
-            },
-            "schedule_evening_hours" : {
-                "title": "Schedule evening hours",
-                "description": "The scheduler only sends messages before this hour, M-F.",
-                "type": "integer",
-                "default": 17
-            },
-            "synthetic_date" : {
-                "title": "Synthetic date",
-                "description": "Only modify this if you are testing the scheduler and want to simulate a specific date. e.g. 201304121200",
-                "type": "string",
-                "minLength":12,
-                "maxLength":12,
-                "pattern": "[0-9]+"
-
             }
         }
     }

@@ -1,12 +1,12 @@
 var _ = require('underscore'),
+  epi = require('epi-week'),
+  async = require('async'),
+  moment = require('moment'),
   db = require('../db'),
   date = require('../date'),
-  epi = require('epi-week'),
   i18n = require('../i18n'),
   config = require('../config'),
-  utils = require('../lib/utils'),
-  async = require('async'),
-  moment = require('moment');
+  utils = require('../lib/utils');
 
 /*
  * Setup reminders for the current week unless they are already setup.
@@ -131,8 +131,7 @@ function createReminders(options, callback) {
 }
 
 /**
- * Setup reminders for CDC
- *
+ * Setup weekly reminders
  *
  *  To configure this, set the send_weekly_reminders property to something like this:
  *  {

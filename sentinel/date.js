@@ -5,6 +5,7 @@ var DATE_RE = /(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?/,
 
 function load() {
     if (sd) {
+      console.info('synthetic date config is', sd);
       var matches =  String(sd).match(DATE_RE);
       if (matches) {
           var fullmatch = matches[0],
