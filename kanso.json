@@ -97,6 +97,11 @@
                 "title": "Reported Date Format",
                 "default": "MMM hh:mm"
             },
+            "public_access": {
+                "type": "boolean",
+                "title": "Public Can Submit Forms",
+                "default": false 
+            },
             "gateway_number": {
                 "type": "string",
                 "title": "Gateway Number",

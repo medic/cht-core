@@ -324,7 +324,8 @@ exports.data_record = function (head, req) {
         headers = req.headers.Host.split(":"),
         baseURL = require('duality/core').getBaseURL(),
         def = jsonforms[form],
-        facility  = null;
+        facility  = null,
+        appInfo = info.getAppInfo.call(this);
 
     //
     // Add first matched facility to record
@@ -348,7 +349,8 @@ exports.data_record = function (head, req) {
         }
     }
 
-    if (!facility && (!def || !def.public_form)) {
+    // no facility, not a public form, and not a public_access install
+    if (!facility && !(def && def.public_form) && !appInfo.public_access) {
         utils.addError(record, 'sys.facility_not_found');
     }
 

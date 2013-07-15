@@ -10,7 +10,6 @@ var _ = require('underscore'),
     validate = require('./validate'),
     utils = require('./utils');
 
-
 /**
  * @param {String} form - jsonforms key string
  * @param {Object} form_data - parsed form data
@@ -171,7 +170,7 @@ var parseSentTimestamp = function(str) {
  * Always limit outgoing message to 160 chars and only send one message.
  *
  */
-var getSMSResponse = function(doc) {
+var getSMSResponse = function(doc, info) {
     var locale = doc.sms_message && doc.sms_message.locale,
         msg = utils.getMessage('sms_received', locale),
         def = doc.form && jsonforms[doc.form],
@@ -222,7 +221,7 @@ var getSMSResponse = function(doc) {
             if (utils.hasError(doc, 'sys.facility_not_found')) {
                 msg = utils.getMessage('reporting_unit_not_found', locale);
             }
-        } else if (doc.errors.length === 1) {
+        } else if (doc.errors.length <= 1) {
             if (utils.hasError(doc, 'sys.facility_not_found')) {
                 msg = utils.getMessage('form_received', locale);
             }
@@ -298,15 +297,19 @@ exports.add_sms = function(doc, request) {
         headers = req.headers.Host.split(":"),
         resp = {payload: {success: true}};
 
-    if (sms_message.form && def)
+    if (sms_message.form && def) {
         form_data = smsparser.parse(def, sms_message);
+    }
+
+    var appInfo = info.getAppInfo.call(this),
+        public = appInfo && appInfo.public_access;
 
     // creates base record
     doc = getDataRecord(sms_message, form_data);
 
     // by default related entities are null so also include errors on the
     // record.
-    if (!def || !def.public_form) {
+    if (!def || !def.public_form && !public) {
         doc.errors.push({
             code: "sys.facility_not_found",
             message: utils.getMessage("sys.facility_not_found", sms_message.locale)
