@@ -98,6 +98,11 @@
                 "title": "Reported Date Format",
                 "default": "MMM hh:mm"
             },
+            "forms_only_mode": {
+                "type": "boolean",
+                "title": "Only Expect Forms",
+                "default": false 
+            },
             "public_access": {
                 "type": "boolean",
                 "title": "Public Can Submit Forms",
