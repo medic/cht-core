@@ -179,9 +179,14 @@
                             "title": "Key",
                             "default": ""
                         },
-                        "value": {
+                        "en": {
                             "type": "string",
-                            "title": "Value",
+                            "title": "English (Default)",
+                            "default": ""
+                        },
+                        "fr": {
+                            "type": "string",
+                            "title": "Français",
                             "default": ""
                         }
                     },
@@ -189,60 +194,46 @@
                 },
                 "default": [
                     {
-                        "key": "Contact",
-                        "value": "Contact"
+                        "key": "Contact"
                     },
                     {
-                        "key": "From",
-                        "value": "From"
+                        "key": "From"
                     },
                     {
-                        "key": "Village Name",
-                        "value": "Village Name"
+                        "key": "Village Name"
                     },
                     {
-                        "key": "Clinic Contact Name",
-                        "value": "Clinic Contact Name"
+                        "key": "Clinic Contact Name"
                     },
                     {
-                        "key": "RC Code",
-                        "value": "RC Code"
+                        "key": "RC Code"
                     },
                     {
-                        "key": "Health Center",
-                        "value": "Health Center"
+                        "key": "Health Center"
                     },
                     {
-                        "key": "Health Center Name",
-                        "value": "Health Center Name"
+                        "key": "Health Center Name"
                     },
                     {
-                        "key": "Health Center Contact Name",
-                        "value": "Health Center Contact Name"
+                        "key": "Health Center Contact Name"
                     },
                     {
-                        "key": "Health Center Contact Phone",
-                        "value": "Health Center Contact Phone"
+                        "key": "Health Center Contact Phone"
                     },
                     {
-                        "key": "District",
-                        "value": "District"
+                        "key": "District"
                     },
                     {
-                        "key": "District Name",
-                        "value": "District Name"
+                        "key": "District Name"
                     },
                     {
-                        "key": "District Contact Name",
-                        "value": "District Contact Name"
+                        "key": "District Contact Name"
                     },
                     {
-                        "key": "District Contact Phone",
-                        "value": "District Contact Phone"
+                        "key": "District Contact Phone"
                     },
                     {
-                        "key": "Phone",
-                        "value": "Phone"
+                        "key": "Phone"
                     }
                 ]
             }
