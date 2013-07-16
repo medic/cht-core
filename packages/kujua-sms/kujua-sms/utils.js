@@ -516,7 +516,7 @@ var messages = {
         fr: "Formulaire '%(form)' non trouvé",
         es: "Forma no encontrada."
     },
-    _disabled_form_not_found: {
+    form_not_found: {
         en: "The form sent '%(form)' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
         fr: "Le formulaire envoyé '%(form)' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
         es: "No se reconocio el reporte enviado '%(form)'. Por favor intente de nuevo. Si el problema persiste, informe al director.",

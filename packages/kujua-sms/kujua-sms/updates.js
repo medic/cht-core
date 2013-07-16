@@ -38,7 +38,7 @@ var getRefID = function(form, form_data) {
  * @returns {Object} - data record
  * @api private
  */
-var getDataRecord = exports.getDataRecord = function(doc, form_data) {
+function getDataRecord(doc, form_data, appInfo) {
     var form = doc.form,
         def = jsonforms[form];
 
@@ -58,8 +58,11 @@ var getDataRecord = exports.getDataRecord = function(doc, form_data) {
 
     // if form is undefined we treat as a regular message
     if (form && !def) {
-        delete record.form;
-        //utils.addError(record, 'sys.form_not_found');
+        if (appInfo.forms_only_mode) {
+            utils.addError(record, 'sys.form_not_found');
+        } else {
+            delete record.form;
+        }
     }
 
     // try to parse timestamp from gateway
@@ -305,7 +308,7 @@ exports.add_sms = function(doc, request) {
         public = appInfo && appInfo.public_access;
 
     // creates base record
-    doc = getDataRecord(sms_message, form_data);
+    doc = getDataRecord(sms_message, form_data, appInfo);
 
     // by default related entities are null so also include errors on the
     // record.
