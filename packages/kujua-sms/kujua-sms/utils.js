@@ -626,13 +626,6 @@ exports.addError = function(record, error) {
     logger.error(error);
 };
 
-/*
- *  @returns {Object} messages object
- */
-exports.getMessagesObject = function() {
-    return messages;
-};
-
 /**
  * @param {String|Object} code - key that maps to messages object, if object
  *                        is passed in then use 'code' key of that object. This
