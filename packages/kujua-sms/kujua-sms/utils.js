@@ -10,20 +10,6 @@ var jsDump = require('jsDump'),
     _ = require('underscore'),
     moment = require('moment');
 
-
-/*
- * return String - Try to return appropriate locale translation for a string,
- *                 english by default. Support array keys, just concatenate.
- */
-var _s = function(key, locale) {
-    var key = _.isArray(key) ? arrayToStringNotation(key) : key;
-    if (exports.strings[key]) {
-        return utils.localizedString(exports.strings[key], [locale]);
-    } else {
-        return key;
-    }
-};
-
 exports.strings = {
     reported_date: {
         en: 'Reported Date',
@@ -142,7 +128,7 @@ var prettyVal = function(data_record, key, def) {
                     for (var i in def.list) {
                         var item = def.list[i];
                         if (item[0] === val) {
-                            return utils.localizedString(item[1], locale);
+                            return exports.info.translate(item[1], locale);
                         }
                     }
                 }
@@ -345,7 +331,7 @@ var getLabels = exports.getLabels = function(keys, form, locale) {
         _.map(def.fields, function (f, key) {
             var label = exports.getLabel(f.labels);
             // use the key as label as last resort
-            form_labels[key] = utils.localizedString(label, locale) || key;
+            form_labels[key] = exports.info.translate(key, locale);
         });
     }
 
@@ -361,7 +347,7 @@ var getLabels = exports.getLabels = function(keys, form, locale) {
                 if (form_labels[key]) {
                     labels.push(form_labels[key]);
                 } else {
-                    labels.push(_s(key, locale));
+                    labels.push(exports.info.translate(key, locale));
                 }
             } else {
                 var key = (appendTo || '') + _key;
@@ -369,7 +355,7 @@ var getLabels = exports.getLabels = function(keys, form, locale) {
                 if (form_labels[key]) {
                     labels.push(form_labels[key]);
                 } else {
-                    labels.push(_s(key, locale));
+                    labels.push(exports.info.translate(key, locale));
                 }
             }
         }
@@ -574,18 +560,20 @@ var messages = {
  * @returns boolean
  */
 exports.hasError = function(record, error) {
-
     if (!record || !error) return;
 
-    error = typeof error === 'string' ? {code:error, message:''} : error;
-
-    for (var i in record.errors) {
-        var e = record.errors[i];
-        if (error.code === e.code) return true;
+    if (_.isString(error)) {
+        error = {
+            code: error,
+            message: ''
+        };
     }
 
-    return false;
+    var existing = _.findWhere(record.errors, {
+        code: error.code
+    });
 
+    return !!existing;
 };
 
 /*
@@ -599,22 +587,24 @@ exports.hasError = function(record, error) {
  * @returns undefined
  */
 exports.addError = function(record, error) {
-
     if (!record || !error) return;
 
-    error = typeof error === 'string' ? {code:error, message:''} : error;
+    if (_.isString(error)) {
+        error = {
+            code: error,
+            message: ''
+        }
+    }
 
-    for (var i in record.errors) {
-        var e = record.errors[i];
-        if (error.code === e.code)
-            return; // already exists on the record
+    if (exports.hasError(record, error)) {
+        return;
     }
 
     var locale = (record.sms_message && record.sms_message.locale) || 'en',
         form = record.form && record.sms_message && record.sms_message.form;
 
     if (!error.message)
-        error.message = exports.getMessage(error, locale);
+        error.message = exports.info.translate(error, locale);
 
     // replace placeholder strings
     error.message = error.message
@@ -624,35 +614,6 @@ exports.addError = function(record, error) {
     record.errors ? record.errors.push(error) : record.errors = [error];
 
     logger.error(error);
-};
-
-/**
- * @param {String|Object} code - key that maps to messages object, if object
- *                        is passed in then use 'code' key of that object. This
- *                        helps support error objects.
- * @param {String} locale - string that is supported in messages, 'en'.
- * @returns {String} - localized response message for the key or object
- * @api public
- */
-exports.getMessage = function (code, locale) {
-
-    var key = code.code ? code.code : code,
-        msg = code.message ? code.message : utils.localizedString(messages[key], locale);
-
-    // if custom validation then use the message property of error object
-    if (key === 'form_invalid_custom')
-        return utils.localizedString(messages['form_invalid'], locale);
-
-    /*
-    if (code.fields && _.isArray(code.fields))
-        return msg.replace('%(fields)', code.fields.join(', '));
-
-    if (code.form && _.isString(code.form))
-        return msg.replace('%(form)', code.form);
-    */
-
-    return msg;
-
 };
 
 /**
@@ -1062,13 +1023,26 @@ var arrayToXML = exports.arrayToXML = function(arr, format) {
     return '<Row>' + rows.join('</Row>\n<Row>') + '</Row>';
 };
 
+// placeholder function that will be replaced with appInfo from the updates function
+exports.info = {
+    translate: function(key) {
+        return key;
+    }
+};
+
 exports.getFormTitle = function(form) {
     var def = jsonforms[form],
         label = def && def.meta && def.meta.label,
+        key,
         title;
 
-    if (label) {
-        title = utils.localizedString(label);
+    if (_.isString(label)) {
+        title = exports.info.translate(label);
+    } else if (_.isObject(label)) {
+        key = _.first(_.keys(label));
+        if (key && label[key]) {
+            title = exports.info.translate(label[key]);
+        }
     }
 
     if (title) {

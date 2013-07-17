@@ -175,7 +175,7 @@ var parseSentTimestamp = function(str) {
  */
 var getSMSResponse = function(doc, info) {
     var locale = doc.sms_message && doc.sms_message.locale,
-        msg = utils.getMessage('sms_received', locale),
+        msg = info.translate('sms_received', locale),
         def = doc.form && jsonforms[doc.form],
         res = {
             success: true,
@@ -189,7 +189,7 @@ var getSMSResponse = function(doc, info) {
     // looks like we parsed a form ok
     if (def) {
         if (doc.errors.length === 0) {
-            msg = utils.getMessage('form_received', locale);
+            msg = info.translate('form_received', locale);
         }
 
         // we have a custom success autoreply
@@ -202,7 +202,7 @@ var getSMSResponse = function(doc, info) {
     doc.errors.forEach(function(err) {
         if (err.code && err.code.substr(0,4) === 'sys.') {
             // sys.foo errors have foo equivalent
-            var m = utils.getMessage(err.code.replace('sys.',''), locale)
+            var m = info.translate(err.code.replace('sys.',''), locale)
                     .replace('%(form)', doc.form)
                     .replace('%(fields)', err.fields && err.fields.join(', '));
             if (m) {
@@ -210,7 +210,7 @@ var getSMSResponse = function(doc, info) {
             }
         } else {
             // default
-            msg = utils.getMessage(err, locale);
+            msg = info.translate(err, locale);
         }
     });
 
@@ -222,11 +222,11 @@ var getSMSResponse = function(doc, info) {
     if (def) {
         if (def.facility_required) {
             if (utils.hasError(doc, 'sys.facility_not_found')) {
-                msg = utils.getMessage('reporting_unit_not_found', locale);
+                msg = info.translate('reporting_unit_not_found', locale);
             }
         } else if (doc.errors.length <= 1) {
             if (utils.hasError(doc, 'sys.facility_not_found')) {
-                msg = utils.getMessage('form_received', locale);
+                msg = info.translate('form_received', locale);
             }
         }
     } else {
@@ -300,12 +300,15 @@ exports.add_sms = function(doc, request) {
         headers = req.headers.Host.split(":"),
         resp = {payload: {success: true}};
 
+    var appInfo = info.getAppInfo.call(this),
+        public = appInfo && appInfo.public_access;
+
+    // replace utils info with real info
+    utils.info = appInfo;
+
     if (sms_message.form && def) {
         form_data = smsparser.parse(def, sms_message);
     }
-
-    var appInfo = info.getAppInfo.call(this),
-        public = appInfo && appInfo.public_access;
 
     // creates base record
     doc = getDataRecord(sms_message, form_data, appInfo);
@@ -315,7 +318,7 @@ exports.add_sms = function(doc, request) {
     if (!def || !def.public_form && !public) {
         doc.errors.push({
             code: "sys.facility_not_found",
-            message: utils.getMessage("sys.facility_not_found", sms_message.locale)
+            message: appInfo.translate("sys.facility_not_found", sms_message.locale)
         });
     }
 
