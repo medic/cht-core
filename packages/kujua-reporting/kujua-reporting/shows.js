@@ -417,7 +417,7 @@ function renderDistrictChoice(appdb, forms) {
 
     _.each(forms, function(form, idx) {
         var def = jsonforms[form.code],
-            formName = sms_utils.getFormTitle(form);
+            formName = sms_utils.getFormTitle(form.code);
 
         if (def) {
             forms[idx] = _.extend(form, {
