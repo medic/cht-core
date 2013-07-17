@@ -77,7 +77,7 @@ exports.data_records_csv = function (head, req) {
     // fetch labels for all keys
     labels = utils.getLabels(keys, form, locale);
     labels = _.map(labels, function(label) {
-      return appInfo[label] || label;
+      return appInfo.translate(label);
     });
 
     if (!query.skip_header_row)
@@ -115,7 +115,7 @@ exports.data_records_xml = function (head, req) {
     // fetch labels for all keys
     var labels = utils.getLabels(keys, form, locale);
     labels = _.map(labels, function(label) {
-      return appInfo[label] || label;
+      return appInfo.translate(label);
     });
 
     var row = [],
