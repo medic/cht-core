@@ -55,10 +55,7 @@ exports.twilio_message = function(doc) {
     });
 };
 
+/* documents where configuration changes live */
 exports.config_docs = function(doc) {
-    if (doc._id === 'sentinel-configuration')
-        return true;
-    if (doc._id === 'sentinel-translations')
-        return true;
-    return false;
+    return doc._id === '_design/kujua-lite';
 };
