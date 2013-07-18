@@ -32,6 +32,18 @@ exports.getAppInfo = function() {
         }
     }
 
+    function getMessage(value, locale) {
+        if (value) {
+            // has value & locale
+            if (value[locale]) {
+                return value[locale];
+            } else if (value.en) {
+                return value.en;
+            }
+        }
+        return null;
+    }
+
     function translate(translations, key, locale) {
         var value;
 
@@ -41,15 +53,7 @@ exports.getAppInfo = function() {
             key: key
         });
 
-        if (value) {
-            // has value & locale
-            if (value[locale]) {
-                return value[locale];
-            } else if (value.en) {
-                return value.en;
-            }
-        }
-        return key;
+        return getMessage(value, locale) || key;
     }
 
     info = {
@@ -79,6 +83,7 @@ exports.getAppInfo = function() {
     info.translations = info.translations || [];
 
     info.translate = _.partial(translate, info.translations);
+    info.getMessage = getMessage;
 
     return info;
 };
