@@ -10,85 +10,6 @@ var jsDump = require('jsDump'),
     _ = require('underscore'),
     moment = require('moment');
 
-exports.strings = {
-    reported_date: {
-        en: 'Reported Date',
-        fr: 'Date envoyé',
-        es: 'Fecha de envío'
-    },
-    "related_entities.clinic.name": {
-        en: "Clinic Name",
-        fr: "Villages"
-    },
-    "related_entities.clinic.contact.name": {
-        en: "Clinic Contact Name",
-        fr: "Personne-ressource Clinique"
-    },
-    "related_entities.clinic.parent.name": {
-        en: "Health Center Name",
-        fr: "Nom du centre de santé"
-    },
-    "related_entities.clinic.parent.contact.name": {
-        en: "Health Center Contact Name",
-        fr: "Nom de la santé Contact Center"
-    },
-    "related_entities.clinic.parent.parent.name": {
-        en: "District Hospital Name",
-        fr: "Nom de l'hôpital de district"
-    },
-    "related_entities.health_center.name": {
-        en: "Health Center Name",
-        fr: "Nom du centre de santé"
-    },
-    "related_entities.health_center.contact.name": {
-        en: "Health Center Contact Name",
-        fr: "Nom de la santé Contact Center"
-    },
-    "related_entities.health_center.parent.name": {
-        en: "District Hospital Name",
-        fr: "Nom de l'hôpital de district"
-    },
-    "tasks.0.messages.0.to": {
-        en: "To",
-        fr: "pour"
-    },
-    "tasks.0.messages.0.message": {
-        en: "Message",
-        fr: "Message"
-    },
-    from: {
-        en: 'From',
-        fr: 'Envoyé par',
-        es: 'De'
-    },
-    sent_timestamp: {
-        en: 'Sent Timestamp',
-        fr: 'Date',
-        es: 'Fecha'
-    },
-    daysoverdue: {
-        en: 'Days since patient visit'
-    }
-};
-
-var arrayToStringNotation = function(arr) {
-    var str = _.flatten(arr).join('.');
-    return str;
-};
-
-var arrayDepth = function(arr) {
-    var depth = 0;
-
-    _.each(arr, function(a) {
-        if (_.isArray(a)) {
-            depth++;
-            depth = arrayDepth(a) + depth;
-        }
-    });
-
-    return depth;
-};
-
 /*
  * @param {Object} data_record - typically a data record or portion (hash)
  * @param {String} key - key for field
@@ -221,7 +142,7 @@ exports.makeDataRecordReadable = function(doc) {
     // adding a fields property for ease of rendering code
     if(data_record.form) {
         var keys = getFormKeys(data_record.form);
-        var labels = getLabels(keys, data_record.form, 'en');
+        var labels = exports.getLabels(keys, data_record.form, 'en');
         data_record.fields = fieldsToHtml(keys, labels, data_record);
         includeNonFormFields(data_record, keys);
     }
@@ -322,50 +243,33 @@ var fieldsToHtml = exports.fieldsToHtml = function(keys, labels, data_record, de
  *
  * @api private
  */
-var getLabels = exports.getLabels = function(keys, form, locale) {
+exports.getLabels = function(keys, form, locale) {
     var def = jsonforms[form],
-        labels = [],
-        form_labels = {};
+        fields = def && def.fields;
 
-    if (def) {
-        _.map(def.fields, function (f, key) {
-            var label = exports.getLabel(f.labels);
-            // use the key as label as last resort
-            form_labels[key] = exports.info.translate(key, locale);
-        });
-    }
+    return _.map(keys, function(key) {
+        var field,
+            label;
 
-    var labelsForKeys = function(keys, appendTo) {
-        for (var i in keys) {
-            var _key = keys[i];
-
-            if(_.isArray(_key) && arrayDepth(_key) === 1) {
-                labelsForKeys(_key[1], _key[0] + '.');
-                continue;
-            } else if(_.isArray(_key) && arrayDepth(_key) > 1) {
-                var key = arrayToStringNotation(_key);
-                if (form_labels[key]) {
-                    labels.push(form_labels[key]);
-                } else {
-                    labels.push(exports.info.translate(key, locale));
-                }
-            } else {
-                var key = (appendTo || '') + _key;
-
-                if (form_labels[key]) {
-                    labels.push(form_labels[key]);
-                } else {
-                    labels.push(exports.info.translate(key, locale));
-                }
+        if (_.isString(key)) {
+            field = fields[key];
+            if (field) {
+                label = getLabel(field, locale);
             }
+
+            if (!label) {
+                label = utils.titleize(key);
+            }
+            return exports.info.translate(label, locale);
+        } else if (key) {
+            return exports.info.translate(_.flatten(key).join('.'), locale);
         }
-    }
-
-    labelsForKeys(keys);
-
-    return labels;
+    });
 };
 
+function getLabel(field, locale) {
+    return exports.info.getMessage(field.labels && field.labels.short, locale);
+}
 
 /*
  * Get an array of values from the doc by the keys from the given keys array.
@@ -470,89 +374,6 @@ var getFormKeys = exports.getFormKeys = function(form) {
     return hashToArray(keys);
 };
 
-//
-// system messsage are prefixed with 'sys.' and only used for kujua admins,
-// not for sms responses to reporting units.
-//
-var messages = {
-    'sys.recipient_not_found': {
-        en: 'Could not find message recipient.',
-        fr: 'Le recipient du message n\'a pas été trouvé.',
-        es: 'No se encontro destinatario para el mensaje.'
-    },
-    'sys.missing_fields': {
-        en: "Missing or invalid fields: %(fields).",
-        fr: "Champs invalides ou manquants: %(fields).",
-        es: "Campo invalido o faltante: %(fields)."
-    },
-    missing_fields: {
-        en: "Missing or invalid fields: %(fields).",
-        fr: "Champs invalides ou manquants: %(fields).",
-        es: "Campo invalido o faltante: %(fields).",
-        ne: "तपाईले फारम पूरा भर्नुभएन। कृपया पुरा गरेर फेरि पठाउन प्रयास गर्नुहोला।"
-    },
-    extra_fields: {
-        en: "Extra fields.",
-        fr: "Champs additionels.",
-        es: "Campos extra.",
-        ne: "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
-    },
-    'sys.form_not_found': {
-        en: "Form '%(form)' not found.",
-        fr: "Formulaire '%(form)' non trouvé",
-        es: "Forma no encontrada."
-    },
-    form_not_found: {
-        en: "The form sent '%(form)' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
-        fr: "Le formulaire envoyé '%(form)' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
-        es: "No se reconocio el reporte enviado '%(form)'. Por favor intente de nuevo. Si el problema persiste, informe al director.",
-        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
-    },
-    /* form_invalid is placeholder until we do proper form validation */
-    form_invalid: {
-        en: "The form sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
-        fr: "Le formulaire envoyé '%(form)' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
-        es: "No se completo el reporte '%(form)'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
-        ne: "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
-    },
-    'sys.facility_not_found': {
-        en: "Facility not found.",
-        fr: "Établissement non trouvé.",
-        es: "No se encontro a la unidad de salud."
-    },
-    'sys.empty': {
-        en: "Message appears empty.",
-        fr: "Le message recu est vide.",
-        es: "El mensaje esta en blanco."
-    },
-    empty : {
-        en: "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor.",
-        fr: "Nous avons des troubles avec votre message, SVP renvoyer. Si vous continuez à avoir des problèmes contactez votre superviseur.",
-        es: "El mensaje esta en blanco, por favor reenvielo. Si encuentra un problema, informe al director.",
-        ne: "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
-    },
-    form_received: {
-        en: 'Your form submission was received, thank you.',
-        fr: 'Merci, votre formulaire a été bien reçu.',
-        es: 'Recibimos su reporte, muchas gracias.',
-        ne: 'डाटा प्राप्त भयो, धन्यवाद'
-    },
-    sms_received: {
-        en: 'SMS message received; it will be reviewed shortly. If you were'
-            + ' trying to submit a text form, please enter a correct form code'
-            + ' and try again.',
-        fr: 'Merci, votre message a été bien reçu.',
-        es: 'Recibimos tu mensaje, lo procesaremos pronto. Si querias mandar un reporte, intentalo nuevamente en el formato adecuado.',
-        ne: 'मेसेज प्राप्त भयो। यदि रिपोर्ट पठाउनुभएको हो भने मिलेन; मिलाएर पुन: पठाउनुहोला।'
-    },
-    reporting_unit_not_found : {
-        en: "Reporting Unit ID is incorrect. Please correct and submit a complete report again.",
-        fr: 'Établissement non trouvé, svp corriger et renvoyer',
-        es: 'No encontramos a su centro de salud. Por favor corrijalo y reenvie el reporte.',
-        ne: " रिपोर्टिङ् युनिटको आइ.डि मिलेन। कृपया सहि आइ.डि राखेर पुरा रिपोर्ट फेरि पठाउनुहोला।"
-    }
-};
-
 /*
  * @param {Object} record - data record
  * @param {String|Object} error - error object or code matching key in messages
@@ -615,18 +436,6 @@ exports.addError = function(record, error) {
 
     logger.error(error);
 };
-
-/**
- * @param {Object} labels object from JSON forms
- * @param {String|Array} locales, preferred locale strings
- * @api public
- */
-exports.getLabel = function (labels, locales) {
-    if (typeof labels === 'string') { return labels; }
-    // if object use short label by default
-    return labels.short;
-};
-
 
 var entityTable = {
 //  34: "&quot;",       // Quotation mark. Not required
@@ -1025,6 +834,9 @@ var arrayToXML = exports.arrayToXML = function(arr, format) {
 
 // placeholder function that will be replaced with appInfo from the updates function
 exports.info = {
+    getMessage: function(value, locale) {
+        return value;
+    },
     translate: function(key) {
         return key;
     }
