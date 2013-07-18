@@ -116,7 +116,7 @@ var renderRelatedFacilities = function(req, doc, selector) {
         var p = d.related_entities ? d.related_entities.clinic : d.parent;
         if(p && p.name) {
             related.push({
-                title: $.kansoconfig(utils.viewHeading(p.type)),
+                title: $.kansotranslate(utils.viewHeading(p.type)),
                 name: p.name
             });
             if (p.parent) { appendRelated(p); }
@@ -335,7 +335,7 @@ function renderReporting(doc, req) {
     });
 
     if (doc) {
-        // TODO fix show when $.kansoconfig is not available
+        // TODO fix show when $.kansotranslate is not available
         return {
             title: doc.name,
             info: appInfo,
@@ -417,8 +417,7 @@ function renderDistrictChoice(appdb, forms) {
 
     _.each(forms, function(form, idx) {
         var def = jsonforms[form.code],
-            formName = kutils.localizedString((def && def.meta && def.meta.label) || 'Unknown');
-
+            formName = sms_utils.getFormTitle(form.code);
 
         if (def) {
             forms[idx] = _.extend(form, {
@@ -461,16 +460,6 @@ function renderDistrictChoice(appdb, forms) {
 
 }
 
-var renderLabels = function() {
-    // e.g.
-    // $('[data-label="Health Center"]').text($.kansoconfig('Health Center'));
-    $('[data-label]').each(function (i, el) {
-        var $el = $(el),
-            val = $el.attr('data-label');
-        $el.text($.kansoconfig(val));
-    });
-};
-
 var renderReports = function(err, facilities) {
 
     var doc = facility_doc
@@ -500,8 +489,6 @@ var renderReports = function(err, facilities) {
                 doc: doc
             })
         );
-
-        renderLabels();
 
         $('#reporting-data .valid-percent').each(function(i, el) {
             var val = parseInt($(el).text().replace(/%/,''), 10);

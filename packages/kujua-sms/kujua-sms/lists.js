@@ -5,7 +5,6 @@
 var _ = require('underscore'),
     _s = require('underscore-string'),
     utils = require('./utils'),
-    strings = utils.strings,
     moment = require('moment'),
     logger = require('kujua-utils').logger,
     jsonforms  = require('views/lib/jsonforms'),
@@ -68,6 +67,7 @@ exports.data_records_csv = function (head, req) {
         values,
         keys = getKeys(form);
 
+    utils.info = appInfo; // replace fake info with real from context
 
     start({code: 200, headers: {
         'Content-Type': 'text/csv; charset=utf-8',
@@ -76,9 +76,6 @@ exports.data_records_csv = function (head, req) {
 
     // fetch labels for all keys
     labels = utils.getLabels(keys, form, locale);
-    labels = _.map(labels, function(label) {
-      return appInfo[label] || label;
-    });
 
     if (!query.skip_header_row)
         send(utils.arrayToCSV([labels], delimiter) + '\n');
@@ -107,6 +104,9 @@ exports.data_records_xml = function (head, req) {
         labels,
         keys = getKeys(form);
 
+    // replace info on utils with "real" one
+    utils.info = appInfo;
+
     start({code: 200, headers: {
         'Content-Type': 'application/vnd.ms-excel; charset=utf-8',
         'Content-Disposition': 'attachment; filename=' + filename
@@ -114,9 +114,6 @@ exports.data_records_xml = function (head, req) {
 
     // fetch labels for all keys
     var labels = utils.getLabels(keys, form, locale);
-    labels = _.map(labels, function(label) {
-      return appInfo[label] || label;
-    });
 
     var row = [],
         values;

@@ -1,6 +1,7 @@
 var utils = require('kujua-utils'),
     mp_parser = require('./mp_parser'),
-    textforms_parser = require('./textforms_parser');
+    textforms_parser = require('./textforms_parser'),
+    sms_utils = require('kujua-sms/utils');
 
 /**
  * Decide if it's a form parsed by the muvuku parser.
@@ -54,12 +55,12 @@ exports.parseField = function (field, raw) {
                 return parseNum(raw);
             // store list value since it has more meaning.
             // TODO we don't have locale data inside this function so calling
-            // localizedString does not resole locale.
+            // translate does not resolve locale.
             if (field.list) {
                 for (var i in field.list) {
                     var item = field.list[i];
                     if (item[0] == raw) { // loose typing
-                        return utils.localizedString(item[1]);
+                        return sms_utils.info.translate(item[1]);
                     }
                 }
                 utils.logger.error('Option not available for '+raw+' in list.');
@@ -71,18 +72,18 @@ exports.parseField = function (field, raw) {
             if (raw === "") { return null; }
             // store list value since it has more meaning.
             // TODO we don't have locale data inside this function so calling
-            // localizedString does not resole locale.
+            // translate does not resolve locale.
             if (field.list) {
                 for (var i in field.list) {
                     var item = field.list[i];
                     if (item[0] === raw) {
-                        return utils.localizedString(item[1]);
+                        return sms_utils.info.translate(item[1]);
                     }
                 }
                 utils.logger.error('Option not available for '+raw+' in list.');
                 utils.logger.error(field.list);
             }
-            return utils.localizedString(raw);
+            return sms_utils.info.translate(raw);
         case 'date':
             if (!raw) { return null; }
             // YYYY-MM-DD assume muvuku format for now
@@ -151,7 +152,7 @@ exports.parse = function (def, doc) {
         for (var k in msg_data) {
             for (var j in def.fields) {
                 var field = def.fields[j],
-                    tiny = utils.localizedString(field.labels.tiny, doc.locale);
+                    tiny = appInfo.translate(field.labels.tiny, doc.locale);
                 if (tiny.toLowerCase() === k) {
                     // parse field types and resolve dot notation keys
                     msg_data[j] = exports.parseField(field, msg_data[k]);
