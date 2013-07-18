@@ -169,6 +169,42 @@
                     }
                 ]
             },
+            "weekly_reminders": {
+                "title": "Weekly Report Reminders",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "form": {
+                            "type": "string",
+                            "title": "Form Code",
+                            "default": ""
+                        },
+                        "day": {
+                            "type": "string",
+                            "title": "Day",
+                            "enum": [
+                                "",
+                                "Monday",
+                                "Tuesday",
+                                "Wednesday",
+                                "Thursday",
+                                "Friday",
+                                "Saturday",
+                                "Sunday"
+                            ],
+                            "default": "",
+                            "description": "The day to send the message."
+                        },
+                        "message": {
+                            "type": "string",
+                            "title": "Message",
+                            "default": "Please submit report for week {{week}} immediately.",
+                            "description": "Message will be sent and the following strings will be substituted into the message: {{week}}, {{year}} and {{form}}."
+                        }
+                    }
+                }
+            },
             "schedule_morning_hours" : {
                 "title": "Schedule morning hours",
                 "description": "The scheduler only sends messages after this hour, M-F.",

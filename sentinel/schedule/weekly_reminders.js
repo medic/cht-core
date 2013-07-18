@@ -13,8 +13,6 @@ var _ = require('underscore'),
  */
 function createReminders(options, callback) {
 
-    //console.log('createReminders options',options)
-
     var day = options.day,
         form = options.form,
         reminder = options.reminder,
@@ -59,8 +57,8 @@ function createReminders(options, callback) {
                     row = _.first(data.rows),
                     result = row && row.value;
 
-                // report was received or reminder already sent
                 if (result && (result.received || _.include(result.sent, day))) {
+                    console.info('report received or reminder already sent for', form, year, week, phone);
                     return callback(null, result);
                 }
 
@@ -91,11 +89,14 @@ function createReminders(options, callback) {
                 year: year
             };
 
+            // {{week}}, {{year}} and {{form}} will be substituted into the
+            // message.
             utils.addMessage(doc, {
                 phone: phone,
                 message: i18n(reminder, {
                     week: week,
-                    year: year
+                    year: year,
+                    form: form
                 })
             });
 
@@ -114,7 +115,7 @@ function createReminders(options, callback) {
 
     }
 
-    // fetch unique list oall clinics
+    // fetch unique list of all clinics
     db.view('kujua-sentinel', 'clinic_by_phone', {include_docs: true}, function(err, data) {
 
         if (err) {
@@ -127,29 +128,39 @@ function createReminders(options, callback) {
         // pass recipients to setupReminder in series so we can avoid sending
         // the same reminder more than once to a phone.
         async.eachSeries(recipients, setupReminder, finalize);
-  });
+    });
 }
 
 /**
  * Setup weekly reminders
  *
- *  To configure this, set the send_weekly_reminders property to something like this:
- *  {
- *    "VPD": {
- *      "3": "Last day to submit a timely VPD report for the previous week.",
- *      "4": "VPD report not received on time; please send previous week's data."
- *    }
- *  }
+ *  To configure this, set the weekly_reminders value to something like this:
  *
- *  "VPD" is the form to expect; 3 & 4 are different days to send reminders on.
- *  The values are the messages to send.  {{week}} and {{year}} will be
- *  substituted into the message.
+ *  [{
+ *    form: 'VPD',
+ *    day: 'Tuesday',
+ *    message: 'Please submit last week\'s {{form}} report immediately.'
+ *  }]
+ *
+ *  "VPD" is the form to expect; message will be sent on day.  {{week}},
+ *  {{year}} and {{form}} will be substituted into the message.
  *
  */
 module.exports = function(callback) {
     var day,
-        reminders = config.get('send_weekly_reminders'),
+        reminders = config.get('weekly_reminders'),
         items = [];
+
+    // map js day number to string
+    var days = {
+        0: 'Sunday',
+        1: 'Monday',
+        2: 'Tuesday',
+        3: 'Wednesday',
+        4: 'Thursday',
+        5: 'Friday',
+        6: 'Saturday'
+    };
 
     if (!_.isObject(reminders)) {
         console.info('skipping weekly_reminders, config not found.');
@@ -157,25 +168,30 @@ module.exports = function(callback) {
     }
 
     day = date.getDate().getDay();
-    _.each(reminders, function(schedule, form) {
-        console.info('checking reminders for form %s', form);
-        if (_.isObject(schedule)) {
-            _.each(schedule, function(reminder, d) {
-                if (day === Number(d)) {
-                    items.push({
-                        form: form,
-                        day: d,
-                        reminder: reminder
-                    });
-                } else {
-                    console.info('skipped day %s, today is day %s', d, day);
-                }
-            });
+
+    _.each(reminders, function(reminder, idx) {
+
+        if (!reminder || !reminder.form || !reminder.day || !reminder.message) {
+            return;
         }
+
+        // if day matches then setup reminder
+        if (days[day].match(RegExp(reminder.day, 'i'))) {
+            items.push({
+                form: reminder.form,
+                day: reminder.day,
+                reminder: reminder.message
+            });
+        } else {
+            console.info(
+                'skipped %s reminder, today is %s', reminder.day, days[day]
+            );
+        }
+
     });
 
     async.forEach(items, function(item, cb) {
-        console.log('processing reminder %s %s', item.form, item.day);
+        console.log('processing reminder config %s %s', item.form, item.day);
         createReminders(item, cb);
     }, function(err) {
         callback(err);
