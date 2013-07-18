@@ -3,7 +3,7 @@
   <div class="row-fluid totals-hc">
     <div class="span2 col1">
       <h4>0</h4>
-      <h3 data-label="Clinics"></h3>
+      <h3>{@translate value="Clinics"/}</h3>
     </div>
     <div class="span2 col2">
       <h4>0</h4>
@@ -30,7 +30,7 @@
       <table class="table table-striped clinic-data">
         <thead>
           <tr>
-            <th class="first-column-hc"><span data-label="Clinic"></span> Name</th>
+            <th class="first-column-hc">{@translate value="Clinic"/} Name</th>
             <th class="reporting-rate">Reporting Rate</th>
           </tr>
         </thead>
@@ -40,9 +40,9 @@
       </table>
     </div>
     <div class="span3 stats-meta">
-      <div><h2>{name} <br /><span data-label="Health Center"></span></h2></div>
+      <div><h2>{name} <br />{@translate value="Health Center"/}</h2></div>
       <div>
-        <h3 data-label="Health Center Contact"></h3><!--TODO add title for contact? {contact.title}//-->
+        <h3>{@translate value="Health Center Contact"/}</h3><!--TODO add title for contact? {contact.title}//-->
         <div class="contact-name">
         {?contact.name}
           <strong>{contact.name}</strong>

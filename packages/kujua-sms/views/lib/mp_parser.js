@@ -75,19 +75,6 @@ exports.parse = function(def, doc) {
             return obj;
         }
 
-        /* deprecating format param
-        if (format === 1) {
-            // include label in array
-            result = [
-                exports.parseField(field, val, obj[field._key]),
-                utils.localizedString(field.labels.short) // TODO fix ugly
-            ];
-        } else {
-            result = exports.parseField(field, val, obj[field._key]);
-        }
-
-        createDeepKey(obj, field._key.split('.'), val);
-        */
         obj[field._key] = val;
         return obj;
     }, {});

@@ -12,49 +12,6 @@ exports.getUserLocale = function(req) {
     return req.userCtx ? req.userCtx.locale : undefined;
 };
 
-/*
- * Resolve language string object based on fallback or specified locale.
- *
- * @param {Object} strings - object with locale strings as keys
- * @param {Array|String} locales - locale strings, e.g. 'en', 'fr', 'en-gb' or
- *                                 ['en', 'fr']
- * @return {String} - string value based on locale
- *
- * @api public
- */
-var localizedString = exports.localizedString = function(strings, locales) {
-
-    var str = '',
-        locales = _.isUndefined(locales) ? [] : locales;
-
-    locales = _.isString(locales) ? [locales] : locales;
-
-    if (_.isUndefined(strings)) { return ''; }
-
-    if (_.isString(strings)) { return strings; }
-
-    if (_.isNumber(strings)) { return strings.toString(); }
-
-    // search for locale
-    for (var i in locales) {
-        var locale = locales[i];
-        if (strings[locale]) {
-            str =  strings[locale];
-            break;
-        }
-    }
-
-    if (!str && _.isObject(strings)) {
-        // just pick the first value if strings looks like a language/locale
-        // based object
-        var k = _.first(_.keys(strings))
-        str = strings[k];
-    }
-
-    return str.replace('\\n', ': ');
-
-};
-
 exports.capitalize = function (str) {
     return str.replace( /(^|\s)([a-z])/g , function(m,p1,p2){
         return p1+p2.toUpperCase();
