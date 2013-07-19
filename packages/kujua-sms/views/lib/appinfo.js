@@ -32,16 +32,34 @@ exports.getAppInfo = function() {
         }
     }
 
+    /*
+     * Value is object with locale strings, e.g.
+     *
+     * {
+     *   "en": "Year",
+     *   "fr": "Anné"
+     * }
+     *
+     * return string
+     */
     function getMessage(value, locale) {
+        var val = null;
         if (value) {
-            // has value & locale
             if (value[locale]) {
-                return value[locale];
+                // we found specified locale
+                val = value[locale];
             } else if (value.en) {
-                return value.en;
+                // default to english if it exists
+                val = value.en;
+            } else {
+                // otherwise return the first value in object
+                for (var k in value) {
+                    val = value[k];
+                    continue;
+                }
             }
         }
-        return null;
+        return val;
     }
 
     function translate(translations, key, locale) {
