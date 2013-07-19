@@ -143,7 +143,7 @@ exports.makeDataRecordReadable = function(doc) {
     if(data_record.form) {
         var keys = getFormKeys(data_record.form);
         var labels = exports.getLabels(keys, data_record.form, 'en');
-        data_record.fields = fieldsToHtml(keys, labels, data_record);
+        data_record.fields = exports.fieldsToHtml(keys, labels, data_record);
         includeNonFormFields(data_record, keys);
     }
 
@@ -194,7 +194,7 @@ exports.makeDataRecordReadable = function(doc) {
 /*
  * @api private
  * */
-var fieldsToHtml = exports.fieldsToHtml = function(keys, labels, data_record, def) {
+exports.fieldsToHtml = function(keys, labels, data_record, def) {
 
     if (!def && data_record && data_record.form)
         def = jsonforms[data_record.form];
@@ -216,7 +216,7 @@ var fieldsToHtml = exports.fieldsToHtml = function(keys, labels, data_record, de
             ));
         } else {
             var label = labels.shift();
-            fields.headers.push({head: label});
+            fields.headers.push({head: exports.info.getMessage(label)});
             if (def && def[key])
                 def = def[key]
             var v = prettyVal(data_record, key, def);
@@ -837,7 +837,13 @@ var arrayToXML = exports.arrayToXML = function(arr, format) {
 // placeholder function that will be replaced with appInfo from the updates function
 exports.info = {
     getMessage: function(value, locale) {
-        return value;
+        locale = locale || 'en';
+
+        if (_.isString(value)) {
+            return value;
+        } else {
+            return value && value[locale];
+        }
     },
     translate: function(key) {
         return key;
