@@ -242,6 +242,16 @@
                             "type": "string",
                             "title": "Français",
                             "default": ""
+                        },
+                        "ne": {
+                            "type": "string",
+                            "title": "Nepalese",
+                            "default": ""
+                        },
+                        "es": {
+                            "type": "string",
+                            "title": "Spanish",
+                            "default": ""
                         }
                     },
                     "type": "object"
