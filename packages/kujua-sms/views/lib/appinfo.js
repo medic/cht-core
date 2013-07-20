@@ -62,6 +62,16 @@ exports.getAppInfo = function() {
         return val;
     }
 
+    /*
+     * Translate a given string or translation object based on translations and
+     * locale.
+     *
+     * @param {Array} translations
+     * @param {Object|String} key
+     * @param {String} locale
+     *
+     * @return String
+    */
     function translate(translations, key, locale) {
         var value;
 
