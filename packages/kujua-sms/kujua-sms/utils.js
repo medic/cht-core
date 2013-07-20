@@ -427,7 +427,7 @@ exports.addError = function(record, error) {
         form = record.form && record.sms_message && record.sms_message.form;
 
     if (!error.message)
-        error.message = exports.info.translate(error, locale);
+        error.message = exports.info.translate(error.code, locale);
 
     // replace placeholder strings
     error.message = error.message
