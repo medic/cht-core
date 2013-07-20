@@ -67,6 +67,9 @@ exports.getAppInfo = function() {
 
         locale = locale || 'en';
 
+        if (_.isObject(key))
+            return getMessage(key, locale) || key;
+
         value = _.findWhere(translations, {
             key: key
         });
