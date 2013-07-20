@@ -324,6 +324,8 @@ exports.data_record = function (head, req) {
         facility  = null,
         appInfo = info.getAppInfo.call(this);
 
+    utils.info = appInfo; // replace fake info with real from context
+
     //
     // Add first matched facility to record
     //
