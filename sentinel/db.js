@@ -17,7 +17,7 @@ if (process.env.COUCH_URL) {
 } else {
     console.log(
         "Please define a COUCH_URL in your environment e.g. \n"
-        + " export COUCH_URL='http://root:123qwe@localhost:5984/kujua-base'"
+        + " export COUCH_URL='http://admin:123qwe@localhost:5984/kujua-lite'"
     );
     process.exit(1);
 }

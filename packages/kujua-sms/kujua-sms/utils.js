@@ -232,8 +232,8 @@ exports.fieldsToHtml = function(keys, labels, data_record, def) {
 };
 
 /*
- * Fetch labels from base strings or jsonform objects, maintaining order in
- * the returned array.
+ * Fetch labels from translation strings or jsonform object, maintaining order
+ * in the returned array.
  *
  * @param Array keys - keys we want to resolve labels for
  * @param String form - form code string
@@ -255,12 +255,14 @@ exports.getLabels = function(keys, form, locale) {
             field = fields[key];
             if (field) {
                 label = getLabel(field, locale);
+            } else {
+                label = exports.info.translate(key, locale);
             }
-
-            if (!label) {
-                label = utils.titleize(key);
+            // still haven't found a proper label; then titleize
+            if (key === label) {
+                return utils.titleize(key);
             }
-            return exports.info.translate(label, locale);
+            return label;
         } else if (key) {
             return exports.info.translate(_.flatten(key).join('.'), locale);
         }
@@ -425,7 +427,7 @@ exports.addError = function(record, error) {
         form = record.form && record.sms_message && record.sms_message.form;
 
     if (!error.message)
-        error.message = exports.info.translate(error, locale);
+        error.message = exports.info.translate(error.code, locale);
 
     // replace placeholder strings
     error.message = error.message

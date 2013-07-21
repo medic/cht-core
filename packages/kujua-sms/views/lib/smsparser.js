@@ -152,7 +152,7 @@ exports.parse = function (def, doc) {
         for (var k in msg_data) {
             for (var j in def.fields) {
                 var field = def.fields[j],
-                    tiny = appInfo.translate(field.labels.tiny, doc.locale);
+                    tiny = sms_utils.info.translate(field.labels.tiny, doc.locale);
                 if (tiny.toLowerCase() === k) {
                     // parse field types and resolve dot notation keys
                     msg_data[j] = exports.parseField(field, msg_data[k]);

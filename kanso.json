@@ -146,6 +146,60 @@
                     }
                 ]
             },
+            "weekly_reminders": {
+                "title": "Weekly Report Reminders",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "form": {
+                            "type": "string",
+                            "title": "Form Code",
+                            "default": ""
+                        },
+                        "day": {
+                            "type": "string",
+                            "title": "Day",
+                            "enum": [
+                                "",
+                                "Monday",
+                                "Tuesday",
+                                "Wednesday",
+                                "Thursday",
+                                "Friday",
+                                "Saturday",
+                                "Sunday"
+                            ],
+                            "default": "",
+                            "description": "The day to send the message."
+                        },
+                        "message": {
+                            "type": "string",
+                            "title": "Message",
+                            "default": "Please submit report for week {{week}} immediately.",
+                            "description": "Message will be sent and the following strings will be substituted into the message: {{week}}, {{year}} and {{form}}."
+                        }
+                    }
+                }
+            },
+            "schedule_morning_hours" : {
+                "title": "Schedule morning hours",
+                "description": "The scheduler only sends messages after this hour, M-F.",
+                "type": "integer",
+                "default": 8
+            },
+            "schedule_evening_hours" : {
+                "title": "Schedule evening hours",
+                "description": "The scheduler only sends messages before this hour, M-F.",
+                "type": "integer",
+                "default": 17
+            },
+            "synthetic_date" : {
+                "title": "Synthetic date",
+                "description": "Only modify this if you are testing the scheduler and want to simulate a specific date. e.g. 201304121200",
+                "type": "string",
+                "pattern": "(^[0-9]{12}$|^$)"
+            },
             "translations": {
                 "title": "Translations",
                 "type": "array",
@@ -164,6 +218,16 @@
                         "fr": {
                             "type": "string",
                             "title": "Français",
+                            "default": ""
+                        },
+                        "ne": {
+                            "type": "string",
+                            "title": "Nepalese",
+                            "default": ""
+                        },
+                        "es": {
+                            "type": "string",
+                            "title": "Spanish",
                             "default": ""
                         }
                     },
@@ -372,7 +436,8 @@
                     }
                 ]
             }
-        }
+        },
+        "required": ["facility_labels"]
     },
     "settings_schema_schedules" : {
         "description": "Kujua Lite Settings",
@@ -717,27 +782,6 @@
                 "items": {
                     "type": "number"
                 }
-            },
-            "schedule_morning_hours" : {
-                "title": "Schedule morning hours",
-                "description": "The scheduler only sends messages after this hour, M-F.",
-                "type": "integer",
-                "default": 8
-            },
-            "schedule_evening_hours" : {
-                "title": "Schedule evening hours",
-                "description": "The scheduler only sends messages before this hour, M-F.",
-                "type": "integer",
-                "default": 17
-            },
-            "synthetic_date" : {
-                "title": "Synthetic date",
-                "description": "Only modify this if you are testing the scheduler and want to simulate a specific date. e.g. 201304121200",
-                "type": "string",
-                "minLength":12,
-                "maxLength":12,
-                "pattern": "[0-9]+"
-
             }
         }
     }

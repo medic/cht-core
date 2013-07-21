@@ -402,10 +402,10 @@ exports.updateRelated = function(doc, request) {
         doc.errors = new_errors;
     }
 
-    // smssync-compat sms response
-    resp.payload = getSMSResponse(doc);
-
     var appInfo = info.getAppInfo.call(this);
+
+    // smssync-compat sms response
+    resp.payload = getSMSResponse(doc, appInfo);
 
     // save response to record
     doc.responses = _.filter(resp.payload.messages, function(message) {
