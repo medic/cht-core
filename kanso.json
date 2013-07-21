@@ -113,29 +113,6 @@
                 "title": "Gateway Number",
                 "default": "+13125551212"
             },
-            "facility_labels": {
-                "title": "Facility labels",
-                "type": "object",
-                "order": ["level1", "level2", "level3"],
-                "required": ["level1", "level2", "level3"],
-                "properties": {
-                    "level1": {
-                        "type": "string",
-                        "title": "Level 1",
-                        "default": "District"
-                    },
-                    "level2": {
-                        "type": "string",
-                        "title": "Level 2",
-                        "default": "Health Center"
-                    },
-                    "level3": {
-                        "type": "string",
-                        "title": "Level 3",
-                        "default": "CHW"
-                    }
-                }
-            },
             "kujua-reporting": {
                 "title": "Scheduled Reports",
                 "type": "array",
