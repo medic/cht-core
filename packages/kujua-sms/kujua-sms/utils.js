@@ -211,7 +211,7 @@ exports.fieldsToHtml = function(keys, labels, data_record, def) {
         if(_.isArray(key)) {
             fields.headers.push({head: utils.titleize(key[0])});
             fields.data.push(_.extend(
-                fieldsToHtml(key[1], labels, data_record[key[0]], def),
+                exports.fieldsToHtml(key[1], labels, data_record[key[0]], def),
                 {isArray: true}
             ));
         } else {
