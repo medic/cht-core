@@ -18,7 +18,8 @@ var EXPORT_KEYS = [
     ['related_entities', ['clinic', ['contact', ['name']]]],
     ['related_entities', ['clinic', ['name']]],
     ['related_entities', ['clinic', ['parent', ['contact', ['name']]]]],
-    ['related_entities', ['clinic', ['parent', ['name']]]]
+    ['related_entities', ['clinic', ['parent', ['name']]]],
+    ['related_entities', ['clinic', ['parent', ['parent', ['name']]]]]
 ];
 
 var formatDate = function(msecs) {
