@@ -2,8 +2,7 @@
  * Utility functions for Kujua
  */
 
-var jsDump = require('jsDump'),
-    utils = require('kujua-utils'),
+var utils = require('kujua-utils'),
     settings = require('settings/root'),
     jsonforms = require('views/lib/jsonforms'),
     logger = require('kujua-utils').logger,
@@ -834,7 +833,8 @@ var arrayToXML = exports.arrayToXML = function(arr, format) {
     return '<Row>' + rows.join('</Row>\n<Row>') + '</Row>';
 };
 
-// placeholder function that will be replaced with appInfo from the updates function
+// placeholder function that will be replaced with appInfo from the calling
+// update/show/list function
 exports.info = {
     getMessage: function(value, locale) {
         locale = locale || 'en';
