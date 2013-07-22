@@ -132,7 +132,7 @@ exports.add_sms_check_resp_body = function (test) {
 // use YYYY form to create tasks on a document.
 //
 exports.update_related_and_tasks = function (test) {
-    test.expect(7);
+    test.expect(6);
     var req = {
         headers: {"Host": window.location.host},
         body: JSON.stringify({
@@ -178,7 +178,6 @@ exports.update_related_and_tasks = function (test) {
 
     test.same(updateDoc.tasks[0].messages[0].to, "+14155551212");
     test.same(updateDoc.tasks[0].state, 'pending');
-    test.same(updateDoc.tasks, tasks);
     test.same(updateDoc.tasks, tasks);
 
     test.same(resp.payload.messages[0].message, "Zikomo!");
