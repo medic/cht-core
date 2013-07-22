@@ -246,9 +246,10 @@ exports.getLabels = function(keys, form, locale) {
     var def = jsonforms[form],
         fields = def && def.fields;
 
-    return _.map(keys, function(key) {
+    return _.reduce(keys, function(memo, key) {
         var field,
-            label;
+            label,
+            array;
 
         if (_.isString(key)) {
             field = fields[key];
@@ -259,14 +260,53 @@ exports.getLabels = function(keys, form, locale) {
             }
             // still haven't found a proper label; then titleize
             if (key === label) {
-                return utils.titleize(key);
+                memo.push(utils.titleize(key));
+            } else {
+                memo.push(label);
             }
-            return label;
         } else if (key) {
-            return exports.info.translate(_.flatten(key).join('.'), locale);
+            array = deepestArray(key);
+
+            if (array.length === 1) {
+                memo.push(exports.info.translate(_.flatten(key).join('.'), locale));
+            } else {
+                _.each(array, function(root) {
+                    var keyCopy = [].concat(key),
+                        label,
+                        translated;
+
+                    keyCopy.pop(); // remove last item
+                    label = _.flatten(keyCopy).join(' ');
+                    translated = exports.info.translate(label, locale);
+
+                    root = root.toUpperCase().replace(/_/g, ' ') + ': ';
+
+                    if (translated === label) {
+                        // haven't found a proper label; then titleize
+                        memo.push(root + utils.titleize(label));
+                    } else {
+                        memo.push(root + translated);
+                    }
+                });
+            }
         }
-    });
+        return memo;
+    }, []);
 };
+
+// returns the deepest array from `key`
+function deepestArray(array) {
+    var target = array,
+        parentArray;
+
+    while (target) {
+        parentArray = target;
+        target = _.find(target, function(item) {
+            return _.isArray(item);
+        });
+    }
+    return parentArray;
+}
 
 function getLabel(field, locale) {
     return exports.info.getMessage(field.labels && field.labels.short, locale);

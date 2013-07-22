@@ -85,17 +85,6 @@ exports.getLabels = function(test) {
             ]
         ],
         [
-            'related_entities', [
-                'clinic', [
-                    'parent', [
-                        'parent', [
-                            'name'
-                        ]
-                    ]
-                ]
-            ]
-        ],
-        [
             "related_entities", [
                 "clinic", [
                     "name"
@@ -107,6 +96,17 @@ exports.getLabels = function(test) {
                 "clinic", [
                     "parent", [
                         "name"
+                    ]
+                ]
+            ]
+        ],
+        [
+            "related_entities", [
+                "clinic", [
+                    "parent", [
+                        "parent", [
+                            "name"
+                        ]
                     ]
                 ]
             ]
@@ -127,11 +127,11 @@ exports.getLabels = function(test) {
             'From',
             'Health Facility Identifier',
             'Clinic Contact Name',
-            'District Hospital Name',
             'Clinic Name',
             'Health Center Name',
-            'LA 6x1: Days stocked out',
-            'LA 6x2: Days stocked out'
+            'District Hospital Name',
+            'LA 6X1: Days Stocked Out',
+            'LA 6X2: Days Stocked Out'
         ]
     );
 
@@ -143,11 +143,11 @@ exports.getLabels = function(test) {
             "Envoyé par",
             "Health Facility Identifier",
             "Personne-ressource Clinique",
-            "Nom de l'hôpital de district",
             "Villages",
             "Nom du centre de santé",
-            "LA 6x1: Days stocked out",
-            "LA 6x2: Days stocked out"
+            "Nom de l'hôpital de district",
+            "LA 6X1: Days Stocked Out",
+            "LA 6X2: Days Stocked Out"
         ]
     );
 
