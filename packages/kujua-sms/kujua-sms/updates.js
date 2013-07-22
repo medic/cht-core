@@ -198,15 +198,21 @@ var getSMSResponse = function(doc, info) {
         }
     }
 
-    // handle errors -> response
+    // process errors array, create a response message for certain errors states
+    // that go back to reporter.  error codes like 'sys.facility_not_found' only
+    // go to kujua admins, but we do look for 'facility_not_found' which is ok
+    // for an SMS client.
     doc.errors.forEach(function(err) {
         if (err.code && err.code.substr(0,4) === 'sys.') {
-            // sys.foo errors have foo equivalent
-            var m = info.translate(err.code.replace('sys.',''), locale)
+            var user_error_code = err.code.replace('sys.','');
+            var m = info.translate(user_error_code, locale)
                     .replace('%(form)', doc.form)
                     .replace('%(fields)', err.fields && err.fields.join(', '));
-            if (m) {
-                msg = m; // only assign if exists
+            // only send error message if defined and had a translation,
+            // translate will return the key if there are no translations
+            // defined.
+            if (m && user_error_code !== m) {
+                msg = m;
             }
         } else {
             // default
