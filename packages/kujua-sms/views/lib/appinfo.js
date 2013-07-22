@@ -43,23 +43,27 @@ exports.getAppInfo = function() {
      * return string
      */
     function getMessage(value, locale) {
-        var val = null;
+        var ret = value;
+
+        if (!_.isObject(value)) return value;
+
+        // try to resolve locale
         if (value) {
             if (value[locale]) {
                 // we found specified locale
-                val = value[locale];
+                ret = value[locale];
             } else if (value.en) {
                 // default to english if it exists
-                val = value.en;
+                ret = value.en;
             } else {
                 // otherwise return the first value in object
                 for (var k in value) {
-                    val = value[k];
-                    continue;
+                    ret = value[k];
+                    break;
                 }
             }
         }
-        return val;
+        return ret;
     }
 
     /*
