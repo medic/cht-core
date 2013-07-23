@@ -10,6 +10,7 @@ var _ = require('underscore'),
     validate = require('./validate'),
     utils = require('./utils');
 
+
 /**
  * @param {String} form - jsonforms key string
  * @param {Object} form_data - parsed form data
@@ -230,7 +231,7 @@ var getSMSResponse = function(doc, info) {
             if (utils.hasError(doc, 'sys.facility_not_found')) {
                 msg = info.translate('reporting_unit_not_found', locale);
             }
-        } else if (doc.errors.length <= 1) {
+        } else if (doc.errors.length === 1) {
             if (utils.hasError(doc, 'sys.facility_not_found')) {
                 msg = info.translate('form_received', locale);
             }
@@ -306,8 +307,7 @@ exports.add_sms = function(doc, request) {
         headers = req.headers.Host.split(":"),
         resp = {payload: {success: true}};
 
-    var appInfo = info.getAppInfo.call(this),
-        public = appInfo && appInfo.public_access;
+    var appInfo = info.getAppInfo.call(this);
 
     // replace utils info with real info
     utils.info = appInfo;
@@ -319,9 +319,8 @@ exports.add_sms = function(doc, request) {
     // creates base record
     doc = getDataRecord(sms_message, form_data, appInfo);
 
-    // by default related entities are null so also include errors on the
-    // record.
-    if (!def || !def.public_form && !public) {
+    // by default related entities are null so also include errors on the record.
+    if (!def || !def.public_form) {
         doc.errors.push({
             code: "sys.facility_not_found",
             message: appInfo.translate("sys.facility_not_found", sms_message.locale)
