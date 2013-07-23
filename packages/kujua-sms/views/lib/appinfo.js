@@ -54,7 +54,7 @@ exports.getAppInfo = function() {
                 return value[locale];
             } else {
                 // otherwise return the first value in object
-                key = _first(_.keys(value));
+                key = _.first(_.keys(value));
 
                 return value[key] || null; // return null if falsey or empty object
             }
