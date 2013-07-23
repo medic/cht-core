@@ -53,6 +53,11 @@ To enable the reporting rates module, see
 See [sentinel/README.md](sentinel/README.md) for more information about
 configuring Sentinel.
 
+## Build Status
+
+[![Build Status](https://travis-ci.org/medic/kujua-lite.png)](https://travis-ci.org/medic/kujua-lite)
+
+
 ## License & Copyright
 
 Copyright 2013 Medic Mobile, 501(c)(3)  <hello@medicmobile.org>
