@@ -53,6 +53,17 @@ To enable the reporting rates module, see
 See [sentinel/README.md](sentinel/README.md) for more information about
 configuring Sentinel.
 
+## Tests
+
+Tests are run in browser, you can run them manually if you browse to `/test`
+after a push.  To run them from commandline you will need to install
+[phantomjs](http://phantomjs.org/).
+
+```
+npm install phantomjs -g
+./tests/phantom_test.sh http://localhost:5984/kujua-lite
+```
+
 ## Build Status
 
 [![Build Status](https://travis-ci.org/medic/kujua-lite.png)](https://travis-ci.org/medic/kujua-lite)
