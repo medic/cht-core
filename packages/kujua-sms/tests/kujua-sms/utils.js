@@ -130,8 +130,8 @@ exports.getLabels = function(test) {
             'Clinic Name',
             'Health Center Name',
             'District Hospital Name',
-            'LA 6X1: Days Stocked Out',
-            'LA 6X2: Days Stocked Out'
+            'LA 6x1: Days stocked out',
+            'LA 6x2: Days stocked out'
         ]
     );
 
@@ -146,8 +146,8 @@ exports.getLabels = function(test) {
             "Villages",
             "Nom du centre de santé",
             "Nom de l'hôpital de district",
-            "LA 6X1: Days Stocked Out",
-            "LA 6X2: Days Stocked Out"
+            "LA 6x1: Days stocked out",
+            "LA 6x2: Days stocked out"
         ]
     );
 
@@ -444,8 +444,6 @@ exports.fieldsToHtml = function(test) {
     var keys = utils.getFormKeys('YYYY'),
         labels = utils.getLabels(keys, 'YYYY'),
         data_records = require('lib/data_records');
-
-
 
     var expected = {
       "headers": [

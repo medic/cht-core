@@ -230,6 +230,22 @@ exports.fieldsToHtml = function(keys, labels, data_record, def) {
     return fields;
 };
 
+function translateKey(key, field, locale) {
+    var label;
+
+    if (field) {
+        label = getLabel(field, locale);
+    } else {
+        label = exports.info.translate(key, locale);
+    }
+    // still haven't found a proper label; then titleize
+    if (key === label) {
+        return utils.titleize(key);
+    } else {
+        return label;
+    }
+}
+
 /*
  * Fetch labels from translation strings or jsonform object, maintaining order
  * in the returned array.
@@ -247,65 +263,35 @@ exports.getLabels = function(keys, form, locale) {
         fields = def && def.fields;
 
     return _.reduce(keys, function(memo, key) {
-        var field,
-            label,
-            array;
+        var keys;
 
         if (_.isString(key)) {
-            field = fields[key];
-            if (field) {
-                label = getLabel(field, locale);
-            } else {
-                label = exports.info.translate(key, locale);
-            }
-            // still haven't found a proper label; then titleize
-            if (key === label) {
-                memo.push(utils.titleize(key));
-            } else {
-                memo.push(label);
-            }
-        } else if (key) {
-            array = deepestArray(key);
+            memo.push(translateKey(key, fields[key], locale));
+        } else if (_.isArray(key)) {
+            keys = unrollKey(key);
 
-            if (array.length === 1) {
-                memo.push(exports.info.translate(_.flatten(key).join('.'), locale));
-            } else {
-                _.each(array, function(root) {
-                    var keyCopy = [].concat(key),
-                        label,
-                        translated;
-
-                    keyCopy.pop(); // remove last item
-                    label = _.flatten(keyCopy).join(' ');
-                    translated = exports.info.translate(label, locale);
-
-                    root = root.toUpperCase().replace(/_/g, ' ') + ': ';
-
-                    if (translated === label) {
-                        // haven't found a proper label; then titleize
-                        memo.push(root + utils.titleize(label));
-                    } else {
-                        memo.push(root + translated);
-                    }
-                });
-            }
+            _.each(keys, function(key) {
+                memo.push(translateKey(key, fields[key], locale));
+            });
         }
+
         return memo;
     }, []);
 };
 
 // returns the deepest array from `key`
-function deepestArray(array) {
-    var target = array,
-        parentArray;
+function unrollKey(array) {
+    var target = [].concat(array),
+        root = [];
 
-    while (target) {
-        parentArray = target;
-        target = _.find(target, function(item) {
-            return _.isArray(item);
-        });
+    while (_.isArray(_.last(target))) {
+        root.push(_.first(target));
+        target = _.last(target);
     }
-    return parentArray;
+
+    return _.map(target, function(item) {
+        return root.concat([item]).join('.');
+    });
 }
 
 function getLabel(field, locale) {
