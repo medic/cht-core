@@ -9,7 +9,7 @@ module.exports = {
             ddoc_url = settings._url + '/_design/' + settings.name;
             get_doc(ddoc_url, settings, function(err, ddoc) {
                 if (err) return callback(err);
-                if (ddoc.app_settings) doc.app_settings = ddoc.app_settings;
+                doc.app_settings = ddoc.app_settings ? ddoc.app_settings : {};
                 callback(null, doc);
             });
         } else {
