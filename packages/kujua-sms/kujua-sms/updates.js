@@ -203,7 +203,7 @@ var getSMSResponse = function(doc, info) {
     // go to kujua admins, but we do look for 'facility_not_found' which is ok
     // for an SMS client.
     doc.errors.forEach(function(err) {
-        if (err.code && err.code.substr(0,4) === 'sys.') {
+        if (/sys\./.test(err.code)) {
             var user_error_code = err.code.replace('sys.','');
             var m = info.translate(user_error_code, locale)
                     .replace('%(form)', doc.form)
@@ -215,8 +215,8 @@ var getSMSResponse = function(doc, info) {
                 msg = m;
             }
         } else {
-            // default
-            msg = info.translate(err, locale);
+            // default, use code if it's available
+            msg = info.translate(err.code || err, locale);
         }
     });
 

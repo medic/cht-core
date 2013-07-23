@@ -323,6 +323,10 @@
                         "ne": "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
                     },
                     {
+                        "key": "extra_fields",
+                        "en": "Extra fields."
+                    },
+                    {
                         "key": "form_invalid_custom",
                         "en": "The form sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor."
                     },
