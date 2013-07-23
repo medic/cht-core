@@ -1,0 +1,20 @@
+language: node_js
+node_js:
+   - 0.10
+
+
+services:
+  - couchdb
+
+before_script:
+  - curl -X PUT localhost:5984/kujua-lite
+  - npm install kanso -g
+  - npm install jamjs -g
+
+script: "kanso push http://localhost:5984/kujua-lite"
+
+notifications:
+  email:
+    recipients:
+      - ryan@medicmobile.org
+      - dev@medicmobile.org
