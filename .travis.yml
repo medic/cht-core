@@ -17,3 +17,4 @@ notifications:
   email:
     recipients:
       - ryan@medicmobile.org
+      - dev@medicmobile.org
