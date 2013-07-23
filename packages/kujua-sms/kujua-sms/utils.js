@@ -230,6 +230,22 @@ exports.fieldsToHtml = function(keys, labels, data_record, def) {
     return fields;
 };
 
+function translateKey(key, field, locale) {
+    var label;
+
+    if (field) {
+        label = getLabel(field, locale);
+    } else {
+        label = exports.info.translate(key, locale);
+    }
+    // still haven't found a proper label; then titleize
+    if (key === label) {
+        return utils.titleize(key);
+    } else {
+        return label;
+    }
+}
+
 /*
  * Fetch labels from translation strings or jsonform object, maintaining order
  * in the returned array.
@@ -246,27 +262,37 @@ exports.getLabels = function(keys, form, locale) {
     var def = jsonforms[form],
         fields = def && def.fields;
 
-    return _.map(keys, function(key) {
-        var field,
-            label;
+    return _.reduce(keys, function(memo, key) {
+        var keys;
 
         if (_.isString(key)) {
-            field = fields[key];
-            if (field) {
-                label = getLabel(field, locale);
-            } else {
-                label = exports.info.translate(key, locale);
-            }
-            // still haven't found a proper label; then titleize
-            if (key === label) {
-                return utils.titleize(key);
-            }
-            return label;
-        } else if (key) {
-            return exports.info.translate(_.flatten(key).join('.'), locale);
+            memo.push(translateKey(key, fields[key], locale));
+        } else if (_.isArray(key)) {
+            keys = unrollKey(key);
+
+            _.each(keys, function(key) {
+                memo.push(translateKey(key, fields[key], locale));
+            });
         }
-    });
+
+        return memo;
+    }, []);
 };
+
+// returns the deepest array from `key`
+function unrollKey(array) {
+    var target = [].concat(array),
+        root = [];
+
+    while (_.isArray(_.last(target))) {
+        root.push(_.first(target));
+        target = _.last(target);
+    }
+
+    return _.map(target, function(item) {
+        return root.concat([item]).join('.');
+    });
+}
 
 function getLabel(field, locale) {
     return exports.info.getMessage(field.labels && field.labels.short, locale);

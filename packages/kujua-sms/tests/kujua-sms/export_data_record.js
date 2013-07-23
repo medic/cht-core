@@ -8,18 +8,17 @@ exports.lists_data_record_csv = function(test) {
 
     test.expect(1);
 
-    // the first char is the BOM
     var expected = '"Reported Date","From","Clinic Contact Name"'
-        +',"Clinic Name","Health Center Contact Name","Health Center Name"'
+        +',"Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name"'
         +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
         +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
         +'","Recommandations/Conseils","Précisions pour recommandations"'
         +',"Nom de l\'agent de santé"\n'
         +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')
-        +'","+12229990000","Paul","Clinic 1","Eric","Health Center 1"'
+        +'","+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1"'
         +',"2012","1","16","","","","","","","","",""\n'
         +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')
-        +'","+13331110000","Sam","Clinic 2","","","2012","1","16","","","",""'
+        +'","+13331110000","Sam","Clinic 2","","","District 2","2012","1","16","","","",""'
         +',"","","","",""\n';
 
     // mockup the view data
@@ -89,18 +88,17 @@ exports.lists_data_record_csv_fr = function(test) {
 
     test.expect(1);
 
-    // the first char is the BOM
     var expected = '"Date envoyé";"Envoyé par";"Personne-ressource Clinique"'
-        +';"Villages";"Nom de la santé Contact Center";"Nom du centre de santé"'
+        +';"Villages";"Nom de la santé Contact Center";"Nom du centre de santé";"Nom de l\'hôpital de district"'
         +';"Année";"Mois";"Jour";"Code du RC";"Type de patient";"Nom";"Age"'
         +';"Nom de la mère ou de l\'accompagnant";"Patient traité pour"'
         +';"Recommandations/Conseils";"Précisions pour recommandations"'
         +';"Nom de l\'agent de santé"\n'
         +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
-        +';"+12229990000";"Paul";"Clinic 1";"Eric";"Health Center 1"'
+        +';"+12229990000";"Paul";"Clinic 1";"Eric";"Health Center 1";"District 1"'
         +';"2012";"1";"16";"";"";"";"";"";"";"";"";""\n'
         +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
-        +';"+13331110000";"Sam";"Clinic 2";"";"";"2012";"1";"16";"";"";"";""'
+        +';"+13331110000";"Sam";"Clinic 2";"";"";"District 2";"2012";"1";"16";"";"";"";""'
         +';"";"";"";"";""\n';
 
     // mockup the view data
@@ -163,12 +161,11 @@ exports.lists_data_record_csv_skip_header_row = function(test) {
 
     test.expect(1);
 
-    // the first char is the BOM
     var expected = '"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
-        +',"+12229990000","Paul","Clinic 1","Eric","Health Center 1"'
+        +',"+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1"'
         +',"2012","1","16","","","","","","","","",""\n'
         +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
-        +',"+13331110000","Sam","Clinic 2","","","2012","1","16","","","",""'
+        +',"+13331110000","Sam","Clinic 2","","","District 2","2012","1","16","","","",""'
         +',"","","","",""\n';
 
     // mockup the view data

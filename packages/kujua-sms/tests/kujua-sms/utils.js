@@ -87,17 +87,6 @@ exports.getLabels = function(test) {
             ]
         ],
         [
-            'related_entities', [
-                'clinic', [
-                    'parent', [
-                        'parent', [
-                            'name'
-                        ]
-                    ]
-                ]
-            ]
-        ],
-        [
             "related_entities", [
                 "clinic", [
                     "name"
@@ -109,6 +98,17 @@ exports.getLabels = function(test) {
                 "clinic", [
                     "parent", [
                         "name"
+                    ]
+                ]
+            ]
+        ],
+        [
+            "related_entities", [
+                "clinic", [
+                    "parent", [
+                        "parent", [
+                            "name"
+                        ]
                     ]
                 ]
             ]
@@ -129,9 +129,9 @@ exports.getLabels = function(test) {
             'From',
             'Health Facility Identifier',
             'Clinic Contact Name',
-            'District Hospital Name',
             'Clinic Name',
             'Health Center Name',
+            'District Hospital Name',
             'LA 6x1: Days stocked out',
             'LA 6x2: Days stocked out'
         ]
@@ -145,9 +145,9 @@ exports.getLabels = function(test) {
             "Envoyé par",
             "Health Facility Identifier",
             "Personne-ressource Clinique",
-            "Nom de l'hôpital de district",
             "Villages",
             "Nom du centre de santé",
+            "Nom de l'hôpital de district",
             "LA 6x1: Days stocked out",
             "LA 6x2: Days stocked out"
         ]
@@ -446,8 +446,6 @@ exports.fieldsToHtml = function(test) {
     var keys = utils.getFormKeys('YYYY'),
         labels = utils.getLabels(keys, 'YYYY'),
         data_records = require('lib/data_records');
-
-
 
     var expected = {
       "headers": [

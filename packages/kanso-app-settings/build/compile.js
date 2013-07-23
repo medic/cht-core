@@ -16,12 +16,13 @@ module.exports = {
             return callback(null, doc);
         }
     }
-}
+};
 
 
 function get_doc(ddoc_url, settings, callback) {
     couchr.get(ddoc_url, function(err, resp){
         if (err && err.error === 'unauthorized') return auth(ddoc_url, settings, callback);
+        if (err && err.error === 'not_found') return callback(null, {}); // no design doc. First push.
         if (err) return callback(err);
         callback(null, resp);
     });
