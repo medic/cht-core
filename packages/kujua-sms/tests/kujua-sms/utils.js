@@ -613,6 +613,6 @@ exports.messages_invalid_custom = function (test) {
         + "Please complete it and resend. If this problem persists "
         + "contact your supervisor."
 
-    test.same(utils.getMessage(err.code.replace('sys.','')), resp);
+    test.same(utils.info.translate(err.code.replace('sys.','')), resp);
     test.done();
 };
