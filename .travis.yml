@@ -9,9 +9,9 @@ services:
 before_script:
   - curl -X PUT localhost:5984/kujua-lite
   - npm install kanso -g
-  - npm install jamjs -g
+  - kanso push http://localhost:5984/kujua-lite
 
-script: "kanso push http://localhost:5984/kujua-lite"
+script: "./tests/phantom_test.sh http://localhost:5984/kujua-lite"
 
 notifications:
   email:
