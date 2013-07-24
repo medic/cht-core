@@ -62,8 +62,6 @@
         {/clinic.parent.name}
         {?clinic.name}
           {clinic.name}
-        {:else}
-          {from}
         {/clinic.name}
         {?clinic.contact.rc_code}
           <span class="label">{clinic.contact.rc_code}</span>
@@ -79,6 +77,13 @@
       {^related_entities}
         <p><b>From:</b> {from}</p>
       {/related_entities}
+      {@if cond="'{from}' !== '{related_entities.clinic.contact.phone}'"}
+        {?sent_by}
+          <div class="label">Submitted by {sent_by}</div>
+        {:else}
+          <div class="label">Submitted by {from}</div>
+        {/sent_by}
+      {/if}
       {#sms_message}
         <p><pre>{message}</pre></p>
       {/sms_message}
