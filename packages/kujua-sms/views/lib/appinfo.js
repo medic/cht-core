@@ -6,9 +6,15 @@ exports.getAppInfo = function() {
     var gateway,
         info,
         muvuku,
+        defaults = require('./app_settings'),
         app_settings = getSettings.call(this),
         _ = _ || require('underscore'),
         url = url || require('url');
+
+    // use mustache syntax
+    _.templateSettings = {
+      interpolate : /\{\{(.+?)\}\}/g
+    };
 
     /*
      * On server side app_settings is availble on design doc (this) and if
@@ -17,19 +23,43 @@ exports.getAppInfo = function() {
      * returns object
      */
     function getSettings() {
+        var settings = {};
+
         if (this.app_settings) {
-            return this.app_settings;
+            settings = this.app_settings;
         } else if (typeof(window) === 'object' && window.jQuery) {
-            return JSON.parse(
+            settings = JSON.parse(
                 window.jQuery.ajax({
                     type: "GET",
                     url: require('duality/core').getBaseURL() + '/app_settings.json',
                     async: false //synchronous request
                 }).responseText
             );
-        } else {
-            return {};
         }
+
+        // add defaults to settings if needed
+        for (var k in defaults) {
+            if (defaults[k] && !settings[k]) {
+                settings[k] = defaults[k];
+            }
+        }
+
+        // add default translations also if needed
+        for (var i in defaults.translations) {
+            var d = defaults.translations[i];
+            var found = false;
+            for (var i in settings.translations) {
+                var t = settings.translations[i];
+                if (t.key === d.key) {
+                    found = true;
+                }
+            }
+            if (!found) {
+                settings.translations.push(d);
+            }
+            found = false;
+        }
+        return settings;
     }
 
     /*
@@ -73,10 +103,15 @@ exports.getAppInfo = function() {
      *
      * @return String
     */
-    function translate(translations, key, locale) {
-        var value;
+    function translate(translations, key, locale, ctx) {
+        var value,
+            ctx = ctx || {},
+            locale = locale || 'en';
 
-        locale = locale || 'en';
+        if (_.isObject(locale)) {
+            ctx = locale;
+            locale = 'en';
+        }
 
         if (_.isObject(key))
             return getMessage(key, locale) || key;
@@ -85,7 +120,15 @@ exports.getAppInfo = function() {
             key: key
         });
 
-        return getMessage(value, locale) || key;
+        value = getMessage(value, locale) || key;
+
+        // underscore templates will return ReferenceError if all variables in
+        // template are not defined.
+        try {
+            return _.template(value, ctx);
+        } catch(e) {
+            return value;
+        }
     }
 
     info = {

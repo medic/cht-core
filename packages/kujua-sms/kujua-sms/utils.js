@@ -461,7 +461,7 @@ exports.addError = function(record, error) {
 
     record.errors ? record.errors.push(error) : record.errors = [error];
 
-    logger.error(error);
+    logger.warn(JSON.stringify(error));
 };
 
 var entityTable = {

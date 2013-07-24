@@ -614,8 +614,17 @@ exports.messages_invalid_custom = function (test) {
 
     var resp = "The form sent 'FOO' was not properly completed. "
         + "Please complete it and resend. If this problem persists "
-        + "contact your supervisor."
+        + "contact your supervisor.";
 
-    test.same(utils.info.translate(err.code.replace('sys.','')), resp);
+    test.same(
+        utils.info.translate(err.code.replace('sys.',''), {form: "FOO"}),
+        resp
+    );
+    test.done();
+};
+
+exports.app_settings_has_defaults = function(test) {
+    test.expect(1);
+    test.same(Object.keys(utils.info).length > 10, true);
     test.done();
 };

@@ -63,8 +63,7 @@ exports.parseField = function (field, raw) {
                         return sms_utils.info.translate(item[1]);
                     }
                 }
-                utils.logger.error('Option not available for '+raw+' in list.');
-                utils.logger.error(field.list);
+                utils.logger.warn('Option not available for '+raw+' in list.');
             }
             return parseNum(raw);
         case 'string':
@@ -80,8 +79,7 @@ exports.parseField = function (field, raw) {
                         return sms_utils.info.translate(item[1]);
                     }
                 }
-                utils.logger.error('Option not available for '+raw+' in list.');
-                utils.logger.error(field.list);
+                utils.logger.warn('Option not available for '+raw+' in list.');
             }
             return sms_utils.info.translate(raw);
         case 'date':
@@ -99,7 +97,7 @@ exports.parseField = function (field, raw) {
             // if we can't parse a number then return null
             return null;
         default:
-            utils.logger.error('Unknown field type: ' + field.type);
+            utils.logger.warn('Unknown field type: ' + field.type);
             return raw;
     }
 };

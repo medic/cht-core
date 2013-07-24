@@ -43,7 +43,13 @@ if (system.args.length !== 2) {
 
 var page = require('webpage').create();
 
-// Route "console.log()" calls from within the Page context to the main Phantom context (i.e. current "this")
+page.onResourceRequested = function (request) {
+    // we do too many of these in our tests
+    // console.log('Request ' + JSON.stringify(request, undefined, 4));
+};
+
+// Route "console.log()" calls from within the Page context to the main Phantom
+// context (i.e. current "this")
 page.onConsoleMessage = function(msg) {
     console.log(msg);
 };
