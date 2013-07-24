@@ -1,3 +1,4 @@
+var appInfo = require('views/lib/appinfo');
 
 exports.test_sms_forms = function (doc, req) {
     return {foo:'test'};
@@ -5,9 +6,9 @@ exports.test_sms_forms = function (doc, req) {
 
 exports.app_settings = function() {
     return {
-        body: JSON.stringify(this.app_settings || {}),
+        body: JSON.stringify(appInfo.getAppInfo.call(this) || {}),
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json;charset=utf-8'
         }
     }
 }
