@@ -278,7 +278,7 @@ var onRecordClick = function(ev) {
                 var msg = 'Error fetching record with id '+ id +'.  '
                             + 'Try a refresh or check the database connection. '
                             + err;
-                kutils.logger.error(msg);
+                kutils.logger.warn(msg);
                 return alert(msg);
             }
             cell.html(
@@ -318,7 +318,7 @@ function renderReporting(doc, req) {
         users.get(req.userCtx.name, function(err, user) {
 
             if (err) {
-                return kutils.logger.error('Failed to retreive user info: '+err.reason);
+                return kutils.logger.warn('Failed to retreive user info: '+err.reason);
             }
 
             userDistrict = user.kujua_facility;
@@ -477,7 +477,7 @@ var renderReports = function(err, facilities) {
 
     getViewReports(doc, dates, function(err, reports) {
         if (err) {
-            kutils.logger.error(err);
+            kutils.logger.warn(err);
         }
         var totals = utils.getTotals(facilities, reports, dates);
         renderReportingTotals(totals, doc);

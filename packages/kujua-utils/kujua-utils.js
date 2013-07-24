@@ -58,8 +58,7 @@ exports.logger = {
     log: function(obj) {
         if (typeof(console) !== 'undefined') {
             console.log(obj);
-        }
-        if (typeof(log) !== 'undefined') {
+        } else if (typeof(log) !== 'undefined') {
             if (_.isObject(obj))
                 log(JSON.stringify(obj));
             else
@@ -69,8 +68,7 @@ exports.logger = {
     log_error: function(obj) {
         if (typeof(console) !== 'undefined') {
             console.error(obj);
-        }
-        if (typeof(log) !== 'undefined') {
+        } else if (typeof(log) !== 'undefined') {
             log('Kujua Lite ERROR:');
             if (_.isObject(obj))
                 log(JSON.stringify(obj,null,2));
