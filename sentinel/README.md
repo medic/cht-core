@@ -7,7 +7,7 @@ set to true.
 
 Get node deps with  `npm install`.
 
-## Configuration
+## Settings
 
 Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 
@@ -15,9 +15,10 @@ Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 export COUCH_URL='http://root:123qwe@localhost:5984/kujua-lite'
 ```
 
-A configuration will be generated from `config.js` and saved at
-`db/sentinel-configuration` you can make your configuration changes to this
-document and save it as part of the project source files.
+Sentinel works with Kujua Lite and listens to changes on the design doc. It can
+be configured through the dashboard Kujua Lite app settings screen.
+
+Default settings values are in `defaults.js`.
 
 ## Run
 

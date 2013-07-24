@@ -1,6 +1,8 @@
 var utils = require('kujua-sms/utils'),
     jsonforms = require('views/lib/jsonforms');
 
+utils.info = require('views/lib/appinfo').getAppInfo.call(this);
+
 var example_doc = {
     "_id": "61716f96177206326cc07653ab9659c7",
     "_rev": "2-03adf0258d78fbbd831d35193c53ce0f",
@@ -607,9 +609,10 @@ exports.fieldsToHtml = function(test) {
 
 exports.messages_invalid_custom = function (test) {
     test.expect(1);
+
     var err = {code:"sys.form_invalid_custom", form:"FOO", message:"Arg."};
 
-    var resp = "The form sent '%(form)' was not properly completed. "
+    var resp = "The form sent 'FOO' was not properly completed. "
         + "Please complete it and resend. If this problem persists "
         + "contact your supervisor."
 

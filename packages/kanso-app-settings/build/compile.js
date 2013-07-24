@@ -9,19 +9,20 @@ module.exports = {
             ddoc_url = settings._url + '/_design/' + settings.name;
             get_doc(ddoc_url, settings, function(err, ddoc) {
                 if (err) return callback(err);
-                if (ddoc.app_settings) doc.app_settings = ddoc.app_settings;
+                doc.app_settings = ddoc.app_settings ? ddoc.app_settings : {};
                 callback(null, doc);
             });
         } else {
             return callback(null, doc);
         }
     }
-}
+};
 
 
 function get_doc(ddoc_url, settings, callback) {
     couchr.get(ddoc_url, function(err, resp){
         if (err && err.error === 'unauthorized') return auth(ddoc_url, settings, callback);
+        if (err && err.error === 'not_found') return callback(null, {}); // no design doc. First push.
         if (err) return callback(err);
         callback(null, resp);
     });

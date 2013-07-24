@@ -318,12 +318,11 @@
                         "ne": "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
                     },
                     {
-                        "key": "extra_fields",
-                        "en": "Extra fields."
-                    },
-                    {
                         "key": "form_invalid_custom",
-                        "en": "The form sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor."
+                        "en": "The form sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
+                        "fr": "Le formulaire envoyé '%(form)' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
+                        "es": "No se completo el reporte '%(form)'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
+                        "ne": "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
                     },
                     {
                         "key": "sys.facility_not_found",
