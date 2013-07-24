@@ -60,7 +60,10 @@
           {to}
         {/related_entities}
         </div>
-        <p><b>Sent by:</b> {sent_by}</p>
+        <p>
+          <b>Sent by:</b> {sent_by}
+          {?from}{from}{/from}
+        </p>
         <p><pre>{message}</pre></p>
       </div>
       {/messages}

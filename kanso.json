@@ -19,7 +19,7 @@
     ],
     "loglevel": "info",
     "load": "lib/app",
-    "modules": ["lib"],
+    "modules": ["lib", "tests"],
     "attachments": ["static"],
     "dust": {
         "templates": "templates"
