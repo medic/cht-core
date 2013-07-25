@@ -263,15 +263,18 @@ exports.getLabels = function(keys, form, locale) {
         fields = def && def.fields;
 
     return _.reduce(keys, function(memo, key) {
-        var keys;
+        var field = fields && fields[key],
+            keys;
 
         if (_.isString(key)) {
-            memo.push(translateKey(key, fields[key], locale));
+            memo.push(translateKey(key, field, locale));
         } else if (_.isArray(key)) {
             keys = unrollKey(key);
 
             _.each(keys, function(key) {
-                memo.push(translateKey(key, fields[key], locale));
+                var field = fields && fields[key];
+
+                memo.push(translateKey(key, field, locale));
             });
         }
 

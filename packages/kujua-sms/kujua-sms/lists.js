@@ -42,7 +42,7 @@ function getFilename(form, name, type) {
     return filename;
 }
 
-function getKeys(form) {
+exports.getKeys = function(form) {
     if (form === 'null') {
         // add message content and to of *first* message
         keys = [].concat(EXPORT_KEYS);
@@ -53,7 +53,7 @@ function getKeys(form) {
         keys = EXPORT_KEYS.concat(utils.getFormKeys(form));
     }
     return keys;
-}
+};
 
 exports.data_records_csv = function (head, req) {
     var labels,
@@ -66,7 +66,7 @@ exports.data_records_csv = function (head, req) {
         delimiter = locale === 'fr' ? '";"' : null,
         rows,
         values,
-        keys = getKeys(form);
+        keys = exports.getKeys(form);
 
     utils.info = appInfo; // replace fake info with real from context
 
@@ -103,7 +103,7 @@ exports.data_records_xml = function (head, req) {
         rows,
         values,
         labels,
-        keys = getKeys(form);
+        keys = exports.getKeys(form);
 
     // replace info on utils with "real" one
     utils.info = appInfo;

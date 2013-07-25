@@ -1,5 +1,7 @@
 var utils = require('kujua-sms/utils'),
-    jsonforms = require('views/lib/jsonforms');
+    lists = require('kujua-sms/lists'),
+    jsonforms = require('views/lib/jsonforms'),
+    _ = require('underscore');
 
 utils.info = require('views/lib/appinfo').getAppInfo.call(this);
 
@@ -626,5 +628,14 @@ exports.messages_invalid_custom = function (test) {
 exports.app_settings_has_defaults = function(test) {
     test.expect(1);
     test.same(Object.keys(utils.info).length > 10, true);
+    test.done();
+};
+
+exports.getLabelsForMessages = function(test) {
+    var keys = lists.getKeys('null'),
+        labels = utils.getLabels(keys, 'null', 'en');
+
+    test.equals(_.isArray(labels), true);
+    test.same(labels, ["Reported Date", "From", "Clinic Contact Name", "Clinic Name", "Health Center Contact Name", "Health Center Name", "District Hospital Name", "To", "Message"]);
     test.done();
 };
