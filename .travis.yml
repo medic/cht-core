@@ -7,7 +7,6 @@ services:
   - couchdb
 
 before_script:
-  - curl -X PUT localhost:5984/kujua-lite
   - npm install kanso -g
   - kanso push http://localhost:5984/kujua-lite
 
