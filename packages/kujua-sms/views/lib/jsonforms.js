@@ -208,3 +208,27 @@ exports['YYYX'] = {
     facility_reference: "id",
     facility_required: true
 };
+
+exports['YYYW'] = {
+    meta: {
+        code: "YYYW",
+        label: 'Test Form - Public Form'
+    },
+    fields: {
+        id: {
+            labels: {
+                short: 'ID'
+            },
+            type: 'string',
+            required: true
+        },
+        foo: {
+            labels: {
+                short: 'Foo'
+            },
+            type: 'string',
+            required: true
+        }
+    },
+    public_form: true
+};
