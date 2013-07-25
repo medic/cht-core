@@ -6,7 +6,7 @@ exports.getAppInfo = function() {
     var gateway,
         info,
         muvuku,
-        defaults = require('./app_settings'),
+        defaults = require('views/lib/app_settings'),
         app_settings = getSettings.call(this),
         _ = _ || require('underscore'),
         url = url || require('url');

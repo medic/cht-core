@@ -79,9 +79,9 @@
       {/related_entities}
       {@if cond="'{from}' !== '{related_entities.clinic.contact.phone}'"}
         {?sent_by}
-          <div class="label">Submitted by {sent_by}</div>
+          <div class="add-message">Submitted by <a href="#">{sent_by}</a></div>
         {:else}
-          <div class="label">Submitted by {from}</div>
+          <div class="add-message">Submitted by <a href="#">{from}</a></div>
         {/sent_by}
       {/if}
       {#sms_message}
