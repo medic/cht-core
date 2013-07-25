@@ -249,15 +249,15 @@ module.exports = {
        },
        {
            "key": "sys.form_not_found",
-           "en": "Form '%(form)' not found.",
-           "fr": "Formulaire '%(form)' non trouvé",
+           "en": "Form '{{ form }}' not found.",
+           "fr": "Formulaire '{{ form }}' non trouvé",
            "ne": "",
            "es": ""
        },
        {
            "key": "form_not_found",
-           "en": "The form sent '%(form)' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
-           "fr": "Le formulaire envoyé '%(form)' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
+           "en": "The form sent '{{ form }}' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
+           "fr": "Le formulaire envoyé '{{ form }}' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
            "ne": "",
            "es": ""
        },
