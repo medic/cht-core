@@ -17,7 +17,7 @@ exports.includesSubmittedByWhenDifferent = function(test) {
     });
 
     test.ok(html.indexOf('+2345') >= 0);
-    test.ok(html.indexOf('<div class="label">Submitted by +1234</div>') >= 0);
+    test.ok(html.indexOf('<div class="add-message">Submitted by <a href="#">+1234</a></div>') >= 0);
     test.done();
 };
 
@@ -34,7 +34,8 @@ exports.noSubmittedByWhenSame = function(test) {
         from: '+2345'
     });
 
-    test.ok(html.indexOf('<div class="label">Submitted by +2345</div>') < 0);
+    test.ok(html.indexOf('+2345') >= 0);
+    test.ok(html.indexOf('<div class="add-message">Submitted by <a href="#">+2345</a></div>') < 0);
     test.done();
 };
 
@@ -52,7 +53,7 @@ exports.usesSentByWhenAvailable = function(test) {
         sent_by: 'donkey'
     });
 
-    test.ok(html.indexOf('<div class="label">Submitted by +1345</div>') < 0);
-    test.ok(html.indexOf('<div class="label">Submitted by donkey</div>') >= 0);
+    test.ok(html.indexOf('<div class="add-message">Submitted by <a href="#">+1345</a></div>') < 0);
+    test.ok(html.indexOf('<div class="add-message">Submitted by <a href="#">donkey</a></div>') >= 0);
     test.done();
 }
