@@ -132,7 +132,7 @@ exports.getAppInfo = function() {
     }
 
     info = {
-        muvuku_webapp_url: '/json-forms/_design/json-forms/_rewrite/?_embed_mode=2'
+        muvuku_webapp_url: '/muvuku/_design/muvuku-webapp/_rewrite/?_embed_mode=2'
     };
 
     if (app_settings) {

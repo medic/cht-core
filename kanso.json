@@ -91,7 +91,7 @@
             "muvuku_webapp_url": {
                 "type": "string",
                 "title": "Muvuku Webapp Url",
-                "default": "/json-forms/_design/json-forms/_rewrite/"
+                "default": "/muvuku/_design/muvuku-webapp/_rewrite/"
             },
             "reported_date_format": {
                 "type": "string",
