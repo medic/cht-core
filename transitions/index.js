@@ -2,7 +2,6 @@ var _ = require('underscore'),
     async = require('async'),
     fs = require('fs'),
     path = require('path'),
-    db = require('../db'),
     transitions = {},
     date = require('../date'),
     utils = require('../lib/utils'),
@@ -54,7 +53,8 @@ queue = async.queue(function(job, callback) {
 
 module.exports = {
     attachTransition: function(transition, key) {
-        var stream;
+        var db = require('../db'),
+            stream;
 
         db.info(function(err, data) {
 
@@ -132,6 +132,7 @@ module.exports = {
 // mark the transition as completed
 function finalize(options, callback) {
     var change = options.change,
+        db = require('../db'),
         key = options.key,
         err = options.err,
         doc = change.doc;
