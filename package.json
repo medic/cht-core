@@ -20,6 +20,7 @@
     },
     "version": "0.0.2",
     "scripts": {
-        "test": "SENTINEL_TEST=true node_modules/nodeunit/bin/nodeunit test/unit"
+        "start": "node server.js",
+        "test": "node_modules/nodeunit/bin/nodeunit test/unit"
     }
 }
