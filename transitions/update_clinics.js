@@ -9,10 +9,10 @@ var _ = require('underscore');
  * good place to get phone numbers from.
  */
 module.exports = {
-    db: require('../db'),
     onMatch: function(change, callback) {
         var self = module.exports,
             doc = change.doc,
+            db = require('../db'),
             q = {
                 include_docs: true,
                 limit: 1
@@ -29,7 +29,7 @@ module.exports = {
             return callback(null, false);
         }
 
-        self.db.view('kujua-sentinel', view, q, function(err, data) {
+        db.view('kujua-sentinel', view, q, function(err, data) {
             var clinic,
                 existing,
                 row;
@@ -47,15 +47,13 @@ module.exports = {
             }
 
             // reporting phone stayed the same and clinic data is up to date
-            if (doc.from === clinic.contact.phone &&
-                clinic._id === existing._id &&
-                clinic._rev === existing._rev) {
-                    return callback(null, false);
+            if (doc.from === clinic.contact.phone && clinic._id === existing._id && clinic._rev === existing._rev) {
+                return callback(null, false);
             }
 
             if (clinic.contact.phone !== doc.from) {
                 clinic.contact.phone = doc.from;
-                self.db.saveDoc(clinic, function(err, ok) {
+                db.saveDoc(clinic, function(err, ok) {
                     if (err) {
                         console.log("Error updating clinic: " + JSON.stringify(err, null, 2));
                         return callback(err);

@@ -7,7 +7,6 @@ var _ = require('underscore'),
     i18n = require('../i18n'),
     ids = require('../lib/ids'),
     utils = require('../lib/utils'),
-    db = require('../db'),
     clinicContactName,
     registration,
     clinicPhone,
@@ -267,8 +266,12 @@ var handleMatch = function(change, callback) {
     grandparentPhone= utils.getGrandparentPhone(new_doc);
 
     validate(function(err) {
+        var db = require('../db');
+
         // validation failed, finalize transition
-        if (err) return callback(null, true);
+        if (err) {
+            return callback(null, true);
+        }
         addResponses();
         updateSchedule();
         db.saveDoc(registration, function(err) {

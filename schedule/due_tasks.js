@@ -1,13 +1,12 @@
 var async = require('async'),
     _ = require('underscore'),
-    db = require('../db'),
     moment = require('moment'),
     date = require('../date');
 
 module.exports = function(callback) {
-    var now = moment(date.getDate()),
+    var db = require('../db'),
+        now = moment(date.getDate()),
         overdue = now.clone().subtract('days', 7);
-
 
     db.view('kujua-sentinel', 'due_tasks', {
         include_docs: true,

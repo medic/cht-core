@@ -2,7 +2,6 @@ var _ = require('underscore'),
   epi = require('epi-week'),
   async = require('async'),
   moment = require('moment'),
-  db = require('../db'),
   date = require('../date'),
   i18n = require('../i18n'),
   config = require('../config'),
@@ -12,8 +11,8 @@ var _ = require('underscore'),
  * Setup reminders for the current week unless they are already setup.
  */
 function createReminders(options, callback) {
-
     var day = options.day,
+        db = require('../db'),
         form = options.form,
         reminder = options.reminder,
         epiWeek,

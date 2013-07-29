@@ -2,7 +2,6 @@ var mustache = require('mustache'),
     async = require('async'),
     utils = require('../lib/utils'),
     i18n = require('../i18n'),
-    db = require('../db'),
     clinicContactName,
     registration,
     clinicPhone,
@@ -94,8 +93,12 @@ var handleMatch = function(change, callback) {
     parentPhone = utils.getParentPhone(new_doc);
 
     validate(function(err) {
+        var db = require('../db');
+
         // validation failed, finalize transition
-        if (err) return callback(null, true);
+        if (err) {
+            return callback(null, true);
+        }
         addResponses();
         updateSchedule();
         db.saveDoc(registration, function(err) {

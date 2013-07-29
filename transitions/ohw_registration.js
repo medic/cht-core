@@ -11,7 +11,6 @@ var msgs = {
 };
 
 module.exports = {
-    db: require('../db'),
     onMatch: function(change, callback) {
         var doc = change.doc,
             self = module.exports;
@@ -19,12 +18,15 @@ module.exports = {
         self.validate(doc, function(err) {
 
             // validation failed, finalize transition
-            if (err) return callback(null, true);
+            if (err) {
+                return callback(null, true);
+            }
 
             self.setId(doc, function() {
                 var expected,
                     lmp,
                     weeks = Number(doc.last_menstrual_period);
+
                 lmp = moment(date.getDate()).startOf('day').startOf('week').subtract('weeks', weeks);
                 expected = lmp.clone().add('weeks', 40);
                 _.extend(doc, {
@@ -183,7 +185,6 @@ module.exports = {
             );
         });
 
-
         // misoprostol reminder
         _.each(config.get('ohw_miso_reminder_days'), function(data, i) {
             if (_.isNumber(data))
@@ -247,6 +248,5 @@ module.exports = {
 
         // sort by due date
         doc.scheduled_tasks = _.sortBy(doc.scheduled_tasks, 'due');
-
     }
 };
