@@ -32,6 +32,8 @@ module.exports = {
         callback(null, []);
     },
     getOHWRegistration: function(id, callback) {
+        var registration;
+
         if (id === 'fake') {
             registration = false;
         } else {

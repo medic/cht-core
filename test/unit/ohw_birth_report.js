@@ -1,16 +1,21 @@
 var _ = require('underscore'),
     gently = global.GENTLY = new (require('gently')),
     moment = require('moment'),
+    i18n = require('../../i18n'),
     transition = require('../../transitions/ohw_birth_report'),
     db = gently.stub('DbStub', '../../db'),
     fakedb = require('../fake-db'),
     utils = require('../../lib/utils'),
-    registration,
-    _getOHWRegistration;
+    registration;
 
 exports.setUp = function(callback) {
     process.env.TEST_ENV = true;
-    gently.hijacked['../lib/utils'].getOHWRegistration = fakedb.getOHWRegistration;
+    gently.hijacked['../lib/utils'].getOHWRegistration = function(id, callback) {
+        fakedb.getOHWRegistration(id, function(err, reg) {
+            registration = reg;
+            callback(err, reg);
+        });
+    };
     gently.hijacked['../lib/utils'].checkOHWDuplicates = fakedb.checkOHWDuplicates;
     callback();
 };
@@ -209,6 +214,7 @@ exports['response for deceased mother and healthy but low weight (yellow) child'
     test.expect(3);
     var doc = {
         reported_date: 1380108400000, // Sep 25 2013 06:26:40 GMT-0500
+        outcome_child: 'Alive and Well',
         outcome_mother: 'Deceased',
         birth_weight: 'Yellow',
         days_since_delivery: 1,
@@ -235,12 +241,13 @@ exports['response for deceased mother and healthy but low weight (yellow) child'
         test.ok(complete);
 
         test.equal(doc.tasks.length, 1);
-        test.same(
+        test.equal(
             doc.tasks[0].messages[0].message,
-            "Thank you, qq. Birth outcome report for ABC has been recorded."
-            + " The Baby is LBW. Please refer the baby to the health post"
-            + " immediately. Please submit the Start/Stop Notifications form."
-        )
+            i18n(transition.messages.lbw_and_onot, {
+                contact_name: 'qq',
+                serial_number: 'ABC'
+            })
+        );
 
         test.done();
     });
@@ -277,12 +284,13 @@ exports['response for deceased mother and healthy but low weight (red) child'] =
         test.ok(complete);
 
         test.equal(doc.tasks.length, 1);
-        test.same(
+        test.equal(
             doc.tasks[0].messages[0].message,
-            "Thank you, qq. Birth outcome report for ABC has been recorded."
-            + " The Baby is LBW. Please refer the baby to the health post"
-            + " immediately. Please submit the Start/Stop Notifications form."
-        )
+            i18n(transition.messages.lbw_and_onot, {
+                contact_name: 'qq',
+                serial_number: 'ABC'
+            })
+        );
 
         test.done();
     });
@@ -570,7 +578,10 @@ exports['response for normal outcome but no weight reported'] = function(test) {
         message = _.first(_.first(doc.tasks).messages).message;
         test.same(
             message,
-            "Thank you, qq. Birth outcome report for ABC has been recorded."
+            i18n(transition.messages.normal_with_proto, {
+                contact_name: 'qq',
+                serial_number: 'ABC'
+            })
         );
 
         test.done();
@@ -863,42 +874,45 @@ exports['birth report fails proximity check sets up right messages'] = function(
                 parent: {
                     contact: {
                         phone: 'parent'
+                    },
+                    parent: {
+                        contact: {
+                            phone: 'grandparent'
+                        }
                     }
                 }
             }
         }
     };
+    debugger;
     transition.onMatch({
         doc: doc
     }, fakedb, function(err, complete) {
-        var msg1 = 'qq has submitted a birth outcome report'
-            + ' for 123. Her EDD is > 45 days away.'
-            + ' Please confirm with qq that the report'
-            + ' is valid.';
-        var msg2 = 'Thank you, qq. Birth outcome report'
-            + ' for ABC has been recorded. Please'
-            + ' complete necessary protocol.';
-
         test.ok(complete);
         test.equal(doc.tasks.length, 2);
         test.equal(
             doc.tasks[0].messages[0].message,
-            msg1
-        );
-        test.equal(
-            doc.tasks[0].messages[0].to,
-            'parent'
+            i18n(transition.messages.edd_warn_facility, {
+                contact_name: 'qq',
+                patient_id: '123'
+            })
         );
         test.equal(
             doc.tasks[1].messages[0].message,
-            msg2
+            i18n(transition.messages.edd_warn, {
+                contact_name: 'qq',
+                serial_number: 'ABC'
+            })
+        );
+        test.equal(
+            doc.tasks[0].messages[0].to,
+            'grandparent'
         );
         test.equal(
             doc.tasks[1].messages[0].to,
             'clinic'
         );
         test.done();
-
     });
 };
 
