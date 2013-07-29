@@ -1,3 +1,7 @@
+if (global.GENTLY) {
+    require = GENTLY.hijack(require);
+}
+
 var _ = require('underscore'),
     async = require('async'),
     mustache = require('mustache'),
@@ -49,7 +53,6 @@ var checkRegistration = function(callback) {
 };
 
 var checkDups = function(callback) {
-
     var msg = msgs.dup;
 
     var onlyValid = function(row) {
@@ -234,19 +237,16 @@ var scheduleReminders = function(config_key) {
 };
 
 var validate = function(callback) {
+    var doc = new_doc;
 
-    var doc = new_doc,
-        validations = [
-            checkRegistration,
-            checkDups,
-            checkEDDProximity
-        ];
-
-    //if (doc.anc_pnc === 'ANC')
-    //    validations.push(checkANCTimePassed);
-
-    async.series(validations, function(err) {
-        if (!err) return callback();
+    async.series([
+         checkRegistration,
+         checkDups,
+         checkEDDProximity
+    ], function(err) {
+        if (!err) {
+            return callback();
+        }
         utils.addMessage(doc, {
             phone: clinicPhone,
             message: i18n(err, {
@@ -255,19 +255,15 @@ var validate = function(callback) {
         });
         return callback(err);
     });
-
 };
 
-var handleMatch = function(change, callback) {
-
+var handleMatch = function(change, db, callback) {
     new_doc = change.doc,
     clinicPhone = utils.getClinicPhone(new_doc);
     clinicContactName = utils.getClinicContactName(new_doc);
     grandparentPhone= utils.getGrandparentPhone(new_doc);
 
     validate(function(err) {
-        var db = require('../db');
-
         // validation failed, finalize transition
         if (err) {
             return callback(null, true);

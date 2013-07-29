@@ -27,6 +27,38 @@ module.exports = {
     },
     saveDoc: function(doc, callback) {
         callback(null, {});
+    },
+    checkOHWDuplicates: function(options, callback) {
+        callback(null, []);
+    },
+    getOHWRegistration: function(id, callback) {
+        if (id === 'fake') {
+            registration = false;
+        } else {
+            registration = {
+                patient_id: "123",
+                serial_number: "ABC",
+                expected_date: 1381208400000, // Oct 08 2013 00:00:00 GMT-0500
+                scheduled_tasks: [
+                    {
+                        messages: [ { message: 'foo' } ],
+                        type: 'upcoming_delivery',
+                        state: 'scheduled'
+                    },
+                    {
+                        messages: [ { message: 'foo' } ],
+                        type: 'upcoming_delivery',
+                        state: 'scheduled'
+                    },
+                    {
+                        messages: [ { message: 'foo' } ],
+                        type: 'outcome_request',
+                        state: 'scheduled'
+                    }
+                ]
+            };
+        }
+        callback(null, registration);
     }
 };
 

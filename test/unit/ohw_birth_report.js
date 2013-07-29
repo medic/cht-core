@@ -1,47 +1,17 @@
 var _ = require('underscore'),
+    gently = global.GENTLY = new (require('gently')),
     moment = require('moment'),
     transition = require('../../transitions/ohw_birth_report'),
+    db = gently.stub('DbStub', '../../db'),
     fakedb = require('../fake-db'),
     utils = require('../../lib/utils'),
     registration,
     _getOHWRegistration;
 
 exports.setUp = function(callback) {
-    transition.db = fakedb;
-    _getOHWRegistration = utils.getOHWRegistration;
-    utils.getOHWRegistration = function(id, callback) {
-        if (id === 'fake') {
-            registration = false;
-        } else {
-            registration = {
-                patient_id: "123",
-                serial_number: "ABC",
-                expected_date: 1381208400000, // Oct 08 2013 00:00:00 GMT-0500
-                scheduled_tasks: [
-                    {
-                        messages: [ { message: 'foo' } ],
-                        type: 'upcoming_delivery',
-                        state: 'scheduled'
-                    },
-                    {
-                        messages: [ { message: 'foo' } ],
-                        type: 'upcoming_delivery',
-                        state: 'scheduled'
-                    },
-                    {
-                        messages: [ { message: 'foo' } ],
-                        type: 'outcome_request',
-                        state: 'scheduled'
-                    }
-                ]
-            };
-        }
-        callback(null, registration);
-    };
-    callback();
-};
-exports.tearDown = function(callback) {
-    utils.getOHWRegistration = _getOHWRegistration;
+    process.env.TEST_ENV = true;
+    gently.hijacked['../lib/utils'].getOHWRegistration = fakedb.getOHWRegistration;
+    gently.hijacked['../lib/utils'].checkOHWDuplicates = fakedb.checkOHWDuplicates;
     callback();
 };
 
@@ -59,7 +29,7 @@ exports['response for invalid patient'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var task = _.first(doc.tasks),
             message;
 
@@ -98,7 +68,7 @@ exports['response for normal weight and outcome'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
 
         test.ok(complete);
@@ -136,7 +106,7 @@ exports['response for normal outcome but low weight (red)'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
 
         var message_exp = "Thank you, qq. Birth outcome report for ABC has been"
@@ -178,7 +148,7 @@ exports['response for normal outcome but low weight (yellow)'] = function(test) 
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
 
         var message_exp = "Thank you, qq. Birth outcome report for ABC has been"
@@ -219,7 +189,7 @@ exports['response for deceased mother and normal outcome child'] = function(test
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
 
         test.ok(complete);
@@ -259,7 +229,7 @@ exports['response for deceased mother and healthy but low weight (yellow) child'
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
 
         test.ok(complete);
@@ -301,7 +271,7 @@ exports['response for deceased mother and healthy but low weight (red) child'] =
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
 
         test.ok(complete);
@@ -343,7 +313,7 @@ exports['no pnc schedule for deceased mother, normal outcome child'] = function(
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
 
         test.ok(complete);
@@ -381,7 +351,7 @@ exports['no pnc schedule for deceased mother, low weight (yellow) child'] = func
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
 
         test.ok(complete);
@@ -419,7 +389,7 @@ exports['no pnc schedule for deceased mother, low weight (red) child'] = functio
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
 
         test.ok(complete);
@@ -458,7 +428,7 @@ exports['response/no pnc schedule for deceased mother and sick but normal weight
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
 
         test.ok(complete);
@@ -502,7 +472,7 @@ exports['response/no pnc schedule for deceased mother and sick and low weight (y
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
 
         test.ok(complete);
@@ -546,7 +516,7 @@ exports['response/cleared task for deceased mother and sick and low weight (red)
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
 
         test.ok(complete);
@@ -591,7 +561,7 @@ exports['response for normal outcome but no weight reported'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
 
         test.ok(complete);
@@ -630,7 +600,7 @@ exports['response for sick baby'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
         var message_exp = "Thank you, qq. Birth outcome report for ABC has"
             + " been recorded. If danger sign, please call health worker"
@@ -670,7 +640,7 @@ exports['response for deceased baby and no other fields'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
         var message_exp = "Thank you, qq. Birth outcome report for ABC has been recorded."
 
@@ -708,7 +678,7 @@ exports['response/no schedule for deceased mother and no other fields'] = functi
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
         var message_exp = "Thank you, qq. Birth outcome report for ABC has been recorded."
             + " Please submit the Start/Stop Notifications form.";
@@ -748,7 +718,7 @@ exports['response/no schedule for deceased mother and no other fields'] = functi
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var message;
         var message_exp = "Thank you, qq. Birth outcome report for ABC has been recorded."
             + " Please complete necessary protocol.";
@@ -792,7 +762,7 @@ exports['outcome report updates registration with weight, birth date'] = functio
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var reported = moment(1380108400000);
 
         test.ok(complete);
@@ -831,7 +801,7 @@ exports['add schedule for outcome report with normal weight'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var reminders = utils.filterScheduledMessages(registration, 'counseling_reminder');
         test.equal(reminders.length, 4);
         test.ok(_.all(reminders, function(task) {
@@ -865,7 +835,7 @@ exports['add lbw schedule for low weight birth outcome'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
 
         var reminders = utils.filterScheduledMessages(registration, 'counseling_reminder');
 
@@ -900,7 +870,7 @@ exports['birth report fails proximity check sets up right messages'] = function(
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var msg1 = 'qq has submitted a birth outcome report'
             + ' for 123. Her EDD is > 45 days away.'
             + ' Please confirm with qq that the report'
@@ -953,7 +923,7 @@ exports['birth report fails proximity check not change schedule'] = function(tes
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.equals(registration.scheduled_tasks.length, 3);
         test.ok(_.all(registration.scheduled_tasks, function(task) {
             return task.state === 'scheduled';

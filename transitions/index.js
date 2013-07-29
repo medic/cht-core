@@ -32,13 +32,14 @@ _.each(fs.readdirSync(__dirname), function(file) {
  * entirely, and callback(err) or callback(null, true) to save the transition.
  */
 queue = async.queue(function(job, callback) {
-    var transition = job.transition,
+    var db = require('../db'),
+        transition = job.transition,
         key = job.key,
         change = job.change;
 
-    console.log('loading queue '+key);
+    console.log('loading queue %s', key);
 
-    transition.onMatch(change, function(err, complete) {
+    transition.onMatch(change, db, function(err, complete) {
         if (err || complete) {
             finalize({
                 key: key,
