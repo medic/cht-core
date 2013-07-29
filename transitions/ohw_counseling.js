@@ -1,3 +1,7 @@
+if (global.GENTLY) {
+    require = GENTLY.hijack(require);
+}
+
 var async = require('async'),
     mustache = require('mustache'),
     moment = require('moment'),
@@ -85,15 +89,13 @@ var validate = function(callback) {
 
 };
 
-var handleMatch = function(change, callback) {
+var handleMatch = function(change, db, callback) {
 
     new_doc = change.doc;
     clinicPhone = utils.getClinicPhone(change.doc);
     clinicContactName = utils.getClinicContactName(change.doc);
 
     validate(function(err) {
-        var db = require('../db'),
-
         if (err) { // validation failed, finalize transition
             return callback(null, true);
         } else if (new_doc.anc_pnc === 'ANC') {
