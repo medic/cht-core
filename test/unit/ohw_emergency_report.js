@@ -1,14 +1,13 @@
 var _ = require('underscore'),
+    gently = global.GENTLY = new (require('gently')),
     transition = require('../../transitions/ohw_emergency_report'),
     fakedb = require('../fake-db'),
     utils = require('../../lib/utils'),
-    registration,
-    _getOHWRegistration;
+    registration;
 
 exports.setUp = function(callback) {
-    transition.db = fakedb;
-    _getOHWRegistration = utils.getOHWRegistration;
-    utils.getOHWRegistration = function(id, callback) {
+    process.env.TEST_ENV = true;
+    gently.hijacked['../lib/utils'].getOHWRegistration = function(id, callback) {
         if (id === 'fake') {
             registration = false;
         } else {
@@ -31,10 +30,6 @@ exports.setUp = function(callback) {
     };
     callback();
 };
-exports.tearDown = function(callback) {
-    utils.getOHWRegistration = _getOHWRegistration;
-    callback();
-};
 
 exports['invalid patient response'] = function(test) {
     test.expect(4);
@@ -50,7 +45,7 @@ exports['invalid patient response'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var task = _.first(doc.tasks),
             message;
         test.ok(complete);
@@ -87,7 +82,7 @@ exports['ANC danger sign with advice response'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var task = _.first(doc.tasks),
             message = (_.first(task.messages) || {}).message;
         test.ok(complete);
@@ -132,7 +127,7 @@ exports['ANC danger sign and no advice response'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.ok(complete);
         test.equal(doc.tasks.length, 2);
         // check clinic response
@@ -178,7 +173,7 @@ exports['PNC danger sign and no advice response'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.ok(complete);
         test.equal(doc.tasks.length, 2);
         // check clinic response
@@ -224,7 +219,7 @@ exports['ANC no danger and no advice sign'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.ok(complete);
         test.ok(registration);
         test.equal(doc.tasks.length, 1);
@@ -269,7 +264,7 @@ exports['Labor with no danger sign or advice response'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.ok(complete);
         test.equal(doc.tasks.length, 2);
         // check clinic response
@@ -318,7 +313,7 @@ exports['Labor with danger sign and no advice response'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.ok(complete);
         test.equal(doc.tasks.length, 2);
         // check clinic response
@@ -364,7 +359,7 @@ exports['Labor with danger sign and advice response'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.ok(complete);
         test.equal(doc.tasks.length, 1);
         // check clinic response

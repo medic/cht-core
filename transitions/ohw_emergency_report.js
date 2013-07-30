@@ -1,3 +1,7 @@
+if (global.GENTLY) {
+    require = GENTLY.hijack(require);
+}
+
 var _ = require('underscore'),
     mustache = require('mustache'),
     async = require('async'),
@@ -158,7 +162,7 @@ var validate = function(callback) {
 
 };
 
-var handleOnMatch = function(change, callback) {
+var handleOnMatch = function(change, db, callback) {
 
     new_doc = change.doc;
     clinicPhone = utils.getClinicPhone(change.doc);
