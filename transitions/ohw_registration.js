@@ -1,3 +1,7 @@
+if (global.GENTLY) {
+    require = GENTLY.hijack(require);
+}
+
 var _ = require('underscore'),
     moment = require('moment'),
     date = require('../date'),
@@ -11,7 +15,7 @@ var msgs = {
 };
 
 module.exports = {
-    onMatch: function(change, callback) {
+    onMatch: function(change, db, callback) {
         var doc = change.doc,
             self = module.exports;
 
@@ -38,7 +42,6 @@ module.exports = {
                 callback(null, true);
             });
         });
-
     },
     validate: function(doc, callback) {
         var weeks = Number(doc.last_menstrual_period);
@@ -75,7 +78,7 @@ module.exports = {
         utils.getOHWRegistration(id, function(err, found) {
             if (err) {
                 callback(err);
-            } else if (found) {
+            } else if (found) { // id collision, retry
                 self.setId(doc, callback);
             } else {
                 doc.patient_id = id;

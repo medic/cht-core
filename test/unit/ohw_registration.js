@@ -1,25 +1,19 @@
 var _ = require('underscore'),
+    gently = global.GENTLY = new (require('gently')),
     moment = require('moment'),
     transition = require('../../transitions/ohw_registration'),
     fakedb = require('../fake-db'),
     utils = require('../../lib/utils'),
-    date = require('../../date'),
-    _getOHWRegistration;
+    date = require('../../date');
 
 exports.setUp = function(callback) {
-    transition.db = fakedb;
-    _getOHWRegistration = utils.getOHWRegistration;
-    utils.getOHWRegistration = function(id, callback) {
-        var registration = false;
-
-        callback(null, registration);
+    process.env.TEST_ENV = true;
+    gently.hijacked['../lib/utils'].checkOHWDuplicates = fakedb.checkOHWDuplicates;
+    gently.hijacked['../lib/utils'].getOHWRegistration = function(id, callback) {
+        callback(null, null); // always report no registration collision
     };
     callback();
 };
-exports.tearDown = function(callback) {
-    utils.getOHWRegistration = _getOHWRegistration;
-    callback();
-}
 
 exports['sets id'] = function(test) {
     var doc = {
@@ -28,7 +22,7 @@ exports['sets id'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.ok(doc.patient_id);
 
         test.done();
@@ -42,7 +36,7 @@ exports['sets dates'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var expectedLmp = moment(date.getDate()).startOf('day').startOf('week').subtract('weeks', 1),
             expectedDate = expectedLmp.clone().add('weeks', 40);
 
@@ -62,7 +56,7 @@ exports['adds acknowledgement'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.ok(doc.tasks);
         test.ok(doc.tasks.length);
         test.done();
@@ -70,7 +64,7 @@ exports['adds acknowledgement'] = function(test) {
 }
 
 exports['adds scheduled messages'] = function(test) {
-    test.expect(10);
+    test.expect(9);
     var doc = {
         serial_number: 'abc',
         last_menstrual_period: 1,
@@ -82,11 +76,11 @@ exports['adds scheduled messages'] = function(test) {
             }
         }
     };
+    debugger;
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.ok(doc.scheduled_tasks);
-        test.equals(doc.scheduled_tasks.length, 15);
         test.equals(utils.filterScheduledMessages(doc, 'anc_visit').length, 11);
         test.equals(utils.filterScheduledMessages(doc, 'miso_reminder').length, 1);
         test.equals(utils.filterScheduledMessages(doc, 'upcoming_delivery').length, 2);
@@ -103,7 +97,7 @@ exports['adds scheduled messages'] = function(test) {
     });
 }
 
-exports['response for positive registration with LMP of 5'] = function(test) {
+exports['response for positive registration with LMP of 6'] = function(test) {
     test.expect(3);
     var doc = {
         serial_number: 'abc',
@@ -118,17 +112,16 @@ exports['response for positive registration with LMP of 5'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
-
+    }, fakedb, function(err, complete) {
         test.ok(complete);
         test.equal(doc.tasks.length, 1);
-        var patient_id = doc.patient_id;
-        var message = _.first(_.first(doc.tasks).messages).message;
+        var patient_id = doc.patient_id,
+            message = _.first(_.first(doc.tasks).messages).message,
+            weeks = Math.round(moment.duration(moment(doc.lmp_date).add('days', 81).valueOf() - date.getTimestamp()).asWeeks());
 
         test.same(
             message,
-            'Thank you qq for registering abc. Patient ID is '+ patient_id
-            + '. ANC visit is needed in 6 weeks.'
+            'Thank you qq for registering abc. Patient ID is '+ patient_id + '. ANC visit is needed in ' + weeks + ' weeks.'
         );
 
         test.done();
