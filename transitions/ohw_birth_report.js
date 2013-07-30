@@ -1,3 +1,7 @@
+if (global.GENTLY) {
+    require = GENTLY.hijack(require);
+}
+
 var _ = require('underscore'),
     async = require('async'),
     mustache = require('mustache'),
@@ -7,7 +11,6 @@ var _ = require('underscore'),
     i18n = require('../i18n'),
     ids = require('../lib/ids'),
     utils = require('../lib/utils'),
-    db = require('../db'),
     clinicContactName,
     registration,
     clinicPhone,
@@ -26,7 +29,7 @@ var msgs = {
     lbw_and_onot: 'Thank you, {{contact_name}}. Birth outcome report for {{serial_number}} has been recorded. The Baby is LBW. Please refer the baby to the health post immediately. Please submit the Start/Stop Notifications form.',
     warning_and_onot: 'Thank you, {{contact_name}}. Birth outcome report for {{serial_number}} has been recorded. If danger sign, please call health worker immediately and fill in the emergency report. Please submit the Start/Stop Notifications form.',
     warning: 'Thank you, {{contact_name}}. Birth outcome report for {{serial_number}} has been recorded. If danger sign, please call health worker immediately and fill in the emergency report.',
-    edd_warn: 'Thank you, {{contact_name}}. You just submitted a birth outcome report for {{serial_number}}. Her EDD is >45 days away. A health worker will call you to confrim the validity of the record soon.',
+    edd_warn: 'Thank you, {{contact_name}}. You just submitted a birth outcome report for {{serial_number}}. Her EDD is >45 days away. A health worker will call you to confirm the validity of the record soon.',
     edd_warn_facility: '{{contact_name}} has submitted a birth outcome report for {{patient_id}}. Her EDD is > 45 days away. Please confirm with {{contact_name}} that the report is valid.',
     dup: 'The birth outcome report you sent appears to be a duplicate. A health facility staff will call you soon to confirm the validity of the forms.',
     not_found: "No patient with id '{{patient_id}}' found."
@@ -50,7 +53,6 @@ var checkRegistration = function(callback) {
 };
 
 var checkDups = function(callback) {
-
     var msg = msgs.dup;
 
     var onlyValid = function(row) {
@@ -73,14 +75,11 @@ var checkDups = function(callback) {
 };
 
 var checkEDDProximity = function(callback) {
-
     var doc = new_doc,
         proximity = config.get('ohw_birth_report_within_days');
 
     // if submitted more than 45 days before EDD include alert
-    if (moment(doc.reported_date).add('days', proximity).valueOf()
-        < registration.expected_date) {
-
+    if (moment(doc.reported_date).add('days', proximity).valueOf() < registration.expected_date) {
         utils.addError(doc, {
             message: mustache.to_html('Sent > 45 days from EDD', {
                 patient_id: doc.patient_id
@@ -96,14 +95,19 @@ var checkEDDProximity = function(callback) {
                 })
             });
         }
-        return callback(msgs.edd_warn);
+        callback(msgs.edd_warn);
+    } else {
+        callback();
     }
-
-    callback();
 };
 
-var addResponses = function() {
+function lowWeight(doc) {
+    var weight = (doc.birth_weight || '').toLowerCase();
 
+    return weight === 'yellow' || weight === 'red';
+}
+
+var addResponses = function() {
     var doc = new_doc;
 
     function finalize(msg) {
@@ -116,52 +120,45 @@ var addResponses = function() {
         });
     }
 
-    if (doc.outcome_child === 'Alive and Well'
-            && doc.outcome_mother === 'Alive and Well'
-            && doc.birth_weight === 'Green')
-        return finalize(msgs.normal);
-
-    if (doc.outcome_child === 'Alive and Well'
-            && doc.outcome_mother === 'Alive and Well'
-            && doc.birth_weight !== 'Green')
-        return finalize(msgs.lbw);
-
-    if (doc.outcome_child === 'Alive and Well'
-            && doc.outcome_mother === 'Deceased'
-            && doc.birth_weight === 'Green')
-        return finalize(msgs.onot_reminder);
-
-    if (doc.outcome_child === 'Alive and Well'
-            && doc.outcome_mother === 'Deceased'
-            && doc.birth_weight !== 'Green')
-        return finalize(msgs.lbw_and_onot);
-
-    if (doc.outcome_child === 'Alive and Sick'
-            && doc.outcome_mother === 'Deceased'
-            && doc.birth_weight === 'Green')
-        return finalize(msgs.warning_and_onot);
-
-    if (doc.outcome_child === 'Alive and Sick'
-            && doc.outcome_mother === 'Deceased'
-            && doc.birth_weight !== 'Green')
-        return finalize(msgs.lbw_and_onot);
-
-    if (doc.outcome_child !== 'Deceased'
-            && doc.birth_weight !== 'Green')
-        return finalize(msgs.lbw);
-
-    if (doc.outcome_child === 'Alive and Sick'
-            || doc.outcome_mother === 'Alive and Sick')
-        return finalize(msgs.warning);
-
-    if (doc.outcome_child === 'Deceased')
-        return finalize(msgs.normal);
-
-    if (doc.outcome_mother === 'Deceased')
-        return finalize(msgs.onot_reminder);
-
-    finalize(msgs.normal_with_proto);
-
+    if (doc.outcome_child === 'Alive and Well') {
+        if (doc.outcome_mother === 'Alive and Well') {
+            if (doc.birth_weight === 'Green') {
+                finalize(msgs.normal);
+            } else if (lowWeight(doc)) {
+                finalize(msgs.lbw);
+            } else {
+                finalize(msgs.normal_with_proto);
+            }
+        } else if (doc.outcome_mother === 'Deceased') {
+            if (doc.birth_weight === 'Green') {
+                finalize(msgs.onot_reminder);
+            } else if (lowWeight(doc)) {
+                finalize(msgs.lbw_and_onot);
+            } else {
+                finalize(msgs.normal_with_proto);
+            }
+        } else if (doc.outcome_mother === 'Alive and Sick') {
+            if (lowWeight(doc)) {
+                finalize(msgs.lbw);
+            } else {
+                finalize(msgs.warning);
+            }
+        }
+    } else if (doc.outcome_child === 'Alive and Sick') {
+        if (doc.outcome_mother === 'Deceased') {
+            if (doc.birth_weight === 'Green') {
+                finalize(msgs.warning_and_onot);
+            } else if (lowWeight(doc)) {
+                finalize(msgs.lbw_and_onot);
+            }
+        } else {
+            finalize(msgs.warning);
+        }
+    } else if (doc.outcome_child === 'Deceased') {
+        finalize(msgs.normal);
+    } else {
+        finalize(msgs.normal_with_proto);
+    }
 };
 
 
@@ -235,32 +232,29 @@ var scheduleReminders = function(config_key) {
 };
 
 var validate = function(callback) {
+    var doc = new_doc;
 
-    var doc = new_doc,
-        validations = [
-            checkRegistration,
-            checkDups,
-            checkEDDProximity
-        ];
-
-    //if (doc.anc_pnc === 'ANC')
-    //    validations.push(checkANCTimePassed);
-
-    async.series(validations, function(err) {
-        if (!err) return callback();
+    async.series([
+         checkRegistration,
+         checkDups,
+         checkEDDProximity
+    ], function(err) {
+        if (!err) {
+            return callback();
+        }
         utils.addMessage(doc, {
             phone: clinicPhone,
             message: i18n(err, {
+                contact_name: clinicContactName,
+                serial_number: (registration || {}).serial_number,
                 patient_id: doc.patient_id || registration.patient_id
             })
         });
         return callback(err);
     });
-
 };
 
-var handleMatch = function(change, callback) {
-
+var handleMatch = function(change, db, callback) {
     new_doc = change.doc,
     clinicPhone = utils.getClinicPhone(new_doc);
     clinicContactName = utils.getClinicContactName(new_doc);
@@ -268,7 +262,9 @@ var handleMatch = function(change, callback) {
 
     validate(function(err) {
         // validation failed, finalize transition
-        if (err) return callback(null, true);
+        if (err) {
+            return callback(null, true);
+        }
         addResponses();
         updateSchedule();
         db.saveDoc(registration, function(err) {
@@ -279,5 +275,6 @@ var handleMatch = function(change, callback) {
 };
 
 module.exports = {
-    onMatch: handleMatch
+    onMatch: handleMatch,
+    messages: msgs
 };

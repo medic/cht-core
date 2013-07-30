@@ -1,5 +1,4 @@
-var db = require('./db'),
-    _ = require('underscore'),
+var _ = require('underscore'),
     config = require('./defaults');
 
 function reload() {
@@ -12,6 +11,8 @@ function reload() {
 };
 
 function setupListener() {
+    var db = require('./db');
+
     db.info(function(err, info) {
         var stream;
 
@@ -45,6 +46,8 @@ function setupListener() {
 };
 
 function fetchConfig(callback) {
+    var db = require('./db');
+
     db.request({
         method:'GET',
         path: config.settings_path

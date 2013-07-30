@@ -1,115 +1,114 @@
 var _ = require('underscore'),
+    gently = global.GENTLY = new (require('gently')),
     moment = require('moment'),
     transition = require('../../transitions/ohw_counseling'),
     fakedb = require('../fake-db'),
     utils = require('../../lib/utils'),
     date = require('../../date'),
-    registration,
-    _getOHWRegistration;
+    registration;
 
 exports.setUp = function(callback) {
     var now = moment();
 
-    transition.db = fakedb;
-    _getOHWRegistration = utils.getOHWRegistration;
-    utils.getOHWRegistration = function(id, callback) {
-        registration = {
-            patient_id: "123",
-            serial_number: "FOO",
-            scheduled_tasks: [
-                {
-                    messages: [ { message: 'x' } ],
-                    type: 'anc_visit',
-                    state: 'scheduled',
-                    group: 1,
-                    due: now.clone().add('days', 3).valueOf()
-                },
-                {
-                    messages: [ { message: 'x' } ],
-                    type: 'anc_visit',
-                    state: 'scheduled',
-                    group: 1,
-                    due: now.clone().add('days', 7).valueOf()
-                },
-                {
-                    messages: [ { message: 'x' } ],
-                    type: 'anc_visit',
-                    state: 'scheduled',
-                    group: 2,
-                    due: now.clone().add('days', 15).valueOf()
-                },
-                {
-                    messages: [ { message: 'x' } ],
-                    type: 'anc_visit',
-                    state: 'scheduled',
-                    group: 3,
-                    due: now.clone().add('days', 17).valueOf()
-                },
-                {
-                    messages: [ { message: 'x' } ],
-                    type: 'anc_visit',
-                    state: 'scheduled',
-                    group: 3,
-                    due: now.clone().add('days', 25).valueOf()
-                },
-                {
-                    messages: [ { message: 'x' } ],
-                    type: 'anc_visit',
-                    state: 'scheduled',
-                    group: 3,
-                    due: now.clone().add('days', 31).valueOf()
-                },
-                {
-                    messages: [ { message: 'x' } ],
-                    state: 'scheduled',
-                    type: 'upcoming_delivery'
-                },
-                {
-                    messages: [ { message: 'x' } ],
-                    state: 'scheduled',
-                    type: 'counseling_reminder',
-                    group: 1,
-                    due: now.clone().add('days', 10).valueOf()
-                },
-                {
-                    messages: [ { message: 'x' } ],
-                    state: 'scheduled',
-                    type: 'counseling_reminder',
-                    group: 1,
-                    due: now.clone().add('days', 12).valueOf()
-                },
-                {
-                    messages: [ { message: 'x' } ],
-                    state: 'scheduled',
-                    type: 'counseling_reminder',
-                    group: 2,
-                    due: now.clone().add('days', 14).valueOf()
-                },
-                {
-                    messages: [ { message: 'x' } ],
-                    state: 'scheduled',
-                    type: 'counseling_reminder',
-                    group: 2,
-                    due: now.clone().add('days', 25).valueOf()
-                },
-                {
-                    messages: [ { message: 'x' } ],
-                    state: 'scheduled',
-                    type: 'counseling_reminder',
-                    group: 3,
-                    due: now.clone().add('days', 34).valueOf()
-                }
-            ]
-        };
+    process.env.TEST_ENV = true;
 
-        callback(null, registration);
+    gently.hijacked['../lib/utils'].checkOHWDuplicates = fakedb.checkOHWDuplicates;
+    gently.hijacked['../lib/utils'].getOHWRegistration = function(id, callback) {
+        fakedb.getOHWRegistration(id, function(err, reg) {
+            registration = {
+                patient_id: "123",
+                serial_number: "FOO",
+                scheduled_tasks: [
+                    {
+                        messages: [ { message: 'x' } ],
+                        type: 'anc_visit',
+                        state: 'scheduled',
+                        group: 1,
+                        due: now.clone().add('days', 3).valueOf()
+                    },
+                    {
+                        messages: [ { message: 'x' } ],
+                        type: 'anc_visit',
+                        state: 'scheduled',
+                        group: 1,
+                        due: now.clone().add('days', 7).valueOf()
+                    },
+                    {
+                        messages: [ { message: 'x' } ],
+                        type: 'anc_visit',
+                        state: 'scheduled',
+                        group: 2,
+                        due: now.clone().add('days', 15).valueOf()
+                    },
+                    {
+                        messages: [ { message: 'x' } ],
+                        type: 'anc_visit',
+                        state: 'scheduled',
+                        group: 3,
+                        due: now.clone().add('days', 17).valueOf()
+                    },
+                    {
+                        messages: [ { message: 'x' } ],
+                        type: 'anc_visit',
+                        state: 'scheduled',
+                        group: 3,
+                        due: now.clone().add('days', 25).valueOf()
+                    },
+                    {
+                        messages: [ { message: 'x' } ],
+                        type: 'anc_visit',
+                        state: 'scheduled',
+                        group: 3,
+                        due: now.clone().add('days', 31).valueOf()
+                    },
+                    {
+                        messages: [ { message: 'x' } ],
+                        state: 'scheduled',
+                        type: 'upcoming_delivery'
+                    },
+                    {
+                        messages: [ { message: 'x' } ],
+                        state: 'scheduled',
+                        type: 'counseling_reminder',
+                        group: 1,
+                        due: now.clone().add('days', 10).valueOf()
+                    },
+                    {
+                        messages: [ { message: 'x' } ],
+                        state: 'scheduled',
+                        type: 'counseling_reminder',
+                        group: 1,
+                        due: now.clone().add('days', 12).valueOf()
+                    },
+                    {
+                        messages: [ { message: 'x' } ],
+                        state: 'scheduled',
+                        type: 'counseling_reminder',
+                        group: 2,
+                        due: now.clone().add('days', 14).valueOf()
+                    },
+                    {
+                        messages: [ { message: 'x' } ],
+                        state: 'scheduled',
+                        type: 'counseling_reminder',
+                        group: 2,
+                        due: now.clone().add('days', 25).valueOf()
+                    },
+                    {
+                        messages: [ { message: 'x' } ],
+                        state: 'scheduled',
+                        type: 'counseling_reminder',
+                        group: 3,
+                        due: now.clone().add('days', 34).valueOf()
+                    }
+                ]
+            };
+            callback(null, registration);
+        });
     };
+
     callback();
 };
-exports.tearDown = function(callback) {
-    utils.getOHWRegistration = _getOHWRegistration;
-    callback();
-}
 
 exports['ANC acknowledgement'] = function(test) {
     test.expect(3);
@@ -125,9 +124,10 @@ exports['ANC acknowledgement'] = function(test) {
             }
         }
     };
+    debugger;
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.ok(doc.tasks);
         test.equals(doc.tasks.length, 1);
         test.same(
@@ -146,7 +146,7 @@ exports['ANC report right now clears group 1'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var st = registration.scheduled_tasks;
         test.ok(st);
         test.equals(st.length, 12);
@@ -169,7 +169,7 @@ exports['ANC report right now clears group 1'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var st = registration.scheduled_tasks;
         test.ok(st);
         test.equals(st.length, 12);
@@ -191,7 +191,7 @@ exports['ANC report in 14 days clears group 1 and 2'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var st = registration.scheduled_tasks;
         test.ok(st);
         test.equals(st.length, 12);
@@ -220,7 +220,7 @@ exports['PNC normal acknowledgement'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.ok(doc.tasks);
         test.equals(doc.tasks.length, 1);
         test.same(
@@ -247,7 +247,7 @@ exports['PNC report now clears group 1'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var st = registration.scheduled_tasks;
         test.equal(doc.tasks.length, 1);
         test.ok(registration);
@@ -291,7 +291,7 @@ exports['PNC report in 36 days clears all counseling reminders'] = function(test
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         var st = registration.scheduled_tasks;
         test.equal(doc.tasks.length, 1);
         test.ok(registration);

@@ -1,10 +1,9 @@
-var _ = require('underscore'),
-    fakedb = require('../fake-db'),
+var fakedb = require('../fake-db'),
     transition = require('../../transitions/update_clinics'),
     phone = '+34567890123';
 
 exports.setUp = function(callback) {
-    transition.db = fakedb;
+    process.env.TEST_ENV = true;
     callback();
 }
 
@@ -15,9 +14,10 @@ exports['should update clinic by phone'] = function(test) {
             clinic: null
         }
     };
+    debugger;
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.ok(complete);
         test.ok(doc.related_entities.clinic);
         test.equal(doc.related_entities.clinic.contact.phone, phone);
@@ -34,7 +34,7 @@ exports['should not update clinic with wrong phone'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.ok(!complete);
         test.ok(!doc.related_entities.clinic);
         test.done();
@@ -51,7 +51,7 @@ exports['should update clinic by refid and fix number'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, function(err, complete) {
+    }, fakedb, function(err, complete) {
         test.ok(complete);
         test.ok(doc.related_entities.clinic);
         test.equal(doc.related_entities.clinic.contact.phone, '+12345');

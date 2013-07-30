@@ -2,7 +2,6 @@ var _ = require('underscore'),
     async = require('async'),
     fs = require('fs'),
     path = require('path'),
-    db = require('../db'),
     transitions = {},
     date = require('../date'),
     utils = require('../lib/utils'),
@@ -33,13 +32,14 @@ _.each(fs.readdirSync(__dirname), function(file) {
  * entirely, and callback(err) or callback(null, true) to save the transition.
  */
 queue = async.queue(function(job, callback) {
-    var transition = job.transition,
+    var db = require('../db'),
+        transition = job.transition,
         key = job.key,
         change = job.change;
 
-    console.log('loading queue '+key);
+    console.log('loading queue %s', key);
 
-    transition.onMatch(change, function(err, complete) {
+    transition.onMatch(change, db, function(err, complete) {
         if (err || complete) {
             finalize({
                 key: key,
@@ -54,7 +54,8 @@ queue = async.queue(function(job, callback) {
 
 module.exports = {
     attachTransition: function(transition, key) {
-        var stream;
+        var db = require('../db'),
+            stream;
 
         db.info(function(err, data) {
 
@@ -132,6 +133,7 @@ module.exports = {
 // mark the transition as completed
 function finalize(options, callback) {
     var change = options.change,
+        db = require('../db'),
         key = options.key,
         err = options.err,
         doc = change.doc;

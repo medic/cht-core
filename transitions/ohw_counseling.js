@@ -1,3 +1,7 @@
+if (global.GENTLY) {
+    require = GENTLY.hijack(require);
+}
+
 var async = require('async'),
     mustache = require('mustache'),
     moment = require('moment'),
@@ -5,7 +9,6 @@ var async = require('async'),
     i18n = require('../i18n'),
     date = require('../date'),
     utils = require('../lib/utils'),
-    db = require('../db'),
     clinicContactName,
     registration,
     clinicPhone,
@@ -86,22 +89,22 @@ var validate = function(callback) {
 
 };
 
-var handleMatch = function(change, callback) {
+var handleMatch = function(change, db, callback) {
 
     new_doc = change.doc;
     clinicPhone = utils.getClinicPhone(change.doc);
     clinicContactName = utils.getClinicContactName(change.doc);
 
     validate(function(err) {
-        // validation failed, finalize transition
-        if (err) return callback(null, true);
-
-        if (new_doc.anc_pnc === 'ANC')
+        if (err) { // validation failed, finalize transition
+            return callback(null, true);
+        } else if (new_doc.anc_pnc === 'ANC') {
             processANC();
-        else if (new_doc.anc_pnc === 'PNC')
+        } else if (new_doc.anc_pnc === 'PNC') {
             processPNC();
-        else
+        } else {
             processOther();
+        }
 
         // save registration/schedule doc changes and finalize transition
         db.saveDoc(registration, function(err) {

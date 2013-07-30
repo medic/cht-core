@@ -1,3 +1,7 @@
+if (global.GENTLY) {
+    require = GENTLY.hijack(require);
+}
+
 var _ = require('underscore'),
     moment = require('moment'),
     date = require('../date'),
@@ -11,20 +15,22 @@ var msgs = {
 };
 
 module.exports = {
-    db: require('../db'),
-    onMatch: function(change, callback) {
+    onMatch: function(change, db, callback) {
         var doc = change.doc,
             self = module.exports;
 
         self.validate(doc, function(err) {
 
             // validation failed, finalize transition
-            if (err) return callback(null, true);
+            if (err) {
+                return callback(null, true);
+            }
 
             self.setId(doc, function() {
                 var expected,
                     lmp,
                     weeks = Number(doc.last_menstrual_period);
+
                 lmp = moment(date.getDate()).startOf('day').startOf('week').subtract('weeks', weeks);
                 expected = lmp.clone().add('weeks', 40);
                 _.extend(doc, {
@@ -36,7 +42,6 @@ module.exports = {
                 callback(null, true);
             });
         });
-
     },
     validate: function(doc, callback) {
         var weeks = Number(doc.last_menstrual_period);
@@ -73,7 +78,7 @@ module.exports = {
         utils.getOHWRegistration(id, function(err, found) {
             if (err) {
                 callback(err);
-            } else if (found) {
+            } else if (found) { // id collision, retry
                 self.setId(doc, callback);
             } else {
                 doc.patient_id = id;
@@ -183,7 +188,6 @@ module.exports = {
             );
         });
 
-
         // misoprostol reminder
         _.each(config.get('ohw_miso_reminder_days'), function(data, i) {
             if (_.isNumber(data))
@@ -247,6 +251,5 @@ module.exports = {
 
         // sort by due date
         doc.scheduled_tasks = _.sortBy(doc.scheduled_tasks, 'due');
-
     }
 };

@@ -11,9 +11,9 @@ var _ = require('underscore'),
  *
  */
 var handleMatch = function(change, callback) {
-
     new_doc = change.doc;
-    var self = module.exports;
+    var db = require('../db'),
+        self = module.exports;
 
     // only process record after callbacks with gateway are done, do nothing
     // otherwise. hackish for now since validation and responses are still
@@ -52,9 +52,9 @@ var handleMatch = function(change, callback) {
             docs.push(doc);
         });
 
-        self.db.bulkDocs({
+        db.bulkDocs({
             all_or_nothing: true,
-            docs:docs
+            docs: docs
         }, function(err) {
             // cancels transition and marks as incomplete
             if (err) {
@@ -94,13 +94,12 @@ var getDuplicates = function(callback) {
         return callback();
     }
 
-    self.db.view('kujua-sentinel', view, q, function(err, data) {
+    db.view('kujua-sentinel', view, q, function(err, data) {
         callback(err, data && data.rows);
     });
 
 };
 
 module.exports = {
-    db: require('../db'),
     onMatch: handleMatch
 }

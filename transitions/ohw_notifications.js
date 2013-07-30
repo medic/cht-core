@@ -1,8 +1,11 @@
+if (global.GENTLY) {
+    require = GENTLY.hijack(require);
+}
+
 var mustache = require('mustache'),
     async = require('async'),
     utils = require('../lib/utils'),
     i18n = require('../i18n'),
-    db = require('../db'),
     clinicContactName,
     registration,
     clinicPhone,
@@ -33,12 +36,11 @@ var addResponses = function() {
 }
 
 var updateSchedule = function() {
-
     var doc = new_doc,
         mute = !/^On$/i.test(String(doc.notifications));
 
     if (mute) {
-        //utils.muteScheduledMessages(registration);
+        utils.muteScheduledMessages(registration);
         utils.addError(doc, {
             message: mustache.to_html('Need to confirm deactivation.', {
                 patient_id: doc.patient_id
@@ -47,7 +49,6 @@ var updateSchedule = function() {
     } else {
         utils.unmuteScheduledMessages(registration);
     }
-
 };
 
 
@@ -86,8 +87,7 @@ var validate = function(callback) {
 
 };
 
-var handleMatch = function(change, callback) {
-
+var handleMatch = function(change, db, callback) {
     new_doc = change.doc,
     clinicPhone = utils.getClinicPhone(new_doc);
     clinicContactName = utils.getClinicContactName(new_doc);
@@ -95,14 +95,15 @@ var handleMatch = function(change, callback) {
 
     validate(function(err) {
         // validation failed, finalize transition
-        if (err) return callback(null, true);
+        if (err) {
+            return callback(null, true);
+        }
         addResponses();
         updateSchedule();
         db.saveDoc(registration, function(err) {
              callback(err, true);
         });
     });
-
 };
 
 module.exports = {

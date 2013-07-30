@@ -3,8 +3,7 @@ var async = require('async'),
     request = require('request');
 
 module.exports = {
-    db: require('../db'),
-    onMatch: function(change, callback) {
+    onMatch: function(change, db, callback) {
         var doc = change.doc,
             original = JSON.stringify(doc),
             fromNumber = config.get('twilio_number') || '+15037664982',
