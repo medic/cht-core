@@ -48,6 +48,37 @@ exports['no change other than transitions property if transition has had no effe
     });
 };
 
+exports['records error status of transition'] = function(test) {
+    var db,
+        doc,
+        latest;
+
+    doc = {
+        _rev: '1'
+    };
+
+    db = {
+        getDoc: function(id, callback) {
+            callback(null, doc);
+        },
+        saveDoc: function(doc, callback) {
+            callback();
+        }
+    };
+
+    transitions.finalize({
+        err: 'badness',
+        change: {
+            doc: doc
+        },
+        key: 'x'
+    }, db, function(err) {
+        test.ok(doc.transitions);
+        test.equals(doc.transitions.x.ok, false);
+        test.done();
+    });
+}
+
 exports['passes changed doc to saveDoc when changed'] = function(test) {
     var db,
         doc,
@@ -80,5 +111,4 @@ exports['passes changed doc to saveDoc when changed'] = function(test) {
         test.ok(!err);
         test.done();
     });
-
 }
