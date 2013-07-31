@@ -1,6 +1,6 @@
 {
   "name": "kujua-sentinel",
-  "description": "Takes data messages, and gets them ready for prime time.",
+  "description": "Takes data messages and gets them ready for prime time.",
   "private": true,
   "dependencies": {
     "async": "0.2.x",
@@ -19,7 +19,7 @@
     "nodeunit": "latest",
     "gently": "~0.9.2"
   },
-  "version": "0.0.2",
+  "version": "0.1.0",
   "scripts": {
     "start": "node server.js",
     "test": "node_modules/nodeunit/bin/nodeunit test/unit"
