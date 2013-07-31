@@ -16,3 +16,33 @@ exports['updateable returns false when objects the same'] = function(test) {
     test.done();
 }
 
+exports['getClinicContactName gets name'] = function(test) {
+    test.equal(utils.getClinicContactName({
+        related_entities: {
+            clinic: {
+                contact: {
+                    name: 'Y'
+                }
+            }
+        }
+    }), 'Y');
+    test.done();
+}
+
+exports['getClinicContactName gets returns health volunteer if miss'] = function(test) {
+    test.equal(utils.getClinicContactName({
+        related_entities: {
+            clinic: { }
+        }
+    }), 'health volunteer');
+    test.done();
+}
+
+exports['getClinicContactName gets name if contact'] = function(test) {
+    test.equal(utils.getClinicContactName({
+        contact: {
+            name: 'Y'
+        }
+    }), 'Y');
+    test.done();
+}
