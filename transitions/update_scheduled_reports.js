@@ -10,10 +10,10 @@ var _ = require('underscore'),
  * GET  /scheduled_reports/:form/:year/:week|month/:clinic_id (look for dups)
  *
  */
-var handleMatch = function(change, callback) {
+var handleMatch = function(change, db, callback) {
+    var self = module.exports;
+
     new_doc = change.doc;
-    var db = require('../db'),
-        self = module.exports;
 
     // only process record after callbacks with gateway are done, do nothing
     // otherwise. hackish for now since validation and responses are still
@@ -23,7 +23,7 @@ var handleMatch = function(change, callback) {
         return callback();
     }
 
-    getDuplicates(function(err, rows) {
+    getDuplicates(db, function(err, rows) {
 
         // only one record in duplicates, mark transition complete
         if (rows && rows.length === 1) {
@@ -71,7 +71,7 @@ var handleMatch = function(change, callback) {
 // look for duplicate from same year, month/week and reporting unit
 // also includes new_doc
 //
-var getDuplicates = function(callback) {
+var getDuplicates = function(db, callback) {
 
     var doc = new_doc,
         q = { include_docs: true },
@@ -97,7 +97,6 @@ var getDuplicates = function(callback) {
     db.view('kujua-sentinel', view, q, function(err, data) {
         callback(err, data && data.rows);
     });
-
 };
 
 module.exports = {
