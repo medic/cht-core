@@ -3,10 +3,7 @@
  * Specifically, needs patched duality/core.js to have correct context
  */
 exports.getAppInfo = function() {
-    var gateway,
-        info,
-        muvuku,
-        defaults = require('views/lib/app_settings'),
+    var defaults = require('views/lib/app_settings'),
         app_settings = getSettings.call(this),
         _ = _ || require('underscore'),
         url = url || require('url');
@@ -131,34 +128,19 @@ exports.getAppInfo = function() {
         }
     }
 
-    info = {
-        muvuku_webapp_url: '/json-forms/_design/json-forms/_rewrite/?_embed_mode=2'
-    };
-
-    if (app_settings) {
-        gateway = app_settings.gateway_number;
-
-        info.muvuku_webapp_url = info.muvuku_webapp_url || app_settings.muvuku_webapp_url;
-
-        _.extend(info, app_settings);
-    }
-
-    muvuku = url.parse(info.muvuku_webapp_url, true);
+    var muvuku = url.parse(app_settings.muvuku_webapp_url, true);
     muvuku.search = null;
     muvuku.query._sync_url = require('duality/core').getBaseURL() + '/add';
 
-    if (gateway) {
-        muvuku.query._gateway_num = gateway;
+    if (app_settings.gateway_number) {
+        muvuku.query._gateway_num = app_settings.gateway_number;
     }
 
-    info.muvuku_webapp_url = url.format(muvuku);
+    app_settings.muvuku_webapp_url = url.format(muvuku);
+    app_settings.sha = this.kanso && this.kanso.git && this.kanso.git.commit;
+    app_settings.translations = app_settings.translations || [];
+    app_settings.translate = _.partial(translate, app_settings.translations);
+    app_settings.getMessage = getMessage;
 
-    info.sha = this.kanso && this.kanso.git && this.kanso.git.commit;
-
-    info.translations = info.translations || [];
-
-    info.translate = _.partial(translate, info.translations);
-    info.getMessage = getMessage;
-
-    return info;
+    return app_settings;
 };

@@ -10,7 +10,7 @@
  */
 
 module.exports = {
-   "muvuku_webapp_url": '/json-forms/_design/json-forms/_rewrite/?_embed_mode=2',
+   "muvuku_webapp_url": '/muvuku-webapp/_design/muvuku-webapp/_rewrite/?_embed_mode=2',
    "reported_date_format": "MMM hh:mm",
    "forms_only_mode": false,
    "public_access": false,

@@ -12,13 +12,14 @@ module.exports = {
             var files = doc['kujua-sms'].json_forms;
 
             async.reduce(files, {}, function(result, filename, cb) {
-                fs.readFile(jsonforms_path + '/' + filename, function(err, content) {
-                    if(err) { return cb(err); }
-
-                    var translation = convert(JSON.parse(content));
+                try {
+                    var json = require(path + '/' + jsonforms_path + '/' + filename);
+                    var translation = convert(json);
                     _.extend(result, translation);
                     cb(null, result);
-                });
+                } catch(e) {
+                    cb(e);
+                }
             },
             function (err, result) {
                 if (err) {
