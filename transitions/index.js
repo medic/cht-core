@@ -74,25 +74,25 @@ module.exports = {
 
             stream.on('data', function(change) {
                 // ignore documents that have been deleted; there's nothing to update
-                if (change.deleted) return;
+                if (change.deleted) {
+                    return;
+                }
 
                 // get the latest document
                 db.getDoc(change.id, function(err, doc) {
 
                     var transitions = doc.transitions || {};
 
-                    if (err)
-                        return console.error('sentinel getDoc failed', err);
-
-                    if (!doc)
-                        return console.error('sentinel getDoc failed');
+                    if (err || !doc) {
+                        return console.error('sentinel getDoc failed with error: %s', err);
+                    }
 
                     if (transition.repeatable || !transitions[key] || !transitions[key].ok) {
-
                         // modify reported_date if we are running in
                         // synthetic date mode
-                        if (doc.reported_date && date.isSynthetic())
+                        if (doc.reported_date && date.isSynthetic()) {
                             doc.reported_date = date.getTimestamp();
+                        }
 
                         change.doc = doc;
 
