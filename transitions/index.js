@@ -148,10 +148,10 @@ module.exports = {
 
         db.getDoc(doc._id, function(err, latest) {
             if (err) {
-                console.log(JSON.stringify(err));
+                console.log("Error fetching doc: %s", JSON.stringify(err));
                 callback(err);
             } else {
-                if (utils.different(doc, latest)) {
+                if (utils.updateable(doc, latest)) {
                     db.saveDoc(doc, function(err, result) {
                         if (err) {
                             console.log(JSON.stringify(err));
