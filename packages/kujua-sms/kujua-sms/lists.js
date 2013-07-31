@@ -253,49 +253,6 @@ var old_getReferralTask = function(form, record) {
     return task;
 };
 
-/**
- * @param {Object} req - kanso request object
- * @param {String} form - jsonforms key string
- * @param {Object} record - record
- * @param {Object} facility - facility object
- *
- * @returns {String} - path for callback
- *
- * @api private
- */
-var getCallbackPath = function(req, form, record, facility) {
-    var appdb = require('duality/core').getDBURL(req),
-        baseURL = require('duality/core').getBaseURL(),
-        path = appdb;
-
-    if(!facility || !form || !record || !jsonforms[form]) {
-        return path;
-    }
-
-    if (!jsonforms[form].data_record_merge) {
-        return path;
-    }
-
-    // parse data_record_merge attribute for field names and replace
-    var matches = jsonforms[form].data_record_merge.match(/(:\w*)/g),
-        updateURL = jsonforms[form].data_record_merge;
-
-    for (var i in matches) {
-        var key = matches[i].replace(':','');
-        if (record[key]) {
-            updateURL = updateURL.replace(
-                            matches[i], encodeURIComponent(record[key]));
-        }
-    }
-
-    return baseURL + updateURL
-        .replace(':clinic_id', facility._id)
-        .replace(':facility_id', facility._id)
-        .replace(':form', encodeURIComponent(form));
-
-};
-
-
 var json_headers = {
     'Content-Type': 'application/json; charset=utf-8'
 };
@@ -359,7 +316,6 @@ exports.data_record = function (head, req) {
             options: {
                 host: headers[0],
                 port: headers[1] || "",
-                //path: getCallbackPath(req, form, record, facility),
                 path: baseURL + '/data_record/update/' + _id,
                 method: "PUT",
                 headers: _.clone(json_headers)
@@ -375,68 +331,6 @@ exports.data_record = function (head, req) {
 
     return JSON.stringify(respBody);
 };
-
-
-/*
- * If a data record for the year/month/clinic already exists this merges the
- * data and sends a callback to update it, if no data record exists, it sends a
- * callback to create a new data record.
- *
- * @param {Object} head
- * @param {Object} req
- *
- * @returns {String} response body
- *
- * @api public
-  */
-exports.data_record_merge = function (head, req) {
-    start({code: 200, headers: json_headers});
-
-    var new_data_record = JSON.parse(req.body),
-        form = req.query && req.query.form,
-        headers = req.headers.Host.split(":"),
-        host = headers[0],
-        port = headers[1] || "",
-        def = jsonforms[form],
-        appdb = require('duality/core').getDBURL(req),
-        old_data_record = null,
-        path = appdb,
-        row = {};
-
-    if (!def)
-        utils.addError(new_data_record, 'sys.form_not_found');
-
-    while (row = getRow()) {
-        old_data_record = row.value;
-        break;
-    }
-
-    if(old_data_record) {
-        path += '/' + old_data_record._id;
-        new_data_record._id = old_data_record._id;
-        new_data_record._rev = old_data_record._rev;
-    }
-
-    /* Send callback to gateway to save the doc. */
-    var respBody = {
-        callback: {
-            options: {
-                host: host,
-                port: port,
-                path: path,
-                method: old_data_record ? "PUT" : "POST",
-                headers: _.clone(json_headers)},
-            data: new_data_record}};
-
-    // pass through Authorization header
-    if(req.headers.Authorization) {
-        respBody.callback.options.headers.Authorization = req.headers.Authorization;
-    }
-
-    return JSON.stringify(respBody);
-};
-
-
 
 /*
  * Respond to smssync task polling, callback does a bulk update to update the

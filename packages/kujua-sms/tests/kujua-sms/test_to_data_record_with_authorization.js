@@ -90,7 +90,7 @@ var expected_callback = {
  */
 exports.test_to_record_with_auth = function (test) {
 
-    test.expect(6);
+    test.expect(4);
 
     // Data parsed from a gateway POST
     var data = {
@@ -173,76 +173,18 @@ var step2 = function(test, req) {
         query: {form: 'YYYY'} // query.form gets set by rewriter
     };
 
-    step3_1(test, next_req);
+    step3(test, next_req);
 
 };
 
 
 /*
- * STEP 3, CASE 1: A data record already exists.
- *
- * Run data_record/merge/year/month/clinic_id and expect a callback to update
- * the data record with the new data.
- *
- * @param {Object} test     - Unittest object
- * @param {Object} req      - Callback object used to form the next request
- * @param {Function} finish - Last callback where test.done() is called
- * @param {Array} args      - Args for last callback
- * @api private
- */
-var step3_1 = function(test, req, finish, args) {
-
-    var viewdata = {rows: [
-        {
-            key: ["2011", "11", "4a6399c98ff78ac7da33b639ed60f458"],
-            value: {
-                _id: "777399c98ff78ac7da33b639ed60f422",
-                _rev: "484399c98ff78ac7da33b639ed60f923"
-            }
-        }
-    ]};
-
-    var resp = fakerequest.list(lists.data_record_merge, viewdata, req);
-    var resp_body = JSON.parse(resp.body);
-
-    test.same(resp_body.callback.options.headers.Authorization,
-        "Basic cm9vdDpwYXNzd29yZA==");
-
-    step3_2(test, req);
-
-};
-
-
-/*
- * STEP 3, CASE 2:
- *
- * A data record does not exist.
- *
- * Run data_record/merge/year/month/clinic_id and expect a callback to create a
- * new data record.
- */
-var step3_2 = function(test, req) {
-
-    var viewdata = {rows: []};
-
-    var resp = fakerequest.list(lists.data_record_merge, viewdata, req);
-
-    var resp_body = JSON.parse(resp.body);
-
-    test.same(resp_body.callback.options.headers.Authorization,
-        "Basic cm9vdDpwYXNzd29yZA==");
-
-    step4(test);
-
-};
-
-/*
- * STEP 4
+ * STEP 3
  *
  * Tasks pending
  *
  */
-var step4 = function(test) {
+var step3 = function(test) {
 
     var viewdata = {
         rows: [{
@@ -251,7 +193,7 @@ var step4 = function(test) {
             }
         }]
     };
-    
+
     var next_req = {
         method: "GET",
         body: "",

@@ -71,22 +71,5 @@ exports.rules = [
             descending: 'true'
         }
     },
-    {
-        from: '/:form/data_record/merge/:phone/:week',
-        to: '_list/data_record_merge/data_record_by_phone_and_week',
-        query: {
-            startkey: [':phone', ':week'],
-            endkey: [':phone', ':week', {}],
-            form: ':form'
-        }
-    },
-    {
-        from: '/:form/data_record/merge/:year/:month/:facility_id',
-        to: '_list/data_record_merge/data_record_by_year_month_and_clinic_id',
-        query: {
-            startkey: [':year', ':month', ':facility_id'],
-            endkey: [':year', ':month', ':facility_id', {}]
-        }
-    },
     {from: '/app_settings.json', to: '_show/app_settings' }
 ];

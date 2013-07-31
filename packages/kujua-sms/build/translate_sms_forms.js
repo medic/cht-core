@@ -40,22 +40,6 @@ module.exports = {
     }
 };
 
-// some forms update existing records instead of always creating new ones.  In
-// that case they need to define an update URL and a view needs to be setup
-// based on the fields to query for an existing record.
-var getUpdatePath = function(form) {
-
-    if( ['VPD', 'NYAA', 'NYAB'].indexOf(form) !== -1 ) {
-        return '/:form/data_record/merge/:from/:week';
-    }
-
-    if(form === 'PSMM') {
-        return '/:form/data_record/merge/:monthly_year/:monthly_month/:facility_id';
-    }
-
-    return '';
-};
-
 // given a range of numbers return one in between
 var randNum = function(from, to) {
     from = from === undefined ? 10000000000: from;
@@ -143,7 +127,6 @@ var convert = function(content) {
 
     _.each(content, function(type) {
         var r = result[type.meta.code] = type;
-        r.data_record_merge = getUpdatePath(type.meta.code);
         r.examples = {
             data: {
                 muvuku: [],
