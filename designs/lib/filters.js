@@ -59,3 +59,7 @@ exports.twilio_message = function(doc) {
 exports.config_docs = function(doc) {
     return doc._id === '_design/kujua-lite';
 };
+
+exports.update_sent_by = function(doc) {
+    return doc.from && doc.type === 'data_record' && doc.sent_by === undefined;
+}

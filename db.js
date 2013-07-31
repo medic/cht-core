@@ -16,8 +16,8 @@ if (process.env.COUCH_URL) {
 		var index = couch_url.auth.indexOf(':');
 
         _.extend(settings, {
-            username: couch_url.substring(0, index),
-            password: couch_url.substring(index + 1)
+            username: couch_url.auth.substring(0, index),
+            password: couch_url.auth.substring(index + 1)
         });
 	}
 } else if (!process.env.TEST_ENV) {

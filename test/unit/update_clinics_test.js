@@ -14,7 +14,6 @@ exports['should update clinic by phone'] = function(test) {
             clinic: null
         }
     };
-    debugger;
     transition.onMatch({
         doc: doc
     }, fakedb, function(err, complete) {
