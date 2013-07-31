@@ -138,7 +138,9 @@ module.exports = {
             err = options.err,
             doc = change.doc;
 
-        doc.transitions = doc.transitions || {};
+        _.defaults(doc, {
+            transitions: {}
+        });
 
         doc.transitions[key] = {
             ok: !err
@@ -150,14 +152,7 @@ module.exports = {
                 callback(err);
             } else {
                 if (utils.different(doc, latest)) {
-                    _.defaults(latest, {
-                        transitions: {}
-                    });
-
-                    latest.transitions[key] = {
-                        ok: !err
-                    };
-                    db.saveDoc(latest, function(err, result) {
+                    db.saveDoc(doc, function(err, result) {
                         if (err) {
                             console.log(JSON.stringify(err));
                         }
