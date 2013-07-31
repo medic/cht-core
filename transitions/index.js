@@ -7,22 +7,24 @@ var _ = require('underscore'),
     utils = require('../lib/utils'),
     queue;
 
-// read all files in this directory and use every one except index.js as a transition
-_.each(fs.readdirSync(__dirname), function(file) {
-    var transition,
+if (!process.env.TEST_ENV) {
+    // read all files in this directory and use every one except index.js as a transition
+    _.each(fs.readdirSync(__dirname), function(file) {
+        var transition,
         key = path.basename(file, path.extname(file));
 
-    console.log('reading file '+key);
-    try {
-        if (file !== 'index.js') {
-            transition = require('./' + key);
-            transitions[key] = transition;
+        console.log('reading file %s', key);
+        try {
+            if (file !== 'index.js') {
+                transition = require('./' + key);
+                transitions[key] = transition;
+            }
+        } catch(e) {
+            // only log exceptions
+            console.error(e);
         }
-    } catch(e) {
-        // only log exceptions
-        console.error(e);
-    }
-});
+    });
+}
 
 /*
  * create a queue to handle the changes, calling the onMatch of the transitions
@@ -32,7 +34,7 @@ _.each(fs.readdirSync(__dirname), function(file) {
  * entirely, and callback(err) or callback(null, true) to save the transition.
  */
 queue = async.queue(function(job, callback) {
-    var db = require('../db'),
+    var db = job.db || require('../db'),
         transition = job.transition,
         key = job.key,
         change = job.change;
@@ -41,11 +43,11 @@ queue = async.queue(function(job, callback) {
 
     transition.onMatch(change, db, function(err, complete) {
         if (err || complete) {
-            finalize({
+            module.exports.finalize({
                 key: key,
                 change: change,
                 err: err
-            }, callback);
+            }, db, callback);
         } else {
             callback();
         }
@@ -96,6 +98,7 @@ module.exports = {
 
                         queue.push({
                             change: change,
+                            db: db,
                             key: key,
                             transition: transition
                         });
@@ -127,45 +130,43 @@ module.exports = {
             module.exports.attachTransition(transition, key);
 
         });
-    }
-}
+    },
+    // mark the transition as completed
+    finalize: function(options, db, callback) {
+        var change = options.change,
+            key = options.key,
+            err = options.err,
+            doc = change.doc;
 
-// mark the transition as completed
-function finalize(options, callback) {
-    var change = options.change,
-        db = require('../db'),
-        key = options.key,
-        err = options.err,
-        doc = change.doc;
+        doc.transitions = doc.transitions || {};
 
-    doc.transitions = doc.transitions || {};
+        doc.transitions[key] = {
+            ok: !err
+        };
 
-    doc.transitions[key] = {
-        ok: !err
-    };
-
-    db.getDoc(doc._id, function(err, latest) {
-        if (err) {
-            console.log(JSON.stringify(err));
-            callback(err);
-        } else {
-            if (!utils.equalRevisions(doc, latest)) {
-                _.defaults(latest, {
-                    transitions: {}
-                });
-
-                latest.transitions[key] = {
-                    ok: !err
-                };
-                db.saveDoc(latest, function(err, result) {
-                    if (err) {
-                        console.log(JSON.stringify(err));
-                    }
-                    callback(err);
-                });
+        db.getDoc(doc._id, function(err, latest) {
+            if (err) {
+                console.log(JSON.stringify(err));
+                callback(err);
             } else {
-                callback();
+                if (utils.different(doc, latest)) {
+                    _.defaults(latest, {
+                        transitions: {}
+                    });
+
+                    latest.transitions[key] = {
+                        ok: !err
+                    };
+                    db.saveDoc(latest, function(err, result) {
+                        if (err) {
+                            console.log(JSON.stringify(err));
+                        }
+                        callback(err);
+                    });
+                } else {
+                    callback();
+                }
             }
-        }
-    });
+        });
+    }
 }
