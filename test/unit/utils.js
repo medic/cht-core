@@ -46,3 +46,30 @@ exports['getClinicContactName gets name if contact'] = function(test) {
     }), 'Y');
     test.done();
 }
+
+exports['getClinicName gets returns health volunteer if miss'] = function(test) {
+    test.equal(utils.getClinicName({
+        related_entities: {
+            clinic: { }
+        }
+    }), 'health volunteer');
+    test.done();
+}
+
+exports['getClinicName gets name if contact'] = function(test) {
+    test.equal(utils.getClinicName({
+        name: 'Y'
+    }), 'Y');
+    test.done();
+}
+
+exports['getClinicName gets name'] = function(test) {
+    test.equal(utils.getClinicName({
+        related_entities: {
+            clinic: {
+                name: 'Y'
+            }
+        }
+    }), 'Y');
+    test.done();
+}
