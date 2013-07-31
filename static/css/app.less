@@ -250,6 +250,10 @@ body {
         .header-row;
         h4 {
             line-height: 30px;
+            i {
+                color: #bbb;
+                text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            }
         }
         label {
             text-align: right;
@@ -821,8 +825,10 @@ table.spreadsheet .dropdown-menu {
     z-index: 100000;
 }
 
-h3 .label {
-    vertical-align: middle;
+h3, h4 {
+    .label {
+        vertical-align: middle;
+    }
 }
 .label-faded {
     background-color: #bbb;

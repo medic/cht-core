@@ -1,7 +1,12 @@
 {#forms}
     <div class="row-fluid form-row">
       <h4 class="span7 offset1">
-        {title} <div class="label label-faded">{form}</div>
+        {title}
+        {?form}
+        <div class="label label-faded">{form}</div>
+        {:else}
+        <i class="icon-envelope"></i>
+        {/form}
       </h4>
         <div class="span3"><label>{total} records</label></div>
         <div class="span1">
