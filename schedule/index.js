@@ -42,7 +42,7 @@ function checkSchedule() {
 
 function reschedule() {
     var now = moment(),
-        heartbeat = now.clone().add('hours', 1).minutes(0).seconds(0).milliseconds(0),
+        heartbeat = now.clone().startOf('hour').add('hours', 1),
         duration = moment.duration(heartbeat.valueOf() - now.valueOf());
 
     console.log('checking schedule again in', moment.duration(duration).humanize());
