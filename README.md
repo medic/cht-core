@@ -66,9 +66,10 @@ npm install phantomjs -g
 
 ## Build Status
 
-Build status for develop branch:
+master: [![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=master)](https://travis-ci.org/medic/kujua-lite/branches)
 
-[![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=develop)](https://travis-ci.org/medic/kujua-lite)
+develop: [![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=develop)](https://travis-ci.org/medic/kujua-lite/branches)
+
 
 
 ## License & Copyright
