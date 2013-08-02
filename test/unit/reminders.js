@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    moment = require('moment'),
     sinon = require('sinon'),
     config = require('../../config'),
     reminders = require('../../schedule/reminders');
@@ -68,6 +69,40 @@ exports['runSchedule does not create document when no match'] = function(test) {
         test.equals(sendReminders.callCount, 0);
         matchSchedule.restore();
         sendReminders.restore();
+        test.done();
+    });
+};
+
+exports['matches schedule if in last hour'] = function(test) {
+    reminders.matchSchedule({
+        cron: moment().format('0 HH * * *') // will generate cron job matching the current hour
+    }, {}, function(err, matches) {
+        test.equals(err, null);
+        test.ok(matches);
+        test.done();
+    });
+}
+
+exports['does not match schedule if in next minute'] = function(test) {
+    var now = moment();
+
+    reminders.matchSchedule({
+        cron: (now.minutes() + 1) + ' ' + now.format('HH * * *') // will generate cron job matching the current hour but 1 minute into future
+    }, {}, function(err, matches) {
+        test.equals(err, null);
+        test.equals(matches, false);
+        test.done();
+    });
+}
+
+exports['does not match if previous to schedule'] = function(test) {
+    var now = moment().subtract(2, 'hours');
+
+    reminders.matchSchedule({
+        cron: now.format('59 HH * * *') // will generate cron job matching the previous hour
+    }, {}, function(err, matches) {
+        test.equals(err, null);
+        test.equals(matches, false);
         test.done();
     });
 };
