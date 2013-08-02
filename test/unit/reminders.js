@@ -27,21 +27,8 @@ exports['config with no schedules calls callback'] = function(test) {
 exports['config with three matching schedule calls runSchedule thrice'] = function(test) {
     var runSchedule;
 
-    sinon.stub(config, 'get').returns([
-        {
-            schedule: '0 8 * * 1',
-            message: 'abcd'
-        },
-        {
-            schedule: '0 8 * * 1',
-            message: 'abcd'
-        },
-        {
-            schedule: '0 8 * * 1',
-            message: 'abcd'
-        }
-    ]);
-    runSchedule = sinon.stub(reminders, 'runSchedule').callsArgWith(1, null);
+    sinon.stub(config, 'get').returns([ {}, {}, {} ]);
+    runSchedule = sinon.stub(reminders, 'runSchedule').callsArgWith(2, null);
     reminders.execute({}, function(err) {
         test.equals(err, null);
         test.equals(runSchedule.callCount, 3);
@@ -49,6 +36,38 @@ exports['config with three matching schedule calls runSchedule thrice'] = functi
         runSchedule.restore();
         config.get.restore();
 
+        test.done();
+    });
+};
+
+exports['runSchedule calls sendReminder when valid'] = function(test) {
+    var sendReminders,
+        matchSchedule;
+
+    matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(2, null, true);
+    sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(2, null);
+
+    reminders.runSchedule({}, {}, function(err) {
+        test.equals(err, null);
+        test.equals(sendReminders.callCount, 1);
+        matchSchedule.restore();
+        sendReminders.restore();
+        test.done();
+    });
+};
+
+exports['runSchedule does not create document when no match'] = function(test) {
+    var sendReminders,
+        matchSchedule;
+
+    matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(2, null, false);
+    sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(2, null);
+
+    reminders.runSchedule({}, {}, function(err) {
+        test.equals(err, null);
+        test.equals(sendReminders.callCount, 0);
+        matchSchedule.restore();
+        sendReminders.restore();
         test.done();
     });
 };
