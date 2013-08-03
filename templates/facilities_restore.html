@@ -1,13 +1,35 @@
-<div class="row">
-  <div class="offset4 span8">
-    <p>{msg} Please <a href="">refresh</a>.</p>
+<div id="facilities-restore">
+  {?msg}
+    {?errors}
+    <div class="row">
+      <div class="offset2 span8 errors">
+        <div class="alert alert-error">
+          <p class="msg">{msg}</p>
+          <p class="errors">{#errors}{.}, {/errors}</p>
+        </div>
+      </div>
+    </div>
+    {:else}
+    <div class="row">
+      <div class="offset2 span8">
+        <p class="msg">{msg}</p>
+      </div>
+    </div>
+    {/errors}
+    <div class="row">
+      <div class="offset2 span8">
+        <p class="continue"><a class="btn btn-primary" href="">Continue</a></p>
+      </div>
+    </div>
+  {/msg}
+  {?stat}
+  <div class="row">
+    <div class="offset2 span8">
+      <p class="stat">Restored <span>{stat}</span> records...</p>
+      <div class="progress progress-striped active">
+          <div class="bar"></div>
+        </div>
+    </div>
   </div>
+  {/stat}
 </div>
-{?errors}
-<div class="row">
-  <div class="offset1 span10">
-    <p>The following facilities did not load:</p>
-    <p>{#errors}{.}, {/errors}</p>
-  </div>
-</div>
-{/errors}
