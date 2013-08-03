@@ -1,0 +1,13 @@
+<div class="row">
+  <div class="offset4 span8">
+    <p>{msg} Please <a href="">refresh</a>.</p>
+  </div>
+</div>
+{?errors}
+<div class="row">
+  <div class="offset1 span10">
+    <p>The following facilities did not load:</p>
+    <p>{#errors}{.}, {/errors}</p>
+  </div>
+</div>
+{/errors}

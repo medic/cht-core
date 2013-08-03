@@ -1,9 +1,19 @@
 <form class="pull-right form-inline" id="facilities-controls">
-  <div>
+  <div class="options">
     <a class="btn btn-small backup" href="{baseURL}/facilities/backup">Backup</a>
     <a class="btn btn-small restore">Restore</a>
   </div>
-  <div style="height:0; width:0; overflow:hidden;">
+  <div class="options-restore hide">
+      <fieldset>
+        <label class="checkbox">
+          <input type="checkbox" name="overwrite"> Overwrite Existing Records
+        </label>
+        <button type="button" class="btn btn-small choose">Choose File</button>
+        <button type="button" title="Cancel" class="cancel close">&times;</button>
+      </fieldset>
+  </div>
+  <!--div style="height:0; width:0; overflow:hidden;"-->
+  <div class="hide">
     <input class="uploader" type="file" accept="application/json">
   </div>
 </form>
