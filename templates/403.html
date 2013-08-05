@@ -2,6 +2,9 @@
   {?msg}
     <p>{msg}</p>
   {:else}
-    <p>Please <a class="page_login" href="/dashboard/_design/dashboard/_rewrite/login">login</a> with an authorized account.</p>
+    <p>Please <span class="login_wait">wait...</span>
+        <span class="login_show hide">
+            <a class="page_login" href="/dashboard/_design/dashboard/_rewrite/login">login</a> with an authorized account.</p>
+        </span>
   {/msg}
 </div>

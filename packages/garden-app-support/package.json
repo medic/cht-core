@@ -1,0 +1,29 @@
+{
+  "name": "garden-app-support",
+  "version": "0.0.4",
+  "description": "Support functions for apps that want to play in the garden.",
+  "homepage": "http://garden20.com/wiki/Garden_App_Support",
+  "keywords": [
+    "garden"
+  ],
+  "jam": {
+    "dependencies": {
+      "jquery": ">1.5.0",
+      "underscore": ">1.3.1"
+    },
+    "main": "garden-app-support.js"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/mit-license.php"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "git",
+      "url": "http://github.com/garden20/garden-app-support.git"
+    }
+  ],
+  "github": "http://github.com/garden20/garden-app-support"
+}

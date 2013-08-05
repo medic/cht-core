@@ -62,7 +62,8 @@
         "users": null,
         "cookies": null,
         "moment": null,
-        "kanso-app-settings": null
+        "kanso-app-settings": null,
+        "garden-app-support": null
     },
     "user_data": {
         "db_prefix": false,

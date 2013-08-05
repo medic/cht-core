@@ -1,0 +1,13 @@
+{
+    "name" : "garden-app-support",
+    "version" : "0.0.4",
+    "description" : "Useful support for apps that want to play nice in the garden.",
+    "url" : "http://github.com/garden20/garden-app-support",
+    "categories" : ["garden", "utils"],
+    "modules": "garden-app-support.js",
+
+    "dependencies": {
+        "modules": null,
+        "jquery": null
+    }
+}
