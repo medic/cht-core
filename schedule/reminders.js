@@ -29,8 +29,13 @@ module.exports = {
             callback(null, false);
         }
     },
-    sendReminders: function(message, db, callback) {
+    getClinics: function(schedule, db, callback) {
         callback();
+    },
+    sendReminders: function(schedule, db, callback) {
+        module.exports.getClinics(schedule, db, function(err) {
+            callback(err);
+        });
     },
     runSchedule: function(schedule, db, callback) {
         module.exports.matchSchedule(schedule, function(err, matches) {

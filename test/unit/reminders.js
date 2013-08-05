@@ -106,3 +106,13 @@ exports['does not match if previous to schedule'] = function(test) {
         test.done();
     });
 };
+
+exports['sendReminders calls getClinics'] = function(test) {
+    var getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(2, null);
+
+    reminders.sendReminders({}, {}, function(err) {
+        test.ok(getClinics.called);
+        test.equals(err, null);
+        test.done();
+    });
+};
