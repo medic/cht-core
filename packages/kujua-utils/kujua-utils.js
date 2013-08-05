@@ -133,6 +133,7 @@ exports.dumper = {
 
 /* poorly named */
 exports.isUserAdmin = function(userCtx) {
+    if (!userCtx) return false;
     return userCtx.roles.indexOf('national_admin') !== -1 ||
            userCtx.roles.indexOf('_admin') !== -1;
 };
@@ -143,6 +144,7 @@ exports.isUserDistrictAdmin = function(userCtx) {
 
 exports.hasPerm = function(userCtx, perm) {
     var permissions = {
+        can_backup_facilities: ['national_admin'],
         can_edit_facility: ['national_admin', 'district_admin'],
         can_edit_any_facility: ['national_admin'],
         can_view_revisions: [],
