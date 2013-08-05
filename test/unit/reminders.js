@@ -112,7 +112,31 @@ exports['sendReminders calls getClinics'] = function(test) {
 
     reminders.sendReminders({}, {}, function(err) {
         test.ok(getClinics.called);
+        getClinics.restore();
         test.equals(err, null);
         test.done();
     });
 };
+
+exports['getClinics calls db.view'] = function(test) {
+    var db = {
+        view: function() {}
+    };
+    sinon.stub(db, 'view').callsArgWith(3, null, {
+        rows: [
+            {
+                doc: {
+                    id: 'xxx'
+                }
+            }
+        ]
+    });
+
+    reminders.getClinics({}, db, function(err, clinics) {
+        test.ok(_.isArray(clinics));
+        test.equals(clinics.length, 1);
+        test.equals(_.first(clinics).id, 'xxx');
+        test.ok(db.view.called);
+        test.done();
+    });
+}

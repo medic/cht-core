@@ -30,7 +30,13 @@ module.exports = {
         }
     },
     getClinics: function(schedule, db, callback) {
-        callback();
+        db.view('kujua-lite', 'clinic_by_phone', {
+            include_docs: true
+        }, function(err, data) {
+            var docs = _.pluck(data.rows, 'doc');
+
+            callback(err, docs);
+        });
     },
     sendReminders: function(schedule, db, callback) {
         module.exports.getClinics(schedule, db, function(err) {
