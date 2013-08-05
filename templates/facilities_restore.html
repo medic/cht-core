@@ -2,9 +2,9 @@
   {?msg}
     {?errors}
     <div class="row">
-      <div class="offset2 span8 errors">
+      <div class="offset2 span8">
+        <p class="msg">{msg} We encountered {errors.length} errors though:</p>
         <div class="alert alert-error">
-          <p class="msg">{msg}</p>
           <p class="errors">{#errors}{.}, {/errors}</p>
         </div>
       </div>
@@ -22,14 +22,13 @@
       </div>
     </div>
   {/msg}
-  {?stat}
-  <div class="row">
+  {?progress}
+  <div class="row update-progress">
     <div class="offset2 span8">
-      <p class="stat">Restored <span>{stat}</span> records...</p>
+      <p class="desc">{progress}</p>
       <div class="progress progress-striped active">
-          <div class="bar"></div>
-        </div>
-    </div>
+        <div class="bar" style="width:{?width}{width}{:else}100%{/width}"></div>
+      </div>
   </div>
-  {/stat}
+  {/progress}
 </div>
