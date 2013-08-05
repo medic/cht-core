@@ -45,7 +45,7 @@ exports['runSchedule calls sendReminder when valid'] = function(test) {
     var sendReminders,
         matchSchedule;
 
-    matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(2, null, true);
+    matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, true);
     sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(2, null);
 
     reminders.runSchedule({}, {}, function(err) {
@@ -61,7 +61,7 @@ exports['runSchedule does not create document when no match'] = function(test) {
     var sendReminders,
         matchSchedule;
 
-    matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(2, null, false);
+    matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, false);
     sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(2, null);
 
     reminders.runSchedule({}, {}, function(err) {
@@ -76,7 +76,7 @@ exports['runSchedule does not create document when no match'] = function(test) {
 exports['matches schedule if in last hour'] = function(test) {
     reminders.matchSchedule({
         cron: moment().format('0 HH * * *') // will generate cron job matching the current hour
-    }, {}, function(err, matches) {
+    }, function(err, matches) {
         test.equals(err, null);
         test.ok(matches);
         test.done();
@@ -88,7 +88,7 @@ exports['does not match schedule if in next minute'] = function(test) {
 
     reminders.matchSchedule({
         cron: (now.minutes() + 1) + ' ' + now.format('HH * * *') // will generate cron job matching the current hour but 1 minute into future
-    }, {}, function(err, matches) {
+    }, function(err, matches) {
         test.equals(err, null);
         test.equals(matches, false);
         test.done();
@@ -100,7 +100,7 @@ exports['does not match if previous to schedule'] = function(test) {
 
     reminders.matchSchedule({
         cron: now.format('59 HH * * *') // will generate cron job matching the previous hour
-    }, {}, function(err, matches) {
+    }, function(err, matches) {
         test.equals(err, null);
         test.equals(matches, false);
         test.done();
