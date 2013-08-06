@@ -1,4 +1,5 @@
-var utils = require('../../lib/utils');
+var _ = require('underscore'),
+    utils = require('../../lib/utils');
 
 exports['updateable returns true when _rev the same'] = function(test) {
     test.ok(utils.updateable({ _rev: '1' }, { _rev: '1', x: 1 }));
@@ -93,5 +94,28 @@ exports['getClinicPhone gets phone if contact'] = function(test) {
             phone: '123'
         }
     }), '123');
+    test.done();
+}
+
+exports['addMessage adds uuid'] = function(test) {
+    var doc = {},
+        message,
+        task;
+
+    utils.addMessage(doc, {
+        phone: '+1234',
+        message: 'xxx'
+    });
+
+    test.ok(doc.tasks);
+    task = _.first(doc.tasks);
+
+    test.ok(_.isArray(task.messages));
+    message = _.first(task.messages);
+    test.equals(task.state, 'pending');
+
+    test.equals(message.to, '+1234');
+    test.equals(message.message, 'xxx');
+    test.ok(message.uuid);
     test.done();
 }
