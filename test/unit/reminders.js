@@ -45,7 +45,7 @@ exports['runSchedule calls sendReminder when valid'] = function(test) {
     var sendReminders,
         matchSchedule;
 
-    matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, true);
+    matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, moment());
     sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(2, null);
 
     reminders.runSchedule({}, {}, function(err) {
@@ -73,15 +73,38 @@ exports['runSchedule does not create document when no match'] = function(test) {
     });
 };
 
-exports['matches schedule if in last hour'] = function(test) {
+exports['matches schedule with moment if in last hour'] = function(test) {
+    var ts = moment().startOf('hour');
+
     reminders.matchSchedule({
         cron: moment().format('0 HH * * *') // will generate cron job matching the current hour
     }, function(err, matches) {
         test.equals(err, null);
         test.ok(matches);
+        test.equals(matches.valueOf(), ts.valueOf());
         test.done();
     });
 }
+
+exports['runSchedule decorates schedule with moment if found'] = function(test) {
+    var sendReminders,
+        matchSchedule
+        now = moment();
+
+    matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, now);
+    sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(2, null);
+
+    reminders.runSchedule({}, {}, function(err) {
+        var schedule = sendReminders.getCall(0).args[0];
+
+        test.ok(schedule.moment);
+        test.equals(schedule.moment.valueOf(), now.valueOf());
+
+        matchSchedule.restore();
+        sendReminders.restore();
+        test.done();
+    });
+};
 
 exports['does not match schedule if in next minute'] = function(test) {
     var now = moment();

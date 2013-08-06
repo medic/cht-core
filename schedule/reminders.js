@@ -24,7 +24,7 @@ module.exports = {
             previous = sched.prev(1, start.toDate(), end.toDate());
 
         if (_.isDate(previous)) {
-            callback(null, true);
+            callback(null, moment(previous));
         } else {
             callback(null, false);
         }
@@ -44,10 +44,11 @@ module.exports = {
         });
     },
     runSchedule: function(schedule, db, callback) {
-        module.exports.matchSchedule(schedule, function(err, matches) {
+        module.exports.matchSchedule(schedule, function(err, moment) {
             if (err) {
                 callback(err);
-            } else if (matches) {
+            } else if (moment) {
+                schedule.moment = moment.clone();
                 module.exports.sendReminders(schedule, db, callback);
             } else {
                 callback();
