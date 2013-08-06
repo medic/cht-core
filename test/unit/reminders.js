@@ -268,7 +268,7 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
         }
     }, {
         code: 'XXX',
-        message: 'hi',
+        message: 'hi {{year}} {{week}}',
         moment: now
     }, db, function(err) {
         var clinic,
@@ -281,6 +281,8 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
 
         message = _.first(_.first(clinic.tasks).messages);
         test.equals(message.to, '+1234');
+        test.ok(message.message.indexOf(now.format('YYYY')) > 0);
+        test.ok(message.message.indexOf(now.format('w')) > 0);
 
         saveDoc.restore();
         test.done();
