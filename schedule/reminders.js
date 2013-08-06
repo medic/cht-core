@@ -29,13 +29,30 @@ module.exports = {
             callback(null, false);
         }
     },
+    isSent: function(schedule, clinic) {
+        var sent;
+
+        schedule.moment = schedule.moment || moment().startOf('hour');
+
+        sent = _.findWhere(clinic.sent_reminders, {
+            code: schedule.code,
+            ts: schedule.moment.toISOString()
+        });
+
+        return !!sent;
+    },
     getClinics: function(schedule, db, callback) {
         db.view('kujua-lite', 'clinic_by_phone', {
             include_docs: true
         }, function(err, data) {
-            var docs = _.pluck(data.rows, 'doc');
+            var clinics,
+                docs = _.pluck(data.rows, 'doc');
 
-            callback(err, docs);
+            clinics = _.reject(docs, function(clinic) {
+                return module.exports.isSent(schedule, clinic);
+            });
+
+            callback(err, clinics);
         });
     },
     sendReminders: function(schedule, db, callback) {

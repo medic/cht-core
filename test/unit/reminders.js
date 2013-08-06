@@ -163,3 +163,65 @@ exports['getClinics calls db.view'] = function(test) {
         test.done();
     });
 }
+
+exports['getClinics ignores clinics with matching sent_reminders'] = function(test) {
+    var db,
+        now = moment().startOf('hour');
+
+    db = {
+        view: function() {}
+    };
+    sinon.stub(db, 'view').callsArgWith(3, null, {
+        rows: [
+            {
+                doc: {
+                    id: 'xxx'
+                }
+            },
+            {
+                doc: {
+                    id: 'yyx',
+                    sent_reminders: [
+                        {
+                            code: 'XXX',
+                            ts: now.toISOString()
+                        }
+                    ]
+                }
+            },
+            {
+                doc: {
+                    id: 'yyy',
+                    sent_reminders: [
+                        {
+                            code: 'YYY',
+                            ts: now.toISOString()
+                        }
+                    ]
+                }
+            },
+            {
+                doc: {
+                    id: 'yyz',
+                    sent_reminders: [
+                        {
+                            code: 'XXX',
+                            ts: now.clone().add(1, 'hour').toISOString()
+                        }
+                    ]
+                }
+            }
+        ]
+    });
+
+    reminders.getClinics({
+        moment: now,
+        code: 'XXX'
+    }, db, function(err, clinics) {
+        var ids = _.pluck(clinics, 'id');
+
+        test.same(['xxx', 'yyy', 'yyz'], ids);
+        test.equals(clinics.length, 3);
+        test.done();
+    });
+}
