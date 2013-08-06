@@ -9,7 +9,7 @@ require('../moment').lang('en-gb', {
     weekdaysShort : "Sun_Mon_Tue_Wed_Thu_Fri_Sat".split("_"),
     weekdaysMin : "Su_Mo_Tu_We_Th_Fr_Sa".split("_"),
     longDateFormat : {
-        LT : "h:mm A",
+        LT : "HH:mm",
         L : "DD/MM/YYYY",
         LL : "D MMMM YYYY",
         LLL : "D MMMM YYYY LT",
@@ -20,7 +20,7 @@ require('../moment').lang('en-gb', {
         nextDay : '[Tomorrow at] LT',
         nextWeek : 'dddd [at] LT',
         lastDay : '[Yesterday at] LT',
-        lastWeek : '[last] dddd [at] LT',
+        lastWeek : '[Last] dddd [at] LT',
         sameElse : 'L'
     },
     relativeTime : {

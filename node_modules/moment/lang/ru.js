@@ -1,34 +1,20 @@
 // moment.js language configuration
 // language : russian (ru)
 // author : Viktorminator : https://github.com/Viktorminator
-
-var pluralRules = [
-    function (n) { return ((n % 10 === 1) && (n % 100 !== 11)); },
-    function (n) { return ((n % 10) >= 2 && (n % 10) <= 4 && ((n % 10) % 1) === 0) && ((n % 100) < 12 || (n % 100) > 14); },
-    function (n) { return ((n % 10) === 0 || ((n % 10) >= 5 && (n % 10) <= 9 && ((n % 10) % 1) === 0) || ((n % 100) >= 11 && (n % 100) <= 14 && ((n % 100) % 1) === 0)); },
-    function (n) { return true; }
-];
+// Author : Menelion Elensúle : https://github.com/Oire
 
 function plural(word, num) {
-    var forms = word.split('_'),
-    minCount = Math.min(pluralRules.length, forms.length),
-    i = -1;
-
-    while (++i < minCount) {
-        if (pluralRules[i](num)) {
-            return forms[i];
-        }
-    }
-    return forms[minCount - 1];
+    var forms = word.split('_');
+    return num % 10 === 1 && num % 100 !== 11 ? forms[0] : (num % 10 >= 2 && num % 10 <= 4 && (num % 100 < 10 || num % 100 >= 20) ? forms[1] : forms[2]);
 }
 
 function relativeTimeWithPlural(number, withoutSuffix, key) {
     var format = {
-        'mm': 'минута_минуты_минут_минуты',
-        'hh': 'час_часа_часов_часа',
-        'dd': 'день_дня_дней_дня',
-        'MM': 'месяц_месяца_месяцев_месяца',
-        'yy': 'год_года_лет_года'
+        'mm': 'минута_минуты_минут',
+        'hh': 'час_часа_часов',
+        'dd': 'день_дня_дней',
+        'MM': 'месяц_месяца_месяцев',
+        'yy': 'год_года_лет'
     };
     if (key === 'm') {
         return withoutSuffix ? 'минута' : 'минуту';
@@ -100,7 +86,6 @@ require('../moment').lang('ru', {
         },
         sameElse: 'L'
     },
-    // It needs checking (adding) russian plurals and cases.
     relativeTime : {
         future : "через %s",
         past : "%s назад",
@@ -116,7 +101,23 @@ require('../moment').lang('ru', {
         y : "год",
         yy : relativeTimeWithPlural
     },
-    ordinal : '%d.',
+
+    ordinal: function (number, period) {
+        switch (period) {
+        case 'M':
+        case 'd':
+        case 'DDD':
+            return number + '-й';
+        case 'D':
+            return number + '-го';
+        case 'w':
+        case 'W':
+            return number + '-я';
+        default:
+            return number;
+        }
+    },
+
     week : {
         dow : 1, // Monday is the first day of the week.
         doy : 7  // The week that contains Jan 1st is the first week of the year.

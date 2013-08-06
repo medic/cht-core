@@ -6,7 +6,7 @@
     "async": "0.2.x",
     "epi-week": "0.0.x",
     "felix-couchdb": "1.0.x",
-    "moment": "2.0.x",
+    "moment": "2.1.x",
     "mustache": "0.7.x",
     "optimist": "0.4.x",
     "request": "2.20.x",
