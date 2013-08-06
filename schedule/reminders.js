@@ -55,9 +55,18 @@ module.exports = {
             callback(err, clinics);
         });
     },
+    sendReminder: function(clinic, schedule, db, callback) {
+        callback();
+    },
     sendReminders: function(schedule, db, callback) {
-        module.exports.getClinics(schedule, db, function(err) {
-            callback(err);
+        module.exports.getClinics(schedule, db, function(err, clinics) {
+            if (err) {
+                callback(err);
+            } else {
+                async.each(clinics, function(clinic, callback) {
+                    module.exports.sendReminder(clinic, schedule, db, callback);
+                }, callback);
+            }
         });
     },
     runSchedule: function(schedule, db, callback) {

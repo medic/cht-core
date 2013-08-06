@@ -131,7 +131,7 @@ exports['does not match if previous to schedule'] = function(test) {
 };
 
 exports['sendReminders calls getClinics'] = function(test) {
-    var getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(2, null);
+    var getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(2, null, []);
 
     reminders.sendReminders({}, {}, function(err) {
         test.ok(getClinics.called);
@@ -222,6 +222,31 @@ exports['getClinics ignores clinics with matching sent_reminders'] = function(te
 
         test.same(['xxx', 'yyy', 'yyz'], ids);
         test.equals(clinics.length, 3);
+        test.done();
+    });
+}
+
+exports['sendReminders calls sendReminder for each clinic'] = function(test) {
+    var clinics,
+        getClinics,
+        sendReminder;
+
+    clinics = [
+        {
+            id: 'xxx'
+        },
+        {
+            id: 'yyy'
+        }
+    ];
+
+    getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(2, null, clinics);
+    sendReminder = sinon.stub(reminders, 'sendReminder').callsArgWithAsync(3, null);
+
+    reminders.sendReminders({}, {}, function(err) {
+        test.equals(sendReminder.callCount, 2);
+        getClinics.restore();
+        sendReminder.restore();
         test.done();
     });
 }
