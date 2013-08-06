@@ -59,7 +59,7 @@ module.exports = {
     },
     sendReminder: function(clinic, schedule, db, callback) {
         utils.addMessage(clinic, {
-            phone: '123',
+            phone: utils.getClinicPhone(clinic),
             message: i18n(schedule.message, {
                 week: schedule.moment.format('w'),
                 year: schedule.moment.format('YYYY')

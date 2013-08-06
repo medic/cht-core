@@ -262,17 +262,25 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
 
     saveDoc = sinon.stub(db, 'saveDoc').callsArgWithAsync(1, null);
 
-    reminders.sendReminder({}, {
+    reminders.sendReminder({
+        contact: {
+            phone: '+1234'
+        }
+    }, {
         code: 'XXX',
         message: 'hi',
         moment: now
     }, db, function(err) {
-        var clinic;
+        var clinic,
+            message;
 
         test.ok(saveDoc.called);
 
         clinic = saveDoc.getCall(0).args[0];
         test.ok(clinic.tasks);
+
+        message = _.first(_.first(clinic.tasks).messages);
+        test.equals(message.to, '+1234');
 
         saveDoc.restore();
         test.done();
