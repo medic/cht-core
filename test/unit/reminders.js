@@ -181,7 +181,7 @@ exports['getClinics ignores clinics with matching sent_reminders'] = function(te
             {
                 doc: {
                     id: 'yyx',
-                    sent_reminders: [
+                    tasks: [
                         {
                             code: 'XXX',
                             ts: now.toISOString()
@@ -192,7 +192,7 @@ exports['getClinics ignores clinics with matching sent_reminders'] = function(te
             {
                 doc: {
                     id: 'yyy',
-                    sent_reminders: [
+                    tasks: [
                         {
                             code: 'YYY',
                             ts: now.toISOString()
@@ -203,7 +203,7 @@ exports['getClinics ignores clinics with matching sent_reminders'] = function(te
             {
                 doc: {
                     id: 'yyz',
-                    sent_reminders: [
+                    tasks: [
                         {
                             code: 'XXX',
                             ts: now.clone().add(1, 'hour').toISOString()
@@ -272,54 +272,24 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
         moment: now
     }, db, function(err) {
         var clinic,
-            message;
+            message,
+            task;
 
         test.ok(saveDoc.called);
 
         clinic = saveDoc.getCall(0).args[0];
         test.ok(clinic.tasks);
 
-        message = _.first(_.first(clinic.tasks).messages);
+        console.log(JSON.stringify(clinic.tasks, null, 2));
+
+        task = _.first(clinic.tasks);
+        message = _.first(task.messages);
         test.equals(message.to, '+1234');
         test.ok(message.message.indexOf(now.format('YYYY')) > 0);
         test.ok(message.message.indexOf(now.format('w')) > 0);
 
-        saveDoc.restore();
-        test.done();
-    });
-};
-
-exports['sendReminder saves doc with sent_reminders field added to clinic'] = function(test) {
-    var db,
-        now = moment(),
-        saveDoc;
-
-    db = {
-        saveDoc: function() {}
-    };
-
-    saveDoc = sinon.stub(db, 'saveDoc').callsArgWithAsync(1, null);
-
-    reminders.sendReminder({
-        contact: {
-            phone: '+1234'
-        }
-    }, {
-        code: 'XXX',
-        message: 'hi {{year}} {{week}}',
-        moment: now
-    }, db, function(err) {
-        var clinic,
-            reminder;
-
-        clinic = saveDoc.getCall(0).args[0];
-        test.ok(clinic.sent_reminders);
-        test.ok(_.isArray(clinic.sent_reminders));
-        test.equals(clinic.sent_reminders.length, 1);
-
-        reminder = _.first(clinic.sent_reminders);
-        test.equals(reminder.code, 'XXX');
-        test.equals(reminder.ts, now.toISOString());
+        test.equals(task.code, 'XXX');
+        test.equals(task.ts, now.toISOString());
 
         saveDoc.restore();
         test.done();

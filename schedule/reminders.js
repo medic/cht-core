@@ -36,7 +36,7 @@ module.exports = {
 
         schedule.moment = schedule.moment || moment().startOf('hour');
 
-        sent = _.findWhere(clinic.sent_reminders, {
+        sent = _.findWhere(clinic.tasks, {
             code: schedule.code,
             ts: schedule.moment.toISOString()
         });
@@ -59,18 +59,13 @@ module.exports = {
     },
     sendReminder: function(clinic, schedule, db, callback) {
         utils.addMessage(clinic, {
+            code: schedule.code,
+            ts: schedule.moment.toISOString(),
             phone: utils.getClinicPhone(clinic),
             message: i18n(schedule.message, {
                 week: schedule.moment.format('w'),
                 year: schedule.moment.format('YYYY')
             })
-        });
-        _.defaults(clinic, {
-            sent_reminders: []
-        });
-        clinic.sent_reminders.push({
-            code: schedule.code,
-            ts: schedule.moment.toISOString()
         });
 
         db.saveDoc(clinic, callback);
