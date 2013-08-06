@@ -1,6 +1,8 @@
 var _ = require('underscore'),
     async = require('async'),
     config = require('../config'),
+    utils = require('../lib/utils'),
+    i18n = require('../i18n'),
     later = require('later'),
     moment = require('moment');
 
@@ -56,7 +58,14 @@ module.exports = {
         });
     },
     sendReminder: function(clinic, schedule, db, callback) {
-        callback();
+        utils.addMessage(clinic, {
+            phone: '123',
+            message: i18n(schedule.message, {
+                week: schedule.moment.format('w'),
+                year: schedule.moment.format('YYYY')
+            })
+        });
+        db.saveDoc(clinic, callback);
     },
     sendReminders: function(schedule, db, callback) {
         module.exports.getClinics(schedule, db, function(err, clinics) {

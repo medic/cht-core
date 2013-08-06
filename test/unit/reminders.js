@@ -250,3 +250,31 @@ exports['sendReminders calls sendReminder for each clinic'] = function(test) {
         test.done();
     });
 }
+
+exports['sendReminder saves doc with added task to clinic'] = function(test) {
+    var db,
+        now = moment(),
+        saveDoc;
+
+    db = {
+        saveDoc: function() {}
+    };
+
+    saveDoc = sinon.stub(db, 'saveDoc').callsArgWithAsync(1, null);
+
+    reminders.sendReminder({}, {
+        code: 'XXX',
+        message: 'hi',
+        moment: now
+    }, db, function(err) {
+        var clinic;
+
+        test.ok(saveDoc.called);
+
+        clinic = saveDoc.getCall(0).args[0];
+        test.ok(clinic.tasks);
+
+        saveDoc.restore();
+        test.done();
+    });
+};
