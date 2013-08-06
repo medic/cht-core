@@ -288,3 +288,40 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
         test.done();
     });
 };
+
+exports['sendReminder saves doc with sent_reminders field added to clinic'] = function(test) {
+    var db,
+        now = moment(),
+        saveDoc;
+
+    db = {
+        saveDoc: function() {}
+    };
+
+    saveDoc = sinon.stub(db, 'saveDoc').callsArgWithAsync(1, null);
+
+    reminders.sendReminder({
+        contact: {
+            phone: '+1234'
+        }
+    }, {
+        code: 'XXX',
+        message: 'hi {{year}} {{week}}',
+        moment: now
+    }, db, function(err) {
+        var clinic,
+            reminder;
+
+        clinic = saveDoc.getCall(0).args[0];
+        test.ok(clinic.sent_reminders);
+        test.ok(_.isArray(clinic.sent_reminders));
+        test.equals(clinic.sent_reminders.length, 1);
+
+        reminder = _.first(clinic.sent_reminders);
+        test.equals(reminder.code, 'XXX');
+        test.equals(reminder.ts, now.toISOString());
+
+        saveDoc.restore();
+        test.done();
+    });
+};

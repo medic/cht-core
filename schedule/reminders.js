@@ -65,6 +65,14 @@ module.exports = {
                 year: schedule.moment.format('YYYY')
             })
         });
+        _.defaults(clinic, {
+            sent_reminders: []
+        });
+        clinic.sent_reminders.push({
+            code: schedule.code,
+            ts: schedule.moment.toISOString()
+        });
+
         db.saveDoc(clinic, callback);
     },
     sendReminders: function(schedule, db, callback) {
