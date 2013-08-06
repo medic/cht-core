@@ -1,4 +1,10 @@
+# Kujua Lite
+
+These instructions should help you get setup to run or develop on Kujua Lite.
+
 ## Dependencies
+
+You will need to intall the following...
 
 ### Node and CouchDB
 
@@ -12,24 +18,23 @@ Assuming you have [Nodejs](http://nodejs.org) and [CouchDB](http://couchdb.apach
 npm install kanso -g
 ```
 
-### Gardener
+### Kujua Sentinel
 
 Kujua Lite is bundled with a node application, called Sentinel, they work together.
 Sentinel listens to the changes feed and does various things, like schedule
-management.  Sentinel is built using
-[kanso-gardener](https://github.com/kanso/kanso-gardener) and attached to the
-design doc then unpacked and monitored by
-[gardener](https://github.com/garden20/gardener).
+management.  
 
-You will also need gardener:
+Clone Kujua Sentinel:
 
 ```
-npm install gardener -g
+git clone https://github.com/medic/kujua-sentinel
 ```
 
-## Deploy
+See [Kujua Sentinel](https://github.com/medic/kujua-sentinel) for more information.
 
-Deploy the couchapp:
+## Deploy the app
+
+Push the couchapp:
 
 ```
 git clone --recursive https://github.com/medic/kujua-lite
@@ -37,21 +42,27 @@ cd kujua-lite
 kanso push http://admin:pass@localhost:5984/kujua-lite
 ```
 
-Start gardener:
+Start kujua-sentinel:
 
 ```
-gardener http://admin:pass@localhost:5984/
+cd kujua-sentinel
+export COUCH_URL=http://admin:pass@localhost:5984/kujua-lite
+node ./server.js
 ```
 
-### Reporting Rates
+Navigate your browser to:
 
-To enable the reporting rates module, see
-[packages/kujua-reporting/README.md](packages/kujua-reporting/README.md).
+```
+http://localhost:5984/
+```
 
-### Sentinel
+## Configure
 
-See [sentinel/README.md](sentinel/README.md) for more information about
-configuring Sentinel.
+TODO
+
+Since dashboard is required to configure Kujua Lite, we might need to change
+the dev docs to install Kujua Lite from the market and then overwrite with a
+kanso push.  Best option I can come up with at the moment.
 
 ## Tests
 
@@ -66,9 +77,11 @@ npm install phantomjs -g
 
 ## Build Status
 
-master: [![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=master)](https://travis-ci.org/medic/kujua-lite/branches)
+Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/kujua-lite).
 
-develop: [![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=develop)](https://travis-ci.org/medic/kujua-lite/branches)
+Develop      | Master 
+------------ | -------------
+[![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=develop)](https://travis-ci.org/medic/kujua-lite/branches) | [![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=master)](https://travis-ci.org/medic/kujua-lite/branches)
 
 
 
