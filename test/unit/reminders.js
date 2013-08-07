@@ -29,7 +29,7 @@ exports['config with three matching schedule calls runSchedule thrice'] = functi
     var runSchedule;
 
     sinon.stub(config, 'get').returns([ {}, {}, {} ]);
-    runSchedule = sinon.stub(reminders, 'runSchedule').callsArgWith(2, null);
+    runSchedule = sinon.stub(reminders, 'runSchedule').callsArgWith(1, null);
     reminders.execute({}, function(err) {
         test.equals(err, null);
         test.equals(runSchedule.callCount, 3);
@@ -48,7 +48,7 @@ exports['runSchedule calls sendReminder when valid'] = function(test) {
     matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, moment());
     sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(2, null);
 
-    reminders.runSchedule({}, {}, function(err) {
+    reminders.runSchedule({}, function(err) {
         test.equals(err, null);
         test.equals(sendReminders.callCount, 1);
         matchSchedule.restore();
@@ -64,7 +64,7 @@ exports['runSchedule does not create document when no match'] = function(test) {
     matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, false);
     sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(2, null);
 
-    reminders.runSchedule({}, {}, function(err) {
+    reminders.runSchedule({}, function(err) {
         test.equals(err, null);
         test.equals(sendReminders.callCount, 0);
         matchSchedule.restore();
@@ -86,15 +86,16 @@ exports['matches schedule with moment if in last hour'] = function(test) {
     });
 }
 
-exports['runSchedule decorates schedule with moment if found'] = function(test) {
+exports['runSchedule decorates options with moment if found'] = function(test) {
     var sendReminders,
-        matchSchedule
-        now = moment();
+        matchSchedule,
+        now = moment(),
+        options = {};
 
     matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, now);
     sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(2, null);
 
-    reminders.runSchedule({}, {}, function(err) {
+    reminders.runSchedule({}, function(err) {
         var schedule = sendReminders.getCall(0).args[0];
 
         test.ok(schedule.moment);
@@ -279,8 +280,6 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
 
         clinic = saveDoc.getCall(0).args[0];
         test.ok(clinic.tasks);
-
-        console.log(JSON.stringify(clinic.tasks, null, 2));
 
         task = _.first(clinic.tasks);
         message = _.first(task.messages);

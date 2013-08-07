@@ -14,7 +14,10 @@ module.exports = {
         var schedules = config.get('schedules');
 
         async.eachSeries(schedules, function(schedule, callback) {
-            module.exports.runSchedule(schedule, db, callback);
+            module.exports.runSchedule({
+                db: db,
+                schedule: schedule
+            }, callback);
         }, callback);
     },
     // matches from "now" to the start of the last hour
@@ -81,13 +84,17 @@ module.exports = {
             }
         });
     },
-    runSchedule: function(schedule, db, callback) {
-        module.exports.matchSchedule(schedule, function(err, moment) {
+    runSchedule: function(options, callback) {
+        _.defaults(options, {
+            schedule: {}
+        });
+
+        module.exports.matchSchedule(options.schedule, function(err, moment) {
             if (err) {
                 callback(err);
             } else if (moment) {
-                schedule.moment = moment.clone();
-                module.exports.sendReminders(schedule, db, callback);
+                options.schedule.moment = moment.clone();
+                module.exports.sendReminders(options.schedule, options.db, callback);
             } else {
                 callback();
             }
