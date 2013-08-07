@@ -35,21 +35,44 @@ module.exports = {
             callback(null, false);
         }
     },
-    isSent: function(schedule, clinic) {
-        var sent;
+    canSend: function(options, clinic) {
+        var send,
+            ts = options.moment || moment().startOf('hour'),
+            schedule = options.schedule,
+            lastReceived,
+            muteDuration;
 
-        schedule.moment = schedule.moment || moment().startOf('hour');
-
-        sent = _.findWhere(clinic.tasks, {
+        send = !_.findWhere(clinic.tasks, {
             code: schedule.code,
-            ts: schedule.moment.toISOString()
+            ts: ts.toISOString()
         });
 
-        return !!sent;
+        // if send, check for mute on schedule, and clinic has received_forms for the schedule
+        if (send && schedule.muteAfterFormFor && clinic.received_forms && clinic.received_forms[schedule.code]) {
+            debugger;
+            lastReceived = moment(clinic.received_forms[schedule.code]);
+            muteDuration = module.exports.parseDuration(schedule.muteAfterFormFor);
+
+            if (lastReceived && muteDuration) {
+                send = ts.isAfter(lastReceived.add(muteDuration));
+            }
+        }
+
+        return send;
+    },
+    parseDuration: function(format) {
+        var tokens;
+
+        if (/^\d+ (minute|day|hour|week)s?$/.test(format)) {
+            tokens = format.split(' ');
+
+            return moment.duration(Number(tokens[0]), tokens[1]);
+        } else {
+            return null;
+        }
     },
     getClinics: function(options, callback) {
-        var db = options.db,
-            schedule = options.schedule;
+        var db = options.db;
 
         db.view('kujua-lite', 'clinic_by_phone', {
             include_docs: true
@@ -57,8 +80,8 @@ module.exports = {
             var clinics,
                 docs = _.pluck(data.rows, 'doc');
 
-            clinics = _.reject(docs, function(clinic) {
-                return module.exports.isSent(schedule, clinic);
+            clinics = _.filter(docs, function(clinic) {
+                return module.exports.canSend(options, clinic);
             });
 
             callback(err, clinics);

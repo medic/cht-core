@@ -304,3 +304,97 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
         test.done();
     });
 };
+
+exports['canSend returns true if no tasks matching schedule'] = function(test) {
+    var canSend,
+        now = moment();
+
+    canSend = reminders.canSend({
+        schedule: {
+            code: 'XXX'
+        },
+        moment: now
+    }, {
+        tasks: [
+            {
+                code: 'XXX',
+                ts: now.clone().add(1, 'minute').toISOString()
+            },
+            {
+                code: 'XXY',
+                ts: now.toISOString()
+            }
+        ]
+    });
+
+    test.equals(canSend, true);
+    test.done();
+}
+
+exports['canSend returns false if a task matches schedule'] = function(test) {
+    var canSend,
+        now = moment();
+
+    canSend = reminders.canSend({
+        schedule: {
+            code: 'XXX'
+        },
+        moment: now
+    }, {
+        tasks: [
+            {
+                code: 'XXX',
+                ts: now.toISOString()
+            },
+            {
+                code: 'XXY',
+                ts: now.toISOString()
+            }
+        ]
+    });
+
+    test.equals(canSend, false);
+    test.done();
+}
+
+exports['canSend returns false if a received_forms within lockout period of schedule'] = function(test) {
+    var canSend,
+        now = moment();
+
+    canSend = reminders.canSend({
+        schedule: {
+            code: 'XXX',
+            muteAfterFormFor: '3 days'
+        },
+        moment: now
+    }, {
+        received_forms: {
+            XXX: now.clone().subtract(2, 'days').toISOString()
+        },
+        tasks: []
+    });
+
+    test.equals(canSend, false);
+    test.done();
+}
+
+exports['canSend returns true if a received_forms outside of lockout period of schedule'] = function(test) {
+    var canSend,
+        now = moment();
+
+    canSend = reminders.canSend({
+        schedule: {
+            code: 'XXX',
+            muteAfterFormFor: '3 days'
+        },
+        moment: now
+    }, {
+        received_forms: {
+            XXX: now.clone().subtract(3, 'days').subtract(1, 'minute').toISOString()
+        },
+        tasks: []
+    });
+
+    test.equals(canSend, true);
+    test.done();
+}
