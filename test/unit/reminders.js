@@ -46,7 +46,7 @@ exports['runSchedule calls sendReminder when valid'] = function(test) {
         matchSchedule;
 
     matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, moment());
-    sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(2, null);
+    sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(1, null);
 
     reminders.runSchedule({}, function(err) {
         test.equals(err, null);
@@ -62,7 +62,7 @@ exports['runSchedule does not create document when no match'] = function(test) {
         matchSchedule;
 
     matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, false);
-    sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(2, null);
+    sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(1, null);
 
     reminders.runSchedule({}, function(err) {
         test.equals(err, null);
@@ -93,10 +93,10 @@ exports['runSchedule decorates options with moment if found'] = function(test) {
         options = {};
 
     matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, now);
-    sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(2, null);
+    sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(1, null);
 
     reminders.runSchedule({}, function(err) {
-        var schedule = sendReminders.getCall(0).args[0];
+        var schedule = sendReminders.getCall(0).args[0].schedule;
 
         test.ok(schedule.moment);
         test.equals(schedule.moment.valueOf(), now.valueOf());
@@ -134,7 +134,7 @@ exports['does not match if previous to schedule'] = function(test) {
 exports['sendReminders calls getClinics'] = function(test) {
     var getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(2, null, []);
 
-    reminders.sendReminders({}, {}, function(err) {
+    reminders.sendReminders({}, function(err) {
         test.ok(getClinics.called);
         getClinics.restore();
         test.equals(err, null);
@@ -244,7 +244,7 @@ exports['sendReminders calls sendReminder for each clinic'] = function(test) {
     getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(2, null, clinics);
     sendReminder = sinon.stub(reminders, 'sendReminder').callsArgWithAsync(3, null);
 
-    reminders.sendReminders({}, {}, function(err) {
+    reminders.sendReminders({}, function(err) {
         test.equals(sendReminder.callCount, 2);
         getClinics.restore();
         sendReminder.restore();

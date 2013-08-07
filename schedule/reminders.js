@@ -73,13 +73,13 @@ module.exports = {
 
         db.saveDoc(clinic, callback);
     },
-    sendReminders: function(schedule, db, callback) {
-        module.exports.getClinics(schedule, db, function(err, clinics) {
+    sendReminders: function(options, callback) {
+        module.exports.getClinics(options.schedule, options.db, function(err, clinics) {
             if (err) {
                 callback(err);
             } else {
                 async.each(clinics, function(clinic, callback) {
-                    module.exports.sendReminder(clinic, schedule, db, callback);
+                    module.exports.sendReminder(clinic, options.schedule, options.db, callback);
                 }, callback);
             }
         });
@@ -94,7 +94,7 @@ module.exports = {
                 callback(err);
             } else if (moment) {
                 options.schedule.moment = moment.clone();
-                module.exports.sendReminders(options.schedule, options.db, callback);
+                module.exports.sendReminders(options, callback);
             } else {
                 callback();
             }
