@@ -132,7 +132,7 @@ exports['does not match if previous to schedule'] = function(test) {
 };
 
 exports['sendReminders calls getClinics'] = function(test) {
-    var getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(2, null, []);
+    var getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(1, null, []);
 
     reminders.sendReminders({}, function(err) {
         test.ok(getClinics.called);
@@ -156,7 +156,10 @@ exports['getClinics calls db.view'] = function(test) {
         ]
     });
 
-    reminders.getClinics({}, db, function(err, clinics) {
+    reminders.getClinics({
+        db: db,
+        schedule: {}
+    }, function(err, clinics) {
         test.ok(_.isArray(clinics));
         test.equals(clinics.length, 1);
         test.equals(_.first(clinics).id, 'xxx');
@@ -216,9 +219,12 @@ exports['getClinics ignores clinics with matching sent_reminders'] = function(te
     });
 
     reminders.getClinics({
-        moment: now,
-        code: 'XXX'
-    }, db, function(err, clinics) {
+        schedule:{
+            moment: now,
+            code: 'XXX'
+        },
+        db: db
+    }, function(err, clinics) {
         var ids = _.pluck(clinics, 'id');
 
         test.same(['xxx', 'yyy', 'yyz'], ids);
@@ -241,7 +247,7 @@ exports['sendReminders calls sendReminder for each clinic'] = function(test) {
         }
     ];
 
-    getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(2, null, clinics);
+    getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(1, null, clinics);
     sendReminder = sinon.stub(reminders, 'sendReminder').callsArgWithAsync(1, null);
 
     reminders.sendReminders({}, function(err) {

@@ -46,7 +46,10 @@ module.exports = {
 
         return !!sent;
     },
-    getClinics: function(schedule, db, callback) {
+    getClinics: function(options, callback) {
+        var db = options.db,
+            schedule = options.schedule;
+
         db.view('kujua-lite', 'clinic_by_phone', {
             include_docs: true
         }, function(err, data) {
@@ -78,7 +81,7 @@ module.exports = {
         db.saveDoc(clinic, callback);
     },
     sendReminders: function(options, callback) {
-        module.exports.getClinics(options.schedule, options.db, function(err, clinics) {
+        module.exports.getClinics(options, function(err, clinics) {
             if (err) {
                 callback(err);
             } else {
