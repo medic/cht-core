@@ -242,7 +242,7 @@ exports['sendReminders calls sendReminder for each clinic'] = function(test) {
     ];
 
     getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(2, null, clinics);
-    sendReminder = sinon.stub(reminders, 'sendReminder').callsArgWithAsync(3, null);
+    sendReminder = sinon.stub(reminders, 'sendReminder').callsArgWithAsync(1, null);
 
     reminders.sendReminders({}, function(err) {
         test.equals(sendReminder.callCount, 2);
@@ -264,14 +264,18 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
     saveDoc = sinon.stub(db, 'saveDoc').callsArgWithAsync(1, null);
 
     reminders.sendReminder({
-        contact: {
-            phone: '+1234'
-        }
-    }, {
-        code: 'XXX',
-        message: 'hi {{year}} {{week}}',
-        moment: now
-    }, db, function(err) {
+        clinic: {
+            contact: {
+                phone: '+1234'
+            }
+        },
+        schedule: {
+            code: 'XXX',
+            message: 'hi {{year}} {{week}}',
+            moment: now
+        },
+        db: db
+    }, function(err) {
         var clinic,
             message,
             task;

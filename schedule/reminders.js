@@ -60,7 +60,11 @@ module.exports = {
             callback(err, clinics);
         });
     },
-    sendReminder: function(clinic, schedule, db, callback) {
+    sendReminder: function(options, callback) {
+        var clinic = options.clinic,
+            db = options.db,
+            schedule = options.schedule;
+
         utils.addMessage(clinic, {
             code: schedule.code,
             ts: schedule.moment.toISOString(),
@@ -79,7 +83,11 @@ module.exports = {
                 callback(err);
             } else {
                 async.each(clinics, function(clinic, callback) {
-                    module.exports.sendReminder(clinic, options.schedule, options.db, callback);
+                    var opts = _.extend({}, options, {
+                        clinic: clinic
+                    });
+
+                    module.exports.sendReminder(opts, callback);
                 }, callback);
             }
         });
