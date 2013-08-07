@@ -1,6 +1,5 @@
 var _ = require('underscore'),
     async = require('async'),
-    config = require('../config'),
     utils = require('../lib/utils'),
     i18n = require('../i18n'),
     later = require('later'),
@@ -10,8 +9,9 @@ var _ = require('underscore'),
 later.date.localTime();
 
 module.exports = {
-    execute: function(db, callback) {
-        var schedules = config.get('schedules');
+    execute: function(options, callback) {
+        var db = options.db,
+            schedules = options.schedules;
 
         async.eachSeries(schedules, function(schedule, callback) {
             module.exports.runSchedule({
