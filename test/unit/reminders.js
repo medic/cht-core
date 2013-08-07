@@ -357,7 +357,7 @@ exports['canSend returns false if a task matches schedule'] = function(test) {
     test.done();
 }
 
-exports['canSend returns false if a received_forms within lockout period of schedule'] = function(test) {
+exports['canSend returns false if a sent_forms within lockout period of schedule'] = function(test) {
     var canSend,
         now = moment();
 
@@ -368,7 +368,7 @@ exports['canSend returns false if a received_forms within lockout period of sche
         },
         moment: now
     }, {
-        received_forms: {
+        sent_forms: {
             XXX: now.clone().subtract(2, 'days').toISOString()
         },
         tasks: []
@@ -378,7 +378,7 @@ exports['canSend returns false if a received_forms within lockout period of sche
     test.done();
 }
 
-exports['canSend returns true if a received_forms outside of lockout period of schedule'] = function(test) {
+exports['canSend returns true if a sent_forms outside of lockout period of schedule'] = function(test) {
     var canSend,
         now = moment();
 
@@ -389,7 +389,7 @@ exports['canSend returns true if a received_forms outside of lockout period of s
         },
         moment: now
     }, {
-        received_forms: {
+        sent_forms: {
             XXX: now.clone().subtract(3, 'days').subtract(1, 'minute').toISOString()
         },
         tasks: []
