@@ -75,12 +75,12 @@
                 "facility_id": {
                     "title": "Facility Id",
                     "type": "string",
-                    "je:hint": "autocomplete"
+                    "je:hint": "autocomplete",
+                    "je:url" : "/{{dbname}}/_design/{{ddoc}}/_list/facilities_select2/facilities"
                 },
                 "phone": {
                     "title": "Phone",
-                    "type": "string",
-                    "je:hint": "autocomplete"
+                    "type": "string"
                 }
             }
         }
