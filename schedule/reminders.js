@@ -66,15 +66,16 @@ module.exports = {
     sendReminder: function(options, callback) {
         var clinic = options.clinic,
             db = options.db,
+            moment = options.moment,
             schedule = options.schedule;
 
         utils.addMessage(clinic, {
             code: schedule.code,
-            ts: schedule.moment.toISOString(),
+            ts: moment.toISOString(),
             phone: utils.getClinicPhone(clinic),
             message: i18n(schedule.message, {
-                week: schedule.moment.format('w'),
-                year: schedule.moment.format('YYYY')
+                week: moment.format('w'),
+                year: moment.format('YYYY')
             })
         });
 
@@ -104,7 +105,7 @@ module.exports = {
             if (err) {
                 callback(err);
             } else if (moment) {
-                options.schedule.moment = moment.clone();
+                options.moment = moment.clone();
                 module.exports.sendReminders(options, callback);
             } else {
                 callback();

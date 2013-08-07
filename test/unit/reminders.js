@@ -95,11 +95,11 @@ exports['runSchedule decorates options with moment if found'] = function(test) {
     matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, now);
     sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(1, null);
 
-    reminders.runSchedule({}, function(err) {
-        var schedule = sendReminders.getCall(0).args[0].schedule;
+    reminders.runSchedule(options, function(err) {
+        var moment = sendReminders.getCall(0).args[0].moment;
 
-        test.ok(schedule.moment);
-        test.equals(schedule.moment.valueOf(), now.valueOf());
+        test.ok(moment);
+        test.equals(moment.valueOf(), now.valueOf());
 
         matchSchedule.restore();
         sendReminders.restore();
@@ -277,9 +277,9 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
         },
         schedule: {
             code: 'XXX',
-            message: 'hi {{year}} {{week}}',
-            moment: now
+            message: 'hi {{year}} {{week}}'
         },
+        moment: now,
         db: db
     }, function(err) {
         var clinic,
