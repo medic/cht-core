@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     moment = require('moment'),
     sinon = require('sinon'),
+    config = require('../../config'),
     reminders = require('../../schedule/reminders');
 
 exports.setUp = function(callback) {
@@ -14,12 +15,12 @@ exports['reminders#execute is function'] = function(test) {
 }
 
 exports['config with no schedules calls callback'] = function(test) {
+    sinon.stub(config, 'get').returns([]);
     sinon.stub(reminders, 'runSchedule').throws();
-    reminders.execute({
-        schedules: []
-    }, function(err) {
+    reminders.execute({}, function(err) {
         test.equals(err, null);
         reminders.runSchedule.restore();
+        config.get.restore();
         test.done();
     });
 };
@@ -27,14 +28,14 @@ exports['config with no schedules calls callback'] = function(test) {
 exports['config with three matching schedule calls runSchedule thrice'] = function(test) {
     var runSchedule;
 
+    sinon.stub(config, 'get').returns([ {}, {}, {} ]);
     runSchedule = sinon.stub(reminders, 'runSchedule').callsArgWith(1, null);
-    reminders.execute({
-        schedules: [ {}, {}, {} ]
-    }, function(err) {
+    reminders.execute({}, function(err) {
         test.equals(err, null);
         test.equals(runSchedule.callCount, 3);
 
         runSchedule.restore();
+        config.get.restore();
 
         test.done();
     });
