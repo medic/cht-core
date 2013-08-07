@@ -30,7 +30,9 @@ function checkSchedule() {
 
     async.forEachSeries(tasks, function(task, callback) {
         if (_.isFunction(task.execute)) {
-            task.execute(db, callback);
+            task.execute({
+                db: db
+            }, callback);
         } else if (sendable(now)) { // in time window for moving due_tasks
             task(db, callback);
         } else {

@@ -10,8 +10,9 @@ var _ = require('underscore'),
 later.date.localTime();
 
 module.exports = {
-    execute: function(db, callback) {
-        var schedules = config.get('schedules');
+    execute: function(options, callback) {
+        var db = options.db,
+            schedules = config.get('schedules');
 
         async.eachSeries(schedules, function(schedule, callback) {
             module.exports.runSchedule({
