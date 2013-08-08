@@ -138,19 +138,21 @@ module.exports = {
     getScheduleWindow: function(options, callback) {
         var db = options.db,
             now = moment().startOf('hour'),
+            floor = now.clone().subtract(1, 'day'),
             code = options.schedule && options.schedule.code;
 
         db.view('kujua-lite', 'sent_reminders', {
             descending: true,
             limit: 1,
-            startkey: [code, now.toISOString()]
+            startkey: [code, now.toISOString()],
+            endkey: [code, floor.toISOString()]
         }, function(err, result) {
             var row = _.first(result.rows);
 
             if (row) {
                 callback(null, moment(row.key[1]));
             } else {
-                callback(null, now.clone().subtract(1, 'day'));
+                callback(null, floor);
             }
         });
     }

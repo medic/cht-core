@@ -455,6 +455,7 @@ exports['getScheduleWindow calls view looking for old events and returns date fo
         test.equals(viewOpts.limit, 1);
         test.ok(viewOpts.startkey);
         test.same(viewOpts.startkey, ['XXX', now.clone().startOf('hour').toISOString()]);
+        test.same(viewOpts.endkey, ['XXX', now.clone().startOf('hour').subtract(1, 'day').toISOString()]);
         test.equals(viewOpts.descending, true);
 
         test.equals(start.valueOf(), now.clone().subtract(1, 'hour').valueOf());
