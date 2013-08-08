@@ -165,3 +165,15 @@ exports.data_records_by_form_year_month_clinic_id_and_reported_date = {
     }
 };
 
+exports.sent_reminders = {
+    map: function(doc) {
+        if (Array.isArray(doc.tasks)) {
+            doc.tasks.forEach(function(task) {
+                if (task.code && task.ts) {
+                    emit([task.code, task.ts], null);
+                }
+            });
+        }
+    }
+}
+

@@ -398,3 +398,66 @@ exports['canSend returns true if a sent_forms outside of lockout period of sched
     test.equals(canSend, true);
     test.done();
 }
+
+exports['getScheduleWindow returns a day ago when no results from db'] = function(test) {
+    var db,
+        view,
+        time = moment().startOf('hour').subtract(1, 'day');
+
+    db = {
+        view: function() {}
+    };
+
+    view = sinon.stub(db, 'view').callsArgWithAsync(3, null, {
+        rows: []
+    });
+
+    reminders.getScheduleWindow({
+        db: db
+    }, function(err, start) {
+        test.equals(err, null);
+        test.ok(start);
+        test.equals(start.valueOf(), time.valueOf());
+        test.done();
+    });
+};
+
+exports['getScheduleWindow calls view looking for old events and returns date found'] = function(test) {
+    var db,
+        view,
+        now = moment();
+
+    db = {
+        view: function() {}
+    };
+
+    view = sinon.stub(db, 'view').callsArgWithAsync(3, null, {
+        rows: [
+            {
+                key: [ 'XXX', now.clone().subtract(1, 'hour').toISOString() ]
+            }
+        ]
+    });
+
+    reminders.getScheduleWindow({
+        schedule: {
+            code: 'XXX'
+        },
+        db: db
+    }, function(err, start) {
+        var call = view.getCall(0),
+            viewOpts = call.args[2];
+
+        test.equals(view.callCount, 1);
+        test.equals(call.args[0], 'kujua-lite');
+        test.equals(call.args[1], 'sent_reminders');
+
+        test.equals(viewOpts.limit, 1);
+        test.ok(viewOpts.startkey);
+        test.same(viewOpts.startkey, ['XXX', now.clone().startOf('hour').toISOString()]);
+        test.equals(viewOpts.descending, true);
+
+        test.equals(start.valueOf(), now.clone().subtract(1, 'hour').valueOf());
+        test.done();
+    });
+};

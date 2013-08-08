@@ -134,5 +134,24 @@ module.exports = {
                 callback();
             }
         });
+    },
+    getScheduleWindow: function(options, callback) {
+        var db = options.db,
+            now = moment().startOf('hour'),
+            code = options.schedule && options.schedule.code;
+
+        db.view('kujua-lite', 'sent_reminders', {
+            descending: true,
+            limit: 1,
+            startkey: [code, now.toISOString()]
+        }, function(err, result) {
+            var row = _.first(result.rows);
+
+            if (row) {
+                callback(null, moment(row.key[1]));
+            } else {
+                callback(null, now.clone().subtract(1, 'day'));
+            }
+        });
     }
 };
