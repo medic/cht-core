@@ -145,7 +145,7 @@ function createReminders(options, callback) {
  *  {{year}} and {{form}} will be substituted into the message.
  *
  */
-module.exports = function(callback) {
+module.exports = function(db, callback) {
     var day,
         reminders = config.get('weekly_reminders'),
         items = [];
