@@ -39,8 +39,8 @@ function checkSchedule() {
             callback();
         }
     }, function(err) {
-        if (e) {
-            console.error('Error running tasks: ' + JSON.stringify(e));
+        if (err) {
+            console.error('Error running tasks: ' + JSON.stringify(err));
         }
         reschedule();
     });

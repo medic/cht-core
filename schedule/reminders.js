@@ -49,7 +49,6 @@ module.exports = {
 
         // if send, check for mute on schedule, and clinic has sent_forms for the schedule
         if (send && schedule.muteAfterFormFor && clinic.sent_forms && clinic.sent_forms[schedule.code]) {
-            debugger;
             lastReceived = moment(clinic.sent_forms[schedule.code]);
             muteDuration = module.exports.parseDuration(schedule.muteAfterFormFor);
 
