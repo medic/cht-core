@@ -12,7 +12,7 @@ later.date.localTime();
 module.exports = {
     execute: function(options, callback) {
         var db = options.db,
-            schedules = config.get('schedules');
+            schedules = config.get('schedules') || [];
 
         async.eachSeries(schedules, function(schedule, callback) {
             module.exports.runSchedule({
