@@ -63,3 +63,11 @@ exports.config_docs = function(doc) {
 exports.update_sent_by = function(doc) {
     return doc.from && doc.type === 'data_record' && doc.sent_by === undefined;
 }
+
+exports.update_sent_forms = function(doc) {
+    return doc.form &&
+        doc.reported_date &&
+        doc.related_entities &&
+        doc.related_entities.clinic &&
+        doc.related_entities.clinic._id;
+}
