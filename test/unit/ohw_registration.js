@@ -76,7 +76,6 @@ exports['adds scheduled messages'] = function(test) {
             }
         }
     };
-    debugger;
     transition.onMatch({
         doc: doc
     }, fakedb, function(err, complete) {
