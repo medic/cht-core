@@ -23,9 +23,10 @@ module.exports = {
     },
     // matches from "now" to the start of the last hour
     // later reverses time ranges fro later#prev searches
-    matchSchedule: function(schedule, callback) {
+    matchSchedule: function(options, callback) {
         var start = moment(),
             end = start.clone().startOf('hour').subtract(1, 'hour'),
+            schedule = options.schedule,
             sched = later.schedule(later.parse.cron(schedule.cron)),
             previous = sched.prev(1, start.toDate(), end.toDate());
 
@@ -124,7 +125,7 @@ module.exports = {
             schedule: {}
         });
 
-        module.exports.matchSchedule(options.schedule, function(err, moment) {
+        module.exports.matchSchedule(options, function(err, moment) {
             if (err) {
                 callback(err);
             } else if (moment) {

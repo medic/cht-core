@@ -77,7 +77,9 @@ exports['matches schedule with moment if in last hour'] = function(test) {
     var ts = moment().startOf('hour');
 
     reminders.matchSchedule({
-        cron: moment().format('0 HH * * *') // will generate cron job matching the current hour
+        schedule: {
+            cron: moment().format('0 HH * * *') // will generate cron job matching the current hour
+        }
     }, function(err, matches) {
         test.equals(err, null);
         test.ok(matches);
@@ -111,7 +113,9 @@ exports['does not match schedule if in next minute'] = function(test) {
     var now = moment();
 
     reminders.matchSchedule({
-        cron: (now.minutes() + 1) + ' ' + now.format('HH * * *') // will generate cron job matching the current hour but 1 minute into future
+        schedule: {
+            cron: (now.minutes() + 1) + ' ' + now.format('HH * * *') // will generate cron job matching the current hour but 1 minute into future
+        }
     }, function(err, matches) {
         test.equals(err, null);
         test.equals(matches, false);
@@ -123,7 +127,9 @@ exports['does not match if previous to schedule'] = function(test) {
     var now = moment().subtract(2, 'hours');
 
     reminders.matchSchedule({
-        cron: now.format('59 HH * * *') // will generate cron job matching the previous hour
+        schedule: {
+            cron: now.format('59 HH * * *') // will generate cron job matching the previous hour
+        }
     }, function(err, matches) {
         test.equals(err, null);
         test.equals(matches, false);
