@@ -166,14 +166,14 @@ exports.hasPerm = function(userCtx, perm) {
 
 exports.getUserDistrict = function(userCtx, callback) {
     var district = '';
-    if (userCtx.kujua_facility)
-        district = userCtx.kujua_facility;
+    if (userCtx.facility_id)
+        district = userCtx.facility_id;
     else
-        district = cookies.readBrowserCookies()['kujua_facility'];
+        district = cookies.readBrowserCookies()['facility_id'];
     if (!district) {
         users.get(userCtx.name, function(err, user) {
             if (err) return callback(err);
-            callback(null, user.kujua_facility);
+            callback(null, user.facility_id);
         });
     } else {
         callback(null, district);

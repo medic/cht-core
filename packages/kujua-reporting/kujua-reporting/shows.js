@@ -324,7 +324,7 @@ function renderReporting(doc, req) {
                 return kutils.logger.warn('Failed to retreive user info: '+err.reason);
             }
 
-            userDistrict = user.kujua_facility;
+            userDistrict = user.facility_id;
             if (isAdmin || (isDistrictAdmin && userDistrict)) {
                 renderPage();
             } else {
