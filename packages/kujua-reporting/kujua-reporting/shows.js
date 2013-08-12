@@ -309,6 +309,9 @@ function renderReporting(doc, req) {
     }
 
     events.once('afterResponse', function() {
+
+        kutils.updateTopNav('reporting_rates');
+
         if (!isAdmin && !isDistrictAdmin) {
             // not logged in or roles is not setup right
             return $('[data-page=reporting_rates] #content').html(
@@ -326,9 +329,9 @@ function renderReporting(doc, req) {
                 renderPage();
             } else {
                 return $('[data-page=reporting_rates] #content').html(
-                    templates.render(
-                        "500.html", req, {msg: 'District is not defined.'}
-                    )
+                    templates.render("500.html", req, {
+                        msg: 'No facility assigned to district admin.'
+                    })
                 );
             }
         });
@@ -361,8 +364,6 @@ function renderPage() {
         form_config,
         parentURL = '',
         req = _req;
-
-    kutils.updateTopNav('reporting_rates');
 
     if (!doc) {
         return renderDistrictChoice(appdb, forms);
