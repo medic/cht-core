@@ -137,8 +137,8 @@ module.exports = {
     },
     getScheduleWindow: function(options, callback) {
         var db = options.db,
-            now = moment().startOf('hour'),
-            floor = now.clone().subtract(1, 'day'),
+            now = moment(),
+            floor = now.clone().startOf('hour').subtract(1, 'day'),
             code = options.schedule && options.schedule.code;
 
         db.view('kujua-lite', 'sent_reminders', {
