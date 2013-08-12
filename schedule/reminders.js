@@ -25,16 +25,17 @@ module.exports = {
     // later reverses time ranges fro later#prev searches
     matchSchedule: function(options, callback) {
         var start = moment(),
-            end = start.clone().startOf('hour').subtract(1, 'hour'),
             schedule = options.schedule,
-            sched = later.schedule(later.parse.cron(schedule.cron)),
-            previous = sched.prev(1, start.toDate(), end.toDate());
+            sched = later.schedule(later.parse.cron(schedule.cron));
 
-        if (_.isDate(previous)) {
-            callback(null, moment(previous));
-        } else {
-            callback(null, false);
-        }
+        module.exports.getScheduleWindow(options, function(err, end) {
+            var previous = sched.prev(1, start.toDate(), end.toDate());
+            if (_.isDate(previous)) {
+                callback(null, moment(previous));
+            } else {
+                callback(null, false);
+            }
+        });
     },
     canSend: function(options, clinic) {
         var send,

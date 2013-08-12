@@ -74,7 +74,8 @@ exports['runSchedule does not create document when no match'] = function(test) {
 };
 
 exports['matches schedule with moment if in last hour'] = function(test) {
-    var ts = moment().startOf('hour');
+    var window = sinon.stub(reminders, 'getScheduleWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour')),
+        ts = moment().startOf('hour');
 
     reminders.matchSchedule({
         schedule: {
@@ -84,6 +85,7 @@ exports['matches schedule with moment if in last hour'] = function(test) {
         test.equals(err, null);
         test.ok(matches);
         test.equals(matches.valueOf(), ts.valueOf());
+        window.restore();
         test.done();
     });
 }
@@ -110,7 +112,8 @@ exports['runSchedule decorates options with moment if found'] = function(test) {
 };
 
 exports['does not match schedule if in next minute'] = function(test) {
-    var now = moment();
+    var window = sinon.stub(reminders, 'getScheduleWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour')),
+        now = moment();
 
     reminders.matchSchedule({
         schedule: {
@@ -118,13 +121,15 @@ exports['does not match schedule if in next minute'] = function(test) {
         }
     }, function(err, matches) {
         test.equals(err, null);
+        window.restore();
         test.equals(matches, false);
         test.done();
     });
 }
 
 exports['does not match if previous to schedule'] = function(test) {
-    var now = moment().subtract(2, 'hours');
+    var window = sinon.stub(reminders, 'getScheduleWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour')),
+        now = moment().subtract(2, 'hours');
 
     reminders.matchSchedule({
         schedule: {
@@ -132,6 +137,7 @@ exports['does not match if previous to schedule'] = function(test) {
         }
     }, function(err, matches) {
         test.equals(err, null);
+        window.restore();
         test.equals(matches, false);
         test.done();
     });
