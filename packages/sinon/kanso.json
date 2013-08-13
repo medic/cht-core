@@ -1,0 +1,15 @@
+{
+    "name": "sinon",
+    "version": "1.7.2",
+    "categories": ["testing"],
+    "maintainers": [
+        {
+            "name": "Christian Johansen",
+            "url": "christian@cjohansen.no"
+        }
+    ],
+    "url": "https://github.com/cjohansen/Sinon.JS",
+    "modules": "sinon.js",
+    "dependencies": { },
+    "description": "Standalone test spies, stubs and mocks for JavaScript. No dependencies, works with any unit testing framework."
+}
