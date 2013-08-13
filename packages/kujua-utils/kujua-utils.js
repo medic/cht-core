@@ -193,7 +193,7 @@ exports.titleize = function (s) {
 
 exports.updateTopNav = function(key, title) {
     title = title || exports.titleize(key);
-    $('.page-header h1').text($.kansoconfig(title));
+    $('.page-header h1').replaceWith('<h1 class="pull-left">&nbsp;</h1>')
     if (key) {
         $('body').attr('data-page', key);
     }
