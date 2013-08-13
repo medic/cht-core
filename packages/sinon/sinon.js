@@ -5,13 +5,13 @@
  * @author Contributors: https://github.com/cjohansen/Sinon.JS/blob/master/AUTHORS
  *
  * (The BSD License)
- * 
+ *
  * Copyright (c) 2010-2013, Christian Johansen, christian@cjohansen.no
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright notice,
  *       this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright notice,
@@ -20,7 +20,7 @@
  *     * Neither the name of Christian Johansen nor the names of his contributors
  *       may be used to endorse or promote products derived from this software
  *       without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -33,9 +33,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-this.sinon = (function () {
+window.sinon = (function () {
 var buster = (function (setTimeout, B) {
-    var isNode = typeof require == "function" && typeof module == "object";
+    var isNode = typeof require == "function" && typeof module == "object" && typeof window == "undefined";
     var div = typeof document != "undefined" && document.createElement("div");
     var F = function () {};
 
@@ -259,7 +259,7 @@ if (typeof buster === "undefined") {
     var buster = {};
 }
 
-if (typeof module === "object" && typeof require === "function") {
+if (typeof module === "object" && typeof require === "function" && typeof window === "undefined") {
     buster = require("buster-core");
 }
 
@@ -268,7 +268,7 @@ buster.format.excludeConstructors = ["Object", /^.$/];
 buster.format.quoteStrings = true;
 
 buster.format.ascii = (function () {
-    
+
     var hasOwn = Object.prototype.hasOwnProperty;
 
     var specialObjects = [];
@@ -773,7 +773,7 @@ var sinon = (function (buster) {
         }
     };
 
-    var isNode = typeof module == "object" && typeof require == "function";
+    var isNode = typeof module == "object" && typeof require == "function" && typeof window == "undefined";
 
     if (isNode) {
         try {
@@ -826,7 +826,7 @@ var sinon = (function (buster) {
  */
 
 (function (sinon) {
-    var commonJSModule = typeof module == "object" && typeof require == "function";
+    var commonJSModule = typeof module == "object" && typeof require == "function" && typeof window == "undefined";
 
     if (!sinon && commonJSModule) {
         sinon = require("../sinon");
@@ -1069,7 +1069,7 @@ var sinon = (function (buster) {
   * Copyright (c) 2013 Maximilian Antoni
   */
 
-var commonJSModule = typeof module == "object" && typeof require == "function";
+var commonJSModule = typeof module == "object" && typeof require == "function" && typeof window == "undefined";
 
 if (!this.sinon && commonJSModule) {
     var sinon = require("../sinon");
@@ -1262,7 +1262,7 @@ if (!this.sinon && commonJSModule) {
   */
 
 (function (sinon) {
-    var commonJSModule = typeof module == "object" && typeof require == "function";
+    var commonJSModule = typeof module == "object" && typeof require == "function" && typeof window == "undefined";
     var push = Array.prototype.push;
     var slice = Array.prototype.slice;
     var callId = 0;
@@ -1645,7 +1645,7 @@ if (!this.sinon && commonJSModule) {
  */
 
 (function (sinon) {
-    var commonJSModule = typeof module == "object" && typeof require == "function";
+    var commonJSModule = typeof module == "object" && typeof require == "function" && typeof window == "undefined";
 
     if (!sinon && commonJSModule) {
         sinon = require("../sinon");
@@ -2016,7 +2016,7 @@ if (!this.sinon && commonJSModule) {
  */
 
 (function (sinon) {
-    var commonJSModule = typeof module == "object" && typeof require == "function";
+    var commonJSModule = typeof module == "object" && typeof require == "function" && typeof window == "undefined";
     var push = [].push;
 
     if (!sinon && commonJSModule) {
@@ -2441,7 +2441,7 @@ if (!this.sinon && commonJSModule) {
  */
 
 (function (sinon) {
-    var commonJSModule = typeof module == "object" && typeof require == "function";
+    var commonJSModule = typeof module == "object" && typeof require == "function" && typeof window == "undefined";
     var push = [].push;
     var hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -2924,7 +2924,7 @@ sinon.timers = {
     Date: Date
 };
 
-if (typeof module == "object" && typeof require == "function") {
+if (typeof module == "object" && typeof require == "function" && typeof window == "undefined") {
     module.exports = sinon;
 }
 
@@ -3508,7 +3508,7 @@ sinon.xhr = { XMLHttpRequest: this.XMLHttpRequest };
     sinon.FakeXMLHttpRequest = FakeXMLHttpRequest;
 })(this);
 
-if (typeof module == "object" && typeof require == "function") {
+if (typeof module == "object" && typeof require == "function" && typeof window == "undefined") {
     module.exports = sinon;
 }
 
@@ -3720,7 +3720,7 @@ sinon.fakeServer = (function () {
     };
 }());
 
-if (typeof module == "object" && typeof require == "function") {
+if (typeof module == "object" && typeof require == "function" && typeof window == "undefined") {
     module.exports = sinon;
 }
 
@@ -3825,7 +3825,7 @@ if (typeof module == "object" && typeof require == "function") {
  * Copyright (c) 2010-2013 Christian Johansen
  */
 
-if (typeof module == "object" && typeof require == "function") {
+if (typeof module == "object" && typeof require == "function" && typeof window == "undefined") {
     var sinon = require("../sinon");
     sinon.extend(sinon, require("./util/fake_timers"));
 }
@@ -3927,7 +3927,7 @@ if (typeof module == "object" && typeof require == "function") {
 
     sinon.sandbox.useFakeXMLHttpRequest = sinon.sandbox.useFakeServer;
 
-    if (typeof module == "object" && typeof require == "function") {
+    if (typeof module == "object" && typeof require == "function" && typeof window == "undefined") {
         module.exports = sinon.sandbox;
     }
 }());
@@ -3950,7 +3950,7 @@ if (typeof module == "object" && typeof require == "function") {
  */
 
 (function (sinon) {
-    var commonJSModule = typeof module == "object" && typeof require == "function";
+    var commonJSModule = typeof module == "object" && typeof require == "function" && typeof window == "undefined";
 
     if (!sinon && commonJSModule) {
         sinon = require("../sinon");
@@ -4023,7 +4023,7 @@ if (typeof module == "object" && typeof require == "function") {
  */
 
 (function (sinon) {
-    var commonJSModule = typeof module == "object" && typeof require == "function";
+    var commonJSModule = typeof module == "object" && typeof require == "function" && typeof window == "undefined";
 
     if (!sinon && commonJSModule) {
         sinon = require("../sinon");
@@ -4120,7 +4120,7 @@ if (typeof module == "object" && typeof require == "function") {
  */
 
 (function (sinon, global) {
-    var commonJSModule = typeof module == "object" && typeof require == "function";
+    var commonJSModule = typeof module == "object" && typeof require == "function" && typeof window == "undefined";
     var slice = Array.prototype.slice;
     var assert;
 

@@ -10,6 +10,8 @@
     ],
     "url": "https://github.com/cjohansen/Sinon.JS",
     "modules": "sinon.js",
-    "dependencies": { },
+    "dependencies": { 
+        "modules": ">=0.0.8"
+    },
     "description": "Standalone test spies, stubs and mocks for JavaScript. No dependencies, works with any unit testing framework."
 }
