@@ -48,6 +48,7 @@
         "duality-dust": null,
         "nodeunit": null,
         "nodeunit-testrunner": null,
+        "sinon": null,
         "less-precompiler": null,
         "select2": null,
         "kujua-branding": ">=0.0.2",
