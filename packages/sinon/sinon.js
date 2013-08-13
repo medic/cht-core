@@ -33,7 +33,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-window.sinon = (function () {
+this.sinon = (function () {
 var buster = (function (setTimeout, B) {
     var isNode = typeof require == "function" && typeof module == "object" && typeof window == "undefined";
     var div = typeof document != "undefined" && document.createElement("div");
@@ -450,7 +450,7 @@ buster.format.ascii = (function () {
     return ascii;
 }());
 
-if (typeof module != "undefined") {
+if (typeof module != "undefined" && typeof window == "undefined") {
     module.exports = buster.format;
 }
 /*jslint eqeqeq: false, onevar: false, forin: true, nomen: false, regexp: false, plusplus: false*/
@@ -775,11 +775,13 @@ var sinon = (function (buster) {
 
     var isNode = typeof module == "object" && typeof require == "function" && typeof window == "undefined";
 
+    if (typeof module != "undefined") {
+        module.exports = sinon;
+    }
     if (isNode) {
         try {
             buster = { format: require("buster-format") };
         } catch (e) {}
-        module.exports = sinon;
         module.exports.spy = require("./sinon/spy");
         module.exports.stub = require("./sinon/stub");
         module.exports.mock = require("./sinon/mock");
