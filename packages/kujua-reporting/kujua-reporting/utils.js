@@ -242,14 +242,19 @@ exports.getDates = function (q, reporting_freq) {
         dates = {},
         list = [];
 
-    if (typeof reporting_freq === 'undefined')
+    if (typeof reporting_freq === 'undefined') {
         reporting_freq = 'month';
+    } else if (reporting_freq === 'monthly') {
+        reporting_freq = 'month';
+    } else if (reporting_freq === 'weekly') {
+        reporting_freq = 'week';
+    }
 
     var step = reporting_freq + 's';
 
     // we can only select week as reporting time unit
     // if the data record is supplied weekly
-    if(selected_time_unit === 'week' && reporting_freq !== 'week') {
+    if (selected_time_unit === 'week' && reporting_freq !== 'week') {
         selected_time_unit = 'month';
     }
 

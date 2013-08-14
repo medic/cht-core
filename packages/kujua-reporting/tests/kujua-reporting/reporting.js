@@ -198,6 +198,24 @@ exports['getDates - month/month'] = function (test) {
     test.done();
 }
 
+exports['interprets "weekly" reporting_freq as by week'] = function(test) {
+    var dates = utils.getDates({
+        time_unit: 'month'
+    }, 'weekly');
+
+    test.equals(dates.reporting_freq, 'week');
+    test.done();
+}
+
+exports['interprets "monthly" reporting_freq as by month'] = function(test) {
+    var dates = utils.getDates({
+        time_unit: 'month'
+    }, 'month');
+
+    test.equals(dates.reporting_freq, 'month');
+    test.done();
+}
+
 /*
  *  reporting_freq: month
  *  query string: {time_unit: 'month', month: 6}
