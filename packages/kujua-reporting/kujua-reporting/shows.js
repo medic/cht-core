@@ -363,7 +363,8 @@ function renderPage() {
         doc = facility_doc,
         form_config,
         parentURL = '',
-        req = _req;
+        req = _req,
+        title;
 
     if (!doc) {
         return renderDistrictChoice(appdb, forms);
@@ -384,6 +385,8 @@ function renderPage() {
         );
     }
 
+    title = sms_utils.getFormTitle(form_config.code);
+
     dates = utils.getDates(req.query, form_config.reporting_freq);
 
     if (utils.isHealthCenter(doc)) {
@@ -395,7 +398,9 @@ function renderPage() {
     // render header
     $('[data-page=reporting_rates] .page-header .container').html(
         templates.render('kujua-reporting/page_header_body.html', req, {
-            doc: _.extend({}, doc, form_config),
+            doc: _.extend({}, doc, form_config, {
+                title: title
+            }),
             parentURL: parentURL
         })
     );
