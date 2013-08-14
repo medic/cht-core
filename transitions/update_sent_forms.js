@@ -9,7 +9,7 @@ module.exports = {
             clinic = doc.related_entities && doc.related_entities.clinic,
             clinicId = clinic && clinic._id;
 
-        db.get(clinicId, function(err, clinic) {
+        db.getDoc(clinicId, function(err, clinic) {
             var latest,
                 reported = moment(reported_date);
 
@@ -26,7 +26,7 @@ module.exports = {
                     clinic.sent_forms[form] = moment(reported_date).toISOString();
                 }
 
-                db.save(clinic, function(err) {
+                db.saveDoc(clinic, function(err) {
                     if (err) {
                         callback(err);
                     } else {
