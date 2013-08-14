@@ -539,14 +539,11 @@ var renderReports = function(err, facilities) {
 
         // only render sibling menu if we are admin and looking at a district
         if (isAdmin || doc.type !== 'district_hospital') {
-            // position siblings menu
-            var offset = $('.controls .facilities').show().offset();
-            offset.left = $('.page-header .title').width() +
-                          $('.page-header .title').offset().left + 5;
-            $('.controls .facilities').offset(offset);
+            // show siblings menu
+            $('.nav.facilities').show();
 
             getViewSiblingFacilities(doc, function(data) {
-                $('.controls .facilities .dropdown-menu').html(
+                $('.nav.facilities .dropdown-menu').html(
                     templates.render(
                         'kujua-reporting/siblings-umenu-item.html', req, {
                             rows: data.rows,
