@@ -77,7 +77,7 @@
                     "title": "Facility Id",
                     "type": "string",
                     "je:hint": "autocomplete",
-                    "je:url" : "/{{dbname}}/_design/{{ddoc}}/_list/facilities_select2/facilities"
+                    "je:url" : "/{{dbname}}/_design/{{ddoc}}/_rewrite/facilities_select2.json"
                 },
                 "phone": {
                     "title": "Phone",
