@@ -250,9 +250,7 @@ var getSMSResponse = function(doc, info) {
     if (msg) {
         res.messages[0].message = msg;
     } else {
-        res = {
-            success: true
-        };
+        res = getDefaultResponse(doc);
     }
 
     return res;
@@ -285,6 +283,20 @@ var getMessagesTask = function(record) {
         return task;
 };
 
+function getDefaultResponse(doc) {
+    var response = {
+        payload: {
+            success: true
+        }
+    };
+
+    if (doc && doc._id) {
+        response.payload.id = doc._id;
+    }
+
+    return response;
+}
+
 /*
  * Create intial/stub data record. Return Ushahidi SMSSync compatible callback
  * response to update facility data in next response.
@@ -305,7 +317,7 @@ exports.add_sms = function(doc, request) {
         def = jsonforms[sms_message.form],
         baseURL = require('duality/core').getBaseURL(),
         headers = req.headers.Host.split(":"),
-        resp = {payload: {success: true}};
+        resp = getDefaultResponse();
 
     var appInfo = info.getAppInfo.call(this);
 
@@ -329,7 +341,7 @@ exports.add_sms = function(doc, request) {
 
     if (def && def.use_sentinel) {
         // reset payload since sentinel deals with responses/messages
-        resp = {payload: {success: true}};
+        resp = getDefaultResponse(doc);
         delete doc.responses;
         return [doc, JSON.stringify(resp)];
     }
