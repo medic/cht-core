@@ -408,3 +408,47 @@ exports.tasks_pending = function (head, req) {
 
     return JSON.stringify(respBody);
 };
+
+exports.facilities_select2 = function(head, req) {
+    start({code: 200, headers: {
+        'Content-Type': 'text/json; charset=utf-8'
+    }});
+
+    row = getRow();
+
+    if (!row) {
+        return send('[]');
+    }
+
+    function getData() {
+        var names = [],
+            //support include_docs=true
+            doc = row.doc || row.value;
+
+        if (doc.name) {
+            names.unshift(doc.name);
+            if (doc.parent && doc.parent.name) {
+                names.unshift(doc.parent.name);
+                if (doc.parent.parent && doc.parent.parent.name) {
+                    names.unshift(doc.parent.parent.name);
+                }
+            }
+        }
+
+        return {
+            text: names.join(', '),
+            id: row.id
+        };
+    }
+
+    // create array of facilities as valid JSON output, no comma at end.  also
+    // format nicely incase someone wants to modify it and re-upload.
+    send('[');
+    send(JSON.stringify(getData()));
+    while (row = getRow()) {
+        send(',\n');
+        send(JSON.stringify(getData()));
+    }
+    send(']');
+
+}
