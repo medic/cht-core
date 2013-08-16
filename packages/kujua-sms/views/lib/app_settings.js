@@ -39,175 +39,175 @@ module.exports = {
    "translations": [
        {
            "key": "district",
-           "en": "field office",
+           "en": "district",
            "fr": "",
            "ne": "",
            "es": ""
        },
        {
            "key": "districts",
-           "en": "field offices",
+           "en": "districts",
            "fr": "",
            "ne": "",
            "es": ""
        },
        {
            "key": "District",
-           "en": "Field Office",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Districts",
-           "en": "Field Offices",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "District Name",
-           "en": "Field Office Name",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "District Contact Name",
-           "en": "SMO",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "District Contact Phone",
-           "en": "SMO Phone",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "District Hospital",
-           "en": "Field Office",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "District Hospitals",
-           "en": "Field Offices",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "District Hospital Name",
-           "en": "Name",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "District Hospital Contact Name",
-           "en": "SMO",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Health Center",
            "en": "District",
            "fr": "",
            "ne": "",
            "es": ""
        },
        {
-           "key": "Health Centers",
+           "key": "Districts",
            "en": "Districts",
            "fr": "",
            "ne": "",
            "es": ""
        },
        {
-           "key": "Health Center Name",
+           "key": "District Name",
            "en": "District Name",
            "fr": "",
            "ne": "",
            "es": ""
        },
        {
-           "key": "Health Center Contact",
-           "en": "District Contact",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Health Center Contact Name",
+           "key": "District Contact Name",
            "en": "District Contact Name",
            "fr": "",
            "ne": "",
            "es": ""
        },
        {
-           "key": "Health Center Contact Phone",
+           "key": "District Contact Phone",
            "en": "District Contact Phone",
            "fr": "",
            "ne": "",
            "es": ""
        },
        {
+           "key": "District Hospital",
+           "en": "District Hospital",
+           "fr": "",
+           "ne": "",
+           "es": ""
+       },
+       {
+           "key": "District Hospitals",
+           "en": "District Hospitals",
+           "fr": "",
+           "ne": "",
+           "es": ""
+       },
+       {
+           "key": "District Hospital Name",
+           "en": "District Hospital Name",
+           "fr": "",
+           "ne": "",
+           "es": ""
+       },
+       {
+           "key": "District Hospital Contact Name",
+           "en": "District Hospital Contact Name",
+           "fr": "",
+           "ne": "",
+           "es": ""
+       },
+       {
+           "key": "Health Center",
+           "en": "Health Center",
+           "fr": "",
+           "ne": "",
+           "es": ""
+       },
+       {
+           "key": "Health Centers",
+           "en": "Health Centers",
+           "fr": "",
+           "ne": "",
+           "es": ""
+       },
+       {
+           "key": "Health Center Name",
+           "en": "Health Center Name",
+           "fr": "",
+           "ne": "",
+           "es": ""
+       },
+       {
+           "key": "Health Center Contact",
+           "en": "Health Center Contact",
+           "fr": "",
+           "ne": "",
+           "es": ""
+       },
+       {
+           "key": "Health Center Contact Name",
+           "en": "Health Center Contact Name",
+           "fr": "",
+           "ne": "",
+           "es": ""
+       },
+       {
+           "key": "Health Center Contact Phone",
+           "en": "Health Center Contact Phone",
+           "fr": "",
+           "ne": "",
+           "es": ""
+       },
+       {
            "key": "clinic",
-           "en": "reporting unit",
+           "en": "clinic",
            "fr": "",
            "ne": "",
            "es": ""
        },
        {
            "key": "clinics",
-           "en": "reporting units",
+           "en": "clinics",
            "fr": "",
            "ne": "",
            "es": ""
        },
        {
            "key": "Clinic",
-           "en": "Reporting Unit",
+           "en": "Clinic",
            "fr": "",
            "ne": "",
            "es": ""
        },
        {
            "key": "Clinics",
-           "en": "Reporting Units",
+           "en": "Clinics",
            "fr": "",
            "ne": "",
            "es": ""
        },
        {
            "key": "Clinic Name",
-           "en": "Reporting Unit Name",
+           "en": "Clinic Name",
            "fr": "",
            "ne": "",
            "es": ""
        },
        {
            "key": "Clinic Contact",
-           "en": "Reporting Unit Contact",
+           "en": "Clinic Contact",
            "fr": "",
            "ne": "",
            "es": ""
        },
        {
            "key": "Clinic Contact Name",
-           "en": "Reporting Unit Contact Name",
+           "en": "Clinic Contact Name",
            "fr": "",
            "ne": "",
            "es": ""
        },
        {
            "key": "Clinic Contact Phone",
-           "en": "Reporting Unit Contact Phone",
+           "en": "Clinic Contact Phone",
            "fr": "",
            "ne": "",
            "es": ""
