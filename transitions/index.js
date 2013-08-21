@@ -58,11 +58,18 @@ queue = async.queue(function(job, callback) {
 module.exports = {
     attachTransition: function(transition, key) {
         var db = require('../db'),
+            filter,
             feed;
+
+        if (_.isFunction(transition.filter)) {
+            filter = transition.filter;
+        } else {
+            filter = 'kujua-sentinel/' + key;
+        }
 
         feed = new couchmark.Feed({
             db: process.env.COUCH_URL,
-            filter: 'kujua-sentinel/' + key,
+            filter: filter,
             stream: key
         });
 
