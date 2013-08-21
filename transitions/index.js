@@ -5,6 +5,7 @@ var _ = require('underscore'),
     transitions = {},
     date = require('../date'),
     utils = require('../lib/utils'),
+    couchmark = require('couchmark'),
     queue;
 
 if (!process.env.TEST_ENV) {
@@ -57,65 +58,52 @@ queue = async.queue(function(job, callback) {
 module.exports = {
     attachTransition: function(transition, key) {
         var db = require('../db'),
-            stream;
+            feed;
 
-        db.info(function(err, data) {
-
-            if (err)
-                return console.error('attachTransition failed', err);
-
-            var since = data.update_seq;
-
-            // get a stream of changes from the database
-            stream = db.changesStream({
-                since: since,
-                filter: 'kujua-sentinel/' + key
-            });
-
-            stream.on('data', function(change) {
-                // ignore documents that have been deleted; there's nothing to update
-                if (change.deleted) {
-                    return;
-                }
-
-                // get the latest document
-                db.getDoc(change.id, function(err, doc) {
-
-                    var transitions = doc.transitions || {};
-
-                    if (err || !doc) {
-                        return console.error('sentinel getDoc failed with error: %s', err);
-                    }
-
-                    if (transition.repeatable || !transitions[key] || !transitions[key].ok) {
-                        // modify reported_date if we are running in
-                        // synthetic date mode
-                        if (doc.reported_date && date.isSynthetic()) {
-                            doc.reported_date = date.getTimestamp();
-                        }
-
-                        change.doc = doc;
-
-                        queue.push({
-                            change: change,
-                            db: db,
-                            key: key,
-                            transition: transition
-                        });
-                    }
-                });
-            });
-            stream.on('error', function(err) {
-                console.log('Changes stream error',err);
-                process.exit(1);
-            });
-            stream.on('end', function(err) {
-                console.log('Changes stream ended',err);
-                process.exit(1);
-            });
-            console.log('Listening for changes for the ' + key + ' transition from sequence number ' + since);
+        feed = new couchmark.Feed({
+            db: process.env.COUCH_URL,
+            filter: 'kujua-sentinel/' + key,
+            stream: key
         });
 
+        feed.on('change', function(change) {
+            // ignore documents that have been deleted; there's nothing to update
+            if (change.deleted) {
+                return;
+            }
+
+            // get the latest document
+            db.getDoc(change.id, function(err, doc) {
+
+                var transitions = doc.transitions || {};
+
+                if (err || !doc) {
+                    return console.error('sentinel getDoc failed with error: %s', err);
+                }
+
+                if (transition.repeatable || !transitions[key] || !transitions[key].ok) {
+                    // modify reported_date if we are running in
+                    // synthetic date mode
+                    if (doc.reported_date && date.isSynthetic()) {
+                        doc.reported_date = date.getTimestamp();
+                    }
+
+                    change.doc = doc;
+
+                    queue.push({
+                        change: change,
+                        db: db,
+                        key: key,
+                        transition: transition
+                    });
+                }
+            });
+        });
+
+        feed.on('ready', function() {
+            console.log('Listening for changes for the ' + key + ' transition from sequence number ' + feed.since);
+            feed.follow();
+        });
     },
     // Attach a transition to a stream of changes from the database.
     attach: function(design) {
