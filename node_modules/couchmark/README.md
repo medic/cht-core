@@ -5,7 +5,7 @@ Wraps couchdb's `follow` to restart at the latest unhandled change by named stre
 handled is optimistic — it occurs as soon as the feed fires the `change` event.
 
 It is for the case when your application is offline whilst documents continue to be inserted into a CouchDB
-database.
+database; starting from the start becomes progressively worse as changes accumulate.
 
 The feed returned from `couchmark` is a `follow` Feed.
 

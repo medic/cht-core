@@ -13,7 +13,8 @@
     "underscore": "1.4.x",
     "url": "0.7.x",
     "uuid": "1.4.x",
-    "later": "~1.1.3"
+    "later": "~1.1.3",
+    "couchmark": "~0.1.0"
   },
   "devDependencies": {
     "kanso": "latest",
