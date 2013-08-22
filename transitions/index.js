@@ -14,7 +14,6 @@ if (!process.env.TEST_ENV) {
         var transition,
         key = path.basename(file, path.extname(file));
 
-        console.log('reading file %s', key);
         try {
             if (file !== 'index.js') {
                 transition = require('./' + key);
@@ -115,9 +114,8 @@ module.exports = {
     // Attach a transition to a stream of changes from the database.
     attach: function(design) {
         _.each(transitions, function(transition, key) {
-
             // don't attach if it doesn't have a filter
-            if (!design.filters || !design.filters[key]) {
+            if (!_.isFunction(transition.filter) && (!design.filters || !design.filters[key])) {
                 console.warn("MISSING " + key + " filter, skipping transition!");
                 return;
             }
