@@ -57,7 +57,6 @@ exports['mutes messages'] = function(test) {
 
         test.ok(message.indexOf('deactivated') >= 0);
         test.equals(doc.notifications, 'off');
-        debugger;
         test.equals(registration.scheduled_tasks.length, 3);
         test.ok(_.all(registration.scheduled_tasks, function(task) {
             return task.state === 'muted';

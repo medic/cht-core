@@ -1,36 +1,26 @@
 // moment.js language configuration
 // language : ukrainian (uk)
 // author : zemlanin : https://github.com/zemlanin
-var pluralRules = [
-    function (n) { return ((n % 10 === 1) && (n % 100 !== 11)); },
-    function (n) { return ((n % 10) >= 2 && (n % 10) <= 4 && ((n % 10) % 1) === 0) && ((n % 100) < 12 || (n % 100) > 14); },
-    function (n) { return ((n % 10) === 0 || ((n % 10) >= 5 && (n % 10) <= 9 && ((n % 10) % 1) === 0) || ((n % 100) >= 11 && (n % 100) <= 14 && ((n % 100) % 1) === 0)); },
-    function (n) { return true; }
-];
+// Author : Menelion Elensúle : https://github.com/Oire
 
 function plural(word, num) {
-    var forms = word.split('_'),
-    minCount = Math.min(pluralRules.length, forms.length),
-    i = -1;
-
-    while (++i < minCount) {
-        if (pluralRules[i](num)) {
-            return forms[i];
-        }
-    }
-    return forms[minCount - 1];
+    var forms = word.split('_');
+    return num % 10 === 1 && num % 100 !== 11 ? forms[0] : (num % 10 >= 2 && num % 10 <= 4 && (num % 100 < 10 || num % 100 >= 20) ? forms[1] : forms[2]);
 }
 
 function relativeTimeWithPlural(number, withoutSuffix, key) {
     var format = {
-        'mm': 'хвилина_хвилини_хвилин_хвилини',
-        'hh': 'година_години_годин_години',
-        'dd': 'день_дня_днів_дня',
-        'MM': 'місяць_місяця_місяців_місяця',
-        'yy': 'рік_року_років_року'
+        'mm': 'хвилина_хвилини_хвилин',
+        'hh': 'година_години_годин',
+        'dd': 'день_дні_днів',
+        'MM': 'місяць_місяці_місяців',
+        'yy': 'рік_роки_років'
     };
     if (key === 'm') {
         return withoutSuffix ? 'хвилина' : 'хвилину';
+    }
+    else if (key === 'h') {
+        return withoutSuffix ? 'година' : 'годину';
     }
     else {
         return number + ' ' + plural(format[key], +number);
@@ -53,14 +43,23 @@ function monthsCaseReplace(m, format) {
 function weekdaysCaseReplace(m, format) {
     var weekdays = {
         'nominative': 'неділя_понеділок_вівторок_середа_четвер_п’ятниця_субота'.split('_'),
-        'accusative': 'неділю_понеділок_вівторок_середу_четвер_п’ятницю_суботу'.split('_')
+        'accusative': 'неділю_понеділок_вівторок_середу_четвер_п’ятницю_суботу'.split('_'),
+        'genitive': 'неділі_понеділка_вівторка_середи_четверга_п’ятниці_суботи'.split('_')
     },
 
-    nounCase = (/\[ ?[Вв] ?(?:попередню|наступну)? ?\] ?dddd/).test(format) ?
+    nounCase = (/(\[[ВвУу]\]) ?dddd/).test(format) ? 
         'accusative' :
-        'nominative';
+        ((/\[?(?:минулої|наступної)? ?\] ?dddd/).test(format) ?
+            'genitive' :
+            'nominative');
 
     return weekdays[nounCase][m.day()];
+}
+
+function processHoursFunction(str) {
+    return function () {
+        return str + 'о' + (this.hours() === 11 ? 'б' : '') + '] LT';
+    };
 }
 
 require('../moment').lang('uk', {
@@ -72,35 +71,32 @@ require('../moment').lang('uk', {
     longDateFormat : {
         LT : "HH:mm",
         L : "DD.MM.YYYY",
-        LL : "D MMMM YYYY г.",
-        LLL : "D MMMM YYYY г., LT",
-        LLLL : "dddd, D MMMM YYYY г., LT"
+        LL : "D MMMM YYYY р.",
+        LLL : "D MMMM YYYY р., LT",
+        LLLL : "dddd, D MMMM YYYY р., LT"
     },
     calendar : {
-        sameDay: '[Сьогодні в] LT',
-        nextDay: '[Завтра в] LT',
-        lastDay: '[Вчора в] LT',
-        nextWeek: function () {
-            return this.day() === 2 ? '[У] dddd [в] LT' : '[В] dddd [в] LT';
-        },
+        sameDay: processHoursFunction('[Сьогодні '),
+        nextDay: processHoursFunction('[Завтра '),
+        lastDay: processHoursFunction('[Вчора '),
+        nextWeek: processHoursFunction('[У] dddd ['),
         lastWeek: function () {
             switch (this.day()) {
             case 0:
             case 3:
             case 5:
             case 6:
-                return '[В минулу] dddd [в] LT';
+                return processHoursFunction('[Минулої] dddd [').call(this);
             case 1:
             case 2:
             case 4:
-                return '[В минулий] dddd [в] LT';
+                return processHoursFunction('[Минулого] dddd [').call(this);
             }
         },
         sameElse: 'L'
     },
-    // It needs checking (adding) ukrainan plurals and cases.
     relativeTime : {
-        future : "через %s",
+        future : "за %s",
         past : "%s тому",
         s : "декілька секунд",
         m : relativeTimeWithPlural,
@@ -114,7 +110,21 @@ require('../moment').lang('uk', {
         y : "рік",
         yy : relativeTimeWithPlural
     },
-    ordinal : '%d.',
+    ordinal: function (number, period) {
+        switch (period) {
+        case 'M':
+        case 'd':
+        case 'DDD':
+        case 'w':
+        case 'W':
+            return number + '-й';
+        case 'D':
+            return number + '-го';
+        default:
+            return number;
+        }
+    },
+
     week : {
         dow : 1, // Monday is the first day of the week.
         doy : 7  // The week that contains Jan 1st is the first week of the year.

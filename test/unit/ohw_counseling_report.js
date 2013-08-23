@@ -124,7 +124,6 @@ exports['ANC acknowledgement'] = function(test) {
             }
         }
     };
-    debugger;
     transition.onMatch({
         doc: doc
     }, fakedb, function(err, complete) {

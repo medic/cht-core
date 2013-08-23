@@ -18,31 +18,37 @@ tasks = _.compact(_.map(fs.readdirSync(__dirname), function(file) {
 
 function sendable(m) {
     var after = config.get('schedule_morning_hours') || 8,
-        until = config.get('schedule_evening_hours') || 17;
+        until = config.get('schedule_evening_hours') || 17,
+        hour = m.hours();
 
-    return m.hours() >= after && m.hours() <= until;
+    return hour >= after && hour <= until;
 }
 
 function checkSchedule() {
-    var m = moment(date.getDate());
+    var db = require('../db'),
+        now = moment(date.getDate());
 
-    if (sendable(m)) {
-        async.forEachSeries(tasks, function(task, callback) {
-            task(callback);
-        }, function(e) {
-            if (e) {
-                console.error('Error running tasks: ' + JSON.stringify(e));
-            }
-            reschedule();
-        });
-    } else {
+    async.forEachSeries(tasks, function(task, callback) {
+        if (_.isFunction(task.execute)) {
+            task.execute({
+                db: db
+            }, callback);
+        } else if (sendable(now)) { // in time window for moving due_tasks
+            task(db, callback);
+        } else {
+            callback();
+        }
+    }, function(err) {
+        if (err) {
+            console.error('Error running tasks: ' + JSON.stringify(err));
+        }
         reschedule();
-    }
+    });
 }
 
 function reschedule() {
     var now = moment(),
-        heartbeat = now.clone().add('hours', 1).minutes(0).seconds(0).milliseconds(0),
+        heartbeat = now.clone().startOf('hour').add('hours', 1),
         duration = moment.duration(heartbeat.valueOf() - now.valueOf());
 
     console.log('checking schedule again in', moment.duration(duration).humanize());

@@ -884,7 +884,6 @@ exports['birth report fails proximity check sets up right messages'] = function(
             }
         }
     };
-    debugger;
     transition.onMatch({
         doc: doc
     }, fakedb, function(err, complete) {
