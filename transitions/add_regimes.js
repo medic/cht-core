@@ -16,6 +16,19 @@ module.exports = {
         });
     },
     onMatch: function(change, db, callback) {
+        var doc = change.doc,
+            successful = [];
+
+        _.each(doc.task_regimes, function(regime) {
+            var success = module.exports.addRegime(doc, regime);
+
+            if (success) {
+                successful.push(regime);
+            }
+        });
+
+        doc.task_regimes = _.without(doc.task_regimes, successful);
+
         callback(null, true);
     },
     getOffset: function(offset) {
