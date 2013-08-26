@@ -92,7 +92,6 @@ exports['regime generates two scheduled messages'] = function(test) {
         lmp_date: moment().valueOf()
     };
 
-    debugger;
     added = transition.addRegime(doc, {
         form: 'x',
         key: 'duckland',
