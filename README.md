@@ -72,7 +72,7 @@ after a push.  To run them from commandline you will need to install
 
 ```
 npm install phantomjs -g
-./tests/phantom_test.sh http://localhost:5984/kujua-lite
+./scripts/phantom_test.sh http://localhost:5984/kujua-lite
 ```
 
 ## Build Status
