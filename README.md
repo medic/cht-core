@@ -53,7 +53,7 @@ node ./server.js
 Navigate your browser to:
 
 ```
-http://localhost:5984/
+http://localhost:5984/kujua-lite/_design/kujua-lite/_rewrite/
 ```
 
 ## Configure
