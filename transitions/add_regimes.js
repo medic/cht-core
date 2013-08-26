@@ -12,7 +12,7 @@ module.exports = {
     onMatch: function(change, db, callback) {
         var doc = change.doc,
             successful = [],
-            regimes = config.get('scheduled_reminder_regimes'),
+            regimes = config.get('task_regimes'),
             updated;
 
         updated = _.any(regimes, function(regime) {
@@ -83,7 +83,7 @@ module.exports = {
                 });
             } else {
                 // bad offset, skip this msg
-                console.log("%s cannot be parsed as a valid offset. Skipping this msg of %s regime.", msg.offset, key);
+                console.log("%s cannot be parsed as a valid offset. Skipping this msg of %s regime.", msg.offset, regime.key);
             }
         });
 
