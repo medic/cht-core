@@ -1,6 +1,7 @@
 node_modules/gently
 node_modules/kanso
 node_modules/nodeunit
+node_modules/sinon
 node_modules/.bin/kanso
 node_modules/.bin/kanso_completions
 node_modules/.bin/nodeunit
