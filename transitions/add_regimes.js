@@ -37,6 +37,9 @@ module.exports = {
             type: type
         });
     },
+    formMismatch: function(form, doc) {
+        return doc.form !== form;
+    },
     addRegime: function(doc, regime) {
         var docStart,
             start,
@@ -44,8 +47,9 @@ module.exports = {
             clinicName = utils.getClinicName(doc),
             now = moment(date.getDate());
 
-            // if we  can't find the regime in config, we're done
-        if (!_.isObject(regime) || module.exports.alreadyRun(regime.key, doc)) {
+        // if we  can't find the regime in config, we're done
+        // also if forms mismatch or already run
+        if (!_.isObject(regime) || module.exports.formMismatch(regime.form, doc) || module.exports.alreadyRun(regime.key, doc)) {
             return false;
         }
 

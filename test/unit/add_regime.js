@@ -51,6 +51,7 @@ exports['addRegime returns false if already has scheduled_task for that type'] =
         doc;
 
     doc = {
+        form: 'x',
         lmp_date: moment().valueOf(),
         scheduled_tasks: [
             {
@@ -60,6 +61,7 @@ exports['addRegime returns false if already has scheduled_task for that type'] =
     };
 
     added = transition.addRegime(doc, {
+        form: 'x',
         key: 'duckland',
         messages: [
             {
@@ -85,11 +87,14 @@ exports['regime generates two scheduled messages'] = function(test) {
     var added,
         doc;
     doc = {
+        form: 'x',
         serial_number: 'abc',
         lmp_date: moment().valueOf()
     };
 
+    debugger;
     added = transition.addRegime(doc, {
+        form: 'x',
         key: 'duckland',
         messages: [
             {
@@ -116,5 +121,14 @@ exports['regime generates two scheduled messages'] = function(test) {
 
 exports['transition is repeatable'] = function(test) {
     test.equals(transition.repeatable, true);
+    test.done();
+}
+
+exports['formMismatch'] = function(test) {
+    test.ok(_.isFunction(transition.formMismatch));
+    test.equals(transition.formMismatch.length, 2);
+
+    test.equals(transition.formMismatch('x', { form: 'x' }), false);
+    test.equals(transition.formMismatch('y', { form: 'x' }), true);
     test.done();
 }
