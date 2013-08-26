@@ -7,29 +7,19 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc, req) {
-        // run the transition if there's a task_regimes array
-        return Array.isArray(doc.task_regimes) && doc.task_regimes.some(function(regime) {
-            // and *any* of the strings in it aren't in the list of scheduled_tasks
-            return !doc.scheduled_tasks || (Array.isArray(doc.scheduled_tasks) && doc.scheduled_tasks.every(function(task) {
-                return task.type !== regime;
-            }));
-        });
+        return !!doc.form;
     },
     onMatch: function(change, db, callback) {
         var doc = change.doc,
-            successful = [];
+            successful = [],
+            regimes = config.get('scheduled_reminder_regimes'),
+            updated;
 
-        _.each(doc.task_regimes, function(regime) {
-            var success = module.exports.addRegime(doc, regime);
-
-            if (success) {
-                successful.push(regime);
-            }
+        updated = _.any(regimes, function(regime) {
+            return module.exports.addRegime(doc, regime);
         });
 
-        doc.task_regimes = _.without(doc.task_regimes, successful);
-
-        callback(null, true);
+        callback(null, updated);
     },
     getOffset: function(offset) {
         var tokens = (offset || '').split(' '),
@@ -42,23 +32,20 @@ module.exports = {
             return false;
         }
     },
-    getRegime: function(key) {
-        var regimes = config.get('scheduled_reminder_regimes');
-
-        return _.find(regimes, function(regime) {
-            return regime.key === key;
+    alreadyRun: function(type, doc) {
+        return _.findWhere(doc.scheduled_tasks, {
+            type: type
         });
     },
-    addRegime: function(doc, key) {
-        var regime = module.exports.getRegime(key),
-            docStart,
+    addRegime: function(doc, regime) {
+        var docStart,
             start,
             clinicContactName = utils.getClinicContactName(doc),
             clinicName = utils.getClinicName(doc),
             now = moment(date.getDate());
 
             // if we  can't find the regime in config, we're done
-        if (!_.isObject(regime)) {
+        if (!_.isObject(regime) || module.exports.alreadyRun(regime.key, doc)) {
             return false;
         }
 
@@ -88,12 +75,16 @@ module.exports = {
                     }),
                     group: msg.group,
                     phone: doc.from,
-                    type: key
+                    type: regime.key
                 });
             } else {
                 // bad offset, skip this msg
                 console.log("%s cannot be parsed as a valid offset. Skipping this msg of %s regime.", msg.offset, key);
             }
         });
-    }
+
+        // if more than zero messages added, return true
+        return !!regime.messages.length;
+    },
+    repeatable: true
 };

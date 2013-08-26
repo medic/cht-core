@@ -9,22 +9,14 @@ exports['signature'] = function(test) {
     test.done();
 };
 
-exports['filter fails if regime not there'] = function(test) {
+exports['filter fails if no form'] = function(test) {
     test.equals(transition.filter({}), false);
     test.done();
 };
 
-exports['filter passes if regime exists and no matching scheduled_tasks'] = function(test) {
+exports['filter passes if form there'] = function(test) {
     test.equals(transition.filter({
-        task_regimes: [ 'x' ]
-    }), true);
-    test.equals(transition.filter({
-        task_regimes: [ 'x' ],
-        scheduled_tasks: [
-            {
-                type: 'y'
-            }
-        ]
+        form: 'x'
     }), true);
     test.done();
 };
@@ -54,13 +46,20 @@ exports['getOffset returns durations for good syntax'] = function(test) {
     test.done();
 };
 
-exports['regime generates two scheduled messages'] = function(test) {
-    var doc = {
-        serial_number: 'abc',
-        lmp_date: moment().valueOf()
+exports['addRegime returns false if already has scheduled_task for that type'] = function(test) {
+    var added,
+        doc;
+
+    doc = {
+        lmp_date: moment().valueOf(),
+        scheduled_tasks: [
+            {
+                type: 'duckland'
+            }
+        ]
     };
 
-    sinon.stub(transition, 'getRegime').returns({
+    added = transition.addRegime(doc, {
         key: 'duckland',
         messages: [
             {
@@ -77,13 +76,45 @@ exports['regime generates two scheduled messages'] = function(test) {
         start_from: 'lmp_date'
     });
 
-    transition.addRegime(doc, 'duckland');
+    test.equals(added, false);
+    test.equals(doc.scheduled_tasks.length, 1);
+    test.done();
+}
 
+exports['regime generates two scheduled messages'] = function(test) {
+    var added,
+        doc;
+    doc = {
+        serial_number: 'abc',
+        lmp_date: moment().valueOf()
+    };
+
+    added = transition.addRegime(doc, {
+        key: 'duckland',
+        messages: [
+            {
+                group: 1,
+                offset: '1 week',
+                message: "This is for serial number {{serial_number}}."
+            },
+            {
+                group: 4,
+                offset: '81 days',
+                message: "This is for serial number {{serial_number}}."
+            }
+        ],
+        start_from: 'lmp_date'
+    });
+
+    test.equals(added, true);
     test.ok(doc.scheduled_tasks);
     test.equals(doc.scheduled_tasks.length, 2);
     test.equals(moment(doc.scheduled_tasks[1].due).diff(doc.lmp_date, 'days'), 81);
 
-    transition.getRegime.restore();
+    test.done();
+}
 
+exports['transition is repeatable'] = function(test) {
+    test.equals(transition.repeatable, true);
     test.done();
 }
