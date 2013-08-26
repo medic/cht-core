@@ -104,6 +104,9 @@
           {>"data_record_errors.html"/}
         </div>
       {/errors}
+      <div class="scroll">
+        {>"data_record_fields.html":fields/}
+      </div>
       {?responses}
       <div class="row-fluid data-record-responses">
         {>"data_record_responses.html"/}
@@ -120,9 +123,6 @@
       </div>
       {/scheduled_tasks}
     </div>
-  </div>
-  <div class="row-fluid scroll">
-    {>"data_record_fields.html":fields/}
   </div>
   {@hasPermission permission="can_view_revisions"}
   <div class="data-record-revisions">
