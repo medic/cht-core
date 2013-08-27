@@ -60,13 +60,16 @@ var prettyVal = function(data_record, key, def) {
 };
 
 function filterObject(obj) {
-    var keys = Array.prototype.slice(arguments, 1);
+    // any arguments after the first are to be removed
+    var keys = _.rest(arguments, 1);
 
-    _.each(_.keys(obj), function(key) {
-        if (key !== '_id' && key !== '_rev' && key.indexOf('_') === 0) {
+    _.each(obj, function(key, val) {
+        // also any key of the object that isn't _id or _key but otherwise starts with _ or $
+        if (!_.contains(['_id', '_key'], key) && /^[_$]/.test(key)) {
             keys.push(key);
         }
     });
+
     return _.omit(obj, keys);
 }
 
