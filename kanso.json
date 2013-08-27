@@ -150,7 +150,11 @@
                     "properties": {
                         "key": {
                             "type": "string",
-                            "title": "Reminder Key"
+                            "title": "Reminder Type"
+                        },
+                        "form": {
+                            "type": "string",
+                            "title": "Reminder Form Code"
                         },
                         "start_from": {
                             "type": "string",
