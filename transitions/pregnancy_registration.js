@@ -47,7 +47,9 @@ module.exports = {
             validName = module.exports.validateName(doc),
             idOnly = module.exports.isIdOnly(doc);
 
-        if (idOnly) {
+        if (options.form !== doc.form) {
+            callback(null, false);
+        } else if (idOnly) {
             // no schedule, and have valid name
             if (validName) {
                 module.exports.setId({

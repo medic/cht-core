@@ -292,3 +292,20 @@ exports['invalid name invalid LMP logic'] = function(test) {
         test.done();
     });
 }
+
+exports['mismatched form returns false'] = function(test) {
+    sinon.stub(transition, 'getConfig').returns({
+        form: 'y'
+    });
+    transition.onMatch({
+        doc: {
+            form: 'x'
+        }
+    }, {}, function(err, complete) {
+        test.equals(complete, false);
+
+        transition.getConfig.restore();
+
+        test.done();
+    })
+}
