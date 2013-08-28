@@ -100,6 +100,14 @@ exports.ohw_registered_patients = {
     }
 };
 
+exports.registered_patients = {
+    map: function(doc) {
+        if (doc.patient_id) {
+            emit(doc.patient_id, null);
+        }
+    }
+}
+
 exports.last_valid_seq = {
     map: function(doc) {
         var transitions = doc.transitions || {};

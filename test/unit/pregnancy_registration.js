@@ -1,6 +1,8 @@
 var _ = require('underscore'),
     transition = require('../../transitions/pregnancy_registration'),
+    sinon = require('sinon'),
     moment = require('moment'),
+    utils = require('../../lib/utils'),
     related_entities;
 
 related_entities = {
@@ -126,20 +128,28 @@ exports['setDate sets lmp_date and expected_date correctly for lmp: 10'] = funct
     test.done();
 }
 
-exports['valid adds lmp_date and response'] = function(test) {
-    var doc;
+exports['valid adds lmp_date and patient_id'] = function(test) {
+    var doc,
+        start = moment().startOf('week').subtract(5, 'weeks');
+
+    sinon.stub(utils, 'getRegistration').callsArgWithAsync(1, null, false);
 
     doc = {
         patient_name: 'abc',
         lmp: 5
     };
 
+    debugger;
     transition.onMatch({
         doc: doc
     }, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
-        //test.ok(doc.lmp_date);
+        test.equals(doc.lmp_date, start.toISOString());
+        test.ok(doc.patient_id);
+
+        utils.getRegistration.restore();
+
         test.done();
     });
 }
