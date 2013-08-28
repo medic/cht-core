@@ -142,7 +142,7 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
     var doc,
         start = moment().startOf('week').subtract(5, 'weeks');
 
-    sinon.stub(utils, 'getRegistration').callsArgWithAsync(1, null, false);
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
 
     doc = {
         patient_name: 'abc',
@@ -159,7 +159,7 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
 
         test.equals(doc.tasks, undefined);
 
-        utils.getRegistration.restore();
+        utils.getRegistrations.restore();
 
         test.done();
     });
@@ -168,7 +168,7 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
 exports['id only logic with valid name'] = function(test) {
     var doc;
 
-    sinon.stub(utils, 'getRegistration').callsArgWithAsync(1, null, false);
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
 
     doc = {
         patient_name: 'abc',
@@ -184,7 +184,7 @@ exports['id only logic with valid name'] = function(test) {
         test.equals(doc.lmp_date, undefined);
         test.ok(doc.patient_id);
 
-        utils.getRegistration.restore();
+        utils.getRegistrations.restore();
 
         test.done();
     });
