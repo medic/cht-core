@@ -72,10 +72,24 @@ module.exports = {
             }, function(err) {
                 callback(err, true);
             });
-        } else if (validLMP) {
-        } else if (validName) {
+        } else if (validLMP) { // validName must be false
+            utils.addMessage(doc, {
+                message: options.invalid_name,
+                phone: phone
+            });
+            callback(null, true);
+        } else if (validName) { // validLMP must be false
+            utils.addMessage(doc, {
+                message: options.invalid_lmp,
+                phone: phone
+            });
+            callback(null, true);
         } else {
-            callback(null, false);
+            utils.addMessage(doc, {
+                message: options.invalid_values,
+                phone: phone
+            });
+            callback(null, true);
         }
     },
     setId: function(options, callback) {

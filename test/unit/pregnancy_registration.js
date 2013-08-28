@@ -13,6 +13,10 @@ related_entities = {
     }
 };
 
+function getMessage(doc) {
+    return _.first(_.first(doc.tasks).messages).message;
+}
+
 exports['filter fails with empty doc'] = function(test) {
     test.ok(_.isFunction(transition.filter));
     test.ok(transition.filter.length >= 1);
@@ -161,7 +165,7 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
     });
 }
 
-exports['schedule only logic with valid name'] = function(test) {
+exports['id only logic with valid name'] = function(test) {
     var doc;
 
     sinon.stub(utils, 'getRegistration').callsArgWithAsync(1, null, false);
@@ -186,7 +190,7 @@ exports['schedule only logic with valid name'] = function(test) {
     });
 }
 
-exports['schedule only logic with invalid name'] = function(test) {
+exports['id only logic with invalid name'] = function(test) {
     var doc;
 
     doc = {
@@ -205,6 +209,85 @@ exports['schedule only logic with invalid name'] = function(test) {
         test.equals(complete, true);
         test.equals(doc.patient_id, undefined);
         test.ok(doc.tasks);
+
+        test.equals(getMessage(doc), 'include patient name');
+
+        transition.getConfig.restore();
+
+        test.done();
+    });
+}
+
+exports['invalid name valid LMP logic'] = function(test) {
+    var doc;
+
+    doc = {
+        patient_name: '',
+        lmp: 5
+    };
+
+    sinon.stub(transition, 'getConfig').returns({
+        invalid_name: 'invalid name lols'
+    });
+    transition.onMatch({
+        doc: doc
+    }, {}, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.equals(doc.patient_id, undefined);
+        test.equals(getMessage(doc), 'invalid name lols');
+
+        transition.getConfig.restore();
+
+        test.done();
+    });
+}
+
+exports['valid name invalid LMP logic'] = function(test) {
+    var doc;
+
+    doc = {
+        patient_name: 'hi',
+        lmp: 45
+    };
+
+    sinon.stub(transition, 'getConfig').returns({
+        invalid_lmp: 'Invalid LMP; must be between 0-40 weeks.'
+    });
+    transition.onMatch({
+        doc: doc
+    }, {}, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.equals(doc.patient_id, undefined);
+        test.equals(getMessage(doc), 'Invalid LMP; must be between 0-40 weeks.');
+
+        transition.getConfig.restore();
+
+        test.done();
+    });
+}
+
+exports['invalid name invalid LMP logic'] = function(test) {
+    var doc;
+
+    doc = {
+        patient_name: '',
+        lmp: 45
+    };
+
+    sinon.stub(transition, 'getConfig').returns({
+        invalid_values: 'Please include patient name and valid LMP.'
+    });
+    transition.onMatch({
+        doc: doc
+    }, {}, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.equals(doc.patient_id, undefined);
+        test.equals(getMessage(doc), 'Please include patient name and valid LMP.');
+
+        transition.getConfig.restore();
 
         test.done();
     });
