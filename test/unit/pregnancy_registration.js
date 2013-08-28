@@ -72,6 +72,12 @@ exports['name validation'] = function(test) {
     }), false);
 
     test.equals(transition.validateName({
+        patient_name: ''
+    }, {
+        max_name_length: 2
+    }), false);
+
+    test.equals(transition.validateName({
         patient_name: 'ab'
     }, {
         max_name_length: 2
@@ -80,15 +86,15 @@ exports['name validation'] = function(test) {
     test.done();
 }
 
-exports['is schedule only'] = function(test) {
-    test.equals(transition.isScheduleOnly({}), false);
-    test.equals(transition.isScheduleOnly({
+exports['is id only'] = function(test) {
+    test.equals(transition.isIdOnly({}), false);
+    test.equals(transition.isIdOnly({
         getid: undefined
     }), false);
-    test.equals(transition.isScheduleOnly({
+    test.equals(transition.isIdOnly({
         getid: ''
     }), false);
-    test.equals(transition.isScheduleOnly({
+    test.equals(transition.isIdOnly({
         getid: 'x'
     }), true);
     test.done();
@@ -139,7 +145,6 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
         lmp: 5
     };
 
-    debugger;
     transition.onMatch({
         doc: doc
     }, {}, function(err, complete) {
@@ -148,7 +153,58 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
         test.equals(doc.lmp_date, start.toISOString());
         test.ok(doc.patient_id);
 
+        test.equals(doc.tasks, undefined);
+
         utils.getRegistration.restore();
+
+        test.done();
+    });
+}
+
+exports['schedule only logic with valid name'] = function(test) {
+    var doc;
+
+    sinon.stub(utils, 'getRegistration').callsArgWithAsync(1, null, false);
+
+    doc = {
+        patient_name: 'abc',
+        lmp: 5,
+        getid: 'x'
+    };
+
+    transition.onMatch({
+        doc: doc
+    }, {}, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.equals(doc.lmp_date, undefined);
+        test.ok(doc.patient_id);
+
+        utils.getRegistration.restore();
+
+        test.done();
+    });
+}
+
+exports['schedule only logic with invalid name'] = function(test) {
+    var doc;
+
+    doc = {
+        patient_name: '',
+        lmp: 5,
+        getid: 'x'
+    };
+
+    sinon.stub(transition, 'getConfig').returns({
+        include_patient_name: 'include patient name'
+    });
+    transition.onMatch({
+        doc: doc
+    }, {}, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.equals(doc.patient_id, undefined);
+        test.ok(doc.tasks);
 
         test.done();
     });

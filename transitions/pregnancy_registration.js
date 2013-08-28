@@ -1,4 +1,5 @@
-var utils = require('../lib/utils'),
+var _ = require('underscore'),
+    utils = require('../lib/utils'),
     ids = require('../lib/ids'),
     moment = require('moment'),
     config = require('../config');
@@ -21,9 +22,9 @@ module.exports = {
         options = options || {};
         max = options.max_name_length || 100;
 
-        return name.length <= max;
+        return name.length > 0 && name.length <= max;
     },
-    isScheduleOnly: function(doc) {
+    isIdOnly: function(doc) {
         return !!doc.getid;
     },
     setDate: function(doc) {
@@ -35,20 +36,44 @@ module.exports = {
         doc.lmp_date = start.toISOString();
         doc.expected_date = start.clone().add(40, 'weeks').toISOString();
     },
+    getConfig: function() {
+        return _.extend({}, config.get('pregnancy_registration'));
+    },
     onMatch: function(change, db, callback) {
         var doc = change.doc,
+            options = module.exports.getConfig(),
+            phone = utils.getClinicPhone(doc),
             validLMP = module.exports.validateLMP(doc),
             validName = module.exports.validateName(doc),
-            scheduleOnly = module.exports.isScheduleOnly(doc);
+            idOnly = module.exports.isIdOnly(doc);
 
-        if (validLMP && validName) {
+        if (idOnly) {
+            // no schedule, and have valid name
+            if (validName) {
+                module.exports.setId({
+                    db: db,
+                    doc: doc
+                }, function(err) {
+                    callback(err, true);
+                });
+            // id only but invalid name
+            } else {
+                utils.addMessage(doc, {
+                    message: options.include_patient_name,
+                    phone: phone
+                });
+                callback(null, true);
+            }
+        } else if (validLMP && validName) {
             module.exports.setDate(doc);
             module.exports.setId({
                 db: db,
                 doc: doc
             }, function(err) {
-                callback(null, true);
+                callback(err, true);
             });
+        } else if (validLMP) {
+        } else if (validName) {
         } else {
             callback(null, false);
         }
