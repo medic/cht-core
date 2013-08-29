@@ -231,3 +231,30 @@ exports['YYYW'] = {
     },
     public_form: true
 };
+
+exports['YYYV'] = {
+    meta: {
+        code: "YYYV",
+        label: 'Test Labels'
+    },
+    fields: {
+        id: {
+            labels: {
+                short: {
+                    'fr': 'Identifier'
+                }
+            },
+            type: 'string',
+            required: true
+        },
+        foo: {
+            labels: {
+                short: {
+                    'fr': 'Foo Bar'
+                }
+            },
+            type: 'string',
+            required: true
+        }
+    }
+};

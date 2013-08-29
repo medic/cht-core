@@ -639,3 +639,29 @@ exports.getLabelsForMessages = function(test) {
     test.same(labels, ["Reported Date", "From", "Clinic Contact Name", "Clinic Name", "Health Center Contact Name", "Health Center Name", "District Hospital Name", "To", "Message"]);
     test.done();
 };
+
+/*
+ * YYYV labels use 'fr' locale, here we request 'en' labels that doesn't exist
+ * on the form and get strings back instead of undefined.
+ */
+exports.labelsMissingLocale = function(test) {
+    test.expect(1);
+    var keys = utils.getFormKeys('YYYV'),
+        labels = utils.getLabels(keys, 'YYYV', 'en'),
+        data_records = require('lib/data_records');
+
+    var expected = {
+      "headers": [
+        {
+          "head": "Identifier"
+        },
+        {
+          "head": "Foo Bar"
+        },
+      ]
+    };
+
+    var out = utils.fieldsToHtml(keys, labels, example_doc);
+    test.same(expected.headers, out.headers);
+    test.done();
+};

@@ -144,7 +144,7 @@ exports.makeDataRecordReadable = function(doc) {
     // adding a fields property for ease of rendering code
     if(data_record.form) {
         var keys = getFormKeys(data_record.form);
-        var labels = exports.getLabels(keys, data_record.form, 'en');
+        var labels = exports.getLabels(keys, data_record.form, getLocale(doc));
         data_record.fields = exports.fieldsToHtml(keys, labels, data_record);
         includeNonFormFields(data_record, keys);
     }
@@ -304,6 +304,11 @@ function getLabel(field, locale) {
     return exports.info.getMessage(field.labels && field.labels.short, locale);
 }
 
+
+function getLocale(record) {
+    return (record.sms_message && record.sms_message.locale) || 'en';
+}
+
 /*
  * Get an array of values from the doc by the keys from the given keys array.
  * Supports deep keys, like:
@@ -454,11 +459,10 @@ exports.addError = function(record, error) {
         return;
     }
 
-    var locale = (record.sms_message && record.sms_message.locale) || 'en',
-        form = record.form && record.sms_message && record.sms_message.form;
+    var form = record.form && record.sms_message && record.sms_message.form;
 
     if (!error.message)
-        error.message = exports.info.translate(error.code, locale);
+        error.message = exports.info.translate(error.code, getLocale(record));
 
     // replace placeholder strings
     error.message = error.message
@@ -871,10 +875,13 @@ exports.info = {
     getMessage: function(value, locale) {
         locale = locale || 'en';
 
-        if (_.isString(value)) {
+        if (!value || _.isString(value)) {
             return value;
+        } else if (value[locale]) {
+            return value[locale];
         } else {
-            return value && value[locale];
+            // if desired locale not present return first string
+            return value[_.first(_.keys(value))];
         }
     },
     translate: function(key) {
