@@ -102,7 +102,7 @@ exports.ohw_registered_patients = {
 
 exports.registered_patients = {
     map: function(doc) {
-        if (doc.patient_id) {
+        if (doc.form && doc.patient_id) {
             emit(doc.patient_id, null);
         }
     }

@@ -98,13 +98,13 @@ module.exports = {
         var doc = options.doc,
             id = ids.generate(doc.serial_number);
 
-        utils.getRegistration({
+        utils.getRegistrations({
             db: options.db,
             id: id
-        }, function(err, found) {
+        }, function(err, registrations) {
             if (err) {
                 callback(err);
-            } else if (found) { // id collision, retry
+            } else if (registrations.length) { // id collision, retry
                 self.setId(doc, callback);
             } else {
                 doc.patient_id = id;
