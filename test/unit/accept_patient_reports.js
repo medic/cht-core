@@ -40,10 +40,14 @@ exports['onMatch returns false if form not included'] = function(test) {
     });
 }
 
-exports['onMatch with matching form calls getRegistration'] = function(test) {
+exports['onMatch with matching form calls getRegistrations and then matchRegistrations'] = function(test) {
+    var getRegistrations,
+        matchRegistrations;
+
     sinon.stub(transition, 'getAcceptedReports').returns([ { form: 'x' }, { form: 'z' } ]);
 
-    var getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    matchRegistrations = sinon.stub(transition, 'matchRegistrations').callsArgWithAsync(1, null, true);
 
     transition.onMatch({
         doc: {
@@ -53,10 +57,61 @@ exports['onMatch with matching form calls getRegistration'] = function(test) {
         test.equals(complete, true);
 
         test.equals(getRegistrations.called, true);
+        test.equals(matchRegistrations.called, true);
+
         transition.getAcceptedReports.restore();
         getRegistrations.restore();
+        matchRegistrations.restore();
 
         test.done();
     });
-
 };
+
+exports['matchRegistrations with no registrations adds error msg'] = function(test) {
+    var doc;
+
+    doc = {
+        patient_id: 'x'
+    };
+
+    transition.matchRegistrations({
+        registrations: [],
+        doc: doc,
+        report: {
+            registration_not_found: 'not found {{patient_id}}'
+        }
+    }, function(err, complete) {
+        test.ok(doc.errors);
+        test.equals(doc.errors[0].message, 'not found x');
+
+        test.done();
+    });
+}
+
+exports['matchRegistrations with registrations adds reply'] = function(test) {
+    var doc;
+
+    doc = {
+        patient_id: 'x',
+        related_entities: {
+            clinic: {
+                contact: {
+                    name: 'woot'
+                }
+            }
+        }
+    };
+
+    transition.matchRegistrations({
+        registrations: [{}],
+        doc: doc,
+        report: {
+            report_accepted: 'Thank you, {{contact_name}}. ANC visit for {{patient_id}} has been recorded.'
+        }
+    }, function(err, complete) {
+        test.ok(doc.tasks);
+        test.equals(_.first(_.first(doc.tasks).messages).message, 'Thank you, woot. ANC visit for x has been recorded.');
+
+        test.done();
+    });
+}
