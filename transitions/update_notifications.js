@@ -1,6 +1,7 @@
 var config = require('../config'),
     mustache = require('mustache'),
-    utils = require('../lib/utils');
+    utils = require('../lib/utils'),
+    messages = require('../lib/messages');
 
 module.exports = {
     filter: function(doc) {
@@ -25,7 +26,6 @@ module.exports = {
         var doc = change.doc,
             patient_id = doc.patient_id,
             options = module.exports.getConfig(),
-            phone = utils.getClinicPhone(doc),
             mute;
 
         if (!options.on_form && !options.off_form) {
@@ -50,10 +50,10 @@ module.exports = {
                 callback(err);
             } else if (registrations.length) {
                 if (mute && options.confirm_deactivation) {
-                    utils.addTranslatedError(doc, options.confirm_deactivation_message);
-                    utils.addReply(doc, options.on_mute_message);
+                    messages.addError(doc, options.confirm_deactivation_message);
+                    messages.addReply(doc, options.on_mute_message);
                 } else {
-                    utils.addReply(doc, options.on_unmute_message);
+                    messages.addReply(doc, options.on_unmute_message);
                 }
                 async.each(registrations, function(registration, callback) {
                     module.exports.modifyRegistration({
@@ -69,7 +69,7 @@ module.exports = {
                     }
                 });
             } else {
-                utils.addTranslatedError(doc, options.patient_not_found);
+                messages.addError(doc, options.patient_not_found);
                 callback(null, true);
             }
         });
