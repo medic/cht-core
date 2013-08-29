@@ -28,7 +28,10 @@ module.exports = {
             phone = utils.getClinicPhone(doc),
             mute;
 
-        if (options.on_form === doc.form) {
+        if (!options.on_form && !options.off_form) {
+            // not configured; bail
+            return callback(null, false);
+        } else if (options.on_form === doc.form) {
             mute = false;
         } else if (options.off_form === doc.form) {
             mute = true;
