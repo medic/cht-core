@@ -47,20 +47,10 @@ module.exports = {
                 callback(err);
             } else if (registrations.length) {
                 if (mute && options.confirm_deactivation) {
-                    utils.addError(doc, {
-                        message: mustache.to_html(options.confirm_deactivation_message, {
-                            patient_id: patient_id
-                        })
-                    });
-                    utils.addMessage(doc, {
-                        phone: phone,
-                        message: options.on_mute_message
-                    });
+                    utils.addTranslatedError(doc, options.confirm_deactivation_message);
+                    utils.addReply(doc, options.on_mute_message);
                 } else {
-                    utils.addMessage(doc, {
-                        phone: phone,
-                        message: options.on_unmute_message
-                    });
+                    utils.addReply(doc, options.on_unmute_message);
                 }
                 async.each(registrations, function(registration, callback) {
                     module.exports.modifyRegistration({
@@ -76,11 +66,7 @@ module.exports = {
                     }
                 });
             } else {
-                utils.addError(doc, {
-                    message: mustache.to_html(options.patient_not_found, {
-                        patient_id: patient_id
-                    })
-                });
+                utils.addTranslatedError(doc, options.patient_not_found);
                 callback(null, true);
             }
         });
