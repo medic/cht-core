@@ -1,6 +1,7 @@
 var config = require('../config'),
     mustache = require('mustache'),
-    utils = require('../lib/utils');
+    utils = require('../lib/utils'),
+    _ = require('underscore');
 
 module.exports = {
     filter: function(doc) {
