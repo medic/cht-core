@@ -43,18 +43,37 @@ exports['returns false if not on or off form'] = function(test) {
         test.done();
     });
 }
+exports['no configured on or off form returns false'] = function(test) {
+    sinon.stub(transition, 'getConfig').returns({});
+    transition.onMatch({
+        doc: {
+            form: 'on',
+            patient_id: 'x'
+        }
+    }, {}, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, false);
+
+        transition.getConfig.restore();
+
+        test.done();
+    });
+};
 exports['registration not found adds error'] = function(test) {
     var doc = {
+        form: 'on',
         patient_id: 'x'
     };
 
     sinon.stub(transition, 'getConfig').returns({
-        patient_not_found: 'not found {{patient_id}}'
+        patient_not_found: 'not found {{patient_id}}',
+        on_form: 'on'
     });
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
 
     transition.onMatch({
-        doc: doc
+        doc: doc,
+        form: 'on'
     }, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
