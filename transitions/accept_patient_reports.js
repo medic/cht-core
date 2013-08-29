@@ -22,6 +22,17 @@ module.exports = {
         }
         callback(null, true);
     },
+    validatePatientId: function(report, doc) {
+        _.defaults(report, {
+            invalid_patient_id: "Patient ID '{{patient_id}}' is invalid. Please correct this and try again."
+        });
+
+        if (report.patient_id_validation_regexp) {
+            return new RegExp(report.patient_id_validation_regexp).test(doc.patient_id);
+        } else {
+            return true;
+        }
+    },
     onMatch: function(change, db, callback) {
         var doc = change.doc,
             reports = module.exports.getAcceptedReports(),
@@ -32,16 +43,21 @@ module.exports = {
         });
 
         if (report) {
-            utils.getRegistrations({
-                db: db,
-                id: doc.patient_id
-            }, function(err, registrations) {
-                module.exports.matchRegistrations({
-                    doc: doc,
-                    registrations: registrations,
-                    report: report
-                }, callback);
-            });
+            if (module.exports.validatePatientId(report, doc)) {
+                utils.getRegistrations({
+                    db: db,
+                    id: doc.patient_id
+                }, function(err, registrations) {
+                    module.exports.matchRegistrations({
+                        doc: doc,
+                        registrations: registrations,
+                        report: report
+                    }, callback);
+                });
+            } else {
+                messages.addError(doc, report.invalid_patient_id);
+                callback(null, true);
+            }
         } else {
             callback(null, false);
         }

@@ -115,3 +115,31 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
         test.done();
     });
 }
+
+exports['patient id failing validation adds error'] = function(test) {
+    var doc;
+
+    doc = {
+        patient_id: 'xxxx',
+        form: 'x'
+    };
+
+    sinon.stub(transition, 'getAcceptedReports').returns([ {
+        patient_id_validation_regexp: '\w{5}',
+        invalid_patient_id: 'bad id {{patient_id}}',
+        form: 'x'
+    } ]);
+
+    transition.onMatch({
+        doc: doc
+    }, {}, function(err, complete) {
+        test.equals(complete, true);
+
+        test.ok(doc.errors);
+        test.equals(doc.errors[0].message, 'bad id xxxx');
+
+        transition.getAcceptedReports.restore();
+
+        test.done();
+    });
+}
