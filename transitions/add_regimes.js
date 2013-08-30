@@ -7,9 +7,14 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc, req) {
-        return !!doc.form &&
-               doc.patient_id &&
-               utils.getClinicPhone(doc);
+        return Boolean(
+            doc.form &&
+            doc.patient_id &&
+            doc.related_entities &&
+            doc.related_entities.clinic &&
+            doc.related_entities.clinic.contact &&
+            doc.related_entities.clinic.contact.phone
+        );
     },
     onMatch: function(change, db, callback) {
         var doc = change.doc,

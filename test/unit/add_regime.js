@@ -14,9 +14,24 @@ exports['filter fails if no form'] = function(test) {
     test.done();
 };
 
-exports['filter passes if form there'] = function(test) {
+exports['filter fails if only form there'] = function(test) {
     test.equals(transition.filter({
         form: 'x'
+    }), false);
+    test.done();
+};
+
+exports['filter passes if form, patient_id and clinic phone there'] = function(test) {
+    test.equals(transition.filter({
+        form: 'x',
+        patient_id: '123',
+        related_entities: {
+            clinic: {
+                contact: {
+                    phone: '123'
+                }
+            }
+        }
     }), true);
     test.done();
 };
