@@ -7,7 +7,9 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc, req) {
-        return !!doc.form;
+        return !!doc.form &&
+               doc.patient_id &&
+               utils.getClinicPhone(doc);
     },
     onMatch: function(change, db, callback) {
         var doc = change.doc,
@@ -68,7 +70,7 @@ module.exports = {
                 offset = module.exports.getOffset(msg.offset);
 
             if (offset) {
-                due = start.clone().add(offset).valueOf();
+                due = start.clone().add(offset).toISOString();
                 utils.addScheduledMessage(doc, {
                     due: due,
                     message: i18n(msg.message, {
