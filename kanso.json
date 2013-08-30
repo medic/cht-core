@@ -143,6 +143,52 @@
                     }
                 ]
             },
+            "task_regimes": {
+                "title": "Reminder Schedules",
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "key": {
+                            "type": "string",
+                            "title": "Reminder Type"
+                        },
+                        "form": {
+                            "type": "string",
+                            "title": "Reminder Form Code"
+                        },
+                        "start_from": {
+                            "type": "string",
+                            "title": "Document Timestamp Property"
+                        },
+                        "messages": {
+                            "type": "array",
+                            "title": "Messages",
+                            "items": {
+                                "properties": {
+                                    "message": {
+                                        "type": "string",
+                                        "title": "Message Text"
+                                    },
+                                    "group": {
+                                        "type": "integer",
+                                        "title": "Message Group",
+                                        "default": 1
+                                    },
+                                    "offset": {
+                                        "type": "string",
+                                        "title": "Send Message After",
+                                        "default": "1 week"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "default": []
+                        }
+                    },
+                    "type": "object"
+                },
+                "default": []
+            },
             "weekly_reminders": {
                 "title": "Weekly Report Reminders",
                 "type": "array",
@@ -440,8 +486,7 @@
                     }
                 ]
             }
-        },
-        "required": ["facility_labels"]
+        }
     },
     "settings_schema_schedules" : {
         "description": "Kujua Lite Settings",
