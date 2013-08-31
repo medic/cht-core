@@ -146,6 +146,51 @@ exports['regime generates two scheduled messages'] = function(test) {
     test.done();
 }
 
+exports['regime with registration_response creates message task'] = function(test) {
+    var added,
+        doc;
+    doc = {
+        form: 'x',
+        serial_number: 'abc',
+        lmp_date: moment().valueOf(),
+        related_entities: {
+            clinic: {
+                contact: {
+                    phone: '123'
+                }
+            }
+        },
+    };
+
+    added = transition.addRegime(doc, {
+        form: 'x',
+        key: 'duckland',
+        registration_response: 'Thanks for registering.',
+        messages: [
+            {
+                group: 1,
+                offset: '1 week',
+                message: "This is for serial number {{serial_number}}."
+            },
+            {
+                group: 4,
+                offset: '81 days',
+                message: "This is for serial number {{serial_number}}."
+            }
+        ],
+        start_from: 'lmp_date'
+    });
+
+    test.equals(added, true);
+    test.ok(doc.scheduled_tasks);
+    test.equals(doc.tasks.length, 1);
+    test.equals(doc.tasks[0].messages.length, 1);
+    test.equals(doc.tasks[0].messages[0].to, '123');
+    test.equals(doc.tasks[0].messages[0].message, 'Thanks for registering.');
+
+    test.done();
+}
+
 exports['transition is repeatable'] = function(test) {
     test.equals(transition.repeatable, true);
     test.done();

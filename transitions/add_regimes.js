@@ -50,8 +50,9 @@ module.exports = {
     addRegime: function(doc, regime) {
         var docStart,
             start,
-            clinicContactName = utils.getClinicContactName(doc),
-            clinicName = utils.getClinicName(doc),
+            clinic_contact_name = utils.getClinicContactName(doc),
+            clinic_name = utils.getClinicName(doc),
+            clinic_phone = utils.getClinicPhone(doc),
             now = moment(date.getDate());
 
         // if we  can't find the regime in config, we're done
@@ -79,8 +80,8 @@ module.exports = {
                 utils.addScheduledMessage(doc, {
                     due: due,
                     message: i18n(msg.message, {
-                        clinic_name: clinicName,
-                        contact_name: clinicContactName,
+                        clinic_name: clinic_name,
+                        contact_name: clinic_contact_name,
                         patient_id: doc.patient_id,
                         serial_number: doc.serial_number
                     }),
@@ -94,8 +95,35 @@ module.exports = {
             }
         });
 
+        function nextMessageDue(time_unit) {
+            var time_unit = time_unit || 'weeks',
+                due = _.first(doc.scheduled_tasks).due;
+            if (!due) return;
+            return now.diff(due, time_unit);
+        }
+
+        // send response if configured
+        if (doc.scheduled_tasks && regime.registration_response) {
+            utils.addMessage(doc, {
+                phone: clinic_phone,
+                message: i18n(regime.registration_response, {
+                    clinic_name: clinic_name,
+                    contact_name: clinic_contact_name,
+                    patient_id: doc.patient_id,
+                    patient_name: doc.patient_name,
+                    minutes: nextMessageDue('minutes'),
+                    weeks: nextMessageDue('weeks'),
+                    months: nextMessageDue('months'),
+                    years: nextMessageDue('years'),
+                    serial_number: doc.serial_number
+                })
+            });
+        }
+
+        // why does this signify a successful addRegime shouldn't we check doc?
         // if more than zero messages added, return true
         return !!regime.messages.length;
+
     },
     repeatable: true
 };
