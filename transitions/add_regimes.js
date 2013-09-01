@@ -52,10 +52,17 @@ module.exports = {
             return {};
         }
     },
-    alreadyRun: function(type, doc) {
-        return _.findWhere(doc.scheduled_tasks, {
+    alreadyRun: function(doc, type) {
+        var scheduled_task,
+            task;
+
+        scheduled_task = _.findWhere(doc.scheduled_tasks, {
             type: type
         });
+        task = _.findWhere(doc.tasks, {
+            type: type
+        });
+        return Boolean(scheduled_task || task);
     },
     formMismatch: function(form, doc) {
         return doc.form !== form;
@@ -71,7 +78,7 @@ module.exports = {
 
         // if we  can't find the regime in config, we're done
         // also if forms mismatch or already run
-        if (!_.isObject(regime) || module.exports.formMismatch(regime.form, doc) || module.exports.alreadyRun(regime.key, doc)) {
+        if (!_.isObject(regime) || module.exports.formMismatch(regime.form, doc) || module.exports.alreadyRun(doc, regime.key)) {
             return false;
         }
 
