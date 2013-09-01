@@ -1,5 +1,6 @@
 var _ = require('underscore'),
     utils = require('../lib/utils'),
+    messages = require('../lib/messages'),
     ids = require('../lib/ids'),
     moment = require('moment'),
     config = require('../config');
@@ -44,7 +45,7 @@ module.exports = {
             options = module.exports.getConfig(),
             phone = utils.getClinicPhone(doc),
             validLMP = module.exports.validateLMP(doc),
-            validName = module.exports.validateName(doc),
+            validName = module.exports.validateName(doc, options),
             idOnly = module.exports.isIdOnly(doc);
 
         if (options.form !== doc.form) {
@@ -60,10 +61,7 @@ module.exports = {
                 });
             // id only but invalid name
             } else {
-                utils.addMessage(doc, {
-                    message: options.include_patient_name,
-                    phone: phone
-                });
+                messages.addReply(doc, options.include_patient_name);
                 callback(null, true);
             }
         } else if (validLMP && validName) {
@@ -75,22 +73,13 @@ module.exports = {
                 callback(err, true);
             });
         } else if (validLMP) { // validName must be false
-            utils.addMessage(doc, {
-                message: options.invalid_name,
-                phone: phone
-            });
+            messages.addReply(doc, options.invalid_name);
             callback(null, true);
         } else if (validName) { // validLMP must be false
-            utils.addMessage(doc, {
-                message: options.invalid_lmp,
-                phone: phone
-            });
+            messages.addReply(doc, options.invalid_lmp);
             callback(null, true);
         } else {
-            utils.addMessage(doc, {
-                message: options.invalid_values,
-                phone: phone
-            });
+            messages.addReply(doc, options.invalid_values);
             callback(null, true);
         }
     },
