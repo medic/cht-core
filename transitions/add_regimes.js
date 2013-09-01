@@ -3,7 +3,8 @@ var _ = require('underscore'),
     date = require('../date'),
     i18n = require('../i18n'),
     moment = require('moment'),
-    utils = require('../lib/utils');
+    utils = require('../lib/utils'),
+    messages = require('../lib/messages');
 
 module.exports = {
     filter: function(doc, req) {
@@ -39,6 +40,18 @@ module.exports = {
             return false;
         }
     },
+    getNextTimes: function(doc, now) {
+        var due = _.first(doc.scheduled_tasks).due,
+            times = {};
+
+        if (due && now) {
+            _.each(['minutes', 'hours', 'days', 'weeks', 'months', 'years'], function(unit) {
+                times[unit] = now.diff(due, unit);
+            });
+        } else {
+            return {};
+        }
+    },
     alreadyRun: function(type, doc) {
         return _.findWhere(doc.scheduled_tasks, {
             type: type
@@ -53,7 +66,8 @@ module.exports = {
             clinic_contact_name = utils.getClinicContactName(doc),
             clinic_name = utils.getClinicName(doc),
             clinic_phone = utils.getClinicPhone(doc),
-            now = moment(date.getDate());
+            now = moment(date.getDate()),
+            times;
 
         // if we  can't find the regime in config, we're done
         // also if forms mismatch or already run
@@ -77,16 +91,10 @@ module.exports = {
 
             if (offset) {
                 due = start.clone().add(offset).toISOString();
-                utils.addScheduledMessage(doc, {
+                messages.scheduleMessage(doc, {
                     due: due,
-                    message: i18n(msg.message, {
-                        clinic_name: clinic_name,
-                        contact_name: clinic_contact_name,
-                        patient_id: doc.patient_id,
-                        serial_number: doc.serial_number
-                    }),
+                    message: msg.message,
                     group: msg.group,
-                    phone: doc.from,
                     type: regime.key
                 });
             } else {
@@ -95,29 +103,10 @@ module.exports = {
             }
         });
 
-        function nextMessageDue(time_unit) {
-            var time_unit = time_unit || 'weeks',
-                due = _.first(doc.scheduled_tasks).due;
-            if (!due) return;
-            return now.diff(due, time_unit);
-        }
-
         // send response if configured
         if (doc.scheduled_tasks && regime.registration_response) {
-            utils.addMessage(doc, {
-                phone: clinic_phone,
-                message: i18n(regime.registration_response, {
-                    clinic_name: clinic_name,
-                    contact_name: clinic_contact_name,
-                    patient_id: doc.patient_id,
-                    patient_name: doc.patient_name,
-                    minutes: nextMessageDue('minutes'),
-                    weeks: nextMessageDue('weeks'),
-                    months: nextMessageDue('months'),
-                    years: nextMessageDue('years'),
-                    serial_number: doc.serial_number
-                })
-            });
+            times = module.exports.getNextTimes(doc, now);
+            messages.addReply(doc, regime.registration_response, times);
         }
 
         // why does this signify a successful addRegime shouldn't we check doc?
