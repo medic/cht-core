@@ -40,7 +40,8 @@ module.exports = function(db, callback) {
                 _.each(tasks, function(task) {
                     doc.tasks.push({
                         messages: task.messages,
-                        state: 'pending'
+                        state: 'pending',
+                        type: task.type
                     });
                 });
                 db.saveDoc(doc, cb);
