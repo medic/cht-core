@@ -204,3 +204,46 @@ exports['formMismatch'] = function(test) {
     test.equals(transition.formMismatch('y', { form: 'x' }), true);
     test.done();
 }
+
+exports['alreadyRun validation'] = function(test) {
+    test.equals(transition.alreadyRun({}, 'x'), false);
+    test.equals(transition.alreadyRun({
+        scheduled_tasks: [
+            {
+                type: 'y'
+            }
+        ]
+    }, 'x'), false);
+    test.equals(transition.alreadyRun({
+        scheduled_tasks: [
+            {
+                type: 'x'
+            }
+        ]
+    }, 'x'), true)
+    test.equals(transition.alreadyRun({
+        tasks: [
+            {
+                type: 'y'
+            }
+        ],
+        scheduled_tasks: [
+            {
+                type: 'y'
+            }
+        ]
+    }, 'x'), false);
+    test.equals(transition.alreadyRun({
+        tasks: [
+            {
+                type: 'x'
+            }
+        ],
+        scheduled_tasks: [
+            {
+                type: 'y'
+            }
+        ]
+    }, 'x'), true);
+    test.done();
+};
