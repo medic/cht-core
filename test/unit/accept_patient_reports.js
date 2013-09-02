@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    moment = require('moment'),
     sinon = require('sinon'),
     transition = require('../../transitions/accept_patient_reports'),
     utils = require('../../lib/utils');
@@ -143,3 +144,91 @@ exports['patient id failing validation adds error'] = function(test) {
         test.done();
     });
 }
+
+exports['adding silence_type to matchRegistrations calls silenceReminders'] = function(test) {
+    sinon.stub(transition, 'silenceReminders').callsArgWithAsync(1, null);
+
+    transition.matchRegistrations({
+        doc: {},
+        registrations: [ {}, {}, {}],
+        report: {
+            silence_type: 'x'
+        }
+    }, function(err, complete) {
+        test.equals(complete, true);
+        test.equals(transition.silenceReminders.callCount, 3);
+
+        transition.silenceReminders.restore();
+        test.done();
+    });
+};
+
+exports['silenceReminders testing'] = function(test) {
+    var db,
+        now = moment(),
+        registration;
+
+    db = { saveDoc: function() {} };
+
+    sinon.stub(db, 'saveDoc').callsArgWithAsync(1, null);
+
+    registration = {
+        scheduled_tasks: [
+            {
+                due: now.clone().subtract(2, 'days'),
+                group: 0,
+                state: 'scheduled',
+                type: 'x'
+            },
+            {
+                due: now.clone().add(2, 'days'),
+                group: 1,
+                state: 'scheduled',
+                type: 'x'
+            },
+            {
+                due: now.clone().add(2, 'days'),
+                group: 2,
+                state: 'scheduled',
+                type: 'y'
+            },
+            {
+                due: now.clone().add(20, 'days'),
+                group: 2,
+                state: 'scheduled',
+                type: 'x'
+            },
+            {
+                due: now.clone().add(2, 'days'),
+                group: 1,
+                state: 'scheduled',
+                type: 'x'
+            }
+        ]
+    };
+
+    transition.silenceReminders({
+        db: db,
+        registration: registration,
+        type: 'x',
+        reported_date: now.clone().toISOString(),
+        silence_for: '19 days'
+    }, function(err) {
+        var tasks;
+
+        test.equals(err, null);
+
+        test.equals(db.saveDoc.called, true);
+
+        tasks = registration.scheduled_tasks;
+
+        test.equals(tasks[0].state, 'scheduled');
+        test.equals(tasks[1].state, 'cleared');
+        test.equals(tasks[2].state, 'scheduled');
+        test.equals(tasks[3].state, 'scheduled');
+        test.equals(tasks[4].state, 'cleared');
+
+
+        test.done();
+    });
+};

@@ -1,11 +1,14 @@
 var _ = require('underscore'),
+    async = require('async'),
     config = require('../config'),
     messages = require('../lib/messages'),
-    utils = require('../lib/utils');
+    moment = require('moment'),
+    utils = require('../lib/utils'),
+    date = require('../date');
 
 module.exports = {
     filter: function(doc) {
-        return !!(doc.form && doc.patient_id && doc.related_entities && doc.related_entities.clinic);
+        return Boolean(doc.form && doc.reported_date && doc.patient_id && doc.related_entities && doc.related_entities.clinic);
     },
     getAcceptedReports: function() {
         return config.get('patient_reports') || [];
@@ -17,10 +20,69 @@ module.exports = {
 
         if (registrations.length) {
             messages.addReply(doc, report.report_accepted);
+            if (report.silence_type) {
+                async.forEach(registrations, function(registration, callback) {
+                    module.exports.silenceReminders({
+                        db: options.db,
+                        reported_date: doc.reported_date,
+                        registration: registration,
+                        silence_for: report.silence_for,
+                        type: report.silence_type
+                    }, callback);
+                }, function(err) {
+                    callback(err, true);
+                });
+            } else {
+                callback(null, true);
+            }
         } else {
             messages.addError(doc, report.registration_not_found);
+            callback(null, true);
         }
-        callback(null, true);
+    },
+    silenceReminders: function(options, callback) {
+        var db = options.db,
+            registration = options.registration,
+            type = options.type,
+            toClear,
+            silenceDuration = date.getDuration(options.silence_for),
+            reportedDate = moment(options.reported_date),
+            silenceUntil = reportedDate.clone(),
+            first;
+
+        if (silenceDuration) {
+            silenceUntil.add(silenceDuration);
+        }
+
+        // filter scheduled message by group
+        toClear = _.filter(utils.filterScheduledMessages(registration, type), function(msg) {
+            var due = moment(msg.due),
+                // due is after it was reported, but before the silence cutoff; also 'scheduled'
+                matches = due >= reportedDate && due <= silenceUntil && msg.state === 'scheduled';
+
+            // capture first match for group matching
+            if (matches && !first) {
+                first = msg;
+            }
+            // if groups match,always clear
+            if (first && first.group === msg.group) {
+                return true;
+            // otherwise only if time/state matches
+            } else {
+                return matches;
+            }
+        });
+
+        // captured all to clear; now "clear" them
+        _.each(toClear, function(msg) {
+            msg.state = 'cleared';
+        });
+
+        if (toClear.length) {
+            db.saveDoc(registration, callback);
+        } else {
+            callback(null);
+        }
     },
     validatePatientId: function(report, doc) {
         _.defaults(report, {
@@ -33,6 +95,27 @@ module.exports = {
             return true;
         }
     },
+    handleReport: function(options, callback) {
+        var db = options.db,
+            doc = options.doc,
+            report = options.report;
+
+        if (module.exports.validatePatientId(report, doc)) {
+            utils.getRegistrations({
+                db: db,
+                id: doc.patient_id
+            }, function(err, registrations) {
+                module.exports.matchRegistrations({
+                    doc: doc,
+                    registrations: registrations,
+                    report: report
+                }, callback);
+            });
+        } else {
+            messages.addError(doc, report.invalid_patient_id);
+            callback(null, true);
+        }
+    },
     onMatch: function(change, db, callback) {
         var doc = change.doc,
             reports = module.exports.getAcceptedReports(),
@@ -43,21 +126,11 @@ module.exports = {
         });
 
         if (report) {
-            if (module.exports.validatePatientId(report, doc)) {
-                utils.getRegistrations({
-                    db: db,
-                    id: doc.patient_id
-                }, function(err, registrations) {
-                    module.exports.matchRegistrations({
-                        doc: doc,
-                        registrations: registrations,
-                        report: report
-                    }, callback);
-                });
-            } else {
-                messages.addError(doc, report.invalid_patient_id);
-                callback(null, true);
-            }
+            module.exports.handleReport({
+                db: db,
+                doc: doc,
+                report: report
+            }, callback);
         } else {
             callback(null, false);
         }
