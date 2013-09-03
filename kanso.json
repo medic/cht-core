@@ -82,6 +82,19 @@
                 "phone": {
                     "title": "Phone",
                     "type": "string"
+                },
+                "locale": {
+                    "title": "Locale",
+                    "type": "string",
+                    "je:hint": "enumlabels",
+                    "je:enumlabels": {
+                        "en": "English",
+                        "fr": "French",
+                        "ne": "Nepali",
+                        "es": "Spanish",
+                        "sw": "Swahili"
+                    },
+                    "enum": [ "en", "fr", "ne", "es", "sw" ]
                 }
             }
         }
