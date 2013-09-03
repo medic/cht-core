@@ -150,15 +150,23 @@
                     "properties": {
                         "key": {
                             "type": "string",
-                            "title": "Reminder Type"
+                            "title": "Reminder Type",
+                            "description": "A made up keyword to define this schedule. e.g. anc_reminders"
                         },
                         "form": {
                             "type": "string",
-                            "title": "Reminder Form Code"
+                            "title": "Registration Form",
+                            "description": "The form code of the registration form that triggers schedule creation. e.g. ANCR"
                         },
                         "start_from": {
                             "type": "string",
-                            "title": "Document Timestamp Property"
+                            "title": "Timestamp Property Name",
+                            "description": "The property name from the form that is used to calculate the offset in the reminders below. e.g. lmp_date"
+                        },
+                        "registration_response": {
+                            "type": "string",
+                            "title": "Registration response message",
+                            "description": "The response message sent out when a schedule is created. e.g. Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. ANC visit is needed in {{weeks}} weeks."
                         },
                         "messages": {
                             "type": "array",
@@ -167,17 +175,19 @@
                                 "properties": {
                                     "message": {
                                         "type": "string",
-                                        "title": "Message Text"
+                                        "title": "Message Text",
+                                        "description": "e.g. Greetings,{{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility."
                                     },
                                     "group": {
                                         "type": "integer",
-                                        "title": "Message Group",
-                                        "default": 1
+                                        "title": "Message Group Number",
+                                        "description": "You can group reminders together by assigning a group number so they can be cleared in batches."
                                     },
                                     "offset": {
                                         "type": "string",
                                         "title": "Send Message After",
-                                        "default": "1 week"
+                                        "default": "12 weeks",
+                                        "description": "This value is added to the timestamp property value to determine when to send the reminder. It supports minutes, hours, weeks, months and years."
                                     }
                                 },
                                 "type": "object"
@@ -242,6 +252,27 @@
                 "description": "Only modify this if you are testing the scheduler and want to simulate a specific date. e.g. 201304121200",
                 "type": "string",
                 "pattern": "(^[0-9]{12}$|^$)"
+            },
+            "outgoing_phone_filters": {
+                "title": "Outgoing Phone Filters",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "match": {
+                            "type": "string",
+                            "title": "Match",
+                            "default": "",
+                            "description": "This is consumed by RegExp() and used to match a phone number. e.g. \\\\+997"
+                        },
+                        "replace": {
+                            "type": "string",
+                            "title": "Replace with",
+                            "default": "",
+                            "description": "Replace the match with this value."
+                        }
+                    }
+                }
             },
             "translations": {
                 "title": "Translations",
