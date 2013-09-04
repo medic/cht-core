@@ -328,46 +328,102 @@
                 },
                 "default": [
                     {
-                        "key": "Contact"
+                        "key": "Contact",
+                        "en": "",
+                        "fr": "",
+                        "es": "",
+                        "ne": ""
                     },
                     {
-                        "key": "From"
+                        "key": "From",
+                        "en": "",
+                        "fr": "",
+                        "es": "",
+                        "ne": ""
                     },
                     {
-                        "key": "Village Name"
+                        "key": "Village Name",
+                        "en": "",
+                        "fr": "",
+                        "es": "",
+                        "ne": ""
                     },
                     {
-                        "key": "Clinic Contact Name"
+                        "key": "Clinic Contact Name",
+                        "en": "",
+                        "fr": "",
+                        "es": "",
+                        "ne": ""
                     },
                     {
-                        "key": "RC Code"
+                        "key": "RC Code",
+                        "en": "",
+                        "fr": "",
+                        "es": "",
+                        "ne": ""
                     },
                     {
-                        "key": "Health Center"
+                        "key": "Health Center",
+                        "en": "",
+                        "fr": "",
+                        "es": "",
+                        "ne": ""
                     },
                     {
-                        "key": "Health Center Name"
+                        "key": "Health Center Name",
+                        "en": "",
+                        "fr": "",
+                        "es": "",
+                        "ne": ""
                     },
                     {
-                        "key": "Health Center Contact Name"
+                        "key": "Health Center Contact Name",
+                        "en": "",
+                        "fr": "",
+                        "es": "",
+                        "ne": ""
                     },
                     {
-                        "key": "Health Center Contact Phone"
+                        "key": "Health Center Contact Phone",
+                        "en": "",
+                        "fr": "",
+                        "es": "",
+                        "ne": ""
                     },
                     {
-                        "key": "District"
+                        "key": "District",
+                        "en": "",
+                        "fr": "",
+                        "es": "",
+                        "ne": ""
                     },
                     {
-                        "key": "District Name"
+                        "key": "District Name",
+                        "en": "",
+                        "fr": "Nom du MCR",
+                        "es": "",
+                        "ne": ""
                     },
                     {
-                        "key": "District Contact Name"
+                        "key": "District Contact Name",
+                        "en": "",
+                        "fr": "",
+                        "es": "",
+                        "ne": ""
                     },
                     {
-                        "key": "District Contact Phone"
+                        "key": "District Contact Phone",
+                        "en": "",
+                        "fr": "Téléphone du MCR",
+                        "es": "",
+                        "ne": ""
                     },
                     {
-                        "key": "Phone"
+                        "key": "Phone",
+                        "en": "",
+                        "fr": "",
+                        "es": "",
+                        "ne": ""
                     },
                     {
                         "key": "sys.recipient_not_found",
