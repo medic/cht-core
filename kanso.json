@@ -164,22 +164,26 @@
                         "key": {
                             "type": "string",
                             "title": "Reminder Type",
-                            "description": "A made up keyword to define this schedule. e.g. anc_reminders"
+                            "description": "A made up keyword to define this schedule. e.g. anc_reminders",
+                            "default": "anc_reminders"
                         },
                         "form": {
                             "type": "string",
                             "title": "Registration Form",
-                            "description": "The form code of the registration form that triggers schedule creation. e.g. ANCR"
+                            "description": "The form code of the registration form that triggers schedule creation. e.g. ANCR",
+                            "default": "ANCR"
                         },
                         "start_from": {
                             "type": "string",
                             "title": "Timestamp Property Name",
-                            "description": "The property name from the form that is used to calculate the offset in the reminders below. e.g. lmp_date"
+                            "description": "The property name from the form that is used to calculate the offset in the reminders below. e.g. lmp_date",
+                            "default": "lmp_date"
                         },
                         "registration_response": {
                             "type": "string",
                             "title": "Registration response message",
-                            "description": "The response message sent out when a schedule is created. e.g. Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. ANC visit is needed in {{weeks}} weeks."
+                            "description": "The response message sent out when a schedule is created. e.g. Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. ANC visit is needed in {{weeks}} weeks.",
+                            "default": "Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. ANC visit is needed in {{weeks}} weeks."
                         },
                         "messages": {
                             "type": "array",
@@ -189,18 +193,20 @@
                                     "message": {
                                         "type": "string",
                                         "title": "Message Text",
-                                        "description": "e.g. Greetings,{{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility."
+                                        "description": "e.g. Greetings,{{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
+                                        "default": "Greetings,{{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility."
                                     },
                                     "group": {
                                         "type": "integer",
                                         "title": "Message Group Number",
-                                        "description": "You can group reminders together by assigning a group number so they can be cleared in batches."
+                                        "description": "You can group reminders together by assigning a group number so they can be cleared in batches.",
+                                        "default": 1
                                     },
                                     "offset": {
                                         "type": "string",
                                         "title": "Send Message After",
-                                        "default": "12 weeks",
-                                        "description": "This value is added to the timestamp property value to determine when to send the reminder. It supports minutes, hours, weeks, months and years."
+                                        "description": "This value is added to the timestamp property value to determine when to send the reminder. It supports minutes, hours, weeks, months and years. e.g. 12 weeks",
+                                        "default": "12 weeks"
                                     }
                                 },
                                 "type": "object"
