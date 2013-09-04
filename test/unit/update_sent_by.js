@@ -48,7 +48,7 @@ exports['updates sent_by to clinic name if contact name not available'] = functi
     });
 }
 
-exports['sent_by set to null if nothing available'] = function(test) {
+exports['sent_by untouched if nothing available'] = function(test) {
     var doc = {
         from: 'unknown number'
     };
@@ -56,8 +56,8 @@ exports['sent_by set to null if nothing available'] = function(test) {
     transition.onMatch({
         doc: doc
     }, fakedb, function(err, complete) {
-        test.ok(complete);
-        test.strictEqual(doc.sent_by, null);
+        test.equals(complete, false);
+        test.strictEqual(doc.sent_by, undefined);
         test.done();
     });
 }
