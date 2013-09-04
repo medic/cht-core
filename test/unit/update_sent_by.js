@@ -61,3 +61,8 @@ exports['sent_by untouched if nothing available'] = function(test) {
         test.done();
     });
 }
+
+exports['is repeatable'] = function(test) {
+    test.equals(transition.repeatable, true);
+    test.done();
+}
