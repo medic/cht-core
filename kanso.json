@@ -156,6 +156,54 @@
                     }
                 ]
             },
+            "notifications": {
+                "title": "Controlling Notifications",
+                "type": "object",
+                "properties": {
+                    "off_form": {
+                        "type": "string",
+                        "title": "Stop Notifications Form",
+                        "description": "When receiving a form of this type, stop sending notifications",
+                        "default": "OFF"
+                    },
+                    "on_form": {
+                        "type": "string",
+                        "title": "Resume Notifications Form",
+                        "description": "When receiving a form of this type, resume sending notifications",
+                        "default": "ON"
+                    },
+                    "confirm_deactivation": {
+                        "type": "boolean",
+                        "title": "Confirm Muting Notifications?",
+                        "description": "Whether to signal the administrator when notifications are muted.",
+                        "default": false
+                    },
+                    "confirm_deactivation_message": {
+                        "type": "string",
+                        "title": "Administrator Mute Message",
+                        "description": "The message to place on the form for administration attention.",
+                        "default": "ON"
+                    },
+                    "on_mute_message": {
+                        "type": "string",
+                        "title": "On Mute Message",
+                        "description": ""
+                        "default": "Thank you. Notifications for {{patient_id}} have been stopped."
+                    },
+                    "on_unmute_message": {
+                        "type": "string",
+                        "title": "On Resume Message",
+                        "description": "Thank you. Notifications for {{patient_id}} are resumed.",
+                        "default": "ON"
+                    },
+                    "patient_not_found": {
+                        "type": "string",
+                        "title": "Patient Not Found Message",
+                        "description": "The message to send when the patient is not found for a notification change.",
+                        "default": "Could not find patient {{patient_id}}."
+                    }
+                }
+            },
             "task_regimes": {
                 "title": "Reminder Schedules",
                 "type": "array",
