@@ -376,7 +376,7 @@ exports['canSend returns false if a sent_forms within lockout period of schedule
     canSend = reminders.canSend({
         schedule: {
             code: 'XXX',
-            muteAfterFormFor: '3 days'
+            mute_after_form_for: '3 days'
         },
         moment: now
     }, {
@@ -397,7 +397,7 @@ exports['canSend returns true if a sent_forms outside of lockout period of sched
     canSend = reminders.canSend({
         schedule: {
             code: 'XXX',
-            muteAfterFormFor: '3 days'
+            mute_after_form_for: '3 days'
         },
         moment: now
     }, {

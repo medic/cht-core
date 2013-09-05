@@ -50,9 +50,9 @@ module.exports = {
         });
 
         // if send, check for mute on schedule, and clinic has sent_forms for the schedule
-        if (send && schedule.muteAfterFormFor && clinic.sent_forms && clinic.sent_forms[schedule.code]) {
+        if (send && schedule.mute_after_form_for && clinic.sent_forms && clinic.sent_forms[schedule.code]) {
             lastReceived = moment(clinic.sent_forms[schedule.code]);
-            muteDuration = module.exports.parseDuration(schedule.muteAfterFormFor);
+            muteDuration = module.exports.parseDuration(schedule.mute_after_form_for);
 
             if (lastReceived && muteDuration) {
                 send = ts.isAfter(lastReceived.add(muteDuration));
