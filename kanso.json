@@ -323,6 +323,11 @@
                             "type": "string",
                             "title": "Spanish",
                             "default": ""
+                        },
+                        "sw": {
+                            "type": "string",
+                            "title": "Swahili",
+                            "default": ""
                         }
                     },
                     "type": "object"
