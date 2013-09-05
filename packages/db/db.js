@@ -368,7 +368,9 @@ exports.newUUID = function (cacheNum, callback) {
         if (err) {
             return callback(err);
         }
-        uuidCache = resp.uuids;
+        _.each(resp.uuids, function(uuid) {
+            uuidCache.push(uuid.substring(0, 8) + '-' + uuid.substring(8, 12) + '-' + uuid.substring(12, 16) + '-' + uuid.substring(16));
+        });
         callback(null, uuidCache.shift());
     });
 };
