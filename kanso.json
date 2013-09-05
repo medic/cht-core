@@ -187,14 +187,14 @@
                     "on_mute_message": {
                         "type": "string",
                         "title": "On Mute Message",
-                        "description": ""
+                        "description": "The message to send when stopping notifications.",
                         "default": "Thank you. Notifications for {{patient_id}} have been stopped."
                     },
                     "on_unmute_message": {
                         "type": "string",
                         "title": "On Resume Message",
-                        "description": "Thank you. Notifications for {{patient_id}} are resumed.",
-                        "default": "ON"
+                        "description": "The message to send when resuming notifications.",
+                        "default": "Thank you. Notifications for {{patient_id}} are resumed."
                     },
                     "patient_not_found": {
                         "type": "string",
