@@ -38,382 +38,340 @@ module.exports = {
    "synthetic_date": "",
    "translations": [
        {
-           "key": "district",
-           "en": "district",
-           "fr": "",
+           "key": "Contact",
+           "en": "Contact",
+           "fr": "Contactez",
            "ne": "",
-           "es": ""
+           "es": "Contacto",
+           "sw": "kuwasiliana na"
        },
        {
-           "key": "districts",
-           "en": "districts",
-           "fr": "",
+           "key": "From",
+           "en": "From",
+           "fr": "à partir de",
            "ne": "",
-           "es": ""
+           "es": "De",
+           "sw": "kutoka"
        },
        {
-           "key": "District",
-           "en": "District",
-           "fr": "",
+           "key": "Village Name",
+           "en": "Village Name",
+           "fr": "Nom du Village",
            "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Districts",
-           "en": "Districts",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "District Name",
-           "en": "District Name",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "District Contact Name",
-           "en": "District Contact Name",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "District Contact Phone",
-           "en": "District Contact Phone",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "District Hospital",
-           "en": "District Hospital",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "District Hospitals",
-           "en": "District Hospitals",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "District Hospital Name",
-           "en": "District Hospital Name",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "District Hospital Contact Name",
-           "en": "District Hospital Contact Name",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Health Center",
-           "en": "Health Center",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Health Centers",
-           "en": "Health Centers",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Health Center Name",
-           "en": "Health Center Name",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Health Center Contact",
-           "en": "Health Center Contact",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Health Center Contact Name",
-           "en": "Health Center Contact Name",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Health Center Contact Phone",
-           "en": "Health Center Contact Phone",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "clinic",
-           "en": "clinic",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "clinics",
-           "en": "clinics",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Clinic",
-           "en": "Clinic",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Clinics",
-           "en": "Clinics",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Clinic Name",
-           "en": "Clinic Name",
-           "fr": "",
-           "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Clinic Contact",
-           "en": "Clinic Contact",
-           "fr": "",
-           "ne": "",
-           "es": ""
+           "es": "Nombre Village",
+           "sw": "Jina kijiji"
        },
        {
            "key": "Clinic Contact Name",
            "en": "Clinic Contact Name",
-           "fr": "",
+           "fr": "Clinique Contact Nom",
            "ne": "",
-           "es": ""
-       },
-       {
-           "key": "Clinic Contact Phone",
-           "en": "Clinic Contact Phone",
-           "fr": "",
-           "ne": "",
-           "es": ""
+           "es": "Clínica de Contacto Nombre",
+           "sw": "Kliniki ya Mawasiliano Jina"
        },
        {
            "key": "RC Code",
-           "en": "RU Code",
-           "fr": "",
+           "en": "RC Code",
+           "fr": "RC code",
            "ne": "",
-           "es": ""
+           "es": "Código RC",
+           "sw": "RC Kanuni"
+       },
+       {
+           "key": "Health Center",
+           "en": "Health Center",
+           "fr": "Centre de santé",
+           "ne": "",
+           "es": "Centro de Salud",
+           "sw": "Kituo cha Afya cha"
+       },
+       {
+           "key": "Health Center Name",
+           "en": "Health Center Name",
+           "fr": "Santé Nom du centre",
+           "ne": "",
+           "es": "Salud Nombre del centro",
+           "sw": "Kituo cha Afya cha Jina"
+       },
+       {
+           "key": "Health Center Contact Name",
+           "en": "Health Center Contact Name",
+           "fr": "Centre de santé Nom du contact",
+           "ne": "",
+           "es": "Centro de Salud de Contacto Nombre",
+           "sw": "Kituo cha Afya cha Mawasiliano Jina"
+       },
+       {
+           "key": "Health Center Contact Phone",
+           "en": "Health Center Contact Phone",
+           "fr": "Centre de santé Contact Tel",
+           "ne": "",
+           "es": "Centro de Salud Teléfono de Contacto",
+           "sw": "Kituo cha Afya cha Mawasiliano Simu"
+       },
+       {
+           "key": "District",
+           "en": "District",
+           "fr": "District",
+           "ne": "",
+           "es": "Distrito",
+           "sw": "Wilaya ya"
+       },
+       {
+           "key": "District Name",
+           "en": "District Name",
+           "fr": "Nom du district",
+           "ne": "",
+           "es": "Nombre del distrito",
+           "sw": "Wilaya ya Jina"
+       },
+       {
+           "key": "District Contact Name",
+           "en": "District Contact Name",
+           "fr": "Quartier Contact Nom",
+           "ne": "",
+           "es": "Distrito Nombre de contacto",
+           "sw": "Wilaya ya Mawasiliano Jina"
+       },
+       {
+           "key": "District Contact Phone",
+           "en": "District Contact Phone",
+           "fr": "Quartier Contact Téléphone",
+           "ne": "",
+           "es": "Distrito de Contacto Teléfono",
+           "sw": "Wilaya ya Mawasiliano Simu"
+       },
+       {
+           "key": "Phone",
+           "en": "Phone",
+           "fr": "Téléphone",
+           "ne": "",
+           "es": "Teléfono",
+           "sw": "Simu"
        },
        {
            "key": "sys.recipient_not_found",
            "en": "Could not find message recipient.",
            "fr": "Le recipient du message n'a pas été trouvé.",
            "ne": "",
-           "es": ""
+           "es": "No se encontro destinatario para el mensaje.",
+           "sw": ""
        },
        {
            "key": "sys.missing_fields",
            "en": "Missing or invalid fields: %(fields).",
            "fr": "Champs invalides ou manquants: %(fields).",
            "ne": "",
-           "es": ""
+           "es": "Campo invalido o faltante: %(fields).",
+           "sw": ""
        },
        {
            "key": "missing_fields",
            "en": "Missing or invalid fields: %(fields).",
            "fr": "Champs invalides ou manquants: %(fields).",
-           "ne": "",
-           "es": ""
+           "ne": "तपाईले फारम पूरा भर्नुभएन। कृपया पुरा गरेर फेरि पठाउन प्रयास गर्नुहोला।",
+           "es": "Campo invalido o faltante: %(fields).",
+           "sw": ""
        },
        {
            "key": "extra_fields",
            "en": "Extra fields.",
            "fr": "Champs additionels.",
-           "ne": "",
-           "es": ""
+           "ne": "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।",
+           "es": "Campos extra.",
+           "sw": ""
        },
        {
            "key": "sys.form_not_found",
-           "en": "Form '{{ form }}' not found.",
-           "fr": "Formulaire '{{ form }}' non trouvé",
+           "en": "Form '%(form)' not found.",
+           "fr": "Formulaire '%(form)' non trouvé",
            "ne": "",
-           "es": ""
+           "es": "Forma no encontrada.",
+           "sw": ""
        },
        {
            "key": "form_not_found",
-           "en": "The form sent '{{ form }}' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
-           "fr": "Le formulaire envoyé '{{ form }}' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
-           "ne": "",
-           "es": ""
+           "en": "The form sent '%(form)' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
+           "fr": "Le formulaire envoyé '%(form)' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
+           "ne": "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला।",
+           "es": "No se reconocio el reporte enviado '%(form)'. Por favor intente de nuevo. Si el problema persiste, informe al director.",
+           "sw": ""
        },
        {
            "key": "form_invalid",
-           "en": "The form sent '{{ form }}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
-           "fr": "Le formulaire envoyé '{{ form }}' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
-           "ne": "",
-           "es": ""
+           "en": "The form sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
+           "fr": "Le formulaire envoyé '%(form)' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
+           "ne": "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।",
+           "es": "No se completo el reporte '%(form)'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
+           "sw": ""
        },
        {
            "key": "form_invalid_custom",
-           "en": "The form sent '{{ form }}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
-           "fr": "Le formulaire envoyé '{{ form }}' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
-           "es": "No se completo el reporte '{{ form }}'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
-           "ne": "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।"
+           "en": "The form sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
+           "fr": "Le formulaire envoyé '%(form)' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
+           "ne": "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।",
+           "es": "No se completo el reporte '%(form)'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
+           "sw": ""
        },
        {
            "key": "sys.facility_not_found",
            "en": "Facility not found.",
            "fr": "Établissement non trouvé.",
            "ne": "",
-           "es": ""
+           "es": "No se encontro a la unidad de salud.",
+           "sw": ""
        },
        {
            "key": "sys.empty",
            "en": "Message appears empty.",
            "fr": "Le message recu est vide.",
            "ne": "",
-           "es": ""
+           "es": "El mensaje esta en blanco.",
+           "sw": ""
        },
        {
            "key": "empty",
            "en": "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor.",
            "fr": "Nous avons des troubles avec votre message, SVP renvoyer. Si vous continuez à avoir des problèmes contactez votre superviseur.",
-           "ne": "",
-           "es": ""
+           "ne": "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला।",
+           "es": "El mensaje esta en blanco, por favor reenvielo. Si encuentra un problema, informe al director.",
+           "sw": ""
        },
        {
            "key": "form_received",
            "en": "Your form submission was received, thank you.",
            "fr": "Merci, votre formulaire a été bien reçu.",
-           "ne": "",
-           "es": ""
+           "ne": "डाटा प्राप्त भयो, धन्यवाद",
+           "es": "Recibimos su reporte, muchas gracias.",
+           "sw": ""
        },
        {
            "key": "sms_received",
            "en": "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again.",
            "fr": "Merci, votre message a été bien reçu.",
-           "ne": "",
-           "es": ""
+           "ne": "मेसेज प्राप्त भयो। यदि रिपोर्ट पठाउनुभएको हो भने मिलेन; मिलाएर पुन: पठाउनुहोला।",
+           "es": "Recibimos tu mensaje, lo procesaremos pronto. Si querias mandar un reporte, intentalo nuevamente en el formato adecuado.",
+           "sw": ""
        },
        {
            "key": "reporting_unit_not_found",
            "en": "Reporting Unit ID is incorrect. Please correct and submit a complete report again.",
            "fr": "Établissement non trouvé, svp corriger et renvoyer",
-           "ne": "",
-           "es": ""
+           "ne": " रिपोर्टिङ् युनिटको आइ.डि मिलेन। कृपया सहि आइ.डि राखेर पुरा रिपोर्ट फेरि पठाउनुहोला।",
+           "es": "No encontramos a su centro de salud. Por favor corrijalo y reenvie el reporte.",
+           "sw": ""
        },
        {
            "key": "reported_date",
            "en": "Reported Date",
            "fr": "Date envoyé",
            "ne": "",
-           "es": ""
+           "es": "Fecha de envío",
+           "sw": ""
        },
        {
            "key": "related_entities.clinic.name",
            "en": "Clinic Name",
            "fr": "Villages",
            "ne": "",
-           "es": ""
+           "es": "",
+           "sw": ""
        },
        {
            "key": "related_entities.clinic.contact.name",
            "en": "Clinic Contact Name",
            "fr": "Personne-ressource Clinique",
            "ne": "",
-           "es": ""
+           "es": "",
+           "sw": ""
        },
        {
            "key": "related_entities.clinic.parent.name",
            "en": "Health Center Name",
            "fr": "Nom du centre de santé",
            "ne": "",
-           "es": ""
+           "es": "",
+           "sw": ""
        },
        {
            "key": "related_entities.clinic.parent.contact.name",
            "en": "Health Center Contact Name",
            "fr": "Nom de la santé Contact Center",
            "ne": "",
-           "es": ""
+           "es": "",
+           "sw": ""
        },
        {
            "key": "related_entities.clinic.parent.parent.name",
            "en": "District Hospital Name",
            "fr": "Nom de l'hôpital de district",
            "ne": "",
-           "es": ""
+           "es": "",
+           "sw": ""
        },
        {
            "key": "related_entities.health_center.name",
            "en": "Health Center Name",
            "fr": "Nom du centre de santé",
            "ne": "",
-           "es": ""
+           "es": "",
+           "sw": ""
        },
        {
            "key": "related_entities.health_center.contact.name",
            "en": "Health Center Contact Name",
            "fr": "Nom de la santé Contact Center",
            "ne": "",
-           "es": ""
+           "es": "",
+           "sw": ""
        },
        {
            "key": "related_entities.health_center.parent.name",
            "en": "District Hospital Name",
            "fr": "Nom de l'hôpital de district",
            "ne": "",
-           "es": ""
+           "es": "",
+           "sw": ""
        },
        {
            "key": "tasks.0.messages.0.to",
            "en": "To",
            "fr": "pour",
            "ne": "",
-           "es": ""
+           "es": "",
+           "sw": ""
        },
        {
            "key": "tasks.0.messages.0.message",
            "en": "Message",
            "fr": "Message",
            "ne": "",
-           "es": ""
+           "es": "",
+           "sw": ""
        },
        {
            "key": "from",
            "en": "From",
            "fr": "Envoyé par",
            "ne": "",
-           "es": ""
+           "es": "De",
+           "sw": ""
        },
        {
            "key": "sent_timestamp",
            "en": "Sent Timestamp",
            "fr": "Date",
            "ne": "",
-           "es": ""
+           "es": "Fecha",
+           "sw": ""
        },
        {
            "key": "daysoverdue",
            "en": "Days since patient visit",
            "fr": "",
            "ne": "",
-           "es": ""
+           "es": "",
+           "sw": ""
        }
    ]
 };
