@@ -2,9 +2,9 @@
  * This has to run in the shows/list/update context for 'this' to work
  * Specifically, needs patched duality/core.js to have correct context
  */
-exports.getAppInfo = function() {
+exports.getAppInfo = function(req) {
     var defaults = require('views/lib/app_settings'),
-        app_settings = getSettings.call(this),
+        app_settings = getSettings.call(this, req),
         _ = _ || require('underscore'),
         url = url || require('url');
 
@@ -13,14 +13,16 @@ exports.getAppInfo = function() {
       interpolate : /\{\{(.+?)\}\}/g
     };
 
+
     /*
      * On server side app_settings is availble on design doc (this) and if
      * call from client side we fetch app_settings via couchdb show.
      *
      * returns object
      */
-    function getSettings() {
-        var settings = {};
+    function getSettings(req) {
+        var settings = {},
+            locale = require('locale');
 
         if (this.app_settings) {
             settings = this.app_settings;
@@ -56,6 +58,31 @@ exports.getAppInfo = function() {
             }
             found = false;
         }
+
+        /*
+         * Locale string based on the following priority:
+         *      user profile > browser > app_settings > 'en'
+         *
+         * Only initialize the locale value server side. With kanso request
+         * object the cookie can only be checked server side.  Fallback to
+         * browser headers otherwise.
+         */
+        if (req && req.cookie && req.cookie.kujua_locale) {
+
+            settings.locale = req.cookie.kujua_locale || 'en';
+
+        } else if (req && req.headers && req.headers['Accept-Language']) {
+
+            // currently supported locales
+            var supported = new locale.Locales(["en", "es", "fr", "ne", "sw"]);
+
+            // locale module chooses best option based on header
+            settings.locale = new locale.Locales(
+                req.headers["Accept-Language"]
+            ).best(supported).toString();
+
+        }
+
         return settings;
     }
 
@@ -103,11 +130,11 @@ exports.getAppInfo = function() {
     function translate(translations, key, locale, ctx) {
         var value,
             ctx = ctx || {},
-            locale = locale || 'en';
+            locale = locale || app_settings.locale || 'en';
 
         if (_.isObject(locale)) {
             ctx = locale;
-            locale = 'en';
+            locale = app_settings.locale || 'en';
         }
 
         if (_.isObject(key))
