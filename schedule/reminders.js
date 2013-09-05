@@ -45,13 +45,13 @@ module.exports = {
             muteDuration;
 
         send = !_.findWhere(clinic.tasks, {
-            code: schedule.code,
+            form: schedule.form,
             ts: ts.toISOString()
         });
 
         // if send, check for mute on schedule, and clinic has sent_forms for the schedule
-        if (send && schedule.mute_after_form_for && clinic.sent_forms && clinic.sent_forms[schedule.code]) {
-            lastReceived = moment(clinic.sent_forms[schedule.code]);
+        if (send && schedule.mute_after_form_for && clinic.sent_forms && clinic.sent_forms[schedule.form]) {
+            lastReceived = moment(clinic.sent_forms[schedule.form]);
             muteDuration = module.exports.parseDuration(schedule.mute_after_form_for);
 
             if (lastReceived && muteDuration) {
@@ -95,7 +95,7 @@ module.exports = {
             schedule = options.schedule;
 
         utils.addMessage(clinic, {
-            code: schedule.code,
+            form: schedule.form,
             ts: moment.toISOString(),
             phone: utils.getClinicPhone(clinic),
             message: i18n(schedule.message, {
@@ -141,13 +141,13 @@ module.exports = {
         var db = options.db,
             now = moment(),
             floor = now.clone().startOf('hour').subtract(1, 'day'),
-            code = options.schedule && options.schedule.code;
+            form = options.schedule && options.schedule.form;
 
         db.view('kujua-lite', 'sent_reminders', {
             descending: true,
             limit: 1,
-            startkey: [code, now.toISOString()],
-            endkey: [code, floor.toISOString()]
+            startkey: [form, now.toISOString()],
+            endkey: [form, floor.toISOString()]
         }, function(err, result) {
             var row = _.first(result.rows);
 
