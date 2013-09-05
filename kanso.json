@@ -204,6 +204,49 @@
                     }
                 }
             },
+            "patient_reports": {
+                "title": "Patient Reports",
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "form": {
+                            "type": "string",
+                            "title": "Report Form",
+                            "description": "Form code of the report."
+                        },
+                        "patient_id_validation_regexp": {
+                            "type": "string",
+                            "title": "Patient Id Validation",
+                            "description": "Regular expression to test patient IDs against. Leave blank to accept all.",
+                            "default": "\\d{5}"
+                        },
+                        "report_accepted": {
+                            "type": "string",
+                            "title": "Report Accepted Message",
+                            "description": "Message to send when the report has been accepted.",
+                            "default": "Thank you, {{contact_name}}. Your report for {{patient_id}} has been processed."
+                        },
+                        "silence_type": {
+                            "type": "string",
+                            "title": "Silence Scheduled Message Type",
+                            "description": "After receiving this report, silence scheduled messages of this type. (Or leave blank.)"
+                        },
+                        "silence_for": {
+                            "type": "string",
+                            "title": "Silence Messages For",
+                            "description": "Silence the message type for this long. Uses momentjs.com syntax, e.g. '1 week'.",
+                            "default": "3 days"
+                        },
+                        "registration_not_found": {
+                            "type": "string",
+                            "title": "Registration Not Found Message",
+                            "description": "The reply to send when the patient ID is not found.",
+                            "default": "This message could not be processed as a registration for {{patient_id}} was not found."
+                        }
+                    }
+                },
+                "default": []
+            },
             "task_regimes": {
                 "title": "Reminder Schedules",
                 "type": "array",
