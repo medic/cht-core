@@ -2,6 +2,13 @@ var _ = require('underscore'),
     moment = require('moment');
 
 module.exports = {
+    filter: function(doc) {
+        return doc.form &&
+            doc.reported_date &&
+            doc.related_entities &&
+            doc.related_entities.clinic &&
+            doc.related_entities.clinic._id;
+    },
     onMatch: function(change, db, callback) {
         var doc = change.doc,
             form = doc.form,

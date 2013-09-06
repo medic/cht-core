@@ -59,11 +59,3 @@ exports.twilio_message = function(doc) {
 exports.config_docs = function(doc) {
     return doc._id === '_design/kujua-lite';
 };
-
-exports.update_sent_forms = function(doc) {
-    return doc.form &&
-        doc.reported_date &&
-        doc.related_entities &&
-        doc.related_entities.clinic &&
-        doc.related_entities.clinic._id;
-}
