@@ -12,23 +12,23 @@ later.date.localTime();
 module.exports = {
     execute: function(options, callback) {
         var db = options.db,
-            schedules = config.get('schedules') || [];
+            reminders = config.get('reminders') || [];
 
-        async.eachSeries(schedules, function(schedule, callback) {
-            module.exports.runSchedule({
+        async.eachSeries(reminders, function(reminder, callback) {
+            module.exports.runReminder({
                 db: db,
-                schedule: schedule
+                reminder: reminder
             }, callback);
         }, callback);
     },
     // matches from "now" to the start of the last hour
     // later reverses time ranges fro later#prev searches
-    matchSchedule: function(options, callback) {
+    matchReminder: function(options, callback) {
         var start = moment(),
-            schedule = options.schedule,
-            sched = later.schedule(later.parse.cron(schedule.cron));
+            reminder = options.reminder,
+            sched = later.schedule(later.parse.cron(reminder.cron));
 
-        module.exports.getScheduleWindow(options, function(err, end) {
+        module.exports.getReminderWindow(options, function(err, end) {
             var previous = sched.prev(1, start.toDate(), end.toDate());
             if (_.isDate(previous)) {
                 callback(null, moment(previous));
@@ -40,19 +40,19 @@ module.exports = {
     canSend: function(options, clinic) {
         var send,
             ts = options.moment || moment().startOf('hour'),
-            schedule = options.schedule,
+            reminder = options.reminder,
             lastReceived,
             muteDuration;
 
         send = !_.findWhere(clinic.tasks, {
-            form: schedule.form,
+            form: reminder.form,
             ts: ts.toISOString()
         });
 
-        // if send, check for mute on schedule, and clinic has sent_forms for the schedule
-        if (send && schedule.mute_after_form_for && clinic.sent_forms && clinic.sent_forms[schedule.form]) {
-            lastReceived = moment(clinic.sent_forms[schedule.form]);
-            muteDuration = module.exports.parseDuration(schedule.mute_after_form_for);
+        // if send, check for mute on reminder, and clinic has sent_forms for the reminder
+        if (send && reminder.mute_after_form_for && clinic.sent_forms && clinic.sent_forms[reminder.form]) {
+            lastReceived = moment(clinic.sent_forms[reminder.form]);
+            muteDuration = module.exports.parseDuration(reminder.mute_after_form_for);
 
             if (lastReceived && muteDuration) {
                 send = ts.isAfter(lastReceived.add(muteDuration));
@@ -92,13 +92,13 @@ module.exports = {
         var clinic = options.clinic,
             db = options.db,
             moment = options.moment,
-            schedule = options.schedule;
+            reminder = options.reminder;
 
         utils.addMessage(clinic, {
-            form: schedule.form,
+            form: reminder.form,
             ts: moment.toISOString(),
             phone: utils.getClinicPhone(clinic),
-            message: i18n(schedule.message, {
+            message: i18n(reminder.message, {
                 week: moment.format('w'),
                 year: moment.format('YYYY')
             })
@@ -121,12 +121,12 @@ module.exports = {
             }
         });
     },
-    runSchedule: function(options, callback) {
+    runReminder: function(options, callback) {
         _.defaults(options, {
-            schedule: {}
+            reminder: {}
         });
 
-        module.exports.matchSchedule(options, function(err, moment) {
+        module.exports.matchReminder(options, function(err, moment) {
             if (err) {
                 callback(err);
             } else if (moment) {
@@ -137,11 +137,11 @@ module.exports = {
             }
         });
     },
-    getScheduleWindow: function(options, callback) {
+    getReminderWindow: function(options, callback) {
         var db = options.db,
             now = moment(),
             floor = now.clone().startOf('hour').subtract(1, 'day'),
-            form = options.schedule && options.schedule.form;
+            form = options.reminder && options.reminder.form;
 
         db.view('kujua-lite', 'sent_reminders', {
             descending: true,

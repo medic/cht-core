@@ -14,71 +14,71 @@ exports['reminders#execute is function'] = function(test) {
     test.done();
 }
 
-exports['config with no schedules calls callback'] = function(test) {
+exports['config with no reminders calls callback'] = function(test) {
     sinon.stub(config, 'get').returns([]);
-    sinon.stub(reminders, 'runSchedule').throws();
+    sinon.stub(reminders, 'runReminder').throws();
     reminders.execute({}, function(err) {
         test.equals(err, null);
-        reminders.runSchedule.restore();
+        reminders.runReminder.restore();
         config.get.restore();
         test.done();
     });
 };
 
-exports['config with three matching schedule calls runSchedule thrice'] = function(test) {
-    var runSchedule;
+exports['config with three matching reminder calls runReminder thrice'] = function(test) {
+    var runReminder;
 
     sinon.stub(config, 'get').returns([ {}, {}, {} ]);
-    runSchedule = sinon.stub(reminders, 'runSchedule').callsArgWith(1, null);
+    runReminder = sinon.stub(reminders, 'runReminder').callsArgWith(1, null);
     reminders.execute({}, function(err) {
         test.equals(err, null);
-        test.equals(runSchedule.callCount, 3);
+        test.equals(runReminder.callCount, 3);
 
-        runSchedule.restore();
+        runReminder.restore();
         config.get.restore();
 
         test.done();
     });
 };
 
-exports['runSchedule calls sendReminder when valid'] = function(test) {
+exports['runReminder calls sendReminder when valid'] = function(test) {
     var sendReminders,
-        matchSchedule;
+        matchReminder;
 
-    matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, moment());
+    matchReminder = sinon.stub(reminders, 'matchReminder').callsArgWith(1, null, moment());
     sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(1, null);
 
-    reminders.runSchedule({}, function(err) {
+    reminders.runReminder({}, function(err) {
         test.equals(err, null);
         test.equals(sendReminders.callCount, 1);
-        matchSchedule.restore();
+        matchReminder.restore();
         sendReminders.restore();
         test.done();
     });
 };
 
-exports['runSchedule does not create document when no match'] = function(test) {
+exports['runReminder does not create document when no match'] = function(test) {
     var sendReminders,
-        matchSchedule;
+        matchReminder;
 
-    matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, false);
+    matchReminder = sinon.stub(reminders, 'matchReminder').callsArgWith(1, null, false);
     sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(1, null);
 
-    reminders.runSchedule({}, function(err) {
+    reminders.runReminder({}, function(err) {
         test.equals(err, null);
         test.equals(sendReminders.callCount, 0);
-        matchSchedule.restore();
+        matchReminder.restore();
         sendReminders.restore();
         test.done();
     });
 };
 
-exports['matches schedule with moment if in last hour'] = function(test) {
-    var window = sinon.stub(reminders, 'getScheduleWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour')),
+exports['matches reminder with moment if in last hour'] = function(test) {
+    var window = sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour')),
         ts = moment().startOf('hour');
 
-    reminders.matchSchedule({
-        schedule: {
+    reminders.matchReminder({
+        reminder: {
             cron: moment().format('0 HH * * *') // will generate cron job matching the current hour
         }
     }, function(err, matches) {
@@ -90,33 +90,33 @@ exports['matches schedule with moment if in last hour'] = function(test) {
     });
 }
 
-exports['runSchedule decorates options with moment if found'] = function(test) {
+exports['runReminder decorates options with moment if found'] = function(test) {
     var sendReminders,
-        matchSchedule,
+        matchReminder,
         now = moment(),
         options = {};
 
-    matchSchedule = sinon.stub(reminders, 'matchSchedule').callsArgWith(1, null, now);
+    matchReminder = sinon.stub(reminders, 'matchReminder').callsArgWith(1, null, now);
     sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(1, null);
 
-    reminders.runSchedule(options, function(err) {
+    reminders.runReminder(options, function(err) {
         var moment = sendReminders.getCall(0).args[0].moment;
 
         test.ok(moment);
         test.equals(moment.valueOf(), now.valueOf());
 
-        matchSchedule.restore();
+        matchReminder.restore();
         sendReminders.restore();
         test.done();
     });
 };
 
-exports['does not match schedule if in next minute'] = function(test) {
-    var window = sinon.stub(reminders, 'getScheduleWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour')),
+exports['does not match reminder if in next minute'] = function(test) {
+    var window = sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour')),
         now = moment();
 
-    reminders.matchSchedule({
-        schedule: {
+    reminders.matchReminder({
+        reminder: {
             cron: (now.minutes() + 1) + ' ' + now.format('HH * * *') // will generate cron job matching the current hour but 1 minute into future
         }
     }, function(err, matches) {
@@ -127,12 +127,12 @@ exports['does not match schedule if in next minute'] = function(test) {
     });
 }
 
-exports['does not match if previous to schedule'] = function(test) {
-    var window = sinon.stub(reminders, 'getScheduleWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour')),
+exports['does not match if previous to reminder'] = function(test) {
+    var window = sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour')),
         now = moment().subtract(2, 'hours');
 
-    reminders.matchSchedule({
-        schedule: {
+    reminders.matchReminder({
+        reminder: {
             cron: now.format('59 HH * * *') // will generate cron job matching the previous hour
         }
     }, function(err, matches) {
@@ -170,7 +170,7 @@ exports['getClinics calls db.view'] = function(test) {
 
     reminders.getClinics({
         db: db,
-        schedule: {}
+        reminder: {}
     }, function(err, clinics) {
         test.ok(_.isArray(clinics));
         test.equals(clinics.length, 1);
@@ -231,7 +231,7 @@ exports['getClinics ignores clinics with matching sent_reminders'] = function(te
     });
 
     reminders.getClinics({
-        schedule:{
+        reminder:{
             moment: now,
             form: 'XXX'
         },
@@ -287,7 +287,7 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
                 phone: '+1234'
             }
         },
-        schedule: {
+        reminder: {
             form: 'XXX',
             message: 'hi {{year}} {{week}}'
         },
@@ -317,12 +317,12 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
     });
 };
 
-exports['canSend returns true if no tasks matching schedule'] = function(test) {
+exports['canSend returns true if no tasks matching reminder'] = function(test) {
     var canSend,
         now = moment();
 
     canSend = reminders.canSend({
-        schedule: {
+        reminder: {
             form: 'XXX'
         },
         moment: now
@@ -343,12 +343,12 @@ exports['canSend returns true if no tasks matching schedule'] = function(test) {
     test.done();
 }
 
-exports['canSend returns false if a task matches schedule'] = function(test) {
+exports['canSend returns false if a task matches reminder'] = function(test) {
     var canSend,
         now = moment();
 
     canSend = reminders.canSend({
-        schedule: {
+        reminder: {
             form: 'XXX'
         },
         moment: now
@@ -369,12 +369,12 @@ exports['canSend returns false if a task matches schedule'] = function(test) {
     test.done();
 }
 
-exports['canSend returns false if a sent_forms within lockout period of schedule'] = function(test) {
+exports['canSend returns false if a sent_forms within lockout period of reminder'] = function(test) {
     var canSend,
         now = moment();
 
     canSend = reminders.canSend({
-        schedule: {
+        reminder: {
             form: 'XXX',
             mute_after_form_for: '3 days'
         },
@@ -390,12 +390,12 @@ exports['canSend returns false if a sent_forms within lockout period of schedule
     test.done();
 }
 
-exports['canSend returns true if a sent_forms outside of lockout period of schedule'] = function(test) {
+exports['canSend returns true if a sent_forms outside of lockout period of reminder'] = function(test) {
     var canSend,
         now = moment();
 
     canSend = reminders.canSend({
-        schedule: {
+        reminder: {
             form: 'XXX',
             mute_after_form_for: '3 days'
         },
@@ -411,7 +411,7 @@ exports['canSend returns true if a sent_forms outside of lockout period of sched
     test.done();
 }
 
-exports['getScheduleWindow returns a day ago when no results from db'] = function(test) {
+exports['getReminderWindow returns a day ago when no results from db'] = function(test) {
     var db,
         view,
         time = moment().startOf('hour').subtract(1, 'day');
@@ -424,7 +424,7 @@ exports['getScheduleWindow returns a day ago when no results from db'] = functio
         rows: []
     });
 
-    reminders.getScheduleWindow({
+    reminders.getReminderWindow({
         db: db
     }, function(err, start) {
         test.equals(err, null);
@@ -434,7 +434,7 @@ exports['getScheduleWindow returns a day ago when no results from db'] = functio
     });
 };
 
-exports['getScheduleWindow calls view looking for old events and returns date found'] = function(test) {
+exports['getReminderWindow calls view looking for old events and returns date found'] = function(test) {
     var db,
         view,
         now = moment();
@@ -451,8 +451,8 @@ exports['getScheduleWindow calls view looking for old events and returns date fo
         ]
     });
 
-    reminders.getScheduleWindow({
-        schedule: {
+    reminders.getReminderWindow({
+        reminder: {
             form: 'XXX'
         },
         db: db
