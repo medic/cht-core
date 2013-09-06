@@ -116,7 +116,8 @@ module.exports = {
             message: i18n(reminder.message, {
                 week: moment.format('w'),
                 year: moment.format('YYYY')
-            })
+            }),
+            type: 'reminder'
         });
 
         db.saveDoc(clinic, callback);
