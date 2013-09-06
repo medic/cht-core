@@ -278,6 +278,37 @@
                     "default": "Invalid patient name and LMP."
                 }
             },
+            "schedules": {
+                "title": "Report Reminders",
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "form": {
+                            "type": "string",
+                            "title": "Reminder Form Code",
+                            "description": "What form this reminder is for. E.g., ANC",
+                        },
+                        "cron": {
+                            "type": "string",
+                            "title": "Reminder Cron Configuration",
+                            "description": "A cron definition of the schedule. E.g., weekly on Monday at 9am: '0 9 * * 1'",
+                            "default": "0 9 * * 1"
+                        },
+                        "mute_after_form_for": {
+                            "type": "string",
+                            "title": "Mute Reminders For",
+                            "description": "After receiving a form, how long to mute reminders for. Uses momentjs format, e.g. '5 days'",
+                            "default": "5 days"
+                        },
+                        "message": {
+                            "type": "string",
+                            "title": "Reminder Text",
+                            "description": "The text of the message. Has the substitutions: week, year",
+                            "default": "Your reminder here."
+                        }
+                    }
+                }
+            },
             "task_regimes": {
                 "title": "Reminder Schedules",
                 "type": "array",
