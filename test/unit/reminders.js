@@ -199,7 +199,7 @@ exports['getClinics ignores clinics with matching sent_reminders'] = function(te
                     id: 'yyx',
                     tasks: [
                         {
-                            code: 'XXX',
+                            form: 'XXX',
                             ts: now.toISOString()
                         }
                     ]
@@ -210,7 +210,7 @@ exports['getClinics ignores clinics with matching sent_reminders'] = function(te
                     id: 'yyy',
                     tasks: [
                         {
-                            code: 'YYY',
+                            form: 'YYY',
                             ts: now.toISOString()
                         }
                     ]
@@ -221,7 +221,7 @@ exports['getClinics ignores clinics with matching sent_reminders'] = function(te
                     id: 'yyz',
                     tasks: [
                         {
-                            code: 'XXX',
+                            form: 'XXX',
                             ts: now.clone().add(1, 'hour').toISOString()
                         }
                     ]
@@ -233,7 +233,7 @@ exports['getClinics ignores clinics with matching sent_reminders'] = function(te
     reminders.getClinics({
         schedule:{
             moment: now,
-            code: 'XXX'
+            form: 'XXX'
         },
         db: db
     }, function(err, clinics) {
@@ -288,7 +288,7 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
             }
         },
         schedule: {
-            code: 'XXX',
+            form: 'XXX',
             message: 'hi {{year}} {{week}}'
         },
         moment: now,
@@ -309,7 +309,7 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
         test.ok(message.message.indexOf(now.format('YYYY')) > 0);
         test.ok(message.message.indexOf(now.format('w')) > 0);
 
-        test.equals(task.code, 'XXX');
+        test.equals(task.form, 'XXX');
         test.equals(task.ts, now.toISOString());
 
         saveDoc.restore();
@@ -323,17 +323,17 @@ exports['canSend returns true if no tasks matching schedule'] = function(test) {
 
     canSend = reminders.canSend({
         schedule: {
-            code: 'XXX'
+            form: 'XXX'
         },
         moment: now
     }, {
         tasks: [
             {
-                code: 'XXX',
+                form: 'XXX',
                 ts: now.clone().add(1, 'minute').toISOString()
             },
             {
-                code: 'XXY',
+                form: 'XXY',
                 ts: now.toISOString()
             }
         ]
@@ -349,17 +349,17 @@ exports['canSend returns false if a task matches schedule'] = function(test) {
 
     canSend = reminders.canSend({
         schedule: {
-            code: 'XXX'
+            form: 'XXX'
         },
         moment: now
     }, {
         tasks: [
             {
-                code: 'XXX',
+                form: 'XXX',
                 ts: now.toISOString()
             },
             {
-                code: 'XXY',
+                form: 'XXY',
                 ts: now.toISOString()
             }
         ]
@@ -375,8 +375,8 @@ exports['canSend returns false if a sent_forms within lockout period of schedule
 
     canSend = reminders.canSend({
         schedule: {
-            code: 'XXX',
-            muteAfterFormFor: '3 days'
+            form: 'XXX',
+            mute_after_form_for: '3 days'
         },
         moment: now
     }, {
@@ -396,8 +396,8 @@ exports['canSend returns true if a sent_forms outside of lockout period of sched
 
     canSend = reminders.canSend({
         schedule: {
-            code: 'XXX',
-            muteAfterFormFor: '3 days'
+            form: 'XXX',
+            mute_after_form_for: '3 days'
         },
         moment: now
     }, {
@@ -453,7 +453,7 @@ exports['getScheduleWindow calls view looking for old events and returns date fo
 
     reminders.getScheduleWindow({
         schedule: {
-            code: 'XXX'
+            form: 'XXX'
         },
         db: db
     }, function(err, start) {
