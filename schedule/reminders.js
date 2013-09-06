@@ -10,6 +10,7 @@ var _ = require('underscore'),
 later.date.localTime();
 
 module.exports = {
+    // called from schedule/index.js on the hour, for now
     execute: function(options, callback) {
         var db = options.db,
             reminders = config.get('reminders') || [];
@@ -26,10 +27,17 @@ module.exports = {
     matchReminder: function(options, callback) {
         var start = moment(),
             reminder = options.reminder,
+            // fetch a schedule based on the configuration, parsing it as a "cron" statement
+            // see: http://bunkat.github.io/later/parsers.html#cron
             sched = later.schedule(later.parse.cron(reminder.cron));
 
+        // this will return a moment sometime between the start of the hour and 24 hours ago
+        // this is purely for efficiency so we're not always examining a 24 hour stretch
         module.exports.getReminderWindow(options, function(err, end) {
+            // this will return either the previous time the schedule schould have run
+            // or null if it should not have run in that window.
             var previous = sched.prev(1, start.toDate(), end.toDate());
+
             if (_.isDate(previous)) {
                 callback(null, moment(previous));
             } else {
@@ -44,23 +52,27 @@ module.exports = {
             lastReceived,
             muteDuration;
 
+        // if it's already been sent, it will have a matching task with the right form/ts
         send = !_.findWhere(clinic.tasks, {
             form: reminder.form,
             ts: ts.toISOString()
         });
 
         // if send, check for mute on reminder, and clinic has sent_forms for the reminder
+        // sent_forms is maintained by the update_sent_forms transition
         if (send && reminder.mute_after_form_for && clinic.sent_forms && clinic.sent_forms[reminder.form]) {
             lastReceived = moment(clinic.sent_forms[reminder.form]);
             muteDuration = module.exports.parseDuration(reminder.mute_after_form_for);
 
             if (lastReceived && muteDuration) {
+                // if it should mute due to being in the mute duration
                 send = ts.isAfter(lastReceived.add(muteDuration));
             }
         }
 
         return send;
     },
+    // returns strings like "1 day" as a moment.duration
     parseDuration: function(format) {
         var tokens;
 
@@ -75,12 +87,14 @@ module.exports = {
     getClinics: function(options, callback) {
         var db = options.db;
 
+        // gets all clinics
         db.view('kujua-lite', 'clinic_by_phone', {
             include_docs: true
         }, function(err, data) {
             var clinics,
                 docs = _.pluck(data.rows, 'doc');
 
+            // filter them by the canSend function (i.e. not already sent, not on cooldown from having received a form)
             clinics = _.filter(docs, function(clinic) {
                 return module.exports.canSend(options, clinic);
             });
@@ -94,6 +108,7 @@ module.exports = {
             moment = options.moment,
             reminder = options.reminder;
 
+        // add a message to the tasks property with the form/ts markers
         utils.addMessage(clinic, {
             form: reminder.form,
             ts: moment.toISOString(),
@@ -116,6 +131,7 @@ module.exports = {
                         clinic: clinic
                     });
 
+                    // send to the specific clinic
                     module.exports.sendReminder(opts, callback);
                 }, callback);
             }
@@ -126,10 +142,12 @@ module.exports = {
             reminder: {}
         });
 
+        // see if the reminder should run in the given window
         module.exports.matchReminder(options, function(err, moment) {
             if (err) {
                 callback(err);
             } else if (moment) {
+                // if it has a timestamp it should have run at, try and send it
                 options.moment = moment.clone();
                 module.exports.sendReminders(options, callback);
             } else {
@@ -140,6 +158,7 @@ module.exports = {
     getReminderWindow: function(options, callback) {
         var db = options.db,
             now = moment(),
+            // at the most, look a day back
             floor = now.clone().startOf('hour').subtract(1, 'day'),
             form = options.reminder && options.reminder.form;
 
@@ -152,6 +171,7 @@ module.exports = {
             var row = _.first(result.rows);
 
             if (row) {
+                // if there's a result, return that as the floor
                 callback(null, moment(row.key[1]));
             } else {
                 callback(null, floor);
