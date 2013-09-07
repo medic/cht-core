@@ -156,6 +156,159 @@
                     }
                 ]
             },
+            "notifications": {
+                "title": "Controlling Notifications",
+                "type": "object",
+                "properties": {
+                    "off_form": {
+                        "type": "string",
+                        "title": "Stop Notifications Form",
+                        "description": "When receiving a form of this type, stop sending notifications",
+                        "default": "OFF"
+                    },
+                    "on_form": {
+                        "type": "string",
+                        "title": "Resume Notifications Form",
+                        "description": "When receiving a form of this type, resume sending notifications",
+                        "default": "ON"
+                    },
+                    "confirm_deactivation": {
+                        "type": "boolean",
+                        "title": "Confirm Muting Notifications?",
+                        "description": "Whether to signal the administrator when notifications are muted.",
+                        "default": false
+                    },
+                    "confirm_deactivation_message": {
+                        "type": "string",
+                        "title": "Administrator Mute Message",
+                        "description": "The message to place on the form for administration attention.",
+                        "default": "ON"
+                    },
+                    "on_mute_message": {
+                        "type": "string",
+                        "title": "On Mute Message",
+                        "description": "The message to send when stopping notifications.",
+                        "default": "Thank you. Notifications for {{patient_id}} have been stopped."
+                    },
+                    "on_unmute_message": {
+                        "type": "string",
+                        "title": "On Resume Message",
+                        "description": "The message to send when resuming notifications.",
+                        "default": "Thank you. Notifications for {{patient_id}} are resumed."
+                    },
+                    "patient_not_found": {
+                        "type": "string",
+                        "title": "Patient Not Found Message",
+                        "description": "The message to send when the patient is not found for a notification change.",
+                        "default": "Could not find patient {{patient_id}}."
+                    }
+                }
+            },
+            "patient_reports": {
+                "title": "Patient Reports",
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "form": {
+                            "type": "string",
+                            "title": "Report Form",
+                            "description": "Form code of the report."
+                        },
+                        "patient_id_validation_regexp": {
+                            "type": "string",
+                            "title": "Patient Id Validation",
+                            "description": "Regular expression to test patient IDs against. Leave blank to accept all.",
+                            "default": "\\d{5}"
+                        },
+                        "report_accepted": {
+                            "type": "string",
+                            "title": "Report Accepted Message",
+                            "description": "Message to send when the report has been accepted.",
+                            "default": "Thank you, {{contact_name}}. Your report for {{patient_id}} has been processed."
+                        },
+                        "silence_type": {
+                            "type": "string",
+                            "title": "Silence Scheduled Message Type",
+                            "description": "After receiving this report, silence scheduled messages of this type. (Or leave blank.)"
+                        },
+                        "silence_for": {
+                            "type": "string",
+                            "title": "Silence Messages For",
+                            "description": "Silence the message type for this long. Uses momentjs.com syntax, e.g. '1 week'.",
+                            "default": "3 days"
+                        },
+                        "registration_not_found": {
+                            "type": "string",
+                            "title": "Registration Not Found Message",
+                            "description": "The reply to send when the patient ID is not found.",
+                            "default": "This message could not be processed as a registration for {{patient_id}} was not found."
+                        }
+                    }
+                },
+                "default": []
+            },
+            "pregnancy_registration": {
+                "form": {
+                    "type": "string",
+                    "title": "Pregnancy Registration Form",
+                    "description": "Form code of a pregnancy registration"
+                },
+                "include_patient_name": {
+                    "type": "string",
+                    "title": "Include Patient Name Message",
+                    "description": "Message to send when patient name needed.",
+                    "default": "Please include patient name."
+                },
+                "invalid_name": {
+                    "type": "string",
+                    "title": "Invalid Name Message",
+                    "description": "Message to send when patient name invalid.",
+                    "default": "Patient name must be under 100 characters long."
+                },
+                "invalid_lmp": {
+                    "type": "string",
+                    "title": "Invalid LMP Message",
+                    "description": "Message to send when LMP is invalid.",
+                    "default": "LMP must be between 0 and 40."
+                },
+                "invalid_values": {
+                    "type": "string",
+                    "title": "Invalid LMP & Name Message",
+                    "description": "Message to send when both LMP and patient name invalid.",
+                    "default": "Invalid patient name and LMP."
+                }
+            },
+            "schedules": {
+                "title": "Report Reminders",
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "form": {
+                            "type": "string",
+                            "title": "Reminder Form Code",
+                            "description": "What form this reminder is for. E.g., ANC",
+                        },
+                        "cron": {
+                            "type": "string",
+                            "title": "Reminder Cron Configuration",
+                            "description": "A cron definition of the schedule. E.g., weekly on Monday at 9am: '0 9 * * 1'",
+                            "default": "0 9 * * 1"
+                        },
+                        "mute_after_form_for": {
+                            "type": "string",
+                            "title": "Mute Reminders For",
+                            "description": "After receiving a form, how long to mute reminders for. Uses momentjs format, e.g. '5 days'",
+                            "default": "5 days"
+                        },
+                        "message": {
+                            "type": "string",
+                            "title": "Reminder Text",
+                            "description": "The text of the message. Has the substitutions: week, year",
+                            "default": "Your reminder here."
+                        }
+                    }
+                }
+            },
             "task_regimes": {
                 "title": "Reminder Schedules",
                 "type": "array",
