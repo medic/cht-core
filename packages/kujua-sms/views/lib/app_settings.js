@@ -10,7 +10,8 @@
  */
 
 module.exports = {
-   "muvuku_webapp_url": '/muvuku-webapp/_design/muvuku-webapp/_rewrite/?_embed_mode=2',
+   "locale": "en",
+   "muvuku_webapp_url": "/muvuku-webapp/_design/muvuku-webapp/_rewrite/?_embed_mode=2",
    "reported_date_format": "MMM hh:mm",
    "forms_only_mode": false,
    "public_access": false,
@@ -159,18 +160,18 @@ module.exports = {
        },
        {
            "key": "sys.missing_fields",
-           "en": "Missing or invalid fields: %(fields).",
-           "fr": "Champs invalides ou manquants: %(fields).",
+           "en": "Missing or invalid fields: {{fields}}.",
+           "fr": "Champs invalides ou manquants: {{fields}}.",
            "ne": "",
-           "es": "Campo invalido o faltante: %(fields).",
+           "es": "Campo invalido o faltante: {{fields}}.",
            "sw": ""
        },
        {
            "key": "missing_fields",
-           "en": "Missing or invalid fields: %(fields).",
-           "fr": "Champs invalides ou manquants: %(fields).",
+           "en": "Missing or invalid fields: {{fields}}.",
+           "fr": "Champs invalides ou manquants: {{fields}}.",
            "ne": "तपाईले फारम पूरा भर्नुभएन। कृपया पुरा गरेर फेरि पठाउन प्रयास गर्नुहोला।",
-           "es": "Campo invalido o faltante: %(fields).",
+           "es": "Campo invalido o faltante: {{fields}}.",
            "sw": ""
        },
        {
@@ -183,34 +184,34 @@ module.exports = {
        },
        {
            "key": "sys.form_not_found",
-           "en": "Form '%(form)' not found.",
-           "fr": "Formulaire '%(form)' non trouvé",
+           "en": "Form '{{form}}' not found.",
+           "fr": "Formulaire '{{form}}' non trouvé",
            "ne": "",
            "es": "Forma no encontrada.",
            "sw": ""
        },
        {
            "key": "form_not_found",
-           "en": "The form sent '%(form)' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
-           "fr": "Le formulaire envoyé '%(form)' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
+           "en": "The form sent '{{form}}' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
+           "fr": "Le formulaire envoyé '{{form}}' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
            "ne": "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला।",
-           "es": "No se reconocio el reporte enviado '%(form)'. Por favor intente de nuevo. Si el problema persiste, informe al director.",
+           "es": "No se reconocio el reporte enviado '{{form}}'. Por favor intente de nuevo. Si el problema persiste, informe al director.",
            "sw": ""
        },
        {
            "key": "form_invalid",
-           "en": "The form sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
-           "fr": "Le formulaire envoyé '%(form)' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
+           "en": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
+           "fr": "Le formulaire envoyé '{{form}}' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
            "ne": "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।",
-           "es": "No se completo el reporte '%(form)'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
+           "es": "No se completo el reporte '{{form}}'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
            "sw": ""
        },
        {
            "key": "form_invalid_custom",
-           "en": "The form sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
-           "fr": "Le formulaire envoyé '%(form)' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
+           "en": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
+           "fr": "Le formulaire envoyé '{{form}}' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
            "ne": "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।",
-           "es": "No se completo el reporte '%(form)'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
+           "es": "No se completo el reporte '{{form}}'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
            "sw": ""
        },
        {

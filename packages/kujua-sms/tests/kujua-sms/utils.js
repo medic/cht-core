@@ -665,3 +665,47 @@ exports.labelsMissingLocale = function(test) {
     test.same(expected.headers, out.headers);
     test.done();
 };
+
+exports['no cookies or header; app_settings.locale default of en'] = function(test) {
+    test.expect(1);
+    var req = {},
+        that = {app_settings: {locale:'en'}};
+
+    var info = require('views/lib/appinfo').getAppInfo.call(that, req);
+    test.same(info.locale, 'en');
+    test.done();
+};
+
+exports['kujua_locale cookie will force locale value'] = function(test) {
+    test.expect(1);
+    var req = {cookie: {'kujua_locale': 'fr'}},
+        that = {app_settings: {locale:'en'}};
+
+    var info = require('views/lib/appinfo').getAppInfo.call(that, req);
+    test.same(info.locale, 'fr');
+    test.done();
+};
+
+exports['no cookie with accept-language header sets locale'] = function(test) {
+    test.expect(1);
+    var req = {headers: {"Accept-Language": "sw;q=0.8"}},
+        that = {app_settings: {locale:'en'}};
+
+    var info = require('views/lib/appinfo').getAppInfo.call(that, req);
+    test.same(info.locale, 'sw');
+    test.done();
+};
+
+exports['cookie with accept-language header sets locale'] = function(test) {
+    test.expect(1);
+    var req = {
+            headers: {"Accept-Language": "sw;q=0.8"},
+            cookie: {'kujua_locale': 'fr'}
+        },
+        that = {app_settings: {locale:'en'}};
+
+    var info = require('views/lib/appinfo').getAppInfo.call(that, req);
+    test.same(info.locale, 'fr');
+    test.done();
+};
+

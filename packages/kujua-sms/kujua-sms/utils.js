@@ -466,8 +466,8 @@ exports.addError = function(record, error) {
 
     // replace placeholder strings
     error.message = error.message
-        .replace('%(fields)', error.fields && error.fields.join(', '))
-        .replace('%(form)', form);
+        .replace('{{fields}}', error.fields && error.fields.join(', '))
+        .replace('{{form}}', form);
 
     record.errors ? record.errors.push(error) : record.errors = [error];
 

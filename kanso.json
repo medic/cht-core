@@ -87,15 +87,8 @@
                 "locale": {
                     "title": "Locale",
                     "type": "string",
-                    "je:hint": "enumlabels",
-                    "je:enumlabels": {
-                        "en": "English",
-                        "fr": "French",
-                        "ne": "Nepali",
-                        "es": "Spanish",
-                        "sw": "Swahili"
-                    },
-                    "enum": [ "en", "fr", "ne", "es", "sw" ]
+                    "default": "",
+                    "description": "Default tries to use best option according to browser settings, you can override that for as specific user here. Currently supporting: en, fr, ne, es, and sw."
                 }
             }
         }
@@ -104,6 +97,12 @@
         "description": "Kujua Lite Settings",
         "type": "object",
         "properties": {
+            "locale": {
+                "title": "Locale",
+                "type": "string",
+                "default": "",
+                "description": "Default tries to use best option according to browser settings, you can override that here. Currently supporting: en, fr, ne, es, and sw."
+            },
             "muvuku_webapp_url": {
                 "type": "string",
                 "title": "Muvuku Webapp Url",
@@ -358,6 +357,14 @@
                         "sw": "Jina kijiji"
                     },
                     {
+                        "key": "Clinics",
+                        "en": "Clinics",
+                        "fr": "Cliniques",
+                        "es": "Clínics",
+                        "ne": "",
+                        "sw": "Kliniki ya Mawasiliano Jina"
+                    },
+                    {
                         "key": "Clinic Contact Name",
                         "en": "Clinic Contact Name",
                         "fr": "Clinique Contact Nom",
@@ -372,6 +379,14 @@
                         "es": "Código RC",
                         "ne": "",
                         "sw": "RC Kanuni"
+                    },
+                    {
+                        "key": "Health Centers",
+                        "en": "Health Centers",
+                        "fr": "Centre de santés",
+                        "es": "Centro de Saluds",
+                        "ne": "",
+                        "sw": "Kituo cha Afya cha"
                     },
                     {
                         "key": "Health Center",
@@ -404,6 +419,14 @@
                         "es": "Centro de Salud Teléfono de Contacto",
                         "ne": "",
                         "sw": "Kituo cha Afya cha Mawasiliano Simu"
+                    },
+                    {
+                        "key": "Districts",
+                        "en": "Districts",
+                        "fr": "Districts",
+                        "es": "Distritos",
+                        "ne": "",
+                        "sw": "Wilaya ya"
                     },
                     {
                         "key": "District",
@@ -455,17 +478,17 @@
                     },
                     {
                         "key": "sys.missing_fields",
-                        "en": "Missing or invalid fields: %(fields).",
-                        "fr": "Champs invalides ou manquants: %(fields).",
-                        "es": "Campo invalido o faltante: %(fields).",
+                        "en": "Missing or invalid fields: {{fields}}.",
+                        "fr": "Champs invalides ou manquants: {{fields}}.",
+                        "es": "Campo invalido o faltante: {{fields}}.",
                         "ne": "",
                         "sw": ""
                     },
                     {
                         "key": "missing_fields",
-                        "en": "Missing or invalid fields: %(fields).",
-                        "fr": "Champs invalides ou manquants: %(fields).",
-                        "es": "Campo invalido o faltante: %(fields).",
+                        "en": "Missing or invalid fields: {{fields}}.",
+                        "fr": "Champs invalides ou manquants: {{fields}}.",
+                        "es": "Campo invalido o faltante: {{fields}}.",
                         "ne": "तपाईले फारम पूरा भर्नुभएन। कृपया पुरा गरेर फेरि पठाउन प्रयास गर्नुहोला।",
                         "sw": ""
                     },
@@ -479,33 +502,33 @@
                     },
                     {
                         "key": "sys.form_not_found",
-                        "en": "Form '%(form)' not found.",
-                        "fr": "Formulaire '%(form)' non trouvé",
+                        "en": "Form '{{form}}' not found.",
+                        "fr": "Formulaire '{{form}}' non trouvé",
                         "es": "Forma no encontrada.",
                         "ne": "",
                         "sw": ""
                     },
                     {
                         "key": "form_not_found",
-                        "en": "The form sent '%(form)' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
-                        "fr": "Le formulaire envoyé '%(form)' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
-                        "es": "No se reconocio el reporte enviado '%(form)'. Por favor intente de nuevo. Si el problema persiste, informe al director.",
+                        "en": "The form sent '{{form}}' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
+                        "fr": "Le formulaire envoyé '{{form}}' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
+                        "es": "No se reconocio el reporte enviado '{{form}}'. Por favor intente de nuevo. Si el problema persiste, informe al director.",
                         "ne": "डाटा प्राप्त भएन। कृपया फेरि भरेर प्रयास गर्नुहोला।",
                         "sw": ""
                     },
                     {
                         "key": "form_invalid",
-                        "en": "The form sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
-                        "fr": "Le formulaire envoyé '%(form)' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
-                        "es": "No se completo el reporte '%(form)'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
+                        "en": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
+                        "fr": "Le formulaire envoyé '{{form}}' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
+                        "es": "No se completo el reporte '{{form}}'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
                         "ne": "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।",
                         "sw": ""
                     },
                     {
                         "key": "form_invalid_custom",
-                        "en": "The form sent '%(form)' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
-                        "fr": "Le formulaire envoyé '%(form)' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
-                        "es": "No se completo el reporte '%(form)'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
+                        "en": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
+                        "fr": "Le formulaire envoyé '{{form}}' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
+                        "es": "No se completo el reporte '{{form}}'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
                         "ne": "तपाईले फारम भरेको मिलेन। कृपया फेरि भरेर प्रयास गर्नुहोला।",
                         "sw": ""
                     },
