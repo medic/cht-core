@@ -279,7 +279,7 @@
                     "default": "Invalid patient name and LMP."
                 }
             },
-            "schedules": {
+            "reminders": {
                 "title": "Report Reminders",
                 "type": "array",
                 "items": {
