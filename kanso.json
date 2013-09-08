@@ -287,7 +287,7 @@
                         "form": {
                             "type": "string",
                             "title": "Reminder Form Code",
-                            "description": "What form this reminder is for. E.g., ANC",
+                            "description": "What form this reminder is for. E.g., ANC"
                         },
                         "cron": {
                             "type": "string",
