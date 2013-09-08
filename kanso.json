@@ -243,39 +243,44 @@
                             "description": "The reply to send when the patient ID is not found.",
                             "default": "This message could not be processed as a registration for {{patient_id}} was not found."
                         }
-                    }
+                    },
+                    "type": "object"
                 },
                 "default": []
             },
             "pregnancy_registration": {
-                "form": {
-                    "type": "string",
-                    "title": "Pregnancy Registration Form",
-                    "description": "Form code of a pregnancy registration"
-                },
-                "include_patient_name": {
-                    "type": "string",
-                    "title": "Include Patient Name Message",
-                    "description": "Message to send when patient name needed.",
-                    "default": "Please include patient name."
-                },
-                "invalid_name": {
-                    "type": "string",
-                    "title": "Invalid Name Message",
-                    "description": "Message to send when patient name invalid.",
-                    "default": "Patient name must be under 100 characters long."
-                },
-                "invalid_lmp": {
-                    "type": "string",
-                    "title": "Invalid LMP Message",
-                    "description": "Message to send when LMP is invalid.",
-                    "default": "LMP must be between 0 and 40."
-                },
-                "invalid_values": {
-                    "type": "string",
-                    "title": "Invalid LMP & Name Message",
-                    "description": "Message to send when both LMP and patient name invalid.",
-                    "default": "Invalid patient name and LMP."
+                "title": "Pregnancy Registration",
+                "type": "object",
+                "properties": {
+                    "form": {
+                        "type": "string",
+                        "title": "Pregnancy Registration Form",
+                        "description": "Form code of a pregnancy registration"
+                    },
+                    "include_patient_name": {
+                        "type": "string",
+                        "title": "Include Patient Name Message",
+                        "description": "Message to send when patient name needed.",
+                        "default": "Please include patient name."
+                    },
+                    "invalid_name": {
+                        "type": "string",
+                        "title": "Invalid Name Message",
+                        "description": "Message to send when patient name invalid.",
+                        "default": "Patient name must be under 100 characters long."
+                    },
+                    "invalid_lmp": {
+                        "type": "string",
+                        "title": "Invalid LMP Message",
+                        "description": "Message to send when LMP is invalid.",
+                        "default": "LMP must be between 0 and 40."
+                    },
+                    "invalid_values": {
+                        "type": "string",
+                        "title": "Invalid LMP & Name Message",
+                        "description": "Message to send when both LMP and patient name invalid.",
+                        "default": "Invalid patient name and LMP."
+                    }
                 }
             },
             "reminders": {
@@ -306,7 +311,8 @@
                             "description": "The text of the message. Has the substitutions: week, year",
                             "default": "Your reminder here."
                         }
-                    }
+                    },
+                    "type": "object"
                 }
             },
             "task_regimes": {
