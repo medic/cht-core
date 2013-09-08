@@ -207,8 +207,8 @@ var getSMSResponse = function(doc, info) {
         if (/sys\./.test(err.code)) {
             var user_error_code = err.code.replace('sys.','');
             var m = info.translate(user_error_code, locale)
-                    .replace('%(form)', doc.form)
-                    .replace('%(fields)', err.fields && err.fields.join(', '));
+                    .replace('{{form}}', doc.form)
+                    .replace('{{fields}}', err.fields && err.fields.join(', '));
             // only send error message if defined and had a translation,
             // translate will return the key if there are no translations
             // defined.
