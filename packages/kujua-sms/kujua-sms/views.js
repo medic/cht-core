@@ -38,6 +38,7 @@ exports.contacts = {
             contactName = contact && contact.name,
             code = contact && contact.rc_code,
             phone = contact && contact.phone,
+            strippedPhone = phone && phone.replace(/^\+/, ''),
             result;
 
         function emitWords(district) {
@@ -55,6 +56,9 @@ exports.contacts = {
             }
             if (phone) {
                 emit([district, phone], doc._id);
+            }
+            if (strippedPhone && strippedPhone !== phone) {
+                emit([district, strippedPhone], doc._id);
             }
             if (code) {
                 emit([district, code], doc._id);
