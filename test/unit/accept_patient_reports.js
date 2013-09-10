@@ -4,6 +4,25 @@ var _ = require('underscore'),
     transition = require('../../transitions/accept_patient_reports'),
     utils = require('../../lib/utils');
 
+exports.tearDown = function(callback) {
+    if (transition.getAcceptedReports.restore)
+        transition.getAcceptedReports.restore();
+
+    if (transition.getPatientRegForm.restore)
+        transition.getPatientRegForm.restore();
+
+    if (transition.silenceReminders.restore)
+        transition.silenceReminders.restore();
+
+    if (transition.matchRegistrations.restore)
+        transition.matchRegistrations.restore();
+
+    if (utils.getRegistrations.restore)
+        utils.getRegistrations.restore();
+
+    callback();
+}
+
 exports['signature'] = function(test) {
     test.ok(_.isFunction(transition.onMatch));
     test.equals(transition.onMatch.length, 3);
@@ -34,18 +53,17 @@ exports['onMatch returns false if form not included'] = function(test) {
     }, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, false);
-
-        transition.getAcceptedReports.restore();
-
         test.done();
     });
 }
 
 exports['onMatch with matching form calls getRegistrations and then matchRegistrations'] = function(test) {
+
     var getRegistrations,
         matchRegistrations;
 
     sinon.stub(transition, 'getAcceptedReports').returns([ { form: 'x' }, { form: 'z' } ]);
+    sinon.stub(transition, 'getPatientRegForm').returns([ { form: 'reg' } ]);
 
     getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     matchRegistrations = sinon.stub(transition, 'matchRegistrations').callsArgWithAsync(1, null, true);
@@ -59,10 +77,6 @@ exports['onMatch with matching form calls getRegistrations and then matchRegistr
 
         test.equals(getRegistrations.called, true);
         test.equals(matchRegistrations.called, true);
-
-        transition.getAcceptedReports.restore();
-        getRegistrations.restore();
-        matchRegistrations.restore();
 
         test.done();
     });
@@ -111,8 +125,10 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
         }
     }, function(err, complete) {
         test.ok(doc.tasks);
-        test.equals(_.first(_.first(doc.tasks).messages).message, 'Thank you, woot. ANC visit for x has been recorded.');
-
+        test.equals(
+            _.first(_.first(doc.tasks).messages).message,
+            'Thank you, woot. ANC visit for x has been recorded.'
+        );
         test.done();
     });
 }
@@ -139,8 +155,6 @@ exports['patient id failing validation adds error'] = function(test) {
         test.ok(doc.errors);
         test.equals(doc.errors[0].message, 'bad id xxxx');
 
-        transition.getAcceptedReports.restore();
-
         test.done();
     });
 }
@@ -158,7 +172,6 @@ exports['adding silence_type to matchRegistrations calls silenceReminders'] = fu
         test.equals(complete, true);
         test.equals(transition.silenceReminders.callCount, 3);
 
-        transition.silenceReminders.restore();
         test.done();
     });
 };

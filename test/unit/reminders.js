@@ -468,8 +468,8 @@ exports['getReminderWindow calls view looking for old events and returns date fo
         test.ok(viewOpts.startkey);
         test.same(viewOpts.startkey[0], 'XXX');
 
-        // time within 10ms
-        test.same(Math.floor(moment(viewOpts.startkey[1]).valueOf() / 10), Math.floor(moment().valueOf() / 10));
+        // time within 1000ms
+        test.same(Math.floor(moment(viewOpts.startkey[1]).valueOf() / 1000), Math.floor(moment().valueOf() / 1000));
 
         test.same(viewOpts.endkey, ['XXX', now.clone().startOf('hour').subtract(1, 'day').toISOString()]);
         test.equals(viewOpts.descending, true);

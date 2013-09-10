@@ -18,6 +18,10 @@ module.exports = {
             doc.related_entities.clinic.contact.phone
         );
     },
+    getPatientRegForm: function() {
+        var conf = config.get('pregnancy_registration');
+        return conf && conf.form;
+    },
     getAcceptedReports: function() {
         return config.get('patient_reports') || [];
     },
@@ -93,6 +97,9 @@ module.exports = {
         }
     },
     validatePatientId: function(report, doc) {
+
+        report = report || {};
+
         _.defaults(report, {
             invalid_patient_id: "Patient ID '{{patient_id}}' is invalid. Please correct this and try again."
         });
@@ -106,41 +113,45 @@ module.exports = {
     handleReport: function(options, callback) {
         var db = options.db,
             doc = options.doc,
-            report = options.report;
+            report = options.report,
+            reg_form = options.reg_form;
 
-        if (module.exports.validatePatientId(report, doc)) {
-            utils.getRegistrations({
-                db: db,
-                id: doc.patient_id
-            }, function(err, registrations) {
-                module.exports.matchRegistrations({
-                    doc: doc,
-                    registrations: registrations,
-                    report: report
-                }, callback);
-            });
-        } else {
-            messages.addError(doc, report.invalid_patient_id);
-            callback(null, true);
-        }
+        utils.getRegistrations({
+            db: db,
+            id: doc.patient_id,
+            form: reg_form
+        }, function(err, registrations) {
+            module.exports.matchRegistrations({
+                doc: doc,
+                registrations: registrations,
+                report: report
+            }, callback);
+        });
     },
     onMatch: function(change, db, callback) {
         var doc = change.doc,
             reports = module.exports.getAcceptedReports(),
+            reg_form = module.exports.getPatientRegForm(),
             report;
 
         report = _.findWhere(reports, {
             form: doc.form
         });
 
-        if (report) {
-            module.exports.handleReport({
-                db: db,
-                doc: doc,
-                report: report
-            }, callback);
-        } else {
-            callback(null, false);
+        if (!module.exports.validatePatientId(report, doc)) {
+            messages.addError(doc, report.invalid_patient_id);
+            return callback(null, true);
         }
+
+        if (!reg_form || !report) {
+            return callback(null, false);
+        }
+
+        module.exports.handleReport({
+            db: db,
+            doc: doc,
+            report: report,
+            reg_form: reg_form
+        }, callback);
     }
 };
