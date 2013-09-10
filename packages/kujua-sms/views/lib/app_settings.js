@@ -87,6 +87,14 @@ module.exports = {
            "sw": "RC Kanuni"
        },
        {
+           "key": "Health Centers",
+           "en": "Health Centers",
+           "fr": "Centres de santé",
+           "es": "Centros de Salud",
+           "ne": "स्वास्थ्य संस्था",
+           "sw": "Kituo cha Afya cha"
+       },
+       {
            "key": "Health Center",
            "en": "Health Center",
            "fr": "Centre de santé",
