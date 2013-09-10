@@ -8,7 +8,15 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc) {
-        return Boolean(doc.form && doc.reported_date && doc.patient_id && doc.related_entities && doc.related_entities.clinic);
+        return Boolean(
+            doc.form &&
+            doc.patient_id &&
+            doc.reported_date &&
+            doc.related_entities &&
+            doc.related_entities.clinic &&
+            doc.related_entities.clinic.contact &&
+            doc.related_entities.clinic.contact.phone
+        );
     },
     getAcceptedReports: function() {
         return config.get('patient_reports') || [];

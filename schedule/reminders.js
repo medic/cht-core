@@ -163,7 +163,7 @@ module.exports = {
             floor = now.clone().startOf('hour').subtract(1, 'day'),
             form = options.reminder && options.reminder.form;
 
-        db.view('kujua-lite', 'sent_reminders', {
+        db.view('kujua-sentinel', 'sent_reminders', {
             descending: true,
             limit: 1,
             startkey: [form, now.toISOString()],

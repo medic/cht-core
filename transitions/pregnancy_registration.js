@@ -7,12 +7,19 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc) {
-        var valid = doc.form && (!doc.patient_id || !doc.lmp_date);
-
-        return !!valid;
+        return Boolean(
+            doc.form &&
+            doc.patient_name &&
+            doc.related_entities &&
+            doc.related_entities.clinic &&
+            doc.related_entities.clinic.contact &&
+            doc.related_entities.clinic.contact.phone &&
+            doc.weeks_since_lmp || doc.last_menstrual_period &&
+            (!doc.patient_id || !doc.lmp_date)
+        );
     },
     validateLMP: function(doc) {
-        var lmp = Number(doc.lmp);
+        var lmp = Number(doc.weeks_since_lmp || doc.last_menstrual_period);
 
         return lmp >= 0 && lmp <= 40; // this will return false if NaN
     },

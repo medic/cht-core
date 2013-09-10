@@ -1,9 +1,3 @@
-exports.update_clinics = function(doc) {
-    return doc.form &&
-        doc.related_entities &&
-        !doc.related_entities.clinic;
-};
-
 exports.update_scheduled_reports = function(doc) {
     return doc.form &&
         doc.year &&

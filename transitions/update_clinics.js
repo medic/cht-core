@@ -9,6 +9,11 @@ var _ = require('underscore');
  * good place to get phone numbers from.
  */
 module.exports = {
+    filter: function(doc) {
+        return doc.form &&
+            doc.related_entities &&
+            !doc.related_entities.clinic;
+    },
     onMatch: function(change, db, callback) {
         var self = module.exports,
             doc = change.doc,
