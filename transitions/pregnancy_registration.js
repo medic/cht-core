@@ -14,12 +14,17 @@ module.exports = {
             doc.related_entities.clinic &&
             doc.related_entities.clinic.contact &&
             doc.related_entities.clinic.contact.phone &&
-            doc.weeks_since_lmp || doc.last_menstrual_period &&
+            module.exports.getWeeksSinceLMP(doc) &&
             (!doc.patient_id || !doc.lmp_date)
         );
     },
+    getWeeksSinceLMP: function(doc) {
+        return Number(
+            doc.weeks_since_lmp || doc.last_menstrual_period || doc.lmp
+        );
+    },
     validateLMP: function(doc) {
-        var lmp = Number(doc.weeks_since_lmp || doc.last_menstrual_period);
+        var lmp = module.exports.getWeeksSinceLMP(doc);
 
         return lmp >= 0 && lmp <= 40; // this will return false if NaN
     },
@@ -36,7 +41,7 @@ module.exports = {
         return !!doc.getid;
     },
     setDate: function(doc) {
-        var lmp = doc.lmp,
+        var lmp = module.exports.getWeeksSinceLMP(doc),
             start = moment().startOf('week');
 
         start.subtract(Number(lmp), 'weeks');

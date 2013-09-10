@@ -48,9 +48,8 @@ module.exports = {
             _.each(['minutes', 'hours', 'days', 'weeks', 'months', 'years'], function(unit) {
                 times[unit] = now.diff(due, unit);
             });
-        } else {
-            return {};
         }
+        return times;
     },
     alreadyRun: function(doc, type) {
         var scheduled_task,
