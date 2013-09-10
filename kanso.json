@@ -364,7 +364,7 @@
                                     "offset": {
                                         "type": "string",
                                         "title": "Send Message After",
-                                        "description": "This value is added to the timestamp property value to determine when to send the reminder. It supports minutes, hours, weeks, months and years. e.g. 12 weeks",
+                                        "description": "This value is added to the timestamp property value to determine when to send the reminder. It supports minutes, hours, days, weeks, months and years. e.g. 12 weeks",
                                         "default": "12 weeks"
                                     }
                                 },
