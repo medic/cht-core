@@ -46,7 +46,7 @@ module.exports = {
 
         if (due && now) {
             _.each(['minutes', 'hours', 'days', 'weeks', 'months', 'years'], function(unit) {
-                times[unit] = now.diff(due, unit);
+                times[unit] = moment(due).diff(now, unit);
             });
         }
         return times;
