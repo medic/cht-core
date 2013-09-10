@@ -146,6 +146,42 @@ exports['regime generates two scheduled messages'] = function(test) {
     test.done();
 }
 
+exports['regime does not generate scheduled messages in past'] = function(test) {
+    var added,
+        doc;
+
+    doc = {
+        form: 'x',
+        serial_number: 'abc',
+        lmp_date: moment().subtract(12, 'weeks').toISOString()
+    };
+
+    added = transition.addRegime(doc, {
+        form: 'x',
+        key: 'duckland',
+        messages: [
+            {
+                group: 1,
+                offset: '1 week',
+                message: "This is for serial number {{serial_number}}."
+            },
+            {
+                group: 4,
+                offset: '20 weeks',
+                message: "This is for serial number {{serial_number}}."
+            }
+        ],
+        start_from: 'lmp_date'
+    });
+
+    test.equals(added, true);
+    test.ok(doc.scheduled_tasks);
+    test.equals(doc.scheduled_tasks.length, 1);
+    test.equals(moment(doc.scheduled_tasks[0].due).diff(doc.lmp_date, 'weeks'), 20);
+
+    test.done();
+}
+
 exports['regime with registration_response creates message task'] = function(test) {
     var added,
         doc;

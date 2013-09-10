@@ -96,16 +96,20 @@ module.exports = {
                 offset = module.exports.getOffset(msg.offset);
 
             if (offset) {
-                due = start.clone().add(offset).toISOString();
+                due = start.clone().add(offset);
+                if (due < now) {
+                    // don't schedule messages in the past
+                    return;
+                }
                 messages.scheduleMessage(doc, {
-                    due: due,
+                    due: due.toISOString(),
                     message: msg.message,
                     group: msg.group,
                     type: regime.key
                 });
             } else {
                 // bad offset, skip this msg
-                console.log("%s cannot be parsed as a valid offset. Skipping this msg of %s regime.", msg.offset, regime.key);
+                console.error("%s cannot be parsed as a valid offset. Skipping this msg of %s regime.", msg.offset, regime.key);
             }
         });
 
