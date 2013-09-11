@@ -62,7 +62,7 @@
         "underscore-string": null,
         "users": null,
         "cookies": null,
-        "moment": null,
+        "moment": ">=2.1.0",
         "kanso-app-settings": null,
         "garden-app-support": null,
         "locale": null
