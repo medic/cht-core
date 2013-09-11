@@ -55,6 +55,21 @@ queue = async.queue(function(job, callback) {
 }, 1);
 
 module.exports = {
+    // determines whether a transition is okay to run on a document
+    canRun: function(transition, key, doc) {
+        // repeatable and has transitions object
+        // returns true if revs don't match
+        if (transition.repeatable && doc.transitions && doc.transitions[key]) {
+            return parseInt(doc._rev) !== doc.transitions[key].last_rev;
+        // not repeatable and has transitions object
+        // return by key value being ok
+        } else if (!doc.repeatable && doc.transitions && doc.transitions[key]) {
+            return !doc.transitions[key].ok;
+        // otherwise, can run
+        } else {
+            return true;
+        }
+    },
     attachTransition: function(transition, key) {
         var db = require('../db'),
             filter,
@@ -80,14 +95,11 @@ module.exports = {
 
             // get the latest document
             db.getDoc(change.id, function(err, doc) {
-
-                var transitions = doc.transitions || {};
-
                 if (err || !doc) {
                     return console.error('sentinel getDoc failed with error: %s', err);
                 }
 
-                if (transition.repeatable || !transitions[key] || !transitions[key].ok) {
+                if (module.exports.canRun(transition, key, doc)) {
                     // modify reported_date if we are running in
                     // synthetic date mode
                     if (doc.reported_date && date.isSynthetic()) {
@@ -136,7 +148,8 @@ module.exports = {
         });
 
         doc.transitions[key] = {
-            ok: !err
+            ok: !err,
+            last_rev: parseInt(doc._rev) + 1 // because it's the revision AFTER a save
         };
 
         db.getDoc(doc._id, function(err, latest) {
