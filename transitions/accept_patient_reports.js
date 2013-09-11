@@ -4,7 +4,8 @@ var _ = require('underscore'),
     messages = require('../lib/messages'),
     moment = require('moment'),
     utils = require('../lib/utils'),
-    date = require('../date');
+    date = require('../date'),
+    db = require('../db');
 
 module.exports = {
     filter: function(doc) {
@@ -30,10 +31,11 @@ module.exports = {
             messages.addReply(doc, report.report_accepted);
             if (report.silence_type) {
                 async.forEach(registrations, function(registration, callback) {
+                    db = options.db || db;
                     module.exports.silenceReminders({
-                        db: options.db,
+                        db: db,
                         reported_date: doc.reported_date,
-                        registration: registration,
+                        registration: registration.doc,
                         silence_for: report.silence_for,
                         type: report.silence_type
                     }, callback);
@@ -49,14 +51,15 @@ module.exports = {
         }
     },
     silenceReminders: function(options, callback) {
-        var db = options.db,
-            registration = options.registration,
+        var registration = options.registration,
             type = options.type,
             toClear,
             silenceDuration = date.getDuration(options.silence_for),
             reportedDate = moment(options.reported_date),
             silenceUntil = reportedDate.clone(),
             first;
+
+        db = options.db || db;
 
         if (silenceDuration) {
             silenceUntil.add(silenceDuration);
@@ -107,9 +110,10 @@ module.exports = {
         }
     },
     handleReport: function(options, callback) {
-        var db = options.db,
-            doc = options.doc,
+        var doc = options.doc,
             report = options.report;
+
+        db = options.db || db;
 
         utils.getRegistrations({
             db: db,
@@ -122,10 +126,12 @@ module.exports = {
             }, callback);
         });
     },
-    onMatch: function(change, db, callback) {
+    onMatch: function(change, _db, callback) {
         var doc = change.doc,
             reports = module.exports.getAcceptedReports(),
             report;
+
+        db = _db;
 
         report = _.findWhere(reports, {
             form: doc.form
