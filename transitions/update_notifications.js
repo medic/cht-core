@@ -1,4 +1,5 @@
-var config = require('../config'),
+var async = require('async'),
+    config = require('../config'),
     mustache = require('mustache'),
     utils = require('../lib/utils'),
     _ = require('underscore'),
