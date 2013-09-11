@@ -71,5 +71,5 @@ exports.rules = [
             descending: 'true'
         }
     },
-    {from: '/app_settings.json', to: '_show/app_settings' }
+    {from: '/app_settings/:doc', to: '_show/app_settings' }
 ];
