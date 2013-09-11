@@ -358,8 +358,8 @@
                                     "message": {
                                         "type": "string",
                                         "title": "Message Text",
-                                        "description": "e.g. Greetings,{{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
-                                        "default": "Greetings,{{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility."
+                                        "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
+                                        "default": "Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility."
                                     },
                                     "group": {
                                         "type": "integer",
