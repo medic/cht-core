@@ -18,10 +18,6 @@ module.exports = {
             doc.related_entities.clinic.contact.phone
         );
     },
-    getPatientRegForm: function() {
-        var conf = config.get('pregnancy_registration');
-        return conf && conf.form;
-    },
     getAcceptedReports: function() {
         return config.get('patient_reports') || [];
     },
@@ -113,13 +109,11 @@ module.exports = {
     handleReport: function(options, callback) {
         var db = options.db,
             doc = options.doc,
-            report = options.report,
-            reg_form = options.reg_form;
+            report = options.report;
 
         utils.getRegistrations({
             db: db,
-            id: doc.patient_id,
-            form: reg_form
+            id: doc.patient_id
         }, function(err, registrations) {
             module.exports.matchRegistrations({
                 doc: doc,
@@ -131,7 +125,6 @@ module.exports = {
     onMatch: function(change, db, callback) {
         var doc = change.doc,
             reports = module.exports.getAcceptedReports(),
-            reg_form = module.exports.getPatientRegForm(),
             report;
 
         report = _.findWhere(reports, {
@@ -143,15 +136,14 @@ module.exports = {
             return callback(null, true);
         }
 
-        if (!reg_form || !report) {
+        if (!report) {
             return callback(null, false);
         }
 
         module.exports.handleReport({
             db: db,
             doc: doc,
-            report: report,
-            reg_form: reg_form
+            report: report
         }, callback);
     }
 };

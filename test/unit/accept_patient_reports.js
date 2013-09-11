@@ -8,9 +8,6 @@ exports.tearDown = function(callback) {
     if (transition.getAcceptedReports.restore)
         transition.getAcceptedReports.restore();
 
-    if (transition.getPatientRegForm.restore)
-        transition.getPatientRegForm.restore();
-
     if (transition.silenceReminders.restore)
         transition.silenceReminders.restore();
 
@@ -19,6 +16,9 @@ exports.tearDown = function(callback) {
 
     if (utils.getRegistrations.restore)
         utils.getRegistrations.restore();
+
+    if (utils.getPatientRegForm.restore)
+        utils.getPatientRegForm.restore();
 
     callback();
 }
@@ -63,7 +63,7 @@ exports['onMatch with matching form calls getRegistrations and then matchRegistr
         matchRegistrations;
 
     sinon.stub(transition, 'getAcceptedReports').returns([ { form: 'x' }, { form: 'z' } ]);
-    sinon.stub(transition, 'getPatientRegForm').returns([ { form: 'reg' } ]);
+    sinon.stub(utils, 'getPatientRegForm').returns([ { form: 'reg' } ]);
 
     getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     matchRegistrations = sinon.stub(transition, 'matchRegistrations').callsArgWithAsync(1, null, true);
