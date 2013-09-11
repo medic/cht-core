@@ -169,13 +169,18 @@ module.exports = {
             startkey: [form, now.toISOString()],
             endkey: [form, floor.toISOString()]
         }, function(err, result) {
-            var row = _.first(result.rows);
+            var row;
 
-            if (row) {
-                // if there's a result, return that as the floor
-                callback(null, moment(row.key[1]));
+            if (err) {
             } else {
-                callback(null, floor);
+                row = _.first(result.rows);
+
+                if (row) {
+                    // if there's a result, return that as the floor
+                    callback(null, moment(row.key[1]));
+                } else {
+                    callback(null, floor);
+                }
             }
         });
     }
