@@ -3,7 +3,8 @@ var _ = require('underscore'),
     messages = require('../lib/messages'),
     ids = require('../lib/ids'),
     moment = require('moment'),
-    config = require('../config');
+    config = require('../config'),
+    date = require('../date');
 
 module.exports = {
     filter: function(doc) {
@@ -42,7 +43,7 @@ module.exports = {
     },
     setDate: function(doc) {
         var lmp = module.exports.getWeeksSinceLMP(doc),
-            start = moment().startOf('week');
+            start = moment(date.getDate()).startOf('week');
 
         start.subtract(Number(lmp), 'weeks');
 
