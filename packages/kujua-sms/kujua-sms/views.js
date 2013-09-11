@@ -345,7 +345,7 @@ exports.data_records_by_patient_id_and_reported_date = {
     map: function(doc) {
         if (doc.type === 'data_record') {
             if (doc.patient_id)
-                emit([doc.patient_id, doc.reported_date, doc._id], doc);
+                emit([String(doc.patient_id), doc.reported_date, doc._id], doc);
         }
     }
 };
@@ -358,7 +358,7 @@ exports.data_records_by_district_patient_id_and_reported_date = {
         if (doc.type === 'data_record' && doc.patient_id) {
             dh = objectpath.get(doc, 'related_entities.clinic.parent.parent') || { _id: null };
 
-            emit([dh._id, doc.patient_id, doc.reported_date, doc._id], doc);
+            emit([dh._id, String(doc.patient_id), doc.reported_date, doc._id], doc);
         }
     }
 };
