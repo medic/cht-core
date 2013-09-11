@@ -87,8 +87,16 @@
                 "locale": {
                     "title": "Locale",
                     "type": "string",
-                    "default": "",
-                    "description": "Default tries to use best option according to browser settings, you can override that for as specific user here. Currently supporting: en, fr, ne, es, and sw."
+                    "description": "Default tries to use best option according to browser settings, you can override that here.",
+                    "enum": ["en", "es", "fr", "ne", "sw"],
+                    "je:hint": "enumlabels",
+                    "je:enumlabels": {
+                        "en": "English",
+                        "es": "Spanish",
+                        "fr": "French",
+                        "ne": "Nepalese",
+                        "sw": "Swahili"
+                    }
                 }
             }
         }
@@ -100,8 +108,16 @@
             "locale": {
                 "title": "Locale",
                 "type": "string",
-                "default": "",
-                "description": "Default tries to use best option according to browser settings, you can override that here. Currently supporting: en, fr, ne, es, and sw."
+                "description": "Default tries to use best option according to browser settings, you can override that here.",
+                "enum": ["en", "es", "fr", "ne", "sw"],
+                "je:hint": "enumlabels",
+                "je:enumlabels": {
+                    "en": "English",
+                    "es": "Spanish",
+                    "fr": "French",
+                    "ne": "Nepalese",
+                    "sw": "Swahili"
+                }
             },
             "muvuku_webapp_url": {
                 "type": "string",
@@ -182,25 +198,29 @@
                         "type": "string",
                         "title": "Administrator Mute Message",
                         "description": "The message to place on the form for administration attention.",
-                        "default": "ON"
+                        "default": "{{chw_name}} {{chw_phone}} has deactivated notifications on patient id {{patient_id}}.",
+                        "je:hint": "textarea"
                     },
                     "on_mute_message": {
                         "type": "string",
                         "title": "On Mute Message",
                         "description": "The message to send when stopping notifications.",
-                        "default": "Thank you. Notifications for {{patient_id}} have been stopped."
+                        "default": "Thank you. Notifications for {{patient_id}} have been stopped.",
+                        "je:hint": "textarea"
                     },
                     "on_unmute_message": {
                         "type": "string",
                         "title": "On Resume Message",
                         "description": "The message to send when resuming notifications.",
-                        "default": "Thank you. Notifications for {{patient_id}} are resumed."
+                        "default": "Thank you. Notifications for {{patient_id}} are resumed.",
+                        "je:hint": "textarea"
                     },
                     "patient_not_found": {
                         "type": "string",
                         "title": "Patient Not Found Message",
                         "description": "The message to send when the patient is not found for a notification change.",
-                        "default": "Could not find patient {{patient_id}}."
+                        "default": "Could not find patient {{patient_id}}.",
+                        "je:hint": "textarea"
                     }
                 }
             },
@@ -230,7 +250,8 @@
                             "type": "string",
                             "title": "Report Accepted Message",
                             "description": "Message to send when the report has been accepted.",
-                            "default": "Thank you, {{contact_name}}. Your report for {{patient_id}} has been processed."
+                            "default": "Thank you, {{contact_name}}. Your report for {{patient_id}} has been processed.",
+                            "je:hint": "textarea"
                         },
                         "silence_type": {
                             "type": "string",
@@ -241,13 +262,14 @@
                             "type": "string",
                             "title": "Silence Messages For",
                             "description": "Silence the message type for this long. Uses momentjs.com syntax, e.g. '1 week'.",
-                            "default": "3 days"
+                            "default": "25 days"
                         },
                         "registration_not_found": {
                             "type": "string",
                             "title": "Registration Not Found Message",
                             "description": "The reply to send when the patient ID is not found.",
-                            "default": "This message could not be processed as a registration for {{patient_id}} was not found."
+                            "default": "This message could not be processed as a registration for {{patient_id}} was not found.",
+                            "je:hint": "textarea"
                         }
                     },
                     "type": "object"
@@ -267,25 +289,29 @@
                         "type": "string",
                         "title": "Include Patient Name Message",
                         "description": "Message to send when patient name needed.",
-                        "default": "Please include patient name."
+                        "default": "Please include patient name.",
+                        "je:hint": "textarea"
                     },
                     "invalid_name": {
                         "type": "string",
                         "title": "Invalid Name Message",
                         "description": "Message to send when patient name invalid.",
-                        "default": "Patient name must be under 100 characters long."
+                        "default": "Patient name must be under 100 characters long.",
+                        "je:hint": "textarea"
                     },
                     "invalid_lmp": {
                         "type": "string",
                         "title": "Invalid LMP Message",
                         "description": "Message to send when LMP is invalid.",
-                        "default": "LMP must be between 0 and 40."
+                        "default": "LMP must be between 0 and 40.",
+                        "je:hint": "textarea"
                     },
                     "invalid_values": {
                         "type": "string",
                         "title": "Invalid LMP & Name Message",
                         "description": "Message to send when both LMP and patient name invalid.",
-                        "default": "Invalid patient name and LMP."
+                        "default": "Please re-submit and include a valid patient name and LMP value.",
+                        "je:hint": "textarea"
                     }
                 }
             },
@@ -315,7 +341,8 @@
                             "type": "string",
                             "title": "Reminder Text",
                             "description": "The text of the message. Has the substitutions: week, year",
-                            "default": "Your reminder here."
+                            "default": "Your reminder here.",
+                            "je:hint": "textarea"
                         }
                     },
                     "type": "object"
@@ -348,7 +375,8 @@
                             "type": "string",
                             "title": "Registration response message",
                             "description": "The response message sent out when a schedule is created. e.g. Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. ANC visit is needed in {{weeks}} weeks.",
-                            "default": "Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. ANC visit is needed in {{weeks}} weeks."
+                            "default": "Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. ANC visit is needed in {{weeks}} weeks.",
+                            "je:hint": "textarea"
                         },
                         "messages": {
                             "type": "array",
@@ -359,7 +387,8 @@
                                         "type": "string",
                                         "title": "Message Text",
                                         "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
-                                        "default": "Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility."
+                                        "default": "Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
+                                        "je:hint": "textarea"
                                     },
                                     "group": {
                                         "type": "integer",
@@ -471,27 +500,32 @@
                         "en": {
                             "type": "string",
                             "title": "English (Default)",
-                            "default": ""
+                            "default": "",
+                            "je:hint": "textarea"
                         },
                         "fr": {
                             "type": "string",
                             "title": "Français",
-                            "default": ""
+                            "default": "",
+                            "je:hint": "textarea"
                         },
                         "ne": {
                             "type": "string",
                             "title": "Nepalese",
-                            "default": ""
+                            "default": "",
+                            "je:hint": "textarea"
                         },
                         "es": {
                             "type": "string",
                             "title": "Spanish",
-                            "default": ""
+                            "default": "",
+                            "je:hint": "textarea"
                         },
                         "sw": {
                             "type": "string",
                             "title": "Swahili",
-                            "default": ""
+                            "default": "",
+                            "je:hint": "textarea"
                         }
                     },
                     "type": "object"
