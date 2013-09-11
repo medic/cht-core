@@ -87,7 +87,7 @@ exports.makeDataRecordOriginal = function(doc) {
 };
 
 function formatDate(timestamp, format) {
-    format = format || 'DD, MMM YYYY, HH:mm:ss ZZ';
+    format = format || 'ddd DD, MMM YYYY, HH:mm:ss ZZ';
     return moment(timestamp).format(format);
 };
 
