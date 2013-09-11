@@ -22,15 +22,17 @@ exports.getAppInfo = function(req) {
      */
     function getSettings(req) {
         var settings = {},
-            locale = require('locale');
+            locale = require('locale'),
+            baseURL = require('duality/core').getBaseURL();
+
 
         if (this.app_settings) {
             settings = this.app_settings;
         } else if (typeof(window) === 'object' && window.jQuery) {
             settings = JSON.parse(
                 window.jQuery.ajax({
-                    type: "GET",
-                    url: require('duality/core').getBaseURL() + '/app_settings.json',
+                    type: 'GET',
+                    url: baseURL + '/app_settings/_design%2Fkujua-lite',
                     async: false //synchronous request
                 }).responseText
             );
