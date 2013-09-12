@@ -55,6 +55,7 @@ module.exports = {
                     messages.addReply(doc, options.on_mute_message);
                     if (options.confirm_deactivation) {
                         messages.addError(doc, options.confirm_deactivation_message);
+                        return callback(null, true);
                     }
                 } else {
                     messages.addReply(doc, options.on_unmute_message);
