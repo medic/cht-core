@@ -3,9 +3,9 @@ var _ = require('underscore'),
     config = require('../config'),
     messages = require('../lib/messages'),
     moment = require('moment'),
+    pupil = require('pupil'),
     utils = require('../lib/utils'),
-    date = require('../date'),
-    db = require('../db');
+    date = require('../date');
 
 module.exports = {
     filter: function(doc) {
@@ -13,14 +13,32 @@ module.exports = {
             doc.form &&
             doc.patient_id &&
             doc.reported_date &&
-            doc.related_entities &&
-            doc.related_entities.clinic &&
-            doc.related_entities.clinic.contact &&
-            doc.related_entities.clinic.contact.phone
+            utils.getClinicPhone(doc)
         );
     },
     getAcceptedReports: function() {
         return config.get('patient_reports') || [];
+    },
+    silenceRegistrations: function(options, callback) {
+        var doc = options.doc,
+            report = options.report,
+            registrations = options.registrations;
+
+        if (report.silence_type) {
+            async.forEach(registrations, function(registration, callback) {
+                module.exports.silenceReminders({
+                    db: options.db,
+                    reported_date: options.reported_date,
+                    registration: registration,
+                    silence_for: report.silence_for,
+                    type: report.silence_type
+                }, callback);
+            }, function(err) {
+                callback(err, true);
+            });
+        } else {
+            callback(null, true);
+        }
     },
     matchRegistrations: function(options, callback) {
         var registrations = options.registrations,
@@ -29,44 +47,32 @@ module.exports = {
 
         if (registrations.length) {
             messages.addReply(doc, report.report_accepted);
-            if (report.silence_type) {
-                async.forEach(registrations, function(registration, callback) {
-                    db = options.db || db;
-                    module.exports.silenceReminders({
-                        db: db,
-                        reported_date: doc.reported_date,
-                        registration: registration.doc,
-                        silence_for: report.silence_for,
-                        type: report.silence_type
-                    }, callback);
-                }, function(err) {
-                    callback(err, true);
-                });
-            } else {
-                callback(null, true);
-            }
+            module.exports.silenceRegistrations({
+                db: options.db,
+                report: report,
+                reported_date: doc.reported_date,
+                registrations: registrations
+            }, callback);
         } else {
             messages.addError(doc, report.registration_not_found);
             callback(null, true);
         }
     },
-    silenceReminders: function(options, callback) {
+    // find the messages to clear
+    findToClear: function(options) {
         var registration = options.registration,
-            type = options.type,
-            toClear,
             silenceDuration = date.getDuration(options.silence_for),
             reportedDate = moment(options.reported_date),
-            silenceUntil = reportedDate.clone(),
-            first;
-
-        db = options.db || db;
+            type = options.type,
+            first,
+            db = options.db,
+            silenceUntil = reportedDate.clone();
 
         if (silenceDuration) {
             silenceUntil.add(silenceDuration);
         }
 
-        // filter scheduled message by group
-        toClear = _.filter(utils.filterScheduledMessages(registration, type), function(msg) {
+        return _.filter(utils.filterScheduledMessages(registration, type), function(msg) {
             var due = moment(msg.due),
                 // due is after it was reported, but before the silence cutoff; also 'scheduled'
                 matches = due >= reportedDate && due <= silenceUntil && msg.state === 'scheduled';
@@ -83,6 +89,14 @@ module.exports = {
                 return matches;
             }
         });
+    },
+    silenceReminders: function(options, callback) {
+        var registration = options.registration,
+            toClear,
+            db = options.db;
+
+        // filter scheduled message by group
+        toClear = module.exports.findToClear(options);
 
         // captured all to clear; now "clear" them
         _.each(toClear, function(msg) {
@@ -95,25 +109,57 @@ module.exports = {
             callback(null);
         }
     },
-    validatePatientId: function(report, doc) {
+    getMessages: function(validations) {
+        return _.reduce(validations, function(memo, validation) {
+            if (validation.property && validation.message) {
+                memo[validation.property] = validation.message;
+            }
+
+            return memo;
+        }, {});
+    },
+    getRules: function(validations) {
+        return _.reduce(validations, function(memo, validation) {
+            if (validation.property && validation.rule) {
+                memo[validation.property] = validation.rule;
+            }
+
+            return memo;
+        }, {});
+    },
+    extractErrors: function(result, messages) {
+        return _.reduce(result, function(memo, valid, key) {
+            if (!valid) {
+                memo.push(messages[key]);
+            }
+            return memo;
+        }, []);
+    },
+    validate: function(report, doc) {
+        var messages,
+            result,
+            rules;
 
         report = report || {};
-
         _.defaults(report, {
-            invalid_patient_id: "Patient ID '{{patient_id}}' is invalid. Please correct this and try again."
+            validations: []
         });
 
-        if (report.patient_id_validation_regexp) {
-            return new RegExp(report.patient_id_validation_regexp).test(doc.patient_id);
-        } else {
-            return true;
+        rules = module.exports.getRules(report.validations);
+        messages = module.exports.getMessages(report.validations);
+
+        try {
+            result = pupil.validate(rules, doc);
+        } catch(e) {
+            result = ['There was an error running the validations: ' + e.message];
         }
+
+        return module.exports.extractErrors(result, messages);
     },
     handleReport: function(options, callback) {
-        var doc = options.doc,
+        var db = options.db,
+            doc = options.doc,
             report = options.report;
-
-        db = options.db || db;
 
         utils.getRegistrations({
             db: db,
@@ -126,19 +172,22 @@ module.exports = {
             }, callback);
         });
     },
-    onMatch: function(change, _db, callback) {
+    onMatch: function(change, db, callback) {
         var doc = change.doc,
             reports = module.exports.getAcceptedReports(),
-            report;
-
-        db = _db;
+            report,
+            errors;
 
         report = _.findWhere(reports, {
             form: doc.form
         });
 
-        if (!module.exports.validatePatientId(report, doc)) {
-            messages.addError(doc, report.invalid_patient_id);
+        errors = module.exports.validate(report, doc);
+
+        if (errors.length) {
+            _.each(errors, function(error) {
+                messages.addError(doc, error);
+            });
             return callback(null, true);
         }
 
@@ -151,5 +200,6 @@ module.exports = {
             doc: doc,
             report: report
         }, callback);
-    }
+    },
+    repeatable: true
 };
