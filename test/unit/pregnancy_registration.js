@@ -17,6 +17,16 @@ function getMessage(doc) {
     return _.first(_.first(doc.tasks).messages).message;
 }
 
+exports.tearDown = function(callback) {
+    if (utils.getRegistrations.restore)
+        utils.getRegistrations.restore();
+
+    if (transition.getConfig.restore)
+        transition.getConfig.restore();
+
+    callback();
+}
+
 exports['filter fails with empty doc'] = function(test) {
     test.ok(_.isFunction(transition.filter));
     test.ok(transition.filter.length >= 1);
@@ -168,8 +178,6 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
 
         test.equals(doc.tasks, undefined);
 
-        utils.getRegistrations.restore();
-
         test.done();
     });
 }
@@ -192,8 +200,6 @@ exports['id only logic with valid name'] = function(test) {
         test.equals(complete, true);
         test.equals(doc.lmp_date, undefined);
         test.ok(doc.patient_id);
-
-        utils.getRegistrations.restore();
 
         test.done();
     });
@@ -221,8 +227,6 @@ exports['id only logic with invalid name'] = function(test) {
 
         test.equals(getMessage(doc), 'include patient name');
 
-        transition.getConfig.restore();
-
         test.done();
     });
 }
@@ -245,8 +249,6 @@ exports['invalid name valid LMP logic'] = function(test) {
         test.equals(complete, true);
         test.equals(doc.patient_id, undefined);
         test.equals(getMessage(doc), 'invalid name lols');
-
-        transition.getConfig.restore();
 
         test.done();
     });
@@ -271,8 +273,6 @@ exports['valid name invalid LMP logic'] = function(test) {
         test.equals(doc.patient_id, undefined);
         test.equals(getMessage(doc), 'Invalid LMP; must be between 0-40 weeks.');
 
-        transition.getConfig.restore();
-
         test.done();
     });
 }
@@ -296,8 +296,6 @@ exports['invalid name invalid LMP logic'] = function(test) {
         test.equals(doc.patient_id, undefined);
         test.equals(getMessage(doc), 'Please include patient name and valid LMP.');
 
-        transition.getConfig.restore();
-
         test.done();
     });
 }
@@ -312,8 +310,6 @@ exports['mismatched form returns false'] = function(test) {
         }
     }, {}, function(err, complete) {
         test.equals(complete, false);
-
-        transition.getConfig.restore();
 
         test.done();
     })
