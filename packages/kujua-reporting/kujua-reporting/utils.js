@@ -76,9 +76,7 @@ var getName = exports.getName = function(doc) {
 
 // take a moment or date object and return the week number
 var getWeek = function(date) {
-    if(date._m)
-        return Number(date.format('w'));
-    return Number(moment(date).format('w'));
+    return moment(date).week();
 };
 
 // take a moment or date object and return the month number
