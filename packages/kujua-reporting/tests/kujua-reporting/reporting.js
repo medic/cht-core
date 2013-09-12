@@ -713,9 +713,9 @@ exports['reporting.getRowsHC - rows are 1-indexed months'] = function (test) {
 
 exports['reporting.getRowsHC - rows are 1-indexed weeks'] = function (test) {
 
-    test.expect(2);
+    test.expect(4);
 
-    var q = {startmonth:'2011-3'},
+    var q = {startmonth:'2012-3'},
         dates = utils.getDates(q, 'week'),
         reports = [];
 
@@ -725,10 +725,13 @@ exports['reporting.getRowsHC - rows are 1-indexed weeks'] = function (test) {
         ]
     };
 
-    var rows = utils.getRowsHC(facilities, reports, dates);
+    var rows = utils.getRowsHC(facilities, reports, dates),
+        row = rows[0];
 
-    test.same(rows[0].records[0].week_number, 9);
-    test.same(rows[0].records[8].week_number, 1);
+    test.equals(row.records.length, 13);
+    test.same(row.records[0].week_number, 9);
+    test.same(row.records[8].week_number, 1);
+    test.same(row.records[9].week_number, 53);
     test.done();
 };
 
