@@ -16,10 +16,6 @@ module.exports = {
             utils.getClinicPhone(doc)
         );
     },
-    getPatientRegForm: function() {
-        var conf = config.get('pregnancy_registration');
-        return conf && conf.form;
-    },
     getAcceptedReports: function() {
         return config.get('patient_reports') || [];
     },
@@ -69,6 +65,7 @@ module.exports = {
             reportedDate = moment(options.reported_date),
             type = options.type,
             first,
+            db = options.db,
             silenceUntil = reportedDate.clone();
 
         if (silenceDuration) {
@@ -94,9 +91,9 @@ module.exports = {
         });
     },
     silenceReminders: function(options, callback) {
-        var db = options.db,
-            registration = options.registration,
-            toClear;
+        var registration = options.registration,
+            toClear,
+            db = options.db;
 
         // filter scheduled message by group
         toClear = module.exports.findToClear(options);
@@ -158,13 +155,11 @@ module.exports = {
     handleReport: function(options, callback) {
         var db = options.db,
             doc = options.doc,
-            report = options.report,
-            reg_form = options.reg_form;
+            report = options.report;
 
         utils.getRegistrations({
             db: db,
-            id: doc.patient_id,
-            form: reg_form
+            id: doc.patient_id
         }, function(err, registrations) {
             module.exports.matchRegistrations({
                 doc: doc,
@@ -176,7 +171,6 @@ module.exports = {
     onMatch: function(change, db, callback) {
         var doc = change.doc,
             reports = module.exports.getAcceptedReports(),
-            reg_form = module.exports.getPatientRegForm(),
             report,
             errors;
 
@@ -193,15 +187,14 @@ module.exports = {
             return callback(null, true);
         }
 
-        if (!reg_form || !report) {
+        if (!report) {
             return callback(null, false);
         }
 
         module.exports.handleReport({
             db: db,
             doc: doc,
-            report: report,
-            reg_form: reg_form
+            report: report
         }, callback);
     }
 };

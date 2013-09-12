@@ -1,4 +1,5 @@
-var config = require('../config'),
+var async = require('async'),
+    config = require('../config'),
     mustache = require('mustache'),
     utils = require('../lib/utils'),
     _ = require('underscore'),
@@ -32,9 +33,9 @@ module.exports = {
         if (!options.on_form && !options.off_form) {
             // not configured; bail
             return callback(null, false);
-        } else if (options.on_form === doc.form) {
+        } else if (utils.isFormCodeSame(options.on_form, doc.form)) {
             mute = false;
-        } else if (options.off_form === doc.form) {
+        } else if (utils.isFormCodeSame(options.off_form, doc.form)) {
             mute = true;
         } else {
             // transition does not apply; return false
@@ -50,9 +51,12 @@ module.exports = {
             if (err) {
                 callback(err);
             } else if (registrations.length) {
-                if (mute && options.confirm_deactivation) {
-                    messages.addError(doc, options.confirm_deactivation_message);
+                if (mute) {
                     messages.addReply(doc, options.on_mute_message);
+                    if (options.confirm_deactivation) {
+                        messages.addError(doc, options.confirm_deactivation_message);
+                        return callback(null, true);
+                    }
                 } else {
                     messages.addReply(doc, options.on_unmute_message);
                 }
@@ -60,7 +64,7 @@ module.exports = {
                     module.exports.modifyRegistration({
                         db: db,
                         mute: mute,
-                        registration: registration
+                        registration: registration.doc
                     }, callback);
                 }, function(err) {
                     if (err) {

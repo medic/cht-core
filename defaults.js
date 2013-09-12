@@ -107,7 +107,7 @@ var translations = [
 ];
 
 var defaults = {
-    settings_path: '/_design/kujua-lite/_rewrite/app_settings.json',
+    settings_path: '/_design/kujua-lite/_rewrite/app_settings/_design%2Fkujua-lite',
     id_format: '111111',
     schedule_morning_hours: 8,
     schedule_evening_hours: 17,
