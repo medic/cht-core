@@ -335,7 +335,7 @@
                         "type": "string",
                         "title": "Invalid Name Message",
                         "description": "Message to send when patient name invalid.",
-                        "default": "Patient name must be under 100 characters long.",
+                        "default": "Patient name is missing or must be under 100 characters long.",
                         "je:hint": "textarea"
                     },
                     "invalid_lmp": {
