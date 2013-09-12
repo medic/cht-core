@@ -3,6 +3,7 @@ var _ = require('underscore'),
     config = require('../config'),
     messages = require('../lib/messages'),
     moment = require('moment'),
+    pupil = require('pupil'),
     utils = require('../lib/utils'),
     date = require('../date');
 
@@ -111,19 +112,48 @@ module.exports = {
             callback(null);
         }
     },
-    validatePatientId: function(report, doc) {
+    getMessages: function(validations) {
+        return _.reduce(validations, function(memo, validation) {
+            if (validation.property && validation.message) {
+                memo[validation.property] = validation.message;
+            }
+
+            return memo;
+        }, {});
+    },
+    getRules: function(validations) {
+        return _.reduce(validations, function(memo, validation) {
+            if (validation.property && validation.rule) {
+                memo[validation.property] = validation.rule;
+            }
+
+            return memo;
+        }, {});
+    },
+    extractErrors: function(result, messages) {
+        return _.reduce(result, function(memo, valid, key) {
+            if (!valid) {
+                memo.push(messages[key]);
+            }
+            return memo;
+        }, []);
+    },
+    validate: function(report, doc) {
+        var messages,
+            result,
+            rules;
 
         report = report || {};
-
         _.defaults(report, {
-            invalid_patient_id: "Patient ID '{{patient_id}}' is invalid. Please correct this and try again."
+            validations: []
         });
 
-        if (report.patient_id_validation_regexp) {
-            return new RegExp(report.patient_id_validation_regexp).test(doc.patient_id);
-        } else {
-            return true;
-        }
+        rules = module.exports.getRules(report.validations);
+        messages = module.exports.getMessages(report.validations);
+
+        result = pupil.validate(rules, doc);
+
+        return module.exports.extractErrors(result, messages);
     },
     handleReport: function(options, callback) {
         var db = options.db,
@@ -147,14 +177,19 @@ module.exports = {
         var doc = change.doc,
             reports = module.exports.getAcceptedReports(),
             reg_form = module.exports.getPatientRegForm(),
-            report;
+            report,
+            errors;
 
         report = _.findWhere(reports, {
             form: doc.form
         });
 
-        if (!module.exports.validatePatientId(report, doc)) {
-            messages.addError(doc, report.invalid_patient_id);
+        errors = module.exports.validate(report, doc);
+
+        if (errors.length) {
+            _.each(errors, function(error) {
+                messages.addError(doc, error);
+            });
             return callback(null, true);
         }
 

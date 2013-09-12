@@ -142,8 +142,13 @@ exports['patient id failing validation adds error'] = function(test) {
     };
 
     sinon.stub(transition, 'getAcceptedReports').returns([ {
-        patient_id_validation_regexp: '\w{5}',
-        invalid_patient_id: 'bad id {{patient_id}}',
+        validations: [
+            {
+                property: 'patient_id',
+                rule: 'regex:\w{5}',
+                message: "bad id {{patient_id}}"
+            }
+        ],
         form: 'x'
     } ]);
 
