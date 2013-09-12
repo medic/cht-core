@@ -12,10 +12,7 @@ module.exports = {
             doc.form &&
             doc.patient_id &&
             doc.reported_date &&
-            doc.related_entities &&
-            doc.related_entities.clinic &&
-            doc.related_entities.clinic.contact &&
-            doc.related_entities.clinic.contact.phone
+            utils.getClinicPhone(doc)
         );
     },
     getPatientRegForm: function() {
@@ -25,6 +22,27 @@ module.exports = {
     getAcceptedReports: function() {
         return config.get('patient_reports') || [];
     },
+    silenceRegistrations: function(options, callback) {
+        var doc = options.doc,
+            report = options.report,
+            registrations = options.registrations;
+
+        if (report.silence_type) {
+            async.forEach(registrations, function(registration, callback) {
+                module.exports.silenceReminders({
+                    db: options.db,
+                    reported_date: options.reported_date,
+                    registration: registration,
+                    silence_for: report.silence_for,
+                    type: report.silence_type
+                }, callback);
+            }, function(err) {
+                callback(err, true);
+            });
+        } else {
+            callback(null, true);
+        }
+    },
     matchRegistrations: function(options, callback) {
         var registrations = options.registrations,
             doc = options.doc,
@@ -32,42 +50,31 @@ module.exports = {
 
         if (registrations.length) {
             messages.addReply(doc, report.report_accepted);
-            if (report.silence_type) {
-                async.forEach(registrations, function(registration, callback) {
-                    module.exports.silenceReminders({
-                        db: options.db,
-                        reported_date: doc.reported_date,
-                        registration: registration,
-                        silence_for: report.silence_for,
-                        type: report.silence_type
-                    }, callback);
-                }, function(err) {
-                    callback(err, true);
-                });
-            } else {
-                callback(null, true);
-            }
+            module.exports.silenceRegistrations({
+                db: options.db,
+                report: report,
+                reported_date: doc.reported_date,
+                registrations: registrations
+            }, callback);
         } else {
             messages.addError(doc, report.registration_not_found);
             callback(null, true);
         }
     },
-    silenceReminders: function(options, callback) {
-        var db = options.db,
-            registration = options.registration,
-            type = options.type,
-            toClear,
+    // find the messages to clear
+    findToClear: function(options) {
+        var registration = options.registration,
             silenceDuration = date.getDuration(options.silence_for),
             reportedDate = moment(options.reported_date),
-            silenceUntil = reportedDate.clone(),
-            first;
+            type = options.type,
+            first,
+            silenceUntil = reportedDate.clone();
 
         if (silenceDuration) {
             silenceUntil.add(silenceDuration);
         }
 
-        // filter scheduled message by group
-        toClear = _.filter(utils.filterScheduledMessages(registration, type), function(msg) {
+        return _.filter(utils.filterScheduledMessages(registration, type), function(msg) {
             var due = moment(msg.due),
                 // due is after it was reported, but before the silence cutoff; also 'scheduled'
                 matches = due >= reportedDate && due <= silenceUntil && msg.state === 'scheduled';
@@ -84,6 +91,14 @@ module.exports = {
                 return matches;
             }
         });
+    },
+    silenceReminders: function(options, callback) {
+        var db = options.db,
+            registration = options.registration,
+            toClear;
+
+        // filter scheduled message by group
+        toClear = module.exports.findToClear(options);
 
         // captured all to clear; now "clear" them
         _.each(toClear, function(msg) {
