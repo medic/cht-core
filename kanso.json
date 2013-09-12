@@ -452,7 +452,7 @@
                         "registration_response": {
                             "type": "string",
                             "title": "Registration response message",
-                            "description": "The response message sent out when a schedule is created. e.g. Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. ANC visit is needed in {{weeks}} weeks.",
+                            "description": "The response message sent out when a schedule is created. e.g. Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. Next visit is needed in {{weeks}} weeks.",
                             "default": "Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. ANC visit is needed in {{weeks}} weeks.",
                             "je:hint": "textarea"
                         },
