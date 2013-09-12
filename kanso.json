@@ -224,6 +224,45 @@
                     }
                 }
             },
+            "schedule_morning_hours" : {
+                "title": "Schedule morning hours",
+                "description": "The scheduler only sends messages after this hour, M-F.",
+                "type": "integer",
+                "default": 8
+            },
+            "schedule_evening_hours" : {
+                "title": "Schedule evening hours",
+                "description": "The scheduler only sends messages before this hour, M-F.",
+                "type": "integer",
+                "default": 17
+            },
+            "synthetic_date" : {
+                "title": "Synthetic date",
+                "description": "Only modify this if you are testing the scheduler and want to simulate a specific date. e.g. 201304121200",
+                "type": "string",
+                "pattern": "(^[0-9]{12}$|^$)"
+            },
+            "outgoing_phone_filters": {
+                "title": "Outgoing Phone Filters",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "match": {
+                            "type": "string",
+                            "title": "Match",
+                            "default": "",
+                            "description": "This is consumed by RegExp() and used to match a phone number. e.g. \\\\+997"
+                        },
+                        "replace": {
+                            "type": "string",
+                            "title": "Replace with",
+                            "default": "",
+                            "description": "Replace the match with this value."
+                        }
+                    }
+                }
+            },
             "id_format": {
                 "title": "Patient ID Format",
                 "type": "string",
@@ -444,45 +483,6 @@
                             "title": "Message",
                             "default": "Please submit report for week {{week}} immediately.",
                             "description": "Message will be sent and the following strings will be substituted into the message: {{week}}, {{year}} and {{form}}."
-                        }
-                    }
-                }
-            },
-            "schedule_morning_hours" : {
-                "title": "Schedule morning hours",
-                "description": "The scheduler only sends messages after this hour, M-F.",
-                "type": "integer",
-                "default": 8
-            },
-            "schedule_evening_hours" : {
-                "title": "Schedule evening hours",
-                "description": "The scheduler only sends messages before this hour, M-F.",
-                "type": "integer",
-                "default": 17
-            },
-            "synthetic_date" : {
-                "title": "Synthetic date",
-                "description": "Only modify this if you are testing the scheduler and want to simulate a specific date. e.g. 201304121200",
-                "type": "string",
-                "pattern": "(^[0-9]{12}$|^$)"
-            },
-            "outgoing_phone_filters": {
-                "title": "Outgoing Phone Filters",
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "match": {
-                            "type": "string",
-                            "title": "Match",
-                            "default": "",
-                            "description": "This is consumed by RegExp() and used to match a phone number. e.g. \\\\+997"
-                        },
-                        "replace": {
-                            "type": "string",
-                            "title": "Replace with",
-                            "default": "",
-                            "description": "Replace the match with this value."
                         }
                     }
                 }
