@@ -10,11 +10,7 @@ module.exports = {
     filter: function(doc) {
         return Boolean(
             doc.form &&
-            doc.patient_name &&
-            doc.related_entities &&
-            doc.related_entities.clinic &&
-            doc.related_entities.clinic.contact &&
-            doc.related_entities.clinic.contact.phone &&
+            utils.getClinicPhone(doc) &&
             module.exports.getWeeksSinceLMP(doc) &&
             (!doc.patient_id || !doc.lmp_date)
         );
@@ -61,7 +57,7 @@ module.exports = {
             validName = module.exports.validateName(doc, options),
             idOnly = module.exports.isIdOnly(doc);
 
-        if (options.form !== doc.form) {
+        if (!utils.isFormCodeSame(options.form, doc.form)) {
             callback(null, false);
         } else if (idOnly) {
             // no schedule, and have valid name
@@ -98,7 +94,8 @@ module.exports = {
     },
     setId: function(options, callback) {
         var doc = options.doc,
-            id = ids.generate(doc.serial_number);
+            id = ids.generate(doc.serial_number),
+            self = module.exports;
 
         utils.getRegistrations({
             db: options.db,
