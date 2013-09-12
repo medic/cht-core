@@ -279,12 +279,6 @@
                             "title": "Report Form",
                             "description": "Form code of the report."
                         },
-                        "patient_id_validation_regexp": {
-                            "type": "string",
-                            "title": "Patient Id Validation",
-                            "description": "Regular expression to test patient IDs against. Leave blank to accept all.",
-                            "default": "\\d{5}"
-                        },
                         "report_accepted": {
                             "type": "string",
                             "title": "Report Accepted Message",
@@ -309,6 +303,32 @@
                             "description": "The reply to send when the patient ID is not found.",
                             "default": "This message could not be processed as a registration for {{patient_id}} was not found.",
                             "je:hint": "textarea"
+                        },
+                        "validations": {
+                            "type": "array",
+                            "items": {
+                                "properties": {
+                                    "property": {
+                                        "type": "string",
+                                        "title": "Property",
+                                        "description": "The property to validate.",
+                                        "default": "patient_id"
+                                    },
+                                    "rule": {
+                                        "type": "string",
+                                        "title": "Validation Rule",
+                                        "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                        "default": "regex:[0-9]{5}"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "title": "Error Message",
+                                        "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
+                                        "default": "Invalid Patient ID '{{patient_id}}'"
+                                    }
+                                },
+                                "type": "object"
+                            }
                         }
                     },
                     "type": "object"
