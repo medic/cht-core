@@ -246,3 +246,8 @@ exports['silenceReminders testing'] = function(test) {
         test.done();
     });
 };
+
+exports['is repeatable'] = function(test) {
+    test.equals(transition.repeatable, true);
+    test.done();
+};

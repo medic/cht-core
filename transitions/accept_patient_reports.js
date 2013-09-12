@@ -148,7 +148,11 @@ module.exports = {
         rules = module.exports.getRules(report.validations);
         messages = module.exports.getMessages(report.validations);
 
-        result = pupil.validate(rules, doc);
+        try {
+            result = pupil.validate(rules, doc);
+        } catch(e) {
+            result = ['There was an error running the validations: ' + e.message];
+        }
 
         return module.exports.extractErrors(result, messages);
     },
@@ -196,5 +200,6 @@ module.exports = {
             doc: doc,
             report: report
         }, callback);
-    }
+    },
+    repeatable: true
 };
