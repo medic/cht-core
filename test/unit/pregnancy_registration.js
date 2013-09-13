@@ -56,22 +56,25 @@ exports['filter fails with empty doc'] = function(test) {
     test.done();
 };
 
-exports['filter passes if form but not if form and patient_id and lmp_date'] = function(test) {
+exports['filter passes until we have patient_id and lmp_date'] = function(test) {
     test.equals(transition.filter({
         form: 'x',
+        reported_date: 'x',
         related_entities: {clinic: {contact: {phone: 'x'}}},
         patient_name: 'x',
         lmp: 1
     }), true);
     test.equals(transition.filter({
         form: 'x',
+        reported_date: 'x',
         related_entities: {clinic: {contact: {phone: 'x'}}},
         patient_name: 'x',
         lmp: 1,
-        patient_id: 'xyz'
+        lmp_date: moment().toISOString()
     }), true);
     test.equals(transition.filter({
         form: 'x',
+        reported_date: 'x',
         related_entities: {clinic: {contact: {phone: 'x'}}},
         patient_name: 'x',
         lmp: 1,

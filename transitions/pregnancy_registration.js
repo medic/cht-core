@@ -13,8 +13,7 @@ module.exports = {
             doc.form &&
             doc.reported_date &&
             utils.getClinicPhone(doc) &&
-            !doc.patient_id &&
-            !doc.lmp_date
+            (!doc.patient_id || !doc.lmp_date)
         );
     },
     getWeeksSinceLMP: function(doc) {
