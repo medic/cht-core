@@ -107,6 +107,7 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
         related_entities: {
             clinic: {
                 contact: {
+                    phone: '+1234',
                     name: 'woot'
                 }
             }
