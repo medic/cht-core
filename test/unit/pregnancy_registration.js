@@ -209,6 +209,7 @@ exports['id only logic with invalid name'] = function(test) {
     var doc;
 
     doc = {
+        from: '+12345',
         patient_name: '',
         lmp: 5,
         getid: 'x'
@@ -235,6 +236,13 @@ exports['invalid name valid LMP logic'] = function(test) {
     var doc;
 
     doc = {
+        related_entities: {
+            clinic: {
+                contact: {
+                    phone: '+1234'
+                }
+            }
+        },
         patient_name: '',
         lmp: 5
     };
@@ -258,6 +266,7 @@ exports['valid name invalid LMP logic'] = function(test) {
     var doc;
 
     doc = {
+        from: '+1234',
         patient_name: 'hi',
         lmp: 45
     };
@@ -281,6 +290,7 @@ exports['invalid name invalid LMP logic'] = function(test) {
     var doc;
 
     doc = {
+        from: '+123',
         patient_name: '',
         lmp: 45
     };
