@@ -3,7 +3,7 @@ var _ = require('underscore'),
     config = require('../config'),
     messages = require('../lib/messages'),
     moment = require('moment'),
-    pupil = require('pupil'),
+    validation = require('../lib/validation'),
     utils = require('../lib/utils'),
     date = require('../date');
 
@@ -109,52 +109,8 @@ module.exports = {
             callback(null);
         }
     },
-    getMessages: function(validations) {
-        return _.reduce(validations, function(memo, validation) {
-            if (validation.property && validation.message) {
-                memo[validation.property] = validation.message;
-            }
-
-            return memo;
-        }, {});
-    },
-    getRules: function(validations) {
-        return _.reduce(validations, function(memo, validation) {
-            if (validation.property && validation.rule) {
-                memo[validation.property] = validation.rule;
-            }
-
-            return memo;
-        }, {});
-    },
-    extractErrors: function(result, messages) {
-        return _.reduce(result, function(memo, valid, key) {
-            if (!valid) {
-                memo.push(messages[key]);
-            }
-            return memo;
-        }, []);
-    },
     validate: function(report, doc) {
-        var messages,
-            result,
-            rules;
-
-        report = report || {};
-        _.defaults(report, {
-            validations: []
-        });
-
-        rules = module.exports.getRules(report.validations);
-        messages = module.exports.getMessages(report.validations);
-
-        try {
-            result = pupil.validate(rules, doc);
-        } catch(e) {
-            result = ['There was an error running the validations: ' + e.message];
-        }
-
-        return module.exports.extractErrors(result, messages);
+        return validation.validate(doc, report.validations);
     },
     handleReport: function(options, callback) {
         var db = options.db,
@@ -182,6 +138,10 @@ module.exports = {
             form: doc.form
         });
 
+        if (!report) {
+            return callback(null, false);
+        }
+
         errors = module.exports.validate(report, doc);
 
         if (errors.length) {
@@ -189,10 +149,6 @@ module.exports = {
                 messages.addError(doc, error);
             });
             return callback(null, true);
-        }
-
-        if (!report) {
-            return callback(null, false);
         }
 
         module.exports.handleReport({
