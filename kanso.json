@@ -324,7 +324,8 @@
                                         "type": "string",
                                         "title": "Error Message",
                                         "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
-                                        "default": "Invalid Patient ID '{{patient_id}}'"
+                                        "default": "Invalid Patient ID '{{patient_id}}'",
+                                        "je:hint": "textarea"
                                     }
                                 },
                                 "type": "object"
@@ -344,33 +345,32 @@
                         "title": "Pregnancy Registration Form",
                         "description": "Form code of a pregnancy registration"
                     },
-                    "include_patient_name": {
-                        "type": "string",
-                        "title": "Include Patient Name Message",
-                        "description": "Message to send when patient name needed.",
-                        "default": "Please include patient name.",
-                        "je:hint": "textarea"
-                    },
-                    "invalid_name": {
-                        "type": "string",
-                        "title": "Invalid Name Message",
-                        "description": "Message to send when patient name invalid.",
-                        "default": "Patient name is missing or must be under 100 characters long.",
-                        "je:hint": "textarea"
-                    },
-                    "invalid_lmp": {
-                        "type": "string",
-                        "title": "Invalid LMP Message",
-                        "description": "Message to send when LMP is invalid.",
-                        "default": "LMP must be between 0 and 40.",
-                        "je:hint": "textarea"
-                    },
-                    "invalid_values": {
-                        "type": "string",
-                        "title": "Invalid LMP & Name Message",
-                        "description": "Message to send when both LMP and patient name invalid.",
-                        "default": "Please re-submit and include a valid patient name and LMP value.",
-                        "je:hint": "textarea"
+                    "validations": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "property": {
+                                    "type": "string",
+                                    "title": "Property",
+                                    "description": "The property on the JSON form to validate.",
+                                    "default": "patient_name"
+                                },
+                                "rule": {
+                                    "type": "string",
+                                    "title": "Validation Rule",
+                                    "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                    "default": "required && lenMin:5 && lenMax:50"
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "title": "Error Message",
+                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
+                                    "default": "Please include a valid Patient Name '{{patient_name}}' should be less than 50 characters.",
+                                    "je:hint": "textarea"
+                                }
+                            },
+                            "type": "object"
+                        }
                     }
                 }
             },
@@ -383,33 +383,32 @@
                         "title": "Birth Registration Form",
                         "description": "Form code of a birth registration"
                     },
-                    "include_patient_name": {
-                        "type": "string",
-                        "title": "Include Patient Name Message",
-                        "description": "Message to send when patient name needed.",
-                        "default": "Please include patient name.",
-                        "je:hint": "textarea"
-                    },
-                    "invalid_name": {
-                        "type": "string",
-                        "title": "Invalid Name Message",
-                        "description": "Message to send when patient name invalid.",
-                        "default": "Patient name must be under 100 characters long.",
-                        "je:hint": "textarea"
-                    },
-                    "invalid_dob": {
-                        "type": "string",
-                        "title": "Invalid DOB (Date of Birth) Message",
-                        "description": "Message to send when DOB is invalid.",
-                        "default": "DOB must be between 0 and 52.",
-                        "je:hint": "textarea"
-                    },
-                    "invalid_values": {
-                        "type": "string",
-                        "title": "Invalid DOB & Name Message",
-                        "description": "Message to send when both DOB and patient name invalid.",
-                        "default": "Please re-submit and include a valid patient name and DOB value.",
-                        "je:hint": "textarea"
+                    "validations": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "property": {
+                                    "type": "string",
+                                    "title": "Property",
+                                    "description": "The property on the JSON form to validate.",
+                                    "default": "patient_name"
+                                },
+                                "rule": {
+                                    "type": "string",
+                                    "title": "Validation Rule",
+                                    "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                    "default": "required && lenMin:5 && lenMax:50"
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "title": "Error Message",
+                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
+                                    "default": "Please include a valid Patient Name '{{patient_name}}' should be less than 50 characters.",
+                                    "je:hint": "textarea"
+                                }
+                            },
+                            "type": "object"
+                        }
                     }
                 }
             },
