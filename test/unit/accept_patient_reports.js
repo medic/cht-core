@@ -17,9 +17,6 @@ exports.tearDown = function(callback) {
     if (utils.getRegistrations.restore)
         utils.getRegistrations.restore();
 
-    if (utils.getPatientRegForm.restore)
-        utils.getPatientRegForm.restore();
-
     callback();
 }
 
@@ -63,7 +60,6 @@ exports['onMatch with matching form calls getRegistrations and then matchRegistr
         matchRegistrations;
 
     sinon.stub(transition, 'getAcceptedReports').returns([ { form: 'x' }, { form: 'z' } ]);
-    sinon.stub(utils, 'getPatientRegForm').returns([ { form: 'reg' } ]);
 
     getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     matchRegistrations = sinon.stub(transition, 'matchRegistrations').callsArgWithAsync(1, null, true);
@@ -142,8 +138,13 @@ exports['patient id failing validation adds error'] = function(test) {
     };
 
     sinon.stub(transition, 'getAcceptedReports').returns([ {
-        patient_id_validation_regexp: '\w{5}',
-        invalid_patient_id: 'bad id {{patient_id}}',
+        validations: [
+            {
+                property: 'patient_id',
+                rule: 'regex:\w{5}',
+                message: "bad id {{patient_id}}"
+            }
+        ],
         form: 'x'
     } ]);
 
@@ -244,4 +245,9 @@ exports['silenceReminders testing'] = function(test) {
 
         test.done();
     });
+};
+
+exports['is repeatable'] = function(test) {
+    test.equals(transition.repeatable, true);
+    test.done();
 };
