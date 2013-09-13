@@ -11,9 +11,10 @@ module.exports = {
     filter: function(doc) {
         return Boolean(
             doc.form &&
+            doc.reported_date &&
             utils.getClinicPhone(doc) &&
-            module.exports.getWeeksSinceLMP(doc) &&
-            (!doc.patient_id || !doc.lmp_date)
+            !doc.patient_id &&
+            !doc.lmp_date
         );
     },
     getWeeksSinceLMP: function(doc) {
@@ -38,20 +39,23 @@ module.exports = {
     },
     onMatch: function(change, db, callback) {
         var doc = change.doc,
-            options = module.exports.getConfig(),
-            errors,
-            idOnly = module.exports.isIdOnly(doc);
+            self = module.exports,
+            config = self.getConfig(),
+            idOnly = self.isIdOnly(doc),
+            errors;
 
-        if (!utils.isFormCodeSame(options.form, doc.form)) {
-            callback(null, false);
-        } else if (idOnly) {
+        if (!utils.isFormCodeSame(config.form, doc.form)) {
+            return callback(null, false);
+        }
+
+        if (idOnly) {
             // no schedule, and have valid name
-            errors = validation.validate(doc, options.validations, 'lmp');
+            errors = validation.validate(doc, config.validations, 'lmp');
             if (errors.length) {
                 messages.addReply(doc, errors.join(', '));
                 callback(null, true);
             } else {
-                module.exports.setId({
+                self.setId({
                     db: db,
                     doc: doc
                 }, function(err) {
@@ -59,14 +63,14 @@ module.exports = {
                 });
             }
         } else {
-            errors = validation.validate(doc, options.validations);
+            errors = validation.validate(doc, config.validations);
 
             if (errors.length) {
                 messages.addReply(doc, errors.join(', '));
                 callback(null, true);
             } else {
-                module.exports.setDate(doc);
-                module.exports.setId({
+                self.setDate(doc);
+                self.setId({
                     db: db,
                     doc: doc
                 }, function(err) {
