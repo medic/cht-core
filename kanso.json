@@ -355,7 +355,7 @@
                         "type": "string",
                         "title": "Invalid Name Message",
                         "description": "Message to send when patient name invalid.",
-                        "default": "Patient name must be under 100 characters long.",
+                        "default": "Patient name is missing or must be under 100 characters long.",
                         "je:hint": "textarea"
                     },
                     "invalid_lmp": {
@@ -370,6 +370,45 @@
                         "title": "Invalid LMP & Name Message",
                         "description": "Message to send when both LMP and patient name invalid.",
                         "default": "Please re-submit and include a valid patient name and LMP value.",
+                        "je:hint": "textarea"
+                    }
+                }
+            },
+            "birth_registration": {
+                "title": "Birth Registration",
+                "type": "object",
+                "properties": {
+                    "form": {
+                        "type": "string",
+                        "title": "Birth Registration Form",
+                        "description": "Form code of a birth registration"
+                    },
+                    "include_patient_name": {
+                        "type": "string",
+                        "title": "Include Patient Name Message",
+                        "description": "Message to send when patient name needed.",
+                        "default": "Please include patient name.",
+                        "je:hint": "textarea"
+                    },
+                    "invalid_name": {
+                        "type": "string",
+                        "title": "Invalid Name Message",
+                        "description": "Message to send when patient name invalid.",
+                        "default": "Patient name must be under 100 characters long.",
+                        "je:hint": "textarea"
+                    },
+                    "invalid_dob": {
+                        "type": "string",
+                        "title": "Invalid DOB (Date of Birth) Message",
+                        "description": "Message to send when DOB is invalid.",
+                        "default": "DOB must be between 0 and 52.",
+                        "je:hint": "textarea"
+                    },
+                    "invalid_values": {
+                        "type": "string",
+                        "title": "Invalid DOB & Name Message",
+                        "description": "Message to send when both DOB and patient name invalid.",
+                        "default": "Please re-submit and include a valid patient name and DOB value.",
                         "je:hint": "textarea"
                     }
                 }
@@ -433,7 +472,7 @@
                         "registration_response": {
                             "type": "string",
                             "title": "Registration response message",
-                            "description": "The response message sent out when a schedule is created. e.g. Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. ANC visit is needed in {{weeks}} weeks.",
+                            "description": "The response message sent out when a schedule is created. e.g. Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. Next visit is needed in {{weeks}} weeks.",
                             "default": "Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. ANC visit is needed in {{weeks}} weeks.",
                             "je:hint": "textarea"
                         },
