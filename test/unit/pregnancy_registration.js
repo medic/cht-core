@@ -3,7 +3,8 @@ var _ = require('underscore'),
     sinon = require('sinon'),
     moment = require('moment'),
     utils = require('../../lib/utils'),
-    related_entities;
+    related_entities,
+    config;
 
 related_entities = {
     clinic: {
@@ -16,6 +17,25 @@ related_entities = {
 function getMessage(doc) {
     return _.first(_.first(doc.tasks).messages).message;
 }
+
+exports.setUp = function(callback) {
+    sinon.stub(transition, 'getConfig').returns({
+        form: 'y',
+        validations: [
+            {
+                property: 'lmp',
+                rule: 'min:0 && max:40',
+                message: 'Invalid LMP; must be between 0-40 weeks.'
+            },
+            {
+                property: 'patient_name',
+                rule: 'lenMin:1 && lenMax:100',
+                message: 'Invalid patient name.'
+            }
+        ]
+    });
+    callback();
+};
 
 exports.tearDown = function(callback) {
     if (utils.getRegistrations.restore)
@@ -65,49 +85,6 @@ exports['is repeatable'] = function(test) {
     test.equals(transition.repeatable, true);
     test.done();
 };
-
-exports['lmp > 40 or NaN returns false from validateLMP'] = function(test) {
-    test.equals(transition.validateLMP({ lmp: 41 }), false);
-    test.equals(transition.validateLMP({ lmp: 'x' }), false);
-
-    test.done();
-}
-
-exports['lmp <= 40 returns true from validateLMP'] = function(test) {
-    test.equals(transition.validateLMP({ lmp: 25 }), true);
-    test.equals(transition.validateLMP({ lmp: 0 }), true);
-    test.equals(transition.validateLMP({ lmp: 40 }), true);
-
-    test.done();
-}
-
-exports['name validation'] = function(test) {
-    test.equals(transition.validateName({
-        patient_name: 'abc'
-    }, {
-        max_name_length: 100
-    }), true);
-
-    test.equals(transition.validateName({
-        patient_name: 'abc'
-    }, {
-        max_name_length: 2
-    }), false);
-
-    test.equals(transition.validateName({
-        patient_name: ''
-    }, {
-        max_name_length: 2
-    }), false);
-
-    test.equals(transition.validateName({
-        patient_name: 'ab'
-    }, {
-        max_name_length: 2
-    }), true);
-
-    test.done();
-}
 
 exports['is id only'] = function(test) {
     test.equals(transition.isIdOnly({}), false);
@@ -164,6 +141,7 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
 
     doc = {
+        form: 'y',
         patient_name: 'abc',
         lmp: 5
     };
@@ -188,6 +166,7 @@ exports['id only logic with valid name'] = function(test) {
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
 
     doc = {
+        form: 'y',
         patient_name: 'abc',
         lmp: 5,
         getid: 'x'
@@ -209,15 +188,13 @@ exports['id only logic with invalid name'] = function(test) {
     var doc;
 
     doc = {
+        form: 'y',
         from: '+12345',
         patient_name: '',
         lmp: 5,
         getid: 'x'
     };
 
-    sinon.stub(transition, 'getConfig').returns({
-        include_patient_name: 'include patient name'
-    });
     transition.onMatch({
         doc: doc
     }, {}, function(err, complete) {
@@ -226,7 +203,7 @@ exports['id only logic with invalid name'] = function(test) {
         test.equals(doc.patient_id, undefined);
         test.ok(doc.tasks);
 
-        test.equals(getMessage(doc), 'include patient name');
+        test.equals(getMessage(doc), 'Invalid patient name.');
 
         test.done();
     });
@@ -236,6 +213,7 @@ exports['invalid name valid LMP logic'] = function(test) {
     var doc;
 
     doc = {
+        form: 'y',
         related_entities: {
             clinic: {
                 contact: {
@@ -247,16 +225,13 @@ exports['invalid name valid LMP logic'] = function(test) {
         lmp: 5
     };
 
-    sinon.stub(transition, 'getConfig').returns({
-        invalid_name: 'invalid name lols'
-    });
     transition.onMatch({
         doc: doc
     }, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.equals(doc.patient_id, undefined);
-        test.equals(getMessage(doc), 'invalid name lols');
+        test.equals(getMessage(doc), 'Invalid patient name.');
 
         test.done();
     });
@@ -265,15 +240,14 @@ exports['invalid name valid LMP logic'] = function(test) {
 exports['valid name invalid LMP logic'] = function(test) {
     var doc;
 
+    debugger;
     doc = {
+        form: 'y',
         from: '+1234',
         patient_name: 'hi',
         lmp: 45
     };
 
-    sinon.stub(transition, 'getConfig').returns({
-        invalid_lmp: 'Invalid LMP; must be between 0-40 weeks.'
-    });
     transition.onMatch({
         doc: doc
     }, {}, function(err, complete) {
@@ -290,30 +264,25 @@ exports['invalid name invalid LMP logic'] = function(test) {
     var doc;
 
     doc = {
+        form: 'y',
         from: '+123',
         patient_name: '',
         lmp: 45
     };
 
-    sinon.stub(transition, 'getConfig').returns({
-        invalid_values: 'Please include patient name and valid LMP.'
-    });
     transition.onMatch({
         doc: doc
     }, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.equals(doc.patient_id, undefined);
-        test.equals(getMessage(doc), 'Please include patient name and valid LMP.');
+        test.equals(getMessage(doc), 'Invalid patient name., Invalid LMP; must be between 0-40 weeks.');
 
         test.done();
     });
 }
 
 exports['mismatched form returns false'] = function(test) {
-    sinon.stub(transition, 'getConfig').returns({
-        form: 'y'
-    });
     transition.onMatch({
         doc: {
             form: 'x'

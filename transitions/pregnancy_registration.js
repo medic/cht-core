@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     utils = require('../lib/utils'),
     messages = require('../lib/messages'),
+    validation = require('../lib/validation'),
     ids = require('../lib/ids'),
     moment = require('moment'),
     config = require('../config'),
@@ -20,20 +21,6 @@ module.exports = {
             doc.weeks_since_lmp || doc.last_menstrual_period || doc.lmp
         );
     },
-    validateLMP: function(doc) {
-        var lmp = module.exports.getWeeksSinceLMP(doc);
-
-        return lmp >= 0 && lmp <= 40; // this will return false if NaN
-    },
-    validateName: function(doc, options) {
-        var name = doc.patient_name || '',
-            max;
-
-        options = options || {};
-        max = options.max_name_length || 100;
-
-        return name.length > 0 && name.length <= max;
-    },
     isIdOnly: function(doc) {
         return !!doc.getid;
     },
@@ -52,44 +39,40 @@ module.exports = {
     onMatch: function(change, db, callback) {
         var doc = change.doc,
             options = module.exports.getConfig(),
-            phone = utils.getClinicPhone(doc),
-            validLMP = module.exports.validateLMP(doc),
-            validName = module.exports.validateName(doc, options),
+            errors,
             idOnly = module.exports.isIdOnly(doc);
 
         if (!utils.isFormCodeSame(options.form, doc.form)) {
             callback(null, false);
         } else if (idOnly) {
             // no schedule, and have valid name
-            if (validName) {
+            errors = validation.validate(doc, options.validations, 'lmp');
+            if (errors.length) {
+                messages.addReply(doc, errors.join(', '));
+                callback(null, true);
+            } else {
                 module.exports.setId({
                     db: db,
                     doc: doc
                 }, function(err) {
                     callback(err, true);
                 });
-            // id only but invalid name
-            } else {
-                messages.addReply(doc, options.include_patient_name);
-                callback(null, true);
             }
-        } else if (validLMP && validName) {
-            module.exports.setDate(doc);
-            module.exports.setId({
-                db: db,
-                doc: doc
-            }, function(err) {
-                callback(err, true);
-            });
-        } else if (validLMP) { // validName must be false
-            messages.addReply(doc, options.invalid_name);
-            callback(null, true);
-        } else if (validName) { // validLMP must be false
-            messages.addReply(doc, options.invalid_lmp);
-            callback(null, true);
         } else {
-            messages.addReply(doc, options.invalid_values);
-            callback(null, true);
+            errors = validation.validate(doc, options.validations);
+
+            if (errors.length) {
+                messages.addReply(doc, errors.join(', '));
+                callback(null, true);
+            } else {
+                module.exports.setDate(doc);
+                module.exports.setId({
+                    db: db,
+                    doc: doc
+                }, function(err) {
+                    callback(err, true);
+                });
+            }
         }
     },
     setId: function(options, callback) {
