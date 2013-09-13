@@ -123,13 +123,19 @@ module.exports = {
             form: doc.form
         });
 
-        if (!utils.validatePatientId(report, doc)) {
-            messages.addError(doc, report.invalid_patient_id);
-            return callback(null, true);
-        }
-
         if (!report) {
             return callback(null, false);
+        }
+
+        var errors = utils.validatePatientId(doc.patient_id, function(id) {
+            if (!new RegExp(report.patient_id_validation_regexp).test(id)) {
+                return report.invalid_patient_id;
+            }
+        });
+
+        if (errors.length) {
+            _.each(errors, function(e) { messages.addError(doc, e); });
+            return callback(null, true);
         }
 
         module.exports.handleReport({

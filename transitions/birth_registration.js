@@ -52,9 +52,18 @@ module.exports = {
             validDOB  = module.exports.validateDOB(doc),
             validName = module.exports.validateName(doc, options);
 
-        if (options.form !== doc.form) {
-            callback(null, false);
-        } else if (validDOB && validName) {
+        if (!utils.isFormCodeSame(options.form, doc.form)) {
+            return callback(null, false);
+        }
+
+        var errors = utils.validatePatientId(doc.mother_patient_id);
+
+        if (errors.length) {
+            _.each(errors, function(e) { messages.addError(doc, e); });
+            return callback(null, true);
+        }
+
+        if (validDOB && validName) {
             module.exports.setDate(doc);
             module.exports.setId({
                 db: db,
