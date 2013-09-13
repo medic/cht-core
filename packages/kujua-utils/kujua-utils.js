@@ -133,13 +133,19 @@ exports.dumper = {
 
 /* poorly named */
 exports.isUserAdmin = function(userCtx) {
-    if (!userCtx) return false;
-    return userCtx.roles.indexOf('national_admin') !== -1 ||
-           userCtx.roles.indexOf('_admin') !== -1;
+    return exports.hasRole(userCtx, 'national_admin') || exports.isDbAdmin(userCtx);
 };
 
 exports.isUserDistrictAdmin = function(userCtx) {
-    return userCtx.roles.indexOf('district_admin') !== -1;
+    return exports.hasRole(userCtx, 'district_admin');
+};
+
+exports.isDbAdmin = function(userCtx) {
+    return exports.hasRole(userCtx, '_admin');
+};
+
+exports.hasRole = function(userCtx, role) {
+    return _.contains(userCtx && userCtx.roles, role);
 };
 
 exports.hasPerm = function(userCtx, perm) {
