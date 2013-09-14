@@ -327,13 +327,6 @@
                             "title": "Report Form",
                             "description": "Form code of the report."
                         },
-                        "report_accepted": {
-                            "type": "string",
-                            "title": "Report Accepted Message",
-                            "description": "Message to send when the report has been accepted.",
-                            "default": "Thank you, {{contact_name}}. Your report for {{patient_id}} has been processed.",
-                            "je:hint": "textarea"
-                        },
                         "silence_type": {
                             "type": "string",
                             "title": "Silence Scheduled Message Type",
@@ -344,13 +337,6 @@
                             "title": "Silence Messages For",
                             "description": "Silence the message type for this long. Uses momentjs.com syntax, e.g. '1 week'.",
                             "default": "25 days"
-                        },
-                        "registration_not_found": {
-                            "type": "string",
-                            "title": "Registration Not Found Message",
-                            "description": "The reply to send when the patient ID is not found.",
-                            "default": "This message could not be processed as a registration for {{patient_id}} was not found.",
-                            "je:hint": "textarea"
                         },
                         "validations": {
                             "type": "array",
@@ -378,6 +364,53 @@
                                 },
                                 "type": "object"
                             }
+                        },
+                        "messages": {
+                            "type": "array",
+                            "title": "Response Messages",
+                            "items": {
+                                "properties": {
+                                    "message": {
+                                        "type": "string",
+                                        "title": "Message Text",
+                                        "je:hint": "textarea"
+                                    },
+                                    "event_type": {
+                                        "type": "string",
+                                        "title": "Event Type",
+                                        "description": "What should trigger this message?",
+                                        "default": "report_accepted",
+                                        "enum": [
+                                            "report_accepted",
+                                            "registration_not_found"
+                                        ],
+                                        "je:hint": "enumlabels",
+                                        "je:enumlabels": {
+                                            "report_accepted": "Report Accepted",
+                                            "registration_not_found": "Registration Not Found"
+                                        }
+                                    },
+                                    "recipient": {
+                                        "type": "string",
+                                        "title": "Recipient",
+                                        "description": "Contact to recieve the message.",
+                                        "default": "reporter",
+                                        "enum": [
+                                            "reporter",
+                                            "reporter_parent",
+                                            "reporter_grandparent"
+                                        ],
+                                        "je:hint": "enumlabels",
+                                        "je:enumlabels": {
+                                            "reporter": "Reporting Unit",
+                                            "reporter_parent": "Parent of Reporting Unit",
+                                            "reporter_grandparent": "Grandparent of Reporting Unit"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "default": []
                         }
                     },
                     "type": "object"
