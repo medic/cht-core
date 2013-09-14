@@ -173,7 +173,7 @@
                 ]
             },
             "notifications": {
-                "title": "Controlling Notifications",
+                "title": "Notifications",
                 "type": "object",
                 "properties": {
                     "off_form": {
@@ -191,36 +191,84 @@
                     "confirm_deactivation": {
                         "type": "boolean",
                         "title": "Confirm Muting Notifications?",
-                        "description": "Whether to signal the administrator when notifications are muted.",
+                        "description": "Disable stopping of notification based on reports, requires administrator action.",
                         "default": false
                     },
-                    "confirm_deactivation_message": {
-                        "type": "string",
-                        "title": "Administrator Mute Message",
-                        "description": "The message to place on the form for administration attention.",
-                        "default": "{{chw_name}} {{chw_phone}} has deactivated notifications on patient id {{patient_id}}.",
-                        "je:hint": "textarea"
+                    "validations": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "property": {
+                                    "type": "string",
+                                    "title": "Property",
+                                    "description": "The property to validate.",
+                                    "default": "patient_id"
+                                },
+                                "rule": {
+                                    "type": "string",
+                                    "title": "Validation Rule",
+                                    "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                    "default": "required && regex:[0-9]{5}"
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "title": "Error Message",
+                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
+                                    "default": "Invalid Patient ID '{{patient_id}}'",
+                                    "je:hint": "textarea"
+                                }
+                            },
+                            "type": "object"
+                        }
                     },
-                    "on_mute_message": {
-                        "type": "string",
-                        "title": "On Mute Message",
-                        "description": "The message to send when stopping notifications.",
-                        "default": "Thank you. Notifications for {{patient_id}} have been stopped.",
-                        "je:hint": "textarea"
-                    },
-                    "on_unmute_message": {
-                        "type": "string",
-                        "title": "On Resume Message",
-                        "description": "The message to send when resuming notifications.",
-                        "default": "Thank you. Notifications for {{patient_id}} are resumed.",
-                        "je:hint": "textarea"
-                    },
-                    "patient_not_found": {
-                        "type": "string",
-                        "title": "Patient Not Found Message",
-                        "description": "The message to send when the patient is not found for a notification change.",
-                        "default": "Could not find patient {{patient_id}}.",
-                        "je:hint": "textarea"
+                    "messages": {
+                        "type": "array",
+                        "title": "Response Messages",
+                        "items": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "title": "Message Text",
+                                    "je:hint": "textarea"
+                                },
+                                "event_type": {
+                                    "type": "string",
+                                    "title": "Event Type",
+                                    "description": "What should trigger this message?",
+                                    "default": "confirm_deactivation",
+                                    "enum": [
+                                        "confirm_deactivation",
+                                        "on_mute",
+                                        "on_unmute"
+                                    ],
+                                    "je:hint": "enumlabels",
+                                    "je:enumlabels": {
+                                        "confirm_deactivation": "Confirm Deactivation",
+                                        "on_mute": "On Mute",
+                                        "on_unmute": "On Unmute"
+                                    }
+                                },
+                                "recipient": {
+                                    "type": "string",
+                                    "title": "Recipient",
+                                    "description": "Contact to recieve the message.",
+                                    "default": "reporter",
+                                    "enum": [
+                                        "reporter",
+                                        "reporter_parent",
+                                        "reporter_grandparent"
+                                    ],
+                                    "je:hint": "enumlabels",
+                                    "je:enumlabels": {
+                                        "reporter": "Reporting Unit",
+                                        "reporter_parent": "Parent of Reporting Unit",
+                                        "reporter_grandparent": "Grandparent of Reporting Unit"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "default": []
                     }
                 }
             },
