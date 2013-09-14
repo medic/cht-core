@@ -127,7 +127,8 @@
             "reported_date_format": {
                 "type": "string",
                 "title": "Reported Date Format",
-                "default": "MMM hh:mm"
+                "default": "MMM hh:mm",
+                "description": "Format used to display the reported date field."
             },
             "forms_only_mode": {
                 "type": "boolean",
@@ -136,12 +137,58 @@
             },
             "gateway_number": {
                 "type": "string",
-                "title": "Gateway Number",
-                "default": "+13125551212"
+                "title": "Gateway Number"
+            },
+            "outgoing_phone_filters": {
+                "title": "Outgoing Phone Filters",
+                "type": "array",
+                "description": "These filters are applied to every phone number on an outgoing message.  This can be useful if your incoming phone number and outgoing phone number formats are slightly different.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "match": {
+                            "type": "string",
+                            "title": "Match",
+                            "default": "",
+                            "description": "A regular expression used to match a phone number.  Backslashes must be double escaped.  e.g. \\\\+997"
+                        },
+                        "replace": {
+                            "type": "string",
+                            "title": "Replace with",
+                            "default": "",
+                            "description": "Replace the match with this value."
+                        }
+                    }
+                }
+            },
+            "schedule_morning_hours" : {
+                "title": "Scheduled Message Morning Hours",
+                "description": "Only send messages after this hour, M-F.",
+                "type": "integer",
+                "default": 8
+            },
+            "schedule_evening_hours" : {
+                "title": "Scheduled Message Evening Hours",
+                "description": "Only send messages before this hour, M-F.",
+                "type": "integer",
+                "default": 17
+            },
+            "synthetic_date" : {
+                "title": "Synthetic date",
+                "description": "Only use this if you are testing message scheduling and want to simulate a specific date. e.g. 201304121200",
+                "type": "string",
+                "pattern": "(^[0-9]{12}$|^$)"
+            },
+            "id_format": {
+                "title": "Patient ID Format",
+                "type": "string",
+                "default": "1111",
+                "description": "Length of generated numerical identifiers. Note, an extra check digit is always used, so the default value (1111) generates a length of 5."
             },
             "kujua-reporting": {
                 "title": "Scheduled Reports",
                 "type": "array",
+                "description": "The forms to include in reporting rates stats.",
                 "items": {
                     "properties": {
                         "code": {
@@ -165,12 +212,288 @@
                     {
                         "code": "ZDIS",
                         "frequency": "weekly"
-                    },
-                    {
-                        "code": "ZSTK",
-                        "frequency": "monthly"
                     }
                 ]
+            },
+            "reminders": {
+                "title": "Scheduled Report Reminders",
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "form": {
+                            "type": "string",
+                            "title": "Reminder Form Code",
+                            "description": "What form is this reminder for?  e.g. ZDIS"
+                        },
+                        "text_expression": {
+                            "type": "string",
+                            "title": "Reminder Text Configuration",
+                            "description": "A text expression definition of the schedule.  See http://bunkat.github.io/later/parsers.html#text e.g. at 9am on Monday",
+                            "default": "at 9am on Monday"
+                        },
+                        "cron": {
+                            "type": "string",
+                            "title": "Reminder Cron Configuration",
+                            "description": "A cron definition of the schedule. e.g. weekly on Monday at 9am: '0 9 * * 1'",
+                            "default": "0 9 * * 1"
+                        },
+                        "mute_after_form_for": {
+                            "type": "string",
+                            "title": "Mute Reminders For",
+                            "description": "After receiving a form, how long to mute reminders for.  Supported units: years, months, weeks, days, hours, minutes. e.g. 5 days",
+                            "default": "5 days"
+                        },
+                        "message": {
+                            "type": "string",
+                            "title": "Reminder Text",
+                            "description": "Message to be sent.  The following strings will be substituted into the message: {{week}}, {{year}} and {{form}}.",
+                            "default": "Your reminder here.",
+                            "je:hint": "textarea"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "pregnancy_registration": {
+                "title": "Pregnancy Registration",
+                "type": "object",
+                "properties": {
+                    "form": {
+                        "type": "string",
+                        "title": "Pregnancy Registration Form",
+                        "description": "Form code of a pregnancy registration"
+                    },
+                    "validations": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "property": {
+                                    "type": "string",
+                                    "title": "Property",
+                                    "description": "The property on the JSON form to validate.",
+                                    "default": "patient_name"
+                                },
+                                "rule": {
+                                    "type": "string",
+                                    "title": "Validation Rule",
+                                    "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                    "default": "required && lenMin:5 && lenMax:50"
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "title": "Error Message",
+                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
+                                    "default": "Please include a valid Patient Name '{{patient_name}}' should be less than 50 characters.",
+                                    "je:hint": "textarea"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "birth_registration": {
+                "title": "Birth Registration",
+                "type": "object",
+                "properties": {
+                    "form": {
+                        "type": "string",
+                        "title": "Birth Registration Form",
+                        "description": "Form code of a birth registration",
+                        "default": "IMMR"
+                    },
+                    "validations": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "property": {
+                                    "type": "string",
+                                    "title": "Property",
+                                    "description": "The property on the JSON form to validate.",
+                                    "default": "patient_name"
+                                },
+                                "rule": {
+                                    "type": "string",
+                                    "title": "Validation Rule",
+                                    "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                    "default": "required && lenMin:5 && lenMax:50"
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "title": "Error Message",
+                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
+                                    "default": "Please include a valid Patient Name '{{patient_name}}' should be less than 50 characters.",
+                                    "je:hint": "textarea"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "patient_reports": {
+                "title": "Patient Reports",
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "form": {
+                            "type": "string",
+                            "title": "Report Form",
+                            "description": "Form code of the report."
+                        },
+                        "silence_type": {
+                            "type": "string",
+                            "title": "Silence Scheduled Message Type",
+                            "description": "After receiving this report, silence scheduled messages of this type. (Or leave blank.)"
+                        },
+                        "silence_for": {
+                            "type": "string",
+                            "title": "Silence Window",
+                            "description": "The length of time used to find the next reminder group to silence.  Supported units: years, months, weeks, days, hours, minutes. e.g. 1 week",
+                            "default": "25 days"
+                        },
+                        "validations": {
+                            "type": "array",
+                            "items": {
+                                "properties": {
+                                    "property": {
+                                        "type": "string",
+                                        "title": "Property",
+                                        "description": "The property to validate.",
+                                        "default": "patient_id"
+                                    },
+                                    "rule": {
+                                        "type": "string",
+                                        "title": "Validation Rule",
+                                        "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                        "default": "regex:[0-9]{5}"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "title": "Error Message",
+                                        "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
+                                        "default": "Invalid Patient ID '{{patient_id}}'",
+                                        "je:hint": "textarea"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "messages": {
+                            "type": "array",
+                            "title": "Response Messages",
+                            "items": {
+                                "properties": {
+                                    "message": {
+                                        "type": "string",
+                                        "title": "Message Text",
+                                        "je:hint": "textarea"
+                                    },
+                                    "event_type": {
+                                        "type": "string",
+                                        "title": "Event Type",
+                                        "description": "What should trigger this message?",
+                                        "default": "report_accepted",
+                                        "enum": [
+                                            "report_accepted",
+                                            "registration_not_found"
+                                        ],
+                                        "je:hint": "enumlabels",
+                                        "je:enumlabels": {
+                                            "report_accepted": "Report Accepted",
+                                            "registration_not_found": "Registration Not Found"
+                                        }
+                                    },
+                                    "recipient": {
+                                        "type": "string",
+                                        "title": "Recipient",
+                                        "description": "Contact to recieve the message.",
+                                        "default": "reporter",
+                                        "enum": [
+                                            "reporter",
+                                            "reporter_parent",
+                                            "reporter_grandparent"
+                                        ],
+                                        "je:hint": "enumlabels",
+                                        "je:enumlabels": {
+                                            "reporter": "Reporting Unit",
+                                            "reporter_parent": "Parent of Reporting Unit",
+                                            "reporter_grandparent": "Grandparent of Reporting Unit"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "default": []
+                        }
+                    },
+                    "type": "object"
+                },
+                "default": []
+            },
+            "task_regimes": {
+                "title": "Reminder Schedules",
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "key": {
+                            "type": "string",
+                            "title": "Reminder Type",
+                            "description": "A made up keyword to define this schedule. e.g. anc_reminders",
+                            "default": "anc_reminders"
+                        },
+                        "form": {
+                            "type": "string",
+                            "title": "Registration Form",
+                            "description": "The form code of the registration form that triggers schedule creation. e.g. ANCR",
+                            "default": "ANCR"
+                        },
+                        "start_from": {
+                            "type": "string",
+                            "title": "Timestamp Property Name",
+                            "description": "A timestamp or date property on the record that is used to calculate when messages are sent. e.g. lmp_date",
+                            "default": "lmp_date"
+                        },
+                        "registration_response": {
+                            "type": "string",
+                            "title": "Registration response message",
+                            "description": "The response message sent out when a schedule is created. e.g. Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. Next visit is needed in {{weeks}} weeks.",
+                            "default": "Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. ANC visit is needed in {{weeks}} weeks.",
+                            "je:hint": "textarea"
+                        },
+                        "messages": {
+                            "type": "array",
+                            "title": "Messages",
+                            "items": {
+                                "properties": {
+                                    "message": {
+                                        "type": "string",
+                                        "title": "Message Text",
+                                        "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
+                                        "default": "Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
+                                        "je:hint": "textarea"
+                                    },
+                                    "group": {
+                                        "type": "integer",
+                                        "title": "Message Group Number",
+                                        "description": "You can group reminders together by assigning a group number so they can be cleared in batches.",
+                                        "default": 1
+                                    },
+                                    "offset": {
+                                        "type": "string",
+                                        "title": "Send Message After",
+                                        "description": "This value is added to the timestamp property value to determine when to send the message.  Supported units: years, months, weeks, days, hours, minutes. e.g. 5 days",
+                                        "default": "12 weeks"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "default": []
+                        }
+                    },
+                    "type": "object"
+                },
+                "default": []
             },
             "notifications": {
                 "title": "Notifications",
@@ -269,360 +592,6 @@
                             "type": "object"
                         },
                         "default": []
-                    }
-                }
-            },
-            "schedule_morning_hours" : {
-                "title": "Schedule morning hours",
-                "description": "The scheduler only sends messages after this hour, M-F.",
-                "type": "integer",
-                "default": 8
-            },
-            "schedule_evening_hours" : {
-                "title": "Schedule evening hours",
-                "description": "The scheduler only sends messages before this hour, M-F.",
-                "type": "integer",
-                "default": 17
-            },
-            "synthetic_date" : {
-                "title": "Synthetic date",
-                "description": "Only modify this if you are testing the scheduler and want to simulate a specific date. e.g. 201304121200",
-                "type": "string",
-                "pattern": "(^[0-9]{12}$|^$)"
-            },
-            "outgoing_phone_filters": {
-                "title": "Outgoing Phone Filters",
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "match": {
-                            "type": "string",
-                            "title": "Match",
-                            "default": "",
-                            "description": "This is consumed by RegExp() and used to match a phone number. e.g. \\\\+997"
-                        },
-                        "replace": {
-                            "type": "string",
-                            "title": "Replace with",
-                            "default": "",
-                            "description": "Replace the match with this value."
-                        }
-                    }
-                }
-            },
-            "id_format": {
-                "title": "Patient ID Format",
-                "type": "string",
-                "default": "1111",
-                "description": "Length of generated numerical identifiers. Note, an extra check digit is always used, so the default value (1111) generates a length of 5."
-            },
-            "patient_reports": {
-                "title": "Patient Reports",
-                "type": "array",
-                "items": {
-                    "properties": {
-                        "form": {
-                            "type": "string",
-                            "title": "Report Form",
-                            "description": "Form code of the report."
-                        },
-                        "silence_type": {
-                            "type": "string",
-                            "title": "Silence Scheduled Message Type",
-                            "description": "After receiving this report, silence scheduled messages of this type. (Or leave blank.)"
-                        },
-                        "silence_for": {
-                            "type": "string",
-                            "title": "Silence Messages For",
-                            "description": "Silence the message type for this long. Uses momentjs.com syntax, e.g. '1 week'.",
-                            "default": "25 days"
-                        },
-                        "validations": {
-                            "type": "array",
-                            "items": {
-                                "properties": {
-                                    "property": {
-                                        "type": "string",
-                                        "title": "Property",
-                                        "description": "The property to validate.",
-                                        "default": "patient_id"
-                                    },
-                                    "rule": {
-                                        "type": "string",
-                                        "title": "Validation Rule",
-                                        "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
-                                        "default": "regex:[0-9]{5}"
-                                    },
-                                    "message": {
-                                        "type": "string",
-                                        "title": "Error Message",
-                                        "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
-                                        "default": "Invalid Patient ID '{{patient_id}}'",
-                                        "je:hint": "textarea"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        },
-                        "messages": {
-                            "type": "array",
-                            "title": "Response Messages",
-                            "items": {
-                                "properties": {
-                                    "message": {
-                                        "type": "string",
-                                        "title": "Message Text",
-                                        "je:hint": "textarea"
-                                    },
-                                    "event_type": {
-                                        "type": "string",
-                                        "title": "Event Type",
-                                        "description": "What should trigger this message?",
-                                        "default": "report_accepted",
-                                        "enum": [
-                                            "report_accepted",
-                                            "registration_not_found"
-                                        ],
-                                        "je:hint": "enumlabels",
-                                        "je:enumlabels": {
-                                            "report_accepted": "Report Accepted",
-                                            "registration_not_found": "Registration Not Found"
-                                        }
-                                    },
-                                    "recipient": {
-                                        "type": "string",
-                                        "title": "Recipient",
-                                        "description": "Contact to recieve the message.",
-                                        "default": "reporter",
-                                        "enum": [
-                                            "reporter",
-                                            "reporter_parent",
-                                            "reporter_grandparent"
-                                        ],
-                                        "je:hint": "enumlabels",
-                                        "je:enumlabels": {
-                                            "reporter": "Reporting Unit",
-                                            "reporter_parent": "Parent of Reporting Unit",
-                                            "reporter_grandparent": "Grandparent of Reporting Unit"
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            },
-                            "default": []
-                        }
-                    },
-                    "type": "object"
-                },
-                "default": []
-            },
-            "pregnancy_registration": {
-                "title": "Pregnancy Registration",
-                "type": "object",
-                "properties": {
-                    "form": {
-                        "type": "string",
-                        "title": "Pregnancy Registration Form",
-                        "description": "Form code of a pregnancy registration"
-                    },
-                    "validations": {
-                        "type": "array",
-                        "items": {
-                            "properties": {
-                                "property": {
-                                    "type": "string",
-                                    "title": "Property",
-                                    "description": "The property on the JSON form to validate.",
-                                    "default": "patient_name"
-                                },
-                                "rule": {
-                                    "type": "string",
-                                    "title": "Validation Rule",
-                                    "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
-                                    "default": "required && lenMin:5 && lenMax:50"
-                                },
-                                "message": {
-                                    "type": "string",
-                                    "title": "Error Message",
-                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
-                                    "default": "Please include a valid Patient Name '{{patient_name}}' should be less than 50 characters.",
-                                    "je:hint": "textarea"
-                                }
-                            },
-                            "type": "object"
-                        }
-                    }
-                }
-            },
-            "birth_registration": {
-                "title": "Birth Registration",
-                "type": "object",
-                "properties": {
-                    "form": {
-                        "type": "string",
-                        "title": "Birth Registration Form",
-                        "description": "Form code of a birth registration"
-                    },
-                    "validations": {
-                        "type": "array",
-                        "items": {
-                            "properties": {
-                                "property": {
-                                    "type": "string",
-                                    "title": "Property",
-                                    "description": "The property on the JSON form to validate.",
-                                    "default": "patient_name"
-                                },
-                                "rule": {
-                                    "type": "string",
-                                    "title": "Validation Rule",
-                                    "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
-                                    "default": "required && lenMin:5 && lenMax:50"
-                                },
-                                "message": {
-                                    "type": "string",
-                                    "title": "Error Message",
-                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
-                                    "default": "Please include a valid Patient Name '{{patient_name}}' should be less than 50 characters.",
-                                    "je:hint": "textarea"
-                                }
-                            },
-                            "type": "object"
-                        }
-                    }
-                }
-            },
-            "reminders": {
-                "title": "Report Reminders",
-                "type": "array",
-                "items": {
-                    "properties": {
-                        "form": {
-                            "type": "string",
-                            "title": "Reminder Form Code",
-                            "description": "What form this reminder is for. E.g., ANC"
-                        },
-                        "cron": {
-                            "type": "string",
-                            "title": "Reminder Cron Configuration",
-                            "description": "A cron definition of the schedule. E.g., weekly on Monday at 9am: '0 9 * * 1'",
-                            "default": "0 9 * * 1"
-                        },
-                        "mute_after_form_for": {
-                            "type": "string",
-                            "title": "Mute Reminders For",
-                            "description": "After receiving a form, how long to mute reminders for. Uses momentjs format, e.g. '5 days'",
-                            "default": "5 days"
-                        },
-                        "message": {
-                            "type": "string",
-                            "title": "Reminder Text",
-                            "description": "The text of the message. Has the substitutions: week, year",
-                            "default": "Your reminder here.",
-                            "je:hint": "textarea"
-                        }
-                    },
-                    "type": "object"
-                }
-            },
-            "task_regimes": {
-                "title": "Reminder Schedules",
-                "type": "array",
-                "items": {
-                    "properties": {
-                        "key": {
-                            "type": "string",
-                            "title": "Reminder Type",
-                            "description": "A made up keyword to define this schedule. e.g. anc_reminders",
-                            "default": "anc_reminders"
-                        },
-                        "form": {
-                            "type": "string",
-                            "title": "Registration Form",
-                            "description": "The form code of the registration form that triggers schedule creation. e.g. ANCR",
-                            "default": "ANCR"
-                        },
-                        "start_from": {
-                            "type": "string",
-                            "title": "Timestamp Property Name",
-                            "description": "The property name from the form that is used to calculate the offset in the reminders below. e.g. lmp_date",
-                            "default": "lmp_date"
-                        },
-                        "registration_response": {
-                            "type": "string",
-                            "title": "Registration response message",
-                            "description": "The response message sent out when a schedule is created. e.g. Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. Next visit is needed in {{weeks}} weeks.",
-                            "default": "Thank you {{chw_name}} for registering {{patient_name}}. Patient ID is {{patient_id}}. ANC visit is needed in {{weeks}} weeks.",
-                            "je:hint": "textarea"
-                        },
-                        "messages": {
-                            "type": "array",
-                            "title": "Messages",
-                            "items": {
-                                "properties": {
-                                    "message": {
-                                        "type": "string",
-                                        "title": "Message Text",
-                                        "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
-                                        "default": "Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
-                                        "je:hint": "textarea"
-                                    },
-                                    "group": {
-                                        "type": "integer",
-                                        "title": "Message Group Number",
-                                        "description": "You can group reminders together by assigning a group number so they can be cleared in batches.",
-                                        "default": 1
-                                    },
-                                    "offset": {
-                                        "type": "string",
-                                        "title": "Send Message After",
-                                        "description": "This value is added to the timestamp property value to determine when to send the reminder. It supports minutes, hours, days, weeks, months and years. e.g. 12 weeks",
-                                        "default": "12 weeks"
-                                    }
-                                },
-                                "type": "object"
-                            },
-                            "default": []
-                        }
-                    },
-                    "type": "object"
-                },
-                "default": []
-            },
-            "weekly_reminders": {
-                "title": "Weekly Report Reminders",
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "form": {
-                            "type": "string",
-                            "title": "Form Code",
-                            "default": ""
-                        },
-                        "day": {
-                            "type": "string",
-                            "title": "Day",
-                            "enum": [
-                                "",
-                                "Monday",
-                                "Tuesday",
-                                "Wednesday",
-                                "Thursday",
-                                "Friday",
-                                "Saturday",
-                                "Sunday"
-                            ],
-                            "default": "",
-                            "description": "The day to send the message."
-                        },
-                        "message": {
-                            "type": "string",
-                            "title": "Message",
-                            "default": "Please submit report for week {{week}} immediately.",
-                            "description": "Message will be sent and the following strings will be substituted into the message: {{week}}, {{year}} and {{form}}."
-                        }
                     }
                 }
             },
