@@ -283,7 +283,7 @@
                                     "type": "string",
                                     "title": "Error Message",
                                     "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
-                                    "default": "Please include a valid Patient Name '{{patient_name}}' should be less than 50 characters.",
+                                    "default": "'{{patient_name}}' is not a valid patient name. Please submit a patient name between 5 and 50 characters.",
                                     "je:hint": "textarea"
                                 }
                             },
@@ -349,7 +349,7 @@
                         "silence_for": {
                             "type": "string",
                             "title": "Silence Window",
-                            "description": "The length of time used to find the next reminder group to silence.  Supported units: years, months, weeks, days, hours, minutes. e.g. 1 week",
+                            "description": "The length of time used to find the next reminder group to silence.  Supported units: years, months, weeks, days, hours, minutes. e.g. 1 week (Or leave blank.)",
                             "default": "25 days"
                         },
                         "validations": {
