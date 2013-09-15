@@ -24,12 +24,12 @@ exports.setUp = function(callback) {
         validations: [
             {
                 property: 'lmp',
-                rule: 'min:0 && max:40',
+                rule: 'required && min(0) && max(40)',
                 message: 'Invalid LMP; must be between 0-40 weeks.'
             },
             {
                 property: 'patient_name',
-                rule: 'lenMin:1 && lenMax:100',
+                rule: 'required && lenMin(1) && lenMax(100)',
                 message: 'Invalid patient name.'
             }
         ]
@@ -243,7 +243,6 @@ exports['invalid name valid LMP logic'] = function(test) {
 exports['valid name invalid LMP logic'] = function(test) {
     var doc;
 
-    debugger;
     doc = {
         form: 'y',
         from: '+1234',

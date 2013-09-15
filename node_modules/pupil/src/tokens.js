@@ -11,8 +11,11 @@
 	};
 
 	addToken('Identifier');
-	addToken('Colon');
 	addToken('Comma');
+	addToken('Colon');
+	addToken('QuestionMark');
+	addToken('String');
+	addToken('Number');
 	addToken('LogicalAnd');
 	addToken('LogicalOr');
 	addToken('LogicalNot');

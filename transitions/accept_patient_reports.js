@@ -45,7 +45,7 @@ module.exports = {
             doc = options.doc,
             report = options.report;
 
-        if (registrations.length) {
+        if (registrations && registrations.length) {
             messages.addReply(doc, report.report_accepted);
             module.exports.silenceRegistrations({
                 db: options.db,

@@ -89,7 +89,7 @@ module.exports = {
         }, function(err, registrations) {
             if (err) {
                 callback(err);
-            } else if (registrations.length) { // id collision, retry
+            } else if (registrations && registrations.length) { // id collision, retry
                 self.setId(doc, callback);
             } else {
                 doc.patient_id = id;

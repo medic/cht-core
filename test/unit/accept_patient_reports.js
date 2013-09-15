@@ -142,7 +142,7 @@ exports['patient id failing validation adds error'] = function(test) {
         validations: [
             {
                 property: 'patient_id',
-                rule: 'regex:\w{5}',
+                rule: "regex('\\w{5}')",
                 message: "bad id {{patient_id}}"
             }
         ],

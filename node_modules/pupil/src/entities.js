@@ -12,6 +12,7 @@
 
 	addEntity('Block');
 	addEntity('Func');
+	addEntity('Ternary');
 	addEntity('LogicalAnd');
 	addEntity('LogicalOr');
 	addEntity('LogicalNot');

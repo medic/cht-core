@@ -5,6 +5,10 @@
     };
 
     Validator.prototype.validate = function(entities, values, valueKey) {
+        if (entities === null || typeof entities === 'undefined') {
+            return true;
+        }
+
         // A couple shorthands
         var ValidatorFunctions = this.validatorFunctions;
         var Entity = this.entities;
@@ -13,6 +17,7 @@
         var logicalOperator = 1; // 1 = AND, 2 = OR
         var negateNext = false;
 
+        // Loop through the entities
         for (var i = 0; i < entities.length; i++) {
             var thisEntity = entities[i];
             var tempResult = true;
@@ -50,6 +55,16 @@
                 useTempResult = true;
             } else if (thisEntity.type == Entity.Block) {
                 tempResult = this.validate(thisEntity.sub, values, valueKey);
+                useTempResult = true;
+            } else if (thisEntity.type == Entity.Ternary) {
+                var ternaryCondition = this.validate(thisEntity.conditions, values, valueKey);
+
+                if (ternaryCondition) {
+                    tempResult = this.validate(thisEntity.ifThen, values, valueKey);
+                } else {
+                    tempResult = this.validate(thisEntity.ifElse, values, valueKey);
+                }
+
                 useTempResult = true;
             }
 

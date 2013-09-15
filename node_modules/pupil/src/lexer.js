@@ -4,8 +4,6 @@
     };
 
     Lexer.prototype.tokenize = function(str) {
-        str = str.replace(/([^\\])\s+/g, '$1');
-
         var chars = str.split(""),
             resultTokens = [],
             i;
@@ -18,6 +16,8 @@
                 data: data || null
             });
         };
+
+        var whiteSpaceRegex = new RegExp('^\\s+$');
 
         // If we're "building" an identifier, store it here until we flush it
         var tempIdentifier = "";
@@ -35,10 +35,18 @@
         // Sometimes we'll completely ignore a char, such as with escape symbols
         var ignoreThisChar = false;
 
+        // Are we in a string?
+        var inString = false;
+        var stringStartChar = null;
+
         // Loop through the chars
         for (i = 0; i < chars.length; i++) {
             var thisChar = chars[i],
                 nextChar = chars[i + 1];
+
+            // If we should start or end a string at the end of this loop
+            var startString = false;
+            var endString = false;
 
             flushIdentifier = true;
             tokensToPush = [];
@@ -48,11 +56,28 @@
             // skip the tokens, go straight to the identifier part
             if (treatNextAsIdentifier) {
                 treatNextAsIdentifier = false;
-            }
+            
+            // String end
+            } else if (thisChar === stringStartChar) {
+                endString = true;
+                flushIdentifier = true;
+
+                tokensToPush.push([Token.StringDelimiter]);
+
+            // Strings
+            } else if (inString) {
+                // Do nothing, counts as an identifier
+
+            // String start
+            } else if (thisChar === '"' || thisChar === "'") {
+                startString = true;
+                flushIdentifier = true;
+
+                tokensToPush.push([Token.StringDelimiter]);
 
             // Escape the next char; ignore this one (because it's an escaping symbol)
             // and don't flush the identifier (as the next char will be added to it).
-            else if (thisChar == '\\') {
+            } else if (thisChar == '\\') {
                 treatNextAsIdentifier = true;
                 ignoreThisChar = true;
                 flushIdentifier = false;
@@ -63,6 +88,8 @@
                 tokensToPush.push([Token.Comma]);
             } else if (thisChar == ':') {
                 tokensToPush.push([Token.Colon]);
+            } else if (thisChar == '?') {
+                tokensToPush.push([Token.QuestionMark]);
             } else if (thisChar == '&' && nextChar == '&') {
                 tokensToPush.push([Token.LogicalAnd]);
                 i++;
@@ -75,6 +102,8 @@
                 tokensToPush.push([Token.BracketOpen]);
             } else if (thisChar == ')') {
                 tokensToPush.push([Token.BracketClose]);
+            } else if (whiteSpaceRegex.test(thisChar)) {
+                ignoreThisChar = true;
             }
 
             // If there is no token to push and we're not ignoring
@@ -94,9 +123,28 @@
             // Flushing the identifier means pushing an identifier
             // token with the current "tempIdentifier" as the data
             // and then emptying the temporary identifier.
+            // 
+            // The identifier can be pushed as a string, a number or an identifier.
             if (flushIdentifier && tempIdentifier !== "") {
-                tokensToPush.unshift([Token.Identifier, tempIdentifier]);
+                if (inString) {
+                    tokensToPush.unshift([Token.String, tempIdentifier]);
+                } else if ( ! isNaN(parseFloat(tempIdentifier, 10)) && isFinite(tempIdentifier)) {
+                    tokensToPush.unshift([Token.Number, tempIdentifier]);
+                } else {
+                    tokensToPush.unshift([Token.Identifier, tempIdentifier]);
+                }
+
                 tempIdentifier = "";
+            }
+
+            if (startString) {
+                inString = true;
+                stringStartChar = thisChar;
+            }
+
+            if (endString) {
+                inString = false;
+                stringStartChar = null;
             }
 
             if (tokensToPush.length > 0) {
