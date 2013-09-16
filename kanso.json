@@ -261,7 +261,8 @@
                     "form": {
                         "type": "string",
                         "title": "Pregnancy Registration Form",
-                        "description": "Form code of a pregnancy registration"
+                        "description": "Form code of a pregnancy registration",
+                        "default": "ANCR"
                     },
                     "validations": {
                         "type": "array",
@@ -282,7 +283,7 @@
                                 "message": {
                                     "type": "string",
                                     "title": "Error Message",
-                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
+                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, chw_phone, chw_name",
                                     "default": "'{{patient_name}}' is not a valid patient name. Please submit a patient name between 5 and 50 characters.",
                                     "je:hint": "textarea"
                                 }
@@ -321,7 +322,7 @@
                                 "message": {
                                     "type": "string",
                                     "title": "Error Message",
-                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
+                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, chw_phone, chw_name",
                                     "default": "Please include a valid Patient Name '{{patient_name}}' should be less than 50 characters.",
                                     "je:hint": "textarea"
                                 }
@@ -339,12 +340,14 @@
                         "form": {
                             "type": "string",
                             "title": "Report Form",
-                            "description": "Form code of the report."
+                            "description": "Form code of the report.",
+                            "default": "ANCV"
                         },
                         "silence_type": {
                             "type": "string",
                             "title": "Silence Scheduled Message Type",
-                            "description": "After receiving this report, silence scheduled messages of this type. (Or leave blank.)"
+                            "description": "After receiving this report, silence scheduled messages of this type. (Or leave blank.)",
+                            "default": "anc_reminders"
                         },
                         "silence_for": {
                             "type": "string",
@@ -371,7 +374,7 @@
                                     "message": {
                                         "type": "string",
                                         "title": "Error Message",
-                                        "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
+                                        "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, chw_phone, chw_name",
                                         "default": "Invalid Patient ID '{{patient_id}}'",
                                         "je:hint": "textarea"
                                     }
@@ -408,17 +411,17 @@
                                         "type": "string",
                                         "title": "Recipient",
                                         "description": "Contact to recieve the message.",
-                                        "default": "reporter",
+                                        "default": "clinic",
                                         "enum": [
-                                            "reporter",
-                                            "reporter_parent",
-                                            "reporter_grandparent"
+                                            "clinic",
+                                            "parent",
+                                            "grandparent"
                                         ],
                                         "je:hint": "enumlabels",
                                         "je:enumlabels": {
-                                            "reporter": "Reporting Unit",
-                                            "reporter_parent": "Parent of Reporting Unit",
-                                            "reporter_grandparent": "Grandparent of Reporting Unit"
+                                            "clinic": "Reporting Unit",
+                                            "parent": "Parent of Reporting Unit",
+                                            "grandparent": "Grandparent of Reporting Unit"
                                         }
                                     }
                                 },
@@ -484,6 +487,23 @@
                                         "title": "Send Message After",
                                         "description": "This value is added to the timestamp property value to determine when to send the message.  Supported units: years, months, weeks, days, hours, minutes. e.g. 5 days",
                                         "default": "12 weeks"
+                                    },
+                                    "recipient": {
+                                        "type": "string",
+                                        "title": "Recipient",
+                                        "description": "Contact to recieve the message.",
+                                        "default": "clinic",
+                                        "enum": [
+                                            "clinic",
+                                            "parent",
+                                            "grandparent"
+                                        ],
+                                        "je:hint": "enumlabels",
+                                        "je:enumlabels": {
+                                            "clinic": "Reporting Unit",
+                                            "parent": "Parent of Reporting Unit",
+                                            "grandparent": "Grandparent of Reporting Unit"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -536,7 +556,7 @@
                                 "message": {
                                     "type": "string",
                                     "title": "Error Message",
-                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, clinic_phone, clinic_name",
+                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, chw_phone, chw_name",
                                     "default": "Invalid Patient ID '{{patient_id}}'",
                                     "je:hint": "textarea"
                                 }
@@ -575,17 +595,17 @@
                                     "type": "string",
                                     "title": "Recipient",
                                     "description": "Contact to recieve the message.",
-                                    "default": "reporter",
+                                    "default": "clinic",
                                     "enum": [
-                                        "reporter",
-                                        "reporter_parent",
-                                        "reporter_grandparent"
+                                        "clinic",
+                                        "parent",
+                                        "grandparent"
                                     ],
                                     "je:hint": "enumlabels",
                                     "je:enumlabels": {
-                                        "reporter": "Reporting Unit",
-                                        "reporter_parent": "Parent of Reporting Unit",
-                                        "reporter_grandparent": "Grandparent of Reporting Unit"
+                                        "clinic": "Reporting Unit",
+                                        "parent_phone": "Parent of Reporting Unit",
+                                        "grandparent_phone": "Grandparent of Reporting Unit"
                                     }
                                 }
                             },
