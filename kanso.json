@@ -277,7 +277,7 @@
                                     "type": "string",
                                     "title": "Validation Rule",
                                     "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
-                                    "default": "required && lenMin(5) && lenMax(50)"
+                                    "default": "lenMin(5) && lenMax(50)"
                                 },
                                 "message": {
                                     "type": "string",
@@ -316,7 +316,7 @@
                                     "type": "string",
                                     "title": "Validation Rule",
                                     "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
-                                    "default": "required && lenMin(5) && lenMax(50)"
+                                    "default": "lenMin(5) && lenMax(50)"
                                 },
                                 "message": {
                                     "type": "string",
@@ -366,7 +366,7 @@
                                         "type": "string",
                                         "title": "Validation Rule",
                                         "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
-                                        "default": "required && regex('[0-9]{5}')"
+                                        "default": "regex('[0-9]{5}')"
                                     },
                                     "message": {
                                         "type": "string",
@@ -531,7 +531,7 @@
                                     "type": "string",
                                     "title": "Validation Rule",
                                     "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
-                                    "default": "required && regex('[0-9]{5}')"
+                                    "default": "regex('[0-9]{5}')"
                                 },
                                 "message": {
                                     "type": "string",
