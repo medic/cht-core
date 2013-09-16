@@ -15,7 +15,7 @@
     "uuid": "1.4.x",
     "later": "~1.1.3",
     "couchmark": "~0.1.0",
-    "pupil": "~1.1.2"
+    "pupil": "~1.2.0"
   },
   "devDependencies": {
     "kanso": "latest",

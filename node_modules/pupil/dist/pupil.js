@@ -48,14 +48,15 @@
         // If we're "building" an identifier, store it here until we flush it
         var tempIdentifier = "";
 
+        // Keep building the identifier?
+        var appendToTempIdentifier = false;
+
         // When a char is escaped, treat it as an identifier even if it would
         // otherwise be resolved to a different token
         var treatNextAsIdentifier = false;
 
-        // Whether we should flush the identifier we're building
-        var flushIdentifier = true;
-
-        // The token or tokens to push after e.g. flushing the identifier
+        // The token or tokens to push at the end of the loop
+        // after e.g. flushing the identifier
         var tokensToPush = [];
 
         // Sometimes we'll completely ignore a char, such as with escape symbols
@@ -74,39 +75,33 @@
             var startString = false;
             var endString = false;
 
-            flushIdentifier = true;
+            // Reset some variables for this loop
+            appendToTempIdentifier = false;
             tokensToPush = [];
             ignoreThisChar = false;
 
-            // This char was escaped;
-            // skip the tokens, go straight to the identifier part
+            // This char was escaped, append it to an identifier.
             if (treatNextAsIdentifier) {
                 treatNextAsIdentifier = false;
+                appendToTempIdentifier = true;
             
             // String end
             } else if (thisChar === stringStartChar) {
                 endString = true;
-                flushIdentifier = true;
-
-                tokensToPush.push([Token.StringDelimiter]);
 
             // Strings
             } else if (inString) {
-                // Do nothing, counts as an identifier
+                appendToTempIdentifier = true;
 
             // String start
             } else if (thisChar === '"' || thisChar === "'") {
                 startString = true;
-                flushIdentifier = true;
-
-                tokensToPush.push([Token.StringDelimiter]);
 
             // Escape the next char; ignore this one (because it's an escaping symbol)
             // and don't flush the identifier (as the next char will be added to it).
             } else if (thisChar == '\\') {
                 treatNextAsIdentifier = true;
                 ignoreThisChar = true;
-                flushIdentifier = false;
             }
 
             // General tokens
@@ -128,22 +123,25 @@
                 tokensToPush.push([Token.BracketOpen]);
             } else if (thisChar == ')') {
                 tokensToPush.push([Token.BracketClose]);
+
+            // Ignore whitespace unless we're in a string
             } else if (whiteSpaceRegex.test(thisChar)) {
                 ignoreThisChar = true;
+
+            // Otherwise it's an identifier part
+            } else {
+                appendToTempIdentifier = true;
             }
 
-            // If there is no token to push and we're not ignoring
-            // this char, assume we're continuing (or starting) an
-            // identifier.
-            if (tokensToPush.length === 0 && ! ignoreThisChar) {
+            // Should we build the identifier with this char?
+            if (appendToTempIdentifier) {
                 tempIdentifier += thisChar;
-                flushIdentifier = false;
             }
 
             // Make sure we flush the identifier if we still have one
             // going when the string ends.
             if (i == chars.length - 1) {
-                flushIdentifier = true;
+                appendToTempIdentifier = false;
             }
 
             // Flushing the identifier means pushing an identifier
@@ -151,7 +149,7 @@
             // and then emptying the temporary identifier.
             // 
             // The identifier can be pushed as a string, a number or an identifier.
-            if (flushIdentifier && tempIdentifier !== "") {
+            if ( ! appendToTempIdentifier && ! ignoreThisChar && tempIdentifier !== "") {
                 if (inString) {
                     tokensToPush.unshift([Token.String, tempIdentifier]);
                 } else if ( ! isNaN(parseFloat(tempIdentifier, 10)) && isFinite(tempIdentifier)) {
@@ -173,6 +171,7 @@
                 stringStartChar = null;
             }
 
+            // Push outstanding tokens
             if (tokensToPush.length > 0) {
                 for (var a = 0; a < tokensToPush.length; a++) {
                     pushToken(tokensToPush[a][0], tokensToPush[a][1]);
@@ -199,7 +198,7 @@
         return {
             type: type,
 
-            // Used for "Block" and "Ternary" type entities
+            // Used for "Block" type entities
             sub: [],
 
             // Used for "Func" (Function) type entities
@@ -270,7 +269,7 @@
         for (var i = 0; i < tokens.length; i++) {
             var thisToken = tokens[i];
             var entitiesToPush = [];
-            var openNewBlock = false;
+            var openBlock = false;
             var closeBlock = false;
             var closeTernary = false;
 
@@ -301,7 +300,7 @@
                 currentFunction = createEntity(Entity.Func);
                 currentFunction.funcName = thisToken.data;
 
-                expectOneOf(['logicalOp', 'funcArgsStart', 'blockEnd']);
+                expectOneOf(['logicalOp', 'funcArgsStart', 'blockEnd', 'ternaryThen', 'ternaryElse']);
 
             // Ternary "then"/start
             } else if (thisToken.name == Token.QuestionMark) {
@@ -372,7 +371,7 @@
                     expectOneOf(['string', 'number', 'funcArgsEnd']);
                 // Or open a block
                 } else if (accept.blockStart) {
-                    openNewBlock = true;
+                    openBlock = true;
                     flushFunction = true;
 
                     expectOneOf(['identifier', 'blockStart', 'blockEnd', 'negator']);
@@ -423,7 +422,7 @@
                 }
             }
 
-            if (openNewBlock) {
+            if (openBlock) {
                 var newBlock = createEntity(Entity.Block);
                 blockStack.push(newBlock);
                 currentBlock.sub.push(newBlock);
@@ -481,6 +480,8 @@
     var parser              = null;
     var validator           = null;
 
+    var validation_result   = null;
+
     var hasInitialized      = false;
 
     var ruleCache = {};
@@ -494,6 +495,8 @@
             lexer               = require('./lexer.js').create(tokens);
             parser              = require('./parser.js').create(tokens, entities);
             validator           = require('./validator.js').create(validator_functions, entities);
+
+            validation_result   = require('./validation_result.js');
         } else {
             tokens              = window.pupil.tokens;
             entities            = window.pupil.entities;
@@ -502,6 +505,8 @@
             lexer               = new window.pupil.lexer(tokens);
             parser              = new window.pupil.parser(tokens, entities);
             validator           = new window.pupil.validator(validator_functions, entities);
+
+            validation_result   = window.pupil.validation_result;
         }
 
         hasInitialized = true;
@@ -549,7 +554,7 @@
             results[index] = validator.validate(entities, values, index);
         }
 
-        return results;
+        return validation_result.create(results);
     };
 
     // Export the module
@@ -593,6 +598,54 @@
     } else {
         window.pupil = window.pupil || {};
         window.pupil.tokens = tokens;
+    }
+})();;(function(undefined) {
+	var ValidationResult = function(results) {
+		this.results = results;
+	};
+
+	ValidationResult.prototype.isValid = function() {
+		for (var index in this.results) {
+			if ( ! this.results[index]) {
+				return false;
+			}
+		}
+
+		return true;
+	};
+
+	ValidationResult.prototype.hasErrors = function() {
+		return ! this.isValid();
+	};
+
+	ValidationResult.prototype.errors = function() {
+		var errors = [];
+
+		for (var index in this.results) {
+			if ( ! this.results[index]) {
+				errors.push(index);
+			}
+		}
+
+		return errors;
+	};
+
+	ValidationResult.prototype.fields = function() {
+		return this.results;
+	};
+
+	// Export the module
+	var exportedModule = {
+		create: function(results) {
+            return new ValidationResult(results);
+        }
+	};
+
+    if (typeof module !== 'undefined') {
+        module.exports = exportedModule;
+    } else {
+        window.pupil = window.pupil || {};
+        window.pupil.validation_result = exportedModule;
     }
 })();;(function(undefined) {
     var Validator = function(validatorFunctions, entities) {

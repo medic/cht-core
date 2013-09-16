@@ -22,14 +22,15 @@
         // If we're "building" an identifier, store it here until we flush it
         var tempIdentifier = "";
 
+        // Keep building the identifier?
+        var appendToTempIdentifier = false;
+
         // When a char is escaped, treat it as an identifier even if it would
         // otherwise be resolved to a different token
         var treatNextAsIdentifier = false;
 
-        // Whether we should flush the identifier we're building
-        var flushIdentifier = true;
-
-        // The token or tokens to push after e.g. flushing the identifier
+        // The token or tokens to push at the end of the loop
+        // after e.g. flushing the identifier
         var tokensToPush = [];
 
         // Sometimes we'll completely ignore a char, such as with escape symbols
@@ -48,39 +49,33 @@
             var startString = false;
             var endString = false;
 
-            flushIdentifier = true;
+            // Reset some variables for this loop
+            appendToTempIdentifier = false;
             tokensToPush = [];
             ignoreThisChar = false;
 
-            // This char was escaped;
-            // skip the tokens, go straight to the identifier part
+            // This char was escaped, append it to an identifier.
             if (treatNextAsIdentifier) {
                 treatNextAsIdentifier = false;
+                appendToTempIdentifier = true;
             
             // String end
             } else if (thisChar === stringStartChar) {
                 endString = true;
-                flushIdentifier = true;
-
-                tokensToPush.push([Token.StringDelimiter]);
 
             // Strings
             } else if (inString) {
-                // Do nothing, counts as an identifier
+                appendToTempIdentifier = true;
 
             // String start
             } else if (thisChar === '"' || thisChar === "'") {
                 startString = true;
-                flushIdentifier = true;
-
-                tokensToPush.push([Token.StringDelimiter]);
 
             // Escape the next char; ignore this one (because it's an escaping symbol)
             // and don't flush the identifier (as the next char will be added to it).
             } else if (thisChar == '\\') {
                 treatNextAsIdentifier = true;
                 ignoreThisChar = true;
-                flushIdentifier = false;
             }
 
             // General tokens
@@ -102,22 +97,25 @@
                 tokensToPush.push([Token.BracketOpen]);
             } else if (thisChar == ')') {
                 tokensToPush.push([Token.BracketClose]);
+
+            // Ignore whitespace unless we're in a string
             } else if (whiteSpaceRegex.test(thisChar)) {
                 ignoreThisChar = true;
+
+            // Otherwise it's an identifier part
+            } else {
+                appendToTempIdentifier = true;
             }
 
-            // If there is no token to push and we're not ignoring
-            // this char, assume we're continuing (or starting) an
-            // identifier.
-            if (tokensToPush.length === 0 && ! ignoreThisChar) {
+            // Should we build the identifier with this char?
+            if (appendToTempIdentifier) {
                 tempIdentifier += thisChar;
-                flushIdentifier = false;
             }
 
             // Make sure we flush the identifier if we still have one
             // going when the string ends.
             if (i == chars.length - 1) {
-                flushIdentifier = true;
+                appendToTempIdentifier = false;
             }
 
             // Flushing the identifier means pushing an identifier
@@ -125,7 +123,7 @@
             // and then emptying the temporary identifier.
             // 
             // The identifier can be pushed as a string, a number or an identifier.
-            if (flushIdentifier && tempIdentifier !== "") {
+            if ( ! appendToTempIdentifier && ! ignoreThisChar && tempIdentifier !== "") {
                 if (inString) {
                     tokensToPush.unshift([Token.String, tempIdentifier]);
                 } else if ( ! isNaN(parseFloat(tempIdentifier, 10)) && isFinite(tempIdentifier)) {
@@ -147,6 +145,7 @@
                 stringStartChar = null;
             }
 
+            // Push outstanding tokens
             if (tokensToPush.length > 0) {
                 for (var a = 0; a < tokensToPush.length; a++) {
                     pushToken(tokensToPush[a][0], tokensToPush[a][1]);

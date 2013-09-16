@@ -51,7 +51,7 @@ module.exports = {
             // no schedule, and have valid name
             errors = validation.validate(doc, config.validations, 'lmp');
             if (errors.length) {
-                messages.addReply(doc, errors.join(', '));
+                messages.addReply(doc, errors.join('  '));
                 callback(null, true);
             } else {
                 self.setId({
@@ -65,7 +65,7 @@ module.exports = {
             errors = validation.validate(doc, config.validations);
 
             if (errors.length) {
-                messages.addReply(doc, errors.join(', '));
+                messages.addReply(doc, errors.join('  '));
                 callback(null, true);
             } else {
                 self.setDate(doc);

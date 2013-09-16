@@ -15,6 +15,7 @@ related_entities = {
 };
 
 function getMessage(doc) {
+    if (!doc || !doc.tasks) return;
     return _.first(_.first(doc.tasks).messages).message;
 }
 
@@ -24,12 +25,12 @@ exports.setUp = function(callback) {
         validations: [
             {
                 property: 'lmp',
-                rule: 'required && min(0) && max(40)',
+                rule: 'min(0) && max(40)',
                 message: 'Invalid LMP; must be between 0-40 weeks.'
             },
             {
                 property: 'patient_name',
-                rule: 'required && lenMin(1) && lenMax(100)',
+                rule: 'lenMin(1) && lenMax(100)',
                 message: 'Invalid patient name.'
             }
         ]
@@ -278,7 +279,7 @@ exports['invalid name invalid LMP logic'] = function(test) {
         test.equals(err, null);
         test.equals(complete, true);
         test.equals(doc.patient_id, undefined);
-        test.equals(getMessage(doc), 'Invalid patient name., Invalid LMP; must be between 0-40 weeks.');
+        test.equals(getMessage(doc), 'Invalid patient name.  Invalid LMP; must be between 0-40 weeks.');
 
         test.done();
     });
@@ -294,4 +295,23 @@ exports['mismatched form returns false'] = function(test) {
 
         test.done();
     })
+}
+
+exports['missing all fields returns validation errors'] = function(test) {
+    test.expect(2);
+    var doc = {
+        form: 'y',
+        from: '+123',
+        related_entities: related_entities
+    };
+    transition.onMatch({
+        doc: doc
+    }, {}, function(err, complete) {
+        test.equals(complete, true);
+        test.equals(
+            getMessage(doc),
+            'Invalid LMP; must be between 0-40 weeks.  Invalid patient name.'
+        );
+        test.done();
+    });
 }

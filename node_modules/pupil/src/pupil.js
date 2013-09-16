@@ -7,6 +7,8 @@
     var parser              = null;
     var validator           = null;
 
+    var validation_result   = null;
+
     var hasInitialized      = false;
 
     var ruleCache = {};
@@ -20,6 +22,8 @@
             lexer               = require('./lexer.js').create(tokens);
             parser              = require('./parser.js').create(tokens, entities);
             validator           = require('./validator.js').create(validator_functions, entities);
+
+            validation_result   = require('./validation_result.js');
         } else {
             tokens              = window.pupil.tokens;
             entities            = window.pupil.entities;
@@ -28,6 +32,8 @@
             lexer               = new window.pupil.lexer(tokens);
             parser              = new window.pupil.parser(tokens, entities);
             validator           = new window.pupil.validator(validator_functions, entities);
+
+            validation_result   = window.pupil.validation_result;
         }
 
         hasInitialized = true;
@@ -75,7 +81,7 @@
             results[index] = validator.validate(entities, values, index);
         }
 
-        return results;
+        return validation_result.create(results);
     };
 
     // Export the module
