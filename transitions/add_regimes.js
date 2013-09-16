@@ -66,12 +66,26 @@ module.exports = {
     formMismatch: function(form, doc) {
         return doc.form !== form;
     },
+    /* try to match a recipient return undefined otherwise */
+    getRecipientPhone: function(doc, recipient) {
+        if (!recipient) {
+            return;
+        }
+        if (recipient === 'clinic') {
+            return utils.getClinicPhone(doc);
+        }
+        if (recipient === 'parent') {
+            return utils.getParentPhone(doc);
+        }
+        if (recipient === 'grandparent') {
+            return utils.getGrandparentPhone(doc);
+        }
+    },
     addRegime: function(doc, regime) {
         var docStart,
             start,
             clinic_contact_name = utils.getClinicContactName(doc),
             clinic_name = utils.getClinicName(doc),
-            clinic_phone = utils.getClinicPhone(doc),
             now = moment(date.getDate()),
             times;
 
@@ -93,7 +107,8 @@ module.exports = {
 
         _.each(regime.messages, function(msg) {
             var due,
-                offset = module.exports.getOffset(msg.offset);
+                offset = module.exports.getOffset(msg.offset),
+                phone = module.exports.getRecipientPhone(doc, msg.recipient);
 
             if (offset) {
                 due = start.clone().add(offset);
@@ -106,7 +121,7 @@ module.exports = {
                     message: msg.message,
                     group: msg.group,
                     type: regime.key
-                });
+                }, phone);
             } else {
                 // bad offset, skip this msg
                 console.error("%s cannot be parsed as a valid offset. Skipping this msg of %s regime.", msg.offset, regime.key);
