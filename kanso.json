@@ -234,8 +234,7 @@
                         "cron": {
                             "type": "string",
                             "title": "Reminder Cron Configuration",
-                            "description": "A cron definition of the schedule. e.g. weekly on Monday at 9am: '0 9 * * 1'",
-                            "default": "0 9 * * 1"
+                            "description": "A cron definition of the schedule. Optional, a text expression will override this.  e.g. weekly on Monday at 9am: '0 9 * * 1'"
                         },
                         "mute_after_form_for": {
                             "type": "string",
