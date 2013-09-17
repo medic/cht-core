@@ -22,18 +22,6 @@ module.exports = {
            "reporting_freq": "weekly"
        }
    ],
-   "weekly_reminders": [
-       {
-           "form": "VPD",
-           "day": "Sunday",
-           "message": "Please submit last week's {{form}} report immediately."
-       },
-       {
-           "form": "VPD",
-           "day": "Thursday",
-           "message": "Today is the last day to submit last week's {{form}} report. Please submit."
-       }
-   ],
    "schedule_morning_hours": 8,
    "schedule_evening_hours": 17,
    "synthetic_date": "",
