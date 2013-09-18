@@ -1,0 +1,60 @@
+
+<div class="user-management">
+  <div class="user-list">
+    <table>
+      <thead>
+      <tr>
+        <td>User ID</td>
+        <td>Name</td>
+        <td>Facility</td>
+        <td>Actions</td>
+      </tr>
+      </thead>
+      <tbody id="user-rows">
+      </tbody>
+    </table>
+  </div>
+  <div class="user-creation">
+    <label for="user" >User Name</label>
+    <input id="user" type="text" />
+
+    <label for="type">User Type</label>
+    <select id="type">
+      <optgroup label="People">
+        <option value="facility_manager">Facility Manager</option>
+        <option value="facility_user">Facility User</option>
+        <option value="data_viewer">Data Viewer</option>
+        <option value="data_entry">Data Entry</option>
+      </optgroup>
+      <optgroup label="Computers">
+        <option value="analytics">Analytics</option>
+        <option value="gateway">Gateway</option>
+      </optgroup>
+    </select>
+
+    <label for="facility">Facility</label>
+    <div id="facility"></div>
+
+    <label for="language">Language</label>
+    <select id="language">
+      <option value="en">English</option>
+      <option value="fr">French</option>
+      <option value="es">Spanish</option>
+      <option value="ne">Nepali</option>
+      <option value="sw">Swahili</option>
+    </select>
+
+    <label for="phone">Phone Number</label>
+    <input id="phone" type="text" />
+
+    <label for="passwd">Password</label>
+    <input id="passwd" type="password" />
+
+    <br />
+
+    <input id="save" type="submit" value="Add User"/>
+  </div>
+  <div class="clear">
+  </div>
+</div>
+
