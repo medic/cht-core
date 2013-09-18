@@ -787,6 +787,38 @@
                         "sw": "Simu"
                     },
                     {
+                        "key": "Export",
+                        "en": "Export",
+                        "fr": "Exporter",
+                        "es": "Exportar",
+                        "ne": "",
+                        "sw": "Kuuza nje"
+                    },
+                    {
+                        "key": "Activity",
+                        "en": "Activity",
+                        "fr": "Activité",
+                        "es": "Actividad",
+                        "ne": "",
+                        "sw": "Shughuli"
+                    },
+                    {
+                        "key": "Facilities",
+                        "en": "Facilities",
+                        "fr": "Equipements",
+                        "es": "Comodidades",
+                        "ne": "",
+                        "sw": "Vifaa"
+                    },
+                    {
+                        "key": "Reporting Rates",
+                        "en": "Reporting Rates",
+                        "fr": "Déclaration des taux de",
+                        "es": "Informes de Cambio",
+                        "ne": "",
+                        "sw": "Taarifa ya Viwango"
+                    },
+                    {
                         "key": "sys.recipient_not_found",
                         "en": "Could not find message recipient.",
                         "fr": "Le recipient du message n'a pas été trouvé.",
