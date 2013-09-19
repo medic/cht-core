@@ -91,6 +91,9 @@ module.exports = {
         db.view('kujua-lite', 'clinic_by_phone', {
             include_docs: true
         }, function(err, data) {
+            if (err) {
+                return callback(err);
+            }
             var clinics,
                 docs = _.pluck(data.rows, 'doc');
 
