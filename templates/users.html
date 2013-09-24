@@ -1,6 +1,6 @@
 
-<div class="user-management">
-  <div class="user-list">
+<div id="user-management">
+  <div id="user-list">
     <table>
       <thead>
         <tr>
@@ -15,9 +15,19 @@
       </tbody>
     </table>
   </div>
-  <div class="user-creation">
-    <label for="user" >User Name</label>
+  <div id="user-creation">
+
+    <input id="id" type="hidden" />
+    <input id="rev" type="hidden" />
+
+    <label for="user">User Name</label>
     <input id="user" type="text" />
+
+    <label for="name">Full Name</label>
+    <input id="name" type="text" />
+
+    <label for="email">E-mail Address</label>
+		<input id="email" type="text" />
 
     <label for="type">User Type</label>
     <select id="type">
@@ -53,7 +63,7 @@
 
     <br />
 
-    <input id="save" type="submit" value="Add User"/>
+    <input id="save" type="submit" value="Save"/>
   </div>
   <div class="clear">
   </div>
