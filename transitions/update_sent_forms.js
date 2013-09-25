@@ -1,6 +1,10 @@
 var _ = require('underscore'),
     moment = require('moment');
 
+/*
+ * TODO add description here
+ */
+
 module.exports = {
     filter: function(doc) {
         return doc.form &&
