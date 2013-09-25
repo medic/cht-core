@@ -4,8 +4,7 @@
     <table>
       <thead>
         <tr>
-          <td style="width: 1.5em;"></td>
-          <td>User ID</td>
+          <td colspan="2">User ID</td>
           <td>Name</td>
           <td>Facility</td>
           <td>Actions</td>
@@ -17,14 +16,14 @@
   </div>
   <div id="user-creation">
 
-    <input id="id" type="hidden" />
-    <input id="rev" type="hidden" />
+    <input id="_id" type="hidden" />
+    <input id="_rev" type="hidden" />
 
-    <label for="user">User Name</label>
-    <input id="user" type="text" />
-
-    <label for="name">Full Name</label>
+    <label for="name">User Name</label>
     <input id="name" type="text" />
+
+    <label for="fullname">Full Name</label>
+    <input id="fullname" type="text" />
 
     <label for="email">E-mail Address</label>
 		<input id="email" type="text" />
@@ -58,8 +57,8 @@
     <label for="phone">Phone Number</label>
     <input id="phone" type="text" />
 
-    <label for="passwd">Password</label>
-    <input id="passwd" type="password" />
+    <label for="password">Password</label>
+    <input id="password" type="password" />
 
     <br />
 
