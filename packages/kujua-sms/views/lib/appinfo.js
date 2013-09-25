@@ -69,6 +69,7 @@ exports.getAppInfo = function(req) {
          * object the cookie can only be checked server side.  Fallback to
          * browser headers otherwise.
          */
+        /* flakey, removing temporarly in favor of manual setting
         if (req && req.cookie && req.cookie.kujua_locale) {
 
             settings.locale = req.cookie.kujua_locale || 'en';
@@ -84,6 +85,7 @@ exports.getAppInfo = function(req) {
             ).best(supported).toString();
 
         }
+        */
 
         return settings;
     }
