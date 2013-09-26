@@ -228,8 +228,7 @@
                         "text_expression": {
                             "type": "string",
                             "title": "Reminder Text Configuration",
-                            "description": "A text expression definition of the schedule.  See http://bunkat.github.io/later/parsers.html#text e.g. at 9am on Monday",
-                            "default": "at 9am on Monday"
+                            "description": "A text expression definition of the schedule.  See http://bunkat.github.io/later/parsers.html#text e.g. at 9am on Monday"
                         },
                         "cron": {
                             "type": "string",
@@ -239,14 +238,12 @@
                         "mute_after_form_for": {
                             "type": "string",
                             "title": "Mute Reminders For",
-                            "description": "After receiving a form, how long to mute reminders for.  Supported units: years, months, weeks, days, hours, minutes. e.g. 5 days",
-                            "default": "5 days"
+                            "description": "After receiving a form, how long to mute reminders for.  Supported units: years, months, weeks, days, hours, minutes. e.g. 5 days"
                         },
                         "message": {
                             "type": "string",
                             "title": "Reminder Text",
                             "description": "Message to be sent.  The following strings will be substituted into the message: {{week}}, {{year}} and {{form}}.",
-                            "default": "Your reminder here.",
                             "je:hint": "textarea"
                         }
                     },
