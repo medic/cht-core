@@ -7,11 +7,13 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc) {
-        return doc.form &&
+        return Boolean(
+            doc.form &&
             doc.reported_date &&
             doc.related_entities &&
             doc.related_entities.clinic &&
-            doc.related_entities.clinic._id;
+            doc.related_entities.clinic._id
+        );
     },
     onMatch: function(change, db, callback) {
         var doc = change.doc,
