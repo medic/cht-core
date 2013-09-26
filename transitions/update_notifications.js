@@ -7,7 +7,7 @@ var async = require('async'),
 
 module.exports = {
     filter: function(doc) {
-        return !!(doc.form && doc.patient_id);
+        return Boolean(doc.form && doc.patient_id);
     },
     getConfig: function() {
         return _.extend({}, config.get('notifications'));
