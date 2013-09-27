@@ -33,17 +33,13 @@ module.exports = function(db, callback) {
                     due = obj.due,
                     tasks = obj.tasks;
 
-                doc.scheduled_tasks = _.reject(doc.scheduled_tasks || [], function(task) {
-                    return task.due === due;
+                // set task to pending for gateway to pick up
+                _.each(doc.scheduled_tasks, function(task) {
+                    if (task.due === due) {
+                        task.state = 'pending';
+                    }
                 });
-                doc.tasks = doc.tasks || [];
-                _.each(tasks, function(task) {
-                    doc.tasks.push({
-                        messages: task.messages,
-                        state: 'pending',
-                        type: task.type
-                    });
-                });
+
                 db.saveDoc(doc, cb);
             }, function(err) {
                 callback(err);
