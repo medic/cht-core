@@ -9,8 +9,8 @@ module.exports = function(db, callback) {
 
     db.view('kujua-sentinel', 'due_tasks', {
         include_docs: true,
-        endkey: now.valueOf(),
-        startkey: overdue.valueOf()
+        endkey: now.toISOString(),
+        startkey: overdue.toISOString()
     }, function(err, result) {
         var objs;
 
