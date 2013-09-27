@@ -9,34 +9,49 @@ exports.setUp = function(callback) {
     callback();
 };
 
+exports.tearDown = function(callback) {
+    // call any restore/sinon overloaded functions on tear down
+    _.each(reminders, function(key) {
+        if(_.isFunction(reminders[key])) {
+            if(_.isFunction(reminders[key].restore)) {
+                reminders[key].restore();
+            }
+        }
+    });
+    if (config.get.restore) {
+        config.get.restore();
+    }
+    callback();
+};
+
 exports['reminders#execute is function'] = function(test) {
+    test.expect(1);
     test.ok(_.isFunction(reminders.execute));
     test.done();
 }
 
 exports['config with no reminders calls callback'] = function(test) {
+    test.expect(1);
     sinon.stub(config, 'get').returns([]);
     sinon.stub(reminders, 'runReminder').throws();
     reminders.execute({}, function(err) {
         test.equals(err, null);
-        reminders.runReminder.restore();
-        config.get.restore();
         test.done();
     });
 };
 
 exports['config with three matching reminder calls runReminder thrice'] = function(test) {
+    test.expect(2);
     var runReminder;
-
-    sinon.stub(config, 'get').returns([ {}, {}, {} ]);
+    sinon.stub(config, 'get').returns([
+        {form:"x", cron:"x", message:"x"},
+        {form:"y", cron:"y", message:"y"},
+        {form:"z", cron:"z", message:"z"}
+    ]);
     runReminder = sinon.stub(reminders, 'runReminder').callsArgWith(1, null);
     reminders.execute({}, function(err) {
         test.equals(err, null);
         test.equals(runReminder.callCount, 3);
-
-        runReminder.restore();
-        config.get.restore();
-
         test.done();
     });
 };
@@ -51,8 +66,6 @@ exports['runReminder calls sendReminder when valid'] = function(test) {
     reminders.runReminder({}, function(err) {
         test.equals(err, null);
         test.equals(sendReminders.callCount, 1);
-        matchReminder.restore();
-        sendReminders.restore();
         test.done();
     });
 };
@@ -67,8 +80,6 @@ exports['runReminder does not create document when no match'] = function(test) {
     reminders.runReminder({}, function(err) {
         test.equals(err, null);
         test.equals(sendReminders.callCount, 0);
-        matchReminder.restore();
-        sendReminders.restore();
         test.done();
     });
 };
@@ -105,8 +116,6 @@ exports['runReminder decorates options with moment if found'] = function(test) {
         test.ok(moment);
         test.equals(moment.valueOf(), now.valueOf());
 
-        matchReminder.restore();
-        sendReminders.restore();
         test.done();
     });
 };
@@ -148,7 +157,6 @@ exports['sendReminders calls getClinics'] = function(test) {
 
     reminders.sendReminders({}, function(err) {
         test.ok(getClinics.called);
-        getClinics.restore();
         test.equals(err, null);
         test.done();
     });
@@ -264,8 +272,6 @@ exports['sendReminders calls sendReminder for each clinic'] = function(test) {
 
     reminders.sendReminders({}, function(err) {
         test.equals(sendReminder.callCount, 2);
-        getClinics.restore();
-        sendReminder.restore();
         test.done();
     });
 }
