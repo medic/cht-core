@@ -165,6 +165,10 @@ exports.makeDataRecordReadable = function(doc) {
                 copy.due = formatDate(t.due);
             }
 
+            if (t.timestamp) {
+                copy.timestamp = formatDate(t.timestamp);
+            }
+
             // setup scheduled groups
             var group_name = t.type;
             if (t.group)

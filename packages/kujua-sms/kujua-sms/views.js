@@ -438,11 +438,17 @@ exports.clinic_by_refid = {
 exports.tasks_pending = {
     map: function (doc) {
         var has_pending,
-            tasks = doc.tasks || [];
+            tasks = doc.tasks || [],
+            scheduled_tasks = doc.scheduled_tasks || [];
 
         has_pending = tasks.some(function(task) {
             return task.state === 'pending';
         });
+
+        has_pending = scheduled_tasks.some(function(task) {
+            return task.state === 'pending';
+        });
+
         if (has_pending) {
             emit([doc.reported_date, doc.refid]);
         }

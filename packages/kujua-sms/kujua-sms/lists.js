@@ -346,7 +346,6 @@ exports.tasks_pending = function (head, req) {
         host = headers[0],
         port = headers[1] || "",
         row,
-        includeDoc,
         doc;
 
     var respBody = {
@@ -362,7 +361,7 @@ exports.tasks_pending = function (head, req) {
         doc = row.doc;
 
         // update state attribute for the bulk update callback
-        // don't process tasks that have no to field since we can't send a
+        // don't process tasks that have no `to` field since we can't send a
         // message and we don't want to mark the task as sent.  TODO have
         // better support in the gateway for tasks so the gateway can verify
         // that it processed the task successfully.
@@ -373,8 +372,22 @@ exports.tasks_pending = function (head, req) {
                     // if to: field is defined then append messages
                     if (msg.to) {
                         task.state = 'sent';
-                        task.timestamp = new Date().getTime();
+                        task.timestamp = new Date().toISOString();
+                        // append outgoing message data payload for smsssync
+                        respBody.payload.messages.push(msg);
+                        includeDoc = true;
+                    }
+                });
+            }
+        });
 
+        _.each(doc.scheduled_tasks || [], function(task) {
+            if (task.state === 'pending') {
+                _.each(task.messages, function(msg) {
+                    // if to: field is defined then append messages
+                    if (msg.to) {
+                        task.state = 'sent';
+                        task.timestamp = new Date().toISOString();
                         // append outgoing message data payload for smsssync
                         respBody.payload.messages.push(msg);
                         includeDoc = true;

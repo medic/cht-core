@@ -34,6 +34,24 @@
         <tbody>
           {#rows}
           <tr data-tasks-idx="{_idx}" class="task">
+          {?timestamp}
+            <td class="tasks-state">
+              <div class="wrap">
+                <span class="label tasks-state-{state}"></span>
+              </div>
+            </td>
+            <td class="tasks-timestamp">
+              <div>{timestamp}</div>
+            </td>
+            {#messages}
+            <td class="tasks-to">
+              <div>{to}</div>
+            </td>
+            <td class="tasks-message">
+              <div>{message}</div>
+            </td>
+            {/messages}
+          {:else}
             <td class="tasks-state">
               <div class="control-group">
                 <div class="btn-group">
@@ -95,6 +113,7 @@
                 <i class="icon-plus-sign"></i>
               </a>
             </td>
+          {/timestamp}
           </tr>
           {/rows}
           <tr id="new-task-template" class="task">
