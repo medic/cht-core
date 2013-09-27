@@ -9,13 +9,38 @@ var _ = require('underscore'),
 // set later to use local time
 later.date.localTime();
 
+function isConfigValid(config) {
+    return Boolean(
+        config.form &&
+        config.message &&
+        (config.text_expression || config.cron)
+    );
+}
+
+function getSchedule(config) {
+    // fetch a schedule based on the configuration, parsing it as a "cron"
+    // or "text" statement see:
+    // http://bunkat.github.io/later/parsers.html
+    if (!config) return;
+    if (config.text_expression) {
+        // text expression takes precedence over cron
+        return later.schedule(later.parse.text(config.text_expression));
+    }
+    if (config.cron) {
+        return later.schedule(later.parse.cron(config.cron));
+    }
+}
+
 module.exports = {
+    isConfigValid: isConfigValid,
+    getSchedule: getSchedule,
     // called from schedule/index.js on the hour, for now
     execute: function(options, callback) {
         var db = options.db,
             reminders = config.get('reminders') || [];
 
         async.eachSeries(reminders, function(reminder, callback) {
+            if (!isConfigValid(reminder)) return;
             module.exports.runReminder({
                 db: db,
                 reminder: reminder
@@ -27,9 +52,7 @@ module.exports = {
     matchReminder: function(options, callback) {
         var start = moment(),
             reminder = options.reminder,
-            // fetch a schedule based on the configuration, parsing it as a "cron" statement
-            // see: http://bunkat.github.io/later/parsers.html#cron
-            sched = later.schedule(later.parse.cron(reminder.cron));
+            sched = getSchedule(reminder);
 
         // this will return a moment sometime between the start of the hour and 24 hours ago
         // this is purely for efficiency so we're not always examining a 24 hour stretch
@@ -97,7 +120,8 @@ module.exports = {
             var clinics,
                 docs = _.pluck(data.rows, 'doc');
 
-            // filter them by the canSend function (i.e. not already sent, not on cooldown from having received a form)
+            // filter them by the canSend function (i.e. not already sent, not
+            // on cooldown from having received a form)
             clinics = _.filter(docs, function(clinic) {
                 return module.exports.canSend(options, clinic);
             });
