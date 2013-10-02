@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     utils = require('../lib/utils'),
     messages = require('../lib/messages'),
+    validation = require('../lib/validation'),
     ids = require('../lib/ids'),
     moment = require('moment'),
     config = require('../config'),
@@ -16,29 +17,15 @@ module.exports = {
         );
     },
     getWeeksSinceDOB: function(doc) {
-        return Number(
-            doc.weeks_since_dob || doc.dob
+        return String(
+            doc.weeks_since_dob || doc.dob || doc.weeks_since_birth
         );
     },
-    validateDOB: function(doc) {
-        var dob = module.exports.getWeeksSinceDOB(doc);
-
-        return dob >= 0 && dob <= 52; // this will return false if NaN
-    },
-    validateName: function(doc, options) {
-        var name = doc.patient_name || '',
-            max;
-
-        options = options || {};
-        max = options.max_name_length || 100;
-
-        return name.length > 0 && name.length <= max;
-    },
     setDate: function(doc) {
-        var dob = module.exports.getWeeksSinceDOB(doc),
+        var weeks_since = module.exports.getWeeksSinceDOB(doc),
             start = moment(date.getDate()).startOf('week');
 
-        start.subtract(Number(dob), 'weeks');
+        start.subtract(Number(weeks_since), 'weeks');
 
         doc.birth_date = start.toISOString();
     },
@@ -47,23 +34,20 @@ module.exports = {
     },
     onMatch: function(change, db, callback) {
         var doc = change.doc,
-            options = module.exports.getConfig(),
-            phone = utils.getClinicPhone(doc),
-            validDOB  = module.exports.validateDOB(doc),
-            validName = module.exports.validateName(doc, options);
+            config = module.exports.getConfig(),
+            phone = utils.getClinicPhone(doc);
 
-        if (!utils.isFormCodeSame(options.form, doc.form)) {
+        if (!utils.isFormCodeSame(config.form, doc.form)) {
             return callback(null, false);
         }
 
-        var errors = utils.validatePatientId(doc.mother_patient_id);
+        var errors = validation.validate(doc, config.validations);
 
         if (errors.length) {
-            _.each(errors, function(e) { messages.addError(doc, e); });
+            messages.addErrors(doc, errors);
+            messages.addReply(doc, errors.join('  '));
             return callback(null, true);
-        }
-
-        if (validDOB && validName) {
+        } else {
             module.exports.setDate(doc);
             module.exports.setId({
                 db: db,
@@ -71,15 +55,6 @@ module.exports = {
             }, function(err) {
                 callback(err, true);
             });
-        } else if (validDOB) { // validName must be false
-            messages.addReply(doc, options.invalid_name);
-            callback(null, true);
-        } else if (validName) { // validLMP must be false
-            messages.addReply(doc, options.invalid_dob);
-            callback(null, true);
-        } else {
-            messages.addReply(doc, options.invalid_values);
-            callback(null, true);
         }
     },
     setId: function(options, callback) {
