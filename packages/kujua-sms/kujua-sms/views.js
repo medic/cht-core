@@ -445,9 +445,12 @@ exports.tasks_pending = {
             return task.state === 'pending';
         });
 
-        has_pending = scheduled_tasks.some(function(task) {
-            return task.state === 'pending';
-        });
+        // check scheduled tasks too if not already pending
+        if (!has_pending) {
+            has_pending = scheduled_tasks.some(function(task) {
+                return task.state === 'pending';
+            });
+        }
 
         if (has_pending) {
             emit([doc.reported_date, doc.refid]);
