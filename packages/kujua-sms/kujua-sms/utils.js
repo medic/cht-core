@@ -106,6 +106,7 @@ var includeNonFormFields = function(doc, form_keys) {
         { key:'child_birth_weight', label: 'Child Birth Weight'},
         { key:'child_birth_date', label: 'Child Birth Date', format: formatDate},
         { key:'expected_date', label: 'Expected Date', format: formatDate},
+        { key:'birth_date', label: 'Birth Date', format: formatDate},
         { key:'patient_id', label:'Patient ID'}
     ];
 
