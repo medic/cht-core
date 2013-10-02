@@ -13,7 +13,8 @@ module.exports = {
             doc.form &&
             utils.getClinicPhone(doc) &&
             module.exports.getWeeksSinceDOB(doc) &&
-            (!doc.patient_id || !doc.birth_date)
+            (!doc.patient_id || !doc.birth_date) &&
+            doc.errors.length === 0
         );
     },
     getWeeksSinceDOB: function(doc) {

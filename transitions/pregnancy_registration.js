@@ -13,7 +13,8 @@ module.exports = {
             doc.form &&
             doc.reported_date &&
             utils.getClinicPhone(doc) &&
-            (!doc.patient_id || !doc.lmp_date)
+            (!doc.patient_id || !doc.lmp_date) &&
+            doc.errors.length === 0
         );
     },
     getWeeksSinceLMP: function(doc) {
@@ -51,6 +52,7 @@ module.exports = {
             // no schedule, and have valid name
             errors = validation.validate(doc, config.validations, 'lmp');
             if (errors.length) {
+                messages.addErrors(doc, errors);
                 messages.addReply(doc, errors.join('  '));
                 callback(null, true);
             } else {
@@ -65,6 +67,7 @@ module.exports = {
             errors = validation.validate(doc, config.validations);
 
             if (errors.length) {
+                messages.addErrors(doc, errors);
                 messages.addReply(doc, errors.join('  '));
                 callback(null, true);
             } else {
