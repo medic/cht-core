@@ -14,6 +14,8 @@
       </tbody>
     </table>
   </div>
+
+  <form id="user-form">
   <div id="user-creation">
 
     <input id="_id" type="hidden" />
@@ -32,10 +34,10 @@
     <select id="type">
       <option value=""></option>
       <optgroup label="People">
-        <option value="facility_manager">Facility Manager</option>
-        <option value="facility_user">Facility User</option>
-        <option value="data_viewer">Data Viewer</option>
-        <option value="data_entry">Data Entry</option>
+        <option value="facility-manager">Facility Manager</option>
+        <option value="facility-user">Facility User</option>
+        <option value="data-viewer">Data Viewer</option>
+        <option value="data-entry">Data Entry</option>
       </optgroup>
       <optgroup label="Computers">
         <option value="analytics">Analytics</option>
@@ -65,7 +67,11 @@
     <br />
 
     <input id="save" type="submit" value="Create User" />
+    <div class="status"></div>
+
   </div>
+  </form>
+
   <div class="clear">
   </div>
 </div>
