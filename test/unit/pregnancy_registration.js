@@ -63,7 +63,8 @@ exports['filter passes until we have patient_id and lmp_date'] = function(test) 
         reported_date: 'x',
         related_entities: {clinic: {contact: {phone: 'x'}}},
         patient_name: 'x',
-        lmp: 1
+        lmp: 1,
+        errors: []
     }), true);
     test.equals(transition.filter({
         form: 'x',
@@ -71,7 +72,8 @@ exports['filter passes until we have patient_id and lmp_date'] = function(test) 
         related_entities: {clinic: {contact: {phone: 'x'}}},
         patient_name: 'x',
         lmp: 1,
-        lmp_date: moment().toISOString()
+        lmp_date: moment().toISOString(),
+        errors: []
     }), true);
     test.equals(transition.filter({
         form: 'x',
@@ -80,7 +82,8 @@ exports['filter passes until we have patient_id and lmp_date'] = function(test) 
         patient_name: 'x',
         lmp: 1,
         patient_id: 'xyz',
-        lmp_date: moment().toISOString()
+        lmp_date: moment().toISOString(),
+        errors: []
     }), false);
     test.done();
 };
