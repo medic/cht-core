@@ -26,6 +26,10 @@ module.exports = {
 
         callback(null, updated);
     },
+    getSendTime: function(send_time) {
+        if (!send_time) return [];
+        return send_time.split(':');
+    },
     getOffset: function(offset) {
         var tokens = (offset || '').split(' '),
             value = tokens[0],
@@ -105,10 +109,15 @@ module.exports = {
         _.each(regime.messages, function(msg) {
             var due,
                 offset = module.exports.getOffset(msg.offset),
-                phone = module.exports.getRecipientPhone(doc, msg.recipient);
+                phone = module.exports.getRecipientPhone(doc, msg.recipient),
+                send_time = module.exports.getSendTime(msg.send_time);
 
             if (offset) {
                 due = start.clone().add(offset);
+                if (send_time.length === 2) {
+                    due.hours(send_time[0]);
+                    due.minutes(send_time[1]);
+                }
                 if (due < now) {
                     // don't schedule messages in the past
                     return;
