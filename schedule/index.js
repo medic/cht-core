@@ -16,9 +16,12 @@ tasks = _.compact(_.map(fs.readdirSync(__dirname), function(file) {
     }
 }));
 
+/*
+ * Return true if within time window to set outgoing/pending tasks/messages.
+ */
 function sendable(m) {
-    var after = config.get('schedule_morning_hours') || 8,
-        until = config.get('schedule_evening_hours') || 17,
+    var after = config.get('schedule_morning_hours') || 0,
+        until = config.get('schedule_evening_hours') || 23,
         hour = m.hours();
 
     return hour >= after && hour <= until;
@@ -33,7 +36,7 @@ function checkSchedule() {
             task.execute({
                 db: db
             }, callback);
-        } else if (sendable(now)) { // in time window for moving due_tasks
+        } else if (sendable(now)) {
             task(db, callback);
         } else {
             callback();
