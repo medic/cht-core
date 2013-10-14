@@ -67,21 +67,6 @@ module.exports = {
     formMismatch: function(form, doc) {
         return doc.form !== form;
     },
-    /* try to match a recipient return undefined otherwise */
-    getRecipientPhone: function(doc, recipient) {
-        if (!recipient) {
-            return;
-        }
-        if (recipient === 'clinic') {
-            return utils.getClinicPhone(doc);
-        }
-        if (recipient === 'parent') {
-            return utils.getParentPhone(doc);
-        }
-        if (recipient === 'grandparent') {
-            return utils.getGrandparentPhone(doc);
-        }
-    },
     addRegime: function(doc, regime) {
         var docStart,
             start,
@@ -109,7 +94,7 @@ module.exports = {
         _.each(regime.messages, function(msg) {
             var due,
                 offset = module.exports.getOffset(msg.offset),
-                phone = module.exports.getRecipientPhone(doc, msg.recipient),
+                phone = messages.getRecipientPhone(doc, msg.recipient),
                 send_time = module.exports.getSendTime(msg.send_time);
 
             if (offset) {
