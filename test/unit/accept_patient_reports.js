@@ -78,10 +78,9 @@ exports['onMatch with matching form calls getRegistrations and then matchRegistr
     });
 };
 
-exports['matchRegistrations with no registrations adds error msg'] = function(test) {
-    var doc;
+exports['matchRegistrations with no registrations adds error msg and response'] = function(test) {
 
-    doc = {
+    var doc = {
         patient_id: 'x'
     };
 
@@ -89,12 +88,15 @@ exports['matchRegistrations with no registrations adds error msg'] = function(te
         registrations: [],
         doc: doc,
         report: {
-            registration_not_found: 'not found {{patient_id}}'
+            messages: [{
+                event_type: 'registration_not_found',
+                message: 'not found {{patient_id}}'
+            }]
         }
     }, function(err, complete) {
         test.ok(doc.errors);
         test.equals(doc.errors[0].message, 'not found x');
-
+        test.equals(doc.tasks[0].message, 'not found x');
         test.done();
     });
 }
@@ -118,7 +120,10 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
         registrations: [{}],
         doc: doc,
         report: {
-            report_accepted: 'Thank you, {{contact_name}}. ANC visit for {{patient_id}} has been recorded.'
+            messages: [{
+                event_type: 'report_accepted',
+                message: 'Thank you, {{contact_name}}. ANC visit for {{patient_id}} has been recorded.'
+            }]
         }
     }, function(err, complete) {
         test.ok(doc.tasks);

@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    transition = require('../../transitions/pregnancy_registration'),
+    transition = require('../../transitions/patient_registration'),
     sinon = require('sinon'),
     moment = require('moment'),
     utils = require('../../lib/utils'),
@@ -20,8 +20,9 @@ function getMessage(doc) {
 }
 
 exports.setUp = function(callback) {
-    sinon.stub(transition, 'getConfig').returns({
+    sinon.stub(transition, 'getConfig').returns([{
         form: 'y',
+        type: 'pregnancy',
         validations: [
             {
                 property: 'lmp',
@@ -34,7 +35,7 @@ exports.setUp = function(callback) {
                 message: 'Invalid patient name.'
             }
         ]
-    });
+    }]);
     callback();
 };
 
@@ -107,7 +108,7 @@ exports['is id only'] = function(test) {
     test.done();
 }
 
-exports['setDate sets lmp_date and expected_date correctly for lmp: 0'] = function(test) {
+exports['setExpectedBirthDate sets lmp_date and expected_date correctly for lmp: 0'] = function(test) {
     var doc,
         start = moment().startOf('week');
 
@@ -115,7 +116,7 @@ exports['setDate sets lmp_date and expected_date correctly for lmp: 0'] = functi
         lmp: 0
     };
 
-    transition.setDate(doc);
+    transition.setExpectedBirthDate(doc);
 
     test.ok(doc.lmp_date);
     test.equals(doc.lmp_date, start.toISOString());
@@ -124,7 +125,7 @@ exports['setDate sets lmp_date and expected_date correctly for lmp: 0'] = functi
     test.done();
 }
 
-exports['setDate sets lmp_date and expected_date correctly for lmp: 10'] = function(test) {
+exports['setExpectedBirthDate sets lmp_date and expected_date correctly for lmp: 10'] = function(test) {
     var doc,
         start = moment().startOf('week');
 
@@ -132,7 +133,7 @@ exports['setDate sets lmp_date and expected_date correctly for lmp: 10'] = funct
         lmp: '10'
     };
 
-    transition.setDate(doc);
+    transition.setExpectedBirthDate(doc);
 
     test.ok(doc.lmp_date);
     test.equals(doc.lmp_date, start.clone().subtract(10, 'weeks').toISOString());

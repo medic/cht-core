@@ -56,25 +56,37 @@ module.exports = {
                     });
                 }
             });
-            module.exports.silenceRegistrations({
+            return module.exports.silenceRegistrations({
                 db: options.db || db,
                 report: report,
                 reported_date: doc.reported_date,
                 registrations: registrations
             }, callback);
-        } else {
-            _.each(report.messages, function(msg) {
-                if (msg.event_type === 'registration_not_found') {
-                    messages.addMessage({
-                        doc: doc,
-                        message: msg.message,
-                        phone: messages.getRecipientPhone(doc, msg.recipient)
-                    });
-                }
-            });
-            messages.addError(doc, 'sys.registration_not_found');
-            callback(null, true);
         }
+
+        var not_found_msg,
+            default_msg = {
+                doc: doc, 
+                message: 'sys.registration_not_found',
+                phone: messages.getRecipientPhone(doc)
+            };
+        _.each(report.messages, function(msg) {
+            if (msg.event_type === 'registration_not_found') {
+                not_found_msg = {
+                    doc: doc,
+                    message: msg.message,
+                    phone: messages.getRecipientPhone(doc, msg.recipient)
+                };
+            }
+        });
+        if (!not_found_msg) {
+            messages.addMessage(default_msg);
+            messages.addError(default_msg);
+        } else {
+            messages.addMessage(not_found_msg);
+            messages.addError(not_found_msg);
+        }
+        callback(null, true);
     },
     // find the messages to clear
     findToClear: function(options) {
