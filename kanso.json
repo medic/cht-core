@@ -250,80 +250,97 @@
                     "type": "object"
                 }
             },
-            "pregnancy_registration": {
-                "title": "Pregnancy Registration",
-                "type": "object",
-                "properties": {
-                    "form": {
-                        "type": "string",
-                        "title": "Pregnancy Registration Form",
-                        "description": "Form code of a pregnancy registration",
-                        "default": "ANCR"
-                    },
-                    "validations": {
-                        "type": "array",
-                        "items": {
-                            "properties": {
-                                "property": {
-                                    "type": "string",
-                                    "title": "Property",
-                                    "description": "The property on the JSON form to validate.",
-                                    "default": "patient_name"
-                                },
-                                "rule": {
-                                    "type": "string",
-                                    "title": "Validation Rule",
-                                    "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
-                                    "default": "lenMin(5) && lenMax(50)"
-                                },
-                                "message": {
-                                    "type": "string",
-                                    "title": "Error Message",
-                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, chw_phone, chw_name",
-                                    "default": "'{{patient_name}}' is not a valid patient name. Please submit a patient name between 5 and 50 characters.",
-                                    "je:hint": "textarea"
+            "patient_registrations": {
+                "title": "Registrations",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "form": {
+                            "type": "string",
+                            "title": "Registration Form",
+                            "description": "Form code of a registration form. e.g. ANCR",
+                            "default": ""
+                        },
+                        "type": {
+                            "type": "string",
+                            "title": "Type",
+                            "default": "patient",
+                            "enum": [
+                                "patient",
+                                "pregnancy",
+                                "birth"
+                            ],
+                            "je:hint": "enumlabels",
+                            "je:enumlabels": {
+                                "patient": "Patient",
+                                "pregnancy": "Pregnancy",
+                                "birth": "Birth"
+                            }
+                        },
+                        "validations": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "property": {
+                                        "type": "string",
+                                        "title": "Property",
+                                        "description": "The property on the JSON form to validate.",
+                                        "default": "patient_name"
+                                    },
+                                    "rule": {
+                                        "type": "string",
+                                        "title": "Validation Rule",
+                                        "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                        "default": "lenMin(5) && lenMax(50)"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "title": "Error Message",
+                                        "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, chw_phone, chw_name",
+                                        "default": "'{{patient_name}}' is not a valid patient name. Please submit a patient name between 5 and 50 characters.",
+                                        "je:hint": "textarea"
+                                    }
+                                }
+                            }
+                        },
+                        "messages": {
+                            "type": "array",
+                            "title": "Response Messages",
+                            "items": {
+                                "type": "object",
+                                "required": ["message", "recipient"],
+                                "properties": {
+                                    "message": {
+                                        "type": "string",
+                                        "title": "Message Text",
+                                        "je:hint": "textarea"
+                                    },
+                                    "recipient": {
+                                        "type": "string",
+                                        "title": "Recipient",
+                                        "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
+                                        "default": "reporting_unit"
+                                    },
+                                    "locale": {
+                                        "title": "Locale",
+                                        "type": "string",
+                                        "description": "Set the locale if you need to support responses in multiple languages.",
+                                        "enum": ["", "en", "es", "fr", "ne", "sw", "lu"],
+                                        "je:hint": "enumlabels",
+                                        "je:enumlabels": {
+                                            "en": "English",
+                                            "es": "Spanish",
+                                            "fr": "French",
+                                            "ne": "Nepalese",
+                                            "sw": "Swahili",
+                                            "lu": "Dholuo"
+                                        }
+                                    }
                                 }
                             },
-                            "type": "object"
-                        }
-                    }
-                }
-            },
-            "birth_registration": {
-                "title": "Birth Registration",
-                "type": "object",
-                "properties": {
-                    "form": {
-                        "type": "string",
-                        "title": "Birth Registration Form",
-                        "description": "Form code of a birth registration",
-                        "default": "IMMR"
-                    },
-                    "validations": {
-                        "type": "array",
-                        "items": {
-                            "properties": {
-                                "property": {
-                                    "type": "string",
-                                    "title": "Property",
-                                    "description": "The property on the JSON form to validate.",
-                                    "default": "patient_name"
-                                },
-                                "rule": {
-                                    "type": "string",
-                                    "title": "Validation Rule",
-                                    "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
-                                    "default": "lenMin(5) && lenMax(50)"
-                                },
-                                "message": {
-                                    "type": "string",
-                                    "title": "Error Message",
-                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, chw_phone, chw_name",
-                                    "default": "Please include a valid Patient Name '{{patient_name}}' should be less than 50 characters.",
-                                    "je:hint": "textarea"
-                                }
-                            },
-                            "type": "object"
+                            "default": []
                         }
                     }
                 }
@@ -332,6 +349,7 @@
                 "title": "Patient Reports",
                 "type": "array",
                 "items": {
+                    "type": "object",
                     "properties": {
                         "form": {
                             "type": "string",
@@ -414,8 +432,7 @@
                             },
                             "default": []
                         }
-                    },
-                    "type": "object"
+                    }
                 },
                 "default": []
             },
@@ -428,13 +445,13 @@
                             "type": "string",
                             "title": "Reminder Type",
                             "description": "A made up keyword to define this schedule. e.g. anc_reminders",
-                            "default": "anc_reminders"
+                            "default": ""
                         },
                         "form": {
                             "type": "string",
                             "title": "Registration Form",
                             "description": "The form code of the registration form that triggers schedule creation. e.g. ANCR",
-                            "default": "ANCR"
+                            "default": ""
                         },
                         "start_from": {
                             "type": "string",
@@ -484,6 +501,21 @@
                                         "title": "Recipient",
                                         "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
                                         "default": "reporting_unit"
+                                    },
+                                    "locale": {
+                                        "title": "Locale",
+                                        "type": "string",
+                                        "description": "Set the locale if you need to support responses in multiple languages.",
+                                        "enum": ["en", "es", "fr", "ne", "sw", "lu"],
+                                        "je:hint": "enumlabels",
+                                        "je:enumlabels": {
+                                            "en": "English",
+                                            "es": "Spanish",
+                                            "fr": "French",
+                                            "ne": "Nepalese",
+                                            "sw": "Swahili",
+                                            "lu": "Dholuo"
+                                        }
                                     }
                                 },
                                 "type": "object"
