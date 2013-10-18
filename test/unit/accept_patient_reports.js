@@ -81,7 +81,16 @@ exports['onMatch with matching form calls getRegistrations and then matchRegistr
 exports['matchRegistrations with no registrations adds error msg and response'] = function(test) {
 
     var doc = {
-        patient_id: 'x'
+        patient_id: 'x',
+        from: "+123",
+        related_entities: {
+            clinic: {
+                contact: {
+                    phone: '+1234',
+                    name: 'woot'
+                }
+            }
+        }
     };
 
     transition.matchRegistrations({
@@ -90,13 +99,18 @@ exports['matchRegistrations with no registrations adds error msg and response'] 
         report: {
             messages: [{
                 event_type: 'registration_not_found',
-                message: 'not found {{patient_id}}'
+                message: 'not found {{patient_id}}',
+                recipient: 'reporting_unit'
             }]
         }
     }, function(err, complete) {
         test.ok(doc.errors);
         test.equals(doc.errors[0].message, 'not found x');
-        test.equals(doc.tasks[0].message, 'not found x');
+        test.ok(doc.tasks);
+        test.equals(
+            _.first(_.first(doc.tasks).messages).message,
+            'not found x'
+        );
         test.done();
     });
 }
@@ -122,7 +136,8 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
         report: {
             messages: [{
                 event_type: 'report_accepted',
-                message: 'Thank you, {{contact_name}}. ANC visit for {{patient_id}} has been recorded.'
+                message: 'Thank you, {{contact_name}}. ANC visit for {{patient_id}} has been recorded.',
+                recipient: 'reporting_unit'
             }]
         }
     }, function(err, complete) {
@@ -192,39 +207,42 @@ exports['silenceReminders testing'] = function(test) {
 
     sinon.stub(db, 'saveDoc').callsArgWithAsync(1, null);
 
+    // mock up a registered_patients view result
     registration = {
-        scheduled_tasks: [
-            {
-                due: now.clone().subtract(2, 'days'),
-                group: 0,
-                state: 'scheduled',
-                type: 'x'
-            },
-            {
-                due: now.clone().add(2, 'days'),
-                group: 1,
-                state: 'scheduled',
-                type: 'x'
-            },
-            {
-                due: now.clone().add(2, 'days'),
-                group: 2,
-                state: 'scheduled',
-                type: 'y'
-            },
-            {
-                due: now.clone().add(20, 'days'),
-                group: 2,
-                state: 'scheduled',
-                type: 'x'
-            },
-            {
-                due: now.clone().add(2, 'days'),
-                group: 1,
-                state: 'scheduled',
-                type: 'x'
-            }
-        ]
+        doc: {
+            scheduled_tasks: [
+                {
+                    due: now.clone().subtract(2, 'days'),
+                    group: 0,
+                    state: 'scheduled',
+                    type: 'x'
+                },
+                {
+                    due: now.clone().add(2, 'days'),
+                    group: 1,
+                    state: 'scheduled',
+                    type: 'x'
+                },
+                {
+                    due: now.clone().add(2, 'days'),
+                    group: 2,
+                    state: 'scheduled',
+                    type: 'y'
+                },
+                {
+                    due: now.clone().add(20, 'days'),
+                    group: 2,
+                    state: 'scheduled',
+                    type: 'x'
+                },
+                {
+                    due: now.clone().add(2, 'days'),
+                    group: 1,
+                    state: 'scheduled',
+                    type: 'x'
+                }
+            ]
+        }
     };
 
     transition.silenceReminders({
@@ -240,14 +258,13 @@ exports['silenceReminders testing'] = function(test) {
 
         test.equals(db.saveDoc.called, true);
 
-        tasks = registration.scheduled_tasks;
+        tasks = registration.doc.scheduled_tasks;
 
         test.equals(tasks[0].state, 'scheduled');
         test.equals(tasks[1].state, 'cleared');
         test.equals(tasks[2].state, 'scheduled');
         test.equals(tasks[3].state, 'scheduled');
         test.equals(tasks[4].state, 'cleared');
-
 
         test.done();
     });

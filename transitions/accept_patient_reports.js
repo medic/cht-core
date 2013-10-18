@@ -68,7 +68,7 @@ module.exports = {
             default_msg = {
                 doc: doc, 
                 message: 'sys.registration_not_found',
-                phone: messages.getRecipientPhone(doc)
+                phone: messages.getRecipientPhone(doc, 'from')
             };
         _.each(report.messages, function(msg) {
             if (msg.event_type === 'registration_not_found') {
@@ -79,12 +79,12 @@ module.exports = {
                 };
             }
         });
-        if (!not_found_msg) {
-            messages.addMessage(default_msg);
-            messages.addError(default_msg);
-        } else {
+        if (not_found_msg) {
             messages.addMessage(not_found_msg);
-            messages.addError(not_found_msg);
+            messages.addError(not_found_msg.doc, not_found_msg.message);
+        } else {
+            messages.addMessage(default_msg);
+            messages.addError(default_msg.doc, default_msg.message);
         }
         callback(null, true);
     },
