@@ -75,18 +75,38 @@ module.exports = {
             return callback(null, true);
         }
 
-        if (config.type === 'birth' && !isIdOnly) {
-            self.setBirthDate(doc);
-        } else if (config.type === 'pregnancy' && !isIdOnly) {
-            self.setExpectedBirthDate(doc);
-        }
-
         self.setId({
             db: db,
             doc: doc
         }, function(err) {
-            callback(err, true);
+            if (err) {
+                return callback(err, true);
+            }
+            if (config.type === 'birth' && !isIdOnly) {
+                self.setBirthDate(doc);
+            } else if (config.type === 'pregnancy' && !isIdOnly) {
+                self.setExpectedBirthDate(doc);
+            }
+            self.addMessages(config, doc);
+            callback(null, true);
         });
+    },
+    addMessages: function(config, doc) {
+        // send response if configured
+        if (config.messages) {
+            _.each(config.messages, function(msg, idx) {
+                // if locale is specified on doc and message then only send
+                // those messages, otherwise send the message.
+                if (doc.locale && msg.locale && doc.locale !== msg.locale) {
+                    return;
+                }
+                messages.addMessage({
+                    doc: doc,
+                    phone_key: msg.recipient,
+                    message: msg.message
+                });
+            });
+        }
     },
     setId: function(options, callback) {
         var doc = options.doc,

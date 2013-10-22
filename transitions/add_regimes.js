@@ -107,6 +107,11 @@ module.exports = {
                     // don't schedule messages in the past
                     return;
                 }
+                // if locale is specified on doc and message then only send
+                // messages in the right locale.
+                if (doc.locale && msg.locale && doc.locale !== msg.locale) {
+                    return;
+                }
                 messages.scheduleMessage(doc, {
                     due: due.toISOString(),
                     message: msg.message,
