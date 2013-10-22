@@ -22,8 +22,8 @@ module.exports = {
            "reporting_freq": "weekly"
        }
    ],
-   "schedule_morning_hours": 8,
-   "schedule_evening_hours": 17,
+   "schedule_morning_hours": 0,
+   "schedule_evening_hours": 23,
    "synthetic_date": "",
    "translations": [
        {
