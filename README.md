@@ -18,20 +18,6 @@ Assuming you have [Nodejs](http://nodejs.org) and [CouchDB](http://couchdb.apach
 npm install kanso -g
 ```
 
-### Kujua Sentinel
-
-Kujua Lite is bundled with a node application, called Sentinel, they work together.
-Sentinel listens to the changes feed and does various things, like schedule
-management.  
-
-Clone Kujua Sentinel:
-
-```
-git clone https://github.com/medic/kujua-sentinel
-```
-
-See [Kujua Sentinel](https://github.com/medic/kujua-sentinel) for more information.
-
 ## Deploy the app
 
 Push the couchapp:
@@ -45,7 +31,7 @@ kanso push http://admin:pass@localhost:5984/kujua-lite
 Start kujua-sentinel:
 
 ```
-cd kujua-sentinel
+cd sentinel
 export COUCH_URL=http://admin:pass@localhost:5984/kujua-lite
 node ./server.js
 ```
@@ -63,6 +49,8 @@ TODO
 Since dashboard is required to configure Kujua Lite, we might need to change
 the dev docs to install Kujua Lite from the market and then overwrite with a
 kanso push.  Best option I can come up with at the moment.
+
+See [Kujua Sentinel](https://github.com/medic/kujua-sentinel) for more information.
 
 ## Tests
 
@@ -82,7 +70,6 @@ Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/kujua-
 Develop      | Master 
 ------------ | -------------
 [![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=develop)](https://travis-ci.org/medic/kujua-lite/branches) | [![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=master)](https://travis-ci.org/medic/kujua-lite/branches)
-
 
 
 ## License & Copyright
