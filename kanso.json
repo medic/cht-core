@@ -609,13 +609,13 @@
                                     "description": "Contact to recieve the message.",
                                     "default": "clinic",
                                     "enum": [
-                                        "clinic",
+                                        "reporting_unit",
                                         "parent",
                                         "grandparent"
                                     ],
                                     "je:hint": "enumlabels",
                                     "je:enumlabels": {
-                                        "clinic": "Reporting Unit",
+                                        "reporting_unit": "Reporting Unit",
                                         "parent_phone": "Parent of Reporting Unit",
                                         "grandparent_phone": "Grandparent of Reporting Unit"
                                     }
