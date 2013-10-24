@@ -111,7 +111,6 @@ exports['is id only'] = function(test) {
 exports['setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0'] = function(test) {
     var doc = {lmp: 0};
     transition.setExpectedBirthDate(doc);
-    test.ok(!doc.lmp_date);
     test.equals(doc.lmp_date, null);
     test.equals(doc.expected_date, null);
     test.done();
@@ -161,6 +160,8 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
 }
 
 exports['zero lmp value only registers patient'] = function(test) {
+
+    test.expect(5);
 
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
 

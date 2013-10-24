@@ -21,10 +21,20 @@ module.exports = {
             doc.weeks_since_dob || doc.dob || doc.weeks_since_birth
         );
     },
+    /*
+     * Given a doc get the LMP value as a number, including 0.  Supports three
+     * property names atm.
+     * */
     getWeeksSinceLMP: function(doc) {
-        return Number(
-            doc.weeks_since_lmp || doc.last_menstrual_period || doc.lmp
-        );
+        var props = ['weeks_since_lmp', 'last_menstrual_period', 'lmp'],
+            ret;
+        _.each(props, function(prop) {
+            if (_.isNumber(ret) && !_.isNaN(ret)) return;
+            if (_.isNumber(Number(doc[prop]))) {
+                ret = Number(doc[prop]);
+            }
+        });
+        return ret;
     },
     isIdOnly: function(doc) {
         /* if true skip schedule creation */

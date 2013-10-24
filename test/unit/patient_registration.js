@@ -74,13 +74,25 @@ exports.tearDown = function(callback) {
     callback();
 }
 
+exports['getWeeksSinceLMP returns 0 not NaN or null'] = function(test) {
+    test.equals(transition.getWeeksSinceLMP({lmp: 0}), 0);
+    test.equals(typeof transition.getWeeksSinceLMP({lmp: 0}), 'number');
+    test.equals(transition.getWeeksSinceLMP({weeks_since_lmp: 0}), 0);
+    test.equals(typeof transition.getWeeksSinceLMP({weeks_since_lmp: 0}), 'number');
+    test.equals(transition.getWeeksSinceLMP({last_menstrual_period: 0}), 0);
+    test.equals(typeof transition.getWeeksSinceLMP({last_menstrual_period: 0}), 'number');
+    test.done();
+};
+
 exports['getWeeksSinceLMP always returns number'] = function(test) {
     test.equals(transition.getWeeksSinceLMP({lmp: '12'}), 12);
     test.done();
 };
 
-exports['getWeeksSinceDOB always returns number'] = function(test) {
-    test.equals(transition.getWeeksSinceDOB({dob: '4'}), 4);
+exports['getWeeksSinceDOB always returns string'] = function(test) {
+    test.equals(typeof transition.getWeeksSinceDOB({dob: '4'}), 'string');
+    test.equals(typeof transition.getWeeksSinceDOB({dob: '0'}), 'string');
+    test.equals(typeof transition.getWeeksSinceDOB({dob: 0}), 'string');
     test.done();
 };
 
