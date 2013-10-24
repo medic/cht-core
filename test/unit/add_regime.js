@@ -195,7 +195,7 @@ exports['regime with registration_response creates message task'] = function(tes
                     phone: '123'
                 }
             }
-        },
+        }
     };
 
     added = transition.addRegime(doc, {
@@ -219,6 +219,51 @@ exports['regime with registration_response creates message task'] = function(tes
 
     test.equals(added, true);
     test.ok(doc.scheduled_tasks);
+    test.equals(doc.tasks.length, 1);
+    test.equals(doc.tasks[0].messages.length, 1);
+    test.equals(doc.tasks[0].messages[0].to, '123');
+    test.equals(doc.tasks[0].messages[0].message, 'Thanks for registering.');
+
+    test.done();
+}
+
+exports['when start from is null send response but skip schedule creation'] = function(test) {
+    var added,
+        doc;
+
+    doc = {
+        form: 'x',
+        reported_date: null,
+        related_entities: {
+            clinic: {
+                contact: {
+                    phone: '123'
+                }
+            }
+        }
+    };
+
+    added = transition.addRegime(doc, {
+        form: 'x',
+        key: 'duckland',
+        registration_response: 'Thanks for registering.',
+        start_from: 'reported_date',
+        messages: [
+            {
+                group: 1,
+                offset: '1 week',
+                message: "This is for serial number {{serial_number}}."
+            },
+            {
+                group: 4,
+                offset: '81 days',
+                message: "This is for serial number {{serial_number}}."
+            }
+        ]
+    });
+
+    test.equals(added, true);
+    test.ok(!doc.scheduled_tasks);
     test.equals(doc.tasks.length, 1);
     test.equals(doc.tasks[0].messages.length, 1);
     test.equals(doc.tasks[0].messages[0].to, '123');

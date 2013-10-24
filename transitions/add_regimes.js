@@ -42,7 +42,8 @@ module.exports = {
         }
     },
     getNextTimes: function(doc, now) {
-        var due = _.first(doc.scheduled_tasks).due,
+        var first = _.first(doc.scheduled_tasks) || {},
+            due = first.due || now,
             times = {};
 
         if (due && now) {
@@ -75,18 +76,29 @@ module.exports = {
             now = moment(date.getDate()),
             times;
 
-        // if we  can't find the regime in config, we're done
-        // also if forms mismatch or already run
+        // if we  can't find the regime in config, we're done also if forms
+        // mismatch or already run.
         if (!_.isObject(regime) || module.exports.formMismatch(regime.form, doc) || module.exports.alreadyRun(doc, regime.key)) {
             return false;
         }
 
         docStart = doc[regime.start_from];
 
-        // if the document does not have the `start_from` property (or its falsey) do nothing; this
-        // will be rerun on next document change
-        if (!docStart) {
+        // if the document does not have the `start_from` property (or its
+        // falsey) do nothing; this will be rerun on next document change
+        if (typeof docStart === 'undefined') {
             return false;
+        }
+
+        // if start_form property is null, we skip schedule creation, but mark
+        // transtition as complete.
+        if (docStart === null) {
+            // still setup response if configured
+            if (regime.registration_response) {
+                times = module.exports.getNextTimes(doc, now);
+                messages.addReply(doc, regime.registration_response, times);
+            }
+            return true;
         }
 
         start = moment(docStart);
