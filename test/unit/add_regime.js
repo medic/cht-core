@@ -117,7 +117,7 @@ exports['regime generates two scheduled messages'] = function(test) {
     doc = {
         form: 'x',
         serial_number: 'abc',
-        lmp_date: moment().valueOf()
+        reported_date: moment().valueOf()
     };
 
     added = transition.addRegime(doc, {
@@ -135,13 +135,13 @@ exports['regime generates two scheduled messages'] = function(test) {
                 message: "This is for serial number {{serial_number}}."
             }
         ],
-        start_from: 'lmp_date'
+        start_from: 'reported_date'
     });
 
     test.equals(added, true);
     test.ok(doc.scheduled_tasks);
     test.equals(doc.scheduled_tasks.length, 2);
-    test.equals(moment(doc.scheduled_tasks[1].due).diff(doc.lmp_date, 'days'), 81);
+    test.equals(moment(doc.scheduled_tasks[1].due).diff(doc.reported_date, 'days'), 81);
 
     test.done();
 }
@@ -153,7 +153,7 @@ exports['regime does not generate scheduled messages in past'] = function(test) 
     doc = {
         form: 'x',
         serial_number: 'abc',
-        lmp_date: moment().subtract(12, 'weeks').toISOString()
+        some_date: moment().subtract(12, 'weeks').toISOString()
     };
 
     added = transition.addRegime(doc, {
@@ -171,13 +171,13 @@ exports['regime does not generate scheduled messages in past'] = function(test) 
                 message: "This is for serial number {{serial_number}}."
             }
         ],
-        start_from: 'lmp_date'
+        start_from: 'some_date'
     });
 
     test.equals(added, true);
     test.ok(doc.scheduled_tasks);
     test.equals(doc.scheduled_tasks.length, 1);
-    test.equals(moment(doc.scheduled_tasks[0].due).diff(doc.lmp_date, 'weeks'), 20);
+    test.equals(moment(doc.scheduled_tasks[0].due).diff(doc.some_date, 'weeks'), 20);
 
     test.done();
 }
@@ -188,7 +188,7 @@ exports['regime with registration_response creates message task'] = function(tes
     doc = {
         form: 'x',
         serial_number: 'abc',
-        lmp_date: moment().valueOf(),
+        reported_date: moment().valueOf(),
         related_entities: {
             clinic: {
                 contact: {
@@ -214,7 +214,7 @@ exports['regime with registration_response creates message task'] = function(tes
                 message: "This is for serial number {{serial_number}}."
             }
         ],
-        start_from: 'lmp_date'
+        start_from: 'reported_date'
     });
 
     test.equals(added, true);

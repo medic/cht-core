@@ -74,6 +74,30 @@ exports.tearDown = function(callback) {
     callback();
 }
 
+exports['getWeeksSinceLMP always returns number'] = function(test) {
+    test.equals(transition.getWeeksSinceLMP({lmp: '12'}), 12);
+    test.done();
+};
+
+exports['getWeeksSinceDOB always returns number'] = function(test) {
+    test.equals(transition.getWeeksSinceDOB({dob: '4'}), 4);
+    test.done();
+};
+
+exports['getWeeksSinceLMP supports three property names'] = function(test) {
+    test.equals(transition.getWeeksSinceLMP({lmp: '12'}), 12);
+    test.equals(transition.getWeeksSinceLMP({weeks_since_lmp: '12'}), 12);
+    test.equals(transition.getWeeksSinceLMP({last_menstrual_period: '12'}), 12);
+    test.done();
+};
+
+exports['getWeeksSinceDOB supports three property names'] = function(test) {
+    test.equals(transition.getWeeksSinceDOB({dob: '12'}), 12);
+    test.equals(transition.getWeeksSinceDOB({weeks_since_dob: '12'}), 12);
+    test.equals(transition.getWeeksSinceDOB({weeks_since_birth: '12'}), 12);
+    test.done();
+};
+
 exports['filter passes until we have patient_id and expected_date'] = function(test) {
     test.equals(transition.filter({
         form: 'PATR',
@@ -221,8 +245,8 @@ exports['registration responses support locale'] = function(test) {
         }
 
         /*
-         * Also checks that recipient using doc property value is handled
-         * resolved correctly
+         * Also checks that recipient using doc property value is resolved
+         * correctly.
          * */
         var msg1 = getMessage(doc, 1);
         test.ok(msg1);

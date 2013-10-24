@@ -108,20 +108,12 @@ exports['is id only'] = function(test) {
     test.done();
 }
 
-exports['setExpectedBirthDate sets lmp_date and expected_date correctly for lmp: 0'] = function(test) {
-    var doc,
-        start = moment().startOf('week');
-
-    doc = {
-        lmp: 0
-    };
-
+exports['setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0'] = function(test) {
+    var doc = {lmp: 0};
     transition.setExpectedBirthDate(doc);
-
-    test.ok(doc.lmp_date);
-    test.equals(doc.lmp_date, start.toISOString());
-    test.equals(doc.expected_date, start.clone().add(40, 'weeks').toISOString());
-
+    test.ok(!doc.lmp_date);
+    test.equals(doc.lmp_date, null);
+    test.equals(doc.expected_date, null);
     test.done();
 }
 
@@ -164,6 +156,28 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
 
         test.equals(doc.tasks, undefined);
 
+        test.done();
+    });
+}
+
+exports['zero lmp value only registers patient'] = function(test) {
+
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+
+    var doc = {
+        form: 'y',
+        patient_name: 'abc',
+        lmp: 0
+    };
+
+    transition.onMatch({
+        doc: doc
+    }, {}, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.equals(doc.lmp_date, null);
+        test.ok(doc.patient_id);
+        test.equals(doc.tasks, undefined);
         test.done();
     });
 }

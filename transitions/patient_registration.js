@@ -31,11 +31,17 @@ module.exports = {
         return Boolean(doc.getid || doc.skip_schedule_creation);
     },
     setExpectedBirthDate: function(doc) {
-        var lmp = module.exports.getWeeksSinceLMP(doc),
+        var lmp = Number(module.exports.getWeeksSinceLMP(doc)),
             start = moment(date.getDate()).startOf('week');
-        start.subtract(Number(lmp), 'weeks');
-        doc.lmp_date = start.toISOString();
-        doc.expected_date = start.clone().add(40, 'weeks').toISOString();
+        if (lmp === 0) {
+            // means baby was already born, chw just wants a registration.
+            doc.lmp_date = null;
+            doc.expected_date = null;
+        } else {
+            start.subtract(lmp, 'weeks');
+            doc.lmp_date = start.toISOString();
+            doc.expected_date = start.clone().add(40, 'weeks').toISOString();
+        }
     },
     setBirthDate: function(doc) {
         var weeks_since = module.exports.getWeeksSinceDOB(doc),
