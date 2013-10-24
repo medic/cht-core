@@ -77,11 +77,18 @@ page.open(system.args[1], function(status){
                 var el = document.getElementById('nodeunit-testresult');
                 console.log(el.innerText);
                 try {
-                    return $('#nodeunit-banner').hasClass('fail');
-                } catch (e) { }
+                    if ($('#nodeunit-banner').hasClass('fail')) {
+                        $('.fail strong').each(function(idx, el){
+                            console.log($(el).text())}
+                        );
+                        return true;
+                    }
+                } catch (e) {}
                 return 10000;
             });
-            if (failed) console.log('Tests Failed');
+            if (failed) {
+                console.log('Tests Failed');
+            }
             phantom.exit((failed) ? 1 : 0);
         }, 30000);
 
