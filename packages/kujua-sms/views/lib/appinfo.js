@@ -40,8 +40,10 @@ exports.getAppInfo = function(req) {
 
         // add defaults to settings if needed
         for (var k in defaults) {
-            if (defaults[k] && !settings[k]) {
-                settings[k] = defaults[k];
+            if (typeof defaults[k] !== 'undefined') {
+                if (typeof settings[k] === 'undefined') {
+                    settings[k] = defaults[k];
+                }
             }
         }
 
