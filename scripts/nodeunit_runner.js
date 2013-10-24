@@ -83,6 +83,7 @@ page.open(system.args[1], function(status){
                         );
                         return true;
                     }
+                    return false;
                 } catch (e) {}
                 return 10000;
             });
