@@ -31,14 +31,18 @@ function checkSchedule() {
     var db = require('../db'),
         now = moment(date.getDate());
 
+    console.log('doing checkSchedule()');
     async.forEachSeries(tasks, function(task, callback) {
         if (_.isFunction(task.execute)) {
+            console.log('calling task.execute()');
             task.execute({
                 db: db
             }, callback);
         } else if (sendable(now)) {
+            console.log('sendable, calling task()');
             task(db, callback);
         } else {
+            console.log('not sendable, calling callback()');
             callback();
         }
     }, function(err) {
@@ -51,7 +55,7 @@ function checkSchedule() {
 
 function reschedule() {
     var now = moment(),
-        heartbeat = now.clone().startOf('hour').add('hours', 1),
+        heartbeat = now.clone().startOf('minute').add('minutes', 5),
         duration = moment.duration(heartbeat.valueOf() - now.valueOf());
 
     console.log('checking schedule again in', moment.duration(duration).humanize());
