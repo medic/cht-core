@@ -107,7 +107,8 @@ module.exports = {
             var due,
                 offset = module.exports.getOffset(msg.offset),
                 phone = messages.getRecipientPhone(doc, msg.recipient),
-                send_time = module.exports.getSendTime(msg.send_time);
+                send_time = module.exports.getSendTime(msg.send_time),
+                locale = utils.getLocale(doc);
 
             if (offset) {
                 due = start.clone().add(offset);
@@ -121,7 +122,7 @@ module.exports = {
                 }
                 // if locale is specified on doc and message then only send
                 // messages in the right locale.
-                if (doc.locale && msg.locale && doc.locale !== msg.locale) {
+                if (locale && msg.locale && locale !== msg.locale) {
                     return;
                 }
                 messages.scheduleMessage(doc, {

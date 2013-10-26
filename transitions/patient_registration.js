@@ -109,11 +109,12 @@ module.exports = {
     },
     addMessages: function(config, doc) {
         // send response if configured
+        var locale = utils.getLocale(doc);
         if (config.messages) {
             _.each(config.messages, function(msg, idx) {
                 // if locale is specified on doc and message then only send
                 // those messages, otherwise send the message.
-                if (doc.locale && msg.locale && doc.locale !== msg.locale) {
+                if (locale && msg.locale && locale !== msg.locale) {
                     return;
                 }
                 messages.addMessage({
