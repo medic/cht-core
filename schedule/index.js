@@ -34,15 +34,12 @@ function checkSchedule() {
     console.log('doing checkSchedule()');
     async.forEachSeries(tasks, function(task, callback) {
         if (_.isFunction(task.execute)) {
-            console.log('calling task.execute()');
             task.execute({
                 db: db
             }, callback);
         } else if (sendable(now)) {
-            console.log('sendable, calling task()');
             task(db, callback);
         } else {
-            console.log('not sendable, calling callback()');
             callback();
         }
     }, function(err) {

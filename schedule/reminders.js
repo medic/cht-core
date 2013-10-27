@@ -40,7 +40,7 @@ module.exports = {
             reminders = config.get('reminders') || [];
 
         async.eachSeries(reminders, function(reminder, callback) {
-            if (!isConfigValid(reminder)) return;
+            if (!isConfigValid(reminder)) return callback();
             module.exports.runReminder({
                 db: db,
                 reminder: reminder
