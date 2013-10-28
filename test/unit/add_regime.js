@@ -146,6 +146,33 @@ exports['regime generates two scheduled messages'] = function(test) {
     test.done();
 }
 
+exports['scheduled due timestamp respects timezone'] = function(test) {
+    var doc = {
+        form: 'x',
+        reported_date: "2050-03-13T13:06:22.002Z"
+    };
+    var added = transition.addRegime(doc, {
+        form: 'x',
+        key: 'duckland',
+        start_from: 'reported_date',
+        messages: [
+            {
+                group: 1,
+                offset: '1 day',
+                send_time: '08:00 +00:00',
+                message: "This is for serial number {{serial_number}}."
+            }
+        ]
+    });
+    test.equals(added, true);
+    test.equals(doc.scheduled_tasks.length, 1);
+    test.equals(
+        moment(doc.scheduled_tasks[0].due).toISOString(),
+        "2050-03-14T08:00:00.000Z"
+    );
+    test.done();
+}
+
 exports['regime does not generate scheduled messages in past'] = function(test) {
     var added,
         doc;

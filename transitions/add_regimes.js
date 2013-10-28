@@ -26,9 +26,13 @@ module.exports = {
 
         callback(null, updated);
     },
+    // return [hour, minute, timezone]
     getSendTime: function(send_time) {
         if (!send_time) return [];
-        return send_time.split(':');
+        var parts = send_time.split(/\s+/),
+            time = parts[0].split(':'),
+            tz = parts[1];
+        return [time[0], time[1], tz];
     },
     getOffset: function(offset) {
         var tokens = (offset || '').split(' '),
@@ -112,9 +116,17 @@ module.exports = {
 
             if (offset) {
                 due = start.clone().add(offset);
-                if (send_time.length === 2) {
+                if (send_time.length >= 2) {
+                    // set timezone first if specified
+                    if (typeof send_time[2] !== 'undefined') {
+                        due.zone(send_time[2]);
+                    }
                     due.hours(send_time[0]);
                     due.minutes(send_time[1]);
+                    // seconds don't matter. force seconds to zero just for
+                    // easier testing.
+                    due.seconds(0);
+                    due.milliseconds(0);
                 }
                 if (due < now) {
                     // don't schedule messages in the past
