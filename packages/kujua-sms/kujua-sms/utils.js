@@ -204,10 +204,10 @@ exports.makeDataRecordReadable = function(doc) {
 exports.fieldsToHtml = function(keys, labels, data_record, def) {
 
     if (!def && data_record && data_record.form)
-        def = jsonforms[data_record.form];
+        def = jsonforms.getForm(data_record.form);
 
     if (_.isString(def))
-        def = jsonforms[def];
+        def = jsonforms.getForm(def);
 
     var fields = {
         headers: [],
@@ -267,7 +267,7 @@ function translateKey(key, field, locale) {
  * @api private
  */
 exports.getLabels = function(keys, form, locale) {
-    var def = jsonforms[form],
+    var def = jsonforms.getForm(form),
         fields = def && def.fields;
 
     return _.reduce(keys, function(memo, key) {
@@ -380,7 +380,7 @@ var getValues = exports.getValues = function(doc, keys) {
  */
 var getFormKeys = exports.getFormKeys = function(form) {
     var keys = {},
-        def = jsonforms[form];
+        def = jsonforms.getForm(form);
 
     var getKeys = function(key, hash) {
         if(key.length > 1) {
@@ -895,7 +895,7 @@ exports.info = {
 };
 
 exports.getFormTitle = function(form) {
-    var def = jsonforms[form],
+    var def = jsonforms.getForm(form),
         label = def && def.meta && def.meta.label,
         key,
         title;

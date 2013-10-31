@@ -18,7 +18,7 @@ var _ = require('underscore'),
  * @api private
  */
 var getRefID = function(form, form_data) {
-    var def = jsonforms[form],
+    var def = jsonforms.getForm(form),
         val;
 
     if (!def || !def.facility_reference)
@@ -41,7 +41,7 @@ var getRefID = function(form, form_data) {
  */
 function getDataRecord(doc, form_data, appInfo) {
     var form = doc.form,
-        def = jsonforms[form];
+        def = jsonforms.getForm(form);
 
     var record = {
         _id: req.uuid,
@@ -103,7 +103,7 @@ function getDataRecord(doc, form_data, appInfo) {
  */
 var getCallbackPath = function(phone, form, form_data, def) {
 
-    def = def ? def : jsonforms[form];
+    def = def ? def : jsonforms.getForm(form);
 
     if (!form) {
         // find a match with a facility's phone number
@@ -177,7 +177,7 @@ var parseSentTimestamp = function(str) {
 var getSMSResponse = function(doc, info) {
     var locale = doc.sms_message && doc.sms_message.locale,
         msg = info.translate('sms_received', locale),
-        def = doc.form && jsonforms[doc.form],
+        def = doc.form && jsonforms.getForm(doc.form),
         res = {
             success: true,
             task: "send",
@@ -267,7 +267,7 @@ var getSMSResponse = function(doc, info) {
  *
  */
 var getMessagesTask = function(record) {
-    var def = jsonforms[record.form],
+    var def = jsonforms.getForm(record.form),
         phone = record.from,
         clinic = record.related_entities.clinic,
         keys = utils.getFormKeys(record.form),
@@ -314,7 +314,7 @@ exports.add_sms = function(doc, request) {
     sms_message = _.extend(req.form, sms_message);
 
     var form_data = null,
-        def = jsonforms[sms_message.form],
+        def = jsonforms.getForm(sms_message.form),
         baseURL = require('duality/core').getBaseURL(),
         headers = req.headers.Host.split(":"),
         resp = getDefaultResponse();
@@ -377,7 +377,7 @@ exports.updateRelated = function(doc, request) {
 
     req = request;
     var data = JSON.parse(req.body),
-        def = jsonforms[doc.form],
+        def = jsonforms.getForm(doc.form),
         resp = {};
 
     doc.related_entities = doc.related_entities || {clinic: null};

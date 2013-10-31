@@ -278,7 +278,7 @@ exports.data_record = function (head, req) {
         form = req.query && req.query.form,
         headers = req.headers.Host.split(":"),
         baseURL = require('duality/core').getBaseURL(),
-        def = jsonforms[form],
+        def = jsonforms.getForm(form),
         facility  = null,
         appInfo = info.getAppInfo.call(this);
 

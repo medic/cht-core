@@ -1,4 +1,11 @@
 
+/*
+ * Return a json form
+ */
+exports.getForm = function(code) {
+    return exports[code];
+};
+
 //
 // Forms for tests, YYY* form code space is reserved for test forms.
 //
