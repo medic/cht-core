@@ -197,7 +197,7 @@ exports.parseArray = function (def, doc) {
  * @returns {String} form code or undefined if we don't recognize the format
  * @api public
  */
-exports.getForm = function(msg) {
+exports.getFormCode = function(msg) {
 
     if (typeof msg !== 'string') { return; }
 

@@ -6,17 +6,17 @@ exports.get_form = function(test) {
     var msg, form;
 
     msg = 'YYYY CDT33';
-    form = smsparser.getForm(msg);
+    form = smsparser.getFormCode(msg);
     test.same('YYYY',form);
 
     // arbitrary delimiter
     msg = 'YYYY-CDT33',
-    form = smsparser.getForm(msg);
+    form = smsparser.getFormCode(msg);
     test.same('YYYY',form);
 
     // arbitrary delimiter
     msg = 'ZZZ!CDT33',
-    form = smsparser.getForm(msg);
+    form = smsparser.getFormCode(msg);
     test.same('ZZZ',form);
 
     test.done();
@@ -26,7 +26,7 @@ exports.validations_is_numeric_month_stays_numeric = function(test) {
     test.expect(1);
 
     var doc = { message: "1!YYYY!foo#2011#11#" },
-        form = smsparser.getForm(doc.message),
+        form = smsparser.getFormCode(doc.message),
         def = jsonforms[form],
         data = smsparser.parse(def, doc);
 
@@ -459,7 +459,7 @@ exports.smsformats_unstructured = function(test) {
 
     for (var i in docs) {
         var doc = docs[i],
-            form = smsparser.getForm(doc.message),
+            form = smsparser.getFormCode(doc.message),
             def = jsonforms[form];
         // assert parsing fails
         test.same({}, smsparser.parse(def, doc));
@@ -478,7 +478,7 @@ exports.smsformats_structured_but_no_form = function(test) {
 
     for (var i in docs) {
         var doc = docs[i],
-            form = smsparser.getForm(doc.message),
+            form = smsparser.getFormCode(doc.message),
             def = jsonforms[form];
         // assert parsing fails
         test.same({}, smsparser.parse(def, doc));
@@ -491,7 +491,7 @@ exports.smsformats_textforms_only_one_field = function(test) {
     test.expect(1);
 
     var doc = { message: 'YYYY CDT33' },
-        form = smsparser.getForm(doc.message),
+        form = smsparser.getFormCode(doc.message),
         def = jsonforms[form],
         data = smsparser.parse(def, doc),
         expect = {
@@ -514,7 +514,7 @@ exports.valid_message = function (test) {
         message: '1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4'
     };
 
-    var form = smsparser.getForm(doc.message);
+    var form = smsparser.getFormCode(doc.message);
     var obj = smsparser.parse(def, doc);
 
     test.same(obj, {
@@ -559,7 +559,7 @@ exports.junk_example_data = function (test) {
 
     test.expect(2);
 
-    var form = smsparser.getForm(doc.message);
+    var form = smsparser.getFormCode(doc.message);
     var obj = smsparser.parse(null, doc);
     var expectedObj = {};
     test.same(obj, expectedObj);

@@ -309,7 +309,7 @@ exports.add_sms = function(doc, request) {
     var sms_message = {
         type: "sms_message",
         locale: (req.query && req.query.locale) || 'en',
-        form: smsparser.getForm(req.form.message)
+        form: smsparser.getFormCode(req.form.message)
     };
     sms_message = _.extend(req.form, sms_message);
 
