@@ -96,7 +96,8 @@
                         "fr": "French",
                         "ne": "Nepalese",
                         "sw": "Swahili"
-                    }
+                    },
+                    "default": "en"
                 }
             }
         }
@@ -117,7 +118,8 @@
                     "fr": "French",
                     "ne": "Nepalese",
                     "sw": "Swahili"
-                }
+                },
+                "default": "en"
             },
             "muvuku_webapp_url": {
                 "type": "string",
@@ -250,8 +252,8 @@
                     "type": "object"
                 }
             },
-            "patient_registrations": {
-                "title": "Patient Registrations",
+            "registrations": {
+                "title": "Registrations",
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -262,20 +264,48 @@
                             "description": "Form code of a registration form. e.g. ANCR",
                             "default": ""
                         },
-                        "type": {
-                            "type": "string",
-                            "title": "Type",
-                            "default": "patient",
-                            "enum": [
-                                "patient",
-                                "pregnancy",
-                                "birth"
-                            ],
-                            "je:hint": "enumlabels",
-                            "je:enumlabels": {
-                                "patient": "Patient",
-                                "pregnancy": "Pregnancy",
-                                "birth": "Birth"
+                        "events": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "title": "Event Name",
+                                        "default": "",
+                                        "enum": ["", "create"],
+                                        "je:hint": "enumlabels",
+                                        "je:enumlabels": {
+                                            "create": "On Create"
+                                        }
+                                    },
+                                    "trigger": {
+                                        "type": "string",
+                                        "title": "Trigger",
+                                        "description": "When form is received trigger actions like enrolling in schedule.",
+                                        "default": "",
+                                        "enum": ["","assign_schedule", "add_patient_id", "add_expected_date", "add_birth_date"],
+                                        "je:hint": "enumlabels",
+                                        "je:enumlabels": {
+                                            "assign_schedule": "Assign a schedule",
+                                            "add_patient_id": "Add Patient ID",
+                                            "add_expected_date": "Add Expected Date",
+                                            "add_birth_date": "Add Birth Date"
+                                        }
+                                    },
+                                    "arguments": {
+                                        "type": "string",
+                                        "title": "Parameters",
+                                        "description": "i.e. if assigning a schedule provide the name.",
+                                        "default": ""
+                                    },
+                                    "bool_expr": {
+                                        "type": "string",
+                                        "title": "Boolean expression",
+                                        "description": "If this expression evaluates to false the trigger will be skipped.",
+                                        "default": ""
+                                    }
+                                }
                             }
                         },
                         "validations": {
@@ -436,28 +466,22 @@
                 },
                 "default": []
             },
-            "task_regimes": {
-                "title": "Reminder Schedules",
+            "schedules": {
+                "title": "Schedules",
                 "type": "array",
                 "items": {
                     "properties": {
-                        "key": {
+                        "name": {
                             "type": "string",
-                            "title": "Reminder Type",
-                            "description": "A made up keyword to define this schedule. e.g. anc_reminders",
-                            "default": ""
-                        },
-                        "form": {
-                            "type": "string",
-                            "title": "Registration Form",
-                            "description": "The form code of the registration form that triggers schedule creation. e.g. ANCR",
+                            "title": "Name",
+                            "description": "A unique name to define this schedule. e.g. ANC Reminders",
                             "default": ""
                         },
                         "start_from": {
                             "type": "string",
                             "title": "Timestamp Property Name",
-                            "description": "A timestamp or date property on the record that is used to calculate when messages are sent. e.g. lmp_date",
-                            "default": "lmp_date"
+                            "description": "A timestamp or date property on the record that is used to calculate when messages are sent. e.g. lmp_date.  Use reported_date if you just want to reference creation time.",
+                            "default": ""
                         },
                         "registration_response": {
                             "type": "string",
@@ -515,7 +539,8 @@
                                             "ne": "Nepalese",
                                             "sw": "Swahili",
                                             "lu": "Dholuo"
-                                        }
+                                        },
+                                        "default": "en"
                                     }
                                 },
                                 "type": "object"
@@ -524,8 +549,7 @@
                         }
                     },
                     "type": "object"
-                },
-                "default": []
+                }
             },
             "notifications": {
                 "title": "Notifications",
