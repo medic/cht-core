@@ -517,8 +517,8 @@
                                     "send_time": {
                                         "type": "string",
                                         "title": "Send Time",
-                                        "description": "Specify time of day at which the message is to be sent. Ignored if blank. e.g. 20:30",
-                                        "pattern": "(^[0-9]{1,2}:[0-9]{2}$|^$)"
+                                        "description": "Specify time of day at which the message is to be sent. Ignored if blank. If timezone offset is not specfiied GMT will be used.  e.g. 20:30 +0300",
+                                        "pattern": "(^[0-9]{1,2}:[0-9]{2}\\s*(\\s+[\\+\\-][0-9]{4})?$|^\\s*$)"
                                     },
                                     "recipient": {
                                         "type": "string",
