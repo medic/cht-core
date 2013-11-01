@@ -119,7 +119,7 @@ module.exports = {
                 }
                 messages.addMessage({
                     doc: doc,
-                    phone_key: msg.recipient,
+                    phone: messages.getRecipientPhone(doc, msg.recipient),
                     message: msg.message
                 });
             });

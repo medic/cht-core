@@ -38,12 +38,12 @@ exports.setUp = function(callback) {
         ],
         messages: [
             {
-                message: "thanks {{contact_name}}",
+                message: "thanks {{contact.name}}",
                 recipient: "reporting_unit",
                 locale: "en"
             },
             {
-                message: "gracias {{contact_name}}",
+                message: "gracias {{contact.name}}",
                 recipient: "reporting_unit",
                 locale: "es"
             },
@@ -174,10 +174,18 @@ exports['registration sets up responses'] = function(test) {
 
     var doc = {
         form: 'PATR',
+        from: '+1234',
         patient_name: 'foo',
         caregiver_name: 'Sam',
         caregiver_phone: '+987',
-        related_entities: related_entities,
+        related_entities: {
+            clinic: {
+                contact: {
+                    phone: '+1234',
+                    name: 'Julie'
+                }
+            }
+        },
         locale: 'en'
     };
 

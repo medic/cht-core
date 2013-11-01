@@ -208,6 +208,7 @@ exports['id only logic with valid name'] = function(test) {
 }
 
 exports['id only logic with invalid name'] = function(test) {
+    test.expect(5);
     var doc;
 
     doc = {
@@ -225,7 +226,6 @@ exports['id only logic with invalid name'] = function(test) {
         test.equals(complete, true);
         test.equals(doc.patient_id, undefined);
         test.ok(doc.tasks);
-
         test.equals(getMessage(doc), 'Invalid patient name.');
 
         test.done();
@@ -233,10 +233,13 @@ exports['id only logic with invalid name'] = function(test) {
 }
 
 exports['invalid name valid LMP logic'] = function(test) {
+    test.expect(4);
+
     var doc;
 
     doc = {
         form: 'y',
+        from: '+1234',
         related_entities: {
             clinic: {
                 contact: {

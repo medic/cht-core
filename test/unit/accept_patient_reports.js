@@ -136,7 +136,7 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
         report: {
             messages: [{
                 event_type: 'report_accepted',
-                message: 'Thank you, {{contact_name}}. ANC visit for {{patient_id}} has been recorded.',
+                message: 'Thank you, {{contact.name}}. ANC visit for {{patient_id}} has been recorded.',
                 recipient: 'reporting_unit'
             }]
         }

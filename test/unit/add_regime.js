@@ -214,6 +214,7 @@ exports['regime with registration_response creates message task'] = function(tes
         doc;
     doc = {
         form: 'x',
+        from: '+123',
         serial_number: 'abc',
         reported_date: moment().valueOf(),
         related_entities: {

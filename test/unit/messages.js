@@ -15,7 +15,7 @@ exports['extractDetails supports template variables on doc'] = function(test) {
         }
     };
     var details = messages.extractDetails(doc);
-    test.equals(details.chw_phone, '123');
+    test.equals(details.contact.phone, '123');
     test.equals(details.governor, 'arnold');
     test.done();
 }
@@ -34,7 +34,8 @@ exports['extractDetails internal fields always override form fields'] = function
         }
     };
     var details = messages.extractDetails(doc);
-    test.equals(details.chw_name, 'Sally');
+    test.equals(details.chw_name, 'Arnold');
+    test.equals(details.contact.name, 'Sally');
     test.done();
 }
 
@@ -79,3 +80,104 @@ exports['addMessage supports template variables on doc'] = function(test) {
     test.done();
 }
 
+exports['addMessage template supports contact obj'] = function(test) {
+    var doc = {
+        form: 'x',
+        related_entities: {
+            clinic: {
+                contact: {
+                    name: 'Paul'
+                }
+            }
+        }
+    };
+    messages.addMessage({
+        doc: doc,
+        phone: "+13125551212",
+        message: "Thank you {{contact.name}}."
+    });
+    test.equals(doc.tasks.length, 1);
+    test.equals(
+        doc.tasks[0].messages[0].message,
+        "Thank you Paul."
+    );
+    test.done();
+}
+
+exports['addMessage supports clinic dot template variables'] = function(test) {
+    var doc = {
+        form: 'x',
+        related_entities: {
+            clinic: {
+                contact: {
+                    name: 'Sally'
+                }
+            }
+        }
+    };
+    messages.addMessage({
+        doc: doc,
+        phone: "+13125551212",
+        message: "Thank you {{clinic.contact.name}}."
+    });
+    test.equals(doc.tasks.length, 1);
+    test.equals(
+        doc.tasks[0].messages[0].message,
+        "Thank you Sally."
+    );
+    test.done();
+}
+
+exports['addMessage template supports health_center object'] = function(test) {
+    var doc = {
+        form: 'x',
+        related_entities: {
+            clinic: {
+                parent: {
+                    contact: {
+                        name: "Jeremy"
+                    }
+                }
+            }
+        }
+    };
+    messages.addMessage({
+        doc: doc,
+        phone: "+13125551212",
+        message: "Thank you {{health_center.contact.name}}."
+    });
+    test.equals(doc.tasks.length, 1);
+    test.equals(
+        doc.tasks[0].messages[0].message,
+        "Thank you Jeremy."
+    );
+    test.done();
+}
+
+exports['addMessage template supports district object'] = function(test) {
+    var doc = {
+        form: 'x',
+        related_entities: {
+            clinic: {
+                parent: {
+                    parent: {
+                        contact: {
+                            name: "Kristen"
+                        }
+                    }
+                }
+            }
+        }
+    };
+    messages.addMessage({
+        doc: doc,
+        phone: "+13125551212",
+        message: "Thank you {{district.contact.name}}."
+    });
+    test.equals(doc.tasks.length, 1);
+    test.equals(
+        doc.tasks[0].messages[0].message,
+        "Thank you Kristen."
+    );
+    test.done();
+}

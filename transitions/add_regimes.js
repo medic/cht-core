@@ -75,8 +75,6 @@ module.exports = {
     addRegime: function(doc, regime) {
         var docStart,
             start,
-            clinic_contact_name = utils.getClinicContactName(doc),
-            clinic_name = utils.getClinicName(doc),
             now = moment(date.getDate()),
             times;
 
