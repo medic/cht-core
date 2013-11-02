@@ -1,96 +1,42 @@
 var _ = require('underscore'),
     sinon = require('sinon'),
     moment = require('moment'),
-    transition = require('../../transitions/add_regimes');
+    schedules = require('../../lib/schedules');
 
 exports['signature'] = function(test) {
-    test.ok(_.isFunction(transition.addRegime));
-    test.equals(transition.addRegime.length, 2);
-    test.done();
-};
-
-exports['filter fails if no form'] = function(test) {
-    test.equals(transition.filter({}), false);
-    test.done();
-};
-
-exports['filter fails if only form there'] = function(test) {
-    test.equals(transition.filter({
-        form: 'x'
-    }), false);
-    test.done();
-};
-
-exports['filter fails if no clinic phone'] = function(test) {
-    test.equals(transition.filter({
-        form: 'x',
-        patient_id: '123',
-        related_entities: {
-            clinic: {
-                contact: {}
-            }
-        }
-    }), false);
-    test.done();
-};
-
-exports['filter passes if form, patient_id and clinic phone there'] = function(test) {
-    test.equals(transition.filter({
-        form: 'x',
-        patient_id: '123',
-        related_entities: {
-            clinic: {
-                contact: {
-                    phone: '123'
-                }
-            }
-        }
-    }), true);
-    test.done();
-};
-
-exports['filter fails if regime exists and matching scheduled_tasks'] = function(test) {
-    test.equals(transition.filter({
-        task_regimes: [ 'x' ],
-        scheduled_tasks: [
-            {
-                type: 'x'
-            }
-        ]
-    }), false);
+    test.ok(_.isFunction(schedules.assignSchedule));
+    test.equals(schedules.assignSchedule.length, 2);
     test.done();
 };
 
 exports['getOffset returns false for bad syntax'] = function(test) {
-    test.equals(transition.getOffset('x'), false);
-    test.equals(transition.getOffset('2 muppets'), false);
-    test.equals(transition.getOffset('one week'), false);
+    test.equals(schedules.getOffset('x'), false);
+    test.equals(schedules.getOffset('2 muppets'), false);
+    test.equals(schedules.getOffset('one week'), false);
     test.done();
 };
 
 exports['getOffset returns durations for good syntax'] = function(test) {
-    test.equals(transition.getOffset('2 weeks').asDays(), 14);
-    test.equals(transition.getOffset('81 days').asDays(), 81);
+    test.equals(schedules.getOffset('2 weeks').asDays(), 14);
+    test.equals(schedules.getOffset('81 days').asDays(), 81);
     test.done();
 };
 
-exports['addRegime returns false if already has scheduled_task for that type'] = function(test) {
-    var added,
-        doc;
+exports['assignSchedule returns false if already has scheduled_task for that name'] = function(test) {
 
-    doc = {
+    var doc = {
         form: 'x',
         lmp_date: moment().valueOf(),
         scheduled_tasks: [
             {
-                type: 'duckland'
+                name: 'duckland'
             }
         ]
     };
 
-    added = transition.addRegime(doc, {
-        form: 'x',
-        key: 'duckland',
+    var added = schedules.assignSchedule(doc, {
+        name: "duckland",
+        start_from: 'lmp_date',
         messages: [
             {
                 group: 1,
@@ -102,8 +48,7 @@ exports['addRegime returns false if already has scheduled_task for that type'] =
                 offset: '81 days',
                 message: "This is for serial number {{serial_number}}."
             }
-        ],
-        start_from: 'lmp_date'
+        ]
     });
 
     test.equals(added, false);
@@ -111,18 +56,17 @@ exports['addRegime returns false if already has scheduled_task for that type'] =
     test.done();
 }
 
-exports['regime generates two scheduled messages'] = function(test) {
-    var added,
-        doc;
-    doc = {
+exports['schedule generates two messages'] = function(test) {
+
+    var doc = {
         form: 'x',
         serial_number: 'abc',
         reported_date: moment().valueOf()
     };
 
-    added = transition.addRegime(doc, {
-        form: 'x',
-        key: 'duckland',
+    var added = schedules.assignSchedule(doc, {
+        name: 'duckland',
+        start_from: 'reported_date',
         messages: [
             {
                 group: 1,
@@ -134,8 +78,7 @@ exports['regime generates two scheduled messages'] = function(test) {
                 offset: '81 days',
                 message: "This is for serial number {{serial_number}}."
             }
-        ],
-        start_from: 'reported_date'
+        ]
     });
 
     test.equals(added, true);
@@ -151,9 +94,8 @@ exports['scheduled due timestamp respects timezone'] = function(test) {
         form: 'x',
         reported_date: "2050-03-13T13:06:22.002Z"
     };
-    var added = transition.addRegime(doc, {
-        form: 'x',
-        key: 'duckland',
+    var added = schedules.assignSchedule(doc, {
+        name: 'duckland',
         start_from: 'reported_date',
         messages: [
             {
@@ -173,7 +115,7 @@ exports['scheduled due timestamp respects timezone'] = function(test) {
     test.done();
 }
 
-exports['regime does not generate scheduled messages in past'] = function(test) {
+exports['schedule does not generate messages in past'] = function(test) {
     var added,
         doc;
 
@@ -183,9 +125,9 @@ exports['regime does not generate scheduled messages in past'] = function(test) 
         some_date: moment().subtract(12, 'weeks').toISOString()
     };
 
-    added = transition.addRegime(doc, {
-        form: 'x',
-        key: 'duckland',
+    added = schedules.assignSchedule(doc, {
+        name: 'duckland',
+        start_from: 'some_date',
         messages: [
             {
                 group: 1,
@@ -197,8 +139,7 @@ exports['regime does not generate scheduled messages in past'] = function(test) 
                 offset: '20 weeks',
                 message: "This is for serial number {{serial_number}}."
             }
-        ],
-        start_from: 'some_date'
+        ]
     });
 
     test.equals(added, true);
@@ -209,7 +150,7 @@ exports['regime does not generate scheduled messages in past'] = function(test) 
     test.done();
 }
 
-exports['regime with registration_response creates message task'] = function(test) {
+exports['schedule with registration_response creates message task'] = function(test) {
     var added,
         doc;
     doc = {
@@ -226,10 +167,10 @@ exports['regime with registration_response creates message task'] = function(tes
         }
     };
 
-    added = transition.addRegime(doc, {
-        form: 'x',
-        key: 'duckland',
+    added = schedules.assignSchedule(doc, {
+        name: 'duckland',
         registration_response: 'Thanks for registering.',
+        start_from: 'reported_date',
         messages: [
             {
                 group: 1,
@@ -241,8 +182,7 @@ exports['regime with registration_response creates message task'] = function(tes
                 offset: '81 days',
                 message: "This is for serial number {{serial_number}}."
             }
-        ],
-        start_from: 'reported_date'
+        ]
     });
 
     test.equals(added, true);
@@ -256,10 +196,9 @@ exports['regime with registration_response creates message task'] = function(tes
 }
 
 exports['when start from is null send response but skip schedule creation'] = function(test) {
-    var added,
-        doc;
+    var added;
 
-    doc = {
+    var doc = {
         form: 'x',
         reported_date: null,
         related_entities: {
@@ -271,9 +210,8 @@ exports['when start from is null send response but skip schedule creation'] = fu
         }
     };
 
-    added = transition.addRegime(doc, {
-        form: 'x',
-        key: 'duckland',
+    added = schedules.assignSchedule(doc, {
+        name: 'duckland',
         registration_response: 'Thanks for registering.',
         start_from: 'reported_date',
         messages: [
@@ -300,57 +238,43 @@ exports['when start from is null send response but skip schedule creation'] = fu
     test.done();
 }
 
-exports['transition is repeatable'] = function(test) {
-    test.equals(transition.repeatable, true);
-    test.done();
-}
-
-exports['formMismatch'] = function(test) {
-    test.ok(_.isFunction(transition.formMismatch));
-    test.equals(transition.formMismatch.length, 2);
-
-    test.equals(transition.formMismatch('x', { form: 'x' }), false);
-    test.equals(transition.formMismatch('y', { form: 'x' }), true);
-    test.done();
-}
-
 exports['alreadyRun validation'] = function(test) {
-    test.equals(transition.alreadyRun({}, 'x'), false);
-    test.equals(transition.alreadyRun({
+    test.equals(schedules.alreadyRun({}, 'x'), false);
+    test.equals(schedules.alreadyRun({
         scheduled_tasks: [
             {
-                type: 'y'
+                name: 'y'
             }
         ]
     }, 'x'), false);
-    test.equals(transition.alreadyRun({
+    test.equals(schedules.alreadyRun({
         scheduled_tasks: [
             {
-                type: 'x'
+                name: 'x'
             }
         ]
     }, 'x'), true)
-    test.equals(transition.alreadyRun({
+    test.equals(schedules.alreadyRun({
         tasks: [
             {
-                type: 'y'
+                name: 'y'
             }
         ],
         scheduled_tasks: [
             {
-                type: 'y'
+                name: 'y'
             }
         ]
     }, 'x'), false);
-    test.equals(transition.alreadyRun({
+    test.equals(schedules.alreadyRun({
         tasks: [
             {
-                type: 'x'
+                name: 'x'
             }
         ],
         scheduled_tasks: [
             {
-                type: 'y'
+                name: 'y'
             }
         ]
     }, 'x'), true);

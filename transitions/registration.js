@@ -3,6 +3,7 @@ var _ = require('underscore'),
     utils = require('../lib/utils'),
     messages = require('../lib/messages'),
     validation = require('../lib/validation'),
+    schedules = require('../lib/schedules'),
     ids = require('../lib/ids'),
     moment = require('moment'),
     config = require('../config'),
@@ -101,7 +102,8 @@ module.exports = {
             if (event.name === 'on_create') {
                 var args = [db, doc];
                 if (event.params) {
-                    args.concat(event.params.split(','));
+                    // params setting get sent as array
+                    args.push(event.params.split(','));
                 }
                 // TODO fix eval
                 if (event.bool_expr && !eval(event.bool_expr)) {
@@ -155,12 +157,26 @@ module.exports = {
             cb();
         },
         'assign_schedule': function(db, doc, cb) {
-            var args = Array.prototype.slice.call(arguments),
-                self = module.exports;
+            var self = module.exports,
+                args = Array.prototype.slice.call(arguments);
+            if (args.length < 4) {
+                cb('Please specify schedule name in settings.');
+            }
             cb = args.pop();
             if (typeof cb !== 'function') {
                 return;
             }
+            _.each(args.pop(), function(name) {
+                var bool = schedules.assignSchedule(
+                    doc, schedules.getScheduleConfig(name)
+                );
+                if (!bool) {
+                    console.error(
+                        'Failed to add schedule please verify settings.'
+                    );
+                }
+            });
+            cb();
         }
     },
     addMessages: function(config, doc) {

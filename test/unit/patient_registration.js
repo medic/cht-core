@@ -3,8 +3,7 @@ var _ = require('underscore'),
     sinon = require('sinon'),
     moment = require('moment'),
     utils = require('../../lib/utils'),
-    related_entities,
-    config;
+    related_entities;
 
 related_entities = {
     clinic: {
