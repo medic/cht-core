@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    transition = require('../../transitions/patient_registration'),
+    transition = require('../../transitions/registration'),
     sinon = require('sinon'),
     moment = require('moment'),
     utils = require('../../lib/utils'),
@@ -22,7 +22,20 @@ function getMessage(doc) {
 exports.setUp = function(callback) {
     sinon.stub(transition, 'getConfig').returns([{
         form: 'BIR',
-        type: 'birth',
+        events: [
+           {
+               "name": "on_create",
+               "trigger": "add_patient_id",
+               "params": "",
+               "bool_expr": ""
+           },
+           {
+               "name": "on_create",
+               "trigger": "add_birth_date",
+               "params": "",
+               "bool_expr": ""
+           }
+        ],
         validations: [
             {
                 property: 'weeks_since_birth',
@@ -90,4 +103,26 @@ exports['setBirthDate sets birth_date correctly for weeks_since_birth: 0'] = fun
     test.ok(doc.birth_date);
     test.equals(doc.birth_date, start.clone().add(0, 'weeks').toISOString());
     test.done();
+};
+
+exports['valid form adds patient_id and expected_date'] = function(test) {
+
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+
+    var doc = {
+        form: 'BIR',
+        patient_name: 'abc',
+        weeks_since_birth: 1
+    };
+
+    transition.onMatch({
+        doc: doc
+    }, {}, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.ok(doc.patient_id);
+        test.ok(doc.birth_date);
+        test.equals(doc.tasks, undefined);
+        test.done();
+    });
 };

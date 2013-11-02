@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    async = require('async'),
     utils = require('../lib/utils'),
     messages = require('../lib/messages'),
     validation = require('../lib/validation'),
@@ -60,9 +61,11 @@ module.exports = {
         doc.birth_date = start.toISOString();
     },
     getConfig: function() {
-        return _.extend({}, config.get('patient_registrations'));
+        return _.extend({}, config.get('registrations'));
     },
-    /* given a form code and config array, return config for that form. */
+    /*
+     * Given a form code and config array, return config for that form.
+     * */
     getRegistrationConfig: function(config, form_code) {
         var ret;
         _.each(config, function(conf) {
@@ -91,21 +94,74 @@ module.exports = {
             return callback(null, true);
         }
 
-        self.setId({
-            db: db,
-            doc: doc
-        }, function(err) {
-            if (err) {
-                return callback(err, true);
+        var series = [];
+        _.each(config.events, function(event) {
+            var trigger = self.triggers[event.trigger];
+            if (!trigger) return;
+            if (event.name === 'on_create') {
+                var args = [db, doc];
+                if (event.params) {
+                    args.concat(event.params.split(','));
+                }
+                // TODO fix eval
+                if (event.bool_expr && !eval(event.bool_expr)) {
+                    return;
+                }
+                series.push(function(callback) {
+                    trigger.apply(null, args.concat(callback));
+                });
             }
-            if (config.type === 'birth' && !isIdOnly) {
-                self.setBirthDate(doc);
-            } else if (config.type === 'pregnancy' && !isIdOnly) {
-                self.setExpectedBirthDate(doc);
-            }
-            self.addMessages(config, doc);
-            callback(null, true);
         });
+        async.series(series, function(err, results) {
+            //callback(null, true);
+            if (err) {
+                callback(err, false);
+            } else {
+                // add messages is done last so data on doc can be used in
+                // messages
+                self.addMessages(config, doc);
+                callback(null, true);
+            }
+        });
+    },
+    triggers: {
+        'add_patient_id': function(db, doc, cb) {
+            var args = Array.prototype.slice.call(arguments),
+                self = module.exports;
+            cb = args.pop();
+            if (typeof cb !== 'function') {
+                return;
+            }
+            self.setId({db: db, doc: doc}, cb);
+        },
+        "add_expected_date": function(db, doc, cb) {
+            var args = Array.prototype.slice.call(arguments),
+                self = module.exports;
+            cb = args.pop();
+            if (typeof cb !== 'function') {
+                return;
+            }
+            self.setExpectedBirthDate(doc);
+            cb();
+        },
+        "add_birth_date": function(db, doc, cb) {
+            var args = Array.prototype.slice.call(arguments),
+                self = module.exports;
+            cb = args.pop();
+            if (typeof cb !== 'function') {
+                return;
+            }
+            self.setBirthDate(doc);
+            cb();
+        },
+        'assign_schedule': function(db, doc, cb) {
+            var args = Array.prototype.slice.call(arguments),
+                self = module.exports;
+            cb = args.pop();
+            if (typeof cb !== 'function') {
+                return;
+            }
+        }
     },
     addMessages: function(config, doc) {
         // send response if configured

@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    transition = require('../../transitions/patient_registration'),
+    transition = require('../../transitions/registration'),
     sinon = require('sinon'),
     moment = require('moment'),
     utils = require('../../lib/utils'),
@@ -23,6 +23,20 @@ exports.setUp = function(callback) {
     sinon.stub(transition, 'getConfig').returns([{
         form: 'y',
         type: 'pregnancy',
+        events: [
+           {
+               "name": "on_create",
+               "trigger": "add_patient_id",
+               "params": "",
+               "bool_expr": ""
+           },
+           {
+               "name": "on_create",
+               "trigger": "add_expected_date",
+               "params": "",
+               "bool_expr": "typeof doc.getid === 'undefined'"
+           }
+        ],
         validations: [
             {
                 property: 'lmp',
@@ -134,6 +148,7 @@ exports['setExpectedBirthDate sets lmp_date and expected_date correctly for lmp:
 }
 
 exports['valid adds lmp_date and patient_id'] = function(test) {
+    test.expect(5);
     var doc,
         start = moment().startOf('week').subtract(5, 'weeks');
 
@@ -152,9 +167,7 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
         test.equals(complete, true);
         test.equals(doc.lmp_date, start.toISOString());
         test.ok(doc.patient_id);
-
         test.equals(doc.tasks, undefined);
-
         test.done();
     });
 }

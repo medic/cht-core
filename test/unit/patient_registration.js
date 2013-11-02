@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    transition = require('../../transitions/patient_registration'),
+    transition = require('../../transitions/registration'),
     sinon = require('sinon'),
     moment = require('moment'),
     utils = require('../../lib/utils'),
@@ -28,7 +28,14 @@ function getMessage(doc, idx) {
 exports.setUp = function(callback) {
     sinon.stub(transition, 'getConfig').returns([{
         form: 'PATR',
-        type: 'patient',
+        events: [
+           {
+               "name": "on_create",
+               "trigger": "add_patient_id",
+               "params": "",
+               "bool_expr": ""
+           }
+        ],
         validations: [
             {
                 property: 'patient_name',
@@ -110,7 +117,7 @@ exports['getWeeksSinceDOB supports three property names'] = function(test) {
     test.done();
 };
 
-exports['filter passes until we have patient_id and expected_date'] = function(test) {
+exports['filter passes until we have patient_id'] = function(test) {
     test.equals(transition.filter({
         form: 'PATR',
         reported_date: 'x',
