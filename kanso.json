@@ -273,10 +273,10 @@
                                         "type": "string",
                                         "title": "Event Name",
                                         "default": "",
-                                        "enum": ["", "create"],
+                                        "enum": ["", "on_create"],
                                         "je:hint": "enumlabels",
                                         "je:enumlabels": {
-                                            "create": "On Create"
+                                            "on_create": "On Create"
                                         }
                                     },
                                     "trigger": {
@@ -293,7 +293,7 @@
                                             "add_birth_date": "Add Birth Date"
                                         }
                                     },
-                                    "arguments": {
+                                    "params": {
                                         "type": "string",
                                         "title": "Parameters",
                                         "description": "i.e. if assigning a schedule provide the name.",
