@@ -31,7 +31,6 @@ function checkSchedule() {
     var db = require('../db'),
         now = moment(date.getDate());
 
-    console.log('doing checkSchedule()');
     async.forEachSeries(tasks, function(task, callback) {
         if (_.isFunction(task.execute)) {
             task.execute({
