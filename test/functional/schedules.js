@@ -36,24 +36,6 @@ function getScheduledMessage(doc, idx) {
 }
 
 exports.setUp = function(callback) {
-    sinon.stub(transition, 'getConfig').returns([{
-        form: 'PATR',
-        events: [
-           {
-               "name": "on_create",
-               "trigger": "assign_schedule",
-               "params": "group1",
-               "bool_expr": ""
-           }
-        ],
-        validations: [],
-        messages: [
-            {
-                message: "thanks {{contact.name}}",
-                recipient: "reporting_unit"
-            }
-        ]
-    }]);
     callback();
 };
 
@@ -72,6 +54,25 @@ exports.tearDown = function(callback) {
 
 exports['registration sets up schedule'] = function(test) {
 
+    test.expect(15);
+    sinon.stub(transition, 'getConfig').returns([{
+        form: 'PATR',
+        events: [
+           {
+               "name": "on_create",
+               "trigger": "assign_schedule",
+               "params": "group1",
+               "bool_expr": ""
+           }
+        ],
+        validations: [],
+        messages: [
+            {
+                message: "thanks {{contact.name}}",
+                recipient: "reporting_unit"
+            }
+        ]
+    }]);
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     sinon.stub(schedules, 'getScheduleConfig').returns({
         "name": "group1",
@@ -127,12 +128,168 @@ exports['registration sets up schedule'] = function(test) {
         test.ok(msg1.to);
         test.ok(msg1.message);
         if (msg1) {
-            delete msg1.uuid;
             test.deepEqual(msg1, {
                 to: '+1234',
                 message: "Mustaches.  Overrated or underrated?"
             });
         }
+        test.done();
+    });
+};
+
+exports['registration sets up schedule using bool_expr'] = function(test) {
+
+    test.expect(15);
+    sinon.stub(transition, 'getConfig').returns([{
+        form: 'PATR',
+        events: [
+           {
+               "name": "on_create",
+               "trigger": "assign_schedule",
+               "params": "group1",
+               "bool_expr": "doc.foo === 'baz'"
+           }
+        ],
+        validations: [],
+        messages: [
+            {
+                message: "thanks {{contact.name}}",
+                recipient: "reporting_unit"
+            }
+        ]
+    }]);
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(schedules, 'getScheduleConfig').returns({
+        "name": "group1",
+        "start_from": "reported_date",
+        "registration_response": "",
+        "messages": [
+            {
+                "message": "Mustaches.  Overrated or underrated?",
+                "group": 1,
+                "offset": "12 weeks",
+                "send_time": "",
+                "recipient": "reporting_unit",
+                "locale": "en"
+            }
+        ]
+    });
+
+    var doc = {
+        reported_date: moment().toISOString(),
+        form: 'PATR',
+        related_entities: related_entities,
+        foo: 'baz'
+    };
+
+    transition.onMatch({
+        doc: doc
+    }, {}, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.ok(doc.tasks);
+        test.equals(doc.tasks && doc.tasks.length, 1);
+        test.ok(doc.scheduled_tasks);
+        test.equals(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
+
+        var msg0 = getMessage(doc, 0);
+        test.ok(msg0);
+        test.ok(msg0.uuid);
+        test.ok(msg0.to);
+        test.ok(msg0.message);
+        if (msg0) {
+            delete msg0.uuid;
+            test.deepEqual(msg0, {
+                to: '+1234',
+                message: 'thanks Julie'
+            });
+        }
+
+        /*
+         * Also checks that recipient using doc property value is resolved
+         * correctly.
+         * */
+        var msg1 = getScheduledMessage(doc, 0);
+        test.ok(msg1);
+        test.ok(msg1.to);
+        test.ok(msg1.message);
+        if (msg1) {
+            test.deepEqual(msg1, {
+                to: '+1234',
+                message: "Mustaches.  Overrated or underrated?"
+            });
+        }
+        test.done();
+    });
+};
+
+exports['no schedule using false bool_expr'] = function(test) {
+
+    test.expect(10);
+    sinon.stub(transition, 'getConfig').returns([{
+        form: 'PATR',
+        events: [
+           {
+               "name": "on_create",
+               "trigger": "assign_schedule",
+               "params": "group1",
+               "bool_expr": "doc.foo === 'notbaz'"
+           }
+        ],
+        validations: [],
+        messages: [
+            {
+                message: "thanks {{contact.name}}",
+                recipient: "reporting_unit"
+            }
+        ]
+    }]);
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(schedules, 'getScheduleConfig').returns({
+        "name": "group1",
+        "start_from": "reported_date",
+        "registration_response": "",
+        "messages": [
+            {
+                "message": "Mustaches.  Overrated or underrated?",
+                "group": 1,
+                "offset": "12 weeks",
+                "send_time": "",
+                "recipient": "reporting_unit",
+                "locale": "en"
+            }
+        ]
+    });
+
+    var doc = {
+        reported_date: moment().toISOString(),
+        form: 'PATR',
+        related_entities: related_entities,
+        foo: 'baz'
+    };
+
+    transition.onMatch({
+        doc: doc
+    }, {}, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.ok(doc.tasks);
+        test.equals(doc.tasks && doc.tasks.length, 1);
+        test.ok(!doc.scheduled_tasks);
+
+        var msg0 = getMessage(doc, 0);
+        test.ok(msg0);
+        test.ok(msg0.uuid);
+        test.ok(msg0.to);
+        test.ok(msg0.message);
+        if (msg0) {
+            delete msg0.uuid;
+            test.deepEqual(msg0, {
+                to: '+1234',
+                message: 'thanks Julie'
+            });
+        }
+
         test.done();
     });
 };
