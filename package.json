@@ -26,6 +26,6 @@
   "version": "0.1.0",
   "scripts": {
     "start": "node server.js",
-    "test": "node_modules/nodeunit/bin/nodeunit test/unit"
+    "test": "node_modules/nodeunit/bin/nodeunit test/unit test/functional"
   }
 }
