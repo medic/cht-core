@@ -42,6 +42,14 @@ module.exports = {
         /* if true skip schedule creation */
         return Boolean(doc.getid || doc.skip_schedule_creation);
     },
+    isBoolExprFalse: function(doc, expr) {
+        // TODO fix bad eval
+        if (expr && !eval(expr)) {
+            return true;
+        } else {
+            return false;
+        }
+    },
     setExpectedBirthDate: function(doc) {
         var lmp = Number(module.exports.getWeeksSinceLMP(doc)),
             start = moment(date.getDate()).startOf('week');
@@ -105,8 +113,7 @@ module.exports = {
                     // params setting get sent as array
                     args.push(event.params.split(','));
                 }
-                // TODO fix eval
-                if (event.bool_expr && !eval(event.bool_expr)) {
+                if (self.isBoolExprFalse(doc, event.bool_expr)) {
                     return;
                 }
                 series.push(function(callback) {

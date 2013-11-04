@@ -116,6 +116,19 @@ exports['getWeeksSinceDOB supports three property names'] = function(test) {
     test.done();
 };
 
+exports['isBoolExprFalse returns false/true based on regex'] = function(test) {
+    var regex1 = "/^\\s*[5]\\d+/.test(doc.foo)",
+        regex2 = "/^\\s*[3]\\d+/.test(doc.foo)",
+        doc = {
+            foo: '533884'
+        };
+    test.equals(transition.isBoolExprFalse(doc, regex1), false);
+    test.equals(transition.isBoolExprFalse(doc, regex2), true);
+    // undefined expr always returns true
+    test.equals(transition.isBoolExprFalse(doc), false);
+    test.done();
+};
+
 exports['filter passes until we have patient_id'] = function(test) {
     test.equals(transition.filter({
         form: 'PATR',
