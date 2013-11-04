@@ -115,6 +115,50 @@ exports['scheduled due timestamp respects timezone'] = function(test) {
     test.done();
 }
 
+exports['scheduled item without message is skipped'] = function(test) {
+    var doc = {
+        form: 'x',
+        reported_date: "2050-03-13T13:06:22.002Z"
+    };
+    var added = schedules.assignSchedule(doc, {
+        name: 'duckland',
+        start_from: 'reported_date',
+        messages: [
+            {
+                group: 1,
+                offset: '1 day',
+                send_time: '08:00 +00:00',
+                message: ""
+            }
+        ]
+    });
+    test.equals(added, false);
+    test.ok(!doc.scheduled_tasks);
+    test.done();
+}
+
+exports['scheduled item with only spaces message is skipped'] = function(test) {
+    var doc = {
+        form: 'x',
+        reported_date: "2050-03-13T13:06:22.002Z"
+    };
+    var added = schedules.assignSchedule(doc, {
+        name: 'duckland',
+        start_from: 'reported_date',
+        messages: [
+            {
+                group: 1,
+                offset: '1 day',
+                send_time: '08:00 +00:00',
+                message: "  "
+            }
+        ]
+    });
+    test.equals(added, false);
+    test.ok(!doc.scheduled_tasks);
+    test.done();
+}
+
 exports['schedule does not generate messages in past'] = function(test) {
     var added,
         doc;
