@@ -630,19 +630,8 @@
                                 "recipient": {
                                     "type": "string",
                                     "title": "Recipient",
-                                    "description": "Contact to recieve the message.",
-                                    "default": "clinic",
-                                    "enum": [
-                                        "reporting_unit",
-                                        "parent",
-                                        "grandparent"
-                                    ],
-                                    "je:hint": "enumlabels",
-                                    "je:enumlabels": {
-                                        "reporting_unit": "Reporting Unit",
-                                        "parent_phone": "Parent of Reporting Unit",
-                                        "grandparent_phone": "Grandparent of Reporting Unit"
-                                    }
+                                    "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
+                                    "default": "reporting_unit"
                                 }
                             },
                             "type": "object"
