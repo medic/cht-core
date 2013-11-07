@@ -72,7 +72,7 @@ module.exports = {
            "fr": "Téléphone",
            "es": "Teléfono",
            "ne": "सम्पर्क टेलिफोन",
-           "sw": "Kituo cha Afya cha Mawasiliano Simu"
+           "sw": "Namba ya Simu"
        },
        {
            "key": "RC Code",
@@ -120,7 +120,7 @@ module.exports = {
            "fr": "Téléphone",
            "es": "Teléfono",
            "ne": "सम्पर्क टेलिफोन",
-           "sw": "Kituo cha Afya cha Mawasiliano Simu"
+           "sw": "Namba ya Simu"
        },
        {
            "key": "District",
@@ -152,7 +152,7 @@ module.exports = {
            "fr": "Téléphone",
            "es": "Teléfono",
            "ne": "सम्पर्क टेलिफोन",
-           "sw": "Wilaya ya Mawasiliano Simu"
+           "sw": "Namba ya Simu"
        },
        {
            "key": "Phone",
