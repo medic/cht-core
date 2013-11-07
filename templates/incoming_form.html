@@ -21,20 +21,20 @@
   </div>
   <div class="icons">
     {@ifHasState array="{tasks}" state="sent"}
-      <span class="label label-success" title="{@countByState array="{tasks}" state="sent"/} messages sent">
-        {@countByState array="{tasks}" state="sent"/}
+    <span class="label label-success" title="{@countByState array1="{tasks}" array2="{scheduled_tasks}" state="sent"/} messages sent">
+      {@countByState array1="{tasks}" array2="{scheduled_tasks}" state="sent"/}
         <i class="icon-envelope"></i>
       </span>
     {/ifHasState}
     {@ifHasState array="{tasks}" state="pending"}
-      <span class="label label-info" title="{@countByState array="{tasks}" state="pending"/} messages pending">
-        {@countByState array="{tasks}" state="pending"/}
+    <span class="label label-info" title="{@countByState array1="{tasks}" array2="{scheduled_tasks}" state="pending"/} messages pending">
+      {@countByState array1="{tasks}" array2="{scheduled_tasks}" state="pending"/}
         <i class="icon-time"></i>
       </span>
     {/ifHasState}
     {?scheduled_tasks}
-    <span class="label label-info" title="{@countByState array="{scheduled_tasks}" state="scheduled"/} scheduled messages">
-      {@countByState array="{scheduled_tasks}" state="scheduled"/}
+    <span class="label label-info" title="{@countByState array1="{scheduled_tasks}" state="scheduled"/} scheduled messages">
+      {@countByState array1="{scheduled_tasks}" state="scheduled"/}
       <i class="icon-bell"></i>
     </span>
     {/scheduled_tasks}
