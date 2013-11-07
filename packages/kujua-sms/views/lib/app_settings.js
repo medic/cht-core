@@ -401,6 +401,14 @@ module.exports = {
            "es": "",
            "ne": "बिरामीलाई भेटेको कति दिन भयो?​",
            "sw": ""
+       },
+       {
+           "key": "Patient ID",
+           "en": "Patient ID",
+           "fr": "Patient ID",
+           "es": "Patient ID",
+           "ne": "Patient ID",
+           "sw": "Patient ID"
        }
    ]
 };
