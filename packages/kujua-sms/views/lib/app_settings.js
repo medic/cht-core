@@ -67,6 +67,14 @@ module.exports = {
            "sw": "Kliniki ya Mawasiliano Jina"
        },
        {
+           "key": "Clinic Contact Phone",
+           "en": "Phone number",
+           "fr": "Téléphone",
+           "es": "Teléfono",
+           "ne": "सम्पर्क टेलिफोन",
+           "sw": "Kituo cha Afya cha Mawasiliano Simu"
+       },
+       {
            "key": "RC Code",
            "en": "Code",
            "fr": "Code",
