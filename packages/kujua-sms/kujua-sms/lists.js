@@ -360,6 +360,8 @@ exports.tasks_pending = function (head, req) {
     while (row = getRow()) {
         doc = row.doc;
 
+        var valid = !doc.errors || doc.errors.length === 0;
+
         // update state attribute for the bulk update callback
         // don't process tasks that have no `to` field since we can't send a
         // message and we don't want to mark the task as sent.  TODO have
@@ -381,20 +383,24 @@ exports.tasks_pending = function (head, req) {
             }
         });
 
-        _.each(doc.scheduled_tasks || [], function(task) {
-            if (task.state === 'pending') {
-                _.each(task.messages, function(msg) {
-                    // if to: field is defined then append messages
-                    if (msg.to) {
-                        task.state = 'sent';
-                        task.timestamp = new Date().toISOString();
-                        // append outgoing message data payload for smsssync
-                        respBody.payload.messages.push(msg);
-                        includeDoc = true;
-                    }
-                });
-            }
-        });
+
+        // if record is invalid don't process schedule
+        if (valid) {
+            _.each(doc.scheduled_tasks || [], function(task) {
+                if (task.state === 'pending') {
+                    _.each(task.messages, function(msg) {
+                        // if to: field is defined then append messages
+                        if (msg.to) {
+                            task.state = 'sent';
+                            task.timestamp = new Date().toISOString();
+                            // append outgoing message data payload for smsssync
+                            respBody.payload.messages.push(msg);
+                            includeDoc = true;
+                        }
+                    });
+                }
+            });
+        }
 
         if (includeDoc) {
             newDocs.push(doc);
