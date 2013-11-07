@@ -44,10 +44,13 @@ function getFilename(form, name, type) {
 
 exports.getKeys = function(form) {
     if (form === 'null') {
-        // add message content and to of *first* message
+        // add message content and to of *first* message for non-structured
+        // message records
         keys = [].concat(EXPORT_KEYS);
         keys.push(['tasks', ['0', ['messages', ['0', ['to']]]]]);
         keys.push(['tasks', ['0', ['messages', ['0', ['message']]]]]);
+        keys.push(['tasks', ['0', ['state']]]);
+        keys.push(['tasks', ['0', ['timestamp']]]);
     } else {
         // add form keys from form def
         keys = EXPORT_KEYS.concat(utils.getFormKeys(form));

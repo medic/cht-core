@@ -347,6 +347,22 @@ module.exports = {
            "sw": ""
        },
        {
+           "key": "tasks.0.state",
+           "en": "State",
+           "fr": "State",
+           "es": "State",
+           "ne": "State",
+           "sw": "State"
+       },
+       {
+           "key": "tasks.0.timestamp",
+           "en": "Timestamp",
+           "fr": "Timestamp",
+           "es": "Timestamp",
+           "ne": "Timestamp",
+           "sw": "Timestamp"
+       },
+       {
            "key": "tasks.0.messages.0.to",
            "en": "To",
            "fr": "pour",
