@@ -15,7 +15,7 @@ duality_events.on('init', function (ev) {
     charts.initPieChart();
 
     /**
-     * render analtyics top nav, relies on kansoconfig `kujua-reporting.forms`
+     * render analtyics top nav, relies on kansoconfig `kujua-reporting`
      * definition and session/user data.
      */
     session.info(function (err, info) {
@@ -26,9 +26,16 @@ duality_events.on('init', function (ev) {
 
         var isAdmin = kutils.hasPerm(info.userCtx, 'can_edit_any_facility'),
             isDistrictAdmin = kutils.hasPerm(info.userCtx, 'can_edit_facility'),
-            forms = $.kansoconfig('kujua-reporting', true);
+            configs = $.kansoconfig('kujua-reporting', true),
+            hasValidConfig;
 
-        if (!forms) {
+        _.each(configs, function(conf) {
+            if (conf.code && conf.reporting_freq) {
+                hasValidConfig = true;
+            }
+        });
+
+        if (!hasValidConfig) {
             return;
         }
 
