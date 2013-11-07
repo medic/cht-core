@@ -72,42 +72,6 @@ exports['filter fails with empty doc'] = function(test) {
     test.done();
 };
 
-exports['filter passes until we have patient_id and lmp_date'] = function(test) {
-    test.equals(transition.filter({
-        form: 'x',
-        reported_date: 'x',
-        related_entities: {clinic: {contact: {phone: 'x'}}},
-        patient_name: 'x',
-        lmp: 1,
-        errors: []
-    }), true);
-    test.equals(transition.filter({
-        form: 'x',
-        reported_date: 'x',
-        related_entities: {clinic: {contact: {phone: 'x'}}},
-        patient_name: 'x',
-        lmp: 1,
-        lmp_date: moment().toISOString(),
-        errors: []
-    }), true);
-    test.equals(transition.filter({
-        form: 'x',
-        reported_date: 'x',
-        related_entities: {clinic: {contact: {phone: 'x'}}},
-        patient_name: 'x',
-        lmp: 1,
-        patient_id: 'xyz',
-        lmp_date: moment().toISOString(),
-        errors: []
-    }), false);
-    test.done();
-};
-
-exports['is repeatable'] = function(test) {
-    test.equals(transition.repeatable, true);
-    test.done();
-};
-
 exports['is id only'] = function(test) {
     test.equals(transition.isIdOnly({}), false);
     test.equals(transition.isIdOnly({

@@ -14,7 +14,6 @@ module.exports = {
         return Boolean(
             doc.form &&
             utils.getClinicPhone(doc) &&
-            !doc.patient_id &&
             doc.errors.length === 0
         );
     },
@@ -141,6 +140,8 @@ module.exports = {
             if (typeof cb !== 'function') {
                 return;
             }
+            // if we already have a patient id then return
+            if (doc.patient_id) return;
             self.setId({db: db, doc: doc}, cb);
         },
         "add_expected_date": function(db, doc, cb) {
@@ -223,6 +224,5 @@ module.exports = {
                 callback();
             }
         });
-    },
-    repeatable: true
+    }
 };

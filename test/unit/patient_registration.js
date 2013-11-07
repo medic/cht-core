@@ -129,32 +129,6 @@ exports['isBoolExprFalse returns false/true based on regex'] = function(test) {
     test.done();
 };
 
-exports['filter passes until we have patient_id'] = function(test) {
-    test.equals(transition.filter({
-        form: 'PATR',
-        reported_date: 'x',
-        related_entities: {clinic: {contact: {phone: 'x'}}},
-        patient_name: 'x',
-        errors: []
-    }), true);
-    test.equals(transition.filter({
-        form: 'PATR',
-        reported_date: 'x',
-        related_entities: {clinic: {contact: {phone: 'x'}}},
-        patient_name: 'x',
-        errors: []
-    }), true);
-    test.equals(transition.filter({
-        form: 'PATR',
-        reported_date: 'x',
-        related_entities: {clinic: {contact: {phone: 'x'}}},
-        patient_name: 'x',
-        patient_id: 'xyz',
-        errors: []
-    }), false);
-    test.done();
-};
-
 exports['setBirthDate sets birth_date correctly for weeks_since_birth: 0'] = function(test) {
     var doc,
         start = moment().startOf('week');

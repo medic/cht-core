@@ -62,37 +62,6 @@ exports.tearDown = function(callback) {
     callback();
 }
 
-exports['filter passes until we have patient_id and expected_date'] = function(test) {
-    test.equals(transition.filter({
-        form: 'BIR',
-        reported_date: 'x',
-        related_entities: {clinic: {contact: {phone: 'x'}}},
-        patient_name: 'x',
-        weeks_since_birth: 1,
-        errors: []
-    }), true);
-    test.equals(transition.filter({
-        form: 'BIR',
-        reported_date: 'x',
-        related_entities: {clinic: {contact: {phone: 'x'}}},
-        patient_name: 'x',
-        weeks_since_birth: 1,
-        lmp_date: moment().toISOString(),
-        errors: []
-    }), true);
-    test.equals(transition.filter({
-        form: 'BIR',
-        reported_date: 'x',
-        related_entities: {clinic: {contact: {phone: 'x'}}},
-        patient_name: 'x',
-        weeks_since_birth: 1,
-        patient_id: 'xyz',
-        expected_date: moment().toISOString(),
-        errors: []
-    }), false);
-    test.done();
-};
-
 exports['setBirthDate sets birth_date correctly for weeks_since_birth: 0'] = function(test) {
     var doc,
         start = moment().startOf('week');
