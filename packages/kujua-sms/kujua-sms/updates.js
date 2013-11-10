@@ -62,7 +62,7 @@ function getDataRecord(doc, form_data, appInfo) {
         if (appInfo.forms_only_mode) {
             utils.addError(record, 'sys.form_not_found');
         } else {
-            delete record.form;
+            record.form = null;
         }
     }
 

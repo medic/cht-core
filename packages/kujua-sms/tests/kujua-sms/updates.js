@@ -756,3 +756,36 @@ exports.missing_facility_response_msg = function(test) {
 };
 
 
+/*
+ * If parsing fails then assume unstructured message
+ */
+exports.unstructured_message = function(test) {
+
+    test.expect(5);
+
+    var req = {
+        headers: {"Host": window.location.host},
+        form: {
+            from:"+888",
+            message: "hello world! anyone there?"
+        }
+    };
+
+    var resp = fakerequest.update(updates.add_sms, null, req);
+        resp_body = JSON.parse(resp[1].body),
+        doc = resp[0];
+
+    // unstructured message has form of null
+    test.same(doc.form, null);
+    test.same(doc.sms_message.message, "hello world! anyone there?");
+    test.same(resp_body.payload.success, true);
+    test.same(resp_body.payload.messages, undefined);
+    test.same(doc.errors[0],
+        {
+            code: "sys.facility_not_found",
+            message: "Facility not found."
+        }
+    );
+    test.done();
+
+};

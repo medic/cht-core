@@ -47,6 +47,7 @@ exports.getKeys = function(form) {
         // add message content and to of *first* message for non-structured
         // message records
         keys = [].concat(EXPORT_KEYS);
+        keys.push(['sms_message', ['message']]);
         keys.push(['tasks', ['0', ['messages', ['0', ['to']]]]]);
         keys.push(['tasks', ['0', ['messages', ['0', ['message']]]]]);
         keys.push(['tasks', ['0', ['state']]]);

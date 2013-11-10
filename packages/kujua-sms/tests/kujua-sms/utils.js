@@ -636,7 +636,7 @@ exports.getLabelsForMessages = function(test) {
         labels = utils.getLabels(keys, 'null', 'en');
 
     test.equals(_.isArray(labels), true);
-    test.same(labels, ["Reported Date", "From", "Clinic Contact Name", "Clinic Name", "Health Center Contact Name", "Health Center Name", "District Hospital Name", "To", "Message","State","Timestamp"]);
+    test.same(labels, ["Reported Date", "From", "Clinic Contact Name", "Clinic Name", "Health Center Contact Name", "Health Center Name", "District Hospital Name", "SMS Message","To", "Message","State","Timestamp"]);
     test.done();
 };
 

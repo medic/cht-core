@@ -379,6 +379,14 @@ module.exports = {
            "sw": ""
        },
        {
+           "key": "sms_message.message",
+           "en": "SMS Message",
+           "fr": "SMS Message",
+           "es": "SMS Message",
+           "ne": "सन्देश",
+           "sw": "Ujumbe Kwa Simu"
+       },
+       {
            "key": "from",
            "en": "From",
            "fr": "Envoyé par",
