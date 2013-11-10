@@ -189,7 +189,9 @@ module.exports = {
     },
     addMessages: function(config, doc) {
         // send response if configured
-        var locale = utils.getLocale(doc);
+        var locale = utils.getLocale(doc),
+            now = moment(date.getDate()),
+            extra = {next_msg: schedules.getNextTimes(doc, now)};
         if (config.messages) {
             _.each(config.messages, function(msg, idx) {
                 // if locale is specified on doc and message then only send
@@ -200,7 +202,8 @@ module.exports = {
                 messages.addMessage({
                     doc: doc,
                     phone: messages.getRecipientPhone(doc, msg.recipient),
-                    message: msg.message
+                    message: msg.message,
+                    options: extra
                 });
             });
         }

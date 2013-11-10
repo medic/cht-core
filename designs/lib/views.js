@@ -67,8 +67,13 @@ exports.ohw_registered_patients = {
 
 exports.registered_patients = {
     map: function(doc) {
-        if (doc.form && doc.patient_id) {
-            emit(String(doc.patient_id), null);
+        if (doc.form &&
+            (!doc.errors || doc.errors.length === 0) &&
+            doc.patient_id &&
+            doc.transitions &&
+            doc.transitions.registration &&
+            doc.transitions.registration.ok ) {
+                emit(String(doc.patient_id), null);
         }
     }
 }
