@@ -96,6 +96,9 @@ exports.parseField = function (field, raw) {
                 return false;
             // if we can't parse a number then return null
             return null;
+        case 'month':
+            // keep months integers, not their list value.
+            return parseNum(raw);
         default:
             utils.logger.warn('Unknown field type: ' + field.type);
             return raw;

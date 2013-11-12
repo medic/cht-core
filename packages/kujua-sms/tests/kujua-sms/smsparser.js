@@ -22,6 +22,29 @@ exports.get_form = function(test) {
     test.done();
 };
 
+exports.parse_month_type = function(test) {
+    test.expect(1);
+
+    var doc = { message: "1!FOO!10" },
+        def = {
+            meta: {code: "FOO", label: 'Test Monthly Report'},
+            fields: {
+                month: {
+                    labels: {
+                         short: 'Report Month',
+                         tiny: 'RPM'
+                    },
+                    type: 'month',
+                    required: true
+                }
+            }
+        },
+        data = smsparser.parse(def, doc);
+
+    test.same(10, data.month);
+    test.done();
+};
+
 exports.validations_is_numeric_month_stays_numeric = function(test) {
     test.expect(1);
 
