@@ -41,6 +41,7 @@ var example_doc = {
     },
     "errors": [],
     "tasks": [],
+    "scheduled_tasks": [],
     "facility_id": "facility",
     "year": "2011",
     "month": "11",
@@ -408,6 +409,44 @@ exports.getValues = function(test) {
     test.done();
 };
 
+exports.getValuesOfArray = function(test) {
+    var keys = [
+        "from",
+        "scheduled_tasks"
+    ];
+    var doc = {
+        from: 'abc123',
+        scheduled_tasks: [
+            {foo: 1},
+            {bar: 2}
+        ]
+    };
+    test.same(utils.getValues(doc, keys), [
+        'abc123',
+        '[{"foo":1},{"bar":2}]'
+    ]);
+    test.done()
+};
+
+exports.getValuesOfObject = function(test) {
+    var keys = [
+        "from",
+        "animal"
+    ];
+    var doc = {
+        from: '+2547123',
+        animal: {
+            weight: 1,
+            height: 2
+        }
+    };
+    test.same(utils.getValues(doc, keys), [
+        '+2547123',
+        '{"weight":1,"height":2}'
+    ]);
+    test.done()
+};
+
 exports.getFormKeys = function(test) {
     test.expect(1);
     test.same(
@@ -635,8 +674,28 @@ exports.getLabelsForMessages = function(test) {
     var keys = lists.getKeys('null'),
         labels = utils.getLabels(keys, 'null', 'en');
 
+    /*
+     * outgoing messages have a special export format to include the message
+     * data in separate columns.
+     * */
     test.equals(_.isArray(labels), true);
-    test.same(labels, ["Reported Date", "From", "Clinic Contact Name", "Clinic Name", "Health Center Contact Name", "Health Center Name", "District Hospital Name", "SMS Message","To", "Message","State","Timestamp"]);
+    test.same(labels, [
+        "Reported Date",
+        "From",
+        "Clinic Contact Name",
+        "Clinic Name",
+        "Health Center Contact Name",
+        "Health Center Name",
+        "District Hospital Name",
+        "To",
+        "Message",
+        "State",
+        "Timestamp",
+        "Sms Message",
+        "Responses",
+        "Tasks",
+        "Scheduled Tasks"
+    ]);
     test.done();
 };
 

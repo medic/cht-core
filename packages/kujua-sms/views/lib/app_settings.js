@@ -417,6 +417,38 @@ module.exports = {
            "es": "Patient ID",
            "ne": "Patient ID",
            "sw": "Patient ID"
+       },
+       {
+           "key": "Responses",
+           "en": "Responses",
+           "fr": "Responses",
+           "es": "Responses",
+           "ne": "Responses",
+           "sw": "Responses"
+       },
+       {
+           "key": "Sms Message",
+           "en": "Sms Message",
+           "fr": "Sms Message",
+           "es": "Sms Message",
+           "ne": "Sms Message",
+           "sw": "Sms Message"
+       },
+       {
+           "key": "Tasks",
+           "en": "Tasks",
+           "fr": "Tasks",
+           "es": "Tasks",
+           "ne": "Tasks",
+           "sw": "Tasks"
+       },
+       {
+           "key": "Scheduled Tasks",
+           "en": "Scheduled Tasks",
+           "fr": "Scheduled Tasks",
+           "es": "Scheduled Tasks",
+           "ne": "Scheduled Tasks",
+           "sw": "Scheduled Tasks"
        }
    ]
 };
