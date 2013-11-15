@@ -1100,6 +1100,38 @@
                         "es": "Patient ID",
                         "ne": "Patient ID",
                         "sw": "Patient ID"
+                    },
+                    {
+                        "key": "responses",
+                        "en": "Responses",
+                        "fr": "Responses",
+                        "es": "Responses",
+                        "ne": "Responses",
+                        "sw": "Responses"
+                    },
+                    {
+                        "key": "sms_message",
+                        "en": "Incoming Message",
+                        "fr": "Incoming Mesasge",
+                        "es": "Incoming Message",
+                        "ne": "Incoming Message",
+                        "sw": "Incoming Message"
+                    },
+                    {
+                        "key": "tasks",
+                        "en": "Outgoing Messages",
+                        "fr": "Outgoing Messages",
+                        "es": "Outgoing Messages",
+                        "ne": "Outgoing Messages",
+                        "sw": "Outgoing Messages"
+                    },
+                    {
+                        "key": "scheduled_tasks",
+                        "en": "Scheduled Tasks",
+                        "fr": "Scheduled Tasks",
+                        "es": "Scheduled Tasks",
+                        "ne": "Scheduled Tasks",
+                        "sw": "Scheduled Tasks"
                     }
                ]
             }

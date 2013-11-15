@@ -419,7 +419,7 @@ module.exports = {
            "sw": "Patient ID"
        },
        {
-           "key": "Responses",
+           "key": "responses",
            "en": "Responses",
            "fr": "Responses",
            "es": "Responses",
@@ -427,23 +427,23 @@ module.exports = {
            "sw": "Responses"
        },
        {
-           "key": "Sms Message",
-           "en": "Sms Message",
-           "fr": "Sms Message",
-           "es": "Sms Message",
-           "ne": "Sms Message",
-           "sw": "Sms Message"
+           "key": "sms_message",
+           "en": "Incoming Message",
+           "fr": "Incoming Mesasge",
+           "es": "Incoming Message",
+           "ne": "Incoming Message",
+           "sw": "Incoming Message"
        },
        {
-           "key": "Tasks",
-           "en": "Tasks",
-           "fr": "Tasks",
-           "es": "Tasks",
-           "ne": "Tasks",
-           "sw": "Tasks"
+           "key": "tasks",
+           "en": "Outgoing Messages",
+           "fr": "Outgoing Messages",
+           "es": "Outgoing Messages",
+           "ne": "Outgoing Messages",
+           "sw": "Outgoing Messages"
        },
        {
-           "key": "Scheduled Tasks",
+           "key": "scheduled_tasks",
            "en": "Scheduled Tasks",
            "fr": "Scheduled Tasks",
            "es": "Scheduled Tasks",
