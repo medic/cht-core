@@ -691,9 +691,9 @@ exports.getLabelsForMessages = function(test) {
         "Message",
         "State",
         "Timestamp",
-        "Sms Message",
+        "Incoming Message",
         "Responses",
-        "Tasks",
+        "Outgoing Messages",
         "Scheduled Tasks"
     ]);
     test.done();

@@ -429,7 +429,7 @@ module.exports = {
        {
            "key": "sms_message",
            "en": "Incoming Message",
-           "fr": "Incoming Mesasge",
+           "fr": "Incoming Message",
            "es": "Incoming Message",
            "ne": "Incoming Message",
            "sw": "Incoming Message"
