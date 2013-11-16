@@ -15,14 +15,6 @@ var handleMatch = function(change, db, callback) {
 
     new_doc = change.doc;
 
-    // only process record after callbacks with gateway are done, do nothing
-    // otherwise. hackish for now since validation and responses are still
-    // processed in couchapp with callbacks.
-    if (new_doc.responses && new_doc.responses.length === 0) {
-        // do nothing
-        return callback();
-    }
-
     getDuplicates(db, function(err, rows) {
 
         // only one record in duplicates, mark transition complete
@@ -79,9 +71,6 @@ var getDuplicates = function(db, callback) {
         clinic_id = utils.getClinicID(doc),
         self = module.exports;
 
-    if (!clinic_id || !doc.year || !doc.form)
-        return callback();
-
     if (doc.week || doc.week_number) {
         q.startkey = [doc.form, doc.year, doc.week || doc.week_number, clinic_id];
         q.endkey = [doc.form, doc.year, doc.week || doc.week_number, clinic_id, {}];
@@ -100,5 +89,14 @@ var getDuplicates = function(db, callback) {
 };
 
 module.exports = {
+    filter: function(doc) {
+        return Boolean(
+            doc.form &&
+            utils.getClinicPhone(doc) &&
+            doc.errors.length === 0 &&
+            (doc.month || doc.month_num || doc.week || doc.week_number) &&
+            doc.year
+        );
+    },
     onMatch: handleMatch
-}
+};
