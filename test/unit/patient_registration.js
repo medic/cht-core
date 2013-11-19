@@ -109,10 +109,11 @@ exports['getWeeksSinceLMP supports three property names'] = function(test) {
     test.done();
 };
 
-exports['getWeeksSinceDOB supports three property names'] = function(test) {
+exports['getWeeksSinceDOB supports four property names'] = function(test) {
     test.equals(transition.getWeeksSinceDOB({dob: '12'}), 12);
     test.equals(transition.getWeeksSinceDOB({weeks_since_dob: '12'}), 12);
     test.equals(transition.getWeeksSinceDOB({weeks_since_birth: '12'}), 12);
+    test.equals(transition.getWeeksSinceDOB({age_in_weeks: '12'}), 12);
     test.done();
 };
 
@@ -126,18 +127,6 @@ exports['isBoolExprFalse returns false/true based on regex'] = function(test) {
     test.equals(transition.isBoolExprFalse(doc, regex2), true);
     // undefined expr always returns true
     test.equals(transition.isBoolExprFalse(doc), false);
-    test.done();
-};
-
-exports['setBirthDate sets birth_date correctly for weeks_since_birth: 0'] = function(test) {
-    var doc,
-        start = moment().startOf('week');
-    doc = {
-        weeks_since_birth: 0
-    };
-    transition.setBirthDate(doc);
-    test.ok(doc.birth_date);
-    test.equals(doc.birth_date, start.clone().add(0, 'weeks').toISOString());
     test.done();
 };
 

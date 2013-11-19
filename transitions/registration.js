@@ -19,7 +19,7 @@ module.exports = {
     },
     getWeeksSinceDOB: function(doc) {
         return String(
-            doc.weeks_since_dob || doc.dob || doc.weeks_since_birth
+            doc.weeks_since_dob || doc.dob || doc.weeks_since_birth || doc.age_in_weeks
         );
     },
     /*

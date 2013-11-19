@@ -74,6 +74,18 @@ exports['setBirthDate sets birth_date correctly for weeks_since_birth: 0'] = fun
     test.done();
 };
 
+exports['setBirthDate sets birth_date correctly for age_in_weeks 10'] = function(test) {
+    var doc,
+        start = moment().startOf('week');
+    doc = {
+        age_in_weeks: 10
+    };
+    transition.setBirthDate(doc);
+    test.ok(doc.birth_date);
+    test.equals(doc.birth_date, start.clone().subtract(10, 'weeks').toISOString());
+    test.done();
+};
+
 exports['valid form adds patient_id and expected_date'] = function(test) {
 
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
