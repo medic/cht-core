@@ -1,7 +1,6 @@
 # Kujua Sentinel
 
-Sentinel is required for certain forms that have the `use_sentinel` property
-set to true.
+Sentinel is required by Kujua to processes documents.
 
 ## Install
 
@@ -15,8 +14,8 @@ Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 export COUCH_URL='http://root:123qwe@localhost:5984/kujua-lite'
 ```
 
-Sentinel works with Kujua Lite and listens to changes on the design doc. It can
-be configured through the dashboard Kujua Lite app settings screen.
+Sentinel works with Kujua Lite and listens to changes on the database. It is 
+configured through the dashboard Kujua app settings screen.
 
 Default settings values are in `defaults.js`.
 
