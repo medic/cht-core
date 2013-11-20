@@ -507,6 +507,24 @@
                                         "description": "This value is added to the timestamp property value to determine when to send the message.  Supported units: years, months, weeks, days, hours, minutes. e.g. 5 days",
                                         "default": "12 weeks"
                                     },
+                                    "send_day": {
+                                        "type": "string",
+                                        "title": "Send Day",
+                                        "description": "Optionally specify the nearest day to offset.",
+                                        "enum": ["", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+                                        "je:hint": "enumlabels",
+                                        "je:enumlabels": {
+                                            "": "",
+                                            "monday": "Monday",
+                                            "tuesday": "Tuesday",
+                                            "wednesday": "Wednesday",
+                                            "thursday": "Thursday",
+                                            "friday": "Friday",
+                                            "saturday": "Saturday",
+                                            "sunday": "Sunday"
+                                        },
+                                        "default": ""
+                                    },
                                     "send_time": {
                                         "type": "string",
                                         "title": "Send Time",
