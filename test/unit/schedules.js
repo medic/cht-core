@@ -115,6 +115,97 @@ exports['scheduled due timestamp respects timezone'] = function(test) {
     test.done();
 }
 
+exports['scheduled due timestamp respects send_day Monday'] = function(test) {
+    var doc = {
+        form: 'x',
+        reported_date: "2050-03-13T13:06:22.002Z"
+    };
+    var added = schedules.assignSchedule(doc, {
+        name: 'duckland',
+        start_from: 'reported_date',
+        messages: [
+            {
+                group: 1,
+                offset: '2 weeks',
+                send_day: 'Monday',
+                message: "Woot"
+            }
+        ]
+    });
+    test.equals(added, true);
+    test.equals(doc.scheduled_tasks.length, 1);
+    test.equals(
+        moment(doc.scheduled_tasks[0].due).toISOString(),
+        "2050-03-28T13:06:22.002Z"
+    );
+    test.equals(
+        moment(doc.scheduled_tasks[0].due).format('dddd'),
+        "Monday"
+    );
+    test.done();
+}
+
+exports['scheduled due timestamp respects send_day Wednesday'] = function(test) {
+    var doc = {
+        form: 'x',
+        reported_date: "2050-03-13T13:06:22.002Z"
+    };
+    var added = schedules.assignSchedule(doc, {
+        name: 'duckland',
+        start_from: 'reported_date',
+        messages: [
+            {
+                group: 1,
+                offset: '2 weeks',
+                send_day: 'Wednesday',
+                message: "Woot"
+            }
+        ]
+    });
+    test.equals(added, true);
+    test.equals(doc.scheduled_tasks.length, 1);
+    test.equals(
+        moment(doc.scheduled_tasks[0].due).toISOString(),
+        "2050-03-30T13:06:22.002Z"
+    );
+    test.equals(
+        moment(doc.scheduled_tasks[0].due).format('dddd'),
+        "Wednesday"
+    );
+    test.done();
+}
+
+exports['scheduled due timestamp respects send_day and send_time'] = function(test) {
+    var doc = {
+        form: 'x',
+        reported_date: "2050-03-13T13:06:22.002Z"
+    };
+    var added = schedules.assignSchedule(doc, {
+        name: 'duckland',
+        start_from: 'reported_date',
+        messages: [
+            {
+                group: 1,
+                offset: '2 weeks',
+                send_day: 'Wednesday',
+                send_time: '08:00 +0000',
+                message: "Woot"
+            }
+        ]
+    });
+    test.equals(added, true);
+    test.equals(doc.scheduled_tasks.length, 1);
+    test.equals(
+        moment(doc.scheduled_tasks[0].due).toISOString(),
+        "2050-03-30T08:00:00.000Z"
+    );
+    test.equals(
+        moment(doc.scheduled_tasks[0].due).format('dddd'),
+        "Wednesday"
+    );
+    test.done();
+}
+
 exports['scheduled item without message is skipped'] = function(test) {
     var doc = {
         form: 'x',
