@@ -55,7 +55,7 @@ exports.getKeys = function(form) {
         // add form keys from form def
         keys = EXPORT_KEYS.concat(utils.getFormKeys(form));
     }
-    keys.push('sms_message');
+    keys.push(['sms_message',['message']]);
     keys.push('responses');
     keys.push('tasks');
     keys.push('scheduled_tasks');
