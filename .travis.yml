@@ -7,4 +7,4 @@ script: "npm test"
 notifications:
   email:
     recipients:
-      - milan@medicmobile.org
+      - dev@medicmobile.org
