@@ -58,7 +58,11 @@ exports.getAppInfo = function(req) {
                 }
             }
             if (!found) {
-                settings.translations.push(d);
+                if (settings.translations) {
+                    settings.translations.push(d);
+                } else {
+                    settings.translations = [d];
+                }
             }
             found = false;
         }

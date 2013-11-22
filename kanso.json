@@ -1,6 +1,6 @@
 {
     "name": "kujua-lite",
-    "version": "0.3.0-beta.21",
+    "version": "0.3.0-beta.26",
     "description": "SMS data collection designed for rural environments (Beta Version)",
     "long_description" : "Kujua Lite is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
     "url": "https://github.com/medic/kujua",
@@ -69,7 +69,7 @@
     },
     "user_data": {
         "db_prefix": false,
-        "available_roles" : ["kujua-user","national_admin","district_admin","kujua_gateway"],
+        "available_roles" : ["kujua-user","national_admin","district_admin","kujua_gateway","data_entry"],
         "schema": {
             "descripton": "Kujua Lite",
             "type": "object",
@@ -506,6 +506,24 @@
                                         "title": "Send Message After",
                                         "description": "This value is added to the timestamp property value to determine when to send the message.  Supported units: years, months, weeks, days, hours, minutes. e.g. 5 days",
                                         "default": "12 weeks"
+                                    },
+                                    "send_day": {
+                                        "type": "string",
+                                        "title": "Send Day",
+                                        "description": "Optionally specify the nearest day to offset.",
+                                        "enum": ["", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+                                        "je:hint": "enumlabels",
+                                        "je:enumlabels": {
+                                            "": "",
+                                            "monday": "Monday",
+                                            "tuesday": "Tuesday",
+                                            "wednesday": "Wednesday",
+                                            "thursday": "Thursday",
+                                            "friday": "Friday",
+                                            "saturday": "Saturday",
+                                            "sunday": "Sunday"
+                                        },
+                                        "default": ""
                                     },
                                     "send_time": {
                                         "type": "string",
@@ -1062,14 +1080,6 @@
                         "sw": ""
                     },
                     {
-                        "key": "sms_message.message",
-                        "en": "SMS Message",
-                        "fr": "SMS Message",
-                        "es": "SMS Message",
-                        "ne": "सन्देश",
-                        "sw": "Ujumbe Kwa Simu"
-                    },
-                    {
                         "key": "from",
                         "en": "From",
                         "fr": "Envoyé par",
@@ -1100,6 +1110,38 @@
                         "es": "Patient ID",
                         "ne": "Patient ID",
                         "sw": "Patient ID"
+                    },
+                    {
+                        "key": "responses",
+                        "en": "Responses",
+                        "fr": "Responses",
+                        "es": "Responses",
+                        "ne": "Responses",
+                        "sw": "Responses"
+                    },
+                    {
+                        "key": "sms_message.message",
+                        "en": "Incoming Message",
+                        "fr": "Incoming Message",
+                        "es": "Incoming Message",
+                        "ne": "Incoming Message",
+                        "sw": "Incoming Message"
+                    },
+                    {
+                        "key": "tasks",
+                        "en": "Outgoing Messages",
+                        "fr": "Outgoing Messages",
+                        "es": "Outgoing Messages",
+                        "ne": "Outgoing Messages",
+                        "sw": "Outgoing Messages"
+                    },
+                    {
+                        "key": "scheduled_tasks",
+                        "en": "Scheduled Tasks",
+                        "fr": "Scheduled Tasks",
+                        "es": "Scheduled Tasks",
+                        "ne": "Scheduled Tasks",
+                        "sw": "Scheduled Tasks"
                     }
                ]
             }

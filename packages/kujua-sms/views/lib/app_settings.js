@@ -379,14 +379,6 @@ module.exports = {
            "sw": ""
        },
        {
-           "key": "sms_message.message",
-           "en": "SMS Message",
-           "fr": "SMS Message",
-           "es": "SMS Message",
-           "ne": "सन्देश",
-           "sw": "Ujumbe Kwa Simu"
-       },
-       {
            "key": "from",
            "en": "From",
            "fr": "Envoyé par",
@@ -417,6 +409,38 @@ module.exports = {
            "es": "Patient ID",
            "ne": "Patient ID",
            "sw": "Patient ID"
+       },
+       {
+           "key": "responses",
+           "en": "Responses",
+           "fr": "Responses",
+           "es": "Responses",
+           "ne": "Responses",
+           "sw": "Responses"
+       },
+       {
+           "key": "sms_message.message",
+           "en": "Incoming Message",
+           "fr": "Incoming Message",
+           "es": "Incoming Message",
+           "ne": "Incoming Message",
+           "sw": "Incoming Message"
+       },
+       {
+           "key": "tasks",
+           "en": "Outgoing Messages",
+           "fr": "Outgoing Messages",
+           "es": "Outgoing Messages",
+           "ne": "Outgoing Messages",
+           "sw": "Outgoing Messages"
+       },
+       {
+           "key": "scheduled_tasks",
+           "en": "Scheduled Tasks",
+           "fr": "Scheduled Tasks",
+           "es": "Scheduled Tasks",
+           "ne": "Scheduled Tasks",
+           "sw": "Scheduled Tasks"
        }
    ]
 };

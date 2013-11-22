@@ -333,7 +333,13 @@ var getValues = exports.getValues = function(doc, keys) {
     if (!_.isObject(doc)) return ret;
     if (keys === undefined) return ret;
     if (!_.isArray(keys)) {
-        doc[keys] !== undefined ? ret.push(doc[keys]) : ret.push(null);
+        if (typeof doc[keys] === 'undefined') {
+            ret.push(null);
+        } else if (_.isObject(doc[keys]) || _.isArray(doc[keys])) {
+            ret.push(JSON.stringify(doc[keys]));
+        } else {
+            ret.push(doc[keys]);
+        }
     }
     if (_.isArray(keys)) {
         for (var i in keys) {
