@@ -441,6 +441,14 @@ module.exports = {
            "es": "Scheduled Tasks",
            "ne": "Scheduled Tasks",
            "sw": "Scheduled Tasks"
+       },
+       {
+           "key": "Search",
+           "en": "Search",
+           "fr": "Search",
+           "es": "Search",
+           "ne": "Search",
+           "sw": "Search"
        }
    ]
 };
