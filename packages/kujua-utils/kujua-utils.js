@@ -198,8 +198,12 @@ exports.titleize = function (s) {
 };
 
 exports.updateTopNav = function(key, title) {
-    title = title || exports.titleize(key);
-    $('.page-header h1').replaceWith('<h1 class="pull-left">' + $.kansotranslate(title) + '</h1>');
+    if (!_.isNull(title)) {
+        title = title || exports.titleize(key);
+        $('.page-header h1').replaceWith('<h1 class="pull-left">' + $.kansotranslate(title) + '</h1>');
+    } else {
+        $('.page-header h1').hide();
+    }
     if (key) {
         $('body').attr('data-page', key);
     }

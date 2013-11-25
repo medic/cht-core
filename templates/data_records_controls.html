@@ -20,15 +20,14 @@
 <div id="clinics-filter" class="records-filter btn-group pull-right">
   <input name="clinics" type="text" class="input-medium" placeholder="{@translate value="Contact"/}">
 </div>
-<div id="patient-id-filter" class="records-filter btn-group pull-right">
+<div id="search-filter" class="records-filter btn-group pull-right">
   <div class="input-append">
     <form action="" method="get" class="form-inline">
       <input 
-        name="patient_id" 
-        value="{query.patient_id}" 
+        name="search" 
+        value="{query.search}" 
         type="text" 
-        class="input-small" 
-        placeholder="{@translate value="Patient ID"/}" />
+        placeholder="{@translate value="Search"/}" />
       <a type="submit" class="btn" href="#">
         <i class="icon-search"></i>
       </a>

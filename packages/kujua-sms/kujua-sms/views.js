@@ -341,28 +341,6 @@ exports.data_records_by_form_valid_and_reported_date = {
     }
 };
 
-exports.data_records_by_patient_id_and_reported_date = {
-    map: function(doc) {
-        if (doc.type === 'data_record') {
-            if (doc.patient_id)
-                emit([String(doc.patient_id), doc.reported_date, doc._id], doc);
-        }
-    }
-};
-
-exports.data_records_by_district_patient_id_and_reported_date = {
-    map: function(doc) {
-        var objectpath = require('views/lib/objectpath'),
-            dh;
-
-        if (doc.type === 'data_record' && doc.patient_id) {
-            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent') || { _id: null };
-
-            emit([dh._id, String(doc.patient_id), doc.reported_date, doc._id], doc);
-        }
-    }
-};
-
 exports.data_record_by_phone_and_week = {
     map: function(doc) {
         if (doc.type === 'data_record') {
