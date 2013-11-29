@@ -20,17 +20,22 @@
 <div id="clinics-filter" class="records-filter btn-group pull-right">
   <input name="clinics" type="text" class="input-medium" placeholder="{@translate value="Contact"/}">
 </div>
-<div id="search-filter" class="records-filter btn-group pull-right">
-  <div class="input-append">
-    <form action="" method="get" class="form-inline">
-      <input 
-        name="search" 
-        value="{query.search}" 
-        type="text" 
-        placeholder="{@translate value="Search"/}" />
-      <a type="submit" class="btn" href="#">
-        <i class="icon-search"></i>
-      </a>
-  </form>
+<div id="search-filter" class="records-filter">
+  <div id="search-filter-help">
+    <a href="help" target="_blank"><i class="icon-question-sign"></i></a>
+  </div>
+  <div class="btn-group">
+    <div class="input-append">
+      <form action="" method="get" class="form-inline">
+        <input 
+          name="search" 
+          value="{query.search}" 
+          type="text" 
+          placeholder="{@translate value="Search"/}" />
+        <a type="submit" class="btn" href="#">
+          <i class="icon-search"></i>
+        </a> 
+    </form>
+    </div>
   </div>
 </div>

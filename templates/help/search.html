@@ -1,0 +1,181 @@
+<div id="help-search">
+  <div class="row">
+    <div class="span11 offset1">
+      <h3>Search</h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="span8 offset1">
+      <h4>Terms</h4>
+      <p> A query is broken up into terms and operators. There are two types of
+      terms: Single Terms and Phrases.  A Single Term is a single word such as
+      "test" or "hello".  A Phrase is a group of words surrounded by double
+      quotes such as "hello dolly".  Multiple terms can be combined together
+      with Boolean operators to form a more complex query.</p>
+
+      <p>When performing a search you can either specify a field by typing a
+      field name followed by a colon ":" and then the term you are looking for,
+      or use the default fields. The default fields are: patient_id,
+      patient_name, caregiver_name and caregiver_phone, so if you do not
+      specify a field name these will be used.  If you would like the default
+      search fields to change please send in a support request.</p> 
+      
+      <h4>Fields</h4>
+      <p>When performing a search you can either specify a field, or use the
+      default field.</p>
+
+      <p>You can search any field by typing the field name followed by a colon
+      ":" and then the term you are looking for.</p>
+
+      <p>As an example, let's assume a Lucene index contains two fields, title and
+      text and text is the default field. If you want to find the document
+      entitled "The Right Way" which contains the text "don't go this way", you
+      can enter:</p>
+
+      <pre>title:"The Right Way" AND text:go</pre>
+
+      <p>or</p>
+
+      <pre>title:"Do it right" AND right</pre>
+      
+      <p>Since text is the default field, the field indicator is not required.</p>
+
+      <p>Note: The field is only valid for the term that it directly precedes, so the query</p>
+
+      <pre>title:Do it right</pre>
+      
+      <p>Will only find "Do" in the title field. It will find "it" and "right"
+      in the default field (in this case the text field).</p>
+
+      <p>You can search any field by typing the field name
+      followed by a colon ":" and then the term you are looking for.</p>
+
+      <h4>Wildcard Searches</h4>
+
+      <p>Lucene supports single and multiple character wildcard searches within
+      single terms (not within phrase queries).</p>
+
+      <p>To perform a single character wildcard search use the "?" symbol.</p>
+
+      <p>To perform a multiple character wildcard search use the "*" symbol.</p>
+
+      <p>The single character wildcard search looks for terms that match that
+      with the single character replaced. For example, to search for "text" or
+      "test" you can use the search:</p>
+
+      <pre>te?t</pre>
+
+      <p>Multiple character wildcard searches looks for 0 or more characters.
+      For example, to search for test, tests or tester, you can use the
+      search:</p>
+
+      <pre>test*</pre>
+
+      <p>You can also use the wildcard searches in the middle of a term.</p>
+
+      <pre>te*t</pre>
+
+      <p>Note: You cannot use a * or ? symbol as the first character of a search.</p>
+
+      <h4>Range Searches</h4>
+
+      <p>Range Queries allow one to match documents whose field(s) values are
+      between the lower and upper bound specified by the Range Query. Range
+      Queries can be inclusive or exclusive of the upper and lower bounds.
+      Sorting is done lexicographically.</p>
+
+      <pre>title:{Aida TO Carmen}</pre>
+
+      <p>This will find all documents whose titles are between Aida and Carmen,
+      but not including Aida and Carmen.</p>
+
+      <p>Inclusive range queries are denoted by square brackets. Exclusive
+      range queries are denoted by curly brackets.</p>
+
+      <h5>Date Range Searches</h5>
+
+      <p>When searching dates you need to include a strict syntax:</p>
+
+      <pre>reported_date&lt;date&gt;:[2002-01-01 TO 2003-01-01]</pre>
+
+      <p>This will find documents whose reported_date fields have values
+      between 2002-01-01 and 2003-01-01, inclusive.</p>
+
+      <h4>Boolean Operators</h4>
+
+      <p>Boolean operators allow terms to be combined through logic operators.
+      Lucene supports AND, "+", OR, NOT and "-" as Boolean operators(Note:
+      Boolean operators must be ALL CAPS).</p>
+
+      <p>The OR operator is the default conjunction operator. This means that
+      if there is no Boolean operator between two terms, the OR operator is
+        used.  The OR operator links two terms and finds a matching document if
+        either of the terms exist in a document.  The symbol || can be used in
+        place of the word OR.</p>
+
+      <p>To search for documents that contain either "jakarta apache" or just
+      "jakarta" use the query:</p> 
+      
+      <pre>"jakarta apache" jakarta</pre>
+      <p>or</p>
+      <pre>"jakarta apache" OR jakarta</pre>
+
+      <h5>AND</h5>
+
+      <p>The AND operator matches documents where both terms exist anywhere in
+      the text of a single document.  This is equivalent to an intersection
+      using sets. The symbol &amp;&amp; can be used in place of the word
+      AND.</p>
+
+      <p>To search for documents that contain "jakarta apache" and "Apache
+      Lucene" use the query: </p>
+
+      <pre>"jakarta apache" AND "Apache Lucene"</pre>
+
+      <h5>+</h5>
+
+      <p>The "+" or required operator requires that the term after the "+"
+      symbol exist somewhere in the field of a single document.</p>
+      
+      <p>To search for documents that must contain "jakarta" and may contain
+      "lucene" use the query:</p>
+
+      <pre>+jakarta lucene</pre>
+
+      <h5>NOT</h5>
+
+      <p>The NOT operator excludes documents that contain the term after NOT.
+      This is equivalent to a difference using sets. The symbol ! can be used
+      in place of the word NOT.</p>
+
+      <p>To search for documents that contain "jakarta apache" but not "Apache
+      Lucene" use the query: </p>
+      
+      <pre class="code">"jakarta apache" NOT "Apache Lucene"</pre>
+      
+      <p>Note: The NOT operator cannot be used with just one term. For example,
+      the following search will return no results:</p>
+
+      <pre class="code">NOT "jakarta apache"</pre>
+
+      <h5>-</h5>
+
+      <p>The "-" or prohibit operator excludes documents that contain the term after the "-" symbol.</p>
+
+      <p>To search for documents that contain "jakarta apache" but not "Apache Lucene" use the query: </p>
+
+      <pre class="code">"jakarta apache" -"Apache Lucene"</pre>
+
+    </div>
+    <div class="span3">
+      <div class="fields">
+        <p><strong>{@translate value="Available Search Fields"/}</strong></p>
+        <ul>
+          {#fields}
+          <li>{.}</li>
+          {/fields}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
