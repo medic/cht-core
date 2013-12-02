@@ -171,6 +171,9 @@
       <div class="fields">
         <p><strong>{@translate value="Available Search Fields"/}</strong></p>
         <ul>
+          {^fields}
+          <li>No records available</li>
+          {/fields}
           {#fields}
           <li>{.}</li>
           {/fields}
