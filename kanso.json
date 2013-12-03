@@ -187,6 +187,12 @@
                 "default": "1111",
                 "description": "Length of generated numerical identifiers. Note, an extra check digit is always used, so the default value (1111) generates a length of 5."
             },
+            "contact_display_short": {
+                "type": "string",
+                "title": "Short Contact Display",
+                "description": "How to render the contact name in short format? e.g. clinic.name, clinic.contact.name, clinic.parent.name",
+                "default": "clinic.name"
+            },
             "kujua-reporting": {
                 "title": "Scheduled Reports",
                 "type": "array",
@@ -328,7 +334,7 @@
                                     "message": {
                                         "type": "string",
                                         "title": "Error Message",
-                                        "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, chw_phone, chw_name",
+                                        "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact.name, contact.phone, patient_name, serial_number",
                                         "default": "'{{patient_name}}' is not a valid patient name. Please submit a patient name between 5 and 50 characters.",
                                         "je:hint": "textarea"
                                     }
