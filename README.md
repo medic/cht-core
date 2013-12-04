@@ -18,7 +18,7 @@ Assuming you have [Nodejs](http://nodejs.org) and [CouchDB](http://couchdb.apach
 npm install kanso -g
 ```
 
-## Deploy the app
+## Develop
 
 Push the couchapp:
 
@@ -40,6 +40,34 @@ Navigate your browser to:
 
 ```
 http://localhost:5984/kujua-lite/_design/kujua-lite/_rewrite/
+```
+
+## Deploy to Market
+
+When deploying to market include the sentinel package in the couchapp so
+[gardener](https://github.com/garden20/gardener) can manage the process.
+
+First clone the repo recursively so you get both submodules `json-forms` and
+`sentinel`, then change directories: 
+
+```
+git clone --recursive https://github.com/medic/kujua-lite 
+cd kujua-lite
+```
+
+Then edit `kanso.json` and add `"kanso-gardener":null` to the end of the list of dependencies.  You can use your editor but
+[jsontool](https://github.com/trentm/json) has an edit mode that works to:
+
+```
+cat kanso.json |json -e 'dependencies["kanso-gardener"] = null;' > new.json
+mv new.json kanso.json
+```
+
+Finally push to the Medic Test [Garden
+Market](https://github.com/garden20/garden-market) run: 
+
+```
+kanso push http://dev.medicmobile.org:5984/market/_design/market/_rewrite/upload`
 ```
 
 ## Configure
