@@ -376,8 +376,8 @@ exports.tasks_pending = function (head, req) {
         _.each(doc.tasks, function(task) {
             if (task.state === 'pending') {
                 _.each(task.messages, function(msg) {
-                    // if to: field is defined then append messages
-                    if (msg.to) {
+                    // if to and message is defined then append messages
+                    if (msg.to && msg.message) {
                         task.state = 'sent';
                         task.timestamp = new Date().toISOString();
                         // append outgoing message data payload for smsssync
@@ -388,20 +388,23 @@ exports.tasks_pending = function (head, req) {
             }
         });
 
-        _.each(doc.scheduled_tasks || [], function(task) {
-            if (task.state === 'pending') {
-                _.each(task.messages, function(msg) {
-                    // if to: field is defined then append messages
-                    if (msg.to) {
-                        task.state = 'sent';
-                        task.timestamp = new Date().toISOString();
-                        // append outgoing message data payload for smsssync
-                        respBody.payload.messages.push(msg);
-                        includeDoc = true;
-                    }
-                });
-            }
-        });
+        // only process scheduled tasks if doc has no errors.
+        if (!doc.errors || doc.errors.length === 0) {
+            _.each(doc.scheduled_tasks || [], function(task) {
+                if (task.state === 'pending') {
+                    _.each(task.messages, function(msg) {
+                        // if to and message is defined then append messages
+                        if (msg.to && msg.message) {
+                            task.state = 'sent';
+                            task.timestamp = new Date().toISOString();
+                            // append outgoing message data payload for smsssync
+                            respBody.payload.messages.push(msg);
+                            includeDoc = true;
+                        }
+                    });
+                }
+            });
+        }
 
         if (includeDoc) {
             newDocs.push(doc);
