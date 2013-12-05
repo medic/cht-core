@@ -5,7 +5,8 @@ exports.rules = [
         to: '_list/tasks_pending/tasks_pending',
         query: {
             descending: 'true',
-            include_docs: 'true'
+            include_docs: 'true',
+            limit: '25'
         },
         method: 'GET'
     },
