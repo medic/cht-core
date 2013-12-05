@@ -219,3 +219,81 @@ exports.tasks_pending_payload = function(test) {
     test.same(expResp.payload, resp_body.payload);
     test.done();
 };
+
+exports['do not process scheduled messages on docs with errors'] = function(test) {
+    test.expect(1);
+
+    var req = {
+        headers: {"Host": window.location.host}
+    };
+
+    var expResp = {};
+
+    expResp.payload = {
+        "success":true,
+        "task":"send",
+        "secret":"",
+        "messages":[
+            {
+                "to":"+123",
+                "message":"foo"
+            },
+            {
+                "to":"+456",
+                "message":"try again"
+            }
+        ]
+    };
+
+    var row1 = {
+        doc: {
+            _id: '0b5586', 
+            scheduled_tasks: [
+                {
+                  "state": "pending",
+                  "messages": [
+                    {
+                      "to": "+123",
+                      "message": "foo"
+                    }
+                  ]
+                }
+            ]
+        },
+    };
+
+    var row2 = {
+        doc: {
+            _id: '0b4883', 
+            errors:['no go'], 
+            tasks: [{
+                "state": "pending",
+                "messages": [
+                    {
+                      "to": "+456",
+                      "message": "try again"
+                    }
+                ]
+            }],
+            scheduled_tasks: [
+                {
+                  "state": "pending",
+                  "messages": [
+                    {
+                      "to": "+789",
+                      "message": "baz"
+                    }
+                  ]
+                }
+            ]
+        }
+    };
+
+    var viewdata = { rows: [row1, row2] };
+
+    var resp = fakerequest.list(lists.tasks_pending, viewdata, req);
+    var resp_body = JSON.parse(resp.body);
+    test.same(expResp.payload, resp_body.payload);
+    test.done();
+};
+
