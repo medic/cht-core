@@ -4,17 +4,16 @@ exports.rules = [
     {from: '/add',
         to: '_list/tasks_pending/tasks_pending',
         query: {
-            descending: 'true',
             include_docs: 'true',
             limit: '25'
         },
         method: 'GET'
     },
     /* use this path if you need to specify the limit */
+    {from: '/add/limit/*', to: '_update/add_sms', method: 'POST'},
     {from: '/add/limit/:limit',
         to: '_list/tasks_pending/tasks_pending',
         query: {
-            descending: 'true',
             include_docs: 'true',
             limit: ':limit'
         },

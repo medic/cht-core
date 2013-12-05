@@ -419,18 +419,59 @@ exports.tasks_pending = {
             tasks = doc.tasks || [],
             scheduled_tasks = doc.scheduled_tasks || [];
 
-        has_pending = tasks.some(function(task) {
-            return task.state === 'pending';
-        });
-
-        // check scheduled tasks too if not already pending
-        if (!has_pending) {
-            has_pending = scheduled_tasks.some(function(task) {
-                return task.state === 'pending';
+        /*
+         * Required fields for message to be processed:
+         *  task `state` value must be 'pending'
+         *  message needs the `to` and `message` properties
+         */
+        function hasPending(tasks) {
+            var has = false,
+                tasks = tasks || [];
+            tasks.forEach(function(task) {
+                if (task && task.state === 'pending') {
+                    task.messages.forEach(function(msg) {
+                        if (msg && msg.to && msg.message) {
+                            has = true;
+                        }
+                    });
+                }
             });
+            return has;
+        }
+
+        // check tasks
+        has_pending = hasPending(doc.tasks);
+
+        // if still not pending check scheduled_tasks too.  also, only process
+        // scheduled tasks if doc has no errors.
+        if (!has_pending && (!doc.errors || doc.errors.length === 0)) {
+            has_pending = hasPending(doc.scheduled_tasks);
         }
 
         if (has_pending) {
+            emit([doc.reported_date, doc.refid]);
+        }
+    }
+};
+
+exports.tasks_sent = {
+    map: function (doc) {
+        var has_sent,
+            tasks = doc.tasks || [],
+            scheduled_tasks = doc.scheduled_tasks || [];
+
+        has_sent = tasks.some(function(task) {
+            return task.state === 'sent';
+        });
+
+        // check scheduled tasks too if not already sent
+        if (!has_sent) {
+            has_sent = scheduled_tasks.some(function(task) {
+                return task.state === 'sent';
+            });
+        }
+
+        if (has_sent) {
             emit([doc.reported_date, doc.refid]);
         }
     }
