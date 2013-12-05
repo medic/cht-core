@@ -380,7 +380,7 @@ function renderPage() {
         return $('[data-page=reporting_rates] #content').html(
             templates.render("500.html", req, {
                 doc: doc,
-                msg: 'Please setup the Kujua Lite application with your kujua-reporting form code and reporting frequency.'
+                msg: 'Please add a form to your Schedule Reports settings.'
             })
         );
     }
@@ -421,34 +421,51 @@ function renderPage() {
 
 function renderDistrictChoice(appdb, forms) {
 
+    var f = [];
+
     _.each(forms, function(form, idx) {
         var def = jsonforms.getForm(form.code),
             formName = sms_utils.getFormTitle(form.code);
-
         if (def) {
-            forms[idx] = _.extend(form, {
+            f.push(_.extend(form, {
                 formName: formName
-            });
-        } else {
-            forms.splice(idx, 1);
+            }));
         }
     });
 
-    appdb.getView(appname, 'facilities_by_type', {
-        startkey: ['district_hospital'],
-        endkey: ['district_hospital', {}],
-        group: true
-    }, function(err, data) {
-        var districts = _.compact(_.map(data.rows, function(row) {
-            if (isAdmin || (isDistrictAdmin && row.key[1] === userDistrict)) {
-                return {
-                    id: row.key[1],
-                    name: row.key[2]
-                };
-            }
-        }));
+    forms = f;
 
-        districts.sort(function(a, b) {
+    appdb.getView(appname, 'facilities_by_type', {
+        startkey: ['health_center'],
+        endkey: ['health_center', {}],
+        reduce: false,
+        include_docs: true
+    }, function(err, data) {
+
+        var districts = {};
+        _.each(data.rows, function(row) {
+            var id = row.doc.parent && row.doc.parent._id;
+            if (id && (isAdmin || (isDistrictAdmin && id === userDistrict))) {
+                if (!districts[id]) {
+                    districts[id] = {
+                        id: id,
+                        name: row.doc.parent.name,
+                        children: [row.doc]
+                    };
+                } else {
+                    districts[id]['children'].push(row.doc);
+                }
+            }
+
+        });
+
+        // make array for template
+        var districts_list = [];
+        _.each(districts, function(obj, key) {
+            districts_list.push(obj);
+        });
+
+        districts_list.sort(function(a, b) {
             if (a.name === b.name) {
                 return 0;
             } else {
@@ -459,9 +476,14 @@ function renderDistrictChoice(appdb, forms) {
         $('[data-page=reporting_rates] #content').html(
             templates.render("kujua-reporting/reporting_district_choice.html", {}, {
                 forms: forms,
-                districts: districts
+                one_form: forms.length === 1,
+                districts: districts_list
             })
-        );
+        ).off('click', '#reporting-district-choice .form-name')
+         .on('click', '#reporting-district-choice .form-name', function(ev) {
+            ev.preventDefault();
+            $(this).siblings().slideToggle();
+        });
     });
 
 }
