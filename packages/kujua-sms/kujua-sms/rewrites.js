@@ -10,6 +10,16 @@ exports.rules = [
         },
         method: 'GET'
     },
+    /* use this path if you need to specify the limit */
+    {from: '/add/limit/:limit',
+        to: '_list/tasks_pending/tasks_pending',
+        query: {
+            descending: 'true',
+            include_docs: 'true',
+            limit: ':limit'
+        },
+        method: 'GET'
+    },
     {
         from: '/:form/data_records.csv',
         to: '_list/data_records_csv/data_records_valid_by_district_form_and_reported_date'
