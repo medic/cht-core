@@ -10,9 +10,17 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc) {
+        function hasConfig(doc) {
+            var reports = module.exports.getAcceptedReports();
+            report = _.findWhere(reports, {
+                form: doc.form
+            });
+            return Boolean(report);
+        }
         return Boolean(
             doc.form &&
             doc.reported_date &&
+            hasConfig(doc) &&
             utils.getClinicPhone(doc)
         );
     },
@@ -66,7 +74,7 @@ module.exports = {
 
         var not_found_msg,
             default_msg = {
-                doc: doc, 
+                doc: doc,
                 message: 'sys.registration_not_found',
                 phone: messages.getRecipientPhone(doc, 'from')
             };
@@ -95,6 +103,7 @@ module.exports = {
             reportedDate = moment(options.reported_date),
             type = options.type,
             first,
+            found_group,
             db = options.db || db,
             silenceUntil = reportedDate.clone();
 
@@ -113,9 +122,10 @@ module.exports = {
             }
             // if groups match,always clear
             if (first && first.group === msg.group) {
+                found_group = true;
                 return true;
             // otherwise only if time/state matches
-            } else {
+            } else if (!found_group) {
                 return matches;
             }
         });
@@ -130,7 +140,9 @@ module.exports = {
 
         // captured all to clear; now "clear" them
         _.each(toClear, function(msg) {
-            msg.state = 'cleared';
+            if (msg.state === 'scheduled') {
+                msg.state = 'cleared';
+            }
         });
 
         if (toClear.length) {
@@ -189,6 +201,5 @@ module.exports = {
             doc: doc,
             report: report
         }, callback);
-    },
-    repeatable: true
+    }
 };

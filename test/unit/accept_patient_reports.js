@@ -270,7 +270,7 @@ exports['silenceReminders testing'] = function(test) {
     });
 };
 
-exports['is repeatable'] = function(test) {
-    test.equals(transition.repeatable, true);
+exports['is not repeatable'] = function(test) {
+    test.equals(Boolean(transition.repeatable), false);
     test.done();
 };
