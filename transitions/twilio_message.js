@@ -1,8 +1,27 @@
 var async = require('async'),
     config = require('../config'),
-    request = require('request');
+    request = require('request'),
+    moment = require('moment');
 
 module.exports = {
+    filter: function(doc) {
+        function hasPending(doc) {
+            var ret = false;
+            if (!doc.tasks) return ret;
+            doc.tasks.forEach(function(task) {
+                if (task.state === 'pending') {
+                    ret = true;
+                }
+            });
+            return ret;
+        }
+        function hasConfig(doc) {
+            var twilioSid = config.get('twilio_sid'),
+                twilioToken = config.get('twilio_token');
+            return twilioSid && twilioToken;
+        }
+        return Boolean(hasPending(doc) && hasConfig(doc));
+    },
     onMatch: function(change, db, callback) {
         var doc = change.doc,
             original = JSON.stringify(doc),
@@ -43,7 +62,7 @@ module.exports = {
                             console.error(JSON.stringify(err));
                         } else {
                             task.state = 'sent';
-                            task.timestamp = Date.now();
+                            task.timestamp = moment().toISOString();
                         }
                         taskCallback(null, task);
                     });
