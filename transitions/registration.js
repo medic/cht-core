@@ -221,7 +221,7 @@ module.exports = {
             if (err) {
                 callback(err);
             } else if (registrations.length) { // id collision, retry
-                self.setId(doc, callback);
+                self.setId({db:db, doc:doc}, callback);
             } else {
                 doc.patient_id = id;
                 callback();
