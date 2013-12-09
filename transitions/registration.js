@@ -11,10 +11,16 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc) {
+        function hasConfig(doc) {
+            var self = module.exports,
+                config = self.getRegistrationConfig(self.getConfig(), doc.form);
+            return Boolean(config);
+        }
         return Boolean(
             doc.form &&
             utils.getClinicPhone(doc) &&
-            doc.errors.length === 0
+            doc.errors.length === 0 &&
+            hasConfig(doc)
         );
     },
     getWeeksSinceDOB: function(doc) {
