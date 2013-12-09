@@ -486,7 +486,7 @@
                         "start_from": {
                             "type": "string",
                             "title": "Timestamp Property Name",
-                            "description": "A timestamp or date property on the record that is used to calculate when messages are sent. e.g. lmp_date.  Use reported_date if you just want to reference creation time.",
+                            "description": "A timestamp or date property on the record that is used to calculate when messages are sent. e.g. lmp_date.  Use reported_date if you want to reference the date and time the report was received.",
                             "default": ""
                         },
                         "messages": {
