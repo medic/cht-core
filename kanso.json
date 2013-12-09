@@ -396,8 +396,8 @@
                         "silence_type": {
                             "type": "string",
                             "title": "Silence Scheduled Message Type",
-                            "description": "After receiving this report, silence scheduled messages of this type. (Or leave blank.)",
-                            "default": "anc_reminders"
+                            "description": "After receiving this report, silence scheduled messages of this name.  Name needs to match exactly.",
+                            "default": "ANC Reminders"
                         },
                         "silence_for": {
                             "type": "string",
