@@ -33,6 +33,9 @@ exports['validate handles pupil regex'] = function(test) {
         phone: '123a'
     };
     errors = validation.validate(doc, validations);
-    test.deepEqual(errors, ['Invalid phone {{phone}}.']);
+    test.deepEqual(errors, [{
+        code:'invalid_phone',
+        message:'Invalid phone {{phone}}.'
+    }]);
     test.done();
 }

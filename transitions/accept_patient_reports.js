@@ -189,10 +189,14 @@ module.exports = {
         errors = module.exports.validate(report, doc);
 
         if (errors.length) {
-            messages.addReply(doc, errors.join('  '));
-            _.each(errors, function(error) {
-                messages.addError(doc, error);
-            });
+            messages.addErrors(doc, errors);
+            messages.addReply(doc, _.map(errors, function(err) {
+                if (_.isObject(err) && err.message) {
+                    return err.message;
+                } else if (_.isString(err)) {
+                    return err;
+                }
+            }).join('  '));
             return callback(null, true);
         }
 
