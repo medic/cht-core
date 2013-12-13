@@ -27,8 +27,10 @@ exports.getAppInfo = function(req) {
 
 
         if (this.app_settings) {
+            // server side
             settings = this.app_settings;
         } else if (typeof(window) === 'object' && window.jQuery) {
+            // client side
             settings = JSON.parse(
                 window.jQuery.ajax({
                     type: 'GET',
