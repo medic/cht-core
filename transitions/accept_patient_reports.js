@@ -190,13 +190,7 @@ module.exports = {
 
         if (errors.length) {
             messages.addErrors(doc, errors);
-            messages.addReply(doc, _.map(errors, function(err) {
-                if (_.isObject(err) && err.message) {
-                    return err.message;
-                } else if (_.isString(err)) {
-                    return err;
-                }
-            }).join('  '));
+            messages.addReply(doc, _.first(errors).message || _.first(errors));
             return callback(null, true);
         }
 
