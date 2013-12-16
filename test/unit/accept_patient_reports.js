@@ -150,36 +150,6 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
     });
 }
 
-exports['patient id failing validation adds error'] = function(test) {
-    var doc;
-
-    doc = {
-        patient_id: 'xxxx',
-        form: 'x'
-    };
-
-    sinon.stub(transition, 'getAcceptedReports').returns([ {
-        validations: [
-            {
-                property: 'patient_id',
-                rule: "regex('\\w{5}')",
-                message: "bad id {{patient_id}}"
-            }
-        ],
-        form: 'x'
-    } ]);
-
-    transition.onMatch({
-        doc: doc
-    }, {}, function(err, complete) {
-        test.equals(complete, true);
-
-        test.ok(doc.errors);
-        test.equals(doc.errors[0].message, 'bad id xxxx');
-
-        test.done();
-    });
-}
 
 exports['adding silence_type to matchRegistrations calls silenceReminders'] = function(test) {
     sinon.stub(transition, 'silenceReminders').callsArgWithAsync(1, null);

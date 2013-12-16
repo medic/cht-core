@@ -89,6 +89,10 @@ module.exports = {
         });
         return ret;
     },
+    validate: function(config, doc) {
+        var validations = config.validations && config.validations.list;
+        return validation.validate(doc, validations);
+    },
     onMatch: function(change, db, callback) {
         var self = module.exports,
             doc = change.doc,
@@ -100,11 +104,23 @@ module.exports = {
             return callback(null, false);
         }
 
-        var errors = validation.validate(doc, config.validations);
+        var errors = self.validate(config, doc);
 
         if (errors.length) {
             messages.addErrors(doc, errors);
-            messages.addReply(doc, _.first(errors).message || _.first(errors));
+            if (config.validations.join_responses) {
+                var msgs = [];
+                _.each(errors, function(err) {
+                    if (err.message) {
+                        msgs.push(err.message);
+                    } else if (err) {
+                        msgs.push(err);
+                    };
+                });
+                messages.addReply(doc, msgs.join('  '));
+            } else {
+                messages.addReply(doc, _.first(errors).message || _.first(errors));
+            }
             return callback(null, true);
         }
 

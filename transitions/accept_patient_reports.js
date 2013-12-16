@@ -152,7 +152,8 @@ module.exports = {
         }
     },
     validate: function(report, doc) {
-        return validation.validate(doc, report.validations);
+        var validations = report.validations && report.validations.list;
+        return validation.validate(doc, validations);
     },
     handleReport: function(options, callback) {
         var db = options.db || db,
@@ -190,7 +191,19 @@ module.exports = {
 
         if (errors.length) {
             messages.addErrors(doc, errors);
-            messages.addReply(doc, _.first(errors).message || _.first(errors));
+            if (report.validations.join_responses) {
+                var msgs = [];
+                _.each(errors, function(err) {
+                    if (err.message) {
+                        msgs.push(err.message);
+                    } else if (err) {
+                        msgs.push(err);
+                    };
+                });
+                messages.addReply(doc, msgs.join('  '));
+            } else {
+                messages.addReply(doc, _.first(errors).message || _.first(errors));
+            }
             return callback(null, true);
         }
 

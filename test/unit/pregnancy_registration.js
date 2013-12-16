@@ -37,18 +37,21 @@ exports.setUp = function(callback) {
                "bool_expr": "typeof doc.getid === 'undefined'"
            }
         ],
-        validations: [
-            {
-                property: 'lmp',
-                rule: 'min(0) && max(40)',
-                message: 'Invalid LMP; must be between 0-40 weeks.'
-            },
-            {
-                property: 'patient_name',
-                rule: 'lenMin(1) && lenMax(100)',
-                message: 'Invalid patient name.'
-            }
-        ]
+        validations: {
+            join_responses: true,
+            list: [
+                {
+                    property: 'lmp',
+                    rule: 'min(0) && max(40)',
+                    message: 'Invalid LMP; must be between 0-40 weeks.'
+                },
+                {
+                    property: 'patient_name',
+                    rule: 'lenMin(1) && lenMax(100)',
+                    message: 'Invalid patient name.'
+                }
+            ]
+        }
     }]);
     callback();
 };
@@ -188,6 +191,8 @@ exports['id only logic with invalid name'] = function(test) {
     test.expect(5);
     var doc;
 
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+
     doc = {
         form: 'y',
         from: '+12345',
@@ -204,7 +209,6 @@ exports['id only logic with invalid name'] = function(test) {
         test.equals(doc.patient_id, undefined);
         test.ok(doc.tasks);
         test.equals(getMessage(doc), 'Invalid patient name.');
-
         test.done();
     });
 }
