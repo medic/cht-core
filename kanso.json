@@ -315,28 +315,39 @@
                             }
                         },
                         "validations": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "property": {
-                                        "type": "string",
-                                        "title": "Property",
-                                        "description": "The property on the JSON form to validate.",
-                                        "default": "patient_name"
-                                    },
-                                    "rule": {
-                                        "type": "string",
-                                        "title": "Validation Rule",
-                                        "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
-                                        "default": "lenMin(5) && lenMax(50)"
-                                    },
-                                    "message": {
-                                        "type": "string",
-                                        "title": "Error Message",
-                                        "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact.name, contact.phone, patient_name, serial_number",
-                                        "default": "'{{patient_name}}' is not a valid patient name. Please submit a patient name between 5 and 50 characters.",
-                                        "je:hint": "textarea"
+                            "type": "object",
+                            "properties": {
+                                "join_responses": {
+                                    "title": "Join Validation Responses",
+                                    "type": "boolean",
+                                    "default": false,
+                                    "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
+                                },
+                                "list": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "property": {
+                                                "type": "string",
+                                                "title": "Property",
+                                                "description": "The property on the JSON form to validate.",
+                                                "default": "patient_name"
+                                            },
+                                            "rule": {
+                                                "type": "string",
+                                                "title": "Validation Rule",
+                                                "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                                "default": "lenMin(5) && lenMax(50)"
+                                            },
+                                            "message": {
+                                                "type": "string",
+                                                "title": "Response Message",
+                                                "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
+                                                "default": "'{{patient_name}}' is not a valid patient name. Please submit a patient name between 5 and 50 characters.",
+                                                "je:hint": "textarea"
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -406,30 +417,41 @@
                             "default": "25 days"
                         },
                         "validations": {
-                            "type": "array",
-                            "items": {
-                                "properties": {
-                                    "property": {
-                                        "type": "string",
-                                        "title": "Property",
-                                        "description": "The property to validate.",
-                                        "default": "patient_id"
-                                    },
-                                    "rule": {
-                                        "type": "string",
-                                        "title": "Validation Rule",
-                                        "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
-                                        "default": "regex('[0-9]{5}')"
-                                    },
-                                    "message": {
-                                        "type": "string",
-                                        "title": "Error Message",
-                                        "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, chw_phone, chw_name",
-                                        "default": "Invalid Patient ID '{{patient_id}}'",
-                                        "je:hint": "textarea"
-                                    }
+                            "type": "object",
+                            "properties": {
+                                "join_responses": {
+                                    "title": "Join Validation Responses",
+                                    "type": "boolean",
+                                    "default": false,
+                                    "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
                                 },
-                                "type": "object"
+                                "list": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "property": {
+                                                "type": "string",
+                                                "title": "Property",
+                                                "description": "The property on the JSON form to validate.",
+                                                "default": "patient_id"
+                                            },
+                                            "rule": {
+                                                "type": "string",
+                                                "title": "Validation Rule",
+                                                "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                                "default": "regex('[0-9]{5}')"
+                                            },
+                                            "message": {
+                                                "type": "string",
+                                                "title": "Response Message",
+                                                "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
+                                                "default": "'{{patient_id}}' is not a valid.",
+                                                "je:hint": "textarea"
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         },
                         "messages": {
