@@ -59,7 +59,7 @@ exports.parseField = function (field, raw) {
             if (field.list) {
                 for (var i in field.list) {
                     var item = field.list[i];
-                    if (item[0] == raw) { // loose typing
+                    if (String(item[0]) === String(raw)) {
                         return sms_utils.info.translate(item[1]);
                     }
                 }

@@ -328,6 +328,38 @@ exports.textforms_w_numeric_string = function(test) {
     test.done();
 };
 
+exports.parse_empty_list_field = function(test) {
+    test.expect(1);
+
+    var sms = {
+        message: "1!0000!1#"
+    };
+
+    var def = {
+        fields: {
+            "q1": {
+                type: "integer",
+                list: [[0, "Yes"], [1, "No"]],
+                labels: {
+                    short: "question 1"
+                }
+            },
+            "q2": {
+                type: "integer",
+                list: [[0, "Yes"], [1, "No"]],
+                labels: {
+                    short: "question 2"
+                }
+            }
+        }
+    };
+
+    var data = smsparser.parse(def, sms);
+    // q2 should be null. empty string attempted to be parsed as number.
+    test.same(data, {q1: "No", q2: null});
+    test.done();
+};
+
 exports.parse_date_field = function(test) {
     test.expect(2);
 
