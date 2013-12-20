@@ -360,6 +360,30 @@ exports.parse_empty_list_field = function(test) {
     test.done();
 };
 
+exports.parse_zero_value_list_field = function(test) {
+    test.expect(1);
+
+    var sms = {
+        message: "1!0000!0"
+    };
+
+    var def = {
+        fields: {
+            "q1": {
+                type: "integer",
+                list: [[0, "Yes"], [1, "No"]],
+                labels: {
+                    short: "question 1"
+                }
+            }
+        }
+    };
+
+    var data = smsparser.parse(def, sms);
+    test.same(data, {q1: "Yes"});
+    test.done();
+};
+
 exports.parse_date_field = function(test) {
     test.expect(2);
 
