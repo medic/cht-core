@@ -22,8 +22,25 @@ var EXPORT_KEYS = [
     ['related_entities', ['clinic', ['parent', ['parent', ['name']]]]]
 ];
 
-var formatDate = function(msecs) {
-    return moment(msecs).format('DD, MMM YYYY, HH:mm:ss Z');
+/*
+ * @param {Number|String} date is Unix timestamp or ISO compatible string
+ *
+ * @param {Number|String} tz is timezone offset value in minutes to GMT as
+ * returned by new Date().getTimezoneOffset(), e.g. -120
+ *
+ * @returns {String} formatted date
+ *
+ * @api public
+ */
+var formatDate = exports.formatDate = function(date, tz) {
+    // standard format for exports
+    var fmt = 'DD, MMM YYYY, HH:mm:ss Z';
+    // return in a specified timezone offset
+    if (typeof tz !== 'undefined') {
+        return moment(date).zone(Number(tz)).format(fmt);
+    }
+    // return in UTC or browser/server preference/default
+    return moment(date).format(fmt);
 };
 
 function getFilename(form, name, type) {
@@ -47,19 +64,22 @@ exports.getKeys = function(form) {
         // add message content and to of *first* message for non-structured
         // message records
         keys = [].concat(EXPORT_KEYS);
-        keys.push(['tasks', ['0', ['messages', ['0', ['to']]]]]);
-        keys.push(['tasks', ['0', ['messages', ['0', ['message']]]]]);
-        keys.push(['tasks', ['0', ['state']]]);
-        keys.push(['tasks', ['0', ['timestamp']]]);
+        //keys.push(['tasks', ['0', ['messages', ['0', ['to']]]]]);
+        //keys.push(['tasks', ['0', ['messages', ['0', ['message']]]]]);
+        //keys.push(['tasks', ['0', ['state']]]);
+        //keys.push(['tasks', ['0', ['timestamp']]]);
     } else {
         // add form keys from form def
         keys = EXPORT_KEYS.concat(utils.getFormKeys(form));
     }
-    keys.push(['sms_message',['message']]);
-    keys.push('responses');
-    keys.push('tasks');
-    keys.push('scheduled_tasks');
+    //keys.push(['sms_message',['message']]);
+    //keys.push('responses');
+    //keys.push('tasks');
+    //keys.push('scheduled_tasks');
     return keys;
+};
+
+exports.messages_csv = function (head, req) {
 };
 
 exports.data_records_csv = function (head, req) {
@@ -92,12 +112,15 @@ exports.data_records_csv = function (head, req) {
         if(row.doc) {
             // add values for each data record to the rows
             values = utils.getValues(row.doc, keys);
-            values[0] = formatDate(values[0]);
+            values[0] = formatDate(values[0], query.tz);
             send(utils.arrayToCSV([values], delimiter) + '\n');
         }
     }
 
     return '';
+};
+
+exports.messages_xml = function (head, req) {
 };
 
 exports.data_records_xml = function (head, req) {
@@ -139,7 +162,7 @@ exports.data_records_xml = function (head, req) {
 
     while (row = getRow()) {
         values = utils.getValues(row.doc, keys);
-        values[0] = formatDate(values[0]);
+        values[0] = formatDate(values[0], query.tz);
         send(utils.arrayToXML([values]));
     }
 
