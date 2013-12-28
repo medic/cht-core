@@ -168,16 +168,9 @@
 
     </div>
     <div class="span3">
-      <div class="fields">
+      <div class="fields loader">
         <p><strong>{@translate value="Available Search Fields"/}</strong></p>
-        <ul>
-          {^fields}
-          <li>No records available</li>
-          {/fields}
-          {#fields}
-          <li>{.}</li>
-          {/fields}
-        </ul>
+        <ul class="field-data"><li>Loading...</li></ul>
       </div>
     </div>
   </div>
