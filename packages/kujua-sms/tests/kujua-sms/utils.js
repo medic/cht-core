@@ -686,15 +686,7 @@ exports.getLabelsForMessages = function(test) {
         "Clinic Name",
         "Health Center Contact Name",
         "Health Center Name",
-        "District Hospital Name",
-        "To",
-        "Message",
-        "State",
-        "Timestamp",
-        "Incoming Message",
-        "Responses",
-        "Outgoing Messages",
-        "Scheduled Tasks"
+        "District Hospital Name"
     ]);
     test.done();
 };

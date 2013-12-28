@@ -32,14 +32,13 @@ exports.lists_data_record_csv = function(test) {
         +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
         +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
         +'","Recommandations/Conseils","Précisions pour recommandations"'
-        +',"Nom de l\'agent de santé","Incoming Message","Responses","Outgoing Messages"'
-        +',"Scheduled Tasks"\n'
+        +',"Nom de l\'agent de santé"\n'
         +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')
         +'","+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1"'
-        +',"2012","1","16","","","","","","","","","","","","",""\n'
+        +',"2012","1","16","","","","","","","","",""\n'
         +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')
         +'","+13331110000","Sam","Clinic 2","","","District 2","2012","1","16","","","",""'
-        +',"","","","","","","","",""\n';
+        +',"","","","",""\n';
 
     // mockup the view data
     var viewdata = {rows: [
@@ -113,14 +112,13 @@ exports.lists_data_record_csv_fr = function(test) {
         +';"Année";"Mois";"Jour";"Code du RC";"Type de patient";"Nom";"Age"'
         +';"Nom de la mère ou de l\'accompagnant";"Patient traité pour"'
         +';"Recommandations/Conseils";"Précisions pour recommandations"'
-        +';"Nom de l\'agent de santé";"Incoming Message";"Responses";"Outgoing Messages"'
-        +';"Scheduled Tasks"\n'
+        +';"Nom de l\'agent de santé"\n'
         +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +';"+12229990000";"Paul";"Clinic 1";"Eric";"Health Center 1";"District 1"'
-        +';"2012";"1";"16";"";"";"";"";"";"";"";"";"";"";"";"";""\n'
+        +';"2012";"1";"16";"";"";"";"";"";"";"";"";""\n'
         +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +';"+13331110000";"Sam";"Clinic 2";"";"";"District 2";"2012";"1";"16";"";"";"";""'
-        +';"";"";"";"";"";"";"";"";""\n';
+        +';"";"";"";"";""\n';
 
     // mockup the view data
     var viewdata = {rows: [
@@ -184,10 +182,10 @@ exports.lists_data_record_csv_skip_header_row = function(test) {
 
     var expected = '"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +',"+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1"'
-        +',"2012","1","16","","","","","","","","","","","","",""\n'
+        +',"2012","1","16","","","","","","","","",""\n'
         +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +',"+13331110000","Sam","Clinic 2","","","District 2","2012","1","16","","","",""'
-        +',"","","","","","","","",""\n';
+        +',"","","","",""\n';
 
     // mockup the view data
     var viewdata = {rows: [
@@ -254,14 +252,13 @@ exports.lists_data_record_with_tz = function(test) {
         +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
         +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
         +'","Recommandations/Conseils","Précisions pour recommandations"'
-        +',"Nom de l\'agent de santé","Incoming Message","Responses","Outgoing Messages"'
-        +',"Scheduled Tasks"\n'
+        +',"Nom de l\'agent de santé"\n'
         +'"12, Mar 2012, 03:10:42 +05:00"'
         +',"+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1"'
-        +',"2012","1","16","","","","","","","","","","","","",""\n'
+        +',"2012","1","16","","","","","","","","",""\n'
         +'"12, Mar 2012, 03:10:50 +05:00"'
         +',"+13331110000","Sam","Clinic 2","","","District 2","2012","1","16","","","",""'
-        +',"","","","","","","","",""\n';
+        +',"","","","",""\n';
 
     // mockup the view data
     var viewdata = {rows: [
@@ -321,7 +318,6 @@ exports.lists_data_record_with_tz = function(test) {
     };
 
     var resp = fakerequest.list(lists.data_records_csv, viewdata, req);
-    debugger;
     test.same(expected, resp.body);
 
     test.done()
