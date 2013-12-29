@@ -27,16 +27,16 @@ exports.lists_data_record_csv = function(test) {
 
     test.expect(1);
 
-    var expected = '"Reported Date","From","Clinic Contact Name"'
+    var expected = '"Record UUID","Reported Date","Reported From","Clinic Contact Name"'
         +',"Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name"'
         +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
         +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
         +'","Recommandations/Conseils","Précisions pour recommandations"'
         +',"Nom de l\'agent de santé"\n'
-        +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')
+        +'"abc123z","'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')
         +'","+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1"'
         +',"2012","1","16","","","","","","","","",""\n'
-        +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')
+        +'"ssdk23z","'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')
         +'","+13331110000","Sam","Clinic 2","","","District 2","2012","1","16","","","",""'
         +',"","","","",""\n';
 
@@ -107,16 +107,16 @@ exports.lists_data_record_csv_fr = function(test) {
 
     test.expect(1);
 
-    var expected = '"Date envoyé";"Envoyé par";"Personne-ressource Clinique"'
+    var expected = '"Record UUID";"Date envoyé";"Envoyé par";"Personne-ressource Clinique"'
         +';"Villages";"Nom de la santé Contact Center";"Nom du centre de santé";"Nom de l\'hôpital de district"'
         +';"Année";"Mois";"Jour";"Code du RC";"Type de patient";"Nom";"Age"'
         +';"Nom de la mère ou de l\'accompagnant";"Patient traité pour"'
         +';"Recommandations/Conseils";"Précisions pour recommandations"'
         +';"Nom de l\'agent de santé"\n'
-        +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
+        +'"abc123z";"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +';"+12229990000";"Paul";"Clinic 1";"Eric";"Health Center 1";"District 1"'
         +';"2012";"1";"16";"";"";"";"";"";"";"";"";""\n'
-        +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
+        +'"ssdk23z";"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +';"+13331110000";"Sam";"Clinic 2";"";"";"District 2";"2012";"1";"16";"";"";"";""'
         +';"";"";"";"";""\n';
 
@@ -180,10 +180,10 @@ exports.lists_data_record_csv_skip_header_row = function(test) {
 
     test.expect(1);
 
-    var expected = '"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
+    var expected = '"abc123z","'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +',"+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1"'
         +',"2012","1","16","","","","","","","","",""\n'
-        +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
+        +'"ssdk23z","'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +',"+13331110000","Sam","Clinic 2","","","District 2","2012","1","16","","","",""'
         +',"","","","",""\n';
 
@@ -247,16 +247,16 @@ exports.lists_data_record_with_tz = function(test) {
 
     test.expect(1);
 
-    var expected = '"Reported Date","From","Clinic Contact Name"'
+    var expected = '"Record UUID","Reported Date","Reported From","Clinic Contact Name"'
         +',"Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name"'
         +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
         +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
         +'","Recommandations/Conseils","Précisions pour recommandations"'
         +',"Nom de l\'agent de santé"\n'
-        +'"12, Mar 2012, 03:10:42 +05:00"'
+        +'"abc123z","12, Mar 2012, 03:10:42 +05:00"'
         +',"+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1"'
         +',"2012","1","16","","","","","","","","",""\n'
-        +'"12, Mar 2012, 03:10:50 +05:00"'
+        +'"ssdk23z","12, Mar 2012, 03:10:50 +05:00"'
         +',"+13331110000","Sam","Clinic 2","","","District 2","2012","1","16","","","",""'
         +',"","","","",""\n';
 

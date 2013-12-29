@@ -77,6 +77,7 @@ var example_doc = {
 exports.getLabels = function(test) {
     test.expect(2);
     var keys = [
+        '_id',
         'reported_date',
         'from',
         'facility_id',
@@ -128,8 +129,9 @@ exports.getLabels = function(test) {
     test.same(
         utils.getLabels(keys, 'YYYY', 'en'),
         [
+            'Record UUID',
             'Reported Date',
-            'From',
+            'Reported From',
             'Health Facility Identifier',
             'Clinic Contact Name',
             'Clinic Name',
@@ -144,6 +146,7 @@ exports.getLabels = function(test) {
     test.same(
         utils.getLabels(keys, 'YYYY', 'fr'),
         [
+            "Record UUID",
             "Date envoyé",
             "Envoyé par",
             "Health Facility Identifier",
@@ -680,8 +683,9 @@ exports.getLabelsForMessages = function(test) {
      * */
     test.equals(_.isArray(labels), true);
     test.same(labels, [
+        "Record UUID",
         "Reported Date",
-        "From",
+        "Reported From",
         "Clinic Contact Name",
         "Clinic Name",
         "Health Center Contact Name",
