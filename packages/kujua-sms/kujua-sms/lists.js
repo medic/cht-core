@@ -8,19 +8,8 @@ var _ = require('underscore'),
     moment = require('moment'),
     logger = require('kujua-utils').logger,
     jsonforms  = require('views/lib/jsonforms'),
-    info = require('views/lib/appinfo');
-
-
-// default properties to export from record
-var EXPORT_KEYS = [
-    'reported_date',
-    'from',
-    ['related_entities', ['clinic', ['contact', ['name']]]],
-    ['related_entities', ['clinic', ['name']]],
-    ['related_entities', ['clinic', ['parent', ['contact', ['name']]]]],
-    ['related_entities', ['clinic', ['parent', ['name']]]],
-    ['related_entities', ['clinic', ['parent', ['parent', ['name']]]]]
-];
+    info = require('views/lib/appinfo'),
+    objectpath = require('views/lib/objectpath');
 
 /*
  * @param {Number|String} date is Unix timestamp or ISO compatible string
@@ -59,27 +48,171 @@ function getFilename(form, name, type) {
     return filename;
 }
 
-exports.getKeys = function(form) {
-    if (form === 'null') {
-        // add message content and to of *first* message for non-structured
-        // message records
-        keys = [].concat(EXPORT_KEYS);
-        //keys.push(['tasks', ['0', ['messages', ['0', ['to']]]]]);
-        //keys.push(['tasks', ['0', ['messages', ['0', ['message']]]]]);
-        //keys.push(['tasks', ['0', ['state']]]);
-        //keys.push(['tasks', ['0', ['timestamp']]]);
-    } else {
-        // add form keys from form def
-        keys = EXPORT_KEYS.concat(utils.getFormKeys(form));
-    }
-    //keys.push(['sms_message',['message']]);
-    //keys.push('responses');
-    //keys.push('tasks');
-    //keys.push('scheduled_tasks');
-    return keys;
+var getKeys = exports.getKeys = function(form) {
+    return [
+        '_id',
+        'reported_date',
+        'from',
+        ['related_entities', ['clinic', ['contact', ['name']]]],
+        ['related_entities', ['clinic', ['name']]],
+        ['related_entities', ['clinic', ['parent', ['contact', ['name']]]]],
+        ['related_entities', ['clinic', ['parent', ['name']]]],
+        ['related_entities', ['clinic', ['parent', ['parent', ['name']]]]]
+    ].concat(utils.getFormKeys(form));
 };
 
-exports.messages_csv = function (head, req) {
+exports.export_messages = function (head, req) {
+    var query = req.query,
+        format = query.format || 'csv',
+        appInfo = info.getAppInfo.call(this),
+        dh_name = query.dh_name ? query.dh_name : 'null',
+        filename = getFilename('null', dh_name, format),
+        locale = query.locale || 'en',
+        delimiter = locale === 'fr' ? '";"' : null;
+
+    utils.info = appInfo; // replace fake info with real from context
+
+    if (format === 'xml') {
+        start({code: 200, headers: {
+            'Content-Type': 'application/vnd.ms-excel; charset=utf-8',
+            'Content-Disposition': 'attachment; filename=' + filename
+        }});
+    } else {
+        start({code: 200, headers: {
+            'Content-Type': 'text/csv; charset=utf-8',
+            'Content-Disposition': 'attachment; filename=' + filename
+        }});
+    }
+
+    var labels = [
+        '_id',
+        'reported_date',
+        'from',
+        'related_entities.clinic.contact.name',
+        'related_entities.clinic.name',
+        'related_entities.clinic.parent.contact.name',
+        'related_entities.clinic.parent.name',
+        'related_entities.clinic.parent.parent.name',
+        'Message Type',
+        'Message State',
+        'Message Timestamp/Due',
+        'Message UUID',
+        'Sent By',
+        'To Phone',
+        'Message Body'
+    ];
+
+    if (format === 'xml') {
+        send('<?xml version="1.0" encoding="UTF-8"?>\n' +
+             '<?mso-application progid="Excel.Sheet"?>\n' +
+             '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
+             ' xmlns:o="urn:schemas-microsoft-com:office:office"\n' +
+             ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n' +
+             ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n' +
+             ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
+             '<Worksheet ss:Name="Messages"><Table>');
+    }
+
+    if (!query.skip_header_row) {
+        labels = _.map(labels, function(label) {
+            return utils.info.translate(label, locale);
+        });
+        if (format === 'xml') {
+            send(utils.arrayToXML([labels]));
+        } else {
+            send(utils.arrayToCSV([labels], delimiter) + '\n');
+        }
+    }
+
+    function sendMessageRows(doc) {
+        var tasks = [];
+        // Normalize and combine incoming messages, responses, tasks and
+        // scheduled_tasks into one array Note, auto responses will likely get
+        // deprecated soon in favor of sentinel based messages.
+        //
+        // Normalized form:
+        // {
+        //  type: ['Auto Response', 'Incoming Message', <schedule name>, 'Task Message'],
+        //  state: ['received', 'sent', 'pending', 'muted', 'scheduled'],
+        //  timestamp/due: <date string>,
+        //  messages: [{
+        //      uuid: <uuid>,
+        //      to: <phone>,
+        //      message: <message body>
+        //  }]
+        // }
+        if (doc.responses && doc.responses.length > 0) {
+            tasks = tasks.concat({
+                type: 'Auto Response',
+                state: 'sent',
+                timestamp: doc.reported_date,
+                messages: doc.responses
+            });
+        }
+        if (doc.tasks && doc.tasks.length > 0) {
+            tasks = tasks.concat(doc.tasks);
+        }
+        if (doc.scheduled_tasks && doc.scheduled_tasks.length > 0) {
+            tasks = tasks.concat(doc.scheduled_tasks);
+        }
+        // incoming msgs
+        if (doc.form === null && doc.sms_message && doc.sms_message.message) {
+            tasks = tasks.concat({
+                type: 'Incoming Message',
+                state: 'received',
+                timestamp: doc.reported_date,
+                messages: [{
+                    from: doc.from,
+                    message: doc.sms_message.message
+                }]
+            });
+        }
+        _.each(tasks, function(task) {
+            var vals = [
+                doc._id,
+                formatDate(doc.reported_date, query.tz),
+                doc.from,
+                objectpath.get(doc, 'related_entities.clinic.contact.name'),
+                objectpath.get(doc, 'related_entities.clinic.name'),
+                objectpath.get(doc, 'related_entities.clinic.parent.contact.name'),
+                objectpath.get(doc, 'related_entities.clinic.parent.name'),
+                objectpath.get(doc, 'related_entities.clinic.parent.parent.name'),
+                task.type || 'Task Message',
+                task.state,
+                formatDate(task.timestamp || task.due, query.tz)
+            ];
+            _.each(task.messages, function(msg) {
+                vals = vals.concat([
+                    msg.uuid,
+                    msg.sent_by,
+                    msg.to,
+                    msg.message
+                ]);
+            });
+            // turn undefined into empty string for xml export
+            vals = _.map(vals, function(val) {
+                return typeof val === 'undefined' ? '' : val;
+            });
+            if (format === 'xml') {
+                send(utils.arrayToXML([vals]));
+            } else {
+                send(utils.arrayToCSV([vals], delimiter) + '\n');
+            }
+        });
+    };
+
+    var row;
+    while (row = getRow()) {
+        if(row && row.doc) {
+            sendMessageRows(row.doc);
+        }
+    }
+
+    if (format === 'xml') {
+        send('</Table></Worksheet></Workbook>');
+    }
+
+    return '';
 };
 
 exports.data_records_csv = function (head, req) {
@@ -112,7 +245,8 @@ exports.data_records_csv = function (head, req) {
         if(row.doc) {
             // add values for each data record to the rows
             values = utils.getValues(row.doc, keys);
-            values[0] = formatDate(values[0], query.tz);
+            // format date fields
+            values[1] = formatDate(values[1], query.tz);
             send(utils.arrayToCSV([values], delimiter) + '\n');
         }
     }
@@ -162,7 +296,8 @@ exports.data_records_xml = function (head, req) {
 
     while (row = getRow()) {
         values = utils.getValues(row.doc, keys);
-        values[0] = formatDate(values[0], query.tz);
+        // format date fields
+        values[1] = formatDate(values[1], query.tz);
         send(utils.arrayToXML([values]));
     }
 

@@ -20,6 +20,14 @@ exports.rules = [
         method: 'GET'
     },
     {
+        from: '/export/messages',
+        to: '_list/export_messages/data_records_by_district_and_reported_date',
+        query: {
+            include_docs: 'true',
+            descending: 'true'
+        }
+    },
+    {
         from: '/:form/data_records.csv',
         to: '_list/data_records_csv/data_records_valid_by_district_form_and_reported_date'
     },

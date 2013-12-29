@@ -348,40 +348,8 @@ module.exports = {
            "sw": ""
        },
        {
-           "key": "tasks.0.state",
-           "en": "State",
-           "fr": "State",
-           "es": "State",
-           "ne": "State",
-           "sw": "State"
-       },
-       {
-           "key": "tasks.0.timestamp",
-           "en": "Timestamp",
-           "fr": "Timestamp",
-           "es": "Timestamp",
-           "ne": "Timestamp",
-           "sw": "Timestamp"
-       },
-       {
-           "key": "tasks.0.messages.0.to",
-           "en": "To",
-           "fr": "pour",
-           "es": "",
-           "ne": "पाउने",
-           "sw": ""
-       },
-       {
-           "key": "tasks.0.messages.0.message",
-           "en": "Message",
-           "fr": "Message",
-           "es": "",
-           "ne": "सन्देश",
-           "sw": ""
-       },
-       {
            "key": "from",
-           "en": "From",
+           "en": "Reported From",
            "fr": "Envoyé par",
            "es": "De",
            "ne": "पठाउने",
@@ -394,6 +362,14 @@ module.exports = {
            "es": "Fecha",
            "ne": "​रिपोर्ट पठाएको समय",
            "sw": ""
+       },
+       {
+           "key": "_id",
+           "en": "Record UUID",
+           "fr": "Record UUID",
+           "es": "Record UUID",
+           "ne": "Record UUID",
+           "sw": "Record UUID"
        },
        {
            "key": "daysoverdue",
