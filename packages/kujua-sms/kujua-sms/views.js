@@ -321,7 +321,7 @@ exports.data_records_by_district_and_reported_date = {
             dh;
 
         if (doc.type === 'data_record') {
-            dh = objectpath.get(doc, 'doc.related_entities.clinic.parent.parent');
+            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent');
 
             if (dh) {
                 emit([dh._id, doc.reported_date, doc._id], doc);

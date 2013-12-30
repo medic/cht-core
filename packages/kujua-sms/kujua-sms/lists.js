@@ -133,7 +133,7 @@ exports.export_messages = function (head, req) {
         // Normalized form:
         // {
         //  type: ['Auto Response', 'Incoming Message', <schedule name>, 'Task Message'],
-        //  state: ['received', 'sent', 'pending', 'muted', 'scheduled'],
+        //  state: ['received', 'sent', 'pending', 'muted', 'scheduled', 'cleared'],
         //  timestamp/due: <date string>,
         //  messages: [{
         //      uuid: <uuid>,
