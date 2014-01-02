@@ -19,9 +19,11 @@ exports.rules = [
         },
         method: 'GET'
     },
+    //export messages by default returns nothing, startkey and endkey need to
+    //be configured to get results
     {
         from: '/export/messages',
-        to: '_list/export_messages/data_records_by_district_and_reported_date',
+        to: '_list/export_messages/data_records',
         query: {
             include_docs: 'true',
             descending: 'true'

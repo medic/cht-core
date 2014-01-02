@@ -243,13 +243,13 @@ exports.data_records_valid_by_district_form_and_reported_date = {
     }
 };
 
-// only emit valid records
+// only emit valid records with a form
 exports.data_records_valid_by_district_and_form = {
      map: function(doc) {
         var objectpath = require('views/lib/objectpath'),
             dh;
 
-        if (doc.type === 'data_record') {
+        if (doc.type === 'data_record' && doc.form) {
             dh = objectpath.get(doc, 'related_entities.clinic.parent.parent') || objectpath.get(doc, 'related_entities.health_center.parent');
 
             if (!doc.errors || doc.errors.length === 0) {
@@ -313,24 +313,6 @@ exports.data_records_by_district_and_clinic = {
  * Views needed to filter data records on
  * data records page.
  */
-
-// by district
-exports.data_records_by_district_and_reported_date = {
-    map: function(doc) {
-        var objectpath = require('views/lib/objectpath'),
-            dh;
-
-        if (doc.type === 'data_record') {
-            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent');
-
-            if (dh) {
-                emit([dh._id, doc.reported_date, doc._id], doc);
-            } else {
-                emit([null, doc.reported_date, doc._id], doc);
-            }
-        }
-    }
-};
 
 exports.data_records_by_form_valid_and_reported_date = {
     map: function(doc) {

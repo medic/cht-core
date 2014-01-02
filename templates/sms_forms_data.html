@@ -2,11 +2,7 @@
     <div class="row-fluid form-row">
       <h4 class="span7 offset1">
         {title}
-        {?form}
         <div class="label label-faded">{form}</div>
-        {:else}
-        <i class="icon-envelope"></i>
-        {/form}
       </h4>
         <div class="span3"><label>{total} records</label></div>
         <div class="span1">
@@ -37,8 +33,7 @@
   <div class="span12">
     <div class="no-records">
       <i class="icon-star-empty"></i>
-
-      No data is available, please login or contact your supervisor.
+      No form data is available, please login or contact your supervisor.
     </div>
   </div>
 </div>

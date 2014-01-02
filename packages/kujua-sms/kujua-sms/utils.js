@@ -918,6 +918,6 @@ exports.getFormTitle = function(form) {
     if (title) {
         return title;
     } else {
-        return form || 'Messages';
+        return form;
     }
 }
