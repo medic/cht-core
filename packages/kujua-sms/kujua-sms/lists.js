@@ -32,6 +32,18 @@ var formatDate = exports.formatDate = function(date, tz) {
     return moment(date).format(fmt);
 };
 
+/*
+ * returns values after formatting
+ */
+var formatValues = exports.formatValues = function(keys, values, tz) {
+    _.each(keys, function(key, idx) {
+        if (key === 'reported_date') {
+            values[idx] = formatDate(values[idx], tz);
+        }
+    });
+    return values;
+};
+
 function getFilename(form, name, type) {
     var filename;
 
@@ -220,6 +232,7 @@ exports.data_records_csv = function (head, req) {
         query = req.query,
         form  = query.form,
         appInfo = info.getAppInfo.call(this),
+        exclude_cols = query.exclude_cols ? query.exclude_cols.split(',') : [],
         dh_name = query.dh_name ? query.dh_name : 'null',
         filename = getFilename(form, dh_name, 'csv'),
         locale = query.locale || 'en', //TODO get from session
@@ -235,18 +248,27 @@ exports.data_records_csv = function (head, req) {
         'Content-Disposition': 'attachment; filename=' + filename
     }});
 
+    // exclude_cols params removes cols from export. takes 1-indexed comma
+    // separated list as input. e.g 1,5
+    if (exclude_cols.length > 0) {
+        _.each(exclude_cols, function(num) {
+            keys.splice(num-1, 1);
+        });
+    }
+
     // fetch labels for all keys
     labels = utils.getLabels(keys, form, locale);
 
-    if (!query.skip_header_row)
+    if (!query.skip_header_row) {
         send(utils.arrayToCSV([labels], delimiter) + '\n');
+    }
 
     while (row = getRow()) {
         if(row.doc) {
             // add values for each data record to the rows
             values = utils.getValues(row.doc, keys);
             // format date fields
-            values[1] = formatDate(values[1], query.tz);
+            values = formatValues(keys, values, query.tz);
             send(utils.arrayToCSV([values], delimiter) + '\n');
         }
     }
@@ -261,6 +283,7 @@ exports.data_records_xml = function (head, req) {
     var query = req.query,
         form  = query.form,
         dh_name = query.dh_name ? query.dh_name : 'null',
+        exclude_cols = query.exclude_cols ? query.exclude_cols.split(',') : [],
         appInfo = info.getAppInfo.call(this),
         filename = getFilename(form, dh_name, 'xml'),
         locale = query.locale || 'en', //TODO get from session
@@ -276,6 +299,14 @@ exports.data_records_xml = function (head, req) {
         'Content-Type': 'application/vnd.ms-excel; charset=utf-8',
         'Content-Disposition': 'attachment; filename=' + filename
     }});
+
+    // exclude_cols params removes cols from export. takes 1-indexed comma
+    // separated list as input. e.g 1,5
+    if (exclude_cols.length > 0) {
+        _.each(exclude_cols, function(num) {
+            keys.splice(num-1, 1);
+        });
+    }
 
     // fetch labels for all keys
     var labels = utils.getLabels(keys, form, locale);
@@ -296,8 +327,7 @@ exports.data_records_xml = function (head, req) {
 
     while (row = getRow()) {
         values = utils.getValues(row.doc, keys);
-        // format date fields
-        values[1] = formatDate(values[1], query.tz);
+        values = formatValues(keys, values, query.tz);
         send(utils.arrayToXML([values]));
     }
 
