@@ -70,7 +70,7 @@
     },
     "user_data": {
         "db_prefix": false,
-        "available_roles" : ["kujua-user","national_admin","district_admin","kujua_gateway","data_entry"],
+        "available_roles" : ["kujua_user","national_admin","district_admin","kujua_gateway","data_entry"],
         "schema": {
             "descripton": "Kujua Lite",
             "type": "object",

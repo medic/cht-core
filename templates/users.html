@@ -40,15 +40,14 @@
     <select id="type">
       <option value=""></option>
       <optgroup label="People">
-        <option value="national-manager">National Manager</option>
-        <option value="facility-manager">Facility Manager</option>
-        <option value="facility-user">Facility User</option>
-        <option value="data-manager">Data Manager</option>
-        <option value="data-viewer">Data Viewer</option>
+        <option value="national-manager">Full access</option>
+        <option value="district-manager">Restricted to group of facilities</option>
+        <!--option value="facility-manager">Restricted to individual facility</option-->
+        <option value="data-entry">Data entry - access to Muvuku only</option>
       </optgroup>
       <optgroup label="Computers">
-        <option value="analytics">Analytics</option>
-        <option value="gateway">Gateway</option>
+        <option value="analytics">Analytics - Data export via URL only</option>
+        <option value="gateway">Gateway - Limited access user for SMSSync</option>
       </optgroup>
     </select>
 
