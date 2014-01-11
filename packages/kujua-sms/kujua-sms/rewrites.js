@@ -30,6 +30,15 @@ exports.rules = [
         }
     },
     {
+        from: '/export/forms/:form',
+        to: '_list/export_data_records/data_records',
+        query: {
+            include_docs: 'true',
+            descending: 'true',
+            form: ':form'
+        }
+    },
+    {
         from: '/:form/data_records.csv',
         to: '_list/data_records_csv/data_records_valid_by_district_form_and_reported_date'
     },

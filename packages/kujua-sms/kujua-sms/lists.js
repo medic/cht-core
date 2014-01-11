@@ -73,17 +73,7 @@ var getKeys = exports.getKeys = function(form) {
     ].concat(utils.getFormKeys(form));
 };
 
-exports.export_messages = function (head, req) {
-    var query = req.query,
-        format = query.format || 'csv',
-        appInfo = info.getAppInfo.call(this),
-        dh_name = query.dh_name ? query.dh_name : 'null',
-        filename = getFilename('null', dh_name, format),
-        locale = query.locale || 'en',
-        delimiter = locale === 'fr' ? '";"' : null;
-
-    utils.info = appInfo; // replace fake info with real from context
-
+function startExportHeaders(format, filename) {
     if (format === 'xml') {
         start({code: 200, headers: {
             'Content-Type': 'application/vnd.ms-excel; charset=utf-8',
@@ -95,6 +85,50 @@ exports.export_messages = function (head, req) {
             'Content-Disposition': 'attachment; filename=' + filename
         }});
     }
+};
+
+function sendHeaderRow(format, labels, form, delimiter) {
+    if (format === 'xml') {
+        send('<?xml version="1.0" encoding="UTF-8"?>\n' +
+             '<?mso-application progid="Excel.Sheet"?>\n' +
+             '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
+             ' xmlns:o="urn:schemas-microsoft-com:office:office"\n' +
+             ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n' +
+             ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n' +
+             ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
+             '<Worksheet ss:Name="'+form+'"><Table>');
+        send(utils.arrayToXML([labels]));
+    } else {
+        send(utils.arrayToCSV([labels], delimiter) + '\n');
+    }
+}
+
+function sendValuesRow(vals, format, delimiter) {
+    if (format === 'xml') {
+        send(utils.arrayToXML([vals]));
+    } else {
+        send(utils.arrayToCSV([vals], delimiter) + '\n');
+    }
+}
+
+function sendClosing(format) {
+    if (format === 'xml') {
+        send('</Table></Worksheet></Workbook>');
+    }
+}
+
+exports.export_messages = function (head, req) {
+    var query = req.query,
+        format = query.format || 'csv',
+        appInfo = info.getAppInfo.call(this),
+        dh_name = query.dh_name ? query.dh_name : 'null',
+        filename = getFilename('null', dh_name, format),
+        locale = query.locale || 'en',
+        delimiter = locale === 'fr' ? '";"' : null;
+
+    utils.info = appInfo; // replace fake info with real from context
+
+    startExportHeaders(format, filename);
 
     var labels = [
         '_id',
@@ -223,6 +257,72 @@ exports.export_messages = function (head, req) {
     if (format === 'xml') {
         send('</Table></Worksheet></Workbook>');
     }
+
+    return '';
+};
+
+function sendError(json, code) {
+    start({
+        code: code || 400,
+        headers: {
+            'Content-Type': 'text/plain; charset=utf-8'
+        }
+    });
+    send(JSON.stringify(json));
+};
+
+exports.export_data_records = function (head, req) {
+    var labels,
+        query = req.query,
+        form  = query.form,
+        format = query.format || 'csv',
+        appInfo = info.getAppInfo.call(this),
+        exclude_cols = query.exclude_cols ? query.exclude_cols.split(',') : [],
+        dh_name = query.dh_name ? query.dh_name : 'null',
+        filename = getFilename(form, dh_name, format),
+        locale = query.locale || 'en', //TODO get from session
+        delimiter = locale === 'fr' ? '";"' : null,
+        rows,
+        values,
+        keys = exports.getKeys(form);
+
+    utils.info = appInfo; // replace fake info with real from context
+
+    startExportHeaders(format, filename);
+
+    if (!query.startkey || !query.endkey) {
+        return sendError({
+            "error": "bad_request",
+            "reason": "startkey and endkey parameters required"
+        });
+    }
+
+    // exclude_cols params removes cols from export. takes 1-indexed comma
+    // separated list as input. e.g 1,5
+    if (exclude_cols.length > 0) {
+        _.each(exclude_cols, function(num) {
+            keys.splice(num-1, 1);
+        });
+    }
+
+    // fetch labels for all keys
+    labels = utils.getLabels(keys, form, locale);
+
+    if (!query.skip_header_row) {
+        sendHeaderRow(format, labels, form, delimiter);
+    }
+
+    while (row = getRow()) {
+        if(row.doc) {
+            // add values for each data record to the rows
+            values = utils.getValues(row.doc, keys);
+            // format date fields
+            values = formatValues(keys, values, query.tz);
+            sendValuesRow(values, format, delimiter);
+        }
+    }
+
+    sendClosing(format);
 
     return '';
 };

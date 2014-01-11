@@ -7,7 +7,7 @@
         <div class="span3"><label>{total} records</label></div>
         <div class="span1">
             <form class="form-inline" method="get">
-              <button class="btn btn-primary" type="submit" data-url="{baseURL}" data-query="{q}">
+              <button class="btn btn-primary" type="submit" data-url="{baseURL}/export/forms/{form}" data-query="{q}">
                     <i class="icon-arrow-down icon-large"></i>
                 </button>
             </form>
@@ -16,12 +16,12 @@
     {#districts}
         <div class="row-fluid district-form-row">
             <h5 class="offset1 span7">
-                {?isAdmin}{dh_name}{/isAdmin}
+              {dh_name}
             </h5>
             <div class="span3"><label>{total} records</label></div>
             <div class="span1">
                 <form class="form-inline" method="get">
-                    <button class="btn btn-primary" type="submit" data-url="{baseURL}" data-form="{form}" data-query="{q}">
+                  <button class="btn btn-primary" type="submit" data-url="{baseURL}/export/forms/{form}" data-form="{form}" data-query="{q}">
                         <i class="icon-arrow-down icon-large"></i>
                     </button>
                 </form>
