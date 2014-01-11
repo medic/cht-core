@@ -105,7 +105,7 @@ function sendHeaderRow(format, labels, form, delimiter) {
 
 function sendValuesRow(vals, format, delimiter) {
     if (format === 'xml') {
-        send(utils.arrayToXML([vals]));
+        send(utils.arrayToXML([vals]) + '\n');
     } else {
         send(utils.arrayToCSV([vals], delimiter) + '\n');
     }
