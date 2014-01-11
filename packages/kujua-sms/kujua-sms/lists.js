@@ -276,9 +276,6 @@ exports.data_records_csv = function (head, req) {
     return '';
 };
 
-exports.messages_xml = function (head, req) {
-};
-
 exports.data_records_xml = function (head, req) {
     var query = req.query,
         form  = query.form,
