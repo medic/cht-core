@@ -219,29 +219,6 @@ exports.data_records = {
     }
 };
 
-exports.data_records_valid_by_district_form_and_reported_date = {
-    map: function(doc) {
-        var objectpath = require('views/lib/objectpath'),
-            dh;
-
-        if(doc.type === 'data_record') {
-            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent');
-
-            if (!dh) {
-                dh = objectpath.get(doc, 'related_entities.health_center.parent');
-            }
-
-            if (dh && (!doc.errors || doc.errors.length === 0)) {
-                emit([dh._id, doc.form, dh.name, doc.reported_date], 1);
-            } else if (!doc.errors || doc.errors.length === 0) {
-                emit([null, doc.form, null, doc.reported_date], 1);
-            }
-        }
-    },
-    reduce: function(key, counts) {
-        return sum(counts);
-    }
-};
 
 // only emit valid records with a form
 exports.data_records_valid_by_district_and_form = {
@@ -307,21 +284,6 @@ exports.data_records_by_district_and_clinic = {
     }
 };
 
-
-
-/*
- * Views needed to filter data records on
- * data records page.
- */
-
-exports.data_records_by_form_valid_and_reported_date = {
-    map: function(doc) {
-        if (doc.type === 'data_record') {
-            var valid = (!doc.errors || doc.errors.length === 0);
-            emit([doc.form, valid, doc.reported_date, doc._id], doc);
-        }
-    }
-};
 
 exports.data_record_by_phone_and_week = {
     map: function(doc) {
