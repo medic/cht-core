@@ -23,7 +23,7 @@ exports.lists_format_date = function(test) {
     test.done();
 }
 
-exports.lists_data_record_csv = function(test) {
+exports.lists_export_data_records_csv = function(test) {
 
     test.expect(1);
 
@@ -44,13 +44,13 @@ exports.lists_data_record_csv = function(test) {
     var viewdata = {rows: [
         {
             "key":[
-                "68d45afe29fbf23d1cb9ee227345ec08",
+                true,
                 "MSBC",
-                "District 1",
-                "Form Title"],
+                1331503842461],
             "value": 1,
             "doc": {
                 _id: 'abc123z',
+                form: "MSBC",
                 related_entities: {
                     clinic: {
                         name:"Clinic 1",
@@ -68,10 +68,9 @@ exports.lists_data_record_csv = function(test) {
         },
         {
             "key":[
-                "fbf23d1cb9ee227345ec0868d45afe29",
+                true,
                 "MSBC",
-                "District 2",
-                "Form title"],
+                1331503850000],
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
@@ -93,17 +92,21 @@ exports.lists_data_record_csv = function(test) {
 
     var req = {
         // locale defaults to english
-        query: {form: 'MSBC'},
+        query: {
+            startkey: 'foo',
+            endkey: 'bar',
+            form: 'MSBC'
+        },
         method: "GET"
     };
 
-    var resp = fakerequest.list(lists.data_records_csv, viewdata, req);
+    var resp = fakerequest.list(lists.export_data_records, viewdata, req);
     test.same(expected, resp.body);
 
     test.done()
 };
 
-exports.lists_data_record_csv_fr = function(test) {
+exports.lists_export_data_records_fr = function(test) {
 
     test.expect(1);
 
@@ -123,7 +126,7 @@ exports.lists_data_record_csv_fr = function(test) {
     // mockup the view data
     var viewdata = {rows: [
         {
-            "key": ["MSBC", 1331503842461],
+            "key": [true, "MSBC", 1331503842461],
             "value": 1,
             "doc": {
                 _id: 'abc123z',
@@ -143,7 +146,7 @@ exports.lists_data_record_csv_fr = function(test) {
             }
         },
         {
-            "key": ["MSBC", 1331503850000],
+            "key": [true, "MSBC", 1331503850000],
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
@@ -165,18 +168,23 @@ exports.lists_data_record_csv_fr = function(test) {
 
     var req = {
         //locale is passed in to request
-        query: {form: 'MSBC', locale: 'fr'},
+        query: {
+            startkey: 'foo',
+            endkey: 'bar',
+            form: 'MSBC',
+            locale: 'fr'
+        },
         method: "GET"
     };
 
-    var resp = fakerequest.list(lists.data_records_csv, viewdata, req);
+    var resp = fakerequest.list(lists.export_data_records, viewdata, req);
 
     test.same(expected, resp.body);
 
     test.done()
 };
 
-exports.lists_data_record_csv_skip_header_row = function(test) {
+exports.lists_export_data_records_skip_header_row = function(test) {
 
     test.expect(1);
 
@@ -190,7 +198,7 @@ exports.lists_data_record_csv_skip_header_row = function(test) {
     // mockup the view data
     var viewdata = {rows: [
         {
-            "key": ["MSBC", 1331503842461],
+            "key": [true, "MSBC", 1331503842461],
             "value": 1,
             "doc": {
                 _id: 'abc123z',
@@ -210,7 +218,7 @@ exports.lists_data_record_csv_skip_header_row = function(test) {
             }
         },
         {
-            "key": ["MSBC", 1331503850000],
+            "key": [true, "MSBC", 1331503850000],
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
@@ -232,18 +240,23 @@ exports.lists_data_record_csv_skip_header_row = function(test) {
 
     var req = {
         //locale is passed in to request
-        query: {form: 'MSBC', skip_header_row: '1'},
+        query: {
+            form: 'MSBC',
+            skip_header_row: '1',
+            startkey: 'foo',
+            endkey: 'bar'
+        },
         method: "GET"
     };
 
-    var resp = fakerequest.list(lists.data_records_csv, viewdata, req);
+    var resp = fakerequest.list(lists.export_data_records, viewdata, req);
 
     test.same(expected, resp.body);
 
     test.done()
 };
 
-exports.lists_data_record_with_tz = function(test) {
+exports.lists_export_data_records_with_tz = function(test) {
 
     test.expect(1);
 
@@ -264,10 +277,10 @@ exports.lists_data_record_with_tz = function(test) {
     var viewdata = {rows: [
         {
             "key":[
-                "68d45afe29fbf23d1cb9ee227345ec08",
+                true,
                 "MSBC",
-                "District 1",
-                "Form Title"],
+                1331503842461
+            ],
             "value": 1,
             "doc": {
                 _id: 'abc123z',
@@ -288,10 +301,10 @@ exports.lists_data_record_with_tz = function(test) {
         },
         {
             "key":[
-                "fbf23d1cb9ee227345ec0868d45afe29",
+                true,
                 "MSBC",
-                "District 2",
-                "Form title"],
+                1331503850000
+            ],
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
@@ -313,11 +326,16 @@ exports.lists_data_record_with_tz = function(test) {
 
     var req = {
         // locale defaults to english
-        query: {form: 'MSBC', tz: "-300"},
+        query: {
+            startkey: 'foo',
+            endkey: 'bar',
+            form: 'MSBC',
+            tz: "-300"
+        },
         method: "GET"
     };
 
-    var resp = fakerequest.list(lists.data_records_csv, viewdata, req);
+    var resp = fakerequest.list(lists.export_data_records, viewdata, req);
     test.same(expected, resp.body);
 
     test.done()
