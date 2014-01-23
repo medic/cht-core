@@ -6,7 +6,7 @@
     <i class="icon-envelope icon-muted"></i>
   </div>
   <div class="contact-info">
-    <b>To:</b> {@contact entities="{related_entities}" to="{tasks[0].messages[0].to}"/}
+    <b>To:</b> {@contact entities="{related_entities}" tasks="{tasks}"/}
   </div>
   <div class="msg">
     {tasks[0].messages[0].message}
