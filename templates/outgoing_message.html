@@ -6,13 +6,25 @@
     <i class="icon-envelope icon-muted"></i>
   </div>
   <div class="contact-info">
-    <b>To:</b> {@contact entities="{related_entities}" tasks="{tasks}"/}
+    <b>To:</b> {@contact entities="{related_entities}" messages="{tasks}"/}
   </div>
   <div class="msg">
     {tasks[0].messages[0].message}
   </div>
   <div class="icons">
-  </div> 
+    {@ifHasState array="{tasks}" state="sent"}
+    <span class="label label-success" title="{@countByState array1="{tasks}" array2="{scheduled_tasks}" state="sent"/} messages sent">
+      {@countByState array1="{tasks}" array2="{scheduled_tasks}" state="sent"/}
+        <i class="icon-envelope"></i>
+      </span>
+    {/ifHasState}
+    {@ifHasState array="{tasks}" state="pending"}
+    <span class="label label-info" title="{@countByState array1="{tasks}" array2="{scheduled_tasks}" state="pending"/} messages pending">
+      {@countByState array1="{tasks}" array2="{scheduled_tasks}" state="pending"/}
+        <i class="icon-time"></i>
+      </span>
+    {/ifHasState}
+  </div>
   <div class="timestamp" title="{@formatDate timestamp="{tasks[0].timestamp}"/}">
   {?tasks[0].timestamp}
     {@formatDate timestamp="{tasks[0].timestamp}" format="MMM DD HH:mm"/}
@@ -30,7 +42,7 @@
       {#messages}
       <div>
         <b>To:</b>
-        {#related_entities}
+        {#facility}
           {?clinic}
             {?clinic.parent.parent.name}
               {clinic.parent.parent.name}
@@ -55,18 +67,19 @@
           {:else}
             {to}
           {/clinic}
-        {/related_entities}
-        {^related_entities}
+        {/facility}
+        {^facility}
           {to}
-        {/related_entities}
-        </div>
+        {/facility}
+      </div>
         <p>
           <b>Sent by:</b> {sent_by}
           {?from}{from}{/from}
+          {?timestamp}<br/><b>Date:</b> {@formatDate timestamp="{timestamp}"/}{/timestamp}
         </p>
         <p><pre>{message}</pre></p>
-      </div>
       {/messages}
     {/tasks}
+    </div>
   </div>
 </div>
