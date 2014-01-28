@@ -896,6 +896,7 @@ exports.info = {
         }
     },
     translate: function(key) {
+        logger.log('translate returned key '+key);
         return key;
     }
 };
