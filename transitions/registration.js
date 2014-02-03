@@ -89,9 +89,9 @@ module.exports = {
         });
         return ret;
     },
-    validate: function(config, doc) {
+    validate: function(config, doc, callback) {
         var validations = config.validations && config.validations.list;
-        return validation.validate(doc, validations);
+        return validation.validate(doc, validations, callback);
     },
     onMatch: function(change, db, callback) {
         var self = module.exports,
@@ -104,54 +104,60 @@ module.exports = {
             return callback(null, false);
         }
 
-        var errors = self.validate(config, doc);
+        self.validate(config, doc, function(errors) {
 
-        if (errors.length) {
-            messages.addErrors(doc, errors);
-            if (config.validations.join_responses) {
-                var msgs = [];
-                _.each(errors, function(err) {
-                    if (err.message) {
-                        msgs.push(err.message);
-                    } else if (err) {
-                        msgs.push(err);
-                    };
-                });
-                messages.addReply(doc, msgs.join('  '));
-            } else {
-                messages.addReply(doc, _.first(errors).message || _.first(errors));
+            if (errors && errors.length > 0) {
+                messages.addErrors(doc, errors);
+                // join all errors into one response or respond with first
+                // error.
+                if (config.validations.join_responses) {
+                    var msgs = [];
+                    _.each(errors, function(err) {
+                        if (err.message) {
+                            msgs.push(err.message);
+                        } else if (err) {
+                            msgs.push(err);
+                        };
+                    });
+                    messages.addReply(doc, msgs.join('  '));
+                } else {
+                    var err = _.first(errors);
+                    messages.addReply(doc, err.message || err);
+                }
+                // if validation errors then stop processign registration
+                return callback(null, true);
             }
-            return callback(null, true);
-        }
 
-        var series = [];
-        _.each(config.events, function(event) {
-            var trigger = self.triggers[event.trigger];
-            if (!trigger) return;
-            if (event.name === 'on_create') {
-                var args = [db, doc];
-                if (event.params) {
-                    // params setting get sent as array
-                    args.push(event.params.split(','));
+            var series = [];
+            _.each(config.events, function(event) {
+                var trigger = self.triggers[event.trigger];
+                if (!trigger) return;
+                if (event.name === 'on_create') {
+                    var args = [db, doc];
+                    if (event.params) {
+                        // params setting get sent as array
+                        args.push(event.params.split(','));
+                    }
+                    if (self.isBoolExprFalse(doc, event.bool_expr)) {
+                        return;
+                    }
+                    series.push(function(cb) {
+                        trigger.apply(null, args.concat(cb));
+                    });
                 }
-                if (self.isBoolExprFalse(doc, event.bool_expr)) {
-                    return;
+            });
+
+            async.series(series, function(err, results) {
+                //callback(null, true);
+                if (err) {
+                    callback(err, false);
+                } else {
+                    // add messages is done last so data on doc can be used in
+                    // messages
+                    self.addMessages(config, doc);
+                    callback(null, true);
                 }
-                series.push(function(callback) {
-                    trigger.apply(null, args.concat(callback));
-                });
-            }
-        });
-        async.series(series, function(err, results) {
-            //callback(null, true);
-            if (err) {
-                callback(err, false);
-            } else {
-                // add messages is done last so data on doc can be used in
-                // messages
-                self.addMessages(config, doc);
-                callback(null, true);
-            }
+            });
         });
     },
     triggers: {
