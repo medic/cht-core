@@ -57,12 +57,11 @@ exports['onMatch returns false if form not included'] = function(test) {
 exports['onMatch with matching form calls getRegistrations and then matchRegistrations'] = function(test) {
 
     var getRegistrations,
-        matchRegistrations,
-        noop = function(){};
+        matchRegistrations;
 
     sinon.stub(transition, 'getAcceptedReports').returns([ { form: 'x' }, { form: 'z' } ]);
 
-    getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [], noop);
+    getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     matchRegistrations = sinon.stub(transition, 'matchRegistrations').callsArgWithAsync(1, null, true);
 
     transition.onMatch({
