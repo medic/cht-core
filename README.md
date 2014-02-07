@@ -8,7 +8,7 @@ You will need to intall the following...
 
 ### Node and CouchDB
 
-Assuming you have [Nodejs](http://nodejs.org) and [CouchDB](http://couchdb.apache.org) installed.
+Assuming you have [Nodejs](http://nodejs.org), [CouchDB](http://couchdb.apache.org), and [couchdb-lucene](https://github.com/rnewson/couchdb-lucene).
 
 ### Kanso
 
