@@ -1,5 +1,46 @@
 # Kujua Release Notes
 
+## 0.3.0-beta.38 
+
+### TBD 
+
+- Added unique Patient ID validation support.
+
+    Use unique('patient_id') in your registration validation rules to validate
+    new form submissions that are setting the patient ID values via forms.
+
+    Validation rules may consist of Pupil.js rules and custom rules.  These
+    cannot be combined as part of the same rule.
+
+    Not OK:        
+    
+        rule: "regex('[0-9]{5}') && unique('patient_id')"
+    
+    OK:
+        
+        rule: "regex('[0-9]{5}') && max(11111)"    
+
+    If for example you want to validate that patient_id is 5 numbers and it
+    is unique (or some other custom validation) you need to define two
+    validation configs/separate rules in your settings. Example validation
+    settings:
+
+    ``` 
+    [
+      {
+        property: "patient_id",
+        rule: "regex('[0-9]{5}')",
+        message: "Invalid: Patient ID {{patient_id}} must be 5 numbers."
+      },
+      {
+        property: "patient_id",
+        rule: "unique('patient_id')",
+        message: "Invalid: Patient ID {{patient_id}} must be unique."
+      }
+    ]
+    ```
+
+
 ## 0.3.0-beta.37 
 
 ### Jan 21, 2014
