@@ -5,3 +5,4 @@ node_modules/sinon
 node_modules/.bin/kanso
 node_modules/.bin/kanso_completions
 node_modules/.bin/nodeunit
+/npm-debug.log
