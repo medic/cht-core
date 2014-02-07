@@ -238,11 +238,12 @@ module.exports = {
     },
     setId: function(options, callback) {
         var doc = options.doc,
+            db = db || options.db,
             id = ids.generate(doc.id),
             self = module.exports;
 
         utils.getRegistrations({
-            db: options.db,
+            db: db,
             id: id,
             form: doc.form
         }, function(err, registrations) {
