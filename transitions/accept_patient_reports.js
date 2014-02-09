@@ -151,9 +151,9 @@ module.exports = {
             callback(null);
         }
     },
-    validate: function(report, doc) {
-        var validations = report.validations && report.validations.list;
-        return validation.validate(doc, validations);
+    validate: function(config, doc, callback) {
+        var validations = config.validations && config.validations.list;
+        return validation.validate(doc, validations, callback);
     },
     handleReport: function(options, callback) {
         var db = options.db || db,
@@ -174,8 +174,7 @@ module.exports = {
     onMatch: function(change, _db, callback) {
         var doc = change.doc,
             reports = module.exports.getAcceptedReports(),
-            report,
-            errors;
+            report;
 
         db = _db;
 
@@ -187,30 +186,31 @@ module.exports = {
             return callback(null, false);
         }
 
-        errors = module.exports.validate(report, doc);
+        module.exports.validate(report, doc, function(errors) {
 
-        if (errors.length) {
-            messages.addErrors(doc, errors);
-            if (report.validations.join_responses) {
-                var msgs = [];
-                _.each(errors, function(err) {
-                    if (err.message) {
-                        msgs.push(err.message);
-                    } else if (err) {
-                        msgs.push(err);
-                    };
-                });
-                messages.addReply(doc, msgs.join('  '));
-            } else {
-                messages.addReply(doc, _.first(errors).message || _.first(errors));
+            if (errors && errors.length > 0) {
+                messages.addErrors(doc, errors);
+                if (report.validations.join_responses) {
+                    var msgs = [];
+                    _.each(errors, function(err) {
+                        if (err.message) {
+                            msgs.push(err.message);
+                        } else if (err) {
+                            msgs.push(err);
+                        };
+                    });
+                    messages.addReply(doc, msgs.join('  '));
+                } else {
+                    messages.addReply(doc, _.first(errors).message || _.first(errors));
+                }
+                return callback(null, true);
             }
-            return callback(null, true);
-        }
 
-        module.exports.handleReport({
-            db: db,
-            doc: doc,
-            report: report
-        }, callback);
+            module.exports.handleReport({
+                db: db,
+                doc: doc,
+                report: report
+            }, callback);
+        });
     }
 };
