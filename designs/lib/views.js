@@ -143,6 +143,14 @@ exports.data_records_by_form_year_month_clinic_id_and_reported_date = {
     }
 };
 
+exports.data_records_by_form_and_reported_date = {
+    map: function(doc) {
+        if (doc.type === 'data_record' && doc.form) {
+            emit(doc.form, null);
+        }
+    }
+};
+
 exports.sent_reminders = {
     map: function(doc) {
         if (Array.isArray(doc.tasks)) {

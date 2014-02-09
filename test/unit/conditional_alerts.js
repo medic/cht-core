@@ -1,17 +1,19 @@
 var _ = require('underscore'),
     sinon = require('sinon'),
     messages = require('../../lib/messages'),
+    utils = require('../../lib/utils'),
     transition = require('../../transitions/conditional_alerts');
 
 exports.tearDown = function(callback) {
-    if (transition._getConfig.restore){
+    if (transition._getConfig.restore) {
         transition._getConfig.restore();      
     }
-
-    if (messages.addMessage.restore){
+    if (messages.addMessage.restore) {
         messages.addMessage.restore();
     }
-
+    if (utils.getRecentForm.restore) {
+        utils.getRecentForm.restore();
+    }
     callback();
 }
 
@@ -167,30 +169,79 @@ exports['when alert matches document and condition is true send message'] = func
     });
 };
 
-
-exports['when alert matches document and complex condition is true send message'] = function(test) {
+exports['when complex condition is true send message'] = function(test) {
+        
     sinon.stub(transition, '_getConfig').returns([{
         form: 'STCK',
-        condition: 'STCK(0).s1_avail < (STCK(0).s1_used + STCK(1).s1_used + STCK(2).s1_used ) / 3',
-        message: 'hello world',
+        condition: 'STCK(0).s1_avail == 0',
+        message: 'out of units',
+        recipient: '+5555555'
+    }, {
+        form: 'STCK',
+        condition: 'STCK(0).s1_avail == 1',
+        message: 'exactly 1 unit available',
         recipient: '+5555555'
     }]);
+
+    sinon.stub(utils, 'getRecentForm')
+        .callsArgWith(1, null, [{
+            reported_date: 1390427075750,
+            s1_avail: 0
+        }]);
+
     var messageFn = sinon.spy(messages, 'addMessage');
-    test.expect(4);
+
     var doc = {
         form: 'STCK'
     };
+    test.expect(4);
     transition.onMatch({
         doc: doc
     }, {}, function(err, complete) {
-        test.ok(messageFn.calledOnce);
+        test.equals(messageFn.callCount, 1);
         test.ok(messageFn.calledWith({
             doc: doc,
             phone: '+5555555',
-            message: 'hello world'
+            message: 'out of units'
         }));
         test.equals(err, null);
         test.equals(complete, true);
         test.done();
     });
 };
+
+exports['handle missing condition reference gracefully'] = function(test) {
+        
+    sinon.stub(transition, '_getConfig').returns([{
+        form: 'STCK',
+        condition: 'STCK(1).s1_avail == 0',
+        message: 'out of units',
+        recipient: '+5555555'
+    }]);
+
+    sinon.stub(utils, 'getRecentForm')
+        .callsArgWith(1, null, [{
+            reported_date: 1390427075750,
+            s1_avail: 0
+        }]);
+
+    var messageFn = sinon.spy(messages, 'addMessage');
+
+    var doc = {
+        form: 'STCK'
+    };
+    test.expect(2);
+    transition.onMatch({
+        doc: doc
+    }, {}, function(err, complete) {
+        test.equals(err, "Cannot read property 's1_avail' of undefined");
+        test.equals(complete, true);
+        test.done();
+    });
+};
+
+// TODO test for a given facility only
+// TODO test templating the message
+// TODO test recipient as reference not just phone number
+// TODO complex condition: 
+//    STCK(0).s1_avail < (STCK(0).s1_used + STCK(1).s1_used + STCK(2).s1_used ) / 3
