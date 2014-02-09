@@ -17,6 +17,12 @@ exports.tearDown = function(callback) {
     callback();
 }
 
+var dbMock = {
+    saveDoc: function(doc, callback) {
+        callback();
+    }
+};
+
 exports['onMatch signature'] = function(test) {
     test.ok(_.isFunction(transition.onMatch));
     test.equals(transition.onMatch.length, 3);
@@ -44,7 +50,7 @@ exports['when document type matches pass filter'] = function(test) {
 exports['when no alerts are registered do nothing'] = function(test) {
     sinon.stub(transition, '_getConfig').returns([]);
     test.expect(2);
-    transition.onMatch({}, {}, function(err, complete) {
+    transition.onMatch({}, dbMock, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.done();
@@ -57,11 +63,10 @@ exports['when no alerts match document do nothing'] = function(test) {
         condition: 'false'
     }]);
     test.expect(2);
-    transition.onMatch({
-        doc: {
-            form: 'PINK'
-        }
-    }, {}, function(err, complete) {
+    var doc = {
+        form: 'PINK'
+    };
+    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.done();
@@ -80,14 +85,15 @@ exports['when alert matches document send message'] = function(test) {
         message: 'goodbye world',
         recipient: '+6666666'
     }]);
+    var saveDocFn = sinon.spy(dbMock, 'saveDoc');
     var messageFn = sinon.spy(messages, 'addMessage');
-    test.expect(4);
+    test.expect(6);
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({
-        doc: doc
-    }, {}, function(err, complete) {
+    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
+        test.ok(saveDocFn.calledOnce);
+        test.ok(saveDocFn.calledWith(doc));
         test.ok(messageFn.calledOnce);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -117,9 +123,7 @@ exports['when alert matches multiple documents send message multiple times'] = f
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({
-        doc: doc
-    }, {}, function(err, complete) {
+    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
         test.ok(messageFn.calledTwice);
         test.ok(messageFn.getCall(0).calledWith({
             doc: doc,
@@ -154,9 +158,7 @@ exports['when alert matches document and condition is true send message'] = func
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({
-        doc: doc
-    }, {}, function(err, complete) {
+    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
         test.ok(messageFn.calledOnce);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -169,7 +171,7 @@ exports['when alert matches document and condition is true send message'] = func
     });
 };
 
-exports['when complex condition is true send message'] = function(test) {
+exports['when recent form condition is true send message'] = function(test) {
         
     sinon.stub(transition, '_getConfig').returns([{
         form: 'STCK',
@@ -195,9 +197,7 @@ exports['when complex condition is true send message'] = function(test) {
         form: 'STCK'
     };
     test.expect(4);
-    transition.onMatch({
-        doc: doc
-    }, {}, function(err, complete) {
+    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
         test.equals(messageFn.callCount, 1);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -231,10 +231,94 @@ exports['handle missing condition reference gracefully'] = function(test) {
         form: 'STCK'
     };
     test.expect(2);
-    transition.onMatch({
-        doc: doc
-    }, {}, function(err, complete) {
+    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
         test.equals(err, "Cannot read property 's1_avail' of undefined");
+        test.equals(complete, true);
+        test.done();
+    });
+};
+
+exports['when complex condition is true send message'] = function(test) {
+        
+    sinon.stub(transition, '_getConfig').returns([{
+        form: 'STCK',
+        condition: 'STCK(0).s1_avail < (STCK(0).s1_used + STCK(1).s1_used + STCK(2).s1_used ) / 3',
+        message: 'low on units',
+        recipient: '+5555555'
+    }]);
+
+    sinon.stub(utils, 'getRecentForm')
+        .callsArgWith(1, null, [{
+            reported_date: 1,
+            s1_avail: 9,
+            s1_used: 2
+        }, {
+            reported_date: 2,
+            s1_avail: 7,
+            s1_used: 4
+        }, {
+            reported_date: 3,
+            s1_avail: 3,
+            s1_used: 5
+        }]);
+
+    var messageFn = sinon.spy(messages, 'addMessage');
+
+    var doc = {
+        form: 'STCK'
+    };
+    test.expect(4);
+    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
+        test.equals(messageFn.callCount, 1);
+        test.ok(messageFn.calledWith({
+            doc: doc,
+            phone: '+5555555',
+            message: 'low on units'
+        }));
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.done();
+    });
+};
+
+exports['database records are sorted before condition evaluation'] = function(test) {
+        
+    sinon.stub(transition, '_getConfig').returns([{
+        form: 'STCK',
+        condition: 'STCK(0).s1_avail < (STCK(0).s1_used + STCK(1).s1_used + STCK(2).s1_used ) / 3',
+        message: 'low on units',
+        recipient: '+5555555'
+    }]);
+
+    sinon.stub(utils, 'getRecentForm')
+        .callsArgWith(1, null, [{
+            reported_date: 3,
+            s1_avail: 3,
+            s1_used: 5
+        }, {
+            reported_date: 1,
+            s1_avail: 9,
+            s1_used: 2
+        }, {
+            reported_date: 2,
+            s1_avail: 7,
+            s1_used: 4
+        }]);
+
+    var messageFn = sinon.spy(messages, 'addMessage');
+
+    var doc = {
+        form: 'STCK'
+    };
+    test.expect(4);
+    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
+        test.equals(messageFn.callCount, 1);
+        test.ok(messageFn.calledWith({
+            doc: doc,
+            phone: '+5555555',
+            message: 'low on units'
+        }));
+        test.equals(err, null);
         test.equals(complete, true);
         test.done();
     });
@@ -243,5 +327,3 @@ exports['handle missing condition reference gracefully'] = function(test) {
 // TODO test for a given facility only
 // TODO test templating the message
 // TODO test recipient as reference not just phone number
-// TODO complex condition: 
-//    STCK(0).s1_avail < (STCK(0).s1_used + STCK(1).s1_used + STCK(2).s1_used ) / 3

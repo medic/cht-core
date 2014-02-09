@@ -27,7 +27,7 @@ module.exports = {
                 if (err) {
                     return callback(err);
                 }
-                _.sortBy(rows, function(row) {
+                rows = _.sortBy(rows, function(row) {
                     return row.reported_date;
                 });
                 context[alert.form] = function(i) {
@@ -40,7 +40,6 @@ module.exports = {
     filter: function(doc) {
         return Boolean(doc.form);
     },
-    // TODO what is db used for?
     onMatch: function(change, db, callback) {
         var doc = change.doc,
             config = module.exports._getConfig();
@@ -66,7 +65,13 @@ module.exports = {
                 }
             }, 
             function(err) {
-                callback(err, true);
+                if (err) {
+                    callback(err, true);    
+                } else {
+                    db.saveDoc(doc, function(err) {
+                        callback(err, true);
+                    });
+                }
             }
         );
 
