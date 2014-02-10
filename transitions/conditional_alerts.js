@@ -1,5 +1,6 @@
 var config = require('../config'),
     _ = require('underscore'),
+    mustache = require('mustache'),
     messages = require('../lib/messages'),
     utils = require('../lib/utils'),
     async = require('async'),
@@ -56,7 +57,10 @@ module.exports = {
                             messages.addMessage({
                                 doc: doc,
                                 phone: alert.recipient,
-                                message: alert.message
+                                message: mustache.to_html(alert.message, {
+                                    facility_name: utils.getClinicName(doc, true),
+                                    form: doc
+                                })
                             });
                         }
                         callback();

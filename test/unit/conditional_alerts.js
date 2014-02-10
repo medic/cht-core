@@ -4,24 +4,27 @@ var _ = require('underscore'),
     utils = require('../../lib/utils'),
     transition = require('../../transitions/conditional_alerts');
 
-exports.tearDown = function(callback) {
-    if (transition._getConfig.restore) {
-        transition._getConfig.restore();      
-    }
-    if (messages.addMessage.restore) {
-        messages.addMessage.restore();
-    }
-    if (utils.getRecentForm.restore) {
-        utils.getRecentForm.restore();
-    }
-    callback();
-}
-
 var dbMock = {
     saveDoc: function(doc, callback) {
         callback();
     }
 };
+
+var restore = function(objs) {
+    _.each(objs, function(obj) {
+        if (obj.restore) obj.restore();
+    });
+}
+
+exports.tearDown = function(callback) {
+    restore([
+        transition._getConfig,
+        messages.addMessage,
+        utils.getRecentForm,
+        dbMock.saveDoc
+    ]);
+    callback();
+}
 
 exports['onMatch signature'] = function(test) {
     test.ok(_.isFunction(transition.onMatch));
@@ -324,6 +327,38 @@ exports['database records are sorted before condition evaluation'] = function(te
     });
 };
 
+exports['template the sent message'] = function(test) {
+    sinon.stub(transition, '_getConfig').returns([{
+        form: 'STCK',
+        condition: 'true',
+        message: '{{facility_name}} is almost out of {{form.s1_name}}',
+        recipient: '+5555555'
+    }]);
+    var saveDocFn = sinon.spy(dbMock, 'saveDoc');
+    var messageFn = sinon.spy(messages, 'addMessage');
+    test.expect(4);
+    var doc = {
+        form: 'STCK',
+        s1_name: 'dipsticks',
+        related_entities: {
+            clinic: {
+                name: 'SomeClinic'
+            }
+        }
+    };
+    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
+        test.ok(messageFn.calledOnce);
+        test.ok(messageFn.calledWith({
+            doc: doc,
+            phone: '+5555555',
+            message: 'SomeClinic is almost out of dipsticks'
+        }));
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.done();
+    });
+};
 
-// TODO test templating the message
+
+
 // TODO test recipient as reference not just phone number
