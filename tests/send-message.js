@@ -10,38 +10,3 @@ exports.countCharUpdatesNote = function(test) {
     test.done();
 };
 
-exports.checkMessageDocDoesNotChangeExistingDoc = function(test) {
-    var existing = {
-        x: 123
-    };
-
-    data_record.checkMessageDoc(existing, {
-        id: 'x'
-    }, function(doc) {
-        test.strictEqual(existing, doc);
-        test.done();
-    });
-};
-exports.checkMessageDocHandlesMissingDoc = function(test) {
-    // stub
-    data_record.setDb({
-        getDoc: function(id, callback) {
-            callback(null, {});
-        }
-    });
-    data_record.user = {
-        name: 'xxx',
-        phone: '+1234567890'
-    };
-
-    data_record.checkMessageDoc(null, {
-        id: 'x'
-    }, function(doc) {
-        test.ok(doc);
-        test.equals(doc.sent_by, 'xxx');
-        test.equals(doc.from, data_record.user.phone);
-        test.equals(doc.kujua_message, true);
-        test.equals(doc.form, null);
-        test.done();
-    });
-}
