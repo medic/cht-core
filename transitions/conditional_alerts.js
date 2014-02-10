@@ -33,21 +33,23 @@ module.exports = {
                     return row.reported_date;
                 });
                 context[alert.form] = function(i) {
-                    return rows[rows.length - 1 - i];
+                    var row = rows[rows.length - 1 - i];
+                    return row ? row.doc : row;
                 }
                 module.exports._runCondition(alert.condition, context, callback);
             });
         }
     },
     filter: function(doc) {
-        return Boolean(doc.form);
+        return Boolean(doc.form && doc.type === 'data_record');
     },
-    onMatch: function(change, db, callback) {
+    onMatch: function(change, db, cb) {
         var doc = change.doc,
-            config = module.exports._getConfig();
+            config = module.exports._getConfig(),
+            updated = false;
 
         async.each(
-            config, 
+            _.values(config),
             function(alert, callback) {
                 if (alert.form === doc.form) {
                     module.exports._evaluateCondition(doc, alert, function(err, result) {
@@ -68,6 +70,7 @@ module.exports = {
                                 phone: phone,
                                 message: message
                             });
+                            updated = true;
                         }
                         callback();
                     });
@@ -76,13 +79,7 @@ module.exports = {
                 }
             }, 
             function(err) {
-                if (err) {
-                    callback(err, true);    
-                } else {
-                    db.saveDoc(doc, function(err) {
-                        callback(err, true);
-                    });
-                }
+                cb(err, updated);
             }
         );
 

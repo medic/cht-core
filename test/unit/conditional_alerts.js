@@ -4,12 +4,6 @@ var _ = require('underscore'),
     utils = require('../../lib/utils'),
     transition = require('../../transitions/conditional_alerts');
 
-var dbMock = {
-    saveDoc: function(doc, callback) {
-        callback();
-    }
-};
-
 var restore = function(objs) {
     _.each(objs, function(obj) {
         if (obj.restore) obj.restore();
@@ -20,8 +14,7 @@ exports.tearDown = function(callback) {
     restore([
         transition._getConfig,
         messages.addMessage,
-        utils.getRecentForm,
-        dbMock.saveDoc
+        utils.getRecentForm
     ]);
     callback();
 }
@@ -45,7 +38,8 @@ exports['when document type is unknown do not pass filter'] = function(test) {
 
 exports['when document type matches pass filter'] = function(test) {
     test.equals(transition.filter({
-        form: 'STCK'
+        form: 'STCK',
+        type: 'data_record'
     }), true);
     test.done();
 };
@@ -53,9 +47,9 @@ exports['when document type matches pass filter'] = function(test) {
 exports['when no alerts are registered do nothing'] = function(test) {
     sinon.stub(transition, '_getConfig').returns([]);
     test.expect(2);
-    transition.onMatch({}, dbMock, function(err, complete) {
+    transition.onMatch({}, {}, function(err, changed) {
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, false);
         test.done();
     });
 };
@@ -69,34 +63,34 @@ exports['when no alerts match document do nothing'] = function(test) {
     var doc = {
         form: 'PINK'
     };
-    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
+    transition.onMatch({ doc: doc }, {}, function(err, changed) {
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, false);
         test.done();
     });
 };
 
 exports['when alert matches document send message'] = function(test) {
-    sinon.stub(transition, '_getConfig').returns([{
-        form: 'STCK',
-        condition: 'true',
-        message: 'hello world',
-        recipient: '+5555555'
-    }, {
-        form: 'XXXX',
-        condition: 'true',
-        message: 'goodbye world',
-        recipient: '+6666666'
-    }]);
-    var saveDocFn = sinon.spy(dbMock, 'saveDoc');
+    sinon.stub(transition, '_getConfig').returns({
+        '0': {
+            form: 'STCK',
+            condition: 'true',
+            message: 'hello world',
+            recipient: '+5555555'
+        }, 
+        '1': {
+            form: 'XXXX',
+            condition: 'true',
+            message: 'goodbye world',
+            recipient: '+6666666'
+        }
+    });
     var messageFn = sinon.spy(messages, 'addMessage');
-    test.expect(6);
+    test.expect(4);
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
-        test.ok(saveDocFn.calledOnce);
-        test.ok(saveDocFn.calledWith(doc));
+    transition.onMatch({ doc: doc }, {}, function(err, changed) {
         test.ok(messageFn.calledOnce);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -104,29 +98,32 @@ exports['when alert matches document send message'] = function(test) {
             message: 'hello world'
         }));
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.done();
     });
 };
 
 exports['when alert matches multiple documents send message multiple times'] = function(test) {
-    sinon.stub(transition, '_getConfig').returns([{
-        form: 'STCK',
-        condition: 'true',
-        message: 'hello world',
-        recipient: '+5555555'
-    }, {
-        form: 'STCK',
-        condition: 'true',
-        message: 'goodbye world',
-        recipient: '+6666666'
-    }]);
+    sinon.stub(transition, '_getConfig').returns({
+        '0': {
+            form: 'STCK',
+            condition: 'true',
+            message: 'hello world',
+            recipient: '+5555555'
+        }, 
+        '1': {
+            form: 'STCK',
+            condition: 'true',
+            message: 'goodbye world',
+            recipient: '+6666666'
+        }
+    });
     var messageFn = sinon.spy(messages, 'addMessage');
     test.expect(5);
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
+    transition.onMatch({ doc: doc }, {}, function(err, changed) {
         test.ok(messageFn.calledTwice);
         test.ok(messageFn.getCall(0).calledWith({
             doc: doc,
@@ -139,29 +136,32 @@ exports['when alert matches multiple documents send message multiple times'] = f
             message: 'goodbye world'
         }));
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.done();
     });
 };
 
 exports['when alert matches document and condition is true send message'] = function(test) {
-    sinon.stub(transition, '_getConfig').returns([{
-        form: 'STCK',
-        condition: 'true',
-        message: 'hello world',
-        recipient: '+5555555'
-    }, {
-        form: 'STCK',
-        condition: 'false',
-        message: 'goodbye world',
-        recipient: '+6666666'
-    }]);
+    sinon.stub(transition, '_getConfig').returns({
+        '0': {
+            form: 'STCK',
+            condition: 'true',
+            message: 'hello world',
+            recipient: '+5555555'
+        }, 
+        '1': {
+            form: 'STCK',
+            condition: 'false',
+            message: 'goodbye world',
+            recipient: '+6666666'
+        }
+    });
     var messageFn = sinon.spy(messages, 'addMessage');
     test.expect(4);
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
+    transition.onMatch({ doc: doc }, {}, function(err, changed) {
         test.ok(messageFn.calledOnce);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -169,29 +169,34 @@ exports['when alert matches document and condition is true send message'] = func
             message: 'hello world'
         }));
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.done();
     });
 };
 
 exports['when recent form condition is true send message'] = function(test) {
         
-    sinon.stub(transition, '_getConfig').returns([{
-        form: 'STCK',
-        condition: 'STCK(0).s1_avail == 0',
-        message: 'out of units',
-        recipient: '+5555555'
-    }, {
-        form: 'STCK',
-        condition: 'STCK(0).s1_avail == 1',
-        message: 'exactly 1 unit available',
-        recipient: '+5555555'
-    }]);
+    sinon.stub(transition, '_getConfig').returns({
+        '0': {
+            form: 'STCK',
+            condition: 'STCK(0).s1_avail == 0',
+            message: 'out of units',
+            recipient: '+5555555'
+        }, 
+        '1': {
+            form: 'STCK',
+            condition: 'STCK(0).s1_avail == 1',
+            message: 'exactly 1 unit available',
+            recipient: '+5555555'
+        }
+    });
 
     sinon.stub(utils, 'getRecentForm')
         .callsArgWith(1, null, [{
             reported_date: 1390427075750,
-            s1_avail: 0
+            doc: {
+                s1_avail: 0
+            }
         }]);
 
     var messageFn = sinon.spy(messages, 'addMessage');
@@ -200,7 +205,7 @@ exports['when recent form condition is true send message'] = function(test) {
         form: 'STCK'
     };
     test.expect(4);
-    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
+    transition.onMatch({ doc: doc }, {}, function(err, changed) {
         test.equals(messageFn.callCount, 1);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -208,19 +213,21 @@ exports['when recent form condition is true send message'] = function(test) {
             message: 'out of units'
         }));
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.done();
     });
 };
 
 exports['handle missing condition reference gracefully'] = function(test) {
         
-    sinon.stub(transition, '_getConfig').returns([{
-        form: 'STCK',
-        condition: 'STCK(1).s1_avail == 0',
-        message: 'out of units',
-        recipient: '+5555555'
-    }]);
+    sinon.stub(transition, '_getConfig').returns({
+        '0': {
+            form: 'STCK',
+            condition: 'STCK(1).s1_avail == 0',
+            message: 'out of units',
+            recipient: '+5555555'
+        }
+    });
 
     sinon.stub(utils, 'getRecentForm')
         .callsArgWith(1, null, [{
@@ -234,35 +241,43 @@ exports['handle missing condition reference gracefully'] = function(test) {
         form: 'STCK'
     };
     test.expect(2);
-    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
+    transition.onMatch({ doc: doc }, {}, function(err, changed) {
         test.equals(err, "Cannot read property 's1_avail' of undefined");
-        test.equals(complete, true);
+        test.equals(changed, false);
         test.done();
     });
 };
 
 exports['when complex condition is true send message'] = function(test) {
         
-    sinon.stub(transition, '_getConfig').returns([{
-        form: 'STCK',
-        condition: 'STCK(0).s1_avail < (STCK(0).s1_used + STCK(1).s1_used + STCK(2).s1_used ) / 3',
-        message: 'low on units',
-        recipient: '+5555555'
-    }]);
+    sinon.stub(transition, '_getConfig').returns({
+        '0': {
+            form: 'STCK',
+            condition: 'STCK(0).s1_avail < (STCK(0).s1_used + STCK(1).s1_used + STCK(2).s1_used ) / 3',
+            message: 'low on units',
+            recipient: '+5555555'
+        }
+    });
 
     sinon.stub(utils, 'getRecentForm')
         .callsArgWith(1, null, [{
             reported_date: 1,
-            s1_avail: 9,
-            s1_used: 2
+            doc: {
+                s1_avail: 9,
+                s1_used: 2
+            }
         }, {
             reported_date: 2,
-            s1_avail: 7,
-            s1_used: 4
+            doc: {
+                s1_avail: 7,
+                s1_used: 4
+            }
         }, {
             reported_date: 3,
-            s1_avail: 3,
-            s1_used: 5
+            doc: {
+                s1_avail: 3,
+                s1_used: 5
+            }
         }]);
 
     var messageFn = sinon.spy(messages, 'addMessage');
@@ -271,7 +286,7 @@ exports['when complex condition is true send message'] = function(test) {
         form: 'STCK'
     };
     test.expect(4);
-    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
+    transition.onMatch({ doc: doc }, {}, function(err, changed) {
         test.equals(messageFn.callCount, 1);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -279,33 +294,41 @@ exports['when complex condition is true send message'] = function(test) {
             message: 'low on units'
         }));
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.done();
     });
 };
 
 exports['database records are sorted before condition evaluation'] = function(test) {
         
-    sinon.stub(transition, '_getConfig').returns([{
-        form: 'STCK',
-        condition: 'STCK(0).s1_avail < (STCK(0).s1_used + STCK(1).s1_used + STCK(2).s1_used ) / 3',
-        message: 'low on units',
-        recipient: '+5555555'
-    }]);
+    sinon.stub(transition, '_getConfig').returns({
+        '0': {
+            form: 'STCK',
+            condition: 'STCK(0).s1_avail < (STCK(0).s1_used + STCK(1).s1_used + STCK(2).s1_used ) / 3',
+            message: 'low on units',
+            recipient: '+5555555'
+        }
+    });
 
     sinon.stub(utils, 'getRecentForm')
         .callsArgWith(1, null, [{
             reported_date: 3,
-            s1_avail: 3,
-            s1_used: 5
+            doc: {
+                s1_avail: 3,
+                s1_used: 5
+            }
         }, {
             reported_date: 1,
-            s1_avail: 9,
-            s1_used: 2
+            doc: {
+                s1_avail: 9,
+                s1_used: 2
+            }
         }, {
             reported_date: 2,
-            s1_avail: 7,
-            s1_used: 4
+            doc: {
+                s1_avail: 7,
+                s1_used: 4
+            }
         }]);
 
     var messageFn = sinon.spy(messages, 'addMessage');
@@ -314,7 +337,7 @@ exports['database records are sorted before condition evaluation'] = function(te
         form: 'STCK'
     };
     test.expect(4);
-    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
+    transition.onMatch({ doc: doc }, {}, function(err, changed) {
         test.equals(messageFn.callCount, 1);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -322,19 +345,20 @@ exports['database records are sorted before condition evaluation'] = function(te
             message: 'low on units'
         }));
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.done();
     });
 };
 
 exports['template the sent message'] = function(test) {
-    sinon.stub(transition, '_getConfig').returns([{
-        form: 'STCK',
-        condition: 'true',
-        message: '{{facility_name}} is almost out of {{form.s1_name}}',
-        recipient: '+5555555'
-    }]);
-    var saveDocFn = sinon.spy(dbMock, 'saveDoc');
+    sinon.stub(transition, '_getConfig').returns({
+        '0': {
+            form: 'STCK',
+            condition: 'true',
+            message: '{{facility_name}} is almost out of {{form.s1_name}}',
+            recipient: '+5555555'
+        }
+    });
     var messageFn = sinon.spy(messages, 'addMessage');
     test.expect(4);
     var doc = {
@@ -346,7 +370,7 @@ exports['template the sent message'] = function(test) {
             }
         }
     };
-    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
+    transition.onMatch({ doc: doc }, {}, function(err, changed) {
         test.ok(messageFn.calledOnce);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -354,20 +378,21 @@ exports['template the sent message'] = function(test) {
             message: 'SomeClinic is almost out of dipsticks'
         }));
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.done();
     });
 };
 
 exports['resolve the recipient if required'] = function(test) {
     var phone = '+123456789';
-    sinon.stub(transition, '_getConfig').returns([{
-        form: 'STCK',
-        condition: 'true',
-        message: 'alarm',
-        recipient: 'grandparent'
-    }]);
-    var saveDocFn = sinon.spy(dbMock, 'saveDoc');
+    sinon.stub(transition, '_getConfig').returns({
+        '0': {
+            form: 'STCK',
+            condition: 'true',
+            message: 'alarm',
+            recipient: 'grandparent'
+        }
+    });
     var messageFn = sinon.spy(messages, 'addMessage');
     test.expect(4);
     var doc = {
@@ -384,7 +409,7 @@ exports['resolve the recipient if required'] = function(test) {
             }
         }
     };
-    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
+    transition.onMatch({ doc: doc }, {}, function(err, changed) {
         test.ok(messageFn.calledOnce);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -392,7 +417,7 @@ exports['resolve the recipient if required'] = function(test) {
             message: 'alarm'
         }));
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.done();
     });
 };

@@ -49,6 +49,9 @@
         "data_records_by_form_year_month_clinic_id_and_reported_date": {
             "map": "function (doc) {\n        if (doc.type === 'data_record'\n                && doc.related_entities\n                && doc.related_entities.clinic\n                && doc.year\n                && doc.month\n                && doc.form\n                && doc.reported_date) {\n            emit([\n                doc.form,\n                doc.year,\n                doc.month,\n                doc.related_entities.clinic._id,\n                doc.reported_date\n            ], null);\n        }\n    }"
         },
+        "data_records_by_form_and_clinic": {
+            "map": "function(doc) {\n        if (doc.type === 'data_record' \n            && doc.form \n            && doc.related_entities\n            && doc.related_entities.clinic) {\n           emit([\n               doc.form,\n                doc.related_entities.clinic._id\n            ], null);\n        }\n    }"
+        },
         "sent_reminders": {
             "map": "function (doc) {\n        if (Array.isArray(doc.tasks)) {\n            doc.tasks.forEach(function(task) {\n                if (task.code && task.ts) {\n                    emit([task.code, task.ts], null);\n                }\n            });\n        }\n    }"
         }
