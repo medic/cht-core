@@ -40,6 +40,10 @@
     ]
     ```
 
+- Added configurable alerts.
+    
+    Configure the Alerts section of the App Settings to send a message when an
+    incoming message meets the configured condition.
 
 ## 0.3.0-beta.37 
 
