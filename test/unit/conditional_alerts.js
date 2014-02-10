@@ -359,6 +359,40 @@ exports['template the sent message'] = function(test) {
     });
 };
 
-
-
-// TODO test recipient as reference not just phone number
+exports['resolve the recipient if required'] = function(test) {
+    var phone = '+123456789';
+    sinon.stub(transition, '_getConfig').returns([{
+        form: 'STCK',
+        condition: 'true',
+        message: 'alarm',
+        recipient: 'grandparent'
+    }]);
+    var saveDocFn = sinon.spy(dbMock, 'saveDoc');
+    var messageFn = sinon.spy(messages, 'addMessage');
+    test.expect(4);
+    var doc = {
+        form: 'STCK',
+        related_entities: {
+            clinic: {
+                parent: {
+                    parent: {
+                        contact: {
+                            phone: phone
+                        }
+                    }
+                }
+            }
+        }
+    };
+    transition.onMatch({ doc: doc }, dbMock, function(err, complete) {
+        test.ok(messageFn.calledOnce);
+        test.ok(messageFn.calledWith({
+            doc: doc,
+            phone: phone,
+            message: 'alarm'
+        }));
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.done();
+    });
+};

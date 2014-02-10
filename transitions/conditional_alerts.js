@@ -54,13 +54,19 @@ module.exports = {
                         if (err) {
                             return callback(err);
                         } else if(result) {
+                            var phone = messages.getRecipientPhone(
+                                doc, 
+                                alert.recipient, 
+                                alert.recipient
+                            );
+                            var message = mustache.to_html(alert.message, {
+                                facility_name: utils.getClinicName(doc, true),
+                                form: doc
+                            });
                             messages.addMessage({
                                 doc: doc,
-                                phone: alert.recipient,
-                                message: mustache.to_html(alert.message, {
-                                    facility_name: utils.getClinicName(doc, true),
-                                    form: doc
-                                })
+                                phone: phone,
+                                message: message
                             });
                         }
                         callback();
