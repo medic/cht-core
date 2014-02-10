@@ -324,6 +324,6 @@ exports['database records are sorted before condition evaluation'] = function(te
     });
 };
 
-// TODO test for a given facility only
+
 // TODO test templating the message
 // TODO test recipient as reference not just phone number

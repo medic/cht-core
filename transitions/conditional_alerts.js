@@ -22,6 +22,7 @@ module.exports = {
             module.exports._runCondition(alert.condition, context, callback);
         } else {
             utils.getRecentForm({
+                doc: doc,
                 formName: alert.form
             }, function(err, rows) {
                 if (err) {

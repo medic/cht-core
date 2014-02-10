@@ -143,10 +143,16 @@ exports.data_records_by_form_year_month_clinic_id_and_reported_date = {
     }
 };
 
-exports.data_records_by_form_and_reported_date = {
+exports.data_records_by_form_and_clinic = {
     map: function(doc) {
-        if (doc.type === 'data_record' && doc.form) {
-            emit(doc.form, null);
+        if (doc.type === 'data_record' 
+            && doc.form 
+            && doc.related_entities
+            && doc.related_entities.clinic) {
+            emit([
+                doc.form,
+                doc.related_entities.clinic._id
+            ], null);
         }
     }
 };
