@@ -1,5 +1,16 @@
+process.env.TEST_ENV = 'hello'; // required for ../../db.js
+
 var _ = require('underscore'),
+    db = require('../../db'),
+    sinon = require('sinon'),
     utils = require('../../lib/utils');
+
+exports.tearDown = function(callback) {
+    if (db.view.restore) {
+        db.view.restore();      
+    }
+    callback();
+}
 
 exports['updateable returns true when _rev the same'] = function(test) {
     test.ok(utils.updateable({ _rev: '1' }, { _rev: '1', x: 1 }));
@@ -119,3 +130,38 @@ exports['addMessage adds uuid'] = function(test) {
     test.ok(message.uuid);
     test.done();
 }
+
+exports['getRecentForm calls through to db view correctly'] = function(test) {
+    
+    var formName = 'someForm';
+    var clinicId = 'someClinicId';
+    var result = [{_id: 'someRowId'}];
+
+    sinon.stub(db, 'view')
+        .withArgs(
+            'kujua-sentinel', 
+            'data_records_by_form_and_clinic', 
+            {
+                startkey: [formName, clinicId],
+                endkey: [formName, clinicId],
+                include_docs: true
+            }
+        )
+        .callsArgWith(3, null, { rows: result });
+
+    test.expect(2);
+    utils.getRecentForm({
+        formName: formName, 
+        doc: {
+            related_entities: {
+                clinic: {
+                    _id: clinicId
+                }
+            }
+        }
+    }, function(err, data) {
+        test.equals(err, null);
+        test.equals(data, result);
+        test.done();
+    });
+}   
