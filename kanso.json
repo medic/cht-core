@@ -246,7 +246,7 @@
                             "je:hint": "textarea",
                             "title": "Alert Text",
                             "default": "",
-                            "description": "Text that will be sent out in the alert. Variables names can be used. E.g.: {{facility_name}}, {{form.s1_name}}."
+                            "description": "Text that will be sent out in the alert. Variables names can be used. E.g.: {{clinic.name}}, {{s1_name}}."
                         },
                         "recipient": {
                             "type": "string",
