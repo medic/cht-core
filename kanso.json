@@ -225,6 +225,38 @@
                     }
                 ]
             },
+            "alerts": {
+                "title": "Alerts",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "form": {
+                            "type": "string",
+                            "title": "Form Code"
+                        },
+                        "condition": {
+                            "type": "string",
+                            "je:hint": "textarea",
+                            "title": "Condition To Send Alerts",
+                            "description": "Alert will be sent when condition is true. Build condition using the notation {{form_code(reports_ago).field_id}}. E.g.: The following can be used to send an alert if the value of `s1_avail` in form STCK falls below the three month average of `s1_used`: \"STCK(0).s1_avail < (STCK(0).s1_used + STCK(1).s1_used + STCK(2).s1_used ) / 3\"."
+                        },
+                        "message": {
+                            "type": "string",
+                            "je:hint": "textarea",
+                            "title": "Alert Text",
+                            "default": "",
+                            "description": "Text that will be sent out in the alert. Variables names can be used. E.g.: {{clinic.name}}, {{s1_name}}."
+                        },
+                        "recipient": {
+                            "type": "string",
+                            "title": "Send Alerts To",
+                            "default": "",
+                            "description": "The email or phone number to receive alerts. Can also use variable name to receive alert. E.g.: reporting_unit, parent, grandparent, name@ngo.org, +15559870000"
+                        }
+                    }
+                }
+            },
             "reminders": {
                 "title": "Scheduled Report Reminders",
                 "type": "array",
