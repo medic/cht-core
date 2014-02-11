@@ -700,13 +700,15 @@
         });
         $table.on('click', 'tbody .delete-row', function (ev) {
             ev.preventDefault();
-            var deleted,
-                row = $(this).parents('tr'),
-                index = row.index();
-            row.trigger('change');
-            row.detach();
-            // update row counter
-            $('.row-counter', $table).text(options.data.length - 1 + ' rows');
+            var row = $(this).parents('tr'),
+                doc = getDoc(row, options);
+
+            options.removeConfirm(doc, function() {
+                row.trigger('change');
+                row.detach();
+                // update row counter
+                $('.row-counter', $table).text(options.data.length - 1 + ' rows');
+            });
         });
         $table.on('click', '.spreadsheet-actions .add-row-btn', function (ev) {
             ev.preventDefault();
@@ -938,8 +940,9 @@
             create: $.noop,
             data: [],
             remove: $.noop,
-            save: $.noop
-        })
+            save: $.noop,
+            removeConfirm: function(doc, cb) {cb();}
+        });
 
         if (!options.columns) {
             throw new Error('You must define some columns');
