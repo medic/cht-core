@@ -350,39 +350,6 @@ exports['database records are sorted before condition evaluation'] = function(te
     });
 };
 
-exports['template the sent message'] = function(test) {
-    sinon.stub(transition, '_getConfig').returns({
-        '0': {
-            form: 'STCK',
-            condition: 'true',
-            message: '{{facility_name}} is almost out of {{form.s1_name}}',
-            recipient: '+5555555'
-        }
-    });
-    var messageFn = sinon.spy(messages, 'addMessage');
-    test.expect(4);
-    var doc = {
-        form: 'STCK',
-        s1_name: 'dipsticks',
-        related_entities: {
-            clinic: {
-                name: 'SomeClinic'
-            }
-        }
-    };
-    transition.onMatch({ doc: doc }, {}, function(err, changed) {
-        test.ok(messageFn.calledOnce);
-        test.ok(messageFn.calledWith({
-            doc: doc,
-            phone: '+5555555',
-            message: 'SomeClinic is almost out of dipsticks'
-        }));
-        test.equals(err, null);
-        test.equals(changed, true);
-        test.done();
-    });
-};
-
 exports['resolve the recipient if required'] = function(test) {
     var phone = '+123456789';
     sinon.stub(transition, '_getConfig').returns({

@@ -61,14 +61,10 @@ module.exports = {
                                 alert.recipient, 
                                 alert.recipient
                             );
-                            var message = mustache.to_html(alert.message, {
-                                facility_name: utils.getClinicName(doc, true),
-                                form: doc
-                            });
                             messages.addMessage({
                                 doc: doc,
                                 phone: phone,
-                                message: message
+                                message: alert.message
                             });
                             updated = true;
                         }
