@@ -34,7 +34,7 @@ exports.getAppInfo = function(req) {
             settings = JSON.parse(
                 window.jQuery.ajax({
                     type: 'GET',
-                    url: baseURL + '/app_settings/_design%2Fkujua-lite',
+                    url: baseURL + '/app_settings/_design%252Fkujua-lite',
                     async: false //synchronous request
                 }).responseText
             );
