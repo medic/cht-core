@@ -29,39 +29,35 @@ var $message = $(
   '</div>'
 );
 
-exports['Validate message is not empty'] = function(test) {
+exports['Emoty message fails validation'] = function(test) {
   var result = data_record.validateSms([], $phone, $message);
-  test.equals($message.find('.help-block').css('display'), 'inline');
   test.equals($message.find('.help-block').text(), 'Please include a message.');
   test.equals(result, false);
   test.done();
 };
 
-exports['Validate phone is not empty'] = function(test) {
+exports['Empty recipients fails validation'] = function(test) {
   var result = data_record.validateSms([], $phone, $message);
-  test.equals($phone.find('.help-block').css('display'), 'inline');
   test.equals($phone.find('.help-block').text(), 'Please include a valid phone number, e.g. +9779875432123');
   test.equals(result, false);
   test.done();
 };
 
-exports['Validate phone number with letters is not valid'] = function(test) {
+exports['Phone number with letters is not valid'] = function(test) {
   var result = data_record.validateSms([{phone: 'xyz', text: 'james dean'}], $phone, $message);
-  test.equals($phone.find('.help-block').css('display'), 'inline');
   test.equals($phone.find('.help-block').text(), 'These recipients do not have a valid contact number: james dean');
   test.equals(result, false);
   test.done();
 };
 
-exports['Validate multiple invalid phone numbers'] = function(test) {
+exports['Multiple invalid phone numbers'] = function(test) {
   var result = data_record.validateSms([{phone: 'xyz', text: 'First'}, {phone: '123456', text: 'Second'}], $phone, $message);
-  test.equals($phone.find('.help-block').css('display'), 'inline');
   test.equals($phone.find('.help-block').text(), 'These recipients do not have a valid contact number: First, Second');
   test.equals(result, false);
   test.done();
 };
 
-exports['Validate phone number is valid'] = function(test) {
+exports['Phone number passes validation'] = function(test) {
   $message.val('Some valid message');
   var result = data_record.validateSms([{phone: '+1234567890', text: 'someone valid'}], $phone, $message);
   test.equals($phone.find('.help-block').css('display'), 'none');
@@ -69,7 +65,7 @@ exports['Validate phone number is valid'] = function(test) {
   test.done();
 };
 
-exports['Validate recipient `everyone at` is valid'] = function(test) {
+exports['Recipient `everyone at` is valid'] = function(test) {
   $message.val('Some valid message');
   var result = data_record.validateSms([{everyoneAtFacility: 'xyz', text: 'Everyone at someplace'}], $phone, $message);
   test.equals($phone.find('.help-block').css('display'), 'none');
