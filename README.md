@@ -48,10 +48,10 @@ When deploying to market include the sentinel package in the couchapp so
 [gardener](https://github.com/garden20/gardener) can manage the process.
 
 First clone the repo recursively so you get both submodules `json-forms` and
-`sentinel`, then change directories: 
+`sentinel`, then change directories:
 
 ```
-git clone --recursive https://github.com/medic/kujua-lite 
+git clone --recursive https://github.com/medic/kujua-lite
 cd kujua-lite
 ```
 
@@ -64,7 +64,7 @@ mv new.json kanso.json
 ```
 
 Finally push to the Medic Test [Garden
-Market](https://github.com/garden20/garden-market) run: 
+Market](https://github.com/garden20/garden-market) run:
 
 ```
 kanso push http://dev.medicmobile.org:5984/market/_design/market/_rewrite/upload`
@@ -72,11 +72,12 @@ kanso push http://dev.medicmobile.org:5984/market/_design/market/_rewrite/upload
 
 ## Configure
 
-TODO
+Dashboard is required to load kujua-lite. To install Dashboard
+1) git clone https://github.com/garden20/dashboard
+2) cd dashboard
+3) kanso push $COUCH_URL
+4) change the couch db configuration secure_rewrites to false.
 
-Since dashboard is required to configure Kujua Lite, we might need to change
-the dev docs to install Kujua Lite from the market and then overwrite with a
-kanso push.  Best option I can come up with at the moment.
 
 See [Kujua Sentinel](https://github.com/medic/kujua-sentinel) for more information.
 
@@ -95,7 +96,7 @@ npm install phantomjs -g
 
 Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/kujua-lite).
 
-Develop      | Master 
+Develop      | Master
 ------------ | -------------
 [![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=develop)](https://travis-ci.org/medic/kujua-lite/branches) | [![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=master)](https://travis-ci.org/medic/kujua-lite/branches)
 
