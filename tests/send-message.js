@@ -29,7 +29,7 @@ var $message = $(
   '</div>'
 );
 
-exports['Emoty message fails validation'] = function(test) {
+exports['Empty message fails validation'] = function(test) {
   var result = data_record.validateSms([], $phone, $message);
   test.equals($message.find('.help-block').text(), 'Please include a message.');
   test.equals(result, false);
