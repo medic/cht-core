@@ -102,7 +102,7 @@ exports['Format recipients on a single recipient'] = function(test) {
   ]);
   assertFormattedRecipients(test, result, [
     {phone: '123', facility: {id: 1}}
-  ])
+  ]);
   test.done();
 };
 
@@ -114,7 +114,7 @@ exports['Format recipients on multiple recipients'] = function(test) {
   assertFormattedRecipients(test, result, [
     {phone: '123', facility: {id: 1}},
     {phone: '456', facility: {id: 2}}
-  ])
+  ]);
   test.done();
 };
 
@@ -132,7 +132,7 @@ exports['Format recipients on `Everyone at` recipients'] = function(test) {
     {phone: '456', facility: {id: 2}},
     {phone: '789', facility: {id: 3}},
     {phone: '000', facility: {id: 4}}
-  ])
+  ]);
   test.done();
 };
 
@@ -149,7 +149,7 @@ exports['Format recipients removes duplicate phone numbers'] = function(test) {
     {phone: '123', facility: {id: 1}},
     {phone: '456', facility: {id: 2}},
     {phone: '789', facility: {id: 3}}
-  ])
+  ]);
   test.done();
 };
 

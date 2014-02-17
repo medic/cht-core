@@ -43,14 +43,12 @@
             <td class="tasks-timestamp">
               <div>{timestamp}</div>
             </td>
-            {#messages}
             <td class="tasks-to">
-              <div>{to}</div>
+              <div>{#messages}{to} {/messages}</div>
             </td>
             <td class="tasks-message">
-              <div>{message}</div>
+              <div>{messages[0].message}</div>
             </td>
-            {/messages}
           {:else}
             <td class="tasks-state">
               <div class="control-group">
@@ -88,24 +86,22 @@
                 </div>
               </div>
             </td>
-            {#messages}
             <td class="tasks-to">
-              <div class="val">{to}</div>
+              <div class="val">{#messages}{to} {/messages}</div>
               <div class="control-group">
                 <div class="control">
-                  <input value="{to}" class="input-medium" type="text" data-provide="typeahead" name="phone" />
+                   <input value="{#messages}{to},{/messages}" class="input-medium" type="text" data-provide="typeahead" name="phone" />
                 </div>
               </div>
             </td>
             <td class="tasks-message">
-              <div class="val">{message}</div>
+              <div class="val">{messages[0].message}</div>
               <div class="control-group">
                 <div class="control">
-                  <textarea>{message}</textarea>
+                  <textarea>{messages[0].message}</textarea>
                 </div>
               </div>
             </td>
-            {/messages}
             <td class="row-controls">
               <a class="remove" href="#">
                 <i class="icon-remove-sign"></i>
