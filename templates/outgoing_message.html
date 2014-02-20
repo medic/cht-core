@@ -50,13 +50,14 @@
       <div>
         <b>To:</b>
         {#recipients}
-        <button 
-          class="btn btn-mini recipient" 
-          type="button" 
-          data-state="{state}"
-          data-timestamp="{@formatDate timestamp="{timestamp}"/}"
-          data-to="{to}"
-          >{@contact entities="{facility}" to="{to}" /}</button>
+        <a 
+          href="#" 
+          class="btn btn-mini" 
+          rel="popover" 
+          data-placement="bottom" 
+          data-content="{state} on {@formatDate timestamp="{timestamp}"/}"
+          title="{@contact entities="{facility}" to="{to}" verbose=1/}"
+          >{@contact entities="{facility}" to="{to}" /}</a> 
         {/recipients}
       </div>
       <p>
