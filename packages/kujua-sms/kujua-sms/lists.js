@@ -202,7 +202,7 @@ exports.export_messages = function (head, req) {
             tasks = tasks.concat(doc.scheduled_tasks);
         }
         // incoming msgs
-        if (doc.form === null && doc.sms_message && doc.sms_message.message) {
+        if (doc.sms_message && doc.sms_message.message) {
             tasks = tasks.concat({
                 type: 'Incoming Message',
                 state: 'received',
