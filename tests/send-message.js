@@ -57,7 +57,7 @@ exports['Phone number with letters is not valid'] = function(test) {
 
 exports['Multiple invalid phone numbers'] = function(test) {
   $phone.select2 = function() { 
-    return [{phone: 'xyz', text: 'First'}, {phone: '123456', text: 'Second'}]; 
+    return [{phone: 'xyz', text: 'First'}, {phone: '1234', text: 'Second'}]; 
   };
   var result = data_record.validateSms($phone, $message);
   test.equals($phone.find('.help-block').text(), 'These recipients do not have a valid contact number: First, Second');
