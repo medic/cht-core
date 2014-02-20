@@ -536,6 +536,12 @@ body {
             overflow: hidden;
             width: 25%;
             text-overflow: ellipsis;
+            .recipient:after {
+              content: ", ";
+            }
+            .recipient:last-child:after {
+              content: "";
+            }
         }
 
         .msg {

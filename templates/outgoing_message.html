@@ -6,10 +6,18 @@
     <i class="icon-envelope icon-muted"></i>
   </div>
   <div class="contact-info">
-    <b>To:</b> {@contact entities="{related_entities}" messages="{tasks}"/}
+    <b>To:</b> 
+    {@if cond="{outgoing_messages_recipients.length} > 5"}
+      <span>{outgoing_messages_recipients.length} {@translate value="recipients"/}</span>
+    {/if}
+    {@if cond="{outgoing_messages_recipients.length} <= 5"}
+      {#outgoing_messages_recipients}
+        <span class="recipient">{@contact entities="{facility}" to="{to}" /}</span>
+      {/outgoing_messages_recipients}
+    {/if}
   </div>
   <div class="msg">
-    {tasks[0].messages[0].message}
+    {outgoing_messages[0].message}
   </div>
   <div class="icons">
     {@ifHasState array="{tasks}" state="sent"}
@@ -25,61 +33,37 @@
       </span>
     {/ifHasState}
   </div>
-  <div class="timestamp" title="{@formatDate timestamp="{tasks[0].timestamp}"/}">
-  {?tasks[0].timestamp}
-    {@formatDate timestamp="{tasks[0].timestamp}" format="MMM DD HH:mm"/}
-  {/tasks[0].timestamp}
+  <div class="timestamp" title="{@formatDate timestamp="{reported_date}"/}">
+  {?reported_date}
+    {@formatDate timestamp="{reported_date}" format="MMM DD HH:mm"/}
+  {/reported_date}
   </div>
   <div class="add-message"></div>
 </div>
 <div class="extended">
   <div class="row-fluid">
     <div class="inset span12 msg-full">
-    {#tasks}
+      {#outgoing_messages}
       <p class="pull-right">
         <span class="tasks-state-{state}">{state}</span>
       </p>
-      {#messages}
       <div>
         <b>To:</b>
-        {#facility}
-          {?clinic}
-            {?clinic.parent.parent.name}
-              {clinic.parent.parent.name}
-              <i class="icon-double-angle-right"></i>
-            {/clinic.parent.parent.name}
-            {?clinic.parent.name}
-              {clinic.parent.name}
-              <i class="icon-double-angle-right"></i>
-            {/clinic.parent.name}
-            {?clinic.name}
-              {clinic.name}
-            {/clinic.name}
-            {?clinic.contact.rc_code}
-              <span class="label">{clinic.contact.rc_code}</span>
-            {/clinic.contact.rc_code}
-            {?clinic.contact.name}
-              {clinic.contact.name}
-            {/clinic.contact.name}
-            {?clinic.contact.phone}
-              {clinic.contact.phone}
-            {/clinic.contact.phone}
-          {:else}
-            {to}
-          {/clinic}
-        {/facility}
-        {^facility}
-          {to}
-        {/facility}
+        {#recipients}
+        <button 
+          class="btn btn-mini recipient" 
+          type="button" 
+          data-state="{state}"
+          data-timestamp="{@formatDate timestamp="{timestamp}"/}"
+          data-to="{to}"
+          >{@contact entities="{facility}" to="{to}" /}</button>
+        {/recipients}
       </div>
-        <p>
-          <b>Sent by:</b> {sent_by}
-          {?from}{from}{/from}
-          {?timestamp}<br/><b>Date:</b> {@formatDate timestamp="{timestamp}"/}{/timestamp}
-        </p>
-        <p><pre>{message}</pre></p>
-      {/messages}
-    {/tasks}
+      <p>
+      <b>Sent by:</b> {sent_by} <span class="phone">{from}</span>
+      </p>
+      <p><pre>{message}</pre></p>
+      {/outgoing_messages}
     </div>
   </div>
 </div>

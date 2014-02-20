@@ -75,7 +75,13 @@ function filterObject(obj) {
 
 // reverse makeDataRecordReadable munge. ;\
 exports.makeDataRecordOriginal = function(doc) {
-    doc = filterObject(doc, 'fields', 'scheduled_tasks_by_group');
+    doc = filterObject(
+        doc,
+        'fields',
+        'scheduled_tasks_by_group',
+        'outgoing_messages',
+        'outgoing_messages_recipients'
+    );
 
     if (doc.tasks) {
         doc.tasks = _.map(doc.tasks, function(task) {
@@ -193,6 +199,73 @@ exports.makeDataRecordReadable = function(doc) {
             });
             data_record.scheduled_tasks_by_group.push(groups[k]);
         }
+    }
+
+    /*
+     * Prepare outgoing messages for render. Reduce messages to organize by
+     * properties: sent_by, from, state and message.  This helps for easier
+     * display especially in the case of bulk sms.
+     *
+     * messages = [
+     *    {
+     *       recipients: [
+     *          {
+     *              to: '+123',
+     *              facility: <facility>,
+     *              timestamp: <timestamp>,
+     *              uuid: <uuid>,
+     *          },
+     *          ...
+     *        ],
+     *        sent_by: 'admin',
+     *        from: '+998',
+     *        state: 'sent',
+     *        message: 'good morning'
+     *    }
+     *  ]
+     */
+    if (data_record.kujua_message) {
+        var outgoing_messages = [],
+            outgoing_messages_recipients = [],
+            msgs = {};
+        _.each(data_record.tasks, function(task) {
+            _.each(task.messages, function(msg) {
+                var recipient = {
+                    to: msg.to,
+                    facility: msg.facility,
+                    timestamp: task.timestamp,
+                    uuid: msg.uuid
+                };
+                var done = false;
+                // append recipient to existing
+                _.each(outgoing_messages, function(m) {
+                    if (msg.message === m.message
+                            && msg.sent_by === m.sent_by
+                            && msg.from === m.from
+                            && task.state === m.state) {
+                        m.recipients.push(recipient);
+                        outgoing_messages_recipients.push(recipient);
+                        done = true;
+                    }
+                });
+                // create new entry
+                if (!done) {
+                    outgoing_messages.push({
+                        recipients: [recipient],
+                        sent_by: msg.sent_by,
+                        from: msg.from,
+                        state: task.state,
+                        message: msg.message
+                    });
+                    outgoing_messages_recipients.push(recipient);
+                }
+            });
+        });
+        if (window) {
+            console.log('outgoing_messages', outgoing_messages);
+        }
+        data_record.outgoing_messages = outgoing_messages;
+        data_record.outgoing_messages_recipients = outgoing_messages_recipients;
     }
 
     return data_record;
