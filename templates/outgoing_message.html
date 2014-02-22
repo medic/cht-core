@@ -50,18 +50,21 @@
       <div>
         <b>To:</b>
         {#recipients}
-        <a 
-          href="#" 
-          class="btn btn-mini" 
-          rel="popover" 
-          data-placement="bottom" 
-          data-content="{state} on {@formatDate timestamp="{timestamp}"/}"
-          title="{@contact entities="{facility}" to="{to}" verbose=1/}"
-          >{@contact entities="{facility}" to="{to}" /}</a> 
+        <a href="#" class="recipient hide long" data-uuid="{uuid}"><span 
+          class="badge"
+            >{@contact entities="{facility}" to="{to}" verbose=1/}
+            {state} on {@formatDate timestamp="{timestamp}"/}</span></a>
+        <a href="#" class="recipient short" data-uuid="{uuid}"><span 
+          class="badge"
+            >{@contact entities="{facility}" to="{to}" /}</span></a> 
         {/recipients}
       </div>
       <p>
-      <b>Sent by:</b> {sent_by} <span class="phone">{from}</span>
+        <b>Sent by:</b> 
+        <a href="#" class="sent_by long hide"><span 
+            class="badge">{sent_by} {from}</span></a>
+        <a href="#" class="sent_by short"><span 
+            class="badge">{sent_by}</span></a>
       </p>
       <p><pre>{message}</pre></p>
       {/outgoing_messages}

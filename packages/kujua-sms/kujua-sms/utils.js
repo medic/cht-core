@@ -261,9 +261,6 @@ exports.makeDataRecordReadable = function(doc) {
                 }
             });
         });
-        if (window) {
-            console.log('outgoing_messages', outgoing_messages);
-        }
         data_record.outgoing_messages = outgoing_messages;
         data_record.outgoing_messages_recipients = outgoing_messages_recipients;
     }
