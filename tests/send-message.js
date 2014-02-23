@@ -1,33 +1,47 @@
 var data_record = require('lib/data_records'),
-    _ = require('underscore');
+    _ = require('underscore'),
+    $phone,
+    $message;
+
+exports.setUp = function(callback) {
+    // mock up translate function, not testing translations here.
+    $.kansotranslate = function(str) {
+        return str;
+    }
+    $phone = $(
+      '<div class="control-group">' +
+        '<div class="controls">' +
+          '<input name="phone" autocomplete="off" type="text">' +
+        '</div>' +
+        '<span class="hide help-block"></span>' +
+      '</div>'
+    );
+    $message = $(
+      '<div class="control-group">' +
+        '<div class="controls">' +
+          '<textarea name="message"></textarea>' +
+        '</div>' +
+        '<span class="hide help-block"></span>' +
+      '</div>'
+    );
+    callback();
+}
+
+exports.tearDown = function(callback) {
+    delete $.kansotranslate;
+    callback();
+}
 
 exports['Count char updates note'] = function(test) {
+  test.expect(1);
   var modal = $('<div class="modal"><div class="modal-footer"><div class="note"/></div></div>'),
     // value 110 chars long
     message = $('<input value="abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij"/>');
 
   data_record.countChars(message, modal);
-  test.equals(modal.find('.note').html(), '110 characters');
+  test.equals(modal.find('.note').html(), '110/160 characters');
   test.done();
 };
-
-var $phone = $(
-  '<div class="control-group">' +
-    '<div class="controls">' + 
-      '<input name="phone" autocomplete="off" type="text">' +
-    '</div>' +
-    '<span class="hide help-block"></span>' +
-  '</div>'
-);
-
-var $message = $(
-  '<div class="control-group">' +
-    '<div class="controls">' +
-      '<textarea name="message"></textarea>' +
-    '</div>' +
-    '<span class="hide help-block"></span>' +
-  '</div>'
-);
 
 exports['Empty message fails validation'] = function(test) {
   $phone.select2 = function() { return []; };
