@@ -16,7 +16,7 @@ var TextForms = function () {
         decimal: new RegExp('\\.'),
         boundary: new RegExp('\\s*#\\s*'),
         // values with leading 0 are not numeric
-        numeric: new RegExp('[^0][0-9]+(?:\\.(?:\\d+)?)?'),
+        numeric: new RegExp('[1-9][0-9]*(?:\\.(?:\\d+)?)?'),
         date: new RegExp('[\\d]{4}[-/][\\d]{1,2}[-/][\\d]{1,2}')
     };
 
@@ -28,7 +28,7 @@ var TextForms = function () {
         '\\s*([A-Za-z_\\.\\*.]+)'
         + '[\\s-!]*(' + this.embed_re(this._re.date) + ')?'
         + '[\\s-!]*(' + this.embed_re(this._re.numeric) + ')?'
-        + '[\\s-!]*(.+)?'
+        + '[\\s-!]*(.+?)?\\s*$'
     );
 };
 

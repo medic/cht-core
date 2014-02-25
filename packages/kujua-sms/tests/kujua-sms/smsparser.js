@@ -384,12 +384,7 @@ exports.parse_zero_value_list_field = function(test) {
     test.done();
 };
 
-exports.ignore_newline_in_list_field_textforms = function(test) {
-    test.expect(1);
-
-    var sms = {
-        message: "ABCD Q 0\n"
-    };
+exports.ignore_whitespace_in_list_field_textforms = function(test) {
 
     var def = {
         meta: {
@@ -406,16 +401,31 @@ exports.ignore_newline_in_list_field_textforms = function(test) {
         }
     };
 
-    var data = smsparser.parse(def, sms);
-    test.same(data, {q: "Yes"});
+    var tests = [
+        [
+            { message: "ABCD Q \t\n 1 \t\n" },
+            { q: "No" }
+        ],
+        [
+            { message: "ABCD Q \t\n 0 \t\n" },
+            { q: "Yes" }
+        ]
+    ];
+
+    test.expect(tests.length);
+
+    tests.forEach(function(pair) {
+        test.same(smsparser.parse(def, pair[0]), pair[1]);
+    });
+
     test.done();
 };
 
-exports.ignore_newline_in_list_field_muvuku = function(test) {
+exports.ignore_whitespace_in_list_field_muvuku = function(test) {
     test.expect(1);
 
     var sms = {
-        message: "1!0000!0\n"
+        message: "1!0000!\t\n 0 \t\n"
     };
 
     var def = {
