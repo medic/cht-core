@@ -75,7 +75,12 @@ exports.parse = function(def, doc) {
             return obj;
         }
 
-        obj[field._key] = val;
+        if (typeof val === 'string') {
+            obj[field._key] = val.trim();
+        } else {
+            obj[field._key] = val;
+        }
+
         return obj;
     }, {});
 };

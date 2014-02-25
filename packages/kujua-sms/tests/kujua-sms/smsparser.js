@@ -384,6 +384,57 @@ exports.parse_zero_value_list_field = function(test) {
     test.done();
 };
 
+exports.ignore_newline_in_list_field_textforms = function(test) {
+    test.expect(1);
+
+    var sms = {
+        message: "ABCD Q 0\n"
+    };
+
+    var def = {
+        meta: {
+            code: 'ABCD'
+        },
+        fields: {
+            "q": {
+                type: "integer",
+                list: [[0, "Yes"], [1, "No"]],
+                labels: {
+                    tiny: "q"
+                }
+            }
+        }
+    };
+
+    var data = smsparser.parse(def, sms);
+    test.same(data, {q: "Yes"});
+    test.done();
+};
+
+exports.ignore_newline_in_list_field_muvuku = function(test) {
+    test.expect(1);
+
+    var sms = {
+        message: "1!0000!0\n"
+    };
+
+    var def = {
+        fields: {
+            "q": {
+                type: "integer",
+                list: [[0, "Yes"], [1, "No"]],
+                labels: {
+                    short: "question 1"
+                }
+            }
+        }
+    };
+
+    var data = smsparser.parse(def, sms);
+    test.same(data, {q: "Yes"});
+    test.done();
+};
+
 exports.parse_date_field = function(test) {
     test.expect(2);
 
