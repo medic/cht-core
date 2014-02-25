@@ -422,11 +422,6 @@ exports.ignore_whitespace_in_list_field_textforms = function(test) {
 };
 
 exports.ignore_whitespace_in_list_field_muvuku = function(test) {
-    test.expect(1);
-
-    var sms = {
-        message: "1!0000!\t\n 0 \t\n"
-    };
 
     var def = {
         fields: {
@@ -440,8 +435,23 @@ exports.ignore_whitespace_in_list_field_muvuku = function(test) {
         }
     };
 
-    var data = smsparser.parse(def, sms);
-    test.same(data, {q: "Yes"});
+    var tests = [
+        [
+            { message: "1!0000!\t\n 0 \t\n" },
+            { q: "Yes" }
+        ],
+        [
+            { message: "1!0000!\t\n 1 \t\n" },
+            { q: "No" }
+        ]
+    ];
+
+    test.expect(tests.length);
+
+    tests.forEach(function(pair) {
+        test.same(smsparser.parse(def, pair[0]), pair[1]);
+    });
+
     test.done();
 };
 
