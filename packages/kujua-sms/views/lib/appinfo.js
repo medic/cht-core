@@ -109,13 +109,7 @@ exports.getAppInfo = function(req) {
      * return string
      */
     function getMessage(value, locale) {
-        if (typeof(window) === 'object') {
-            console.log('getMessage value '+ JSON.stringify(value));
-            console.log('getMessage locale '+ JSON.stringify(locale));
-        } else {
-            log('getMessage value '+ JSON.stringify(value));
-            log('getMessage locale '+ JSON.stringify(locale));
-        }
+
         var key;
 
         locale = locale || 'en';
@@ -147,13 +141,7 @@ exports.getAppInfo = function(req) {
      * @return String
     */
     function translate(translations, key, locale, ctx) {
-        if (typeof(window) === 'object') {
-            console.log('appinfo translate translations '+translations);
-            console.log('appinfo translate key '+ JSON.stringify(key));
-        } else {
-            log('appinfo translate translations '+translations);
-            log('appinfo translate key '+ JSON.stringify(key));
-        }
+
         var value,
             ctx = ctx || {},
             locale = locale || app_settings.locale || 'en';
