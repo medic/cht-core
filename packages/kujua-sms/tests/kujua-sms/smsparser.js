@@ -397,6 +397,12 @@ exports.ignore_whitespace_in_list_field_textforms = function(test) {
                 labels: {
                     tiny: "q"
                 }
+            },
+            "name": {
+                type: "string",
+                labels: {
+                    tiny: "name"
+                }
             }
         }
     };
@@ -409,6 +415,14 @@ exports.ignore_whitespace_in_list_field_textforms = function(test) {
         [
             { message: "ABCD Q \t\n 0 \t\n" },
             { q: "Yes" }
+        ],
+        [
+            { message: "ABCD Q \t\n 0 \t\n# \t\n Name John Smith\n \t" },
+            { q: "Yes", name: "John Smith" }
+        ],
+        [
+            { message: "ABCD Q \t\n 1 \t \n# \t\n Name  \t \n John Smith\n \t" },
+            { q: "No", name: "John Smith" }
         ]
     ];
 
@@ -431,6 +445,12 @@ exports.ignore_whitespace_in_list_field_muvuku = function(test) {
                 labels: {
                     short: "question 1"
                 }
+            },
+            "name": {
+                type: "string",
+                labels: {
+                    short: "Name"
+                }
             }
         }
     };
@@ -438,11 +458,19 @@ exports.ignore_whitespace_in_list_field_muvuku = function(test) {
     var tests = [
         [
             { message: "1!0000!\t\n 0 \t\n" },
-            { q: "Yes" }
+            { q: "Yes", name: undefined }
         ],
         [
             { message: "1!0000!\t\n 1 \t\n" },
-            { q: "No" }
+            { q: "No", name: undefined }
+        ],
+        [
+            { message: "1!0000!\t\n 1 \t\n#\n \t John Smith \n \t" },
+            { q: "No", name: "John Smith" }
+        ],
+        [
+            { message: "1!0000!\t\n 1 \t\n#\n \t John \nSmith \n \t" },
+            { q: "No", name: "John \nSmith" }
         ]
     ];
 
