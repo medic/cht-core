@@ -57,13 +57,21 @@ exports.parseField = function (field, raw) {
             // TODO we don't have locale data inside this function so calling
             // translate does not resolve locale.
             if (field.list) {
+                utils.logger.log('looking at field list');
                 for (var i in field.list) {
                     var item = field.list[i];
+                    utils.logger.log('item is '+JSON.stringify(item));
+                    utils.logger.log('raw is '+ JSON.stringify(raw));
+                    utils.logger.log('strict compare returns');
+                    utils.logger.log(String(item[0]) === String(raw));
+                    utils.logger.log('soft compare returns');
+                    utils.logger.log(String(item[0]) == String(raw));
                     if (String(item[0]) === String(raw)) {
+                        utils.logger.log('calling translate() '+ JSON.stringify(item[1]));
                         return sms_utils.info.translate(item[1]);
                     }
                 }
-                utils.logger.warn('Option not available for '+raw+' in list.');
+                utils.logger.warn('Option not available for '+JSON.stringify(raw)+' in list.');
             }
             return parseNum(raw);
         case 'string':
@@ -122,6 +130,8 @@ exports.parse = function (def, doc) {
 
     if (!def || !doc || !doc.message || !def.fields)
         return {};
+
+    utils.logger.log('parsing message: '+ JSON.stringify(doc.message));
 
     if (exports.isMuvukuFormat(doc.message)) {
         // parse muvuku format
