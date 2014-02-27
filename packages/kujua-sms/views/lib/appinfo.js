@@ -109,6 +109,7 @@ exports.getAppInfo = function(req) {
      * return string
      */
     function getMessage(value, locale) {
+
         var key;
 
         locale = locale || 'en';
@@ -140,6 +141,7 @@ exports.getAppInfo = function(req) {
      * @return String
     */
     function translate(translations, key, locale, ctx) {
+
         var value,
             ctx = ctx || {},
             locale = locale || app_settings.locale || 'en';
@@ -149,8 +151,9 @@ exports.getAppInfo = function(req) {
             locale = app_settings.locale || 'en';
         }
 
-        if (_.isObject(key))
+        if (_.isObject(key)) {
             return getMessage(key, locale) || key;
+        }
 
         value = _.findWhere(translations, {
             key: key

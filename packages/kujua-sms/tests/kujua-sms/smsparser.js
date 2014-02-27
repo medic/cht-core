@@ -384,6 +384,105 @@ exports.parse_zero_value_list_field = function(test) {
     test.done();
 };
 
+exports.ignore_whitespace_in_list_field_textforms = function(test) {
+
+    var def = {
+        meta: {
+            code: 'ABCD'
+        },
+        fields: {
+            "q": {
+                type: "integer",
+                list: [[0, "Yes"], [1, "No"]],
+                labels: {
+                    tiny: "q"
+                }
+            },
+            "name": {
+                type: "string",
+                labels: {
+                    tiny: "name"
+                }
+            }
+        }
+    };
+
+    var tests = [
+        [
+            { message: "\t\nABCD \t \n \t Q \t\n 1 \t\n" },
+            { q: "No" }
+        ],
+        [
+            { message: "\t\nABCD \t\n Q \t\n 0 \t\n" },
+            { q: "Yes" }
+        ],
+        [
+            { message: "\t\n ABCD\t\n  Q \t\n 0 \t\n# \t\n Name John Smith\n \t" },
+            { q: "Yes", name: "John Smith" }
+        ],
+        [
+            { message: "\t\nABCD\t \n Q \t\n 1 \t \n# \t\n Name  \t \n John Smith\n \t" },
+            { q: "No", name: "John Smith" }
+        ]
+    ];
+
+    test.expect(tests.length);
+
+    tests.forEach(function(pair) {
+        test.same(smsparser.parse(def, pair[0]), pair[1]);
+    });
+
+    test.done();
+};
+
+exports.ignore_whitespace_in_list_field_muvuku = function(test) {
+
+    var def = {
+        fields: {
+            "q": {
+                type: "integer",
+                list: [[0, "Yes"], [1, "No"]],
+                labels: {
+                    short: "question 1"
+                }
+            },
+            "name": {
+                type: "string",
+                labels: {
+                    short: "Name"
+                }
+            }
+        }
+    };
+
+    var tests = [
+        [
+            { message: "1!0000!\t\n 0 \t\n" },
+            { q: "Yes", name: undefined }
+        ],
+        [
+            { message: "1!0000!\t\n 1 \t\n" },
+            { q: "No", name: undefined }
+        ],
+        [
+            { message: "1!0000!\t\n 1 \t\n#\n \t John Smith \n \t" },
+            { q: "No", name: "John Smith" }
+        ],
+        [
+            { message: "1!0000!\t\n 1 \t\n#\n \t John \nSmith \n \t" },
+            { q: "No", name: "John \nSmith" }
+        ]
+    ];
+
+    test.expect(tests.length);
+
+    tests.forEach(function(pair) {
+        test.same(smsparser.parse(def, pair[0]), pair[1]);
+    });
+
+    test.done();
+};
+
 exports.parse_date_field = function(test) {
     test.expect(2);
 
