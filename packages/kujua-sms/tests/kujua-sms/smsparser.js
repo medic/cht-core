@@ -409,19 +409,19 @@ exports.ignore_whitespace_in_list_field_textforms = function(test) {
 
     var tests = [
         [
-            { message: "ABCD Q \t\n 1 \t\n" },
+            { message: "\t\nABCD \t \n \t Q \t\n 1 \t\n" },
             { q: "No" }
         ],
         [
-            { message: "ABCD Q \t\n 0 \t\n" },
+            { message: "\t\nABCD \t\n Q \t\n 0 \t\n" },
             { q: "Yes" }
         ],
         [
-            { message: "ABCD Q \t\n 0 \t\n# \t\n Name John Smith\n \t" },
+            { message: "\t\n ABCD\t\n  Q \t\n 0 \t\n# \t\n Name John Smith\n \t" },
             { q: "Yes", name: "John Smith" }
         ],
         [
-            { message: "ABCD Q \t\n 1 \t \n# \t\n Name  \t \n John Smith\n \t" },
+            { message: "\t\nABCD\t \n Q \t\n 1 \t \n# \t\n Name  \t \n John Smith\n \t" },
             { q: "No", name: "John Smith" }
         ]
     ];
