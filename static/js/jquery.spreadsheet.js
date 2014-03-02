@@ -165,8 +165,8 @@
               $input.tooltip('hide');
             }
             $input.remove();
-            $table.data('spreadsheet:edit-inline-input', undefined);
-            $table.data('spreadsheet:edit-inline-td', undefined);
+            $table.removeData('spreadsheet:edit-inline-input');
+            $table.removeData('spreadsheet:edit-inline-td');
         }
     };
 
@@ -296,8 +296,8 @@
         var $table = $(this);
         if ($table.data('spreadsheet:select-div')) {
             $($table.data('spreadsheet:select-div')).remove();
-            $table.data('spreadsheet:select-div', undefined);
-            $table.data('spreadsheet:selected-td', undefined);
+            $table.removeData('spreadsheet:select-div');
+            $table.removeData('spreadsheet:selected-td');
         }
         $table.trigger('selectionChange');
     };
@@ -521,8 +521,6 @@
             if (selected) {
                 pos = getCellPosition($table, selected);
                 $(ths[pos.column + 1]).addClass('active');
-            }
-            if (selected) {
                 $('th.handle', $(selected).parents('tr')).addClass('active');
             }
         }
@@ -568,11 +566,11 @@
     var clearRange = function () {
         var $table = $(this);
         $('td.range', $table).removeClass('range');
-        $table.data('spreadsheet:range-tds', undefined);
-        $table.data('spreadsheet:range-start-col', undefined);
-        $table.data('spreadsheet:range-end-col', undefined);
-        $table.data('spreadsheet:range-start-row', undefined);
-        $table.data('spreadsheet:range-end-row', undefined);
+        $table.removeData('spreadsheet:range-tds');
+        $table.removeData('spreadsheet:range-start-col');
+        $table.removeData('spreadsheet:range-end-col');
+        $table.removeData('spreadsheet:range-start-row');
+        $table.removeData('spreadsheet:range-end-row');
         $table.trigger('rangeChange');
     };
 
@@ -791,7 +789,7 @@
               select_div = $table.data('spreadsheet:select-div'),
               table = $table.data('spreadsheet:current-table');
             if (!el.is('td', table) && !el.is(input) && !el.is(select_div)) {
-                clearSelection.call(this);
+                clearSelection.call($table);
             }
         });
         $(document).keydown(function (ev) {
