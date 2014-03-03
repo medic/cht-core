@@ -1,10 +1,27 @@
 # Kujua Release Notes
 
-## 0.3.0-beta.38 
+## 0.3.0-beta.40
 
-### TBD 
+### Mar 3, 2014 
 
-- Added unique Patient ID validation support.
+- Fixed a bug where the facilities spreadsheet was holding focus so sending a message doesn't work. #440
+
+- Added Bulk Messaging support, so you can send messages to multiple recipients. #333
+
+- Fixed bug to include incoming messages in messages export. #436
+    
+- Fixed bug where it is possible to send a message twice by double clicking the submit button
+
+- Fixed bug where we failed to retrieve settings on port 80 #438
+    
+    This was experienced when proxying to couchdb because http proxying will
+    decode the URL including docid of the show parameter, so the show
+    returns 404.  Solution is to always double URL encode if the show docid
+    contains special characters.
+
+- Confirm with user before deleting facility so they can't be deleted by accident. #371
+
+- Added unique Patient ID validation support.  #411 kujua-sentinel/pull/50
 
     Use unique('patient_id') in your registration validation rules to validate
     new form submissions that are setting the patient ID values via forms.
@@ -40,10 +57,34 @@
     ]
     ```
 
-- Added configurable alerts.
-    
+- Added Conditional Alerts feature. #437  kujua-sentinel/issue/52
+
     Configure the Alerts section of the App Settings to send a message when an
     incoming message meets the configured condition.
+    
+    
+## 0.3.0-beta.39 (bugfix)
+
+### Feb 25, 2014
+
+- Fixed textforms whitespace parser bug when using form list field types. #431
+
+    Textforms parser wasn't trimming space correctly on a field value, so if
+    you had a list defined using those values they would never get matched.
+    
+    Textforms was only matching numeric values of length 2 or more, so if
+    you submitted a one digit number you would not get a numeric match.
+    
+    Also if the value didn't match numeric or a date format then the
+    whitespace was not being trimmed correctly.
+
+
+## 0.3.0-beta.38 (debug) 
+
+### Feb 13, 2014
+ 
+- added logging calls to help debug and identify whitespace parsing bug #431
+
 
 ## 0.3.0-beta.37 
 
