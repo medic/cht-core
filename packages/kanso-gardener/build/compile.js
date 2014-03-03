@@ -69,7 +69,9 @@ function clean_up(dir, tgz_file, callback) {
             fs.rmrf(dir, cb);
         },
         function(cb) {
-            fs.unlink(tgz_file, cb);
+            if (tgz_file) {
+                fs.unlink(tgz_file, cb);
+            }
         }
     ], callback);
 }
