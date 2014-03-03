@@ -20,6 +20,7 @@ after_success:
   - cat kanso.json | json -o json-4 -e "dependencies[\"kanso-gardener\"] = null; version = \"0.3.0-alpha.$TRAVIS_BUILD_NUMBER\";" > tmp.json
   - mv tmp.json kanso.json
   - kanso push http://service:a5nghmongP@medic.iriscouch.com/market/_design/market/_rewrite/upload
+  - kanso push http://service:a5nghmongP@medic-dev.iriscouch.com/markets/alpha/upload
 
 notifications:
   email:
