@@ -970,19 +970,17 @@ exports.info = {
     }
 };
 
-exports.getFormTitle = function(form) {
+exports.getFormTitle = function(form, appinfo) {
     var def = jsonforms.getForm(form),
         label = def && def.meta && def.meta.label,
         key,
         title;
 
+    appinfo = appinfo || exports.info;
     if (_.isString(label)) {
-        title = exports.info.translate(label);
+        title = appinfo.translate(label);
     } else if (_.isObject(label)) {
-        key = _.first(_.keys(label));
-        if (key && label[key]) {
-            title = exports.info.translate(label[key]);
-        }
+        title = label[appinfo.locale || 'en'];
     }
 
     if (title) {
