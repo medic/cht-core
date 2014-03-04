@@ -16,11 +16,7 @@ before_script:
 script: "./scripts/phantom_test.sh http://localhost:5984/kujua-lite"
 
 after_success:
-  - if [ "$TRAVIS_BRANCH" != "develop" ]; then exit 0; fi;
-  - npm install -g jsontool
-  - cat kanso.json | json -o json-4 -e "dependencies[\"kanso-gardener\"] = null; version += \"-alpha.$TRAVIS_BUILD_NUMBER\";" > tmp.json
-  - mv tmp.json kanso.json
-  - kanso push http://service:a5nghmongP\!@staging.dev.medicmobile.org/markets/alpha/upload
+  - sh ./scripts/ci/after_success.sh
 
 notifications:
   email:
