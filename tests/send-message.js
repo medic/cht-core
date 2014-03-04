@@ -90,9 +90,45 @@ exports['Phone number passes validation'] = function(test) {
   test.done();
 };
 
-exports['Recipient `everyone at` is valid'] = function(test) {
+exports['Recipient `everyone at` is invalid if no child has valid phone'] = function(test) {
   $phone.select2 = function() { 
-    return [{everyoneAtFacility: 'xyz', text: 'Everyone at someplace'}]; 
+    return [{
+      everyoneAtFacility: 'xyz', 
+      text: 'Everyone at someplace',
+      docs: [
+        {
+          contact: {
+            phone: 'xx'
+          }
+        }
+      ]
+    }]; 
+  };
+  $message.val('Some valid message');
+  var result = data_record.validateSms($phone, $message);
+  test.equals($phone.find('.help-block').text(), 'These recipients do not have a valid contact number: Everyone at someplace');
+  test.equals(result, false);
+  test.done();
+};
+
+exports['Recipient `everyone at` is valid if at least one child has valid phone'] = function(test) {
+  $phone.select2 = function() { 
+    return [{
+      everyoneAtFacility: 'xyz', 
+      text: 'Everyone at someplace',
+      docs: [
+        {
+          contact: {
+            phone: 'xx'
+          }
+        },
+        {
+          contact: {
+            phone: '+1234567890'
+          }
+        }
+      ]
+    }]; 
   };
   $message.val('Some valid message');
   var result = data_record.validateSms($phone, $message);
