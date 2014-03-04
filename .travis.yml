@@ -19,6 +19,10 @@ after_success:
   - bash ./scripts/ci/after_success.sh
 
 notifications:
-  email:
-    recipients:
-      - dev@medicmobile.org
+  webhooks: 
+    urls:
+      - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
+    on_success: change
+    on_failure: always
+  email: false
+
