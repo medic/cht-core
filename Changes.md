@@ -1,6 +1,6 @@
 # Kujua Release Notes
 
-## 0.3.0-beta.40
+## 0.3.1
 
 ### Mar 3, 2014 
 
