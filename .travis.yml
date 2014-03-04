@@ -24,5 +24,7 @@ notifications:
       - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
     on_success: change
     on_failure: always
-  email: false
+  email:
+    recipients:
+      - dev@medicmobile.org
 
