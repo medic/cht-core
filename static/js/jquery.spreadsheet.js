@@ -345,6 +345,21 @@
         return null;
     };
 
+    /**
+     * Move the selection x places to the right, and y places down.
+     */
+    var changeSelection = function(ev, $table, selected, x, y) {
+        if (!selected || ev.target.tagName === 'INPUT') {
+            return;
+        }
+        pos = getCellPosition($table, selected);
+        cell = getCellAt($table, pos.row + y, pos.column + x);
+        if (cell) {
+            ev.preventDefault();
+            $table.data('spreadsheet:start-column', pos.column + x);
+            select.call($table, cell);
+        }
+    };
 
     /**
      * Get the td element at the given row and column in the table
@@ -792,6 +807,7 @@
                 clearSelection.call($table);
             }
         });
+
         $(document).keydown(function (ev) {
             var selected = $table.data('spreadsheet:selected-td'),
                 input = $table.data('spreadsheet:edit-inline-input'),
@@ -812,52 +828,16 @@
                      key === 93 ||
                      key === 224)  {                       return; }
             else if (key === 38)  { /* UP */
-                if (!selected || ev.target.tagName === 'INPUT') {
-                    return;
-                }
-                pos = getCellPosition($table, selected);
-                cell = getCellAt($table, pos.row - 1, pos.column)
-                if (cell) {
-                    ev.preventDefault();
-                    $table.data('spreadsheet:start-column', pos.column);
-                    select.call($table, cell);
-                }
+                changeSelection(ev, $table, selected, 0, -1);
             }
             else if (key === 40)  { /* DOWN */
-                if (!selected || ev.target.tagName === 'INPUT') {
-                    return;
-                }
-                pos = getCellPosition($table, selected);
-                cell = getCellAt($table, pos.row + 1, pos.column)
-                if (cell) {
-                    ev.preventDefault();
-                    $table.data('spreadsheet:start-column', pos.column);
-                    select.call($table, cell);
-                }
+                changeSelection(ev, $table, selected, 0, 1);
             }
             else if (key === 37)  { /* LEFT */
-                if (!selected || ev.target.tagName === 'INPUT') {
-                    return;
-                }
-                pos = getCellPosition($table, selected);
-                cell = getCellAt($table, pos.row, pos.column - 1)
-                if (cell) {
-                    ev.preventDefault();
-                    $table.data('spreadsheet:start-column', pos.column - 1);
-                    select.call($table, cell);
-                }
+                changeSelection(ev, $table, selected, -1, 0);
             }
             else if (key === 39)  { /* RIGHT */
-                if (!selected || ev.target.tagName === 'INPUT') {
-                    return;
-                }
-                pos = getCellPosition.call($table, selected);
-                cell = getCellAt($table, pos.row, pos.column + 1)
-                if (cell) {
-                    ev.preventDefault();
-                    $table.data('spreadsheet:start-column', pos.column + 1);
-                    select.call($table, cell);
-                }
+                changeSelection(ev, $table, selected, 1, 0);
             }
             else if (key === 46)  { /* DEL */
                 if (ev.target.tagName === 'INPUT') {
