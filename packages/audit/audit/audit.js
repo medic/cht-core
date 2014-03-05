@@ -16,16 +16,14 @@ module.exports = {
         return callback(err);
       }
       session.info(function (err, info) {
-        if (err) {
-          return callback(err);
-        }
+        var user = err ? undefined : info.userCtx.name;
         var record;
         if (result.rows.length === 0) {
-          record = createRecord(doc, info.userCtx.name);
+          record = createRecord(doc, user);
         } else {
           record = result.rows[0];
           var action = doc._deleted ? 'delete' : 'update';
-          record.history.push(createItem(doc, info.userCtx.name, action));
+          record.history.push(createItem(doc, user, action));
         }
         appdb.saveDoc(record, callback);
       });
