@@ -1,6 +1,17 @@
 var audit = require('audit/audit'),
   db = require('db'),
+  session = require('session'),
   sinon = require('sinon');
+
+exports.tearDown = function (callback) {
+  if (db.use.restore) {
+    db.use.restore();
+  }
+  if (session.info.restore) {
+    session.info.restore();
+  }
+  callback();
+}
 
 exports['when no existing audit record, create one'] = function(test) {
   test.expect(12);
@@ -27,10 +38,11 @@ exports['when no existing audit record, create one'] = function(test) {
       callback(null, {record_id: docid});
     }
   });
+  sinon.stub(session, 'info')
+    .callsArgWith(0, null, {userCtx: {name: user}});
 
   audit.log(
     doc1,
-    user,
     function(err, response) {
       test.equal(err, null, 'no error');
       test.equal(response.record_id, docid, 'response is created doc');
@@ -38,7 +50,6 @@ exports['when no existing audit record, create one'] = function(test) {
   );
 
   test.done();
-  db.use.restore();
 };
 
 exports['when existing audit record, append update to history'] = function(test) {
@@ -79,10 +90,11 @@ exports['when existing audit record, append update to history'] = function(test)
       callback(null, {record_id: docid});
     }
   });
+  sinon.stub(session, 'info')
+    .callsArgWith(0, null, {userCtx: {name: user2}});
 
   audit.log(
     doc2,
-    user2,
     function(err, response) {
       test.equal(err, null, 'no error');
       test.equal(response.record_id, docid, 'response is created doc');
@@ -90,7 +102,6 @@ exports['when existing audit record, append update to history'] = function(test)
   );
 
   test.done();
-  db.use.restore();
 };
 
 exports['when existing audit record is deleted, append delete to history'] = function(test) {
@@ -131,10 +142,11 @@ exports['when existing audit record is deleted, append delete to history'] = fun
       callback(null, {record_id: docid});
     }
   });
+  sinon.stub(session, 'info')
+    .callsArgWith(0, null, {userCtx: {name: user2}});
 
   audit.log(
     doc2,
-    user2,
     function(err, response) {
       test.equal(err, null, 'no error');
       test.equal(response.record_id, docid, 'response is created doc');
@@ -142,5 +154,4 @@ exports['when existing audit record is deleted, append delete to history'] = fun
   );
 
   test.done();
-  db.use.restore();
 };

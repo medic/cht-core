@@ -1,11 +1,11 @@
 var db = require('db'),
   duality = require('duality/core'),
   appname = require('settings/root').name,
+  session = require('session'),
   _ = require('underscore');
 
 module.exports = {
-  log: function(doc, user, callback) {
-    // can i get the user from the session???
+  log: function(doc, callback) {
     var appdb = db.use(duality.getDBURL());
     appdb.getView(appname, 'audit_records_by_doc', {
       include_docs: false,
@@ -15,15 +15,20 @@ module.exports = {
       if (err) {
         return callback(err);
       }
-      var record;
-      if (result.rows.length === 0) {
-        record = createRecord(doc, user);
-      } else {
-        record = result.rows[0];
-        var action = doc._deleted ? 'delete' : 'update';
-        record.history.push(createItem(doc, user, action));
-      }
-      appdb.saveDoc(record, callback);
+      session.info(function (err, info) {
+        if (err) {
+          return callback(err);
+        }
+        var record;
+        if (result.rows.length === 0) {
+          record = createRecord(doc, info.userCtx.name);
+        } else {
+          record = result.rows[0];
+          var action = doc._deleted ? 'delete' : 'update';
+          record.history.push(createItem(doc, info.userCtx.name, action));
+        }
+        appdb.saveDoc(record, callback);
+      });
     });
   }
 };
