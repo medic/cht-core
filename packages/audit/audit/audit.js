@@ -18,24 +18,26 @@ module.exports = {
       session.info(function (err, info) {
         var user = err ? undefined : info.userCtx.name;
         var record;
+        var action;
         if (result.rows.length === 0) {
-          record = createRecord(doc, user);
+          record = createRecord(doc);
+          action = 'create';
         } else {
           record = result.rows[0];
-          var action = doc._deleted ? 'delete' : 'update';
-          record.history.push(createItem(doc, user, action));
+          action = doc._deleted ? 'delete' : 'update';
         }
+        record.history.push(createItem(doc, user, action));
         appdb.saveDoc(record, callback);
       });
     });
   }
 };
 
-function createRecord(doc, user) {
+function createRecord(doc) {
   return {
     type: 'audit_record',
     record_id: doc._id,
-    history: [createItem(doc, user, 'create')]
+    history: []
   };
 }
 
