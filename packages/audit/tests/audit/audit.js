@@ -3,9 +3,12 @@ var audit = require('audit/audit'),
   sinon = require('sinon');
 
 exports['when no existing audit record, create one'] = function(test) {
+  test.expect(12);
+
   var docid = 123;
   var user = 'hacker';
-  test.expect(11);
+  var doc1 = {_id: docid};
+ 
   sinon.stub(db, 'use').returns({
     getView: function(appname, viewname, query, callback) {
       test.equal(query.startkey[0], docid, 'correct startkey query param');
@@ -19,27 +22,34 @@ exports['when no existing audit record, create one'] = function(test) {
       test.equal(doc.history.length, 1, 'history has one entry');
       test.equal(doc.history[0].user, user, 'user recorded correctly');
       test.equal(doc.history[0].action, 'create', 'action is set correctly');
+      test.equal(doc.history[0].doc, doc1, 'current doc is saved');
       test.ok(doc.history[0].timestamp, 'timestamp is set');
       callback(null, {record_id: docid});
     }
   });
+
   audit.log(
-    {_id: docid},
-    {user: user},
+    doc1,
+    user,
     function(err, response) {
       test.equal(err, null, 'no error');
       test.equal(response.record_id, docid, 'response is created doc');
     }
   );
+
   test.done();
   db.use.restore();
 };
 
 exports['when existing audit record, append update to history'] = function(test) {
+  test.expect(12);
+
   var docid = 123;
   var user1 = 'admin';
   var user2 = 'hacker';
-  test.expect(10);
+  var doc1 = {_id: docid, x: 'foo'};
+  var doc2 = {_id: docid, x: 'bar'};
+  
   sinon.stub(db, 'use').returns({
     getView: function(appname, viewname, query, callback) {
       callback(null, {"rows":[{
@@ -47,7 +57,8 @@ exports['when existing audit record, append update to history'] = function(test)
         history: [{
           user: user1,
           action: 'create',
-          timestamp: '1Z'
+          timestamp: '1Z',
+          doc: doc1
         }]
       }]});
     },
@@ -58,31 +69,39 @@ exports['when existing audit record, append update to history'] = function(test)
       test.equal(doc.history[0].user, user1, 'user recorded correctly');
       test.equal(doc.history[0].action, 'create', 'action is set correctly');
       test.equal(doc.history[0].timestamp, '1Z', 'timestamp is set');
+      test.equal(doc.history[0].doc, doc1, 'doc is set');
 
       test.equal(doc.history[1].user, user2, 'user recorded correctly');
       test.equal(doc.history[1].action, 'update', 'action is set correctly');
       test.ok(doc.history[1].timestamp, 'timestamp is set');
+      test.equal(doc.history[1].doc, doc2, 'new doc is set');
 
       callback(null, {record_id: docid});
     }
   });
+
   audit.log(
-    {_id: docid},
-    {user: user2},
+    doc2,
+    user2,
     function(err, response) {
       test.equal(err, null, 'no error');
       test.equal(response.record_id, docid, 'response is created doc');
     }
   );
+
   test.done();
   db.use.restore();
 };
 
 exports['when existing audit record is deleted, append delete to history'] = function(test) {
+  test.expect(12);
+
   var docid = 123;
   var user1 = 'admin';
   var user2 = 'hacker';
-  test.expect(10);
+  var doc1 = {_id: docid, x: 'foo'};
+  var doc2 = {_id: docid, x: 'bar', _deleted: true};
+
   sinon.stub(db, 'use').returns({
     getView: function(appname, viewname, query, callback) {
       callback(null, {"rows":[{
@@ -90,7 +109,8 @@ exports['when existing audit record is deleted, append delete to history'] = fun
         history: [{
           user: user1,
           action: 'create',
-          timestamp: '1Z'
+          timestamp: '1Z',
+          doc: doc1
         }]
       }]});
     },
@@ -101,22 +121,26 @@ exports['when existing audit record is deleted, append delete to history'] = fun
       test.equal(doc.history[0].user, user1, 'user recorded correctly');
       test.equal(doc.history[0].action, 'create', 'action is set correctly');
       test.equal(doc.history[0].timestamp, '1Z', 'timestamp is set');
+      test.equal(doc.history[0].doc, doc1, 'doc is set');
 
       test.equal(doc.history[1].user, user2, 'user recorded correctly');
       test.equal(doc.history[1].action, 'delete', 'action is set correctly');
       test.ok(doc.history[1].timestamp, 'timestamp is set');
+      test.equal(doc.history[1].doc, doc2, 'new doc is set');
 
       callback(null, {record_id: docid});
     }
   });
+
   audit.log(
-    {_id: docid, _deleted: true},
-    {user: user2},
+    doc2,
+    user2,
     function(err, response) {
       test.equal(err, null, 'no error');
       test.equal(response.record_id, docid, 'response is created doc');
     }
   );
+
   test.done();
   db.use.restore();
 };
