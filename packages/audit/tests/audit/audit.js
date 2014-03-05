@@ -1,4 +1,4 @@
-var audit = require('audit/audit'),
+var audit = require('audit/log'),
   db = require('db'),
   session = require('session'),
   sinon = require('sinon');
