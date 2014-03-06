@@ -191,3 +191,49 @@ exports['updating a `data_record` creates an `audit_record` if required'] = func
   test.equal(dataRecord, doc2);
   test.done();
 };
+
+// TODO write this test
+exports['bulkSave updates all relevant `audit_record` docs'] = function(test) {
+  test.expect(10);
+  test.ok(false);
+
+  var docId1 = 123;
+  var docId2 = 456;
+  var doc1 = {
+    _id: docId1,
+    type: 'data_record',
+    foo: 'baz'
+  };
+  var doc2 = {
+    _id: docId2,
+    type: 'data_record',
+    foo: 'bar'
+  };
+
+  var appdb = { 
+    saveDoc: function(doc, callback) { 
+      callback(null, {id: docId});
+    },
+    getView: function(appname, view, query, callback) {
+      callback(null, {"rows":[]});
+    }
+  };
+  var save = sinon.spy(appdb, 'saveDoc');
+  var getView = sinon.spy(appdb, 'getView');
+  sinon.stub(db, 'use').returns(appdb);
+  audit.bulkSave([doc1, doc2], function(err, result) {
+    test.equal(err, null);
+  });
+
+  test.equal(getView.callCount, 1);
+  test.equal(save.callCount, 2);
+  var auditRecord = save.firstCall.args[0];
+  var dataRecord = save.secondCall.args[0];
+  test.equal(auditRecord.type, 'audit_record');
+  test.equal(auditRecord.record_id, docId);
+  test.equal(auditRecord.history.length, 1);
+  test.equal(auditRecord.history[0].action, 'update');
+  test.equal(auditRecord.history[0].doc, doc2);
+  test.equal(dataRecord, doc2);
+  test.done();
+};

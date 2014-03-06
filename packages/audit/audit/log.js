@@ -37,6 +37,33 @@ module.exports = {
         save(appdb, doc, audit, callback);
       });
     }
+  },
+  // TODO new documents (generate id)
+  // TODO documents without audit
+  // TODO reuse functionality with saveDoc
+  bulkSave: function(docs, callback) {
+    var appdb = db.use(duality.getDBURL());
+    appdb.getView(appname, 'audit_records_by_doc', {
+      include_docs: false,
+      keys: _.pluck(docs, '_id')
+    }, function(err, result) {
+      if (err) {
+        return callback('Failed retrieving existing audit log. ' + err);
+      }
+      _.each(result.rows, function(_audit, _i)) {
+        _audit.history.push({
+          action: docs[_i]._deleted ? 'delete' : 'update',
+          doc: docs[_i]
+        });
+      }
+      db.bulkSave(result.rows, function(err, response) {
+        if (err) {
+          return callback('Failed saving audit record. ' + err);
+        }
+        db.bulkSave(docs, callback);
+      });
+    });
+
   }
 };
 
