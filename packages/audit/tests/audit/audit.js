@@ -1,224 +1,193 @@
 var audit = require('audit/log'),
   db = require('db'),
-  session = require('session'),
   sinon = require('sinon');
 
 exports.tearDown = function (callback) {
   if (db.use.restore) {
     db.use.restore();
   }
-  if (session.info.restore) {
-    session.info.restore();
+  if (db.newUUID.restore) {
+    db.newUUID.restore();
   }
   callback();
 }
 
-exports['calling create saves new audit record'] = function(test) {
+exports['saving a new `data_record` creates a new `audit_record`'] = function(test) {
   test.expect(10);
-
-  var docid = 123;
-  var user = 'hacker';
-  var doc1 = {_id: undefined};
- 
-  sinon.stub(db, 'use').returns({
-    saveDoc: function(doc, callback) {
-      test.equal(doc.type, 'audit_record', 'doc has correct type');
-      test.equal(doc._id, undefined, 'doc has no id');
-      test.equal(doc.record_id, docid, 'doc refers to original doc');
-      test.equal(doc.history.length, 1, 'history has one entry');
-      test.equal(doc.history[0].user, user, 'user recorded correctly');
-      test.equal(doc.history[0].action, 'create', 'action is set correctly');
-      test.equal(doc.history[0].doc, doc1, 'current doc is saved');
-      test.ok(doc.history[0].reported_date, 'reported_date is set');
-      callback(null, {record_id: docid});
-    }
-  });
-  sinon.stub(session, 'info')
-    .callsArgWith(0, null, {userCtx: {name: user}});
-
-  audit.create(
-    doc1,
-    docid,
-    function(err, response) {
-      test.equal(err, null, 'no error');
-      test.equal(response.record_id, docid, 'response is created doc');
-    }
-  );
-
-  test.done();
-};
-
-exports['when getting user fails, log audit record anyway'] = function(test) {
-  test.expect(10);
-
-  var docid = 123;
-  var doc1 = {_id: undefined};
- 
-  sinon.stub(db, 'use').returns({
-    saveDoc: function(doc, callback) {
-      test.equal(doc.type, 'audit_record', 'doc has correct type');
-      test.equal(doc._id, undefined, 'doc has no id');
-      test.equal(doc.record_id, docid, 'doc refers to original doc');
-      test.equal(doc.history.length, 1, 'history has one entry');
-      test.equal(doc.history[0].user, undefined, 'user recorded correctly');
-      test.equal(doc.history[0].action, 'create', 'action is set correctly');
-      test.equal(doc.history[0].doc, doc1, 'current doc is saved');
-      test.ok(doc.history[0].reported_date, 'reported_date is set');
-      callback(null, {record_id: docid});
-    }
-  });
-  sinon.stub(session, 'info')
-    .callsArgWith(0, 'no user logged in');
-
-  audit.create(
-    doc1,
-    docid,
-    function(err, response) {
-      test.equal(err, null, 'no error');
-      test.equal(response.record_id, docid, 'response is created doc');
-    }
-  );
-
-  test.done();
-};
-
-exports['when existing audit record, append update to history'] = function(test) {
-  test.expect(12);
-
-  var docid = 123;
-  var user1 = 'admin';
-  var user2 = 'hacker';
-  var doc1 = {_id: docid, x: 'foo'};
-  var doc2 = {_id: docid, x: 'bar'};
   
-  sinon.stub(db, 'use').returns({
-    getView: function(appname, viewname, query, callback) {
-      callback(null, {"rows":[{
-        record_id: docid,
-        history: [{
-          user: user1,
-          action: 'create',
-          reported_date: '1Z',
-          doc: doc1
-        }]
-      }]});
-    },
-    saveDoc: function(doc, callback) {
-      test.equal(doc.record_id, docid, 'doc refers to original doc');
-      test.equal(doc.history.length, 2, 'history has two entries');
+  var docId = 123;
+  var doc1 = {
+    _id: undefined,
+    type: 'data_record'
+  };
 
-      test.equal(doc.history[0].user, user1, 'user recorded correctly');
-      test.equal(doc.history[0].action, 'create', 'action is set correctly');
-      test.equal(doc.history[0].reported_date, '1Z', 'reported_date is set');
-      test.equal(doc.history[0].doc, doc1, 'doc is set');
-
-      test.equal(doc.history[1].user, user2, 'user recorded correctly');
-      test.equal(doc.history[1].action, 'update', 'action is set correctly');
-      test.ok(doc.history[1].reported_date, 'reported_date is set');
-      test.equal(doc.history[1].doc, doc2, 'new doc is set');
-
-      callback(null, {record_id: docid});
-    }
+  var appdb = { saveDoc: function(doc, callback) { 
+    callback(null, {id: docId}); 
+  } };
+  var save = sinon.spy(appdb, 'saveDoc');
+  sinon.stub(db, 'use').returns(appdb);
+  sinon.stub(db, 'newUUID').yields(null, docId);
+  audit.saveDoc(doc1, function(err, result) {
+    test.equal(err, null);
+    test.equal(result.id, docId);
   });
-  sinon.stub(session, 'info')
-    .callsArgWith(0, null, {userCtx: {name: user2}});
 
-  audit.update(
-    doc2,
-    function(err, response) {
-      test.equal(err, null, 'no error');
-      test.equal(response.record_id, docid, 'response is created doc');
-    }
-  );
-
+  test.equal(save.callCount, 2);
+  var auditRecord = save.firstCall.args[0];
+  var dataRecord = save.secondCall.args[0];
+  test.equal(auditRecord.type, 'audit_record');
+  test.equal(auditRecord.record_id, docId);
+  test.equal(auditRecord.history.length, 1);
+  test.equal(auditRecord.history[0].action, 'create');
+  test.equal(auditRecord.history[0].doc._id, docId);
+  test.equal(dataRecord.type, 'data_record');
+  test.equal(dataRecord._id, docId);
   test.done();
 };
 
-exports['when existing audit record is deleted, append delete to history'] = function(test) {
+exports['updating a `data_record` updates the `audit_record`'] = function(test) {
   test.expect(12);
 
-  var docid = 123;
-  var user1 = 'admin';
-  var user2 = 'hacker';
-  var doc1 = {_id: docid, x: 'foo'};
-  var doc2 = {_id: docid, x: 'bar', _deleted: true};
+  var docId = 123;
+  var doc1 = {
+    _id: docId,
+    type: 'data_record'
+  };
+  var doc2 = {
+    _id: docId,
+    type: 'data_record',
+    foo: 'bar'
+  };
 
-  sinon.stub(db, 'use').returns({
-    getView: function(appname, viewname, query, callback) {
+  var appdb = { 
+    saveDoc: function(doc, callback) { 
+      callback(null, {id: docId});
+    },
+    getView: function(appname, view, query, callback) {
       callback(null, {"rows":[{
-        record_id: docid,
+        type: 'audit_record',
+        record_id: docId,
         history: [{
-          user: user1,
           action: 'create',
-          reported_date: '1Z',
           doc: doc1
         }]
       }]});
-    },
-    saveDoc: function(doc, callback) {
-      test.equal(doc.record_id, docid, 'doc refers to original doc');
-      test.equal(doc.history.length, 2, 'history has two entries');
-
-      test.equal(doc.history[0].user, user1, 'user recorded correctly');
-      test.equal(doc.history[0].action, 'create', 'action is set correctly');
-      test.equal(doc.history[0].reported_date, '1Z', 'reported_date is set');
-      test.equal(doc.history[0].doc, doc1, 'doc is set');
-
-      test.equal(doc.history[1].user, user2, 'user recorded correctly');
-      test.equal(doc.history[1].action, 'delete', 'action is set correctly');
-      test.ok(doc.history[1].reported_date, 'reported_date is set');
-      test.equal(doc.history[1].doc, doc2, 'new doc is set');
-
-      callback(null, {record_id: docid});
     }
+  };
+  var save = sinon.spy(appdb, 'saveDoc');
+  var getView = sinon.spy(appdb, 'getView');
+  sinon.stub(db, 'use').returns(appdb);
+  audit.saveDoc(doc2, function(err, result) {
+    test.equal(err, null);
+    test.equal(result.id, docId);
   });
-  sinon.stub(session, 'info')
-    .callsArgWith(0, null, {userCtx: {name: user2}});
 
-  audit.update(
-    doc2,
-    function(err, response) {
-      test.equal(err, null, 'no error');
-      test.equal(response.record_id, docid, 'response is created doc');
-    }
-  );
-
+  test.equal(getView.callCount, 1);
+  test.equal(save.callCount, 2);
+  var auditRecord = save.firstCall.args[0];
+  var dataRecord = save.secondCall.args[0];
+  test.equal(auditRecord.type, 'audit_record');
+  test.equal(auditRecord.record_id, docId);
+  test.equal(auditRecord.history.length, 2);
+  test.equal(auditRecord.history[0].action, 'create');
+  test.equal(auditRecord.history[0].doc, doc1);
+  test.equal(auditRecord.history[1].action, 'update');
+  test.equal(auditRecord.history[1].doc, doc2);
+  test.equal(dataRecord, doc2);
   test.done();
 };
 
-exports['when update but no existing audit'] = function(test) {
-  test.expect(8);
+exports['deleting a `data_record` updates the `audit_record`'] = function(test) {
+  test.expect(12);
 
-  var docid = 123;
-  var user1 = 'admin';
-  var doc1 = {_id: docid, x: 'foo'};
+  var docId = 123;
+  var doc1 = {
+    _id: docId,
+    type: 'data_record'
+  };
+  var doc2 = {
+    _id: docId,
+    type: 'data_record',
+    _deleted: true
+  };
 
-  sinon.stub(db, 'use').returns({
-    getView: function(appname, viewname, query, callback) {
-      callback(null, {"rows":[]});
+  var appdb = { 
+    saveDoc: function(doc, callback) { 
+      callback(null, {id: docId});
     },
-    saveDoc: function(doc, callback) {
-      test.equal(doc.record_id, docid, 'doc refers to original doc');
-      test.equal(doc.history.length, 1, 'history has one entry');
-
-      test.equal(doc.history[0].user, user1, 'user recorded correctly');
-      test.equal(doc.history[0].action, 'update', 'action is set correctly');
-      test.ok(doc.history[0].reported_date, 'reported_date is set');
-      test.equal(doc.history[0].doc, doc1, 'doc is set');
-
-      callback(null, {record_id: docid});
+    getView: function(appname, view, query, callback) {
+      callback(null, {"rows":[{
+        type: 'audit_record',
+        record_id: docId,
+        history: [{
+          action: 'create',
+          doc: doc1
+        }]
+      }]});
     }
+  };
+  var save = sinon.spy(appdb, 'saveDoc');
+  var getView = sinon.spy(appdb, 'getView');
+  sinon.stub(db, 'use').returns(appdb);
+  audit.saveDoc(doc2, function(err, result) {
+    test.equal(err, null);
+    test.equal(result.id, docId);
   });
-  sinon.stub(session, 'info')
-    .callsArgWith(0, null, {userCtx: {name: user1}});
 
-  audit.update(
-    doc1,
-    function(err, response) {
-      test.equal(err, null, 'no error');
-      test.equal(response.record_id, docid, 'response is created doc');
+  test.equal(getView.callCount, 1);
+  test.equal(save.callCount, 2);
+  var auditRecord = save.firstCall.args[0];
+  var dataRecord = save.secondCall.args[0];
+  test.equal(auditRecord.type, 'audit_record');
+  test.equal(auditRecord.record_id, docId);
+  test.equal(auditRecord.history.length, 2);
+  test.equal(auditRecord.history[0].action, 'create');
+  test.equal(auditRecord.history[0].doc, doc1);
+  test.equal(auditRecord.history[1].action, 'delete');
+  test.equal(auditRecord.history[1].doc, doc2);
+  test.equal(dataRecord, doc2);
+  test.done();
+};
+
+exports['updating a `data_record` creates an `audit_record` if required'] = function(test) {
+  test.expect(10);
+
+  var docId = 123;
+  var doc1 = {
+    _id: docId,
+    type: 'data_record'
+  };
+  var doc2 = {
+    _id: docId,
+    type: 'data_record',
+    foo: 'bar'
+  };
+
+  var appdb = { 
+    saveDoc: function(doc, callback) { 
+      callback(null, {id: docId});
+    },
+    getView: function(appname, view, query, callback) {
+      callback(null, {"rows":[]});
     }
-  );
+  };
+  var save = sinon.spy(appdb, 'saveDoc');
+  var getView = sinon.spy(appdb, 'getView');
+  sinon.stub(db, 'use').returns(appdb);
+  audit.saveDoc(doc2, function(err, result) {
+    test.equal(err, null);
+    test.equal(result.id, docId);
+  });
 
+  test.equal(getView.callCount, 1);
+  test.equal(save.callCount, 2);
+  var auditRecord = save.firstCall.args[0];
+  var dataRecord = save.secondCall.args[0];
+  test.equal(auditRecord.type, 'audit_record');
+  test.equal(auditRecord.record_id, docId);
+  test.equal(auditRecord.history.length, 1);
+  test.equal(auditRecord.history[0].action, 'update');
+  test.equal(auditRecord.history[0].doc, doc2);
+  test.equal(dataRecord, doc2);
   test.done();
 };

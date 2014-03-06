@@ -1,58 +1,58 @@
 var db = require('db'),
   duality = require('duality/core'),
   appname = require('settings/root').name,
-  session = require('session'),
   _ = require('underscore');
 
 module.exports = {
-  create: function(doc, docid, callback) {
+  saveDoc: function(doc, callback) {
     var appdb = db.use(duality.getDBURL());
-    getUsername(function(user) {
-      var record = createRecord(docid);
-      record.history.push(createItem(doc, user, 'create'));
-      appdb.saveDoc(record, callback);
-    });
-  },
-  update: function(doc, callback) {
-    var appdb = db.use(duality.getDBURL());
-    appdb.getView(appname, 'audit_records_by_doc', {
-      include_docs: false,
-      startkey: [doc._id],
-      endkey: [doc._id, {}]
-    }, function(err, result) {
-      if (err) {
-        return callback(err);
-      }
-      getUsername(function(user) {
-        var record = result.rows.length === 0 ? 
-          createRecord(doc._id) : result.rows[0];
-        var action = doc._deleted ? 'delete' : 'update';
-        record.history.push(createItem(doc, user, action));
-        appdb.saveDoc(record, callback);
+    if (doc._id) {
+      appdb.getView(appname, 'audit_records_by_doc', {
+        include_docs: false,
+        startkey: [doc._id],
+        endkey: [doc._id, {}]
+      }, function(err, result) {
+        if (err) {
+          return callback('Failed retrieving existing audit log. ' + err);
+        }
+        var audit = result.rows.length === 0 ? 
+          createAudit(doc) : result.rows[0];
+        audit.history.push({
+          action: doc._deleted ? 'delete' : 'update',
+          doc: doc
+        });
+        save(appdb, doc, audit, callback);
       });
-    });
+    } else {
+      db.newUUID(function(err, id) {
+        if (err) {
+          return callback('Failed generating a new database ID. ' + err);
+        }
+        doc._id = id;
+        var audit = createAudit(doc);
+        audit.history.push({
+          action: 'create',
+          doc: doc
+        });
+        save(appdb, doc, audit, callback);
+      });
+    }
   }
 };
 
-function getUsername(callback) {
-  session.info(function (err, info) {
-    callback.call(this, err ? undefined : info.userCtx.name);
+function save(appdb, doc, audit, callback) {
+  appdb.saveDoc(audit, function(err, response) {
+    if (err) {
+      return callback('Failed saving audit record. ' + err);
+    }
+    appdb.saveDoc(doc, callback);
   });
 }
 
-function createRecord(docid) {
+function createAudit(record) {
   return {
     type: 'audit_record',
-    record_id: docid,
+    record_id: record._id,
     history: []
-  };
-}
-
-function createItem(doc, user, action) {
-  return {
-    user: user,
-    action: action,
-    reported_date: new Date().toISOString(),
-    doc: doc
   };
 }
