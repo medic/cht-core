@@ -4,8 +4,16 @@ var db = require('db'),
   async = require('async'),
   _ = require('underscore');
 
-// TODO documentation
 module.exports = {
+
+  /**
+   * Saves the given doc with an audit record
+   *
+   * @name saveDoc(doc, callback)
+   * @param {Object} doc
+   * @param {Function} callback(err,response)
+   * @api public
+   */
   saveDoc: function(doc, callback) {
     var appdb = db.use(duality.getDBURL());
     audit(appdb, [doc], function(err) {
@@ -16,6 +24,14 @@ module.exports = {
     });
   },
 
+  /**
+   * Saves the given docs with individual audit records
+   *
+   * @name bulkSave(doc, callback)
+   * @param {Array} docs An array of documents; each document is an object
+   * @param {Function} callback(err,response)
+   * @api public
+   */
   bulkSave: function(docs, callback) {
     var appdb = db.use(duality.getDBURL());
     audit(appdb, docs, function(err) {

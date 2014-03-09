@@ -5,6 +5,7 @@
     "modules": ["audit", "tests"],
     "load": "audit/app",
     "dependencies": {
+        "settings": null,
         "modules": null,
         "underscore": ">=1.1.5",
         "db": null,
