@@ -10,6 +10,7 @@
         "db": null,
         "properties": null,
         "duality": ">=0.0.18",
-        "session": null
+        "session": null,
+        "async": "0.1.15"
     }
 }

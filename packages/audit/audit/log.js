@@ -1,78 +1,67 @@
 var db = require('db'),
   duality = require('duality/core'),
   appname = require('settings/root').name,
+  async = require('async'),
   _ = require('underscore');
 
+// TODO documentation
 module.exports = {
   saveDoc: function(doc, callback) {
     var appdb = db.use(duality.getDBURL());
-    if (doc._id) {
+    audit(appdb, [doc], function(err) {
+      if (err) {
+        return callback('Failed saving audit record. ' + err);
+      }
+      appdb.saveDoc(doc, callback);
+    });
+  },
+
+  bulkSave: function(docs, callback) {
+    var appdb = db.use(duality.getDBURL());
+    audit(appdb, docs, function(err) {
+      if (err) {
+        return callback('Failed saving audit records. ' + err);
+      }
+      appdb.bulkSave(docs, callback);
+    });
+  }
+};
+
+function audit(appdb, docs, callback) {
+  async.map(docs, function(_doc, _cb) {
+    if (!_doc._id) {
+      db.newUUID(100, function(err, id) {
+        if (err) {
+          return _cb('Failed generating a new database ID. ' + err);
+        }
+        _doc._id = id;
+        var audit = createAudit(_doc);
+        audit.history.push({
+          action: 'create',
+          doc: _doc
+        });
+        _cb(null, audit);
+      });
+    } else {
       appdb.getView(appname, 'audit_records_by_doc', {
         include_docs: false,
-        startkey: [doc._id],
-        endkey: [doc._id, {}]
+        startkey: [_doc._id],
+        endkey: [_doc._id, {}]
       }, function(err, result) {
         if (err) {
           return callback('Failed retrieving existing audit log. ' + err);
         }
         var audit = result.rows.length === 0 ? 
-          createAudit(doc) : result.rows[0];
+          createAudit(_doc) : result.rows[0];
         audit.history.push({
-          action: doc._deleted ? 'delete' : 'update',
-          doc: doc
+          action: _doc._deleted ? 'delete' : 'update',
+          doc: _doc
         });
-        save(appdb, doc, audit, callback);
-      });
-    } else {
-      db.newUUID(function(err, id) {
-        if (err) {
-          return callback('Failed generating a new database ID. ' + err);
-        }
-        doc._id = id;
-        var audit = createAudit(doc);
-        audit.history.push({
-          action: 'create',
-          doc: doc
-        });
-        save(appdb, doc, audit, callback);
+        _cb(null, audit);
       });
     }
-  },
-  // TODO new documents (generate id)
-  // TODO documents without audit
-  // TODO reuse functionality with saveDoc
-  bulkSave: function(docs, callback) {
-    var appdb = db.use(duality.getDBURL());
-    appdb.getView(appname, 'audit_records_by_doc', {
-      include_docs: false,
-      keys: _.pluck(docs, '_id')
-    }, function(err, result) {
-      if (err) {
-        return callback('Failed retrieving existing audit log. ' + err);
-      }
-      _.each(result.rows, function(_audit, _i)) {
-        _audit.history.push({
-          action: docs[_i]._deleted ? 'delete' : 'update',
-          doc: docs[_i]
-        });
-      }
-      db.bulkSave(result.rows, function(err, response) {
-        if (err) {
-          return callback('Failed saving audit record. ' + err);
-        }
-        db.bulkSave(docs, callback);
-      });
-    });
-
-  }
-};
-
-function save(appdb, doc, audit, callback) {
-  appdb.saveDoc(audit, function(err, response) {
-    if (err) {
-      return callback('Failed saving audit record. ' + err);
-    }
-    appdb.saveDoc(doc, callback);
+  }, function(err, auditRecords) {
+    appdb.bulkSave(auditRecords, callback);
   });
 }
 
