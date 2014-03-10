@@ -4,7 +4,7 @@ These instructions should help you get setup to run or develop on Kujua Lite.
 
 ## Dependencies
 
-You will need to intall the following...
+You will need to install the following:
 
 ### Node and CouchDB
 
