@@ -75,12 +75,14 @@ exports['updating a `data_record` updates the `audit_record`'] = function(test) 
     },
     getView: function(appname, view, query, callback) {
       callback(null, {"rows":[{
-        type: 'audit_record',
-        record_id: docId,
-        history: [{
-          action: 'create',
-          doc: doc1
-        }]
+        doc: {
+          type: 'audit_record',
+          record_id: docId,
+          history: [{
+            action: 'create',
+            doc: doc1
+          }]
+        }
       }]});
     }
   };
@@ -132,12 +134,14 @@ exports['deleting a `data_record` updates the `audit_record`'] = function(test) 
     },
     getView: function(appname, view, query, callback) {
       callback(null, {"rows":[{
-        type: 'audit_record',
-        record_id: docId,
-        history: [{
-          action: 'create',
-          doc: doc1
-        }]
+        doc: {
+          type: 'audit_record',
+          record_id: docId,
+          history: [{
+            action: 'create',
+            doc: doc1
+          }]
+        }
       }]});
     }
   };
@@ -235,12 +239,14 @@ exports['bulkSave updates all relevant `audit_record` docs'] = function(test) {
     },
     getView: function(appname, view, query, callback) {
       callback(null, {"rows":[{
-        type: 'audit_record',
-        record_id: (query.startkey === docId1) ? docId1 : docId2,
-        history: [{
-          action: 'create',
-          doc: (query.startkey === docId1) ? doc1 : doc2
-        }]
+        doc: {
+          type: 'audit_record',
+          record_id: (query.startkey === docId1) ? docId1 : docId2,
+          history: [{
+            action: 'create',
+            doc: (query.startkey === docId1) ? doc1 : doc2
+          }]
+        }
       }]});
     }
   };

@@ -60,7 +60,7 @@ function audit(appdb, docs, callback) {
       });
     } else {
       appdb.getView(appname, 'audit_records_by_doc', {
-        include_docs: false,
+        include_docs: true,
         startkey: [_doc._id],
         endkey: [_doc._id, {}]
       }, function(err, result) {
@@ -68,7 +68,7 @@ function audit(appdb, docs, callback) {
           return callback('Failed retrieving existing audit log. ' + err);
         }
         var audit = result.rows.length === 0 ? 
-          createAudit(_doc) : result.rows[0];
+          createAudit(_doc) : result.rows[0].doc;
         audit.history.push({
           action: _doc._deleted ? 'delete' : 'update',
           doc: _doc
