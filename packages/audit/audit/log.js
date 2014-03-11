@@ -6,17 +6,83 @@ module.exports = {
   /**
    * Initialise the audit to persist to the given kanso db.
    *
-   * @name withKansoDb(db)
+   * @name withKanso(db)
    * @param {Object} db The kanso db instance to use
    * @api public
    */
-  withKansoDb: function(db) {
-    return init(db);
+  withKanso: function(db, session) {
+    return init(db, {
+      getName: function(callback) {
+        session.info(function(err, result) {
+          if (err) {
+            return callback(err);
+          }
+          callback(null, result.userCtx.name);
+        });
+      }
+    });
   }
-
 };
 
-function init(dbWrapper) {
+function init(db, user) {
+  function audit(docs, callback) {
+    user.getName(function(err, userName) {
+      if (err) {
+        return callback('Failed getting user name. ' + err);
+      }
+      async.map(docs, function(_doc, _cb) {
+        if (!_doc._id) {
+          db.newUUID(100, function(err, id) {
+            if (err) {
+              return _cb('Failed generating a new database ID. ' + err);
+            }
+            _doc._id = id;
+            var audit = createAudit(_doc);
+            audit.history.push(createHistory(
+              'create', userName, _doc
+            ));
+            _cb(null, audit);
+          });
+        } else {
+          db.getView(appname, 'audit_records_by_doc', {
+            include_docs: true,
+            startkey: [_doc._id],
+            endkey: [_doc._id, {}]
+          }, function(err, result) {
+            if (err) {
+              return callback('Failed retrieving existing audit log. ' + err);
+            }
+            var audit = result.rows.length === 0 ? 
+              createAudit(_doc) : result.rows[0].doc;
+            audit.history.push(createHistory(
+              _doc._deleted ? 'delete' : 'update', userName, _doc
+            ));
+            _cb(null, audit);
+          });
+        }
+      }, function(err, auditRecords) {
+        db.bulkSave(auditRecords, callback);
+      });
+    });
+  };
+
+  function createAudit(record) {
+    return {
+      type: 'audit_record',
+      record_id: record._id,
+      history: []
+    };
+  };
+
+  function createHistory(action, user, doc) {
+    return {
+      action: action,
+      user: user,
+      timestamp: new Date().toISOString(),
+      doc: doc
+    };
+  }
+
   return {
 
     /**
@@ -29,11 +95,11 @@ function init(dbWrapper) {
      * @api public
      */
     saveDoc: function(doc, callback) {
-      audit(dbWrapper, [doc], function(err) {
+      audit([doc], function(err) {
         if (err) {
           return callback('Failed saving audit record. ' + err);
         }
-        dbWrapper.saveDoc(doc, callback);
+        db.saveDoc(doc, callback);
       });
     },
 
@@ -47,59 +113,14 @@ function init(dbWrapper) {
      * @api public
      */
     bulkSave: function(docs, callback) {
-      audit(dbWrapper, docs, function(err) {
+      audit(docs, function(err) {
         if (err) {
           return callback('Failed saving audit records. ' + err);
         }
-        dbWrapper.bulkSave(docs, callback);
+        db.bulkSave(docs, callback);
       });
     }
 
   };
 }
 
-function audit(dbWrapper, docs, callback) {
-  async.map(docs, function(_doc, _cb) {
-    if (!_doc._id) {
-      dbWrapper.newUUID(100, function(err, id) {
-        if (err) {
-          return _cb('Failed generating a new database ID. ' + err);
-        }
-        _doc._id = id;
-        var audit = createAudit(_doc);
-        audit.history.push({
-          action: 'create',
-          doc: _doc
-        });
-        _cb(null, audit);
-      });
-    } else {
-      dbWrapper.getView(appname, 'audit_records_by_doc', {
-        include_docs: true,
-        startkey: [_doc._id],
-        endkey: [_doc._id, {}]
-      }, function(err, result) {
-        if (err) {
-          return callback('Failed retrieving existing audit log. ' + err);
-        }
-        var audit = result.rows.length === 0 ? 
-          createAudit(_doc) : result.rows[0].doc;
-        audit.history.push({
-          action: _doc._deleted ? 'delete' : 'update',
-          doc: _doc
-        });
-        _cb(null, audit);
-      });
-    }
-  }, function(err, auditRecords) {
-    dbWrapper.bulkSave(auditRecords, callback);
-  });
-};
-
-function createAudit(record) {
-  return {
-    type: 'audit_record',
-    record_id: record._id,
-    history: []
-  };
-};
