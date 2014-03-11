@@ -50,21 +50,53 @@ function init(db, user) {
             endkey: [_doc._id, {}]
           }, function(err, result) {
             if (err) {
-              return callback('Failed retrieving existing audit log. ' + err);
+              return _cb('Failed retrieving existing audit log. ' + err);
             }
-            var audit = result.rows.length === 0 ? 
-              createAudit(_doc) : result.rows[0].doc;
-            audit.history.push(createHistory(
-              _doc._deleted ? 'delete' : 'update', userName, _doc
-            ));
-            _cb(null, audit);
+            if (result.rows.length === 0) {
+              var audit = createAudit(_doc);
+              if (_doc._rev) {
+                // no existing audit, but existing revision - log current
+                db.getDoc(_doc._id, function(err, _oldDoc) {
+                  if (err) {
+                    return _cb('Failed retrieving existing document. ' + err);
+                  }
+                  audit.history.push(createHistory(
+                    isInitialRev(_oldDoc) ? 'create' : 'update', null, _oldDoc
+                  ));
+                  audit.history.push(createHistory(
+                    _doc._deleted ? 'delete' : 'update', userName, _doc
+                  ));
+                  _cb(null, audit);
+                });
+              } else {
+                // no existing audit or existing revision
+                audit.history.push(createHistory(
+                  'create', userName, _doc
+                ));
+                _cb(null, audit);
+              }
+            } else {
+              // existing audit
+              var audit = result.rows[0].doc;
+              audit.history.push(createHistory(
+                _doc._deleted ? 'delete' : 'update', userName, _doc
+              ));
+              _cb(null, audit);
+            }
           });
         }
       }, function(err, auditRecords) {
+        if (err) {
+          return callback(err);
+        }
         db.bulkSave(auditRecords, callback);
       });
     });
   };
+
+  function isInitialRev(doc) {
+    return doc._rev.indexOf('1-') === 0;
+  }
 
   function createAudit(record) {
     return {
