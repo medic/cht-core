@@ -96,9 +96,9 @@ npm install phantomjs -g
 
 Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/kujua-lite).
 
-Develop      | Master
------------- | -------------
-[![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=develop)](https://travis-ci.org/medic/kujua-lite/branches) | [![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=master)](https://travis-ci.org/medic/kujua-lite/branches)
+Develop      | Testing       | Master
+------------ | ------------- | ------------
+[![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=develop)](https://travis-ci.org/medic/kujua-lite/branches) | [![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=testing)](https://travis-ci.org/medic/kujua-lite/branches) | [![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=master)](https://travis-ci.org/medic/kujua-lite/branches)
 
 
 ## License & Copyright
