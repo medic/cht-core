@@ -1,5 +1,14 @@
 # Kujua Release Notes
 
+## 0.3.2
+
+### Mar 11, 2014 
+
+- fixed facilities spreadsheet bug #451 in Chrome
+    
+- minor user interface tweaks on deletion of facilities modal
+
+
 ## 0.3.1
 
 ### Mar 3, 2014 
