@@ -703,6 +703,9 @@
             // TODO: coerce value to correct type depending on options
             setProperty(doc, $(this).data('property'), $(this).text());
         });
+        $table.on('click', function (ev) {
+            ev.stopImmediatePropagation();
+        });
         $table.on('click', 'tbody th', function (ev) {
             if (ev.which === 3) { // right mouse button
 
@@ -798,14 +801,8 @@
             var td = $table.data('spreadsheet:selected-td');
             editCell.call($table, td);
         });
-        $(document).click(function (ev) {
-            var el = $(ev.target),
-              input = $table.data('spreadsheet:edit-inline-input'),
-              select_div = $table.data('spreadsheet:select-div'),
-              table = $table.data('spreadsheet:current-table');
-            if (!el.is('td', table) && !el.is(input) && !el.is(select_div)) {
-                clearSelection.call($table);
-            }
+        $(document).on('click', function(ev) {
+            clearSelection.call($table);
         });
 
         $(document).keydown(function (ev) {
