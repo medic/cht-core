@@ -7,11 +7,7 @@
     "dependencies": {
         "settings": null,
         "modules": null,
-        "underscore": ">=1.1.5",
-        "db": null,
         "properties": null,
-        "duality": ">=0.0.18",
-        "session": null,
-        "async": "0.1.15"
+        "async": null
     }
 }

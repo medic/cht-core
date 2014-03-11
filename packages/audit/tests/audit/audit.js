@@ -1,19 +1,7 @@
-var audit = require('audit/log'),
-  db = require('db'),
-  sinon = require('sinon');
-
-exports.tearDown = function (callback) {
-  if (db.use.restore) {
-    db.use.restore();
-  }
-  if (db.newUUID.restore) {
-    db.newUUID.restore();
-  }
-  callback();
-}
+var sinon = require('sinon');
 
 exports['saving a new `data_record` creates a new `audit_record`'] = function(test) {
-  test.expect(11);
+  test.expect(12);
   
   var docId = 123;
   var doc1 = {
@@ -21,25 +9,30 @@ exports['saving a new `data_record` creates a new `audit_record`'] = function(te
     type: 'data_record'
   };
 
-  var appdb = { 
+  var db = {
     saveDoc: function(doc, callback) { 
       callback(null, {id: docId}); 
     },
     bulkSave: function(docs, callback) {
       callback(null);
+    },
+    newUUID: function(count, callback) {
+      callback(null, docId);
     }
   };
-  var saveDoc = sinon.spy(appdb, 'saveDoc');
-  var bulkSave = sinon.spy(appdb, 'bulkSave');
-  sinon.stub(db, 'use').returns(appdb);
-  sinon.stub(db, 'newUUID').yields(null, docId);
+  var saveDoc = sinon.spy(db, 'saveDoc');
+  var bulkSave = sinon.spy(db, 'bulkSave');
+  var newUUID = sinon.spy(db, 'newUUID');
+  var audit = require('audit/log').withKansoDb(db);
+
   audit.saveDoc(doc1, function(err, result) {
     test.equal(err, null);
     test.equal(result.id, docId);
   });
 
-  test.equal(saveDoc.callCount, 1);
   test.equal(bulkSave.callCount, 1);
+  test.equal(saveDoc.callCount, 1);
+  test.equal(newUUID.callCount, 1);
   var auditRecord = bulkSave.firstCall.args[0];
   var dataRecord = saveDoc.firstCall.args[0];
   test.equal(auditRecord[0].type, 'audit_record');
@@ -66,7 +59,7 @@ exports['updating a `data_record` updates the `audit_record`'] = function(test) 
     foo: 'bar'
   };
 
-  var appdb = { 
+  var db = {
     saveDoc: function(doc, callback) { 
       callback(null, {id: docId});
     },
@@ -86,10 +79,11 @@ exports['updating a `data_record` updates the `audit_record`'] = function(test) 
       }]});
     }
   };
-  var saveDoc = sinon.spy(appdb, 'saveDoc');
-  var bulkSave = sinon.spy(appdb, 'bulkSave');
-  var getView = sinon.spy(appdb, 'getView');
-  sinon.stub(db, 'use').returns(appdb);
+  var saveDoc = sinon.spy(db, 'saveDoc');
+  var bulkSave = sinon.spy(db, 'bulkSave');
+  var getView = sinon.spy(db, 'getView');
+  var audit = require('audit/log').withKansoDb(db);
+
   audit.saveDoc(doc2, function(err, result) {
     test.equal(err, null);
     test.equal(result.id, docId);
@@ -125,7 +119,7 @@ exports['deleting a `data_record` updates the `audit_record`'] = function(test) 
     _deleted: true
   };
 
-  var appdb = { 
+  var db = { 
     saveDoc: function(doc, callback) { 
       callback(null, {id: docId});
     },
@@ -145,10 +139,11 @@ exports['deleting a `data_record` updates the `audit_record`'] = function(test) 
       }]});
     }
   };
-  var saveDoc = sinon.spy(appdb, 'saveDoc');
-  var bulkSave = sinon.spy(appdb, 'bulkSave');
-  var getView = sinon.spy(appdb, 'getView');
-  sinon.stub(db, 'use').returns(appdb);
+  var saveDoc = sinon.spy(db, 'saveDoc');
+  var bulkSave = sinon.spy(db, 'bulkSave');
+  var getView = sinon.spy(db, 'getView');
+  var audit = require('audit/log').withKansoDb(db);
+
   audit.saveDoc(doc2, function(err, result) {
     test.equal(err, null);
     test.equal(result.id, docId);
@@ -184,7 +179,7 @@ exports['updating a `data_record` creates an `audit_record` if required'] = func
     foo: 'bar'
   };
 
-  var appdb = { 
+  var db = { 
     saveDoc: function(doc, callback) { 
       callback(null, {id: docId});
     },
@@ -195,10 +190,11 @@ exports['updating a `data_record` creates an `audit_record` if required'] = func
       callback(null, {"rows":[]});
     }
   };
-  var saveDoc = sinon.spy(appdb, 'saveDoc');
-  var bulkSave = sinon.spy(appdb, 'bulkSave');
-  var getView = sinon.spy(appdb, 'getView');
-  sinon.stub(db, 'use').returns(appdb);
+  var saveDoc = sinon.spy(db, 'saveDoc');
+  var bulkSave = sinon.spy(db, 'bulkSave');
+  var getView = sinon.spy(db, 'getView');
+  var audit = require('audit/log').withKansoDb(db);
+
   audit.saveDoc(doc2, function(err, result) {
     test.equal(err, null);
     test.equal(result.id, docId);
@@ -233,7 +229,7 @@ exports['bulkSave updates all relevant `audit_record` docs'] = function(test) {
     foo: 'bar'
   };
 
-  var appdb = { 
+  var db = { 
     bulkSave: function(doc, callback) { 
       callback(null);
     },
@@ -250,9 +246,10 @@ exports['bulkSave updates all relevant `audit_record` docs'] = function(test) {
       }]});
     }
   };
-  var save = sinon.spy(appdb, 'bulkSave');
-  var getView = sinon.spy(appdb, 'getView');
-  sinon.stub(db, 'use').returns(appdb);
+  var save = sinon.spy(db, 'bulkSave');
+  var getView = sinon.spy(db, 'getView');
+  var audit = require('audit/log').withKansoDb(db);
+
   audit.bulkSave([doc1, doc2], function(err, result) {
     test.equal(err, null);
   });
@@ -280,7 +277,7 @@ exports['bulkSave updates all relevant `audit_record` docs'] = function(test) {
 
 
 exports['bulkSave creates `audit_record` docs when needed'] = function(test) {
-  test.expect(20);
+  test.expect(21);
 
   var docId1 = 123;
   var docId2 = 456;
@@ -305,24 +302,29 @@ exports['bulkSave creates `audit_record` docs when needed'] = function(test) {
     _deleted: true
   };
 
-  var appdb = { 
+  var db = { 
     bulkSave: function(doc, callback) { 
       callback(null);
     },
     getView: function(appname, view, query, callback) {
       callback(null, {"rows":[ ]});
+    },
+    newUUID: function(count, callback) {
+      callback(null, docId2);
     }
   };
-  var save = sinon.spy(appdb, 'bulkSave');
-  var getView = sinon.spy(appdb, 'getView');
-  sinon.stub(db, 'use').returns(appdb);
-  sinon.stub(db, 'newUUID').yields(null, docId2);
+  var save = sinon.spy(db, 'bulkSave');
+  var getView = sinon.spy(db, 'getView');
+  var newUUID = sinon.spy(db, 'newUUID');
+  var audit = require('audit/log').withKansoDb(db);
+
   audit.bulkSave([doc1, doc2, doc3], function(err, result) {
     test.equal(err, null);
   });
 
   test.equal(getView.callCount, 2);
   test.equal(save.callCount, 2);
+  test.equal(newUUID.callCount, 1);
   var auditRecord = save.firstCall.args[0];
   var dataRecord = save.secondCall.args[0];
   test.equal(auditRecord.length, 3);
@@ -359,14 +361,16 @@ exports['when audit fails, doc is not saved and error returned'] = function(test
     type: 'data_record'
   };
 
-  var appdb = { 
+  var db = { 
     bulkSave: function(docs, callback) {
       callback(errMsg);
+    },
+    newUUID: function(count, callback) {
+      callback(null, docId);
     }
   };
-  var bulkSave = sinon.spy(appdb, 'bulkSave');
-  sinon.stub(db, 'use').returns(appdb);
-  sinon.stub(db, 'newUUID').yields(null, docId);
+  var bulkSave = sinon.spy(db, 'bulkSave');
+  var audit = require('audit/log').withKansoDb(db);
   audit.saveDoc(doc1, function(err, result) {
     test.equal(err, 'Failed saving audit record. ' + errMsg);
   });
