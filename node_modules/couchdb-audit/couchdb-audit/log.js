@@ -156,7 +156,7 @@ function init(appname, db, user) {
     saveDoc: function(doc, callback) {
       audit([doc], function(err) {
         if (err) {
-          return callback('Failed saving audit record. ' + JSON.stringify(err));
+          return callback('Failed saving audit record. ' + err);
         }
         db.saveDoc(doc, callback);
       });
@@ -174,7 +174,7 @@ function init(appname, db, user) {
     bulkSave: function(docs, callback) {
       audit(docs, function(err) {
         if (err) {
-          return callback('Failed saving audit records. ' + JSON.stringify(err));
+          return callback('Failed saving audit records. ' + err);
         }
         db.bulkSave(docs, callback);
       });
