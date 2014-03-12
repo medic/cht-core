@@ -35,8 +35,9 @@ module.exports = {
       saveDoc: function(doc, callback) {
         felix.saveDoc.call(felix, doc, callback);
       },
-      bulkSave: function(docs, callback) {
-        felix.bulkDocs.call(felix, {docs: docs}, callback);
+      bulkSave: function(docs, options, callback) {
+        options.docs = docs;
+        felix.bulkDocs.call(felix, options, callback);
       },
       newUUID: function(count, callback) {
         felix.uuids.call(felix, 1, function(uuids) {
@@ -116,7 +117,7 @@ function init(appname, db, user) {
         if (err) {
           return callback(err);
         }
-        db.bulkSave(auditRecords, callback);
+        db.bulkSave(auditRecords, {}, callback);
       });
     });
   };
@@ -140,7 +141,7 @@ function init(appname, db, user) {
       timestamp: new Date().toISOString(),
       doc: doc
     };
-  }
+  };
 
   return {
 
@@ -148,7 +149,6 @@ function init(appname, db, user) {
      * Saves the given doc with an audit record
      *
      * @name saveDoc(doc, callback)
-     * @param {Object} db The db instance to use
      * @param {Object} doc
      * @param {Function} callback(err,response)
      * @api public
@@ -165,18 +165,22 @@ function init(appname, db, user) {
     /**
      * Saves the given docs with individual audit records
      *
-     * @name bulkSave(doc, callback)
-     * @param {Object} db The kanso db instance to use
-     * @param {Array} docs An array of documents; each document is an object
+     * @name bulkSave(docs, options, callback)
+     * @param {Array} docs An array of documents to be saved
+     * @param {Object} options Optional options to pass through to bulk save
      * @param {Function} callback(err,response)
      * @api public
      */
-    bulkSave: function(docs, callback) {
+    bulkSave: function(docs, options, callback) {
+      if (!callback) {
+        callback = options;
+        options = {};
+      }
       audit(docs, function(err) {
         if (err) {
           return callback('Failed saving audit records. ' + err);
         }
-        db.bulkSave(docs, callback);
+        db.bulkSave(docs, options, callback);
       });
     }
 

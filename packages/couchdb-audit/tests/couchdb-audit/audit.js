@@ -15,7 +15,7 @@ exports['saving a new `data_record` creates a new `audit_record`'] = function(te
     saveDoc: function(doc, callback) { 
       callback(null, {id: docId}); 
     },
-    bulkSave: function(docs, callback) {
+    bulkSave: function(docs, options, callback) {
       callback(null);
     },
     newUUID: function(count, callback) {
@@ -74,7 +74,7 @@ exports['saving a new `data_record` with id set creates a new `audit_record`'] =
     saveDoc: function(doc, callback) { 
       callback(null, {id: docId}); 
     },
-    bulkSave: function(docs, callback) {
+    bulkSave: function(docs, options, callback) {
       callback(null);
     },
     getView: function(appname, view, query, callback) {
@@ -136,7 +136,7 @@ exports['updating a `data_record` updates the `audit_record`'] = function(test) 
     saveDoc: function(doc, callback) { 
       callback(null, {id: docId});
     },
-    bulkSave: function(docs, callback) {
+    bulkSave: function(docs, options, callback) {
       callback(null);
     },
     getView: function(appname, view, query, callback) {
@@ -208,7 +208,7 @@ exports['deleting a `data_record` updates the `audit_record`'] = function(test) 
     saveDoc: function(doc, callback) { 
       callback(null, {id: docId});
     },
-    bulkSave: function(docs, callback) {
+    bulkSave: function(docs, options, callback) {
       callback(null);
     },
     getView: function(appname, view, query, callback) {
@@ -280,7 +280,7 @@ exports['updating a `data_record` creates an `audit_record` if required'] = func
     saveDoc: function(doc, callback) { 
       callback(null, {id: docId});
     },
-    bulkSave: function(docs, callback) {
+    bulkSave: function(docs, options, callback) {
       callback(null);
     },
     getView: function(appname, view, query, callback) {
@@ -341,7 +341,7 @@ exports['bulkSave updates all relevant `audit_record` docs'] = function(test) {
   };
 
   var db = { 
-    bulkSave: function(doc, callback) { 
+    bulkSave: function(doc, options, callback) { 
       callback(null);
     },
     getView: function(appname, view, query, callback) {
@@ -368,7 +368,7 @@ exports['bulkSave updates all relevant `audit_record` docs'] = function(test) {
   var getView = sinon.spy(db, 'getView');
   var audit = require('couchdb-audit/log').withKanso(appname, db, session);
 
-  audit.bulkSave([doc1, doc2], function(err, result) {
+  audit.bulkSave([doc1, doc2], {all_or_nothing: true}, function(err, result) {
     test.equal(err, null);
   });
 
@@ -390,6 +390,73 @@ exports['bulkSave updates all relevant `audit_record` docs'] = function(test) {
   });
   test.equal(dataRecord[0], doc1);
   test.equal(dataRecord[1], doc2);
+  test.done();
+};
+
+exports['bulkSave works with felix couchdb node module'] = function(test) {
+  test.expect(16);
+
+  var user = 'jack';
+  var docId1 = 123;
+  var docId2 = 456;
+  var doc1 = {
+    _id: docId1,
+    type: 'data_record',
+    foo: 'baz'
+  };
+  var doc2 = {
+    _id: docId2,
+    type: 'data_record',
+    foo: 'bar'
+  };
+
+  var db = { 
+    bulkDocs: function(options, callback) {
+      callback(null);
+    },
+    view: function(appname, view, query, callback) {
+      callback(null, {"rows":[{
+        doc: {
+          type: 'audit_record',
+          record_id: (query.startkey === docId1) ? docId1 : docId2,
+          history: [{
+            action: 'create',
+            doc: (query.startkey === docId1) ? doc1 : doc2
+          }]
+        }
+      }]});
+    }
+  };
+  var save = sinon.spy(db, 'bulkDocs');
+  var getView = sinon.spy(db, 'view');
+  var audit = require('couchdb-audit/log').withNode(appname, db, user);
+
+  audit.bulkSave([doc1, doc2], {all_or_nothing: true}, function(err, result) {
+    test.equal(err, null);
+  });
+
+  test.equal(getView.callCount, 2);
+  test.equal(save.callCount, 2);
+  var auditRecord = save.firstCall.args[0].docs;
+  
+  auditRecord.forEach(function(record) {
+    test.equal(record.type, 'audit_record');
+    test.equal(record.history.length, 2);
+    test.equal(record.history[1].action, 'update');
+    test.equal(record.history[1].user, user);
+    if (record.record_id === docId1) {
+      test.equal(record.history[0].doc, doc1);
+    } else if (record.record_id === docId2) {
+      test.equal(record.history[0].doc, doc2);
+    } else {
+      test.ok(false, 'Unexpected record_id');
+    }
+  });
+
+  test.equal(save.secondCall.args[0].all_or_nothing, true);
+  var dataRecords = save.secondCall.args[0].docs;
+  test.equal(dataRecords[0], doc1);
+  test.equal(dataRecords[1], doc2);
   test.done();
 };
 
@@ -423,7 +490,7 @@ exports['bulkSave creates `audit_record` docs when needed'] = function(test) {
   };
 
   var db = { 
-    bulkSave: function(doc, callback) { 
+    bulkSave: function(doc, options, callback) { 
       callback(null);
     },
     getView: function(appname, view, query, callback) {
@@ -498,7 +565,7 @@ exports['when audit fails, doc is not saved and error returned'] = function(test
   };
 
   var db = { 
-    bulkSave: function(docs, callback) {
+    bulkSave: function(docs, options, callback) {
       callback(errMsg);
     },
     newUUID: function(count, callback) {
