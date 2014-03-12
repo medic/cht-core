@@ -1,4 +1,5 @@
 var fakedb = require('../fake-db'),
+    fakeaudit = require('../fake-audit'),
     transition = require('../../transitions/update_clinics'),
     phone = '+34567890123';
 
@@ -16,7 +17,7 @@ exports['should update clinic by phone'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         test.ok(complete);
         test.ok(doc.related_entities.clinic);
         test.equal(doc.related_entities.clinic.contact.phone, phone);
@@ -33,7 +34,7 @@ exports['should not update clinic with wrong phone'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         test.ok(!complete);
         test.ok(!doc.related_entities.clinic);
         test.done();
@@ -50,7 +51,7 @@ exports['should update clinic by refid and fix number'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         test.ok(complete);
         test.ok(doc.related_entities.clinic);
         test.equal(doc.related_entities.clinic.contact.phone, '+12345');

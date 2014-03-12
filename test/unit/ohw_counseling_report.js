@@ -3,6 +3,7 @@ var _ = require('underscore'),
     moment = require('moment'),
     transition = require('../../transitions/ohw_counseling'),
     fakedb = require('../fake-db'),
+    fakeaudit = require('../fake-audit'),
     utils = require('../../lib/utils'),
     date = require('../../date'),
     registration;
@@ -126,7 +127,7 @@ exports['ANC acknowledgement'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         test.ok(doc.tasks);
         test.equals(doc.tasks.length, 1);
         test.same(
@@ -145,7 +146,7 @@ exports['ANC report right now clears group 1'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         var st = registration.scheduled_tasks;
         test.ok(st);
         test.equals(st.length, 12);
@@ -168,7 +169,7 @@ exports['ANC report right now clears group 1'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         var st = registration.scheduled_tasks;
         test.ok(st);
         test.equals(st.length, 12);
@@ -190,7 +191,7 @@ exports['ANC report in 14 days clears group 1 and 2'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         var st = registration.scheduled_tasks;
         test.ok(st);
         test.equals(st.length, 12);
@@ -219,7 +220,7 @@ exports['PNC normal acknowledgement'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         test.ok(doc.tasks);
         test.equals(doc.tasks.length, 1);
         test.same(
@@ -246,7 +247,7 @@ exports['PNC report now clears group 1'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         var st = registration.scheduled_tasks;
         test.equal(doc.tasks.length, 1);
         test.ok(registration);
@@ -290,7 +291,7 @@ exports['PNC report in 36 days clears all counseling reminders'] = function(test
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         var st = registration.scheduled_tasks;
         test.equal(doc.tasks.length, 1);
         test.ok(registration);

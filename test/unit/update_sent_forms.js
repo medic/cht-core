@@ -30,7 +30,7 @@ exports['calls db.getDoc with id of clinic'] = function(test) {
                 }
             }
         }
-    }, db, function(err, complete) {
+    }, db, {}, function(err, complete) {
         var call;
 
         test.equals(db.getDoc.callCount, 1);
@@ -66,7 +66,7 @@ exports['calls db.saveDoc with clinic and updated sent_forms'] = function(test) 
             form: 'XXX',
             reported_date: now.valueOf()
         }
-    }, db, function(err, complete) {
+    }, db, {}, function(err, complete) {
         var call,
             clinic;
 
@@ -110,7 +110,7 @@ exports['does not overwrite if existing date is after'] = function(test) {
             form: 'XXX',
             reported_date: now.valueOf()
         }
-    }, db, function(err, complete) {
+    }, db, {}, function(err, complete) {
         var call,
             clinic;
 
@@ -154,7 +154,7 @@ exports['overwrites if existing date is before'] = function(test) {
             form: 'XXX',
             reported_date: now.valueOf()
         }
-    }, db, function(err, complete) {
+    }, db, {}, function(err, complete) {
         var call,
             clinic;
 
