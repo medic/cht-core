@@ -1,4 +1,5 @@
-var sinon = require('sinon');
+var sinon = require('sinon'),
+  appname = 'test';
 
 exports['saving a new `data_record` creates a new `audit_record`'] = function(test) {
   test.expect(15);
@@ -33,7 +34,7 @@ exports['saving a new `data_record` creates a new `audit_record`'] = function(te
   var newUUID = sinon.spy(db, 'newUUID');
   var sessionInfo = sinon.spy(session, 'info');
   var clock = sinon.useFakeTimers();
-  var audit = require('audit/log').withKanso(db, session);
+  var audit = require('couchdb-audit/log').withKanso(appname, db, session);
 
   audit.saveDoc(doc1, function(err, result) {
     test.equal(err, null);
@@ -91,7 +92,7 @@ exports['saving a new `data_record` with id set creates a new `audit_record`'] =
   var bulkSave = sinon.spy(db, 'bulkSave');
   var getView = sinon.spy(db, 'getView');
   var sessionInfo = sinon.spy(session, 'info');
-  var audit = require('audit/log').withKanso(db, session);
+  var audit = require('couchdb-audit/log').withKanso(appname, db, session);
 
   audit.saveDoc(doc1, function(err, result) {
     test.equal(err, null);
@@ -162,7 +163,7 @@ exports['updating a `data_record` updates the `audit_record`'] = function(test) 
   var saveDoc = sinon.spy(db, 'saveDoc');
   var bulkSave = sinon.spy(db, 'bulkSave');
   var getView = sinon.spy(db, 'getView');
-  var audit = require('audit/log').withKanso(db, session);
+  var audit = require('couchdb-audit/log').withKanso(appname, db, session);
 
   audit.saveDoc(doc2, function(err, result) {
     test.equal(err, null);
@@ -234,7 +235,7 @@ exports['deleting a `data_record` updates the `audit_record`'] = function(test) 
   var saveDoc = sinon.spy(db, 'saveDoc');
   var bulkSave = sinon.spy(db, 'bulkSave');
   var getView = sinon.spy(db, 'getView');
-  var audit = require('audit/log').withKanso(db, session);
+  var audit = require('couchdb-audit/log').withKanso(appname, db, session);
 
   audit.saveDoc(doc2, function(err, result) {
     test.equal(err, null);
@@ -300,7 +301,7 @@ exports['updating a `data_record` creates an `audit_record` if required'] = func
   var bulkSave = sinon.spy(db, 'bulkSave');
   var getView = sinon.spy(db, 'getView');
   var getDoc = sinon.spy(db, 'getDoc');
-  var audit = require('audit/log').withKanso(db, session);
+  var audit = require('couchdb-audit/log').withKanso(appname, db, session);
 
   audit.saveDoc(doc2, function(err, result) {
     test.equal(err, null);
@@ -365,7 +366,7 @@ exports['bulkSave updates all relevant `audit_record` docs'] = function(test) {
   };
   var save = sinon.spy(db, 'bulkSave');
   var getView = sinon.spy(db, 'getView');
-  var audit = require('audit/log').withKanso(db, session);
+  var audit = require('couchdb-audit/log').withKanso(appname, db, session);
 
   audit.bulkSave([doc1, doc2], function(err, result) {
     test.equal(err, null);
@@ -445,7 +446,7 @@ exports['bulkSave creates `audit_record` docs when needed'] = function(test) {
   var save = sinon.spy(db, 'bulkSave');
   var getView = sinon.spy(db, 'getView');
   var newUUID = sinon.spy(db, 'newUUID');
-  var audit = require('audit/log').withKanso(db, session);
+  var audit = require('couchdb-audit/log').withKanso(appname, db, session);
 
   audit.bulkSave([doc1, doc2, doc3], function(err, result) {
     test.equal(err, null);
@@ -512,7 +513,7 @@ exports['when audit fails, doc is not saved and error returned'] = function(test
     }
   };
   var bulkSave = sinon.spy(db, 'bulkSave');
-  var audit = require('audit/log').withKanso(db, session);
+  var audit = require('couchdb-audit/log').withKanso(appname, db, session);
   audit.saveDoc(doc1, function(err, result) {
     test.equal(err, 'Failed saving audit record. ' + errMsg);
   });
