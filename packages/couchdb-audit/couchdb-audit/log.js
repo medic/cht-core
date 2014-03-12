@@ -1,5 +1,4 @@
-var async = require('async'),
-  appname = require('settings/root').name;
+var async = require('async');
 
 module.exports = {
 
@@ -7,11 +6,13 @@ module.exports = {
    * Initialise the audit to persist to the given kanso db.
    *
    * @name withKanso(db)
+   * @param {String} appname The name of the couchdb app
    * @param {Object} db The kanso db instance to use
+   * @param {Object} session The kanso session instance to use
    * @api public
    */
-  withKanso: function(db, session) {
-    return init(db, {
+  withKanso: function(appname, db, session) {
+    return init(appname, db, {
       getName: function(callback) {
         session.info(function(err, result) {
           if (err) {
@@ -21,10 +22,36 @@ module.exports = {
         });
       }
     });
+  },
+
+  withNode: function(appname, felix, userName) {
+    return init(appname, {
+      getView: function(design, view, query, callback) {
+        felix.view.call(felix, design, view, query, callback);
+      },
+      getDoc: function(id, callback) {
+        felix.getDoc.call(felix, id, callback);
+      },
+      saveDoc: function(doc, callback) {
+        felix.saveDoc.call(felix, doc, callback);
+      },
+      bulkSave: function(docs, callback) {
+        felix.bulkDocs.call(felix, {docs: docs}, callback);
+      },
+      newUUID: function(count, callback) {
+        felix.uuids.call(felix, 1, function(uuids) {
+          callback(uuids[0]);
+        });
+      }
+    }, {
+      getName: function(callback) {
+        callback(null, userName);
+      }
+    });
   }
 };
 
-function init(db, user) {
+function init(appname, db, user) {
   function audit(docs, callback) {
     user.getName(function(err, userName) {
       if (err) {
@@ -129,7 +156,7 @@ function init(db, user) {
     saveDoc: function(doc, callback) {
       audit([doc], function(err) {
         if (err) {
-          return callback('Failed saving audit record. ' + err);
+          return callback('Failed saving audit record. ' + JSON.stringify(err));
         }
         db.saveDoc(doc, callback);
       });
@@ -147,7 +174,7 @@ function init(db, user) {
     bulkSave: function(docs, callback) {
       audit(docs, function(err) {
         if (err) {
-          return callback('Failed saving audit records. ' + err);
+          return callback('Failed saving audit records. ' + JSON.stringify(err));
         }
         db.bulkSave(docs, callback);
       });
