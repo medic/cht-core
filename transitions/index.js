@@ -35,6 +35,7 @@ if (!process.env.TEST_ENV) {
  */
 queue = async.queue(function(job, callback) {
     var db = job.db || require('../db'),
+        audit = require('couchdb-audit').withNode('kujua-lite', db, 'sentinel'),
         transition = job.transition,
         key = job.key,
         change = job.change;
@@ -47,7 +48,7 @@ queue = async.queue(function(job, callback) {
                 key: key,
                 change: change,
                 err: err
-            }, db, callback);
+            }, db, audit, callback);
         } else {
             callback();
         }
@@ -137,7 +138,7 @@ module.exports = {
         });
     },
     // mark the transition as completed
-    finalize: function(options, db, callback) {
+    finalize: function(options, db, audit, callback) {
         var change = options.change,
             key = options.key,
             err = options.err,
@@ -158,7 +159,7 @@ module.exports = {
                 callback(err);
             } else {
                 if (utils.updateable(doc, latest)) {
-                    db.saveDoc(doc, function(err, result) {
+                    audit.saveDoc(doc, function(err, result) {
                         if (err) {
                             console.log(JSON.stringify(err));
                         }
