@@ -16,6 +16,7 @@ exports['finalize exposed'] = function(test) {
 
 exports['save not called if transition has had no effect'] = function(test) {
     var db,
+        audit,
         doc,
         latest;
 
@@ -29,7 +30,9 @@ exports['save not called if transition has had no effect'] = function(test) {
     db = {
         getDoc: function(id, callback) {
             callback(null, latest);
-        },
+        }
+    };
+    audit = {
         saveDoc: function(doc, callback) {
             test.fail();
         }
@@ -40,13 +43,14 @@ exports['save not called if transition has had no effect'] = function(test) {
             doc: doc
         },
         key: 'x'
-    }, db, function(err) {
+    }, db, audit, function(err) {
         test.done();
     });
 };
 
 exports['records error status of transition'] = function(test) {
     var db,
+        audit,
         doc,
         latest;
 
@@ -57,7 +61,9 @@ exports['records error status of transition'] = function(test) {
     db = {
         getDoc: function(id, callback) {
             callback(null, doc);
-        },
+        }
+    };
+    audit = {
         saveDoc: function(doc, callback) {
             callback();
         }
@@ -69,7 +75,7 @@ exports['records error status of transition'] = function(test) {
             doc: doc
         },
         key: 'x'
-    }, db, function(err) {
+    }, db, audit, function(err) {
         test.ok(doc.transitions);
         test.equals(doc.transitions.x.ok, false);
         test.done();
@@ -78,6 +84,7 @@ exports['records error status of transition'] = function(test) {
 
 exports['updated _rev bypasses save'] = function(test) {
     var db,
+        audit,
         doc,
         latest;
 
@@ -92,18 +99,21 @@ exports['updated _rev bypasses save'] = function(test) {
     db = {
         getDoc: function(id, callback) {
             callback(null, latest);
-        },
+        }
+    };
+    audit = {
         saveDoc: function(doc, callback) {
             test.fail();
         }
     };
+
 
     transitions.finalize({
         change: {
             doc: doc
         },
         key: 'x'
-    }, db, function(err) {
+    }, db, audit, function(err) {
         test.ok(!err);
         test.done();
     });
@@ -111,6 +121,7 @@ exports['updated _rev bypasses save'] = function(test) {
 
 exports['passes changed doc to saveDoc when changed'] = function(test) {
     var db,
+        audit,
         doc,
         latest;
 
@@ -125,7 +136,9 @@ exports['passes changed doc to saveDoc when changed'] = function(test) {
     db = {
         getDoc: function(id, callback) {
             callback(null, latest);
-        },
+        }
+    };
+    audit = {
         saveDoc: function(doc, callback) {
             test.ok(doc.changed_stuff);
             callback();
@@ -137,7 +150,7 @@ exports['passes changed doc to saveDoc when changed'] = function(test) {
             doc: doc
         },
         key: 'x'
-    }, db, function(err) {
+    }, db, audit, function(err) {
         test.ok(!err);
         test.equals(doc.transitions.x.ok, true);
         test.done();
