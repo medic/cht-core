@@ -87,7 +87,7 @@ var validate = function(callback) {
 
 };
 
-var handleMatch = function(change, db, callback) {
+var handleMatch = function(change, db, audit, callback) {
     new_doc = change.doc,
     clinicPhone = utils.getClinicPhone(new_doc);
     clinicContactName = utils.getClinicContactName(new_doc);
@@ -100,7 +100,7 @@ var handleMatch = function(change, db, callback) {
         }
         addResponses();
         updateSchedule();
-        db.saveDoc(registration, function(err) {
+        audit.saveDoc(registration, function(err) {
              callback(err, true);
         });
     });

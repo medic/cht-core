@@ -89,7 +89,7 @@ var validate = function(callback) {
 
 };
 
-var handleMatch = function(change, db, callback) {
+var handleMatch = function(change, db, audit, callback) {
 
     new_doc = change.doc;
     clinicPhone = utils.getClinicPhone(change.doc);
@@ -107,7 +107,7 @@ var handleMatch = function(change, db, callback) {
         }
 
         // save registration/schedule doc changes and finalize transition
-        db.saveDoc(registration, function(err) {
+        audit.saveDoc(registration, function(err) {
             return callback(err, true);
         });
     });

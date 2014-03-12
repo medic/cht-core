@@ -3,7 +3,7 @@ var async = require('async'),
     moment = require('moment'),
     date = require('../date');
 
-module.exports = function(db, callback) {
+module.exports = function(db, audit, callback) {
     var now = moment(date.getDate()),
         overdue = now.clone().subtract('days', 7);
 
@@ -40,7 +40,7 @@ module.exports = function(db, callback) {
                     }
                 });
 
-                db.saveDoc(doc, cb);
+                audit.saveDoc(doc, cb);
             }, function(err) {
                 callback(err);
             });

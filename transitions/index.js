@@ -42,7 +42,7 @@ queue = async.queue(function(job, callback) {
 
     console.log('loading queue %s', key);
 
-    transition.onMatch(change, db, function(err, complete) {
+    transition.onMatch(change, db, audit, function(err, complete) {
         if (err || complete) {
             module.exports.finalize({
                 key: key,

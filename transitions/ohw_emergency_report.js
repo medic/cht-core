@@ -162,7 +162,7 @@ var validate = function(callback) {
 
 };
 
-var handleOnMatch = function(change, db, callback) {
+var handleOnMatch = function(change, db, audit, callback) {
 
     new_doc = change.doc;
     clinicPhone = utils.getClinicPhone(change.doc);

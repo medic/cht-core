@@ -93,7 +93,7 @@ module.exports = {
         var validations = config.validations && config.validations.list;
         return validation.validate(doc, validations, callback);
     },
-    onMatch: function(change, db, callback) {
+    onMatch: function(change, db, audit, callback) {
         var self = module.exports,
             doc = change.doc,
             config = self.getRegistrationConfig(self.getConfig(), doc.form),
