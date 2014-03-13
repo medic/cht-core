@@ -6,6 +6,7 @@
     "load": "couchdb-audit/app",
     "dependencies": {
         "settings": null,
+        "session": null,
         "modules": null,
         "properties": null,
         "async": null

@@ -3,68 +3,35 @@ var async = require('async');
 module.exports = {
 
   /**
-   * Initialise the audit to persist to the given kanso db.
+   * Initialise the audit logger.
    *
-   * @name withKanso(db)
-   * @param {String} appname The name of the couchdb app
-   * @param {Object} db The kanso db instance to use
-   * @param {Object} session The kanso session instance to use
+   * @name withNode(appname, felix, name)
+   * @param {String} appname The name of the app.
+   * @param {Object} felix The felix instance to use to persist.
+   * @param {String|Function(err, name)} name Either the authors name, 
+   *    or a function to retrieve the name.
    * @api public
    */
-  withKanso: function(appname, db, session) {
-    return init(appname, db, {
-      getName: function(callback) {
-        session.info(function(err, result) {
-          if (err) {
-            return callback(err);
-          }
-          callback(null, result.userCtx.name);
-        });
-      }
-    });
-  },
-
-  withNode: function(appname, felix, userName) {
-    return init(appname, {
-      getView: function(design, view, query, callback) {
-        felix.view.call(felix, design, view, query, callback);
-      },
-      getDoc: function(id, callback) {
-        felix.getDoc.call(felix, id, callback);
-      },
-      saveDoc: function(doc, callback) {
-        felix.saveDoc.call(felix, doc, callback);
-      },
-      bulkSave: function(docs, options, callback) {
-        options.docs = docs;
-        felix.bulkDocs.call(felix, options, callback);
-      },
-      newUUID: function(count, callback) {
-        felix.uuids.call(felix, 1, function(uuids) {
-          callback(uuids[0]);
-        });
-      }
-    }, {
-      getName: function(callback) {
-        callback(null, userName);
-      }
-    });
+  withNode: function(appname, felix, name) {
+    var nameFn = (typeof name === 'string') ? 
+      function(callback) { callback(null, name); } : name;
+    return init(appname, felix, nameFn);
   }
 };
 
-function init(appname, db, user) {
+function init(appname, db, nameFn) {
   function audit(docs, callback) {
-    user.getName(function(err, userName) {
+    nameFn(function(err, userName) {
       if (err) {
         return callback('Failed getting user name. ' + err);
       }
       async.map(docs, function(_doc, _cb) {
         if (!_doc._id) {
-          db.newUUID(100, function(err, id) {
+          db.uuids(1, function(err, ids) {
             if (err) {
               return _cb('Failed generating a new database ID. ' + err);
             }
-            _doc._id = id;
+            _doc._id = ids[0];
             var audit = createAudit(_doc);
             audit.history.push(createHistory(
               'create', userName, _doc
@@ -72,7 +39,7 @@ function init(appname, db, user) {
             _cb(null, audit);
           });
         } else {
-          db.getView(appname, 'audit_records_by_doc', {
+          db.view(appname, 'audit_records_by_doc', {
             include_docs: true,
             startkey: [_doc._id],
             endkey: [_doc._id, {}]
@@ -117,7 +84,7 @@ function init(appname, db, user) {
         if (err) {
           return callback(err);
         }
-        db.bulkSave(auditRecords, {}, callback);
+        db.bulkDocs({docs: auditRecords}, callback);
       });
     });
   };
@@ -180,7 +147,8 @@ function init(appname, db, user) {
         if (err) {
           return callback('Failed saving audit records. ' + err);
         }
-        db.bulkSave(docs, options, callback);
+        options.docs = docs;
+        db.bulkDocs(options, callback);
       });
     }
 
