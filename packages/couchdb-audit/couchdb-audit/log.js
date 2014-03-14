@@ -33,21 +33,15 @@ function init(appname, db, nameFn) {
             }
             _doc._id = ids[0];
             var audit = createAudit(_doc);
-            audit.history.push(createHistory(
-              'create', userName, _doc
-            ));
+            appendHistory(audit.history, 'create', userName, _doc);
             _cb(null, audit);
           });
         } else {
-          db.view(appname, 'audit_records_by_doc', {
-            include_docs: true,
-            startkey: [_doc._id],
-            endkey: [_doc._id, {}]
-          }, function(err, result) {
+          get(_doc._id, function(err, result) {
             if (err) {
               return _cb('Failed retrieving existing audit log. ' + err);
             }
-            if (result.rows.length === 0) {
+            if (!result) {
               var audit = createAudit(_doc);
               if (_doc._rev) {
                 // no existing audit, but existing revision - log current
@@ -55,27 +49,22 @@ function init(appname, db, nameFn) {
                   if (err) {
                     return _cb('Failed retrieving existing document. ' + err);
                   }
-                  audit.history.push(createHistory(
-                    isInitialRev(_oldDoc) ? 'create' : 'update', null, _oldDoc
-                  ));
-                  audit.history.push(createHistory(
-                    _doc._deleted ? 'delete' : 'update', userName, _doc
-                  ));
+                  var action = isInitialRev(_oldDoc) ? 'create' : 'update';
+                  appendHistory(audit.history, action, null, _oldDoc);
+                  action = _doc._deleted ? 'delete' : 'update';
+                  appendHistory(audit.history, action, userName, _doc);
                   _cb(null, audit);
                 });
               } else {
                 // no existing audit or existing revision
-                audit.history.push(createHistory(
-                  'create', userName, _doc
-                ));
+                appendHistory(audit.history, 'create', userName, _doc);
                 _cb(null, audit);
               }
             } else {
               // existing audit
-              var audit = result.rows[0].doc;
-              audit.history.push(createHistory(
-                _doc._deleted ? 'delete' : 'update', userName, _doc
-              ));
+              var audit = result.doc;
+              var action = _doc._deleted ? 'delete' : 'update';
+              appendHistory(audit.history, action, userName, _doc);
               _cb(null, audit);
             }
           });
@@ -89,6 +78,14 @@ function init(appname, db, nameFn) {
     });
   };
 
+  function clone(obj) {
+    var clone = {};
+    for (var attr in obj) {
+        if (obj.hasOwnProperty(attr)) clone[attr] = obj[attr];
+    }
+    return clone;
+  }
+
   function isInitialRev(doc) {
     return doc._rev.indexOf('1-') === 0;
   }
@@ -99,15 +96,33 @@ function init(appname, db, nameFn) {
       record_id: record._id,
       history: []
     };
-  };
+  }
 
-  function createHistory(action, user, doc) {
-    return {
+  function appendHistory(history, action, user, doc) {
+    if (history.length > 0) {
+      history[history.length - 1].doc._rev = doc._rev;
+    }
+    doc = clone(doc);
+    doc._rev = 'current';
+    history.push({
       action: action,
       user: user,
       timestamp: new Date().toISOString(),
       doc: doc
-    };
+    });
+  }
+
+  function get(docId, callback) {
+    db.view(appname, 'audit_records_by_doc', {
+      include_docs: true,
+      startkey: [docId],
+      endkey: [docId, {}]
+    }, function(err, result) {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, result.rows[0]);
+    });
   };
 
   return {
@@ -150,7 +165,17 @@ function init(appname, db, nameFn) {
         options.docs = docs;
         db.bulkDocs(options, callback);
       });
-    }
+    },
+
+    /**
+     * Get the audit_record for the given docId
+     * 
+     * @name get(docId, callback)
+     * @param {String} docId The id of the `data_record` document
+     * @param {Function} callback(err,response)
+     * @api public
+     */
+    get: get
 
   };
 }
