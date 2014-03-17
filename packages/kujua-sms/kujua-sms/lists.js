@@ -260,7 +260,7 @@ function sendError(json, code) {
 exports.export_data_records = function (head, req) {
 
     if (!kutils.hasPerm(req.userCtx, 'can_export_forms')) {
-        log('messages export sending 403');
+        log('data records export sending 403');
         start({code: 403});
         return send('');
     }
@@ -322,6 +322,12 @@ exports.export_data_records = function (head, req) {
 
 exports.export_audit = function (head, req) {
 
+    if (!kutils.hasPerm(req.userCtx, 'can_export_audit')) {
+        log('audit export sending 403');
+        start({code: 403});
+        return send('');
+    }
+
     var query = req.query,
         locale = query.locale || 'en',
         delimiter = locale === 'fr' ? '";"' : null,
@@ -368,6 +374,8 @@ exports.export_audit = function (head, req) {
     }
 
     sendClosing(format);
+
+    return '';
 };
 
 /**
