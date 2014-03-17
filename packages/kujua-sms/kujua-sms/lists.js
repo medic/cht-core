@@ -6,7 +6,7 @@ var _ = require('underscore'),
     _s = require('underscore-string'),
     utils = require('./utils'),
     moment = require('moment'),
-    logger = require('kujua-utils').logger,
+    kutils = require('kujua-utils'),
     jsonforms  = require('views/lib/jsonforms'),
     info = require('views/lib/appinfo'),
     objectpath = require('views/lib/objectpath');
@@ -107,6 +107,9 @@ function sendHeaderRow(format, labels, form, delimiter, skipHeader) {
 
 function sendValuesRow(vals, format, delimiter) {
     if (format === 'xml') {
+        vals = _.map(vals, function(val) {
+            return typeof val === 'undefined' ? '' : val;
+        });
         send(utils.arrayToXML([vals]) + '\n');
     } else {
         send(utils.arrayToCSV([vals], delimiter) + '\n');
@@ -120,6 +123,13 @@ function sendClosing(format) {
 }
 
 exports.export_messages = function (head, req) {
+
+    if (!kutils.hasPerm(req.userCtx, 'can_export_messages')) {
+        log('messages export sending 403');
+        start({code: 403});
+        return send('');
+    }
+
     var query = req.query,
         format = query.format || 'csv',
         appInfo = info.getAppInfo.call(this),
@@ -221,10 +231,6 @@ exports.export_messages = function (head, req) {
                     msg.message
                 ]);
             });
-            // turn undefined into empty string for xml export
-            vals = _.map(vals, function(val) {
-                return typeof val === 'undefined' ? '' : val;
-            });
             sendValuesRow(vals, format, delimiter);
         });
     };
@@ -252,6 +258,13 @@ function sendError(json, code) {
 };
 
 exports.export_data_records = function (head, req) {
+
+    if (!kutils.hasPerm(req.userCtx, 'can_export_forms')) {
+        log('messages export sending 403');
+        start({code: 403});
+        return send('');
+    }
+
     var labels,
         query = req.query,
         form  = query.form,

@@ -154,20 +154,27 @@ exports.hasPerm = function(userCtx, perm) {
         can_edit_facility: ['national_admin', 'district_admin'],
         can_edit_any_facility: ['national_admin'],
         can_view_revisions: [],
-        can_view_sms_message: []
+        can_view_sms_message: [],
+        can_export_messages: ['national_admin', 'district_admin'],
+        can_export_forms: ['national_admin', 'district_admin']
     };
 
-    if (!userCtx || !perm) {
+    if (!userCtx || !userCtx.roles || userCtx.roles.length === 0) {
+        // user has no roles
         return false;
     }
 
-    if (permissions[perm]) {
-        // admins can do anything
-        return _.intersection(userCtx.roles, ['_admin'].concat(permissions[perm])).length > 0;
-    } else {
-        // if permission doesn't exist, it is always false
+    if (!perm || !permissions[perm]) {
+        // unknown permission
         return false;
     }
+
+    if (exports.isDbAdmin(userCtx)) {
+        // admins can do anything
+        return true;
+    }
+
+    return _.intersection(userCtx.roles, permissions[perm]).length > 0;
 };
 
 exports.getUserDistrict = function(userCtx, callback) {
