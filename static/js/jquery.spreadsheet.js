@@ -703,7 +703,7 @@
             // TODO: coerce value to correct type depending on options
             setProperty(doc, $(this).data('property'), $(this).text());
         });
-        $table.on('click', function (ev) {
+        $table.find('table').on('click', function (ev) {
             ev.stopImmediatePropagation();
         });
         $table.on('click', 'tbody th', function (ev) {
