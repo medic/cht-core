@@ -37,7 +37,6 @@ exports['saving a new `data_record` creates a new `audit_record`'] = function(te
   var sessionInfo = sinon.stub(session, 'info').callsArgWith(0, null, {
     userCtx: {name: userName}
   });
-  var clock = sinon.useFakeTimers();
   var audit = require('couchdb-audit/kanso').withKanso(db);
 
   audit.saveDoc(doc1, function(err, result) {
@@ -56,12 +55,11 @@ exports['saving a new `data_record` creates a new `audit_record`'] = function(te
   test.equal(auditRecord[0].history.length, 1);
   test.equal(auditRecord[0].history[0].action, 'create');
   test.equal(auditRecord[0].history[0].user, userName);
-  test.equal(auditRecord[0].history[0].timestamp, new Date().toISOString());
+  test.ok(!!auditRecord[0].history[0].timestamp);
   test.equal(auditRecord[0].history[0].doc._id, docId);
   test.equal(auditRecord[0].history[0].doc._rev, 'current'); // we don't know the rev yet
   test.equal(dataRecord.type, 'data_record');
   test.equal(dataRecord._id, docId);
-  clock.restore();
   test.done();
 };
 
