@@ -1,33 +1,31 @@
 {#forms}
-    <div class="row-fluid form-row">
-      <h4 class="span7 offset1">
-        {title}
-        <div class="label label-faded">{form}</div>
-      </h4>
-        <div class="span3"><label>{total} records</label></div>
-        <div class="span1">
-            <form class="form-inline" method="get">
-              <button class="btn btn-primary" type="submit" data-url="{baseURL}/export/forms/{form}" data-query="{q}">
-                    <i class="icon-arrow-down icon-large"></i>
-                </button>
-            </form>
-        </div>
+  <div class="row-fluid form-row">
+    <h4 class="span7 offset1">
+      {title}
+      <div class="label label-faded">{form}</div>
+    </h4>
+    <div class="span3"><label>{total} records</label></div>
+    <div class="span1">
+      <form class="form-inline" method="get">
+        <button class="btn btn-primary" type="submit" data-url="{baseURL}/export/forms/{form}" data-query="{q}">
+          <i class="icon-arrow-down icon-large"></i>
+        </button>
+      </form>
     </div>
-    {#districts}
-        <div class="row-fluid district-form-row">
-            <h5 class="offset1 span7">
-              {dh_name}
-            </h5>
-            <div class="span3"><label>{total} records</label></div>
-            <div class="span1">
-                <form class="form-inline" method="get">
-                  <button class="btn btn-primary" type="submit" data-url="{baseURL}/export/forms/{form}" data-form="{form}" data-query="{q}">
-                        <i class="icon-arrow-down icon-large"></i>
-                    </button>
-                </form>
-            </div>
-        </div>
-    {/districts}
+  </div>
+  {#districts}
+    <div class="row-fluid district-form-row">
+      <h5 class="offset1 span7">{dh_name}</h5>
+      <div class="span3"><label>{total} records</label></div>
+      <div class="span1">
+        <form class="form-inline" method="get">
+          <button class="btn btn-primary" type="submit" data-url="{baseURL}/export/forms/{form}" data-form="{form}" data-query="{q}">
+            <i class="icon-arrow-down icon-large"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  {/districts}
 {:else}
 <div class="row-fluid">
   <div class="span12">

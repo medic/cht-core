@@ -156,7 +156,8 @@ exports.hasPerm = function(userCtx, perm) {
         can_view_revisions: [],
         can_view_sms_message: [],
         can_export_messages: ['national_admin', 'district_admin'],
-        can_export_forms: ['national_admin', 'district_admin']
+        can_export_forms: ['national_admin', 'district_admin'],
+        can_export_audit: ['national_admin']
     };
 
     if (!userCtx || !userCtx.roles || userCtx.roles.length === 0) {
