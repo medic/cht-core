@@ -87,7 +87,7 @@ function startExportHeaders(format, filename) {
     }
 };
 
-function sendHeaderRow(format, labels, form, delimiter) {
+function sendHeaderRow(format, labels, form, delimiter, skipHeader) {
     if (format === 'xml') {
         send('<?xml version="1.0" encoding="UTF-8"?>\n' +
              '<?mso-application progid="Excel.Sheet"?>\n' +
@@ -97,8 +97,10 @@ function sendHeaderRow(format, labels, form, delimiter) {
              ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n' +
              ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
              '<Worksheet ss:Name="'+form+'"><Table>');
-        send(utils.arrayToXML([labels]));
-    } else {
+        if (!skipHeader) {
+            send(utils.arrayToXML([labels]));
+        }
+    } else if (!skipHeader) {
         send(utils.arrayToCSV([labels], delimiter) + '\n');
     }
 }
@@ -148,27 +150,11 @@ exports.export_messages = function (head, req) {
         'Message Body'
     ];
 
-    if (format === 'xml') {
-        send('<?xml version="1.0" encoding="UTF-8"?>\n' +
-             '<?mso-application progid="Excel.Sheet"?>\n' +
-             '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
-             ' xmlns:o="urn:schemas-microsoft-com:office:office"\n' +
-             ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n' +
-             ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n' +
-             ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
-             '<Worksheet ss:Name="Messages"><Table>');
-    }
+    labels = _.map(labels, function(label) {
+        return utils.info.translate(label, locale);
+    });
 
-    if (!query.skip_header_row) {
-        labels = _.map(labels, function(label) {
-            return utils.info.translate(label, locale);
-        });
-        if (format === 'xml') {
-            send(utils.arrayToXML([labels]));
-        } else {
-            send(utils.arrayToCSV([labels], delimiter) + '\n');
-        }
-    }
+    sendHeaderRow(format, labels, 'Messages', delimiter, query.skip_header_row);
 
     function sendMessageRows(doc) {
         var tasks = [];
@@ -239,11 +225,7 @@ exports.export_messages = function (head, req) {
             vals = _.map(vals, function(val) {
                 return typeof val === 'undefined' ? '' : val;
             });
-            if (format === 'xml') {
-                send(utils.arrayToXML([vals]));
-            } else {
-                send(utils.arrayToCSV([vals], delimiter) + '\n');
-            }
+            sendValuesRow(vals, format, delimiter);
         });
     };
 
@@ -254,9 +236,7 @@ exports.export_messages = function (head, req) {
         }
     }
 
-    if (format === 'xml') {
-        send('</Table></Worksheet></Workbook>');
-    }
+    sendClosing(format);
 
     return '';
 };
@@ -327,6 +307,55 @@ exports.export_data_records = function (head, req) {
     return '';
 };
 
+exports.export_audit = function (head, req) {
+
+    var query = req.query,
+        locale = query.locale || 'en',
+        delimiter = locale === 'fr' ? '";"' : null,
+        format = query.format || 'csv',
+        date = moment().format('YYYYMMDDHHmm'),
+        filename = _s.sprintf('audit-%s.%s', date, format),
+        appInfo = info.getAppInfo.call(this),
+        row,
+        vals;
+
+    utils.info = appInfo; // replace fake info with real from context
+
+    startExportHeaders(format, filename);
+
+    var labels = [
+        '_id',
+        'Type',
+        'Timestamp',
+        'Author',
+        'Action',
+        'Document'
+    ];
+
+    labels = _.map(labels, function(label) {
+        return utils.info.translate(label, locale);
+    });
+
+    sendHeaderRow(format, labels, 'Audit', delimiter, query.skip_header_row);
+
+    while (row = getRow()) {
+        if (row.doc) {
+            _.each(row.doc.history, function(rev) {
+                vals = [
+                    row.doc.record_id,
+                    rev.doc.type,
+                    formatDate(rev.timestamp, query.tz),
+                    rev.user,
+                    rev.action,
+                    JSON.stringify(rev.doc)
+                ];
+                sendValuesRow(vals, format, delimiter);
+            });
+        }
+    }
+
+    sendClosing(format);
+};
 
 /**
  * @param {String} phone - phone number of the phone sending the referral (from)
@@ -335,11 +364,9 @@ exports.export_data_records = function (head, req) {
  * @api private
  */
 var isFromHealthCenter = function(phone, clinic) {
-    if (!clinic.parent || !clinic.parent.contact) { return false; }
-    if (phone === clinic.parent.contact.phone) {
-        return true;
-    }
-    return false;
+    return clinic.parent && 
+        clinic.parent.contact && 
+        clinic.parent.contact.phone === phone;
 };
 
 
