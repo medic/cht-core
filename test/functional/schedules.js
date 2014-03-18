@@ -98,7 +98,7 @@ exports['registration sets up schedule'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.ok(doc.tasks);
@@ -184,7 +184,7 @@ exports['registration sets up schedule using bool_expr'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.ok(doc.tasks);
@@ -270,7 +270,7 @@ exports['no schedule using false bool_expr'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.ok(doc.tasks);

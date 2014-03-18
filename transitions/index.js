@@ -35,19 +35,20 @@ if (!process.env.TEST_ENV) {
  */
 queue = async.queue(function(job, callback) {
     var db = job.db || require('../db'),
+        audit = require('couchdb-audit').withNode(db, db.user),
         transition = job.transition,
         key = job.key,
         change = job.change;
 
     console.log('loading queue %s', key);
 
-    transition.onMatch(change, db, function(err, complete) {
+    transition.onMatch(change, db, audit, function(err, complete) {
         if (err || complete) {
             module.exports.finalize({
                 key: key,
                 change: change,
                 err: err
-            }, db, callback);
+            }, db, audit, callback);
         } else {
             callback();
         }
@@ -137,7 +138,7 @@ module.exports = {
         });
     },
     // mark the transition as completed
-    finalize: function(options, db, callback) {
+    finalize: function(options, db, audit, callback) {
         var change = options.change,
             key = options.key,
             err = options.err,
@@ -158,7 +159,7 @@ module.exports = {
                 callback(err);
             } else {
                 if (utils.updateable(doc, latest)) {
-                    db.saveDoc(doc, function(err, result) {
+                    audit.saveDoc(doc, function(err, result) {
                         if (err) {
                             console.log(JSON.stringify(err));
                         }

@@ -5,7 +5,7 @@ module.exports = {
     filter: function(doc) {
         return doc.from && doc.type === 'data_record' && doc.sent_by === undefined;
     },
-    onMatch: function(change, db, callback) {
+    onMatch: function(change, db, audit, callback) {
         var doc = change.doc;
 
         db.view('kujua-sentinel', 'clinic_by_phone', {

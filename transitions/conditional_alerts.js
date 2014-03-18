@@ -43,7 +43,7 @@ module.exports = {
     filter: function(doc) {
         return Boolean(doc.form && doc.type === 'data_record');
     },
-    onMatch: function(change, db, cb) {
+    onMatch: function(change, db, audit, cb) {
         var doc = change.doc,
             config = module.exports._getConfig(),
             updated = false;

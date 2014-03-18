@@ -29,15 +29,17 @@ function sendable(m) {
 
 function checkSchedule() {
     var db = require('../db'),
+        audit = require('couchdb-audit').withNode(db, db.user),
         now = moment(date.getDate());
 
     async.forEachSeries(tasks, function(task, callback) {
         if (_.isFunction(task.execute)) {
             task.execute({
-                db: db
+                db: db,
+                audit: audit
             }, callback);
         } else if (sendable(now)) {
-            task(db, callback);
+            task(db, audit, callback);
         } else {
             callback();
         }

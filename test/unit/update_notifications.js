@@ -5,7 +5,7 @@ var _ = require('underscore'),
 
 exports['onMatch signature'] = function(test) {
     test.ok(_.isFunction(transition.onMatch));
-    test.equals(transition.onMatch.length, 3);
+    test.equals(transition.onMatch.length, 4);
     test.done();
 };
 
@@ -37,7 +37,7 @@ exports['returns false if not on or off form'] = function(test) {
         doc: {
             form: 'z'
         }
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(complete, false);
         transition.getConfig.restore();
         test.done();
@@ -50,7 +50,7 @@ exports['no configured on or off form returns false'] = function(test) {
             form: 'on',
             patient_id: 'x'
         }
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, false);
 
@@ -74,7 +74,7 @@ exports['registration not found adds error'] = function(test) {
     transition.onMatch({
         doc: doc,
         form: 'on'
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
 

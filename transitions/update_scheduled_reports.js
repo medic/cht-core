@@ -10,7 +10,7 @@ var _ = require('underscore'),
  * GET  /scheduled_reports/:form/:year/:week|month/:clinic_id (look for dups)
  *
  */
-var handleMatch = function(change, db, callback) {
+var handleMatch = function(change, db, audit, callback) {
     var self = module.exports;
 
     new_doc = change.doc;
@@ -44,7 +44,7 @@ var handleMatch = function(change, db, callback) {
             docs.push(doc);
         });
 
-        db.bulkDocs({
+        audit.bulkSave({
             all_or_nothing: true,
             docs: docs
         }, function(err) {

@@ -24,7 +24,7 @@ module.exports = {
         }
         db.saveDoc(registration, callback);
     },
-    onMatch: function(change, db, callback) {
+    onMatch: function(change, db, audit, callback) {
         var doc = change.doc,
             patient_id = doc.patient_id,
             options = module.exports.getConfig(),
@@ -62,7 +62,7 @@ module.exports = {
                 }
                 async.each(registrations, function(registration, callback) {
                     module.exports.modifyRegistration({
-                        db: db,
+                        db: audit,
                         mute: mute,
                         registration: registration.doc
                     }, callback);

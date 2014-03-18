@@ -22,7 +22,7 @@ module.exports = {
         }
         return Boolean(hasPending(doc) && hasConfig(doc));
     },
-    onMatch: function(change, db, callback) {
+    onMatch: function(change, db, audit, callback) {
         var doc = change.doc,
             original = JSON.stringify(doc),
             fromNumber = config.get('twilio_number') || '+15037664982',

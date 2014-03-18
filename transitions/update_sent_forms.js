@@ -15,7 +15,7 @@ module.exports = {
             doc.related_entities.clinic._id
         );
     },
-    onMatch: function(change, db, callback) {
+    onMatch: function(change, db, audit, callback) {
         var doc = change.doc,
             form = doc.form,
             reported_date = doc.reported_date,

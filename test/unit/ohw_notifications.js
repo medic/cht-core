@@ -3,6 +3,7 @@ var _ = require('underscore'),
     moment = require('moment'),
     transition = require('../../transitions/ohw_notifications'),
     fakedb = require('../fake-db'),
+    fakeaudit = require('../fake-audit'),
     utils = require('../../lib/utils'),
     date = require('../../date'),
     registration;
@@ -52,7 +53,7 @@ exports['mutes messages'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         var message = _.first(_.first(doc.tasks).messages).message;
 
         test.ok(message.indexOf('deactivated') >= 0);
@@ -78,7 +79,7 @@ exports['unmutes messages; discards old ones'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         var message = _.first(_.first(doc.tasks).messages).message;
 
         test.ok(message.indexOf('reactivated') >= 0);

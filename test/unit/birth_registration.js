@@ -98,7 +98,7 @@ exports['valid form adds patient_id and expected_date'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.ok(doc.patient_id);

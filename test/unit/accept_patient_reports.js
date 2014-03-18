@@ -22,7 +22,7 @@ exports.tearDown = function(callback) {
 
 exports['signature'] = function(test) {
     test.ok(_.isFunction(transition.onMatch));
-    test.equals(transition.onMatch.length, 3);
+    test.equals(transition.onMatch.length, 4);
 
     test.ok(_.isFunction(transition.filter));
     test.equals(transition.filter.length, 1);
@@ -47,7 +47,7 @@ exports['onMatch returns false if form not included'] = function(test) {
         doc: {
             form: 'y'
         }
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, false);
         test.done();
@@ -68,7 +68,7 @@ exports['onMatch with matching form calls getRegistrations and then matchRegistr
         doc: {
             form: 'x'
         }
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(complete, true);
 
         test.equals(getRegistrations.called, true);

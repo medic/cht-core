@@ -129,7 +129,7 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.equals(doc.lmp_date, start.toISOString());
@@ -153,7 +153,7 @@ exports['zero lmp value only registers patient'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.equals(doc.lmp_date, null);
@@ -177,7 +177,7 @@ exports['id only logic with valid name'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.equals(doc.lmp_date, undefined);
@@ -203,7 +203,7 @@ exports['id only logic with invalid name'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.equals(doc.patient_id, undefined);
@@ -234,7 +234,7 @@ exports['invalid name valid LMP logic'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.equals(doc.patient_id, undefined);
@@ -256,7 +256,7 @@ exports['valid name invalid LMP logic'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.equals(doc.patient_id, undefined);
@@ -278,7 +278,7 @@ exports['invalid name invalid LMP logic'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.equals(doc.patient_id, undefined);
@@ -293,7 +293,7 @@ exports['mismatched form returns false'] = function(test) {
         doc: {
             form: 'x'
         }
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(complete, false);
 
         test.done();
@@ -309,7 +309,7 @@ exports['missing all fields returns validation errors'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(complete, true);
         test.equals(
             getMessage(doc),

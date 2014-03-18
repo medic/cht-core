@@ -141,7 +141,7 @@ exports['valid form adds patient_id'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.ok(doc.patient_id);
@@ -173,7 +173,7 @@ exports['registration sets up responses'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.ok(doc.tasks);
@@ -227,7 +227,7 @@ exports['registration responses support locale'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, function(err, complete) {
+    }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
         test.ok(doc.tasks);

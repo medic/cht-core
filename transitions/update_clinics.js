@@ -14,7 +14,7 @@ module.exports = {
             doc.related_entities &&
             !doc.related_entities.clinic;
     },
-    onMatch: function(change, db, callback) {
+    onMatch: function(change, db, audit, callback) {
         var self = module.exports,
             doc = change.doc,
             q = {

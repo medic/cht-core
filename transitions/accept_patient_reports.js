@@ -171,12 +171,12 @@ module.exports = {
             }, callback);
         });
     },
-    onMatch: function(change, _db, callback) {
+    onMatch: function(change, _db, _audit, callback) {
         var doc = change.doc,
             reports = module.exports.getAcceptedReports(),
             report;
 
-        db = _db;
+        db = _audit;
 
         report = _.findWhere(reports, {
             form: doc.form

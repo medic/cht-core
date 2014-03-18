@@ -21,7 +21,7 @@ exports.tearDown = function(callback) {
 
 exports['onMatch signature'] = function(test) {
     test.ok(_.isFunction(transition.onMatch));
-    test.equals(transition.onMatch.length, 3);
+    test.equals(transition.onMatch.length, 4);
     test.done();
 };
 
@@ -47,7 +47,7 @@ exports['when document type matches pass filter'] = function(test) {
 exports['when no alerts are registered do nothing'] = function(test) {
     sinon.stub(transition, '_getConfig').returns([]);
     test.expect(2);
-    transition.onMatch({}, {}, function(err, changed) {
+    transition.onMatch({}, {}, {}, function(err, changed) {
         test.equals(err, null);
         test.equals(changed, false);
         test.done();
@@ -63,7 +63,7 @@ exports['when no alerts match document do nothing'] = function(test) {
     var doc = {
         form: 'PINK'
     };
-    transition.onMatch({ doc: doc }, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
         test.equals(err, null);
         test.equals(changed, false);
         test.done();
@@ -90,7 +90,7 @@ exports['when alert matches document send message'] = function(test) {
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({ doc: doc }, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
         test.ok(messageFn.calledOnce);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -123,7 +123,7 @@ exports['when alert matches multiple documents send message multiple times'] = f
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({ doc: doc }, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
         test.ok(messageFn.calledTwice);
         test.ok(messageFn.getCall(0).calledWith({
             doc: doc,
@@ -161,7 +161,7 @@ exports['when alert matches document and condition is true send message'] = func
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({ doc: doc }, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
         test.ok(messageFn.calledOnce);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -205,7 +205,7 @@ exports['when recent form condition is true send message'] = function(test) {
         form: 'STCK'
     };
     test.expect(4);
-    transition.onMatch({ doc: doc }, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
         test.equals(messageFn.callCount, 1);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -241,7 +241,7 @@ exports['handle missing condition reference gracefully'] = function(test) {
         form: 'STCK'
     };
     test.expect(2);
-    transition.onMatch({ doc: doc }, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
         test.equals(err, "Cannot read property 's1_avail' of undefined");
         test.equals(changed, false);
         test.done();
@@ -286,7 +286,7 @@ exports['when complex condition is true send message'] = function(test) {
         form: 'STCK'
     };
     test.expect(4);
-    transition.onMatch({ doc: doc }, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
         test.equals(messageFn.callCount, 1);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -337,7 +337,7 @@ exports['database records are sorted before condition evaluation'] = function(te
         form: 'STCK'
     };
     test.expect(4);
-    transition.onMatch({ doc: doc }, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
         test.equals(messageFn.callCount, 1);
         test.ok(messageFn.calledWith({
             doc: doc,
@@ -376,7 +376,7 @@ exports['resolve the recipient if required'] = function(test) {
             }
         }
     };
-    transition.onMatch({ doc: doc }, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
         test.ok(messageFn.calledOnce);
         test.ok(messageFn.calledWith({
             doc: doc,

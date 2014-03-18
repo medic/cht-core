@@ -1,4 +1,5 @@
 var fakedb = require('../fake-db'),
+    fakeaudit = require('../fake-audit'),
     gently = global.GENTLY = new (require('gently')),
     transition = require('../../transitions/update_sent_by'),
     phone = '+34567890123';
@@ -15,7 +16,7 @@ exports['updates sent_by to contact name if both available'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         test.ok(complete);
         test.equal(doc.sent_by, 'CCN');
         test.done();
@@ -41,7 +42,7 @@ exports['updates sent_by to clinic name if contact name not available'] = functi
 
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         test.ok(complete);
         test.equal(doc.sent_by, 'Clinic');
         test.done();
@@ -55,7 +56,7 @@ exports['sent_by untouched if nothing available'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, fakedb, function(err, complete) {
+    }, fakedb, fakeaudit, function(err, complete) {
         test.equals(complete, false);
         test.strictEqual(doc.sent_by, undefined);
         test.done();
