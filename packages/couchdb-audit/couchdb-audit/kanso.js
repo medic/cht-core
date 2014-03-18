@@ -3,6 +3,14 @@ var log = require('couchdb-audit/log'),
     session = require('session');
 
 module.exports = {
+
+  /**
+   * Sets up auditing to work with the kanso db module.
+   * 
+   * @name withKanso(db)
+   * @param {Object} db The kanso db instance to use.
+   * @api public
+   */
   withKanso: function(db) {
     return log.init(appname, {
       view: function(design, view, query, callback) {
@@ -33,5 +41,15 @@ module.exports = {
         callback(null, result.userCtx.name);
       });
     });
+  },
+
+  /**
+   * Exposed for testing only
+   *
+   * @api private
+   */
+  withSession: function(mock) {
+    session = mock;
+    return module.exports;
   }
 };

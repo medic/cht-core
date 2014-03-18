@@ -1,6 +1,5 @@
 var sinon = require('sinon'),
-  session = require('session'),
-  appname = require('settings/root').name;
+  session = require('session');
 
 exports.tearDown = function (callback) {
   if (session.info.restore) {
@@ -37,7 +36,9 @@ exports['saving a new `data_record` creates a new `audit_record`'] = function(te
   var sessionInfo = sinon.stub(session, 'info').callsArgWith(0, null, {
     userCtx: {name: userName}
   });
-  var audit = require('couchdb-audit/kanso').withKanso(db);
+  var audit = require('couchdb-audit/kanso')
+    .withSession(session)
+    .withKanso(db);
 
   audit.saveDoc(doc1, function(err, result) {
     test.equal(err, null);
@@ -61,6 +62,7 @@ exports['saving a new `data_record` creates a new `audit_record`'] = function(te
   test.equal(dataRecord.type, 'data_record');
   test.equal(dataRecord._id, docId);
   test.done();
+
 };
 
 exports['saving a new `data_record` with id set creates a new `audit_record`'] = function(test) {
@@ -91,7 +93,9 @@ exports['saving a new `data_record` with id set creates a new `audit_record`'] =
   var sessionInfo = sinon.stub(session, 'info').callsArgWith(0, null, {
     userCtx: {name: userName}
   });
-  var audit = require('couchdb-audit/kanso').withKanso(db);
+  var audit = require('couchdb-audit/kanso')
+    .withSession(session)
+    .withKanso(db);
 
   audit.saveDoc(doc1, function(err, result) {
     test.equal(err, null);
@@ -162,7 +166,9 @@ exports['updating a `data_record` updates the `audit_record`'] = function(test) 
   sinon.stub(session, 'info').callsArgWith(0, null, {
     userCtx: {name: user2}
   });
-  var audit = require('couchdb-audit/kanso').withKanso(db);
+  var audit = require('couchdb-audit/kanso')
+    .withSession(session)
+    .withKanso(db);
 
   audit.saveDoc(doc2, function(err, result) {
     test.equal(err, null);
@@ -232,7 +238,9 @@ exports['deleting a `data_record` updates the `audit_record`'] = function(test) 
   sinon.stub(session, 'info').callsArgWith(0, null, {
     userCtx: {name: user2}
   });
-  var audit = require('couchdb-audit/kanso').withKanso(db);
+  var audit = require('couchdb-audit/kanso')
+    .withSession(session)
+    .withKanso(db);
 
   audit.saveDoc(doc2, function(err, result) {
     test.equal(err, null);
@@ -295,7 +303,9 @@ exports['updating a `data_record` creates an `audit_record` if required'] = func
   sinon.stub(session, 'info').callsArgWith(0, null, {
     userCtx: {name: 'joe'}
   });
-  var audit = require('couchdb-audit/kanso').withKanso(db);
+  var audit = require('couchdb-audit/kanso')
+    .withSession(session)
+    .withKanso(db);
 
   audit.saveDoc(doc2, function(err, result) {
     test.equal(err, null);
@@ -356,7 +366,9 @@ exports['bulkSave updates all relevant `audit_record` docs'] = function(test) {
   sinon.stub(session, 'info').callsArgWith(0, null, {
     userCtx: {name: 'joe'}
   });
-  var audit = require('couchdb-audit/kanso').withKanso(db);
+  var audit = require('couchdb-audit/kanso')
+    .withSession(session)
+    .withKanso(db);
 
   audit.bulkSave([doc1, doc2], {all_or_nothing: true}, function(err, result) {
     test.equal(err, null);
@@ -431,7 +443,9 @@ exports['bulkSave creates `audit_record` docs when needed'] = function(test) {
   sinon.stub(session, 'info').callsArgWith(0, null, {
     userCtx: {name: 'joe'}
   });
-  var audit = require('couchdb-audit/kanso').withKanso(db);
+  var audit = require('couchdb-audit/kanso')
+    .withSession(session)
+    .withKanso(db);
 
   audit.bulkSave([doc1, doc2, doc3], function(err, result) {
     test.equal(err, null);
@@ -494,7 +508,9 @@ exports['when audit fails, doc is not saved and error returned'] = function(test
   sinon.stub(session, 'info').callsArgWith(0, null, {
     userCtx: {name: 'joe'}
   });
-  var audit = require('couchdb-audit/kanso').withKanso(db);
+  var audit = require('couchdb-audit/kanso')
+    .withSession(session)
+    .withKanso(db);
   audit.saveDoc(doc1, function(err, result) {
     test.equal(err, 'Failed saving audit record. ' + errMsg);
   });
@@ -566,7 +582,9 @@ exports['removeDoc updates the `audit_record` for the given `data_record`'] = fu
   var sessionInfo = sinon.stub(session, 'info').callsArgWith(0, null, {
     userCtx: {name: user2}
   });
-  var audit = require('couchdb-audit/kanso').withKanso(db);
+  var audit = require('couchdb-audit/kanso')
+    .withSession(session)
+    .withKanso(db);
 
   audit.removeDoc(doc1, function(err) {
     test.equal(err, null);
