@@ -1,11 +1,10 @@
 var sinon = require('sinon'),
-  appname = 'test',
-  session = require('session'),
-  appname = require('settings/root').name;
+  session = require('session');
 
 exports['bulkSave works with felix couchdb node module'] = function(test) {
-  test.expect(16);
+  test.expect(18);
 
+  var name = 'test';
   var user = 'jack';
   var docId1 = 123;
   var docId2 = 456;
@@ -20,11 +19,13 @@ exports['bulkSave works with felix couchdb node module'] = function(test) {
     foo: 'bar'
   };
 
-  var db = { 
+  var db = {
+    name: name,
     bulkDocs: function(options, callback) {
       callback(null);
     },
     view: function(appname, view, query, callback) {
+      test.equal(name, appname);
       callback(null, {"rows":[{
         doc: {
           type: 'audit_record',
@@ -39,7 +40,7 @@ exports['bulkSave works with felix couchdb node module'] = function(test) {
   };
   var save = sinon.spy(db, 'bulkDocs');
   var getView = sinon.spy(db, 'view');
-  var audit = require('couchdb-audit/log').withNode(appname, db, user);
+  var audit = require('couchdb-audit/log').withNode(db, user);
 
   audit.bulkSave([doc1, doc2], {all_or_nothing: true}, function(err, result) {
     test.equal(err, null);

@@ -5,18 +5,28 @@ module.exports = {
   /**
    * Initialise the audit logger.
    *
-   * @name withNode(appname, felix, name)
-   * @param {String} appname The name of the app.
+   * @name withNode(felix, name)
    * @param {Object} felix The felix instance to use to persist.
    * @param {String|Function(err, name)} name Either the authors name, 
    *    or a function to retrieve the name.
    * @api public
    */
-  withNode: function(appname, felix, name) {
+  withNode: function(felix, name) {
     var nameFn = (typeof name === 'string') ? 
       function(callback) { callback(null, name); } : name;
-    return init(appname, felix, nameFn);
-  }
+    return init(felix.name, felix, nameFn);
+  },
+
+  /**
+   * Initialise the audit logger.
+   *
+   * @name init(appname, db, name)
+   * @param {String} appname The name of the app.
+   * @param {Object} db The felix instance to use to persist.
+   * @param {Function(err, name)} name Returns the username.
+   * @api public
+   */
+  init: init
 };
 
 function init(appname, db, nameFn) {
