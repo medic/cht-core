@@ -14,6 +14,9 @@ module.exports = {
       saveDoc: function(doc, callback) {
         db.saveDoc.call(db, doc, callback);
       },
+      removeDoc: function(id, rev, callback) {
+        db.removeDoc.call(db, { _id: id, _rev: rev }, callback);
+      },
       bulkDocs: function(options, callback) {
         db.bulkSave.call(db, options.docs, options, callback);
       },

@@ -30,7 +30,11 @@ module.exports = {
 };
 
 function init(appname, db, nameFn) {
-  function audit(docs, callback) {
+  function audit(docs, actionOverride, callback) {
+    if (!callback) {
+      callback = actionOverride;
+      actionOverride = undefined;
+    }
     nameFn(function(err, userName) {
       if (err) {
         return callback('Failed getting user name. ' + err);
@@ -61,7 +65,7 @@ function init(appname, db, nameFn) {
                   }
                   var action = isInitialRev(_oldDoc) ? 'create' : 'update';
                   appendHistory(audit.history, action, null, _oldDoc);
-                  action = _doc._deleted ? 'delete' : 'update';
+                  action = actionOverride || _doc._deleted ? 'delete' : 'update';
                   appendHistory(audit.history, action, userName, _doc);
                   _cb(null, audit);
                 });
@@ -73,7 +77,7 @@ function init(appname, db, nameFn) {
             } else {
               // existing audit
               var audit = result.doc;
-              var action = _doc._deleted ? 'delete' : 'update';
+              var action = actionOverride || _doc._deleted ? 'delete' : 'update';
               appendHistory(audit.history, action, userName, _doc);
               _cb(null, audit);
             }
@@ -174,6 +178,23 @@ function init(appname, db, nameFn) {
         }
         options.docs = docs;
         db.bulkDocs(options, callback);
+      });
+    },
+
+    /**
+     * Deletes the given doc with auditing
+     *
+     * @name removeDoc(doc, callback)
+     * @param {Object} doc
+     * @param {Function} callback(err,response)
+     * @api public
+     */
+    removeDoc: function(doc, callback) {
+      audit([doc], 'delete', function(err) {
+        if (err) {
+          return callback('Failed saving audit records. ' + err);
+        }
+        db.removeDoc(doc._id, doc._rev, callback);
       });
     },
 
