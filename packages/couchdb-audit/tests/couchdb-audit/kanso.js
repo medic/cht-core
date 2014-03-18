@@ -527,3 +527,65 @@ exports['get returns the `audit_record` for the given `data_record`'] = function
 
   test.done();
 };
+
+exports['removeDoc updates the `audit_record` for the given `data_record`'] = function(test) {
+  test.expect(14);
+  
+  var user1 = 'creator';
+  var user2 = 'destroyer';
+  var docId = 123;
+  var doc1 = {
+    _id: docId,
+    _rev: '1-XXXXXXX',
+    type: 'data_record'
+  };
+
+  var db = {
+    getView: function(appname, view, query, callback) {
+      callback(null, {'rows':[{
+        doc: {
+          type: 'audit_record',
+          record_id: docId,
+          history: [{
+            action: 'create',
+            user: user1,
+            doc: doc1
+          }]
+        }
+      }]});
+    },
+    bulkSave: function(docs, options, callback) {
+      callback(null);
+    },
+    removeDoc: function(doc, callback) {
+      callback(null);
+    }
+  };
+  var removeDoc = sinon.spy(db, 'removeDoc');
+  var bulkSave = sinon.spy(db, 'bulkSave');
+  var sessionInfo = sinon.stub(session, 'info').callsArgWith(0, null, {
+    userCtx: {name: user2}
+  });
+  var audit = require('couchdb-audit/kanso').withKanso(db);
+
+  audit.removeDoc(doc1, function(err) {
+    test.equal(err, null);
+  });
+
+  test.equal(bulkSave.callCount, 1);
+  test.equal(removeDoc.callCount, 1);
+  test.equal(sessionInfo.callCount, 1);
+  var auditRecord = bulkSave.firstCall.args[0];
+  var dataRecord = removeDoc.firstCall.args[0];
+  test.equal(auditRecord[0].type, 'audit_record');
+  test.equal(auditRecord[0].record_id, docId);
+  test.equal(auditRecord[0].history.length, 2);
+  test.equal(auditRecord[0].history[0].action, 'create');
+  test.equal(auditRecord[0].history[0].user, user1);
+  test.equal(auditRecord[0].history[0].doc._id, docId);
+  test.equal(auditRecord[0].history[1].action, 'delete');
+  test.equal(auditRecord[0].history[1].user, user2);
+  test.equal(auditRecord[0].history[1].doc._id, docId);
+  test.equal(dataRecord._id, docId);
+  test.done();
+};
