@@ -320,9 +320,12 @@
         if (_.isFunction(validation)) {
             $td.toggleClass('error', !validation(val));
         }
-        $td.text(val);
-        if (!options.silent) {
-            $td.trigger('change');
+
+        if ($td.text() != val) {
+            $td.text(val);
+            if (!options.silent) {
+                $td.trigger('change');
+            }
         }
         return td;
     };
