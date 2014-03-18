@@ -4,7 +4,7 @@ var log = require('couchdb-audit/log'),
 
 module.exports = {
   withKanso: function(db) {
-    return log.withNode(appname, {
+    return log.init(appname, {
       view: function(design, view, query, callback) {
         db.getView.call(db, design, view, query, callback);
       },
@@ -17,7 +17,7 @@ module.exports = {
       bulkDocs: function(options, callback) {
         db.bulkSave.call(db, options.docs, options, callback);
       },
-      uuids: function(count, callback) {// done
+      uuids: function(count, callback) {
         db.newUUID.call(db, 100, function(err, id) {
           callback(err, [id]);
         });

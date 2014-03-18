@@ -29,7 +29,7 @@ function sendable(m) {
 
 function checkSchedule() {
     var db = require('../db'),
-        audit = require('couchdb-audit').withNode(db.name, db, db.user),
+        audit = require('couchdb-audit').withNode(db, db.user),
         now = moment(date.getDate());
 
     async.forEachSeries(tasks, function(task, callback) {
