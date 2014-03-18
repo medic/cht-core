@@ -703,7 +703,7 @@
             // TODO: coerce value to correct type depending on options
             setProperty(doc, $(this).data('property'), $(this).text());
         });
-        $table.find('table').on('click', function (ev) {
+        $table.on('click', function (ev) {
             ev.stopImmediatePropagation();
         });
         $table.on('click', 'tbody th', function (ev) {
@@ -965,6 +965,10 @@
         bindDocumentEvents.call(this);
         bindTableEvents.call(this, options);
         $('.row-counter', this).text(options.data.length + ' rows');
+        $table.find('.spreadsheet-help').on('click', function(ev){ 
+            var el = $(ev.target);
+            el.siblings('ul').toggle();
+        });
 
         return this;
     };
