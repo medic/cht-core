@@ -35,7 +35,7 @@ if (!process.env.TEST_ENV) {
  */
 queue = async.queue(function(job, callback) {
     var db = job.db || require('../db'),
-        audit = require('couchdb-audit').withNode('kujua-lite', db, 'sentinel'),
+        audit = require('couchdb-audit').withNode(db.name, db, db.user),
         transition = job.transition,
         key = job.key,
         change = job.change;
