@@ -232,9 +232,11 @@ exports['silenceReminders testing'] = function(test) {
 
         test.equals(tasks[0].state, 'scheduled');
         test.equals(tasks[1].state, 'cleared');
+        test.equals(tasks[1].state_history[0].state, 'cleared');
         test.equals(tasks[2].state, 'scheduled');
         test.equals(tasks[3].state, 'scheduled');
         test.equals(tasks[4].state, 'cleared');
+        test.equals(tasks[4].state_history[0].state, 'cleared');
 
         test.done();
     });

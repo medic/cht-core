@@ -138,14 +138,13 @@ module.exports = {
         // filter scheduled message by group
         toClear = module.exports.findToClear(options);
 
-        // captured all to clear; now "clear" them
-        _.each(toClear, function(msg) {
-            if (msg.state === 'scheduled') {
-                msg.state = 'cleared';
-            }
-        });
-
         if (toClear.length) {
+            // captured all to clear; now "clear" them
+            _.each(toClear, function(task) {
+                if (task.state === 'scheduled') {
+                    utils.setTaskState(task, 'cleared');
+                }
+            });
             db.saveDoc(registration, callback);
         } else {
             callback(null);
