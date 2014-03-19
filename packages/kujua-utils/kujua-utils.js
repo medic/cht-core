@@ -219,3 +219,12 @@ exports.updateTopNav = function(key, title) {
     $('.page-header .container').attr('class', 'container');
     $('body > .container div').filter(':first').attr('class','content');
 };
+
+exports.setTaskState = function(task, state) {
+    task.state = state;
+    task.state_history = task.state_history || [];
+    task.state_history.push({
+        state: state,
+        timestamp: new Date().toISOString()
+    });
+};
