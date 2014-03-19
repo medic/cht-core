@@ -1,6 +1,7 @@
 var async = require('async'),
     config = require('../config'),
     request = require('request'),
+    utils = require('../lib/utils'),
     moment = require('moment');
 
 module.exports = {
@@ -61,7 +62,7 @@ module.exports = {
                         if (err) {
                             console.error(JSON.stringify(err));
                         } else {
-                            task.state = 'sent';
+                            utils.setTaskState(task, 'sent');
                             task.timestamp = moment().toISOString();
                         }
                         taskCallback(null, task);
