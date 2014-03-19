@@ -1,6 +1,7 @@
 var async = require('async'),
     _ = require('underscore'),
     moment = require('moment'),
+    utils = require('../lib/utils'),
     date = require('../date');
 
 module.exports = function(db, audit, callback) {
@@ -22,17 +23,11 @@ module.exports = function(db, audit, callback) {
         });
 
         async.forEachSeries(objs, function(obj, cb) {
-            var doc = obj.doc,
-                due = obj.key;
-
             // set task to pending for gateway to pick up
-            _.each(doc.scheduled_tasks, function(task) {
-                if (task.due === due) {
-                    task.state = 'pending';
-                }
+            utils.setTasksStates(obj.doc, 'pending', function(task) {
+                return task.due === obj.key;
             });
-
-            audit.saveDoc(doc, cb);
+            audit.saveDoc(obj.doc, cb);
         }, function(err) {
             callback(err);
         });

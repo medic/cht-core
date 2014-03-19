@@ -29,7 +29,7 @@ exports['due_tasks handles view returning no rows'] = function(test) {
 }
 
 exports['set all due scheduled tasks to pending'] = function(test) {
-  test.expect(8);
+  test.expect(11);
 
   var due = moment().toISOString();
   var notDue = moment().add('days', 7).toISOString();
@@ -76,6 +76,9 @@ exports['set all due scheduled tasks to pending'] = function(test) {
   test.equals(saved.scheduled_tasks.length, 2);
   test.equals(saved.scheduled_tasks[0].due, due);
   test.equals(saved.scheduled_tasks[0].state, 'pending');
+  test.equals(saved.scheduled_tasks[0].state_history.length, 1);
+  test.equals(saved.scheduled_tasks[0].state_history[0].state, 'pending');
+  test.ok(!!saved.scheduled_tasks[0].state_history[0].timestamp);
   test.equals(saved.scheduled_tasks[1].due, notDue);
   test.equals(saved.scheduled_tasks[1].state, 'scheduled');
   test.done();
