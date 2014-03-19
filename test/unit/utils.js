@@ -122,9 +122,13 @@ exports['addMessage adds uuid'] = function(test) {
     task = _.first(doc.tasks);
 
     test.ok(_.isArray(task.messages));
-    message = _.first(task.messages);
     test.equals(task.state, 'pending');
+    test.ok(!!task.state_history);
+    test.equals(task.state_history.length, 1);
+    test.equals(task.state_history[0].state, 'pending');
+    test.ok(!!task.state_history[0].timestamp);
 
+    message = _.first(task.messages);
     test.equals(message.to, '+1234');
     test.equals(message.message, 'xxx');
     test.ok(message.uuid);
@@ -164,4 +168,223 @@ exports['getRecentForm calls through to db view correctly'] = function(test) {
         test.equals(data, result);
         test.done();
     });
-}   
+}
+
+exports['addScheduledMessage creates a new scheduled task'] = function(test) {
+
+    test.expect(9);
+
+    var message = 'xyz';
+    var due = new Date();
+    var phone = '+123';
+    var doc = {};
+
+    utils.addScheduledMessage(doc, {
+        message: message,
+        due: due,
+        phone: phone
+    });
+
+    test.equals(doc.scheduled_tasks.length, 1);
+    var task = doc.scheduled_tasks[0];
+    test.equals(task.due, due.getTime());
+    test.equals(task.messages.length, 1);
+    test.equals(task.messages[0].to, phone);
+    test.equals(task.messages[0].message, message);
+    test.equals(task.state, 'scheduled');
+    test.equals(task.state_history.length, 1);
+    test.equals(task.state_history[0].state, 'scheduled');
+    test.ok(!!task.state_history[0].timestamp);
+
+    test.done();
+}
+
+exports['obsoleteScheduledMessages clears overdue tasks'] = function(test) {
+
+    test.expect(7);
+
+    var type = 'abc';
+    var doc = {
+        scheduled_tasks: [
+            {
+                type: type,
+                due: 999,
+                state: 'scheduled',
+                group: 'a'
+            }, {
+                type: type,
+                due: new Date().valueOf(),
+                state: 'scheduled',
+                group: 'b'
+            }, {
+                type: 'othertype',
+                due: 999,
+                state: 'scheduled',
+                group: 'c'
+            }
+        ]
+    };
+
+    var changed = utils.obsoleteScheduledMessages(doc, type, 1000);
+
+    test.equals(changed, true);
+    test.equals(doc.scheduled_tasks.length, 3);
+    test.equals(doc.scheduled_tasks[0].state, 'cleared');
+    test.equals(doc.scheduled_tasks[0].state_history[0].state, 'cleared');
+    test.ok(!!doc.scheduled_tasks[0].state_history[0].timestamp);
+    test.equals(doc.scheduled_tasks[1].state, 'scheduled');
+    test.equals(doc.scheduled_tasks[2].state, 'scheduled');
+
+    test.done();
+}
+
+exports['obsoleteScheduledMessages appends to state_history'] = function(test) {
+
+    test.expect(8);
+
+    var type = 'abc';
+    var scheduledTimestamp = 998;
+    var doc = {
+        scheduled_tasks: [{
+            type: type,
+            due: 999,
+            state: 'scheduled',
+            group: 'a',
+            state_history: [{
+                state: 'scheduled',
+                timestamp: scheduledTimestamp
+            }]
+        }]
+    };
+
+    var changed = utils.obsoleteScheduledMessages(doc, type, 1000);
+
+    test.equals(changed, true);
+    test.equals(doc.scheduled_tasks.length, 1);
+    test.equals(doc.scheduled_tasks[0].state, 'cleared');
+    test.equals(doc.scheduled_tasks[0].state_history.length, 2);
+    test.equals(doc.scheduled_tasks[0].state_history[0].state, 'scheduled');
+    test.equals(doc.scheduled_tasks[0].state_history[0].timestamp, scheduledTimestamp);
+    test.equals(doc.scheduled_tasks[0].state_history[1].state, 'cleared');
+    test.ok(!!doc.scheduled_tasks[0].state_history[1].timestamp);
+
+    test.done();
+}
+
+exports['obsoleteScheduledMessages clears groups of obsolete messages'] = function(test) {
+
+    test.expect(9);
+
+    var type = 'abc';
+    var group = 'a';
+    var doc = {
+        scheduled_tasks: [
+            {
+                type: type,
+                due: 999,
+                state: 'scheduled',
+                group: group
+            }, {
+                type: type,
+                due: new Date().valueOf(),
+                state: 'scheduled',
+                group: group
+            }, {
+                type: 'othertype',
+                due: 999,
+                state: 'scheduled',
+                group: 'othergroup'
+            }
+        ]
+    };
+
+    var changed = utils.obsoleteScheduledMessages(doc, type, 1);
+
+    test.equals(changed, true);
+    test.equals(doc.scheduled_tasks.length, 3);
+    test.equals(doc.scheduled_tasks[0].state, 'cleared');
+    test.equals(doc.scheduled_tasks[0].state_history[0].state, 'cleared');
+    test.ok(!!doc.scheduled_tasks[0].state_history[0].timestamp);
+    test.equals(doc.scheduled_tasks[1].state, 'cleared');
+    test.equals(doc.scheduled_tasks[1].state_history[0].state, 'cleared');
+    test.ok(!!doc.scheduled_tasks[1].state_history[0].timestamp);
+    test.equals(doc.scheduled_tasks[2].state, 'scheduled');
+
+    test.done();
+}
+
+exports['clearScheduledMessages clears all matching tasks'] = function(test) {
+
+    test.expect(6);
+
+    var type = 'xyz';
+    var doc = {
+        scheduled_tasks: [
+            {
+                type: type,
+                state: 'scheduled'
+            }, {
+                type: 'miss',
+                state: 'scheduled'
+            }
+        ]
+    };
+
+    utils.clearScheduledMessages(doc, [type, 'othertype']);
+
+    test.equals(doc.scheduled_tasks.length, 2);
+    test.equals(doc.scheduled_tasks[0].state, 'cleared');
+    test.equals(doc.scheduled_tasks[0].state_history.length, 1);
+    test.equals(doc.scheduled_tasks[0].state_history[0].state, 'cleared');
+    test.ok(!!doc.scheduled_tasks[0].state_history[0].timestamp);
+    test.equals(doc.scheduled_tasks[1].state, 'scheduled');
+    test.done();
+}
+
+exports['unmuteScheduledMessages schedules all muted tasks'] = function(test) {
+
+    test.expect(5);
+
+    var doc = {
+        scheduled_tasks: [
+            {
+                due: Date.now().valueOf() + 1000,
+                state: 'muted'
+            }, {
+                due: Date.now().valueOf() - 1000,
+                state: 'muted'
+            }
+        ]
+    };
+
+    utils.unmuteScheduledMessages(doc);
+
+    test.equals(doc.scheduled_tasks.length, 1);
+    test.equals(doc.scheduled_tasks[0].state, 'scheduled');
+    test.equals(doc.scheduled_tasks[0].state_history.length, 1);
+    test.equals(doc.scheduled_tasks[0].state_history[0].state, 'scheduled');
+    test.ok(!!doc.scheduled_tasks[0].state_history[0].timestamp);
+    test.done();
+}
+
+exports['muteScheduledMessages mutes all scheduled tasks'] = function(test) {
+
+    test.expect(5);
+
+    var doc = {
+        scheduled_tasks: [
+            {
+                state: 'scheduled'
+            }
+        ]
+    };
+
+    utils.muteScheduledMessages(doc);
+
+    test.equals(doc.scheduled_tasks.length, 1);
+    test.equals(doc.scheduled_tasks[0].state, 'muted');
+    test.equals(doc.scheduled_tasks[0].state_history.length, 1);
+    test.equals(doc.scheduled_tasks[0].state_history[0].state, 'muted');
+    test.ok(!!doc.scheduled_tasks[0].state_history[0].timestamp);
+    test.done();
+}
