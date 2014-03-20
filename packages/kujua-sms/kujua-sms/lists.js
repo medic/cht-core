@@ -157,8 +157,8 @@ exports.export_messages = function (head, req) {
         'Message Type',
         'Message State',
         'Message Timestamp/Due',
-        'Pending Timestamp',
         'Scheduled Timestamp',
+        'Pending Timestamp',
         'Message UUID',
         'Sent By',
         'To Phone',
@@ -232,7 +232,7 @@ exports.export_messages = function (head, req) {
             _.each(task.state_history, function(item) {
                 history[item.state] = item.timestamp;
             });
-            _.each(['pending','scheduled'], function(state) {
+            _.each(['scheduled','pending'], function(state) {
                 vals.push(formatDate(history[state], query.tz));
             });
             _.each(task.messages, function(msg) {
