@@ -168,3 +168,80 @@ exports['requesting messages export succeeds if user is national administrator']
     test.same(expected, resp.body);
     test.done();
 }
+
+exports['requesting messages export in xml'] = function(test) {
+    test.expect(1);
+
+    var reportedDate = 1331503842461;
+    var taskTimestamp = 1331503843461;
+    var pendingTimestamp = 1331503844461;
+    var scheduledTimestamp = 1331503845461;
+
+    var expected = '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40"><Worksheet ss:Name="Messages"><Table>' + 
+        '<Row><Cell><Data ss:Type="String">Record UUID</Data></Cell><Cell><Data ss:Type="String">Reported Date</Data></Cell><Cell><Data ss:Type="String">Reported From</Data></Cell><Cell><Data ss:Type="String">Clinic Contact Name</Data></Cell><Cell><Data ss:Type="String">Clinic Name</Data></Cell><Cell><Data ss:Type="String">Health Center Contact Name</Data></Cell><Cell><Data ss:Type="String">Health Center Name</Data></Cell><Cell><Data ss:Type="String">District Hospital Name</Data></Cell><Cell><Data ss:Type="String">Message Type</Data></Cell><Cell><Data ss:Type="String">Message State</Data></Cell><Cell><Data ss:Type="String">Message Timestamp/Due</Data></Cell><Cell><Data ss:Type="String">Scheduled Timestamp</Data></Cell><Cell><Data ss:Type="String">Pending Timestamp</Data></Cell><Cell><Data ss:Type="String">Message UUID</Data></Cell><Cell><Data ss:Type="String">Sent By</Data></Cell><Cell><Data ss:Type="String">To Phone</Data></Cell><Cell><Data ss:Type="String">Message Body</Data></Cell></Row>' + 
+        '<Row><Cell><Data ss:Type="String">abc123z</Data></Cell><Cell><Data ss:Type="String">' + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell><Cell><Data ss:Type="String">+12229990000</Data></Cell><Cell><Data ss:Type="String">Paul</Data></Cell><Cell><Data ss:Type="String">Clinic 1</Data></Cell><Cell><Data ss:Type="String">Eric</Data></Cell><Cell><Data ss:Type="String">Health Center 1</Data></Cell><Cell><Data ss:Type="String">District 1</Data></Cell><Cell><Data ss:Type="String">Test</Data></Cell><Cell><Data ss:Type="String">Pending</Data></Cell><Cell><Data ss:Type="String">12, Mar 2012, 11:10:43 +13:00</Data></Cell><Cell><Data ss:Type="String">' + moment(scheduledTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell><Cell><Data ss:Type="String">' + moment(pendingTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell></Row></Table></Worksheet></Workbook>'
+
+    var req = {
+        query: {
+            startkey: 'foo',
+            endkey: 'bar',
+            form: 'MSBC',
+            format: 'xml'
+        },
+        method: "GET",
+        userCtx: {
+            roles: ['national_admin']
+        }
+    };
+
+    // mockup the view data
+    var viewdata = {rows: [{
+        "key": [ true, "MSBC", 1331503842461 ],
+        "value": 1,
+        "doc": {
+            _id: 'abc123z',
+            reported_date: reportedDate,
+            from: '+12229990000',
+            form: "MSBC",
+            related_entities: {
+                clinic: {
+                    name: "Clinic 1",
+                    contact: { name:"Paul", phone: "" },
+                    parent: {
+                        name: "Health Center 1",
+                        contact: { name: "Eric" },
+                        parent: { name: "District 1" }
+                    }
+                }
+            },
+            tasks: [{
+                type: 'Test',
+                state: 'Pending',
+                timestamp: taskTimestamp,
+                state_history: [
+                    {
+                        state: 'pending',
+                        timestamp: '1'
+                    },
+                    {
+                        state: 'pending',
+                        timestamp: pendingTimestamp
+                    },
+                    {
+                        state: 'scheduled',
+                        timestamp: scheduledTimestamp
+                    },
+                    {
+                        state: 'muted',
+                        timestamp: '2'
+                    }
+                ]
+            }]
+        }
+    }]};
+
+
+    var resp = fakerequest.list(lists.export_messages, viewdata, req);
+    test.same(expected, resp.body.replace(/\n/g, ''));
+    test.done();
+}
