@@ -22,6 +22,9 @@ var _ = require('underscore'),
  * @api public
  */
 var formatDate = exports.formatDate = function(date, tz) {
+    if (!date) {
+        return '';
+    }
     // standard format for exports
     var fmt = 'DD, MMM YYYY, HH:mm:ss Z';
     // return in a specified timezone offset
@@ -154,6 +157,8 @@ exports.export_messages = function (head, req) {
         'Message Type',
         'Message State',
         'Message Timestamp/Due',
+        'Pending Timestamp',
+        'Scheduled Timestamp',
         'Message UUID',
         'Sent By',
         'To Phone',
@@ -223,6 +228,13 @@ exports.export_messages = function (head, req) {
                 task.state,
                 formatDate(task.timestamp || task.due, query.tz)
             ];
+            var history = {};
+            _.each(task.state_history, function(item) {
+                history[item.state] = item.timestamp;
+            });
+            _.each(['pending','scheduled'], function(state) {
+                vals.push(formatDate(history[state], query.tz));
+            });
             _.each(task.messages, function(msg) {
                 vals = vals.concat([
                     msg.uuid,
