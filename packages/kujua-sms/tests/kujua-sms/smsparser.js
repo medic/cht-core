@@ -1,6 +1,17 @@
 var smsparser = require('views/lib/smsparser'),
     jsonforms = require('views/lib/jsonforms');
 
+exports['is muvuku format'] = function(test) {
+    var msgs = [
+        '1!ANCR!sarah', 
+        '1!ANCR!sarah#11'
+    ];
+    msgs.forEach(function(msg) {
+        test.ok(smsparser.isMuvukuFormat(msg));
+    });
+    test.done();
+};
+
 exports.get_form = function(test) {
     test.expect(3);
     var msg, form;
@@ -491,6 +502,9 @@ exports.parse_date_field = function(test) {
     };
 
     var def = {
+        meta: {
+            code: '0000'
+        },
         fields: {
             testdate: {
                 type: 'date',
@@ -572,6 +586,9 @@ exports.parse_string_field_mixed = function(test) {
         message: "0000 foo 16A"
     };
     var def = {
+        meta: {
+            code: '0000'
+        },
         fields: {
             foo: {
                 type: 'string',
@@ -603,6 +620,9 @@ exports.parse_string_field_leading_zero = function(test) {
         message: "0000 foo 012345"
     };
     var def = {
+        meta: {
+            code: '0000'
+        },
         fields: {
             foo: {
                 type: 'string',

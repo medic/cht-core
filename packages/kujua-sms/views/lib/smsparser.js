@@ -6,8 +6,7 @@ var utils = require('kujua-utils'),
 /**
  * Decide if it's a form parsed by the muvuku parser.
  *
- * @param {String} msg      - sms message
- *
+ * @param {String} msg sms message
  * @api private
  */
 exports.isMuvukuFormat = function(msg) {
@@ -152,27 +151,30 @@ exports.parse = function (def, doc) {
          * not belong to the TextForms format but is just a convention to
          * identify the message.
          */
-        var msg = doc.message ? doc.message : doc,
+        var msg = doc.message || doc,
             code = def && def.meta && def.meta.code;
 
         msg = msg.replace(new RegExp('^\\s*'+code+'\\W*','i'),'')
 
-        msg_data = textforms_parser.parse(msg);
+        if (textforms_parser.isCompact(def, msg)) {
+            form_data = textforms_parser.parseCompact(def, msg);
+        } else {
+            msg_data = textforms_parser.parse(msg);
 
-        // replace tiny labels with field keys for textforms
-        for (var k in msg_data) {
-            for (var j in def.fields) {
-                var field = def.fields[j],
-                    tiny = sms_utils.info.translate(field.labels.tiny, doc.locale);
-                if (tiny.toLowerCase() === k) {
-                    // parse field types and resolve dot notation keys
-                    msg_data[j] = exports.parseField(field, msg_data[k]);
-                    createDeepKey(form_data, j.split('.'), msg_data[j]);
-                    break;
+            // replace tiny labels with field keys for textforms
+            for (var k in msg_data) {
+                for (var j in def.fields) {
+                    var field = def.fields[j],
+                        tiny = sms_utils.info.translate(field.labels.tiny, doc.locale);
+                    if (tiny.toLowerCase && tiny.toLowerCase() === k) {
+                        // parse field types and resolve dot notation keys
+                        msg_data[j] = exports.parseField(field, msg_data[k]);
+                        createDeepKey(form_data, j.split('.'), msg_data[j]);
+                        break;
+                    }
                 }
             }
         }
-
     }
 
     // pass along some system generated fields
