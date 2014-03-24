@@ -15,35 +15,43 @@ exports.isMuvukuFormat = function(msg) {
 };
 
 /**
- * Splits key by '.' and creates a deep key on the obj.
+ * Uses the keys to create a deep key on the obj.
  * Assigns the val to the key in the obj.
  * If key already exists, only assign value.
  *
  * @param {Object} obj - object in which value is assigned to key
- * @param {String} key - key in dot notation (e.g. some.thing.else)
+ * @param {Array} keys - keys in dot notation (e.g. ['some','thing','else'])
  * @param {String} val - value to be assigned to the generated key
  */
-var createDeepKey = function(obj, key, val) {
-    if(key.length > 1) {
-        var tmp = key.shift();
-        if(!obj[tmp]) {
-            obj[tmp] = {};
-        }
-
-        createDeepKey(obj[tmp], key, val);
-    } else {
-        obj[key[0]] = val;
+var createDeepKey = function(obj, keys, val) {
+    if (keys.length === 0) {
+        return;
     }
+
+    var key = keys.shift();
+    if (keys.length === 0) {
+        obj[key] = val;
+        return;
+    }
+
+    if(!obj[key]) {
+        obj[key] = {};
+    }
+    createDeepKey(obj[key], keys, val);
 };
 
 var parseNum = function (raw) {
     if (raw === void 0) {
         return undefined;
-    } else if (!isFinite(raw) || raw === "") {
-        return null;
-    } else {
-        return Number(raw);
     }
+    if (!isFinite(raw) || raw === "") {
+        return null;
+    }
+    return Number(raw);
+};
+
+var lower = function(str) {
+    return str && str.toLowerCase ? str.toLowerCase() : str;
 };
 
 exports.parseField = function (field, raw) {
@@ -124,58 +132,58 @@ exports.parseField = function (field, raw) {
  */
 exports.parse = function (def, doc) {
 
-    var msg_data = {},
-        form_data = {};
+    var msg_data,
+        form_data = {},
+        addOmittedFields = false;
 
-    if (!def || !doc || !doc.message || !def.fields)
+    if (!def || !doc || !doc.message || !def.fields) {
         return {};
+    }
 
     utils.logger.debug('parsing message: '+ JSON.stringify(doc.message));
 
     if (exports.isMuvukuFormat(doc.message)) {
         // parse muvuku format
         msg_data = mp_parser.parse(def, doc);
-
-        // parse field types and resolve dot notation keys
-        for (var k in def.fields) {
-            msg_data[k] = exports.parseField(def.fields[k], msg_data[k]);
-            createDeepKey(form_data, k.split('.'), msg_data[k]);
-        }
-
+        addOmittedFields = true;
     } else {
 
+        var msg = doc.message || doc,
+            code = def && def.meta && def.meta.code;
+
         /*
-         * Parse textforms format
-         *
          * Remove the form code from the beginning of the message since it does
          * not belong to the TextForms format but is just a convention to
          * identify the message.
          */
-        var msg = doc.message || doc,
-            code = def && def.meta && def.meta.code;
-
-        msg = msg.replace(new RegExp('^\\s*'+code+'\\W*','i'),'')
+        msg = msg.replace(new RegExp('^\\s*'+code+'\\s*','i'),'')
 
         if (textforms_parser.isCompact(def, msg)) {
-            form_data = textforms_parser.parseCompact(def, msg);
+            msg_data = textforms_parser.parseCompact(def, msg);
         } else {
             msg_data = textforms_parser.parse(msg);
 
             // replace tiny labels with field keys for textforms
-            for (var k in msg_data) {
-                for (var j in def.fields) {
-                    var field = def.fields[j],
-                        tiny = sms_utils.info.translate(field.labels.tiny, doc.locale);
-                    if (tiny.toLowerCase && tiny.toLowerCase() === k) {
-                        // parse field types and resolve dot notation keys
-                        msg_data[j] = exports.parseField(field, msg_data[k]);
-                        createDeepKey(form_data, j.split('.'), msg_data[j]);
-                        break;
-                    }
+            for (var j in def.fields) {
+                var label = lower(sms_utils.info.translate(
+                    def.fields[j].labels.tiny, doc.locale
+                ));
+                if (j !== label && msg_data[label]) {
+                    msg_data[j] = msg_data[label];
+                    msg_data[label] = undefined; // TODO delete??
                 }
             }
         }
     }
+
+    // parse field types and resolve dot notation keys
+    for (var k in def.fields) {
+        if (msg_data[k] || addOmittedFields) {
+            var value = exports.parseField(def.fields[k], msg_data[k]);
+            createDeepKey(form_data, k.split('.'), value);
+        }
+    }
+
 
     // pass along some system generated fields
     if (msg_data._extra_fields === true) {

@@ -36,28 +36,14 @@ var startsWith = function(lhs, rhs) {
 };
 
 /**
- * @name trim:
- * Return a trimmed version of the string `_s` -- that is, a version
- * with whitespace removed from the beginning and end of the string.
- */
-var trim = function (_s) {
-    return _s.replace(new RegExp('^\\s+'), '').replace(new RegExp('\\s+$'), '');
-};
-
-/**
  * @name type_of:
  *  Determines the TextForms type for the string `_s`.
  */
 var type_of = function (_s) {
     if (_s.match(_re_numeric_only)) {
-        if (_s.match(_re_decimal)) {
-            return 'numeric';
-        } else {
-            return 'integer';
-        }
-    } else {
-        return 'string';
+        return _s.match(_re_decimal) ? 'numeric' : 'integer';
     }
+    return 'string';
 };
 
 /**
@@ -113,7 +99,9 @@ var set_result = function (_result, _key, _value) {
  * @api public
  */
 exports.parse = function(msg) {
-    if (!msg) return {};
+    if (!msg) {
+        return {};
+    }
     msg = msg.message || msg;
     var fields = msg.split(_re_boundary);
 
@@ -146,7 +134,7 @@ exports.parse = function(msg) {
         /* Whitespace-only value of `other`?:
             Interpret as non-match, preventing pair formation (below). */
 
-        if (other !== undefined && trim(other) === '') {
+        if (other !== undefined && other.trim() === '') {
             other = undefined;
         }
 
@@ -216,18 +204,23 @@ exports.parseCompact = function(def, msg) {
         return {};
     }
     msg = msg.message || msg;
-    var values = msg.match(/\w+|"[^"]+"/g);
+    var values = msg.match(/"[^"]+"|[^"\s]+/g);
     var keys = _.keys(def.fields);
 
     var results = {};
-
-    // TODO parse values (int, date, etc)
-    for (var i = 0; i < values.length; i++) {
-        value = values[i].replace(/"/g,"");
+    for (var i = 0; i < keys.length; i++) {
+        if (values.length === 0) {
+            break;
+        }
         key = keys[i];
-        set_result(results, key, value);
+        if (i === keys.length - 1 && def.fields[key].type === 'string') {
+            // parsing the trailing string field, use the rest of the msg
+            value = values.join(' ');
+        } else {
+            value = values.shift();
+        }
+        set_result(results, key, value.replace(/"/g,""));
     }
-
     return results;
 };
 
