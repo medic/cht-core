@@ -547,7 +547,7 @@ exports.payload_missing_fields = function (test) {
         headers: { "Host": window.location.host },
         form: {
             "from":"+888",
-            "message": 'yyyy 123',
+            "message": 'yyyy HFI',
         }
     };
     var ret = updates.add_sms(null, req),
