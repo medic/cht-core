@@ -199,6 +199,14 @@ exports.parse = function(msg) {
     return results;
 };
 
+/**
+ * @param {Object} def The form definition for this msg
+ * @param {String|Object} msg The message or an object with a 'message'
+ *      property which contains the message
+ * @returns {Object} A parsed object of the sms message or an empty
+ *      object if parsing fails.
+ * @api public
+ */
 exports.parseCompact = function(def, msg) {
     if (!msg) {
         return {};
@@ -224,6 +232,13 @@ exports.parseCompact = function(def, msg) {
     return results;
 };
 
+/**
+ * @param {Object} def The form definition for this msg
+ * @param {String|Object} msg The message or an object with a 'message'
+ *      property which contains the message
+ * @returns {Boolean} Returns true if the given msg is in compact format
+ * @api public
+ */
 exports.isCompact = function(def, msg) {
     if (!msg) {
         return false;
