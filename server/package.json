@@ -1,0 +1,16 @@
+{
+  "name": "kujua-server",
+  "description": "Provides a server side API.",
+  "private": true,
+  "dependencies": {
+    "weo-http-proxy": "0.8.x",
+    "felix-couchdb": "1.0.x",
+    "underscore": "1.4.x",
+    "couchdb-audit": "0.0.1",
+    "pass-stream": "0.1.x"
+  },
+  "version": "0.1.0",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

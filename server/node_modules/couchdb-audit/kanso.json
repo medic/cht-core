@@ -1,0 +1,14 @@
+{
+    "name": "couchdb-audit",
+    "version": "0.0.1",
+    "description": "A CouchDB library for creating a document audit trail",
+    "modules": ["couchdb-audit", "tests"],
+    "load": "couchdb-audit/app",
+    "dependencies": {
+        "settings": null,
+        "session": null,
+        "modules": null,
+        "properties": null,
+        "async": null
+    }
+}
