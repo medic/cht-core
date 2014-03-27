@@ -19,5 +19,5 @@ var proxy = httpProxy.createProxyServer({});
 proxy.on('error', function(e) { 
   console.log(JSON.stringify(e));
 });
-console.log("proxying requests on port 5985 to " + target);
-server.listen(5985);
+console.log("proxying requests on port 5988 to " + target);
+server.listen(5988);
