@@ -71,20 +71,30 @@ exports['filter matches PUT request'] = function(test) {
 exports['onMatch audits the request'] = function(test) {
   test.expect(4);
   var target = 'http://localhost:4444';
+  var generatedId = 'abc';
   var doc = {
     first: 'one',
     second: 'two'
   };
-  var proxy = {
-    web: function(req, res, options) {
-      test.equals(target, options.target);
-      test.equals('content-length', options.omitHeaders[0]);
-    }
+  var auditedDoc = {
+    first: 'one',
+    second: 'two',
+    _id: generatedId
   };
   var audit = {
     log: function(docs, cb) {
       test.same(docs[0], doc);
+      docs[0]._id = generatedId;
       cb();
+    }
+  };
+  var proxy = {
+    web: function(req, res, options) {
+      test.equals(target, options.target);
+      test.equals(
+        Buffer.byteLength(JSON.stringify(auditedDoc)), 
+        options.headers['content-length']
+      );
     }
   };
   var passStreamFn = function(writeFn, endFn) {
@@ -93,7 +103,7 @@ exports['onMatch audits the request'] = function(test) {
       writeFn(chunk, 'UTF-8', function() {});
     });
     endFn.call({push: function(body) {
-      test.equals(body, JSON.stringify(doc));
+      test.equals(body, JSON.stringify(auditedDoc));
     }}, function(err) {});
   };
   var req = {
