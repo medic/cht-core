@@ -14,7 +14,7 @@ module.exports = {
   withNode: function(felix, name) {
     var nameFn = (typeof name === 'string') ? 
       function(callback) { callback(null, name); } : name;
-    return init(felix.name, felix, nameFn);
+    return init(felix.name, felix.client, felix, nameFn);
   },
 
   /**
@@ -29,7 +29,7 @@ module.exports = {
   init: init
 };
 
-function init(appname, db, nameFn) {
+function init(appname, client, db, nameFn) {
   function audit(docs, actionOverride, callback) {
     if (!callback) {
       callback = actionOverride;
@@ -41,11 +41,11 @@ function init(appname, db, nameFn) {
       }
       async.map(docs, function(_doc, _cb) {
         if (!_doc._id) {
-          db.uuids(1, function(err, ids) {
+          client.uuids(1, function(err, ids) {
             if (err) {
               return _cb('Failed generating a new database ID. ' + err);
             }
-            _doc._id = ids[0];
+            _doc._id = ids.uuids[0];
             var audit = createAudit(_doc);
             appendHistory(audit.history, 'create', userName, _doc);
             _cb(null, audit);
@@ -206,7 +206,17 @@ function init(appname, db, nameFn) {
      * @param {Function} callback(err,response)
      * @api public
      */
-    get: get
+    get: get,
+
+    /**
+     * Save the audit record only
+     * 
+     * @name log(docs, callback)
+     * @param {Array} docs An array of documents to be saved
+     * @param {Function} callback(err,response)
+     * @api public
+     */
+    log: audit
 
   };
 }
