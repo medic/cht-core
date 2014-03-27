@@ -36,5 +36,4 @@ var client = couchdb.createClient(
     settings.password
 );
 module.exports = client.db(settings.db);
-module.exports.client = client;
 module.exports.user = settings.username;
