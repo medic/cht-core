@@ -3,7 +3,7 @@
   "description": "Provides a server side API.",
   "private": true,
   "dependencies": {
-    "weo-http-proxy": "0.8.x",
+    "http-proxy": "1.0.x",
     "felix-couchdb": "1.0.x",
     "underscore": "1.4.x",
     "couchdb-audit": "0.0.1",
