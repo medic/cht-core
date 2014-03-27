@@ -41,7 +41,17 @@ module.exports = {
       var doc = JSON.parse(dataBuffer);
       audit.log([doc], function(err) {
         if (!err) {
-          self.push(JSON.stringify(doc));
+          var body = JSON.stringify(doc);
+          proxy.web(req, res, {
+            target: target, 
+            buffer: buffer,
+            // audit might modify the doc (eg: generating an id)
+            // so we need to update the content-length header
+            headers: {
+              'content-length': Buffer.byteLength(body)
+            }
+          });
+          self.push(body);
         }
         cb(err);
       });
@@ -51,11 +61,6 @@ module.exports = {
     var buffer = req.pipe(ps);
     buffer.destroy = function(){};
 
-    proxy.web(req, res, {
-      target: target, 
-      buffer: buffer,
-      omitHeaders: ['content-length']
-    });
   },
 
   /**
