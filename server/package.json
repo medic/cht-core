@@ -9,8 +9,12 @@
     "couchdb-audit": "0.0.1",
     "pass-stream": "0.1.x"
   },
+  "devDependencies": {
+    "nodeunit": "latest"
+  },
   "version": "0.1.0",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "nodeunit tests"
   }
 }
