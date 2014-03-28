@@ -21,3 +21,9 @@ Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 ## Test
 
 `npm test`
+
+## Build Status
+
+Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/kujua-api).
+
+[![Build Status](https://travis-ci.org/medic/kujua-api.png?branch=master)](https://travis-ci.org/medic/kujua-api/branches)
