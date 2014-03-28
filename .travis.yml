@@ -2,7 +2,7 @@ language: node_js
 node_js:
    - 0.10
 
-script: "npm test"
+script: "TEST_ENV=1 npm test"
 
 notifications:
   webhooks: 
