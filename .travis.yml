@@ -6,7 +6,7 @@ services:
   - couchdb
 
 before_install:
-  - git submodule update --recursive --init sentinel json-forms
+  - git submodule update --recursive --init sentinel json-forms kujua-api
 
 before_script:
   - curl -X PUT localhost:5984/kujua-lite
