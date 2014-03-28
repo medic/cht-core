@@ -6,4 +6,4 @@
 	url = git://github.com/medic/kujua-sentinel.git
 [submodule "kujua-api"]
 	path = kujua-api
-	url = git@github.com:medic/kujua-api.git
+	url = git://github.com/medic/kujua-api.git
