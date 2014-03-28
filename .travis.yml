@@ -1,0 +1,19 @@
+language: node_js
+node_js:
+   - 0.10
+
+before_install:
+  - git submodule update --recursive --init sentinel json-forms
+
+script: "npm test"
+
+notifications:
+  webhooks: 
+    urls:
+      - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
+    on_success: change
+    on_failure: always
+  email:
+    recipients:
+      - dev@medicmobile.org
+
