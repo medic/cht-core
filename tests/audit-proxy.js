@@ -1,4 +1,5 @@
-var auditProxy = require('../audit-proxy.js');
+var auditProxy = require('../audit-proxy.js'),
+  events = require('events');
 
 exports['filter does not match request for different db'] = function(test) {
   var db = {
@@ -69,9 +70,10 @@ exports['filter matches PUT request'] = function(test) {
 };
 
 exports['onMatch audits the request'] = function(test) {
-  test.expect(4);
+  test.expect(5);
   var target = 'http://localhost:4444';
   var generatedId = 'abc';
+  var username = 'steve';
   var doc = {
     first: 'one',
     second: 'two'
@@ -82,10 +84,17 @@ exports['onMatch audits the request'] = function(test) {
     _id: generatedId
   };
   var audit = {
-    log: function(docs, cb) {
-      test.same(docs[0], doc);
-      docs[0]._id = generatedId;
-      cb();
+    withNode: function(db, cb) {
+      cb(function(err, _username) {
+        test.same(username, _username);
+      });
+      return {
+        log: function(docs, _cb) {
+          test.same(docs[0], doc);
+          docs[0]._id = generatedId;
+          _cb();
+        }
+      }
     }
   };
   var proxy = {
@@ -111,7 +120,20 @@ exports['onMatch audits the request'] = function(test) {
       return {};
     }
   };
-  auditProxy.setup({audit: audit, passStream: passStreamFn});
+  var db = {
+    client: {
+      host: 'localhost',
+      port: 5984
+    }
+  };
+  var res = new events.EventEmitter();
+  var http = {
+    get: function(options, cb) {
+      cb(res);
+      res.emit('data', '{"userCtx": {"name": "' + username + '"}}');
+    }
+  };
+  auditProxy.setup({audit: audit, passStream: passStreamFn, db: db, http: http});
   auditProxy.onMatch(proxy, req, {}, target);
   test.done();
 };

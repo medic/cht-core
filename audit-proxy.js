@@ -1,6 +1,24 @@
-var passStream = require('pass-stream'),
+var http = require('http'),
+  passStream = require('pass-stream'),
   db = require('./db'),
-  audit;
+  couchdbAudit = require('couchdb-audit');
+
+var getUsername = function(req, cb) {
+  http.get({
+    host: db.client.host,
+    port: db.client.port,
+    path: '/_session',
+    headers: req.headers
+  }, function(res) {
+    res
+      .on('data', function (chunk) {
+        cb(null, JSON.parse(chunk).userCtx.name);
+      })
+      .on('error', function(e) {
+        cb(e);
+      });
+  });
+};
 
 module.exports = {
 
@@ -27,7 +45,10 @@ module.exports = {
    * @api public
    */
   onMatch: function(proxy, req, res, target) {
-    audit = audit || require('couchdb-audit').withNode(db, db.user);
+
+    var audit = couchdbAudit.withNode(db, function(cb) {
+      getUsername(req, cb);
+    });
     var dataBuffer = '';
 
     function writeFn(data, encoding, cb) {
@@ -59,7 +80,7 @@ module.exports = {
 
     var ps = passStream(writeFn, endFn);
     var buffer = req.pipe(ps);
-    buffer.destroy = function(){};
+    buffer.destroy = function() {};
 
   },
 
@@ -69,7 +90,8 @@ module.exports = {
   setup: function(deps) {
     passStream = deps.passStream;
     db = deps.db;
-    audit = deps.audit;
+    couchdbAudit = deps.audit;
+    http = deps.http;
   }
 
 }
