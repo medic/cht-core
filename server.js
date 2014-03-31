@@ -4,7 +4,6 @@ var http = require('http'),
   db = require('./db'),
   target = 'http://' + db.client.host + ':' + db.client.port;
 
-// TODO copy couchdb audit in to sentinel and kujua-lite and bump version
 var server = http.createServer(function(req, res) {
 
   if (auditProxy.filter(req)) {
@@ -18,6 +17,7 @@ var server = http.createServer(function(req, res) {
 var proxy = httpProxy.createProxyServer({});
 proxy.on('error', function(e) { 
   console.log(JSON.stringify(e));
+  process.exit(1);
 });
 console.log("proxying requests on port 5988 to " + target);
 server.listen(5988);

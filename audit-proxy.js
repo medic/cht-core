@@ -46,9 +46,6 @@ module.exports = {
    */
   onMatch: function(proxy, req, res, target) {
 
-    var audit = couchdbAudit.withNode(db, function(cb) {
-      getUsername(req, cb);
-    });
     var dataBuffer = '';
 
     function writeFn(data, encoding, cb) {
@@ -59,23 +56,34 @@ module.exports = {
 
     function endFn(cb) {
       var self = this;
-      var doc = JSON.parse(dataBuffer);
-      audit.log([doc], function(err) {
-        if (!err) {
-          var body = JSON.stringify(doc);
-          proxy.web(req, res, {
-            target: target, 
-            buffer: buffer,
-            // audit might modify the doc (eg: generating an id)
-            // so we need to update the content-length header
-            headers: {
-              'content-length': Buffer.byteLength(body)
-            }
-          });
-          self.push(body);
-        }
-        cb(err);
-      });
+      var options = {
+        target: target, 
+        buffer: buffer
+      };
+      try {
+        var doc = JSON.parse(dataBuffer);
+        var audit = couchdbAudit.withNode(db, function(cb) {
+          getUsername(req, cb);
+        });
+        audit.log([doc], function(err) {
+          if (err) {
+            return cb(err);
+          }
+          dataBuffer = JSON.stringify(doc);
+          // audit might modify the doc (eg: generating an id)
+          // so we need to update the content-length header
+          options.headers = {
+            'content-length': Buffer.byteLength(dataBuffer)
+          };
+          proxy.web(req, res, options);
+          self.push(dataBuffer);
+        });
+      } catch(e) {
+        // ignore non-json requests
+        proxy.web(req, res, options);
+        self.push(dataBuffer);
+      }
+      cb();
     }
 
     var ps = passStream(writeFn, endFn);

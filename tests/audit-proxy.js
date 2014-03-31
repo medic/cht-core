@@ -138,3 +138,35 @@ exports['onMatch audits the request'] = function(test) {
   test.done();
 };
 
+
+exports['onMatch does not audit non json request'] = function(test) {
+  test.expect(2);
+  var target = 'http://localhost:4444';
+  var generatedId = 'abc';
+  var username = 'steve';
+  var doc = 'message_id=15095&sent_timestamp=1396224953456&message=ANCR+jessiec+18+18&from=%2B13125551212';
+  var proxy = {
+    web: function(req, res, options) {
+      test.equals(target, options.target);
+    }
+  };
+  var passStreamFn = function(writeFn, endFn) {
+    var chunks = doc.match(/.{1,4}/g);
+    chunks.forEach(function(chunk){
+      writeFn(chunk, 'UTF-8', function() {});
+    });
+    endFn.call({push: function(body) {
+      test.equals(body, doc);
+    }}, function(err) {});
+  };
+  var req = {
+    pipe: function(ps) {
+      return {};
+    }
+  };
+
+  auditProxy.setup({passStream: passStreamFn});
+  auditProxy.onMatch(proxy, req, {}, target);
+  test.done();
+};
+
