@@ -234,7 +234,12 @@ exports.export_messages = function (head, req) {
                 history[item.state] = item.timestamp;
             });
             _.each(['sent','pending','scheduled','cleared','muted'], function(state) {
-                vals.push(formatDate(history[state], query.tz));
+                var val = history[state];
+                if (!val && task.state === state && (task.timestamp || task.due)) {
+                    // include timestamp data for records that have no history.
+                    val = task.timestamp || task.due;
+                }
+                vals.push(formatDate(val, query.tz));
             });
             _.each(task.messages, function(msg) {
                 vals = vals.concat([

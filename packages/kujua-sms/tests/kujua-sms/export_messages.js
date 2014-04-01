@@ -48,7 +48,12 @@ exports['requesting messages export handles no state_history'] = function(test) 
     var reportedDate = 1331503842461;
     var taskTimestamp = 1331503843461;
 
-    var expected = headers + '"abc123z","' + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z') + '","+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1","Test","Pending","","","","",""\n';
+    var expected = headers + '"abc123z","'
+        + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z')
+        + '","+12229990000","Paul","Clinic 1","Eric","Health Center 1",'
+        + '"District 1","Test","pending","","'
+        + moment(taskTimestamp).format('DD, MMM YYYY, HH:mm:ss Z')
+        + '","","",""\n';
 
     var req = {
         query: {
@@ -84,7 +89,7 @@ exports['requesting messages export handles no state_history'] = function(test) 
             },
             tasks: [{
                 type: 'Test',
-                state: 'Pending',
+                state: 'pending',
                 timestamp: taskTimestamp
             }]
         }
