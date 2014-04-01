@@ -156,9 +156,11 @@ exports.export_messages = function (head, req) {
         'related_entities.clinic.parent.parent.name',
         'Message Type',
         'Message State',
-        'Message Timestamp/Due',
-        'Scheduled Timestamp',
+        'Sent Timestamp',
         'Pending Timestamp',
+        'Scheduled Timestamp',
+        'Cleared Timestamp',
+        'Muted Timestamp',
         'Message UUID',
         'Sent By',
         'To Phone',
@@ -225,14 +227,13 @@ exports.export_messages = function (head, req) {
                 objectpath.get(doc, 'related_entities.clinic.parent.name'),
                 objectpath.get(doc, 'related_entities.clinic.parent.parent.name'),
                 task.type || 'Task Message',
-                task.state,
-                formatDate(task.timestamp || task.due, query.tz)
+                task.state
             ];
             var history = {};
             _.each(task.state_history, function(item) {
                 history[item.state] = item.timestamp;
             });
-            _.each(['scheduled','pending'], function(state) {
+            _.each(['sent','pending','scheduled','cleared','muted'], function(state) {
                 vals.push(formatDate(history[state], query.tz));
             });
             _.each(task.messages, function(msg) {
