@@ -1039,6 +1039,22 @@
                         "sw": ""
                     },
                     {
+                        "key": "_id",
+                        "en": "Record UUID",
+                        "fr": "Record UUID",
+                        "es": "Record UUID",
+                        "ne": "Record UUID",
+                        "sw": "Record UUID"
+                    },
+                    {
+                        "key": "patient_id",
+                        "en": "Patient ID",
+                        "fr": "Patient ID",
+                        "es": "Patient ID",
+                        "ne": "Patient ID",
+                        "sw": "Patient ID"
+                    },
+                    {
                         "key": "reported_date",
                         "en": "Reported Date",
                         "fr": "Date envoyé",

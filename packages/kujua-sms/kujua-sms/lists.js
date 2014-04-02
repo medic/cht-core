@@ -147,6 +147,7 @@ exports.export_messages = function (head, req) {
 
     var labels = [
         '_id',
+        'patient_id',
         'reported_date',
         'from',
         'related_entities.clinic.contact.name',
@@ -219,6 +220,7 @@ exports.export_messages = function (head, req) {
         _.each(tasks, function(task) {
             var vals = [
                 doc._id,
+                doc.patient_id,
                 formatDate(doc.reported_date, query.tz),
                 doc.from,
                 objectpath.get(doc, 'related_entities.clinic.contact.name'),
