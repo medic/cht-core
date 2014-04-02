@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    sms_utils = require('kujua-sms/utils'),
     embed_re = function (_regex) {
         return _regex.toString()
                 .replace(new RegExp('^\\/'), '')
@@ -249,7 +250,10 @@ exports.isCompact = function(def, msg) {
         return false;
     }
     var labels = _.flatten(_.map(_.values(def.fields), function(field) {
-        return [field.labels.short, field.labels.tiny];
+        return [
+            sms_utils.info.getMessage(field.labels.tiny, def.locale),
+            sms_utils.info.getMessage(field.labels.short, def.locale)
+        ];
     }));
     return !_.some(labels, function(label) {
         return startsWith(lower(fields[0]), lower(label));

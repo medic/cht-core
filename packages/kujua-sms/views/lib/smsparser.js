@@ -165,12 +165,12 @@ exports.parse = function (def, doc) {
 
             // replace tiny labels with field keys for textforms
             for (var j in def.fields) {
-                var label = lower(sms_utils.info.translate(
+                var label = lower(sms_utils.info.getMessage(
                     def.fields[j].labels.tiny, doc.locale
                 ));
                 if (j !== label && msg_data[label]) {
                     msg_data[j] = msg_data[label];
-                    msg_data[label] = undefined; // TODO delete??
+                    msg_data[label] = undefined;
                 }
             }
         }
