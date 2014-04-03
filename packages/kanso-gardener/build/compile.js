@@ -7,57 +7,67 @@ var path = require('path'),
 
 module.exports = {
     run : function(root, path_loc, kanso_json, doc, callback) {
-        var folder_name = 'node_module',
-            dependencies_included = false;
+        var folder_names = get_folder_names(kanso_json),
+            dependencies_included = !!kanso_json.dependencies_included;
 
-        if (kanso_json.node_module_folder) {
-            folder_name = kanso_json.node_module_folder;
-        }
-        if (kanso_json.dependencies_included) {
-            dependencies_included = true;
-        }
-
-        var working_folder_name = folder_name + '_working';
         root = _.isString(root) ? root : '';
-        folder_name = _.isString(folder_name) ? folder_name : '';
 
-        var src_folder = path.join(root, folder_name),
-            package_folder = path.join(root, working_folder_name),
-            generated_package_json,
-            expected_tgz_name;
-        async.waterfall([
-            function(callback) {
-                copy_node_dir(src_folder, package_folder, callback);
+        async.forEachSeries(
+            folder_names,
+            function(folder_name, callbackEach) {
+                var working_folder_name = folder_name + '_working',
+                    src_folder = path.join(root, folder_name),
+                    package_folder = path.join(root, working_folder_name),
+                    generated_package_json,
+                    expected_tgz_name;
+
+                async.waterfall([
+                    function(callback) {
+                        copy_node_dir(src_folder, package_folder, callback);
+                    },
+                    function(callback) {
+                        read_package_json(package_folder, kanso_json, dependencies_included, callback);
+                    },
+                    function(package_json, callback) {
+                        generated_package_json = package_json;
+                        write_package_json(package_json, package_folder, callback);
+                    },
+                    function(callback) {
+                        generate_tgz(package_folder, callback);
+                    },
+                    function(callback) {
+                        expected_tgz_name = generate_tgz_name(generated_package_json);
+                        attach_tgz(expected_tgz_name, doc, callback);
+                    },
+                    function(doc, callback) {
+                        add_node_info(doc, expected_tgz_name, callback);
+                    }
+                ], function(err, doc) {
+                    clean_up(package_folder, expected_tgz_name, function() {
+                        callbackEach(err);
+                    });
+                });
             },
-            function(callback) {
-                read_package_json(package_folder, kanso_json, dependencies_included, callback);
-            },
-            function(package_json, callback) {
-                generated_package_json = package_json;
-                write_package_json(package_json, package_folder, callback);
-            },
-            function(callback) {
-                generate_tgz(package_folder, callback);
-            },
-            function(callback) {
-                expected_tgz_name = generate_tgz_name(generated_package_json);
-                attach_tgz(expected_tgz_name, doc, callback);
-            },
-            function(doc, callback) {
-                add_node_info(doc, expected_tgz_name, callback);
-            }
-        ], function(err, doc) {
-            clean_up(package_folder, expected_tgz_name,  function(err2) {
+            function(err) {
+                console.log(doc);
                 callback(err, doc);
-            });
-        });
+            }
+        )
     }
 };
+
+function get_folder_names(kanso_json) {
+    var node_module_folders = 
+            kanso_json.node_module_folder || kanso_json.node_module_folders;
+    if (!node_module_folders) {
+        return ['node_module'];
+    }
+    return node_module_folders.split(',');
+}
 
 function generate_full_command(package_folder) {
     return npm_cmd + ' ' + package_folder;
 }
-
 
 function copy_node_dir(from, to, callback) {
     fs.copyRecursive(from, to, callback);
@@ -164,11 +174,12 @@ function attach_tgz(tgz_name, doc, callback) {
 
 
 function add_node_info(doc, expected_tgz_name, callback) {
+    var modules = doc.node_modules ? doc.node_modules + ',' : '';
+    modules += expected_tgz_name;
 
-    doc.node_module = expected_tgz_name;
-
+    doc.node_modules = modules;
     if (!doc.kanso) doc.kanso = {};
     if (!doc.kanso.config) doc.kanso.config = {};
-    doc.kanso.config.node_module = expected_tgz_name;
+    doc.kanso.config.node_modules = modules;
     callback(null, doc);
 }
