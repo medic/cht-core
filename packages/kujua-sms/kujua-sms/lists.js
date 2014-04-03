@@ -246,9 +246,13 @@ exports.export_messages = function (head, req) {
             });
             _.each(['received','sent','pending','scheduled','cleared','muted'], function(state) {
                 var val = history[state];
-                if (!val && task.state === state && (task.timestamp || task.due)) {
+                if (state === 'scheduled') {
+                    // use due property for scheduled timestamp value
+                    val = task.due;
+                }
+                if (!val && task.state === state) {
                     // include timestamp data for records that have no history.
-                    val = task.timestamp || task.due;
+                    val = task.timestamp;
                 }
                 vals.push(formatDate(val, query.tz));
             });
