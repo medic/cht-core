@@ -244,8 +244,7 @@ module.exports = {
 
         utils.getRegistrations({
             db: db,
-            id: id,
-            form: doc.form
+            id: id
         }, function(err, registrations) {
             if (err) {
                 callback(err);
