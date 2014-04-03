@@ -157,6 +157,7 @@ exports.export_messages = function (head, req) {
         'related_entities.clinic.parent.parent.name',
         'Message Type',
         'Message State',
+        'Received Timestamp',
         'Sent Timestamp',
         'Pending Timestamp',
         'Scheduled Timestamp',
@@ -196,6 +197,10 @@ exports.export_messages = function (head, req) {
                 type: 'Auto Response',
                 state: 'sent',
                 timestamp: doc.reported_date,
+                state_history: [{
+                    state: 'sent',
+                    timestamp: doc.reported_date
+                }],
                 messages: doc.responses
             });
         }
@@ -211,6 +216,10 @@ exports.export_messages = function (head, req) {
                 type: 'Incoming Message',
                 state: 'received',
                 timestamp: doc.reported_date,
+                state_history: [{
+                    state: 'received',
+                    timestamp: doc.reported_date
+                }],
                 messages: [{
                     from: doc.from,
                     message: doc.sms_message.message
@@ -235,7 +244,7 @@ exports.export_messages = function (head, req) {
             _.each(task.state_history, function(item) {
                 history[item.state] = item.timestamp;
             });
-            _.each(['sent','pending','scheduled','cleared','muted'], function(state) {
+            _.each(['received','sent','pending','scheduled','cleared','muted'], function(state) {
                 var val = history[state];
                 if (!val && task.state === state && (task.timestamp || task.due)) {
                     // include timestamp data for records that have no history.

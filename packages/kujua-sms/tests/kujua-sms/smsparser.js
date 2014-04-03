@@ -1023,3 +1023,67 @@ exports.msbr_example_data = function (test) {
 
     test.done();
 };
+
+exports['one field input is parsed correctly'] = function(test) {
+    var def = {
+      "meta": {
+         "code": "OFF",
+         "label": {
+            "en": "Disable Notifications",
+            "sw": "Toa"
+         }
+      },
+      "fields": {
+         "patient_id": {
+            "labels": {
+               "tiny": {
+                 "en": "ID"
+               },
+               "description": {
+                 "en": "Patient Identifier"
+               },
+               "short": {
+                 "en": "Patient ID"
+               }
+            },
+            "position": 0,
+            "flags": {
+                "input_digits_only": true
+            },
+            "length": [
+                5, 5
+            ],
+            "type": "string"
+         },
+         "reason": {
+            "labels": {
+               "tiny": {
+                 "en": "r",
+                 "sw": "r"
+               },
+               "description": {
+                 "en": "Reason",
+                 "sw": "Reason"
+               },
+               "short": {
+                 "en": "Reason",
+                 "sw": "Reason"
+               }
+            },
+            "position": 1,
+            "length": [
+                3, 100
+            ],
+            "type": "string"
+         }
+      },
+      "use_sentinel": true
+    };
+
+    var id = 12345;
+    var doc = { message: "OFF ID " + id, locale: 'en' };
+    var data = smsparser.parse(def, doc);
+    test.same({ patient_id: id }, data);
+    test.done();
+
+};
