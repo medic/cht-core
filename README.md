@@ -92,6 +92,10 @@ npm install phantomjs -g
 ./scripts/phantom_test.sh http://localhost:5984/kujua-lite
 ```
 
+## Help
+
+Join our [Google Group](https://groups.google.com/forum/#!forum/medic-developers) or file an issue on Github.
+
 ## Build Status
 
 Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/kujua-lite).
