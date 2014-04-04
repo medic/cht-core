@@ -112,7 +112,14 @@ exports['requesting messages export succeeds if user is national administrator']
     var clearedTimestamp = 1331503885461;
     var mutedTimestamp = 1331503895461;
 
-    var expected = headers + '"abc123z","","' + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z') + '","+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1","Test","Pending","","' + moment(sentTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '","' + moment(pendingTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '","' + moment(scheduledTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '","' + moment(clearedTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '","' + moment(mutedTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '"\n';
+    var expected = headers + '"abc123z","","'
+        + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z')
+        + '","+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1","Test","Pending","","'
+        + moment(sentTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '","'
+        + moment(pendingTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '","'
+        + moment(scheduledTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '","'
+        + moment(clearedTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '","'
+        + moment(mutedTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '"\n';
 
     var req = {
         query: {
@@ -270,5 +277,98 @@ exports['requesting messages export in xml'] = function(test) {
 
     var resp = fakerequest.list(lists.export_messages, viewdata, req);
     test.same(expected, resp.body.replace(/\n/g, ''));
+    test.done();
+}
+
+exports['messages export preserves scheduled message due value'] = function(test) {
+    test.expect(1);
+
+    var reportedDate = 1331503842461;
+    var taskTimestamp = 1331503843461;
+    var pendingTimestamp = 1331503844461;
+    var scheduledTimestamp = 1331503845461;
+    var scheduledDue = 1331603845462;
+    var sentTimestamp = 1332505846461;
+    var clearedTimestamp = 1331503885461;
+    var mutedTimestamp = 1331503895461;
+
+    var expected = headers + '"abc123z","","'
+        + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z')
+        + '","+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1","Test","sent","","'
+        + moment(sentTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '","'
+        + moment(pendingTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '","'
+        + moment(scheduledDue).format('DD, MMM YYYY, HH:mm:ss Z') + '","'
+        + moment(clearedTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '","'
+        + moment(mutedTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '"\n';
+
+    var req = {
+        query: {
+            startkey: 'foo',
+            endkey: 'bar',
+            form: 'MSBC'
+        },
+        method: "GET",
+        userCtx: {
+            roles: ['national_admin']
+        }
+    };
+
+    // mockup the view data
+    var viewdata = {rows: [{
+        "key": [ true, "MSBC", 1331503842461 ],
+        "value": 1,
+        "doc": {
+            _id: 'abc123z',
+            reported_date: reportedDate,
+            from: '+12229990000',
+            form: "MSBC",
+            related_entities: {
+                clinic: {
+                    name: "Clinic 1",
+                    contact: { name:"Paul", phone: "" },
+                    parent: {
+                        name: "Health Center 1",
+                        contact: { name: "Eric" },
+                        parent: { name: "District 1" }
+                    }
+                }
+            },
+            tasks: [{
+                type: 'Test',
+                state: 'sent',
+                timestamp: taskTimestamp,
+                due: scheduledDue,
+                state_history: [
+                    {
+                        state: 'pending',
+                        timestamp: '1'
+                    },
+                    {
+                        state: 'pending',
+                        timestamp: pendingTimestamp
+                    },
+                    {
+                        state: 'scheduled',
+                        timestamp: scheduledTimestamp
+                    },
+                    {
+                        state: 'muted',
+                        timestamp: mutedTimestamp
+                    },
+                    {
+                        state: 'sent',
+                        timestamp: sentTimestamp
+                    },
+                    {
+                        state: 'cleared',
+                        timestamp: clearedTimestamp
+                    }
+                ]
+            }]
+        }
+    }]};
+
+    var resp = fakerequest.list(lists.export_messages, viewdata, req);
+    test.same(expected, resp.body);
     test.done();
 }

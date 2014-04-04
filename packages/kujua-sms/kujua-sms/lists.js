@@ -246,7 +246,7 @@ exports.export_messages = function (head, req) {
             });
             _.each(['received','sent','pending','scheduled','cleared','muted'], function(state) {
                 var val = history[state];
-                if (state === 'scheduled') {
+                if (state === 'scheduled' && task.due) {
                     // use due property for scheduled timestamp value
                     val = task.due;
                 }
