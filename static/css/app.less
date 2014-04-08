@@ -864,7 +864,6 @@ table.spreadsheet .dropdown-menu {
 }
 .modal-body {
     min-height: 50px;
-    overflow: visible;
     form, textarea {
         margin: 0;
     }
@@ -907,10 +906,8 @@ h3, h4 {
     padding: 20px;
 }
 
-#user-management {
-  padding: 2em;
+#user-management-modal {
   #user-creation {
-    width: 30%;
     .select2-container, input[type=text], input[type=password] {
       margin: 0 0 1em 0;
     }
@@ -925,58 +922,30 @@ h3, h4 {
       padding: 0;
       font-weight: bold;
     }
-    button, input[type=submit] {
-      font-size: 0.85em;
-      font-weight: bold;
-    }
-    .status {
-      float: right;
-      font-size: 0.9em;
-      font-weight: bold;
-      line-height: 2em;
-    }
-    .error {
-      color: #d22;
-    }
+  }
+}
+
+#user-management {
+  padding: 2em;
+  #add-user {
+    margin-bottom: 1em;
   }
   #user-list {
-    float: right;
-    width: 65%;
     overflow: visible;
     table {
       width: 100%;
       thead {
         font-size: 1.2em;
         font-weight: bold;
-        border-bottom: solid 2px #000;
-        tr td.first {
-          padding-left: 1em;
-        }
+        border-bottom: solid 1px #000;
       }
       tbody {
         tr td {
-          cursor: pointer;
           padding: 0.5em;
           font-size: 0.95em;
-          button {
-            font-size: 0.75em;
-            font-weight: bold;
-            padding: 0.25em 0.5em;
-          }
         }
         tr td.first {
           font-weight: bold;
-        }
-        tr.spacer td {
-          padding: 0.25em 0;
-        }
-        input[type=radio] {
-          margin: 0;
-          padding: 0;
-        }
-        tr.selected td {
-          color: #fff;
-          background-color: #3875d7;
         }
       }
     }

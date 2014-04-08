@@ -147,6 +147,7 @@ exports.export_messages = function (head, req) {
 
     var labels = [
         '_id',
+        'patient_id',
         'reported_date',
         'from',
         'related_entities.clinic.contact.name',
@@ -156,9 +157,12 @@ exports.export_messages = function (head, req) {
         'related_entities.clinic.parent.parent.name',
         'Message Type',
         'Message State',
-        'Message Timestamp/Due',
-        'Scheduled Timestamp',
+        'Received Timestamp',
+        'Sent Timestamp',
         'Pending Timestamp',
+        'Scheduled Timestamp',
+        'Cleared Timestamp',
+        'Muted Timestamp',
         'Message UUID',
         'Sent By',
         'To Phone',
@@ -193,6 +197,10 @@ exports.export_messages = function (head, req) {
                 type: 'Auto Response',
                 state: 'sent',
                 timestamp: doc.reported_date,
+                state_history: [{
+                    state: 'sent',
+                    timestamp: doc.reported_date
+                }],
                 messages: doc.responses
             });
         }
@@ -208,6 +216,10 @@ exports.export_messages = function (head, req) {
                 type: 'Incoming Message',
                 state: 'received',
                 timestamp: doc.reported_date,
+                state_history: [{
+                    state: 'received',
+                    timestamp: doc.reported_date
+                }],
                 messages: [{
                     from: doc.from,
                     message: doc.sms_message.message
@@ -217,6 +229,7 @@ exports.export_messages = function (head, req) {
         _.each(tasks, function(task) {
             var vals = [
                 doc._id,
+                doc.patient_id,
                 formatDate(doc.reported_date, query.tz),
                 doc.from,
                 objectpath.get(doc, 'related_entities.clinic.contact.name'),
@@ -225,15 +238,19 @@ exports.export_messages = function (head, req) {
                 objectpath.get(doc, 'related_entities.clinic.parent.name'),
                 objectpath.get(doc, 'related_entities.clinic.parent.parent.name'),
                 task.type || 'Task Message',
-                task.state,
-                formatDate(task.timestamp || task.due, query.tz)
+                task.state
             ];
             var history = {};
             _.each(task.state_history, function(item) {
                 history[item.state] = item.timestamp;
             });
-            _.each(['scheduled','pending'], function(state) {
-                vals.push(formatDate(history[state], query.tz));
+            _.each(['received','sent','pending','scheduled','cleared','muted'], function(state) {
+                var val = history[state];
+                if (!val && task.state === state && (task.timestamp || task.due)) {
+                    // include timestamp data for records that have no history.
+                    val = task.timestamp || task.due;
+                }
+                vals.push(formatDate(val, query.tz));
             });
             _.each(task.messages, function(msg) {
                 vals = vals.concat([

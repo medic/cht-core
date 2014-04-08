@@ -372,6 +372,14 @@ module.exports = {
            "sw": "Record UUID"
        },
        {
+           "key": "patient_id",
+           "en": "Patient ID",
+           "fr": "Patient ID",
+           "es": "Patient ID",
+           "ne": "Patient ID",
+           "sw": "Patient ID"
+       },
+       {
            "key": "daysoverdue",
            "en": "Days since patient visit",
            "fr": "Jours depuis visite du patient",

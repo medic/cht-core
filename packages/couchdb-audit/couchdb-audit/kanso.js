@@ -12,7 +12,7 @@ module.exports = {
    * @api public
    */
   withKanso: function(db) {
-    return log.init(appname, {
+    var dbWrapper = {
       view: function(design, view, query, callback) {
         db.getView.call(db, design, view, query, callback);
       },
@@ -27,13 +27,16 @@ module.exports = {
       },
       bulkDocs: function(options, callback) {
         db.bulkSave.call(db, options.docs, options, callback);
-      },
+      }
+    };
+    var clientWrapper = {
       uuids: function(count, callback) {
         db.newUUID.call(db, 100, function(err, id) {
-          callback(err, [id]);
+          callback(err, {uuids: [id]});
         });
       }
-    }, function(callback) {
+    };
+    return log.init(appname, clientWrapper, dbWrapper, function(callback) {
       session.info(function(err, result) {
         if (err) {
           return callback(err);
