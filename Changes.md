@@ -4,7 +4,7 @@
 
 ### TBD
 
-- Fix spreadsheet keyboard navigation. #448
+- Fixed spreadsheet keyboard navigation. #448
 
 - Validate 'Everyone at x' for at least one valid phone number. #333
 
@@ -26,15 +26,15 @@
 
 - Added support for compact version of TextForms format #428
 
-    Compact Textforms is delimited by spaces and field is determined by order.
+    In compact Textforms fields are delimited by spaces and determined by order.
     So no hashes or field keys are required like in classic TextForms format.
     If your field value has spaces in it then it must be surrounded by quotes
     unless it is the last field.
 
     Examples:
 
-    REG 4165550000 John Smith
-    REG "John Smith" 4165550000
+        REG 4165550000 John Smith
+        REG "John Smith" 4165550000
     
 - Include state change timestamps and patient_id in messages export #453
     
@@ -51,7 +51,7 @@
     Clinic Name, Health Center Contact Name, Health Center Name, District
     Hospital Name, Message Type, Message State, Received Timestamp, Sent
     Timestamp, Pending Timestamp, Scheduled Timestamp, Cleared Timestamp, Muted
-    Timestamp Message UUID, Sent By, To Phone, Message Body
+    Timestamp, Message UUID, Sent By, To Phone, Message Body
 
     Note: These are the default column labels and they are configurable.
 
