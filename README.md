@@ -1,6 +1,7 @@
 # Kujua Lite
 
 These instructions should help you get setup to run or develop on Kujua Lite.
+For latest changes and release announcements see the [change log](Changes.md).
 
 ## Dependencies
 
