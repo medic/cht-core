@@ -1,5 +1,83 @@
 # Kujua Release Notes
 
+## 0.3.3
+
+### Apr 10, 2014
+
+- Fixed spreadsheet keyboard navigation. #448
+
+- Validate 'Everyone at x' for at least one valid phone number. #333
+
+- Audit support for data records and facility data #415
+
+    Also includes support for export of audit data as XML or CSV file.
+
+    Note: Only new records and record edits will have an audit log entry.  So
+    this means your audit log will only contain changes to records after the
+    upgrade.
+
+    Similarly browsing old revision will stop working for old records because
+    they lack audit log entries.  If this is a major problem for you let us
+    know and we can add backwards compatible revision browsing in the next
+    release.
+
+    This has been released as a standalone re-useable module for Node and
+    browser environments: https://github.com/medic/couchdb-audit
+
+- Added support for compact version of TextForms format #428
+
+    In compact Textforms fields are delimited by spaces and determined by order.
+    So no hashes or field keys are required like in classic TextForms format.
+    If your field value has spaces in it then it must be surrounded by quotes
+    unless it is the last field.
+
+    Examples:
+
+        REG 4165550000 John Smith
+        REG "John Smith" 4165550000
+    
+- Include state change timestamps and patient_id in messages export #453
+    
+    Old Columns:
+
+    Record UUID, Reported Date, From, Clinic Contact Name, Clinic Name,  Health
+    Center Contact Name, Health Center Name, District Hospital Name, Message
+    Type, Message State, Message Timestamp/Due, Message UUID, Sent By, To
+    Phone, Message Body
+
+    New Columns:
+
+    Record UUID, Patient ID, Reported Date, Reported From, Clinic Contact Name,
+    Clinic Name, Health Center Contact Name, Health Center Name, District
+    Hospital Name, Message Type, Message State, Received Timestamp, Sent
+    Timestamp, Pending Timestamp, Scheduled Timestamp, Cleared Timestamp, Muted
+    Timestamp, Message UUID, Sent By, To Phone, Message Body
+
+    Note: These are the default column labels and they are configurable.
+
+- Disable facility select and show loading message until data is loaded. #452
+
+- Updated font-awesome to 3.2.1 to get extra icons
+
+- Fixed Help button on the spreadsheet. #455
+
+- Fixed spreadsheet duplicate rendering when quickly switching tabs. #362 #450
+
+- Added permissions checks to export lists functions. #456
+
+- Fixed bug where facility spreadsheet update records when field value is
+  unchanged. #457
+
+- Fixed bug where registrations was not using db-wide unique IDs. kujua-sentinel#54 
+
+- Fixed duplicate records on ID search #430
+
+- User Management UX refactor #385, #380, #462, #380, #379, #378, #377, #429
+
+- Fixed bug on facilities screen where delete functions would stack up and
+  inadvertantly delete a facility. #469
+
+
 ## 0.3.2
 
 ### Mar 11, 2014 

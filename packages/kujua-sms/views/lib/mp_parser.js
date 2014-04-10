@@ -10,29 +10,6 @@ var zip = function (a, b) {
     return zipped;
 };
 
-
-/**
- * Splits key by '.' and creates a deep key on the obj.
- * Assigns the val to the key in the obj.
- * If key already exists, only assign value.
- *
- * @param {Object} obj - object in which value is assigned to key
- * @param {Array} key  - key in dot notation (e.g. some.thing.else)
- * @param {String} val - value to be assigned to the generated key
- */
-var createDeepKey = function(obj, key, val) {
-    if(key.length > 1) {
-        var tmp = key.shift();
-        if(!obj[tmp]) {
-            obj[tmp] = {};
-        }
-
-        createDeepKey(obj[tmp], key, val);
-    } else {
-        obj[key[0]] = val;
-    }
-};
-
 /**
  * @param {Object} def - jsonforms form definition
  * @param {Object} doc - sms_message document
@@ -66,19 +43,13 @@ exports.parse = function(def, doc) {
 
     return pairs.reduce(function (obj, v) {
         var field = v[0],
-            val = v[1],
-            result;
+            val = v[1];
 
-        // ignore extra form data that has no matching field definition.
         if (!field) {
+            // ignore extra form data that has no matching field definition.
             obj._extra_fields = true;
-            return obj;
-        }
-
-        if (typeof val === 'string') {
-            obj[field._key] = val.trim();
         } else {
-            obj[field._key] = val;
+            obj[field._key] = typeof val === 'string' ? val.trim() : val;
         }
 
         return obj;

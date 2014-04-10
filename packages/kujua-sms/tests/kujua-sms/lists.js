@@ -151,6 +151,11 @@ exports.tasks_pending_callback = function(test) {
                 _id: '0b5586',
                 tasks:[{
                     "state":"sent",
+                    "state_history": [
+                        {
+                            "state": "sent"
+                        }
+                    ],
                     "messages":[
                         {
                             "to": "+123",
@@ -167,6 +172,7 @@ exports.tasks_pending_callback = function(test) {
 
     // remove timestamp for this test
     delete resp_body.callback.data.docs[0].tasks[0].timestamp;
+    delete resp_body.callback.data.docs[0].tasks[0].state_history[0].timestamp;
 
     test.same(expResp.callback.data, resp_body.callback.data);
     test.same(expResp.callback.options, resp_body.callback.options);

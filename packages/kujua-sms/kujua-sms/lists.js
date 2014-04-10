@@ -6,7 +6,7 @@ var _ = require('underscore'),
     _s = require('underscore-string'),
     utils = require('./utils'),
     moment = require('moment'),
-    logger = require('kujua-utils').logger,
+    kutils = require('kujua-utils'),
     jsonforms  = require('views/lib/jsonforms'),
     info = require('views/lib/appinfo'),
     objectpath = require('views/lib/objectpath');
@@ -22,6 +22,9 @@ var _ = require('underscore'),
  * @api public
  */
 var formatDate = exports.formatDate = function(date, tz) {
+    if (!date) {
+        return '';
+    }
     // standard format for exports
     var fmt = 'DD, MMM YYYY, HH:mm:ss Z';
     // return in a specified timezone offset
@@ -87,7 +90,7 @@ function startExportHeaders(format, filename) {
     }
 };
 
-function sendHeaderRow(format, labels, form, delimiter) {
+function sendHeaderRow(format, labels, form, delimiter, skipHeader) {
     if (format === 'xml') {
         send('<?xml version="1.0" encoding="UTF-8"?>\n' +
              '<?mso-application progid="Excel.Sheet"?>\n' +
@@ -97,14 +100,19 @@ function sendHeaderRow(format, labels, form, delimiter) {
              ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n' +
              ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
              '<Worksheet ss:Name="'+form+'"><Table>');
-        send(utils.arrayToXML([labels]));
-    } else {
+        if (!skipHeader) {
+            send(utils.arrayToXML([labels]));
+        }
+    } else if (!skipHeader) {
         send(utils.arrayToCSV([labels], delimiter) + '\n');
     }
 }
 
 function sendValuesRow(vals, format, delimiter) {
     if (format === 'xml') {
+        vals = _.map(vals, function(val) {
+            return typeof val === 'undefined' ? '' : val;
+        });
         send(utils.arrayToXML([vals]) + '\n');
     } else {
         send(utils.arrayToCSV([vals], delimiter) + '\n');
@@ -118,6 +126,13 @@ function sendClosing(format) {
 }
 
 exports.export_messages = function (head, req) {
+
+    if (!kutils.hasPerm(req.userCtx, 'can_export_messages')) {
+        log('messages export sending 403');
+        start({code: 403});
+        return send('');
+    }
+
     var query = req.query,
         format = query.format || 'csv',
         appInfo = info.getAppInfo.call(this),
@@ -132,6 +147,7 @@ exports.export_messages = function (head, req) {
 
     var labels = [
         '_id',
+        'patient_id',
         'reported_date',
         'from',
         'related_entities.clinic.contact.name',
@@ -141,34 +157,23 @@ exports.export_messages = function (head, req) {
         'related_entities.clinic.parent.parent.name',
         'Message Type',
         'Message State',
-        'Message Timestamp/Due',
+        'Received Timestamp',
+        'Sent Timestamp',
+        'Pending Timestamp',
+        'Scheduled Timestamp',
+        'Cleared Timestamp',
+        'Muted Timestamp',
         'Message UUID',
         'Sent By',
         'To Phone',
         'Message Body'
     ];
 
-    if (format === 'xml') {
-        send('<?xml version="1.0" encoding="UTF-8"?>\n' +
-             '<?mso-application progid="Excel.Sheet"?>\n' +
-             '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
-             ' xmlns:o="urn:schemas-microsoft-com:office:office"\n' +
-             ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n' +
-             ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n' +
-             ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
-             '<Worksheet ss:Name="Messages"><Table>');
-    }
+    labels = _.map(labels, function(label) {
+        return utils.info.translate(label, locale);
+    });
 
-    if (!query.skip_header_row) {
-        labels = _.map(labels, function(label) {
-            return utils.info.translate(label, locale);
-        });
-        if (format === 'xml') {
-            send(utils.arrayToXML([labels]));
-        } else {
-            send(utils.arrayToCSV([labels], delimiter) + '\n');
-        }
-    }
+    sendHeaderRow(format, labels, 'Messages', delimiter, query.skip_header_row);
 
     function sendMessageRows(doc) {
         var tasks = [];
@@ -192,6 +197,10 @@ exports.export_messages = function (head, req) {
                 type: 'Auto Response',
                 state: 'sent',
                 timestamp: doc.reported_date,
+                state_history: [{
+                    state: 'sent',
+                    timestamp: doc.reported_date
+                }],
                 messages: doc.responses
             });
         }
@@ -207,6 +216,10 @@ exports.export_messages = function (head, req) {
                 type: 'Incoming Message',
                 state: 'received',
                 timestamp: doc.reported_date,
+                state_history: [{
+                    state: 'received',
+                    timestamp: doc.reported_date
+                }],
                 messages: [{
                     from: doc.from,
                     message: doc.sms_message.message
@@ -216,6 +229,7 @@ exports.export_messages = function (head, req) {
         _.each(tasks, function(task) {
             var vals = [
                 doc._id,
+                doc.patient_id,
                 formatDate(doc.reported_date, query.tz),
                 doc.from,
                 objectpath.get(doc, 'related_entities.clinic.contact.name'),
@@ -224,9 +238,24 @@ exports.export_messages = function (head, req) {
                 objectpath.get(doc, 'related_entities.clinic.parent.name'),
                 objectpath.get(doc, 'related_entities.clinic.parent.parent.name'),
                 task.type || 'Task Message',
-                task.state,
-                formatDate(task.timestamp || task.due, query.tz)
+                task.state
             ];
+            var history = {};
+            _.each(task.state_history, function(item) {
+                history[item.state] = item.timestamp;
+            });
+            _.each(['received','sent','pending','scheduled','cleared','muted'], function(state) {
+                var val = history[state];
+                if (state === 'scheduled' && task.due) {
+                    // use due property for scheduled timestamp value
+                    val = task.due;
+                }
+                if (!val && task.state === state) {
+                    // include timestamp data for records that have no history.
+                    val = task.timestamp;
+                }
+                vals.push(formatDate(val, query.tz));
+            });
             _.each(task.messages, function(msg) {
                 vals = vals.concat([
                     msg.uuid,
@@ -235,15 +264,7 @@ exports.export_messages = function (head, req) {
                     msg.message
                 ]);
             });
-            // turn undefined into empty string for xml export
-            vals = _.map(vals, function(val) {
-                return typeof val === 'undefined' ? '' : val;
-            });
-            if (format === 'xml') {
-                send(utils.arrayToXML([vals]));
-            } else {
-                send(utils.arrayToCSV([vals], delimiter) + '\n');
-            }
+            sendValuesRow(vals, format, delimiter);
         });
     };
 
@@ -254,9 +275,7 @@ exports.export_messages = function (head, req) {
         }
     }
 
-    if (format === 'xml') {
-        send('</Table></Worksheet></Workbook>');
-    }
+    sendClosing(format);
 
     return '';
 };
@@ -272,6 +291,13 @@ function sendError(json, code) {
 };
 
 exports.export_data_records = function (head, req) {
+
+    if (!kutils.hasPerm(req.userCtx, 'can_export_forms')) {
+        log('data records export sending 403');
+        start({code: 403});
+        return send('');
+    }
+
     var labels,
         query = req.query,
         form  = query.form,
@@ -327,6 +353,63 @@ exports.export_data_records = function (head, req) {
     return '';
 };
 
+exports.export_audit = function (head, req) {
+
+    if (!kutils.hasPerm(req.userCtx, 'can_export_audit')) {
+        log('audit export sending 403');
+        start({code: 403});
+        return send('');
+    }
+
+    var query = req.query,
+        locale = query.locale || 'en',
+        delimiter = locale === 'fr' ? '";"' : null,
+        format = query.format || 'csv',
+        date = moment().format('YYYYMMDDHHmm'),
+        filename = _s.sprintf('audit-%s.%s', date, format),
+        appInfo = info.getAppInfo.call(this),
+        row,
+        vals;
+
+    utils.info = appInfo; // replace fake info with real from context
+
+    startExportHeaders(format, filename);
+
+    var labels = [
+        '_id',
+        'Type',
+        'Timestamp',
+        'Author',
+        'Action',
+        'Document'
+    ];
+
+    labels = _.map(labels, function(label) {
+        return utils.info.translate(label, locale);
+    });
+
+    sendHeaderRow(format, labels, 'Audit', delimiter, query.skip_header_row);
+
+    while (row = getRow()) {
+        if (row.doc) {
+            _.each(row.doc.history, function(rev) {
+                vals = [
+                    row.doc.record_id,
+                    rev.doc.type,
+                    formatDate(rev.timestamp, query.tz),
+                    rev.user,
+                    rev.action,
+                    JSON.stringify(rev.doc)
+                ];
+                sendValuesRow(vals, format, delimiter);
+            });
+        }
+    }
+
+    sendClosing(format);
+
+    return '';
+};
 
 /**
  * @param {String} phone - phone number of the phone sending the referral (from)
@@ -335,11 +418,9 @@ exports.export_data_records = function (head, req) {
  * @api private
  */
 var isFromHealthCenter = function(phone, clinic) {
-    if (!clinic.parent || !clinic.parent.contact) { return false; }
-    if (phone === clinic.parent.contact.phone) {
-        return true;
-    }
-    return false;
+    return clinic.parent && 
+        clinic.parent.contact && 
+        clinic.parent.contact.phone === phone;
 };
 
 
@@ -461,7 +542,7 @@ exports.tasks_pending = function (head, req) {
                 _.each(task.messages, function(msg) {
                     // if to and message is defined then append messages
                     if (msg.to && msg.message) {
-                        task.state = 'sent';
+                        kutils.setTaskState(task, 'sent');
                         task.timestamp = new Date().toISOString();
                         // append outgoing message data payload for smsssync
                         respBody.payload.messages.push(msg);
@@ -478,7 +559,7 @@ exports.tasks_pending = function (head, req) {
                     _.each(task.messages, function(msg) {
                         // if to and message is defined then append messages
                         if (msg.to && msg.message) {
-                            task.state = 'sent';
+                            kutils.setTaskState(task, 'sent');
                             task.timestamp = new Date().toISOString();
                             // append outgoing message data payload for smsssync
                             respBody.payload.messages.push(msg);

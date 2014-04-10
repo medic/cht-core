@@ -13,12 +13,18 @@ before_script:
   - npm install kanso -g
   - kanso push http://localhost:5984/kujua-lite
 
-script: "./scripts/phantom_test.sh http://localhost:5984/kujua-lite"
+script: ./scripts/ci/run_build.sh
 
 after_success:
   - bash ./scripts/ci/after_success.sh
 
 notifications:
+  webhooks: 
+    urls:
+      - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
+    on_success: change
+    on_failure: always
   email:
     recipients:
       - dev@medicmobile.org
+

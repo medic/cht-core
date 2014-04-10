@@ -78,11 +78,18 @@ page.open(system.args[1], function(status){
                 console.log(el.innerText);
                 try {
                     if ($('#nodeunit-banner').hasClass('fail')) {
-                        $('.fail strong').each(function(idx, el){
-                            console.log($(el).text())}
-                        );
+                        $('#nodeunit-tests > .fail').each(function(idx, el) {
+                            console.log($(el).find('strong').text());
+                            $(el).find('li').each(function(i, assertion) {
+                                if ($(assertion).is('.fail')) {
+                                    console.log('  fail: ' + $(assertion).find('pre').text());
+                                } else {
+                                    console.log('  pass');
+                                }
+                            });
+                        });
                         return true;
-                    }
+                    };
                     return false;
                 } catch (e) {}
                 return 10000;

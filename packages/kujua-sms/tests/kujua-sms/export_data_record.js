@@ -4,7 +4,7 @@ var lists = require('kujua-sms/lists'),
     helpers = require('../../test-helpers/helpers');
 
 
-exports.lists_format_date = function(test) {
+exports['lists format date'] = function(test) {
     test.expect(3);
     test.same(
         "11, Mar 2012, 20:10:42 -02:00",
@@ -23,7 +23,27 @@ exports.lists_format_date = function(test) {
     test.done();
 }
 
-exports.lists_export_data_records_csv = function(test) {
+exports['requesting data records export fails if user does not have perms'] = function(test) {
+    test.expect(2);
+    var req = {
+        query: {
+            startkey: 'foo',
+            endkey: 'bar',
+            form: 'MSBC'
+        },
+        method: "GET",
+        userCtx: {
+            roles: ['just_some_dude']
+        }
+    };
+
+    var resp = fakerequest.list(lists.export_data_records, {rows: []}, req);
+    test.same(403, resp.code);
+    test.same(undefined, resp.body);
+    test.done();
+}
+
+exports['lists export data records csv'] = function(test) {
 
     test.expect(1);
 
@@ -97,7 +117,10 @@ exports.lists_export_data_records_csv = function(test) {
             endkey: 'bar',
             form: 'MSBC'
         },
-        method: "GET"
+        method: "GET",
+        userCtx: {
+            roles: ['national_admin']
+        }
     };
 
     var resp = fakerequest.list(lists.export_data_records, viewdata, req);
@@ -106,7 +129,7 @@ exports.lists_export_data_records_csv = function(test) {
     test.done()
 };
 
-exports.lists_export_data_records_fr = function(test) {
+exports['lists export data records fr'] = function(test) {
 
     test.expect(1);
 
@@ -174,7 +197,10 @@ exports.lists_export_data_records_fr = function(test) {
             form: 'MSBC',
             locale: 'fr'
         },
-        method: "GET"
+        method: "GET",
+        userCtx: {
+            roles: ['national_admin']
+        }
     };
 
     var resp = fakerequest.list(lists.export_data_records, viewdata, req);
@@ -184,7 +210,7 @@ exports.lists_export_data_records_fr = function(test) {
     test.done()
 };
 
-exports.lists_export_data_records_skip_header_row = function(test) {
+exports['lists export data records skip header row'] = function(test) {
 
     test.expect(1);
 
@@ -246,7 +272,10 @@ exports.lists_export_data_records_skip_header_row = function(test) {
             startkey: 'foo',
             endkey: 'bar'
         },
-        method: "GET"
+        method: "GET",
+        userCtx: {
+            roles: ['national_admin']
+        }
     };
 
     var resp = fakerequest.list(lists.export_data_records, viewdata, req);
@@ -256,7 +285,7 @@ exports.lists_export_data_records_skip_header_row = function(test) {
     test.done()
 };
 
-exports.lists_export_data_records_with_tz = function(test) {
+exports['lists export data records with tz'] = function(test) {
 
     test.expect(1);
 
@@ -332,7 +361,10 @@ exports.lists_export_data_records_with_tz = function(test) {
             form: 'MSBC',
             tz: "-300"
         },
-        method: "GET"
+        method: "GET",
+        userCtx: {
+            roles: ['national_admin']
+        }
     };
 
     var resp = fakerequest.list(lists.export_data_records, viewdata, req);

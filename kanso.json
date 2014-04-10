@@ -67,7 +67,8 @@
         "moment-timezone": ">=0.0.3",
         "kanso-app-settings": null,
         "garden-app-support": null,
-        "locale": null
+        "locale": null,
+        "couchdb-audit": null
     },
     "user_data": {
         "db_prefix": false,
@@ -239,7 +240,7 @@
                             "type": "string",
                             "je:hint": "textarea",
                             "title": "Condition To Send Alerts",
-                            "description": "Alert will be sent when condition is true. Build condition using the notation {{form_code(reports_ago).field_id}}. E.g.: The following can be used to send an alert if the value of `s1_avail` in form STCK falls below the three month average of `s1_used`: \"STCK(0).s1_avail < (STCK(0).s1_used + STCK(1).s1_used + STCK(2).s1_used ) / 3\"."
+                            "description": "Alert will be sent when condition is true. Build condition using the notation `form_code(reports_ago).field_id`. E.g.: The following can be used to send an alert if the value of `s1_avail` in form `STCK` falls below the three month average of `s1_used`: \"STCK(0).s1_avail < (STCK(0).s1_used + STCK(1).s1_used + STCK(2).s1_used ) / 3\"."
                         },
                         "message": {
                             "type": "string",
@@ -1036,6 +1037,22 @@
                         "es": "No encontramos a su centro de salud. Por favor corrijalo y reenvie el reporte.",
                         "ne": "रिपोर्टिङ् युनिटको आइ.डि मिलेन। कृपया ​मिलाएर​  ​पुन:​ पठाउनुहोला।",
                         "sw": ""
+                    },
+                    {
+                        "key": "_id",
+                        "en": "Record UUID",
+                        "fr": "Record UUID",
+                        "es": "Record UUID",
+                        "ne": "Record UUID",
+                        "sw": "Record UUID"
+                    },
+                    {
+                        "key": "patient_id",
+                        "en": "Patient ID",
+                        "fr": "Patient ID",
+                        "es": "Patient ID",
+                        "ne": "Patient ID",
+                        "sw": "Patient ID"
                     },
                     {
                         "key": "reported_date",
