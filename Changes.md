@@ -2,7 +2,7 @@
 
 ## 0.3.3
 
-### TBD
+### Apr 10, 2014
 
 - Fixed spreadsheet keyboard navigation. #448
 
