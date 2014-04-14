@@ -158,9 +158,9 @@ exports.export_messages = function (head, req) {
         'Message Type',
         'Message State',
         'Received Timestamp',
-        'Sent Timestamp',
-        'Pending Timestamp',
         'Scheduled Timestamp',
+        'Pending Timestamp',
+        'Sent Timestamp',
         'Cleared Timestamp',
         'Muted Timestamp',
         'Message UUID',
@@ -244,7 +244,7 @@ exports.export_messages = function (head, req) {
             _.each(task.state_history, function(item) {
                 history[item.state] = item.timestamp;
             });
-            _.each(['received','sent','pending','scheduled','cleared','muted'], function(state) {
+            _.each(['received','scheduled', 'pending', 'sent', 'cleared','muted'], function(state) {
                 var val = history[state];
                 if (state === 'scheduled' && task.due) {
                     // use due property for scheduled timestamp value
