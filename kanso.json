@@ -775,6 +775,14 @@
                         "sw": "kutoka"
                     },
                     {
+                        "key": "Clinic",
+                        "en": "Community Health Worker",
+                        "fr": "Agent de santé",
+                        "es": "Agento de salud",
+                        "ne": "सामुदायिक स्वास्थ्यकर्मि",
+                        "sw": ""
+                    },
+                    {
                         "key": "Clinics",
                         "en": "Community Health Workers",
                         "fr": "Agents de santé",
@@ -853,6 +861,14 @@
                         "es": "Teléfono",
                         "ne": "सम्पर्क टेलिफोन",
                         "sw": "Namba ya Simu"
+                    },
+                    {
+                        "key": "District Hospital",
+                        "en": "District",
+                        "fr": "District",
+                        "es": "Distrito",
+                        "ne": "जिल्ला​",
+                        "sw": "Wilaya ya"
                     },
                     {
                         "key": "District",
