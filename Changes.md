@@ -1,5 +1,17 @@
 # Kujua Release Notes
 
+## 0.3.4
+
+### Apr 14, 2014
+
+- translate strings on user mgmt facilities select list #474
+
+- Change ordering of messages export format for better readability based on
+  when the state is triggered. #475
+
+    From: Received, Sent, Pending, Scheduled Cleared, Muted
+    To: Received, Scheduled, Pending, Sent, Cleared, Muted
+
 ## 0.3.3
 
 ### Apr 10, 2014
