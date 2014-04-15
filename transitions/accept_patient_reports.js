@@ -5,8 +5,7 @@ var _ = require('underscore'),
     moment = require('moment'),
     validation = require('../lib/validation'),
     utils = require('../lib/utils'),
-    date = require('../date'),
-    db;
+    date = require('../date');
 
 module.exports = {
     filter: function(doc) {
@@ -35,7 +34,8 @@ module.exports = {
         if (report.silence_type) {
             async.forEach(registrations, function(registration, callback) {
                 module.exports.silenceReminders({
-                    db: options.db || db,
+                    db: options.db,
+                    audit: options.audit,
                     reported_date: options.reported_date,
                     registration: registration,
                     silence_for: report.silence_for,
@@ -65,7 +65,8 @@ module.exports = {
                 }
             });
             return module.exports.silenceRegistrations({
-                db: options.db || db,
+                db: options.db,
+                audit: options.audit,
                 report: report,
                 reported_date: doc.reported_date,
                 registrations: registrations
@@ -104,7 +105,6 @@ module.exports = {
             type = options.type,
             first,
             found_group,
-            db = options.db || db,
             silenceUntil = reportedDate.clone();
 
         if (silenceDuration) {
@@ -133,7 +133,7 @@ module.exports = {
     silenceReminders: function(options, callback) {
         var registration = options.registration.doc,
             toClear,
-            db = options.db || db;
+            audit = options.audit;
 
         // filter scheduled message by group
         toClear = module.exports.findToClear(options);
@@ -145,7 +145,7 @@ module.exports = {
                     utils.setTaskState(task, 'cleared');
                 }
             });
-            db.saveDoc(registration, callback);
+            audit.saveDoc(registration, callback);
         } else {
             callback(null);
         }
@@ -155,18 +155,19 @@ module.exports = {
         return validation.validate(doc, validations, callback);
     },
     handleReport: function(options, callback) {
-        var db = options.db || db,
-            doc = options.doc,
-            report = options.report;
+        var db = options.db,
+            doc = options.doc;
 
         utils.getRegistrations({
             db: db,
             id: doc.patient_id
         }, function(err, registrations) {
             module.exports.matchRegistrations({
+                db: db,
+                audit: options.audit,
                 doc: doc,
                 registrations: registrations,
-                report: report
+                report: options.report
             }, callback);
         });
     },
@@ -174,8 +175,6 @@ module.exports = {
         var doc = change.doc,
             reports = module.exports.getAcceptedReports(),
             report;
-
-        db = _audit;
 
         report = _.findWhere(reports, {
             form: doc.form
@@ -206,7 +205,8 @@ module.exports = {
             }
 
             module.exports.handleReport({
-                db: db,
+                db: _db,
+                audit: _audit,
                 doc: doc,
                 report: report
             }, callback);

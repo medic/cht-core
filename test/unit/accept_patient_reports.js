@@ -169,13 +169,11 @@ exports['adding silence_type to matchRegistrations calls silenceReminders'] = fu
 };
 
 exports['silenceReminders testing'] = function(test) {
-    var db,
+    var audit = { saveDoc: function() {} },
         now = moment(),
         registration;
 
-    db = { saveDoc: function() {} };
-
-    sinon.stub(db, 'saveDoc').callsArgWithAsync(1, null);
+    sinon.stub(audit, 'saveDoc').callsArgWithAsync(1, null);
 
     // mock up a registered_patients view result
     registration = {
@@ -216,7 +214,7 @@ exports['silenceReminders testing'] = function(test) {
     };
 
     transition.silenceReminders({
-        db: db,
+        audit: audit,
         registration: registration,
         type: 'x',
         reported_date: now.clone().toISOString(),
@@ -226,7 +224,7 @@ exports['silenceReminders testing'] = function(test) {
 
         test.equals(err, null);
 
-        test.equals(db.saveDoc.called, true);
+        test.equals(audit.saveDoc.called, true);
 
         tasks = registration.doc.scheduled_tasks;
 
