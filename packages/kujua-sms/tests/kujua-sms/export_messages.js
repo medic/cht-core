@@ -100,8 +100,7 @@ exports['requesting messages export handles no state_history'] = function(test) 
     test.done();
 }
 
-
-exports['requesting messages export succeeds if user is national administrator'] = function(test) {
+var _test_permissions = function(test, roles) {
     test.expect(1);
 
     var reportedDate = 1331503842461;
@@ -129,7 +128,7 @@ exports['requesting messages export succeeds if user is national administrator']
         },
         method: "GET",
         userCtx: {
-            roles: ['national_admin']
+            roles: roles
         }
     };
 
@@ -190,6 +189,14 @@ exports['requesting messages export succeeds if user is national administrator']
     var resp = fakerequest.list(lists.export_messages, viewdata, req);
     test.same(expected, resp.body);
     test.done();
+}
+
+exports['requesting messages export succeeds if user is national administrator'] = function(test) {
+    _test_permissions(test, ['national_admin'])
+}
+
+exports['requesting messages export succeeds if user is analytics user'] = function(test) {
+    _test_permissions(test, ['analytics'])
 }
 
 exports['requesting messages export in xml'] = function(test) {
