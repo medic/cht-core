@@ -1,5 +1,21 @@
 # Kujua Release Notes
 
+## 0.3.5
+
+### Apr 16, 2014
+
+- Major bug fix that was introduced in 0.3.3 where visit reports do not get processed.
+
+    Fixed accept_patient_reports transition so it calls db for readonly actions
+    instead of audit.
+
+- Allow analytics role to download messages and forms. Issue: #477
+
+- Updated user management to show role for analytics user. Issue: #478
+
+- Initial version of forms for Miraclefeet India
+
+
 ## 0.3.4
 
 ### Apr 14, 2014
@@ -11,6 +27,7 @@
 
     From: Received, Sent, Pending, Scheduled Cleared, Muted
     To: Received, Scheduled, Pending, Sent, Cleared, Muted
+
 
 ## 0.3.3
 
