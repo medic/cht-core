@@ -34,6 +34,13 @@ exports['filter tests'] = function(test) {
     test.equals(transition.filter({
         patient_id: 'x',
     }), false);
+    // has errors
+    test.equals(transition.filter({
+        form: 'x',
+        month: 'x',
+        related_entities: related_entities,
+        errors: ['x']
+    }), false);
     // missing year property
     test.equals(transition.filter({
         form: 'x',
@@ -46,6 +53,14 @@ exports['filter tests'] = function(test) {
         month: 'x',
         year: 'x',
         related_entities: related_entities
+    }), true);
+    // month, year property and empty errors
+    test.equals(transition.filter({
+        form: 'x',
+        month: 'x',
+        year: 'x',
+        related_entities: related_entities,
+        errors: []
     }), true);
     // month_num, year property
     test.equals(transition.filter({
