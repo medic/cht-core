@@ -1,5 +1,12 @@
 # Kujua Release Notes
 
+## 0.3.6
+
+### Apr 28, 2014
+
+- Fixed bug in updating duplicate scheduled reports #483
+
+
 ## 0.3.5
 
 ### Apr 16, 2014
