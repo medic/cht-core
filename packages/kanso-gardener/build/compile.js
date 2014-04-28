@@ -49,7 +49,6 @@ module.exports = {
                 });
             },
             function(err) {
-                console.log(err);
                 callback(err, doc);
             }
         )
