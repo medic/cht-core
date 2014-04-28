@@ -1,6 +1,7 @@
 # Kujua Lite
 
 These instructions should help you get setup to run or develop on Kujua Lite.
+For latest changes and release announcements see the [change log](Changes.md).
 
 ## Dependencies
 
@@ -91,6 +92,10 @@ after a push.  To run them from commandline you will need to install
 npm install phantomjs -g
 ./scripts/phantom_test.sh http://localhost:5984/kujua-lite
 ```
+
+## Help
+
+Join our [Google Group](https://groups.google.com/forum/#!forum/medic-developers) or file an issue on Github.
 
 ## Build Status
 

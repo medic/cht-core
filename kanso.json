@@ -1,6 +1,6 @@
 {
     "name": "kujua-lite",
-    "version": "0.3.3",
+    "version": "0.3.7",
     "description": "SMS data collection designed for rural environments.",
     "long_description" : "Kujua Lite is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
     "url": "https://github.com/medic/kujua-lite",
@@ -775,6 +775,14 @@
                         "sw": "kutoka"
                     },
                     {
+                        "key": "Clinic",
+                        "en": "Community Health Worker",
+                        "fr": "Agent de santé",
+                        "es": "Agento de salud",
+                        "ne": "सामुदायिक स्वास्थ्यकर्मि",
+                        "sw": ""
+                    },
+                    {
                         "key": "Clinics",
                         "en": "Community Health Workers",
                         "fr": "Agents de santé",
@@ -853,6 +861,14 @@
                         "es": "Teléfono",
                         "ne": "सम्पर्क टेलिफोन",
                         "sw": "Namba ya Simu"
+                    },
+                    {
+                        "key": "District Hospital",
+                        "en": "District",
+                        "fr": "District",
+                        "es": "Distrito",
+                        "ne": "जिल्ला​",
+                        "sw": "Wilaya ya"
                     },
                     {
                         "key": "District",
