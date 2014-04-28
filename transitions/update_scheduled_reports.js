@@ -44,7 +44,7 @@ var handleMatch = function(change, db, audit, callback) {
             docs.push(doc);
         });
 
-        audit.bulkSave({
+        audit.bulkSave(docs, {
             all_or_nothing: true,
             docs: docs
         }, function(err) {
@@ -93,7 +93,7 @@ module.exports = {
         return Boolean(
             doc.form &&
             utils.getClinicPhone(doc) &&
-            doc.errors.length === 0 &&
+            (doc.errors ? doc.errors.length === 0 : true) &&
             (doc.month || doc.month_num || doc.week || doc.week_number) &&
             doc.year
         );
