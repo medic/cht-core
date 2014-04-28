@@ -4,3 +4,6 @@
 [submodule "sentinel"]
 	path = sentinel
 	url = git://github.com/medic/kujua-sentinel.git
+[submodule "kujua-api"]
+	path = kujua-api
+	url = git://github.com/medic/kujua-api.git
