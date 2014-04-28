@@ -49,7 +49,7 @@ module.exports = {
                 });
             },
             function(err) {
-                console.log(doc);
+                console.log(err);
                 callback(err, doc);
             }
         )
