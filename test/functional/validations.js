@@ -33,7 +33,10 @@ exports['patient id failing validation adds error'] = function(test) {
             list: [{
                 property: 'patient_id',
                 rule: "regex('\\w{5}')",
-                message: "bad id {{patient_id}}"
+                message: [{
+                    content: "bad id {{patient_id}}",
+                    locale: "en"
+                }]
             }]
         },
         form: 'x'
@@ -66,12 +69,18 @@ exports['join responses concats validation response msgs'] = function(test) {
                 {
                     property: 'patient_id',
                     rule: "regex('\\w{5}')",
-                    message: 'patient id should be 5 characters'
+                    message: [{
+                        content: 'patient id should be 5 characters',
+                        locale: 'en'
+                    }]
                 },
                 {
                     property: 'patient_name',
                     rule: "lenMin(5) && lenMax(50)",
-                    message: 'patient name should be between 5 and 50 chars.'
+                    message: [{
+                        content: 'patient name should be between 5 and 50 chars.',
+                        locale: 'en'
+                    }]
                 },
             ]
         },
@@ -118,12 +127,18 @@ exports['false join_responses does not concat validation msgs'] = function(test)
                 {
                     property: 'patient_id',
                     rule: "regex('\\w{5}')",
-                    message: 'patient id should be 5 characters'
+                    message: [{
+                        content: 'patient id should be 5 characters',
+                        locale: 'en'
+                    }]
                 },
                 {
                     property: 'patient_name',
                     rule: "lenMin(5) && lenMax(50)",
-                    message: 'patient name should be between 5 and 50 chars.'
+                    message: [{
+                        content: 'patient name should be between 5 and 50 chars.',
+                        locale: 'en'
+                    }]
                 },
             ]
         },
@@ -169,12 +184,18 @@ exports['undefined join_responses does not concat validation msgs'] = function(t
                 {
                     property: 'patient_id',
                     rule: "regex('\\w{5}')",
-                    message: 'patient id should be 5 characters'
+                    message: [{
+                        content: 'patient id should be 5 characters',
+                        locale: 'en'
+                    }]
                 },
                 {
                     property: 'patient_name',
                     rule: "lenMin(5) && lenMax(50)",
-                    message: 'patient name should be between 5 and 50 chars.'
+                    message: [{
+                        content: 'patient name should be between 5 and 50 chars.',
+                        locale: 'en'
+                    }]
                 },
             ]
         },

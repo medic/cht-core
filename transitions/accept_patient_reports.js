@@ -52,6 +52,7 @@ module.exports = {
     matchRegistrations: function(options, callback) {
         var registrations = options.registrations,
             doc = options.doc,
+            locale = utils.getLocale(doc),
             report = options.report;
 
         if (registrations && registrations.length) {
@@ -59,7 +60,7 @@ module.exports = {
                 if (msg.event_type === 'report_accepted') {
                     messages.addMessage({
                         doc: doc,
-                        message: msg.message,
+                        message: messages.getMessage(msg.message, locale),
                         phone: messages.getRecipientPhone(doc, msg.recipient)
                     });
                 }
@@ -83,7 +84,7 @@ module.exports = {
             if (msg.event_type === 'registration_not_found') {
                 not_found_msg = {
                     doc: doc,
-                    message: msg.message,
+                    message: messages.getMessage(msg.message, locale),
                     phone: messages.getRecipientPhone(doc, msg.recipient)
                 };
             }

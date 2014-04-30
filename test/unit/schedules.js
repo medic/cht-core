@@ -41,12 +41,18 @@ exports['assignSchedule returns false if already has scheduled_task for that nam
             {
                 group: 1,
                 offset: '1 week',
-                message: "This is for serial number {{serial_number}}."
+                message: [{
+                    "content": "This is for serial number {{serial_number}}.",
+                    "locale": "en"
+                }]
             },
             {
                 group: 4,
                 offset: '81 days',
-                message: "This is for serial number {{serial_number}}."
+                message: [{
+                    "content": "This is for serial number {{serial_number}}.",
+                    "locale": "en"
+                }]
             }
         ]
     });
@@ -64,6 +70,7 @@ exports['schedule generates two messages'] = function(test) {
         reported_date: moment().valueOf()
     };
 
+    debugger;
     var added = schedules.assignSchedule(doc, {
         name: 'duckland',
         start_from: 'reported_date',
@@ -71,12 +78,18 @@ exports['schedule generates two messages'] = function(test) {
             {
                 group: 1,
                 offset: '1 week',
-                message: "This is for serial number {{serial_number}}."
+                message: [{
+                    content: "This is for serial number {{serial_number}}.",
+                    locale: "en"
+                }]
             },
             {
                 group: 4,
                 offset: '81 days',
-                message: "This is for serial number {{serial_number}}."
+                message: [{
+                    content: "This is for serial number {{serial_number}}.",
+                    locale: "en"
+                }]
             }
         ]
     });
@@ -102,7 +115,10 @@ exports['scheduled due timestamp respects timezone'] = function(test) {
                 group: 1,
                 offset: '1 day',
                 send_time: '08:00 +00:00',
-                message: "This is for serial number {{serial_number}}."
+                message: [{
+                    "content": "This is for serial number {{serial_number}}.",
+                    "locale": "en"
+                }]
             }
         ]
     });
@@ -128,7 +144,10 @@ exports['scheduled due timestamp respects send_day Monday'] = function(test) {
                 group: 1,
                 offset: '2 weeks',
                 send_day: 'Monday',
-                message: "Woot"
+                message: [{
+                    "content": "Woot",
+                    "locale": "en"
+                }]
             }
         ]
     });
@@ -158,7 +177,10 @@ exports['scheduled due timestamp respects send_day Wednesday'] = function(test) 
                 group: 1,
                 offset: '2 weeks',
                 send_day: 'Wednesday',
-                message: "Woot"
+                message: [{
+                    "content": "Woot",
+                    "locale": "en"
+                }]
             }
         ]
     });
@@ -189,7 +211,10 @@ exports['scheduled due timestamp respects send_day and send_time'] = function(te
                 offset: '2 weeks',
                 send_day: 'Wednesday',
                 send_time: '08:00 +0000',
-                message: "Woot"
+                message: [{
+                    "content": "Woot",
+                    "locale": "en"
+                }]
             }
         ]
     });
@@ -241,7 +266,10 @@ exports['scheduled item with only spaces message is skipped'] = function(test) {
                 group: 1,
                 offset: '1 day',
                 send_time: '08:00 +00:00',
-                message: "  "
+                message: [{
+                    "content": "  ",
+                    "locale": "en"
+                }]
             }
         ]
     });
@@ -267,12 +295,18 @@ exports['schedule does not generate messages in past'] = function(test) {
             {
                 group: 1,
                 offset: '1 week',
-                message: "This is for serial number {{serial_number}}."
+                message: [{
+                    "content": "This is for serial number {{serial_number}}.",
+                    "locale": "en"
+                }]
             },
             {
                 group: 4,
                 offset: '20 weeks',
-                message: "This is for serial number {{serial_number}}."
+                message: [{
+                    "content": "This is for serial number {{serial_number}}.",
+                    "locale": "en"
+                }]
             }
         ]
     });
@@ -307,12 +341,18 @@ exports['when start from is null skip schedule creation'] = function(test) {
             {
                 group: 1,
                 offset: '1 week',
-                message: "This is for serial number {{serial_number}}."
+                message: [{
+                    "content": "This is for serial number {{serial_number}}.",
+                    "locale": "en"
+                }]
             },
             {
                 group: 4,
                 offset: '81 days',
-                message: "This is for serial number {{serial_number}}."
+                message: [{
+                    "content": "This is for serial number {{serial_number}}.",
+                    "locale": "en"
+                }]
             }
         ]
     });

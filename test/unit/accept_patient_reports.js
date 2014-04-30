@@ -99,7 +99,10 @@ exports['matchRegistrations with no registrations adds error msg and response'] 
         report: {
             messages: [{
                 event_type: 'registration_not_found',
-                message: 'not found {{patient_id}}',
+                message: [{
+                    content: 'not found {{patient_id}}',
+                    locale: 'en'
+                }],
                 recipient: 'reporting_unit'
             }]
         }
@@ -136,7 +139,10 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
         report: {
             messages: [{
                 event_type: 'report_accepted',
-                message: 'Thank you, {{contact.name}}. ANC visit for {{patient_id}} has been recorded.',
+                message: [{
+                    content: 'Thank you, {{contact.name}}. ANC visit for {{patient_id}} has been recorded.',
+                    locale: 'en'
+                }],
                 recipient: 'reporting_unit'
             }]
         }

@@ -222,15 +222,10 @@ module.exports = {
             extra = {next_msg: schedules.getNextTimes(doc, now)};
         if (config.messages) {
             _.each(config.messages, function(msg, idx) {
-                // if locale is specified on doc and message then only send
-                // those messages, otherwise send the message.
-                if (locale && msg.locale && locale !== msg.locale) {
-                    return;
-                }
                 messages.addMessage({
                     doc: doc,
                     phone: messages.getRecipientPhone(doc, msg.recipient),
-                    message: msg.message,
+                    message: messages.getMessage(msg.message, locale),
                     options: extra
                 });
             });

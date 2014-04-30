@@ -7,7 +7,7 @@ var _ = require('underscore'),
 
 exports.tearDown = function(callback) {
     if (db.view.restore) {
-        db.view.restore();      
+        db.view.restore();
     }
     callback();
 }

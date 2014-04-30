@@ -68,7 +68,10 @@ exports['registration sets up schedule'] = function(test) {
         validations: [],
         messages: [
             {
-                message: "thanks {{contact.name}}",
+                message: [{
+                    content: "thanks {{contact.name}}",
+                    locale: "en"
+                }],
                 recipient: "reporting_unit"
             }
         ]
@@ -80,12 +83,14 @@ exports['registration sets up schedule'] = function(test) {
         "registration_response": "",
         "messages": [
             {
-                "message": "Mustaches.  Overrated or underrated?",
+                "message": [{
+                    "content": "Mustaches.  Overrated or underrated?",
+                    "locale": "en"
+                }],
                 "group": 1,
                 "offset": "12 weeks",
                 "send_time": "",
-                "recipient": "reporting_unit",
-                "locale": "en"
+                "recipient": "reporting_unit"
             }
         ]
     });
@@ -153,7 +158,10 @@ exports['registration sets up schedule using bool_expr'] = function(test) {
         validations: [],
         messages: [
             {
-                message: "thanks {{contact.name}}",
+                message: [{
+                    content: "thanks {{contact.name}}",
+                    locale: "en"
+                }],
                 recipient: "reporting_unit"
             }
         ]
@@ -165,12 +173,14 @@ exports['registration sets up schedule using bool_expr'] = function(test) {
         "registration_response": "",
         "messages": [
             {
-                "message": "Mustaches.  Overrated or underrated?",
+                "message": [{
+                    "content": "Mustaches.  Overrated or underrated?",
+                    "locale": "en"
+                }],
                 "group": 1,
                 "offset": "12 weeks",
                 "send_time": "",
-                "recipient": "reporting_unit",
-                "locale": "en"
+                "recipient": "reporting_unit"
             }
         ]
     });
@@ -239,7 +249,10 @@ exports['no schedule using false bool_expr'] = function(test) {
         validations: [],
         messages: [
             {
-                message: "thanks {{contact.name}}",
+                message: [{
+                    content: "thanks {{contact.name}}",
+                    locale: "en"
+                }],
                 recipient: "reporting_unit"
             }
         ]
@@ -251,12 +264,14 @@ exports['no schedule using false bool_expr'] = function(test) {
         "registration_response": "",
         "messages": [
             {
-                "message": "Mustaches.  Overrated or underrated?",
+                "message": [{
+                    "content": "Mustaches.  Overrated or underrated?",
+                    "locale": "en"
+                }],
                 "group": 1,
                 "offset": "12 weeks",
                 "send_time": "",
-                "recipient": "reporting_unit",
-                "locale": "en"
+                "recipient": "reporting_unit"
             }
         ]
     });

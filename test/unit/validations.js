@@ -18,8 +18,7 @@ exports['validate handles pupil parse errors'] = function(test) {
     };
     var validations = [{
         "property": "phone",
-        "rule": 'regex(bad no quotes)',
-        "message": "Invalid phone {{phone}}."
+        "rule": 'regex(bad no quotes)'
     }];
     validation.validate(doc, validations, function(errors) {
         test.deepEqual(
@@ -35,7 +34,10 @@ exports['validate handles pupil regex'] = function(test) {
     var validations = [{
         "property": "phone",
         "rule": "regex('^\\d+$')",
-        "message": "Invalid phone {{phone}}."
+        "message": [{
+            content: "Invalid phone {{phone}}.",
+            locale: "en"
+        }]
     }];
     validation.validate({phone: '123'}, validations, function(errors) {
         test.deepEqual(errors, []);
@@ -57,8 +59,7 @@ exports['pass unique("patient_id") validation when doc has errors'] = function(t
     }]);
     var validations = [{
         "property": "patient_id",
-        "rule": "unique('patient_id')",
-        "message": "Duplicate patient id."
+        "rule": "unique('patient_id')"
     }];
     var doc = {patient_id: '111'};
     validation.validate(doc, validations, function(errors) {
@@ -77,7 +78,10 @@ exports['fail unique("patient_id") validation on doc with no errors'] = function
     var validations = [{
         "property": "patient_id",
         "rule": "unique('patient_id')",
-        "message": "Duplicate patient id {{patient_id}}."
+        "message": [{
+            content: "Duplicate patient id {{patient_id}}.",
+            locale: "en"
+        }]
     }];
     var doc = {patient_id: '444'};
     validation.validate(doc, validations, function(errors) {

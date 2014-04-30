@@ -44,24 +44,30 @@ exports.setUp = function(callback) {
         ],
         messages: [
             {
-                message: "thanks {{contact.name}}",
+                message: [
+                    {
+                        content: "thanks {{contact.name}}",
+                        locale: "en"
+                    },
+                    {
+                        content: "gracias {{contact.name}}",
+                        locale: "es"
+                    }
+                ],
                 recipient: "reporting_unit",
-                locale: "en"
             },
             {
-                message: "gracias {{contact.name}}",
-                recipient: "reporting_unit",
-                locale: "es"
-            },
-            {
-                message: "thanks {{caregiver_name}}",
+                message: [
+                    {
+                        content: "thanks {{caregiver_name}}",
+                        locale: "en"
+                    },
+                    {
+                        content: "gracias {{caregiver_name}}",
+                        locale: "es"
+                    }
+                ],
                 recipient: "caregiver_phone",
-                locale: "en"
-            },
-            {
-                message: "gracias {{caregiver_name}}",
-                recipient: "caregiver_phone",
-                locale: "es"
             }
         ]
     }]);

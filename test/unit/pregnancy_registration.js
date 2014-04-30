@@ -43,12 +43,18 @@ exports.setUp = function(callback) {
                 {
                     property: 'lmp',
                     rule: 'min(0) && max(40)',
-                    message: 'Invalid LMP; must be between 0-40 weeks.'
+                    message: [{
+                        content: 'Invalid LMP; must be between 0-40 weeks.',
+                        locale: 'en'
+                    }]
                 },
                 {
                     property: 'patient_name',
                     rule: 'lenMin(1) && lenMax(100)',
-                    message: 'Invalid patient name.'
+                    message: [{
+                        content: 'Invalid patient name.',
+                        locale: 'en'
+                    }]
                 }
             ]
         }

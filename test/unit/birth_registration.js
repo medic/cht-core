@@ -40,12 +40,18 @@ exports.setUp = function(callback) {
             {
                 property: 'weeks_since_birth',
                 rule: 'min(0) && max(52)',
-                message: 'Invalid DOB; must be between 0-52 weeks.'
+                message: [{
+                    content: 'Invalid DOB; must be between 0-52 weeks.',
+                    locale: 'en'
+                }]
             },
             {
                 property: 'patient_name',
                 rule: 'lenMin(1) && lenMax(100)',
-                message: 'Invalid patient name.'
+                message: [{
+                    content: 'Invalid patient name.',
+                    locale: 'en'
+                }]
             }
         ]
     }]);
