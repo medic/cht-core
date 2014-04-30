@@ -376,11 +376,36 @@
                                                 "default": "lenMin(5) && lenMax(50)"
                                             },
                                             "message": {
-                                                "type": "string",
+                                                "type": "array",
                                                 "title": "Response Message",
                                                 "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
-                                                "default": "'{{patient_name}}' is not a valid patient name. Please submit a patient name between 5 and 50 characters.",
-                                                "je:hint": "textarea"
+                                                "items": {
+                                                    "properties": {
+                                                        "content": {
+                                                            "type": "string",
+                                                            "title": "Message Content",
+                                                            "default": "'{{patient_name}}' is not a valid patient name. Please submit a patient name between 5 and 50 characters.",
+                                                            "je:hint": "textarea"
+                                                        },
+                                                        "locale": {
+                                                            "title": "Locale",
+                                                            "type": "string",
+                                                            "description": "Set the locale if you need to support responses in multiple languages.",
+                                                            "enum": ["en", "es", "fr", "ne", "sw", "lu"],
+                                                            "je:hint": "enumlabels",
+                                                            "je:enumlabels": {
+                                                                "en": "English",
+                                                                "es": "Spanish",
+                                                                "fr": "French",
+                                                                "ne": "Nepalese",
+                                                                "sw": "Swahili",
+                                                                "lu": "Dholuo"
+                                                            },
+                                                            "default": "en"
+                                                        }
+                                                    }
+                                                },
+                                                "default": []
                                             }
                                         }
                                     }
@@ -394,31 +419,42 @@
                                 "type": "object",
                                 "properties": {
                                     "message": {
-                                        "type": "string",
-                                        "title": "Message Text",
-                                        "je:hint": "textarea"
+                                        "type": "array",
+                                        "title": "Message",
+                                        "items": {
+                                            "properties": {
+                                                "content": {
+                                                    "type": "string",
+                                                    "title": "Message Content",
+                                                    "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
+                                                    "default": "",
+                                                    "je:hint": "textarea"
+                                                },
+                                                "locale": {
+                                                    "title": "Locale",
+                                                    "type": "string",
+                                                    "description": "Set the locale if you need to support responses in multiple languages.",
+                                                    "enum": ["en", "es", "fr", "ne", "sw", "lu"],
+                                                    "je:hint": "enumlabels",
+                                                    "je:enumlabels": {
+                                                        "en": "English",
+                                                        "es": "Spanish",
+                                                        "fr": "French",
+                                                        "ne": "Nepalese",
+                                                        "sw": "Swahili",
+                                                        "lu": "Dholuo"
+                                                    },
+                                                    "default": "en"
+                                                }
+                                            }
+                                        },
+                                        "default": []
                                     },
                                     "recipient": {
                                         "type": "string",
                                         "title": "Recipient",
                                         "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
                                         "default": "reporting_unit"
-                                    },
-                                    "locale": {
-                                        "title": "Locale",
-                                        "type": "string",
-                                        "description": "Set the locale if you need to support responses in multiple languages.",
-                                        "default": "en",
-                                        "enum": ["en", "es", "fr", "ne", "sw", "lu"],
-                                        "je:hint": "enumlabels",
-                                        "je:enumlabels": {
-                                            "en": "English",
-                                            "es": "Spanish",
-                                            "fr": "French",
-                                            "ne": "Nepalese",
-                                            "sw": "Swahili",
-                                            "lu": "Dholuo"
-                                        }
                                     }
                                 }
                             },
@@ -478,11 +514,35 @@
                                                 "default": "regex('[0-9]{5}')"
                                             },
                                             "message": {
-                                                "type": "string",
                                                 "title": "Response Message",
+                                                "type": "array",
                                                 "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
-                                                "default": "'{{patient_id}}' is not a valid.",
-                                                "je:hint": "textarea"
+                                                "items": {
+                                                    "properties": {
+                                                        "content": {
+                                                            "type": "string",
+                                                            "title": "Message Content",
+                                                            "default": "'{{patient_id}}' is not a valid.",
+                                                            "je:hint": "textarea"
+                                                        },
+                                                        "locale": {
+                                                            "title": "Locale",
+                                                            "type": "string",
+                                                            "enum": ["en", "es", "fr", "ne", "sw", "lu"],
+                                                            "je:hint": "enumlabels",
+                                                            "je:enumlabels": {
+                                                                "en": "English",
+                                                                "es": "Spanish",
+                                                                "fr": "French",
+                                                                "ne": "Nepalese",
+                                                                "sw": "Swahili",
+                                                                "lu": "Dholuo"
+                                                            },
+                                                            "default": "en"
+                                                        }
+                                                    }
+                                                },
+                                                "default": []
                                             }
                                         }
                                     }
@@ -552,11 +612,35 @@
                             "items": {
                                 "properties": {
                                     "message": {
-                                        "type": "string",
-                                        "title": "Message Text",
-                                        "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
-                                        "default": "",
-                                        "je:hint": "textarea"
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "content": {
+                                                    "type": "string",
+                                                    "title": "Message Content",
+                                                    "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
+                                                    "default": "",
+                                                    "je:hint": "textarea"
+                                                },
+                                                "locale": {
+                                                    "title": "Locale",
+                                                    "type": "string",
+                                                    "description": "Set the locale if you need to support responses in multiple languages.",
+                                                    "enum": ["en", "es", "fr", "ne", "sw", "lu"],
+                                                    "je:hint": "enumlabels",
+                                                    "je:enumlabels": {
+                                                        "en": "English",
+                                                        "es": "Spanish",
+                                                        "fr": "French",
+                                                        "ne": "Nepalese",
+                                                        "sw": "Swahili",
+                                                        "lu": "Dholuo"
+                                                    },
+                                                    "default": "en"
+                                                }
+                                            }
+                                        },
+                                        "default": []
                                     },
                                     "group": {
                                         "type": "integer",
@@ -599,22 +683,6 @@
                                         "title": "Recipient",
                                         "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
                                         "default": "reporting_unit"
-                                    },
-                                    "locale": {
-                                        "title": "Locale",
-                                        "type": "string",
-                                        "description": "Set the locale if you need to support responses in multiple languages.",
-                                        "enum": ["en", "es", "fr", "ne", "sw", "lu"],
-                                        "je:hint": "enumlabels",
-                                        "je:enumlabels": {
-                                            "en": "English",
-                                            "es": "Spanish",
-                                            "fr": "French",
-                                            "ne": "Nepalese",
-                                            "sw": "Swahili",
-                                            "lu": "Dholuo"
-                                        },
-                                        "default": "en"
                                     }
                                 },
                                 "type": "object"
@@ -680,9 +748,36 @@
                         "items": {
                             "properties": {
                                 "message": {
-                                    "type": "string",
-                                    "title": "Message Text",
-                                    "je:hint": "textarea"
+                                    "type": "array",
+                                    "title": "Message",
+                                    "items": {
+                                        "properties": {
+                                            "content": {
+                                                "type": "string",
+                                                "title": "Message Content",
+                                                "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
+                                                "default": "",
+                                                "je:hint": "textarea"
+                                            },
+                                            "locale": {
+                                                "title": "Locale",
+                                                "type": "string",
+                                                "description": "Set the locale if you need to support responses in multiple languages.",
+                                                "enum": ["en", "es", "fr", "ne", "sw", "lu"],
+                                                "je:hint": "enumlabels",
+                                                "je:enumlabels": {
+                                                    "en": "English",
+                                                    "es": "Spanish",
+                                                    "fr": "French",
+                                                    "ne": "Nepalese",
+                                                    "sw": "Swahili",
+                                                    "lu": "Dholuo"
+                                                },
+                                                "default": "en"
+                                            }
+                                        }
+                                    },
+                                    "default": []
                                 },
                                 "event_type": {
                                     "type": "string",
