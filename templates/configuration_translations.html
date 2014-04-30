@@ -1,0 +1,40 @@
+<form id="translations-form">
+
+  <label for="locale-selector">Translate language</label>
+  <select id="locale-selector" data-language="en">
+    <option value="en" selected="selected">English</en>
+    <option value="es">Spanish</option>
+    <option value="fr">French</option>
+    <option value="ne">Nepalese</option>
+    <option value="sw">Swahili</option>
+  </select>
+
+  <ul>
+    {#info.translations}
+      <li>
+        <div class="key">{key}</div>
+        <div class="default">{en}</div>
+        <div class="translation"><textarea name="{key}">{en}</textarea></div>
+      </li>
+    {/info.translations}
+  </ul>
+
+  <div class="footer">
+    <button type="button" class="btn submit btn-primary">Save</button>
+    <span class="status"></span>
+  </div>
+</form>
+
+<div id="discard-changes-confirmation" class="modal hide fade" tabindex="-1">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">&times;</button>
+    <h3>Unsubmitted changes</h3>
+  </div>
+  <div class="modal-body">
+    Would you like to continue and discard changes made to the current language?
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn cancel" data-dismiss="modal">Cancel</button>
+    <button type="button" class="btn submit btn-primary">Continue</button>
+  </div>
+</div>
