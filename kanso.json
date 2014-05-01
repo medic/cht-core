@@ -172,11 +172,23 @@
                 "type": "integer",
                 "default": 0
             },
+            "schedule_morning_minutes" : {
+                "title": "Scheduled Message Morning Minutes",
+                "description": "Only send messages on or after this minute.",
+                "type": "integer",
+                "default": 0
+            },
             "schedule_evening_hours" : {
                 "title": "Scheduled Message Evening Hours",
                 "description": "Only send messages on or before this hour.",
                 "type": "integer",
                 "default": 23
+            },
+            "schedule_evening_minutes" : {
+                "title": "Scheduled Message Evening Minutes",
+                "description": "Only send messages on or before this minute.",
+                "type": "integer",
+                "default": 0
             },
             "synthetic_date" : {
                 "title": "Synthetic date",

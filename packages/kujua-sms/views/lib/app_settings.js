@@ -23,7 +23,9 @@ module.exports = {
        }
    ],
    "schedule_morning_hours": 0,
+   "schedule_morning_minutes": 0,
    "schedule_evening_hours": 23,
+   "schedule_evening_minutes": 0,
    "synthetic_date": "",
    "contact_display_short": "clinic.name",
    "translations": [
