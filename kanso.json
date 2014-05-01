@@ -231,6 +231,7 @@
                 "type": "array",
                 "description": "The forms to include in reporting rates stats.",
                 "items": {
+                    "type": "object",
                     "properties": {
                         "code": {
                             "type": "string",
@@ -246,8 +247,7 @@
                             ],
                             "default": "weekly"
                         }
-                    },
-                    "type": "object"
+                    }
                 },
                 "default": [
                     {
@@ -292,6 +292,7 @@
                 "title": "Scheduled Report Reminders",
                 "type": "array",
                 "items": {
+                    "type": "object",
                     "properties": {
                         "form": {
                             "type": "string",
@@ -319,8 +320,7 @@
                             "description": "Message to be sent.  The following strings will be substituted into the message: {{week}}, {{year}} and {{form}}.",
                             "je:hint": "textarea"
                         }
-                    },
-                    "type": "object"
+                    }
                 }
             },
             "registrations": {
@@ -344,7 +344,7 @@
                                         "type": "string",
                                         "title": "Event Name",
                                         "default": "",
-                                        "enum": ["", "on_create"],
+                                        "enum": ["on_create"],
                                         "je:hint": "enumlabels",
                                         "je:enumlabels": {
                                             "on_create": "On Create"
@@ -355,7 +355,7 @@
                                         "title": "Trigger",
                                         "description": "When form is received trigger actions like enrolling in schedule.",
                                         "default": "",
-                                        "enum": ["","assign_schedule", "add_patient_id", "add_expected_date", "add_birth_date"],
+                                        "enum": ["assign_schedule", "add_patient_id", "add_expected_date", "add_birth_date"],
                                         "je:hint": "enumlabels",
                                         "je:enumlabels": {
                                             "assign_schedule": "Assign a schedule",
@@ -410,6 +410,7 @@
                                                 "title": "Response Message",
                                                 "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
                                                 "items": {
+                                                    "type": "object",
                                                     "properties": {
                                                         "content": {
                                                             "type": "string",
@@ -452,6 +453,7 @@
                                         "type": "array",
                                         "title": "Message",
                                         "items": {
+                                            "type": "object",
                                             "properties": {
                                                 "content": {
                                                     "type": "string",
@@ -548,6 +550,7 @@
                                                 "type": "array",
                                                 "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
                                                 "items": {
+                                                    "type": "object",
                                                     "properties": {
                                                         "content": {
                                                             "type": "string",
@@ -583,6 +586,7 @@
                             "type": "array",
                             "title": "Response Messages",
                             "items": {
+                                "type": "object",
                                 "properties": {
                                     "message": {
                                         "type": "string",
@@ -610,8 +614,7 @@
                                         "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
                                         "default": "reporting_unit"
                                     }
-                                },
-                                "type": "object"
+                                }
                             },
                             "default": []
                         }
@@ -623,6 +626,7 @@
                 "title": "Schedules",
                 "type": "array",
                 "items": {
+                    "type": "object",
                     "properties": {
                         "name": {
                             "type": "string",
@@ -640,10 +644,12 @@
                             "type": "array",
                             "title": "Messages",
                             "items": {
+                                "type": "object",
                                 "properties": {
                                     "message": {
                                         "type": "array",
                                         "items": {
+                                            "type": "object",
                                             "properties": {
                                                 "content": {
                                                     "type": "string",
@@ -714,13 +720,11 @@
                                         "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
                                         "default": "reporting_unit"
                                     }
-                                },
-                                "type": "object"
+                                }
                             },
                             "default": []
                         }
-                    },
-                    "type": "object"
+                    }
                 }
             },
             "notifications": {
@@ -748,6 +752,7 @@
                     "validations": {
                         "type": "array",
                         "items": {
+                            "type": "object",
                             "properties": {
                                 "property": {
                                     "type": "string",
@@ -768,19 +773,20 @@
                                     "default": "Invalid Patient ID '{{patient_id}}'",
                                     "je:hint": "textarea"
                                 }
-                            },
-                            "type": "object"
+                            }
                         }
                     },
                     "messages": {
                         "type": "array",
                         "title": "Response Messages",
                         "items": {
+                            "type": "object",
                             "properties": {
                                 "message": {
                                     "type": "array",
                                     "title": "Message",
                                     "items": {
+                                        "type": "object",
                                         "properties": {
                                             "content": {
                                                 "type": "string",
@@ -832,8 +838,7 @@
                                     "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
                                     "default": "reporting_unit"
                                 }
-                            },
-                            "type": "object"
+                            }
                         },
                         "default": []
                     }
@@ -843,6 +848,7 @@
                 "title": "Translations",
                 "type": "array",
                 "items": {
+                    "type": "object",
                     "properties": {
                         "key": {
                             "type": "string",
@@ -879,8 +885,7 @@
                             "default": "",
                             "je:hint": "textarea"
                         }
-                    },
-                    "type": "object"
+                    }
                 },
                 "default": [
                     {
