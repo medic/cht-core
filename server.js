@@ -13,7 +13,7 @@ function completeSetup(err, design) {
                 process.exit(1);
             }
             require('./transitions').attach(design);
-            require('./schedule');
+            require('./schedule').checkSchedule();
             config.listen();
             console.log('Kujua Sentinel startup complete.');
         });

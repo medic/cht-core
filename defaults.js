@@ -110,7 +110,9 @@ var defaults = {
     settings_path: '/_design/kujua-lite/_rewrite/app_settings/_design%2Fkujua-lite',
     id_format: '111111',
     schedule_morning_hours: 0,
+    schedule_morning_minutes: 0,
     schedule_evening_hours: 23,
+    schedule_evening_minutes: 0,
     synthetic_date: null,
     translations: translations
 };

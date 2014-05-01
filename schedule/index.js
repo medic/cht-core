@@ -19,15 +19,20 @@ tasks = _.compact(_.map(fs.readdirSync(__dirname), function(file) {
 /*
  * Return true if within time window to set outgoing/pending tasks/messages.
  */
-function sendable(m) {
-    var after = config.get('schedule_morning_hours') || 0,
-        until = config.get('schedule_evening_hours') || 23,
-        hour = m.hours();
+exports.sendable = function(_config, _now) {
+    var afterHours = _config.get('schedule_morning_hours') || 0,
+        afterMinutes = _config.get('schedule_morning_minutes') || 0,
+        untilHours = _config.get('schedule_evening_hours') || 23,
+        untilMinutes = _config.get('schedule_evening_minutes') || 0;
 
-    return hour >= after && hour <= until;
-}
+    var now = _getTime(_now.hours(), _now.minutes());
+    var after = _getTime(afterHours, afterMinutes);
+    var until = _getTime(untilHours, untilMinutes);
 
-function checkSchedule() {
+    return now >= after && now <= until;
+};
+
+exports.checkSchedule = function() {
     var db = require('../db'),
         audit = require('couchdb-audit').withNode(db, db.user),
         now = moment(date.getDate());
@@ -38,7 +43,7 @@ function checkSchedule() {
                 db: db,
                 audit: audit
             }, callback);
-        } else if (sendable(now)) {
+        } else if (exports.sendable(config, now)) {
             task(db, audit, callback);
         } else {
             callback();
@@ -47,17 +52,19 @@ function checkSchedule() {
         if (err) {
             console.error('Error running tasks: ' + JSON.stringify(err));
         }
-        reschedule();
+        _reschedule();
     });
-}
+};
 
-function reschedule() {
+function _reschedule() {
     var now = moment(),
         heartbeat = now.clone().startOf('minute').add('minutes', 5),
         duration = moment.duration(heartbeat.valueOf() - now.valueOf());
 
     console.log('checking schedule again in', moment.duration(duration).humanize());
-    setTimeout(checkSchedule, duration.asMilliseconds());
+    setTimeout(exports.checkSchedule, duration.asMilliseconds());
 }
 
-checkSchedule();
+function _getTime(_hour, _minute) {
+    return moment(0).hours(_hour).minutes(_minute);
+}

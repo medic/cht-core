@@ -62,9 +62,11 @@ function fetchConfig(callback) {
             _.extend(config, custom);
             console.log('loaded config');
             console.log(
-                'Reminder messages allowed between hours %s and %s',
+                'Reminder messages allowed between %s:%s and %s:%s',
                 config['schedule_morning_hours'],
-                config['schedule_evening_hours']
+                config['schedule_morning_minutes'],
+                config['schedule_evening_hours'],
+                config['schedule_evening_minutes']
             );
             callback();
         }
