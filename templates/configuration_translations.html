@@ -1,28 +1,37 @@
 <form id="translations-form">
+  <fieldset>
 
-  <label for="locale-selector">Translate language</label>
-  <select id="locale-selector" data-language="en">
-    <option value="en" selected="selected">English</en>
-    <option value="es">Spanish</option>
-    <option value="fr">French</option>
-    <option value="ne">Nepali</option>
-    <option value="sw">Swahili</option>
-  </select>
+    <legend>Language to translate</legend>
 
-  <ul>
-    {#info.translations}
-      <li>
-        <div class="key">{key}</div>
-        <div class="default">{en}</div>
-        <div class="translation"><textarea name="{key}">{en}</textarea></div>
-      </li>
-    {/info.translations}
-  </ul>
+    <select id="locale-selector" data-language="en">
+      <option value="en" selected="selected">English</en>
+      <option value="es">Spanish</option>
+      <option value="fr">French</option>
+      <option value="ne">Nepali</option>
+      <option value="sw">Swahili</option>
+    </select>
 
-  <div class="footer">
-    <button type="button" class="btn submit btn-primary">Save</button>
-    <span class="status"></span>
-  </div>
+  </fieldset>
+  <fieldset>
+
+    <legend>Translations</legend>
+
+    <ul>
+      {#info.translations}
+        <li>
+          <div class="key">{key}</div>
+          <div class="default">{en}</div>
+          <div class="translation"><textarea name="{key}">{en}</textarea></div>
+        </li>
+      {/info.translations}
+    </ul>
+
+    <div class="footer">
+      <button type="button" class="btn submit btn-primary">Save</button>
+      <span class="status"></span>
+    </div>
+
+  </fieldset>
 </form>
 
 <div id="discard-changes-confirmation" class="modal hide fade" tabindex="-1">

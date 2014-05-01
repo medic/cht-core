@@ -44,6 +44,10 @@ body {
 
 }
 
+label {
+    font-weight: bold;
+}
+
 [data-page=sms-forms-data] .nav .sms-forms-data,
 [data-page=activity] .nav .activity,
 [data-page=reporting_rates] .nav .reporting_rates,
@@ -314,7 +318,6 @@ body {
             text-align: right;
             margin-top: 16px;
             cursor: default;
-            font-weight: bold;
         }
         form {
             margin-bottom: 0;
@@ -920,7 +923,6 @@ h3, h4 {
     label, .label {
       margin: 0;
       padding: 0;
-      font-weight: bold;
     }
   }
 }
@@ -990,10 +992,32 @@ h3, h4 {
     }
   }
 }
-.nav-tabs > .active > a {
-    &, &:hover, &:focus {
-        border-bottom-color: #fff;
-        outline: 0;
+.nav-tabs {
+    margin-top: 1em;
+
+    & > li:first-child {
+        margin-left: 1em;
+    }
+
+    & > .active > a {
+        &, &:hover, &:focus {
+            border-bottom-color: #fff;
+            outline: 0;
+        }
+    }
+}
+.tab-content {
+    margin: 1em;
+}
+#configuration-form {
+    select, textarea, input, label, .help-block, legend {
+        margin-bottom: 0;
+    }
+    fieldset {
+        margin-bottom: 2em;
+    }
+    label {
+        margin-top: 1em;
     }
 }
 #translations-form {
