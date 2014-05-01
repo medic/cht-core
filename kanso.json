@@ -144,6 +144,24 @@
                 "type": "string",
                 "title": "Gateway Number"
             },
+            "outgoing_phone_replace": {
+                "title": "Outgoing Phone Replacement",
+                "type": "object",
+                "properties": {
+                    "match": {
+                        "type": "string",
+                        "title": "Match",
+                        "default": "",
+                        "description": "The prefix to match.  e.g. +997"
+                    },
+                    "replace": {
+                        "type": "string",
+                        "title": "Replace with",
+                        "default": "",
+                        "description": "The value to replace the match with"
+                    }
+                }
+            },
             "outgoing_phone_filters": {
                 "title": "Outgoing Phone Filters",
                 "type": "array",
