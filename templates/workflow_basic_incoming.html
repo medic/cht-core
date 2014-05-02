@@ -1,0 +1,47 @@
+<form>
+  <fieldset>
+
+    <legend>Registrations</legend>
+    {#registration}
+      <p>
+        Register for this message workflow by sending an SMS with the following format: 
+        <span class="pre">R Patient Name</span>
+      </p>
+
+      <p>
+        For example, to register "Maria Soleil" you would send:
+        <span class="pre">R Maria Soleil</span>
+      </p>
+
+      <h4>Validations</h4>
+      {#form.validations.list}
+      <p>
+        Send the following response message if the 
+        <select class="inline">
+          <option value="patient_name" {@eq key="property" value="patient_name"}selected="true"{/eq}>patient name</option>
+          <option value="patient_phone" {@eq key="property" value="patient_phone"}selected="true"{/eq}>patient phone</option>
+        </select>
+        field does not pass this validation
+        <input type="text" value="{rule}"/>
+      </p>
+      <textarea class="input-xxlarge">{message[0].content}</textarea>
+      {/form.validations.list}
+
+      <h4>Responses</h4>
+      <p>If all the validations pass, this message will be sent to the sender:</p>
+      <textarea class="input-xxlarge">{message}</textarea>
+    {/registration}
+
+    <legend>Visits</legend>
+    <p>Visits are recorded by sending an SMS in the format <span class="pre">V 12345</span>, replacing 12345 with the Patient's ID.</p>
+    {#visit}
+      {>"workflow_form.html"/}
+    {/visit}
+
+    <legend>Deliveries</legend>
+    <p>Deliveries are registered by sending an SMS in the format <span class="pre">D 12345 &lt;facility&gt;</span>, replacing 12345 with the Patient's ID.</p>
+    {#delivery}
+      {>"workflow_form.html"/}
+    {/delivery}
+  </fieldset>
+</form>

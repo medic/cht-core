@@ -1,3 +1,4 @@
+{#info}
 <form id="configuration-form">
   <fieldset>
 
@@ -5,16 +6,16 @@
 
     <label for="language">Language</label>
     <select id="language">
-      <option value="en">English</option>
-      <option value="es">Spanish</option>
-      <option value="fr">French</option>
-      <option value="ne">Nepali</option>
-      <option value="sw">Swahili</option>
+      <option value="en" {@eq key="locale" value="en"}selected="true"{/eq}>English</option>
+      <option value="es" {@eq key="locale" value="es"}selected="true"{/eq}>Spanish</option>
+      <option value="fr" {@eq key="locale" value="fr"}selected="true"{/eq}>French</option>
+      <option value="ne" {@eq key="locale" value="ne"}selected="true"{/eq}>Nepali</option>
+      <option value="sw" {@eq key="locale" value="sw"}selected="true"{/eq}>Swahili</option>
     </select>
     <span class="help-block">edit translations by going to the Translations tab above</span>
 
     <label for="gateway-number">Gateway number</label>
-    <input id="gateway-number" type="text" value="{info.gateway_number}" />
+    <input id="gateway-number" type="text" value="{gateway_number}" />
 
   </fieldset>
 
@@ -22,19 +23,19 @@
     <legend>Advanced Settings</legend>
 
     <label for="accept-messages">Accept messages</label>
-    <input id="accept-messages" type="checkbox">
+    <input id="accept-messages" type="checkbox" {@eq key="forms_only_mode" value="false"}checked="true"{/eq}>
     <span class="help-block">if unchecked only forms will be accepted and an error will be sent to sender</span>
 
     <label for="date-display-format">Date display format</label>
-    <input id="date-display-format" type="text" value="{info.reported_date_format}"/>
+    <input id="date-display-format" type="text" value="{reported_date_format}"/>
 
     <label>Phone number conversion</label>
-     Replace country code <input id="phone-filters-match" type="text" value="{info.outgoing_phone_replace.match}" class="input-mini"/> 
-     with <input id="phone-filters-replace" type="text" value="{info.outgoing_phone_replace.replace}" class="input-mini"/>
+     Replace country code <input id="phone-filters-match" type="text" value="{outgoing_phone_replace.match}" class="input-mini"/> 
+     with <input id="phone-filters-replace" type="text" value="{outgoing_phone_replace.replace}" class="input-mini"/>
 
     <label>Messaging window</label>
-    Send scheduled messages between <input id="schedule-morning" type="text" class="input-mini"/> 
-    and <input id="schedule-evening" type="text" class="input-mini"/>
+    Send scheduled messages between <input id="schedule-morning" type="text" class="input-mini" value="{scheduleMorning}"/> 
+    and <input id="schedule-evening" type="text" class="input-mini" value="{scheduleEvening}"/>
   </fieldset>
 
   <div class="footer">
@@ -42,3 +43,4 @@
     <span class="status"></span>
   </div>
 </form>
+{/info}

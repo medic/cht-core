@@ -205,10 +205,13 @@ exports.titleize = function (s) {
     return _s.titleize(_s.humanize(s));
 };
 
-exports.updateTopNav = function(key, title) {
+exports.updateTopNav = function(key, title, suffix) {
     if (!_.isNull(title)) {
         title = title || exports.titleize(key);
-        $('.page-header h1').replaceWith('<h1 class="pull-left">' + $.kansotranslate(title) + '</h1>');
+        suffix = suffix || '';
+        $('.page-header h1').replaceWith(
+            '<h1 class="pull-left">' + $.kansotranslate(title) + suffix + '</h1>'
+        );
     } else {
         $('.page-header h1').hide();
     }
