@@ -14,19 +14,7 @@
 <p>
 
 {#form}
-  <h4>Validations</h4>
-  {#validations.list}
-  <p>
-    Send the following response message if the 
-    <select class="inline">
-      <option value="patient_name" {@eq key="property" value="patient_name"}selected="true"{/eq}>patient name</option>
-      <option value="patient_phone" {@eq key="property" value="patient_phone"}selected="true"{/eq}>patient phone</option>
-    </select>
-    field does not pass this validation
-    <input type="text" value="{rule}"/>
-  </p>
-  <textarea class="input-xxlarge">{message[0].content}</textarea>
-  {/validations.list}
+  {>"workflow_validations.html"/}
 
   <h4>Responses</h4>
   {#messages}
