@@ -197,6 +197,9 @@ label {
   .scroll;
   width: 580px;
 }
+.btn:focus {
+    outline: none;
+}
 .muvuku, .textforms {
   white-space:nowrap;
 }
@@ -1043,8 +1046,14 @@ h3, h4 {
         margin-left: 1em;
     }
 }
-select.inline {
-    width: inherit;
+.inline-form {
+    margin: 0;
+    select {
+        width: inherit;
+    }
+    select, input {
+        margin-top: 0.5em;
+    }
 }
 span.pre {
     font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
@@ -1053,4 +1062,36 @@ span.pre {
     border-radius: 4px;
     padding: 2px 4px;
 }
+.repeat-container .repeat-element {
+    border-top: 1px solid #EEEEEE;
+    padding: 1em;
+    padding-right: 0;
 
+    &:first-child {
+        border-top: 0;
+    }
+}
+.toggle {
+    .toggle-head {
+        cursor: pointer;
+        i {
+            font-size: 0.5em;
+            line-height: 1em;
+            vertical-align: middle;
+        }
+    }
+    .toggle-body, .toggle-head .icon-chevron-up {
+        display: none;
+    }
+    &.expanded {
+        .toggle-body {
+            display: block;
+        }
+        .toggle-head .icon-chevron-up {
+            display: inline;
+        }
+        .toggle-head .icon-chevron-down {
+            display: none;
+        }
+    }
+}

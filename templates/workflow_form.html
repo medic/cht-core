@@ -1,10 +1,10 @@
 
 <h4>Action</h4>
-<p>
+<p class="inline-form">
   A valid form will silence message groups for
   {#silence}
-  <input type="number" class="input-mini" value="{value}"/>
-  <select class="inline">
+  <input type="number" class="input-mini" value="{value}" min="0"/>
+  <select>
     <option value="days" {@eq key="unit" value="days"}selected="true"{/eq}>days</option>
     <option value="weeks" {@eq key="unit" value="weeks"}selected="true"{/eq}>weeks</option>
     <option value="months" {@eq key="unit" value="months"}selected="true"{/eq}>months</option>
@@ -15,18 +15,25 @@
 
 {#form}
   {>"workflow_validations.html"/}
-
-  <h4>Responses</h4>
-  {#messages}
-    <p>
-      {@eq key="event_type" value="report_accepted"}
-        If all the validations pass and the report is accepted
-      {/eq}
-      {@eq key="event_type" value="registration_not_found"}
-        If the validations pass but the patient ID is not located
-      {/eq}
-      this message will be sent to the sender
-    </p>
-    <textarea class="input-xxlarge">{message}</textarea>
-  {/messages}
+  <div class="toggle">
+    <h4 class="toggle-head">
+      Responses
+      <i class="icon-chevron-down"></i>
+      <i class="icon-chevron-up"></i>
+    </h4>
+    <div class="toggle-body">
+      {#messages}
+        <p>
+          {@eq key="event_type" value="report_accepted"}
+            If all the validations pass and the report is accepted
+          {/eq}
+          {@eq key="event_type" value="registration_not_found"}
+            If the validations pass but the patient ID is not located
+          {/eq}
+          this message will be sent to the sender
+        </p>
+        <textarea class="input-xxlarge">{message}</textarea>
+      {/messages}
+    </div>
+  </div>
 {/form}
