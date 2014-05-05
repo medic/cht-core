@@ -54,7 +54,7 @@
                 This message is part of group
                 <input name="group" type="number" class="input-mini" value="{message.group}" min="0"/>
                 and should be sent at
-                <input name="send_time" type="text" class="input-mini" value="{message.send_time}"/>
+                <span id="send_time">{#sendTime}{>"partials/time.html"/}{/sendTime}</span>
               </p>
               <textarea name="message" class="input-xxlarge">{content}</textarea>
               <p>
