@@ -34,8 +34,12 @@
      with <input id="phone-filters-replace" type="text" value="{outgoing_phone_replace.replace}" class="input-mini"/>
 
     <label>Messaging window</label>
-    Send scheduled messages between <input id="schedule-morning" type="text" class="input-mini" value="{scheduleMorning}"/> 
-    and <input id="schedule-evening" type="text" class="input-mini" value="{scheduleEvening}"/>
+    <p class="inline-form">
+      Send scheduled messages between 
+      <span id="schedule-morning">{#scheduleMorning}{>"partials/time.html"/}{/scheduleMorning}</span>
+      and
+      <span id="schedule-evening">{#scheduleEvening}{>"partials/time.html"/}{/scheduleEvening}</span>.
+    </p>
   </fieldset>
 
   <div class="footer">
