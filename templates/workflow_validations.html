@@ -6,17 +6,17 @@
   </h4>
   <div class="repeat-container toggle-body">
     {#validations.list}
-    <div class="repeat-element">
+    <div class="repeat-element validation">
       <p class="inline-form">
         Send the following response message if the 
-        <select>
+        <select name="property">
           <option value="patient_name" {@eq key="property" value="patient_name"}selected="true"{/eq}>patient name</option>
           <option value="patient_phone" {@eq key="property" value="patient_phone"}selected="true"{/eq}>patient phone</option>
         </select>
         field does not pass this validation
-        <input type="text" value="{rule}"/>
+        <input type="text" name="rule" value="{rule}"/>
       </p>
-      <textarea class="input-xxlarge">{message[0].content}</textarea>
+      <textarea name="content" class="input-xxlarge">{message[0].content}</textarea>
       <p>
         <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
       </p>

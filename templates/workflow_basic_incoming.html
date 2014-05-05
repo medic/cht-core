@@ -1,5 +1,5 @@
-<form>
-  <fieldset>
+<form id="workflow-incoming">
+  <fieldset id="workflow-registrations">
 
     <legend>Registrations</legend>
     {#registration}
@@ -25,21 +25,31 @@
         </h4>
         <div class="toggle-body">
           <p>If all the validations pass, this message will be sent to the sender:</p>
-          <textarea class="input-xxlarge">{message}</textarea>
+          <textarea name="message" class="input-xxlarge">{message}</textarea>
         </div>
       </div>
     {/registration}
+  </fieldset>
 
+  <fieldset id="workflow-visits">
     <legend>Visits</legend>
     <p>Visits are recorded by sending an SMS in the format <span class="pre">V 12345</span>, replacing 12345 with the Patient's ID.</p>
     {#visit}
       {>"workflow_form.html"/}
     {/visit}
+  </fieldset>
 
+  <fieldset id="workflow-deliveries">
     <legend>Deliveries</legend>
     <p>Deliveries are registered by sending an SMS in the format <span class="pre">D 12345 &lt;facility&gt;</span>, replacing 12345 with the Patient's ID.</p>
     {#delivery}
       {>"workflow_form.html"/}
     {/delivery}
   </fieldset>
+
+  <div class="footer">
+    <button type="button" class="btn submit btn-primary">Save</button>
+    <span class="status"></span>
+  </div>
+
 </form>
