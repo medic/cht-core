@@ -2,62 +2,79 @@
 <form>
   <fieldset>
 
-    <legend>Messages</legend>
     <div class="repeat-container">
-    {#messages}
+      {#schedules}
       <div class="repeat-element">
-        <p class="inline-form">
-          {#message}
-          <select>
-            <option value="">Exactly</option>
-            <option value="monday" {@eq key="send_day" value="monday"}selected="true"{/eq}>On the Monday</option>
-            <option value="tuesday" {@eq key="send_day" value="tuesday"}selected="true"{/eq}>On the Tuesday</option>
-            <option value="wednesday" {@eq key="send_day" value="wednesday"}selected="true"{/eq}>On the Wednesday</option>
-            <option value="thursday" {@eq key="send_day" value="thursday"}selected="true"{/eq}>On the Thursday</option>
-            <option value="friday" {@eq key="send_day" value="friday"}selected="true"{/eq}>On the Friday</option>
-            <option value="saturday" {@eq key="send_day" value="saturday"}selected="true"{/eq}>On the Saturday</option>
-            <option value="sunday" {@eq key="send_day" value="sunday"}selected="true"{/eq}>On the Sunday</option>
-          </select>
-          {/message}
-          {#offset}
-          <input type="number" class="input-mini" value="{value}" min="0"/>
-          <select>
-            <option value="days" {@eq key="unit" value="days"}selected="true"{/eq}>days</option>
-            <option value="weeks" {@eq key="unit" value="weeks"}selected="true"{/eq}>weeks</option>
-            <option value="months" {@eq key="unit" value="months"}selected="true"{/eq}>months</option>
-            <option value="years" {@eq key="unit" value="years"}selected="true"{/eq}>years</option>
-          </select>
-          {/offset}
-          after
-          {#schedule}
-          <select>
-            <option value="reported_date" {@eq key="start_from" value="reported_date"}selected="true"{/eq}>registration</option>
-            <option value="lmp_date" {@eq key="start_from" value="lmp_date"}selected="true"{/eq}>LMP</option>
-          </select>
-          {/schedule}
-          , send the following message to the
-          {#message}
-          <select>
-            <option value="reporting_unit" {@eq key="recipient" value="reporting_unit"}selected="true"{/eq}>registrant</option>
-            <option value="parent" {@eq key="recipient" value="parent"}selected="true"{/eq}>registrant's supervisor</option>
-          </select>.
-          {/message}
-        </p>
-        <p class="inline-form">
-          This message is part of group
-          <input type="number" class="input-mini" value="{message.group}" min="0"/>
-          and should be sent at
-          <input type="text" class="input-mini" value="{message.send_time}"/>
-        </p>
-        <textarea class="input-xxlarge">{content}</textarea>
+        <legend>Schedule</legend>
+
+        <label>Name</label>
+        <input type="text" value="{name}"/>
+
+        <h4>Messages</h4>
+        <div class="repeat-container">
+          {#messages}
+            <div class="repeat-element">
+              <p class="inline-form">
+                {#message}
+                <select>
+                  <option value="">Exactly</option>
+                  <option value="monday" {@eq key="send_day" value="monday"}selected="true"{/eq}>On the Monday</option>
+                  <option value="tuesday" {@eq key="send_day" value="tuesday"}selected="true"{/eq}>On the Tuesday</option>
+                  <option value="wednesday" {@eq key="send_day" value="wednesday"}selected="true"{/eq}>On the Wednesday</option>
+                  <option value="thursday" {@eq key="send_day" value="thursday"}selected="true"{/eq}>On the Thursday</option>
+                  <option value="friday" {@eq key="send_day" value="friday"}selected="true"{/eq}>On the Friday</option>
+                  <option value="saturday" {@eq key="send_day" value="saturday"}selected="true"{/eq}>On the Saturday</option>
+                  <option value="sunday" {@eq key="send_day" value="sunday"}selected="true"{/eq}>On the Sunday</option>
+                </select>
+                {/message}
+                {#offset}
+                <input type="number" class="input-mini" value="{value}" min="0"/>
+                <select>
+                  <option value="days" {@eq key="unit" value="days"}selected="true"{/eq}>days</option>
+                  <option value="weeks" {@eq key="unit" value="weeks"}selected="true"{/eq}>weeks</option>
+                  <option value="months" {@eq key="unit" value="months"}selected="true"{/eq}>months</option>
+                  <option value="years" {@eq key="unit" value="years"}selected="true"{/eq}>years</option>
+                </select>
+                {/offset}
+                after
+                {#schedule}
+                <select>
+                  <option value="reported_date" {@eq key="start_from" value="reported_date"}selected="true"{/eq}>registration</option>
+                  <option value="lmp_date" {@eq key="start_from" value="lmp_date"}selected="true"{/eq}>LMP</option>
+                </select>
+                {/schedule}
+                , send the following message to the
+                {#message}
+                <select>
+                  <option value="reporting_unit" {@eq key="recipient" value="reporting_unit"}selected="true"{/eq}>registrant</option>
+                  <option value="parent" {@eq key="recipient" value="parent"}selected="true"{/eq}>registrant's supervisor</option>
+                </select>.
+                {/message}
+              </p>
+              <p class="inline-form">
+                This message is part of group
+                <input type="number" class="input-mini" value="{message.group}" min="0"/>
+                and should be sent at
+                <input type="text" class="input-mini" value="{message.send_time}"/>
+              </p>
+              <textarea class="input-xxlarge">{content}</textarea>
+              <p>
+                <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove message</a>
+              </p>
+            </div>
+          {/messages}
+          <p>
+            <a href="#" class="add btn"><i class="icon-plus"></i> Add message</a>
+          </p>
+        </div>
         <p>
-          <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
+          <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove schedule</a>
         </p>
       </div>
-    {/messages}
-    <p>
-      <a href="#" class="add btn"><i class="icon-plus"></i> Add message</a>
-    </p>
+      {/schedules}
+      <p>
+        <a href="#" class="add btn"><i class="icon-plus"></i> Add schedule</a>
+      </p>
     </div>
   </fieldset>
 </form>
