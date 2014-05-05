@@ -1,0 +1,30 @@
+<div class="toggle">
+  <h4 class="toggle-head">
+    Validations
+    <i class="icon-chevron-down"></i>
+    <i class="icon-chevron-up"></i>
+  </h4>
+  <div class="repeat-container toggle-body">
+    {#validations.list}
+    <div class="repeat-element">
+      <p class="inline-form">
+        Send the following response message if the 
+        <select>
+          <option value="patient_name" {@eq key="property" value="patient_name"}selected="true"{/eq}>patient name</option>
+          <option value="patient_phone" {@eq key="property" value="patient_phone"}selected="true"{/eq}>patient phone</option>
+        </select>
+        field does not pass this validation
+        <input type="text" value="{rule}"/>
+      </p>
+      <textarea class="input-xxlarge">{message[0].content}</textarea>
+      <p>
+        <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
+      </p>
+    </div>
+    {/validations.list}
+
+    <p>
+      <a href="#" class="btn add"><i class="icon-plus"></i> Add validation</a>
+    </p>
+  </div>
+</div>
