@@ -59,8 +59,7 @@
                 and should be sent at
                 <span id="send_time">{#sendTime}{>"partials/time.html"/}{/sendTime}</span>
               </p>
-              <textarea name="message" class="input-xxlarge">{content}</textarea>
-              <input type="hidden" name="messages" value="{contents}"/>
+              <textarea name="message" class="input-xxlarge translated" data-message="{content}" data-messages="{contents}">{content}</textarea>
               <p>
                 <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
               </p>
