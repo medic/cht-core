@@ -97,7 +97,7 @@
                         "en": "English",
                         "es": "Spanish",
                         "fr": "French",
-                        "ne": "Nepalese",
+                        "ne": "Nepali",
                         "sw": "Swahili"
                     },
                     "default": "en"
@@ -119,7 +119,7 @@
                     "en": "English",
                     "es": "Spanish",
                     "fr": "French",
-                    "ne": "Nepalese",
+                    "ne": "Nepali",
                     "sw": "Swahili"
                 },
                 "default": "en"
@@ -428,7 +428,7 @@
                                                                 "en": "English",
                                                                 "es": "Spanish",
                                                                 "fr": "French",
-                                                                "ne": "Nepalese",
+                                                                "ne": "Nepali",
                                                                 "sw": "Swahili",
                                                                 "lu": "Dholuo"
                                                             },
@@ -472,7 +472,7 @@
                                                         "en": "English",
                                                         "es": "Spanish",
                                                         "fr": "French",
-                                                        "ne": "Nepalese",
+                                                        "ne": "Nepali",
                                                         "sw": "Swahili",
                                                         "lu": "Dholuo"
                                                     },
@@ -567,7 +567,7 @@
                                                                 "en": "English",
                                                                 "es": "Spanish",
                                                                 "fr": "French",
-                                                                "ne": "Nepalese",
+                                                                "ne": "Nepali",
                                                                 "sw": "Swahili",
                                                                 "lu": "Dholuo"
                                                             },
@@ -668,7 +668,7 @@
                                                         "en": "English",
                                                         "es": "Spanish",
                                                         "fr": "French",
-                                                        "ne": "Nepalese",
+                                                        "ne": "Nepali",
                                                         "sw": "Swahili",
                                                         "lu": "Dholuo"
                                                     },
@@ -805,7 +805,7 @@
                                                     "en": "English",
                                                     "es": "Spanish",
                                                     "fr": "French",
-                                                    "ne": "Nepalese",
+                                                    "ne": "Nepali",
                                                     "sw": "Swahili",
                                                     "lu": "Dholuo"
                                                 },
@@ -869,7 +869,7 @@
                         },
                         "ne": {
                             "type": "string",
-                            "title": "Nepalese",
+                            "title": "Nepali",
                             "default": "",
                             "je:hint": "textarea"
                         },
