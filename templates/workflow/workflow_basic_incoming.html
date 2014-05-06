@@ -14,7 +14,7 @@
       </p>
 
       {#form}
-        {>"workflow_validations.html"/}
+        {>"workflow/workflow_validations.html"/}
       {/form}
 
       <div class="toggle">
@@ -35,7 +35,7 @@
     <legend>Visits</legend>
     <p>Visits are recorded by sending an SMS in the format <span class="pre">V 12345</span>, replacing 12345 with the Patient's ID.</p>
     {#visit}
-      {>"workflow_form.html"/}
+      {>"workflow/workflow_form.html"/}
     {/visit}
   </fieldset>
 
@@ -43,7 +43,7 @@
     <legend>Deliveries</legend>
     <p>Deliveries are registered by sending an SMS in the format <span class="pre">D 12345 &lt;facility&gt;</span>, replacing 12345 with the Patient's ID.</p>
     {#delivery}
-      {>"workflow_form.html"/}
+      {>"workflow/workflow_form.html"/}
     {/delivery}
   </fieldset>
 
