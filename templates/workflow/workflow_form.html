@@ -15,29 +15,27 @@
 
 {>"workflow/workflow_validations.html"/}
 
-{#form}
-  <div class="toggle">
-    <h4 class="toggle-head">
-      Responses
-      <i class="icon-chevron-down"></i>
-      <i class="icon-chevron-up"></i>
-    </h4>
-    <div class="toggle-body responses">
-      {#messages}
-        <div class="response">
-          <p>
-            {@eq key="event_type" value="report_accepted"}
-              If all the validations pass and the report is accepted
-            {/eq}
-            {@eq key="event_type" value="registration_not_found"}
-              If the validations pass but the patient ID is not located
-            {/eq}
-            this message will be sent to the sender
-          </p>
-          <input type="hidden" name="event_type" value="{event_type}"/>
-          <textarea name="message" class="input-xxlarge">{message}</textarea>
-        </div>
-      {/messages}
-    </div>
+<div class="toggle">
+  <h4 class="toggle-head">
+    Responses
+    <i class="icon-chevron-down"></i>
+    <i class="icon-chevron-up"></i>
+  </h4>
+  <div class="toggle-body responses">
+    {#responses}
+      <div class="response">
+        <p>
+          {@eq key="event_type" value="report_accepted"}
+            If all the validations pass and the report is accepted
+          {/eq}
+          {@eq key="event_type" value="registration_not_found"}
+            If the validations pass but the patient ID is not located
+          {/eq}
+          this message will be sent to the sender
+        </p>
+        <input type="hidden" name="event_type" value="{event_type}"/>
+        <textarea name="message" class="input-xxlarge translated" data-message="{message}" data-messages="{messages}">{message}</textarea>
+      </div>
+    {/responses}
   </div>
-{/form}
+</div>

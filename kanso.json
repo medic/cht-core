@@ -589,9 +589,35 @@
                                 "type": "object",
                                 "properties": {
                                     "message": {
-                                        "type": "string",
+										"type": "array",
                                         "title": "Message Text",
-                                        "je:hint": "textarea"
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "content": {
+                                                    "type": "string",
+                                                    "title": "Message Content",
+                                                    "default": "'{{patient_id}}' is not a valid.",
+                                                    "je:hint": "textarea"
+                                                },
+                                                "locale": {
+                                                    "title": "Locale",
+                                                    "type": "string",
+                                                    "enum": ["en", "es", "fr", "ne", "sw", "lu"],
+                                                    "je:hint": "enumlabels",
+                                                    "je:enumlabels": {
+                                                        "en": "English",
+                                                        "es": "Spanish",
+                                                        "fr": "French",
+                                                        "ne": "Nepali",
+                                                        "sw": "Swahili",
+                                                        "lu": "Dholuo"
+                                                    },
+                                                    "default": "en"
+                                                }
+                                            }
+                                        },
+                                        "default": []
                                     },
                                     "event_type": {
                                         "type": "string",
