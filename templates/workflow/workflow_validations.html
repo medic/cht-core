@@ -5,7 +5,7 @@
     <i class="icon-chevron-up"></i>
   </h4>
   <div class="repeat-container toggle-body">
-    {#validations.list}
+    {#validations}
     <div class="repeat-element validation">
       <p class="inline-form">
         Send the following response message if the 
@@ -16,12 +16,13 @@
         field does not pass this validation
         <input type="text" name="rule" value="{rule}"/>
       </p>
-      <textarea name="content" class="input-xxlarge">{message[0].content}</textarea>
+      <textarea name="content" class="input-xxlarge">{message}</textarea>
+      <input type="hidden" name="messages" value="{messages}" />
       <p>
         <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
       </p>
     </div>
-    {/validations.list}
+    {/validations}
 
     <p>
       <a href="#" class="btn add"><i class="icon-plus"></i> Add validation</a>

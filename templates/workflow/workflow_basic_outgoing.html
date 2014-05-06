@@ -1,5 +1,8 @@
 
 <form id="workflow-outgoing">
+
+  {>"partials/locale.html"/}
+
   <fieldset>
 
     <div class="repeat-container">
@@ -57,6 +60,7 @@
                 <span id="send_time">{#sendTime}{>"partials/time.html"/}{/sendTime}</span>
               </p>
               <textarea name="message" class="input-xxlarge">{content}</textarea>
+              <input type="hidden" name="messages" value="{contents}"/>
               <p>
                 <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
               </p>

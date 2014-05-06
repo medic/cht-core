@@ -1,4 +1,7 @@
 <form id="workflow-incoming">
+
+  {>"partials/locale.html"/}
+
   <fieldset id="workflow-registrations">
 
     <legend>Registrations</legend>
@@ -13,11 +16,9 @@
         <span class="pre">R Maria Soleil</span>
       </p>
 
-      {#form}
-        {>"workflow/workflow_validations.html"/}
-      {/form}
+      {>"workflow/workflow_validations.html"/}
 
-      <div class="toggle">
+      <div class="toggle responses">
         <h4 class="toggle-head">
           Responses
           <i class="icon-chevron-down"></i>
@@ -25,7 +26,8 @@
         </h4>
         <div class="toggle-body">
           <p>If all the validations pass, this message will be sent to the sender:</p>
-          <textarea name="message" class="input-xxlarge">{message}</textarea>
+          <textarea name="content" class="input-xxlarge">{message}</textarea>
+          <input name="messages" type="hidden" value="{messages}" />
         </div>
       </div>
     {/registration}

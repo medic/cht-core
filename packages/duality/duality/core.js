@@ -192,7 +192,6 @@ exports.handleUrl = function(ev, href, rel) {
     if (exports._in_page) { // in-page anchor
         return;
     }
-    console.log('no in-page anchor');
     if (href && exports.isAppURL(href) && rel !== 'external') {
         var url = exports.appPath(href);
         ev.preventDefault();
