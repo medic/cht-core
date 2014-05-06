@@ -13,13 +13,19 @@
   </ul>
   <div class="tab-content">
     <div class="tab-pane active" id="overview">
-      {overview|s}
+      {#overview}
+        {>"workflow/overview.html"/}
+      {/overview}
     </div>
     <div class="tab-pane" id="incoming">
-      {incoming|s}
+      {#incoming}
+        {>"workflow/incoming.html"/}
+      {/incoming}
     </div>
     <div class="tab-pane" id="outgoing">
-      {outgoing|s}
+      {#outgoing}
+        {>"workflow/outgoing.html"/}
+      {/outgoing}
     </div>
   </div>
 

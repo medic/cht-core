@@ -5,17 +5,18 @@
   <fieldset id="workflow-registrations">
 
     <legend>Registrations</legend>
-    {#registration}
+    {#workflow.registration}
       <p>
         Register for this message workflow by sending an SMS with the following format: 
-        <span class="pre">R Patient Name</span>
+        <span class="pre">{code} Patient Name</span>
       </p>
 
       <p>
         For example, to register "Maria Soleil" you would send:
-        <span class="pre">R Maria Soleil</span>
+        <span class="pre">{code} Maria Soleil</span>
       </p>
-
+    {/workflow.registration}
+    {#registration}
       {>"workflow/validations.html"/}
 
       <div class="toggle responses">
@@ -32,21 +33,17 @@
     {/registration}
   </fieldset>
 
-  <fieldset id="workflow-visits">
-    <legend>Visits</legend>
-    <p>Visits are recorded by sending an SMS in the format <span class="pre">V 12345</span>, replacing 12345 with the Patient's ID.</p>
-    {#visit}
-      {>"workflow/form.html"/}
-    {/visit}
-  </fieldset>
-
-  <fieldset id="workflow-deliveries">
-    <legend>Deliveries</legend>
-    <p>Deliveries are registered by sending an SMS in the format <span class="pre">D 12345 &lt;facility&gt;</span>, replacing 12345 with the Patient's ID.</p>
-    {#delivery}
-      {>"workflow/form.html"/}
-    {/delivery}
-  </fieldset>
+  {#reports}
+    <fieldset class="report" data-formcode="{report.code}">
+      {#report}
+        <legend>{name}</legend>
+        <p>Recorded by sending an SMS in the format <span class="pre">{format}</span>.</p>
+      {/report}
+      {#form}
+        {>"workflow/form.html"/}
+      {/form}
+    </fieldset>
+  {/reports}
 
   <div class="footer">
     <button type="button" class="btn submit btn-primary">Save</button>
