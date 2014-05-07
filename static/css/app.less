@@ -976,10 +976,10 @@ h3, h4 {
   margin-left: 10px;
   a {
     color: darkgray;
-    &:hover {
-      text-decoration: none;
-    }
   }
+}
+.help:hover {
+    text-decoration: none;
 }
 #help-search {
   padding-top: 20px;
@@ -1090,5 +1090,21 @@ span.pre {
         .toggle-head .icon-chevron-down {
             display: none;
         }
+    }
+}
+dl.horizontal {
+
+    dt {
+        width: 100px;
+        float: left;
+        text-align: right;
+        margin-bottom: 0.5em;
+        margin-right: 1em;
+    }
+
+    dd:after {
+        content: '';
+        display: block;
+        clear: both;
     }
 }
