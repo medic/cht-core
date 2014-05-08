@@ -15,7 +15,7 @@ exports.getAppInfo = function(req) {
 
 
     /*
-     * On server side app_settings is availble on design doc (this) and if
+     * On server side app_settings is available on design doc (this) and if
      * call from client side we fetch app_settings via couchdb show.
      *
      * returns object
@@ -34,10 +34,10 @@ exports.getAppInfo = function(req) {
             settings = JSON.parse(
                 window.jQuery.ajax({
                     type: 'GET',
-                    url: baseURL + '/app_settings/_design%252Fkujua-lite',
+                    url: baseURL + '/app_settings/kujua-lite',
                     async: false //synchronous request
                 }).responseText
-            );
+            ).settings;
         }
 
         // add defaults to settings if needed

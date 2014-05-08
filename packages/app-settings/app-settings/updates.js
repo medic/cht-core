@@ -29,7 +29,7 @@ var _process = function (ddoc, body) {
             success: false, 
             error: 'Design document not found'
         };
-    } 
+    }
 
     try {
         body = JSON.parse(body);

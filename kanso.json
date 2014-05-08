@@ -68,7 +68,8 @@
         "kanso-app-settings": null,
         "garden-app-support": null,
         "locale": null,
-        "couchdb-audit": null
+        "couchdb-audit": null,
+        "app-settings": null
     },
     "user_data": {
         "db_prefix": false,

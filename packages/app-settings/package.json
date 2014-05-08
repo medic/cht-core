@@ -1,0 +1,26 @@
+{
+  "name": "app_settings",
+  "version": "0.0.1",
+  "description": "Manage an app_settings property on a couchdb design document.",
+  "main": "index.js",
+  "dependencies": {
+    "couchr": "*"
+  },
+  "bin": {
+    "couchapp-settings": "./bin/app_settings"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/garden20/app_settings.git"
+  },
+  "keywords": [
+    "couchdb",
+    "garden",
+    "couchapp"
+  ],
+  "author": "Ryan Ramage",
+  "license": "BSD"
+}
