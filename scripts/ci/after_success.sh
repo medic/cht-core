@@ -9,7 +9,7 @@ function push {
     ((COUNT++))
     local URL="$1"
     if [ $COUNT -le $MAX ]; then
-        kanso push "$URL" && DONE=1
+        kanso push --minify "$URL" && DONE=1
         if [ $DONE == 1 ]; then 
             exit 0
         else 
