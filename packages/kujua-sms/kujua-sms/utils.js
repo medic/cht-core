@@ -1,7 +1,6 @@
-﻿/**
+/*
  * Utility functions for Kujua
  */
-
 var utils = require('kujua-utils'),
     settings = require('settings/root'),
     jsonforms = require('views/lib/jsonforms'),
