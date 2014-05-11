@@ -6,7 +6,7 @@
   </h4>
   <div class="repeat-container toggle-body">
     {#validations}
-    <div class="repeat-element validation">
+    <div class="repeat-{@if cond="{template}"}template{:else}element{/if}">
       <p class="inline-form">
         Send the following response message if the 
         <select name="property">
