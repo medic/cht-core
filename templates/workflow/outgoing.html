@@ -4,73 +4,69 @@
   {>"partials/locale.html"/}
 
   <fieldset>
+  {#schedule}
+    <legend>Schedule</legend>
 
-    {#schedules}
-      <legend>Schedule</legend>
+    <label>Date Property</label>
+    <select name="start_from">
+      <option value="reported_date" {@eq key="start_from" value="reported_date"}selected="true"{/eq}>registration</option>
+      <option value="lmp_date" {@eq key="start_from" value="lmp_date"}selected="true"{/eq}>LMP</option>
+    </select>
 
-      <label>Name</label>
-      <input name="name" type="text" value="{name}"/>
-
-      <label>Date Property</label>
-      <select name="start_from">
-        <option value="reported_date" {@eq key="start_from" value="reported_date"}selected="true"{/eq}>registration</option>
-        <option value="lmp_date" {@eq key="start_from" value="lmp_date"}selected="true"{/eq}>LMP</option>
-      </select>
-
-      <h4>Messages</h4>
-      <div class="repeat-container">
-        {#messages}
-          <div class="repeat-element message">
-            <p class="inline-form">
-              {#message}
-              <select name="send_day">
-                <option value="">Exactly</option>
-                <option value="monday" {@eq key="send_day" value="monday"}selected="true"{/eq}>On the Monday</option>
-                <option value="tuesday" {@eq key="send_day" value="tuesday"}selected="true"{/eq}>On the Tuesday</option>
-                <option value="wednesday" {@eq key="send_day" value="wednesday"}selected="true"{/eq}>On the Wednesday</option>
-                <option value="thursday" {@eq key="send_day" value="thursday"}selected="true"{/eq}>On the Thursday</option>
-                <option value="friday" {@eq key="send_day" value="friday"}selected="true"{/eq}>On the Friday</option>
-                <option value="saturday" {@eq key="send_day" value="saturday"}selected="true"{/eq}>On the Saturday</option>
-                <option value="sunday" {@eq key="send_day" value="sunday"}selected="true"{/eq}>On the Sunday</option>
-              </select>
-              {/message}
-              {#offset}
-              <input name="offset_value" type="number" class="input-mini" value="{value}" min="0"/>
-              <select name="offset_unit">
-                <option value="days" {@eq key="unit" value="days"}selected="true"{/eq}>days</option>
-                <option value="weeks" {@eq key="unit" value="weeks"}selected="true"{/eq}>weeks</option>
-                <option value="months" {@eq key="unit" value="months"}selected="true"{/eq}>months</option>
-                <option value="years" {@eq key="unit" value="years"}selected="true"{/eq}>years</option>
-              </select>
-              {/offset}
-              after the date property, send the following message to the
-              {#message}
-              <select name="recipient">
-                <option value="reporting_unit" {@eq key="recipient" value="reporting_unit"}selected="true"{/eq}>registrant</option>
-                <option value="parent" {@eq key="recipient" value="parent"}selected="true"{/eq}>registrant's supervisor</option>
-              </select>.
-              {/message}
-            </p>
-            <p class="inline-form">
-              This message is part of group
-              <input name="group" type="number" class="input-mini" value="{message.group}" min="0"/>
-              and should be sent at
-              <span id="send_time">{#sendTime}{>"partials/time.html"/}{/sendTime}</span>
-            </p>
-            <textarea name="message" class="input-xxlarge translated" data-message="{content}" data-messages="{contents}">{content}</textarea>
-            <p>
-              <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
-            </p>
-          </div>
-        {/messages}
-        <p>
-          <a href="#" class="add btn"><i class="icon-plus"></i> Add message</a>
-        </p>
-      </div>
+    <h4>Messages</h4>
+    <div class="repeat-container">
+      {#messages}
+        <div class="repeat-{@if cond="{template}"}template{:else}element{/if}">
+          <p class="inline-form">
+            {#message}
+            <select name="send_day">
+              <option value="">Exactly</option>
+              <option value="monday" {@eq key="send_day" value="monday"}selected="true"{/eq}>On the Monday</option>
+              <option value="tuesday" {@eq key="send_day" value="tuesday"}selected="true"{/eq}>On the Tuesday</option>
+              <option value="wednesday" {@eq key="send_day" value="wednesday"}selected="true"{/eq}>On the Wednesday</option>
+              <option value="thursday" {@eq key="send_day" value="thursday"}selected="true"{/eq}>On the Thursday</option>
+              <option value="friday" {@eq key="send_day" value="friday"}selected="true"{/eq}>On the Friday</option>
+              <option value="saturday" {@eq key="send_day" value="saturday"}selected="true"{/eq}>On the Saturday</option>
+              <option value="sunday" {@eq key="send_day" value="sunday"}selected="true"{/eq}>On the Sunday</option>
+            </select>
+            {/message}
+            {#offset}
+            <input name="offset_value" type="number" class="input-mini" value="{value}" min="0"/>
+            <select name="offset_unit">
+              <option value="days" {@eq key="unit" value="days"}selected="true"{/eq}>days</option>
+              <option value="weeks" {@eq key="unit" value="weeks"}selected="true"{/eq}>weeks</option>
+              <option value="months" {@eq key="unit" value="months"}selected="true"{/eq}>months</option>
+              <option value="years" {@eq key="unit" value="years"}selected="true"{/eq}>years</option>
+            </select>
+            {/offset}
+            after the date property, send the following message to the
+            {#message}
+            <select name="recipient">
+              <option value="reporting_unit" {@eq key="recipient" value="reporting_unit"}selected="true"{/eq}>registrant</option>
+              <option value="parent" {@eq key="recipient" value="parent"}selected="true"{/eq}>registrant's supervisor</option>
+            </select>.
+            {/message}
+          </p>
+          <p class="inline-form">
+            This message is part of group
+            <input name="group" type="number" class="input-mini" value="{message.group}" min="0"/>
+            and should be sent at
+            <span id="send_time">{#sendTime}{>"partials/time.html"/}{/sendTime}</span>
+          </p>
+          <textarea name="message" class="input-xxlarge translated" data-message="{content}" data-messages="{contents}">{content}</textarea>
+          <p>
+            <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
+          </p>
+        </div>
+      {/messages}
       <p>
-        <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
+        <a href="#" class="add btn"><i class="icon-plus"></i> Add message</a>
       </p>
-    {/schedules}
+    </div>
+    <p>
+      <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
+    </p>
+  {/schedule}
   </fieldset>
 
   <div class="footer">
