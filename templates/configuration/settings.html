@@ -25,7 +25,7 @@
 
     <label for="accept-messages">Accept messages</label>
     <input id="accept-messages" type="checkbox" {@eq key="forms_only_mode" value="false"}checked="true"{/eq}>
-    <span class="help-block">if unchecked only forms will be accepted and an error will be sent to sender</span>
+    <span class="help-block">if unchecked an error message will be sent to anyone who submits anything other than a report</span>
 
     <label for="date-display-format">Date display format</label>
     <input id="date-display-format" type="text" value="{reported_date_format}"/>
