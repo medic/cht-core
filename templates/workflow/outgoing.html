@@ -7,7 +7,7 @@
   {#schedule}
     <legend>Schedule</legend>
 
-    <label>Date Property</label>
+    <label>Start messages based on</label>
     <select name="start_from">
       <option value="reported_date" {@eq key="start_from" value="reported_date"}selected="true"{/eq}>registration</option>
       <option value="lmp_date" {@eq key="start_from" value="lmp_date"}selected="true"{/eq}>LMP</option>
@@ -39,7 +39,12 @@
               <option value="years" {@eq key="unit" value="years"}selected="true"{/eq}>years</option>
             </select>
             {/offset}
-            after the date property, send the following message to the
+            after the
+            <span class="date-property-name">
+              {@eq key="start_from" value="reported_date"}registration{/eq}
+              {@eq key="start_from" value="lmp_date"}LMP{/eq}
+            </span>
+            date, send the following message to the
             {#message}
             <select name="recipient">
               <option value="reporting_unit" {@eq key="recipient" value="reporting_unit"}selected="true"{/eq}>registrant</option>
