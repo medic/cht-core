@@ -334,7 +334,7 @@
                             "type": "string",
                             "title": "Registration Form",
                             "description": "Form code of a registration form. e.g. ANCR",
-                            "default": ""
+                            "default": "ANCR"
                         },
                         "events": {
                             "type": "array",
@@ -344,7 +344,7 @@
                                     "name": {
                                         "type": "string",
                                         "title": "Event Name",
-                                        "default": "",
+                                        "default": "on_create",
                                         "enum": ["on_create"],
                                         "je:hint": "enumlabels",
                                         "je:enumlabels": {
@@ -355,7 +355,7 @@
                                         "type": "string",
                                         "title": "Trigger",
                                         "description": "When form is received trigger actions like enrolling in schedule.",
-                                        "default": "",
+                                        "default": "add_patient_id",
                                         "enum": ["assign_schedule", "add_patient_id", "add_expected_date", "add_birth_date"],
                                         "je:hint": "enumlabels",
                                         "je:enumlabels": {
@@ -378,7 +378,8 @@
                                         "default": ""
                                     }
                                 }
-                            }
+                            },
+                            "default": []
                         },
                         "validations": {
                             "type": "object",
