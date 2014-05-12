@@ -28,7 +28,16 @@
     <span class="help-block">if unchecked an error message will be sent to anyone who submits anything other than a report</span>
 
     <label for="date-display-format">Date display format</label>
-    <input id="date-display-format" type="text" value="{reported_date_format}"/>
+    <select id="date-display-format">
+      {#date_formats}
+      <option 
+        value="{.}" 
+        {@if cond="'{reported_date_format}' === '{.}'"}selected="true"{/if}>
+          {.}
+      </option>
+      {/date_formats}
+    </select>
+    eg: <span id="date-format-example">{date_format_example}</span>
 
     <label>Phone number conversion</label>
      Replace country code <input id="phone-filters-match" type="text" value="{outgoing_phone_replace.match}" class="input-mini"/> 
