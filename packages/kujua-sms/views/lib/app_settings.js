@@ -31,6 +31,7 @@ module.exports = {
    "translations": [
        {
            "key": "Contact",
+           "default": "Contact",
            "en": "Contact",
            "fr": "Contact",
            "es": "Contacto",
@@ -39,6 +40,7 @@ module.exports = {
        },
        {
            "key": "From",
+           "default": "From",
            "en": "From",
            "fr": "De",
            "es": "De",
@@ -47,6 +49,7 @@ module.exports = {
        },
        {
            "key": "Clinics",
+           "default": "Community Health Workers",
            "en": "Community Health Workers",
            "fr": "Agents de santé",
            "es": "Agento de salud",
@@ -55,6 +58,7 @@ module.exports = {
        },
        {
            "key": "Village Name",
+           "default": "Town",
            "en": "Town",
            "fr": "Ville",
            "es": "Ciudia",
@@ -63,6 +67,7 @@ module.exports = {
        },
        {
            "key": "Clinic Contact Name",
+           "default": "Name",
            "en": "Name",
            "fr": "Nom",
            "es": "Nombre",
@@ -71,6 +76,7 @@ module.exports = {
        },
        {
            "key": "Clinic Contact Phone",
+           "default": "Phone number",
            "en": "Phone number",
            "fr": "Téléphone",
            "es": "Teléfono",
@@ -79,6 +85,7 @@ module.exports = {
        },
        {
            "key": "RC Code",
+           "default": "Code",
            "en": "Code",
            "fr": "Code",
            "es": "Código",
@@ -87,6 +94,7 @@ module.exports = {
        },
        {
            "key": "Health Centers",
+           "default": "Health Centers",
            "en": "Health Centers",
            "fr": "Centres de santé",
            "es": "Centros de Salud",
@@ -95,6 +103,7 @@ module.exports = {
        },
        {
            "key": "Health Center",
+           "default": "Health Center",
            "en": "Health Center",
            "fr": "Centre de santé",
            "es": "Centro de Salud",
@@ -103,6 +112,7 @@ module.exports = {
        },
        {
            "key": "Health Center Name",
+           "default": "Health Center Name",
            "en": "Health Center Name",
            "fr": "Nom du centre de santé",
            "es": "Nombre del centro de salud",
@@ -111,6 +121,7 @@ module.exports = {
        },
        {
            "key": "Health Center Contact Name",
+           "default": "Contact Name",
            "en": "Contact Name",
            "fr": "Nom du contact",
            "es": "Nombre del contacto",
@@ -119,6 +130,7 @@ module.exports = {
        },
        {
            "key": "Health Center Contact Phone",
+           "default": "Phone number",
            "en": "Phone number",
            "fr": "Téléphone",
            "es": "Teléfono",
@@ -127,6 +139,7 @@ module.exports = {
        },
        {
            "key": "District",
+           "default": "District",
            "en": "District",
            "fr": "District",
            "es": "Distrito",
@@ -135,6 +148,7 @@ module.exports = {
        },
        {
            "key": "District Name",
+           "default": "District Name",
            "en": "District Name",
            "fr": "Nom du district",
            "es": "Nombre del distrito",
@@ -143,6 +157,7 @@ module.exports = {
        },
        {
            "key": "District Contact Name",
+           "default": "Contact Name",
            "en": "Contact Name",
            "fr": "Nom du contact",
            "es": "Nombre del contacto",
@@ -151,6 +166,7 @@ module.exports = {
        },
        {
            "key": "District Contact Phone",
+           "default": "Phone number",
            "en": "Phone number",
            "fr": "Téléphone",
            "es": "Teléfono",
@@ -159,6 +175,7 @@ module.exports = {
        },
        {
            "key": "Phone",
+           "default": "Phone",
            "en": "Phone",
            "fr": "Téléphone",
            "es": "Teléfono",
@@ -167,6 +184,7 @@ module.exports = {
        },
        {
            "key": "sys.recipient_not_found",
+           "default": "Could not find message recipient.",
            "en": "Could not find message recipient.",
            "fr": "Le recipient du message n'a pas été trouvé.",
            "es": "No se encontro destinatario para el mensaje.",
@@ -175,6 +193,7 @@ module.exports = {
        },
        {
            "key": "sys.missing_fields",
+           "default": "Missing or invalid fields: {{fields}}.",
            "en": "Missing or invalid fields: {{fields}}.",
            "fr": "Champs invalides ou manquants: {{fields}}.",
            "es": "Campo invalido o faltante: {{fields}}.",
@@ -183,6 +202,7 @@ module.exports = {
        },
        {
            "key": "missing_fields",
+           "default": "Missing or invalid fields: {{fields}}.",
            "en": "Missing or invalid fields: {{fields}}.",
            "fr": "Champs invalides ou manquants: {{fields}}.",
            "es": "Campo invalido o faltante: {{fields}}.",
@@ -191,6 +211,7 @@ module.exports = {
        },
        {
            "key": "extra_fields",
+           "default": "Extra fields.",
            "en": "Extra fields.",
            "fr": "Champs additionels.",
            "es": "Campos extra.",
@@ -199,6 +220,7 @@ module.exports = {
        },
        {
            "key": "sys.form_not_found",
+           "default": "Form '{{form}}' not found.",
            "en": "Form '{{form}}' not found.",
            "fr": "Formulaire '{{form}}' non trouvé",
            "es": "Forma no encontrada.",
@@ -207,6 +229,7 @@ module.exports = {
        },
        {
            "key": "form_not_found",
+           "default": "The form sent '{{form}}' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
            "en": "The form sent '{{form}}' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
            "fr": "Le formulaire envoyé '{{form}}' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
            "es": "No se reconocio el reporte enviado '{{form}}'. Por favor intente de nuevo. Si el problema persiste, informe al director.",
@@ -215,6 +238,7 @@ module.exports = {
        },
        {
            "key": "form_invalid",
+           "default": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
            "en": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
            "fr": "Le formulaire envoyé '{{form}}' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
            "es": "No se completo el reporte '{{form}}'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
@@ -223,6 +247,7 @@ module.exports = {
        },
        {
            "key": "form_invalid_custom",
+           "default": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
            "en": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
            "fr": "Le formulaire envoyé '{{form}}' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
            "es": "No se completo el reporte '{{form}}'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
@@ -231,6 +256,7 @@ module.exports = {
        },
        {
            "key": "sys.facility_not_found",
+           "default": "Facility not found.",
            "en": "Facility not found.",
            "fr": "Établissement non trouvé.",
            "es": "No se encontro a la unidad de salud.",
@@ -239,6 +265,7 @@ module.exports = {
        },
        {
            "key": "sys.empty",
+           "default": "Message appears empty.",
            "en": "Message appears empty.",
            "fr": "Le message recu est vide.",
            "es": "El mensaje esta en blanco.",
@@ -247,6 +274,7 @@ module.exports = {
        },
        {
            "key": "empty",
+           "default": "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor.",
            "en": "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor.",
            "fr": "Nous avons des troubles avec votre message, SVP renvoyer. Si vous continuez à avoir des problèmes contactez votre superviseur.",
            "es": "El mensaje esta en blanco, por favor reenvielo. Si encuentra un problema, informe al director.",
@@ -255,6 +283,7 @@ module.exports = {
        },
        {
            "key": "form_received",
+           "default": "Your form submission was received, thank you.",
            "en": "Your form submission was received, thank you.",
            "fr": "Merci, votre formulaire a été bien reçu.",
            "es": "Recibimos su reporte, muchas gracias.",
@@ -263,6 +292,7 @@ module.exports = {
        },
        {
            "key": "sms_received",
+           "default": "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again.",
            "en": "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again.",
            "fr": "Merci, votre message a été bien reçu.",
            "es": "Recibimos tu mensaje, lo procesaremos pronto. Si querias mandar un reporte, intentalo nuevamente en el formato adecuado.",
@@ -271,6 +301,7 @@ module.exports = {
        },
        {
            "key": "reporting_unit_not_found",
+           "default": "Reporting Unit ID is incorrect. Please correct and submit a complete report again.",
            "en": "Reporting Unit ID is incorrect. Please correct and submit a complete report again.",
            "fr": "Établissement non trouvé, svp corriger et renvoyer",
            "es": "No encontramos a su centro de salud. Por favor corrijalo y reenvie el reporte.",
@@ -279,6 +310,7 @@ module.exports = {
        },
        {
            "key": "reported_date",
+           "default": "Reported Date",
            "en": "Reported Date",
            "fr": "Date envoyé",
            "es": "Fecha de envío",
@@ -287,6 +319,7 @@ module.exports = {
        },
        {
            "key": "related_entities.clinic.name",
+           "default": "Clinic Name",
            "en": "Clinic Name",
            "fr": "Villages",
            "es": "",
@@ -295,6 +328,7 @@ module.exports = {
        },
        {
            "key": "related_entities.clinic.contact.name",
+           "default": "Clinic Contact Name",
            "en": "Clinic Contact Name",
            "fr": "Personne-ressource Clinique",
            "es": "",
@@ -303,6 +337,7 @@ module.exports = {
        },
        {
            "key": "related_entities.clinic.parent.name",
+           "default": "Health Center Name",
            "en": "Health Center Name",
            "fr": "Nom du centre de santé",
            "es": "",
@@ -311,6 +346,7 @@ module.exports = {
        },
        {
            "key": "related_entities.clinic.parent.contact.name",
+           "default": "Health Center Contact Name",
            "en": "Health Center Contact Name",
            "fr": "Nom de la santé Contact Center",
            "es": "",
@@ -319,6 +355,7 @@ module.exports = {
        },
        {
            "key": "related_entities.clinic.parent.parent.name",
+           "default": "District Hospital Name",
            "en": "District Hospital Name",
            "fr": "Nom de l'hôpital de district",
            "es": "",
@@ -327,6 +364,7 @@ module.exports = {
        },
        {
            "key": "related_entities.health_center.name",
+           "default": "Health Center Name",
            "en": "Health Center Name",
            "fr": "Nom du centre de santé",
            "es": "",
@@ -335,6 +373,7 @@ module.exports = {
        },
        {
            "key": "related_entities.health_center.contact.name",
+           "default": "Health Center Contact Name",
            "en": "Health Center Contact Name",
            "fr": "Nom de la santé Contact Center",
            "es": "",
@@ -343,6 +382,7 @@ module.exports = {
        },
        {
            "key": "related_entities.health_center.parent.name",
+           "default": "District Hospital Name",
            "en": "District Hospital Name",
            "fr": "Nom de l'hôpital de district",
            "es": "",
@@ -351,6 +391,7 @@ module.exports = {
        },
        {
            "key": "from",
+           "default": "Reported From",
            "en": "Reported From",
            "fr": "Envoyé par",
            "es": "De",
@@ -359,6 +400,7 @@ module.exports = {
        },
        {
            "key": "sent_timestamp",
+           "default": "Sent Timestamp",
            "en": "Sent Timestamp",
            "fr": "Date",
            "es": "Fecha",
@@ -367,6 +409,7 @@ module.exports = {
        },
        {
            "key": "_id",
+           "default": "Record UUID",
            "en": "Record UUID",
            "fr": "Record UUID",
            "es": "Record UUID",
@@ -375,6 +418,7 @@ module.exports = {
        },
        {
            "key": "patient_id",
+           "default": "Patient ID",
            "en": "Patient ID",
            "fr": "Patient ID",
            "es": "Patient ID",
@@ -383,6 +427,7 @@ module.exports = {
        },
        {
            "key": "daysoverdue",
+           "default": "Days since patient visit",
            "en": "Days since patient visit",
            "fr": "Jours depuis visite du patient",
            "es": "",
@@ -391,6 +436,7 @@ module.exports = {
        },
        {
            "key": "Patient ID",
+           "default": "Patient ID",
            "en": "Patient ID",
            "fr": "Patient ID",
            "es": "Patient ID",
@@ -399,6 +445,7 @@ module.exports = {
        },
        {
            "key": "responses",
+           "default": "Responses",
            "en": "Responses",
            "fr": "Responses",
            "es": "Responses",
@@ -407,6 +454,7 @@ module.exports = {
        },
        {
            "key": "sms_message.message",
+           "default": "Incoming Message",
            "en": "Incoming Message",
            "fr": "Incoming Message",
            "es": "Incoming Message",
@@ -415,6 +463,7 @@ module.exports = {
        },
        {
            "key": "tasks",
+           "default": "Outgoing Messages",
            "en": "Outgoing Messages",
            "fr": "Outgoing Messages",
            "es": "Outgoing Messages",
@@ -423,6 +472,7 @@ module.exports = {
        },
        {
            "key": "scheduled_tasks",
+           "default": "Scheduled Tasks",
            "en": "Scheduled Tasks",
            "fr": "Scheduled Tasks",
            "es": "Scheduled Tasks",
@@ -431,6 +481,7 @@ module.exports = {
        },
        {
            "key": "Search",
+           "default": "Search",
            "en": "Search",
            "fr": "Search",
            "es": "Search",

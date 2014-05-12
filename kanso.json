@@ -882,9 +882,15 @@
                             "title": "Key",
                             "default": ""
                         },
+                        "default": {
+                            "type": "string",
+                            "title": "Default",
+                            "default": "",
+                            "je:hint": "textarea"
+                        },
                         "en": {
                             "type": "string",
-                            "title": "English (Default)",
+                            "title": "English",
                             "default": "",
                             "je:hint": "textarea"
                         },
@@ -911,12 +917,19 @@
                             "title": "Swahili",
                             "default": "",
                             "je:hint": "textarea"
+                        },
+                        "lu": {
+                            "type": "string",
+                            "title": "Dholuo",
+                            "default": "",
+                            "je:hint": "textarea"
                         }
                     }
                 },
                 "default": [
                     {
                         "key": "Contact",
+                        "default": "Contact",
                         "en": "Contact",
                         "fr": "Contact",
                         "es": "Contacto",
@@ -925,6 +938,7 @@
                     },
                     {
                         "key": "From",
+                        "default": "From",
                         "en": "From",
                         "fr": "De",
                         "es": "De",
@@ -933,6 +947,7 @@
                     },
                     {
                         "key": "Clinic",
+                        "default": "Community Health Worker",
                         "en": "Community Health Worker",
                         "fr": "Agent de santé",
                         "es": "Agento de salud",
@@ -941,6 +956,7 @@
                     },
                     {
                         "key": "Clinics",
+                        "default": "Community Health Workers",
                         "en": "Community Health Workers",
                         "fr": "Agents de santé",
                         "es": "Agento de salud",
@@ -949,6 +965,7 @@
                     },
                     {
                         "key": "Village Name",
+                        "default": "Town",
                         "en": "Town",
                         "fr": "Ville",
                         "es": "Ciudia",
@@ -957,6 +974,7 @@
                     },
                     {
                         "key": "Clinic Contact Name",
+                        "default": "Name",
                         "en": "Name",
                         "fr": "Nom",
                         "es": "Nombre",
@@ -965,6 +983,7 @@
                     },
                     {
                         "key": "Clinic Contact Phone",
+                        "default": "Phone number",
                         "en": "Phone number",
                         "fr": "Téléphone",
                         "es": "Teléfono",
@@ -973,6 +992,7 @@
                     },
                     {
                         "key": "RC Code",
+                        "default": "Code",
                         "en": "Code",
                         "fr": "Code",
                         "es": "Código",
@@ -981,6 +1001,7 @@
                     },
                     {
                         "key": "Health Centers",
+                        "default": "Health Centers",
                         "en": "Health Centers",
                         "fr": "Centres de santé",
                         "es": "Centros de Salud",
@@ -989,6 +1010,7 @@
                     },
                     {
                         "key": "Health Center",
+                        "default": "Health Center",
                         "en": "Health Center",
                         "fr": "Centre de santé",
                         "es": "Centro de Salud",
@@ -997,6 +1019,7 @@
                     },
                     {
                         "key": "Health Center Name",
+                        "default": "Health Center Name",
                         "en": "Health Center Name",
                         "fr": "Nom du centre de santé",
                         "es": "Nombre del centro de salud",
@@ -1005,6 +1028,7 @@
                     },
                     {
                         "key": "Health Center Contact Name",
+                        "default": "Contact Name",
                         "en": "Contact Name",
                         "fr": "Nom du contact",
                         "es": "Nombre del contacto",
@@ -1013,6 +1037,7 @@
                     },
                     {
                         "key": "Health Center Contact Phone",
+                        "default": "Phone number",
                         "en": "Phone number",
                         "fr": "Téléphone",
                         "es": "Teléfono",
@@ -1021,6 +1046,7 @@
                     },
                     {
                         "key": "District Hospital",
+                        "default": "District",
                         "en": "District",
                         "fr": "District",
                         "es": "Distrito",
@@ -1029,6 +1055,7 @@
                     },
                     {
                         "key": "District",
+                        "default": "District",
                         "en": "District",
                         "fr": "District",
                         "es": "Distrito",
@@ -1037,6 +1064,7 @@
                     },
                     {
                         "key": "District Name",
+                        "default": "District Name",
                         "en": "District Name",
                         "fr": "Nom du district",
                         "es": "Nombre del distrito",
@@ -1045,6 +1073,7 @@
                     },
                     {
                         "key": "District Contact Name",
+                        "default": "Contact Name",
                         "en": "Contact Name",
                         "fr": "Nom du contact",
                         "es": "Nombre del contacto",
@@ -1053,6 +1082,7 @@
                     },
                     {
                         "key": "District Contact Phone",
+                        "default": "Phone number",
                         "en": "Phone number",
                         "fr": "Téléphone",
                         "es": "Teléfono",
@@ -1061,6 +1091,7 @@
                     },
                     {
                         "key": "Phone",
+                        "default": "Phone",
                         "en": "Phone",
                         "fr": "Téléphone",
                         "es": "Teléfono",
@@ -1069,6 +1100,7 @@
                     },
                     {
                         "key": "Export",
+                        "default": "Export",
                         "en": "Export",
                         "fr": "Exporter",
                         "es": "Exportar",
@@ -1077,6 +1109,7 @@
                     },
                     {
                         "key": "Activity",
+                        "default": "Activity",
                         "en": "Activity",
                         "fr": "Activité",
                         "es": "Actividad",
@@ -1085,6 +1118,7 @@
                     },
                     {
                         "key": "Facilities",
+                        "default": "Facilities",
                         "en": "Facilities",
                         "fr": "Equipements",
                         "es": "Comodidades",
@@ -1093,6 +1127,7 @@
                     },
                     {
                         "key": "Reporting Rates",
+                        "default": "Reporting Rates",
                         "en": "Reporting Rates",
                         "fr": "Déclaration des taux de",
                         "es": "Informes de Cambio",
@@ -1101,6 +1136,7 @@
                     },
                     {
                         "key": "sys.recipient_not_found",
+                        "default": "Could not find message recipient.",
                         "en": "Could not find message recipient.",
                         "fr": "Le recipient du message n'a pas été trouvé.",
                         "es": "No se encontro destinatario para el mensaje.",
@@ -1109,6 +1145,7 @@
                     },
                     {
                         "key": "sys.missing_fields",
+                        "default": "Missing or invalid fields: {{fields}}.",
                         "en": "Missing or invalid fields: {{fields}}.",
                         "fr": "Champs invalides ou manquants: {{fields}}.",
                         "es": "Campo invalido o faltante: {{fields}}.",
@@ -1117,6 +1154,7 @@
                     },
                     {
                         "key": "missing_fields",
+                        "default": "Missing or invalid fields: {{fields}}.",
                         "en": "Missing or invalid fields: {{fields}}.",
                         "fr": "Champs invalides ou manquants: {{fields}}.",
                         "es": "Campo invalido o faltante: {{fields}}.",
@@ -1125,6 +1163,7 @@
                     },
                     {
                         "key": "extra_fields",
+                        "default": "Extra fields.",
                         "en": "Extra fields.",
                         "fr": "Champs additionels.",
                         "es": "Campos extra.",
@@ -1133,6 +1172,7 @@
                     },
                     {
                         "key": "sys.form_not_found",
+                        "default": "Form '{{form}}' not found.",
                         "en": "Form '{{form}}' not found.",
                         "fr": "Formulaire '{{form}}' non trouvé",
                         "es": "Forma no encontrada.",
@@ -1141,6 +1181,7 @@
                     },
                     {
                         "key": "form_not_found",
+                        "default": "The form sent '{{form}}' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
                         "en": "The form sent '{{form}}' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
                         "fr": "Le formulaire envoyé '{{form}}' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
                         "es": "No se reconocio el reporte enviado '{{form}}'. Por favor intente de nuevo. Si el problema persiste, informe al director.",
@@ -1149,6 +1190,7 @@
                     },
                     {
                         "key": "form_invalid",
+                        "default": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
                         "en": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
                         "fr": "Le formulaire envoyé '{{form}}' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
                         "es": "No se completo el reporte '{{form}}'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
@@ -1157,6 +1199,7 @@
                     },
                     {
                         "key": "form_invalid_custom",
+                        "default": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
                         "en": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
                         "fr": "Le formulaire envoyé '{{form}}' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
                         "es": "No se completo el reporte '{{form}}'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
@@ -1165,6 +1208,7 @@
                     },
                     {
                         "key": "sys.facility_not_found",
+                        "default": "Facility not found.",
                         "en": "Facility not found.",
                         "fr": "Établissement non trouvé.",
                         "es": "No se encontro a la unidad de salud.",
@@ -1173,6 +1217,7 @@
                     },
                     {
                         "key": "sys.empty",
+                        "default": "Message appears empty.",
                         "en": "Message appears empty.",
                         "fr": "Le message recu est vide.",
                         "es": "El mensaje esta en blanco.",
@@ -1181,6 +1226,7 @@
                     },
                     {
                         "key": "empty",
+                        "default": "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor.",
                         "en": "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor.",
                         "fr": "Nous avons des troubles avec votre message, SVP renvoyer. Si vous continuez à avoir des problèmes contactez votre superviseur.",
                         "es": "El mensaje esta en blanco, por favor reenvielo. Si encuentra un problema, informe al director.",
@@ -1189,6 +1235,7 @@
                     },
                     {
                         "key": "form_received",
+                        "default": "Your form submission was received, thank you.",
                         "en": "Your form submission was received, thank you.",
                         "fr": "Merci, votre formulaire a été bien reçu.",
                         "es": "Recibimos su reporte, muchas gracias.",
@@ -1197,6 +1244,7 @@
                     },
                     {
                         "key": "sms_received",
+                        "default": "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again.",
                         "en": "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again.",
                         "fr": "Merci, votre message a été bien reçu.",
                         "es": "Recibimos tu mensaje, lo procesaremos pronto. Si querias mandar un reporte, intentalo nuevamente en el formato adecuado.",
@@ -1205,6 +1253,7 @@
                     },
                     {
                         "key": "reporting_unit_not_found",
+                        "default": "Reporting Unit ID is incorrect. Please correct and submit a complete report again.",
                         "en": "Reporting Unit ID is incorrect. Please correct and submit a complete report again.",
                         "fr": "Établissement non trouvé, svp corriger et renvoyer",
                         "es": "No encontramos a su centro de salud. Por favor corrijalo y reenvie el reporte.",
@@ -1213,6 +1262,7 @@
                     },
                     {
                         "key": "_id",
+                        "default": "Record UUID",
                         "en": "Record UUID",
                         "fr": "Record UUID",
                         "es": "Record UUID",
@@ -1221,6 +1271,7 @@
                     },
                     {
                         "key": "patient_id",
+                        "default": "Patient ID",
                         "en": "Patient ID",
                         "fr": "Patient ID",
                         "es": "Patient ID",
@@ -1229,6 +1280,7 @@
                     },
                     {
                         "key": "reported_date",
+                        "default": "Reported Date",
                         "en": "Reported Date",
                         "fr": "Date envoyé",
                         "es": "Fecha de envío",
@@ -1237,6 +1289,7 @@
                     },
                     {
                         "key": "related_entities.clinic.name",
+                        "default": "Clinic Name",
                         "en": "Clinic Name",
                         "fr": "Villages",
                         "es": "",
@@ -1245,6 +1298,7 @@
                     },
                     {
                         "key": "related_entities.clinic.contact.name",
+                        "default": "Clinic Contact Name",
                         "en": "Clinic Contact Name",
                         "fr": "Personne-ressource Clinique",
                         "es": "",
@@ -1253,6 +1307,7 @@
                     },
                     {
                         "key": "related_entities.clinic.parent.name",
+                        "default": "Health Center Name",
                         "en": "Health Center Name",
                         "fr": "Nom du centre de santé",
                         "es": "",
@@ -1261,6 +1316,7 @@
                     },
                     {
                         "key": "related_entities.clinic.parent.contact.name",
+                        "default": "Health Center Contact Name",
                         "en": "Health Center Contact Name",
                         "fr": "Nom de la santé Contact Center",
                         "es": "",
@@ -1269,6 +1325,7 @@
                     },
                     {
                         "key": "related_entities.clinic.parent.parent.name",
+                        "default": "District Hospital Name",
                         "en": "District Hospital Name",
                         "fr": "Nom de l'hôpital de district",
                         "es": "",
@@ -1277,6 +1334,7 @@
                     },
                     {
                         "key": "related_entities.health_center.name",
+                        "default": "Health Center Name",
                         "en": "Health Center Name",
                         "fr": "Nom du centre de santé",
                         "es": "",
@@ -1285,6 +1343,7 @@
                     },
                     {
                         "key": "related_entities.health_center.contact.name",
+                        "default": "Health Center Contact Name",
                         "en": "Health Center Contact Name",
                         "fr": "Nom de la santé Contact Center",
                         "es": "",
@@ -1293,6 +1352,7 @@
                     },
                     {
                         "key": "related_entities.health_center.parent.name",
+                        "default": "District Hospital Name",
                         "en": "District Hospital Name",
                         "fr": "Nom de l'hôpital de district",
                         "es": "",
@@ -1301,6 +1361,7 @@
                     },
                     {
                         "key": "tasks.0.state",
+                        "default": "State",
                         "en": "State",
                         "fr": "State",
                         "es": "State",
@@ -1309,6 +1370,7 @@
                     },
                     {
                         "key": "tasks.0.timestamp",
+                        "default": "Timestamp",
                         "en": "Timestamp",
                         "fr": "Timestamp",
                         "es": "Timestamp",
@@ -1317,6 +1379,7 @@
                     },
                     {
                         "key": "tasks.0.messages.0.to",
+                        "default": "To",
                         "en": "To",
                         "fr": "pour",
                         "es": "",
@@ -1325,6 +1388,7 @@
                     },
                     {
                         "key": "tasks.0.messages.0.message",
+                        "default": "Message",
                         "en": "Message",
                         "fr": "Message",
                         "es": "",
@@ -1333,6 +1397,7 @@
                     },
                     {
                         "key": "from",
+                        "default": "From",
                         "en": "From",
                         "fr": "Envoyé par",
                         "es": "De",
@@ -1341,6 +1406,7 @@
                     },
                     {
                         "key": "sent_timestamp",
+                        "default": "Sent Timestamp",
                         "en": "Sent Timestamp",
                         "fr": "Date",
                         "es": "Fecha",
@@ -1349,6 +1415,7 @@
                     },
                     {
                         "key": "daysoverdue",
+                        "default": "Days since patient visit",
                         "en": "Days since patient visit",
                         "fr": "Jours depuis visite du patient",
                         "es": "",
@@ -1357,6 +1424,7 @@
                     },
                     {
                         "key": "Patient ID",
+                        "default": "Patient ID",
                         "en": "Patient ID",
                         "fr": "Patient ID",
                         "es": "Patient ID",
@@ -1365,6 +1433,7 @@
                     },
                     {
                         "key": "responses",
+                        "default": "Responses",
                         "en": "Responses",
                         "fr": "Responses",
                         "es": "Responses",
@@ -1373,6 +1442,7 @@
                     },
                     {
                         "key": "sms_message.message",
+                        "default": "Incoming Message",
                         "en": "Incoming Message",
                         "fr": "Incoming Message",
                         "es": "Incoming Message",
@@ -1381,6 +1451,7 @@
                     },
                     {
                         "key": "tasks",
+                        "default": "Outgoing Messages",
                         "en": "Outgoing Messages",
                         "fr": "Outgoing Messages",
                         "es": "Outgoing Messages",
@@ -1389,6 +1460,7 @@
                     },
                     {
                         "key": "scheduled_tasks",
+                        "default": "Scheduled Tasks",
                         "en": "Scheduled Tasks",
                         "fr": "Scheduled Tasks",
                         "es": "Scheduled Tasks",
@@ -1397,6 +1469,7 @@
                     },
                     {
                         "key": "Search",
+                        "default": "Search",
                         "en": "Search",
                         "fr": "Search",
                         "es": "Search",

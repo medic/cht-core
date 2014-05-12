@@ -110,24 +110,25 @@ exports.getAppInfo = function(req) {
      */
     function getMessage(value, locale) {
 
-        var key;
-
-        locale = locale || 'en';
-
-        if (_.isObject(value)) {
-            // try to resolve locale
-            if (value[locale]) {
-                // we found specified locale
-                return value[locale];
-            } else {
-                // otherwise return the first value in object
-                key = _.first(_.keys(value));
-
-                return value[key] || null; // return null if falsey or empty object
-            }
-        } else {
+        if (!_.isObject(value)) {
             return value;
         }
+
+        var locale = locale || 'default';
+        
+        // Check for translation in order
+        //   1) the provided locale
+        //   2) the `default` locale
+        //   3) the `en` locale
+        var key = _.find(
+            [locale, 'default', 'en'], 
+            function(_key) {
+                return !!value[_key];
+            }
+        ) || _.first(_.keys(value)); // fallback to just return the first locale
+
+        // return null if falsey or empty object
+        return value[key] || null;
     }
 
     /*
@@ -144,11 +145,11 @@ exports.getAppInfo = function(req) {
 
         var value,
             ctx = ctx || {},
-            locale = locale || app_settings.locale || 'en';
+            locale = locale || app_settings.locale;
 
         if (_.isObject(locale)) {
             ctx = locale;
-            locale = app_settings.locale || 'en';
+            locale = app_settings.locale;
         }
 
         if (_.isObject(key)) {
