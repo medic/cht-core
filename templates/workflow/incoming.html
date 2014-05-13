@@ -5,44 +5,40 @@
   <fieldset id="workflow-registrations">
 
     <legend>Registrations</legend>
-    {#workflow.registration}
-      <p>
-        Register for this message workflow by sending an SMS with the following format: 
-        <span class="pre">{code} &lt;patientname&gt;</span>
-      </p>
+    {#registrations}
+      <div class="registration" data-form="{form}">
+        <p>
+          Register for this message workflow by sending an SMS with the following format: 
+          <span class="pre">{form} &lt;patientname&gt;</span>
+        </p>
 
-      <p>
-        For example, to register "Maria Soleil" you would send:
-        <span class="pre">{code} Maria Soleil</span>
-      </p>
-    {/workflow.registration}
-    {#registration}
-      {>"workflow/validations.html"/}
+        <p>
+          For example, to register "Maria Soleil" you would send:
+          <span class="pre">{form} Maria Soleil</span>
+        </p>
+        {>"workflow/validations.html"/}
 
-      <div class="toggle responses">
-        <h4 class="toggle-head">
-          Responses
-          <i class="icon-chevron-down"></i>
-          <i class="icon-chevron-up"></i>
-        </h4>
-        <div class="toggle-body">
-          <p>If all the validations pass, this message will be sent to the sender:</p>
-          <textarea name="content" class="input-xxlarge translated" data-message="{message}" data-messages="{messages}">{message}</textarea>
+        <div class="toggle responses">
+          <h4 class="toggle-head">
+            Responses
+            <i class="icon-chevron-down"></i>
+            <i class="icon-chevron-up"></i>
+          </h4>
+          <div class="toggle-body">
+            <p>If all the validations pass, this message will be sent to the sender:</p>
+            <textarea name="content" class="input-xxlarge translated" data-message="{message}" data-messages="{messages}">{message}</textarea>
+          </div>
         </div>
       </div>
-    {/registration}
+    {/registrations}
   </fieldset>
 
   <div class="reports">
   {#reports}
-    <fieldset class="report" data-formcode="{report.code}">
-      {#report}
-        <legend>{name}</legend>
-        <p>Recorded by sending an SMS in the format <span class="pre">{format}</span>.</p>
-      {/report}
-      {#form}
-        {>"workflow/form.html"/}
-      {/form}
+    <fieldset class="report" data-form="{form}">
+      <legend>{name}</legend>
+      <p>Recorded by sending an SMS in the format <span class="pre">{format}</span>.</p>
+      {>"workflow/form.html"/}
     </fieldset>
   {/reports}
   </div>

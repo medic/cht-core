@@ -9,8 +9,8 @@
 
     <label>Start messages based on</label>
     <select name="start_from">
-      <option value="reported_date" {@eq key="start_from" value="reported_date"}selected="true"{/eq}>registration</option>
-      <option value="lmp_date" {@eq key="start_from" value="lmp_date"}selected="true"{/eq}>LMP</option>
+      <option value="reported_date" {@eq key="start_from" value="reported_date"}selected="true"{/eq}>registration date</option>
+      <option value="lmp_date" {@eq key="start_from" value="lmp_date"}selected="true"{/eq}>LMP date</option>
     </select>
 
     <h4>Messages</h4>
@@ -43,10 +43,10 @@
             {/offset}
             after the
             <span class="date-property-name">
-              {@eq key="start_from" value="reported_date"}registration{/eq}
-              {@eq key="start_from" value="lmp_date"}LMP{/eq}
+              {@eq key="start_from" value="reported_date"}registration date{/eq}
+              {@eq key="start_from" value="lmp_date"}LMP date{/eq}
             </span>
-            date, send the following message to the
+            send the following message to the
             {#message}
             <select name="recipient">
               <option value="reporting_unit" {@eq key="recipient" value="reporting_unit"}selected="true"{/eq}>registrant</option>

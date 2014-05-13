@@ -509,6 +509,16 @@
                             "description": "Form code of the report.",
                             "default": "ANCV"
                         },
+                        "name": {
+                            "type": "string",
+                            "title": "Display Name",
+                            "default": "Visits"
+                        },
+                        "format": {
+                            "type": "string",
+                            "title": "Expected Format",
+                            "default": "V <patientid>"
+                        },
                         "silence_type": {
                             "type": "string",
                             "title": "Silence Scheduled Message Type",
@@ -661,6 +671,19 @@
                             "title": "Name",
                             "description": "A unique name to define this schedule. e.g. ANC Reminders",
                             "default": ""
+                        },
+                        "summary": {
+                            "type": "string",
+                            "title": "Summary",
+                            "description": "A brief summary of this schedule",
+                            "default": ""
+                        },
+                        "description": {
+                            "type": "string",
+                            "title": "Description",
+                            "description": "A complete description of this schedule in markdown format",
+                            "default": "",
+                            "je:hint": "textarea"
                         },
                         "start_from": {
                             "type": "string",
