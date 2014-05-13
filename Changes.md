@@ -1,5 +1,12 @@
 # Kujua Release Notes
 
+## 0.3.7
+
+### May 13, 2014
+
+- Modified KEMRI form fields to be ordered the same as KEMR form.
+
+
 ## 0.3.6
 
 ### Apr 28, 2014
