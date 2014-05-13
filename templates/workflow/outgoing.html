@@ -52,13 +52,25 @@
             </select>.
             {/message}
           </p>
-          <p class="inline-form">
-            This message is part of group
-            <input name="group" type="number" class="input-mini" value="{message.group}" min="0"/>
-            and should be sent at
-            <span id="send_time">{#sendTime}{>"partials/time.html"/}{/sendTime}</span>
-          </p>
+          
           <textarea name="message" class="input-xxlarge translated" data-message="{content}" data-messages="{contents}">{content}</textarea>
+
+          <div class="toggle">
+            <h5 class="toggle-head">
+              Advanced
+              <i class="icon-chevron-down"></i>
+              <i class="icon-chevron-up"></i>
+            </h5>
+            <div class="toggle-body">
+              <p class="inline-form">
+                This message is part of group
+                <input name="group" type="number" class="input-mini" value="{message.group}" min="0"/>
+                and should be sent at
+                <span id="send_time">{#sendTime}{>"partials/time.html"/}{/sendTime}</span>
+              </p>
+            </div>
+          </div>
+
           <p>
             <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
           </p>
