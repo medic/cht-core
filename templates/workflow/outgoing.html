@@ -16,8 +16,8 @@
     <h4>Messages</h4>
     <div class="repeat-container">
       {#messages}
-        <div class="repeat-{@if cond="{template}"}template{:else}element{/if}">
-          <p class="inline-form">
+        <div class="repeat-{@if cond="{template}"}template{:else}element{/if} message">
+          <p class="inline-form control-group message-description">
             {#message}
             <select name="send_day">
               <option value="">Exactly</option>
@@ -62,7 +62,7 @@
               <i class="icon-chevron-up"></i>
             </h5>
             <div class="toggle-body">
-              <p class="inline-form">
+              <p class="inline-form group control-group">
                 This message is part of group
                 <input name="group" type="number" class="input-mini" value="{message.group}" min="0"/>
                 and should be sent at
