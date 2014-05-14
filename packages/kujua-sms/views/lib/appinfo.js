@@ -121,10 +121,16 @@ exports.getAppInfo = function(req) {
     function getMessage(value, locale) {
 
         function _findTranslation(value, locale) {
-            var translation = _.findWhere(
-                value.translations, { locale: locale }
-            );
-            return translation && translation.content;
+            if (value.translations) {
+                var translation = _.findWhere(
+                    value.translations, { locale: locale }
+                );
+                return translation && translation.content;
+            } else {
+                // fallback to old translation definition to support
+                // backwards compatibility with existing forms
+                return value[locale];
+            }
         }
 
         if (!_.isObject(value)) {
@@ -142,9 +148,12 @@ exports.getAppInfo = function(req) {
             // 3) Look for the English value
             || _findTranslation(value, 'en')
 
-            // 4) Look for the first value
+            // 4) Look for the first translation
             || (value.translations && value.translations[0] 
-                && value.translations[0].content);
+                && value.translations[0].content)
+
+            // 5) Look for the first value
+            || value[_.first(_.keys(value))];
 
         return result;
     }
