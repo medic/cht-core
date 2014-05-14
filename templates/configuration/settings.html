@@ -4,13 +4,9 @@
 
     <legend>Basic Settings</legend>
 
-    <label for="language">Language</label>
-    <select id="language">
-    {#locales}
-      <option value="{code}" {@if cond="'{locale}' === '{code}'"}selected="true"{/if}>{name}</option>
-    {/locales}
-    </select>
-    <span class="help-block">edit translations by going to the Translations tab above</span>
+    <div id="default-language">
+      {>"configuration/default-language.html"/}
+    </div>
 
     <label for="gateway-number">Gateway number</label>
     <input id="gateway-number" type="text" value="{gateway_number}" />
@@ -47,6 +43,35 @@
       and
       <span id="schedule-evening">{#scheduleEvening}{>"partials/time.html"/}{/scheduleEvening}</span>.
     </p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Languages</legend>
+    <div id="languages" class="repeat-container">
+      {#locales}
+      <div class="repeat-element">
+        <p class="inline-form">
+          Display the language code <input type="text" class="input-mini" name="language-code" value="{code}"/>
+          as <input type="text" name="language-name" value="{name}"/>
+        </p>
+        <p>
+          <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
+        </p>
+      </div>
+      {/locales}
+      <div class="repeat-template">
+        <p class="inline-form">
+          Display the language code <input type="text" class="input-mini" name="language-code"/>
+          as <input type="text" name="language-name"/>
+        </p>
+        <p>
+          <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
+        </p>
+      </div>
+      <p>
+        <a href="#" class="add btn"><i class="icon-plus"></i> Add language</a>
+      </p>
+    </div>
   </fieldset>
 
   <div class="footer">
