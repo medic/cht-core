@@ -10,6 +10,28 @@
  */
 
 module.exports = {
+   "locales": [
+      {
+          "code": "en",
+          "name": "English"
+      },
+      {
+          "code": "es",
+          "name": "Spanish"
+      },
+      {
+          "code": "fr",
+          "name": "French"
+      },
+      {
+          "code": "ne",
+          "name": "Nepali"
+      },
+      {
+          "code": "sw",
+          "name": "Swahili"
+      }
+   ],
    "locale": "en",
    "muvuku_webapp_url": "/muvuku-webapp/_design/muvuku-webapp/_rewrite/?_embed_mode=2",
    "reported_date_format": "MMM hh:mm",

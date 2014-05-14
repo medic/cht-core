@@ -92,15 +92,6 @@
                     "title": "Locale",
                     "type": "string",
                     "description": "Default tries to use best option according to browser settings, you can override that here.",
-                    "enum": ["en", "es", "fr", "ne", "sw"],
-                    "je:hint": "enumlabels",
-                    "je:enumlabels": {
-                        "en": "English",
-                        "es": "Spanish",
-                        "fr": "French",
-                        "ne": "Nepali",
-                        "sw": "Swahili"
-                    },
                     "default": "en"
                 }
             }
@@ -110,19 +101,52 @@
         "description": "Kujua Lite Settings",
         "type": "object",
         "properties": {
-            "locale": {
-                "title": "Locale",
-                "type": "string",
-                "description": "Default tries to use best option according to browser settings, you can override that here.",
-                "enum": ["en", "es", "fr", "ne", "sw"],
-                "je:hint": "enumlabels",
-                "je:enumlabels": {
-                    "en": "English",
-                    "es": "Spanish",
-                    "fr": "French",
-                    "ne": "Nepali",
-                    "sw": "Swahili"
+            "locales": {
+                "title": "Locales",
+                "description": "A list of available locales with a unique short code (egs: 'en', 'fr') and a human readable name of the locale (egs: 'English', 'French')",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "title": "Code",
+                            "default": ""
+                        },
+                        "name": {
+                            "type": "string",
+                            "title": "Display Name",
+                            "default": ""
+                        }
+                    }
                 },
+                "default": [
+                    {
+                        "code": "en",
+                        "name": "English"
+                    },
+                    {
+                        "code": "es",
+                        "name": "Spanish"
+                    },
+                    {
+                        "code": "fr",
+                        "name": "French"
+                    },
+                    {
+                        "code": "ne",
+                        "name": "Nepali"
+                    },
+                    {
+                        "code": "sw",
+                        "name": "Swahili"
+                    }
+                ]
+            },
+            "locale": {
+                "title": "Default Locale Code",
+                "type": "string",
+                "description": "Default tries to use best option according to browser settings, you can override that here. Must be one of the codes specified in Locales above.",
                 "default": "en"
             },
             "muvuku_webapp_url": {
@@ -424,16 +448,6 @@
                                                             "title": "Locale",
                                                             "type": "string",
                                                             "description": "Set the locale if you need to support responses in multiple languages.",
-                                                            "enum": ["en", "es", "fr", "ne", "sw", "lu"],
-                                                            "je:hint": "enumlabels",
-                                                            "je:enumlabels": {
-                                                                "en": "English",
-                                                                "es": "Spanish",
-                                                                "fr": "French",
-                                                                "ne": "Nepali",
-                                                                "sw": "Swahili",
-                                                                "lu": "Dholuo"
-                                                            },
                                                             "default": "en"
                                                         }
                                                     }
@@ -468,16 +482,6 @@
                                                     "title": "Locale",
                                                     "type": "string",
                                                     "description": "Set the locale if you need to support responses in multiple languages.",
-                                                    "enum": ["en", "es", "fr", "ne", "sw", "lu"],
-                                                    "je:hint": "enumlabels",
-                                                    "je:enumlabels": {
-                                                        "en": "English",
-                                                        "es": "Spanish",
-                                                        "fr": "French",
-                                                        "ne": "Nepali",
-                                                        "sw": "Swahili",
-                                                        "lu": "Dholuo"
-                                                    },
                                                     "default": "en"
                                                 }
                                             }
@@ -573,16 +577,6 @@
                                                         "locale": {
                                                             "title": "Locale",
                                                             "type": "string",
-                                                            "enum": ["en", "es", "fr", "ne", "sw", "lu"],
-                                                            "je:hint": "enumlabels",
-                                                            "je:enumlabels": {
-                                                                "en": "English",
-                                                                "es": "Spanish",
-                                                                "fr": "French",
-                                                                "ne": "Nepali",
-                                                                "sw": "Swahili",
-                                                                "lu": "Dholuo"
-                                                            },
                                                             "default": "en"
                                                         }
                                                     }
@@ -615,16 +609,6 @@
                                                 "locale": {
                                                     "title": "Locale",
                                                     "type": "string",
-                                                    "enum": ["en", "es", "fr", "ne", "sw", "lu"],
-                                                    "je:hint": "enumlabels",
-                                                    "je:enumlabels": {
-                                                        "en": "English",
-                                                        "es": "Spanish",
-                                                        "fr": "French",
-                                                        "ne": "Nepali",
-                                                        "sw": "Swahili",
-                                                        "lu": "Dholuo"
-                                                    },
                                                     "default": "en"
                                                 }
                                             }
@@ -713,16 +697,6 @@
                                                     "title": "Locale",
                                                     "type": "string",
                                                     "description": "Set the locale if you need to support responses in multiple languages.",
-                                                    "enum": ["en", "es", "fr", "ne", "sw", "lu"],
-                                                    "je:hint": "enumlabels",
-                                                    "je:enumlabels": {
-                                                        "en": "English",
-                                                        "es": "Spanish",
-                                                        "fr": "French",
-                                                        "ne": "Nepali",
-                                                        "sw": "Swahili",
-                                                        "lu": "Dholuo"
-                                                    },
                                                     "default": "en"
                                                 }
                                             }
@@ -850,16 +824,6 @@
                                                 "title": "Locale",
                                                 "type": "string",
                                                 "description": "Set the locale if you need to support responses in multiple languages.",
-                                                "enum": ["en", "es", "fr", "ne", "sw", "lu"],
-                                                "je:hint": "enumlabels",
-                                                "je:enumlabels": {
-                                                    "en": "English",
-                                                    "es": "Spanish",
-                                                    "fr": "French",
-                                                    "ne": "Nepali",
-                                                    "sw": "Swahili",
-                                                    "lu": "Dholuo"
-                                                },
                                                 "default": "en"
                                             }
                                         }

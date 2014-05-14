@@ -1,9 +1,6 @@
 <label>Language to edit</label>
 <select class="locale-selector" data-language="{locale}">
-  <option value="en" {@eq key="locale" value="en"}selected="true"{/eq}>English</option>
-  <option value="es" {@eq key="locale" value="es"}selected="true"{/eq}>Spanish</option>
-  <option value="fr" {@eq key="locale" value="fr"}selected="true"{/eq}>French</option>
-  <option value="ne" {@eq key="locale" value="ne"}selected="true"{/eq}>Nepali</option>
-  <option value="sw" {@eq key="locale" value="sw"}selected="true"{/eq}>Swahili</option>
-  <option value="lu" {@eq key="locale" value="lu"}selected="true"{/eq}>Dholuo</option>
+{#locales}
+  <option value="{code}" {@if cond="'{locale}' === '{code}'"}selected="true"{/if}>{name}</option>
+{/locales}
 </select>
