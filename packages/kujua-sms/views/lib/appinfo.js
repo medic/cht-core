@@ -101,34 +101,52 @@ exports.getAppInfo = function(req) {
     /*
      * Value is object with locale strings, e.g.
      *
-     * {
-     *   "en": "Year",
-     *   "fr": "Anné"
-     * }
+     *   {
+     *       "key": "Search",
+     *       "default": "Search",
+     *       "translations": [
+     *           {
+     *               "locale": "en",
+     *               "content": "Search"
+     *           },
+     *           {
+     *               "locale": "fr",
+     *               "content": "Search"
+     *           }
+     *       ]
+     *   }
      *
      * return string
      */
     function getMessage(value, locale) {
 
+        function _findTranslation(value, locale) {
+            var translation = _.findWhere(
+                value.translations, { locale: locale }
+            );
+            return translation && translation.content;
+        }
+
         if (!_.isObject(value)) {
             return value;
         }
 
-        var locale = locale || 'default';
-        
-        // Check for translation in order
-        //   1) the provided locale
-        //   2) the `default` locale
-        //   3) the `en` locale
-        var key = _.find(
-            [locale, 'default', 'en'], 
-            function(_key) {
-                return !!value[_key];
-            }
-        ) || _.first(_.keys(value)); // fallback to just return the first locale
+        var result =
 
-        // return null if falsey or empty object
-        return value[key] || null;
+            // 1) Look for the requested locale
+            _findTranslation(value, locale)
+
+            // 2) Look for the default
+            || value.default
+
+            // 3) Look for the English value
+            || _findTranslation(value, 'en')
+
+            // 4) Look for the first value
+            || (value.translations && value.translations[0] 
+                && value.translations[0].content);
+
+        return result;
     }
 
     /*
