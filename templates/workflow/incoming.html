@@ -37,7 +37,9 @@
   {#reports}
     <fieldset class="report" data-form="{form}">
       <legend>{name}</legend>
-      <p>Recorded by sending an SMS in the format <span class="pre">{format}</span>.</p>
+      {#format}
+      <p>Recorded by sending an SMS in the format <span class="pre">{.}</span>.</p>
+      {/format}
       {>"workflow/form.html"/}
     </fieldset>
   {/reports}
