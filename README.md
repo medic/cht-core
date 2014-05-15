@@ -52,6 +52,12 @@ url=http://foo:bar@localhost:5984/
 
 Start lucene: `<lucene_home>/bin/run`
 
+You should now see a welcome message at 
+
+```
+http://localhost:5985
+```
+
 ### Try it out
 
 Navigate your browser to:
