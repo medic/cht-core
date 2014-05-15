@@ -21,7 +21,7 @@ npm install kanso -g
 
 ## Develop
 
-Push the couchapp:
+### Push the couchapp
 
 ```
 git clone --recursive https://github.com/medic/kujua-lite
@@ -29,13 +29,30 @@ cd kujua-lite
 kanso push http://admin:pass@localhost:5984/kujua-lite
 ```
 
-Start kujua-sentinel:
+### Start kujua-sentinel
 
 ```
 cd sentinel
 export COUCH_URL=http://admin:pass@localhost:5984/kujua-lite
 node ./server.js
 ```
+
+### Configure lucene
+
+Add the following to couchdb httpd_global_handlers 
+```
+_fti = {couch_httpd_proxy, handle_proxy_req, <<"http://127.0.0.1:5985">>}
+```
+
+Update `<lucene_home>/conf/couchdb-lucene.ini` so the URL has credentials, eg:
+
+```
+url=http://foo:bar@localhost:5984/
+```
+
+Start lucene: `<lucene_home>/bin/run`
+
+### Try it out
 
 Navigate your browser to:
 
