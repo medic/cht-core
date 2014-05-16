@@ -1,6 +1,7 @@
 var validation = require('../../lib/validation'),
     underscore = require('underscore'),
     utils = require('../../lib/utils'),
+    db = require('../../db'),
     sinon = require('sinon');
 
 
@@ -8,8 +9,11 @@ exports.tearDown = function(callback) {
     if (utils.getRegistrations.restore) {
         utils.getRegistrations.restore();
     }
+    if (db.fti.restore) {
+        db.fti.restore();
+    }
     callback();
-}
+};
 
 exports['validate handles pupil parse errors'] = function(test) {
     test.expect(1);
@@ -27,7 +31,7 @@ exports['validate handles pupil parse errors'] = function(test) {
         );
         test.done();
     });
-}
+};
 
 exports['validate handles pupil regex'] = function(test) {
     test.expect(2);
@@ -49,13 +53,13 @@ exports['validate handles pupil regex'] = function(test) {
         }]);
         test.done();
     });
-}
+};
 
-exports['pass unique("patient_id") validation when doc has errors'] = function(test) {
+exports['pass unique validation when doc has errors'] = function(test) {
     test.expect(2);
     // simulate view results with doc attribute
-    var getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [{
-        doc: { errors: [{foo:'bar'}] }
+    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, [{
+        doc: { errors: [{foo: 'bar'}] }
     }]);
     var validations = [{
         "property": "patient_id",
@@ -63,33 +67,68 @@ exports['pass unique("patient_id") validation when doc has errors'] = function(t
     }];
     var doc = {patient_id: '111'};
     validation.validate(doc, validations, function(errors) {
-        test.equals(getRegistrations.called, true);
+        test.ok(fti.calledWith('data_records', {
+            patient_id: '111',
+            include_docs: true
+        }));
         test.deepEqual(errors, []);
         test.done();
     });
-}
+};
 
-exports['fail unique("patient_id") validation on doc with no errors'] = function(test) {
+exports['fail unique validation on doc with no errors'] = function(test) {
     test.expect(2);
     // simulate view results with doc attribute
-    var getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [{
+    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, [{
         doc: { errors: [] }
     }]);
     var validations = [{
-        "property": "patient_id",
-        "rule": "unique('patient_id')",
+        "property": "xyz",
+        "rule": "unique('xyz')",
         "message": [{
-            content: "Duplicate patient id {{patient_id}}.",
+            content: "Duplicate patient id {{xyz}}.",
             locale: "en"
         }]
     }];
-    var doc = {patient_id: '444'};
+    var doc = {xyz: '444'};
     validation.validate(doc, validations, function(errors) {
-        test.equals(getRegistrations.called, true);
+        test.ok(fti.calledWith('data_records', {
+            xyz: '444',
+            include_docs: true
+        }));
         test.deepEqual(errors, [{
-            code:'invalid_patient_id_unique',
-            message:'Duplicate patient id {{patient_id}}.'
+            code: 'invalid_xyz_unique',
+            message: 'Duplicate patient id {{xyz}}.'
         }]);
         test.done();
     });
-}
+};
+
+exports['fail multiple field unique validation on doc with no errors'] = function(test) {
+    test.expect(2);
+    // simulate view results with doc attribute
+    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, [{
+        doc: { errors: [] }
+    }]);
+    var validations = [{
+        "property": "xyz",
+        "rule": "unique('xyz','abc')",
+        "message": [{
+            content: "Duplicate xyz {{xyz}} and abc {{abc}}.",
+            locale: "en"
+        }]
+    }];
+    var doc = {xyz: '444', abc: 'cheese'};
+    validation.validate(doc, validations, function(errors) {
+        test.ok(fti.calledWith('data_records', {
+            xyz: '444',
+            abc: 'cheese',
+            include_docs: true
+        }));
+        test.deepEqual(errors, [{
+            code: 'invalid_xyz_unique',
+            message: 'Duplicate xyz {{xyz}} and abc {{abc}}.'
+        }]);
+        test.done();
+    });
+};

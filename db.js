@@ -37,3 +37,11 @@ var client = couchdb.createClient(
 );
 module.exports = client.db(settings.db);
 module.exports.user = settings.username;
+module.exports.fti = function(index, data, cb) {
+    var path = '/_fti/local/' + settings.db 
+        + '/_design/' + settings.db + '/' + index;
+    client.request({
+        path: path,
+        data: data
+    }, cb);
+}
