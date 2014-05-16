@@ -55,11 +55,12 @@ function fetchConfig(callback) {
         if (err) {
             callback(err);
         } else {
+            var settings = custom.settings;
             // append custom translations to defaults
-            if (custom.translations) {
-                custom.translations = config.translations.concat(custom.translations);
+            if (settings.translations) {
+                settings.translations = config.translations.concat(settings.translations);
             }
-            _.extend(config, custom);
+            _.extend(config, settings);
             console.log('loaded config');
             console.log(
                 'Reminder messages allowed between %s:%s and %s:%s',
