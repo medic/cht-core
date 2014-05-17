@@ -91,6 +91,5 @@ exports.rules = [
             endkey: [':refid'],
             descending: 'true'
         }
-    },
-    {from: '/app_settings/:doc', to: '_show/app_settings' }
+    }
 ];

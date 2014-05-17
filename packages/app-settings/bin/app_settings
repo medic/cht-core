@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+
+var app_settings = require('../index.js');
+
+function usage() {
+    console.log('\nUsage: app_settings [ACTION] url\n');
+
+    console.log('Available ACTIONS:');
+    console.log('   restore    -  Restore app_settings from the last revision of the doc that had app_settings');
+    console.log('   clear   -  Removes the app_settings');
+    console.log('   copy    -  copy app settings from one app to another. Requires a second url')
+    console.log('\nurl is of form http://admin:pass@localhost:5984/db/_design/ddoc\n');
+}
+var args = process.argv.slice(2);
+
+if (!args.length || args.length < 2) {
+    return usage();
+}
+
+var ddoc_url = args[1];
+var action = args[0];
+
+
+console.log('action:', action);
+console.log('url', ddoc_url);
+
+if (action === 'clear') app_settings.clear(ddoc_url, onFinished);
+if (action === 'restore')  app_settings.restore(ddoc_url, onFinished);
+if (action === 'copy')  {
+    var ddoc_url_to = args[2];
+    app_settings.copy(ddoc_url, ddoc_url_to, onFinished);
+}
+
+
+function onFinished(err, resp) {
+    if (err) return console.log("ERROR", err);
+    console.log("SUCCESS");
+}
