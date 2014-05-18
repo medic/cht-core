@@ -55,20 +55,77 @@ exports['validate handles pupil regex'] = function(test) {
     });
 };
 
-exports['pass unique validation when doc has errors'] = function(test) {
+exports['pass unique validation when no doc found'] = function(test) {
     test.expect(2);
     // simulate view results with doc attribute
-    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, [{
-        doc: { errors: [{foo: 'bar'}] }
-    }]);
+    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+        rows: []
+    });
     var validations = [{
         "property": "patient_id",
         "rule": "unique('patient_id')"
     }];
-    var doc = {patient_id: '111'};
+    var doc = {
+        _id: 'same',
+        patient_id: '111'
+    };
     validation.validate(doc, validations, function(errors) {
         test.ok(fti.calledWith('data_records', {
-            patient_id: '111',
+            q: 'patient_id:"111"',
+            include_docs: true
+        }));
+        test.deepEqual(errors, []);
+        test.done();
+    });
+};
+
+exports['pass unique validation when doc is the same'] = function(test) {
+    test.expect(2);
+    // simulate view results with doc attribute
+    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+        rows: [{
+            id: 'same',
+            doc: { errors: [] } 
+        }]
+    });
+    var validations = [{
+        "property": "patient_id",
+        "rule": "unique('patient_id')"
+    }];
+    var doc = {
+        _id: 'same',
+        patient_id: '111'
+    };
+    validation.validate(doc, validations, function(errors) {
+        test.ok(fti.calledWith('data_records', {
+            q: 'patient_id:"111"',
+            include_docs: true
+        }));
+        test.deepEqual(errors, []);
+        test.done();
+    });
+};
+
+exports['pass unique validation when doc has errors'] = function(test) {
+    test.expect(2);
+    // simulate view results with doc attribute
+    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+        rows: [{
+            id: 'different',
+            doc: { errors: [{foo: 'bar'}] } 
+        }]
+    });
+    var validations = [{
+        "property": "patient_id",
+        "rule": "unique('patient_id')"
+    }];
+    var doc = {
+        _id: 'same',
+        patient_id: '111'
+    };
+    validation.validate(doc, validations, function(errors) {
+        test.ok(fti.calledWith('data_records', {
+            q: 'patient_id:"111"',
             include_docs: true
         }));
         test.deepEqual(errors, []);
@@ -79,26 +136,32 @@ exports['pass unique validation when doc has errors'] = function(test) {
 exports['fail unique validation on doc with no errors'] = function(test) {
     test.expect(2);
     // simulate view results with doc attribute
-    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, [{
-        doc: { errors: [] }
-    }]);
+    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+        rows: [{
+            id: 'different',
+            doc: { errors: [] } 
+        }]
+    });
     var validations = [{
         "property": "xyz",
         "rule": "unique('xyz')",
         "message": [{
-            content: "Duplicate patient id {{xyz}}.",
+            content: "Duplicate: {{xyz}}.",
             locale: "en"
         }]
     }];
-    var doc = {xyz: '444'};
+    var doc = {
+        _id: 'same',
+        xyz: '444'
+    };
     validation.validate(doc, validations, function(errors) {
         test.ok(fti.calledWith('data_records', {
-            xyz: '444',
+            q: 'xyz:"444"',
             include_docs: true
         }));
         test.deepEqual(errors, [{
             code: 'invalid_xyz_unique',
-            message: 'Duplicate patient id {{xyz}}.'
+            message: 'Duplicate: {{xyz}}.'
         }]);
         test.done();
     });
@@ -107,9 +170,12 @@ exports['fail unique validation on doc with no errors'] = function(test) {
 exports['fail multiple field unique validation on doc with no errors'] = function(test) {
     test.expect(2);
     // simulate view results with doc attribute
-    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, [{
-        doc: { errors: [] }
-    }]);
+    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+        rows: [{
+            id: 'different',
+            doc: { errors: [] } 
+        }]
+    });
     var validations = [{
         "property": "xyz",
         "rule": "unique('xyz','abc')",
@@ -118,11 +184,14 @@ exports['fail multiple field unique validation on doc with no errors'] = functio
             locale: "en"
         }]
     }];
-    var doc = {xyz: '444', abc: 'cheese'};
+    var doc = {
+        _id: 'same',
+        xyz: '444',
+        abc: 'cheese'
+    };
     validation.validate(doc, validations, function(errors) {
         test.ok(fti.calledWith('data_records', {
-            xyz: '444',
-            abc: 'cheese',
+            q: 'xyz:"444" AND abc:"cheese"',
             include_docs: true
         }));
         test.deepEqual(errors, [{
