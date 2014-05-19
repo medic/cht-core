@@ -1,9 +1,10 @@
-var validation = require('../../lib/validation'),
-    underscore = require('underscore'),
+var underscore = require('underscore'),
+    moment = require('moment'),
+    validation = require('../../lib/validation'),
     utils = require('../../lib/utils'),
     db = require('../../db'),
-    sinon = require('sinon');
-
+    sinon = require('sinon'),
+    clock;
 
 exports.tearDown = function(callback) {
     if (utils.getRegistrations.restore) {
@@ -11,6 +12,9 @@ exports.tearDown = function(callback) {
     }
     if (db.fti.restore) {
         db.fti.restore();
+    }
+    if (clock && clock.restore) {
+        clock.restore();
     }
     callback();
 };
@@ -199,5 +203,44 @@ exports['fail multiple field unique validation on doc with no errors'] = functio
             message: 'Duplicate xyz {{xyz}} and abc {{abc}}.'
         }]);
         test.done();
+    });
+};
+
+exports['pass uniqueWithin validation on old doc'] = function(test) {
+    test.expect(2);
+    clock = sinon.useFakeTimers();
+    // simulate view results with doc attribute
+    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+        rows: [{
+            id: 'different',
+            doc: { errors: [] } 
+        }]
+    });
+    var validations = [{
+        "property": "xyz",
+        "rule": "uniqueWithin('xyz','2 weeks')",
+        "message": [{
+            content: "Duplicate xyz {{xyz}}.",
+            locale: "en"
+        }]
+    }];
+    var doc = {
+        _id: 'same',
+        xyz: '444'
+    };
+    validation.validate(doc, validations, function(errors) {
+        var start = moment().subtract('weeks', 2).toISOString();
+        var q = 'xyz:"444" AND reported_date<date>:[' + start + ' TO 3000-01-01T00:00:00]';
+        test.ok(fti.calledWith('data_records', {
+            q: q,
+            include_docs: true
+        }));
+
+        test.deepEqual(errors, [{
+            code: 'invalid_xyz_uniqueWithin',
+            message: 'Duplicate xyz {{xyz}}.'
+        }]);
+        test.done();
+        
     });
 };
