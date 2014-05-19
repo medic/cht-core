@@ -437,7 +437,7 @@
                                             "rule": {
                                                 "type": "string",
                                                 "title": "Validation Rule",
-                                                "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                                "description": "The <a href='/kujua-lite/_design/kujua-lite/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
                                                 "default": "lenMin(5) && lenMax(50)"
                                             },
                                             "message": {
@@ -573,7 +573,7 @@
                                             "rule": {
                                                 "type": "string",
                                                 "title": "Validation Rule",
-                                                "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                                "description": "The <a href='/kujua-lite/_design/kujua-lite/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
                                                 "default": "regex('[0-9]{5}')"
                                             },
                                             "message": {
@@ -815,7 +815,7 @@
                                 "rule": {
                                     "type": "string",
                                     "title": "Validation Rule",
-                                    "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                    "description": "The <a href='/kujua-lite/_design/kujua-lite/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
                                     "default": "regex('[0-9]{5}')"
                                 },
                                 "message": {
