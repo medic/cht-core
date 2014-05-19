@@ -29,45 +29,47 @@
       <p>The available operators are:</p>
       <dl class="horizontal">
         <dt><span class="pre">equals</span></dt>
-        <dd>comparison</dd>
+        <dd>Comparison</dd>
         <dt><span class="pre">iEquals</span></dt>
-        <dd>case insensitive comparison</dd>
+        <dd>Case insensitive comparison</dd>
         <dt><span class="pre">sEquals</span></dt>
-        <dd>type sensitive equals</dd>
+        <dd>Type sensitive equals</dd>
         <dt><span class="pre">siEquals</span></dt>
-        <dd>type sensitive case insensitive equals</dd>
+        <dd>Type sensitive case insensitive equals</dd>
         <dt><span class="pre">lenMin</span></dt>
-        <dd>minimum length</dd>
+        <dd>Minimum length</dd>
         <dt><span class="pre">lenMax</span></dt>
-        <dd>maximum length</dd>
+        <dd>Maximum length</dd>
         <dt><span class="pre">lenEquals</span></dt>
-        <dd>exact length</dd>
+        <dd>Exact length</dd>
         <dt><span class="pre">min</span></dt>
-        <dd>minimum value</dd>
+        <dd>Minimum value</dd>
         <dt><span class="pre">max</span></dt>
-        <dd>maximum value</dd>
+        <dd>Maximum value</dd>
         <dt><span class="pre">between</span></dt>
-        <dd>minimum and maximum value</dd>
+        <dd>Minimum and maximum value</dd>
         <dt><span class="pre">in</span></dt>
-        <dd>one of the provided values</dd>
+        <dd>One of the provided values</dd>
         <dt><span class="pre">required</span></dt>
-        <dd>must have a value</dd>
+        <dd>Must have a value</dd>
         <dt><span class="pre">optional</span></dt>
-        <dd>always valid</dd>
+        <dd>Always valid</dd>
         <dt><span class="pre">numeric</span></dt>
-        <dd>numbers only</dd>
+        <dd>Numbers only</dd>
         <dt><span class="pre">integer</span></dt>
-        <dd>integer numbers only</dd>
+        <dd>Integer numbers only</dd>
         <dt><span class="pre">alpha</span></dt>
-        <dd>letters only</dd>
+        <dd>Letters only</dd>
         <dt><span class="pre">alphaNumeric</span></dt>
-        <dd>numbers and letters only</dd>
+        <dd>Numbers and letters only</dd>
         <dt><span class="pre">email</span></dt>
-        <dd>email address format</dd>
+        <dd>Email address format</dd>
         <dt><span class="pre">regex</span></dt>
-        <dd>a custom regular expression</dd>
+        <dd>A custom regular expression</dd>
         <dt><span class="pre">unique</span></dt>
-        <dd>used to specify one or more fields which must be unique, eg: "unique('patient_id')"</dd>
+        <dd>Used to specify one or more fields which must be unique, eg: "unique('patient_id')". To check uniqueness within a form type, include 'form' as a parameter.</dd>
+        <dt><span class="pre">uniqueWithin</span></dt>
+        <dd>Used to specify one or more fields which must be unique within a given time frame, eg: "uniqueWithin('patient_id', '1 months')"</dd>
       </dl>
 
     </div>
