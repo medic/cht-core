@@ -431,3 +431,67 @@ exports.updateRelated = function(doc, request) {
 
     return [doc, JSON.stringify(resp)];
 };
+
+exports.create_delete_form = function(ddoc, req) {
+
+    var code = req.query.code,
+        method = req.method;
+
+    function getResp(options) {
+        var headers = {
+            "Content-Type": "application/json"
+        };
+        if (options && options.error) {
+            return [null, {
+                headers: headers,
+                body: JSON.stringify({
+                    success: false,
+                    error: options.error
+                })
+            }];
+        } else {
+            return [ddoc, {
+                headers: headers,
+                body: JSON.stringify({ success: true })
+            }];
+        }
+    };
+
+    if (!ddoc.app_settings) {
+        ddoc.app_settings = {};
+    }
+
+    if (!ddoc.app_settings.forms) {
+        ddoc.app_settings.forms = {};
+    }
+
+    if (!code) {
+        return getResp({
+            error: "Form code not specified"
+        });
+    }
+
+    if (method === 'DELETE') {
+        if (ddoc.app_settings.forms[code]) {
+            delete ddoc.app_settings.forms[code];
+        } else {
+            return getResp({
+                error: "Form " + code + " not found in library."
+            });
+        }
+    } else if (method === 'PUT') {
+        try {
+            ddoc.app_settings.forms[code] = JSON.parse(req.body);
+        } catch(e) {
+            return getResp({
+                error: 'Request body must be valid JSON'
+            });
+        }
+    } else {
+        return getResp({
+            error: "Only PUT, DELETE allowed"
+        });
+    }
+
+    return getResp();
+};
