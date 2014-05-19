@@ -230,15 +230,116 @@ exports['pass uniqueWithin validation on old doc'] = function(test) {
     };
     validation.validate(doc, validations, function(errors) {
         var start = moment().subtract('weeks', 2).toISOString();
-        var q = 'xyz:"444" AND reported_date<date>:[' + start + ' TO 3000-01-01T00:00:00]';
         test.ok(fti.calledWith('data_records', {
-            q: q,
+            q: 'xyz:"444" AND reported_date<date>:[' + start + ' TO 3000-01-01T00:00:00]',
             include_docs: true
         }));
 
         test.deepEqual(errors, [{
             code: 'invalid_xyz_uniqueWithin',
             message: 'Duplicate xyz {{xyz}}.'
+        }]);
+        test.done();
+        
+    });
+};
+
+exports['pass exists validation when matching document'] = function(test) {
+    test.expect(2);
+    // simulate view results with doc attribute
+    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+        rows: [{
+            id: 'different',
+            doc: { errors: [] } 
+        }]
+    });
+    var validations = [{
+        "property": "parent_id",
+        "rule": "exists('REGISTRATION', 'patient_id')",
+        "message": [{
+            content: "Unknown patient {{parent_id}}.",
+            locale: "en"
+        }]
+    }];
+    var doc = {
+        _id: 'same',
+        parent_id: '444'
+    };
+    validation.validate(doc, validations, function(errors) {
+        test.ok(fti.calledWith('data_records', {
+            q: 'form:"REGISTRATION" AND patient_id:"444"',
+            include_docs: true
+        }));
+
+        test.deepEqual(errors, []);
+        test.done();
+        
+    });
+};
+
+exports['fail exists validation when no matching document'] = function(test) {
+    test.expect(2);
+    // simulate view results with doc attribute
+    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+        rows: []
+    });
+    var validations = [{
+        "property": "parent_id",
+        "rule": "exists('REGISTRATION', 'patient_id')",
+        "message": [{
+            content: "Unknown patient {{parent_id}}.",
+            locale: "en"
+        }]
+    }];
+    var doc = {
+        _id: 'same',
+        parent_id: '444'
+    };
+    validation.validate(doc, validations, function(errors) {
+        test.ok(fti.calledWith('data_records', {
+            q: 'form:"REGISTRATION" AND patient_id:"444"',
+            include_docs: true
+        }));
+
+        test.deepEqual(errors, [{
+            code: 'invalid_parent_id_exists',
+            message: 'Unknown patient {{parent_id}}.'
+        }]);
+        test.done();
+        
+    });
+};
+
+exports['fail exists validation when matching document is same as this'] = function(test) {
+    test.expect(2);
+    // simulate view results with doc attribute
+    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+        rows: [{
+            id: 'same',
+            doc: { errors: [] } 
+        }]
+    });
+    var validations = [{
+        "property": "parent_id",
+        "rule": "exists('REGISTRATION', 'patient_id')",
+        "message": [{
+            content: "Unknown patient {{parent_id}}.",
+            locale: "en"
+        }]
+    }];
+    var doc = {
+        _id: 'same',
+        parent_id: '444'
+    };
+    validation.validate(doc, validations, function(errors) {
+        test.ok(fti.calledWith('data_records', {
+            q: 'form:"REGISTRATION" AND patient_id:"444"',
+            include_docs: true
+        }));
+
+        test.deepEqual(errors, [{
+            code: 'invalid_parent_id_exists',
+            message: 'Unknown patient {{parent_id}}.'
         }]);
         test.done();
         
