@@ -16,10 +16,12 @@ module.exports = {
                 config = self.getRegistrationConfig(self.getConfig(), doc.form);
             return Boolean(config);
         }
+        if (doc.errors && doc.errors.length > 0) {
+            return false;
+        }
         return Boolean(
             doc.form &&
             utils.getClinicPhone(doc) &&
-            doc.errors.length === 0 &&
             hasConfig(doc)
         );
     },

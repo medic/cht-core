@@ -51,7 +51,8 @@ function fetchConfig(callback) {
     db.request({
         method:'GET',
         path: config.settings_path
-    }, function(err, custom) {
+    }, function(err, data) {
+        var custom = data.settings;
         if (err) {
             callback(err);
         } else {
