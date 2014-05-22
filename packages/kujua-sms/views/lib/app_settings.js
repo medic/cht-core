@@ -358,6 +358,15 @@ module.exports = {
            "sw": ""
        },
        {
+           "key": "related_entities.clinic.external_id",
+           "default": "Clinic External ID",
+           "en": "Clinic External ID",
+           "fr": "",
+           "es": "",
+           "ne": "",
+           "sw": ""
+       },
+       {
            "key": "related_entities.clinic.parent.name",
            "default": "Health Center Name",
            "en": "Health Center Name",
@@ -376,10 +385,28 @@ module.exports = {
            "sw": ""
        },
        {
+           "key": "related_entities.clinic.parent.external_id",
+           "default": "Health Center External ID",
+           "en": "Health Center External ID",
+           "fr": "",
+           "es": "",
+           "ne": "",
+           "sw": ""
+       },
+       {
            "key": "related_entities.clinic.parent.parent.name",
            "default": "District Hospital Name",
            "en": "District Hospital Name",
            "fr": "Nom de l'hôpital de district",
+           "es": "",
+           "ne": "",
+           "sw": ""
+       },
+       {
+           "key": "related_entities.clinic.parent.parent.external_id",
+           "default": "District Hospital External ID",
+           "en": "District Hospital External ID",
+           "fr": "",
            "es": "",
            "ne": "",
            "sw": ""
