@@ -46,7 +46,7 @@ exports.rules = [
             form: ':form'
         }
     },
-    {
+/*    {
         from: '/forms',
         to: '_show/list_forms',
         method: 'GET'
@@ -59,7 +59,7 @@ exports.rules = [
     {
         from: '/forms/:ddoc/:code',
         to: '_update/create_delete_form/_design/:ddoc'
-    },
+    },*/
     {
         from: '/:form/data_record/add/clinic/:phone',
         to: '_list/data_record/clinic_by_phone',
