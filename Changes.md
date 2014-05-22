@@ -1,5 +1,18 @@
 # Kujua Release Notes
 
+## 0.3.8
+
+### May 22, 2014
+
+- fixed bug in messages export filters to include all data records,
+  unstructured messages were being ignored. #502
+
+- added support for app-settings kanso package.
+        
+    Saving settings in dashboard was too slow for use because entire ddoc was
+    being updated.  Using app-settings API fixes that.
+
+
 ## 0.3.7
 
 ### May 13, 2014
