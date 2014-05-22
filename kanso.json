@@ -72,7 +72,7 @@
         "app-settings": null,
         "js-migrations": ">=1.0.0"
     },
-    "migration_path": "migration",
+    "migration_path": "/kujua-lite/_design/kujua-lite/_rewrite/migration",
     "user_data": {
         "db_prefix": false,
         "available_roles" : ["kujua_user","national_admin","district_admin","kujua_gateway","data_entry"],
