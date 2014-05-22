@@ -1,5 +1,12 @@
 # Kujua Release Notes
 
+## 0.3.9
+
+### May 22, 2014
+
+- fixed a bug in settings parser, to conform to the latest app-settings
+  changes, otherwise configs never get triggered.
+
 ## 0.3.8
 
 ### May 22, 2014
