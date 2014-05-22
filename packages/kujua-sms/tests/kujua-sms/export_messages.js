@@ -379,3 +379,68 @@ exports['messages export preserves scheduled message due value'] = function(test
     test.same(expected, resp.body);
     test.done();
 }
+
+exports['requesting messages export can display external id'] = function(test) {
+    test.expect(1);
+
+    var reportedDate = 1331503842461;
+    var taskTimestamp = 1331503843461;
+
+    var expected = '"Record UUID","Patient ID","Reported Date","Reported From","Clinic Contact Name","Clinic Name","Clinic External ID","Health Center Contact Name","Health Center Name","Health Center External ID","District Hospital Name","District Hospital External ID","Message Type","Message State","Received Timestamp","Scheduled Timestamp","Pending Timestamp","Sent Timestamp","Cleared Timestamp","Muted Timestamp","Message UUID","Sent By","To Phone","Message Body"\n'
+        + '"abc123z","","'
+        + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z')
+        + '","+12229990000","Paul","Clinic 1","AAA","Eric","Health Center 1","BBB",'
+        + '"District 1","CCC","Test","pending","","","'
+        + moment(taskTimestamp).format('DD, MMM YYYY, HH:mm:ss Z')
+        + '","","",""\n';
+
+    var req = {
+        query: {
+            startkey: 'foo',
+            endkey: 'bar',
+            form: 'MSBC',
+            include_facility_external_id: true
+        },
+        method: 'GET',
+        userCtx: {
+            roles: ['national_admin']
+        }
+    };
+
+    // mockup the view data
+    var viewdata = {rows: [{
+        "key": [ true, "MSBC", 1331503842461 ],
+        "value": 1,
+        "doc": {
+            _id: 'abc123z',
+            reported_date: reportedDate,
+            from: '+12229990000',
+            form: "MSBC",
+            related_entities: {
+                clinic: {
+                    name: "Clinic 1",
+                    external_id: "AAA",
+                    contact: { name:"Paul", phone: "" },
+                    parent: {
+                        name: "Health Center 1",
+                        external_id: "BBB",
+                        contact: { name: "Eric" },
+                        parent: { 
+                            name: "District 1",
+                            external_id: "CCC"
+                        }
+                    }
+                }
+            },
+            tasks: [{
+                type: 'Test',
+                state: 'pending',
+                timestamp: taskTimestamp
+            }]
+        }
+    }]};
+
+    var resp = fakerequest.list(lists.export_messages, viewdata, req);
+    test.same(expected, resp.body);
+    test.done();
+}

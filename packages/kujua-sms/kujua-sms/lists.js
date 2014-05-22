@@ -63,17 +63,42 @@ function getFilename(form, name, type) {
     return filename;
 }
 
-var getKeys = exports.getKeys = function(form) {
-    return [
-        '_id',
-        'reported_date',
-        'from',
+var getKeys = exports.getKeys = function(form, includeExternalId) {
+    var result = ['_id', 'reported_date', 'from'];
+
+    // clinic
+    result = result.concat([
         ['related_entities', ['clinic', ['contact', ['name']]]],
-        ['related_entities', ['clinic', ['name']]],
+        ['related_entities', ['clinic', ['name']]]
+    ]);
+    if (includeExternalId) {
+        result = result.concat([
+            ['related_entities', ['clinic', ['external_id']]]
+        ]);
+    }
+
+    // facility
+    result = result.concat([
         ['related_entities', ['clinic', ['parent', ['contact', ['name']]]]],
-        ['related_entities', ['clinic', ['parent', ['name']]]],
+        ['related_entities', ['clinic', ['parent', ['name']]]]
+    ]);
+    if (includeExternalId) {
+        result = result.concat([
+            ['related_entities', ['clinic', ['parent', ['external_id']]]]
+        ]);
+    }
+
+    // district
+    result = result.concat([
         ['related_entities', ['clinic', ['parent', ['parent', ['name']]]]]
-    ].concat(utils.getFormKeys(form));
+    ]);
+    if (includeExternalId) {
+        result = result.concat([
+            ['related_entities', ['clinic', ['parent', ['parent', ['external_id']]]]]
+        ]);
+    }
+
+    return result.concat(utils.getFormKeys(form));
 };
 
 function startExportHeaders(format, filename) {
@@ -169,6 +194,18 @@ exports.export_messages = function (head, req) {
         'Message Body'
     ];
 
+    var _spliceAfter = function (arr, key, elem) {
+        var pos = arr.indexOf(key);
+        if (pos >= 0) {
+            arr.splice(pos+1, 0, elem);
+        }
+    };
+
+    if (query.include_facility_external_id) {
+        _spliceAfter(labels, 'related_entities.clinic.name', 'related_entities.clinic.external_id');
+        _spliceAfter(labels, 'related_entities.clinic.parent.name', 'related_entities.clinic.parent.external_id');
+        _spliceAfter(labels, 'related_entities.clinic.parent.parent.name', 'related_entities.clinic.parent.parent.external_id');
+    }
     labels = _.map(labels, function(label) {
         return utils.info.translate(label, locale);
     });
@@ -226,6 +263,7 @@ exports.export_messages = function (head, req) {
                 }]
             });
         }
+        var includeExternalId = query.include_facility_external_id;
         _.each(tasks, function(task) {
             var vals = [
                 doc._id,
@@ -233,13 +271,34 @@ exports.export_messages = function (head, req) {
                 formatDate(doc.reported_date, query.tz),
                 doc.from,
                 objectpath.get(doc, 'related_entities.clinic.contact.name'),
-                objectpath.get(doc, 'related_entities.clinic.name'),
+                objectpath.get(doc, 'related_entities.clinic.name')
+            ];
+            if (includeExternalId) {
+                vals = vals.concat([
+                    objectpath.get(doc, 'related_entities.clinic.external_id')
+                ]);
+            }
+            vals = vals.concat([
                 objectpath.get(doc, 'related_entities.clinic.parent.contact.name'),
-                objectpath.get(doc, 'related_entities.clinic.parent.name'),
-                objectpath.get(doc, 'related_entities.clinic.parent.parent.name'),
+                objectpath.get(doc, 'related_entities.clinic.parent.name')
+            ]);
+            if (includeExternalId) {
+                vals = vals.concat([
+                    objectpath.get(doc, 'related_entities.clinic.parent.external_id')
+                ]);
+            }
+            vals = vals.concat([
+                objectpath.get(doc, 'related_entities.clinic.parent.parent.name')
+            ]);
+            if (includeExternalId) {
+                vals = vals.concat([
+                    objectpath.get(doc, 'related_entities.clinic.parent.parent.external_id')
+                ]);
+            }
+            vals = vals.concat([
                 task.type || 'Task Message',
                 task.state
-            ];
+            ]);
             var history = {};
             _.each(task.state_history, function(item) {
                 history[item.state] = item.timestamp;
@@ -310,7 +369,7 @@ exports.export_data_records = function (head, req) {
         delimiter = locale === 'fr' ? '";"' : null,
         rows,
         values,
-        keys = exports.getKeys(form);
+        keys = exports.getKeys(form, query.include_facility_external_id);
 
     utils.info = appInfo; // replace fake info with real from context
 

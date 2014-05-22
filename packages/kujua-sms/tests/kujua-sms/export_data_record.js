@@ -372,3 +372,91 @@ exports['lists export data records with tz'] = function(test) {
 
     test.done()
 };
+
+exports['lists export data records with external facility id'] = function(test) {
+
+    test.expect(1);
+    var expected = '"Record UUID","Reported Date","Reported From","Clinic Contact Name"'
+        +',"Clinic Name","Clinic External ID","Health Center Contact Name",' 
+        +'"Health Center Name","Health Center External ID","District Hospital Name","District Hospital External ID"'
+        +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
+        +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
+        +'","Recommandations/Conseils","Précisions pour recommandations"'
+        +',"Nom de l\'agent de santé"\n'
+        +'"abc123z","'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
+        +',"+12229990000","Paul","Clinic 1","ZYX","Eric","Health Center 1","ABC","District 1","QWE"'
+        +',"2012","1","16","","","","","","","","",""\n'
+        +'"ssdk23z","'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
+        +',"+13331110000","Sam","Clinic 2","ASD","","","","District 2","ZXC","2012","1","16","","","",""'
+        +',"","","","",""\n';
+
+    // mockup the view data
+    var viewdata = {rows: [
+        {
+            "key": [true, "MSBC", 1331503842461],
+            "value": 1,
+            "doc": {
+                _id: 'abc123z',
+                related_entities: {
+                    clinic: {
+                        name:"Clinic 1",
+                        external_id: "ZYX",
+                        contact: { name:"Paul", phone: ""},
+                        parent: {
+                            name: "Health Center 1",
+                            external_id: "ABC",
+                            contact: { name: "Eric" },
+                            parent: { 
+                                name: "District 1",
+                                external_id: "QWE"
+                            }}}},
+                reported_date: 1331503842461,
+                from: '+12229990000',
+                cref_year: '2012',
+                cref_month: "1",
+                cref_day: 16
+            }
+        },
+        {
+            "key": [true, "MSBC", 1331503850000],
+            "value": 1,
+            "doc": {
+                _id: 'ssdk23z',
+                related_entities: {
+                    clinic: {
+                        name:"Clinic 2",
+                        external_id: "ASD",
+                        contact: {name:"Sam", phone: ""},
+                        parent: {
+                            name: "",
+                            contact: { name:""},
+                            parent: { name: "District 2", external_id: "ZXC" }}}},
+                reported_date: 1331503850000,
+                from: '+13331110000',
+                cref_year: '2012',
+                cref_month: "1",
+                cref_day: 16}
+        }
+    ]};
+
+    var req = {
+        //locale is passed in to request
+        query: {
+            form: 'MSBC',
+            locale: 'en',
+            include_facility_external_id: true,
+            startkey: 'foo',
+            endkey: 'bar'
+        },
+        method: 'GET',
+        userCtx: {
+            roles: ['national_admin']
+        }
+    };
+
+    var resp = fakerequest.list(lists.export_data_records, viewdata, req);
+
+    test.same(expected, resp.body);
+
+    test.done()
+};

@@ -2031,6 +2031,16 @@
                         ]
                     },
                     {
+                        "key": "related_entities.clinic.external_id",
+                        "default": "Clinic External ID",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Clinic External ID"
+                            }
+                        ]
+                    },
+                    {
                         "key": "related_entities.clinic.parent.name",
                         "default": "Health Center Name",
                         "translations": [
@@ -2083,6 +2093,16 @@
                         ]
                     },
                     {
+                        "key": "related_entities.clinic.parent.external_id",
+                        "default": "Health Center External ID",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Health Center External ID"
+                            }
+                        ]
+                    },
+                    {
                         "key": "related_entities.clinic.parent.parent.name",
                         "default": "District Hospital Name",
                         "translations": [
@@ -2105,6 +2125,16 @@
                             {
                                 "locale": "sw",
                                 "content": ""
+                            }
+                        ]
+                    },
+                    {
+                        "key": "related_entities.clinic.parent.parent.external_id",
+                        "default": "District Hospital External ID",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "District Hospital External ID"
                             }
                         ]
                     },
