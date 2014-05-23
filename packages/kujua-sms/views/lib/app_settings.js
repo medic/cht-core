@@ -536,6 +536,46 @@ module.exports = {
            "es": "Search",
            "ne": "Search",
            "sw": "Search"
+       },
+       {
+           "key": "pending",
+           "default": "Pending Timestamp",
+           "en": "Pending Timestamp"
+       },
+       {
+           "key": "scheduled",
+           "default": "Scheduled Timestamp",
+           "en": "Scheduled Timestamp"
+       },
+       {
+           "key": "received",
+           "default": "Received Timestamp",
+           "en": "Received Timestamp"
+       },
+       {
+           "key": "sent",
+           "default": "Sent Timestamp",
+           "en": "Sent Timestamp"
+       },
+       {
+           "key": "cleared",
+           "default": "Cleared Timestamp",
+           "en": "Cleared Timestamp"
+       },
+       {
+           "key": "muted",
+           "default": "Muted Timestamp",
+           "en": "Muted Timestamp"
+       },
+       {
+           "key": "task.type",
+           "default": "Message Type",
+           "en": "Message Type"
+       },
+       {
+           "key": "task.state",
+           "default": "Message State",
+           "en": "Message State"
        }
    ]
 };

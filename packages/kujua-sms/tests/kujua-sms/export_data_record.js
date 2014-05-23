@@ -91,6 +91,7 @@ exports['lists export data records csv'] = function(test) {
                 true,
                 "MSBC",
                 1331503850000],
+            "locale": 'en',
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
@@ -116,6 +117,94 @@ exports['lists export data records csv'] = function(test) {
             startkey: 'foo',
             endkey: 'bar',
             form: 'MSBC'
+        },
+        method: "GET",
+        userCtx: {
+            roles: ['national_admin']
+        }
+    };
+
+    var resp = fakerequest.list(lists.export_data_records, viewdata, req);
+    test.same(expected, resp.body);
+
+    test.done()
+};
+
+
+exports['lists export data records csv with excluded columns'] = function(test) {
+
+    test.expect(1);
+
+    var expected = '"Reported Date","Clinic Contact Name"'
+        +',"Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name"'
+        +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
+        +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
+        +'","Recommandations/Conseils","Précisions pour recommandations"'
+        +',"Nom de l\'agent de santé"\n'
+        +'"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')
+        +'","Paul","Clinic 1","Eric","Health Center 1","District 1"'
+        +',"2012","1","16","","","","","","","","",""\n'
+        +'"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')
+        +'","Sam","Clinic 2","","","District 2","2012","1","16","","","",""'
+        +',"","","","",""\n';
+
+    // mockup the view data
+    var viewdata = {rows: [
+        {
+            "key":[
+                true,
+                "MSBC",
+                1331503842461],
+            "value": 1,
+            "doc": {
+                _id: 'abc123z',
+                form: "MSBC",
+                related_entities: {
+                    clinic: {
+                        name:"Clinic 1",
+                        contact: { name:"Paul", phone: ""},
+                        parent: {
+                            name: "Health Center 1",
+                            contact: { name: "Eric" },
+                            parent: { name: "District 1" }}}},
+                reported_date: 1331503842461,
+                from: '+12229990000',
+                cref_year: '2012',
+                cref_month: "1",
+                cref_day: 16
+            }
+        },
+        {
+            "key":[
+                true,
+                "MSBC",
+                1331503850000],
+            "value": 1,
+            "doc": {
+                _id: 'ssdk23z',
+                related_entities: {
+                    clinic: {
+                        name:"Clinic 2",
+                        contact: {name:"Sam", phone: ""},
+                        parent: {
+                            name: "",
+                            contact: { name: "" }, // empty contact name
+                            parent: { name: "District 2" }}}},
+                reported_date: 1331503850000,
+                from: '+13331110000',
+                cref_year: '2012',
+                cref_month: "1",
+                cref_day: 16}
+        }
+    ]};
+
+    var req = {
+        // locale defaults to english
+        query: {
+            startkey: 'foo',
+            endkey: 'bar',
+            form: 'MSBC',
+            exclude_cols: '1,3'
         },
         method: "GET",
         userCtx: {
@@ -376,19 +465,18 @@ exports['lists export data records with tz'] = function(test) {
 exports['lists export data records with external facility id'] = function(test) {
 
     test.expect(1);
-    var expected = '"Record UUID","Reported Date","Reported From","Clinic Contact Name"'
-        +',"Clinic Name","Clinic External ID","Health Center Contact Name",' 
-        +'"Health Center Name","Health Center External ID","District Hospital Name","District Hospital External ID"'
-        +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
-        +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
-        +'","Recommandations/Conseils","Précisions pour recommandations"'
-        +',"Nom de l\'agent de santé"\n'
-        +'"abc123z","'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
-        +',"+12229990000","Paul","Clinic 1","ZYX","Eric","Health Center 1","ABC","District 1","QWE"'
-        +',"2012","1","16","","","","","","","","",""\n'
-        +'"ssdk23z","'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
-        +',"+13331110000","Sam","Clinic 2","ASD","","","","District 2","ZXC","2012","1","16","","","",""'
-        +',"","","","",""\n';
+    var expected = '"Reported Date","Reported From"'
+        + ',"Clinic Name","Clinic External ID","Record UUID"' 
+        + ',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
+        + ',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
+        + '","Recommandations/Conseils","Précisions pour recommandations"'
+        + ',"Nom de l\'agent de santé"\n'
+        + '"' + moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z') + '"'
+        + ',"+12229990000","Clinic 1","ZYX","abc123z"'
+        + ',"2012","1","16","","","","","","","","",""\n'
+        + '"' + moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z') + '"'
+        + ',"+13331110000","Clinic 2","ASD","ssdk23z"'
+        + ',"2012","1","16","","","","","","","","",""\n'
 
     // mockup the view data
     var viewdata = {rows: [
@@ -446,7 +534,8 @@ exports['lists export data records with external facility id'] = function(test) 
             locale: 'en',
             include_facility_external_id: true,
             startkey: 'foo',
-            endkey: 'bar'
+            endkey: 'bar',
+            columns: '["reported_date","from","related_entities.clinic.name","related_entities.clinic.external_id","_id"]'
         },
         method: 'GET',
         userCtx: {
@@ -460,3 +549,4 @@ exports['lists export data records with external facility id'] = function(test) 
 
     test.done()
 };
+

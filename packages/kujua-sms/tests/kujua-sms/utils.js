@@ -674,8 +674,17 @@ exports.app_settings_has_defaults = function(test) {
 };
 
 exports.getLabelsForMessages = function(test) {
-    var keys = lists.getKeys('null'),
-        labels = utils.getLabels(keys, 'null', 'en');
+    var keys = [
+        '_id', 
+        'reported_date', 
+        'from',
+        'related_entities.clinic.contact.name',
+        'related_entities.clinic.name',
+        'related_entities.clinic.parent.contact.name',
+        'related_entities.clinic.parent.name',
+        'related_entities.clinic.parent.parent.name'
+    ];
+    var labels = utils.getLabels(keys, 'null', 'en');
 
     /*
      * outgoing messages have a special export format to include the message

@@ -6,7 +6,8 @@ var utils = require('kujua-utils'),
     jsonforms = require('views/lib/jsonforms'),
     logger = require('kujua-utils').logger,
     _ = require('underscore'),
-    moment = require('moment');
+    moment = require('moment'),
+    objectpath = require('views/lib/objectpath');
 
 /*
  * @param {Object} data_record - typically a data record or portion (hash)
@@ -402,12 +403,13 @@ var getValues = exports.getValues = function(doc, keys) {
     if (!_.isObject(doc)) return ret;
     if (keys === undefined) return ret;
     if (!_.isArray(keys)) {
-        if (typeof doc[keys] === 'undefined') {
+        var value = objectpath.get(doc, keys);
+        if (typeof value === 'undefined') {
             ret.push(null);
-        } else if (_.isObject(doc[keys]) || _.isArray(doc[keys])) {
-            ret.push(JSON.stringify(doc[keys]));
+        } else if (_.isObject(value) || _.isArray(value)) {
+            ret.push(JSON.stringify(value));
         } else {
-            ret.push(doc[keys]);
+            ret.push(value);
         }
     }
     if (_.isArray(keys)) {

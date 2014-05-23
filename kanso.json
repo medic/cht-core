@@ -2553,6 +2553,86 @@
                                 "content": "Search"
                             }
                         ]
+                    },
+                    {
+                        "key": "pending",
+                        "default": "Pending Timestamp",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Pending Timestamp"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "scheduled",
+                        "default": "Scheduled Timestamp",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Scheduled Timestamp"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "received",
+                        "default": "Received Timestamp",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Received Timestamp"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "sent",
+                        "default": "Sent Timestamp",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Sent Timestamp"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "cleared",
+                        "default": "Cleared Timestamp",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Cleared Timestamp"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "muted",
+                        "default": "Muted Timestamp",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Muted Timestamp"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "task.type",
+                        "default": "Message Type",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Message Type"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "task.state",
+                        "default": "Message State",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Message State"
+                            }
+                        ]
                     }
                 ]
             }
