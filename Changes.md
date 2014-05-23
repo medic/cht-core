@@ -1,5 +1,32 @@
 # Kujua Release Notes
 
+## 0.3.9
+
+### May 22, 2014
+
+- fixed a bug in settings parser, to conform to the latest app-settings
+  changes, otherwise configs never get triggered.
+
+## 0.3.8
+
+### May 22, 2014
+
+- fixed bug in messages export filters to include all data records,
+  unstructured messages were being ignored. #502
+
+- added support for app-settings kanso package.
+        
+    Saving settings in dashboard was too slow for use because entire ddoc was
+    being updated.  Using app-settings API fixes that.
+
+
+## 0.3.7
+
+### May 13, 2014
+
+- Modified KEMRI form fields to be ordered the same as KEMR form.
+
+
 ## 0.3.6
 
 ### Apr 28, 2014
