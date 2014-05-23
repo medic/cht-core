@@ -322,33 +322,6 @@ exports.export_data_records = function (head, req) {
     sendHeaderRow(options, utils.getLabels(keys, form, options.locale));
     options.columns = options.columns.concat(keys);
 
-
-
-
-    // startExportHeaders(format, filename);
-
-    // if (!query.startkey || !query.endkey) {
-    //     return sendError({
-    //         "error": "bad_request",
-    //         "reason": "startkey and endkey parameters required"
-    //     });
-    // }
-
-    // // exclude_cols params removes cols from export. takes 1-indexed comma
-    // // separated list as input. e.g 1,5
-    // if (exclude_cols.length > 0) {
-    //     _.each(exclude_cols, function(num) {
-    //         keys.splice(num-1, 1);
-    //     });
-    // }
-
-    // // fetch labels for all keys
-    // labels = utils.getLabels(keys, form, locale);
-
-    // if (!query.skip_header_row) {
-    //     sendHeaderRow(format, labels, form, delimiter);
-    // }
-
     var row;
     while (row = getRow()) {
         if(row.doc) {
