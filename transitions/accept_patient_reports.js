@@ -100,34 +100,46 @@ module.exports = {
     // find the messages to clear
     findToClear: function(options) {
         var registration = options.registration.doc,
-            silenceDuration = date.getDuration(options.silence_for),
-            reportedDate = moment(options.reported_date),
+            reported_date = moment(options.reported_date),
             type = options.type,
-            first,
+            silence_until,
             found_group,
-            silenceUntil = reportedDate.clone();
+            first;
 
-        if (silenceDuration) {
-            silenceUntil.add(silenceDuration);
-        }
+        if (options.silence_for) {
+            silence_until = reported_date.clone();
+            silence_until.add(date.getDuration(options.silence_for));
+        };
 
         return _.filter(utils.filterScheduledMessages(registration, type), function(msg) {
             var due = moment(msg.due),
-                // due is after it was reported, but before the silence cutoff; also 'scheduled'
-                matches = due >= reportedDate && due <= silenceUntil && msg.state === 'scheduled';
+                matches;
 
-            // capture first match for group matching
-            if (matches && !first) {
-                first = msg;
+            // If we have a silence_until value then only clear the first group
+            // matched within the silence window. Otherwise clear all messages
+            // in the future.
+            if (silence_until) {
+                matches = (
+                    due >= reported_date
+                    && due <= silence_until
+                    && msg.state === 'scheduled'
+                );
+                // capture first match for group matching
+                if (matches && !first) {
+                    first = msg;
+                }
+                // if groups match then clear
+                if (first && first.group === msg.group) {
+                    found_group = true;
+                    return true;
+                }
+            } else {
+                matches = (
+                    due >= reported_date
+                    && msg.state === 'scheduled'
+                );
             }
-            // if groups match,always clear
-            if (first && first.group === msg.group) {
-                found_group = true;
-                return true;
-            // otherwise only if time/state matches
-            } else if (!found_group) {
-                return matches;
-            }
+            return matches;
         });
     },
     silenceReminders: function(options, callback) {
