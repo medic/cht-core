@@ -1,5 +1,15 @@
 # Kujua Release Notes
 
+## 0.3.10
+
+### TBD
+
+- added delivery form to generic ANC forms.
+
+- modified behavior of patient reports when `silence_for` option is empty we
+  clear the entire schedule instead of a group.
+
+
 ## 0.3.9
 
 ### May 22, 2014
