@@ -246,6 +246,82 @@ exports['silenceReminders testing'] = function(test) {
     });
 };
 
+exports['empty silence_for option clears all reminders'] = function(test) {
+    var audit = { saveDoc: function() {} },
+        now = moment(),
+        registration;
+
+    sinon.stub(audit, 'saveDoc').callsArgWithAsync(1, null);
+
+    // mock up a registered_patients view result
+    registration = {
+        doc: {
+            scheduled_tasks: [
+                {
+                    due: now.clone().subtract(2, 'days'),
+                    group: 0,
+                    state: 'scheduled',
+                    type: 'x'
+                },
+                {
+                    due: now.clone().add(2, 'days'),
+                    group: 1,
+                    state: 'scheduled',
+                    type: 'x'
+                },
+                {
+                    due: now.clone().add(2, 'days'),
+                    group: 2,
+                    state: 'scheduled',
+                    type: 'y'
+                },
+                {
+                    due: now.clone().add(20, 'days'),
+                    group: 2,
+                    state: 'scheduled',
+                    type: 'x'
+                },
+                {
+                    due: now.clone().add(2, 'days'),
+                    group: 1,
+                    state: 'scheduled',
+                    type: 'x'
+                }
+            ]
+        }
+    };
+
+    transition.silenceReminders({
+        audit: audit,
+        registration: registration,
+        type: 'x',
+        reported_date: now.clone().toISOString(),
+        silence_for: ''
+    }, function(err) {
+        var tasks;
+
+        test.equals(err, null);
+
+        test.equals(audit.saveDoc.called, true);
+
+        tasks = registration.doc.scheduled_tasks;
+
+        // don't clear in the past
+        test.equals(tasks[0].state, 'scheduled');
+
+        // only clear schedule of the same type
+        test.equals(tasks[2].state, 'scheduled');
+
+        test.equals(tasks[1].state, 'cleared');
+        test.equals(tasks[1].state_history[0].state, 'cleared');
+        test.equals(tasks[3].state, 'cleared');
+        test.equals(tasks[4].state, 'cleared');
+        test.equals(tasks[4].state_history[0].state, 'cleared');
+
+        test.done();
+    });
+};
+
 exports['is not repeatable'] = function(test) {
     test.equals(Boolean(transition.repeatable), false);
     test.done();
