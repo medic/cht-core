@@ -29,19 +29,13 @@
   </h4>
   <div class="toggle-body responses">
     {#responses}
+      {@eq key="event_type" value="report_accepted"}
       <div class="response">
-        <p>
-          {@eq key="event_type" value="report_accepted"}
-            If all the validations pass and the report is accepted
-          {/eq}
-          {@eq key="event_type" value="registration_not_found"}
-            If the validations pass but the patient ID is not located
-          {/eq}
-          this message will be sent to the sender
-        </p>
-        <input type="hidden" name="event_type" value="{event_type}"/>
+        <p>If all the validations pass and the report is accepted this message will be sent to the sender</p>
+        <input type="hidden" name="event_type" value="report_accepted"/>
         <textarea name="message" class="input-xxlarge translated" data-message="{message}" data-messages="{messages}">{message}</textarea>
       </div>
+      {/eq}
     {/responses}
   </div>
 </div>

@@ -5,6 +5,15 @@
     <i class="icon-chevron-up"></i>
   </h4>
   <div class="repeat-container toggle-body">
+    {#responses}
+      {@eq key="event_type" value="registration_not_found"}
+        <div class="response">
+          <p>Send the following response message if the validations pass but the patient ID is not located.</p>
+          <input type="hidden" name="event_type" value="registration_not_found"/>
+          <textarea name="message" class="input-xxlarge translated" data-message="{message}" data-messages="{messages}">{message}</textarea>
+        </div>
+      {/eq}
+    {/responses}
     {#validations}
     <div class="repeat-{@if cond="{template}"}template{:else}element{/if}">
       <p class="inline-form">
