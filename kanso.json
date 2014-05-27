@@ -688,7 +688,7 @@
                         "description": {
                             "type": "string",
                             "title": "Description",
-                            "description": "A complete description of this schedule in markdown format",
+                            "description": "A complete description of this schedule in <a href=\"http://daringfireball.net/projects/markdown/syntax\">markdown format</a>",
                             "default": "",
                             "je:hint": "textarea",
                             "je:textarea": {
