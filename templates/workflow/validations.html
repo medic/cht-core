@@ -19,8 +19,9 @@
       <p class="inline-form">
         Send the following response message if the 
         <select name="property">
-          <option value="patient_name" {@eq key="property" value="patient_name"}selected="true"{/eq}>patient name</option>
-          <option value="patient_phone" {@eq key="property" value="patient_phone"}selected="true"{/eq}>patient phone</option>
+        {#properties}
+          <option value="{.}" {@if cond="'{property}' === '{.}'"}selected="true"{/if}>{.}</option>
+        {/properties}
         </select>
         field does not pass this validation
         <input type="text" name="rule" value="{rule}"/>
