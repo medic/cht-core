@@ -30,6 +30,8 @@
           </div>
         </div>
       </div>
+    {:else}
+      <p>No registrations found for this schedule. This indicates a problem with the configuration.<p>
     {/registrations}
   </fieldset>
 
@@ -42,6 +44,8 @@
       {/format}
       {>"workflow/form.html"/}
     </fieldset>
+  {:else}
+    <p>No forms found for this schedule.</p>
   {/reports}
   </div>
 
