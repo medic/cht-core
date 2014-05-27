@@ -9,8 +9,9 @@
 
     <label>Start messages based on</label>
     <select name="start_from">
-      <option value="reported_date" {@eq key="start_from" value="reported_date"}selected="true"{/eq}>registration date</option>
-      <option value="lmp_date" {@eq key="start_from" value="lmp_date"}selected="true"{/eq}>LMP date</option>
+    {#properties}
+      <option value="{.}" {@if cond="'{start_from}' === '{.}'"}selected="true"{/if}>{.}</option>
+    {/properties}
     </select>
 
     <h4>Messages</h4>
