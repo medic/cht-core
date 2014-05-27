@@ -9,9 +9,9 @@
 
     <label>Start messages based on</label>
     <select name="start_from">
-    {#properties}
-      <option value="{.}" {@if cond="'{start_from}' === '{.}'"}selected="true"{/if}>{.}</option>
-    {/properties}
+    {#fields}
+      <option value="{field_name}" {@if cond="'{start_from}' === '{field_name}'"}selected="true"{/if}>{title}</option>
+    {/fields}
     </select>
 
     <h4>Messages</h4>

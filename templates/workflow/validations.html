@@ -19,9 +19,9 @@
       <p class="inline-form">
         Send the following response message if the 
         <select name="property">
-        {#properties}
-          <option value="{.}" {@if cond="'{property}' === '{.}'"}selected="true"{/if}>{.}</option>
-        {/properties}
+        {#fields}
+          <option value="{field_name}" {@if cond="'{property}' === '{field_name}'"}selected="true"{/if}>{title}</option>
+        {/fields}
         </select>
         field does not pass this validation
         <input type="text" name="rule" value="{rule}"/>

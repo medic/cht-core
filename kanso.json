@@ -371,6 +371,25 @@
                             "description": "Form code of a registration form. e.g. ANCR",
                             "default": "ANCR"
                         },
+                        "fields": {
+                            "title": "Fields",
+                            "type": "array",
+                            "description": "Available field names for use in validations",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "field_name": {
+                                        "type": "string",
+                                        "title": "Field Name"
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "title": "Display Name"
+                                    }
+                                }
+                            },
+                            "default": []
+                        },
                         "events": {
                             "type": "array",
                             "items": {
@@ -551,6 +570,25 @@
                             "title": "Silence Window",
                             "description": "The length of time used to find the next reminder group to silence.  Supported units: years, months, weeks, days, hours, minutes. e.g. 1 week (Or leave blank.)",
                             "default": "25 days"
+                        },
+                        "fields": {
+                            "title": "Fields",
+                            "type": "array",
+                            "description": "Available field names for use in validations",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "field_name": {
+                                        "type": "string",
+                                        "title": "Field Name"
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "title": "Display Name"
+                                    }
+                                }
+                            },
+                            "default": []
                         },
                         "validations": {
                             "type": "object",
