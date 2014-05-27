@@ -34,7 +34,7 @@ module.exports = {
    ],
    "locale": "en",
    "muvuku_webapp_url": "/muvuku-webapp/_design/muvuku-webapp/_rewrite/?_embed_mode=2",
-   "reported_date_format": "MMM hh:mm",
+   "reported_date_format": "DD-MMM-YYYY hh:mm:ss",
    "forms_only_mode": false,
    "public_access": false,
    "gateway_number": "+13125551212",

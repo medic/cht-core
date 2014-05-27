@@ -159,7 +159,7 @@
             "reported_date_format": {
                 "type": "string",
                 "title": "Reported Date Format",
-                "default": "MMM hh:mm",
+                "default": "DD-MMM-YYYY hh:mm:ss",
                 "description": "Format used to display the reported date field."
             },
             "forms_only_mode": {
