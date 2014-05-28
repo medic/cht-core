@@ -308,7 +308,8 @@ exports.export_data_records = function (head, req) {
 
     var form = req.query.form;
     var options = getOptions(req, form, [
-        '_id', 
+        '_id',
+        'patient_id',
         'reported_date', 
         'from',
         'related_entities.clinic.contact.name',
