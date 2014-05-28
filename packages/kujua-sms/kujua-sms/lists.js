@@ -248,8 +248,8 @@ exports.export_messages = function (head, req) {
                     date = true;
                 } else if (column === 'task.type') {
                     value = task.type || 'Task Message';
-                } else if (column === 'task.state') {
-                    value = task.state;
+                } else if (_s.startsWith(column, 'task.')) {
+                    value = objectpath.get(task, column.substring(5));
                 } else {
                     // otherwise just check the doc
                     value = objectpath.get(doc, column);
