@@ -47,16 +47,16 @@ exports['lists export data records csv'] = function(test) {
 
     test.expect(1);
 
-    var expected = '"Record UUID","Reported Date","Reported From","Clinic Contact Name"'
+    var expected = '"Record UUID","Patient ID","Reported Date","Reported From","Clinic Contact Name"'
         +',"Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name"'
         +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
         +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
         +'","Recommandations/Conseils","Précisions pour recommandations"'
         +',"Nom de l\'agent de santé"\n'
-        +'"abc123z","'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')
+        +'"abc123z","5594","'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')
         +'","+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1"'
         +',"2012","1","16","","","","","","","","",""\n'
-        +'"ssdk23z","'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')
+        +'"ssdk23z","5595","'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')
         +'","+13331110000","Sam","Clinic 2","","","District 2","2012","1","16","","","",""'
         +',"","","","",""\n';
 
@@ -70,6 +70,7 @@ exports['lists export data records csv'] = function(test) {
             "value": 1,
             "doc": {
                 _id: 'abc123z',
+                patient_id: '5594',
                 form: "MSBC",
                 related_entities: {
                     clinic: {
@@ -95,6 +96,7 @@ exports['lists export data records csv'] = function(test) {
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
+                patient_id: '5595',
                 related_entities: {
                     clinic: {
                         name:"Clinic 2",
@@ -158,6 +160,7 @@ exports['lists export data records csv with excluded columns'] = function(test) 
             "value": 1,
             "doc": {
                 _id: 'abc123z',
+                patient_id: '5595',
                 form: "MSBC",
                 related_entities: {
                     clinic: {
@@ -182,6 +185,7 @@ exports['lists export data records csv with excluded columns'] = function(test) 
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
+                patient_id: '5596',
                 related_entities: {
                     clinic: {
                         name:"Clinic 2",
@@ -204,7 +208,7 @@ exports['lists export data records csv with excluded columns'] = function(test) 
             startkey: 'foo',
             endkey: 'bar',
             form: 'MSBC',
-            exclude_cols: '1,3'
+            exclude_cols: '1,2,4'
         },
         method: "GET",
         userCtx: {
@@ -222,16 +226,16 @@ exports['lists export data records fr'] = function(test) {
 
     test.expect(1);
 
-    var expected = '"Record UUID";"Date envoyé";"Envoyé par";"Personne-ressource Clinique"'
+    var expected = '"Record UUID";"Patient ID";"Date envoyé";"Envoyé par";"Personne-ressource Clinique"'
         +';"Villages";"Nom de la santé Contact Center";"Nom du centre de santé";"Nom de l\'hôpital de district"'
         +';"Année";"Mois";"Jour";"Code du RC";"Type de patient";"Nom";"Age"'
         +';"Nom de la mère ou de l\'accompagnant";"Patient traité pour"'
         +';"Recommandations/Conseils";"Précisions pour recommandations"'
         +';"Nom de l\'agent de santé"\n'
-        +'"abc123z";"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
+        +'"abc123z";"5597";"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +';"+12229990000";"Paul";"Clinic 1";"Eric";"Health Center 1";"District 1"'
         +';"2012";"1";"16";"";"";"";"";"";"";"";"";""\n'
-        +'"ssdk23z";"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
+        +'"ssdk23z";"5598";"'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +';"+13331110000";"Sam";"Clinic 2";"";"";"District 2";"2012";"1";"16";"";"";"";""'
         +';"";"";"";"";""\n';
 
@@ -242,6 +246,7 @@ exports['lists export data records fr'] = function(test) {
             "value": 1,
             "doc": {
                 _id: 'abc123z',
+                patient_id: '5597',
                 related_entities: {
                     clinic: {
                         name:"Clinic 1",
@@ -262,6 +267,7 @@ exports['lists export data records fr'] = function(test) {
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
+                patient_id: '5598',
                 related_entities: {
                     clinic: {
                         name:"Clinic 2",
@@ -303,10 +309,10 @@ exports['lists export data records skip header row'] = function(test) {
 
     test.expect(1);
 
-    var expected = '"abc123z","'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
+    var expected = '"abc123z","5545","'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +',"+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1"'
         +',"2012","1","16","","","","","","","","",""\n'
-        +'"ssdk23z","'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
+        +'"ssdk23z","5546","'+moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +',"+13331110000","Sam","Clinic 2","","","District 2","2012","1","16","","","",""'
         +',"","","","",""\n';
 
@@ -317,6 +323,7 @@ exports['lists export data records skip header row'] = function(test) {
             "value": 1,
             "doc": {
                 _id: 'abc123z',
+                patient_id: '5545',
                 related_entities: {
                     clinic: {
                         name:"Clinic 1",
@@ -337,6 +344,7 @@ exports['lists export data records skip header row'] = function(test) {
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
+                patient_id: '5546',
                 related_entities: {
                     clinic: {
                         name:"Clinic 2",
@@ -378,16 +386,16 @@ exports['lists export data records with tz'] = function(test) {
 
     test.expect(1);
 
-    var expected = '"Record UUID","Reported Date","Reported From","Clinic Contact Name"'
+    var expected = '"Record UUID","Patient ID","Reported Date","Reported From","Clinic Contact Name"'
         +',"Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name"'
         +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
         +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
         +'","Recommandations/Conseils","Précisions pour recommandations"'
         +',"Nom de l\'agent de santé"\n'
-        +'"abc123z","12, Mar 2012, 03:10:42 +05:00"'
+        +'"abc123z","5545","12, Mar 2012, 03:10:42 +05:00"'
         +',"+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1"'
         +',"2012","1","16","","","","","","","","",""\n'
-        +'"ssdk23z","12, Mar 2012, 03:10:50 +05:00"'
+        +'"ssdk23z","5547","12, Mar 2012, 03:10:50 +05:00"'
         +',"+13331110000","Sam","Clinic 2","","","District 2","2012","1","16","","","",""'
         +',"","","","",""\n';
 
@@ -402,6 +410,7 @@ exports['lists export data records with tz'] = function(test) {
             "value": 1,
             "doc": {
                 _id: 'abc123z',
+                patient_id: '5545',
                 related_entities: {
                     clinic: {
                         name:"Clinic 1",
@@ -426,6 +435,7 @@ exports['lists export data records with tz'] = function(test) {
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
+                patient_id: '5547',
                 related_entities: {
                     clinic: {
                         name:"Clinic 2",
@@ -485,6 +495,7 @@ exports['lists export data records with external facility id'] = function(test) 
             "value": 1,
             "doc": {
                 _id: 'abc123z',
+                patient_id: '5545',
                 related_entities: {
                     clinic: {
                         name:"Clinic 1",
@@ -510,6 +521,7 @@ exports['lists export data records with external facility id'] = function(test) 
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
+                patient_id: '5548',
                 related_entities: {
                     clinic: {
                         name:"Clinic 2",
