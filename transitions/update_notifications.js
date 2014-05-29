@@ -7,7 +7,11 @@ var async = require('async'),
 
 module.exports = {
     filter: function(doc) {
-        return Boolean(doc.form && doc.patient_id);
+        return Boolean(
+            doc.form &&
+            doc.patient_id &&
+            utils.getClinicPhone(doc)
+        );
     },
     getConfig: function() {
         return _.extend({}, config.get('notifications'));
@@ -27,15 +31,15 @@ module.exports = {
     onMatch: function(change, db, audit, callback) {
         var doc = change.doc,
             patient_id = doc.patient_id,
-            options = module.exports.getConfig(),
+            config = module.exports.getConfig(),
             mute;
 
-        if (!options.on_form && !options.off_form) {
+        if (!config.on_form && !config.off_form) {
             // not configured; bail
             return callback(null, false);
-        } else if (utils.isFormCodeSame(options.on_form, doc.form)) {
+        } else if (utils.isFormCodeSame(config.on_form, doc.form)) {
             mute = false;
-        } else if (utils.isFormCodeSame(options.off_form, doc.form)) {
+        } else if (utils.isFormCodeSame(config.off_form, doc.form)) {
             mute = true;
         } else {
             // transition does not apply; return false
@@ -48,17 +52,36 @@ module.exports = {
             id: patient_id
         }, function(err, registrations) {
 
+            function addErr(event_type) {
+                var msg = _.findWhere(config.messages, {event_type: event_type});
+                if (msg) {
+                    messages.addError(doc, msg.message);
+                } else {
+                    messages.addError(doc, event_type);
+                }
+            }
+
+            function addMsg(event_type) {
+                var msg = _.findWhere(config.messages, {event_type: event_type});
+                messages.addMessage({
+                    doc: doc,
+                    message: msg.message,
+                    phone: messages.getRecipientPhone(doc, msg.recipient)
+                });
+            };
+
             if (err) {
                 callback(err);
             } else if (registrations.length) {
                 if (mute) {
-                    messages.addReply(doc, options.on_mute_message);
-                    if (options.confirm_deactivation) {
-                        messages.addError(doc, options.confirm_deactivation_message);
+                    if (config.confirm_deactivation) {
+                        addErr('confirm_deactivation');
                         return callback(null, true);
+                    } else {
+                        addMsg('on_mute');
                     }
                 } else {
-                    messages.addReply(doc, options.on_unmute_message);
+                        addMsg('on_unmute');
                 }
                 async.each(registrations, function(registration, callback) {
                     module.exports.modifyRegistration({
@@ -74,7 +97,8 @@ module.exports = {
                     }
                 });
             } else {
-                messages.addError(doc, options.patient_not_found);
+                addErr('sys.registration_not_found');
+                addMsg('patient_not_found');
                 callback(null, true);
             }
         });
