@@ -19,12 +19,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td colspan="7">Loading...</td>
-        </tr>
       </tbody>
     </table>
   </div>
+
+  {>"loader.html"/}
 </div>
 
 <div id="user-management-modal" class="modal hide fade" tabindex="-1">
@@ -43,6 +42,7 @@
         <input id="iterations" type="hidden" />
         <input id="derived_key" type="hidden" />
         <input id="password_scheme" type="hidden" />
+        <input id="iterations" type="hidden" />
 
         <label for="name">User Name</label>
         <input id="name" type="text" />
@@ -68,8 +68,8 @@
           </optgroup>
         </select>
 
-        <label for="facility">Facility</label>
-        <div id="facility"></div>
+        <label for="facility_id">Facility</label>
+        <div id="facility_id"></div>
 
         <label for="language">Language</label>
         <select id="language">
