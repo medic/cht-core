@@ -691,12 +691,14 @@
                                     "description": "What should trigger this message?",
                                     "default": "confirm_deactivation",
                                     "enum": [
+                                        "patient_not_found",
                                         "confirm_deactivation",
                                         "on_mute",
                                         "on_unmute"
                                     ],
                                     "je:hint": "enumlabels",
                                     "je:enumlabels": {
+                                        "patient_not_found": "Patient Not Found",
                                         "confirm_deactivation": "Confirm Deactivation",
                                         "on_mute": "On Mute",
                                         "on_unmute": "On Unmute"
