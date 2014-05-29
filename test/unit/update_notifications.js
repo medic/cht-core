@@ -3,6 +3,21 @@ var _ = require('underscore'),
     transition = require('../../transitions/update_notifications'),
     utils = require('../../lib/utils');
 
+var restore = function(objs) {
+    _.each(objs, function(obj) {
+        if (obj.restore) obj.restore();
+    });
+};
+
+exports.tearDown = function(callback) {
+    restore([
+        transition.getConfig,
+        utils.getRegistrations,
+        utils.getClinicPhone
+    ]);
+    callback();
+};
+
 exports['onMatch signature'] = function(test) {
     test.ok(_.isFunction(transition.onMatch));
     test.equals(transition.onMatch.length, 4);
@@ -15,15 +30,33 @@ exports['filter signature'] = function(test) {
     test.done();
 };
 
-exports['filter tests'] = function(test) {
-    test.equals(transition.filter({}), false);
-    test.equals(transition.filter({
+exports['filter tests: empty doc does not match'] = function(test) {
+    test.ok(!transition.filter({}));
+    test.done();
+};
+
+exports['filter tests: missing form does not match'] = function(test) {
+    test.ok(!transition.filter({
         patient_id: 'x',
-    }), false);
-    test.equals(transition.filter({
+    }));
+    test.done();
+};
+
+exports['filter tests: missing clinic phone does not match'] = function(test) {
+    sinon.stub(utils, 'getClinicPhone').returns(null);
+    test.ok(!transition.filter({
         form: 'x',
-        patient_id: 'x',
-    }), true);
+        patient_id: 'x'
+    }));
+    test.done();
+};
+
+exports['filter tests: match'] = function(test) {
+    sinon.stub(utils, 'getClinicPhone').returns('+555');
+    test.ok(transition.filter({
+        form: 'x',
+        patient_id: 'x'
+    }));
     test.done();
 };
 
@@ -39,10 +72,10 @@ exports['returns false if not on or off form'] = function(test) {
         }
     }, {}, {}, function(err, complete) {
         test.equals(complete, false);
-        transition.getConfig.restore();
         test.done();
     });
-}
+};
+
 exports['no configured on or off form returns false'] = function(test) {
     sinon.stub(transition, 'getConfig').returns({});
     transition.onMatch({
@@ -53,12 +86,10 @@ exports['no configured on or off form returns false'] = function(test) {
     }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, false);
-
-        transition.getConfig.restore();
-
         test.done();
     });
 };
+
 exports['registration not found adds error'] = function(test) {
     var doc = {
         form: 'on',
@@ -77,13 +108,8 @@ exports['registration not found adds error'] = function(test) {
     }, {}, {}, function(err, complete) {
         test.equals(err, null);
         test.equals(complete, true);
-
         test.equals(doc.errors.length, 1);
         test.equals(doc.errors[0].message, 'not found x');
-
-        transition.getConfig.restore();
-        utils.getRegistrations.restore();
-
         test.done();
     });
-}
+};
