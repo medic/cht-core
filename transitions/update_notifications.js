@@ -97,7 +97,7 @@ module.exports = {
                     }
                 });
             } else {
-                addErr('sys.registration_not_found');
+                addErr('patient_not_found');
                 addMsg('patient_not_found');
                 callback(null, true);
             }

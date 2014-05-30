@@ -93,11 +93,15 @@ exports['no configured on or off form returns false'] = function(test) {
 exports['registration not found adds error'] = function(test) {
     var doc = {
         form: 'on',
-        patient_id: 'x'
+        patient_id: 'x',
+        related_entities: {clinic: {contact: {phone: 'x'}}}
     };
 
     sinon.stub(transition, 'getConfig').returns({
-        patient_not_found: 'not found {{patient_id}}',
+        messages: [{
+            event_type: 'patient_not_found',
+            message: 'not found {{patient_id}}'
+        }],
         on_form: 'on'
     });
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
