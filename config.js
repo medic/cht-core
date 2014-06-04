@@ -52,11 +52,10 @@ function fetchConfig(callback) {
         method:'GET',
         path: config.settings_path
     }, function(err, data) {
-        var custom = data.settings;
         if (err) {
             callback(err);
         } else {
-            var settings = custom.settings;
+            var settings = data.settings;
             // append custom translations to defaults
             if (settings.translations) {
                 settings.translations = config.translations.concat(settings.translations);
