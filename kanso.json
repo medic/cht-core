@@ -443,13 +443,13 @@
                         "silence_type": {
                             "type": "string",
                             "title": "Schedule Name",
-                            "description": "Name of reminder schedule to silence after receiving this report.  Name needs to match exactly. e.g. ANC Reminders",
+                            "description": "Name of reminder schedule(s) to clear after receiving this report.  Name needs to match exactly, e.g. ANC Reminders.  If you need to support clearing multiple schedules then separate the names with commas.",
                             "default": "ANC Reminders"
                         },
                         "silence_for": {
                             "type": "string",
                             "title": "Silence Window",
-                            "description": "The length of time used to find the next reminder group to silence.  Leave blank to silence all reminder groups.  Supported units: years, months, weeks, days, hours, minutes. e.g. 25 days",
+                            "description": "The length of time used to find the next reminder group to clear.  Leave blank to clear all reminder groups.  Supported units: years, months, weeks, days, hours, minutes. e.g. 25 days",
                             "default": "25 days"
                         },
                         "validations": {
