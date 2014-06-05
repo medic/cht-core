@@ -186,31 +186,51 @@ exports['silenceReminders testing'] = function(test) {
         doc: {
             scheduled_tasks: [
                 {
-                    due: now.clone().subtract(2, 'days'),
-                    group: 0,
-                    state: 'scheduled',
-                    type: 'x'
-                },
-                {
-                    due: now.clone().add(2, 'days'),
+                    due: now.clone().subtract(5, 'days').toISOString(),
                     group: 1,
                     state: 'scheduled',
                     type: 'x'
                 },
                 {
-                    due: now.clone().add(2, 'days'),
-                    group: 2,
+                    due: now.clone().subtract(2, 'days').toISOString(),
+                    group: 1,
                     state: 'scheduled',
-                    type: 'y'
+                    type: 'x'
                 },
                 {
-                    due: now.clone().add(20, 'days'),
+                    due: now.clone().add(10, 'days').toISOString(),
                     group: 2,
                     state: 'scheduled',
                     type: 'x'
                 },
                 {
-                    due: now.clone().add(2, 'days'),
+                    due: now.clone().add(12, 'days').toISOString(),
+                    group: 2,
+                    state: 'scheduled',
+                    type: 'x'
+                },
+                {
+                    due: now.clone().add(12, 'days').toISOString(),
+                    group: 2,
+                    state: 'scheduled',
+                    // a different type, should be ignored
+                    type: 'y'
+                },
+                {
+                    due: now.clone().add(20, 'days').toISOString(),
+                    group: 3,
+                    state: 'scheduled',
+                    type: 'x'
+                },
+                {
+                    due: now.clone().add(25, 'days').toISOString(),
+                    group: 3,
+                    state: 'scheduled',
+                    type: 'x'
+                },
+                // last one is out of order
+                {
+                    due: now.clone().add(7, 'days').toISOString(),
                     group: 1,
                     state: 'scheduled',
                     type: 'x'
@@ -223,8 +243,8 @@ exports['silenceReminders testing'] = function(test) {
         audit: audit,
         registration: registration,
         type: 'x',
-        reported_date: now.clone().toISOString(),
-        silence_for: '19 days'
+        reported_date: now.valueOf(),
+        silence_for: '15 days'
     }, function(err) {
         var tasks;
 
@@ -235,12 +255,14 @@ exports['silenceReminders testing'] = function(test) {
         tasks = registration.doc.scheduled_tasks;
 
         test.equals(tasks[0].state, 'scheduled');
-        test.equals(tasks[1].state, 'cleared');
-        test.equals(tasks[1].state_history[0].state, 'cleared');
-        test.equals(tasks[2].state, 'scheduled');
-        test.equals(tasks[3].state, 'scheduled');
-        test.equals(tasks[4].state, 'cleared');
-        test.equals(tasks[4].state_history[0].state, 'cleared');
+        test.equals(tasks[1].state, 'scheduled');
+        test.equals(tasks[2].state, 'cleared');
+        test.equals(tasks[2].state_history[0].state, 'cleared');
+        test.equals(tasks[3].state, 'cleared');
+        test.equals(tasks[3].state_history[0].state, 'cleared');
+        test.equals(tasks[4].state, 'scheduled');
+        test.equals(tasks[5].state, 'scheduled');
+        test.equals(tasks[6].state, 'scheduled');
 
         test.done();
     });
@@ -315,6 +337,82 @@ exports['empty silence_for option clears all reminders'] = function(test) {
         test.equals(tasks[1].state, 'cleared');
         test.equals(tasks[1].state_history[0].state, 'cleared');
         test.equals(tasks[3].state, 'cleared');
+        test.equals(tasks[4].state, 'cleared');
+        test.equals(tasks[4].state_history[0].state, 'cleared');
+
+        test.done();
+    });
+};
+
+exports['when silence_type is comma separated act on multiple schedules'] = function(test) {
+    var audit = { saveDoc: function() {} },
+        now = moment(),
+        registration;
+
+    sinon.stub(audit, 'saveDoc').callsArgWithAsync(1, null);
+
+    // mock up a registered_patients view result
+    registration = {
+        doc: {
+            scheduled_tasks: [
+                {
+                    due: now.clone().subtract(2, 'days').toISOString(),
+                    group: 0,
+                    state: 'scheduled',
+                    type: 'foo'
+                },
+                {
+                    due: now.clone().add(2, 'days').toISOString(),
+                    group: 1,
+                    state: 'scheduled',
+                    type: 'foo'
+                },
+                {
+                    due: now.clone().add(2, 'days').toISOString(),
+                    group: 2,
+                    state: 'scheduled',
+                    type: 'foo'
+                },
+                {
+                    due: now.clone().add(2, 'days').toISOString(),
+                    group: 1,
+                    state: 'scheduled',
+                    type: 'bar'
+                },
+                {
+                    due: now.clone().add(5, 'days').toISOString(),
+                    group: 1,
+                    state: 'scheduled',
+                    type: 'bar'
+                }
+            ]
+        }
+    };
+
+    transition.silenceReminders({
+        audit: audit,
+        registration: registration,
+        type: 'foo, bar',
+        reported_date: now.clone().toISOString(),
+        silence_for: ''
+    }, function(err) {
+        var tasks;
+
+        test.equals(err, null);
+
+        test.equals(audit.saveDoc.called, true);
+
+        tasks = registration.doc.scheduled_tasks;
+
+        // don't clear in the past
+        test.equals(tasks[0].state, 'scheduled');
+
+        test.equals(tasks[1].state, 'cleared');
+        test.equals(tasks[1].state_history[0].state, 'cleared');
+        test.equals(tasks[2].state, 'cleared');
+        test.equals(tasks[2].state_history[0].state, 'cleared');
+        test.equals(tasks[3].state, 'cleared');
+        test.equals(tasks[3].state_history[0].state, 'cleared');
         test.equals(tasks[4].state, 'cleared');
         test.equals(tasks[4].state_history[0].state, 'cleared');
 
