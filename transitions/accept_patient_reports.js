@@ -101,9 +101,10 @@ module.exports = {
     findToClear: function(options) {
         var registration = options.registration.doc,
             reported_date = moment(options.reported_date),
-            type = options.type,
+            types = _.map(options.type.split(','), function(s) {
+                return s.trim();
+            }),
             silence_until,
-            found_group,
             first;
 
         if (options.silence_for) {
@@ -111,11 +112,11 @@ module.exports = {
             silence_until.add(date.getDuration(options.silence_for));
         };
 
-        return _.filter(utils.filterScheduledMessages(registration, type), function(msg) {
+        return _.filter(utils.filterScheduledMessages(registration, types), function(msg) {
             var due = moment(msg.due),
                 matches;
 
-            // If we have a silence_until value then only clear the first group
+            // If we have a silence_until value then clear the entire group
             // matched within the silence window. Otherwise clear all messages
             // in the future.
             if (silence_until) {
@@ -128,18 +129,14 @@ module.exports = {
                 if (matches && !first) {
                     first = msg;
                 }
-                // if groups match then clear
-                if (first && first.group === msg.group) {
-                    found_group = true;
-                    return true;
-                }
+                // clear entire group
+                return (first && first.group === msg.group);
             } else {
-                matches = (
+                return (
                     due >= reported_date
                     && msg.state === 'scheduled'
                 );
             }
-            return matches;
         });
     },
     silenceReminders: function(options, callback) {
