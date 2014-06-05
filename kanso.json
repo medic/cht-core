@@ -546,7 +546,7 @@
                         "form": {
                             "type": "string",
                             "title": "Report Form",
-                            "description": "Form code of the report.",
+                            "description": "Form code of the report. e.g. ANCV",
                             "default": "ANCV"
                         },
                         "name": {
@@ -561,14 +561,14 @@
                         },
                         "silence_type": {
                             "type": "string",
-                            "title": "Silence Scheduled Message Type",
-                            "description": "After receiving this report, silence scheduled messages of this name.  Name needs to match exactly.",
+                            "title": "Schedule Name",
+                            "description": "Name of reminder schedule(s) to clear after receiving this report.  Name needs to match exactly, e.g. ANC Reminders.  If you need to support clearing multiple schedules then separate the names with commas.",
                             "default": "ANC Reminders"
                         },
                         "silence_for": {
                             "type": "string",
                             "title": "Silence Window",
-                            "description": "The length of time used to find the next reminder group to silence.  Supported units: years, months, weeks, days, hours, minutes. e.g. 1 week (Or leave blank.)",
+                            "description": "The length of time used to find the next reminder group to clear.  Leave blank to clear all reminder groups.  Supported units: years, months, weeks, days, hours, minutes. e.g. 25 days",
                             "default": "25 days"
                         },
                         "fields": {
