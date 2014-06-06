@@ -117,19 +117,27 @@ function sendClosing(options) {
 }
 
 function getOptions(req, formName, defaultColumns) {
+    var query = req.query;
     var options = {
-        format: req.query.format,
-        dhName: req.query.dh_name,
-        locale: req.query.locale,
-        delimiter: req.query.locale === 'fr' ? '";"' : null,
-        skipHeader: req.query.skip_header_row,
-        timezone: req.query.tz,
-        columns: req.query.columns ? JSON.parse(req.query.columns) : defaultColumns,
+        format: query.format,
+        dhName: query.dh_name,
+        locale: query.locale,
+        delimiter: query.locale === 'fr' ? '";"' : null,
+        skipHeader: query.skip_header_row,
+        timezone: query.tz,
+        columns: query.columns ? JSON.parse(query.columns) : defaultColumns,
         formName: formName
     };
-    if (req.query.exclude_cols) {
+    if (query.filterState) {
+        options.filterState = {
+            state: query.filterState,
+            from: moment().add('days', query.filterStateFrom).startOf('day'),
+            to: moment().add('days', query.filterStateTo).endOf('day')
+        };
+    }
+    if (query.exclude_cols) {
         options.excludeColumns = _.sortBy(
-            req.query.exclude_cols.split(','),
+            query.exclude_cols.split(','),
             function(num) { 
                 // must exclude in reverse order or the pos keeps changing
                 return -1 * num;
@@ -176,6 +184,19 @@ exports.export_messages = function (head, req) {
 
     startExportHeaders(options, getFilename(options));
     sendHeaderRow(options, ['Message UUID', 'Sent By', 'To Phone', 'Message Body']);
+
+    function getStateDate(state, task, history) {
+        if (state === 'scheduled' && task.due) {
+            return task.due;
+        }
+        if (history[state]) {
+            return history[state];
+        }
+        if (task.state === state) {
+            return task.timestamp;
+        }
+        return;
+    }
 
     function sendMessageRows(doc) {
         var tasks = [];
@@ -233,18 +254,32 @@ exports.export_messages = function (head, req) {
             _.each(task.state_history, function(item) {
                 history[item.state] = item.timestamp;
             });
+
+            if (options.filterState) {
+                var filter = options.filterState;
+                var state = history[filter.state];
+                if (!state) {
+                     // task hasn't been in the required state
+                    return;
+                }
+                var stateTimestamp = getStateDate(filter.state, task, history);
+                if (!stateTimestamp) {
+                     // task has no timestamp
+                    return;
+                }
+                stateTimestamp = moment(stateTimestamp);
+                if (stateTimestamp.isBefore(filter.from)
+                    || stateTimestamp.isAfter(filter.to)) {
+                    // task isn't within filter period
+                    return;
+                }
+            }
             var vals = _.map(options.columns, function(column) {
                 var value;
                 var date = false;
                 if (_.contains(['received', 'scheduled', 'pending', 'sent', 'cleared', 'muted'], column)) {
                     // check the history
-                    if (column === 'scheduled' && task.due) {
-                        value = task.due;
-                    } else if (history[column]) {
-                        value = history[column];
-                    } else if (task.state === column) {
-                        value = task.timestamp;
-                    }
+                    value = getStateDate(column, task, history);
                     date = true;
                 } else if (column === 'task.type') {
                     value = task.type || 'Task Message';

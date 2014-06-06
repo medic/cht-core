@@ -512,3 +512,343 @@ exports['requesting messages export with columns parameter appends messages'] = 
     test.same(expected, resp.body);
     test.done();
 }
+
+exports['requesting messages export filtered by state'] = function(test) {
+    test.expect(1);
+
+    var reportedDate = 1331503842461;
+    var pendingTimestampA = moment().subtract('days', 21).valueOf();
+    var pendingTimestampB = moment().subtract('days', 20).valueOf();
+    var pendingTimestampC = moment().subtract('days', 10).valueOf();
+    var pendingTimestampD = moment().subtract('days', 9).valueOf();
+
+    var expected = '"Record UUID","Reported From","Message UUID","Sent By","To Phone","Message Body"\n'
+        + '"b","+12229990000"\n'
+        + '"c","+12229990000"\n';
+
+    var req = {
+        query: {
+            columns: '["_id","from"]',
+            filterState: 'pending',
+            filterStateFrom: '-20',
+            filterStateTo: '-10'
+        },
+        method: 'GET',
+        userCtx: {
+            roles: ['national_admin']
+        }
+    };
+
+    // mockup the view data
+    var viewdata = {rows: [
+        {
+            "key": [ true, "MSBC", 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'a',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'pending',
+                    timestamp: pendingTimestampA,
+                    state_history: [
+                        {
+                            state: 'pending',
+                            timestamp: pendingTimestampA
+                        }
+                    ]
+                }],
+                responses: [{
+                    uuid: 'z12',
+                    sent_by: 'g man',
+                    to: 'bro',
+                    message: 'yo dawg'
+                }]
+            }
+        },
+        {
+            "key": [ true, "MSBC", 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'b',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'pending',
+                    timestamp: pendingTimestampB,
+                    state_history: [
+                        {
+                            state: 'pending',
+                            timestamp: pendingTimestampB
+                        }
+                    ]
+                }],
+                responses: [{
+                    uuid: 'z12',
+                    sent_by: 'g man',
+                    to: 'bro',
+                    message: 'yo dawg'
+                }]
+            }
+        },
+        {
+            "key": [ true, "MSBC", 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'c',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'pending',
+                    timestamp: pendingTimestampC,
+                    state_history: [
+                        {
+                            state: 'pending',
+                            timestamp: pendingTimestampC
+                        }
+                    ]
+                }],
+                responses: [{
+                    uuid: 'z12',
+                    sent_by: 'g man',
+                    to: 'bro',
+                    message: 'yo dawg'
+                }]
+            }
+        },
+        {
+            "key": [ true, "MSBC", 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'd',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'pending',
+                    timestamp: pendingTimestampD,
+                    state_history: [
+                        {
+                            state: 'pending',
+                            timestamp: pendingTimestampD
+                        }
+                    ]
+                }],
+                responses: [{
+                    uuid: 'z12',
+                    sent_by: 'g man',
+                    to: 'bro',
+                    message: 'yo dawg'
+                }]
+            }
+        },
+        {
+            "key": [ true, "MSBC", 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'd',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'pending',
+                    timestamp: pendingTimestampD,
+                    state_history: [
+                        {
+                            state: 'sent',
+                            timestamp: pendingTimestampB
+                        }
+                    ]
+                }],
+                responses: [{
+                    uuid: 'z12',
+                    sent_by: 'g man',
+                    to: 'bro',
+                    message: 'yo dawg'
+                }]
+            }
+        }
+    ]};
+
+    var resp = fakerequest.list(lists.export_messages, viewdata, req);
+    test.same(expected, resp.body);
+    test.done();
+};
+
+exports['requesting messages export filtered by state in future'] = function(test) {
+    test.expect(1);
+
+    var reportedDate = 1331503842461;
+    var pendingTimestampA = moment().subtract('days', 11).valueOf();
+    var pendingTimestampB = moment().valueOf();
+    var pendingTimestampC = moment().add('days', 30).valueOf();
+    var pendingTimestampD = moment().add('days', 31).valueOf();
+
+    var expected = '"Record UUID","Reported From","Message UUID","Sent By","To Phone","Message Body"\n'
+        + '"b","+12229990000"\n'
+        + '"c","+12229990000"\n';
+
+    var req = {
+        query: {
+            columns: '["_id","from"]',
+            filterState: 'scheduled',
+            filterStateFrom: '-10',
+            filterStateTo: '+30'
+        },
+        method: 'GET',
+        userCtx: {
+            roles: ['national_admin']
+        }
+    };
+
+    // mockup the view data
+    var viewdata = {rows: [
+        {
+            "key": [ true, "MSBC", 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'a',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'scheduled',
+                    timestamp: pendingTimestampA,
+                    state_history: [
+                        {
+                            state: 'scheduled',
+                            timestamp: pendingTimestampA
+                        }
+                    ]
+                }],
+                responses: [{
+                    uuid: 'z12',
+                    sent_by: 'g man',
+                    to: 'bro',
+                    message: 'yo dawg'
+                }]
+            }
+        },
+        {
+            "key": [ true, "MSBC", 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'b',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'scheduled',
+                    timestamp: pendingTimestampA,
+                    state_history: [
+                        {
+                            state: 'scheduled',
+                            timestamp: pendingTimestampB
+                        }
+                    ]
+                }],
+                responses: [{
+                    uuid: 'z12',
+                    sent_by: 'g man',
+                    to: 'bro',
+                    message: 'yo dawg'
+                }]
+            }
+        },
+        {
+            "key": [ true, "MSBC", 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'c',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'scheduled',
+                    timestamp: pendingTimestampA,
+                    state_history: [
+                        {
+                            state: 'scheduled',
+                            timestamp: pendingTimestampC
+                        }
+                    ]
+                }],
+                responses: [{
+                    uuid: 'z12',
+                    sent_by: 'g man',
+                    to: 'bro',
+                    message: 'yo dawg'
+                }]
+            }
+        },
+        {
+            "key": [ true, "MSBC", 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'd',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'scheduled',
+                    timestamp: pendingTimestampA,
+                    state_history: [
+                        {
+                            state: 'scheduled',
+                            timestamp: pendingTimestampD
+                        }
+                    ]
+                }],
+                responses: [{
+                    uuid: 'z12',
+                    sent_by: 'g man',
+                    to: 'bro',
+                    message: 'yo dawg'
+                }]
+            }
+        },
+        {
+            "key": [ true, "MSBC", 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'd',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'sent',
+                    timestamp: pendingTimestampD,
+                    state_history: [
+                        {
+                            state: 'sent',
+                            timestamp: pendingTimestampB
+                        }
+                    ]
+                }],
+                responses: [{
+                    uuid: 'z12',
+                    sent_by: 'g man',
+                    to: 'bro',
+                    message: 'yo dawg'
+                }]
+            }
+        }
+    ]};
+
+    var resp = fakerequest.list(lists.export_messages, viewdata, req);
+    test.same(expected, resp.body);
+    test.done();
+};
