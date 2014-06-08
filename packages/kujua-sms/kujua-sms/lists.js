@@ -130,10 +130,17 @@ function getOptions(req, formName, defaultColumns) {
     };
     if (query.filter_state) {
         options.filterState = {
-            state: query.filter_state,
-            from: moment().add('days', query.filter_state_from).startOf('day'),
-            to: moment().add('days', query.filter_state_to).endOf('day')
+            state: query.filter_state
         };
+        if (query.filter_state_from) {
+            options.filterState.from = 
+                moment().add('days', query.filter_state_from).startOf('day');
+        }
+        if (query.filter_state_to) {
+            options.filterState.to = 
+                moment().add('days', query.filter_state_to).endOf('day')
+        }
+
     }
     if (query.exclude_cols) {
         options.excludeColumns = _.sortBy(
@@ -268,9 +275,12 @@ exports.export_messages = function (head, req) {
                     return;
                 }
                 stateTimestamp = moment(stateTimestamp);
-                if (stateTimestamp.isBefore(filter.from)
-                    || stateTimestamp.isAfter(filter.to)) {
-                    // task isn't within filter period
+                if (filter.from && stateTimestamp.isBefore(filter.from)) {
+                    // task is earlier than filter period start
+                    return;
+                }
+                if (filter.to && stateTimestamp.isAfter(filter.to)) {
+                    // task is later than filter period end
                     return;
                 }
             }

@@ -643,7 +643,7 @@ exports['requesting messages export filtered by state'] = function(test) {
     test.done();
 };
 
-exports['requesting messages export filtered by state in future'] = function(test) {
+exports['requesting messages export filtered by state in future with no upper bound'] = function(test) {
     test.expect(1);
 
     var reportedDate = 1331503842461;
@@ -660,8 +660,7 @@ exports['requesting messages export filtered by state in future'] = function(tes
         query: {
             columns: '["_id","from"]',
             filter_state: 'scheduled',
-            filter_state_from: '-10',
-            filter_state_to: '+30'
+            filter_state_from: '-10'
         },
         method: 'GET',
         userCtx: {
@@ -724,25 +723,6 @@ exports['requesting messages export filtered by state in future'] = function(tes
                     state_history: [{
                         state: 'scheduled',
                         timestamp: pendingTimestampC
-                    }]
-                }]
-            }
-        },
-        {
-            "key": [ 1331503842461 ],
-            "value": 1,
-            "doc": {
-                _id: 'd',
-                reported_date: reportedDate,
-                from: '+12229990000',
-                form: "MSBC",
-                tasks: [{
-                    type: 'Test',
-                    state: 'scheduled',
-                    timestamp: pendingTimestampA,
-                    state_history: [{
-                        state: 'scheduled',
-                        timestamp: pendingTimestampD
                     }]
                 }]
             }
