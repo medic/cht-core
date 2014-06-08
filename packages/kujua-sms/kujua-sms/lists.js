@@ -25,14 +25,13 @@ var formatDate = exports.formatDate = function(date, tz) {
     if (!date) {
         return '';
     }
-    // standard format for exports
-    var fmt = 'DD, MMM YYYY, HH:mm:ss Z';
     // return in a specified timezone offset
+    var result = moment(date);
     if (typeof tz !== 'undefined') {
-        return moment(date).zone(Number(tz)).format(fmt);
+        result = result.zone(Number(tz));
     }
     // return in UTC or browser/server preference/default
-    return moment(date).format(fmt);
+    return result.format('DD, MMM YYYY, HH:mm:ss Z');
 };
 
 /*

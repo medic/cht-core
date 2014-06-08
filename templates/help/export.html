@@ -1,0 +1,119 @@
+<div id="help-search">
+  <div class="row">
+    <div class="span10 offset1">
+      <h3>Export</h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="span10 offset1">
+      
+      <h4>Integration</h4>
+
+      <p>You can export data by making requests to specific URLs.</p>
+
+      <h5>Forms</h5>
+      <p>Export a file containing all submitted forms.</p>
+      <pre>/export/forms/&lt;formcode&gt;</pre>
+      <p>Parameters:</p>
+      <dl class="horizontal">
+        <dt>format</dt>
+        <dd>The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.</dd>
+        <dt>locale</dt>
+        <dd>Locale for translatable data. Defaults to 'en'.</dd>
+        <dt>tz</dt>
+        <dd>The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.</dd>
+        <dt>skip_header_row</dt>
+        <dd>'true' to omit the column headings. Defaults to 'false'.</dd>
+        <dt>columns</dt>
+        <dd>
+          <p>An orderered array of columns to export, eg:</p>
+          <pre>["reported_date","from","related_entities.clinic.name"]</pre>
+          <p>Defaults to:</p>
+          <ul>
+            <li>_id</li>
+            <li>patient_id</li>
+            <li>reported_date</li>
+            <li>from</li>
+            <li>related_entities.clinic.contact.name</li>
+            <li>related_entities.clinic.name</li>
+            <li>related_entities.clinic.parent.contact.name</li>
+            <li>related_entities.clinic.parent.name</li>
+            <li>related_entities.clinic.parent.parent.name</li>
+          </ul>
+        </dd>
+        <dt>exclude_cols</dt>
+        <dd>Comma separated column indexes to exclude from the output, for example '1,4,5'. The columns parameter should be used instead.</dd>
+        <dt>dh_name</dt>
+        <dd>The name of the district hospital to show rows for.</dd>
+      </dl>
+
+      <h5>Messages</h5>
+      <p>Export a file containing all messages</p>
+      <pre>/export/messages</pre>
+      <p>Parameters:</p>
+      <dl class="horizontal">
+        <dt>format</dt>
+        <dd>The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.</dd>
+        <dt>locale</dt>
+        <dd>Locale for translatable data. Defaults to 'en'.</dd>
+        <dt>tz</dt>
+        <dd>The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.</dd>
+        <dt>skip_header_row</dt>
+        <dd>'true' to omit the column headings. Defaults to 'false'.</dd>
+        <dt>columns</dt>
+        <dd>
+          <p>An orderered array of columns to export, eg:</p>
+          <pre>["reported_date","from","related_entities.clinic.name"]</pre> 
+          <p>In addition to the specified columns, the export will contain four columns per response for "Message UUID", "Sent By", "To Phone", and "Message Body".</p>
+          <p>Defaults to:</p>
+          <ul>
+            <li>_id</li>
+            <li>patient_id</li>
+            <li>reported_date</li>
+            <li>from</li>
+            <li>related_entities.clinic.contact.name</li>
+            <li>related_entities.clinic.name</li>
+            <li>related_entities.clinic.parent.contact.name</li>
+            <li>related_entities.clinic.parent.name</li>
+            <li>related_entities.clinic.parent.parent.name</li>
+            <li>task.type</li>
+            <li>task.state</li>
+            <li>received</li>
+            <li>scheduled</li>
+            <li>pending</li>
+            <li>sent</li>
+            <li>cleared</li>
+            <li>muted</li>
+          </ul>
+        </dd>
+        <dt>exclude_cols</dt>
+        <dd>Comma separated column indexes to exclude from the output, for example '1,4,5'. The columns parameter should be used instead.</dd>
+        <dt>dh_name</dt>
+        <dd>The name of the district hospital to show rows for.</dd>
+        <dt>filter_state</dt>
+        <dd>Used in conjunction with the parameters below to only return messages that were in a given state. Possible values are 'received', 'scheduled', 'pending', 'sent', 'cleared', or 'muted'.</dd>
+        <dt>filter_state_from</dt>
+        <dd>The lower bound on the date that the message is in the given state. Defaults to no lower bound. Ignored if filter_state is not provided.</dd>
+        <dt>filter_state_to</dt>
+        <dd>The upper bound on the date that the message is in the given state. Defaults to no upper bound. Ignored if filter_state is not provided.</dd>
+      </dl>
+
+      <h5>Audit Log</h5>
+      <p>Export a file containing the audit log.</p>
+      <pre>/export/audit</pre>
+      <p>Parameters:</p>
+      <dl class="horizontal">
+        <dt>format</dt>
+        <dd>The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.</dd>
+        <dt>locale</dt>
+        <dd>Locale for translatable data. Defaults to 'en'.</dd>
+        <dt>tz</dt>
+        <dd>The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.</dd>
+        <dt>skip_header_row</dt>
+        <dd>'true' to omit the column headings. Defaults to 'false'.</dd>
+        <dt>exclude_cols</dt>
+        <dd>Comma separated column indexes to exclude from the output, for example '1,4,5'. The columns parameter should be used instead.</dd>
+      </dl>
+    </div>
+  </div>
+</div>
