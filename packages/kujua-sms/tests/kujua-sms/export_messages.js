@@ -542,7 +542,7 @@ exports['requesting messages export filtered by state'] = function(test) {
     // mockup the view data
     var viewdata = {rows: [
         {
-            "key": [ true, "MSBC", 1331503842461 ],
+            "key": [ 1331503842461 ],
             "value": 1,
             "doc": {
                 _id: 'a',
@@ -559,17 +559,11 @@ exports['requesting messages export filtered by state'] = function(test) {
                             timestamp: pendingTimestampA
                         }
                     ]
-                }],
-                responses: [{
-                    uuid: 'z12',
-                    sent_by: 'g man',
-                    to: 'bro',
-                    message: 'yo dawg'
                 }]
             }
         },
         {
-            "key": [ true, "MSBC", 1331503842461 ],
+            "key": [ 1331503842461 ],
             "value": 1,
             "doc": {
                 _id: 'b',
@@ -586,17 +580,11 @@ exports['requesting messages export filtered by state'] = function(test) {
                             timestamp: pendingTimestampB
                         }
                     ]
-                }],
-                responses: [{
-                    uuid: 'z12',
-                    sent_by: 'g man',
-                    to: 'bro',
-                    message: 'yo dawg'
                 }]
             }
         },
         {
-            "key": [ true, "MSBC", 1331503842461 ],
+            "key": [ 1331503842461 ],
             "value": 1,
             "doc": {
                 _id: 'c',
@@ -613,17 +601,11 @@ exports['requesting messages export filtered by state'] = function(test) {
                             timestamp: pendingTimestampC
                         }
                     ]
-                }],
-                responses: [{
-                    uuid: 'z12',
-                    sent_by: 'g man',
-                    to: 'bro',
-                    message: 'yo dawg'
                 }]
             }
         },
         {
-            "key": [ true, "MSBC", 1331503842461 ],
+            "key": [ 1331503842461 ],
             "value": 1,
             "doc": {
                 _id: 'd',
@@ -640,20 +622,14 @@ exports['requesting messages export filtered by state'] = function(test) {
                             timestamp: pendingTimestampD
                         }
                     ]
-                }],
-                responses: [{
-                    uuid: 'z12',
-                    sent_by: 'g man',
-                    to: 'bro',
-                    message: 'yo dawg'
                 }]
             }
         },
         {
-            "key": [ true, "MSBC", 1331503842461 ],
+            "key": [ 1331503842461 ],
             "value": 1,
             "doc": {
-                _id: 'd',
+                _id: 'e',
                 reported_date: reportedDate,
                 from: '+12229990000',
                 form: "MSBC",
@@ -667,12 +643,6 @@ exports['requesting messages export filtered by state'] = function(test) {
                             timestamp: pendingTimestampB
                         }
                     ]
-                }],
-                responses: [{
-                    uuid: 'z12',
-                    sent_by: 'g man',
-                    to: 'bro',
-                    message: 'yo dawg'
                 }]
             }
         }
@@ -712,7 +682,7 @@ exports['requesting messages export filtered by state in future'] = function(tes
     // mockup the view data
     var viewdata = {rows: [
         {
-            "key": [ true, "MSBC", 1331503842461 ],
+            "key": [ 1331503842461 ],
             "value": 1,
             "doc": {
                 _id: 'a',
@@ -729,17 +699,11 @@ exports['requesting messages export filtered by state in future'] = function(tes
                             timestamp: pendingTimestampA
                         }
                     ]
-                }],
-                responses: [{
-                    uuid: 'z12',
-                    sent_by: 'g man',
-                    to: 'bro',
-                    message: 'yo dawg'
                 }]
             }
         },
         {
-            "key": [ true, "MSBC", 1331503842461 ],
+            "key": [ 1331503842461 ],
             "value": 1,
             "doc": {
                 _id: 'b',
@@ -756,17 +720,11 @@ exports['requesting messages export filtered by state in future'] = function(tes
                             timestamp: pendingTimestampB
                         }
                     ]
-                }],
-                responses: [{
-                    uuid: 'z12',
-                    sent_by: 'g man',
-                    to: 'bro',
-                    message: 'yo dawg'
                 }]
             }
         },
         {
-            "key": [ true, "MSBC", 1331503842461 ],
+            "key": [ 1331503842461 ],
             "value": 1,
             "doc": {
                 _id: 'c',
@@ -783,17 +741,11 @@ exports['requesting messages export filtered by state in future'] = function(tes
                             timestamp: pendingTimestampC
                         }
                     ]
-                }],
-                responses: [{
-                    uuid: 'z12',
-                    sent_by: 'g man',
-                    to: 'bro',
-                    message: 'yo dawg'
                 }]
             }
         },
         {
-            "key": [ true, "MSBC", 1331503842461 ],
+            "key": [ 1331503842461 ],
             "value": 1,
             "doc": {
                 _id: 'd',
@@ -810,20 +762,14 @@ exports['requesting messages export filtered by state in future'] = function(tes
                             timestamp: pendingTimestampD
                         }
                     ]
-                }],
-                responses: [{
-                    uuid: 'z12',
-                    sent_by: 'g man',
-                    to: 'bro',
-                    message: 'yo dawg'
                 }]
             }
         },
         {
-            "key": [ true, "MSBC", 1331503842461 ],
+            "key": [ 1331503842461 ],
             "value": 1,
             "doc": {
-                _id: 'd',
+                _id: 'e',
                 reported_date: reportedDate,
                 from: '+12229990000',
                 form: "MSBC",
@@ -837,12 +783,6 @@ exports['requesting messages export filtered by state in future'] = function(tes
                             timestamp: pendingTimestampB
                         }
                     ]
-                }],
-                responses: [{
-                    uuid: 'z12',
-                    sent_by: 'g man',
-                    to: 'bro',
-                    message: 'yo dawg'
                 }]
             }
         }
