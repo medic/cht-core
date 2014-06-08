@@ -128,11 +128,11 @@ function getOptions(req, formName, defaultColumns) {
         columns: query.columns ? JSON.parse(query.columns) : defaultColumns,
         formName: formName
     };
-    if (query.filterState) {
+    if (query.filter_state) {
         options.filterState = {
-            state: query.filterState,
-            from: moment().add('days', query.filterStateFrom).startOf('day'),
-            to: moment().add('days', query.filterStateTo).endOf('day')
+            state: query.filter_state,
+            from: moment().add('days', query.filter_state_from).startOf('day'),
+            to: moment().add('days', query.filter_state_to).endOf('day')
         };
     }
     if (query.exclude_cols) {

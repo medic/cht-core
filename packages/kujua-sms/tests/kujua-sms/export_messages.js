@@ -529,9 +529,9 @@ exports['requesting messages export filtered by state'] = function(test) {
     var req = {
         query: {
             columns: '["_id","from"]',
-            filterState: 'pending',
-            filterStateFrom: '-20',
-            filterStateTo: '-10'
+            filter_state: 'pending',
+            filter_state_from: '-20',
+            filter_state_to: '-10'
         },
         method: 'GET',
         userCtx: {
@@ -669,9 +669,9 @@ exports['requesting messages export filtered by state in future'] = function(tes
     var req = {
         query: {
             columns: '["_id","from"]',
-            filterState: 'scheduled',
-            filterStateFrom: '-10',
-            filterStateTo: '+30'
+            filter_state: 'scheduled',
+            filter_state_from: '-10',
+            filter_state_to: '+30'
         },
         method: 'GET',
         userCtx: {
