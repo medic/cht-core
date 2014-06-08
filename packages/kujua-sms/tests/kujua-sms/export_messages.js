@@ -553,12 +553,10 @@ exports['requesting messages export filtered by state'] = function(test) {
                     type: 'Test',
                     state: 'pending',
                     timestamp: pendingTimestampA,
-                    state_history: [
-                        {
-                            state: 'pending',
-                            timestamp: pendingTimestampA
-                        }
-                    ]
+                    state_history: [{
+                        state: 'pending',
+                        timestamp: pendingTimestampA
+                    }]
                 }]
             }
         },
@@ -574,12 +572,10 @@ exports['requesting messages export filtered by state'] = function(test) {
                     type: 'Test',
                     state: 'pending',
                     timestamp: pendingTimestampB,
-                    state_history: [
-                        {
-                            state: 'pending',
-                            timestamp: pendingTimestampB
-                        }
-                    ]
+                    state_history: [{
+                        state: 'pending',
+                        timestamp: pendingTimestampB
+                    }]
                 }]
             }
         },
@@ -595,12 +591,10 @@ exports['requesting messages export filtered by state'] = function(test) {
                     type: 'Test',
                     state: 'pending',
                     timestamp: pendingTimestampC,
-                    state_history: [
-                        {
-                            state: 'pending',
-                            timestamp: pendingTimestampC
-                        }
-                    ]
+                    state_history: [{
+                        state: 'pending',
+                        timestamp: pendingTimestampC
+                    }]
                 }]
             }
         },
@@ -616,12 +610,10 @@ exports['requesting messages export filtered by state'] = function(test) {
                     type: 'Test',
                     state: 'pending',
                     timestamp: pendingTimestampD,
-                    state_history: [
-                        {
-                            state: 'pending',
-                            timestamp: pendingTimestampD
-                        }
-                    ]
+                    state_history: [{
+                        state: 'pending',
+                        timestamp: pendingTimestampD
+                    }]
                 }]
             }
         },
@@ -636,13 +628,11 @@ exports['requesting messages export filtered by state'] = function(test) {
                 tasks: [{
                     type: 'Test',
                     state: 'pending',
-                    timestamp: pendingTimestampD,
-                    state_history: [
-                        {
-                            state: 'sent',
-                            timestamp: pendingTimestampB
-                        }
-                    ]
+                    timestamp: pendingTimestampA,
+                    state_history: [{
+                        state: 'sent',
+                        timestamp: pendingTimestampB
+                    }]
                 }]
             }
         }
@@ -693,12 +683,10 @@ exports['requesting messages export filtered by state in future'] = function(tes
                     type: 'Test',
                     state: 'scheduled',
                     timestamp: pendingTimestampA,
-                    state_history: [
-                        {
-                            state: 'scheduled',
-                            timestamp: pendingTimestampA
-                        }
-                    ]
+                    state_history: [{
+                        state: 'scheduled',
+                        timestamp: pendingTimestampA
+                    }]
                 }]
             }
         },
@@ -714,12 +702,10 @@ exports['requesting messages export filtered by state in future'] = function(tes
                     type: 'Test',
                     state: 'scheduled',
                     timestamp: pendingTimestampA,
-                    state_history: [
-                        {
-                            state: 'scheduled',
-                            timestamp: pendingTimestampB
-                        }
-                    ]
+                    state_history: [{
+                        state: 'scheduled',
+                        timestamp: pendingTimestampB
+                    }]
                 }]
             }
         },
@@ -735,12 +721,10 @@ exports['requesting messages export filtered by state in future'] = function(tes
                     type: 'Test',
                     state: 'scheduled',
                     timestamp: pendingTimestampA,
-                    state_history: [
-                        {
-                            state: 'scheduled',
-                            timestamp: pendingTimestampC
-                        }
-                    ]
+                    state_history: [{
+                        state: 'scheduled',
+                        timestamp: pendingTimestampC
+                    }]
                 }]
             }
         },
@@ -756,12 +740,10 @@ exports['requesting messages export filtered by state in future'] = function(tes
                     type: 'Test',
                     state: 'scheduled',
                     timestamp: pendingTimestampA,
-                    state_history: [
-                        {
-                            state: 'scheduled',
-                            timestamp: pendingTimestampD
-                        }
-                    ]
+                    state_history: [{
+                        state: 'scheduled',
+                        timestamp: pendingTimestampD
+                    }]
                 }]
             }
         },
@@ -776,13 +758,11 @@ exports['requesting messages export filtered by state in future'] = function(tes
                 tasks: [{
                     type: 'Test',
                     state: 'sent',
-                    timestamp: pendingTimestampD,
-                    state_history: [
-                        {
-                            state: 'sent',
-                            timestamp: pendingTimestampB
-                        }
-                    ]
+                    timestamp: pendingTimestampA,
+                    state_history: [{
+                        state: 'sent',
+                        timestamp: pendingTimestampB
+                    }]
                 }]
             }
         }
