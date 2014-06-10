@@ -3,7 +3,6 @@
  */
 var utils = require('kujua-utils'),
     settings = require('settings/root'),
-    jsonforms = require('views/lib/jsonforms'),
     logger = require('kujua-utils').logger,
     _ = require('underscore'),
     moment = require('moment'),
@@ -145,12 +144,15 @@ var includeNonFormFields = function(doc, form_keys) {
  * makeDataRecordOriginal.
  *
  */
-exports.makeDataRecordReadable = function(doc) {
+exports.makeDataRecordReadable = function(doc, appinfo) {
+
+    exports.info = appinfo;
+
     var data_record = doc;
 
     // adding a fields property for ease of rendering code
     if(data_record.form) {
-        var keys = getFormKeys(data_record.form);
+        var keys = getFormKeys(data_record.form, appinfo);
         var labels = exports.getLabels(keys, data_record.form, getLocale(doc));
         data_record.fields = exports.fieldsToHtml(keys, labels, data_record);
         includeNonFormFields(data_record, keys);
@@ -274,10 +276,10 @@ exports.makeDataRecordReadable = function(doc) {
 exports.fieldsToHtml = function(keys, labels, data_record, def) {
 
     if (!def && data_record && data_record.form)
-        def = jsonforms.getForm(data_record.form);
+        def = exports.info.getForm(data_record.form);
 
     if (_.isString(def))
-        def = jsonforms.getForm(def);
+        def = exports.info.getForm(def);
 
     var fields = {
         headers: [],
@@ -308,6 +310,9 @@ exports.fieldsToHtml = function(keys, labels, data_record, def) {
     return fields;
 };
 
+/*
+ * @api private
+ * */
 function translateKey(key, field, locale) {
     var label;
 
@@ -332,12 +337,13 @@ function translateKey(key, field, locale) {
  * @param String form - form code string
  * @param String locale - locale string, e.g. 'en', 'fr', 'en-gb'
  *
- * @return Array  - form field labels based on jsonforms definition.
+ * @return Array  - form field labels based on forms definition.
  *
  * @api private
  */
 exports.getLabels = function(keys, form, locale) {
-    var def = jsonforms.getForm(form),
+
+    var def = exports.info.getForm(form),
         fields = def && def.fields;
 
     return _.reduce(keys, function(memo, key) {
@@ -451,13 +457,14 @@ var getValues = exports.getValues = function(doc, keys) {
  * If dot notation is used it will be an array
  * of arrays.
  *
- * @param String form - jsonforms key
+ * @param String form - forms key
  *
- * @return Array  - form field keys based on jsonforms definition
+ * @return Array  - form field keys based on forms definition
  */
-var getFormKeys = exports.getFormKeys = function(form) {
+var getFormKeys = exports.getFormKeys = function(form, appinfo) {
+
     var keys = {},
-        def = jsonforms.getForm(form);
+        def = appinfo.getForm(form);
 
     var getKeys = function(key, hash) {
         if(key.length > 1) {
@@ -954,6 +961,7 @@ var arrayToXML = exports.arrayToXML = function(arr, format) {
 // placeholder function that will be replaced with appInfo from the calling
 // update/show/list function
 exports.info = {
+    getForm: function() {},
     getMessage: function(value, locale) {
         locale = locale || 'en';
 
@@ -972,12 +980,14 @@ exports.info = {
 };
 
 exports.getFormTitle = function(form, appinfo) {
-    var def = jsonforms.getForm(form),
-        label = def && def.meta && def.meta.label,
+
+    appinfo = appinfo || exports.info;
+
+    var label = def && def.meta && def.meta.label,
+        def = appinfo.getForm(form),
         key,
         title;
 
-    appinfo = appinfo || exports.info;
     if (_.isString(label)) {
         title = appinfo.translate(label);
     } else if (_.isObject(label)) {

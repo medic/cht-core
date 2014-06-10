@@ -64,17 +64,9 @@ exports.parseField = function (field, raw) {
             // TODO we don't have locale data inside this function so calling
             // translate does not resolve locale.
             if (field.list) {
-                utils.logger.debug('looking at field list');
                 for (var i in field.list) {
                     var item = field.list[i];
-                    utils.logger.debug('item is '+JSON.stringify(item));
-                    utils.logger.debug('raw is '+ JSON.stringify(raw));
-                    utils.logger.debug('strict compare returns');
-                    utils.logger.debug(String(item[0]) === String(raw));
-                    utils.logger.debug('soft compare returns');
-                    utils.logger.debug(String(item[0]) == String(raw));
                     if (String(item[0]) === String(raw)) {
-                        utils.logger.debug('calling translate() '+ JSON.stringify(item[1]));
                         return sms_utils.info.translate(item[1]);
                     }
                 }

@@ -7,8 +7,7 @@ var _ = require('underscore'),
     utils = require('./utils'),
     moment = require('moment'),
     kutils = require('kujua-utils'),
-    jsonforms  = require('views/lib/jsonforms'),
-    info = require('views/lib/appinfo'),
+    appinfo = require('views/lib/appinfo'),
     objectpath = require('views/lib/objectpath');
 
 /*
@@ -166,7 +165,7 @@ exports.export_messages = function (head, req) {
         return send('');
     }
 
-    utils.info = info.getAppInfo.call(this); // replace fake info with real from context
+    utils.info = appinfo.getAppInfo.call(this); // replace fake info with real from context
 
     var options = getOptions(req, 'messages', [
         '_id',
@@ -348,7 +347,7 @@ exports.export_data_records = function (head, req) {
         return send('');
     }
 
-    utils.info = info.getAppInfo.call(this); // replace fake info with real from context
+    utils.info = appinfo.getAppInfo.call(this); // replace fake info with real from context
 
     var form = req.query.form;
     var options = getOptions(req, form, [
@@ -391,7 +390,7 @@ exports.export_audit = function (head, req) {
         return send('');
     }
 
-    utils.info = info.getAppInfo.call(this); // replace fake info with real from context
+    utils.info = appinfo.getAppInfo.call(this); // replace fake info with real from context
 
     var options = getOptions(req, 'audit');
     options.columns = [
@@ -472,11 +471,11 @@ exports.data_record = function (head, req) {
         form = req.query && req.query.form,
         headers = req.headers.Host.split(":"),
         baseURL = require('duality/core').getBaseURL(),
-        def = jsonforms.getForm(form),
-        facility  = null,
-        appInfo = info.getAppInfo.call(this);
+        app_settings = appinfo.getAppInfo.call(this),
+        def = app_settings.getForm(form),
+        facility  = null;
 
-    utils.info = appInfo; // replace fake info with real from context
+    utils.info = app_settings; // replace fake info with real from context
 
     //
     // Add first matched facility to record
@@ -501,7 +500,7 @@ exports.data_record = function (head, req) {
     }
 
     // no facility, not a public form, and not a public_access install
-    if (!facility && !(def && def.public_form) && !appInfo.public_access) {
+    if (!facility && !(def && def.public_form) && !app_settings.public_access) {
         utils.addError(record, 'sys.facility_not_found');
     }
 
