@@ -48,6 +48,9 @@
       <h5>Messages</h5>
       <p>Export a file containing all messages</p>
       <pre>/export/messages</pre>
+      <p>Examples:</p>
+      <p>Return only rows that are scheduled to be sent in the next ten days.</p>
+      <pre>/export/messages?filter_state=scheduled&amp;filter_state_to=10</pre>
       <p>Parameters:</p>
       <dl class="horizontal">
         <dt>format</dt>
@@ -89,9 +92,9 @@
         <dt>filter_state</dt>
         <dd>Used in conjunction with the parameters below to only return messages that were in a given state. Possible values are 'received', 'scheduled', 'pending', 'sent', 'cleared', or 'muted'.</dd>
         <dt>filter_state_from</dt>
-        <dd>The lower bound on the date that the message is in the given state. Defaults to no lower bound. Ignored if filter_state is not provided.</dd>
+        <dd>The number of days from now to use as a lower bound on the date that the message is in the given state. Defaults to no lower bound. Ignored if filter_state is not provided.</dd>
         <dt>filter_state_to</dt>
-        <dd>The upper bound on the date that the message is in the given state. Defaults to no upper bound. Ignored if filter_state is not provided.</dd>
+        <dd>The number of days from now to use as an upper bound on the date that the message is in the given state. Defaults to no upper bound. Ignored if filter_state is not provided.</dd>
       </dl>
 
       <h5>Audit Log</h5>
