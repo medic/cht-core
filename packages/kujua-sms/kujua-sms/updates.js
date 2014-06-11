@@ -59,10 +59,9 @@ function getDataRecord(doc, form_data, appInfo) {
 
     // if form is undefined we treat as a regular message
     if (form && !def) {
+        record.form = null;
         if (appInfo.forms_only_mode) {
             utils.addError(record, 'sys.form_not_found');
-        } else {
-            record.form = null;
         }
     }
 
