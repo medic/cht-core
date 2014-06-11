@@ -29,16 +29,21 @@
           <p>An orderered array of columns to export, eg:</p>
           <pre>["reported_date","from","related_entities.clinic.name"]</pre>
           <p>Defaults to:</p>
+          <pre>["_id","patient_id","reported_date", "from", "related_entities.clinic.contact.name", "related_entities.clinic.name", "related_entities.clinic.parent.contact.name", "related_entities.clinic.parent.name", "related_entities.clinic.parent.parent.name"]</pre>
+          <p>Available columns:</p>
           <ul>
             <li>_id</li>
             <li>patient_id</li>
             <li>reported_date</li>
             <li>from</li>
-            <li>related_entities.clinic.contact.name</li>
             <li>related_entities.clinic.name</li>
-            <li>related_entities.clinic.parent.contact.name</li>
+            <li>related_entities.clinic.external_id</li>
+            <li>related_entities.clinic.contact.name</li>
             <li>related_entities.clinic.parent.name</li>
+            <li>related_entities.clinic.parent.external_id</li>
+            <li>related_entities.clinic.parent.contact.name</li>
             <li>related_entities.clinic.parent.parent.name</li>
+            <li>related_entities.clinic.parent.parent.external_id</li>
           </ul>
           <p>All form fields will be included as columns at the end regardless of the value for this parameter.</p>
         </dd>
@@ -66,18 +71,22 @@
         <dd>
           <p>An orderered array of columns to export, eg:</p>
           <pre>["reported_date","from","related_entities.clinic.name"]</pre> 
-          <p>In addition to the specified columns, the export will contain four columns per response for "Message UUID", "Sent By", "To Phone", and "Message Body".</p>
           <p>Defaults to:</p>
+          <pre>["_id","patient_id","reported_date", "from", "related_entities.clinic.contact.name", "related_entities.clinic.name", "related_entities.clinic.parent.contact.name", "related_entities.clinic.parent.name", "related_entities.clinic.parent.parent.name","task.type","task.state","received","scheduled","pending","sent","cleared","muted"]</pre>
+          <p>Available columns:</p>
           <ul>
             <li>_id</li>
             <li>patient_id</li>
             <li>reported_date</li>
             <li>from</li>
-            <li>related_entities.clinic.contact.name</li>
             <li>related_entities.clinic.name</li>
-            <li>related_entities.clinic.parent.contact.name</li>
+            <li>related_entities.clinic.external_id</li>
+            <li>related_entities.clinic.contact.name</li>
             <li>related_entities.clinic.parent.name</li>
+            <li>related_entities.clinic.parent.external_id</li>
+            <li>related_entities.clinic.parent.contact.name</li>
             <li>related_entities.clinic.parent.parent.name</li>
+            <li>related_entities.clinic.parent.parent.external_id</li>
             <li>task.type</li>
             <li>task.state</li>
             <li>received</li>
