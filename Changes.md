@@ -1,6 +1,6 @@
 # Kujua Release Notes
 
-## 0.3.10
+## 0.3.11
 
 ### TBD
 
@@ -8,6 +8,13 @@
 
 - modified behavior of patient reports when `silence_for` option is empty we
   clear the entire schedule instead of a group.
+
+
+## 0.3.10
+
+### Jun 12, 2014
+
+- updated intrahealth-senegal forms
 
 
 ## 0.3.9
