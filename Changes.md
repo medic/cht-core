@@ -1,5 +1,11 @@
 # Kujua Release Notes
 
+## 0.3.10
+
+### Jun 12, 2014
+
+- updated intrahealth-senegal forms
+
 ## 0.3.9
 
 ### May 22, 2014
