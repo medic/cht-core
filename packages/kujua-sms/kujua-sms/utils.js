@@ -152,7 +152,7 @@ exports.makeDataRecordReadable = function(doc, appinfo) {
 
     // adding a fields property for ease of rendering code
     if(data_record.form) {
-        var keys = getFormKeys(data_record.form, appinfo);
+        var keys = getFormKeys(appinfo.getForm(data_record.form));
         var labels = exports.getLabels(keys, data_record.form, getLocale(doc));
         data_record.fields = exports.fieldsToHtml(keys, labels, data_record);
         includeNonFormFields(data_record, keys);
@@ -453,18 +453,16 @@ var getValues = exports.getValues = function(doc, keys) {
 
 
 /*
- * Get an array of keys from the form.
- * If dot notation is used it will be an array
- * of arrays.
+ * Get an array of keys from the form.  If dot notation is used it will be an
+ * array of arrays.
  *
- * @param String form - forms key
+ * @param Object def - form definition
  *
  * @return Array  - form field keys based on forms definition
  */
-var getFormKeys = exports.getFormKeys = function(form, appinfo) {
+var getFormKeys = exports.getFormKeys = function(def) {
 
-    var keys = {},
-        def = appinfo.getForm(form);
+    var keys = {};
 
     var getKeys = function(key, hash) {
         if(key.length > 1) {

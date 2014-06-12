@@ -353,7 +353,7 @@ exports.export_data_records = function (head, req) {
     var options = getOptions(req, form, [
         '_id',
         'patient_id',
-        'reported_date', 
+        'reported_date',
         'from',
         'related_entities.clinic.contact.name',
         'related_entities.clinic.name',
@@ -361,7 +361,7 @@ exports.export_data_records = function (head, req) {
         'related_entities.clinic.parent.name',
         'related_entities.clinic.parent.parent.name'
     ]);
-    var keys = utils.getFormKeys(form);
+    var keys = utils.getFormKeys(utils.info.getForm(form));
     startExportHeaders(options, getFilename(options));
     sendHeaderRow(options, utils.getLabels(keys, form, options.locale));
     options.columns = options.columns.concat(keys);
