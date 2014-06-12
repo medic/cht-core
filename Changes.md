@@ -1,5 +1,12 @@
 # Kujua Release Notes
 
+## 0.4.0
+
+### TBD
+
+- deprecated `exclude_cols` parameter for export integrations. Migrate 
+  applications to use the `columns` parameter instead.
+
 ## 0.3.10
 
 ### TBD
