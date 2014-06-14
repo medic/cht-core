@@ -1,5 +1,4 @@
-var smsparser = require('views/lib/smsparser'),
-    jsonforms = require('views/lib/jsonforms');
+var smsparser = require('views/lib/smsparser');
 
 var def = {
     meta: {
