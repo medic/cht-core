@@ -13,7 +13,7 @@ var system = require('system');
  * @param timeOutMillis the max amount of time to wait. If not specified, 3 sec is used.
  */
 function waitFor(testFx, onReady, timeOutMillis) {
-    var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 6001, //< Default Max Timout is 6s
+    var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 3001, //< Default Max Timout is 3s
         start = new Date().getTime(),
         condition = false,
         interval = setInterval(function() {
@@ -98,7 +98,7 @@ page.open(system.args[1], function(status){
                 console.log('Tests Failed');
             }
             phantom.exit((failed) ? 1 : 0);
-        }, 30000);
+        }, 60000);
 
 
 
