@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# confirm json-forms submodule tests also pass
-cd json-forms/test &&
-make &&
 cd ../../kujua-api &&
 npm install &&
 cd .. &&
