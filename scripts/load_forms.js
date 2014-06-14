@@ -3,8 +3,7 @@
 var http = require('http'),
     url = require('url'),
     fs = require('fs'),
-    args = [],
-    payload;
+    args = [];
 
 process.argv.forEach(function(val, idx, array) {
     args[idx] = val;
@@ -12,7 +11,7 @@ process.argv.forEach(function(val, idx, array) {
 
 var usage = "\nUsage: load_forms.js <path> <url>\n\n"
     + "path    Path to a json forms file to upload.\n"
-    + "url     URL to kujua database, no trailing slash.\n\n"
+    + "url     URL to kujua database.\n\n"
     + "Examples:\n\n"
     + "./scripts/load_forms.js ../json-forms/generic-anc.json http://admin:pass@localhost/kujua-lite\n";
 
