@@ -7,10 +7,25 @@
     <div class="span3"><label></label></div>
     <div class="span1">
       <form class="form-inline" method="get">
-        <button class="btn btn-primary" type="submit" data-url="{baseURL}" data-query="{q}">
+        <button class="btn btn-primary" type="submit" data-url="{baseURL}" data-district-id="{dh_id}">
           <i class="icon-arrow-down icon-large"></i>
         </button>
       </form>
     </div>
   </div>
+  {#districts}
+    <div class="row-fluid district-form-row">
+      <h5 class="offset1 span7">
+        {dh_name}
+      </h5>
+      <div class="span3"><label></label></div>
+      <div class="span1">
+        <form class="form-inline" method="get">
+          <button class="btn btn-primary" type="submit" data-url="{baseURL}" data-district-id="{dh_id}" data-district-name="{dh_name}">
+            <i class="icon-arrow-down icon-large"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  {/districts}
 {/messages}
