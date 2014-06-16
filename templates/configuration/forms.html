@@ -1,0 +1,26 @@
+{#info}
+
+<form id="forms-form">
+  <div id="forms-upload">
+    <fieldset>
+      <legend>Upload Forms</legend>
+      <button type="button" class="btn btn-small choose">Choose File</button>
+      <span class="help-block">Upload a file that contains your forms.  Form codes will remain unique, so if there is an existing form with the same code, it gets overwritten.</span>
+    </fieldset>
+  </div>
+</form>
+
+<fieldset>
+  <legend>Installed Forms</legend>
+  <ul>
+  {?forms}
+  {#forms}
+  <li>{meta.code} {meta.label.en}</li>
+  {/forms}
+  {:else}
+  <li>No forms installed.</li>
+  {/forms}
+  </ul>
+</fieldset>
+
+{/info}
