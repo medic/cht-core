@@ -1,26 +1,30 @@
 {#info}
 
-<form id="forms-form">
-  <div id="forms-upload">
+<div id="forms-configuration">
+<form id="forms-upload-form">
+  <div>
     <fieldset>
       <legend>Upload Forms</legend>
+      <div class="alert alert-error hide">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        <i class="icon-warning-sign"></i> <span>Upload failed</span>
+      </div>
+      <div class="alert alert-success hide">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        <i class="icon-check-sign"></i> <span>Upload succeeded!</span>
+      </div>
       <button type="button" class="btn btn-small choose">Choose File</button>
       <span class="help-block">Upload a file that contains your forms.  Form codes will remain unique, so if there is an existing form with the same code, it gets overwritten.</span>
+      <div class="hide">
+        <input class="uploader" type="file" accept="application/json">
+      </div>
     </fieldset>
   </div>
 </form>
 
-<fieldset>
-  <legend>Installed Forms</legend>
-  <ul>
-  {?forms}
-  {#forms}
-  <li>{meta.code} {meta.label.en}</li>
-  {/forms}
-  {:else}
-  <li>No forms installed.</li>
-  {/forms}
-  </ul>
-</fieldset>
+<div id="forms-installed">
+      {>"configuration/forms_installed.html"/}
+</div>
+</div>
 
 {/info}
