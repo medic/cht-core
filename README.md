@@ -87,11 +87,11 @@ cat kanso.json |json -e 'dependencies["kanso-gardener"] = null;' > new.json
 mv new.json kanso.json
 ```
 
-Finally push to the Medic Test [Garden
+Finally push to the Medic [Garden
 Market](https://github.com/garden20/garden-market) run:
 
 ```
-kanso push http://dev.medicmobile.org:5984/market/_design/market/_rewrite/upload`
+kanso push http://staging.dev.medicmobile.org/markets-alpha/upload
 ```
 
 ## Configure
