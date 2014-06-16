@@ -37,7 +37,7 @@ exports.getAppInfo = function(req) {
                     url: baseURL + '/app_settings/kujua-lite',
                     async: false //synchronous request
                 }).responseText
-            );
+            ).settings;
         }
 
         // add defaults to settings if needed
