@@ -10,9 +10,6 @@
  */
 exports.update_config = function (ddoc, req) {
 
-    log('update_config req');
-    log(JSON.stringify(req,null,2));
-
     return [
         ddoc,
         JSON.stringify(_process(ddoc, req.body))

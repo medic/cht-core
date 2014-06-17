@@ -18,9 +18,6 @@ var _objectpath = function(obj, path) {
 
 exports.app_settings = function(doc, req) {
 
-  log('shows.app_settings req');
-  log(JSON.stringify(req,null,2));
-
   var settings = (doc && doc.app_settings) || {},
       meta = doc.kanso || doc.couchapp,
       schema = meta && meta.config && meta.config.settings_schema,
