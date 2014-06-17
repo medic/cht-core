@@ -13,12 +13,12 @@ var updates = require('kujua-sms/updates'),
 var example = {
     sms_message: {
        from: "+13125551212",
-       message: '1!MSBB!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc',
+       message: '1!YYYT!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc',
        sent_timestamp: "10-01-11 18:45",
        sent_to: "+15551212",
        type: "sms_message",
        locale: "en",
-       form: "MSBB"
+       form: "YYYT"
     },
     clinic: {
         "_id": "4a6399c98ff78ac7da33b639ed60f458",
@@ -54,7 +54,7 @@ var expected_callback = {
       "headers": {
         "Content-Type": "application/json; charset=utf-8"
       },
-      "path": "/kujua-lite/_design/kujua-lite/_rewrite/MSBB/data_record/add/facility/%2B13125551212"
+      "path": "/kujua-lite/_design/kujua-lite/_rewrite/YYYT/data_record/add/facility/%2B13125551212"
     },
     "data": {
       "uuid": "14dc3a5aa6"
@@ -65,7 +65,7 @@ var expected_doc = {
   "_id": "14dc3a5aa6",
   "type": "data_record",
   "from": "+13125551212",
-  "form": "MSBB",
+  "form": "YYYT",
   "related_entities": {
     "clinic": null
   },
@@ -80,12 +80,12 @@ var expected_doc = {
   "reported_date": new Date(2011, 9, 1, 18, 45).valueOf(),
   "sms_message": {
     "from": "+13125551212",
-    "message": "1!MSBB!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc",
+    "message": "1!YYYT!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc",
     "sent_timestamp": "10-01-11 18:45",
     "sent_to": "+15551212",
     "type": "sms_message",
     "locale": "en",
-    "form": "MSBB"
+    "form": "YYYT"
   },
   "ref_year": 2012,
   "ref_month": 1,
@@ -112,7 +112,7 @@ exports.msbb_to_record = function (test) {
     // Data parsed from a gateway POST
     var data = {
         from: '+13125551212',
-        message: '1!MSBB!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc',
+        message: '1!YYYT!2012#1#24#abcdef#1111#bbbbbb#22#15#cccccc',
         sent_timestamp: "10-01-11 18:45",
         sent_to: '+15551212'
     };
@@ -121,7 +121,7 @@ exports.msbb_to_record = function (test) {
     // rewriter.
     var req = {
         uuid: '14dc3a5aa6',
-        query: {form: 'MSBB'},
+        query: {form: 'YYYT'},
         method: "POST",
         headers: helpers.headers("url", querystring.stringify(data)),
         body: querystring.stringify(data),
@@ -139,7 +139,7 @@ exports.msbb_to_record = function (test) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/MSBB/data_record/add/facility/%2B13125551212");
+        baseURL + "/YYYT/data_record/add/facility/%2B13125551212");
 
     _.each([
         'ref_year', 'ref_month', 'ref_day', 'ref_rc', 'ref_hour',
@@ -154,7 +154,7 @@ exports.msbb_to_record = function (test) {
 
     test.same(doc, expected_doc)
 
-    step2(test, helpers.nextRequest(resp_body, 'MSBB'));
+    step2(test, helpers.nextRequest(resp_body, 'YYYT'));
 
 };
 
@@ -223,14 +223,14 @@ var step1_with_only_required_fields_defined = function(test) {
 
     var data = {
         from: '+13125551212',
-        message: '1!MSBB!2012#1#24###bbbbbb',
+        message: '1!YYYT!2012#1#24###bbbbbb',
         sent_timestamp: "10-01-11 18:45",
         sent_to: '+15551212'
     };
 
     var req = {
         uuid: '14dc3a5aa6',
-        query: {form: 'MSBB'},
+        query: {form: 'YYYT'},
         method: "POST",
         headers: helpers.headers("url", querystring.stringify(data)),
         body: querystring.stringify(data),
@@ -244,7 +244,7 @@ var step1_with_only_required_fields_defined = function(test) {
 
     test.same(
         resp_body.callback.options.path,
-        baseURL + "/MSBB/data_record/add/facility/%2B13125551212"
+        baseURL + "/YYYT/data_record/add/facility/%2B13125551212"
     );
 
     _.each([

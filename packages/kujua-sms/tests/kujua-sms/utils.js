@@ -1,9 +1,6 @@
 var utils = require('kujua-sms/utils'),
     lists = require('kujua-sms/lists'),
-    jsonforms = require('views/lib/jsonforms'),
     _ = require('underscore');
-
-utils.info = require('views/lib/appinfo').getAppInfo.call(this);
 
 var example_doc = {
     "_id": "61716f96177206326cc07653ab9659c7",
@@ -453,7 +450,7 @@ exports.getValuesOfObject = function(test) {
 exports.getFormKeys = function(test) {
     test.expect(1);
     test.same(
-        utils.getFormKeys('YYYY'),
+        utils.getFormKeys(utils.info.getForm('YYYY')),
         [
             'facility_id',
             'year',
@@ -487,7 +484,7 @@ exports.getFormKeys = function(test) {
 
 exports.fieldsToHtml = function(test) {
     test.expect(1);
-    var keys = utils.getFormKeys('YYYY'),
+    var keys = utils.getFormKeys(utils.info.getForm('YYYY')),
         labels = utils.getLabels(keys, 'YYYY'),
         data_records = require('lib/data_records');
 
@@ -710,7 +707,7 @@ exports.getLabelsForMessages = function(test) {
  */
 exports.labelsMissingLocale = function(test) {
     test.expect(1);
-    var keys = utils.getFormKeys('YYYV'),
+    var keys = utils.getFormKeys(utils.info.getForm('YYYV')),
         labels = utils.getLabels(keys, 'YYYV', 'en'),
         data_records = require('lib/data_records');
 

@@ -1,9 +1,16 @@
-var updates = require('kujua-sms/updates'),
+var utils = require('kujua-sms/utils'),
+    updates = require('kujua-sms/updates'),
     querystring = require('querystring'),
     fakerequest = require('couch-fakerequest'),
     baseURL = require('duality/core').getBaseURL(),
     host = window.location.host.split(':')[0],
     port = window.location.host.split(':')[1] || '';
+
+
+exports.setUp = function (callback) {
+    utils.info = require('views/lib/appinfo').getAppInfo.call(this);
+    callback();
+};
 
 exports.assert_month_is_integer = function(test) {
     test.expect(1);

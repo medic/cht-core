@@ -6,12 +6,15 @@
  * @exports
  * @param {Object} ddoc Design document to update
  * @param {Object} req The request. The request body must be valid JSON.
- * @return {Array} The updated ddoc and the response body. 
+ * @return {Array} The updated ddoc and the response body.
  */
 exports.update_config = function (ddoc, req) {
 
+    log('update_config req');
+    log(JSON.stringify(req,null,2));
+
     return [
-        ddoc, 
+        ddoc,
         JSON.stringify(_process(ddoc, req.body))
     ];
 
@@ -26,7 +29,7 @@ var _process = function (ddoc, body) {
 
     if (!ddoc) {
         return {
-            success: false, 
+            success: false,
             error: 'Design document not found'
         };
     }
@@ -37,7 +40,7 @@ var _process = function (ddoc, body) {
         return { success: true };
     } catch(e) {
         return {
-            success: false, 
+            success: false,
             error: 'Request body must be valid JSON'
         };
     }

@@ -29,7 +29,7 @@ exports['requesting data records export fails if user does not have perms'] = fu
         query: {
             startkey: 'foo',
             endkey: 'bar',
-            form: 'MSBC'
+            form: 'YYYU'
         },
         method: "GET",
         userCtx: {
@@ -65,13 +65,13 @@ exports['lists export data records csv'] = function(test) {
         {
             "key":[
                 true,
-                "MSBC",
+                "YYYU",
                 1331503842461],
             "value": 1,
             "doc": {
                 _id: 'abc123z',
                 patient_id: '5594',
-                form: "MSBC",
+                form: "YYYU",
                 related_entities: {
                     clinic: {
                         name:"Clinic 1",
@@ -90,7 +90,7 @@ exports['lists export data records csv'] = function(test) {
         {
             "key":[
                 true,
-                "MSBC",
+                "YYYU",
                 1331503850000],
             "locale": 'en',
             "value": 1,
@@ -118,7 +118,7 @@ exports['lists export data records csv'] = function(test) {
         query: {
             startkey: 'foo',
             endkey: 'bar',
-            form: 'MSBC'
+            form: 'YYYU'
         },
         method: "GET",
         userCtx: {
@@ -127,6 +127,7 @@ exports['lists export data records csv'] = function(test) {
     };
 
     var resp = fakerequest.list(lists.export_data_records, viewdata, req);
+
     test.same(expected, resp.body);
 
     test.done()
@@ -155,13 +156,13 @@ exports['lists export data records csv with excluded columns'] = function(test) 
         {
             "key":[
                 true,
-                "MSBC",
+                "YYYU",
                 1331503842461],
             "value": 1,
             "doc": {
                 _id: 'abc123z',
                 patient_id: '5595',
-                form: "MSBC",
+                form: "YYYU",
                 related_entities: {
                     clinic: {
                         name:"Clinic 1",
@@ -180,7 +181,7 @@ exports['lists export data records csv with excluded columns'] = function(test) 
         {
             "key":[
                 true,
-                "MSBC",
+                "YYYU",
                 1331503850000],
             "value": 1,
             "doc": {
@@ -207,7 +208,7 @@ exports['lists export data records csv with excluded columns'] = function(test) 
         query: {
             startkey: 'foo',
             endkey: 'bar',
-            form: 'MSBC',
+            form: 'YYYU',
             exclude_cols: '1,2,4'
         },
         method: "GET",
@@ -242,7 +243,7 @@ exports['lists export data records fr'] = function(test) {
     // mockup the view data
     var viewdata = {rows: [
         {
-            "key": [true, "MSBC", 1331503842461],
+            "key": [true, "YYYU", 1331503842461],
             "value": 1,
             "doc": {
                 _id: 'abc123z',
@@ -263,7 +264,7 @@ exports['lists export data records fr'] = function(test) {
             }
         },
         {
-            "key": [true, "MSBC", 1331503850000],
+            "key": [true, "YYYU", 1331503850000],
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
@@ -289,7 +290,7 @@ exports['lists export data records fr'] = function(test) {
         query: {
             startkey: 'foo',
             endkey: 'bar',
-            form: 'MSBC',
+            form: 'YYYU',
             locale: 'fr'
         },
         method: "GET",
@@ -319,7 +320,7 @@ exports['lists export data records skip header row'] = function(test) {
     // mockup the view data
     var viewdata = {rows: [
         {
-            "key": [true, "MSBC", 1331503842461],
+            "key": [true, "YYYU", 1331503842461],
             "value": 1,
             "doc": {
                 _id: 'abc123z',
@@ -340,7 +341,7 @@ exports['lists export data records skip header row'] = function(test) {
             }
         },
         {
-            "key": [true, "MSBC", 1331503850000],
+            "key": [true, "YYYU", 1331503850000],
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
@@ -364,7 +365,7 @@ exports['lists export data records skip header row'] = function(test) {
     var req = {
         //locale is passed in to request
         query: {
-            form: 'MSBC',
+            form: 'YYYU',
             skip_header_row: '1',
             startkey: 'foo',
             endkey: 'bar'
@@ -404,7 +405,7 @@ exports['lists export data records with tz'] = function(test) {
         {
             "key":[
                 true,
-                "MSBC",
+                "YYYU",
                 1331503842461
             ],
             "value": 1,
@@ -429,7 +430,7 @@ exports['lists export data records with tz'] = function(test) {
         {
             "key":[
                 true,
-                "MSBC",
+                "YYYU",
                 1331503850000
             ],
             "value": 1,
@@ -457,7 +458,7 @@ exports['lists export data records with tz'] = function(test) {
         query: {
             startkey: 'foo',
             endkey: 'bar',
-            form: 'MSBC',
+            form: 'YYYU',
             tz: "-300"
         },
         method: "GET",
@@ -491,7 +492,7 @@ exports['lists export data records with external facility id'] = function(test) 
     // mockup the view data
     var viewdata = {rows: [
         {
-            "key": [true, "MSBC", 1331503842461],
+            "key": [true, "YYYU", 1331503842461],
             "value": 1,
             "doc": {
                 _id: 'abc123z',
@@ -517,7 +518,7 @@ exports['lists export data records with external facility id'] = function(test) 
             }
         },
         {
-            "key": [true, "MSBC", 1331503850000],
+            "key": [true, "YYYU", 1331503850000],
             "value": 1,
             "doc": {
                 _id: 'ssdk23z',
@@ -542,7 +543,7 @@ exports['lists export data records with external facility id'] = function(test) 
     var req = {
         //locale is passed in to request
         query: {
-            form: 'MSBC',
+            form: 'YYYU',
             locale: 'en',
             include_facility_external_id: true,
             startkey: 'foo',

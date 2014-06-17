@@ -11,7 +11,7 @@ var zip = function (a, b) {
 };
 
 /**
- * @param {Object} def - jsonforms form definition
+ * @param {Object} def - forms form definition
  * @param {Object} doc - sms_message document
  * @returns {Object|{}} - A parsed object of the sms message or an empty
  * object if parsing fails.
@@ -57,7 +57,7 @@ exports.parse = function(def, doc) {
 };
 
 /**
- * @param {Object} def - jsonforms form definition
+ * @param {Object} def - forms form definition
  * @param {Object} doc - sms_message document
  * @returns {Array|[]} - An array of values from the raw sms message
  * @api public

@@ -6,7 +6,7 @@ services:
   - couchdb
 
 before_install:
-  - git submodule update --recursive --init sentinel json-forms kujua-api
+  - git submodule update --recursive --init sentinel kujua-api
 
 before_script:
   - sleep 3

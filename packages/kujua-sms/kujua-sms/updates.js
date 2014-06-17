@@ -4,7 +4,6 @@
 
 var _ = require('underscore'),
     logger = require('kujua-utils').logger,
-    jsonforms = require('views/lib/jsonforms'),
     info = require('views/lib/appinfo'),
     smsparser = require('views/lib/smsparser'),
     validate = require('./validate'),
@@ -12,13 +11,14 @@ var _ = require('underscore'),
 
 
 /**
- * @param {String} form - jsonforms key string
+ * @param {String} form - form code
  * @param {Object} form_data - parsed form data
  * @returns {String} - Reporting Unit ID value (case insensitive)
  * @api private
  */
 var getRefID = function(form, form_data) {
-    var def = jsonforms.getForm(form),
+
+    var def = utils.info.getForm(form),
         val;
 
     if (!def || !def.facility_reference)
@@ -39,9 +39,10 @@ var getRefID = function(form, form_data) {
  * @returns {Object} - data record
  * @api private
  */
-function getDataRecord(doc, form_data, appInfo) {
+function getDataRecord(doc, form_data) {
+
     var form = doc.form,
-        def = jsonforms.getForm(form);
+        def = utils.info.getForm(form);
 
     var record = {
         _id: req.uuid,
@@ -60,7 +61,7 @@ function getDataRecord(doc, form_data, appInfo) {
     // if form is undefined we treat as a regular message
     if (form && !def) {
         record.form = null;
-        if (appInfo.forms_only_mode) {
+        if (utils.info.forms_only_mode) {
             utils.addError(record, 'sys.form_not_found');
         }
     }
@@ -95,14 +96,14 @@ function getDataRecord(doc, form_data, appInfo) {
 
 /**
  * @param {String} phone - phone number of the sending phone (from)
- * @param {String} form - jsonforms key string
+ * @param {String} form - forms key string
  * @param {Object} form_data - parsed form data
  * @returns {String} - Path for callback
  * @api private
  */
 var getCallbackPath = function(phone, form, form_data, def) {
 
-    def = def ? def : jsonforms.getForm(form);
+    def = def ? def : utils.info.getForm(form);
 
     if (!form) {
         // find a match with a facility's phone number
@@ -173,10 +174,10 @@ var parseSentTimestamp = function(str) {
  * Always limit outgoing message to 160 chars and only send one message.
  *
  */
-var getSMSResponse = function(doc, info) {
+var getSMSResponse = function(doc) {
     var locale = doc.sms_message && doc.sms_message.locale,
-        msg = info.translate('sms_received', locale),
-        def = doc.form && jsonforms.getForm(doc.form),
+        msg = utils.info.translate('sms_received', locale),
+        def = doc.form && utils.info.getForm(doc.form),
         res = {
             success: true,
             task: "send",
@@ -189,7 +190,7 @@ var getSMSResponse = function(doc, info) {
     // looks like we parsed a form ok
     if (def) {
         if (doc.errors.length === 0) {
-            msg = info.translate('form_received', locale);
+            msg = utils.info.translate('form_received', locale);
         }
 
         // we have a custom success autoreply
@@ -205,7 +206,7 @@ var getSMSResponse = function(doc, info) {
     doc.errors.forEach(function(err) {
         if (/sys\./.test(err.code)) {
             var user_error_code = err.code.replace('sys.','');
-            var m = info.translate(user_error_code, locale)
+            var m = utils.info.translate(user_error_code, locale)
                     .replace('{{form}}', doc.form)
                     .replace('{{fields}}', err.fields && err.fields.join(', '));
             // only send error message if defined and had a translation,
@@ -216,7 +217,7 @@ var getSMSResponse = function(doc, info) {
             }
         } else {
             // default, use code if it's available
-            msg = info.translate(err.code || err, locale);
+            msg = utils.info.translate(err.code || err, locale);
         }
     });
 
@@ -228,11 +229,11 @@ var getSMSResponse = function(doc, info) {
     if (def) {
         if (def.facility_required) {
             if (utils.hasError(doc, 'sys.facility_not_found')) {
-                msg = info.translate('reporting_unit_not_found', locale);
+                msg = utils.info.translate('reporting_unit_not_found', locale);
             }
         } else if (doc.errors.length === 1) {
             if (utils.hasError(doc, 'sys.facility_not_found')) {
-                msg = info.translate('form_received', locale);
+                msg = utils.info.translate('form_received', locale);
             }
         }
     } else {
@@ -258,7 +259,7 @@ var getSMSResponse = function(doc, info) {
 /*
  * Setup context and run eval on `messages_task` property on form.
  *
- * @param {String} form - jsonforms form key
+ * @param {String} form - form key
  * @param {Object} record - Data record object
  *
  * @returns {Object|undefined} - the task object or undefined if we have no
@@ -266,10 +267,10 @@ var getSMSResponse = function(doc, info) {
  *
  */
 var getMessagesTask = function(record) {
-    var def = jsonforms.getForm(record.form),
+    var def = utils.info.getForm(record.form),
         phone = record.from,
         clinic = record.related_entities.clinic,
-        keys = utils.getFormKeys(record.form),
+        keys = utils.getFormKeys(def),
         labels = utils.getLabels(keys, record.form),
         values = utils.getValues(record, keys),
         task = {
@@ -304,6 +305,7 @@ var req = {};
 exports.add_sms = function(doc, request) {
 
     req = request;
+    utils.info = info.getAppInfo.call(this);
 
     var sms_message = {
         type: "sms_message",
@@ -313,28 +315,23 @@ exports.add_sms = function(doc, request) {
     sms_message = _.extend(req.form, sms_message);
 
     var form_data = null,
-        def = jsonforms.getForm(sms_message.form),
         baseURL = require('duality/core').getBaseURL(),
         headers = req.headers.Host.split(":"),
-        resp = getDefaultResponse();
-
-    var appInfo = info.getAppInfo.call(this);
-
-    // replace utils info with real info
-    utils.info = appInfo;
+        resp = getDefaultResponse(),
+        def = utils.info.getForm(sms_message.form);
 
     if (sms_message.form && def) {
         form_data = smsparser.parse(def, sms_message);
     }
 
     // creates base record
-    doc = getDataRecord(sms_message, form_data, appInfo);
+    doc = getDataRecord(sms_message, form_data, utils.info);
 
     // by default related entities are null so also include errors on the record.
     if (!def || !def.public_form) {
         doc.errors.push({
             code: "sys.facility_not_found",
-            message: appInfo.translate("sys.facility_not_found", sms_message.locale)
+            message: utils.info.translate("sys.facility_not_found", sms_message.locale)
         });
     }
 
@@ -374,9 +371,11 @@ exports.add_sms = function(doc, request) {
  */
 exports.updateRelated = function(doc, request) {
 
+    utils.info = info.getAppInfo.call(this);
     req = request;
+
     var data = JSON.parse(req.body),
-        def = jsonforms.getForm(doc.form),
+        def = utils.info.getForm(doc.form),
         resp = {};
 
     doc.related_entities = doc.related_entities || {clinic: null};
@@ -418,79 +417,13 @@ exports.updateRelated = function(doc, request) {
         doc.errors = new_errors;
     }
 
-    var appInfo = info.getAppInfo.call(this);
-
     // smssync-compat sms response
-    resp.payload = getSMSResponse(doc, appInfo);
+    resp.payload = getSMSResponse(doc, utils.info);
 
     // save response to record
     doc.responses = _.filter(resp.payload.messages, function(message) {
-        return message.to !== appInfo.gateway_number;
+        return message.to !== utils.info.gateway_number;
     });
 
     return [doc, JSON.stringify(resp)];
-};
-
-exports.create_delete_form = function(ddoc, req) {
-
-    var code = req.query.code,
-        method = req.method;
-
-    function getResp(options) {
-        var headers = {
-            "Content-Type": "application/json"
-        };
-        if (options && options.error) {
-            return [null, {
-                headers: headers,
-                body: JSON.stringify({
-                    success: false,
-                    error: options.error
-                })
-            }];
-        } else {
-            return [ddoc, {
-                headers: headers,
-                body: JSON.stringify({ success: true })
-            }];
-        }
-    };
-
-    if (!ddoc.app_settings) {
-        ddoc.app_settings = {};
-    }
-
-    if (!ddoc.app_settings.forms) {
-        ddoc.app_settings.forms = {};
-    }
-
-    if (!code) {
-        return getResp({
-            error: "Form code not specified"
-        });
-    }
-
-    if (method === 'DELETE') {
-        if (ddoc.app_settings.forms[code]) {
-            delete ddoc.app_settings.forms[code];
-        } else {
-            return getResp({
-                error: "Form " + code + " not found in library."
-            });
-        }
-    } else if (method === 'PUT') {
-        try {
-            ddoc.app_settings.forms[code] = JSON.parse(req.body);
-        } catch(e) {
-            return getResp({
-                error: 'Request body must be valid JSON'
-            });
-        }
-    } else {
-        return getResp({
-            error: "Only PUT, DELETE allowed"
-        });
-    }
-
-    return getResp();
 };

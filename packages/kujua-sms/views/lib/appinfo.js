@@ -18,41 +18,9 @@ exports.getAppInfo = function(req) {
      * Return a json form
      */
     function getForm(code) {
-        if (!hasForms()) {
-            return;
-        }
-        return this.forms[code];
+        return this.forms && this.forms[code];
     };
 
-    /*
-     * Return all forms
-     */
-    function getForms() {
-        var ret = [];
-        if (!hasForms()) {
-            return ret;
-        }
-        for (var k in this.app_settings.forms) {
-            if (typeof this.app_settings.forms[k] === 'object') {
-                ret.push(this.getForm(k));
-            }
-        }
-        return ret;
-    };
-
-    /*
-     * Return boolean
-     */
-    function hasForms() {
-        log('hasForms this');
-        log(this);
-        if (this.app_settings && this.app_settings.forms) {
-            if (Object.keys(this.app_settings.forms).length > 0) {
-                return true;
-            }
-        }
-        return false;
-    };
 
     /*
      * On server side app_settings is available on design doc (this) and if
@@ -251,9 +219,7 @@ exports.getAppInfo = function(req) {
     app_settings.translations = app_settings.translations || [];
     app_settings.translate = _.partial(translate, app_settings.translations);
     app_settings.getMessage = getMessage;
-    app_settings.getForms = getForms;
     app_settings.getForm = getForm;
-    app_settings.hasForms = hasForms;
 
     return app_settings;
 };

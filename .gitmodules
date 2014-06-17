@@ -1,6 +1,3 @@
-[submodule "json-forms"]
-	path = json-forms
-	url = git://github.com/medic/json-forms.git
 [submodule "sentinel"]
 	path = sentinel
 	url = git://github.com/medic/kujua-sentinel.git
