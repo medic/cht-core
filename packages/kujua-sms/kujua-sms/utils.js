@@ -195,7 +195,10 @@ exports.makeDataRecordReadable = function(doc) {
         for (var k in groups) {
             // sort by due date ascending
             groups[k].rows.sort(function(l,r) {
-                if (l._due_ts && r._due_ts) return l._due_ts > r._due_ts;
+                if (!l._due_ts || !r._due_ts) {
+                    return 0
+                }
+                return (l._due_ts < r._due_ts) ? -1 : 1;
             });
             data_record.scheduled_tasks_by_group.push(groups[k]);
         }
