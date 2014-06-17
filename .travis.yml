@@ -9,6 +9,7 @@ before_install:
   - git submodule update --recursive --init sentinel json-forms kujua-api
 
 before_script:
+  - sleep 3
   - curl -X PUT localhost:5984/kujua-lite
   - npm install kanso -g
   - kanso push http://localhost:5984/kujua-lite
