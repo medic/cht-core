@@ -7,14 +7,38 @@
 - deprecated `exclude_cols` parameter for export integrations. Migrate 
   applications to use the `columns` parameter instead.
 
-## 0.3.10
+
+## 0.3.11
 
 ### TBD
 
-- added delivery form to generic ANC forms.
+- Fixed bug where app settings was ignored, and the app reverted to defaults. #524
 
-- modified behavior of patient reports when `silence_for` option is empty we
+- Added delivery form to generic ANC forms.
+
+- Modified behavior of patient reports when `silence_for` option is empty we
   clear the entire schedule instead of a group.
+
+- Fixed notifications to not add the configured response #508
+
+- Fixed bug and added support for multiple schedules in schedule silencing
+    
+    When `silence_for` is specified we should only silence/clear one group, I
+    introduced a bug a few commits ago that would ignore the group and
+    silence/clear based on date. Use the `silence_for` window to match and
+    clear the first group.
+    
+    Also added support for comma separate string on `silence_type` option.
+    In the MCH case we have two schedules that can be generated depending on
+    the form submission/registration: ANC Reminders and ANC Reminders LMP.
+    Now both schedules can be cleared with a single ANCV settings entry.
+
+
+## 0.3.10
+
+### Jun 12, 2014
+
+- updated intrahealth-senegal forms
 
 
 ## 0.3.9
