@@ -4,8 +4,6 @@ MAX=50
 COUNT=0
 DONE=0
 
-echo `bash --version`
-
 # Try pushing up to $MAX times.
 function push {
     ((COUNT++))
@@ -24,22 +22,22 @@ function push {
 }
 
 if [ "$TRAVIS_BRANCH" == "master" ]; then
-    npm install -g json &&
-    cat kanso.json | json -o json-4 -e "dependencies[\"kanso-gardener\"] = null;" > tmp.json &&
-    mv tmp.json kanso.json &&
+    npm install -g json && \
+    cat kanso.json | json -o json-4 -e "this.dependencies[\"kanso-gardener\"] = null;" > tmp.json && \
+    mv tmp.json kanso.json && \
     push 'http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-release/upload'
 fi;
 
 if [ "$TRAVIS_BRANCH" == "develop" ]; then
-    npm install -g json &&
-    cat kanso.json | json -o json-4 -e "dependencies[\"kanso-gardener\"] = null; version += \"-alpha.$TRAVIS_BUILD_NUMBER\";" > tmp.json &&
-    mv tmp.json kanso.json &&
+    npm install -g json && \
+    cat kanso.json | json -o json-4 -e "this.dependencies[\"kanso-gardener\"] = null; this.version += \"-alpha.$TRAVIS_BUILD_NUMBER\";" > tmp.json && \
+    mv tmp.json kanso.json && \
     push 'http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-alpha/upload'
 fi;
 
 if [ "$TRAVIS_BRANCH" == "testing" ]; then
     npm install -g json && \
-    cat kanso.json | json -o json-4 -e "dependencies[\"kanso-gardener\"] = null; version += \"-beta.$TRAVIS_BUILD_NUMBER\";" > tmp.json && \
+    cat kanso.json | json -o json-4 -e "this.dependencies[\"kanso-gardener\"] = null; this.version += \"-beta.$TRAVIS_BUILD_NUMBER\";" > tmp.json && \
     mv tmp.json kanso.json && \
     push 'http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-beta/upload'
 fi;
