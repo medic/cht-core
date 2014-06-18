@@ -12,6 +12,8 @@
 
 ### TBD
 
+- Fixed bug where scheduled messages were out of order on Chrome #527
+
 - Fixed bug where app settings was ignored, and the app reverted to defaults. #524
 
 - Added delivery form to generic ANC forms.
