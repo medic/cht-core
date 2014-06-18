@@ -16,10 +16,10 @@ var _objectpath = function(obj, path) {
     return obj;
 };
 
-exports.app_settings = function(doc, req) {
+exports.app_settings = function(ddoc, req) {
 
-  var settings = (doc && doc.app_settings) || {},
-      meta = doc.kanso || doc.couchapp,
+  var settings = (ddoc && ddoc.app_settings) || {},
+      meta = ddoc.kanso || ddoc.couchapp,
       schema = meta && meta.config && meta.config.settings_schema,
       path = req.query.objectpath;
 

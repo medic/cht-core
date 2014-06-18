@@ -10,9 +10,11 @@
  */
 exports.update_config = function (ddoc, req) {
 
+    var replace = req.query && req.query.replace;
+
     return [
         ddoc,
-        JSON.stringify(_process(ddoc, req.body))
+        JSON.stringify(_process(ddoc, req.body, replace))
     ];
 
 };
@@ -22,7 +24,7 @@ exports.update_config = function (ddoc, req) {
  * @param {Object} ddoc Design document to update
  * @param {String} body The request body. Must be valid JSON.
  */
-var _process = function (ddoc, body) {
+var _process = function (ddoc, body, replace) {
 
     if (!ddoc) {
         return {
@@ -33,7 +35,11 @@ var _process = function (ddoc, body) {
 
     try {
         body = JSON.parse(body);
-        _extend(ddoc.app_settings, body);
+        if (replace) {
+            _replace(ddoc.app_settings, body);
+        } else {
+            _extend(ddoc.app_settings, body);
+        }
         return { success: true };
     } catch(e) {
         return {
@@ -43,6 +49,17 @@ var _process = function (ddoc, body) {
     }
 
 };
+
+/**
+ * @private
+ * @param {Object} target The settings to update into.
+ * @param {Object} source The new settings to update from.
+ */
+var _replace = function (target, source) {
+    for (var k in source) {
+        target[k] = source[k];
+    }
+}
 
 /**
  * @private

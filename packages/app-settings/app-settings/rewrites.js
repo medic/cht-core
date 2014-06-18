@@ -14,11 +14,8 @@ module.exports = [
       method: "GET"
   },
   {
-      from: '/update_settings/:ddoc/:objectpath',
-      to: '_update/update_config/_design/:ddoc'
-  },
-  {
       from: '/update_settings/:ddoc',
-      to: '_update/update_config/_design/:ddoc'
+      to: '_update/update_config/_design/:ddoc',
+      method: "PUT"
   }
 ];
