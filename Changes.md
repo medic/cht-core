@@ -2,7 +2,7 @@
 
 ## 0.3.11
 
-### TBD
+### Jun 19, 2014
 
 - Fixed bug where scheduled messages were out of order on Chrome #527
 
