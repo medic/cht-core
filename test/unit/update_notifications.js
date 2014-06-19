@@ -90,7 +90,7 @@ exports['no configured on or off form returns false'] = function(test) {
     });
 };
 
-exports['registration not found adds error'] = function(test) {
+exports['registration not found adds error and response'] = function(test) {
     var doc = {
         form: 'on',
         patient_id: 'x',
@@ -100,7 +100,10 @@ exports['registration not found adds error'] = function(test) {
     sinon.stub(transition, 'getConfig').returns({
         messages: [{
             event_type: 'patient_not_found',
-            message: 'not found {{patient_id}}'
+            message: [{
+                content: 'not found {{patient_id}}',
+                locale: 'en'
+            }]
         }],
         on_form: 'on'
     });
@@ -114,6 +117,53 @@ exports['registration not found adds error'] = function(test) {
         test.equals(complete, true);
         test.equals(doc.errors.length, 1);
         test.equals(doc.errors[0].message, 'not found x');
+        test.equals(doc.tasks.length, 1);
+        test.equals(doc.tasks[0].messages[0].message, 'not found x');
+        test.equals(doc.tasks[0].messages[0].to, 'x');
+        test.done();
+    });
+};
+
+exports['validation failure adds error and response'] = function(test) {
+
+    var doc = {
+        form: 'on',
+        patient_id: 'x',
+        related_entities: {clinic: {contact: {phone: 'x'}}}
+    };
+
+    sinon.stub(transition, 'getConfig').returns({
+        validations: {
+            join_responses: false,
+            list: [
+                {
+                    property: "patient_id",
+                    rule: "regex('^[0-9]{5}$')",
+                    message: [{
+                        content: "patient id needs 5 numbers.",
+                        locale: "en"
+                    }]
+                }
+            ]
+        },
+        on_form: 'on'
+    });
+
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [{
+        _id: 'x'
+    }]);
+
+    transition.onMatch({
+        doc: doc,
+        form: 'on'
+    }, {}, {}, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.equals(doc.errors.length, 1);
+        test.equals(doc.errors[0].message, 'patient id needs 5 numbers.');
+        test.equals(doc.tasks.length, 1);
+        test.equals(doc.tasks[0].messages[0].message, 'patient id needs 5 numbers.');
+        test.equals(doc.tasks[0].messages[0].to, 'x');
         test.done();
     });
 };

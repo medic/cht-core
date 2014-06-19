@@ -3,7 +3,8 @@ var async = require('async'),
     mustache = require('mustache'),
     utils = require('../lib/utils'),
     _ = require('underscore'),
-    messages = require('../lib/messages');
+    messages = require('../lib/messages'),
+    validation = require('../lib/validation');
 
 module.exports = {
     filter: function(doc) {
@@ -28,10 +29,15 @@ module.exports = {
         }
         db.saveDoc(registration, callback);
     },
+    validate: function(config, doc, callback) {
+        var validations = config.validations && config.validations.list;
+        return validation.validate(doc, validations, callback);
+    },
     onMatch: function(change, db, audit, callback) {
         var doc = change.doc,
             patient_id = doc.patient_id,
             config = module.exports.getConfig(),
+            locale = utils.getLocale(doc),
             mute;
 
         if (!config.on_form && !config.off_form) {
@@ -46,61 +52,85 @@ module.exports = {
             return callback(null, false);
         }
 
-        // get registrations
-        utils.getRegistrations({
-            db: db,
-            id: patient_id
-        }, function(err, registrations) {
+        module.exports.validate(config, doc, function(errors) {
 
-            function addErr(event_type) {
-                var msg = _.findWhere(config.messages, {event_type: event_type});
-                if (msg) {
-                    messages.addError(doc, msg.message);
+            if (errors && errors.length > 0) {
+                messages.addErrors(doc, errors);
+                if (config.validations.join_responses) {
+                    var msgs = [];
+                    _.each(errors, function(err) {
+                        if (err.message) {
+                            msgs.push(err.message);
+                        } else if (err) {
+                            msgs.push(err);
+                        };
+                    });
+                    messages.addReply(doc, msgs.join('  '));
                 } else {
-                    messages.addError(doc, event_type);
+                    messages.addReply(doc, _.first(errors).message || _.first(errors));
                 }
+                return callback(null, true);
             }
 
-            function addMsg(event_type) {
-                var msg = _.findWhere(config.messages, {event_type: event_type});
-                messages.addMessage({
-                    doc: doc,
-                    message: msg.message,
-                    phone: messages.getRecipientPhone(doc, msg.recipient)
-                });
-            };
+            utils.getRegistrations({
+                db: db,
+                id: patient_id
+            }, function(err, registrations) {
 
-            if (err) {
-                callback(err);
-            } else if (registrations.length) {
-                if (mute) {
-                    if (config.confirm_deactivation) {
-                        addErr('confirm_deactivation');
-                        return callback(null, true);
+                function addErr(event_type) {
+                    var msg = _.findWhere(config.messages, {
+                        event_type: event_type
+                    }).message;
+                    if (msg) {
+                        messages.addError(doc, messages.getMessage(msg, locale));
                     } else {
-                        addMsg('on_mute');
+                        messages.addError(doc, event_type);
                     }
-                } else {
-                        addMsg('on_unmute');
                 }
-                async.each(registrations, function(registration, callback) {
-                    module.exports.modifyRegistration({
-                        db: audit,
-                        mute: mute,
-                        registration: registration.doc
-                    }, callback);
-                }, function(err) {
-                    if (err) {
-                        callback(err);
+
+                function addMsg(event_type) {
+                    var msg = _.findWhere(config.messages, {
+                        event_type: event_type
+                    }).message;
+                    messages.addMessage({
+                        doc: doc,
+                        message: messages.getMessage(msg, locale),
+                        phone: messages.getRecipientPhone(doc, msg.recipient)
+                    });
+                };
+
+                if (err) {
+                    callback(err);
+                } else if (registrations.length) {
+                    if (mute) {
+                        if (config.confirm_deactivation) {
+                            addErr('confirm_deactivation');
+                            return callback(null, true);
+                        } else {
+                            addMsg('on_mute');
+                        }
                     } else {
-                        callback(null, true);
+                            addMsg('on_unmute');
                     }
-                });
-            } else {
-                addErr('patient_not_found');
-                addMsg('patient_not_found');
-                callback(null, true);
-            }
+                    async.each(registrations, function(registration, callback) {
+                        module.exports.modifyRegistration({
+                            db: audit,
+                            mute: mute,
+                            registration: registration.doc
+                        }, callback);
+                    }, function(err) {
+                        if (err) {
+                            callback(err);
+                        } else {
+                            callback(null, true);
+                        }
+                    });
+                } else {
+                    addErr('patient_not_found');
+                    addMsg('patient_not_found');
+                    callback(null, true);
+                }
+            });
         });
     }
 };
