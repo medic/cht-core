@@ -30,7 +30,11 @@
     "changelog": "Changes.md",
     "less": {
         "compress": true,
-        "compile": ["static/css/app.less", "static/css/spreadsheet.less"],
+        "compile": [
+            "static/css/app.less",
+            "static/css/spreadsheet.less",
+            "static/css/inbox.less"
+        ],
         "remove_from_attachments": true
     },
     "node_module_folders" : "sentinel,kujua-api",
