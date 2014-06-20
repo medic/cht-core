@@ -117,3 +117,4 @@ $(function () {
 
 });
 
+angular.module('inboxApp', ['inboxControllers', 'inboxServices']);

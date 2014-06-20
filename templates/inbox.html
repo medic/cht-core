@@ -36,7 +36,7 @@
       <div class="row header">
         <div class="inner">
 
-          <a href="">
+          <a href="#">
             <div class="logo">
               <img alt="Medic" src="{baseURL}/static/img/medic-logo-light.svg" />
             </div>
@@ -248,56 +248,38 @@
           <div class="inbox">
             <div class="col-sm-4 inbox-items">
               <ul>
-                <li ng-repeat="message in messages | filter:checkFilter()" ng-click="setMessage(message.id)">
-                  <span class="time">{~lb}{~lb}message.time{~rb}{~rb}</span>
-                  <span ng-switch on="message.status">
-                    <span ng-switch-when="incomplete" class="mm-badge mm-badge-round mm-badge-border mm-badge-red">
-                      <span class="fa fa-exclamation"></span>
-                    </span>
-                    <span ng-switch-when="good" class="mm-badge mm-badge-round mm-badge-border mm-badge-green">
-                      <span class="fa fa-check"></span>
-                    </span>
-                    <span ng-switch-default class="mm-badge mm-badge-round mm-badge-border mm-badge-green">
-                      <span class="fa"></span>
-                    </span>
+                <li ng-repeat="message in messages.rows | filter:checkFilter()" ng-click="setMessage(message.id)">
+                  <span class="time">{~lb}{~lb}message.doc.reported_date{~rb}{~rb}</span>
+                  <span class="mm-badge mm-badge-round mm-badge-border" ng-class="message.doc.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
+                    <span class="fa"></span>
                   </span>
                   <div class="detail">
                     <div class="sender">
-                      <div class="name">{~lb}{~lb}message.sender.name{~rb}{~rb}</div>
-                      <div class="position">
-                        {~lb}{~lb}message.sender.role{~rb}{~rb}, {~lb}{~lb}message.sender.clinic{~rb}{~rb}
-                      </div>
+                      <div class="name">{~lb}{~lb}message.doc.related_entities.clinic.contact.name{~rb}{~rb}</div>
+                      <div class="position">{~lb}{~lb}message.doc.related_entities.clinic.name{~rb}{~rb}</div>
                     </div>
-                    <div>{~lb}{~lb}message.form{~rb}{~rb}</div>
+                    <div>{~lb}{~lb}message.doc.form{~rb}{~rb}</div>
                   </div>
                 </li>
               </ul>
             </div>
 
-            <div class="col-sm-8 item-content {~lb}{~lb}selected.status{~rb}{~rb}">
+            <div class="col-sm-8 item-content">
               <div>
                 <div class="meta">
-                  <span class="time">{~lb}{~lb}selected.time{~rb}{~rb}</span>
+                  <span class="time">{~lb}{~lb}selected.doc.reported_date{~rb}{~rb}</span>
                   <div class="sender">
-                    <div class="name">{~lb}{~lb}selected.sender.name{~rb}{~rb}</div>
-                    <div class="position">{~lb}{~lb}selected.sender.role{~rb}{~rb}, {~lb}{~lb}selected.sender.clinic{~rb}{~rb}</div>
+                    <div class="name">{~lb}{~lb}selected.doc.related_entities.clinic.contact.name{~rb}{~rb}</div>
+                    <div class="position">{~lb}{~lb}selected.doc.related_entities.clinic.name{~rb}{~rb}</div>
                   </div>
                 </div>
                 <div class="status">
-                  <span ng-switch on="selected.status">
-                    <span ng-switch-when="incomplete" class="mm-badge mm-badge-round mm-badge-red">
-                      <span class="fa fa-exclamation"></span>
-                    </span>
-                    <span ng-switch-when="good" class="mm-badge mm-badge-round mm-badge-green">
-                      <span class="fa fa-check"></span>
-                    </span>
-                    <span ng-switch-default class="mm-badge mm-badge-round mm-badge-green">
-                      <span class="fa"></span>
-                    </span>
+                  <span class="mm-badge mm-badge-round mm-badge-border" ng-class="selected.doc.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
+                    <span class="fa"></span>
                   </span>
                 </div>
                 <div class="body">
-                  <h2>{~lb}{~lb}selected.form{~rb}{~rb}</h2>
+                  <h2>{~lb}{~lb}selected.doc.form{~rb}{~rb}</h2>
                   <ul>
                     <li>
                       <label>Patient ID</label>
@@ -340,7 +322,9 @@
     <script src="{baseURL}/static/js/bootstrap.min.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/bootstrap-datepicker.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/angular.min.js" type="text/javascript"></script>
+    <script src="{baseURL}/static/js/angular-resource.min.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/controllers.js" type="text/javascript"></script>
+    <script src="{baseURL}/static/js/services.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/inbox.js" type="text/javascript"></script>
 
   </body>

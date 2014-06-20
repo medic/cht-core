@@ -1,7 +1,7 @@
-var inboxApp = angular.module('inboxApp', []);
+var inboxControllers = angular.module('inboxControllers', []);
 
-inboxApp.controller('MessageCtrl', function ($scope) {
-  
+inboxControllers.controller('MessageCtrl', ['$scope', 'Message', function ($scope, Message) {
+  /*
   $scope.messages = [
     {
       id: '1',
@@ -135,14 +135,16 @@ inboxApp.controller('MessageCtrl', function ($scope) {
         clinic: 'Ganze Clinic'
       }
     }
-  ];
+  ];*/
+
+  $scope.messages = Message.query();
   $scope.forms = [
     {
       code: 'PREN',
       name: 'Prenatal Care'
     },
     {
-      code: 'ANTE',
+      code: 'ANCR',
       name: 'Antenatal Care'
     },
     {
@@ -156,7 +158,7 @@ inboxApp.controller('MessageCtrl', function ($scope) {
   $scope.filterForms = [];
 
   $scope.setMessage = function(id) {
-    $scope.messages.forEach(function(message) {
+    $scope.messages.rows.forEach(function(message) {
       if (message.id === id) {
         $scope.selected = message;
       }
@@ -168,12 +170,15 @@ inboxApp.controller('MessageCtrl', function ($scope) {
   };
 
   $scope.setFilterForms = function(filterForms) {
-    console.log(filterForms);
     $scope.filterForms = filterForms;
   }
 
   var checkFilterType = function(message) {
-    return message.type === $scope.filterType;
+    var hasForm = !!message.doc.form;
+    if ($scope.filterType === 'message') {
+      return !hasForm;
+    }
+    return hasForm;
   };
 
   var checkFilterForms = function(message) {
@@ -184,7 +189,7 @@ inboxApp.controller('MessageCtrl', function ($scope) {
       return true;
     }
     for (var i = 0; i < $scope.filterForms.length; i++) {
-      if ($scope.filterForms[i].name === message.form) {
+      if ($scope.filterForms[i].code === message.doc.form) {
         return true;
       }
     }
@@ -198,4 +203,4 @@ inboxApp.controller('MessageCtrl', function ($scope) {
     };
   };
 
-});
+}]);
