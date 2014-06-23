@@ -3,11 +3,8 @@ var inboxServices = angular.module('inboxServices', ['ngResource']);
 inboxServices.factory('Message', ['$resource',
   function($resource) {
     // TODO read from filters
-    //var form = 'null_form'; // message
-    // TODO read from filters
     var startdate = 0; 
     var enddate = 1902529477402;
-    // TODO get base url from somewhere
     var baseUrl = $('html').data('base-url');
     return $resource(baseUrl + '/data_records', {}, {
       query: {
@@ -20,6 +17,18 @@ inboxServices.factory('Message', ['$resource',
           limit: 1000
         },
         isArray: true
+      }
+    });
+  }
+]);
+
+inboxServices.factory('Settings', ['$resource',
+  function($resource) {
+    var baseUrl = $('html').data('base-url');
+    return $resource(baseUrl + '/app_settings/kujua-lite', {}, {
+      query: {
+        method: 'GET',
+        isArray: false
       }
     });
   }
