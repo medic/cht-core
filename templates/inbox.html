@@ -7,7 +7,7 @@
     <link rel="shortcut icon" href="{baseURL}/static/img/ico/icon_48.ico">
     <title>Medic Mobile: Inbox</title>
   </head>
-  <body ng-controller="MessageCtrl">
+  <body ng-controller="MessageCtrl" ng-class="{'show-content': selected}">
     <div class="container-fluid action-container">
       <div class="row">
         <div class="inner">
@@ -89,8 +89,8 @@
           </div>
 
           <div class="tabs">
-            <a href="#" ng-click="setFilterType('message')" class="selected">
-              <div class="mm-icon">
+            <a ng-click="setFilterType('message')" ng-class="{'selected': filterType === 'message'}">
+              <div class="mm-icon" ng-class="{'mm-icon-inverse': filterType !== 'message'}">
                 <span class="fa fa-envelope"></span>
                 <span class="mm-badge-overlay mm-badge-overlay-top">
                   <span class="mm-badge mm-badge-red mm-badge-border">405</span>
@@ -98,8 +98,8 @@
               </div>
               <div class="button-label">Messages</div>
             </a>
-            <a href="#" ng-click="setFilterType('form')">
-              <div class="mm-icon mm-icon-inverse">
+            <a ng-click="setFilterType('form')" ng-class="{'selected': filterType === 'form'}">
+              <div class="mm-icon" ng-class="{'mm-icon-inverse': filterType !== 'form'}">
                 <span class="fa fa-list-alt"></span>
                 <span class="mm-badge-overlay mm-badge-overlay-top">
                   <span class="mm-badge mm-badge-red mm-badge-border">15</span>
@@ -107,8 +107,8 @@
               </div>
               <div class="button-label">Forms</div>
             </a>
-            <a href="#" ng-click="setFilterType('reporting')">
-              <div class="mm-icon mm-icon-inverse">
+            <a ng-click="setFilterType('reporting')" ng-class="{'selected': filterType === 'reporting'}">
+              <div class="mm-icon" ng-class="{'mm-icon-inverse': filterType !== 'reporting'}">
                 <span class="fa fa-bar-chart-o"></span>
               </div>
               <div class="button-label">Reports</div>
@@ -120,8 +120,8 @@
       <div class="row filters">
         <div class="inner">
 
-          <span class="dropdown mm-dropdown slide-back">
-            <span id="back" class="mm-button mm-button-disabled mm-button-nudge-down">
+          <span class="dropdown mm-dropdown slide-back" ng-click="setMessage()">
+            <span id="back" class="mm-button mm-button-nudge-down" ng-class="{'mm-button-disabled': !selected}">
               <span class="mm-button-icon">
                 <span class="fa fa-chevron-left"></span>
               </span>
@@ -231,7 +231,7 @@
           <div class="inbox">
             <div class="col-sm-4 inbox-items">
               <ul>
-                <li ng-repeat="message in messages | filter:checkFilter()" ng-click="setMessage(message._id)" data-record-id="{~lb}{~lb}message._id{~rb}{~rb}">
+                <li ng-repeat="message in messages | filter:checkFilter()" ng-click="setMessage(message._id)" data-record-id="{~lb}{~lb}message._id{~rb}{~rb}" ng-class="{'selected': message._id === selected._id}">
                   <span class="time" ng-bind-html="message.reported_date | relativeDate"></span>
                   <span class="mm-badge mm-badge-round mm-badge-border" ng-class="message.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
                     <span class="fa"></span>

@@ -54,11 +54,14 @@ inboxControllers.controller('MessageCtrl',
   });
 
   $scope.setMessage = function(id) {
-    $scope.messages.forEach(function(message) {
-      if (message._id === id) {
-        $scope.selected = message;
-      }
-    });
+    $scope.selected = undefined;
+    if (id) {
+      $scope.messages.forEach(function(message) {
+        if (message._id === id) {
+          $scope.selected = message;
+        }
+      });
+    }
   };
 
   $scope.setFilterType = function(filterType) {
@@ -155,11 +158,16 @@ inboxControllers.controller('MessageCtrl',
 
   $scope.checkFilter = function() {
     return function(message) {
-      return checkFilterType(message)
-          && checkFilterValid(message)
-          && checkFilterForms(message)
-          && checkFilterDate(message)
-          && checkFilterFacilities(message);
+      var show = checkFilterType(message)
+              && checkFilterValid(message)
+              && checkFilterForms(message)
+              && checkFilterDate(message)
+              && checkFilterFacilities(message);
+      if (!show && $scope.selected && message._id === $scope.selected._id) {
+        // hide content if filter doesn't apply to message any more
+        $scope.setMessage();
+      }
+      return show;
     };
   };
 
