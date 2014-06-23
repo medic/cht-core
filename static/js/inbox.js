@@ -100,29 +100,35 @@ $(function () {
     }
   });
 
-  $('.datepicker').addClass('dropdown-menu mm-dropdown-menu mm-dropdown-menu-inverse');
-  $('#date-from, #date-to')
-    .datepicker()
-    .on('changeDate', function(ev) {
-      $(this).find('.mm-button-text').text(moment(ev.date).format('D MMM YYYY'));
-      $(this).datepicker('hide');
-    })
-    .on('show', function(ev) {
-      $('.dropdown.open .dropdown-menu').dropdown('toggle');
-      // Change position when rendering in mobile
-      if ($('#back').is(':visible')) {
-        $('.datepicker').css({
-          left: '3em',
-          right: '3em',
-          top: '9em'
-        });
-      } else {
-        $('.datepicker').css({
-          'margin-left': $(this).is('#date-to') ? '-7%' : ''
-        });
-      }
-      $('.datepicker').addClass('open');
+  $('#date-from').datepicker().on('changeDate', function(ev) {
+    $(this).datepicker('hide');
+    angular.element($('body')).scope().$apply(function(scope) {
+      scope.setFilterDateFrom(ev.date.getTime());
     });
+  });
+  $('#date-to').datepicker().on('changeDate', function(ev) {
+    $(this).datepicker('hide');
+    angular.element($('body')).scope().$apply(function(scope) {
+      scope.setFilterDateTo(ev.date.getTime());
+    });
+  });
+  $('#date-from, #date-to').datepicker().on('show', function(ev) {
+    $('.dropdown.open .dropdown-menu').dropdown('toggle');
+    // Change position when rendering in mobile
+    if ($('#back').is(':visible')) {
+      $('.datepicker').css({
+        left: '3em',
+        right: '3em',
+        top: '9em'
+      });
+    } else {
+      $('.datepicker').css({
+        'margin-left': $(this).is('#date-to') ? '-7%' : ''
+      });
+    }
+    $('.datepicker').addClass('open');
+  });
+  $('.datepicker').addClass('dropdown-menu mm-dropdown-menu mm-dropdown-menu-inverse');
 
 });
 

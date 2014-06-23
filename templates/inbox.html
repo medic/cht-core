@@ -168,23 +168,23 @@
           </span>
 
           <span class="dropdown mm-dropdown pair-left">
-            <span id="date-from" class="mm-button" data-date="2014-02-02" data-date-format="yyyy-mm-dd">
+            <span id="date-from" class="mm-button" data-date="{~lb}{~lb}filterDate.from | date : 'yyyy-MM-dd'{~rb}{~rb}" data-date-format="yyyy-mm-dd">
               <span class="mm-button-dropdown">
                 <span class="fa fa-chevron-down"></span>
               </span>
               <span class="mm-button-text">
-                2 Feb 2014
+                {~lb}{~lb}filterDate.from | date : 'mediumDate'{~rb}{~rb}
               </span>
             </span>
           </span><!--
           comment required to keep dropdowns flush
           --><span class="dropdown mm-dropdown pair-right">
-            <span id="date-to" class="mm-button" data-date="2014-02-10" data-date-format="yyyy-mm-dd">
+            <span id="date-to" class="mm-button" data-date="{~lb}{~lb}filterDate.to | date : 'yyyy-MM-dd'{~rb}{~rb}" data-date-format="yyyy-mm-dd">
               <span class="mm-button-dropdown">
                 <span class="fa fa-chevron-down"></span>
               </span>
               <span class="mm-button-text">
-                10 Feb 2014
+                {~lb}{~lb}filterDate.to | date : 'mediumDate'{~rb}{~rb}
               </span>
             </span>
           </span>

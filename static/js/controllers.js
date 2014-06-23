@@ -27,14 +27,19 @@ inboxControllers.controller('MessageCtrl',
   function ($scope, Message, Facility, Settings) {
  
   $scope.messages = Message.query();
+  $scope.facilities = Facility.query();
   $scope.forms = [];
   $scope.selected = undefined;
+
   $scope.filterType = 'message';
   $scope.filterForms = [];
   $scope.filterFacilities = [];
   $scope.filterValid = true;
-  $scope.facilities = Facility.query();
-  
+  $scope.filterDate = {
+    from: moment().subtract('months', 1).valueOf(),
+    to: moment().valueOf()
+  }
+
   Settings.query(function(res) {
     if (res.settings && res.settings.forms) {
       var forms = res.settings.forms;
@@ -70,6 +75,14 @@ inboxControllers.controller('MessageCtrl',
 
   $scope.setFilterValid = function(filterValid) {
     $scope.filterValid = filterValid;
+  };
+
+  $scope.setFilterDateFrom = function(date) {
+    $scope.filterDate.from = date;
+  };
+
+  $scope.setFilterDateTo = function(date) {
+    $scope.filterDate.to = date;
   };
 
   var checkFilterType = function(message) {
@@ -135,11 +148,17 @@ inboxControllers.controller('MessageCtrl',
     return false;
   };
 
+  var checkFilterDate = function(message) {
+    return message.reported_date > $scope.filterDate.from 
+        && message.reported_date < $scope.filterDate.to;
+  };
+
   $scope.checkFilter = function() {
     return function(message) {
       return checkFilterType(message)
           && checkFilterValid(message)
           && checkFilterForms(message)
+          && checkFilterDate(message)
           && checkFilterFacilities(message);
     };
   };
