@@ -254,11 +254,8 @@
                     <span class="fa"></span>
                   </span>
                   <div class="detail">
-                    <div class="sender">
-                      <div class="name">{~lb}{~lb}message.related_entities.clinic.contact.name{~rb}{~rb}</div>
-                      <div class="position">{~lb}{~lb}message.related_entities.clinic.name{~rb}{~rb}</div>
-                    </div>
-                    <div>{~lb}{~lb}message.form{~rb}{~rb}{~lb}{~lb}message.sms_message.message{~rb}{~rb}</div>
+                    <mm-sender message="message"></mm-sender>
+                    <div>{~lb}{~lb}message.form ? message.form : 'Message'{~rb}{~rb}</div>
                   </div>
                 </li>
               </ul>
@@ -268,10 +265,7 @@
               <div>
                 <div class="meta">
                   <span class="time" ng-bind-html="selected.reported_date | relativeDate"></span>
-                  <div class="sender">
-                    <div class="name">{~lb}{~lb}selected.related_entities.clinic.contact.name{~rb}{~rb}</div>
-                    <div class="position">{~lb}{~lb}selected.related_entities.clinic.name{~rb}{~rb}</div>
-                  </div>
+                  <mm-sender message="selected"></mm-sender>
                 </div>
                 <div class="status">
                   <span class="mm-badge mm-badge-round mm-badge-border" ng-class="selected.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
@@ -279,35 +273,37 @@
                   </span>
                 </div>
                 <div class="body">
-                  <h2>{~lb}{~lb}selected.form{~rb}{~rb}</h2>
+                  <h2>{~lb}{~lb}selected.form ? selected.form : 'Message'{~rb}{~rb}</h2>
                   <ul>
-                    <li>
-                      <label>Patient ID</label>
-                      <p>548912254</p>
+                    <li ng-repeat="field in selected.fields.data">
+                      <label>{~lb}{~lb}field.label{~rb}{~rb}</label>
+                      <p>{~lb}{~lb}field.value{~rb}{~rb}</p>
                     </li>
-                    <li>
-                      <label>Days Since Delivery</label>
-                      <p>5</p>
+                    <li ng-if="selected.errors.length">
+                      <label>Errors</label>
+                      <ul>
+                        <li ng-repeat="error in selected.errors">
+                          {~lb}{~lb}error.message{~rb}{~rb}
+                        </li>
+                      </ul>
                     </li>
-                    <li class="missing">
-                      <label>Physician Present?</label>
-                      <p>Not Recorded</p>
-                    </li>
-                    <li>
-                      <label>Date of Delivery</label>
-                      <p>June 7<sup>th</sup>, 2014</p>
-                    </li>
-                    <li>
-                      <label>Misoprostol Administered?</label>
-                      <p>Yes</p>
-                    </li>
-                    <li>
-                      <label>Birth Outcome</label>
-                      <p>Alive and well</p>
-                    </li>
-                    <li>
-                      <label>Date Submitted</label>
-                      <p>June 12<sup>th</sup>, 2014</p>
+                    <li ng-if="selected.scheduled_tasks_by_group.length">
+                      <label>Scheduled Tasks</label>
+                      <ul>
+                      <li ng-repeat="group in selected.scheduled_tasks_by_group">
+                        {~lb}{~lb}group.group{~rb}{~rb}
+                        <ul>
+                          <li ng-repeat="task in group.rows">
+                            {~lb}{~lb}task.state{~rb}{~rb} - {~lb}{~lb}task.due{~rb}{~rb}
+                            <ul>
+                              <li ng-repeat="m in task.messages">
+                                {~lb}{~lb}m.message{~rb}{~rb}
+                              </li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </li>
+                      </ul>
                     </li>
                   </ul>
                 </div>

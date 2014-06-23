@@ -1,5 +1,8 @@
 var inboxControllers = angular.module('inboxControllers', ['ngSanitize']);
 
+// TODO get base url from somewhere
+var baseUrl = 'http://localhost:5984/kujua-lite/_design/kujua-lite/_rewrite';
+
 inboxControllers.filter('relativeDate', function () {
   return function (date) {
     if (!date) { 
@@ -9,6 +12,14 @@ inboxControllers.filter('relativeDate', function () {
     var m = moment(date);
 
     return '<span title="' + m.format('HH:mm, Do MMM YYYY') + '">' + m.fromNow() + '</span>';
+  };
+});
+
+inboxControllers.directive('mmSender', function() {
+  return {
+    restrict: 'E',
+    scope: { message: '=' },
+    templateUrl: baseUrl + '/static/js/templates/sender.html'
   };
 });
 
@@ -152,8 +163,8 @@ inboxControllers.controller('MessageCtrl', ['$scope', 'Message', function ($scop
   $scope.messages = Message.query();
   $scope.forms = [
     {
-      code: 'PREN',
-      name: 'Prenatal Care'
+      code: 'ANCV',
+      name: 'Antenatal Visit'
     },
     {
       code: 'ANCR',
