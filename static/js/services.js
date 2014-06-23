@@ -8,7 +8,7 @@ inboxServices.factory('Message', ['$resource',
     var startdate = 0; 
     var enddate = 1902529477402;
     // TODO get base url from somewhere
-    var baseUrl = 'http://localhost:5984/kujua-lite/_design/kujua-lite/_rewrite';
+    var baseUrl = $('html').data('base-url');
     return $resource(baseUrl + '/data_records', {}, {
       query: {
         method: 'GET',

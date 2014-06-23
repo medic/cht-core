@@ -1,7 +1,6 @@
 var inboxControllers = angular.module('inboxControllers', ['ngSanitize']);
 
-// TODO get base url from somewhere
-var baseUrl = 'http://localhost:5984/kujua-lite/_design/kujua-lite/_rewrite';
+var baseUrl = $('html').data('base-url');
 
 inboxControllers.filter('relativeDate', function () {
   return function (date) {
