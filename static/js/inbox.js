@@ -78,6 +78,10 @@ $(function () {
     });
   });
 
+  $('#validDropdown [role=menuitem]').on('click', function() {
+    $('#validDropdown .mm-button-text').text($(this).text());
+  });
+
   var blockSelectHide = false;
 
   $('.mm-multiple-select').on('click', '[role=menuitem]', function(e) {
@@ -96,6 +100,7 @@ $(function () {
     }
   });
 
+  $('.datepicker').addClass('dropdown-menu mm-dropdown-menu mm-dropdown-menu-inverse');
   $('#date-from, #date-to')
     .datepicker()
     .on('changeDate', function(ev) {
@@ -118,7 +123,6 @@ $(function () {
       }
       $('.datepicker').addClass('open');
     });
-  $('.datepicker').addClass('dropdown-menu mm-dropdown-menu mm-dropdown-menu-inverse');
 
 });
 

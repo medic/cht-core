@@ -189,7 +189,7 @@
             </span>
           </span>
 
-          <span class="dropdown mm-dropdown">
+          <span id="validDropdown" class="dropdown mm-dropdown">
             <span id="status" class="mm-button" data-toggle="dropdown" ng-class="{'mm-button-disabled': filterType === 'message', disabled: filterType === 'message'}">
               <span class="mm-button-icon">
                 <span class="fa fa-check-circle-o"></span>
@@ -197,20 +197,18 @@
               <span class="mm-button-dropdown">
                 <span class="fa fa-chevron-down"></span>
               </span>
-              <span class="mm-button-text">
-                Valid Only
-              </span>
+              <span class="mm-button-text">Valid Only</span>
             </span>
             <ul role="menu" aria-labelledby="status"
               class="dropdown-menu mm-dropdown-menu mm-dropdown-menu-inverse">
               <li role="presentation">
-                <a role="menuitem" tabindex="-1" href="#">Any</a>
+                <a role="menuitem" tabindex="-1" href="#" ng-click="setFilterValid()">Any Status</a>
               </li>
               <li role="presentation">
-                <a role="menuitem" tabindex="-1" href="#">Valid</a>
+                <a role="menuitem" tabindex="-1" href="#" ng-click="setFilterValid(true)">Valid Only</a>
               </li>
               <li role="presentation">
-                <a role="menuitem" tabindex="-1" href="#">Invalid</a>
+                <a role="menuitem" tabindex="-1" href="#" ng-click="setFilterValid(false)">Invalid Only</a>
               </li>
             </ul>
           </span>

@@ -32,6 +32,7 @@ inboxControllers.controller('MessageCtrl',
   $scope.filterType = 'message';
   $scope.filterForms = [];
   $scope.filterFacilities = [];
+  $scope.filterValid = true;
   $scope.facilities = Facility.query();
   
   Settings.query(function(res) {
@@ -67,12 +68,29 @@ inboxControllers.controller('MessageCtrl',
     $scope.filterFacilities = facilityIds;
   };
 
+  $scope.setFilterValid = function(filterValid) {
+    $scope.filterValid = filterValid;
+  };
+
   var checkFilterType = function(message) {
     var hasForm = !!message.form;
     if ($scope.filterType === 'message') {
       return !hasForm;
     }
     return hasForm;
+  };
+
+  var checkFilterValid = function(message) {
+    if ($scope.filterType === 'message') {
+      return true;
+    }
+    if ($scope.filterValid === true) {
+      return !message.errors.length;
+    }
+    if ($scope.filterValid === false) {
+      return !!message.errors.length;
+    }
+    return true;
   };
 
   var checkFilterForms = function(message) {
@@ -120,6 +138,7 @@ inboxControllers.controller('MessageCtrl',
   $scope.checkFilter = function() {
     return function(message) {
       return checkFilterType(message)
+          && checkFilterValid(message)
           && checkFilterForms(message)
           && checkFilterFacilities(message);
     };
