@@ -15,22 +15,55 @@ Retrieve Settings
 
 To access the settings, request the app_settings show passing the name of the design doc, eg:
 
-    GET http://localhost:5984/kujua-lite/_design/kujua-lite/_rewrite/app_settings/kujua-lite
+```
+    GET /kujua-lite/_design/kujua-lite/_rewrite/app_settings/kujua-lite HTTP/1.1
+    Host: localhost
+```
 
-Note not to pass the ID of the design doc (eg: '_design/kujua-lite'), instead pass the name (eg: 'kujua-lite'). This avoids having to escape the parameters.
+Do not to pass the ID of the design doc (eg: '_design/kujua-lite'), instead
+pass the name (eg: 'kujua-lite'). This avoids having to escape the parameters.
+
+Optionally you can also pass in a path to a specific property using an object
+path dot notation, like:
+
+```
+    GET /kujua-lite/_design/kujua-lite/_rewrite/app_settings/kujua-lite/foo.bar.baz HTTP/1.1
+    Host: localhost
+```
+
+This would return the `baz` object located at `{foo: {bar: {baz: {}}}}`.
 
 Update Settings
 -----------------
 
 To update the settings, PUT the new settings to the document update function passing the name of the design doc, eg:
 
-    PUT http://localhost:5984/kujua-lite/_design/kujua-lite/_rewrite/update_settings/kujua-lite
+```
+    PUT /kujua-lite/_design/kujua-lite/_rewrite/update_settings/kujua-lite HTTP/1.1
+    Host: localhost
+    Content-Type: application/json; charset=utf-8
+
+    { "forms": { "R": { "name": "foo", "desc": "bar" }}} 
+```
 
 As with retrieving settings, use the name of the design document, not the ID.
 
-The body must be a valid JSON object and will be merged with the current app_settings, so you should submit a partial object rather than the entire app_settings.
+The body must be a valid JSON object and will be merged with the current
+app_settings, so you should submit a partial object rather than the entire
+app_settings.  **Note** that app_settings arrays are replaced not merged.
 
-Note that app_settings arrays are replaced not merged.
+To replace an object completely use the `?replace=1` query parameter. For
+example:
+
+```
+    PUT /kujua-lite/_design/kujua-lite/_rewrite/update_settings/kujua-lite?replace=1 HTTP/1.1
+    Host: localhost
+    Content-Type: application/json; charset=utf-8
+
+    { "forms": { "R": { "name": "foo", "desc": "bar" }}} 
+```
+
+Then the forms object would be completely replaced instead of extended/merged.
 
 Command line
 ============

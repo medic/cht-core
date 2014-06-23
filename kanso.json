@@ -846,30 +846,56 @@
                         "default": false
                     },
                     "validations": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "property": {
-                                    "type": "string",
-                                    "title": "Property",
-                                    "description": "The property to validate.",
-                                    "default": "patient_id"
-                                },
-                                "rule": {
-                                    "type": "string",
-                                    "title": "Validation Rule",
-                                    "description": "The <a href='/kujua-lite/_design/kujua-lite/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
-                                    "default": "regex('[0-9]{5}')"
-                                },
-                                "message": {
-                                    "type": "string",
-                                    "title": "Error Message",
-                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, chw_phone, chw_name",
-                                    "default": "Invalid Patient ID '{{patient_id}}'",
-                                    "je:hint": "textarea",
-                                    "je:textarea": {
-                                        "rows": 2
+                        "type": "object",
+                        "properties": {
+                            "join_responses": {
+                                "title": "Join Validation Responses",
+                                "type": "boolean",
+                                "default": false,
+                                "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
+                            },
+                            "list": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "property": {
+                                            "type": "string",
+                                            "title": "Property",
+                                            "description": "The property on the JSON form to validate.",
+                                            "default": "patient_id"
+                                        },
+                                        "rule": {
+                                            "type": "string",
+                                            "title": "Validation Rule",
+                                            "description": "The <a href='/kujua-lite/_design/kujua-lite/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
+                                            "default": "regex('[0-9]{5}')"
+                                        },
+                                        "message": {
+                                            "title": "Response Message",
+                                            "type": "array",
+                                            "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "content": {
+                                                        "type": "string",
+                                                        "title": "Message Content",
+                                                        "default": "'{{patient_id}}' is not a valid.",
+                                                        "je:hint": "textarea",
+                                                        "je:textarea": {
+                                                            "rows": 2
+                                                        }
+                                                    },
+                                                    "locale": {
+                                                        "title": "Locale",
+                                                        "type": "string",
+                                                        "default": "en"
+                                                    }
+                                                }
+                                            },
+                                            "default": []
+                                        }
                                     }
                                 }
                             }
@@ -890,7 +916,7 @@
                                             "content": {
                                                 "type": "string",
                                                 "title": "Message Content",
-                                                "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
+                                                "description": "e.g. Greetings, {{chw_name}}. {{patient_id}} notification will be disabled.",
                                                 "default": "",
                                                 "je:hint": "textarea",
                                                 "je:textarea": {

@@ -10,7 +10,9 @@
 
 ## 0.3.11
 
-### TBD
+### Jun 19, 2014
+
+- Fixed bug where scheduled messages were out of order on Chrome #527
 
 - Fixed bug where app settings was ignored, and the app reverted to defaults. #524
 
