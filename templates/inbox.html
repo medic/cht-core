@@ -272,8 +272,17 @@
                     <span class="fa"></span>
                   </span>
                 </div>
-                <div class="body">
-                  <h2>{~lb}{~lb}selected.form ? selected.form : 'Message'{~rb}{~rb}</h2>
+                <div class="body" ng-if="!selected.form">
+                  <h2>Message</h2>
+                  <ul>
+                    <li>
+                      <label>Content</label>
+                      <p>{~lb}{~lb}selected.sms_message.message{~rb}{~rb}</p>
+                    </li>
+                  </ul>
+                </div>
+                <div class="body" ng-if="selected.form">
+                  <h2>{~lb}{~lb}selected.form{~rb}{~rb}</h2>
                   <ul>
                     <li ng-repeat="field in selected.fields.data">
                       <label>{~lb}{~lb}field.label{~rb}{~rb}</label>
@@ -287,22 +296,35 @@
                         </li>
                       </ul>
                     </li>
+                    <li ng-if="selected.tasks.length">
+                      <label>Messages</label>
+                      <ul>
+                        <li ng-repeat="task in selected.tasks">
+                          <ul>
+                            <li ng-repeat="message in task.messages">
+                              {~lb}{~lb}message.message{~rb}{~rb}
+                              ({~lb}{~lb}task.state{~rb}{~rb})
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
                     <li ng-if="selected.scheduled_tasks_by_group.length">
                       <label>Scheduled Tasks</label>
                       <ul>
-                      <li ng-repeat="group in selected.scheduled_tasks_by_group">
-                        {~lb}{~lb}group.group{~rb}{~rb}
-                        <ul>
-                          <li ng-repeat="task in group.rows">
-                            {~lb}{~lb}task.state{~rb}{~rb} - {~lb}{~lb}task.due{~rb}{~rb}
-                            <ul>
-                              <li ng-repeat="m in task.messages">
-                                {~lb}{~lb}m.message{~rb}{~rb}
-                              </li>
-                            </ul>
-                          </li>
-                        </ul>
-                      </li>
+                        <li ng-repeat="group in selected.scheduled_tasks_by_group">
+                          {~lb}{~lb}group.group{~rb}{~rb}
+                          <ul>
+                            <li ng-repeat="task in group.rows">
+                              {~lb}{~lb}task.state{~rb}{~rb} - {~lb}{~lb}task.due{~rb}{~rb}
+                              <ul>
+                                <li ng-repeat="m in task.messages">
+                                  {~lb}{~lb}m.message{~rb}{~rb}
+                                </li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </li>
                       </ul>
                     </li>
                   </ul>
