@@ -149,7 +149,7 @@
             </ul>
           </span>
 
-          <span class="dropdown mm-dropdown">
+          <span id="facilityDropdown" class="dropdown mm-dropdown mm-multiple-select" data-label-no-filter="All facilities" data-filter-label="facilities">
             <span id="facility" class="mm-button" data-toggle="dropdown">
               <span class="mm-button-icon">
                 <span class="fa fa-hospital-o"></span>
@@ -157,27 +157,12 @@
               <span class="mm-button-dropdown">
                 <span class="fa fa-chevron-down"></span>
               </span>
-              <span class="mm-button-text">
-                Ganze Health Clinic
-              </span>
+              <span class="mm-button-text"></span>
             </span>
             <ul role="menu" aria-labelledby="facility"
               class="dropdown-menu mm-dropdown-menu mm-dropdown-menu-inverse">
-
-              <li role="presentation">
-                <a role="menuitem" tabindex="-1" href="#">Chicago General Hospital</a>
-              </li>
-              <li role="presentation">
-                <a role="menuitem" tabindex="-1" href="#">Ganze Health Clinic</a>
-              </li>
-              <li role="presentation">
-                <a role="menuitem" tabindex="-1" href="#">Portland Intensive Care</a>
-              </li>
-              <li role="presentation">
-                <a role="menuitem" tabindex="-1" href="#">Toronto Urgent Care</a>
-              </li>
-              <li role="presentation">
-                <a role="menuitem" tabindex="-1" href="#">Zanzibar Health Post</a>
+              <li role="presentation" ng-repeat="facility in facilities">
+                <a role="menuitem" tabindex="-1" href="#" data-facility-id="{~lb}{~lb}facility.id{~rb}{~rb}">{~lb}{~lb}facility.text{~rb}{~rb}</a>
               </li>
             </ul>
           </span>

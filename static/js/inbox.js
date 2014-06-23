@@ -34,24 +34,16 @@ $(function () {
     }
   });
 
-  var getForms = function(dropdown, selector) {
-    var forms = [];
-    dropdown.find(selector).each(function() {
-      forms.push($(this).data('form'));
-    });
-    return forms;
-  };
-
   var getTitle = function(dropdown) {
-    var allForms = getForms(dropdown, '[role=menuitem]');
-    var selectedForms = getForms(dropdown, '[role=menuitem].selected');
+    var allForms = dropdown.find('[role=menuitem]');
+    var selectedForms = dropdown.find('[role=menuitem].selected');
     if (selectedForms.length === 0 || selectedForms.length === allForms.length) {
       return dropdown.data('label-no-filter');
     }
     if (selectedForms.length > 1) {
       return selectedForms.length + ' ' + dropdown.data('filter-label');
     }
-    return selectedForms[0].name;
+    return selectedForms.first().text();
   };
 
   var updateMultipleSelect = function(dropdown) {
@@ -67,9 +59,22 @@ $(function () {
   });
 
   $('#formTypeDropdown').on('update', function() {
-    var forms = getForms($(this), '[role=menuitem].selected');
+    var forms = [];
+    $(this).find('[role=menuitem].selected').each(function() {
+      ids.push($(this).data('form'));
+    });
     angular.element($('body')).scope().$apply(function(scope) {
       scope.setFilterForms(forms);
+    });
+  });
+
+  $('#facilityDropdown').on('update', function() {
+    var ids = [];
+    $(this).find('[role=menuitem].selected').each(function() {
+      ids.push($(this).data('facility-id'));
+    });
+    angular.element($('body')).scope().$apply(function(scope) {
+      scope.setFilterFacilities(ids);
     });
   });
 

@@ -33,3 +33,15 @@ inboxServices.factory('Settings', ['$resource',
     });
   }
 ]);
+
+inboxServices.factory('Facility', ['$resource',
+  function($resource) {
+    var baseUrl = $('html').data('base-url');
+    return $resource(baseUrl + '/facilities_select2.json', {}, {
+      query: {
+        method: 'GET',
+        isArray: true
+      }
+    });
+  }
+]);
