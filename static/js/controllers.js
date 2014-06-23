@@ -1,4 +1,16 @@
-var inboxControllers = angular.module('inboxControllers', []);
+var inboxControllers = angular.module('inboxControllers', ['ngSanitize']);
+
+inboxControllers.filter('relativeDate', function () {
+  return function (date) {
+    if (!date) { 
+      return ''; 
+    }
+
+    var m = moment(date);
+
+    return '<span title="' + m.format('HH:mm, Do MMM YYYY') + '">' + m.fromNow() + '</span>';
+  };
+});
 
 inboxControllers.controller('MessageCtrl', ['$scope', 'Message', function ($scope, Message) {
   /*
@@ -158,8 +170,8 @@ inboxControllers.controller('MessageCtrl', ['$scope', 'Message', function ($scop
   $scope.filterForms = [];
 
   $scope.setMessage = function(id) {
-    $scope.messages.rows.forEach(function(message) {
-      if (message.id === id) {
+    $scope.messages.forEach(function(message) {
+      if (message._id === id) {
         $scope.selected = message;
       }
     });
@@ -174,7 +186,7 @@ inboxControllers.controller('MessageCtrl', ['$scope', 'Message', function ($scop
   }
 
   var checkFilterType = function(message) {
-    var hasForm = !!message.doc.form;
+    var hasForm = !!message.form;
     if ($scope.filterType === 'message') {
       return !hasForm;
     }
@@ -189,7 +201,7 @@ inboxControllers.controller('MessageCtrl', ['$scope', 'Message', function ($scop
       return true;
     }
     for (var i = 0; i < $scope.filterForms.length; i++) {
-      if ($scope.filterForms[i].code === message.doc.form) {
+      if ($scope.filterForms[i].code === message.form) {
         return true;
       }
     }

@@ -146,13 +146,13 @@ var includeNonFormFields = function(doc, form_keys) {
  */
 exports.makeDataRecordReadable = function(doc, appinfo) {
 
-    exports.info = appinfo;
+    exports.info = appinfo || exports.info;
 
     var data_record = doc;
 
     // adding a fields property for ease of rendering code
     if(data_record.form) {
-        var keys = getFormKeys(appinfo.getForm(data_record.form));
+        var keys = getFormKeys(exports.info.getForm(data_record.form));
         var labels = exports.getLabels(keys, data_record.form, getLocale(doc));
         data_record.fields = exports.fieldsToHtml(keys, labels, data_record);
         includeNonFormFields(data_record, keys);
