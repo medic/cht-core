@@ -89,6 +89,9 @@ inboxControllers.controller('MessageCtrl',
   };
 
   var checkFilterType = function(message) {
+    if ($scope.filterType === 'reporting') {
+      return false;
+    }
     var hasForm = !!message.form;
     if ($scope.filterType === 'message') {
       return !hasForm;

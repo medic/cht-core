@@ -150,12 +150,14 @@
   right: 0;
 }
 
-.row.content .inbox {
-  top: @header-height + @filters-height;
-  bottom: 0;
-  position: absolute;
-  width: 100%;
-  max-width: @content-width;
+.row.content {
+  .inbox, .reporting {
+    top: @header-height + @filters-height;
+    bottom: 0;
+    position: absolute;
+    width: 100%;
+    max-width: @content-width;
+  }
 }
 
 .inbox-items, .item-content {
@@ -330,6 +332,12 @@
   }
 }
 
+.reporting {
+  background-color: #fff;
+  border: 1px solid #E0E0E0;
+  border-width: 0 1px;
+}
+
 @media (max-width: 767px) {
   /* Hover fires incorrectly on touch devices */
   .inbox-items li:hover {
@@ -381,7 +389,7 @@
     }
   }
   .row.content {
-    .inbox {
+    .inbox, .reporting {
       top: 6.25em;
     }
     .meta {
