@@ -13,7 +13,7 @@
 - Modified behavior of patient reports when `silence_for` option is empty we
   clear the entire schedule instead of a group.
 
-- Fixed notifications to not add the configured response #508
+- Fixed notifications to add the configured response #508
 
 - Fixed bug and added support for multiple schedules in schedule silencing
     
