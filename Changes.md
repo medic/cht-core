@@ -8,7 +8,6 @@
   applications to use the `columns` parameter instead.
 
 
-
 ## 0.3.11
 
 ### Jun 19, 2014
