@@ -234,7 +234,7 @@
                 <span class="fa fa-spinner fa-spin"></span>
               </span>
               <ul>
-                <li ng-repeat="message in messages | filter:checkFilter()" ng-click="setMessage(message._id)" data-record-id="{~lb}{~lb}message._id{~rb}{~rb}" ng-class="{'selected': message._id === selected._id}">
+                <li ng-repeat="message in filteredMessages = (messages | filter:checkFilter())" ng-click="setMessage(message._id)" data-record-id="{~lb}{~lb}message._id{~rb}{~rb}" ng-class="{'selected': message._id === selected._id}">
                   <span class="time" ng-bind-html="message.reported_date | relativeDate"></span>
                   <span class="mm-badge mm-badge-round mm-badge-border" ng-class="message.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
                     <span class="fa"></span>
@@ -245,6 +245,7 @@
                   </div>
                 </li>
               </ul>
+              <p ng-show="!loading && !filteredMessages.length">No messages found</p>
             </div>
 
             <div class="col-sm-8 item-content">
