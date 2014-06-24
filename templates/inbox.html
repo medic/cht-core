@@ -54,17 +54,27 @@
                 <span class="fa fa-envelope"></span>
               </div>
             </a>
-            <a href="#" title="Send form">
-              <div class="mm-icon mm-icon-nudge-up mm-icon-inverse">
-                <span class="mm-icon-overlay mm-icon-overlay-before fa fa-plus-circle"></span>
-                <span class="fa fa-list-alt"></span>
-              </div>
-            </a>
-            <a href="#" title="Search">
-              <div class="mm-icon mm-icon-inverse">
-                <span class="fa fa-search"></span>
-              </div>
-            </a>
+            <span>
+              <a id="send-record-button" href="#" title="Send form" data-toggle="dropdown">
+                <div class="mm-icon mm-icon-nudge-up mm-icon-inverse mm-icon-disabled">
+                  <span class="mm-icon-overlay mm-icon-overlay-before fa fa-plus-circle"></span>
+                  <span class="fa fa-list-alt"></span>
+                </div>
+              </a>
+              <span id="add-record-panel">
+                <ul class="dropdown-menu">
+                  <li>
+                    <button type="button" class="cancel close">×</button>
+                    <iframe data-src="{info.muvuku_webapp_url}"></iframe>
+                  </li>
+                </ul>
+              </span>
+              <a href="#" title="Search">
+                <div class="mm-icon mm-icon-inverse">
+                  <span class="fa fa-search"></span>
+                </div>
+              </a>
+            </span>
 
             <span class="dropdown">
               <a href="#" data-toggle="dropdown">

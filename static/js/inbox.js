@@ -97,6 +97,23 @@ $(function () {
   });
   $('.datepicker').addClass('dropdown-menu mm-dropdown-menu mm-dropdown-menu-inverse');
 
+  var iframe = $('#add-record-panel iframe');
+  var src = iframe.data('src');
+  $.ajax({
+    type: 'head',
+    url: src,
+    success: function() {
+      var btn = $('#send-record-button');
+      btn.find('.mm-icon').removeClass('mm-icon-disabled');
+      btn.on('click', function(e) {
+        e.preventDefault();
+        $('#add-record-panel .dropdown-menu').toggle();
+        if (!iframe.attr('src')) {
+          iframe.attr('src', src);
+        }
+      });
+    }
+  });
 });
 
 angular.module('inboxApp', ['inboxControllers', 'inboxServices']);
