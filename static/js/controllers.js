@@ -26,10 +26,13 @@ inboxControllers.controller('MessageCtrl',
   ['$scope', 'Message', 'Facility', 'Settings', 
   function ($scope, Message, Facility, Settings) {
  
-  $scope.messages = Message.query();
-  $scope.facilities = Facility.query();
   $scope.forms = [];
   $scope.selected = undefined;
+  $scope.loading = true;
+  $scope.messages = Message.query(function() {
+    $scope.loading = false;
+  });
+  $scope.facilities = Facility.query();
 
   $scope.filterType = 'message';
   $scope.filterForms = [];

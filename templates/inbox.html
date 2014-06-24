@@ -230,6 +230,9 @@
         <div class="inner">
           <div class="inbox">
             <div class="col-sm-4 inbox-items">
+              <span class="mm-loader" ng-show="loading">
+                <span class="fa fa-spinner fa-spin"></span>
+              </span>
               <ul>
                 <li ng-repeat="message in messages | filter:checkFilter()" ng-click="setMessage(message._id)" data-record-id="{~lb}{~lb}message._id{~rb}{~rb}" ng-class="{'selected': message._id === selected._id}">
                   <span class="time" ng-bind-html="message.reported_date | relativeDate"></span>
