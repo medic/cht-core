@@ -128,6 +128,13 @@ $(function () {
     e.preventDefault();
     $('.row.filters').toggleClass('advanced');
   });
+
+  $('.advanced-filters .btn').on('click', function(e) {
+    e.preventDefault();
+    angular.element($('body')).scope().$apply(function(scope) {
+      scope.advancedFilter();
+    });
+  });
   
 });
 

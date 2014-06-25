@@ -90,7 +90,7 @@ inboxControllers.controller('MessageCtrl',
     );
 
     if ($scope.filterType === 'message') {
-      filters.push('form:null_form');
+      filters.push('-form:[* TO *]');
     } else {
       if ($scope.filterForms.length) {
         var formCodes = [];
@@ -118,14 +118,18 @@ inboxControllers.controller('MessageCtrl',
 
   _setFilterString();
 
-  $scope.filter = function(options) {
+  $scope.advancedFilter = function(options) {
     var options = options || {};
     if (!options.silent) {
       $scope.messages = [];
       $scope.loading = true;
     }
+    $('body').trigger({type: "updateMessages"});
+  };
+
+  $scope.filter = function(options) {
     _setFilterString();
-    $('#advanced').trigger('change');
+    $scope.advancedFilter(options);
   };
 
   $scope.setFilterType = function(filterType) {
