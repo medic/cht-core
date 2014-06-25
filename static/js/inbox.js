@@ -123,6 +123,11 @@ $(function () {
 
   $(document).on('data-record-updated', _applyFilter);
   _applyFilter();
+
+  $('#toggle-filters').on('click', function(e) {
+    e.preventDefault();
+    $('.row.filters').toggleClass('advanced');
+  });
   
 });
 

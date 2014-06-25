@@ -108,9 +108,15 @@
   background-color: @option-color;
   height: @filters-height;
   font-size: 0.95em;
-  padding: 0.65em 1.5em 0 0.5em;
+  padding: 0 1.5em 0 0.5em;
   white-space: nowrap;
   box-shadow: 0 5px 2px -2px #aaa;
+
+  .inner {
+    position: relative;
+    overflow: hidden;
+    height: @filters-height;
+  }
 
   .dropdown {
     width: 22%;
@@ -136,9 +142,51 @@
     width: 100%;
   }
 
-  .filter-actions .mm-button {
-    width: 3.5em;
+  .filter-actions {
+    float: right;
+    .mm-button {
+      width: 3.5em;
+    }
   }
+
+  .basic-filters, .advanced-filters, .filter-actions, .slide-back {
+    padding-top: 0.65em;
+  }
+  
+  .basic-filters, .advanced-filters {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 5em;
+    -webkit-transition: top 500ms ease 0s;
+    -moz-transition: top 500ms ease 0s;
+    transition: top 500ms ease 0s;
+  }
+
+  .advanced-filters {
+    top: 4em;
+
+    .input-group {
+      margin: 0.3em 1em;
+      .form-control {
+        border-radius: 10em 0 0 10em;
+      }
+      .input-group-btn .btn {
+        border-radius: 0 10em 10em 0;
+        outline: 0;
+      }
+    }
+  }
+
+  &.advanced {
+    .basic-filters {
+      top: -4em;
+    }
+    .advanced-filters {
+      top: 0;
+    }
+  }
+
 }
 
 .container-fluid {
@@ -391,8 +439,8 @@
   }
   .filters {
     text-align: right;
-    max-height: 3.15em;
-    padding: 0.4em 0.5em 1em 0.5em;
+    height: 3.15em;
+    padding: 0 0.5em 1em 0.5em;
     .dropdown {
       width: 6.25em;
       display: inline-block;
@@ -413,6 +461,21 @@
       .mm-button-text {
         visibility: visible;
         width: auto;
+      }
+    }
+    .inner {
+      height: 3.15em;
+    }
+    .basic-filters, .advanced-filters, .filter-actions, .slide-back {
+      padding-top: 0.4em;
+    }
+    .basic-filters, .advanced-filters {
+      right: 0;
+    }
+    .advanced-filters {
+      left: 6em;
+      .input-group {
+        margin: 0
       }
     }
     .filter-actions {
@@ -500,6 +563,9 @@
       width: 0;
       visibility: hidden;
     }
+  }
+  .row.filters .advanced-filters {
+    left: 4em;
   }
 }
 
