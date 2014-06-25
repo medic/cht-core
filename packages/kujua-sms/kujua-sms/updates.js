@@ -59,7 +59,7 @@ function getDataRecord(doc, form_data) {
     };
 
     // if form is undefined we treat as a regular message
-    if (form && !def) {
+    if (!def) {
         record.form = null;
         if (utils.info.forms_only_mode) {
             utils.addError(record, 'sys.form_not_found');
@@ -325,7 +325,7 @@ exports.add_sms = function(doc, request) {
     }
 
     // creates base record
-    doc = getDataRecord(sms_message, form_data, utils.info);
+    doc = getDataRecord(sms_message, form_data);
 
     // by default related entities are null so also include errors on the record.
     if (!def || !def.public_form) {
