@@ -23,15 +23,14 @@ inboxControllers.directive('mmSender', function() {
 });
 
 inboxControllers.controller('MessageCtrl', 
-  ['$scope', 'Message', 'Facility', 'Settings', 
-  function ($scope, Message, Facility, Settings) {
+  ['$scope', 'Facility', 'Settings', 
+  function ($scope, Facility, Settings) {
+
  
   $scope.forms = [];
   $scope.selected = undefined;
   $scope.loading = true;
-  $scope.messages = Message.query(function() {
-    $scope.loading = false;
-  });
+  $scope.messages = [];
   $scope.facilities = Facility.query();
 
   $scope.filterType = 'message';
@@ -41,7 +40,7 @@ inboxControllers.controller('MessageCtrl',
   $scope.filterDate = {
     from: moment().subtract('months', 1).valueOf(),
     to: moment().valueOf()
-  }
+  };
 
   Settings.query(function(res) {
     if (res.settings && res.settings.forms) {
@@ -67,114 +66,96 @@ inboxControllers.controller('MessageCtrl',
     }
   };
 
+  $scope.update = function(updated) {
+    $scope.messages = updated;
+    $scope.loading = false;
+  };
+
+  var _setFilterString = function() {
+
+    var formatDate = function(date) {
+      return moment(date).format('YYYY-MM-DD');
+    };
+
+    var filters = [];
+
+    // increment end date so it's inclusive
+    var to = new Date($scope.filterDate.to.valueOf());
+    to.setDate(to.getDate() + 1);
+
+    filters.push(
+      'reported_date<date>:[' 
+      + formatDate($scope.filterDate.from) + ' TO ' 
+      + formatDate(to) + ']'
+    );
+
+    if ($scope.filterType === 'message') {
+      filters.push('form:null_form');
+    } else {
+      if ($scope.filterForms.length) {
+        var formCodes = [];
+        $scope.filterForms.forEach(function(form) {
+          formCodes.push(form.code);
+        });
+        filters.push('form:(' + formCodes.join(' OR ') + ')');
+      } else {
+        filters.push('NOT form:null_form');
+      }
+    }
+
+    if ($scope.filterValid === true) {
+      filters.push('errors<int>:0');
+    } else if ($scope.filterValid === false) {
+      filters.push('NOT errors<int>:0');
+    }
+
+    if ($scope.filterFacilities.length) {
+      filters.push('clinic:(' + $scope.filterFacilities.join(' OR ') + ')');
+    }
+
+    $('#advanced').val(filters.join(' AND '));
+  };
+
+  _setFilterString();
+
+  $scope.filter = function(options) {
+    var options = options || {};
+    if (!options.silent) {
+      $scope.messages = [];
+      $scope.loading = true;
+    }
+    _setFilterString();
+    $('#advanced').trigger('change');
+  };
+
   $scope.setFilterType = function(filterType) {
     $scope.filterType = filterType;
+    $scope.filter();
   };
 
   $scope.setFilterForms = function(filterForms) {
     $scope.filterForms = filterForms;
+    $scope.filter();
   };
 
   $scope.setFilterFacilities = function(facilityIds) {
     $scope.filterFacilities = facilityIds;
+    $scope.filter();
   };
 
   $scope.setFilterValid = function(filterValid) {
     $scope.filterValid = filterValid;
+    $scope.filter();
   };
 
   $scope.setFilterDateFrom = function(date) {
     $scope.filterDate.from = date;
+    $scope.filter();
   };
 
   $scope.setFilterDateTo = function(date) {
     $scope.filterDate.to = date;
-  };
-
-  var checkFilterType = function(message) {
-    if ($scope.filterType === 'reporting') {
-      return false;
-    }
-    var hasForm = !!message.form;
-    if ($scope.filterType === 'message') {
-      return !hasForm;
-    }
-    return hasForm;
-  };
-
-  var checkFilterValid = function(message) {
-    if ($scope.filterType === 'message') {
-      return true;
-    }
-    if ($scope.filterValid === true) {
-      return !message.errors.length;
-    }
-    if ($scope.filterValid === false) {
-      return !!message.errors.length;
-    }
-    return true;
-  };
-
-  var checkFilterForms = function(message) {
-    if ($scope.filterType === 'message') {
-      return true;
-    }
-    if ($scope.filterForms.length === 0) {
-      return true;
-    }
-    for (var i = 0; i < $scope.filterForms.length; i++) {
-      if ($scope.filterForms[i].code === message.form) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  var checkFacility = function(facility, entity) {
-    if (!entity) {
-      return false;
-    }
-    if (facility === entity._id) {
-      return true;
-    }
-    if (entity.parent) {
-      return checkFacility(facility, entity.parent);
-    }
-    return false;
-  }
-
-  var checkFilterFacilities = function(message) {
-    if ($scope.filterFacilities.length === 0) {
-      return true;
-    }
-    for (var i = 0; i < $scope.filterFacilities.length; i++) {
-      if (checkFacility(
-        $scope.filterFacilities[i], message.related_entities.clinic)
-      ) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  var checkFilterDate = function(message) {
-    return message.reported_date > $scope.filterDate.from 
-        && message.reported_date < $scope.filterDate.to;
-  };
-
-  $scope.checkFilter = function() {
-    return function(message) {
-      var show = checkFilterType(message)
-              && checkFilterValid(message)
-              && checkFilterForms(message)
-              && checkFilterDate(message)
-              && checkFilterFacilities(message);
-      if (!show && $scope.selected && message._id === $scope.selected._id) {
-        // hide content if filter doesn't apply to message any more
-        $scope.setMessage();
-      }
-      return show;
-    };
+    $scope.filter();
   };
 
 }]);

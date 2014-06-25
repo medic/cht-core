@@ -139,6 +139,8 @@
             </span>
           </span>
 
+          <input id="advanced" style="display:none"/>
+
           <span id="formTypeDropdown" class="dropdown mm-dropdown mm-multiple-select" data-label-no-filter="All form types" data-filter-label="form types">
             <span id="form_type" class="mm-button mm-button-nudge-down" data-toggle="dropdown" ng-class="{'mm-button-disabled': filterType === 'message', disabled: filterType === 'message'}">
               <span class="mm-button-icon">
@@ -244,7 +246,7 @@
                 <span class="fa fa-spinner fa-spin"></span>
               </span>
               <ul>
-                <li ng-repeat="message in filteredMessages = (messages | filter:checkFilter())" ng-click="setMessage(message._id)" data-record-id="{~lb}{~lb}message._id{~rb}{~rb}" ng-class="{'selected': message._id === selected._id}">
+                <li ng-repeat="message in messages" ng-click="setMessage(message._id)" data-record-id="{~lb}{~lb}message._id{~rb}{~rb}" ng-class="{'selected': message._id === selected._id}">
                   <span class="time" ng-bind-html="message.reported_date | relativeDate"></span>
                   <span class="mm-badge mm-badge-round mm-badge-border" ng-class="message.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
                     <span class="fa"></span>
@@ -255,7 +257,7 @@
                   </div>
                 </li>
               </ul>
-              <p ng-show="!loading && !filteredMessages.length">No messages found</p>
+              <p ng-show="!loading && !messages.length">No messages found</p>
             </div>
 
             <div class="col-sm-8 item-content">
@@ -343,6 +345,7 @@
     </div>
 
     <script src="{baseURL}/static/js/jquery.min.js" type="text/javascript"></script>
+    <script src="{baseURL}/static/js/underscore.min.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/bootstrap.min.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/bootstrap-datepicker.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/moment.min.js" type="text/javascript"></script>
@@ -352,6 +355,10 @@
     <script src="{baseURL}/static/js/controllers.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/services.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/inbox.js" type="text/javascript"></script>
+    <script src="{baseURL}/static/kujua-reporting/js/raphael.js" type="text/javascript"></script>
+    <script src="{baseURL}/config.js" type="text/javascript"></script>
+    <script src="{baseURL}/modules.js" type="text/javascript"></script>
+    <script src="{baseURL}/duality.js" type="text/javascript"></script>
 
   </body>
 </html>

@@ -28,7 +28,7 @@ $(function () {
   $('#formTypeDropdown').on('update', function() {
     var forms = [];
     $(this).find('[role=menuitem].selected').each(function() {
-      ids.push($(this).data('form'));
+      forms.push($(this).data('form'));
     });
     angular.element($('body')).scope().$apply(function(scope) {
       scope.setFilterForms(forms);
@@ -114,6 +114,16 @@ $(function () {
       });
     }
   });
+
+  var _applyFilter = function() {
+    angular.element($('body')).scope().$apply(function(scope) {
+      scope.filter();
+    });
+  };
+
+  $(document).on('data-record-updated', _applyFilter);
+  _applyFilter();
+  
 });
 
 angular.module('inboxApp', ['inboxControllers', 'inboxServices']);
