@@ -783,7 +783,7 @@ exports.unstructured_message = function(test) {
         doc = resp[0];
 
     // unstructured message has form of null
-    test.same(doc.form, null);
+    test.same(doc.form, undefined);
     test.same(doc.sms_message.message, "hello world! anyone there?");
     test.same(resp_body.payload.success, true);
     test.same(resp_body.payload.messages, undefined);
