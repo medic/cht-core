@@ -11,19 +11,18 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc) {
-        function hasConfig(doc) {
-            var self = module.exports,
-                config = self.getRegistrationConfig(self.getConfig(), doc.form);
-            return Boolean(config);
-        }
+        var self = module.exports;
         if (doc.errors && doc.errors.length > 0) {
             return false;
         }
-        return Boolean(
-            doc.form &&
-            utils.getClinicPhone(doc) &&
-            hasConfig(doc)
-        );
+        if (!doc.form) {
+            return false;
+        }
+        var config = self.getRegistrationConfig(self.getConfig(), doc.form);
+        if (!config) {
+            return false;
+        }
+        return Boolean(utils.getClinicPhone(doc) || config.public_form);
     },
     getWeeksSinceDOB: function(doc) {
         return String(
@@ -83,13 +82,10 @@ module.exports = {
      * Given a form code and config array, return config for that form.
      * */
     getRegistrationConfig: function(config, form_code) {
-        var ret;
-        _.each(config, function(conf) {
-            if (RegExp('^\W*' + form_code + '\\W*$','i').test(conf.form)) {
-                ret = conf;
-            }
+        var regex = RegExp('^\W*' + form_code + '\\W*$','i');
+        return _.find(config, function(conf) {
+            return regex.test(conf.form);
         });
-        return ret;
     },
     validate: function(config, doc, callback) {
         var validations = config.validations && config.validations.list;
@@ -99,7 +95,6 @@ module.exports = {
         var self = module.exports,
             doc = change.doc,
             config = self.getRegistrationConfig(self.getConfig(), doc.form),
-            phone = utils.getClinicPhone(doc),
             isIdOnly = self.isIdOnly(doc);
 
         if (!config) {

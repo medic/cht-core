@@ -58,6 +58,45 @@ exports.setUp = function(callback) {
                 }
             ]
         }
+    },{
+        form: 'p',
+        public_form: true,
+        type: 'pregnancy',
+        events: [
+           {
+               "name": "on_create",
+               "trigger": "add_patient_id",
+               "params": "",
+               "bool_expr": ""
+           },
+           {
+               "name": "on_create",
+               "trigger": "add_expected_date",
+               "params": "",
+               "bool_expr": "typeof doc.getid === 'undefined'"
+           }
+        ],
+        validations: {
+            join_responses: true,
+            list: [
+                {
+                    property: 'lmp',
+                    rule: 'min(0) && max(40)',
+                    message: [{
+                        content: 'Invalid LMP; must be between 0-40 weeks.',
+                        locale: 'en'
+                    }]
+                },
+                {
+                    property: 'patient_name',
+                    rule: 'lenMin(1) && lenMax(100)',
+                    message: [{
+                        content: 'Invalid patient name.',
+                        locale: 'en'
+                    }]
+                }
+            ]
+        }
     }]);
     callback();
 };
@@ -66,18 +105,58 @@ exports.tearDown = function(callback) {
     if (utils.getRegistrations.restore)
         utils.getRegistrations.restore();
 
+    if (utils.getClinicPhone.restore)
+        utils.getClinicPhone.restore();
+
     if (transition.getConfig.restore)
         transition.getConfig.restore();
 
     callback();
-}
+};
 
-exports['filter fails with empty doc'] = function(test) {
+exports['filter exists'] = function(test) {
     test.ok(_.isFunction(transition.filter));
     test.ok(transition.filter.length >= 1);
+    test.done();
+};
 
-    test.equals(transition.filter({}), false);
+exports['filter fails with empty doc'] = function(test) {
+    test.ok(!transition.filter({}));
+    test.done();
+};
 
+exports['filter fails with no clinic phone'] = function(test) {
+    var doc = { form: 'y' };
+    sinon.stub(utils, 'getClinicPhone').returns(null);
+    test.ok(!transition.filter(doc));
+    test.done();
+};
+
+exports['filter fails if doc has errors'] = function(test) {
+    var doc = { form: 'y', errors: [ 'some error ' ] };
+    sinon.stub(utils, 'getClinicPhone').returns('somephone');
+    test.ok(!transition.filter(doc));
+    test.done();
+};
+
+exports['filter fails if form is unknown'] = function(test) {
+    var doc = { form: 'x' };
+    sinon.stub(utils, 'getClinicPhone').returns('somephone');
+    test.ok(!transition.filter(doc));
+    test.done();
+};
+
+exports['filter succeeds with no clinic phone if public form'] = function(test) {
+    var doc = { form: 'p' };
+    sinon.stub(utils, 'getClinicPhone').returns(null);
+    test.ok(transition.filter(doc));
+    test.done();
+};
+
+exports['filter succeeds with populated doc'] = function(test) {
+    var doc = { form: 'y' };
+    sinon.stub(utils, 'getClinicPhone').returns('somephone');
+    test.ok(transition.filter(doc));
     test.done();
 };
 
