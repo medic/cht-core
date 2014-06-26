@@ -8,6 +8,26 @@ exports.setUp = function(callback) {
     callback();
 }
 
+exports['filter includes docs with no clinic'] = function(test) {
+    var doc = {
+        from: phone,
+        related_entities: {}
+    };
+    test.ok(transition.filter(doc));
+    test.done();
+};
+
+exports['filter out docs which already have a clinic'] = function(test) {
+    var doc = {
+        from: phone,
+        related_entities: {
+            clinic: { name: 'some clinic' }
+        }
+    };
+    test.ok(!transition.filter(doc));
+    test.done();
+};
+
 exports['should update clinic by phone'] = function(test) {
     var doc = {
         from: phone,

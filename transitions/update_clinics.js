@@ -10,9 +10,9 @@ var _ = require('underscore');
  */
 module.exports = {
     filter: function(doc) {
-        return doc.form &&
-            doc.related_entities &&
-            !doc.related_entities.clinic;
+        return Boolean(
+            doc.related_entities && !doc.related_entities.clinic
+        );
     },
     onMatch: function(change, db, audit, callback) {
         var self = module.exports,
