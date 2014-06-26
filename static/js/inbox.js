@@ -115,13 +115,15 @@ $(function () {
     }
   });
 
-  var _applyFilter = function() {
+  var _applyFilter = function(options) {
     angular.element($('body')).scope().$apply(function(scope) {
-      scope.filter();
+      scope.filter(options);
     });
   };
 
-  $(document).on('data-record-updated', _applyFilter);
+  $(document).on('data-record-updated', function() {
+    _applyFilter({silent:true});
+  });
   _applyFilter();
 
   $('#toggle-filters').on('click', function(e) {
@@ -135,7 +137,16 @@ $(function () {
       scope.advancedFilter();
     });
   });
-  
+
+  var itemPanel = $('.inbox-items');
+  itemPanel.on('scroll', function () {
+    if (this.scrollHeight - this.scrollTop - 10 < this.clientHeight) {
+      _applyFilter({
+        silent: true,
+        skip: true
+      });
+    }
+  });  
 });
 
 angular.module('inboxApp', ['inboxControllers', 'inboxServices']);

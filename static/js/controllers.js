@@ -30,6 +30,7 @@ inboxControllers.controller('MessageCtrl',
   $scope.forms = [];
   $scope.selected = undefined;
   $scope.loading = true;
+  $scope.appending = false;
   $scope.messages = [];
   $scope.facilities = Facility.query();
 
@@ -66,9 +67,24 @@ inboxControllers.controller('MessageCtrl',
     }
   };
 
+  var _findMessage = function(id) {
+    for (var i = 0; i < $scope.messages.length; i++) {
+      if (id === $scope.messages[i]._id) {
+        return $scope.messages[i];
+      }
+    }
+  }
+
   $scope.update = function(updated) {
-    $scope.messages = updated;
+    for (var i = updated.length - 1; i >= 0; i--) {
+      if (_findMessage(updated[i]._id)) {
+        // update message!
+        updated.splice(i, 1);
+      }
+    }
+    $scope.messages.push.apply($scope.messages, updated);
     $scope.loading = false;
+    $scope.appending = false;
   };
 
   var _setFilterString = function() {
@@ -84,9 +100,9 @@ inboxControllers.controller('MessageCtrl',
     to.setDate(to.getDate() + 1);
 
     filters.push(
-      'reported_date<date>:[' 
-      + formatDate($scope.filterDate.from) + ' TO ' 
-      + formatDate(to) + ']'
+      'reported_date<date>:[' + 
+      formatDate($scope.filterDate.from) + ' TO ' + formatDate(to) + 
+      ']'
     );
 
     if ($scope.filterType === 'message') {
@@ -121,10 +137,13 @@ inboxControllers.controller('MessageCtrl',
   $scope.advancedFilter = function(options) {
     var options = options || {};
     if (!options.silent) {
-      $scope.messages = [];
       $scope.loading = true;
     }
-    $('body').trigger({type: "updateMessages"});
+    if (options.skip) {
+      $scope.appending = true;
+      options.skip = $scope.messages.length;
+    }
+    $('body').trigger('updateMessages', options);
   };
 
   $scope.filter = function(options) {
