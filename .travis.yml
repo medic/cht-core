@@ -5,9 +5,6 @@ node_js:
 services:
   - couchdb
 
-before_install:
-  - git submodule update --recursive --init sentinel kujua-api
-
 before_script:
   - sleep 3
   - curl -X PUT localhost:5984/kujua-lite
