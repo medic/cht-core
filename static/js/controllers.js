@@ -76,13 +76,17 @@ inboxControllers.controller('MessageCtrl',
   }
 
   $scope.update = function(updated) {
-    for (var i = updated.length - 1; i >= 0; i--) {
-      if (_findMessage(updated[i]._id)) {
-        // update message!
-        updated.splice(i, 1);
+    for (var i = 0; i < updated.length; i++) {
+      var newMsg = updated[i];
+      var oldMsg = _findMessage(newMsg._id);
+      if (oldMsg && newMsg._rev !== oldMsg._rev) {
+        for (prop in newMsg) {
+          oldMsg[prop] = newMsg[prop];
+        }
+      } else {
+        $scope.messages.push(newMsg);
       }
     }
-    $scope.messages.push.apply($scope.messages, updated);
     $scope.loading = false;
     $scope.appending = false;
   };
