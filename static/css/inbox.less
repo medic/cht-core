@@ -114,7 +114,6 @@
 
   .inner {
     position: relative;
-    overflow: hidden;
     height: @filters-height;
   }
 
@@ -200,11 +199,13 @@
 
 .row.content {
   .inbox, .reporting {
-    top: @header-height + @filters-height;
+    top: @header-height + @filters-height + 0.1em;
     bottom: 0;
     position: absolute;
     width: 100%;
     max-width: @content-width;
+    z-index: 2;
+    background-color: @background-color;
   }
 }
 
@@ -471,9 +472,9 @@
     }
     .basic-filters, .advanced-filters {
       right: 0;
+      left: 6em;
     }
     .advanced-filters {
-      left: 6em;
       .input-group {
         margin: 0
       }
@@ -564,8 +565,10 @@
       visibility: hidden;
     }
   }
-  .row.filters .advanced-filters {
-    left: 4em;
+  .row.filters {
+    .basic-filters, .advanced-filters {
+      left: 4em;
+    }
   }
 }
 

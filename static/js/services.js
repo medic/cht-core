@@ -3,7 +3,7 @@ var inboxServices = angular.module('inboxServices', ['ngResource']);
 inboxServices.factory('Settings', ['$resource',
   function($resource) {
     var baseUrl = $('html').data('base-url');
-    return $resource(baseUrl + '/app_settings/kujua-lite', {}, {
+    return $resource(baseUrl + '/app_settings/medic', {}, {
       query: {
         method: 'GET',
         isArray: false
