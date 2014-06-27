@@ -119,7 +119,7 @@ inboxControllers.controller('MessageCtrl',
         });
         filters.push('form:(' + formCodes.join(' OR ') + ')');
       } else {
-        filters.push('NOT form:null_form');
+        filters.push('form:[* TO *]');
       }
     }
 
@@ -146,6 +146,8 @@ inboxControllers.controller('MessageCtrl',
     if (options.skip) {
       $scope.appending = true;
       options.skip = $scope.messages.length;
+    } else {
+      $scope.messages = [];
     }
     $('body').trigger('updateMessages', options);
   };

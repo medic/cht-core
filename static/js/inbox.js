@@ -116,13 +116,18 @@ $(function () {
   });
 
   var _applyFilter = function(options) {
+    options = options || {};
     angular.element($('body')).scope().$apply(function(scope) {
-      scope.filter(options);
+      if (options.advanced) {
+        scope.advancedFilter(options);
+      } else {
+        scope.filter(options);
+      }
     });
   };
 
   $(document).on('data-record-updated', function() {
-    _applyFilter({silent:true});
+    _applyFilter({ silent:true });
   });
   _applyFilter();
 
@@ -133,9 +138,13 @@ $(function () {
 
   $('.advanced-filters .btn').on('click', function(e) {
     e.preventDefault();
-    angular.element($('body')).scope().$apply(function(scope) {
-      scope.advancedFilter();
-    });
+    _applyFilter({ advanced: true });
+  });
+
+  $('#advanced').on('keypress', function(e) {
+    if (e.which === 13) {
+      _applyFilter({ advanced: true });
+    }
   });
 
   var itemPanel = $('.inbox-items');
