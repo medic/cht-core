@@ -1,10 +1,8 @@
-/*jshint node:true es5:true strict:true laxcomma:true laxbreak:true*/
 (function () {
   "use strict";
 
   var oldFs = require('fs')
     , extraFs = require('fs-extra')
-    , util = require('util')
     , fs = {}
     ;
 

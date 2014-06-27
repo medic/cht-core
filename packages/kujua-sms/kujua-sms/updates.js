@@ -59,8 +59,8 @@ function getDataRecord(doc, form_data) {
     };
 
     // if form is undefined we treat as a regular message
-    if (form && !def) {
-        record.form = null;
+    if (!def) {
+        record.form = undefined;
         if (utils.info.forms_only_mode) {
             utils.addError(record, 'sys.form_not_found');
         }
@@ -201,7 +201,7 @@ var getSMSResponse = function(doc) {
 
     // process errors array, create a response message for certain errors states
     // that go back to reporter.  error codes like 'sys.facility_not_found' only
-    // go to kujua admins, but we do look for 'facility_not_found' which is ok
+    // go to admins, but we do look for 'facility_not_found' which is ok
     // for an SMS client.
     doc.errors.forEach(function(err) {
         if (/sys\./.test(err.code)) {
@@ -325,7 +325,7 @@ exports.add_sms = function(doc, request) {
     }
 
     // creates base record
-    doc = getDataRecord(sms_message, form_data, utils.info);
+    doc = getDataRecord(sms_message, form_data);
 
     // by default related entities are null so also include errors on the record.
     if (!def || !def.public_form) {

@@ -1,9 +1,7 @@
-/*jshint node:true es5:true strict:true laxcomma:true laxbreak:true*/
 (function () {
   "use strict";
 
   var fs = require('fs')
-    , util = require('util')
     , fsCopy = require('./fs.copy')
     ;
 

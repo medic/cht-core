@@ -42,7 +42,7 @@ exports.getAppInfo = function(req) {
             settings = JSON.parse(
                 window.jQuery.ajax({
                     type: 'GET',
-                    url: baseURL + '/app_settings/kujua-lite',
+                    url: baseURL + '/app_settings/medic',
                     async: false //synchronous request
                 }).responseText
             ).settings;
@@ -76,32 +76,6 @@ exports.getAppInfo = function(req) {
             }
             found = false;
         }
-
-        /*
-         * Locale string based on the following priority:
-         *      user profile > browser > app_settings > 'en'
-         *
-         * Only initialize the locale value server side. With kanso request
-         * object the cookie can only be checked server side.  Fallback to
-         * browser headers otherwise.
-         */
-        /* flakey, removing temporarly in favor of manual setting
-        if (req && req.cookie && req.cookie.kujua_locale) {
-
-            settings.locale = req.cookie.kujua_locale || 'en';
-
-        } else if (req && req.headers && req.headers['Accept-Language']) {
-
-            // currently supported locales
-            var supported = new locale.Locales(["en", "es", "fr", "ne", "sw"]);
-
-            // locale module chooses best option based on header
-            settings.locale = new locale.Locales(
-                req.headers["Accept-Language"]
-            ).best(supported).toString();
-
-        }
-        */
 
         return settings;
     }

@@ -1,4 +1,4 @@
-# Kujua Release Notes
+# Medic Mobile Release Notes
 
 ## 0.4.0
 

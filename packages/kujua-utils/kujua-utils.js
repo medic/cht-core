@@ -69,7 +69,7 @@ exports.logger = {
         if (typeof(console) !== 'undefined') {
             console.error(obj);
         } else if (typeof(log) !== 'undefined') {
-            log('Kujua Lite ERROR:');
+            log('Medic Mobile ERROR:');
             if (_.isObject(obj))
                 log(JSON.stringify(obj,null,2));
             else

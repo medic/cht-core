@@ -359,7 +359,7 @@ function renderReporting(doc, req) {
 function renderPage() {
 
     var appdb = db.use(duality.getDBURL()),
-        config = sms_utils.info['kujua-reporting'],
+        config = sms_utils.info['medic'],
         doc = facility_doc,
         form_config,
         parentURL = '',

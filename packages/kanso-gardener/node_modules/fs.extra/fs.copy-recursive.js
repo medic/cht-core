@@ -1,4 +1,3 @@
-/*jshint strict:true node:true es5:true onevar:true laxcomma:true laxbreak:true*/
 (function () {
   "use strict";
 
@@ -7,7 +6,6 @@
     , fsMkdirp = require('mkdirp')
     , fsWalk = require('walk').walk
     , path = require('path')
-    , EventEmitter = require('events').EventEmitter
     ;
 
   function run(src, dst, cb) {

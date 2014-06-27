@@ -2,7 +2,7 @@
   "use strict";
 
   var fs = require('./fs.extra')
-    , sequence = require('sequence')()
+    , sequence = require('sequence').create()
     , exec = require('child_process').exec
     , count = 0
     ;

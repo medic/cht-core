@@ -1,6 +1,7 @@
 #!/bin/sh
 
-cd kujua-api &&
-npm install &&
-cd .. &&
-./scripts/phantom_test.sh http://localhost:5984/kujua-lite
+# install deps for kujua-api 
+cd kujua-api && \
+npm install --production && \
+cd .. && \
+./scripts/phantom_test.sh http://localhost:5984/medic
