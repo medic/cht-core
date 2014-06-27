@@ -1,6 +1,6 @@
-# Kujua Lite
+# Medic Mobile
 
-These instructions should help you get setup to run or develop on Kujua Lite.
+These instructions should help you get setup to run or develop on Medic Mobile.
 For latest changes and release announcements see the [change log](Changes.md).
 
 ## Dependencies
@@ -13,7 +13,7 @@ Assuming you have [Nodejs](http://nodejs.org), [CouchDB](http://couchdb.apache.o
 
 ### Kanso
 
-[Kanso](http://kan.so) is required to build and deploy Kujua Lite.
+[Kanso](http://kan.so) is required to build and deploy.
 
 ```
 npm install kanso -g
@@ -26,14 +26,14 @@ npm install kanso -g
 ```
 git clone --recursive https://github.com/medic/kujua-lite
 cd kujua-lite
-kanso push http://admin:pass@localhost:5984/kujua-lite
+kanso push http://admin:pass@localhost:5984/medic
 ```
 
 ### Start kujua-sentinel
 
 ```
 cd sentinel
-export COUCH_URL=http://admin:pass@localhost:5984/kujua-lite
+export COUCH_URL=http://admin:pass@localhost:5984/medic
 node ./server.js
 ```
 
@@ -63,7 +63,7 @@ http://localhost:5985
 Navigate your browser to:
 
 ```
-http://localhost:5984/kujua-lite/_design/kujua-lite/_rewrite/
+http://localhost:5984/medic/_design/medic/_rewrite/
 ```
 
 ## Deploy to Market
@@ -96,7 +96,7 @@ kanso push http://staging.dev.medicmobile.org/markets-alpha/upload
 
 ## Configure
 
-Dashboard is required to load kujua-lite. To install Dashboard
+Dashboard is required to load Medic Mobile. To install Dashboard
 1) git clone https://github.com/garden20/dashboard
 2) cd dashboard
 3) kanso push $COUCH_URL
@@ -113,7 +113,7 @@ after a push.  To run them from commandline you will need to install
 
 ```
 npm install phantomjs -g
-./scripts/phantom_test.sh http://localhost:5984/kujua-lite
+./scripts/phantom_test.sh http://localhost:5984/medic
 ```
 
 ## Help

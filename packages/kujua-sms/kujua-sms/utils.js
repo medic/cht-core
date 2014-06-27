@@ -1,5 +1,5 @@
 /*
- * Utility functions for Kujua
+ * Utility functions for Medic Mobile
  */
 var utils = require('kujua-utils'),
     settings = require('settings/root'),

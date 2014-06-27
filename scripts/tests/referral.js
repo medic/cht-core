@@ -5,7 +5,7 @@ var fs = require('fs'),
     querystring = require('querystring'),
     jsDump = require('jsDump'),
     debug = true,
-    db_name = 'kujua-lite';
+    db_name = 'medic';
 
 var log = function(o) {
     if (debug) {
@@ -69,7 +69,7 @@ var doTasks = function() {
     var options = {
         host: 'localhost',
         port: 5984,
-        path: '/' + db_name + '/_design/kujua-lite/_rewrite/add',
+        path: '/' + db_name + '/_design/medic/_rewrite/add',
         method: 'GET'
     };
     var r = req(options);
@@ -99,7 +99,7 @@ var ref_rc = rand();
 var options = {
     host: 'localhost',
     port: 5984,
-    path: '/' + db_name + '/_design/kujua-lite/_rewrite/add',
+    path: '/' + db_name + '/_design/medic/_rewrite/add',
     method: 'POST',
     headers: {
         'Content-Type': 'application/x-www-form-urlencoded',

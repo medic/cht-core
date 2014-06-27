@@ -201,7 +201,7 @@ var getSMSResponse = function(doc) {
 
     // process errors array, create a response message for certain errors states
     // that go back to reporter.  error codes like 'sys.facility_not_found' only
-    // go to kujua admins, but we do look for 'facility_not_found' which is ok
+    // go to admins, but we do look for 'facility_not_found' which is ok
     // for an SMS client.
     doc.errors.forEach(function(err) {
         if (/sys\./.test(err.code)) {

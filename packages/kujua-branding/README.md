@@ -1,4 +1,4 @@
-# Kujua Lite Branding
+# Medic Mobile Branding
 
 This package includes css/less code and font files that allows for easy
 inclusion into your application.
@@ -16,7 +16,7 @@ repository yet, so just copy the package into your packages directory.
 
 ## Configure
 
-By default the Kujua Lite font (DroidSerif Bold) is embedded as a TTF/truetype font
+By default the Medic Mobile font (DroidSerif Bold) is embedded as a TTF/truetype font
 in `base.less`.  So all you need to do is import it into your main less file:
 
 ```css

@@ -1,8 +1,8 @@
 {
-    "name": "kujua-lite",
+    "name": "medic",
     "version": "0.4.0",
     "description": "SMS data collection designed for rural environments.",
-    "long_description" : "Kujua Lite is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
+    "long_description" : "Medic Mobile is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
     "url": "https://github.com/medic/kujua-lite",
     "categories": ["health", "sms"],
     "icons": {
@@ -72,12 +72,12 @@
         "couchdb-audit": null,
         "js-migrations": ">=1.0.0"
     },
-    "migration_path": "/kujua-lite/_design/kujua-lite/_rewrite/migration",
+    "migration_path": "/medic/_design/medic/_rewrite/migration",
     "user_data": {
         "db_prefix": false,
         "available_roles" : ["kujua_user","national_admin","district_admin","kujua_gateway","data_entry"],
         "schema": {
-            "descripton": "Kujua Lite",
+            "descripton": "Medic Mobile",
             "type": "object",
             "properties": {
                 "facility_id": {
@@ -100,7 +100,7 @@
         }
     },
     "settings_schema" : {
-        "description": "Kujua Lite Settings",
+        "description": "Medic Mobile Settings",
         "type": "object",
         "properties": {
             "locales": {
@@ -458,7 +458,7 @@
                                             "rule": {
                                                 "type": "string",
                                                 "title": "Validation Rule",
-                                                "description": "The <a href='/kujua-lite/_design/kujua-lite/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
+                                                "description": "The <a href='/medic/_design/medic/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
                                                 "default": "lenMin(5) && lenMax(50)"
                                             },
                                             "message": {
@@ -613,7 +613,7 @@
                                             "rule": {
                                                 "type": "string",
                                                 "title": "Validation Rule",
-                                                "description": "The <a href='/kujua-lite/_design/kujua-lite/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
+                                                "description": "The <a href='/medic/_design/medic/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
                                                 "default": "regex('[0-9]{5}')"
                                             },
                                             "message": {
@@ -864,7 +864,7 @@
                                         "rule": {
                                             "type": "string",
                                             "title": "Validation Rule",
-                                            "description": "The <a href='/kujua-lite/_design/kujua-lite/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
+                                            "description": "The <a href='/medic/_design/medic/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
                                             "default": "regex('[0-9]{5}')"
                                         },
                                         "message": {

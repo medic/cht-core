@@ -1,6 +1,6 @@
-# Kujua Lite Reporting
+# Medic Mobile Reporting
 
-Reporting rates Kanso package for use with Kujua Lite. Supports weekly and monthly
+Reporting rates Kanso package for use with Medic Mobile. Supports weekly and monthly
 timed reports.
 
 ## Usage Requirements
@@ -13,7 +13,7 @@ The form definition must include a `year` field and one of the following:
 
 **Optionally** if you are using `list` values in the field definition, you need to
 modify the validations object so the month and week values remain numeric after
-the form data is parsed by Kujua Lite.
+the form data is parsed by Medic Mobile.
 
 Example `fields` object for a supported form:
 
@@ -66,7 +66,7 @@ Note: the keys for the year list begin with 1 because of known issue in Muvuku.
 
 ### Config.js Entry
 
-Kujua Lite Reporting requires an associated `config.js` entry.  You need to specify
+Medic Mobile Reporting requires an associated `config.js` entry.  You need to specify
 what forms you want to provide reporting rates for and what frequency those
 forms are reported.  Here is an example `config.js` document:
 

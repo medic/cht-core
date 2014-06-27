@@ -11,9 +11,9 @@ process.argv.forEach(function(val, idx, array) {
 
 var usage = "\nUsage: load_forms.js <path> <url>\n\n"
     + "path    Path to a json forms file to upload.\n"
-    + "url     URL to kujua database.\n\n"
+    + "url     URL to medic database.\n\n"
     + "Examples:\n\n"
-    + "./scripts/load_forms.js ../json-forms/generic-anc.json http://admin:pass@localhost/kujua-lite\n";
+    + "./scripts/load_forms.js ../json-forms/generic-anc.json http://admin:pass@localhost/medic\n";
 
 if (!args[2] || !args[3]) {
     return console.error(usage);
@@ -30,7 +30,7 @@ fs.readFile(args[2], {encoding: "utf-8"}, function(err, data) {
         }
     });
 
-    var options = url.parse(args[3] + '/_design/kujua-lite/_rewrite/update_settings/kujua-lite');
+    var options = url.parse(args[3] + '/_design/medic/_rewrite/update_settings/medic');
     options.method = 'PUT';
 
     var req = http.request(options, function(res) {
