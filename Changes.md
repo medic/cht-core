@@ -174,7 +174,7 @@
 - Fixed bug where facility spreadsheet update records when field value is
   unchanged. #457
 
-- Fixed bug where registrations was not using db-wide unique IDs. kujua-sentinel#54 
+- Fixed bug where registrations was not using db-wide unique IDs. medic-sentinel#54 
 
 - Fixed duplicate records on ID search #430
 
@@ -214,7 +214,7 @@
 
 - Confirm with user before deleting facility so they can't be deleted by accident. #371
 
-- Added unique Patient ID validation support.  #411 kujua-sentinel/pull/50
+- Added unique Patient ID validation support.  #411 medic-sentinel/pull/50
 
     Use unique('patient_id') in your registration validation rules to validate
     new form submissions that are setting the patient ID values via forms.
@@ -250,7 +250,7 @@
     ]
     ```
 
-- Added Conditional Alerts feature. #437  kujua-sentinel/issue/52
+- Added Conditional Alerts feature. #437  medic-sentinel/issue/52
 
     Configure the Alerts section of the App Settings to send a message when an
     incoming message meets the configured condition.
