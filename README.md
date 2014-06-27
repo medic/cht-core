@@ -11,11 +11,11 @@ Get node deps with  `npm install`.
 Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 
 ```
-export COUCH_URL='http://root:123qwe@localhost:5984/kujua-lite'
+export COUCH_URL='http://root:123qwe@localhost:5984/medic'
 ```
 
-Sentinel works with Kujua Lite and listens to changes on the database. It is 
-configured through the dashboard Kujua app settings screen.
+Sentinel works with Medic Mobile and listens to changes on the database. It is 
+configured through the dashboard Medic Mobile app settings screen.
 
 Default settings values are in `defaults.js`.
 
