@@ -107,7 +107,7 @@ var translations = [
 ];
 
 var defaults = {
-    settings_path: '/_design/kujua-lite/_rewrite/app_settings/kujua-lite',
+    settings_path: '/_design/medic/_rewrite/app_settings/medic',
     id_format: '111111',
     schedule_morning_hours: 0,
     schedule_morning_minutes: 0,

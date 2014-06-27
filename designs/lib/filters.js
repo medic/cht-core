@@ -51,5 +51,5 @@ exports.twilio_message = function(doc) {
 
 /* documents where configuration changes live */
 exports.config_docs = function(doc) {
-    return doc._id === '_design/kujua-lite';
+    return doc._id === '_design/medic';
 };

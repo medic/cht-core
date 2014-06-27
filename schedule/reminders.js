@@ -111,7 +111,7 @@ module.exports = {
         var db = options.db;
 
         // gets all clinics
-        db.view('kujua-lite', 'clinic_by_phone', {
+        db.view('kujua-sentinel', 'clinic_by_phone', {
             include_docs: true
         }, function(err, data) {
             if (err) {
