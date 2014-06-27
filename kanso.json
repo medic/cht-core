@@ -4,7 +4,7 @@
     "version": "0.4.0",
     "description": "SMS data collection designed for rural environments.",
     "long_description" : "Medic Mobile is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
-    "url": "https://github.com/medic/kujua-lite",
+    "url": "https://github.com/medic/medic-webapp",
     "categories": ["health", "sms"],
     "icons": {
         "16": "static/img/promo/icon_16.png",
@@ -34,7 +34,7 @@
         "compile": ["static/css/app.less", "static/css/spreadsheet.less"],
         "remove_from_attachments": true
     },
-    "node_module_folders" : "sentinel,kujua-api",
+    "node_module_folders" : "sentinel,api",
     "dependencies_included" : true,
     "bundledDependencies": [
         "packages/underscore"
