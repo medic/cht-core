@@ -1,6 +1,6 @@
 # kujua-api
 
-Node server to support kujua-lite.
+Node server to support Medic Mobile.
 
 Currently supports auditing by proxying requests to CouchDB and updating the audit history where required.
 
@@ -12,7 +12,7 @@ Get node deps with  `npm install`.
 
 Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 
-```export COUCH_URL='http://root:123qwe@localhost:5984/kujua-lite'```
+```export COUCH_URL='http://root:123qwe@localhost:5984/medic'```
 
 ## Run
 

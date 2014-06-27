@@ -3,7 +3,7 @@ var auditProxy = require('../audit-proxy.js'),
 
 exports['filter does not match request for different db'] = function(test) {
   var db = {
-    name: '/kujua-lite'
+    name: '/medic'
   }
   var req = {
     url: '/somedb/do-something'
@@ -14,7 +14,7 @@ exports['filter does not match request for different db'] = function(test) {
 };
 
 exports['filter does not match GET request'] = function(test) {
-  var dbName = '/kujua-lite';
+  var dbName = '/medic';
   var db = {
     name: dbName
   }
@@ -28,7 +28,7 @@ exports['filter does not match GET request'] = function(test) {
 };
 
 exports['filter matches POST request'] = function(test) {
-  var dbName = '/kujua-lite';
+  var dbName = '/medic';
   var db = {
     name: dbName
   }
@@ -42,7 +42,7 @@ exports['filter matches POST request'] = function(test) {
 };
 
 exports['filter matches DELETE request'] = function(test) {
-  var dbName = '/kujua-lite';
+  var dbName = '/medic';
   var db = {
     name: dbName
   }
@@ -56,7 +56,7 @@ exports['filter matches DELETE request'] = function(test) {
 };
 
 exports['filter matches PUT request'] = function(test) {
-  var dbName = '/kujua-lite';
+  var dbName = '/medic';
   var db = {
     name: dbName
   }
