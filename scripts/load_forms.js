@@ -13,7 +13,7 @@ var usage = "\nUsage: load_forms.js <path> <url>\n\n"
     + "path    Path to a json forms file to upload.\n"
     + "url     URL to medic database.\n\n"
     + "Examples:\n\n"
-    + "./scripts/load_forms.js ../json-forms/generic-anc.json http://admin:pass@localhost/medic\n";
+    + "node scripts/load_forms.js ~/generic-anc.json http://admin:pass@localhost/medic\n";
 
 if (!args[2] || !args[3]) {
     return console.error(usage);

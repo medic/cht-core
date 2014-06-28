@@ -66,6 +66,33 @@ Navigate your browser to:
 http://localhost:5984/medic/_design/medic/_rewrite/
 ```
 
+
+### Loading Data
+
+You can load your form definitions in the settings interface but you can also do that from command line, see:
+
+```
+node scripts/load_forms.js
+```
+
+Simialrly you can bulk load messages from a csv file on the command line, see:
+
+```
+node scripts/load_messages.js
+```
+
+You can also add a message using curl:
+
+```
+curl -i -u gateway:123qwe \
+    --data-urlencode 'message=Test One two' \
+    --data-urlencode 'from=+13125551212' \
+    --data-urlencode 'sent_timestamp=1403965605868' \
+    -X POST \
+    http://medic.local/medic/_design/medic/_rewrite/add
+```
+
+
 ## Deploy to Market
 
 When deploying to market include the sentinel package in the couchapp so
