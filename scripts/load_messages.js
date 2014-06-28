@@ -13,9 +13,13 @@ process.argv.forEach(function(val, idx, array) {
 
 var usage = "\nUsage: load_messages.js <path> <url>\n\n"
     + "path    CSV file with message data, columns are defined as follows:\n"
-    + "            message   raw message string\n"
-    + "            from      phone number of sender\n"
-    + "            timestamp when message was received by gateway (optional)\n"
+    + "            message   Raw message string\n"
+    + "            from      Phone number of sender\n"
+    + "            timestamp When message was received by gateway (optional).\n"
+    + "                      This could be any format that is supported by the\n"
+    + "                      moment.js library or used by SMSSync (currently ms\n"
+    + "                      since epoch). If it fails to parse then default\n"
+    + "                      will be creation time.\n"
     + "url     URL to medic database.\n\n"
     + "Examples:\n\n"
     + "node scripts/load_messages.js ~/data.csv http://admin:pass@localhost/medic\n\n"
@@ -23,8 +27,8 @@ var usage = "\nUsage: load_messages.js <path> <url>\n\n"
     + "message,from,sent timestamp\n"
     + "ANCR jina Sam,+3125551212 \n"
     + "ANCR LMP 10,+13125551212,1403965605868\n"
-    + "ANCR jina Maria,+13125551212\n"
-    + "\"IMMR # mtoto Sandra Muragiri, III# mamaid 48892#dob 200\",+13125551212\n";
+    + "ANCR jina Maria,+13125551212,\"Apr 11, 2021 18:00 +0800\"\n"
+    + "\"IMMR # mtoto Sandra Muragiri, III# mamaid 48892#dob 200\",+13125551212,not a date\n";
 
 if (!args[2] || !args[3]) {
     return console.error(usage);
