@@ -1,6 +1,6 @@
 Develop      | Master 
 ------------ | -------------
-[![Build Status](https://travis-ci.org/medic/kujua-sentinel.png?branch=develop)](https://travis-ci.org/medic/kujua-sentinel/branches) | [![Build Status](https://travis-ci.org/medic/kujua-sentinel.png?branch=master)](https://travis-ci.org/medic/kujua-sentinel/branches)
+[![Build Status](https://travis-ci.org/medic/medic-sentinel.png?branch=develop)](https://travis-ci.org/medic/medic-sentinel/branches) | [![Build Status](https://travis-ci.org/medic/medic-sentinel.png?branch=master)](https://travis-ci.org/medic/medic-sentinel/branches)
 
 ## Install
 
