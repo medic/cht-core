@@ -1,5 +1,5 @@
 {
-  "name": "kujua-sentinel",
+  "name": "medic-sentinel",
   "description": "Takes data messages and gets them ready for prime time.",
   "private": true,
   "dependencies": {
