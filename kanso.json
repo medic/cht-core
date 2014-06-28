@@ -35,7 +35,6 @@
         "remove_from_attachments": true
     },
     "node_module_folders" : "sentinel,api",
-    "dependencies_included" : true,
     "bundledDependencies": [
         "packages/underscore"
     ],
