@@ -3,6 +3,7 @@
  */
 
 var _ = require('underscore'),
+    moment = require('moment'),
     logger = require('kujua-utils').logger,
     info = require('views/lib/appinfo'),
     smsparser = require('views/lib/smsparser'),
@@ -53,7 +54,7 @@ function getDataRecord(doc, form_data) {
         errors: [],
         responses: [],
         tasks: [],
-        reported_date: new Date().getTime(),
+        reported_date: new Date().valueOf(),
         // keep message data part of record
         sms_message: doc
     };
@@ -140,9 +141,6 @@ var parseSentTimestamp = function(str) {
         ret,
         year;
 
-    // smssync 2.0 format (ms since epoch)
-    var match2 = str.match(/(\d{13,})/);
-
     if (match1) {
         ret = new Date();
 
@@ -156,13 +154,19 @@ var parseSentTimestamp = function(str) {
         ret.setMinutes(match1[5]);
         ret.setSeconds(match1[7] || 0);
         ret.setMilliseconds(0);
-        return ret.getTime();
+        return ret.valueOf();
     }
+
+    // smssync 2.0 format (ms since epoch)
+    var match2 = str.match(/(\d{13,})/);
 
     if (match2) {
         ret = new Date(Number(match2[1]));
-        return ret.getTime();
+        return ret.valueOf();
     }
+
+    // otherwise leave it up to moment lib
+    return moment(str).valueOf();
 };
 
 /*
