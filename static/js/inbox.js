@@ -127,7 +127,10 @@ $(function () {
   };
 
   $(document).on('data-record-updated', function() {
-    _applyFilter({ silent:true });
+    _applyFilter({ 
+      silent: true, 
+      force: true
+    });
   });
   _applyFilter();
 

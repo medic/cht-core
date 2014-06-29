@@ -138,8 +138,15 @@ inboxControllers.controller('MessageCtrl',
 
   _setFilterString();
 
+  var _currentQuery;
+
   $scope.advancedFilter = function(options) {
     var options = options || {};
+    options.query = $('#advanced').val();
+    if (options.query === _currentQuery && !options.force) {
+      // debounce as same query already running
+      return;
+    }
     if (!options.silent) {
       $scope.loading = true;
     }
@@ -149,6 +156,17 @@ inboxControllers.controller('MessageCtrl',
     } else {
       $scope.messages = [];
     }
+    _currentQuery = options.query;
+    options.callback = function(err, rows) {
+      _currentQuery = null;
+      if (err) {
+        console.log(err);
+      } else {
+        angular.element($('body')).scope().$apply(function(scope) {
+          scope.update(rows);
+        });
+      }
+    };
     $('body').trigger('updateMessages', options);
   };
 
