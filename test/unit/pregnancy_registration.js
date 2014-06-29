@@ -132,10 +132,10 @@ exports['filter fails with no clinic phone'] = function(test) {
     test.done();
 };
 
-exports['filter fails if doc has errors'] = function(test) {
+exports['filter does not fail if doc has errors'] = function(test) {
     var doc = { form: 'y', errors: [ 'some error ' ] };
     sinon.stub(utils, 'getClinicPhone').returns('somephone');
-    test.ok(!transition.filter(doc));
+    test.ok(transition.filter(doc));
     test.done();
 };
 

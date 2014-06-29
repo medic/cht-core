@@ -12,9 +12,6 @@ var _ = require('underscore'),
 module.exports = {
     filter: function(doc) {
         var self = module.exports;
-        if (doc.errors && doc.errors.length > 0) {
-            return false;
-        }
         if (!doc.form) {
             return false;
         }
