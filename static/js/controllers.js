@@ -33,6 +33,7 @@ inboxControllers.controller('MessageCtrl',
   $scope.appending = false;
   $scope.messages = [];
   $scope.facilities = Facility.query();
+  $scope.totalMessages;
 
   $scope.filterType = 'message';
   $scope.filterForms = [];
@@ -157,13 +158,14 @@ inboxControllers.controller('MessageCtrl',
       $scope.messages = [];
     }
     _currentQuery = options.query;
-    options.callback = function(err, rows) {
+    options.callback = function(err, data) {
       _currentQuery = null;
       if (err) {
         console.log(err);
       } else {
         angular.element($('body')).scope().$apply(function(scope) {
-          scope.update(rows);
+          scope.update(data.rows);
+          scope.totalMessages = data.total_rows;
         });
       }
     };
