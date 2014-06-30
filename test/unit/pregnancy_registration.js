@@ -60,7 +60,6 @@ exports.setUp = function(callback) {
         }
     },{
         form: 'p',
-        public_form: true,
         type: 'pregnancy',
         events: [
            {
@@ -102,15 +101,14 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-    if (utils.getRegistrations.restore)
-        utils.getRegistrations.restore();
-
-    if (utils.getClinicPhone.restore)
-        utils.getClinicPhone.restore();
-
-    if (transition.getConfig.restore)
-        transition.getConfig.restore();
-
+    _.each([
+        utils.getRegistrations,
+        utils.getClinicPhone,
+        transition.getConfig,
+        transition.getForm
+    ], function(o) {
+        if (o.restore) o.restore();
+    });
     callback();
 };
 
@@ -125,9 +123,10 @@ exports['filter fails with empty doc'] = function(test) {
     test.done();
 };
 
-exports['filter fails with no clinic phone'] = function(test) {
+exports['filter fails with no clinic phone and private form'] = function(test) {
     var doc = { form: 'y' };
     sinon.stub(utils, 'getClinicPhone').returns(null);
+    sinon.stub(transition, 'getForm').returns({ public_form: false });
     test.ok(!transition.filter(doc));
     test.done();
 };
@@ -135,6 +134,7 @@ exports['filter fails with no clinic phone'] = function(test) {
 exports['filter does not fail if doc has errors'] = function(test) {
     var doc = { form: 'y', errors: [ 'some error ' ] };
     sinon.stub(utils, 'getClinicPhone').returns('somephone');
+    sinon.stub(transition, 'getForm').returns({ public_form: true });
     test.ok(transition.filter(doc));
     test.done();
 };
@@ -149,6 +149,7 @@ exports['filter fails if form is unknown'] = function(test) {
 exports['filter succeeds with no clinic phone if public form'] = function(test) {
     var doc = { form: 'p' };
     sinon.stub(utils, 'getClinicPhone').returns(null);
+    sinon.stub(transition, 'getForm').returns({ public_form: true });
     test.ok(transition.filter(doc));
     test.done();
 };
