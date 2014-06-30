@@ -20,7 +20,7 @@ module.exports = {
             return false;
         }
         var form = self.getForm(doc.form);
-        return Boolean(utils.getClinicPhone(doc) || form.public_form);
+        return Boolean(utils.getClinicPhone(doc) || (form && form.public_form));
     },
     getWeeksSinceDOB: function(doc) {
         return String(
@@ -75,9 +75,7 @@ module.exports = {
     },
     getForm: function(form_code) {
         var forms = config.get('forms');
-        return _.find(forms, function(form) {
-            return form.code === form_code;
-        });
+        return forms && forms[form_code];
     },
     getConfig: function() {
         return _.extend({}, config.get('registrations'));
