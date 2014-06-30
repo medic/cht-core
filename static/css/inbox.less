@@ -2,6 +2,7 @@
 @import "fonts.css";
 @import "bootstrap.min.css";
 @import "font-awesome.min.css";
+@import "select2/select2.css";
 
 @import "variables";
 @import "theme";
@@ -237,10 +238,6 @@
     cursor: pointer;
     white-space: nowrap;
 
-    &:last-child {
-      border-bottom: none;
-    }
-
     &.selected, &:hover {
       background-color: @highlight-color;
     }
@@ -417,6 +414,26 @@
       cursor: pointer;
       opacity: 0.4;
     }
+  }
+}
+
+.modal-dialog {
+  .modal-header {
+    h3 {
+      font-size: 1.5em;
+    }
+    .close {
+      border: none;
+      background: none;
+    }
+  }
+
+  .modal-body {
+      min-height: 50px;
+      textarea {
+          margin: 0;
+          width: 100%;
+      }
   }
 }
 
