@@ -321,8 +321,8 @@ exports.add_sms = function(doc, request) {
     var form_data = null,
         baseURL = require('duality/core').getBaseURL(),
         headers = req.headers.Host.split(":"),
-        resp = getDefaultResponse(),
-        def = utils.info.getForm(sms_message.form);
+        def = utils.info.getForm(sms_message.form),
+        resp;
 
     if (sms_message.form && def) {
         form_data = smsparser.parse(def, sms_message);
@@ -330,6 +330,7 @@ exports.add_sms = function(doc, request) {
 
     // creates base record
     doc = getDataRecord(sms_message, form_data);
+    resp = getDefaultResponse(doc);
 
     // by default related entities are null so also include errors on the record.
     if (!def || !def.public_form) {
@@ -339,13 +340,12 @@ exports.add_sms = function(doc, request) {
         });
     }
 
-    if (def && def.use_sentinel) {
-        // reset payload since sentinel deals with responses/messages
-        resp = getDefaultResponse(doc);
-        delete doc.responses;
-        return [doc, JSON.stringify(resp)];
-    }
+    delete doc.responses;
+    return [doc, JSON.stringify(resp)];
 
+    /*
+     * callbacks are legacy by leaving for potential future need
+     */
 
     // provide callback for next part of record creation.
     resp.callback = {
