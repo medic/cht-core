@@ -1,13 +1,6 @@
 var updates = require('kujua-sms/updates'),
-    lists = require('kujua-sms/lists'),
-    logger = require('kujua-utils').logger,
-    baseURL = require('duality/core').getBaseURL(),
-    appdb = require('duality/core').getDBURL(),
-    querystring = require('querystring'),
-    jsDump = require('jsDump'),
     fakerequest = require('couch-fakerequest'),
-    helpers = require('../../test-helpers/helpers');
-
+    moment = require('moment');
 
 function process(timestamp) {
 
@@ -32,6 +25,7 @@ exports.timestamp_parsing_without_seconds = function (test) {
     test.equals(reported_date.getSeconds(), 0);
     test.done();
 };
+
 exports.timestamp_parsing_boundaries = function (test) {
     var reported_date = process( '1-9-99 8:45:59');
 
@@ -44,6 +38,7 @@ exports.timestamp_parsing_boundaries = function (test) {
     test.equals(reported_date.getMinutes(), 45);
     test.done();
 };
+
 exports.timestamp_parsing_with_seconds = function (test) {
     var reported_date = process( '01-19-12 18:45:59');
 
@@ -51,6 +46,7 @@ exports.timestamp_parsing_with_seconds = function (test) {
     test.equals(reported_date.getSeconds(), 59);
     test.done();
 };
+
 exports.ms_since_epoch = function (test) {
     var time = '1352659197736';
     var reported_date = process(time);
@@ -59,3 +55,12 @@ exports.ms_since_epoch = function (test) {
     test.equals(reported_date.getSeconds(), 57);
     test.done();
 };
+
+exports['support moment.js compat dates'] = function (test) {
+    var time = 'Apr 11, 2021 18:00 +0800',
+        reported_date = process(time);
+
+    test.equals(reported_date.valueOf(), moment(time).valueOf());
+    test.done();
+};
+
