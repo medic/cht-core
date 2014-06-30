@@ -13,7 +13,9 @@
         <button type="button" class="close" data-dismiss="alert">×</button>
         <i class="icon-check-sign"></i> <span>Upload succeeded!</span>
       </div>
-      <button type="button" class="btn btn-small choose">Choose File</button>
+      <button type="button" class="btn choose">
+        <i class="icon-upload"></i> Choose File
+      </button>
       <span class="loading-wrapper">
         <i class="icon-spinner icon-spin hide"></i>
       </span>
@@ -25,8 +27,16 @@
   </div>
 </form>
 
-<div id="forms-installed">
-      {>"configuration/forms_installed.html"/}
+<div>
+  <fieldset>
+  <legend>Forms Installed</legend>
+    <p>
+      <a href="#" id="forms-download" class="btn">
+        <i class="icon-download"></i> Download
+      </a>
+    </p>
+    <p id="forms-installed"></p>
+  </fieldset>
 </div>
 </div>
 
