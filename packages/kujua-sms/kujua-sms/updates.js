@@ -59,11 +59,12 @@ function getDataRecord(doc, form_data) {
         sms_message: doc
     };
 
-    // if form is undefined we treat as a regular message
     if (!def) {
-        record.form = undefined;
         if (utils.info.forms_only_mode) {
             utils.addError(record, 'sys.form_not_found');
+        } else {
+            // if form is undefined we treat as a regular message
+            record.form = undefined;
         }
     }
 
