@@ -984,9 +984,8 @@ exports.getFormTitle = function(form, appinfo) {
 
     appinfo = appinfo || exports.info;
 
-    var label = def && def.meta && def.meta.label,
-        def = appinfo.getForm(form),
-        key,
+    var def = appinfo.getForm(form),
+        label = def && def.meta && def.meta.label,
         title;
 
     if (_.isString(label)) {
@@ -995,9 +994,5 @@ exports.getFormTitle = function(form, appinfo) {
         title = label[appinfo.locale || 'en'];
     }
 
-    if (title) {
-        return title;
-    } else {
-        return form;
-    }
+    return title || form;
 }
