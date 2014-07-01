@@ -395,18 +395,6 @@ function renderPage() {
         parentURL = 'reporting';
     }
 
-    // render header
-    $('[data-page=reporting_rates] .page-header .container').html(
-        templates.render('kujua-reporting/page_header_body.html', req, {
-            doc: _.extend({}, doc, form_config, {
-                title: title
-            }),
-            parentURL: parentURL
-        })
-    );
-    $('.page-header .container').addClass('reporting');
-    $('body > .container .content').filter(':first').attr('class','content-reporting');
-
     // render date nav
     $('[data-page=reporting_rates] #date-nav .row').html(
         templates.render('kujua-reporting/date_nav.html', req, {
