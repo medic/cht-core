@@ -92,7 +92,7 @@ exports.sms_message_attr_on_doc = function(test) {
 };
 
 exports.add_sms_check_resp_body = function (test) {
-    test.expect(7);
+
     // smssync post
     var req = {
         headers: {"Host": window.location.host},
@@ -103,33 +103,19 @@ exports.add_sms_check_resp_body = function (test) {
             "sent_timestamp":"1352399720000"
         }
     };
+
     // updates.add_sms generates a callback and payload
-    var expResp = {};
-    expResp.callback = {
-        "options": {
-            "host": host,
-            "port": port,
-            "method":"POST",
-            "headers":{
-                "Content-Type":"application/json; charset=utf-8"
-            },
-            "path": baseURL + "/data_record/add/facility/%2B888"
-        },
-        "data":{"uuid":"13f58b9c648b9a997248cba27aa00fdf"}
-    };
-    expResp.payload = {
-      "success": true
+    var expResp = {
+        payload: {
+          "id": "13f58b9c648b9a997248cba27aa00fdf",
+          "success": true
+        }
     };
 
     var ret = updates.add_sms(null, req);
     resp = JSON.parse(ret[1]);
 
-    test.same(resp.callback.options, expResp.callback.options);
-    test.same(resp.callback.options.headers, expResp.callback.options.headers);
-    test.same(resp.callback.options.path, expResp.callback.options.path);
-    test.same(resp.callback.data, expResp.callback.data);
     test.same(resp.payload, expResp.payload);
-    test.same(resp.callback, expResp.callback);
     test.same(resp, expResp);
     test.done();
 };

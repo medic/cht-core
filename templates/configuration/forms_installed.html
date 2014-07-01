@@ -1,14 +1,9 @@
-<fieldset>
-  <legend>Forms Installed</legend>
-    {?error}
-    <div class="alert alert-error hide">
-      <button type="button" class="close" data-dismiss="alert">×</button>
-      <i class="icon-warning-sign"></i> <span>{error}</span>
-    </div>
-    {/error}
-    <ul>
-    {#forms}
-    <li>{meta.code} {meta.label.en}</li>
-    {/forms}
-    </ul>
-</fieldset>
+{?error}
+<div class="alert alert-error hide">
+  <button type="button" class="close" data-dismiss="alert">×</button>
+  <i class="icon-warning-sign"></i> <span>{error}</span>
+</div>
+{/error}
+<ul>
+  {#forms}<li>{meta.code} {meta.label.en}</li>{/forms}
+</ul>

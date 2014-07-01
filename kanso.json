@@ -157,8 +157,8 @@
             },
             "muvuku_webapp_url": {
                 "type": "string",
-                "title": "Muvuku Webapp Url",
-                "default": "/muvuku-webapp/_design/muvuku-webapp/_rewrite/?_embed_mode=2#/examples.json"
+                "title": "Medic Reporter URL",
+                "default": "/medic-reporter/_design/medic-reporter/_rewrite/?_embed_mode=2#/examples.json"
             },
             "reported_date_format": {
                 "type": "string",

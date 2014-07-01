@@ -359,7 +359,7 @@ function renderReporting(doc, req) {
 function renderPage() {
 
     var appdb = db.use(duality.getDBURL()),
-        config = sms_utils.info['medic'],
+        config = sms_utils.info['kujua-reporting'],
         doc = facility_doc,
         form_config,
         parentURL = '',
@@ -419,12 +419,12 @@ function renderPage() {
     getViewChildFacilities(doc, renderReports);
 }
 
-function renderDistrictChoice(appdb, config, app_settings) {
+function renderDistrictChoice(appdb, config) {
 
     var f = [];
 
     _.each(config, function(form, idx) {
-        var def = app_settings.getForm(form.code),
+        var def = sms_utils.info.getForm(form.code),
             formName = sms_utils.getFormTitle(form.code);
         if (def) {
             f.push(_.extend(form, {
