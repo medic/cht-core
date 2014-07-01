@@ -28,11 +28,11 @@ inboxControllers.controller('MessageCtrl',
 
  
   $scope.forms = [];
+  $scope.facilities = [];
   $scope.selected = undefined;
   $scope.loading = true;
   $scope.appending = false;
   $scope.messages = [];
-  $scope.facilities = Facility.query();
   $scope.totalMessages;
 
   $scope.filterType = 'message';
@@ -44,6 +44,22 @@ inboxControllers.controller('MessageCtrl',
     to: moment().valueOf()
   };
 
+  Facility.query(function(res) {
+    if (res.rows) {
+      res.rows.forEach(function(clinic) {
+        var entity = clinic.doc;
+        var names = [];
+        do {
+          names.push(entity.name);
+          entity = entity.parent;
+        } while( entity.name );
+        $scope.facilities.push({
+          id: clinic.id,
+          text: names.join(', ')
+        });
+      });
+    }
+  });
   Settings.query(function(res) {
     if (res.settings && res.settings.forms) {
       var forms = res.settings.forms;

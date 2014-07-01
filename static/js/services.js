@@ -15,10 +15,14 @@ inboxServices.factory('Settings', ['$resource',
 inboxServices.factory('Facility', ['$resource',
   function($resource) {
     var baseUrl = $('html').data('base-url');
-    return $resource(baseUrl + '/facilities_select2.json', {}, {
+    return $resource(baseUrl + '/facilities.json', {}, {
       query: {
         method: 'GET',
-        isArray: true
+        isArray: false,
+        params: {
+          startkey: '["clinic"]',
+          endkey: '["clinic"]'
+        }
       }
     });
   }
