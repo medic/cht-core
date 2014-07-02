@@ -33,7 +33,10 @@ var lower = function(str) {
 };
 
 var startsWith = function(lhs, rhs) {
-    return lhs && rhs && new RegExp('^' + rhs + '[\\s0-9]', 'i').test(lhs);
+    return lhs && rhs && (
+        lower(lhs) === lower(rhs)
+        || new RegExp('^' + rhs + '[\\s0-9]', 'i').test(lhs)
+    );
 };
 
 /**

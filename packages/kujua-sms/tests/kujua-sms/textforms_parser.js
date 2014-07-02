@@ -64,3 +64,12 @@ exports['is compact false when field value starts with number'] = function(test)
     test.ok(!smsparser.isCompact(def, doc));
     test.done();
 };
+
+exports['is compact false when field value absent'] = function(test) {
+    var doc = {
+        message: 'lmp'
+    };
+
+    test.ok(!smsparser.isCompact(def, doc));
+    test.done();
+};
