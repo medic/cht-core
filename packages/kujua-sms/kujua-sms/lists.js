@@ -50,7 +50,9 @@ function getFilename(options) {
     if (options.dhName) {
         parts.push(options.dhName.replace(' ', ''));
     }
-    parts.push(options.formName);
+    if (options.formName) {
+        parts.push(options.formName);
+    }
     parts.push('data_records');
     return parts.join('_') + '.' + options.format;
 }
@@ -361,10 +363,15 @@ exports.export_data_records = function (head, req) {
         'related_entities.clinic.parent.name',
         'related_entities.clinic.parent.parent.name'
     ]);
-    var keys = utils.getFormKeys(utils.info.getForm(form));
     startExportHeaders(options, getFilename(options));
-    sendHeaderRow(options, utils.getLabels(keys, form, options.locale));
-    options.columns = options.columns.concat(keys);
+    var extraColumns;
+    if (form) {
+        extraColumns = utils.getFormKeys(utils.info.getForm(form));
+    } else {
+        extraColumns = ['form'];
+    }
+    sendHeaderRow(options, utils.getLabels(extraColumns, form, options.locale));
+    options.columns = options.columns.concat(extraColumns);
 
     var row;
     while (row = getRow()) {

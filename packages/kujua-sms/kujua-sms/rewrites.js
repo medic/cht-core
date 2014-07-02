@@ -38,6 +38,14 @@ exports.rules = [
         }
     },
     {
+        from: '/export/forms',
+        to: '_list/export_data_records/data_records',
+        query: {
+            include_docs: 'true',
+            descending: 'true'
+        }
+    },
+    {
         from: '/export/forms/:form',
         to: '_list/export_data_records/data_records',
         query: {

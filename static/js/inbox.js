@@ -158,7 +158,24 @@ $(function () {
         skip: true
       });
     }
-  });  
+  });
+
+  $('#download').on('click', function(e) {
+    angular.element($('body')).scope().$apply(function(scope) {
+      var url = $('html').data('base-url');
+      var type = scope.filterType === 'message' ? 'messages' : 'forms';
+      url += '/export/' + type;
+      var params = {
+        startkey: '["*",9999999999999,{}]',
+        endkey: '["*",0]',
+        tz: moment().zone(),
+        format: 'xml',
+        reduce: false
+      };
+      url += '?' + $.param(params);
+      $('#download').attr('href', url);
+    });
+  });
 });
 
 angular.module('inboxApp', ['inboxControllers', 'inboxServices']);
