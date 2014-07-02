@@ -223,6 +223,7 @@ inboxControllers.controller('MessageCtrl',
   };
 
   $scope.setFilterType = function(filterType) {
+    $scope.selected = undefined;
     $scope.filterType = filterType;
     $scope.filter();
   };
