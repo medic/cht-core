@@ -55,3 +55,12 @@ exports['is compact false'] = function(test) {
     test.ok(!smsparser.isCompact(def, doc));
     test.done();
 };
+
+exports['is compact false when field value starts with number'] = function(test) {
+    var doc = {
+        message: 'LMP24'
+    };
+
+    test.ok(!smsparser.isCompact(def, doc));
+    test.done();
+};
