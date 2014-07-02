@@ -305,9 +305,9 @@
                       <ul>
                         <li ng-repeat="task in selected.tasks">
                           <ul>
+                            <li ng-bind-html="task | state"></li>
                             <li ng-repeat="message in task.messages">
                               {~lb}{~lb}message.message{~rb}{~rb}
-                              ({~lb}{~lb}task.state{~rb}{~rb})
                             </li>
                           </ul>
                         </li>
@@ -317,11 +317,11 @@
                       <label>Scheduled Tasks</label>
                       <ul>
                         <li ng-repeat="group in selected.scheduled_tasks_by_group">
-                          {~lb}{~lb}group.group{~rb}{~rb}
+                          <p>{~lb}{~lb}group.group{~rb}{~rb}</p>
                           <ul>
                             <li ng-repeat="task in group.rows">
-                              {~lb}{~lb}task.state{~rb}{~rb} - {~lb}{~lb}task.due{~rb}{~rb}
                               <ul>
+                                <li ng-bind-html="task | state"></li>
                                 <li ng-repeat="m in task.messages">
                                   {~lb}{~lb}m.message{~rb}{~rb}
                                 </li>

@@ -7,10 +7,22 @@ inboxControllers.filter('relativeDate', function () {
     if (!date) { 
       return ''; 
     }
-
     var m = moment(date);
+    return '<span title="' + m.format('HH:mm, Do MMM YYYY') + '">' 
+      + m.fromNow() 
+      + '</span>';
+  };
+});
 
-    return '<span title="' + m.format('HH:mm, Do MMM YYYY') + '">' + m.fromNow() + '</span>';
+inboxControllers.filter('state', function () {
+  return function (task) {
+    if (!task || !task.state) { 
+      return ''; 
+    }
+    var title = task.due ? moment(task.due).fromNow() : '';
+    return '<span class="task-state" title="' + title + '">'
+     + task.state
+     + '</span>';
   };
 });
 
