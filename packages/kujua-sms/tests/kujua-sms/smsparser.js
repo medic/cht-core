@@ -855,8 +855,7 @@ exports['one field input is parsed correctly'] = function(test) {
             ],
             "type": "string"
          }
-      },
-      "use_sentinel": true
+      }
     };
 
     var id = 12345;
