@@ -26,6 +26,23 @@ inboxControllers.filter('state', function () {
   };
 });
 
+inboxControllers.filter('messageType', function () {
+  return function (message, forms) {
+    if (!message || !forms) { 
+      return '';
+    }
+    if (!message.form) {
+      return 'Message';
+    }
+    for (var i = 0; i < forms.length; i++) {
+      if (message.form === forms[i].code) {
+        return forms[i].name;
+      }
+    }
+    return message.form;
+  };
+});
+
 inboxControllers.directive('mmSender', function() {
   return {
     restrict: 'E',

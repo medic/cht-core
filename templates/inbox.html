@@ -259,7 +259,7 @@
                   </span>
                   <div class="detail">
                     <mm-sender message="message"></mm-sender>
-                    <div>{~lb}{~lb}message.form ? message.form : 'Message'{~rb}{~rb}</div>
+                    <div ng-bind-html="message | messageType:forms"></div>
                   </div>
                 </li>
               </ul>
@@ -282,7 +282,7 @@
                   </span>
                 </div>
                 <div class="body">
-                  <h2>{~lb}{~lb}selected.form ? selected.form : 'Message'{~rb}{~rb}</h2>
+                  <h2 ng-bind-html="selected | messageType:forms"></h2>
                   <ul>
                     <li ng-if="!selected.form && selected.sms_message.message">
                       <label>Content</label>
