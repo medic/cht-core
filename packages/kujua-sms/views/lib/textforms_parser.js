@@ -33,7 +33,7 @@ var lower = function(str) {
 };
 
 var startsWith = function(lhs, rhs) {
-    return lhs && rhs && lhs.substring(0, rhs.length) === rhs;
+    return lhs && rhs && new RegExp('^' + rhs + '\\s', 'i').test(lhs);
 };
 
 /**
@@ -256,7 +256,7 @@ exports.isCompact = function(def, msg) {
         ];
     }));
     return !_.some(labels, function(label) {
-        return startsWith(lower(fields[0]), lower(label));
+        return startsWith(fields[0], label);
     });
 };
 
