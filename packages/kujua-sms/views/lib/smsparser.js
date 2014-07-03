@@ -221,7 +221,7 @@ exports.getFormCode = function(msg) {
         return msg.split('!')[1].toUpperCase();
     }
     // textforms
-    var match = msg.match(/^\s*([^\s!\-,:]+)[\s!\-,:]+.+/);
+    var match = msg.match(/^\s*([^\s!\-,:]+)[\s!\-,:]*.*/);
     if (match !== null && match.length === 2) {
         return match[1].toUpperCase();
     }
