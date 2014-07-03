@@ -19,7 +19,7 @@ exports['is muvuku format'] = function(test) {
 };
 
 exports['get form none found'] = function(test) {
-    var msg = 'QQQQCDT33';
+    var msg = '';
     var form = smsparser.getFormCode(msg);
     test.same(undefined, form);
     test.done();
@@ -27,6 +27,13 @@ exports['get form none found'] = function(test) {
 
 exports['get form with space delimiter'] = function(test) {
     var msg = 'YYYY CDT33';
+    var form = smsparser.getFormCode(msg);
+    test.same('YYYY', form);
+    test.done();
+};
+
+exports['get form with no content'] = function(test) {
+    var msg = 'YYYY';
     var form = smsparser.getFormCode(msg);
     test.same('YYYY', form);
     test.done();
