@@ -115,6 +115,18 @@ $(function () {
     }
   });
 
+  $('body').on('click', '.send-message', function(e) {
+    e.preventDefault();
+    if ($(e.target).closest('.send-message').is('.reply')) {
+      angular.element($('body')).scope().$apply(function(scope) {
+        $('#send-message [name=phone]').select2('val', [scope.selected.from]);
+      });
+    } else {
+      $('#send-message [name=phone]').select2('val', []);
+    }
+    $('#send-message').modal('show');
+  });
+
   var _applyFilter = function(options) {
     options = options || {};
     angular.element($('body')).scope().$apply(function(scope) {
