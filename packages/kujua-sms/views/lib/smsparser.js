@@ -11,7 +11,7 @@ var utils = require('kujua-utils'),
  */
 exports.isMuvukuFormat = function(msg) {
     if (typeof msg !== 'string') { return; }
-    return msg.match(new RegExp('^\\s*\\d+![\\w]+!.+')) !== null;
+    return msg.match(/^\s*\d+!.+!.+/) !== null;
 };
 
 /**
@@ -148,7 +148,7 @@ exports.parse = function (def, doc) {
          * not belong to the TextForms format but is just a convention to
          * identify the message.
          */
-        msg = msg.replace(new RegExp('^\\s*'+code+'\\s*','i'),'')
+        msg = msg.replace(new RegExp('^\\s*' + code + '\\s*','i'),'')
 
         if (textforms_parser.isCompact(def, msg)) {
             msg_data = textforms_parser.parseCompact(def, msg);
@@ -221,7 +221,7 @@ exports.getFormCode = function(msg) {
         return msg.split('!')[1].toUpperCase();
     }
     // textforms
-    var match = msg.match(new RegExp('^\\s*([\\w]+)\\W+.+'));
+    var match = msg.match(/^\s*([^\s!\-,:]+)[\s!\-,:]*.*/);
     if (match !== null && match.length === 2) {
         return match[1].toUpperCase();
     }
