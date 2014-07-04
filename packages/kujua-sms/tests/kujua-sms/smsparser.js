@@ -915,3 +915,65 @@ exports['non ascii code is accepted'] = function(test) {
     test.done();
 
 };
+
+exports['support textforms locale on tiny labels'] = function(test) {
+
+    var def = {
+        meta: {
+            code: 'R'
+        },
+        fields: {
+            name: {
+                type: 'string',
+                labels: {
+                    short: 'Name',
+                    tiny: {
+                        en: 'n',
+                        sw: 'j'
+                    }
+                }
+            }
+        }
+    };
+
+    // textforms with locale mismatch parses as compact format
+    var doc = {
+        message: "R n jane",
+        locale: 'sw'
+    };
+    var data = smsparser.parse(def, doc, doc.locale);
+    test.same(data, {name: "n jane"});
+
+    // textforms with locale match parses correctly
+    doc = {
+        message: "R j jane",
+        locale: 'sw'
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {name: "jane"});
+
+    // same thing but case insensitive check
+    doc = {
+        message: "r J jane",
+        locale: 'sw'
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {name: "jane"});
+
+    // compact parses correctly
+    doc = {
+        message: "R jane"
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {name: "jane"});
+
+    // muvuku parses correctly
+    doc = {
+        message: "1!R!jane"
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {name: "jane"});
+
+    test.done();
+
+};

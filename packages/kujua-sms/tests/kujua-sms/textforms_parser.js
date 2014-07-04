@@ -8,7 +8,10 @@ var def = {
         name: {
             labels: {
                 short: 'Name',
-                tiny: 'N'
+                tiny: {
+                    en: 'N',
+                    sw: 'J'
+                }
             },
             type: 'string'
         },
@@ -56,6 +59,16 @@ exports['is compact false'] = function(test) {
     test.done();
 };
 
+exports['is compact false and respects locale property'] = function(test) {
+    var doc = {
+        message: 'j sarah lmp 24 d 2012-03-12',
+        locale: 'sw'
+    };
+
+    test.ok(!smsparser.isCompact(def, doc, doc.locale));
+    test.done();
+};
+
 exports['is compact false when field value starts with number'] = function(test) {
     var doc = {
         message: 'LMP24'
@@ -71,5 +84,15 @@ exports['is compact false when field value absent'] = function(test) {
     };
 
     test.ok(!smsparser.isCompact(def, doc));
+    test.done();
+};
+
+exports['is compact respects locale'] = function(test) {
+    var doc = {
+        message: 'lmp',
+        locale: 'sw'
+    };
+
+    test.ok(!smsparser.isCompact(def, doc.message, doc.locale));
     test.done();
 };
