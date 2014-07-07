@@ -5,6 +5,9 @@ sentinel/settings-test.js
 sentinel/Procfile
 sentinel_working
 npm-debug.log
+node_modules
+bower_components
+static/js/compiled
 
 logs
 config.js

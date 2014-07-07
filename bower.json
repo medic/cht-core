@@ -1,0 +1,20 @@
+{
+  "name": "medic",
+  "version": "0.4.0",
+  "main": "static/js/inbox.js",
+  "ignore": [
+    ".jshintrc",
+    "**/*.txt"
+  ],
+  "dependencies": {
+      "jquery": "2.1.x",
+      "underscore": "1.6.x",
+      "bootstrap": "3.2.x",
+      "bootstrap-datepicker": ">0",
+      "angular": "1.2.x",
+      "angular-resource": "1.2.x",
+      "angular-sanitize": "1.2.x",
+      "moment": "2.7.x",
+      "select2": "3.5.x"
+  }
+}
