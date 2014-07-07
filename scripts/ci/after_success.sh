@@ -42,4 +42,11 @@ if [ "$TRAVIS_BRANCH" == "testing" ]; then
     push 'http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-beta/upload'
 fi;
 
+if [ "$TRAVIS_BRANCH" == "inbox-design" ]; then
+    npm install -g json && \
+    cat kanso.json | json -o json-4 -e "this.dependencies[\"kanso-gardener\"] = null; this.version += \"-alpha.$TRAVIS_BUILD_NUMBER\"; this.name = \"medic-inbox\"; this.display_name = \"Medic Mobile Inbox Design\"" > tmp.json && \
+    mv tmp.json kanso.json && \
+    push 'http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-alpha/upload'
+fi;
+
 exit 0;
