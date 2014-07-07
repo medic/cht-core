@@ -9,7 +9,7 @@ before_script:
   - sleep 3
   - curl -X PUT localhost:5984/medic
   - npm install kanso -g
-  - npm install grunt -g
+  - npm install grunt-cli -g
   - grunt
   - kanso push http://localhost:5984/medic
 
