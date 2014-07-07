@@ -1,11 +1,11 @@
 <div class="sender">
-  <div class="name" ng-if="message.related_entities.clinic.contact">
+  <div class="name" ng-if="message.related_entities.clinic.contact.name">
     {{message.related_entities.clinic.contact.name}}
   </div>
-  <div class="name" ng-if="!message.related_entities.clinic.contact && message.from">
+  <div class="name" ng-if="!message.related_entities.clinic.contact.name && message.from">
     {{message.from}}
   </div>
-  <div class="name" ng-if="!message.related_entities.clinic.contact && !message.from">
+  <div class="name" ng-if="!message.related_entities.clinic.contact.name && !message.from">
     {{message.sent_by}}
   </div>
   <div class="position" ng-if="message.related_entities.clinic.parent.name">

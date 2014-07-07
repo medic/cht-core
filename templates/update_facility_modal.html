@@ -1,21 +1,27 @@
-<div class="modal hide fade" id="mark-invalid">
-  <div class="modal-header">
-    <button type="button" class="cancel close">&times;</button>
-    <h3>Update Facility</h3>
-  </div>
-  <div class="modal-body">
-      <form action="" method="POST"> 
-        <fieldset>
-          <div class="control-group">
-            <input type="hidden" name="facility" class="input-xxlarge" style="width:100%">
-            <div class="alert alert-error hide tm15">Please choose a facility.</div>
-          </div>
-        </fieldset>
-      </form>
-  </div>
-  <div class="modal-footer">
-    <p class="pull-left note">{note}</p>
-    <a href="#" class="btn cancel">Cancel</a>
-    <a href="#" class="btn submit btn-primary">Submit</a>
+<div class="modal fade" id="update-facility" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
+        <h3>Update Facility</h3>
+      </div>
+      <div class="modal-body">
+        <form action="" method="POST"> 
+          <input type="hidden" name="messageId" value="{~lb}{~lb}selected._id{~rb}{~rb}"/>
+          <fieldset>
+            <div class="control-group">
+              <select name="facility" style="width:100%;">
+                <option value="{~lb}{~lb}clinic.id{~rb}{~rb}" ng-repeat="clinic in facilities">{~lb}{~lb}clinic.text{~rb}{~rb}</option>
+              </select>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <p class="pull-left note">{note}</p>
+        <a href="#" class="btn cancel" data-dismiss="modal">Cancel</a>
+        <a href="#" class="btn submit btn-primary">Submit</a>
+      </div>
+    </div>
   </div>
 </div>

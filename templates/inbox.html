@@ -18,9 +18,9 @@
                 <span class="fa fa-mail-reply"></span>
                 <p>Reply</p>
               </a>
-              <a class="mm-icon mm-icon-inverse mm-icon-caption" href="#">
+              <a class="mm-icon mm-icon-inverse mm-icon-caption" href="#" id="update-facility-btn">
                 <span class="fa fa-pencil"></span>
-                <p>Edit</p>
+                <p>Update Facility</p>
               </a>
               <a class="mm-icon mm-icon-inverse mm-icon-caption" href="#" ng-class="{'mm-icon-disabled': selected && !selected.form}">
                 <span class="fa fa-check-circle-o"></span>
@@ -350,6 +350,7 @@
     </div>
 
     {>"modal_send_message.html"/}
+    {>"update_facility_modal.html"/}
 
     <script src="{baseURL}/static/js/compiled/inbox.min.js" type="text/javascript"></script>
     <script src="{baseURL}/static/kujua-reporting/js/raphael.js" type="text/javascript"></script>

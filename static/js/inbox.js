@@ -127,6 +127,21 @@ $(function () {
     $('#send-message').modal('show');
   });
 
+  $('#update-facility-btn').on('click', function(e) {
+    e.preventDefault();
+    angular.element($('body')).scope().$apply(function(scope) {
+      var val = '';
+      if (scope.selected 
+          && scope.selected.related_entities 
+          && scope.selected.related_entities.clinic) {
+        val = scope.selected.related_entities.clinic._id
+      }
+      $('#update-facility [name=facility]').select2('val', val);
+    });
+    $('#update-facility').modal('show');
+  });
+  $('#update-facility [name=facility]').select2();
+
   var _applyFilter = function(options) {
     options = options || {};
     angular.element($('body')).scope().$apply(function(scope) {

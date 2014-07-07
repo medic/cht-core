@@ -125,9 +125,11 @@ inboxControllers.controller('MessageCtrl',
     for (var i = 0; i < updated.length; i++) {
       var newMsg = updated[i];
       var oldMsg = _findMessage(newMsg._id);
-      if (oldMsg && newMsg._rev !== oldMsg._rev) {
-        for (prop in newMsg) {
-          oldMsg[prop] = newMsg[prop];
+      if (oldMsg) {
+        if (newMsg._rev !== oldMsg._rev) {
+          for (prop in newMsg) {
+            oldMsg[prop] = newMsg[prop];
+          }
         }
       } else {
         $scope.messages.push(newMsg);
