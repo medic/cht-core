@@ -8,6 +8,9 @@
   text-align: center;
   position: relative;
   .button-text;
+  &:hover, &:focus {
+    .button-text-hover;
+  }
 }
 
 .mm-icon-inverse {
@@ -15,7 +18,11 @@
 }
 
 .mm-icon-disabled {
-  color: #777;
+  &, &:hover, &:focus {
+    text-decoration: none;
+    cursor: default;
+    .button-text-disabled;
+  }
 }
 
 .mm-icon-nudge-down {
