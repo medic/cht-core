@@ -154,10 +154,10 @@ $(function () {
   };
   _applyFilter({updateFilter: true});
 
-  $(document).on('data-record-updated', function() {
+  $(document).on('data-record-updated', function(e, data) {
     _applyFilter({ 
       silent: true, 
-      force: true
+      changes: data
     });
   });
 

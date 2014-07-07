@@ -20,11 +20,15 @@
               </a>
               <a class="mm-icon mm-icon-inverse mm-icon-caption" href="#" id="update-facility-btn">
                 <span class="fa fa-pencil"></span>
-                <p>Update Facility</p>
+                <p>Edit</p>
               </a>
               <a class="mm-icon mm-icon-inverse mm-icon-caption" href="#" ng-class="{'mm-icon-disabled': selected && !selected.form}">
                 <span class="fa fa-check-circle-o"></span>
                 <p>Verify</p>
+              </a>
+              <a class="mm-icon mm-icon-inverse mm-icon-caption" href="#" data-toggle="modal" data-target="#delete-confirm">
+                <span class="fa fa-trash-o"></span>
+                <p>Delete</p>
               </a>
             </div>
           </div>
@@ -348,6 +352,7 @@
 
     {>"modal_send_message.html"/}
     {>"update_facility_modal.html"/}
+    {>"modal_alert.html"/}
 
     <script src="{baseURL}/static/js/compiled/inbox.min.js" type="text/javascript"></script>
     <script src="{baseURL}/static/kujua-reporting/js/raphael.js" type="text/javascript"></script>

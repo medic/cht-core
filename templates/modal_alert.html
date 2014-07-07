@@ -1,13 +1,18 @@
-<div class="modal hide fade" tabindex="-1">
-  <div class="modal-header">
-    <button type="button" class="cancel close">&times;</button>
-    <h3>{title}</h3>
-  </div>
-  <div class="hide modal-body">
-  </div>
-  <div class="modal-footer">
-    <p class="pull-left note">{note}</p>
-    <a href="#" class="btn cancel">Cancel</a>
-    <a href="#" class="btn submit btn-primary">Ok</a>
+<div id="delete-confirm" class="modal fade" tabindex="-1" role="dialog" data-record-id="{~lb}{~lb}selected._id{~rb}{~rb}">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
+        <h3>Confirm</h3>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this message?</p>
+      </div>
+      <div class="modal-footer">
+        <p class="pull-left note"></p>
+        <a href="#" class="btn cancel" data-dismiss="modal">Cancel</a>
+        <a href="#" class="btn submit btn-danger">Delete</a>
+      </div>
+    </div>
   </div>
 </div>

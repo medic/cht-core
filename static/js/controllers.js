@@ -113,6 +113,17 @@ inboxControllers.controller('MessageCtrl',
     }
   };
 
+  var _deleteMessage = function(id) {
+    if ($scope.selected && $scope.selected._id === id) {
+      $scope.selected = undefined;
+    }
+    for (var i = 0; i < $scope.messages.length; i++) {
+      if (id === $scope.messages[i]._id) {
+        $scope.messages.splice(i, 1);
+      }
+    }
+  }
+
   var _findMessage = function(id) {
     for (var i = 0; i < $scope.messages.length; i++) {
       if (id === $scope.messages[i]._id) {
@@ -191,9 +202,18 @@ inboxControllers.controller('MessageCtrl',
   $scope.advancedFilter = function(options) {
     var options = options || {};
     options.query = $('#advanced').val();
-    if (options.query === _currentQuery && !options.force) {
+    if (options.query === _currentQuery && !options.changes) {
       // debounce as same query already running
       return;
+    }
+    _currentQuery = options.query;
+    if (options.changes) {
+      var changedRows = options.changes.results;
+      for (var i = 0; i < changedRows.length; i++) {
+        if (changedRows[i].deleted) {
+          _deleteMessage(changedRows[i].id);
+        }
+      }
     }
     if (!options.silent) {
       $scope.loading = true;
@@ -201,20 +221,18 @@ inboxControllers.controller('MessageCtrl',
     if (options.skip) {
       $scope.appending = true;
       options.skip = $scope.messages.length;
-    } else if(!options.silent) {
+    } else if (!options.silent) {
       $scope.messages = [];
     }
-    _currentQuery = options.query;
     options.callback = function(err, data) {
       _currentQuery = null;
       if (err) {
-        console.log(err);
-      } else {
-        angular.element($('body')).scope().$apply(function(scope) {
-          scope.update(data.rows);
-          scope.totalMessages = data.total_rows;
-        });
+        return console.log(err);
       }
+      angular.element($('body')).scope().$apply(function(scope) {
+        scope.update(data.rows);
+        scope.totalMessages = data.total_rows;
+      });
     };
     $('body').trigger('updateMessages', options);
   };
