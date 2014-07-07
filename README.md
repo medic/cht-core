@@ -19,6 +19,14 @@ Assuming you have [Nodejs](http://nodejs.org), [CouchDB](http://couchdb.apache.o
 npm install kanso -g
 ```
 
+### Grunt
+
+[Grunt](http://gruntjs.com) is required to build.
+
+```
+npm install grunt-cli -g
+```
+
 ## Develop
 
 ### Push the couchapp
@@ -26,6 +34,7 @@ npm install kanso -g
 ```
 git clone --recursive https://github.com/medic/medic-webapp
 cd medic-webapp
+grunt
 kanso push http://admin:pass@localhost:5984/medic
 ```
 
