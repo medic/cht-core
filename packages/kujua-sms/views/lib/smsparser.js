@@ -140,8 +140,8 @@ exports.parse = function (def, doc) {
         addOmittedFields = true;
     } else {
 
-        var msg = doc.message || doc,
-            code = def && def.meta && def.meta.code;
+        var code = def && def.meta && def.meta.code,
+            msg = doc.message || doc;
 
         /*
          * Remove the form code from the beginning of the message since it does
@@ -150,7 +150,7 @@ exports.parse = function (def, doc) {
          */
         msg = msg.replace(new RegExp('^\\s*' + code + '\\s*','i'),'')
 
-        if (textforms_parser.isCompact(def, msg)) {
+        if (textforms_parser.isCompact(def, msg, doc.locale)) {
             msg_data = textforms_parser.parseCompact(def, msg);
         } else {
             msg_data = textforms_parser.parse(msg);

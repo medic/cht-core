@@ -314,10 +314,14 @@ exports.add_sms = function(doc, request) {
 
     var sms_message = {
         type: "sms_message",
-        locale: (req.query && req.query.locale) || 'en',
         form: smsparser.getFormCode(req.form.message)
     };
     sms_message = _.extend(req.form, sms_message);
+
+    // if locale was not passed in form data then check query string
+    if (!sms_message.locale) {
+        sms_message.locale = (req.query && req.query.locale) || 'en'
+    }
 
     var form_data = null,
         baseURL = require('duality/core').getBaseURL(),

@@ -30,7 +30,7 @@ fs.readFile(args[2], {encoding: "utf-8"}, function(err, data) {
         }
     });
 
-    var options = url.parse(args[3] + '/_design/medic/_rewrite/update_settings/medic');
+    var options = url.parse(args[3] + '/_design/medic/_rewrite/update_settings/medic?replace=1');
     options.method = 'PUT';
 
     var req = http.request(options, function(res) {

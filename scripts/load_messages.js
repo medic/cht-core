@@ -24,11 +24,11 @@ var usage = "\nUsage: load_messages.js <path> <url>\n\n"
     + "Examples:\n\n"
     + "node scripts/load_messages.js ~/data.csv http://admin:pass@localhost/medic\n\n"
     + "data.csv contents:\n\n"
-    + "message,from,sent timestamp\n"
-    + "ANCR jina Sam,+3125551212 \n"
+    + "message,from,sent timestamp,locale\n"
+    + "ANCR name Samantha,+3125551212 \n"
     + "ANCR LMP 10,+13125551212,1403965605868\n"
-    + "ANCR jina Maria,+13125551212,\"Apr 11, 2021 18:00 +0800\"\n"
-    + "\"IMMR # mtoto Sandra Muragiri, III# mamaid 48892#dob 200\",+13125551212,not a date\n";
+    + "ANCR jina Maria,+13125551212,sw,\"Apr 11, 2021 18:00 +0800\",sw\n"
+    + "\"IMMR # mtoto Sandra Muragiri, III# mamaid 48892#dob 200\",+13125551212,not a date,sw\n";
 
 if (!args[2] || !args[3]) {
     return console.error(usage);
@@ -37,6 +37,31 @@ if (!args[2] || !args[3]) {
 var parser = csv.parse(),
     input = fs.createReadStream(args[2]),
     first;
+
+/*
+ * Configure columns for parsing.
+ *
+ *   name - field name used for POST
+ *   match - regex to match the header cell
+ */
+var columns = [
+    {
+        name: 'message',
+        match: /message/i
+    },
+    {
+        name: 'from',
+        match: /(from|phone)/i,
+    },
+    {
+        name: 'sent_timestamp',
+        match: /timestamp/i,
+    },
+    {
+        name: 'locale',
+        match: /locale/i,
+    },
+];
 
 parser.on('readable', function() {
     postMessage(parser.read());
@@ -50,19 +75,24 @@ input.pipe(parser);
 
 function postMessage(data) {
 
-    // skip header row
+    var body = {};
+
+    // collect header data to match columns and field names and then skip.
     if (!first) {
+        data.forEach(function(val, idx) {
+            columns.forEach(function(v, i) {
+                if (val.match(v.match)) {
+                    v.idx = idx;
+                }
+            })
+        });
         first = true;
         return;
     }
-    var body = {
-        message: data[0],
-        from: data[1]
-    };
 
-    if (data.length > 2) {
-        body.sent_timestamp = data[2];
-    }
+    columns.forEach(function(val, idx) {
+        body[val.name] = data[val.idx];
+    });
 
     var options = url.parse(args[3] + '/_design/medic/_rewrite/add');
     options.headers = options.headers ? options.headers : {};
