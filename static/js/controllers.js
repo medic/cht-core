@@ -201,7 +201,7 @@ inboxControllers.controller('MessageCtrl',
     if (options.skip) {
       $scope.appending = true;
       options.skip = $scope.messages.length;
-    } else {
+    } else if(!options.silent) {
       $scope.messages = [];
     }
     _currentQuery = options.query;

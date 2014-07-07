@@ -145,13 +145,14 @@ $(function () {
   var _applyFilter = function(options) {
     options = options || {};
     angular.element($('body')).scope().$apply(function(scope) {
-      if (options.advanced) {
-        scope.advancedFilter(options);
-      } else {
+      if (options.updateFilter) {
         scope.filter(options);
+      } else {
+        scope.advancedFilter(options);
       }
     });
   };
+  _applyFilter({updateFilter: true});
 
   $(document).on('data-record-updated', function() {
     _applyFilter({ 
@@ -159,7 +160,6 @@ $(function () {
       force: true
     });
   });
-  _applyFilter();
 
   $('#toggle-filters').on('click', function(e) {
     e.preventDefault();
@@ -168,12 +168,12 @@ $(function () {
 
   $('.advanced-filters .btn').on('click', function(e) {
     e.preventDefault();
-    _applyFilter({ advanced: true });
+    _applyFilter();
   });
 
   $('#advanced').on('keypress', function(e) {
     if (e.which === 13) {
-      _applyFilter({ advanced: true });
+      _applyFilter();
     }
   });
 
