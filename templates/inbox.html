@@ -22,9 +22,13 @@
                 <span class="fa fa-pencil"></span>
                 <p>Edit</p>
               </a>
-              <a class="mm-icon mm-icon-inverse mm-icon-caption" href="#" ng-class="{'mm-icon-disabled': selected && !selected.form}">
-                <span class="fa fa-check-circle-o"></span>
+              <a id="verify" class="mm-icon mm-icon-inverse mm-icon-caption" href="#" ng-class="{'mm-icon-disabled': selected && !selected.form}" data-record-id="{~lb}{~lb}selected._id{~rb}{~rb}" ng-show="!selected.verified">
+                <span class="fa fa-check"></span>
                 <p>Verify</p>
+              </a>
+              <a id="unverify" class="mm-icon mm-icon-inverse mm-icon-caption" href="#" ng-class="{'mm-icon-disabled': selected && !selected.form}" data-record-id="{~lb}{~lb}selected._id{~rb}{~rb}" ng-show="selected.verified">
+                <span class="fa fa-times"></span>
+                <p>Unverify</p>
               </a>
               <a class="mm-icon mm-icon-inverse mm-icon-caption" href="#" data-toggle="modal" data-target="#delete-confirm">
                 <span class="fa fa-trash-o"></span>
@@ -256,7 +260,7 @@
                 <li ng-show="!loading || appending" ng-repeat="message in messages | orderBy:'-reported_date'" ng-click="setMessage(message._id)" data-record-id="{~lb}{~lb}message._id{~rb}{~rb}" ng-class="{'selected': message._id === selected._id}">
                   <span class="time" ng-bind-html="message.reported_date | relativeDate"></span>
                   <span class="mm-badge mm-badge-round mm-badge-border" ng-class="message.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
-                    <span class="fa"></span>
+                    <span class="fa" ng-class="{'fa-check': message.verified}"></span>
                   </span>
                   <div class="detail">
                     <mm-sender message="message"></mm-sender>
@@ -279,7 +283,7 @@
                 </div>
                 <div class="status">
                   <span class="mm-badge mm-badge-round mm-badge-border" ng-class="selected.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
-                    <span class="fa"></span>
+                    <span class="fa" ng-class="{'fa-check': selected.verified}"></span>
                   </span>
                 </div>
                 <div class="body">

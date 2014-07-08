@@ -7,14 +7,18 @@
   cursor: pointer;
   text-align: center;
   position: relative;
-  .button-text;
-  &:hover, &:focus {
+  &, &:focus {
+    .button-text;
+  }
+  &:hover {
     .button-text-hover;
   }
 }
 
 .mm-icon-inverse {
-  .button-text-inverse;
+  &, &:focus {
+    .button-text-inverse;
+  }
 }
 
 .mm-icon-disabled {
