@@ -34,6 +34,7 @@ npm install grunt-cli -g
 ```
 git clone --recursive https://github.com/medic/medic-webapp
 cd medic-webapp
+npm install
 grunt
 kanso push http://admin:pass@localhost:5984/medic
 ```
