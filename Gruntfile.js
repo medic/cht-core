@@ -36,6 +36,14 @@ module.exports = function(grunt) {
         'static/js/services.js',
         'static/js/controllers.js'
       ]
+    },
+    exec: {
+      deploy: {
+        cmd: function() {
+          return 'kanso push http://' + grunt.option('user') + ':' + 
+            grunt.option('pass') + '@localhost:5984/medic';
+        }
+      }
     }
   });
 
@@ -44,6 +52,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-bower-task');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-exec');
 
   // Default tasks
   grunt.registerTask('default', [
@@ -51,6 +60,11 @@ module.exports = function(grunt) {
     'bower:install',
     'bower_concat',
     'uglify'
+  ]);
+
+  grunt.registerTask('dev', [
+    'default',
+    'exec:deploy'
   ]);
 
 };
