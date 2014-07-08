@@ -131,10 +131,10 @@ $(function () {
     e.preventDefault();
     angular.element($('body')).scope().$apply(function(scope) {
       var val = '';
-      if (scope.selected 
-          && scope.selected.related_entities 
-          && scope.selected.related_entities.clinic) {
-        val = scope.selected.related_entities.clinic._id
+      if (scope.selected && 
+        scope.selected.related_entities && 
+        scope.selected.related_entities.clinic) {
+        val = scope.selected.related_entities.clinic._id;
       }
       $('#update-facility [name=facility]').select2('val', val);
     });

@@ -8,9 +8,9 @@ inboxControllers.filter('relativeDate', function () {
       return ''; 
     }
     var m = moment(date);
-    return '<span title="' + m.format('HH:mm, Do MMM YYYY') + '">' 
-      + m.fromNow() 
-      + '</span>';
+    return '<span title="' + m.format('HH:mm, Do MMM YYYY') + '">' + 
+      m.fromNow() + 
+      '</span>';
   };
 });
 
@@ -20,9 +20,9 @@ inboxControllers.filter('state', function () {
       return ''; 
     }
     var title = task.due ? moment(task.due).fromNow() : '';
-    return '<span class="task-state" title="' + title + '">'
-     + task.state
-     + '</span>';
+    return '<span class="task-state" title="' + title + '">' + 
+      task.state + 
+      '</span>';
   };
 });
 
@@ -62,7 +62,7 @@ inboxControllers.controller('MessageCtrl',
   $scope.loading = true;
   $scope.appending = false;
   $scope.messages = [];
-  $scope.totalMessages;
+  $scope.totalMessages = undefined;
 
   $scope.filterType = 'message';
   $scope.filterForms = [];
@@ -92,7 +92,7 @@ inboxControllers.controller('MessageCtrl',
   Settings.query(function(res) {
     if (res.settings && res.settings.forms) {
       var forms = res.settings.forms;
-      for (key in forms) {
+      for (var key in forms) {
         var form = forms[key];
         $scope.forms.push({
           name: form.meta.label.en,
@@ -122,7 +122,7 @@ inboxControllers.controller('MessageCtrl',
         $scope.messages.splice(i, 1);
       }
     }
-  }
+  };
 
   var _findMessage = function(id) {
     for (var i = 0; i < $scope.messages.length; i++) {
@@ -130,7 +130,7 @@ inboxControllers.controller('MessageCtrl',
         return $scope.messages[i];
       }
     }
-  }
+  };
 
   $scope.update = function(updated) {
     for (var i = 0; i < updated.length; i++) {
@@ -138,7 +138,7 @@ inboxControllers.controller('MessageCtrl',
       var oldMsg = _findMessage(newMsg._id);
       if (oldMsg) {
         if (newMsg._rev !== oldMsg._rev) {
-          for (prop in newMsg) {
+          for (var prop in newMsg) {
             oldMsg[prop] = newMsg[prop];
           }
         }
@@ -200,7 +200,7 @@ inboxControllers.controller('MessageCtrl',
   var _currentQuery;
 
   $scope.advancedFilter = function(options) {
-    var options = options || {};
+    options = options || {};
     options.query = $('#advanced').val();
     if (options.query === _currentQuery && !options.changes) {
       // debounce as same query already running

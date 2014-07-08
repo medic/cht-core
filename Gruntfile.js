@@ -28,6 +28,14 @@ module.exports = function(grunt) {
           ]
         }
       }
+    },
+    jshint: {
+      all: [
+        'Gruntfile.js',
+        'static/js/inbox.js',
+        'static/js/services.js',
+        'static/js/controllers.js'
+      ]
     }
   });
 
@@ -35,9 +43,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-bower-concat');
   grunt.loadNpmTasks('grunt-bower-task');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
 
-  // Default tasks.
+  // Default tasks
   grunt.registerTask('default', [
+    'jshint',
     'bower:install',
     'bower_concat',
     'uglify'
