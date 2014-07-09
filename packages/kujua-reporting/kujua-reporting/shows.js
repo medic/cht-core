@@ -366,6 +366,7 @@ function registerInboxListeners() {
         e.preventDefault();
         var row = $(e.target).closest('.facility');
         var formCode = row.attr('data-form-code');
+        dates.form = formCode;
         var facilityId = row.attr('data-facility-id');
         appdb.getDoc(facilityId, function(err, facility) {
             if (err) {
@@ -607,6 +608,8 @@ exports.facility_reporting = renderReporting;
 exports.init = init;
 
 exports.render_page = function() {
-    renderPage();
+    var appdb = db.use(duality.getDBURL()),
+        config = sms_utils.info['kujua-reporting'];
+    renderDistrictChoice(appdb, config);
     registerInboxListeners();   
 };
