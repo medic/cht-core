@@ -160,6 +160,8 @@ var renderReportingTotals = function(totals, doc) {
         });
     }
 
+    $('#totals .chart').html('');
+
     var chart = charts.pie(
         [totals.incomplete, totals.not_submitted, totals.complete],
         {selector: '#totals .chart',
