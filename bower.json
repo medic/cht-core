@@ -16,6 +16,7 @@
       "angular-sanitize": "1.2.x",
       "moment": "2.7.x",
       "select2": "3.5.x",
-      "fontawesome": "4.1.x"
+      "fontawesome": "4.1.x",
+      "raphael": "2.1.x"
   }
 }

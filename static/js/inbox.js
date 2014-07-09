@@ -117,13 +117,12 @@ $(function () {
 
   $('body').on('click', '.send-message', function(e) {
     e.preventDefault();
-    if ($(e.target).closest('.send-message').is('.reply')) {
-      angular.element($('body')).scope().$apply(function(scope) {
-        $('#send-message [name=phone]').select2('val', [scope.selected.from]);
-      });
-    } else {
-      $('#send-message [name=phone]').select2('val', []);
+    var val = [];
+    var to = $(e.target).closest('.send-message').attr('data-send-to');
+    if (to) {
+      val.push(to);
     }
+    $('#send-message [name=phone]').select2('val', val);
     $('#send-message').modal('show');
   });
 

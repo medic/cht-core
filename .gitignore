@@ -7,9 +7,7 @@ sentinel_working
 npm-debug.log
 node_modules
 bower_components
-static/js/compiled
-static/css/app.css
-static/css/inbox.css
+static/dist
 
 logs
 config.js

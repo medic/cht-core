@@ -361,11 +361,9 @@ function renderReporting(doc, req) {
 };
 
 function registerInboxListeners() {
-    console.log('registering listeners');
     var appdb = db.use(duality.getDBURL());
     $('body').on('click', '#reporting-district-choice .btn', function(e) {
         e.preventDefault();
-        console.log('clicked');
         var link = $(e.target);
         var formCode = link.attr('data-form-code');
         var facilityId = link.attr('data-facility-id');

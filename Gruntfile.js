@@ -21,7 +21,7 @@ module.exports = function(grunt) {
       },
       build: {
         files: {
-          'static/js/compiled/inbox.min.js': [
+          'static/dist/inbox.js': [
             'bower_components/concat.js',
             'static/js/jquery.spreadsheet.js',
             'static/js/inbox.js',
@@ -42,9 +42,24 @@ module.exports = function(grunt) {
     less: {
       all: {
         files: {
-          'static/css/app.css': 'static/css/app.less',
-          'static/css/inbox.css': 'static/css/inbox.less'
+          'static/dist/app.css': 'static/css/app.less',
+          'static/dist/inbox.css': 'static/css/inbox.less'
         }
+      }
+    },
+    copy: {
+      resources: {
+        files: [
+          {
+            expand: true,
+            flatten: true,
+            src: [
+              'bower_components/select2/*.gif',
+              'bower_components/select2/*.png'
+            ], 
+            dest: 'static/dist/'
+          },
+        ]
       }
     },
     exec: {
@@ -64,6 +79,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-exec');
+  grunt.loadNpmTasks('grunt-contrib-copy');
 
   // Default tasks
   grunt.registerTask('default', [
@@ -71,7 +87,8 @@ module.exports = function(grunt) {
     'bower:install',
     'bower_concat',
     'uglify',
-    'less'
+    'less',
+    'copy:resources'
   ]);
 
   grunt.registerTask('dev', [

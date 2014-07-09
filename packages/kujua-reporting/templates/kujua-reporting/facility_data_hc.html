@@ -7,8 +7,8 @@
       </div>
       {?phone}
       <span class="add-message">
-        <button class="btn btn-primary btn-mini" data-phone="{phone}">
-          <i class="icon-envelope"></i>
+        <button class="btn btn-primary btn-mini send-message" data-send-to="{phone}">
+          <i class="fa fa-envelope"></i>
         </button>
       </span>
       {/phone}
@@ -36,8 +36,8 @@
                 {?reporting_phone}
                   {reporting_phone}
                   <span class="add-message">
-                    <button class="btn btn-primary btn-mini" data-phone="{phone}" data-doc="{.id}">
-                      <i class="icon-reply"></i>
+                    <button class="btn btn-primary btn-mini send-message" data-send-to="{phone}" data-doc="{.id}">
+                      <i class="fa fa-reply"></i>
                     </button>
                   </span>
                 {/reporting_phone}
