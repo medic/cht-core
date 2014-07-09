@@ -1,3 +1,5 @@
+@import "variables";
+
 .content-reporting {
   margin-top: 100px;
 }
@@ -349,3 +351,31 @@
   float: left;
 }
 
+
+#reporting-district-choice {
+  padding-bottom: 40px;
+  padding-top: 20px;
+  .form-name {
+    padding: 20px;
+    text-align: center;
+  }
+  .district-name {
+    padding: 10px 0 10px 20px;
+  }
+  .child-name {
+    padding: 15px 0 15px 40px;
+  }
+  .facility {
+    cursor: pointer;
+    &:hover {
+      background-color: @highlight-color;
+    }
+  }
+}
+
+.row.content .reporting {
+  background-color: #FFF;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+}

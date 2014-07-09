@@ -362,11 +362,11 @@ function renderReporting(doc, req) {
 
 function registerInboxListeners() {
     var appdb = db.use(duality.getDBURL());
-    $('body').on('click', '#reporting-district-choice .btn', function(e) {
+    $('body').on('click', '#reporting-district-choice .facility', function(e) {
         e.preventDefault();
-        var link = $(e.target);
-        var formCode = link.attr('data-form-code');
-        var facilityId = link.attr('data-facility-id');
+        var row = $(e.target).closest('.facility');
+        var formCode = row.attr('data-form-code');
+        var facilityId = row.attr('data-facility-id');
         appdb.getDoc(facilityId, function(err, facility) {
             if (err) {
                 return console.log(err);
