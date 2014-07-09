@@ -48,7 +48,7 @@ module.exports = function(grunt) {
       }
     },
     copy: {
-      resources: {
+      inbox: {
         files: [
           {
             expand: true,
@@ -58,7 +58,20 @@ module.exports = function(grunt) {
               'bower_components/select2/*.png'
             ], 
             dest: 'static/dist/'
-          },
+          }
+        ]
+      },
+      admin: {
+        files: [
+          {
+            expand: true,
+            flatten: true,
+            src: [
+              'bower_components/select2/select2.js',
+              'bower_components/raphael/raphael.js'
+            ], 
+            dest: 'static/dist/'
+          }
         ]
       }
     },
@@ -88,7 +101,8 @@ module.exports = function(grunt) {
     'bower_concat',
     'uglify',
     'less',
-    'copy:resources'
+    'copy:inbox',
+    'copy:admin'
   ]);
 
   grunt.registerTask('dev', [
