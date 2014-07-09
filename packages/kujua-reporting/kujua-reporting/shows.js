@@ -293,16 +293,20 @@ var onRecordClick = function(ev) {
     }
 };
 
-function renderReporting(doc, req) {
-
+function init(req) {
     sms_utils.info = appinfo.getAppInfo.apply(this);
-
-    var template = 'kujua-reporting/facility.html';
-    _req = req;
     isAdmin = kutils.isUserAdmin(req.userCtx);
     isDistrictAdmin = kutils.isUserDistrictAdmin(req.userCtx);
-    facility_doc = doc;
     dates = utils.getDates(req.query);
+    _req = req;
+};
+
+function renderReporting(doc, req) {
+
+    init(req);
+
+    facility_doc = doc;
+    var template = 'kujua-reporting/facility.html';
 
     if (utils.isHealthCenter(doc)) {
         template = 'kujua-reporting/facility_hc.html';
@@ -354,6 +358,25 @@ function renderReporting(doc, req) {
         }
     }
 
+};
+
+function registerInboxListeners() {
+    console.log('registering listeners');
+    var appdb = db.use(duality.getDBURL());
+    $('body').on('click', '#reporting-district-choice .btn', function(e) {
+        e.preventDefault();
+        console.log('clicked');
+        var link = $(e.target);
+        var formCode = link.attr('data-form-code');
+        var facilityId = link.attr('data-facility-id');
+        appdb.getDoc(facilityId, function(err, facility) {
+            if (err) {
+                return console.log(err);
+            }
+            facility_doc = facility;
+            getViewChildFacilities(facility, renderReports);
+        });
+    });
 };
 
 function renderPage() {
@@ -491,6 +514,14 @@ var renderReports = function(err, facilities) {
         getReportingData = utils.getRowsHC;
     }
 
+
+    $('[data-page=reporting_rates] #content').html(
+        templates.render(template, req, {
+            doc: doc
+        })
+    );
+
+
     getViewReports(doc, dates, function(err, reports) {
         if (err) {
             kutils.logger.warn(err);
@@ -575,3 +606,9 @@ var renderReports = function(err, facilities) {
  */
 exports.facility_reporting = renderReporting;
 
+exports.init = init;
+
+exports.render_page = function() {
+    renderPage();
+    registerInboxListeners();   
+};

@@ -29,15 +29,6 @@
         "base_template": "base.html"
     },
     "changelog": "Changes.md",
-    "less": {
-        "compress": true,
-        "compile": [
-            "static/css/app.less",
-            "static/css/spreadsheet.less",
-            "static/css/inbox.less"
-        ],
-        "remove_from_attachments": true
-    },
     "node_module_folders" : "sentinel,api",
     "bundledDependencies": [
         "packages/underscore"
@@ -54,8 +45,6 @@
         "nodeunit": null,
         "nodeunit-testrunner": null,
         "sinon": null,
-        "less-precompiler": null,
-        "select2": null,
         "kujua-branding": ">=0.0.2",
         "kujua-sms": null,
         "kujua-utils": null,

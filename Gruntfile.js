@@ -11,7 +11,8 @@ module.exports = function(grunt) {
     },
     bower_concat: {
       all: {
-        dest: 'bower_components/concat.js'
+        dest: 'bower_components/concat.js',
+        exclude: [ 'fontawesome' ]
       }
     },
     uglify: {
@@ -22,6 +23,7 @@ module.exports = function(grunt) {
         files: {
           'static/js/compiled/inbox.min.js': [
             'bower_components/concat.js',
+            'static/js/jquery.spreadsheet.js',
             'static/js/inbox.js',
             'static/js/controllers.js',
             'static/js/services.js'
@@ -36,6 +38,14 @@ module.exports = function(grunt) {
         'static/js/services.js',
         'static/js/controllers.js'
       ]
+    },
+    less: {
+      all: {
+        files: {
+          'static/css/app.css': 'static/css/app.less',
+          'static/css/inbox.css': 'static/css/inbox.less'
+        }
+      }
     },
     exec: {
       deploy: {
@@ -52,6 +62,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-bower-task');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-exec');
 
   // Default tasks
@@ -59,7 +70,8 @@ module.exports = function(grunt) {
     'jshint',
     'bower:install',
     'bower_concat',
-    'uglify'
+    'uglify',
+    'less'
   ]);
 
   grunt.registerTask('dev', [
@@ -68,3 +80,13 @@ module.exports = function(grunt) {
   ]);
 
 };
+
+    // "less": {
+    //     "compress": true,
+    //     "compile": [
+    //         "static/css/app.less",
+    //         "static/css/spreadsheet.less",
+    //         "static/css/inbox.less"
+    //     ],
+    //     "remove_from_attachments": true
+    // },

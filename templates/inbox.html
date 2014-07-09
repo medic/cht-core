@@ -121,7 +121,7 @@
               </div>
               <div class="button-label">Forms</div>
             </a>
-            <a ng-click="setFilterType('reporting')" ng-class="{'selected': filterType === 'reporting'}">
+            <a id="reports-tab" ng-click="setFilterType('reporting')" ng-class="{'selected': filterType === 'reporting'}">
               <div class="mm-icon" ng-class="{'mm-icon-inverse': filterType !== 'reporting'}">
                 <span class="fa fa-bar-chart-o"></span>
               </div>
@@ -344,10 +344,9 @@
         </div>
       </div>
 
-      <div class="row content" ng-show="filterType === 'reporting'">
+      <div class="row content" ng-show="filterType === 'reporting'" data-page="reporting_rates">
         <div class="inner">
-          <div class="col-sm-12 reporting">
-            Reporting goes here
+          <div class="col-sm-12 reporting" id="content">
           </div>
         </div>
       </div>
