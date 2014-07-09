@@ -192,8 +192,8 @@ $(function () {
       var type = scope.filterType === 'message' ? 'messages' : 'forms';
       url += '/export/' + type;
       var params = {
-        startkey: '["*",9999999999999,{}]',
-        endkey: '["*",0]',
+        startkey: '[9999999999999,{}]',
+        endkey: '[0]',
         tz: moment().zone(),
         format: 'xml',
         reduce: false

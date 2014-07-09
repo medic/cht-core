@@ -97,13 +97,3 @@ module.exports = function(grunt) {
   ]);
 
 };
-
-    // "less": {
-    //     "compress": true,
-    //     "compile": [
-    //         "static/css/app.less",
-    //         "static/css/spreadsheet.less",
-    //         "static/css/inbox.less"
-    //     ],
-    //     "remove_from_attachments": true
-    // },
