@@ -299,9 +299,9 @@ exports.fieldsToHtml = function(keys, labels, data_record, def) {
         } else {
             var label = labels.shift();
             fields.headers.push({head: exports.info.getMessage(label)});
-            if (def && def[key])
-                def = def[key]
-            var v = prettyVal(data_record, key, def);
+            if (def && def[key]) {
+                def = def[key];
+            }
             fields.data.push({
                 isArray: false,
                 value: prettyVal(data_record, key, def),
