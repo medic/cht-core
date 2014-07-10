@@ -378,6 +378,20 @@ function registerInboxListeners() {
             getViewChildFacilities(facility, renderReports);
         });
     });
+    $('body').on('click', '#date-nav a', function(e) {
+        e.preventDefault();
+        var link = $(e.target).closest('a');
+        dates = utils.getDates({
+            form: link.attr('data-form-code'),
+            time_unit: link.attr('data-time-unit'),
+            quantity: link.attr('data-quantity'),
+            startweek: link.attr('data-startweek'),
+            startmonth: link.attr('data-startmonth'),
+            startquarter: link.attr('data-startquarter'),
+            startyear: link.attr('data-startyear')
+        });
+        getViewChildFacilities(facility_doc, renderReports);
+    });
 };
 
 function renderPage() {
@@ -522,7 +536,8 @@ var renderReports = function(err, facilities) {
     $('[data-page=reporting_rates] #content').html(
         templates.render(template, req, {
             doc: doc,
-            date_nav: utils.getDateNav(dates, form_config.reporting_freq)
+            date_nav: utils.getDateNav(dates, form_config.reporting_freq),
+            form: dates.form
         })
     );
 
