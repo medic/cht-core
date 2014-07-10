@@ -33,7 +33,10 @@ var lower = function(str) {
 };
 
 var startsWith = function(lhs, rhs) {
-    return lhs && rhs && lhs.substring(0, rhs.length) === rhs;
+    return lhs && rhs && (
+        lower(lhs) === lower(rhs)
+        || new RegExp('^' + rhs + '[\\s0-9]', 'i').test(lhs)
+    );
 };
 
 /**
@@ -237,10 +240,11 @@ exports.parseCompact = function(def, msg) {
  * @param {Object} def The form definition for this msg
  * @param {String|Object} msg The message or an object with a 'message'
  *      property which contains the message
+ * @param {String} locale The locale string
  * @returns {Boolean} Returns true if the given msg is in compact format
  * @api public
  */
-exports.isCompact = function(def, msg) {
+exports.isCompact = function(def, msg, locale) {
     if (!msg) {
         return false;
     }
@@ -251,12 +255,12 @@ exports.isCompact = function(def, msg) {
     }
     var labels = _.flatten(_.map(_.values(def.fields), function(field) {
         return [
-            sms_utils.info.getMessage(field.labels.tiny, def.locale),
-            sms_utils.info.getMessage(field.labels.short, def.locale)
+            sms_utils.info.getMessage(field.labels.tiny, locale),
+            sms_utils.info.getMessage(field.labels.short, locale)
         ];
     }));
     return !_.some(labels, function(label) {
-        return startsWith(lower(fields[0]), lower(label));
+        return startsWith(fields[0], label);
     });
 };
 

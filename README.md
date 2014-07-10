@@ -1,6 +1,6 @@
-# Kujua Lite
+# Medic Mobile
 
-These instructions should help you get setup to run or develop on Kujua Lite.
+These instructions should help you get setup to run or develop on Medic Mobile.
 For latest changes and release announcements see the [change log](Changes.md).
 
 ## Dependencies
@@ -13,7 +13,7 @@ Assuming you have [Nodejs](http://nodejs.org), [CouchDB](http://couchdb.apache.o
 
 ### Kanso
 
-[Kanso](http://kan.so) is required to build and deploy Kujua Lite.
+[Kanso](http://kan.so) is required to build and deploy.
 
 ```
 npm install kanso -g
@@ -21,27 +21,77 @@ npm install kanso -g
 
 ## Develop
 
-Push the couchapp:
+### Push the couchapp
 
 ```
-git clone --recursive https://github.com/medic/kujua-lite
-cd kujua-lite
-kanso push http://admin:pass@localhost:5984/kujua-lite
+git clone --recursive https://github.com/medic/medic-webapp
+cd medic-webapp
+kanso push http://admin:pass@localhost:5984/medic
 ```
 
-Start kujua-sentinel:
+### Start medic-sentinel
 
 ```
 cd sentinel
-export COUCH_URL=http://admin:pass@localhost:5984/kujua-lite
+export COUCH_URL=http://admin:pass@localhost:5984/medic
 node ./server.js
 ```
+
+### Configure lucene
+
+Add the following to couchdb httpd_global_handlers 
+```
+_fti = {couch_httpd_proxy, handle_proxy_req, <<"http://127.0.0.1:5985">>}
+```
+
+Update `<lucene_home>/conf/couchdb-lucene.ini` so the URL has credentials, eg:
+
+```
+url=http://foo:bar@localhost:5984/
+```
+
+Start lucene: `<lucene_home>/bin/run`
+
+You should now see a welcome message at 
+
+```
+http://localhost:5985
+```
+
+### Try it out
 
 Navigate your browser to:
 
 ```
-http://localhost:5984/kujua-lite/_design/kujua-lite/_rewrite/
+http://localhost:5984/medic/_design/medic/_rewrite/
 ```
+
+
+### Loading Data
+
+You can load your form definitions in the settings interface but you can also do that from command line, see:
+
+```
+node scripts/load_forms.js
+```
+
+Simialrly you can bulk load messages from a csv file on the command line, see:
+
+```
+node scripts/load_messages.js
+```
+
+You can also add a message using curl:
+
+```
+curl -i -u gateway:123qwe \
+    --data-urlencode 'message=Test One two' \
+    --data-urlencode 'from=+13125551212' \
+    --data-urlencode 'sent_timestamp=1403965605868' \
+    -X POST \
+    http://medic.local/medic/_design/medic/_rewrite/add
+```
+
 
 ## Deploy to Market
 
@@ -52,8 +102,8 @@ First clone the repo recursively so you get both submodules `json-forms` and
 `sentinel`, then change directories:
 
 ```
-git clone --recursive https://github.com/medic/kujua-lite
-cd kujua-lite
+git clone --recursive https://github.com/medic/medic-webapp
+cd medic-webapp
 ```
 
 Then edit `kanso.json` and add `"kanso-gardener":null` to the end of the list of dependencies.  You can use your editor but
@@ -64,23 +114,23 @@ cat kanso.json |json -e 'dependencies["kanso-gardener"] = null;' > new.json
 mv new.json kanso.json
 ```
 
-Finally push to the Medic Test [Garden
+Finally push to the Medic [Garden
 Market](https://github.com/garden20/garden-market) run:
 
 ```
-kanso push http://dev.medicmobile.org:5984/market/_design/market/_rewrite/upload`
+kanso push http://staging.dev.medicmobile.org/markets-alpha/upload
 ```
 
 ## Configure
 
-Dashboard is required to load kujua-lite. To install Dashboard
+Dashboard is required to load Medic Mobile. To install Dashboard
 1) git clone https://github.com/garden20/dashboard
 2) cd dashboard
 3) kanso push $COUCH_URL
 4) change the couch db configuration secure_rewrites to false.
 
 
-See [Kujua Sentinel](https://github.com/medic/kujua-sentinel) for more information.
+See [Medic Sentinel](https://github.com/medic/medic-sentinel) for more information.
 
 ## Tests
 
@@ -90,7 +140,7 @@ after a push.  To run them from commandline you will need to install
 
 ```
 npm install phantomjs -g
-./scripts/phantom_test.sh http://localhost:5984/kujua-lite
+./scripts/phantom_test.sh http://localhost:5984/medic
 ```
 
 ## Help
@@ -99,11 +149,11 @@ Join our [Google Group](https://groups.google.com/forum/#!forum/medic-developers
 
 ## Build Status
 
-Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/kujua-lite).
+Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/medic-webapp).
 
 Develop      | Testing       | Master
 ------------ | ------------- | ------------
-[![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=develop)](https://travis-ci.org/medic/kujua-lite/branches) | [![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=testing)](https://travis-ci.org/medic/kujua-lite/branches) | [![Build Status](https://travis-ci.org/medic/kujua-lite.png?branch=master)](https://travis-ci.org/medic/kujua-lite/branches)
+[![Build Status](https://travis-ci.org/medic/medic-webapp.png?branch=develop)](https://travis-ci.org/medic/medic-webapp/branches) | [![Build Status](https://travis-ci.org/medic/medic-webapp.png?branch=testing)](https://travis-ci.org/medic/medic-webapp/branches) | [![Build Status](https://travis-ci.org/medic/medic-webapp.png?branch=master)](https://travis-ci.org/medic/medic-webapp/branches)
 
 
 ## License & Copyright

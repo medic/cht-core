@@ -7,8 +7,7 @@ var _ = require('underscore'),
     utils = require('./utils'),
     moment = require('moment'),
     kutils = require('kujua-utils'),
-    jsonforms  = require('views/lib/jsonforms'),
-    info = require('views/lib/appinfo'),
+    appinfo = require('views/lib/appinfo'),
     objectpath = require('views/lib/objectpath');
 
 /*
@@ -25,73 +24,62 @@ var formatDate = exports.formatDate = function(date, tz) {
     if (!date) {
         return '';
     }
-    // standard format for exports
-    var fmt = 'DD, MMM YYYY, HH:mm:ss Z';
     // return in a specified timezone offset
+    var result = moment(date);
     if (typeof tz !== 'undefined') {
-        return moment(date).zone(Number(tz)).format(fmt);
+        result = result.zone(Number(tz));
     }
     // return in UTC or browser/server preference/default
-    return moment(date).format(fmt);
+    return result.format('DD, MMM YYYY, HH:mm:ss Z');
 };
 
 /*
  * returns values after formatting
  */
-var formatValues = exports.formatValues = function(keys, values, tz) {
+var formatValues = exports.formatValues = function(keys, values, options) {
     _.each(keys, function(key, idx) {
         if (key === 'reported_date') {
-            values[idx] = formatDate(values[idx], tz);
+            values[idx] = formatDate(values[idx], options.timezone);
         }
     });
     return values;
 };
 
-function getFilename(form, name, type) {
-    var filename;
-
-    if (form === 'null') {
-        form = 'messages';
+function getFilename(options) {
+    var parts = [];
+    if (options.dhName) {
+        parts.push(options.dhName.replace(' ', ''));
     }
-
-    filename = _s.sprintf('%s_data_records.%s', form, type);
-
-    if (name !== 'null') {
-        name = name.replace(' ', '');
-        filename = name + '_' + filename;
-    }
-    return filename;
+    parts.push(options.formName);
+    parts.push('data_records');
+    return parts.join('_') + '.' + options.format;
 }
 
-var getKeys = exports.getKeys = function(form) {
-    return [
-        '_id',
-        'reported_date',
-        'from',
-        ['related_entities', ['clinic', ['contact', ['name']]]],
-        ['related_entities', ['clinic', ['name']]],
-        ['related_entities', ['clinic', ['parent', ['contact', ['name']]]]],
-        ['related_entities', ['clinic', ['parent', ['name']]]],
-        ['related_entities', ['clinic', ['parent', ['parent', ['name']]]]]
-    ].concat(utils.getFormKeys(form));
+function startExportHeaders(options, filename) {
+    var mime = options.format === 'xml' ? 'application/vnd.ms-excel' : 'text/csv';
+    start({code: 200, headers: {
+        'Content-Type': mime + '; charset=utf-8',
+        'Content-Disposition': 'attachment; filename=' + filename
+    }});
 };
 
-function startExportHeaders(format, filename) {
-    if (format === 'xml') {
-        start({code: 200, headers: {
-            'Content-Type': 'application/vnd.ms-excel; charset=utf-8',
-            'Content-Disposition': 'attachment; filename=' + filename
-        }});
-    } else {
-        start({code: 200, headers: {
-            'Content-Type': 'text/csv; charset=utf-8',
-            'Content-Disposition': 'attachment; filename=' + filename
-        }});
-    }
-};
+function excludeColumns(columns, options) {
+    // exclude_cols params removes cols from export. takes 1-indexed comma
+    // separated list as input. e.g 1,5
+    _.each(options.excludeColumns, function(idx) {
+        columns.splice(idx - 1, 1);
+    });
+}
 
-function sendHeaderRow(format, labels, form, delimiter, skipHeader) {
-    if (format === 'xml') {
+function sendHeaderRow(options, extraColumns) {
+    var cols = options.columns.concat(extraColumns || []);
+    excludeColumns(cols, options);
+    var labels = _.map(cols, function(label) {
+        return utils.info.translate(label, options.locale);
+    });
+
+    if (options.format === 'xml') {
+        var formName = _s.capitalize(options.formName);
         send('<?xml version="1.0" encoding="UTF-8"?>\n' +
              '<?mso-application progid="Excel.Sheet"?>\n' +
              '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
@@ -99,30 +87,74 @@ function sendHeaderRow(format, labels, form, delimiter, skipHeader) {
              ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n' +
              ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n' +
              ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
-             '<Worksheet ss:Name="'+form+'"><Table>');
-        if (!skipHeader) {
+             '<Worksheet ss:Name="' + formName + '"><Table>');
+        if (!options.skipHeader) {
             send(utils.arrayToXML([labels]));
         }
-    } else if (!skipHeader) {
-        send(utils.arrayToCSV([labels], delimiter) + '\n');
+    } else if (!options.skipHeader) {
+        send(utils.arrayToCSV([labels], options.delimiter) + '\n');
     }
 }
 
-function sendValuesRow(vals, format, delimiter) {
-    if (format === 'xml') {
+function sendValuesRow(vals, options) {
+    excludeColumns(vals, options);
+    if (options.format === 'xml') {
         vals = _.map(vals, function(val) {
             return typeof val === 'undefined' ? '' : val;
         });
         send(utils.arrayToXML([vals]) + '\n');
     } else {
-        send(utils.arrayToCSV([vals], delimiter) + '\n');
+        send(utils.arrayToCSV([vals], options.delimiter) + '\n');
     }
 }
 
-function sendClosing(format) {
-    if (format === 'xml') {
+function sendClosing(options) {
+    if (options.format === 'xml') {
         send('</Table></Worksheet></Workbook>');
     }
+}
+
+function getOptions(req, formName, defaultColumns) {
+    var query = req.query;
+    var options = {
+        format: query.format,
+        dhName: query.dh_name,
+        locale: query.locale,
+        delimiter: query.locale === 'fr' ? '";"' : null,
+        skipHeader: query.skip_header_row,
+        timezone: query.tz,
+        columns: query.columns ? JSON.parse(query.columns) : defaultColumns,
+        formName: formName
+    };
+    if (query.filter_state) {
+        options.filterState = {
+            state: query.filter_state
+        };
+        if (query.filter_state_from) {
+            options.filterState.from = 
+                moment().add('days', query.filter_state_from).startOf('day');
+        }
+        if (query.filter_state_to) {
+            options.filterState.to = 
+                moment().add('days', query.filter_state_to).endOf('day')
+        }
+
+    }
+    if (query.exclude_cols) {
+        options.excludeColumns = _.sortBy(
+            query.exclude_cols.split(','),
+            function(num) { 
+                // must exclude in reverse order or the pos keeps changing
+                return -1 * num;
+            }
+        );
+    }
+    _.defaults(options, {
+        format: 'csv',
+        locale: 'en',
+        skipHeader: false
+    });
+    return options;
 }
 
 exports.export_messages = function (head, req) {
@@ -133,19 +165,9 @@ exports.export_messages = function (head, req) {
         return send('');
     }
 
-    var query = req.query,
-        format = query.format || 'csv',
-        appInfo = info.getAppInfo.call(this),
-        dh_name = query.dh_name ? query.dh_name : 'null',
-        filename = getFilename('null', dh_name, format),
-        locale = query.locale || 'en',
-        delimiter = locale === 'fr' ? '";"' : null;
+    utils.info = appinfo.getAppInfo.call(this); // replace fake info with real from context
 
-    utils.info = appInfo; // replace fake info with real from context
-
-    startExportHeaders(format, filename);
-
-    var labels = [
+    var options = getOptions(req, 'messages', [
         '_id',
         'patient_id',
         'reported_date',
@@ -155,25 +177,31 @@ exports.export_messages = function (head, req) {
         'related_entities.clinic.parent.contact.name',
         'related_entities.clinic.parent.name',
         'related_entities.clinic.parent.parent.name',
-        'Message Type',
-        'Message State',
-        'Received Timestamp',
-        'Scheduled Timestamp',
-        'Pending Timestamp',
-        'Sent Timestamp',
-        'Cleared Timestamp',
-        'Muted Timestamp',
-        'Message UUID',
-        'Sent By',
-        'To Phone',
-        'Message Body'
-    ];
+        'task.type',
+        'task.state',
+        'received',
+        'scheduled',
+        'pending',
+        'sent',
+        'cleared',
+        'muted'
+    ]);
 
-    labels = _.map(labels, function(label) {
-        return utils.info.translate(label, locale);
-    });
+    startExportHeaders(options, getFilename(options));
+    sendHeaderRow(options, ['Message UUID', 'Sent By', 'To Phone', 'Message Body']);
 
-    sendHeaderRow(format, labels, 'Messages', delimiter, query.skip_header_row);
+    function getStateDate(state, task, history) {
+        if (state === 'scheduled' && task.due) {
+            return task.due;
+        }
+        if (history[state]) {
+            return history[state];
+        }
+        if (task.state === state) {
+            return task.timestamp;
+        }
+        return;
+    }
 
     function sendMessageRows(doc) {
         var tasks = [];
@@ -221,41 +249,61 @@ exports.export_messages = function (head, req) {
                     timestamp: doc.reported_date
                 }],
                 messages: [{
-                    from: doc.from,
+                    sent_by: doc.from,
                     message: doc.sms_message.message
                 }]
             });
         }
         _.each(tasks, function(task) {
-            var vals = [
-                doc._id,
-                doc.patient_id,
-                formatDate(doc.reported_date, query.tz),
-                doc.from,
-                objectpath.get(doc, 'related_entities.clinic.contact.name'),
-                objectpath.get(doc, 'related_entities.clinic.name'),
-                objectpath.get(doc, 'related_entities.clinic.parent.contact.name'),
-                objectpath.get(doc, 'related_entities.clinic.parent.name'),
-                objectpath.get(doc, 'related_entities.clinic.parent.parent.name'),
-                task.type || 'Task Message',
-                task.state
-            ];
             var history = {};
             _.each(task.state_history, function(item) {
                 history[item.state] = item.timestamp;
             });
-            _.each(['received','scheduled', 'pending', 'sent', 'cleared','muted'], function(state) {
-                var val = history[state];
-                if (state === 'scheduled' && task.due) {
-                    // use due property for scheduled timestamp value
-                    val = task.due;
+
+            if (options.filterState) {
+                var filter = options.filterState;
+                var state = history[filter.state];
+                if (!state) {
+                     // task hasn't been in the required state
+                    return;
                 }
-                if (!val && task.state === state) {
-                    // include timestamp data for records that have no history.
-                    val = task.timestamp;
+                var stateTimestamp = getStateDate(filter.state, task, history);
+                if (!stateTimestamp) {
+                     // task has no timestamp
+                    return;
                 }
-                vals.push(formatDate(val, query.tz));
+                stateTimestamp = moment(stateTimestamp);
+                if (filter.from && stateTimestamp.isBefore(filter.from)) {
+                    // task is earlier than filter period start
+                    return;
+                }
+                if (filter.to && stateTimestamp.isAfter(filter.to)) {
+                    // task is later than filter period end
+                    return;
+                }
+            }
+            var vals = _.map(options.columns, function(column) {
+                var value;
+                var date = false;
+                if (_.contains(['received', 'scheduled', 'pending', 'sent', 'cleared', 'muted'], column)) {
+                    // check the history
+                    value = getStateDate(column, task, history);
+                    date = true;
+                } else if (column === 'task.type') {
+                    value = task.type || 'Task Message';
+                } else if (_s.startsWith(column, 'task.')) {
+                    value = objectpath.get(task, column.substring(5));
+                } else {
+                    // otherwise just check the doc
+                    value = objectpath.get(doc, column);
+                    date = _.contains(['reported_date'], column);
+                }
+                if (date) {
+                    value = formatDate(value, options.timezone);
+                }
+                return value;
             });
+
             _.each(task.messages, function(msg) {
                 vals = vals.concat([
                     msg.uuid,
@@ -264,7 +312,8 @@ exports.export_messages = function (head, req) {
                     msg.message
                 ]);
             });
-            sendValuesRow(vals, format, delimiter);
+
+            sendValuesRow(vals, options);
         });
     };
 
@@ -275,7 +324,7 @@ exports.export_messages = function (head, req) {
         }
     }
 
-    sendClosing(format);
+    sendClosing(options);
 
     return '';
 };
@@ -298,57 +347,37 @@ exports.export_data_records = function (head, req) {
         return send('');
     }
 
-    var labels,
-        query = req.query,
-        form  = query.form,
-        format = query.format || 'csv',
-        appInfo = info.getAppInfo.call(this),
-        exclude_cols = query.exclude_cols ? query.exclude_cols.split(',') : [],
-        dh_name = query.dh_name ? query.dh_name : 'null',
-        filename = getFilename(form, dh_name, format),
-        locale = query.locale || 'en', //TODO get from session
-        delimiter = locale === 'fr' ? '";"' : null,
-        rows,
-        values,
-        keys = exports.getKeys(form);
+    utils.info = appinfo.getAppInfo.call(this); // replace fake info with real from context
 
-    utils.info = appInfo; // replace fake info with real from context
+    var form = req.query.form;
+    var options = getOptions(req, form, [
+        '_id',
+        'patient_id',
+        'reported_date',
+        'from',
+        'related_entities.clinic.contact.name',
+        'related_entities.clinic.name',
+        'related_entities.clinic.parent.contact.name',
+        'related_entities.clinic.parent.name',
+        'related_entities.clinic.parent.parent.name'
+    ]);
+    var keys = utils.getFormKeys(utils.info.getForm(form));
+    startExportHeaders(options, getFilename(options));
+    sendHeaderRow(options, utils.getLabels(keys, form, options.locale));
+    options.columns = options.columns.concat(keys);
 
-    startExportHeaders(format, filename);
-
-    if (!query.startkey || !query.endkey) {
-        return sendError({
-            "error": "bad_request",
-            "reason": "startkey and endkey parameters required"
-        });
-    }
-
-    // exclude_cols params removes cols from export. takes 1-indexed comma
-    // separated list as input. e.g 1,5
-    if (exclude_cols.length > 0) {
-        _.each(exclude_cols, function(num) {
-            keys.splice(num-1, 1);
-        });
-    }
-
-    // fetch labels for all keys
-    labels = utils.getLabels(keys, form, locale);
-
-    if (!query.skip_header_row) {
-        sendHeaderRow(format, labels, form, delimiter);
-    }
-
+    var row;
     while (row = getRow()) {
         if(row.doc) {
-            // add values for each data record to the rows
-            values = utils.getValues(row.doc, keys);
-            // format date fields
-            values = formatValues(keys, values, query.tz);
-            sendValuesRow(values, format, delimiter);
+            var values = utils.getValues(row.doc, options.columns);
+            sendValuesRow(
+                formatValues(options.columns, values, options),
+                options
+            );
         }
     }
 
-    sendClosing(format);
+    sendClosing(options);
 
     return '';
 };
@@ -361,21 +390,10 @@ exports.export_audit = function (head, req) {
         return send('');
     }
 
-    var query = req.query,
-        locale = query.locale || 'en',
-        delimiter = locale === 'fr' ? '";"' : null,
-        format = query.format || 'csv',
-        date = moment().format('YYYYMMDDHHmm'),
-        filename = _s.sprintf('audit-%s.%s', date, format),
-        appInfo = info.getAppInfo.call(this),
-        row,
-        vals;
+    utils.info = appinfo.getAppInfo.call(this); // replace fake info with real from context
 
-    utils.info = appInfo; // replace fake info with real from context
-
-    startExportHeaders(format, filename);
-
-    var labels = [
+    var options = getOptions(req, 'audit');
+    options.columns = [
         '_id',
         'Type',
         'Timestamp',
@@ -383,30 +401,34 @@ exports.export_audit = function (head, req) {
         'Action',
         'Document'
     ];
+    
+    var filename = _s.sprintf(
+        'audit-%s.%s',
+        moment().format('YYYYMMDDHHmm'), 
+        options.format
+    );
 
-    labels = _.map(labels, function(label) {
-        return utils.info.translate(label, locale);
-    });
+    startExportHeaders(options, filename);
+    sendHeaderRow(options);
 
-    sendHeaderRow(format, labels, 'Audit', delimiter, query.skip_header_row);
-
+    var row;
     while (row = getRow()) {
         if (row.doc) {
             _.each(row.doc.history, function(rev) {
-                vals = [
+                var vals = [
                     row.doc.record_id,
                     rev.doc.type,
-                    formatDate(rev.timestamp, query.tz),
+                    formatDate(rev.timestamp, options.timezone),
                     rev.user,
                     rev.action,
                     JSON.stringify(rev.doc)
                 ];
-                sendValuesRow(vals, format, delimiter);
+                sendValuesRow(vals, options);
             });
         }
     }
 
-    sendClosing(format);
+    sendClosing(options);
 
     return '';
 };
@@ -449,11 +471,11 @@ exports.data_record = function (head, req) {
         form = req.query && req.query.form,
         headers = req.headers.Host.split(":"),
         baseURL = require('duality/core').getBaseURL(),
-        def = jsonforms.getForm(form),
-        facility  = null,
-        appInfo = info.getAppInfo.call(this);
+        app_settings = appinfo.getAppInfo.call(this),
+        def = app_settings.getForm(form),
+        facility  = null;
 
-    utils.info = appInfo; // replace fake info with real from context
+    utils.info = app_settings; // replace fake info with real from context
 
     //
     // Add first matched facility to record
@@ -478,7 +500,7 @@ exports.data_record = function (head, req) {
     }
 
     // no facility, not a public form, and not a public_access install
-    if (!facility && !(def && def.public_form) && !appInfo.public_access) {
+    if (!facility && !(def && def.public_form) && !app_settings.public_access) {
         utils.addError(record, 'sys.facility_not_found');
     }
 

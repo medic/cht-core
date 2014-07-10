@@ -1,0 +1,82 @@
+{#info}
+<form id="configuration-form">
+  <fieldset>
+
+    <legend>Basic Settings</legend>
+
+    <div id="default-language">
+      {>"configuration/default-language.html"/}
+    </div>
+
+    <label for="gateway-number">Gateway number</label>
+    <input id="gateway-number" type="text" value="{gateway_number}" />
+
+  </fieldset>
+
+  <fieldset>
+    <legend>Advanced Settings</legend>
+
+    <label for="accept-messages">Accept messages</label>
+    <input id="accept-messages" type="checkbox" {@eq key="forms_only_mode" value="false"}checked="true"{/eq}>
+    <span class="help-block">if unchecked an error message will be sent to anyone who submits anything other than a report</span>
+
+    <label for="date-display-format">Date display format</label>
+    <select id="date-display-format">
+      {#date_formats}
+      <option 
+        value="{.}" 
+        {@if cond="'{reported_date_format}' === '{.}'"}selected="true"{/if}>
+          {.}
+      </option>
+      {/date_formats}
+    </select>
+    eg: <span id="date-format-example">{date_format_example}</span>
+
+    <label>Phone number conversion</label>
+    Replace the country code for {>"configuration/countrycodes.html"/}
+    with <input id="phone-filters-replace" type="text" value="{outgoing_phone_replace.replace}" class="input-mini"/>
+
+    <label>Messaging window</label>
+    <p class="inline-form control-group" id="messaging-window">
+      Send scheduled messages between 
+      <span id="schedule-morning">{#scheduleMorning}{>"partials/time.html"/}{/scheduleMorning}</span>
+      and
+      <span id="schedule-evening">{#scheduleEvening}{>"partials/time.html"/}{/scheduleEvening}</span>.
+    </p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Languages</legend>
+    <div id="languages" class="repeat-container">
+      {#locales}
+      <div class="repeat-element">
+        <p class="inline-form">
+          Display the language code <input type="text" class="input-mini" name="language-code" value="{code}"/>
+          as <input type="text" name="language-name" value="{name}"/>
+        </p>
+        <p>
+          <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
+        </p>
+      </div>
+      {/locales}
+      <div class="repeat-template">
+        <p class="inline-form">
+          Display the language code <input type="text" class="input-mini" name="language-code"/>
+          as <input type="text" name="language-name"/>
+        </p>
+        <p>
+          <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
+        </p>
+      </div>
+      <p>
+        <a href="#" class="add btn"><i class="icon-plus"></i> Add language</a>
+      </p>
+    </div>
+  </fieldset>
+
+  <div class="footer control-group">
+    <button type="button" class="btn submit btn-primary">Save</button>
+    <span class="status help-inline"></span>
+  </div>
+</form>
+{/info}

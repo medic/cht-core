@@ -98,7 +98,7 @@ page.open(system.args[1], function(status){
                 console.log('Tests Failed');
             }
             phantom.exit((failed) ? 1 : 0);
-        }, 30000);
+        }, 60000);
 
 
 

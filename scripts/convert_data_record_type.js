@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var http = require('http'),
-    db_name = 'kujua-lite',
+    db_name = 'medic',
     username = 'root',
     password = 'password',
     auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
@@ -14,7 +14,7 @@ var request = function(verb, path, data, callback) {
     var options = {
         host: 'endor.iriscouch.com',
         port: 80,
-        path: '/kujua-lite' + path,
+        path: '/medic' + path,
         method: verb,
         headers: {
             'Content-Type': 'application/json',

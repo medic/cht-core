@@ -15,7 +15,15 @@ exports.getAppInfo = function(req) {
 
 
     /*
-     * On server side app_settings is availble on design doc (this) and if
+     * Return a json form
+     */
+    function getForm(code) {
+        return this.forms && this.forms[code];
+    };
+
+
+    /*
+     * On server side app_settings is available on design doc (this) and if
      * call from client side we fetch app_settings via couchdb show.
      *
      * returns object
@@ -34,7 +42,7 @@ exports.getAppInfo = function(req) {
             settings = JSON.parse(
                 window.jQuery.ajax({
                     type: 'GET',
-                    url: baseURL + '/app_settings/kujua-lite',
+                    url: baseURL + '/app_settings/medic',
                     async: false //synchronous request
                 }).responseText
             ).settings;
@@ -69,65 +77,67 @@ exports.getAppInfo = function(req) {
             found = false;
         }
 
-        /*
-         * Locale string based on the following priority:
-         *      user profile > browser > app_settings > 'en'
-         *
-         * Only initialize the locale value server side. With kanso request
-         * object the cookie can only be checked server side.  Fallback to
-         * browser headers otherwise.
-         */
-        /* flakey, removing temporarly in favor of manual setting
-        if (req && req.cookie && req.cookie.kujua_locale) {
-
-            settings.locale = req.cookie.kujua_locale || 'en';
-
-        } else if (req && req.headers && req.headers['Accept-Language']) {
-
-            // currently supported locales
-            var supported = new locale.Locales(["en", "es", "fr", "ne", "sw"]);
-
-            // locale module chooses best option based on header
-            settings.locale = new locale.Locales(
-                req.headers["Accept-Language"]
-            ).best(supported).toString();
-
-        }
-        */
-
         return settings;
     }
 
     /*
      * Value is object with locale strings, e.g.
      *
-     * {
-     *   "en": "Year",
-     *   "fr": "Anné"
-     * }
+     *   {
+     *       "key": "Search",
+     *       "default": "Search",
+     *       "translations": [
+     *           {
+     *               "locale": "en",
+     *               "content": "Search"
+     *           },
+     *           {
+     *               "locale": "fr",
+     *               "content": "Search"
+     *           }
+     *       ]
+     *   }
      *
      * return string
      */
     function getMessage(value, locale) {
 
-        var key;
-
-        locale = locale || 'en';
-
-        if (_.isObject(value)) {
-            // try to resolve locale
-            if (value[locale]) {
-                // we found specified locale
-                return value[locale];
+        function _findTranslation(value, locale) {
+            if (value.translations) {
+                var translation = _.findWhere(
+                    value.translations, { locale: locale }
+                );
+                return translation && translation.content;
             } else {
-                // otherwise return the first value in object
-                key = _.first(_.keys(value));
-
-                return value[key] || null; // return null if falsey or empty object
+                // fallback to old translation definition to support
+                // backwards compatibility with existing forms
+                return value[locale];
             }
-        } else {
+        }
+
+        if (!_.isObject(value)) {
             return value;
         }
+
+        var result =
+
+            // 1) Look for the requested locale
+            _findTranslation(value, locale)
+
+            // 2) Look for the default
+            || value.default
+
+            // 3) Look for the English value
+            || _findTranslation(value, 'en')
+
+            // 4) Look for the first translation
+            || (value.translations && value.translations[0] 
+                && value.translations[0].content)
+
+            // 5) Look for the first value
+            || value[_.first(_.keys(value))];
+
+        return result;
     }
 
     /*
@@ -144,11 +154,11 @@ exports.getAppInfo = function(req) {
 
         var value,
             ctx = ctx || {},
-            locale = locale || app_settings.locale || 'en';
+            locale = locale || app_settings.locale;
 
         if (_.isObject(locale)) {
             ctx = locale;
-            locale = app_settings.locale || 'en';
+            locale = app_settings.locale;
         }
 
         if (_.isObject(key)) {
@@ -183,6 +193,7 @@ exports.getAppInfo = function(req) {
     app_settings.translations = app_settings.translations || [];
     app_settings.translate = _.partial(translate, app_settings.translations);
     app_settings.getMessage = getMessage;
+    app_settings.getForm = getForm;
 
     return app_settings;
 };

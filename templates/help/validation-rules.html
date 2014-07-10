@@ -1,0 +1,79 @@
+<div id="help-search">
+  <div class="row">
+    <div class="span10 offset1">
+      <h3>Validation Rules</h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="span10 offset1">
+      
+      <h4>Rules</h4>
+      <p>Validation rules are code fragments used to determine if some input is valid. For example, to say a field is only valid if the value has at least five characters, you would use the <span class="pre">lenMin(5)</span>.</p>
+      
+      <h4>Operators</h4>
+      <p>The available operators are:</p>
+      <dl class="horizontal">
+        <dt><span class="pre">&amp;&amp;</span></dt>
+        <dd>and</dd>
+        <dt><span class="pre">||</span></dt>
+        <dd>or</dd>
+        <dt><span class="pre">!</span></dt>
+        <dd>not</dd>
+        <dt><span class="pre">a ? b : c</span></dt>
+        <dd>ternary, ie: if 'a' is true, then check 'b', otherwise check 'c'</dd>
+        <dt><span class="pre">()</span></dt>
+        <dd>nested blocks, eg: 'a &amp;&amp; (b || c)'</dd>
+      </dl>
+
+      <h4>Functions</h4>
+      <p>The available operators are:</p>
+      <dl class="horizontal">
+        <dt><span class="pre">equals</span></dt>
+        <dd>Comparison</dd>
+        <dt><span class="pre">iEquals</span></dt>
+        <dd>Case insensitive comparison</dd>
+        <dt><span class="pre">sEquals</span></dt>
+        <dd>Type sensitive equals</dd>
+        <dt><span class="pre">siEquals</span></dt>
+        <dd>Type sensitive case insensitive equals</dd>
+        <dt><span class="pre">lenMin</span></dt>
+        <dd>Minimum length</dd>
+        <dt><span class="pre">lenMax</span></dt>
+        <dd>Maximum length</dd>
+        <dt><span class="pre">lenEquals</span></dt>
+        <dd>Exact length</dd>
+        <dt><span class="pre">min</span></dt>
+        <dd>Minimum value</dd>
+        <dt><span class="pre">max</span></dt>
+        <dd>Maximum value</dd>
+        <dt><span class="pre">between</span></dt>
+        <dd>Minimum and maximum value</dd>
+        <dt><span class="pre">in</span></dt>
+        <dd>One of the provided values</dd>
+        <dt><span class="pre">required</span></dt>
+        <dd>Must have a value</dd>
+        <dt><span class="pre">optional</span></dt>
+        <dd>Always valid</dd>
+        <dt><span class="pre">numeric</span></dt>
+        <dd>Numbers only</dd>
+        <dt><span class="pre">integer</span></dt>
+        <dd>Integer numbers only</dd>
+        <dt><span class="pre">alpha</span></dt>
+        <dd>Letters only</dd>
+        <dt><span class="pre">alphaNumeric</span></dt>
+        <dd>Numbers and letters only</dd>
+        <dt><span class="pre">email</span></dt>
+        <dd>Email address format</dd>
+        <dt><span class="pre">regex</span></dt>
+        <dd>A custom regular expression</dd>
+        <dt><span class="pre">unique</span></dt>
+        <dd>Used to specify one or more fields which must be unique, eg: "unique('patient_id')". To check uniqueness within a form type, include 'form' as a parameter.</dd>
+        <dt><span class="pre">uniqueWithin</span></dt>
+        <dd>Used to specify one or more fields which must be unique within a given time frame, eg: "uniqueWithin('patient_id', '1 months')"</dd>
+        <dt><span class="pre">exists</span></dt>
+        <dd>Validates that the provided value matches an existing document, eg: "exists('ANCR', 'patient_id')"</dd>
+      </dl>
+
+    </div>
+  </div>
+</div>

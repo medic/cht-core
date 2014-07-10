@@ -23,7 +23,7 @@
     var b = getBrowser();
     if (b !== 'chrome' && b !== 'firefox' && b !== 'safari') {
         alert(
-            'Warning Kujua Lite does not support your browser.\n'
+            'Warning Medic Mobile does not support your browser.\n'
             + 'Use Firefox, Chrome or Safari.'
         );
     }

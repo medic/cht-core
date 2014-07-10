@@ -3,7 +3,7 @@ var updates = require('app-settings/updates');
 exports['no ddoc found'] = function(test) {
   var result = updates.update_config(null, {});
   test.deepEqual(
-    JSON.parse(result[1]), 
+    JSON.parse(result[1]),
     { success: false, error: 'Design document not found' }
   );
   test.done();
@@ -12,7 +12,7 @@ exports['no ddoc found'] = function(test) {
 exports['body not valid json'] = function(test) {
   var result = updates.update_config({ app_settings: {} }, 'malformed');
   test.deepEqual(
-    JSON.parse(result[1]), 
+    JSON.parse(result[1]),
     { success: false, error: 'Request body must be valid JSON' }
   );
   test.done();
@@ -58,9 +58,42 @@ exports['array settings are replaced'] = function(test) {
   test.done();
 };
 
-var _exec = function(test, _existing, _updates, _expected) {
+exports['replace param replaces property'] = function(test) {
+  _exec(
+    test,
+    { parent: { one: "a", two: "b" } },
+    { parent: { three: "c" } },
+    { parent: { three: "c" } },
+    true
+  );
+  test.done();
+};
+
+exports['replace param leaves other properties intact'] = function(test) {
+  _exec(
+    test,
+    {
+        foo: { one: "a", two: "b" },
+        bar: { three: "c", four: "d" }
+    },
+    {
+        bar: { five: "e" }
+    },
+    {
+        foo: { one: "a", two: "b" },
+        bar: { five: "e" }
+    },
+    true
+  );
+  test.done();
+};
+
+var _exec = function(test, _existing, _updates, _expected, _replace) {
   var ddoc = { app_settings: _existing };
   var req = { body: JSON.stringify(_updates) };
+  if (_replace) {
+      req.query = {replace: true};
+  }
   var result = updates.update_config(ddoc, req);
   var status = JSON.parse(result[1]);
   test.equals(status.success, true);

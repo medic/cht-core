@@ -11,7 +11,7 @@ var utils = require('kujua-utils'),
  */
 exports.isMuvukuFormat = function(msg) {
     if (typeof msg !== 'string') { return; }
-    return msg.match(new RegExp('^\\s*\\d+![\\w]+!.+')) !== null;
+    return msg.match(/^\s*\d+!.+!.+/) !== null;
 };
 
 /**
@@ -64,17 +64,9 @@ exports.parseField = function (field, raw) {
             // TODO we don't have locale data inside this function so calling
             // translate does not resolve locale.
             if (field.list) {
-                utils.logger.debug('looking at field list');
                 for (var i in field.list) {
                     var item = field.list[i];
-                    utils.logger.debug('item is '+JSON.stringify(item));
-                    utils.logger.debug('raw is '+ JSON.stringify(raw));
-                    utils.logger.debug('strict compare returns');
-                    utils.logger.debug(String(item[0]) === String(raw));
-                    utils.logger.debug('soft compare returns');
-                    utils.logger.debug(String(item[0]) == String(raw));
                     if (String(item[0]) === String(raw)) {
-                        utils.logger.debug('calling translate() '+ JSON.stringify(item[1]));
                         return sms_utils.info.translate(item[1]);
                     }
                 }
@@ -148,17 +140,17 @@ exports.parse = function (def, doc) {
         addOmittedFields = true;
     } else {
 
-        var msg = doc.message || doc,
-            code = def && def.meta && def.meta.code;
+        var code = def && def.meta && def.meta.code,
+            msg = doc.message || doc;
 
         /*
          * Remove the form code from the beginning of the message since it does
          * not belong to the TextForms format but is just a convention to
          * identify the message.
          */
-        msg = msg.replace(new RegExp('^\\s*'+code+'\\s*','i'),'')
+        msg = msg.replace(new RegExp('^\\s*' + code + '\\s*','i'),'')
 
-        if (textforms_parser.isCompact(def, msg)) {
+        if (textforms_parser.isCompact(def, msg, doc.locale)) {
             msg_data = textforms_parser.parseCompact(def, msg);
         } else {
             msg_data = textforms_parser.parse(msg);
@@ -229,7 +221,7 @@ exports.getFormCode = function(msg) {
         return msg.split('!')[1].toUpperCase();
     }
     // textforms
-    var match = msg.match(new RegExp('^\\s*([\\w]+)\\W+.+'));
+    var match = msg.match(/^\s*([^\s!\-,:]+)[\s!\-,:]*.*/);
     if (match !== null && match.length === 2) {
         return match[1].toUpperCase();
     }

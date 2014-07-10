@@ -1,3 +1,0 @@
-[submodule "tests/QUnit"]
-	path = tests/QUnit
-	url = git://github.com/NV/qunit.git

@@ -8,9 +8,8 @@ var db = require('db'),
     users = require('users'),
     charts = require('./ui/charts'),
     templates = require('duality/templates'),
-    info = require('views/lib/appinfo'),
-    url_util = require('url'),
-    jsonforms = require('views/lib/jsonforms');
+    appinfo = require('views/lib/appinfo'),
+    url_util = require('url');
 
 var facility_doc
     , _req
@@ -295,9 +294,10 @@ var onRecordClick = function(ev) {
 };
 
 function renderReporting(doc, req) {
-    var template = 'kujua-reporting/facility.html',
-        appInfo = info.getAppInfo.apply(this);
 
+    sms_utils.info = appinfo.getAppInfo.apply(this);
+
+    var template = 'kujua-reporting/facility.html';
     _req = req;
     isAdmin = kutils.isUserAdmin(req.userCtx);
     isDistrictAdmin = kutils.isUserDistrictAdmin(req.userCtx);
@@ -341,7 +341,7 @@ function renderReporting(doc, req) {
         // TODO fix show when $.kansotranslate is not available
         return {
             title: doc.name,
-            info: appInfo,
+            info: sms_utils.info,
             content: templates.render(template, req, {
                 doc: doc
             })
@@ -349,7 +349,7 @@ function renderReporting(doc, req) {
     } else {
         return {
             title: "Reporting Rates",
-            info: appInfo,
+            info: sms_utils.info,
             content: templates.render("loader.html", req, {})
         }
     }
@@ -357,9 +357,9 @@ function renderReporting(doc, req) {
 };
 
 function renderPage() {
+
     var appdb = db.use(duality.getDBURL()),
-        appInfo = info.getAppInfo(),
-        forms = appInfo['kujua-reporting'],
+        config = sms_utils.info['kujua-reporting'],
         doc = facility_doc,
         form_config,
         parentURL = '',
@@ -367,11 +367,11 @@ function renderPage() {
         title;
 
     if (!doc) {
-        return renderDistrictChoice(appdb, forms);
+        return renderDistrictChoice(appdb, config);
     }
 
     // check that form code is setup in config
-    form_config = _.findWhere(forms, {
+    form_config = _.findWhere(config, {
         code: req.query.form
     });
 
@@ -419,12 +419,12 @@ function renderPage() {
     getViewChildFacilities(doc, renderReports);
 }
 
-function renderDistrictChoice(appdb, forms) {
+function renderDistrictChoice(appdb, config) {
 
     var f = [];
 
-    _.each(forms, function(form, idx) {
-        var def = jsonforms.getForm(form.code),
+    _.each(config, function(form, idx) {
+        var def = sms_utils.info.getForm(form.code),
             formName = sms_utils.getFormTitle(form.code);
         if (def) {
             f.push(_.extend(form, {
@@ -433,7 +433,7 @@ function renderDistrictChoice(appdb, forms) {
         }
     });
 
-    forms = f;
+    config = f;
 
     appdb.getView(appname, 'facilities_by_type', {
         startkey: ['health_center'],
@@ -475,8 +475,8 @@ function renderDistrictChoice(appdb, forms) {
 
         $('[data-page=reporting_rates] #content').html(
             templates.render("kujua-reporting/reporting_district_choice.html", {}, {
-                forms: forms,
-                one_form: forms.length === 1,
+                forms: config,
+                one_form: config.length === 1,
                 districts: districts_list
             })
         ).off('click', '#reporting-district-choice .form-name')

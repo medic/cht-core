@@ -7,6 +7,10 @@ var _ = require('underscore')._,
 exports.validate = function(def, form_data) {
     var missing_fields = [], orig_key, key, data;
 
+    var _isDefined = function(obj) {
+        return !_.isUndefined(obj) && !_.isNull(obj);
+    };
+
     _.each(def.fields, function(field, k) {
         orig_key = k;
         key = k.split('.');
@@ -18,18 +22,14 @@ exports.validate = function(def, form_data) {
 
         key = key[0];
 
-        if (!data) {
-            if (!!field.required)
+        if (!!field.required) {
+            if (
+                !data
+                || !_isDefined(data[key])
+                || (_.isArray(data[key]) && !_isDefined(data[key][0]))
+            ) {
                 missing_fields.push(orig_key);
-            return;
-        }
-
-        if(
-            ((_.isUndefined(data[key]) || _.isNull(data[key])) && !!field.required) ||
-            ((!_.isUndefined(data[key]) && !_.isNull(data[key])) && !!field.required &&
-            _.isArray(data[key]) && (_.isUndefined(data[key][0]) || _.isNull(data[key][0])))
-        ) {
-            missing_fields.push(orig_key);
+            }
         }
     });
 

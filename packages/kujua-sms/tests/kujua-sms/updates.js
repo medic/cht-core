@@ -1,9 +1,16 @@
-var updates = require('kujua-sms/updates'),
+var utils = require('kujua-sms/utils'),
+    updates = require('kujua-sms/updates'),
     querystring = require('querystring'),
     fakerequest = require('couch-fakerequest'),
     baseURL = require('duality/core').getBaseURL(),
     host = window.location.host.split(':')[0],
     port = window.location.host.split(':')[1] || '';
+
+
+exports.setUp = function (callback) {
+    utils.info = require('views/lib/appinfo').getAppInfo.call(this);
+    callback();
+};
 
 exports.assert_month_is_integer = function(test) {
     test.expect(1);
@@ -85,7 +92,7 @@ exports.sms_message_attr_on_doc = function(test) {
 };
 
 exports.add_sms_check_resp_body = function (test) {
-    test.expect(7);
+
     // smssync post
     var req = {
         headers: {"Host": window.location.host},
@@ -96,33 +103,19 @@ exports.add_sms_check_resp_body = function (test) {
             "sent_timestamp":"1352399720000"
         }
     };
+
     // updates.add_sms generates a callback and payload
-    var expResp = {};
-    expResp.callback = {
-        "options": {
-            "host": host,
-            "port": port,
-            "method":"POST",
-            "headers":{
-                "Content-Type":"application/json; charset=utf-8"
-            },
-            "path": baseURL + "/data_record/add/facility/%2B888"
-        },
-        "data":{"uuid":"13f58b9c648b9a997248cba27aa00fdf"}
-    };
-    expResp.payload = {
-      "success": true
+    var expResp = {
+        payload: {
+          "id": "13f58b9c648b9a997248cba27aa00fdf",
+          "success": true
+        }
     };
 
     var ret = updates.add_sms(null, req);
     resp = JSON.parse(ret[1]);
 
-    test.same(resp.callback.options, expResp.callback.options);
-    test.same(resp.callback.options.headers, expResp.callback.options.headers);
-    test.same(resp.callback.options.path, expResp.callback.options.path);
-    test.same(resp.callback.data, expResp.callback.data);
     test.same(resp.payload, expResp.payload);
-    test.same(resp.callback, expResp.callback);
     test.same(resp, expResp);
     test.done();
 };
@@ -776,7 +769,7 @@ exports.unstructured_message = function(test) {
         doc = resp[0];
 
     // unstructured message has form of null
-    test.same(doc.form, null);
+    test.same(doc.form, undefined);
     test.same(doc.sms_message.message, "hello world! anyone there?");
     test.same(resp_body.payload.success, true);
     test.same(resp_body.payload.messages, undefined);

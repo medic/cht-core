@@ -1,9 +1,10 @@
 {
-    "name": "kujua-lite",
-    "version": "0.3.11",
+    "name": "medic",
+    "display_name": "Medic Mobile",
+    "version": "0.4.0",
     "description": "SMS data collection designed for rural environments.",
-    "long_description" : "Kujua Lite is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
-    "url": "https://github.com/medic/kujua-lite",
+    "long_description" : "Medic Mobile is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
+    "url": "https://github.com/medic/medic-webapp",
     "categories": ["health", "sms"],
     "icons": {
         "16": "static/img/promo/icon_16.png",
@@ -33,8 +34,7 @@
         "compile": ["static/css/app.less", "static/css/spreadsheet.less"],
         "remove_from_attachments": true
     },
-    "node_module_folder" : "sentinel",
-    "dependencies_included" : true,
+    "node_module_folders" : "sentinel,api",
     "bundledDependencies": [
         "packages/underscore"
     ],
@@ -69,13 +69,15 @@
         "garden-app-support": null,
         "app-settings": null,
         "locale": null,
-        "couchdb-audit": null
+        "couchdb-audit": null,
+        "js-migrations": ">=1.0.0"
     },
+    "migration_path": "/medic/_design/medic/_rewrite/migration",
     "user_data": {
         "db_prefix": false,
         "available_roles" : ["kujua_user","national_admin","district_admin","kujua_gateway","data_entry"],
         "schema": {
-            "descripton": "Kujua Lite",
+            "descripton": "Medic Mobile",
             "type": "object",
             "properties": {
                 "facility_id": {
@@ -92,48 +94,72 @@
                     "title": "Locale",
                     "type": "string",
                     "description": "Default tries to use best option according to browser settings, you can override that here.",
-                    "enum": ["en", "es", "fr", "ne", "sw"],
-                    "je:hint": "enumlabels",
-                    "je:enumlabels": {
-                        "en": "English",
-                        "es": "Spanish",
-                        "fr": "French",
-                        "ne": "Nepalese",
-                        "sw": "Swahili"
-                    },
                     "default": "en"
                 }
             }
         }
     },
     "settings_schema" : {
-        "description": "Kujua Lite Settings",
+        "description": "Medic Mobile Settings",
         "type": "object",
         "properties": {
-            "locale": {
-                "title": "Locale",
-                "type": "string",
-                "description": "Default tries to use best option according to browser settings, you can override that here.",
-                "enum": ["en", "es", "fr", "ne", "sw"],
-                "je:hint": "enumlabels",
-                "je:enumlabels": {
-                    "en": "English",
-                    "es": "Spanish",
-                    "fr": "French",
-                    "ne": "Nepalese",
-                    "sw": "Swahili"
+            "locales": {
+                "title": "Locales",
+                "description": "A list of available locales with a unique short code (egs: 'en', 'fr') and a human readable name of the locale (egs: 'English', 'French')",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "title": "Code",
+                            "default": ""
+                        },
+                        "name": {
+                            "type": "string",
+                            "title": "Display Name",
+                            "default": ""
+                        }
+                    }
                 },
+                "default": [
+                    {
+                        "code": "en",
+                        "name": "English"
+                    },
+                    {
+                        "code": "es",
+                        "name": "Spanish"
+                    },
+                    {
+                        "code": "fr",
+                        "name": "French"
+                    },
+                    {
+                        "code": "ne",
+                        "name": "Nepali"
+                    },
+                    {
+                        "code": "sw",
+                        "name": "Swahili"
+                    }
+                ]
+            },
+            "locale": {
+                "title": "Default Locale Code",
+                "type": "string",
+                "description": "Default tries to use best option according to browser settings, you can override that here. Must be one of the codes specified in Locales above.",
                 "default": "en"
             },
             "muvuku_webapp_url": {
                 "type": "string",
-                "title": "Muvuku Webapp Url",
-                "default": "/muvuku-webapp/_design/muvuku-webapp/_rewrite/?_embed_mode=2#/examples.json"
+                "title": "Medic Reporter URL",
+                "default": "/medic-reporter/_design/medic-reporter/_rewrite/?_embed_mode=2#/examples.json"
             },
             "reported_date_format": {
                 "type": "string",
                 "title": "Reported Date Format",
-                "default": "MMM hh:mm",
+                "default": "DD-MMM-YYYY hh:mm:ss",
                 "description": "Format used to display the reported date field."
             },
             "forms_only_mode": {
@@ -144,6 +170,24 @@
             "gateway_number": {
                 "type": "string",
                 "title": "Gateway Number"
+            },
+            "outgoing_phone_replace": {
+                "title": "Outgoing Phone Replacement",
+                "type": "object",
+                "properties": {
+                    "match": {
+                        "type": "string",
+                        "title": "Match",
+                        "default": "",
+                        "description": "The prefix to match.  e.g. +997"
+                    },
+                    "replace": {
+                        "type": "string",
+                        "title": "Replace with",
+                        "default": "",
+                        "description": "The value to replace the match with"
+                    }
+                }
             },
             "outgoing_phone_filters": {
                 "title": "Outgoing Phone Filters",
@@ -173,11 +217,23 @@
                 "type": "integer",
                 "default": 0
             },
+            "schedule_morning_minutes" : {
+                "title": "Scheduled Message Morning Minutes",
+                "description": "Only send messages on or after this minute.",
+                "type": "integer",
+                "default": 0
+            },
             "schedule_evening_hours" : {
                 "title": "Scheduled Message Evening Hours",
                 "description": "Only send messages on or before this hour.",
                 "type": "integer",
                 "default": 23
+            },
+            "schedule_evening_minutes" : {
+                "title": "Scheduled Message Evening Minutes",
+                "description": "Only send messages on or before this minute.",
+                "type": "integer",
+                "default": 0
             },
             "synthetic_date" : {
                 "title": "Synthetic date",
@@ -202,6 +258,7 @@
                 "type": "array",
                 "description": "The forms to include in reporting rates stats.",
                 "items": {
+                    "type": "object",
                     "properties": {
                         "code": {
                             "type": "string",
@@ -217,8 +274,7 @@
                             ],
                             "default": "weekly"
                         }
-                    },
-                    "type": "object"
+                    }
                 },
                 "default": [
                     {
@@ -240,12 +296,18 @@
                         "condition": {
                             "type": "string",
                             "je:hint": "textarea",
+                            "je:textarea": {
+                                "rows": 2
+                            },
                             "title": "Condition To Send Alerts",
                             "description": "Alert will be sent when condition is true. Build condition using the notation `form_code(reports_ago).field_id`. E.g.: The following can be used to send an alert if the value of `s1_avail` in form `STCK` falls below the three month average of `s1_used`: \"STCK(0).s1_avail < (STCK(0).s1_used + STCK(1).s1_used + STCK(2).s1_used ) / 3\"."
                         },
                         "message": {
                             "type": "string",
                             "je:hint": "textarea",
+                            "je:textarea": {
+                                "rows": 2
+                            },
                             "title": "Alert Text",
                             "default": "",
                             "description": "Text that will be sent out in the alert. Variables names can be used. E.g.: {{clinic.name}}, {{s1_name}}."
@@ -263,6 +325,7 @@
                 "title": "Scheduled Report Reminders",
                 "type": "array",
                 "items": {
+                    "type": "object",
                     "properties": {
                         "form": {
                             "type": "string",
@@ -288,10 +351,12 @@
                             "type": "string",
                             "title": "Reminder Text",
                             "description": "Message to be sent.  The following strings will be substituted into the message: {{week}}, {{year}} and {{form}}.",
-                            "je:hint": "textarea"
+                            "je:hint": "textarea",
+                            "je:textarea": {
+                                "rows": 2
+                            }
                         }
-                    },
-                    "type": "object"
+                    }
                 }
             },
             "registrations": {
@@ -304,7 +369,26 @@
                             "type": "string",
                             "title": "Registration Form",
                             "description": "Form code of a registration form. e.g. ANCR",
-                            "default": ""
+                            "default": "ANCR"
+                        },
+                        "fields": {
+                            "title": "Fields",
+                            "type": "array",
+                            "description": "Available field names for use in validations",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "field_name": {
+                                        "type": "string",
+                                        "title": "Field Name"
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "title": "Display Name"
+                                    }
+                                }
+                            },
+                            "default": []
                         },
                         "events": {
                             "type": "array",
@@ -314,8 +398,8 @@
                                     "name": {
                                         "type": "string",
                                         "title": "Event Name",
-                                        "default": "",
-                                        "enum": ["", "on_create"],
+                                        "default": "on_create",
+                                        "enum": ["on_create"],
                                         "je:hint": "enumlabels",
                                         "je:enumlabels": {
                                             "on_create": "On Create"
@@ -325,8 +409,8 @@
                                         "type": "string",
                                         "title": "Trigger",
                                         "description": "When form is received trigger actions like enrolling in schedule.",
-                                        "default": "",
-                                        "enum": ["","assign_schedule", "add_patient_id", "add_expected_date", "add_birth_date"],
+                                        "default": "add_patient_id",
+                                        "enum": ["assign_schedule", "add_patient_id", "add_expected_date", "add_birth_date"],
                                         "je:hint": "enumlabels",
                                         "je:enumlabels": {
                                             "assign_schedule": "Assign a schedule",
@@ -348,7 +432,8 @@
                                         "default": ""
                                     }
                                 }
-                            }
+                            },
+                            "default": []
                         },
                         "validations": {
                             "type": "object",
@@ -373,15 +458,34 @@
                                             "rule": {
                                                 "type": "string",
                                                 "title": "Validation Rule",
-                                                "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                                "description": "The <a href='/medic/_design/medic/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
                                                 "default": "lenMin(5) && lenMax(50)"
                                             },
                                             "message": {
-                                                "type": "string",
+                                                "type": "array",
                                                 "title": "Response Message",
                                                 "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
-                                                "default": "'{{patient_name}}' is not a valid patient name. Please submit a patient name between 5 and 50 characters.",
-                                                "je:hint": "textarea"
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "content": {
+                                                            "type": "string",
+                                                            "title": "Message Content",
+                                                            "default": "'{{patient_name}}' is not a valid patient name. Please submit a patient name between 5 and 50 characters.",
+                                                            "je:hint": "textarea",
+                                                            "je:textarea": {
+                                                                "rows": 2
+                                                            }
+                                                        },
+                                                        "locale": {
+                                                            "title": "Locale",
+                                                            "type": "string",
+                                                            "description": "Set the locale if you need to support responses in multiple languages.",
+                                                            "default": "en"
+                                                        }
+                                                    }
+                                                },
+                                                "default": []
                                             }
                                         }
                                     }
@@ -395,31 +499,36 @@
                                 "type": "object",
                                 "properties": {
                                     "message": {
-                                        "type": "string",
-                                        "title": "Message Text",
-                                        "je:hint": "textarea"
+                                        "type": "array",
+                                        "title": "Message",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "content": {
+                                                    "type": "string",
+                                                    "title": "Message Content",
+                                                    "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
+                                                    "default": "",
+                                                    "je:hint": "textarea",
+                                                    "je:textarea": {
+                                                        "rows": 2
+                                                    }
+                                                },
+                                                "locale": {
+                                                    "title": "Locale",
+                                                    "type": "string",
+                                                    "description": "Set the locale if you need to support responses in multiple languages.",
+                                                    "default": "en"
+                                                }
+                                            }
+                                        },
+                                        "default": []
                                     },
                                     "recipient": {
                                         "type": "string",
                                         "title": "Recipient",
                                         "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
                                         "default": "reporting_unit"
-                                    },
-                                    "locale": {
-                                        "title": "Locale",
-                                        "type": "string",
-                                        "description": "Set the locale if you need to support responses in multiple languages.",
-                                        "default": "en",
-                                        "enum": ["en", "es", "fr", "ne", "sw", "lu"],
-                                        "je:hint": "enumlabels",
-                                        "je:enumlabels": {
-                                            "en": "English",
-                                            "es": "Spanish",
-                                            "fr": "French",
-                                            "ne": "Nepalese",
-                                            "sw": "Swahili",
-                                            "lu": "Dholuo"
-                                        }
                                     }
                                 }
                             },
@@ -440,6 +549,16 @@
                             "description": "Form code of the report. e.g. ANCV",
                             "default": "ANCV"
                         },
+                        "name": {
+                            "type": "string",
+                            "title": "Display Name",
+                            "default": "Visits"
+                        },
+                        "format": {
+                            "type": "string",
+                            "title": "Expected Format",
+                            "default": "V <patientid>"
+                        },
                         "silence_type": {
                             "type": "string",
                             "title": "Schedule Name",
@@ -451,6 +570,25 @@
                             "title": "Silence Window",
                             "description": "The length of time used to find the next reminder group to clear.  Leave blank to clear all reminder groups.  Supported units: years, months, weeks, days, hours, minutes. e.g. 25 days",
                             "default": "25 days"
+                        },
+                        "fields": {
+                            "title": "Fields",
+                            "type": "array",
+                            "description": "Available field names for use in validations",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "field_name": {
+                                        "type": "string",
+                                        "title": "Field Name"
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "title": "Display Name"
+                                    }
+                                }
+                            },
+                            "default": []
                         },
                         "validations": {
                             "type": "object",
@@ -475,15 +613,33 @@
                                             "rule": {
                                                 "type": "string",
                                                 "title": "Validation Rule",
-                                                "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
+                                                "description": "The <a href='/medic/_design/medic/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
                                                 "default": "regex('[0-9]{5}')"
                                             },
                                             "message": {
-                                                "type": "string",
                                                 "title": "Response Message",
+                                                "type": "array",
                                                 "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
-                                                "default": "'{{patient_id}}' is not a valid.",
-                                                "je:hint": "textarea"
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "content": {
+                                                            "type": "string",
+                                                            "title": "Message Content",
+                                                            "default": "'{{patient_id}}' is not a valid.",
+                                                            "je:hint": "textarea",
+                                                            "je:textarea": {
+                                                                "rows": 2
+                                                            }
+                                                        },
+                                                        "locale": {
+                                                            "title": "Locale",
+                                                            "type": "string",
+                                                            "default": "en"
+                                                        }
+                                                    }
+                                                },
+                                                "default": []
                                             }
                                         }
                                     }
@@ -494,11 +650,31 @@
                             "type": "array",
                             "title": "Response Messages",
                             "items": {
+                                "type": "object",
                                 "properties": {
                                     "message": {
-                                        "type": "string",
+										"type": "array",
                                         "title": "Message Text",
-                                        "je:hint": "textarea"
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "content": {
+                                                    "type": "string",
+                                                    "title": "Message Content",
+                                                    "default": "'{{patient_id}}' is not a valid.",
+                                                    "je:hint": "textarea",
+                                                    "je:textarea": {
+                                                        "rows": 2
+                                                    }
+                                                },
+                                                "locale": {
+                                                    "title": "Locale",
+                                                    "type": "string",
+                                                    "default": "en"
+                                                }
+                                            }
+                                        },
+                                        "default": []
                                     },
                                     "event_type": {
                                         "type": "string",
@@ -521,8 +697,7 @@
                                         "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
                                         "default": "reporting_unit"
                                     }
-                                },
-                                "type": "object"
+                                }
                             },
                             "default": []
                         }
@@ -534,12 +709,29 @@
                 "title": "Schedules",
                 "type": "array",
                 "items": {
+                    "type": "object",
                     "properties": {
                         "name": {
                             "type": "string",
                             "title": "Name",
                             "description": "A unique name to define this schedule. e.g. ANC Reminders",
                             "default": ""
+                        },
+                        "summary": {
+                            "type": "string",
+                            "title": "Summary",
+                            "description": "A brief summary of this schedule",
+                            "default": ""
+                        },
+                        "description": {
+                            "type": "string",
+                            "title": "Description",
+                            "description": "A complete description of this schedule in <a href=\"http://daringfireball.net/projects/markdown/syntax\">markdown format</a>",
+                            "default": "",
+                            "je:hint": "textarea",
+                            "je:textarea": {
+                                "rows": 2
+                            }
                         },
                         "start_from": {
                             "type": "string",
@@ -551,13 +743,32 @@
                             "type": "array",
                             "title": "Messages",
                             "items": {
+                                "type": "object",
                                 "properties": {
                                     "message": {
-                                        "type": "string",
-                                        "title": "Message Text",
-                                        "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
-                                        "default": "",
-                                        "je:hint": "textarea"
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "content": {
+                                                    "type": "string",
+                                                    "title": "Message Content",
+                                                    "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
+                                                    "default": "",
+                                                    "je:hint": "textarea",
+                                                    "je:textarea": {
+                                                        "rows": 2
+                                                    }
+                                                },
+                                                "locale": {
+                                                    "title": "Locale",
+                                                    "type": "string",
+                                                    "description": "Set the locale if you need to support responses in multiple languages.",
+                                                    "default": "en"
+                                                }
+                                            }
+                                        },
+                                        "default": []
                                     },
                                     "group": {
                                         "type": "integer",
@@ -600,30 +811,12 @@
                                         "title": "Recipient",
                                         "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
                                         "default": "reporting_unit"
-                                    },
-                                    "locale": {
-                                        "title": "Locale",
-                                        "type": "string",
-                                        "description": "Set the locale if you need to support responses in multiple languages.",
-                                        "enum": ["en", "es", "fr", "ne", "sw", "lu"],
-                                        "je:hint": "enumlabels",
-                                        "je:enumlabels": {
-                                            "en": "English",
-                                            "es": "Spanish",
-                                            "fr": "French",
-                                            "ne": "Nepalese",
-                                            "sw": "Swahili",
-                                            "lu": "Dholuo"
-                                        },
-                                        "default": "en"
                                     }
-                                },
-                                "type": "object"
+                                }
                             },
                             "default": []
                         }
-                    },
-                    "type": "object"
+                    }
                 }
             },
             "notifications": {
@@ -649,41 +842,92 @@
                         "default": false
                     },
                     "validations": {
-                        "type": "array",
-                        "items": {
-                            "properties": {
-                                "property": {
-                                    "type": "string",
-                                    "title": "Property",
-                                    "description": "The property to validate.",
-                                    "default": "patient_id"
-                                },
-                                "rule": {
-                                    "type": "string",
-                                    "title": "Validation Rule",
-                                    "description": "The Pupil.js validation rule. See here for rules: https://github.com/Dragory/Pupil.js/blob/master/README.md. Backslashes must be double escaped.",
-                                    "default": "regex('[0-9]{5}')"
-                                },
-                                "message": {
-                                    "type": "string",
-                                    "title": "Error Message",
-                                    "description": "The error message to send when validation fails. Accepted substitutions: patient_id, contact_name, contact_phone, patient_name, serial_number, chw_phone, chw_name",
-                                    "default": "Invalid Patient ID '{{patient_id}}'",
-                                    "je:hint": "textarea"
-                                }
+                        "type": "object",
+                        "properties": {
+                            "join_responses": {
+                                "title": "Join Validation Responses",
+                                "type": "boolean",
+                                "default": false,
+                                "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
                             },
-                            "type": "object"
+                            "list": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "property": {
+                                            "type": "string",
+                                            "title": "Property",
+                                            "description": "The property on the JSON form to validate.",
+                                            "default": "patient_id"
+                                        },
+                                        "rule": {
+                                            "type": "string",
+                                            "title": "Validation Rule",
+                                            "description": "The <a href='/medic/_design/medic/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
+                                            "default": "regex('[0-9]{5}')"
+                                        },
+                                        "message": {
+                                            "title": "Response Message",
+                                            "type": "array",
+                                            "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "content": {
+                                                        "type": "string",
+                                                        "title": "Message Content",
+                                                        "default": "'{{patient_id}}' is not a valid.",
+                                                        "je:hint": "textarea",
+                                                        "je:textarea": {
+                                                            "rows": 2
+                                                        }
+                                                    },
+                                                    "locale": {
+                                                        "title": "Locale",
+                                                        "type": "string",
+                                                        "default": "en"
+                                                    }
+                                                }
+                                            },
+                                            "default": []
+                                        }
+                                    }
+                                }
+                            }
                         }
                     },
                     "messages": {
                         "type": "array",
                         "title": "Response Messages",
                         "items": {
+                            "type": "object",
                             "properties": {
                                 "message": {
-                                    "type": "string",
-                                    "title": "Message Text",
-                                    "je:hint": "textarea"
+                                    "type": "array",
+                                    "title": "Message",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "content": {
+                                                "type": "string",
+                                                "title": "Message Content",
+                                                "description": "e.g. Greetings, {{chw_name}}. {{patient_id}} notification will be disabled.",
+                                                "default": "",
+                                                "je:hint": "textarea",
+                                                "je:textarea": {
+                                                    "rows": 2
+                                                }
+                                            },
+                                            "locale": {
+                                                "title": "Locale",
+                                                "type": "string",
+                                                "description": "Set the locale if you need to support responses in multiple languages.",
+                                                "default": "en"
+                                            }
+                                        }
+                                    },
+                                    "default": []
                                 },
                                 "event_type": {
                                     "type": "string",
@@ -710,8 +954,7 @@
                                     "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
                                     "default": "reporting_unit"
                                 }
-                            },
-                            "type": "object"
+                            }
                         },
                         "default": []
                     }
@@ -721,535 +964,1743 @@
                 "title": "Translations",
                 "type": "array",
                 "items": {
+                    "type": "object",
                     "properties": {
                         "key": {
                             "type": "string",
                             "title": "Key",
                             "default": ""
                         },
-                        "en": {
+                        "default": {
                             "type": "string",
-                            "title": "English (Default)",
+                            "title": "Default",
                             "default": "",
-                            "je:hint": "textarea"
+                            "je:hint": "textarea",
+                            "je:textarea": {
+                                "rows": 2
+                            }
                         },
-                        "fr": {
-                            "type": "string",
-                            "title": "Français",
-                            "default": "",
-                            "je:hint": "textarea"
-                        },
-                        "ne": {
-                            "type": "string",
-                            "title": "Nepalese",
-                            "default": "",
-                            "je:hint": "textarea"
-                        },
-                        "es": {
-                            "type": "string",
-                            "title": "Spanish",
-                            "default": "",
-                            "je:hint": "textarea"
-                        },
-                        "sw": {
-                            "type": "string",
-                            "title": "Swahili",
-                            "default": "",
-                            "je:hint": "textarea"
+                        "translations": {
+                            "type": "array",
+                            "title": "",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "locale": {
+                                        "title": "Locale",
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "title": "Translation",
+                                        "type": "string",
+                                        "je:hint": "textarea",
+                                        "je:textarea": {
+                                            "rows": 2
+                                        }
+                                    }
+                                }
+                            }
                         }
-                    },
-                    "type": "object"
+                    }
                 },
                 "default": [
                     {
                         "key": "Contact",
-                        "en": "Contact",
-                        "fr": "Contact",
-                        "es": "Contacto",
-                        "ne": "सम्पर्क व्यक्ति",
-                        "sw": "kuwasiliana na"
+                        "default": "Contact",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Contact"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Contact"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Contacto"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सम्पर्क व्यक्ति"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "kuwasiliana na"
+                            }
+                        ]
                     },
                     {
                         "key": "From",
-                        "en": "From",
-                        "fr": "De",
-                        "es": "De",
-                        "ne": "पठाउने",
-                        "sw": "kutoka"
+                        "default": "From",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "From"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "De"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "De"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "पठाउने"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "kutoka"
+                            }
+                        ]
                     },
                     {
                         "key": "Clinic",
-                        "en": "Community Health Worker",
-                        "fr": "Agent de santé",
-                        "es": "Agento de salud",
-                        "ne": "सामुदायिक स्वास्थ्यकर्मि",
-                        "sw": ""
+                        "default": "Community Health Worker",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Community Health Worker"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Agent de santé"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Agento de salud"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सामुदायिक स्वास्थ्यकर्मि"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "Clinics",
-                        "en": "Community Health Workers",
-                        "fr": "Agents de santé",
-                        "es": "Agento de salud",
-                        "ne": "सामुदायिक स्वास्थ्यकर्मि",
-                        "sw": ""
+                        "default": "Community Health Workers",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Community Health Workers"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Agents de santé"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Agento de salud"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सामुदायिक स्वास्थ्यकर्मि"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "Village Name",
-                        "en": "Town",
-                        "fr": "Ville",
-                        "es": "Ciudia",
-                        "ne": "गाउँ",
-                        "sw": "Jina kijiji"
+                        "default": "Town",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Town"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Ville"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Ciudia"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "गाउँ"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Jina kijiji"
+                            }
+                        ]
                     },
                     {
                         "key": "Clinic Contact Name",
-                        "en": "Name",
-                        "fr": "Nom",
-                        "es": "Nombre",
-                        "ne": "सम्पर्क व्यक्ति",
-                        "sw": "Kliniki ya Mawasiliano Jina"
+                        "default": "Name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Name"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Nom"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Nombre"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सम्पर्क व्यक्ति"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Kliniki ya Mawasiliano Jina"
+                            }
+                        ]
                     },
                     {
                         "key": "Clinic Contact Phone",
-                        "en": "Phone number",
-                        "fr": "Téléphone",
-                        "es": "Teléfono",
-                        "ne": "सम्पर्क टेलिफोन",
-                        "sw": "Namba ya Simu"
+                        "default": "Phone number",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Phone number"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Téléphone"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Teléfono"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सम्पर्क टेलिफोन"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Namba ya Simu"
+                            }
+                        ]
                     },
                     {
                         "key": "RC Code",
-                        "en": "Code",
-                        "fr": "Code",
-                        "es": "Código",
-                        "ne": "कोड",
-                        "sw": "RC Kanuni"
+                        "default": "Code",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Code"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Code"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Código"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "कोड"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "RC Kanuni"
+                            }
+                        ]
                     },
                     {
                         "key": "Health Centers",
-                        "en": "Health Centers",
-                        "fr": "Centres de santé",
-                        "es": "Centros de Salud",
-                        "ne": "स्वास्थ्य संस्था",
-                        "sw": "Kituo cha Afya cha"
+                        "default": "Health Centers",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Health Centers"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Centres de santé"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Centros de Salud"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "स्वास्थ्य संस्था"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Kituo cha Afya cha"
+                            }
+                        ]
                     },
                     {
                         "key": "Health Center",
-                        "en": "Health Center",
-                        "fr": "Centre de santé",
-                        "es": "Centro de Salud",
-                        "ne": "स्वास्थ्य संस्था",
-                        "sw": "Kituo cha Afya cha"
+                        "default": "Health Center",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Health Center"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Centre de santé"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Centro de Salud"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "स्वास्थ्य संस्था"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Kituo cha Afya cha"
+                            }
+                        ]
                     },
                     {
                         "key": "Health Center Name",
-                        "en": "Health Center Name",
-                        "fr": "Nom du centre de santé",
-                        "es": "Nombre del centro de salud",
-                        "ne": "स्वास्थ्य संस्थाको नाम",
-                        "sw": "Kituo cha Afya cha Jina"
+                        "default": "Health Center Name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Health Center Name"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Nom du centre de santé"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Nombre del centro de salud"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "स्वास्थ्य संस्थाको नाम"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Kituo cha Afya cha Jina"
+                            }
+                        ]
                     },
                     {
                         "key": "Health Center Contact Name",
-                        "en": "Contact Name",
-                        "fr": "Nom du contact",
-                        "es": "Nombre del contacto",
-                        "ne": "सम्पर्क व्यक्ति",
-                        "sw": "Kituo cha Afya cha Mawasiliano Jina"
+                        "default": "Contact Name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Contact Name"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Nom du contact"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Nombre del contacto"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सम्पर्क व्यक्ति"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Kituo cha Afya cha Mawasiliano Jina"
+                            }
+                        ]
                     },
                     {
                         "key": "Health Center Contact Phone",
-                        "en": "Phone number",
-                        "fr": "Téléphone",
-                        "es": "Teléfono",
-                        "ne": "सम्पर्क टेलिफोन",
-                        "sw": "Namba ya Simu"
+                        "default": "Phone number",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Phone number"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Téléphone"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Teléfono"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सम्पर्क टेलिफोन"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Namba ya Simu"
+                            }
+                        ]
                     },
                     {
                         "key": "District Hospital",
-                        "en": "District",
-                        "fr": "District",
-                        "es": "Distrito",
-                        "ne": "जिल्ला​",
-                        "sw": "Wilaya ya"
+                        "default": "District",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "District"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "District"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Distrito"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "जिल्ला​"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Wilaya ya"
+                            }
+                        ]
                     },
                     {
                         "key": "District",
-                        "en": "District",
-                        "fr": "District",
-                        "es": "Distrito",
-                        "ne": "जिल्ला​",
-                        "sw": "Wilaya ya"
+                        "default": "District",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "District"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "District"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Distrito"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "जिल्ला​"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Wilaya ya"
+                            }
+                        ]
                     },
                     {
                         "key": "District Name",
-                        "en": "District Name",
-                        "fr": "Nom du district",
-                        "es": "Nombre del distrito",
-                        "ne": "जिल्लाको नाम",
-                        "sw": "Wilaya ya Jina"
+                        "default": "District Name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "District Name"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Nom du district"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Nombre del distrito"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "जिल्लाको नाम"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Wilaya ya Jina"
+                            }
+                        ]
                     },
                     {
                         "key": "District Contact Name",
-                        "en": "Contact Name",
-                        "fr": "Nom du contact",
-                        "es": "Nombre del contacto",
-                        "ne": "सम्पर्क व्यक्ति",
-                        "sw": "Wilaya ya Mawasiliano Jina"
+                        "default": "Contact Name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Contact Name"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Nom du contact"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Nombre del contacto"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सम्पर्क व्यक्ति"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Wilaya ya Mawasiliano Jina"
+                            }
+                        ]
                     },
                     {
                         "key": "District Contact Phone",
-                        "en": "Phone number",
-                        "fr": "Téléphone",
-                        "es": "Teléfono",
-                        "ne": "सम्पर्क टेलिफोन",
-                        "sw": "Namba ya Simu"
+                        "default": "Phone number",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Phone number"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Téléphone"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Teléfono"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सम्पर्क टेलिफोन"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Namba ya Simu"
+                            }
+                        ]
                     },
                     {
                         "key": "Phone",
-                        "en": "Phone",
-                        "fr": "Téléphone",
-                        "es": "Teléfono",
-                        "ne": "टेलिफोन",
-                        "sw": "Simu"
+                        "default": "Phone",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Phone"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Téléphone"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Teléfono"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "टेलिफोन"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Simu"
+                            }
+                        ]
                     },
                     {
                         "key": "Export",
-                        "en": "Export",
-                        "fr": "Exporter",
-                        "es": "Exportar",
-                        "ne": "",
-                        "sw": "Kuuza nje"
+                        "default": "Export",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Export"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Exporter"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Exportar"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": ""
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Kuuza nje"
+                            }
+                        ]
                     },
                     {
                         "key": "Activity",
-                        "en": "Activity",
-                        "fr": "Activité",
-                        "es": "Actividad",
-                        "ne": "",
-                        "sw": "Shughuli"
+                        "default": "Activity",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Activity"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Activité"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Actividad"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": ""
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Shughuli"
+                            }
+                        ]
                     },
                     {
                         "key": "Facilities",
-                        "en": "Facilities",
-                        "fr": "Equipements",
-                        "es": "Comodidades",
-                        "ne": "",
-                        "sw": "Vifaa"
+                        "default": "Facilities",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Facilities"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Equipements"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Comodidades"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": ""
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Vifaa"
+                            }
+                        ]
                     },
                     {
                         "key": "Reporting Rates",
-                        "en": "Reporting Rates",
-                        "fr": "Déclaration des taux de",
-                        "es": "Informes de Cambio",
-                        "ne": "",
-                        "sw": "Taarifa ya Viwango"
+                        "default": "Reporting Rates",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Reporting Rates"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Déclaration des taux de"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Informes de Cambio"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": ""
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Taarifa ya Viwango"
+                            }
+                        ]
                     },
                     {
                         "key": "sys.recipient_not_found",
-                        "en": "Could not find message recipient.",
-                        "fr": "Le recipient du message n'a pas été trouvé.",
-                        "es": "No se encontro destinatario para el mensaje.",
-                        "ne": "सन्देश​ पाउने व्यक्ति पत्ता लगाउन असफल।​",
-                        "sw": ""
+                        "default": "Could not find message recipient.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Could not find message recipient."
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Le recipient du message n'a pas été trouvé."
+                            },
+                            {
+                                "locale": "es",
+                                "content": "No se encontro destinatario para el mensaje."
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सन्देश​ पाउने व्यक्ति पत्ता लगाउन असफल।​"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "sys.missing_fields",
-                        "en": "Missing or invalid fields: {{fields}}.",
-                        "fr": "Champs invalides ou manquants: {{fields}}.",
-                        "es": "Campo invalido o faltante: {{fields}}.",
-                        "ne": "फारम पूरा  ​नभएको या नमिलेको​।",
-                        "sw": ""
+                        "default": "Missing or invalid fields: {{fields}}.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Missing or invalid fields: {{fields}}."
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Champs invalides ou manquants: {{fields}}."
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Campo invalido o faltante: {{fields}}."
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "फारम पूरा  ​नभएको या नमिलेको​।"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "missing_fields",
-                        "en": "Missing or invalid fields: {{fields}}.",
-                        "fr": "Champs invalides ou manquants: {{fields}}.",
-                        "es": "Campo invalido o faltante: {{fields}}.",
-                        "ne": "फारम पूरा ​नभएको या नमिलेको​।",
-                        "sw": ""
+                        "default": "Missing or invalid fields: {{fields}}.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Missing or invalid fields: {{fields}}."
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Champs invalides ou manquants: {{fields}}."
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Campo invalido o faltante: {{fields}}."
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "फारम पूरा ​नभएको या नमिलेको​।"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "extra_fields",
-                        "en": "Extra fields.",
-                        "fr": "Champs additionels.",
-                        "es": "Campos extra.",
-                        "ne": "फारममा भर्नुपर्ने भन्दा अतिरिक्त कुरा भरिएको।",
-                        "sw": ""
+                        "default": "Extra fields.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Extra fields."
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Champs additionels."
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Campos extra."
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "फारममा भर्नुपर्ने भन्दा अतिरिक्त कुरा भरिएको।"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "sys.form_not_found",
-                        "en": "Form '{{form}}' not found.",
-                        "fr": "Formulaire '{{form}}' non trouvé",
-                        "es": "Forma no encontrada.",
-                        "ne": "फारम भेटिएन।​",
-                        "sw": ""
+                        "default": "Form '{{form}}' not found.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Form '{{form}}' not found."
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Formulaire '{{form}}' non trouvé"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Forma no encontrada."
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "फारम भेटिएन।​"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "form_not_found",
-                        "en": "The form sent '{{form}}' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
-                        "fr": "Le formulaire envoyé '{{form}}' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
-                        "es": "No se reconocio el reporte enviado '{{form}}'. Por favor intente de nuevo. Si el problema persiste, informe al director.",
-                        "ne": "फारम मिलेन​। कृपया फेरि प्रयास गर्नुहोला।",
-                        "sw": ""
+                        "default": "The form sent '{{form}}' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "The form sent '{{form}}' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor."
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Le formulaire envoyé '{{form}}' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur."
+                            },
+                            {
+                                "locale": "es",
+                                "content": "No se reconocio el reporte enviado '{{form}}'. Por favor intente de nuevo. Si el problema persiste, informe al director."
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "फारम मिलेन​। कृपया फेरि प्रयास गर्नुहोला।"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "form_invalid",
-                        "en": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
-                        "fr": "Le formulaire envoyé '{{form}}' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
-                        "es": "No se completo el reporte '{{form}}'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
-                        "ne": "फारम ​पूरा भएन​। कृपया फेरि प्रयास गर्नुहोला।",
-                        "sw": ""
+                        "default": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor."
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Le formulaire envoyé '{{form}}' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur."
+                            },
+                            {
+                                "locale": "es",
+                                "content": "No se completo el reporte '{{form}}'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director."
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "फारम ​पूरा भएन​। कृपया फेरि प्रयास गर्नुहोला।"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "form_invalid_custom",
-                        "en": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
-                        "fr": "Le formulaire envoyé '{{form}}' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
-                        "es": "No se completo el reporte '{{form}}'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director.",
-                        "ne": "फारम  ​पूरा भएन​। कृपया फेरि प्रयास गर्नुहोला।",
-                        "sw": ""
+                        "default": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "The form sent '{{form}}' was not properly completed. Please complete it and resend. If this problem persists contact your supervisor."
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Le formulaire envoyé '{{form}}' n'est pas complet, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur."
+                            },
+                            {
+                                "locale": "es",
+                                "content": "No se completo el reporte '{{form}}'. Por favor completelo y vuelvalo a enviar. Si el problema persiste, informe al director."
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "फारम  ​पूरा भएन​। कृपया फेरि प्रयास गर्नुहोला।"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "sys.facility_not_found",
-                        "en": "Facility not found.",
-                        "fr": "Établissement non trouvé.",
-                        "es": "No se encontro a la unidad de salud.",
-                        "ne": "सम्बन्धित स्वास्थ्य संस्था पत्ता लगाउन असफल।",
-                        "sw": ""
+                        "default": "Facility not found.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Facility not found."
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Établissement non trouvé."
+                            },
+                            {
+                                "locale": "es",
+                                "content": "No se encontro a la unidad de salud."
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सम्बन्धित स्वास्थ्य संस्था पत्ता लगाउन असफल।"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "sys.empty",
-                        "en": "Message appears empty.",
-                        "fr": "Le message recu est vide.",
-                        "es": "El mensaje esta en blanco.",
-                        "ne": "सन्देश​ खाली छ।",
-                        "sw": ""
+                        "default": "Message appears empty.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Message appears empty."
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Le message recu est vide."
+                            },
+                            {
+                                "locale": "es",
+                                "content": "El mensaje esta en blanco."
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सन्देश​ खाली छ।"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "empty",
-                        "en": "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor.",
-                        "fr": "Nous avons des troubles avec votre message, SVP renvoyer. Si vous continuez à avoir des problèmes contactez votre superviseur.",
-                        "es": "El mensaje esta en blanco, por favor reenvielo. Si encuentra un problema, informe al director.",
-                        "ne": "सन्देश​ खाली छ​ । कृपया फेरि प्रयास गर्नुहोला।",
-                        "sw": ""
+                        "default": "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor."
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Nous avons des troubles avec votre message, SVP renvoyer. Si vous continuez à avoir des problèmes contactez votre superviseur."
+                            },
+                            {
+                                "locale": "es",
+                                "content": "El mensaje esta en blanco, por favor reenvielo. Si encuentra un problema, informe al director."
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सन्देश​ खाली छ​ । कृपया फेरि प्रयास गर्नुहोला।"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "form_received",
-                        "en": "Your form submission was received, thank you.",
-                        "fr": "Merci, votre formulaire a été bien reçu.",
-                        "es": "Recibimos su reporte, muchas gracias.",
-                        "ne": "रिपोर्ट​ प्राप्त भयो, धन्यवाद ​।",
-                        "sw": ""
+                        "default": "Your form submission was received, thank you.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Your form submission was received, thank you."
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Merci, votre formulaire a été bien reçu."
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Recibimos su reporte, muchas gracias."
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "रिपोर्ट​ प्राप्त भयो, धन्यवाद ​।"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "sms_received",
-                        "en": "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again.",
-                        "fr": "Merci, votre message a été bien reçu.",
-                        "es": "Recibimos tu mensaje, lo procesaremos pronto. Si querias mandar un reporte, intentalo nuevamente en el formato adecuado.",
-                        "ne": "सन्देश​ प्राप्त भयो। रिपोर्ट पठाउनुभएको हो भने मिलेन; ​पुन:​ पठाउनुहोला।",
-                        "sw": ""
+                        "default": "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again."
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Merci, votre message a été bien reçu."
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Recibimos tu mensaje, lo procesaremos pronto. Si querias mandar un reporte, intentalo nuevamente en el formato adecuado."
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सन्देश​ प्राप्त भयो। रिपोर्ट पठाउनुभएको हो भने मिलेन; ​पुन:​ पठाउनुहोला।"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "reporting_unit_not_found",
-                        "en": "Reporting Unit ID is incorrect. Please correct and submit a complete report again.",
-                        "fr": "Établissement non trouvé, svp corriger et renvoyer",
-                        "es": "No encontramos a su centro de salud. Por favor corrijalo y reenvie el reporte.",
-                        "ne": "रिपोर्टिङ् युनिटको आइ.डि मिलेन। कृपया ​मिलाएर​  ​पुन:​ पठाउनुहोला।",
-                        "sw": ""
+                        "default": "Reporting Unit ID is incorrect. Please correct and submit a complete report again.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Reporting Unit ID is incorrect. Please correct and submit a complete report again."
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Établissement non trouvé, svp corriger et renvoyer"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "No encontramos a su centro de salud. Por favor corrijalo y reenvie el reporte."
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "रिपोर्टिङ् युनिटको आइ.डि मिलेन। कृपया ​मिलाएर​  ​पुन:​ पठाउनुहोला।"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "_id",
-                        "en": "Record UUID",
-                        "fr": "Record UUID",
-                        "es": "Record UUID",
-                        "ne": "Record UUID",
-                        "sw": "Record UUID"
+                        "default": "Record UUID",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Record UUID"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Record UUID"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Record UUID"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "Record UUID"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Record UUID"
+                            }
+                        ]
                     },
                     {
                         "key": "patient_id",
-                        "en": "Patient ID",
-                        "fr": "Patient ID",
-                        "es": "Patient ID",
-                        "ne": "Patient ID",
-                        "sw": "Patient ID"
+                        "default": "Patient ID",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Patient ID"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Patient ID"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Patient ID"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "Patient ID"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Patient ID"
+                            }
+                        ]
                     },
                     {
                         "key": "reported_date",
-                        "en": "Reported Date",
-                        "fr": "Date envoyé",
-                        "es": "Fecha de envío",
-                        "ne": "रिपोर्ट पठाएको मिति​",
-                        "sw": ""
+                        "default": "Reported Date",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Reported Date"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Date envoyé"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Fecha de envío"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "रिपोर्ट पठाएको मिति​"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "related_entities.clinic.name",
-                        "en": "Clinic Name",
-                        "fr": "Villages",
-                        "es": "",
-                        "ne": "",
-                        "sw": ""
+                        "default": "Clinic Name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Clinic Name"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Villages"
+                            },
+                            {
+                                "locale": "es",
+                                "content": ""
+                            },
+                            {
+                                "locale": "ne",
+                                "content": ""
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "related_entities.clinic.contact.name",
-                        "en": "Clinic Contact Name",
-                        "fr": "Personne-ressource Clinique",
-                        "es": "",
-                        "ne": "",
-                        "sw": ""
+                        "default": "Clinic Contact Name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Clinic Contact Name"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Personne-ressource Clinique"
+                            },
+                            {
+                                "locale": "es",
+                                "content": ""
+                            },
+                            {
+                                "locale": "ne",
+                                "content": ""
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
+                    },
+                    {
+                        "key": "related_entities.clinic.external_id",
+                        "default": "Clinic External ID",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Clinic External ID"
+                            }
+                        ]
                     },
                     {
                         "key": "related_entities.clinic.parent.name",
-                        "en": "Health Center Name",
-                        "fr": "Nom du centre de santé",
-                        "es": "",
-                        "ne": "",
-                        "sw": ""
+                        "default": "Health Center Name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Health Center Name"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Nom du centre de santé"
+                            },
+                            {
+                                "locale": "es",
+                                "content": ""
+                            },
+                            {
+                                "locale": "ne",
+                                "content": ""
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "related_entities.clinic.parent.contact.name",
-                        "en": "Health Center Contact Name",
-                        "fr": "Nom de la santé Contact Center",
-                        "es": "",
-                        "ne": "",
-                        "sw": ""
+                        "default": "Health Center Contact Name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Health Center Contact Name"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Nom de la santé Contact Center"
+                            },
+                            {
+                                "locale": "es",
+                                "content": ""
+                            },
+                            {
+                                "locale": "ne",
+                                "content": ""
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
+                    },
+                    {
+                        "key": "related_entities.clinic.parent.external_id",
+                        "default": "Health Center External ID",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Health Center External ID"
+                            }
+                        ]
                     },
                     {
                         "key": "related_entities.clinic.parent.parent.name",
-                        "en": "District Hospital Name",
-                        "fr": "Nom de l'hôpital de district",
-                        "es": "",
-                        "ne": "",
-                        "sw": ""
+                        "default": "District Hospital Name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "District Hospital Name"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Nom de l'hôpital de district"
+                            },
+                            {
+                                "locale": "es",
+                                "content": ""
+                            },
+                            {
+                                "locale": "ne",
+                                "content": ""
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
+                    },
+                    {
+                        "key": "related_entities.clinic.parent.parent.external_id",
+                        "default": "District Hospital External ID",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "District Hospital External ID"
+                            }
+                        ]
                     },
                     {
                         "key": "related_entities.health_center.name",
-                        "en": "Health Center Name",
-                        "fr": "Nom du centre de santé",
-                        "es": "",
-                        "ne": "स्वास्थ्य संस्थाको नाम​",
-                        "sw": ""
+                        "default": "Health Center Name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Health Center Name"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Nom du centre de santé"
+                            },
+                            {
+                                "locale": "es",
+                                "content": ""
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "स्वास्थ्य संस्थाको नाम​"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "related_entities.health_center.contact.name",
-                        "en": "Health Center Contact Name",
-                        "fr": "Nom de la santé Contact Center",
-                        "es": "",
-                        "ne": "स्वास्थ्य संस्थाको सम्पर्क व्यक्ति",
-                        "sw": ""
+                        "default": "Health Center Contact Name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Health Center Contact Name"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Nom de la santé Contact Center"
+                            },
+                            {
+                                "locale": "es",
+                                "content": ""
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "स्वास्थ्य संस्थाको सम्पर्क व्यक्ति"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "related_entities.health_center.parent.name",
-                        "en": "District Hospital Name",
-                        "fr": "Nom de l'hôpital de district",
-                        "es": "",
-                        "ne": "जिल्ला अस्पतालको नाम",
-                        "sw": ""
+                        "default": "District Hospital Name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "District Hospital Name"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Nom de l'hôpital de district"
+                            },
+                            {
+                                "locale": "es",
+                                "content": ""
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "जिल्ला अस्पतालको नाम"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "tasks.0.state",
-                        "en": "State",
-                        "fr": "State",
-                        "es": "State",
-                        "ne": "State",
-                        "sw": "State"
+                        "default": "State",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "State"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "State"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "State"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "State"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "State"
+                            }
+                        ]
                     },
                     {
                         "key": "tasks.0.timestamp",
-                        "en": "Timestamp",
-                        "fr": "Timestamp",
-                        "es": "Timestamp",
-                        "ne": "Timestamp",
-                        "sw": "Timestamp"
+                        "default": "Timestamp",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Timestamp"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Timestamp"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Timestamp"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "Timestamp"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Timestamp"
+                            }
+                        ]
                     },
                     {
                         "key": "tasks.0.messages.0.to",
-                        "en": "To",
-                        "fr": "pour",
-                        "es": "",
-                        "ne": "पाउने",
-                        "sw": ""
+                        "default": "To",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "To"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "pour"
+                            },
+                            {
+                                "locale": "es",
+                                "content": ""
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "पाउने"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "tasks.0.messages.0.message",
-                        "en": "Message",
-                        "fr": "Message",
-                        "es": "",
-                        "ne": "सन्देश",
-                        "sw": ""
+                        "default": "Message",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Message"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Message"
+                            },
+                            {
+                                "locale": "es",
+                                "content": ""
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सन्देश"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "from",
-                        "en": "From",
-                        "fr": "Envoyé par",
-                        "es": "De",
-                        "ne": "पठाउने",
-                        "sw": ""
+                        "default": "From",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "From"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Envoyé par"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "De"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "पठाउने"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "sent_timestamp",
-                        "en": "Sent Timestamp",
-                        "fr": "Date",
-                        "es": "Fecha",
-                        "ne": "​रिपोर्ट पठाएको समय",
-                        "sw": ""
+                        "default": "Sent Timestamp",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Sent Timestamp"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Date"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Fecha"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "​रिपोर्ट पठाएको समय"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "daysoverdue",
-                        "en": "Days since patient visit",
-                        "fr": "Jours depuis visite du patient",
-                        "es": "",
-                        "ne": "बिरामीलाई भेटेको कति दिन भयो?​",
-                        "sw": ""
+                        "default": "Days since patient visit",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Days since patient visit"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Jours depuis visite du patient"
+                            },
+                            {
+                                "locale": "es",
+                                "content": ""
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "बिरामीलाई भेटेको कति दिन भयो?​"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": ""
+                            }
+                        ]
                     },
                     {
                         "key": "Patient ID",
-                        "en": "Patient ID",
-                        "fr": "Patient ID",
-                        "es": "Patient ID",
-                        "ne": "Patient ID",
-                        "sw": "Patient ID"
+                        "default": "Patient ID",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Patient ID"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Patient ID"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Patient ID"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "Patient ID"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Patient ID"
+                            }
+                        ]
                     },
                     {
                         "key": "responses",
-                        "en": "Responses",
-                        "fr": "Responses",
-                        "es": "Responses",
-                        "ne": "Responses",
-                        "sw": "Responses"
+                        "default": "Responses",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Responses"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Responses"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Responses"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "Responses"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Responses"
+                            }
+                        ]
                     },
                     {
                         "key": "sms_message.message",
-                        "en": "Incoming Message",
-                        "fr": "Incoming Message",
-                        "es": "Incoming Message",
-                        "ne": "Incoming Message",
-                        "sw": "Incoming Message"
+                        "default": "Incoming Message",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Incoming Message"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Incoming Message"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Incoming Message"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "Incoming Message"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Incoming Message"
+                            }
+                        ]
                     },
                     {
                         "key": "tasks",
-                        "en": "Outgoing Messages",
-                        "fr": "Outgoing Messages",
-                        "es": "Outgoing Messages",
-                        "ne": "Outgoing Messages",
-                        "sw": "Outgoing Messages"
+                        "default": "Outgoing Messages",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Outgoing Messages"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Outgoing Messages"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Outgoing Messages"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "Outgoing Messages"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Outgoing Messages"
+                            }
+                        ]
                     },
                     {
                         "key": "scheduled_tasks",
-                        "en": "Scheduled Tasks",
-                        "fr": "Scheduled Tasks",
-                        "es": "Scheduled Tasks",
-                        "ne": "Scheduled Tasks",
-                        "sw": "Scheduled Tasks"
+                        "default": "Scheduled Tasks",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Scheduled Tasks"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Scheduled Tasks"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Scheduled Tasks"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "Scheduled Tasks"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Scheduled Tasks"
+                            }
+                        ]
                     },
                     {
                         "key": "Search",
-                        "en": "Search",
-                        "fr": "Search",
-                        "es": "Search",
-                        "ne": "Search",
-                        "sw": "Search"
+                        "default": "Search",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Search"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Search"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Search"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "Search"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Search"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "pending",
+                        "default": "Pending Timestamp",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Pending Timestamp"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "scheduled",
+                        "default": "Scheduled Timestamp",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Scheduled Timestamp"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "received",
+                        "default": "Received Timestamp",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Received Timestamp"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "sent",
+                        "default": "Sent Timestamp",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Sent Timestamp"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "cleared",
+                        "default": "Cleared Timestamp",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Cleared Timestamp"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "muted",
+                        "default": "Muted Timestamp",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Muted Timestamp"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "task.type",
+                        "default": "Message Type",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Message Type"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "task.state",
+                        "default": "Message State",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Message State"
+                            }
+                        ]
                     }
-               ]
+                ]
             }
         }
     }

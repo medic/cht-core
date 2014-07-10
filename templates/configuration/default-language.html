@@ -1,0 +1,7 @@
+<label for="language">Default Language</label>
+<select id="language">
+{#locales}
+  <option value="{code}" {@if cond="'{locale}' === '{code}'"}selected="true"{/if}>{name}</option>
+{/locales}
+</select>
+<span class="help-block">edit translations by going to the Translations tab above</span>

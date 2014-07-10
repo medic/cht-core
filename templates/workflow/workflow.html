@@ -1,0 +1,46 @@
+<div class="tabbable">
+
+  <ul class="nav nav-tabs">
+    <li class="active">
+      <a href="#overview" data-toggle="tab">Overview</a>
+    </li>
+    <li>
+      <a href="#incoming" data-toggle="tab">Incoming Reports</a>
+    </li>
+    <li>
+      <a href="#outgoing" data-toggle="tab">Outgoing Messages</a>
+    </li>
+  </ul>
+  <div id="workflow-content" class="tab-content">
+    <div class="tab-pane active" id="overview">
+      {#overview}
+        {>"workflow/overview.html"/}
+      {/overview}
+    </div>
+    <div class="tab-pane" id="incoming">
+      {#incoming}
+        {>"workflow/incoming.html"/}
+      {/incoming}
+    </div>
+    <div class="tab-pane" id="outgoing">
+      {#outgoing}
+        {>"workflow/outgoing.html"/}
+      {/outgoing}
+    </div>
+  </div>
+
+</div>
+
+<div id="discard-changes-confirmation" class="modal hide fade" tabindex="-1">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">&times;</button>
+    <h3>Unsubmitted changes</h3>
+  </div>
+  <div class="modal-body">
+    Would you like to continue and discard changes made to the current language?
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn cancel" data-dismiss="modal">Cancel</button>
+    <button type="button" class="btn submit btn-primary">Continue</button>
+  </div>
+</div>

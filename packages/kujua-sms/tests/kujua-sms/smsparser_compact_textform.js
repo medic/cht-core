@@ -1,5 +1,4 @@
-var smsparser = require('views/lib/smsparser'),
-    jsonforms = require('views/lib/jsonforms');
+var smsparser = require('views/lib/smsparser');
 
 var def = {
     meta: {
@@ -154,6 +153,37 @@ exports['compact textforms handles mismatched types'] = function(test) {
     };
 
     var obj = smsparser.parse(def, doc);
+    test.same(obj, expectedObj);
+    test.done();
+};
+
+var defR = {
+    meta: {
+        code: 'R'
+    },
+    fields: {
+        name: {
+            labels: {
+                short: 'Name',
+                tiny: 'N'
+            },
+            type: 'string'
+        }
+    }
+};
+
+exports['compact textforms handles registrations starting with N'] = function(test) {
+    var doc = {
+        sent_timestamp: '1-13-12 15:35',
+        from: '+15551212',
+        message: 'R North West'
+    };
+
+    var expectedObj = {
+        name: 'North West'
+    };
+
+    var obj = smsparser.parse(defR, doc);
     test.same(obj, expectedObj);
     test.done();
 };

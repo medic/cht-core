@@ -1,0 +1,38 @@
+{#info}
+
+<div id="forms-configuration">
+<form id="forms-upload-form">
+  <div>
+    <fieldset>
+      <legend>Upload Forms</legend>
+      <div class="alert alert-error hide">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        <i class="icon-warning-sign"></i> <span>Upload failed</span>
+      </div>
+      <div class="alert alert-success hide">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        <i class="icon-check-sign"></i> <span>Upload succeeded!</span>
+      </div>
+      <button type="button" class="btn choose">
+        <i class="icon-upload"></i> Choose File
+      </button>
+      <span class="loading-wrapper">
+        <i class="icon-spinner icon-spin hide"></i>
+      </span>
+      <span class="help-block">The file should contain a JSON encoded list of form definitions.  Any existing forms will be overwritten.</span>
+      <div class="hide">
+        <input class="uploader" type="file" accept="application/json">
+      </div>
+    </fieldset>
+  </div>
+</form>
+
+<div>
+  <fieldset>
+  <legend>Forms Installed</legend>
+    <p id="forms-installed"></p>
+  </fieldset>
+</div>
+</div>
+
+{/info}

@@ -1,8 +1,6 @@
 var templates = require('duality/templates'),
     events = require('lib/events');
 
-events.addHelpers();
-
 exports.includesSubmittedByWhenDifferent = function(test) {
     var html = templates.render('incoming_message.html', {}, {
         related_entities: {

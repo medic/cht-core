@@ -379,3 +379,376 @@ exports['messages export preserves scheduled message due value'] = function(test
     test.same(expected, resp.body);
     test.done();
 }
+
+exports['requesting messages export with columns parameter'] = function(test) {
+    test.expect(1);
+
+    var reportedDate = 1331503842461;
+    var taskTimestamp = 1331503843461;
+
+    var expected = '"Reported Date","Reported From","Clinic Name","Clinic External ID","Pending Timestamp","Record UUID","Message UUID","Sent By","To Phone","Message Body"\n'
+        + '"'
+        + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z')
+        + '","+12229990000","Clinic 1","AAA","'
+        + moment(taskTimestamp).format('DD, MMM YYYY, HH:mm:ss Z')
+        + '","abc123z"\n';
+
+    var req = {
+        query: {
+            startkey: 'foo',
+            endkey: 'bar',
+            form: 'MSBC',
+            columns: '["reported_date","from","related_entities.clinic.name","related_entities.clinic.external_id","pending","_id"]'
+        },
+        method: 'GET',
+        userCtx: {
+            roles: ['national_admin']
+        }
+    };
+
+    // mockup the view data
+    var viewdata = {rows: [{
+        "key": [ true, "MSBC", 1331503842461 ],
+        "value": 1,
+        "doc": {
+            _id: 'abc123z',
+            reported_date: reportedDate,
+            from: '+12229990000',
+            form: "MSBC",
+            related_entities: {
+                clinic: {
+                    name: "Clinic 1",
+                    external_id: "AAA",
+                    contact: { name:"Paul", phone: "" },
+                    parent: {
+                        name: "Health Center 1",
+                        external_id: "BBB",
+                        contact: { name: "Eric" },
+                        parent: { 
+                            name: "District 1",
+                            external_id: "CCC"
+                        }
+                    }
+                }
+            },
+            tasks: [{
+                type: 'Test',
+                state: 'pending',
+                timestamp: taskTimestamp
+            }]
+        }
+    }]};
+
+    var resp = fakerequest.list(lists.export_messages, viewdata, req);
+    test.same(expected, resp.body);
+    test.done();
+}
+
+exports['requesting messages export with columns parameter appends messages'] = function(test) {
+    test.expect(1);
+
+    var reportedDate = 1331503842461;
+    var taskTimestamp = 1331503843461;
+
+    var expected = '"Reported Date","Reported From","Clinic Name","Message UUID","Sent By","To Phone","Message Body"\n'
+        + '"' + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z') + '"'
+        + ',"+12229990000","Clinic 1","z12","g man","bro","yo dawg"\n'
+        + '"' + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z') + '"'
+        + ',"+12229990000","Clinic 1"\n';
+
+    var req = {
+        query: {
+            startkey: 'foo',
+            endkey: 'bar',
+            form: 'MSBC',
+            columns: '["reported_date","from","related_entities.clinic.name"]'
+        },
+        method: 'GET',
+        userCtx: {
+            roles: ['national_admin']
+        }
+    };
+
+    // mockup the view data
+    var viewdata = {rows: [{
+        "key": [ true, "MSBC", 1331503842461 ],
+        "value": 1,
+        "doc": {
+            _id: 'abc123z',
+            reported_date: reportedDate,
+            from: '+12229990000',
+            form: "MSBC",
+            related_entities: {
+                clinic: {
+                    name: "Clinic 1",
+                    external_id: "AAA",
+                    contact: { name:"Paul", phone: "" },
+                    parent: {
+                        name: "Health Center 1",
+                        external_id: "BBB",
+                        contact: { name: "Eric" },
+                        parent: { 
+                            name: "District 1",
+                            external_id: "CCC"
+                        }
+                    }
+                }
+            },
+            tasks: [{
+                type: 'Test',
+                state: 'pending',
+                timestamp: taskTimestamp
+            }],
+            responses: [{
+                uuid: 'z12',
+                sent_by: 'g man',
+                to: 'bro',
+                message: 'yo dawg'
+            }]
+        }
+    }]};
+
+    var resp = fakerequest.list(lists.export_messages, viewdata, req);
+    test.same(expected, resp.body);
+    test.done();
+}
+
+exports['requesting messages export filtered by state'] = function(test) {
+    test.expect(1);
+
+    var reportedDate = 1331503842461;
+    var pendingTimestampA = moment().subtract('days', 21).valueOf();
+    var pendingTimestampB = moment().subtract('days', 20).valueOf();
+    var pendingTimestampC = moment().subtract('days', 10).valueOf();
+    var pendingTimestampD = moment().subtract('days', 9).valueOf();
+
+    var expected = '"Record UUID","Reported From","Message UUID","Sent By","To Phone","Message Body"\n'
+        + '"b","+12229990000"\n'
+        + '"c","+12229990000"\n';
+
+    var req = {
+        query: {
+            columns: '["_id","from"]',
+            filter_state: 'pending',
+            filter_state_from: '-20',
+            filter_state_to: '-10'
+        },
+        method: 'GET',
+        userCtx: {
+            roles: ['national_admin']
+        }
+    };
+
+    // mockup the view data
+    var viewdata = {rows: [
+        {
+            "key": [ 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'a',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'pending',
+                    timestamp: pendingTimestampA,
+                    state_history: [{
+                        state: 'pending',
+                        timestamp: pendingTimestampA
+                    }]
+                }]
+            }
+        },
+        {
+            "key": [ 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'b',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'pending',
+                    timestamp: pendingTimestampB,
+                    state_history: [{
+                        state: 'pending',
+                        timestamp: pendingTimestampB
+                    }]
+                }]
+            }
+        },
+        {
+            "key": [ 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'c',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'pending',
+                    timestamp: pendingTimestampC,
+                    state_history: [{
+                        state: 'pending',
+                        timestamp: pendingTimestampC
+                    }]
+                }]
+            }
+        },
+        {
+            "key": [ 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'd',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'pending',
+                    timestamp: pendingTimestampD,
+                    state_history: [{
+                        state: 'pending',
+                        timestamp: pendingTimestampD
+                    }]
+                }]
+            }
+        },
+        {
+            "key": [ 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'e',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'pending',
+                    timestamp: pendingTimestampA,
+                    state_history: [{
+                        state: 'sent',
+                        timestamp: pendingTimestampB
+                    }]
+                }]
+            }
+        }
+    ]};
+
+    var resp = fakerequest.list(lists.export_messages, viewdata, req);
+    test.same(expected, resp.body);
+    test.done();
+};
+
+exports['requesting messages export filtered by state in future with no upper bound'] = function(test) {
+    test.expect(1);
+
+    var reportedDate = 1331503842461;
+    var pendingTimestampA = moment().subtract('days', 11).valueOf();
+    var pendingTimestampB = moment().valueOf();
+    var pendingTimestampC = moment().add('days', 30).valueOf();
+    var pendingTimestampD = moment().add('days', 31).valueOf();
+
+    var expected = '"Record UUID","Reported From","Message UUID","Sent By","To Phone","Message Body"\n'
+        + '"b","+12229990000"\n'
+        + '"c","+12229990000"\n';
+
+    var req = {
+        query: {
+            columns: '["_id","from"]',
+            filter_state: 'scheduled',
+            filter_state_from: '-10'
+        },
+        method: 'GET',
+        userCtx: {
+            roles: ['national_admin']
+        }
+    };
+
+    // mockup the view data
+    var viewdata = {rows: [
+        {
+            "key": [ 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'a',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'scheduled',
+                    timestamp: pendingTimestampA,
+                    state_history: [{
+                        state: 'scheduled',
+                        timestamp: pendingTimestampA
+                    }]
+                }]
+            }
+        },
+        {
+            "key": [ 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'b',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'scheduled',
+                    timestamp: pendingTimestampA,
+                    state_history: [{
+                        state: 'scheduled',
+                        timestamp: pendingTimestampB
+                    }]
+                }]
+            }
+        },
+        {
+            "key": [ 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'c',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'scheduled',
+                    timestamp: pendingTimestampA,
+                    state_history: [{
+                        state: 'scheduled',
+                        timestamp: pendingTimestampC
+                    }]
+                }]
+            }
+        },
+        {
+            "key": [ 1331503842461 ],
+            "value": 1,
+            "doc": {
+                _id: 'e',
+                reported_date: reportedDate,
+                from: '+12229990000',
+                form: "MSBC",
+                tasks: [{
+                    type: 'Test',
+                    state: 'sent',
+                    timestamp: pendingTimestampA,
+                    state_history: [{
+                        state: 'sent',
+                        timestamp: pendingTimestampB
+                    }]
+                }]
+            }
+        }
+    ]};
+
+    var resp = fakerequest.list(lists.export_messages, viewdata, req);
+    test.same(expected, resp.body);
+    test.done();
+};

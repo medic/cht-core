@@ -1,0 +1,99 @@
+
+<form id="workflow-outgoing">
+
+  {>"partials/locale.html"/}
+
+  <fieldset>
+  {#schedule}
+    <legend>Schedule</legend>
+
+    <label>Start messages based on</label>
+    <select name="start_from">
+    {#fields}
+      <option value="{field_name}" {@if cond="'{start_from}' === '{field_name}'"}selected="true"{/if}>{title}</option>
+    {/fields}
+    </select>
+
+    <h4>Messages</h4>
+    <div class="repeat-container">
+      {#messages}
+        <div class="repeat-{@if cond="{template}"}template{:else}element{/if} message">
+          <p class="inline-form control-group message-description">
+            {#message}
+            <select name="send_day">
+              <option value="">Exactly</option>
+              <option value="monday" {@eq key="send_day" value="monday"}selected="true"{/eq}>On the Monday</option>
+              <option value="tuesday" {@eq key="send_day" value="tuesday"}selected="true"{/eq}>On the Tuesday</option>
+              <option value="wednesday" {@eq key="send_day" value="wednesday"}selected="true"{/eq}>On the Wednesday</option>
+              <option value="thursday" {@eq key="send_day" value="thursday"}selected="true"{/eq}>On the Thursday</option>
+              <option value="friday" {@eq key="send_day" value="friday"}selected="true"{/eq}>On the Friday</option>
+              <option value="saturday" {@eq key="send_day" value="saturday"}selected="true"{/eq}>On the Saturday</option>
+              <option value="sunday" {@eq key="send_day" value="sunday"}selected="true"{/eq}>On the Sunday</option>
+            </select>
+            {/message}
+            {#offset}
+            <input name="offset_value" type="number" class="input-mini" value="{value}" min="0"/>
+            <select name="offset_unit">
+              <option value="minutes" {@eq key="unit" value="minutes"}selected="true"{/eq}>minutes</option>
+              <option value="hours" {@eq key="unit" value="hours"}selected="true"{/eq}>hours</option>
+              <option value="days" {@eq key="unit" value="days"}selected="true"{/eq}>days</option>
+              <option value="weeks" {@eq key="unit" value="weeks"}selected="true"{/eq}>weeks</option>
+              <option value="months" {@eq key="unit" value="months"}selected="true"{/eq}>months</option>
+              <option value="years" {@eq key="unit" value="years"}selected="true"{/eq}>years</option>
+            </select>
+            {/offset}
+            after the
+            <span class="date-property-name">
+              {@eq key="start_from" value="reported_date"}registration date{/eq}
+              {@eq key="start_from" value="lmp_date"}LMP date{/eq}
+            </span>
+            send the following message to the
+            {#message}
+            <select name="recipient">
+              <option value="reporting_unit" {@eq key="recipient" value="reporting_unit"}selected="true"{/eq}>registrant</option>
+              <option value="parent" {@eq key="recipient" value="parent"}selected="true"{/eq}>registrant's supervisor</option>
+            </select>
+            {/message}
+          </p>
+          
+          <textarea name="message" class="input-xxlarge translated" data-message="{content}" data-messages="{contents}">{content}</textarea>
+
+          <div class="toggle">
+            <h5 class="toggle-head">
+              Advanced
+              <i class="icon-chevron-down"></i>
+              <i class="icon-chevron-up"></i>
+            </h5>
+            <div class="toggle-body">
+              <p class="inline-form group control-group">
+                This message is part of group
+                <input name="group" type="number" class="input-mini" value="{message.group}" min="0"/>
+                <span class="send_time" 
+                  {@if cond="['', 'hours', 'minutes'].indexOf('{offset.unit}') != -1"}style="display:none"{/if}
+                >
+                    and should be sent at {#sendTime}{>"partials/time.html"/}{/sendTime}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <p>
+            <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
+          </p>
+        </div>
+      {/messages}
+      <p>
+        <a href="#" class="add btn"><i class="icon-plus"></i> Add message</a>
+      </p>
+    </div>
+    <p>
+      <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
+    </p>
+  {/schedule}
+  </fieldset>
+
+  <div class="footer">
+    <button type="button" class="btn submit btn-primary">Save</button>
+    <span class="status"></span>
+  </div>
+</form>
