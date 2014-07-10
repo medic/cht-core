@@ -261,7 +261,7 @@ var renderReportingTotals = function(totals, doc) {
 var onRecordClick = function(ev) {
     ev.preventDefault();
     ev.stopPropagation();
-    var $tr = $(ev.currentTarget),
+    var $tr = $(ev.target).closest('tr'),
         id = $tr.attr('rel'),
         req = {};
     // get target el from event context

@@ -124,9 +124,6 @@
     .first-column-hc {
         width: 67%;
     }
-    .status-column {
-        width: 20%;
-    }
     .mini-pie {
       font-size: 2em;
       margin-top: 5px;
@@ -174,6 +171,7 @@
 
 #reporting-data {
     .data-record {
+        background-color:#ebebeb;
       .period {
           color: @gold;
           font-weight: bold;
@@ -183,22 +181,17 @@
           .droidBoldItalic;
           /* too italics? font-style: italic;*/
       }
-      .status p {
-          font-size: 8em;
-          color: @grey;
-          position: relative;
-          span {
-              position: absolute;
-              top: -0.6em;
-              left: 8px;
-          }
-          .important {
-              color: @red;
-          }
-          .success {
-              color: @green;
-          }
-      }
+        .status {
+            text-align: center;
+            color: @grey;
+
+            .important {
+                color: @red;
+            }
+            .success {
+                color: @green;
+            }
+        }
       .phone {
           font-family: Georgia, serif;
           font-weight: normal;
@@ -216,6 +209,7 @@
         padding: 0;
         td, th {
             padding: 20px 0 20px 30px;
+            vertical-align: middle;
         }
         th {
             border: none;
@@ -224,16 +218,16 @@
         table {
             margin: 0;
         }
-        tr:nth-child(odd) td {
-            background-color:#ebebeb;
-        }
         .data-record[rel]:hover {
             cursor: pointer;
         }
         .data-record-details {
           font-size: .8em;
           td, th, .loading {
-            padding: 10px 0 10px 60px;
+            padding: 10px 0 10px 30px;
+          }
+          td:first-child {
+            width: 30%;
           }
           /*.sms-message-data {
               overflow: auto;
@@ -242,9 +236,7 @@
               padding: 0;
           }
           .data-records-table {
-              /*height: 400px;*/
               overflow: auto;
-              width: 700px;
           }
           .responses ul, .errors ul {
             padding: 0;
@@ -382,15 +374,17 @@
 
 @media (max-width: 767px) {
     #stats table {
-        font-size: 0.8em;
-        #reporting-data .data-records table {
+        .data-record, thead {
             font-size: 0.8em;
         }
     }
     #stats td,
     #stats th,
     #reporting-data .data-records th,
-    #reporting-data .data-records td {
+    #reporting-data .data-records td,
+    #reporting-data .data-records .data-record-details td,
+    #reporting-data .data-records .data-record-details th, 
+    #reporting-data .data-records .data-record-details .loading {
         padding-left: 10px;
     }
 }

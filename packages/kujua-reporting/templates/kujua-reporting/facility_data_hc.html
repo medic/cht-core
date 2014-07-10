@@ -43,12 +43,10 @@
                 {/reporting_phone}
               </td>
               <td class="status">
-                <p>
-                  <span class="{^not_submitted}{?is_valid}success{:else}important{/is_valid}{/not_submitted}">&middot;</span>
-                </p>
+                <span class="{^not_submitted}{?is_valid}success{:else}important{/is_valid}{/not_submitted}"><i class="fa fa-square"></i></span>
               </td>
             </tr>
-            <tr class="hide data-record-details"><td colspan="4"></td></tr>
+            <tr class="data-record-details"><td colspan="4"></td></tr>
             {/records}
           </tbody>
         </table>
