@@ -160,11 +160,11 @@ var renderReportingTotals = function(totals, doc) {
         });
     }
 
-    $('#totals .chart').html('');
+    $('#totals .chart .chartwrapper').html('');
 
     var chart = charts.pie(
         [totals.incomplete, totals.not_submitted, totals.complete],
-        {selector: '#totals .chart',
+        {selector: '#totals .chart .chartwrapper',
          cx: 110,
          cy: 150,
          radius: 100,
@@ -507,7 +507,8 @@ var renderReports = function(err, facilities) {
         , rows = []
         , template = 'kujua-reporting/facility.html'
         , data_template = 'kujua-reporting/facility_data.html'
-        , getReportingData = utils.getRows;
+        , getReportingData = utils.getRows
+        , config = sms_utils.info['kujua-reporting'];
 
     if (utils.isHealthCenter(doc)) {
         template = 'kujua-reporting/facility_hc.html';
@@ -515,10 +516,13 @@ var renderReports = function(err, facilities) {
         getReportingData = utils.getRowsHC;
     }
 
-
+    var form_config = _.findWhere(config, {
+        code: dates.form
+    });
     $('[data-page=reporting_rates] #content').html(
         templates.render(template, req, {
-            doc: doc
+            doc: doc,
+            date_nav: utils.getDateNav(dates, form_config.reporting_freq)
         })
     );
 

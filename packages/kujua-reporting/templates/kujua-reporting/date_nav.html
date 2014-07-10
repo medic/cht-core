@@ -7,22 +7,19 @@
     <a href="{baseURL}/reporting/{form}/{_id}?{query_params}">{@translate value="{text}"/}</a>
     </li>
   {/date_nav}
-  <li class="dropdown">
-      <a class="dropdown-toggle"
-         data-toggle="dropdown"
-         href="#">
-         {@translate value="Change time unit"/}
-          <b class="caret"></b>
-        </a>
-      <ul class="dropdown-menu">
-        <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=week"
+  <div class="btn-group">
+    <button type="button" class="btn btn-default dropdown-toggle">
+      {@translate value="Change time unit"/} <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+      <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=week"
           >{@translate value="Week"/}</a></li>
-        <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=month"
+      <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=month"
           >{@translate value="Month"/}</a></li>
-        <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=quarter"
+      <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=quarter"
           >{@translate value="Quarter"/}</a></li>
-        <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=year"
+      <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=year"
           >{@translate value="Year"/}</a></li>
-      </ul>
-  </li>
+    </ul>
+  </div>
 </ul>

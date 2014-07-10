@@ -7,7 +7,7 @@ var events = require('duality/events'),
 
 exports.pie = function (values, opts) {
     var opts = opts || {},
-        selector = opts.selector || '#totals .chart',
+        selector = opts.selector || '#totals .chart .chartwrapper',
         cx = opts.cx || 110,
         cy = opts.cy || 150,
         radius = opts.radius || 100,
