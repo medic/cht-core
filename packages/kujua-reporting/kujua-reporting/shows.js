@@ -572,9 +572,9 @@ var renderReports = function(err, facilities) {
             var color = Raphael.hsb(val/300, .75, .85);
 
             if (val === 0) {
-                paper.addClass('icon-remove-sign');
+                paper.addClass('fa-times');
             } else if (val == 100) {
-                paper.addClass('icon-ok-sign');
+                paper.addClass('fa-check');
             } else {
                 var chart = charts.pie(
                     [val, 100 - val],

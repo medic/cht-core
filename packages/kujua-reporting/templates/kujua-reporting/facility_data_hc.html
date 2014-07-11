@@ -5,13 +5,13 @@
       <div class="name">{name}</div>
       {?phone}
       <span class="add-message">
-        <button class="btn btn-primary btn-mini send-message" data-send-to="{phone}">
+        <button class="btn btn-primary btn-sm send-message" data-send-to="{phone}">
           <i class="fa fa-envelope"></i>
         </button>
       </span>
       {/phone}
     </td>
-    <td class="valid-percent"><em>{valid_percent}%</em> <span class="mini-pie"></span></td>
+    <td class="valid-percent"><em>{valid_percent}%</em> <span class="mini-pie fa"></span></td>
   </tr>
   <tr class="data-records-list">
     <td colspan="2" class="data-records">
@@ -34,7 +34,7 @@
                 {?reporting_phone}
                   {reporting_phone}
                   <span class="add-message">
-                    <button class="btn btn-primary btn-mini send-message" data-send-to="{phone}" data-doc="{.id}">
+                    <button class="btn btn-primary btn-sm send-message" data-send-to="{phone}" data-doc="{.id}">
                       <i class="fa fa-reply"></i>
                     </button>
                   </span>

@@ -21,7 +21,6 @@
 }
 
 #totals {
-    border-bottom: 1px solid @lightgrey;
     h3 {
         font-size: 1em;
         text-align: center;
@@ -73,7 +72,11 @@
 }
 
 #date-nav {
-    margin: 1em auto 0 auto;
+    margin: 0 auto;
+    padding: 1em 0;
+    clear: both;
+    border-top: 1px solid @lightgrey;
+    border-bottom: 1px solid @lightgrey;
     .title h3 {
         color: @grey;
         .droidItalic;
@@ -127,14 +130,14 @@
         width: 67%;
     }
     .mini-pie {
-      font-size: 2em;
-      margin-top: 5px;
-    }
-    .mini-pie.icon-remove-sign {
-      color: @red;
-    }
-    .mini-pie.icon-ok-sign {
-      color: @green;
+        font-size: 2em;
+        margin-top: 5px;
+        &.fa-times {
+          color: @red;
+        }
+        &.fa-check {
+          color: @green;
+        }
     }
 }
 
@@ -147,28 +150,27 @@
     line-height: 1.23em;
 }
 
-#content .pagination {
-    margin-left: auto;
-    margin-right: auto;
-    width: 26em;
-}
+#content {
+    .pagination {
+        margin-left: auto;
+        margin-right: auto;
+        width: 26em;
+    }
 
-#content .field .content {
-    margin-left: 0;
-    min-width: 0;
-}
-
-#content .field {
-    padding: 1em 0 0 0;
-}
-
-#content .field .label label {
-    margin-right: 1em;
-}
-
-#content .field .content .inner span {
-    padding-top: .675em;
-    display: block;
+    .field {
+        padding: 1em 0 0 0;
+        .label label {
+            margin-right: 1em;
+        }
+        .content {
+            margin-left: 0;
+            min-width: 0;
+            .inner span {
+                padding-top: .675em;
+                display: block;
+            }
+        }
+    }
 }
 
 #reporting-data {
@@ -234,9 +236,6 @@
           td:first-child {
             width: 30%;
           }
-          /*.sms-message-data {
-              overflow: auto;
-          }*/
           > td {
               padding: 0;
           }

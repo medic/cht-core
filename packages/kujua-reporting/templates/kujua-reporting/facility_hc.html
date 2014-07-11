@@ -24,6 +24,7 @@
 </div>
 <div id="date-nav">
   <div class="row">
+    {>"kujua-reporting/date_nav.html"/}
   </div>
 </div>
 <div id="stats">
@@ -44,7 +45,7 @@
     <div class="col-sm-3 col-xs-12 stats-meta">
       <div><h2>{name} <br />{@translate value="Health Center"/}</h2></div>
       <div>
-        <h3>{@translate value="Health Center Contact"/}</h3><!--TODO add title for contact? {contact.title}//-->
+        <h3>{@translate value="Health Center Contact"/}</h3>
         <div class="contact-name">
         {?contact.name}
           <strong>{contact.name}</strong>
@@ -56,7 +57,7 @@
         <div class="contact-phone">
           {contact.phone}
           <span class="add-message">
-            <button class="btn btn-primary btn-mini send-message" data-send-to="{contact.phone}">
+            <button class="btn btn-primary btn-sm send-message" data-send-to="{contact.phone}">
               <i class="fa fa-envelope"></i>
             </button>
           </span>
@@ -126,7 +127,6 @@
         </span>
       </div>
   </div>
-  {>"kujua-reporting/page_footer.html"/}
 
 {/doc}
 
