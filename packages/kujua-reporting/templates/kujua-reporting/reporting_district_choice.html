@@ -10,13 +10,13 @@
         </h4>
         {#districts}
         <div class="row-fluid district {^one_form}hide{/one_form}">
-          <div class="district-name facility" data-form-code="{code}" data-facility-id="{id}">
+          <div class="district-name facility" data-form-code="{code}" rel="{id}">
             <h5><i class="fa fa-building"></i> {name}</h5>
           </div>
         </div>
           {#children}
           <div class="row-fluid {^one_form}hide{/one_form}">
-            <div class="child-name facility" data-form-code="{code}" data-facility-id="{_id}">
+            <div class="child-name facility" data-form-code="{code}" rel="{_id}">
               <i class="fa fa-plus-square"></i> {name}
             </div>
           </div>

@@ -74,21 +74,12 @@
 
 #date-nav {
     margin: 1em auto 0 auto;
-    .title {
-        h3 {
-            color: @grey;
-            .droidItalic;
-            font-size: 1.12em;
-            font-weight: normal;
-            margin-top: 0.7em;
-            margin-bottom: 0;
-        }
-        .icon-time {
-            font-style: normal;
-            font-size: 1.65em;
-            margin-right: .35em;
-            vertical-align: middle;
-        }
+    .title h3 {
+        color: @grey;
+        .droidItalic;
+        font-size: 1.12em;
+        font-weight: normal;
+        margin: 0.7em 1em 0 0;
     }
     .row {
         margin: 0 10px;
@@ -96,6 +87,9 @@
     }
     .nav {
         display: inline-block;
+    }
+    .btn-group {
+        margin: 3px;
     }
 }
 
@@ -213,6 +207,9 @@
         color: @green;
         font-weight: bold;
     }
+    tr[rel] {
+        cursor: pointer;
+    }
     .data-records {
         padding: 0;
         td, th {
@@ -226,7 +223,7 @@
         table {
             margin: 0;
         }
-        .data-record[rel]:hover {
+        .data-record[rel] {
             cursor: pointer;
         }
         .data-record-details {

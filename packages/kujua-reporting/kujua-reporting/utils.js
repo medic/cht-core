@@ -481,8 +481,7 @@ exports.getRows = function(facilities, reports, dates) {
                 records: [],
                 clinics: [],
                 valid: 0,
-                valid_percent: 0,
-                url: url
+                valid_percent: 0
             };
         }
 
@@ -524,7 +523,9 @@ exports.getRows = function(facilities, reports, dates) {
 
     processNotSubmitted(rows, dates);
 
-    return _.sortBy(rows, function (r) { return r.valid_percent; });
+    return _.sortBy(rows, function (r) { 
+        return r.valid_percent; 
+    });
 };
 
 /*

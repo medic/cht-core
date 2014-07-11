@@ -362,21 +362,24 @@ function renderReporting(doc, req) {
 
 };
 
+function renderFacility(formCode, facilityId) {
+    var appdb = db.use(duality.getDBURL());
+    dates.form = formCode;
+    appdb.getDoc(facilityId, function(err, facility) {
+        if (err) {
+            return console.log(err);
+        }
+        facility_doc = facility;
+        getViewChildFacilities(facility, renderReports);
+    });
+};
+
 function registerInboxListeners() {
     var appdb = db.use(duality.getDBURL());
     $('body').on('click', '#reporting-district-choice .facility', function(e) {
         e.preventDefault();
         var row = $(e.target).closest('.facility');
-        var formCode = row.attr('data-form-code');
-        dates.form = formCode;
-        var facilityId = row.attr('data-facility-id');
-        appdb.getDoc(facilityId, function(err, facility) {
-            if (err) {
-                return console.log(err);
-            }
-            facility_doc = facility;
-            getViewChildFacilities(facility, renderReports);
-        });
+        renderFacility(row.attr('data-form-code'), row.attr('rel'));
     });
     $('body').on('click', '#date-nav a', function(e) {
         e.preventDefault();
@@ -391,6 +394,11 @@ function registerInboxListeners() {
             startyear: link.attr('data-startyear')
         });
         getViewChildFacilities(facility_doc, renderReports);
+    });
+    $('body').on('click', '#reporting-data tr[rel]', function(e) {
+        e.preventDefault();
+        var facilityId = $(e.target).closest('tr').attr('rel');
+        renderFacility(dates.form, facilityId);
     });
 };
 
