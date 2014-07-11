@@ -80,6 +80,10 @@ $(function () {
     });
   });
   $('#date-from, #date-to').datepicker().on('show', function(ev) {
+    if ($(ev.target).is('.disabled')) {
+      $('.datepicker').hide();
+      return;
+    }
     $('.dropdown.open .dropdown-menu').dropdown('toggle');
     // Change position when rendering in mobile
     if ($('#back').is(':visible')) {
@@ -93,9 +97,8 @@ $(function () {
         'margin-left': $(this).is('#date-to') ? '-7%' : ''
       });
     }
-    $('.datepicker').addClass('open');
+    $('.datepicker').addClass('open dropdown-menu mm-dropdown-menu mm-dropdown-menu-inverse');
   });
-  $('.datepicker').addClass('dropdown-menu mm-dropdown-menu mm-dropdown-menu-inverse');
 
   var iframe = $('#add-record-panel iframe');
   var src = iframe.data('src');
@@ -162,6 +165,9 @@ $(function () {
 
   $('#toggle-filters').on('click', function(e) {
     e.preventDefault();
+    if ($('#toggle-filters').find('.mm-icon.mm-icon-disabled').length) {
+      return;
+    }
     $('.row.filters').toggleClass('advanced');
   });
 
@@ -187,6 +193,10 @@ $(function () {
   });
 
   $('#download').on('click', function(e) {
+    if ($('#download').find('.mm-button.disabled').length) {
+      e.preventDefault();
+      return;
+    }
     angular.element($('body')).scope().$apply(function(scope) {
       var url = $('html').data('base-url');
       var type = scope.filterType === 'message' ? 'messages' : 'forms';

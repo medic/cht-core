@@ -78,7 +78,7 @@
                 </ul>
               </span>
               <a id="toggle-filters" href="#" title="Search">
-                <div class="mm-icon mm-icon-inverse">
+                <div class="mm-icon mm-icon-inverse" ng-class="{'mm-icon-disabled': filterType === 'reporting'}">
                   <span class="fa fa-search"></span>
                 </div>
               </a>
@@ -145,7 +145,7 @@
 
           <span class="basic-filters">
             <span id="formTypeDropdown" class="dropdown mm-dropdown mm-multiple-select" data-label-no-filter="All form types" data-filter-label="form types">
-              <span id="form_type" class="mm-button mm-button-nudge-down" data-toggle="dropdown" ng-class="{'mm-button-disabled': filterType === 'message', disabled: filterType === 'message'}">
+              <span id="form_type" class="mm-button mm-button-nudge-down" data-toggle="dropdown" ng-class="{'mm-button-disabled': filterType !== 'form', disabled: filterType !== 'form'}">
                 <span class="mm-button-icon">
                   <span class="fa fa-list-alt"></span>
                 </span>
@@ -165,7 +165,7 @@
             </span>
 
             <span id="facilityDropdown" class="dropdown mm-dropdown mm-multiple-select" data-label-no-filter="All facilities" data-filter-label="facilities">
-              <span id="facility" class="mm-button" data-toggle="dropdown">
+              <span id="facility" class="mm-button" data-toggle="dropdown" ng-class="{'mm-button-disabled': filterType === 'reporting', disabled: filterType === 'reporting'}">
                 <span class="mm-button-icon">
                   <span class="fa fa-hospital-o"></span>
                 </span>
@@ -183,7 +183,7 @@
             </span>
 
             <span class="dropdown mm-dropdown pair-left">
-              <span id="date-from" class="mm-button" data-date="{~lb}{~lb}filterDate.from | date : 'yyyy-MM-dd'{~rb}{~rb}" data-date-format="yyyy-mm-dd">
+              <span id="date-from" class="mm-button" data-date="{~lb}{~lb}filterDate.from | date : 'yyyy-MM-dd'{~rb}{~rb}" data-date-format="yyyy-mm-dd" ng-class="{'mm-button-disabled': filterType === 'reporting', disabled: filterType === 'reporting'}">
                 <span class="mm-button-dropdown">
                   <span class="fa fa-chevron-down"></span>
                 </span>
@@ -194,7 +194,7 @@
             </span><!--
             comment required to keep dropdowns flush
             --><span class="dropdown mm-dropdown pair-right">
-              <span id="date-to" class="mm-button" data-date="{~lb}{~lb}filterDate.to | date : 'yyyy-MM-dd'{~rb}{~rb}" data-date-format="yyyy-mm-dd">
+              <span id="date-to" class="mm-button" data-date="{~lb}{~lb}filterDate.to | date : 'yyyy-MM-dd'{~rb}{~rb}" data-date-format="yyyy-mm-dd" ng-class="{'mm-button-disabled': filterType === 'reporting', disabled: filterType === 'reporting'}">
                 <span class="mm-button-dropdown">
                   <span class="fa fa-chevron-down"></span>
                 </span>
@@ -205,7 +205,7 @@
             </span>
 
             <span id="validDropdown" class="dropdown mm-dropdown">
-              <span id="status" class="mm-button" data-toggle="dropdown" ng-class="{'mm-button-disabled': filterType === 'message', disabled: filterType === 'message'}">
+              <span id="status" class="mm-button" data-toggle="dropdown" ng-class="{'mm-button-disabled': filterType !== 'form', disabled: filterType !== 'form'}">
                 <span class="mm-button-icon">
                   <span class="fa fa-check-circle-o"></span>
                 </span>
@@ -231,9 +231,9 @@
 
           <span class="advanced-filters">
             <div class="input-group">
-              <input id="advanced" type="text" class="form-control">
+              <input id="advanced" type="text" class="form-control" disabled="{~lb}{~lb}filterType !== 'reporting'{~rb}{~rb}">
               <span class="input-group-btn">
-                <button class="btn btn-default" type="button">
+                <button class="btn btn-default" type="button" ng-class="{disabled: filterType === 'reporting'}">
                   <span class="fa fa-search"></span>
                 </button>
               </span>
@@ -242,7 +242,7 @@
 
           <span class="filter-actions">
             <a href="#" id="download" title="Download all messages" rel="external">
-              <span class="mm-button">
+              <span class="mm-button" ng-class="{'mm-button-disabled': filterType === 'reporting', disabled: filterType === 'reporting'}">
                 <span class="mm-button-icon">
                   <span class="fa fa-arrow-down"></span>
                 </span>
