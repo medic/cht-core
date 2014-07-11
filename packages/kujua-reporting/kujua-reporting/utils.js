@@ -627,7 +627,6 @@ var processNotSubmitted = exports.processNotSubmitted = function(rows, dates) {
         while (date >= enddate) {
 
             var extra = {},
-                url = duality.getBaseURL() + '/add/data_record?clinic=' + row.id,
                 val = weekly_reports ? getWeek(date) : getMonth(date)+1;
 
             var empty_report = {
@@ -636,13 +635,10 @@ var processNotSubmitted = exports.processNotSubmitted = function(rows, dates) {
             }
 
             if (weekly_reports) {
-                extra.url = url + '&week_number=' + val;
                 extra.week_number = val;
             } else {
-                extra.url = url + '&month=' + val;
                 extra.month = val;
             }
-
 
             if (!_.contains(recorded_time_frames, getYear(date) + '' + pat(val))) {
                 _.extend(empty_report, extra);
