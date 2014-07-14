@@ -10,6 +10,8 @@ before_script:
   - curl -X PUT localhost:5984/medic
   - npm install kanso -g
   - npm install grunt-cli -g
+  - bower cache clean
+  - rm -rf bower_components
   - grunt -v
   - kanso push http://localhost:5984/medic
 
