@@ -27,6 +27,14 @@ npm install kanso -g
 npm install grunt-cli -g
 ```
 
+### Bower
+
+[Bower](http://bower.io/) is required to build.
+
+```
+npm install bower -g
+```
+
 ## Develop
 
 ### Push the couchapp
