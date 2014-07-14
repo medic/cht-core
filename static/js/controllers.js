@@ -52,8 +52,8 @@ inboxControllers.directive('mmSender', function() {
 });
 
 inboxControllers.controller('InboxCtrl', 
-  ['$scope', '$route', 'Facility', 'Settings', 
-  function ($scope, $route, Facility, Settings) {
+  ['$scope', '$route', '$location', 'Facility', 'Settings', 
+  function ($scope, $route, $location, Facility, Settings) {
 
     $scope.forms = [];
     $scope.facilities = [];
@@ -104,7 +104,12 @@ inboxControllers.controller('InboxCtrl',
     });
 
     $scope.setMessage = function(id) {
+      $location.path('/' + $scope.filterModel.type + '/' + id);
+    };
+
+    $scope.selectMessage = function(id) {
       $scope.selected = undefined;
+      _selectedDoc = id;
       if (id) {
         $scope.messages.forEach(function(message) {
           if (message._id === id) {
@@ -197,6 +202,7 @@ inboxControllers.controller('InboxCtrl',
     };
 
     var _currentQuery;
+    var _selectedDoc;
 
     $scope.advancedFilter = function(options) {
       options = options || {};
@@ -231,6 +237,9 @@ inboxControllers.controller('InboxCtrl',
         angular.element($('body')).scope().$apply(function(scope) {
           scope.update(data.rows);
           scope.totalMessages = data.total_rows;
+          if (_selectedDoc) {
+            scope.selectMessage(_selectedDoc);
+          }
         });
       };
       $('body').trigger('updateMessages', options);
@@ -252,17 +261,19 @@ inboxControllers.controller('InboxCtrl',
 ]);
 
 inboxControllers.controller('MessageCtrl', 
-  ['$scope', '$route', 'Facility', 'Settings', 
-  function ($scope) {
+  ['$scope', '$route', 
+  function ($scope, $route) {
     $scope.filterModel.type = 'messages';
+    $scope.selectMessage($route.current.params.doc);
   }
 ]);
 
 
 inboxControllers.controller('FormCtrl', 
-  ['$scope', '$route', 'Facility', 'Settings', 
-  function ($scope) {
+  ['$scope', '$route', 
+  function ($scope, $route) {
     $scope.filterModel.type = 'forms';
+    $scope.selectMessage($route.current.params.doc);
   }
 ]);
 
@@ -271,6 +282,7 @@ inboxControllers.controller('ReportCtrl',
   ['$scope', 
   function ($scope) {
     $scope.filterModel.type = 'reports';
+    $scope.selectMessage();
     $('body').trigger('renderReports');
   }
 ]);

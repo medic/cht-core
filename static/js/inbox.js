@@ -223,11 +223,11 @@ var inboxApp = angular.module('inboxApp', [
 inboxApp.config(['$routeProvider',
   function($routeProvider) {
     $routeProvider
-      .when('/messages', {
+      .when('/messages/:doc?', {
         templateUrl: '/partials/messages.html',
         controller: 'MessageCtrl'
       })
-      .when('/forms', {
+      .when('/forms/:doc?', {
         templateUrl: '/partials/messages.html',
         controller: 'FormCtrl'
       })
