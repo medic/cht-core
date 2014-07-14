@@ -1,0 +1,89 @@
+<div class="row header" ng-cloak>
+  <div class="inner">
+
+    <a href="#">
+      <div class="logo">
+        <img alt="Medic" src="{baseURL}/static/img/medic-logo-light.svg" />
+      </div>
+    </a>
+
+    <div class="welcome">
+      <div>Medic Mobile</div>
+      <div>INBOX</div>
+    </div>
+
+    <div class="extras">
+      <a href="#" rel="external" title="Send message" class="send-message">
+        <div class="mm-icon mm-icon-nudge-up mm-icon-inverse">
+          <span class="mm-icon-overlay mm-icon-overlay-before fa fa-plus-circle"></span>
+          <span class="fa fa-envelope"></span>
+        </div>
+      </a>
+      <span>
+        <a id="send-record-button" href="#" rel="external" title="Send form" data-toggle="dropdown">
+          <div class="mm-icon mm-icon-nudge-up mm-icon-inverse mm-icon-disabled">
+            <span class="mm-icon-overlay mm-icon-overlay-before fa fa-plus-circle"></span>
+            <span class="fa fa-list-alt"></span>
+          </div>
+        </a>
+        <span id="add-record-panel">
+          <ul class="dropdown-menu">
+            <li>
+              <button type="button" class="cancel close">×</button>
+              <iframe data-src="{info.muvuku_webapp_url}"></iframe>
+            </li>
+          </ul>
+        </span>
+        <a id="toggle-filters" href="#" rel="external" title="Search">
+          <div class="mm-icon mm-icon-inverse" ng-class="{'mm-icon-disabled': filterModel.type === 'reports'}">
+            <span class="fa fa-search"></span>
+          </div>
+        </a>
+      </span>
+
+      <span class="dropdown">
+        <a href="#" rel="external" data-toggle="dropdown">
+          <div class="mm-icon mm-icon-inverse">
+            <span class="fa fa-cog"></span>
+          </div>
+        </a>
+        <ul role="menu" class="dropdown-menu mm-dropdown-menu
+                  mm-dropdown-menu-fullscreen mm-dropdown-menu-inverse">
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" href="{baseURL}/settings" rel="external">Administrative Options</a>
+          </li>
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" href="#" rel="external" id="logout">Log Out</a>
+          </li>
+        </ul>
+      </span>
+    </div>
+
+    <div class="tabs">
+      <a href="#/messages/" ng-class="{'selected': filterModel.type === 'messages'}">
+        <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'messages'}">
+          <span class="fa fa-envelope"></span>
+          <span class="mm-badge-overlay mm-badge-overlay-top">
+            <span class="mm-badge mm-badge-red mm-badge-border">405</span>
+          </span>
+        </div>
+        <div class="button-label">Messages</div>
+      </a>
+      <a href="#/forms/" ng-class="{'selected': filterModel.type === 'forms'}">
+        <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'forms'}">
+          <span class="fa fa-list-alt"></span>
+          <span class="mm-badge-overlay mm-badge-overlay-top">
+            <span class="mm-badge mm-badge-red mm-badge-border">15</span>
+          </span>
+        </div>
+        <div class="button-label">Forms</div>
+      </a>
+      <a href="#/reports/" id="reports-tab" ng-class="{'selected': filterModel.type === 'reports'}">
+        <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'reports'}">
+          <span class="fa fa-bar-chart-o"></span>
+        </div>
+        <div class="button-label">Reports</div>
+      </a>
+    </div>
+  </div>
+</div>

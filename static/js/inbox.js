@@ -31,7 +31,7 @@ $(function () {
       forms.push($(this).data('form'));
     });
     angular.element($('body')).scope().$apply(function(scope) {
-      scope.setFilterForms(forms);
+      scope.filterModel.forms = forms;
     });
   });
 
@@ -41,7 +41,7 @@ $(function () {
       ids.push($(this).data('facility-id'));
     });
     angular.element($('body')).scope().$apply(function(scope) {
-      scope.setFilterFacilities(ids);
+      scope.filterModel.facilities = ids;
     });
   });
 
@@ -70,13 +70,13 @@ $(function () {
   $('#date-from').datepicker().on('changeDate', function(ev) {
     $(this).datepicker('hide');
     angular.element($('body')).scope().$apply(function(scope) {
-      scope.setFilterDateFrom(ev.date.getTime());
+      scope.filterModel.date.from = ev.date.getTime();
     });
   });
   $('#date-to').datepicker().on('changeDate', function(ev) {
     $(this).datepicker('hide');
     angular.element($('body')).scope().$apply(function(scope) {
-      scope.setFilterDateTo(ev.date.getTime());
+      scope.filterModel.date.to = ev.date.getTime();
     });
   });
   $('#date-from, #date-to').datepicker().on('show', function(ev) {
@@ -199,7 +199,7 @@ $(function () {
     }
     angular.element($('body')).scope().$apply(function(scope) {
       var url = $('html').data('base-url');
-      var type = scope.filterType === 'message' ? 'messages' : 'forms';
+      var type = scope.filterModel.type === 'message' ? 'messages' : 'forms';
       url += '/export/' + type;
       var params = {
         startkey: '[9999999999999,{}]',
@@ -214,4 +214,29 @@ $(function () {
   });
 });
 
-angular.module('inboxApp', ['inboxControllers', 'inboxServices']);
+var inboxApp = angular.module('inboxApp', [
+  'ngRoute',
+  'inboxControllers',
+  'inboxServices'
+]);
+
+inboxApp.config(['$routeProvider',
+  function($routeProvider) {
+    $routeProvider
+      .when('/messages', {
+        templateUrl: '/partials/messages.html',
+        controller: 'MessageCtrl'
+      })
+      .when('/forms', {
+        templateUrl: '/partials/messages.html',
+        controller: 'FormCtrl'
+      })
+      .when('/reports', {
+        templateUrl: '/partials/reports.html',
+        controller: 'ReportCtrl'
+      })
+      .otherwise({
+        redirectTo: '/messages'
+      });
+  }
+]);

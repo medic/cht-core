@@ -11,6 +11,11 @@
 @import "packages/kujua-reporting/css/base";
 @import "spreadsheet";
 
+/* Angular JS directive to hide elements until model is bound */
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}
+
 .container-fluid {
   overflow-x: hidden;
 }

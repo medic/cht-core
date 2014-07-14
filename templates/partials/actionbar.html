@@ -1,0 +1,31 @@
+<div class="container-fluid action-container">
+  <div class="row">
+    <div class="inner">
+      <div class="col-sm-4"></div>
+      <div class="col-sm-8 column">
+        <div class="actions">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" href="#" rel="external" data-send-to="{~lb}{~lb}selected.from{~rb}{~rb}">
+            <span class="fa fa-mail-reply"></span>
+            <p>Reply</p>
+          </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" href="#" rel="external" id="update-facility-btn">
+            <span class="fa fa-pencil"></span>
+            <p>Edit</p>
+          </a>
+          <a id="verify" class="mm-icon mm-icon-inverse mm-icon-caption" href="#" rel="external" ng-class="{'mm-icon-disabled': selected && !selected.form}" data-record-id="{~lb}{~lb}selected._id{~rb}{~rb}" ng-show="!selected.verified">
+            <span class="fa fa-check"></span>
+            <p>Verify</p>
+          </a>
+          <a id="unverify" class="mm-icon mm-icon-inverse mm-icon-caption" href="#" rel="external" ng-class="{'mm-icon-disabled': selected && !selected.form}" data-record-id="{~lb}{~lb}selected._id{~rb}{~rb}" ng-show="selected.verified">
+            <span class="fa fa-times"></span>
+            <p>Unverify</p>
+          </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" href="#" rel="external" data-toggle="modal" data-target="#delete-confirm">
+            <span class="fa fa-trash-o"></span>
+            <p>Delete</p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

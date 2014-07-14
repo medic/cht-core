@@ -1,0 +1,89 @@
+<div class="inner">
+  <div class="inbox">
+    <div class="col-sm-4 inbox-items">
+      <ul>
+        <li ng-show="!loading || appending" ng-repeat="message in messages | orderBy:'-reported_date'" ng-click="setMessage(message._id)" data-record-id="{~lb}{~lb}message._id{~rb}{~rb}" ng-class="{'selected': message._id === selected._id}">
+          <span class="time" ng-bind-html="message.reported_date | relativeDate"></span>
+          <span class="mm-badge mm-badge-round mm-badge-border" ng-class="message.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
+            <span class="fa" ng-class="{'fa-check': message.verified}"></span>
+          </span>
+          <div class="detail">
+            <mm-sender message="message"></mm-sender>
+            <div ng-bind-html="message | messageType:forms"></div>
+          </div>
+        </li>
+      </ul>
+      <p ng-show="!loading && !messages.length">No messages found</p>
+      <p ng-show="!loading && messages.length && messages.length === totalMessages">No more messages</p>
+      <span class="mm-loader" ng-show="loading">
+        <span class="fa fa-spinner fa-spin"></span>
+      </span>
+    </div>
+
+    <div class="col-sm-8 item-content">
+      <div>
+        <div class="meta">
+          <span class="time" ng-bind-html="selected.reported_date | relativeDate"></span>
+          <mm-sender message="selected"></mm-sender>
+        </div>
+        <div class="status">
+          <span class="mm-badge mm-badge-round mm-badge-border" ng-class="selected.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
+            <span class="fa" ng-class="{'fa-check': selected.verified}"></span>
+          </span>
+        </div>
+        <div class="body">
+          <h2 ng-bind-html="selected | messageType:forms"></h2>
+          <ul>
+            <li ng-if="!selected.form && selected.sms_message.message">
+              <label>Content</label>
+              <p>{~lb}{~lb}selected.sms_message.message{~rb}{~rb}</p>
+            </li>
+            <li ng-if="selected.form" ng-repeat="field in selected.fields.data">
+              <label>{~lb}{~lb}field.label{~rb}{~rb}</label>
+              <p>{~lb}{~lb}field.value{~rb}{~rb}</p>
+            </li>
+            <li ng-if="selected.errors.length">
+              <label>Errors</label>
+              <ul>
+                <li ng-repeat="error in selected.errors">
+                  {~lb}{~lb}error.message{~rb}{~rb}
+                </li>
+              </ul>
+            </li>
+            <li ng-if="selected.tasks.length">
+              <label>Messages</label>
+              <ul>
+                <li ng-repeat="task in selected.tasks">
+                  <ul>
+                    <li ng-bind-html="task | state"></li>
+                    <li ng-repeat="message in task.messages">
+                      {~lb}{~lb}message.message{~rb}{~rb}
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li ng-if="selected.scheduled_tasks_by_group.length">
+              <label>Scheduled Tasks</label>
+              <ul>
+                <li ng-repeat="group in selected.scheduled_tasks_by_group">
+                  <p>{~lb}{~lb}group.group{~rb}{~rb}</p>
+                  <ul>
+                    <li ng-repeat="task in group.rows">
+                      <ul>
+                        <li ng-bind-html="task | state"></li>
+                        <li ng-repeat="m in task.messages">
+                          {~lb}{~lb}m.message{~rb}{~rb}
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
