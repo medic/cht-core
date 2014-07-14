@@ -34,12 +34,21 @@ exports.tearDown = function(callback) {
 
 exports['Count char updates note'] = function(test) {
   test.expect(1);
-  var modal = $('<div class="modal"><div class="modal-footer"><div class="note"/></div></div>'),
-    // value 110 chars long
-    message = $('<input value="abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij"/>');
+  var val = 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij';
+  var modal = $('<div class="modal"><div class="modal-footer"><input name="message" value="' + val + '"/><div class="note"/></div></div>');
 
-  data_record.countChars(message, modal);
-  test.equals(modal.find('.note').html(), '110/160 characters');
+  data_record.countChars(modal);
+  test.equals(modal.find('.note').text(), '110/160 characters');
+  test.done();
+};
+
+exports['Count char updates note to blank if less than 51 chars'] = function(test) {
+  test.expect(1);
+  var val = 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghij';
+  var modal = $('<div class="modal"><div class="modal-footer"><input name="message" value="' + val + '"/><div class="note">110/160 characters</div></div></div>');
+
+  data_record.countChars(modal);
+  test.equals(modal.find('.note').text(), '');
   test.done();
 };
 
