@@ -81,13 +81,15 @@ module.exports = function(grunt) {
           return 'kanso push http://' + grunt.option('user') + ':' + 
             grunt.option('pass') + '@localhost:5984/medic';
         }
+      },
+      bower: {
+        cmd: 'bower install'
       }
     }
   });
 
   // Load the plugins
   grunt.loadNpmTasks('grunt-bower-concat');
-  grunt.loadNpmTasks('grunt-bower-task');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-less');
@@ -97,7 +99,7 @@ module.exports = function(grunt) {
   // Default tasks
   grunt.registerTask('default', [
     'jshint',
-    'bower:install',
+    'exec:bower',
     'bower_concat',
     'uglify',
     'less',
