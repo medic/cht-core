@@ -135,24 +135,28 @@ inboxControllers.controller('InboxCtrl',
         }
       }
     });
-    ReadMessages.query(function(res) {
 
-      var getUsername = function(key) {
-        if (key === '_total') {
-          return 'total';
-        }
-        if (key === user) {
-          return 'read';
-        }
-      };
-      
-      res.rows.forEach(function(row) {
-        var username = getUsername(row.key[0]);
-        if (username) {
-          $scope.readStatus[row.key[1]][username] = row.value;
-        }
+    var updateReadStatus = function () {
+      ReadMessages.query(function(res) {
+
+        var getUsername = function(key) {
+          if (key === '_total') {
+            return 'total';
+          }
+          if (key === user) {
+            return 'read';
+          }
+        };
+        
+        res.rows.forEach(function(row) {
+          var username = getUsername(row.key[0]);
+          if (username) {
+            $scope.readStatus[row.key[1]][username] = row.value;
+          }
+        });
       });
-    });
+    };
+    updateReadStatus();
 
     $scope.setMessage = function(id) {
       $location.path('/' + $scope.filterModel.type + '/' + id);
@@ -168,6 +172,8 @@ inboxControllers.controller('InboxCtrl',
         $scope.messages.forEach(function(message) {
           if (message._id === id) {
             if (!$scope.isRead(message)) {
+              var type = message.form ? 'forms' : 'messages';
+              $scope.readStatus[type].read++;
               $('body').trigger('markRead', {
                 read: true,
                 messageId: id,
@@ -309,6 +315,7 @@ inboxControllers.controller('InboxCtrl',
           return console.log(err);
         }
         angular.element($('body')).scope().$apply(function(scope) {
+          updateReadStatus();
           scope.update(data.rows);
           scope.totalMessages = data.total_rows;
           if (_selectedDoc) {
