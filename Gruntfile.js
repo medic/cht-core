@@ -1,5 +1,7 @@
 module.exports = function(grunt) {
 
+  'use strict';
+
   // Project configuration
   grunt.initConfig({
     bower: {
@@ -25,6 +27,7 @@ module.exports = function(grunt) {
             'bower_components/concat.js',
             'static/js/jquery.spreadsheet.js',
             'static/js/inbox.js',
+            'static/js/app.js',
             'static/js/controllers.js',
             'static/js/services.js'
           ]
@@ -32,9 +35,13 @@ module.exports = function(grunt) {
       }
     },
     jshint: {
+      options: {
+        jshintrc: true
+      },
       all: [
         'Gruntfile.js',
         'static/js/inbox.js',
+        'static/js/app.js',
         'static/js/services.js',
         'static/js/controllers.js'
       ]

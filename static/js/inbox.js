@@ -1,5 +1,7 @@
 $(function () {
 
+  'use strict';
+
   var getTitle = function(dropdown) {
     var allForms = dropdown.find('[role=menuitem]');
     var selectedForms = dropdown.find('[role=menuitem].selected');
@@ -50,7 +52,7 @@ $(function () {
 
   var blockSelectHide = false;
 
-  $('.mm-multiple-select').on('click', '[role=menuitem]', function(e) {
+  $('.mm-multiple-select').on('click', '[role=menuitem]', function() {
     var item = $(this);
     item.blur();
     item.toggleClass('selected');
@@ -211,36 +213,5 @@ $(function () {
       $('#download').attr('href', url);
     });
   });
-});
 
-var inboxApp = angular.module('inboxApp', [
-  'ngRoute',
-  'inboxControllers',
-  'inboxServices'
-])
-.config(['$routeProvider',
-  function($routeProvider) {
-    $routeProvider
-      .when('/messages/:doc?', {
-        templateUrl: '/partials/messages.html',
-        controller: 'MessageCtrl'
-      })
-      .when('/forms/:doc?', {
-        templateUrl: '/partials/messages.html',
-        controller: 'FormCtrl'
-      })
-      .when('/reports', {
-        templateUrl: '/partials/reports.html',
-        controller: 'ReportCtrl'
-      })
-      .otherwise({
-        redirectTo: '/messages'
-      });
-  }
-])
-.factory('rememberService', function() {
-  return {
-      scrollTop: undefined
-  };
 });
-
