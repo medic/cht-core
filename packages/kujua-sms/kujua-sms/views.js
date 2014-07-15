@@ -243,6 +243,25 @@ exports.data_records_valid_by_district_and_form = {
     }
 };
 
+exports.data_records_read_by_type = {
+    map: function(doc) {
+        if (doc.type === 'data_record') {
+            var type = doc.form ? 'forms' : 'messages';
+            emit(['_total', type], 1);
+            if (doc.read) {
+                doc.read.forEach(function(user) {
+                    if (user) {
+                        emit([user, type], 1);
+                    }
+                });
+            }
+        }
+    },
+    reduce: function(key, counts) {
+        return sum(counts);
+    }
+};
+
 exports.data_records_by_district = {
     map: function(doc) {
         var objectpath = require('views/lib/objectpath'),

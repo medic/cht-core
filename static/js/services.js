@@ -27,3 +27,18 @@ inboxServices.factory('Facility', ['$resource',
     });
   }
 ]);
+
+inboxServices.factory('ReadMessages', ['$resource',
+  function($resource) {
+    var baseUrl = $('html').data('base-url');
+    return $resource(baseUrl + '/../_view/data_records_read_by_type', {}, {
+      query: {
+        method: 'GET',
+        isArray: false,
+        params: {
+          group: true
+        }
+      }
+    });
+  }
+]);

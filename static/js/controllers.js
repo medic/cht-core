@@ -47,7 +47,7 @@ inboxControllers.filter('messageType', function () {
 inboxControllers.directive('scroller', ['$timeout', 'rememberService', 
   function($timeout, rememberService) {
     return {
-      restrict: 'A', // this gets tacked on to an existing <div>
+      restrict: 'A',
       scope: {},
       link: function(scope, elm, attrs) {
         var raw = elm[0];
@@ -74,8 +74,8 @@ inboxControllers.directive('mmSender', function() {
 });
 
 inboxControllers.controller('InboxCtrl', 
-  ['$scope', '$route', '$location', 'Facility', 'Settings', 
-  function ($scope, $route, $location, Facility, Settings) {
+  ['$scope', '$route', '$location', 'Facility', 'Settings', 'ReadMessages', 
+  function ($scope, $route, $location, Facility, Settings, ReadMessages) {
 
     $scope.forms = [];
     $scope.facilities = [];
@@ -84,6 +84,17 @@ inboxControllers.controller('InboxCtrl',
     $scope.appending = false;
     $scope.messages = [];
     $scope.totalMessages = undefined;
+
+    $scope.readStatus = {
+      forms: {
+        total: 0,
+        read: 0
+      },
+      messages: {
+        total: 0,
+        read: 0
+      }
+    };
 
     $scope.filterModel = {
       type: 'messages',
@@ -123,6 +134,24 @@ inboxControllers.controller('InboxCtrl',
           });
         }
       }
+    });
+    ReadMessages.query(function(res) {
+
+      var getUsername = function(key) {
+        if (key === '_total') {
+          return 'total';
+        }
+        if (key === user) {
+          return 'read';
+        }
+      };
+      
+      res.rows.forEach(function(row) {
+        var username = getUsername(row.key[0]);
+        if (username) {
+          $scope.readStatus[row.key[1]][username] = row.value;
+        }
+      });
     });
 
     $scope.setMessage = function(id) {

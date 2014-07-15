@@ -63,8 +63,8 @@
       <a href="#/messages/" ng-class="{'selected': filterModel.type === 'messages'}">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'messages'}">
           <span class="fa fa-envelope"></span>
-          <span class="mm-badge-overlay mm-badge-overlay-top">
-            <span class="mm-badge mm-badge-red mm-badge-border">405</span>
+          <span class="mm-badge-overlay mm-badge-overlay-top" ng-hide="readStatus.messages.total - readStatus.messages.read <= 0">
+            <span class="mm-badge mm-badge-red mm-badge-border">{~lb}{~lb}readStatus.messages.total - readStatus.messages.read{~rb}{~rb}</span>
           </span>
         </div>
         <div class="button-label">Messages</div>
@@ -72,8 +72,8 @@
       <a href="#/forms/" ng-class="{'selected': filterModel.type === 'forms'}">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'forms'}">
           <span class="fa fa-list-alt"></span>
-          <span class="mm-badge-overlay mm-badge-overlay-top">
-            <span class="mm-badge mm-badge-red mm-badge-border">15</span>
+          <span class="mm-badge-overlay mm-badge-overlay-top" ng-hide="readStatus.forms.total - readStatus.forms.read <= 0">
+            <span class="mm-badge mm-badge-red mm-badge-border">{~lb}{~lb}readStatus.forms.total - readStatus.forms.read{~rb}{~rb}</span>
           </span>
         </div>
         <div class="button-label">Forms</div>
