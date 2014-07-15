@@ -21,6 +21,11 @@ function push {
     fi
 }
 
+# Never push to market on pull requests
+if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    exit 0;
+fi
+
 if [ "$TRAVIS_BRANCH" == "master" ]; then
     npm install -g json && \
     cat kanso.json | json -o json-4 -e "this.dependencies[\"kanso-gardener\"] = null;" > tmp.json && \
