@@ -243,12 +243,9 @@ label {
   .errors {
     margin-bottom: 20px;
   }
-  .msg {
-  }
-  .continue {
-  }
 }
 #loader {
+    overflow: hidden;
     > .spin-box {
         font-weight: bold;
         color: @grayLight;
@@ -286,7 +283,6 @@ label {
         }
     }
     .form-row {
-        .header-row;
         h4 {
             line-height: 30px;
             i {
@@ -855,6 +851,9 @@ table.spreadsheet .dropdown-menu {
         width: 98%;
     }
 }
+.select2-container {
+    width: 200px;
+}
 .select2-container .select2-choice {
     padding-top: 1px;
     padding-bottom: 1px;
@@ -894,7 +893,7 @@ h3, h4 {
     .select2-container, input[type=text], input[type=password] {
       margin: 0 0 1em 0;
     }
-    #facility_id, #type, #language {
+    .select2-container {
       width: 100%;
     }
     input[type=text], input[type=password] {
@@ -908,7 +907,6 @@ h3, h4 {
 }
 
 #user-management {
-  padding: 2em;
   #add-user {
     margin-bottom: 1em;
   }
