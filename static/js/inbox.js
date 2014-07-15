@@ -218,9 +218,8 @@ var inboxApp = angular.module('inboxApp', [
   'ngRoute',
   'inboxControllers',
   'inboxServices'
-]);
-
-inboxApp.config(['$routeProvider',
+])
+.config(['$routeProvider',
   function($routeProvider) {
     $routeProvider
       .when('/messages/:doc?', {
@@ -239,4 +238,10 @@ inboxApp.config(['$routeProvider',
         redirectTo: '/messages'
       });
   }
-]);
+])
+.factory('rememberService', function() {
+  return {
+      scrollTop: undefined
+  };
+});
+

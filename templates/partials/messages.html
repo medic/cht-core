@@ -1,6 +1,6 @@
 <div class="inner">
   <div class="inbox">
-    <div class="col-sm-4 inbox-items">
+    <div class="col-sm-4 inbox-items" scroller>
       <ul>
         <li ng-show="!loading || appending" ng-repeat="message in messages | orderBy:'-reported_date'" ng-click="setMessage(message._id)" data-record-id="{~lb}{~lb}message._id{~rb}{~rb}" ng-class="{'selected': message._id === selected._id, 'read': isRead(message)}">
           <span class="time" ng-bind-html="message.reported_date | relativeDate"></span>

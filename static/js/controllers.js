@@ -44,6 +44,27 @@ inboxControllers.filter('messageType', function () {
   };
 });
 
+inboxControllers.directive('scroller', ['$timeout', 'rememberService', 
+  function($timeout, rememberService) {
+    return {
+      restrict: 'A', // this gets tacked on to an existing <div>
+      scope: {},
+      link: function(scope, elm, attrs) {
+        var raw = elm[0];
+        
+        elm.bind('scroll', function() {
+          rememberService.scrollTop = raw.scrollTop;
+        });
+
+        $timeout(function() {
+          raw.scrollTop = rememberService.scrollTop;
+        });
+      }
+    };
+  }
+]);
+
+
 inboxControllers.directive('mmSender', function() {
   return {
     restrict: 'E',
@@ -117,7 +138,6 @@ inboxControllers.controller('InboxCtrl',
       if (id) {
         $scope.messages.forEach(function(message) {
           if (message._id === id) {
-            $scope.selected = message;
             if (!$scope.isRead(message)) {
               $('body').trigger('markRead', {
                 read: true,
@@ -125,6 +145,7 @@ inboxControllers.controller('InboxCtrl',
                 username: user
               });
             }
+            $scope.selected = message;
           }
         });
       }
@@ -169,6 +190,9 @@ inboxControllers.controller('InboxCtrl',
 
     $scope.isRead = function(message) {
       message.read = message.read || [];
+      if ($scope.selected && $scope.selected._id === message._id) {
+        return true;
+      }
       for (var i = 0; i < message.read.length; i++) {
         if (message.read[i] === user) {
           return true;
