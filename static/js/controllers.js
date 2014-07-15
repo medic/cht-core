@@ -1,6 +1,7 @@
 var inboxControllers = angular.module('inboxControllers', ['ngSanitize']);
 
 var baseUrl = $('html').data('base-url');
+var user = $('html').data('user');
 
 inboxControllers.filter('relativeDate', function () {
   return function (date) {
@@ -108,12 +109,22 @@ inboxControllers.controller('InboxCtrl',
     };
 
     $scope.selectMessage = function(id) {
+      if ($scope.selected && $scope.selected._id === id) {
+        return;
+      }
       $scope.selected = undefined;
       _selectedDoc = id;
       if (id) {
         $scope.messages.forEach(function(message) {
           if (message._id === id) {
             $scope.selected = message;
+            if (!$scope.isRead(message)) {
+              $('body').trigger('markRead', {
+                read: true,
+                messageId: id,
+                username: user
+              });
+            }
           }
         });
       }
@@ -154,6 +165,16 @@ inboxControllers.controller('InboxCtrl',
       }
       $scope.loading = false;
       $scope.appending = false;
+    };
+
+    $scope.isRead = function(message) {
+      message.read = message.read || [];
+      for (var i = 0; i < message.read.length; i++) {
+        if (message.read[i] === user) {
+          return true;
+        }
+      }
+      return false;
     };
 
     var _setFilterString = function() {
