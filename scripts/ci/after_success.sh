@@ -2,7 +2,6 @@
 
 MAX=50
 COUNT=0
-DONE=0
 
 # Never push to market on pull requests
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
@@ -23,9 +22,8 @@ function push {
 }
 
 function prep {
-    local args=''
     local meta="$1"
-    args+='this.dependencies["kanso-gardener"] = null;'
+    local args='this.dependencies["kanso-gardener"] = null;'
     args+='this.dependencies_included = true;'
 
     # Process meta portion of version string if provided
