@@ -98,7 +98,7 @@
 
     <span class="advanced-filters">
       <div class="input-group">
-        <input id="advanced" type="text" class="form-control" disabled="{~lb}{~lb}filterModel.type !== 'reports'{~rb}{~rb}">
+        <input id="advanced" type="text" class="form-control" ng-disabled="filterModel.type === 'reports'">
         <span class="input-group-btn">
           <button class="btn btn-default" type="button" ng-class="{disabled: filterModel.type === 'reports'}">
             <span class="fa fa-search"></span>
