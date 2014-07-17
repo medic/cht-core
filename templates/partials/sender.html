@@ -1,14 +1,14 @@
 <div class="sender">
   <div class="name" ng-if="message.related_entities.clinic.contact.name">
-    {{message.related_entities.clinic.contact.name}}
+    {~lb}{~lb}message.related_entities.clinic.contact.name{~rb}{~rb}
   </div>
   <div class="name" ng-if="!message.related_entities.clinic.contact.name && message.from">
-    {{message.from}}
+    {~lb}{~lb}message.from{~rb}{~rb}
   </div>
   <div class="name" ng-if="!message.related_entities.clinic.contact.name && !message.from">
-    {{message.sent_by}}
+    {~lb}{~lb}message.sent_by{~rb}{~rb}
   </div>
   <div class="position" ng-if="message.related_entities.clinic.parent.name">
-    {{message.related_entities.clinic.parent.name}} {{message.related_entities.clinic.parent.parent.name}}
+    {~lb}{~lb}message.related_entities.clinic.parent.name{~rb}{~rb} {~lb}{~lb}message.related_entities.clinic.parent.parent.name{~rb}{~rb}
   </div>
 </div>

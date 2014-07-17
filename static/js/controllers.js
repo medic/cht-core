@@ -4,7 +4,6 @@
 
   var inboxControllers = angular.module('inboxControllers', ['ngSanitize']);
 
-  var baseUrl = $('html').data('base-url');
   var user = $('html').data('user');
 
   inboxControllers.filter('relativeDate', function () {
@@ -73,7 +72,7 @@
     return {
       restrict: 'E',
       scope: { message: '=' },
-      templateUrl: baseUrl + '/static/js/templates/sender.html'
+      templateUrl: '/partials/sender.html'
     };
   });
 
