@@ -1,4 +1,7 @@
 (function ($) {
+
+    'use strict';
+
     /**
      * Creates a thead element for the given unique key list.
      */
@@ -67,7 +70,7 @@
                 );
                 */
                 // overwrite existing structure
-                a = a[x] = {}
+                a = a[x] = {};
             }
             return a;
         }, obj);
@@ -103,17 +106,17 @@
                 column.validationHint = 'Phone number: +225588881111';
                 return function(v) {
                     return /^\s*\+\d{11,12}\s*$/.test(v);
-                }
+                };
             } else if (validation === 'notblank') {
                 column.validationHint = 'Value required';
                 return function(v) {
                     return /\w/.test(v);
-                }
+                };
             } else if (validation === 'integer') {
                 column.validationHint = 'Numbers only';
                 return function(v) {
                     return /^\s*\d+\s*$/.test(v);
-                }
+                };
             } else {
                 return undefined;
             }
@@ -211,7 +214,7 @@
             validationHint = $td.data('validation-hint');
 
         // if no validation fn provided, it's always valid
-        validation = validation || function() { return true; }
+        validation = validation || function() { return true; };
 
         $input = $('<input class="edit-inline" type="text" />').css({
             height: ($td.outerHeight() - 3) + 'px',
@@ -309,8 +312,9 @@
      */
 
     var setValue = function (td, val, options) {
+        options = options || {};
+
         var $td = $(td),
-            options = options || {},
             validation = $td.data('validation');
 
         _.defaults(options, {
@@ -321,7 +325,7 @@
             $td.toggleClass('error', !validation(val));
         }
 
-        if ($td.text() != val) {
+        if ($td.text() !== val) {
             $td.text(val);
             if (!options.silent) {
                 $td.trigger('change');
@@ -355,8 +359,8 @@
         if (!selected || ev.target.tagName === 'INPUT') {
             return;
         }
-        pos = getCellPosition($table, selected);
-        cell = getCellAt($table, pos.row + y, pos.column + x);
+        var pos = getCellPosition($table, selected);
+        var cell = getCellAt($table, pos.row + y, pos.column + x);
         if (cell) {
             ev.preventDefault();
             $table.data('spreadsheet:start-column', pos.column + x);
@@ -528,8 +532,8 @@
                 $(ths[c + 1]).addClass('active');
             }
             trs = $('tbody tr', $table);
-            sr = $table.data('spreadsheet:range-start-row;')
-            er = $table.data('spreadsheet:range-end-row;')
+            sr = $table.data('spreadsheet:range-start-row;');
+            er = $table.data('spreadsheet:range-end-row;');
             for (r = sr; r <= er; r++) {
                 $('th.handle', trs[r]).addClass('active');
             }
@@ -593,11 +597,6 @@
     };
 
 
-    var showRowContextMenu = function () {
-        alert('row context menu');
-    };
-
-
     /**
      * Handles user interaction with the table
      */
@@ -615,7 +614,7 @@
                 completeInlineEditor.call($table);
             }
             if ($table.data('spreadsheet:edit-inline-td')) {
-                if ($table.data('spreadsheet:edit-inline-td') != $table.data('spreadsheet:selected-td')) {
+                if ($table.data('spreadsheet:edit-inline-td') !== $table.data('spreadsheet:selected-td')) {
                     completeInlineEditor.call($table);
                 }
             }
@@ -643,7 +642,7 @@
                 }
             }
         });
-        $table.bind('change', function (ev) {
+        $table.bind('change', function () {
             // re-select td to make sure select box is properly resized.
             if ($table.data('spreadsheet:selected-td')) {
                 select.call($table, $table.data('spreadsheet:selected-td'));
@@ -651,7 +650,7 @@
             // update row counter
             $('.row-counter', $table).text(options.data.length + ' rows');
         });
-        $table.on('mousedown', 'thead th', function (ev) {
+        $table.on('mousedown', 'thead th', function () {
             var ths = $('thead th', $table);
             var trs = $('tbody tr', $table);
 
@@ -662,7 +661,7 @@
                 }
             }
         });
-        $table.on('mousedown', 'tbody th.handle', function (ev) {
+        $table.on('mousedown', 'tbody th.handle', function () {
             var this_tr = $(this).parent()[0];
             var tds = $('td', this_tr);
             var trs = $('tbody tr', $table);
@@ -692,14 +691,14 @@
             }
             return false;
         });
-        $table.on('change', 'tr', function (ev) {
+        $table.on('change', 'tr', function () {
             // TODO: don't save on every cell change, use a timeout and
             // wait until a different tr is selected if possible
             // TODO: check if doc has actually changed values
             var tr = $(this);
             saveDoc(tr, options);
         });
-        $table.on('change', 'td', function (ev) {
+        $table.on('change', 'td', function () {
             // update doc value in spreadsheet data array
             var tr = $(this).parent(),
                 doc = getDoc(tr, options);
@@ -756,7 +755,7 @@
                 $table.data('spreadsheet:left-btn-down', false);
             }
         });
-        $(document).bind('cut', function (ev) {
+        $(document).bind('cut', function () {
             var td = $table.data('spreadsheet:selected-td'),
                 textarea,
                 val;
@@ -800,11 +799,11 @@
                 }, 0);
             }
         });
-        $(document).on('dblclick', '#spreadsheet_select', function (ev) {
+        $(document).on('dblclick', '#spreadsheet_select', function () {
             var td = $table.data('spreadsheet:selected-td');
             editCell.call($table, td);
         });
-        $(document).on('click', function(ev) {
+        $(document).on('click', function() {
             clearSelection.call($table);
         });
 
@@ -862,7 +861,7 @@
                     ev.preventDefault();
                     pos = getCellPosition($table, selected);
                     offset = ev.shiftKey ? -1 : 1;
-                    cell = getCellAt($table, pos.row, pos.column + offset)
+                    cell = getCellAt($table, pos.row, pos.column + offset);
                     if (cell) {
                         select.call($table, cell);
                     }
@@ -879,7 +878,7 @@
                     if (col === undefined) {
                         col = pos.column;
                     }
-                    cell = getCellAt($table, pos.row + 1, col)
+                    cell = getCellAt($table, pos.row + 1, col);
                     // move to cell below if possible
                     if (cell) {
                         select.call($table, cell);
@@ -926,15 +925,15 @@
             throw new Error('You must define some columns');
         }
 
-        help = '<div class="spreadsheet-help">'
-            + '<i class="icon-question-sign"></i>'
-            + '<ul>'
-            + '<li><b>Double click</b> or enter key to edit a cell.</li>'
-            + '<li><b>Enter</b> key to save.</li>'
-            + '<li><b>Escape</b> key for undo.</li>'
-            + '<li><b>Tab</b> cycles through cells.</li>'
-            + '</ul>'
-            + '</div>';
+        help =  '<div class="spreadsheet-help">' +
+                '<i class="icon-question-sign"></i>' +
+                '<ul>' +
+                '<li><b>Double click</b> or enter key to edit a cell.</li>' +
+                '<li><b>Enter</b> key to save.</li>' +
+                '<li><b>Escape</b> key for undo.</li>' +
+                '<li><b>Tab</b> cycles through cells.</li>' +
+                '</ul>' +
+                '</div>';
 
         table = $('<table class="spreadsheet"></table>');
         thead = createHeadings(options.columns);

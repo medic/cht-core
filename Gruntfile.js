@@ -36,15 +36,18 @@ module.exports = function(grunt) {
     },
     jshint: {
       options: {
-        jshintrc: true
+        jshintrc: true,
+        ignores: [
+          'static/js/*.min.js',
+          'static/js/bootstrap-datetimepicker.js',
+          'static/js/jquery-ext.js',
+          'static/js/json2.js',
+          'static/js/browser.js'
+        ]
       },
       all: [
         'Gruntfile.js',
-        'static/js/bootstrap-multidropdown.js',
-        'static/js/inbox.js',
-        'static/js/app.js',
-        'static/js/services.js',
-        'static/js/controllers.js'
+        'static/js/*.js'
       ]
     },
     less: {
