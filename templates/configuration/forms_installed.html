@@ -4,6 +4,13 @@
   <i class="icon-warning-sign"></i> <span>{error}</span>
 </div>
 {/error}
+{?forms}
+<p>
+  <a href="#" id="forms-download" class="btn">
+    <i class="icon-download"></i> Download
+  </a>
+</p>
 <ul>
   {#forms}<li>{meta.code} {meta.label.en}</li>{/forms}
 </ul>
+{/forms}

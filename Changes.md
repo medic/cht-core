@@ -2,7 +2,59 @@
 
 ## 0.4.0
 
-### TBD
+### Jul 10, 2014
+
+#### New Features
+
+- User interface for common settings and translations #484
+
+- User interface to configure basic ANC messaging workflows #487
+
+- Nodejs module for API calls and to handle audit transactions
+
+- Better language support on messages throughout configuration. e.g. you can
+  define a reminder schedule using multiple languages and the right language
+  will be used based on the locale of the message.  #486
+
+- Added support to configure locales through settings screen #491
+
+- Added support for custom forms and uploading JSON form definitions #283
+
+- Supporting old/obsolete settings via migrations during restore #501
+
+- Support minute setting for scheduled hours configuration
+
+- Reduced files size of design doc by minifying javascript and combining files
+
+- Added support for unique validations across multiple fields. #412
+
+- External IDs can be added to facilities on the facility page.  #503
+
+- Added `columns` query parameter to allow callers to messages and data_records
+  exports to retrieve specific columns in a specific order. #503
+
+- Added Patient ID field to default data record export
+
+- Allow specifying of task columns in message export. 
+
+  To include the group column, include the parameter `columns=["task.group"]`
+  (and any other columns you need, eg: `patient_id`). #432
+
+- Allow range searches on number fields in lucene. #481
+
+#### Bug fixes
+
+- Fixed bug stopping district admins from being able to delete documents. #509
+
+- Corrected language Nepalese to Nepali
+
+- Fixed too many requests for app_settings #511
+
+- Fixed saving user password, was getting reset/wiped #509 
+
+- Render facilities controls on all facilities tabs. #338
+
+#### Deprecated and Backwards Incompatible changes
 
 - deprecated `exclude_cols` parameter for export integrations. Migrate 
   applications to use the `columns` parameter instead.
@@ -21,7 +73,7 @@
 - Modified behavior of patient reports when `silence_for` option is empty we
   clear the entire schedule instead of a group.
 
-- Fixed notifications to not add the configured response #508
+- Fixed notifications to add the configured response #508
 
 - Fixed bug and added support for multiple schedules in schedule silencing
     
