@@ -37,13 +37,24 @@ npm install bower -g
 
 ## Develop
 
-### Push the couchapp
+### Build
 
 ```
 git clone --recursive https://github.com/medic/medic-webapp
 cd medic-webapp
 npm install
+```
+
+### Push the couchapp
+
+```
 grunt dev --user=admin --pass=pass
+```
+
+Or you can watch and automatically update the app on changes
+
+```
+grunt watch --user=admin --pass=pass
 ```
 
 ### Start medic-sentinel

@@ -91,6 +91,16 @@ module.exports = function(grunt) {
       bower: {
         cmd: 'bower install'
       }
+    },
+    watch: {
+      css: {
+        files: ['static/css/**/*'],
+        tasks: ['less', 'exec:deploy']
+      },
+      js: {
+        files: ['static/js/**/*', 'lib/**/*'],
+        tasks: ['jshint', 'uglify', 'exec:deploy']
+      }
     }
   });
 
@@ -101,6 +111,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
   // Default tasks
   grunt.registerTask('default', [
