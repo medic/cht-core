@@ -25,6 +25,7 @@ module.exports = function(grunt) {
         files: {
           'static/dist/inbox.js': [
             'bower_components/concat.js',
+            'static/js/bootstrap-multidropdown.js',
             'static/js/inbox.js',
             'static/js/app.js',
             'static/js/controllers.js',
@@ -39,6 +40,7 @@ module.exports = function(grunt) {
       },
       all: [
         'Gruntfile.js',
+        'static/js/bootstrap-multidropdown.js',
         'static/js/inbox.js',
         'static/js/app.js',
         'static/js/services.js',

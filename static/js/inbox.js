@@ -2,45 +2,15 @@ $(function () {
 
   'use strict';
 
-  var getTitle = function(dropdown) {
-    var allForms = dropdown.find('[role=menuitem]');
-    var selectedForms = dropdown.find('[role=menuitem].selected');
-    if (selectedForms.length === 0 || selectedForms.length === allForms.length) {
-      return dropdown.data('label-no-filter');
-    }
-    if (selectedForms.length > 1) {
-      return selectedForms.length + ' ' + dropdown.data('filter-label');
-    }
-    return selectedForms.first().text();
-  };
-
-  var updateMultipleSelect = function(dropdown) {
-    dropdown.find('.mm-button-text').text(getTitle(dropdown));
-  };
-
-  $('.mm-multiple-select').each(function() {
-    var select = $(this);
-    updateMultipleSelect(select);
-    select.on('update', function() {
-      updateMultipleSelect($(this));
-    });
-  });
-
   $('#formTypeDropdown').on('update', function() {
-    var forms = [];
-    $(this).find('[role=menuitem].selected').each(function() {
-      forms.push($(this).data('form'));
-    });
+    var forms = $(this).multiDropdown().val();
     angular.element($('body')).scope().$apply(function(scope) {
       scope.filterModel.forms = forms;
     });
   });
 
   $('#facilityDropdown').on('update', function() {
-    var ids = [];
-    $(this).find('[role=menuitem].selected').each(function() {
-      ids.push($(this).data('facility-id'));
-    });
+    var ids = $(this).multiDropdown().val();
     angular.element($('body')).scope().$apply(function(scope) {
       scope.filterModel.facilities = ids;
     });
@@ -48,24 +18,6 @@ $(function () {
 
   $('#validDropdown [role=menuitem]').on('click', function() {
     $('#validDropdown .mm-button-text').text($(this).text());
-  });
-
-  var blockSelectHide = false;
-
-  $('.mm-multiple-select').on('click', '[role=menuitem]', function() {
-    var item = $(this);
-    item.blur();
-    item.toggleClass('selected');
-    item.closest('.dropdown').trigger({ type: 'update' });
-    updateMultipleSelect(item.closest('.dropdown'));
-    blockSelectHide = true;
-  });
-
-  $('.mm-multiple-select').on('hide.bs.dropdown', function (e) {
-    if (blockSelectHide) {
-      e.preventDefault();
-      blockSelectHide = false;
-    }
   });
 
   $('#date-from').datepicker().on('changeDate', function(ev) {
