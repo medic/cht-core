@@ -25,7 +25,6 @@ module.exports = function(grunt) {
         files: {
           'static/dist/inbox.js': [
             'bower_components/concat.js',
-            'static/js/jquery.spreadsheet.js',
             'static/js/inbox.js',
             'static/js/app.js',
             'static/js/controllers.js',
