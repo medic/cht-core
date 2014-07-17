@@ -4,8 +4,6 @@
 
   var inboxControllers = angular.module('inboxControllers', ['ngSanitize']);
 
-  var user = $('html').data('user');
-
   inboxControllers.filter('relativeDate', function () {
     return function (date) {
       if (!date) { 
@@ -47,8 +45,8 @@
     };
   });
 
-  inboxControllers.directive('scroller', ['$timeout', 'rememberService', 
-    function($timeout, rememberService) {
+  inboxControllers.directive('scroller', ['$timeout', 'RememberService', 
+    function($timeout, RememberService) {
       return {
         restrict: 'A',
         scope: {},
@@ -56,11 +54,11 @@
           var raw = elm[0];
           
           elm.bind('scroll', function() {
-            rememberService.scrollTop = raw.scrollTop;
+            RememberService.scrollTop = raw.scrollTop;
           });
 
           $timeout(function() {
-            raw.scrollTop = rememberService.scrollTop;
+            raw.scrollTop = RememberService.scrollTop;
           });
         }
       };
@@ -77,8 +75,8 @@
   });
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', 'Facility', 'Settings', 'ReadMessages', 
-    function ($scope, $route, $location, Facility, Settings, ReadMessages) {
+    ['$scope', '$route', '$location', 'Facility', 'Settings', 'ReadMessages', 'UserService',
+    function ($scope, $route, $location, Facility, Settings, ReadMessages, UserService) {
 
       $scope.forms = [];
       $scope.facilities = [];
@@ -153,6 +151,7 @@
             }
           };
           
+          var user = UserService();
           res.rows.forEach(function(row) {
             var username = getUsername(row.key[0]);
             if (username) {
@@ -182,7 +181,7 @@
                 $('body').trigger('markRead', {
                   read: true,
                   messageId: id,
-                  username: user
+                  username: UserService()
                 });
               }
               $scope.selected = message;
@@ -236,7 +235,7 @@
           return true;
         }
         for (var i = 0; i < message.read.length; i++) {
-          if (message.read[i] === user) {
+          if (message.read[i] === UserService()) {
             return true;
           }
         }

@@ -26,11 +26,6 @@
           redirectTo: '/messages'
         });
     }
-  ])
-  .factory('rememberService', function() {
-    return {
-        scrollTop: undefined
-    };
-  });
+  ]);
   
 }());

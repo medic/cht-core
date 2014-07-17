@@ -4,10 +4,9 @@
 
   var inboxServices = angular.module('inboxServices', ['ngResource']);
 
-  inboxServices.factory('Settings', ['$resource',
-    function($resource) {
-      var baseUrl = $('html').data('base-url');
-      return $resource(baseUrl + '/app_settings/medic', {}, {
+  inboxServices.factory('Settings', ['$resource', 'BaseUrlService',
+    function($resource, BaseUrlService) {
+      return $resource(BaseUrlService() + '/app_settings/medic', {}, {
         query: {
           method: 'GET',
           isArray: false
@@ -16,10 +15,9 @@
     }
   ]);
 
-  inboxServices.factory('Facility', ['$resource',
-    function($resource) {
-      var baseUrl = $('html').data('base-url');
-      return $resource(baseUrl + '/facilities.json', {}, {
+  inboxServices.factory('Facility', ['$resource', 'BaseUrlService',
+    function($resource, BaseUrlService) {
+      return $resource(BaseUrlService() + '/facilities.json', {}, {
         query: {
           method: 'GET',
           isArray: false,
@@ -32,10 +30,9 @@
     }
   ]);
 
-  inboxServices.factory('ReadMessages', ['$resource',
-    function($resource) {
-      var baseUrl = $('html').data('base-url');
-      return $resource(baseUrl + '/../_view/data_records_read_by_type', {}, {
+  inboxServices.factory('ReadMessages', ['$resource', 'BaseUrlService',
+    function($resource, BaseUrlService) {
+      return $resource(BaseUrlService() + '/../_view/data_records_read_by_type', {}, {
         query: {
           method: 'GET',
           isArray: false,
@@ -46,5 +43,23 @@
       });
     }
   ]);
+
+  inboxServices.factory('RememberService', function() {
+    return {
+        scrollTop: undefined
+    };
+  });
+
+  inboxServices.factory('BaseUrlService', function() {
+    return function() {
+      return $('html').data('base-url');
+    };
+  });
+
+  inboxServices.factory('UserService', function() {
+    return function() {
+      return $('html').data('user');
+    };
+  });
 
 }());
