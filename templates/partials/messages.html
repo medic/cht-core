@@ -38,10 +38,7 @@
               <label>Content</label>
               <p>{~lb}{~lb}selected.sms_message.message{~rb}{~rb}</p>
             </li>
-            <li ng-if="selected.form" ng-repeat="field in selected.fields.data">
-              <label>{~lb}{~lb}field.label{~rb}{~rb}</label>
-              <p>{~lb}{~lb}field.value{~rb}{~rb}</p>
-            </li>
+            <li ng-if="selected.form" ng-repeat="field in selected.fields.data" ng-bind-html="field | messageField"></li>
             <li ng-if="selected.errors.length">
               <label>Errors</label>
               <ul>

@@ -91,11 +91,6 @@ exports.makeDataRecordOriginal = function(doc) {
     return doc;
 };
 
-function formatDate(timestamp, format) {
-    format = format || 'ddd DD, MMM YYYY, HH:mm:ss ZZ';
-    return moment(timestamp).format(format);
-};
-
 /*
  * With some forms like ORPT (patient registration), we add additional data to
  * it based on other form submissions.  Form data from other reports is used to
@@ -109,16 +104,15 @@ var includeNonFormFields = function(doc, form_keys) {
         { key:'mother_outcome', label: 'Mother Outcome'},
         { key:'child_birth_outcome', label: 'Child Birth Outcome'},
         { key:'child_birth_weight', label: 'Child Birth Weight'},
-        { key:'child_birth_date', label: 'Child Birth Date', format: formatDate},
-        { key:'expected_date', label: 'Expected Date', format: formatDate},
-        { key:'birth_date', label: 'Birth Date', format: formatDate},
-        { key:'patient_id', label:'Patient ID'}
+        { key:'child_birth_date', label: 'Child Birth Date'},
+        { key:'expected_date', label: 'Expected Date'},
+        { key:'birth_date', label: 'Birth Date'},
+        { key:'patient_id', label: 'Patient ID'}
     ];
 
     _.each(fields, function(obj) {
         var key = obj.key,
-            label = obj.label,
-            format = obj.format;
+            label = obj.label;
 
         // Only include the property if we find it on the doc and not as a form
         // key since then it would be duplicated.
@@ -127,7 +121,7 @@ var includeNonFormFields = function(doc, form_keys) {
         doc.fields.data.unshift({
             isArray: false,
             label: label,
-            value: format ? format(doc[key]) : doc[key]
+            value: doc[key]
         });
 
         doc.fields.headers.unshift({
@@ -170,12 +164,11 @@ exports.makeDataRecordReadable = function(doc, appinfo) {
 
             // format timestamp
             if (t.due) {
-                copy._due_ts = t.due;
-                copy.due = formatDate(t.due);
+                copy.due = t.due;
             }
 
             if (t.timestamp) {
-                copy.timestamp = formatDate(t.timestamp);
+                copy.timestamp = t.timestamp;
             }
 
             // setup scheduled groups

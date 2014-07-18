@@ -4,15 +4,18 @@
 
   var inboxControllers = angular.module('inboxControllers', ['ngSanitize']);
 
+  var getRelativeDate = function(moment) {
+      return '<span title="' + moment.format('HH:mm, Do MMM YYYY') + '">' + 
+        moment.fromNow() + 
+        '</span>';
+  };
+
   inboxControllers.filter('relativeDate', function () {
     return function (date) {
       if (!date) { 
         return ''; 
       }
-      var m = moment(date);
-      return '<span title="' + m.format('HH:mm, Do MMM YYYY') + '">' + 
-        m.fromNow() + 
-        '</span>';
+      return getRelativeDate(moment(date));
     };
   });
 
@@ -25,6 +28,21 @@
       return '<span class="task-state" title="' + title + '">' + 
         task.state + 
         '</span>';
+    };
+  });
+
+  inboxControllers.filter('messageField', function () {
+    return function (field) {
+      if (!field) { 
+        return ''; 
+      }
+      var label = field.label;
+      var value = field.value;
+      if (['Child Birth Date', 'Expected Date', 'Birth Date'].indexOf(label) !== -1) {
+        value = getRelativeDate(moment(value));
+      }
+      return '<label>' + label + '</label>' +
+              '<p>' + value + '</p>';
     };
   });
 
