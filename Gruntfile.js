@@ -103,8 +103,12 @@ module.exports = function(grunt) {
         tasks: ['less', 'exec:deploy']
       },
       js: {
-        files: ['static/js/**/*', 'lib/**/*'],
+        files: ['static/js/**/*'],
         tasks: ['jshint', 'uglify', 'exec:deploy']
+      },
+      other: {
+        files: ['templates/**/*', 'lib/**/*'],
+        tasks: ['exec:deploy']
       }
     }
   });
