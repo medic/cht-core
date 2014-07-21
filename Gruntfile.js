@@ -115,12 +115,13 @@ module.exports = function(grunt) {
       options: {
         enabled: true,
         max_jshint_notifications: 1,
-        title: "Medic Mobile"
+        title: 'Medic Mobile'
       }
     },
     notify: {
       deployed: {
         options: {
+          title: 'Medic Mobile',
           message: 'Deployed successfully'
         }
       }
