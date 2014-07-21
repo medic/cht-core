@@ -100,15 +100,22 @@ module.exports = function(grunt) {
     watch: {
       css: {
         files: ['static/css/**/*'],
-        tasks: ['less', 'exec:deploy']
+        tasks: ['less', 'exec:deploy', 'notify:deployed']
       },
       js: {
         files: ['static/js/**/*'],
-        tasks: ['jshint', 'uglify', 'exec:deploy']
+        tasks: ['jshint', 'uglify', 'exec:deploy', 'notify:deployed']
       },
       other: {
         files: ['templates/**/*', 'lib/**/*'],
-        tasks: ['exec:deploy']
+        tasks: ['exec:deploy', 'notify:deployed']
+      }
+    },
+    notify: {
+      deployed: {
+        options: {
+          message: 'Deployed successfully'
+        }
       }
     }
   });
@@ -121,6 +128,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-notify');
 
   // Default tasks
   grunt.registerTask('default', [
@@ -135,7 +143,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('dev', [
     'default',
-    'exec:deploy'
+    'exec:deploy',
+    'notify:deployed'
   ]);
 
 };
