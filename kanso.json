@@ -2692,6 +2692,56 @@
                                 "content": "Message State"
                             }
                         ]
+                    },
+                    {
+                        "key": "Reply",
+                        "default": "Reply",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Reply"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Verify",
+                        "default": "Verify",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Verify"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Unverify",
+                        "default": "Unverify",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Unverify"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Delete",
+                        "default": "Delete",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Delete"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Edit",
+                        "default": "Edit",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Edit"
+                            }
+                        ]
                     }
                 ]
             }

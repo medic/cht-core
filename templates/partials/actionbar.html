@@ -6,23 +6,23 @@
         <div class="actions">
           <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" href="#" rel="external" data-send-to="{~lb}{~lb}selected.from{~rb}{~rb}">
             <span class="fa fa-mail-reply"></span>
-            <p>Reply</p>
+            <p>{~lb}{~lb}'Reply' | translate{~rb}{~rb}</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" href="#" rel="external" id="update-facility-btn">
             <span class="fa fa-pencil"></span>
-            <p>Edit</p>
+            <p>{~lb}{~lb}'Edit' | translate{~rb}{~rb}</p>
           </a>
           <a id="verify" class="mm-icon mm-icon-inverse mm-icon-caption" href="#" rel="external" ng-class="{'mm-icon-disabled': selected && !selected.form}" data-record-id="{~lb}{~lb}selected._id{~rb}{~rb}" ng-show="!selected.verified">
             <span class="fa fa-check"></span>
-            <p>Verify</p>
+            <p>{~lb}{~lb}'Verify' | translate{~rb}{~rb}</p>
           </a>
           <a id="unverify" class="mm-icon mm-icon-inverse mm-icon-caption" href="#" rel="external" ng-class="{'mm-icon-disabled': selected && !selected.form}" data-record-id="{~lb}{~lb}selected._id{~rb}{~rb}" ng-show="selected.verified">
             <span class="fa fa-times"></span>
-            <p>Unverify</p>
+            <p>{~lb}{~lb}'Unverify' | translate{~rb}{~rb}</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" href="#" rel="external" data-toggle="modal" data-target="#delete-confirm">
             <span class="fa fa-trash-o"></span>
-            <p>Delete</p>
+            <p>{~lb}{~lb}'Delete' | translate{~rb}{~rb}</p>
           </a>
         </div>
       </div>

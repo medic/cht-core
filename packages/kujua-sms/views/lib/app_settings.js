@@ -576,7 +576,32 @@ module.exports = {
            "key": "task.state",
            "default": "Message State",
            "en": "Message State"
-       }
+       },
+      {
+          "key": "Reply",
+          "default": "Reply",
+          "en": "Reply"
+      },
+      {
+          "key": "Verify",
+          "default": "Verify",
+          "en": "Verify"
+      },
+      {
+          "key": "Unverify",
+          "default": "Unverify",
+          "en": "Unverify"
+      },
+      {
+          "key": "Delete",
+          "default": "Delete",
+          "en": "Delete"
+      },
+      {
+          "key": "Edit",
+          "default": "Edit",
+          "en": "Edit"
+      }
    ],
    "forms": {
         "YYYY": {
