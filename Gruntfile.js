@@ -111,6 +111,13 @@ module.exports = function(grunt) {
         tasks: ['exec:deploy', 'notify:deployed']
       }
     },
+    notify_hooks: {
+      options: {
+        enabled: true,
+        max_jshint_notifications: 1,
+        title: "Medic Mobile"
+      }
+    },
     notify: {
       deployed: {
         options: {
@@ -129,6 +136,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-notify');
+
+  grunt.task.run('notify_hooks');
 
   // Default tasks
   grunt.registerTask('default', [
