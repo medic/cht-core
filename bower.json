@@ -15,6 +15,7 @@
     "angular-resource": "1.2.x",
     "angular-sanitize": "1.2.x",
     "angular-route": "1.2.x",
+    "angular-translate": "~2.2.0",
     "moment": "2.7.x",
     "select2": "3.5.x",
     "fontawesome": "4.1.x",

@@ -93,8 +93,8 @@
   });
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', 'Facility', 'Settings', 'ReadMessages', 'UserService',
-    function ($scope, $route, $location, Facility, Settings, ReadMessages, UserService) {
+    ['$scope', '$route', '$location', '$translate', 'Facility', 'Settings', 'User', 'ReadMessages', 'UserNameService',
+    function ($scope, $route, $location, $translate, Facility, Settings, User, ReadMessages, UserNameService) {
 
       $scope.forms = [];
       $scope.facilities = [];
@@ -156,6 +156,15 @@
           }
         }
       });
+      User.query(function(res) {
+        if (res && res.language) {
+          $translate.use(res.language);
+        } else {
+          Settings.query(function(res) {
+            $translate.use(res.settings && res.settings.locale);
+          });
+        }
+      });
 
       var updateReadStatus = function () {
         ReadMessages.query(function(res) {
@@ -169,7 +178,7 @@
             }
           };
           
-          var user = UserService();
+          var user = UserNameService();
           res.rows.forEach(function(row) {
             var username = getUsername(row.key[0]);
             if (username) {
@@ -199,7 +208,7 @@
                 $('body').trigger('markRead', {
                   read: true,
                   messageId: id,
-                  username: UserService()
+                  username: UserNameService()
                 });
               }
               $scope.selected = message;
@@ -253,7 +262,7 @@
           return true;
         }
         for (var i = 0; i < message.read.length; i++) {
-          if (message.read[i] === UserService()) {
+          if (message.read[i] === UserNameService()) {
             return true;
           }
         }

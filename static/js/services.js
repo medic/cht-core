@@ -9,7 +9,20 @@
       return $resource(BaseUrlService() + '/app_settings/medic', {}, {
         query: {
           method: 'GET',
-          isArray: false
+          isArray: false,
+          cache: true
+        }
+      });
+    }
+  ]);
+
+  inboxServices.factory('User', ['$resource', 'UserNameService',
+    function($resource, UserNameService) {
+      return $resource('/_users/org.couchdb.user%3A' + UserNameService(), {}, {
+        query: {
+          method: 'GET',
+          isArray: false,
+          cache: true
         }
       });
     }
@@ -56,7 +69,7 @@
     };
   });
 
-  inboxServices.factory('UserService', function() {
+  inboxServices.factory('UserNameService', function() {
     return function() {
       return $('html').data('user');
     };
