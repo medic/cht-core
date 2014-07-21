@@ -45,8 +45,7 @@ exports['when district that does not exist callback with error'] = function(test
         db: db
     }, function(err) {
         test.equals(err,
-            'No facility found with id \'abc\'.'
-            + ' Your admin needs to update the Facility Id in your user details.'
+            'No facility found with id \'abc\'. Your admin needs to update the Facility Id in your user details.'
         );
         getUserDistrict.restore();
         test.done();
@@ -69,8 +68,7 @@ exports['when district that exists but not district_hospital callback with error
         db: db
     }, function(err) {
         test.equals(err,
-            'No facility found with id \'abc\'.'
-            + ' Your admin needs to update the Facility Id in your user details.'
+            'Facility with id \'abc\' is not a district hospital. Your admin needs to update the Facility Id in your user details.'
         );
         getUserDistrict.restore();
         test.done();
