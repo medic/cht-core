@@ -47,6 +47,55 @@ exports['compact textforms format'] = function(test) {
     test.done();
 };
 
+exports['compact textforms format with hash separated form code'] = function(test) {
+    var doc = {
+        sent_timestamp: '1-13-12 15:35',
+        from: '+15551212',
+        message: 'ANCR#sarah'
+    };
+
+    var expectedObj = {
+        name: 'sarah'
+    };
+
+    var obj = smsparser.parse(def, doc);
+    test.same(obj, expectedObj);
+    test.done();
+};
+
+exports['compact textforms format with exclaimation separated form code'] = function(test) {
+    var doc = {
+        sent_timestamp: '1-13-12 15:35',
+        from: '+15551212',
+        message: 'ANCR!sarah'
+    };
+
+    var expectedObj = {
+        name: 'sarah'
+    };
+
+    var obj = smsparser.parse(def, doc);
+    test.same(obj, expectedObj);
+    test.done();
+};
+
+exports['compact textforms format with hyphen separated form code'] = function(test) {
+    var doc = {
+        sent_timestamp: '1-13-12 15:35',
+        from: '+15551212',
+        message: 'ANCR-sarah'
+    };
+
+    var expectedObj = {
+        name: 'sarah'
+    };
+
+    var obj = smsparser.parse(def, doc);
+    test.same(obj, expectedObj);
+    test.done();
+};
+
+
 exports['compact textforms format uses quotes for multiple words'] = function(test) {
     var doc = {
         sent_timestamp: '1-13-12 15:35',
