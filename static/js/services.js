@@ -59,7 +59,8 @@
 
   inboxServices.factory('RememberService', function() {
     return {
-        scrollTop: undefined
+      scrollTop: undefined,
+      dateFormat: 'DD-MMM-YYYY hh:mm'
     };
   });
 

@@ -4,24 +4,26 @@
 
   var inboxControllers = angular.module('inboxControllers', ['ngSanitize']);
 
-  var getRelativeDate = function(moment) {
-      return '<span title="' + moment.format('HH:mm, Do MMM YYYY') + '">' + 
+  var getRelativeDate = function(moment, dateFormat) {
+      return '<span title="' + moment.format(dateFormat) + '">' + 
         moment.fromNow() + 
         '</span>';
   };
 
-  inboxControllers.filter('relativeDate', function () {
-    return function (date) {
-      if (!date) { 
-        return ''; 
-      }
-      return getRelativeDate(moment(date));
-    };
-  });
+  inboxControllers.filter('relativeDate', ['RememberService',
+    function (RememberService) {
+      return function (date) {
+        if (!date) { 
+          return ''; 
+        }
+        return getRelativeDate(moment(date), RememberService.dateFormat);
+      };
+    }
+  ]);
 
   inboxControllers.filter('state', function () {
     return function (task) {
-      if (!task || !task.state) { 
+      if (!task || !task.state) {
         return ''; 
       }
       var title = task.due ? moment(task.due).fromNow() : '';
@@ -31,20 +33,21 @@
     };
   });
 
-  inboxControllers.filter('messageField', function () {
-    return function (field) {
-      if (!field) { 
-        return ''; 
-      }
-      var label = field.label;
-      var value = field.value;
-      if (['Child Birth Date', 'Expected Date', 'Birth Date'].indexOf(label) !== -1) {
-        value = getRelativeDate(moment(value));
-      }
-      return '<label>' + label + '</label>' +
-              '<p>' + value + '</p>';
-    };
-  });
+  inboxControllers.filter('messageField', ['RememberService',
+    function (RememberService) {
+      return function (field) {
+        if (!field) { 
+          return ''; 
+        }
+        var label = field.label;
+        var value = field.value;
+        if (['Child Birth Date', 'Expected Date', 'Birth Date'].indexOf(label) !== -1) {
+          value = getRelativeDate(moment(value), RememberService.dateFormat);
+        }
+        return '<label>' + label + '</label><p>' + value + '</p>';
+      };
+    }
+  ]);
 
   inboxControllers.filter('messageType', function () {
     return function (message, forms) {
@@ -93,8 +96,8 @@
   });
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', 'Facility', 'Settings', 'User', 'ReadMessages', 'UserNameService',
-    function ($scope, $route, $location, $translate, Facility, Settings, User, ReadMessages, UserNameService) {
+    ['$scope', '$route', '$location', '$translate', 'Facility', 'Settings', 'User', 'ReadMessages', 'UserNameService', 'RememberService',
+    function ($scope, $route, $location, $translate, Facility, Settings, User, ReadMessages, UserNameService, RememberService) {
 
       $scope.forms = [];
       $scope.facilities = [];
@@ -143,16 +146,21 @@
         }
       });
       Settings.query(function(res) {
-        if (res.settings && res.settings.forms) {
-          var forms = res.settings.forms;
-          for (var key in forms) {
-            if (forms.hasOwnProperty(key)) {
-              var form = forms[key];
-              $scope.forms.push({
-                name: form.meta.label.en,
-                code: form.meta.code
-              });
+        if (res.settings) {
+          if (res.settings.forms) {
+            var forms = res.settings.forms;
+            for (var key in forms) {
+              if (forms.hasOwnProperty(key)) {
+                var form = forms[key];
+                $scope.forms.push({
+                  name: form.meta.label.en,
+                  code: form.meta.code
+                });
+              }
             }
+          }
+          if (res.settings.reported_date_format) {
+            RememberService.dateFormat = res.settings.reported_date_format;
           }
         }
       });
