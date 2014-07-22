@@ -165,7 +165,6 @@
 
         Facility.query(function(res) {
           if (res.rows) {
-            console.log($scope.userDistrict, res.rows);
             res.rows.forEach(function(clinic) {
               var entity = clinic.doc;
               if (inDistrict(entity)) {

@@ -129,11 +129,13 @@ $(function () {
     _applyFilter();
   });
 
-  $('body').on('initialized', function(e, options) {
+  $('body').on('dataRecordsInitialized', function(e, options) {
     angular.element($('body')).scope().$apply(function(scope) {
       scope.init(options);
     });
   });
+  // Notify data_records.js that inbox is ready
+  $('body').trigger('inboxInitialized');
 
   $('#advanced').on('keypress', function(e) {
     if (e.which === 13) {
