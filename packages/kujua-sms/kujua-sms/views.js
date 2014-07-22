@@ -245,15 +245,21 @@ exports.data_records_valid_by_district_and_form = {
 
 exports.data_records_read_by_type = {
     map: function(doc) {
+        var objectpath = require('views/lib/objectpath'),
+            type,
+            dh;
         if (doc.type === 'data_record') {
-            var type = doc.form ? 'forms' : 'messages';
-            emit(['_total', type], 1);
-            if (doc.read) {
-                doc.read.forEach(function(user) {
-                    if (user) {
-                        emit([user, type], 1);
-                    }
-                });
+            type = doc.form ? 'forms' : 'messages';
+            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent');
+            if (dh && dh.type === 'district_hospital') {
+                emit(['_total', type, dh._id], 1);
+                if (doc.read) {
+                    doc.read.forEach(function(user) {
+                        if (user) {
+                            emit([user, type, dh._id], 1);
+                        }
+                    });
+                }
             }
         }
     },

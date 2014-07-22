@@ -129,6 +129,13 @@ $(function () {
     _applyFilter();
   });
 
+  $('body').on('initialized', function(e, options) {
+    angular.element($('body')).scope().$apply(function(scope) {
+      scope.userDistrict = options.district;
+      scope.init();
+    });
+  });
+
   $('#advanced').on('keypress', function(e) {
     if (e.which === 13) {
       _applyFilter();

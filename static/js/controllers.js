@@ -106,16 +106,12 @@
       $scope.appending = false;
       $scope.messages = [];
       $scope.totalMessages = undefined;
+      $scope.initialized = false;
+      $scope.userDistrict = undefined;
 
       $scope.readStatus = {
-        forms: {
-          total: 0,
-          read: 0
-        },
-        messages: {
-          total: 0,
-          read: 0
-        }
+        forms: { total: 0, read: 0 },
+        messages: { total: 0, read: 0 }
       };
 
       $scope.filterModel = {
@@ -186,16 +182,25 @@
             }
           };
           
+          var status = {
+            forms: { total: 0, read: 0 },
+            messages: { total: 0, read: 0 }
+          };
           var user = UserNameService();
           res.rows.forEach(function(row) {
-            var username = getUsername(row.key[0]);
-            if (username) {
-              $scope.readStatus[row.key[1]][username] = row.value;
+            var name = row.key[0];
+            var type = row.key[1];
+            var dist = row.key[2];
+            if (!$scope.userDistrict || $scope.userDistrict === dist) {
+              var username = getUsername(name);
+              if (username) {
+                status[type][username] += row.value;
+              }
             }
           });
+          $scope.readStatus = status;
         });
       };
-      updateReadStatus();
 
       $scope.setMessage = function(id) {
         $location.path('/' + $scope.filterModel.type + '/' + id);
@@ -326,6 +331,9 @@
       var _selectedDoc;
 
       $scope.advancedFilter = function(options) {
+        if (!$scope.initialized) {
+          return;
+        }
         options = options || {};
         options.query = $('#advanced').val();
         if (options.query === _currentQuery && !options.changes) {
@@ -377,8 +385,10 @@
         $scope.selected = undefined; 
       });
 
-      _setFilterString();
-
+      $scope.init = function() {
+        $scope.initialized = true;
+        $scope.filter();
+      };
     }
   ]);
 
