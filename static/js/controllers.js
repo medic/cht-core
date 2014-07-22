@@ -125,22 +125,6 @@
         }
       };
 
-      Facility.query(function(res) {
-        if (res.rows) {
-          res.rows.forEach(function(clinic) {
-            var entity = clinic.doc;
-            var names = [];
-            do {
-              names.push(entity.name);
-              entity = entity.parent;
-            } while( entity.name );
-            $scope.facilities.push({
-              id: clinic.id,
-              text: names.join(', ')
-            });
-          });
-        }
-      });
       Settings.query(function(res) {
         if (res.settings) {
           if (res.settings.forms) {
@@ -169,6 +153,36 @@
           });
         }
       });
+
+      var updateAvailableFacilities = function() {
+
+        var inDistrict = function(clinic) {
+          if (!$scope.userDistrict) {
+            return true;
+          }
+          return $scope.userDistrict === clinic.parent.parent._id;
+        };
+
+        Facility.query(function(res) {
+          if (res.rows) {
+            console.log($scope.userDistrict, res.rows);
+            res.rows.forEach(function(clinic) {
+              var entity = clinic.doc;
+              if (inDistrict(entity)) {
+                var names = [];
+                do {
+                  names.push(entity.name);
+                  entity = entity.parent;
+                } while( entity.name );
+                $scope.facilities.push({
+                  id: clinic.id,
+                  text: names.join(', ')
+                });
+              }
+            });
+          }
+        });
+      };
 
       var updateReadStatus = function () {
         ReadMessages.query(function(res) {
@@ -385,9 +399,11 @@
         $scope.selected = undefined; 
       });
 
-      $scope.init = function() {
+      $scope.init = function(options) {
         $scope.initialized = true;
+        $scope.userDistrict = options.district;
         $scope.filter();
+        updateAvailableFacilities();
       };
     }
   ]);

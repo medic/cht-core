@@ -131,8 +131,7 @@ $(function () {
 
   $('body').on('initialized', function(e, options) {
     angular.element($('body')).scope().$apply(function(scope) {
-      scope.userDistrict = options.district;
-      scope.init();
+      scope.init(options);
     });
   });
 
