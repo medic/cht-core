@@ -125,7 +125,14 @@ module.exports = function(grunt) {
           message: 'Deployed successfully'
         }
       }
-    }
+    },
+    karma: {
+      unit: {
+        configFile: './tests/karma-unit.conf.js',
+        autoWatch: false,
+        singleRun: true
+      }
+    },
   });
 
   // Load the plugins
@@ -137,6 +144,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-notify');
+  grunt.loadNpmTasks('grunt-karma');
 
   grunt.task.run('notify_hooks');
 
@@ -155,6 +163,10 @@ module.exports = function(grunt) {
     'default',
     'exec:deploy',
     'notify:deployed'
+  ]);
+
+  grunt.registerTask('test', [
+    'karma:unit'
   ]);
 
 };
