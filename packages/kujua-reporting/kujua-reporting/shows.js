@@ -4,19 +4,16 @@ var db = require('db'),
     sms_utils = require('kujua-sms/utils'),
     appname = require('settings/root').name,
     duality = require('duality/core'),
-    events = require('duality/events'),
-    users = require('users'),
     charts = require('./ui/charts'),
     templates = require('duality/templates'),
-    appinfo = require('views/lib/appinfo'),
-    url_util = require('url');
+    appinfo = require('views/lib/appinfo');
 
-var facility_doc
-    , _req
-    , dates
-    , isAdmin
-    , isDistrictAdmin
-    , userDistrict;
+var facility_doc, 
+    _req, 
+    dates, 
+    isAdmin, 
+    isDistrictAdmin, 
+    userDistrict;
 
 var getViewReports = function(doc, dates, callback) {
     var args = utils.getReportingViewArgs(dates),
