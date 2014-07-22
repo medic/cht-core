@@ -52,9 +52,11 @@
           <li role="presentation">
             <a role="menuitem" tabindex="-1" href="#" rel="external" data-toggle="modal" data-target="#edit-user-profile">Edit User Profile</a>
           </li>
+          {#isAdmin}
           <li role="presentation">
             <a role="menuitem" tabindex="-1" href="{baseURL}/settings" rel="external">Administrative Options</a>
           </li>
+          {/isAdmin}
           <li role="presentation">
             <a role="menuitem" tabindex="-1" href="#" rel="external" id="logout">Log Out</a>
           </li>
