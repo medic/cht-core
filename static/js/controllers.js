@@ -24,11 +24,11 @@
   inboxControllers.filter('state', function () {
     return function (task) {
       if (!task || !task.state) {
-        return ''; 
+        return '';
       }
       var title = task.due ? moment(task.due).fromNow() : '';
-      return '<span class="task-state" title="' + title + '">' + 
-        task.state + 
+      return '<span class="task-state" title="' + title + '">' +
+        task.state +
         '</span>';
     };
   });

@@ -295,12 +295,13 @@ var onRecordClick = function(ev) {
     }
 };
 
-function init(req) {
+function init(req, options) {
     sms_utils.info = appinfo.getAppInfo.apply(this);
-    isAdmin = kutils.isUserAdmin(req.userCtx);
-    isDistrictAdmin = kutils.isUserDistrictAdmin(req.userCtx);
     dates = utils.getDates(req.query);
     _req = req;
+    isAdmin = options.isAdmin;
+    isDistrictAdmin = options.isDistrictAdmin;
+    userDistrict = options.district;
 };
 
 function renderReporting(doc, req) {
@@ -637,8 +638,10 @@ exports.facility_reporting = renderReporting;
 exports.init = init;
 
 exports.render_page = function() {
-    var appdb = db.use(duality.getDBURL()),
-        config = sms_utils.info['kujua-reporting'];
-    renderDistrictChoice(appdb, config);
-    registerInboxListeners();   
+    if (_req) {
+        var appdb = db.use(duality.getDBURL()),
+            config = sms_utils.info['kujua-reporting'];
+        renderDistrictChoice(appdb, config);
+    }
+    registerInboxListeners();
 };

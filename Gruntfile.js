@@ -107,7 +107,7 @@ module.exports = function(grunt) {
         tasks: ['jshint', 'uglify', 'exec:deploy', 'notify:deployed']
       },
       other: {
-        files: ['templates/**/*', 'lib/**/*'],
+        files: ['templates/**/*', 'lib/**/*', 'packages/kujua-*/**/*'],
         tasks: ['exec:deploy', 'notify:deployed']
       }
     },
