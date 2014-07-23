@@ -4,7 +4,6 @@ module.exports = function(config) {
     basePath: '../',
     frameworks: ['mocha'],
     reporters: ['progress'],
-    browsers: ['Chrome'],
     autoWatch: true,
     singleRun: false,
     colors: true,
@@ -18,7 +17,7 @@ module.exports = function(config) {
       moduleName: 'templates'
     },
     
-    files : [
+    files: [
       // 3rd Party Code
       'bower_components/jquery/jquery.js',
       'bower_components/angular/angular.js',
@@ -40,7 +39,7 @@ module.exports = function(config) {
       'templates/partials/sender.html',
 
       // test files
-      'tests/unit/**/*.js'
+      'tests_ui/unit/**/*.js'
     ]
   });
 

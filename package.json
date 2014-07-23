@@ -18,7 +18,9 @@
     "grunt-karma": "~0.8.0",
     "grunt-notify": "^0.3.0",
     "karma": "~0.12.17",
-    "karma-chrome-launcher": "~0.1.4",
+    "karma-chrome-launcher": "~0.1",
+    "karma-firefox-launcher": "~0.1",
+    "karma-phantomjs-launcher": "~0.1",
     "karma-mocha": "~0.1.6",
     "karma-ng-html2js-preprocessor": "~0.1"
   }

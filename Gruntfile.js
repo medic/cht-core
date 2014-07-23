@@ -95,6 +95,9 @@ module.exports = function(grunt) {
       },
       bower: {
         cmd: 'bower install'
+      },
+      phantom: {
+        cmd: 'phantomjs scripts/nodeunit_runner.js http://localhost:5984/medic/_design/medic/_rewrite/test'
       }
     },
     watch: {
@@ -128,9 +131,14 @@ module.exports = function(grunt) {
     },
     karma: {
       unit: {
-        configFile: './tests/karma-unit.conf.js',
-        autoWatch: false,
-        singleRun: true
+        configFile: './tests_ui/karma-unit.conf.js',
+        singleRun: true,
+        browsers: ['Chrome', 'Firefox']
+      },
+      unit_ci: {
+        configFile: './tests_ui/karma-unit.conf.js',
+        singleRun: true,
+        browsers: ['PhantomJS']
       }
     },
   });
@@ -156,7 +164,14 @@ module.exports = function(grunt) {
     'uglify',
     'less',
     'copy:inbox',
-    'copy:admin'
+    'copy:admin',
+  ]);
+
+  grunt.registerTask('ci', [
+    'default',
+    'karma:unit_ci',
+    'exec:deploy',
+    'exec:phantom'
   ]);
 
   grunt.registerTask('dev', [
@@ -166,7 +181,8 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('test', [
-    'karma:unit'
+    'karma:unit',
+    'exec:phantom'
   ]);
 
 };

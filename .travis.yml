@@ -11,10 +11,8 @@ before_script:
   - npm install kanso -g
   - npm install grunt-cli -g
   - npm install bower -g
-  - grunt
-  - kanso push http://localhost:5984/medic
 
-script: ./scripts/ci/run_build.sh
+script: grunt ci
 
 after_success:
   - bash ./scripts/ci/after_success.sh
