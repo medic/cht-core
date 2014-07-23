@@ -28,7 +28,7 @@
     }
   ]);
 
-  inboxServices.factory('Facility', ['$resource', 'BaseUrlService',
+  inboxServices.factory('FacilityRaw', ['$resource', 'BaseUrlService',
     function($resource, BaseUrlService) {
       return $resource(BaseUrlService() + '/facilities.json', {}, {
         query: {
@@ -40,6 +40,56 @@
           }
         }
       });
+    }
+  ]);
+
+  inboxServices.factory('Facility', ['$q', 'FacilityRaw',
+    function($q, FacilityRaw) {
+
+      var inDistrict = function(userDistrict, clinic) {
+        if (!userDistrict) {
+          return true;
+        }
+        return userDistrict === clinic.parent.parent._id;
+      };
+
+      var getName = function(clinic) {
+        var parts = [];
+        do {
+          parts.push(clinic.name);
+          clinic = clinic.parent;
+        } while( clinic.name );
+        return parts.join(', ');
+      };
+
+      return {
+        get: function(options) {
+
+          options = options || {};
+
+          var deferred = $q.defer();
+
+          FacilityRaw.query(function(res) {
+
+            var facilities = [];
+
+            if (res.rows) {
+              res.rows.forEach(function(clinic) {
+                if (inDistrict(options.userDistrict, clinic.doc)) {
+                  facilities.push({
+                    id: clinic.id,
+                    text: getName(clinic.doc)
+                  });
+                }
+              });
+            }
+
+            deferred.resolve(facilities);
+          });
+
+          return deferred.promise;
+        }
+      };
     }
   ]);
 

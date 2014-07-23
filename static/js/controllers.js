@@ -155,32 +155,16 @@
       });
 
       var updateAvailableFacilities = function() {
-
-        var inDistrict = function(clinic) {
-          if (!$scope.userDistrict) {
-            return true;
+        Facility.get({
+          userDistrict: $scope.userDistrict
+        }).then(
+          function(res) {
+            $scope.facilities = res;
+          },
+          function() {
+            console.log('Failed to retrieve facilities');
           }
-          return $scope.userDistrict === clinic.parent.parent._id;
-        };
-
-        Facility.query(function(res) {
-          if (res.rows) {
-            res.rows.forEach(function(clinic) {
-              var entity = clinic.doc;
-              if (inDistrict(entity)) {
-                var names = [];
-                do {
-                  names.push(entity.name);
-                  entity = entity.parent;
-                } while( entity.name );
-                $scope.facilities.push({
-                  id: clinic.id,
-                  text: names.join(', ')
-                });
-              }
-            });
-          }
-        });
+        );
       };
 
       var updateReadStatus = function () {
@@ -192,7 +176,7 @@
             $scope.readStatus = res;
           },
           function() {
-            console.log('failed to retrieve read status');
+            console.log('Failed to retrieve read status');
           }
         );
       };
