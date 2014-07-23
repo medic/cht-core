@@ -89,8 +89,11 @@ module.exports = function(grunt) {
     exec: {
       deploy: {
         cmd: function() {
-          return 'kanso push http://' + grunt.option('user') + ':' + 
-            grunt.option('pass') + '@localhost:5984/medic';
+          var auth = '';
+          if (grunt.option('user') && grunt.option('pass')) {
+            auth = grunt.option('user') + ':' + grunt.option('pass') + '@';
+          }
+          return 'kanso push http://' + auth + 'localhost:5984/medic';
         }
       },
       bower: {
