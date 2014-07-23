@@ -96,8 +96,8 @@
   });
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', 'Facility', 'Settings', 'User', 'ReadMessages', 'UserNameService', 'RememberService',
-    function ($scope, $route, $location, $translate, Facility, Settings, User, ReadMessages, UserNameService, RememberService) {
+    ['$scope', '$route', '$location', '$translate', 'Facility', 'Settings', 'Form', 'Language', 'ReadMessages', 'UserNameService', 'RememberService',
+    function ($scope, $route, $location, $translate, Facility, Settings, Form, Language, ReadMessages, UserNameService, RememberService) {
 
       $scope.forms = [];
       $scope.facilities = [];
@@ -125,34 +125,29 @@
         }
       };
 
+      Form.get().then(
+        function(res) {
+          $scope.forms = res;
+        },
+        function() {
+          console.log('Failed to retrieve facilities');
+        }
+      );
+
       Settings.query(function(res) {
-        if (res.settings) {
-          if (res.settings.forms) {
-            var forms = res.settings.forms;
-            for (var key in forms) {
-              if (forms.hasOwnProperty(key)) {
-                var form = forms[key];
-                $scope.forms.push({
-                  name: form.meta.label.en,
-                  code: form.meta.code
-                });
-              }
-            }
-          }
-          if (res.settings.reported_date_format) {
-            RememberService.dateFormat = res.settings.reported_date_format;
-          }
+        if (res.settings && res.settings.reported_date_format) {
+          RememberService.dateFormat = res.settings.reported_date_format;
         }
       });
-      User.query(function(res) {
-        if (res && res.language) {
-          $translate.use(res.language);
-        } else {
-          Settings.query(function(res) {
-            $translate.use(res.settings && res.settings.locale);
-          });
+
+      Language.get().then(
+        function(language) {
+          $translate.use(language);
+        },
+        function() {
+          console.log('Failed to retrieve language');
         }
-      });
+      );
 
       var updateAvailableFacilities = function() {
         Facility.get({
