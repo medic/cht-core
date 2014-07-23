@@ -1,5 +1,7 @@
 describe('Unit: Testing mmSender', function() {
 
+  'use strict';
+
   var compile,
       scope;
 
@@ -23,7 +25,7 @@ describe('Unit: Testing mmSender', function() {
     scope.message = {
       sent_by: '+789',
       from: '+123'
-    }
+    };
 
     var element = compile('<mm-sender message="message"/>')(scope);
     scope.$digest();
@@ -33,7 +35,7 @@ describe('Unit: Testing mmSender', function() {
   it('should render sender when message has sent by', function() {
     scope.message = {
       sent_by: '+789'
-    }
+    };
 
     var element = compile('<mm-sender message="message"/>')(scope);
     scope.$digest();
@@ -57,7 +59,7 @@ describe('Unit: Testing mmSender', function() {
           }
         }
       }
-    }
+    };
 
     var element = compile('<mm-sender message="message"/>')(scope);
     scope.$digest();

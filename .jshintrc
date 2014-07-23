@@ -77,6 +77,13 @@
     "globals"       : {         // additional predefined global variables
         "angular"   : true,
         "moment"    : true,
-        "_"         : true
+        "_"         : true,
+
+        // tests_ui globals
+        "beforeEach": true,
+        "it"        : true,
+        "describe"  : true,
+        "inject"    : true,
+        "chai"      : true
     }
 }
