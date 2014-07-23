@@ -184,35 +184,17 @@
       };
 
       var updateReadStatus = function () {
-        ReadMessages.query(function(res) {
-
-          var getUsername = function(key) {
-            if (key === '_total') {
-              return 'total';
-            }
-            if (key === user) {
-              return 'read';
-            }
-          };
-          
-          var status = {
-            forms: { total: 0, read: 0 },
-            messages: { total: 0, read: 0 }
-          };
-          var user = UserNameService();
-          res.rows.forEach(function(row) {
-            var name = row.key[0];
-            var type = row.key[1];
-            var dist = row.key[2];
-            if (!$scope.userDistrict || $scope.userDistrict === dist) {
-              var username = getUsername(name);
-              if (username) {
-                status[type][username] += row.value;
-              }
-            }
-          });
-          $scope.readStatus = status;
-        });
+        ReadMessages.get({
+          user: UserNameService(),
+          userDistrict: $scope.userDistrict
+        }).then(
+          function(res) {
+            $scope.readStatus = res;
+          },
+          function() {
+            console.log('failed to retrieve read status');
+          }
+        );
       };
 
       $scope.setMessage = function(id) {
