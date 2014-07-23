@@ -12,7 +12,6 @@
 
   inboxControllers.filter('relativeDate', ['RememberService',
     function (RememberService) {
-      console.log('RememberService', RememberService);
       return function (date) {
         if (!date) { 
           return ''; 
