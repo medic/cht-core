@@ -13,7 +13,8 @@
           </div>
         </li>
       </ul>
-      <p ng-show="!loading && !messages.length">No messages found</p>
+      <p ng-show="error" class="alert alert-danger" role="alert">Error fetching messages.</p>
+      <p ng-show="!error && !loading && !messages.length">No messages found</p>
       <p ng-show="!loading && messages.length && messages.length === totalMessages">No more messages</p>
       <span class="mm-loader" ng-show="loading">
         <span class="fa fa-spinner fa-spin"></span>

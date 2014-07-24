@@ -12,6 +12,7 @@
       $scope.facilities = [];
       $scope.selected = undefined;
       $scope.loading = true;
+      $scope.error = false;
       $scope.appending = false;
       $scope.messages = [];
       $scope.totalMessages = undefined;
@@ -236,6 +237,7 @@
           }
         }
         if (!options.silent) {
+          $scope.error = false;
           $scope.loading = true;
         }
         if (options.skip) {
@@ -246,15 +248,19 @@
         }
         options.callback = function(err, data) {
           _currentQuery = null;
-          if (err) {
-            return console.log(err);
-          }
           angular.element($('body')).scope().$apply(function(scope) {
-            updateReadStatus();
-            scope.update(data.rows);
-            scope.totalMessages = data.total_rows;
-            if (_selectedDoc) {
-              scope.selectMessage(_selectedDoc);
+            if (err) {
+              scope.loading = false;
+              scope.error = true;
+              console.log('Error loading messages', err);
+            } else {
+              scope.error = false;
+              updateReadStatus();
+              scope.update(data.rows);
+              scope.totalMessages = data.total_rows;
+              if (_selectedDoc) {
+                scope.selectMessage(_selectedDoc);
+              }
             }
           });
         };
