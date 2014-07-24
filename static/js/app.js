@@ -4,6 +4,7 @@
 
   var app = angular.module('inboxApp', [
     'ngRoute',
+    'inboxFilters',
     'inboxControllers',
     'inboxServices',
     'pascalprecht.translate'

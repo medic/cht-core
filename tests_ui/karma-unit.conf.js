@@ -30,6 +30,7 @@ module.exports = function(config) {
       'bower_components/moment/moment.js',
 
       // app-specific code
+      'static/js/filters.js',
       'static/js/controllers.js',
       'static/js/services.js',
       'static/js/app.js',

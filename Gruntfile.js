@@ -28,6 +28,7 @@ module.exports = function(grunt) {
             'static/js/bootstrap-multidropdown.js',
             'static/js/inbox.js',
             'static/js/app.js',
+            'static/js/filters.js',
             'static/js/controllers.js',
             'static/js/services.js'
           ]
