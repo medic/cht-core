@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', 'Facility', 'Settings', 'Form', 'Language', 'ReadMessages', 'UserNameService', 'RememberService',
-    function ($scope, $route, $location, $translate, Facility, Settings, Form, Language, ReadMessages, UserNameService, RememberService) {
+    ['$scope', '$route', '$location', '$translate', '$animate', 'Facility', 'Settings', 'Form', 'Language', 'ReadMessages', 'UserNameService', 'RememberService',
+    function ($scope, $route, $location, $translate, $animate, Facility, Settings, Form, Language, ReadMessages, UserNameService, RememberService) {
 
       $scope.forms = [];
       $scope.facilities = [];
@@ -150,8 +150,6 @@
             $scope.messages.push(newMsg);
           }
         }
-        $scope.loading = false;
-        $scope.appending = false;
       };
 
       $scope.isRead = function(message) {
@@ -228,6 +226,7 @@
           return;
         }
         _currentQuery = options.query;
+        $animate.enabled(!!options.changes);
         if (options.changes) {
           var changedRows = options.changes.results;
           for (var i = 0; i < changedRows.length; i++) {
@@ -248,20 +247,21 @@
         }
         options.callback = function(err, data) {
           _currentQuery = null;
-          angular.element($('body')).scope().$apply(function(scope) {
+          angular.element($('body')).scope().$apply(function($scope) {
+            $scope.loading = false;
             if (err) {
-              scope.loading = false;
-              scope.error = true;
+              $scope.error = true;
               console.log('Error loading messages', err);
             } else {
-              scope.error = false;
+              $scope.error = false;
               updateReadStatus();
-              scope.update(data.rows);
-              scope.totalMessages = data.total_rows;
+              $scope.update(data.rows);
+              $scope.totalMessages = data.total_rows;
               if (_selectedDoc) {
-                scope.selectMessage(_selectedDoc);
+                $scope.selectMessage(_selectedDoc);
               }
             }
+            $scope.appending = false;
           });
         };
         $('body').trigger('updateMessages', options);

@@ -252,9 +252,9 @@
 
   li {
     border-bottom: 1px solid @seperator-color;
-    padding: 1em;
     cursor: pointer;
     white-space: nowrap;
+    overflow: hidden;
 
     &.selected, &:hover {
       background-color: @highlight-color;
@@ -263,7 +263,38 @@
     &.read .sender .name {
       font-weight: normal;
     }
+
+    .message-wrapper {
+      margin: 1em;
+    }
+
+    &.animate-repeat {
+
+      &.ng-move,
+      &.ng-enter,
+      &.ng-leave {
+        -webkit-transition: all 500ms ease 0s;
+        -moz-transition: all 500ms ease 0s;
+        transition: all 500ms ease 0s;
+      }
+
+      &.ng-leave.ng-leave-active,
+      &.ng-move,
+      &.ng-enter {
+        opacity: 0;
+        max-height: 0;
+      }
+
+      &.ng-leave,
+      &.ng-move.ng-move-active,
+      &.ng-enter.ng-enter-active {
+        opacity: 1;
+        max-height: 70px;
+      }
+
+    }
   }
+
 
   .mm-badge-container {
     display: inline-block;

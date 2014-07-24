@@ -4,6 +4,7 @@
 
   var app = angular.module('inboxApp', [
     'ngRoute',
+    'ngAnimate',
     'inboxFilters',
     'inboxControllers',
     'inboxServices',
