@@ -8,6 +8,7 @@
   "devDependencies": {
     "chai": "~1.9.1",
     "grunt": "^0.4.5",
+    "grunt-autoprefixer": "^0.8.2",
     "grunt-bower-concat": "^0.3.0",
     "grunt-contrib-copy": "^0.5.0",
     "grunt-contrib-jshint": "^0.10.0",
@@ -20,8 +21,8 @@
     "karma": "~0.12.17",
     "karma-chrome-launcher": "~0.1",
     "karma-firefox-launcher": "~0.1",
-    "karma-phantomjs-launcher": "~0.1",
     "karma-mocha": "~0.1.6",
-    "karma-ng-html2js-preprocessor": "~0.1"
+    "karma-ng-html2js-preprocessor": "~0.1",
+    "karma-phantomjs-launcher": "~0.1"
   }
 }

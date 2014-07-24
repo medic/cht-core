@@ -60,6 +60,11 @@ module.exports = function(grunt) {
         }
       }
     },
+    autoprefixer: {
+      all: {
+        src: 'static/dist/*.css'
+      },
+    },
     copy: {
       inbox: {
         files: [
@@ -108,11 +113,11 @@ module.exports = function(grunt) {
     watch: {
       css: {
         files: ['static/css/**/*'],
-        tasks: ['less', 'exec:deploy', 'notify:deployed']
+        tasks: ['mmcss', 'exec:deploy', 'notify:deployed']
       },
       js: {
         files: ['static/js/**/*'],
-        tasks: ['jshint', 'uglify', 'exec:deploy', 'notify:deployed']
+        tasks: ['mmjs', 'exec:deploy', 'notify:deployed']
       },
       other: {
         files: ['templates/**/*', 'lib/**/*', 'packages/kujua-*/**/*'],
@@ -158,18 +163,32 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-notify');
   grunt.loadNpmTasks('grunt-karma');
+  grunt.loadNpmTasks('grunt-autoprefixer');
 
   grunt.task.run('notify_hooks');
 
   // Default tasks
-  grunt.registerTask('default', [
+  grunt.registerTask('mmjs', [
     'jshint',
+    'uglify'
+  ]);
+
+  grunt.registerTask('mmcss', [
+    'less',
+    'autoprefixer'
+  ]);
+
+  grunt.registerTask('mmbower', [
     'exec:bower',
     'bower_concat',
-    'uglify',
-    'less',
     'copy:inbox',
-    'copy:admin',
+    'copy:admin'
+  ]);
+
+  grunt.registerTask('default', [
+    'mmbower',
+    'mmjs',
+    'mmcss'
   ]);
 
   grunt.registerTask('ci', [
