@@ -108,6 +108,7 @@
       $scope.totalMessages = undefined;
       $scope.initialized = false;
       $scope.userDistrict = undefined;
+      $scope.filterQuery = undefined;
 
       $scope.readStatus = {
         forms: { total: 0, read: 0 },
@@ -259,25 +260,26 @@
       var _setFilterString = function() {
 
         var formatDate = function(date) {
-          return moment(date).format('YYYY-MM-DD');
+          return date.format('YYYY-MM-DD');
         };
 
         var filters = [];
 
         // increment end date so it's inclusive
-        var to = new Date($scope.filterModel.date.to.valueOf());
-        to.setDate(to.getDate() + 1);
+        var to = moment($scope.filterModel.date.to).add('days', 1);
+        var from = moment($scope.filterModel.date.from);
 
         filters.push(
           'reported_date<date>:[' + 
-          formatDate($scope.filterModel.date.from) + ' TO ' + formatDate(to) + 
+          formatDate(from) + ' TO ' + formatDate(to) + 
           ']'
         );
 
         if ($scope.filterModel.type === 'messages') {
           filters.push('-form:[* TO *]');
         } else {
-          if ($scope.filterModel.forms.length) {
+          var selectedForms = $scope.filterModel.forms.length;
+          if (selectedForms > 0 && selectedForms < $scope.forms.length) {
             var formCodes = [];
             $scope.filterModel.forms.forEach(function(form) {
               formCodes.push(form.code);
@@ -294,11 +296,12 @@
           filters.push('NOT errors<int>:0');
         }
 
-        if ($scope.filterModel.facilities.length) {
+        var selectedFacilities = $scope.filterModel.facilities.length;
+        if (selectedFacilities > 0 && selectedFacilities < $scope.facilities.length) {
           filters.push('clinic:(' + $scope.filterModel.facilities.join(' OR ') + ')');
         }
 
-        $('#advanced').val(filters.join(' AND '));
+        $scope.filterQuery = filters.join(' AND ');
       };
 
       var _currentQuery;
@@ -309,7 +312,7 @@
           return;
         }
         options = options || {};
-        options.query = $('#advanced').val();
+        options.query = $scope.filterQuery;
         if (options.query === _currentQuery && !options.changes) {
           // debounce as same query already running
           return;
