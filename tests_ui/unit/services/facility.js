@@ -46,9 +46,9 @@ describe('Facility service', function() {
     ];
 
     var expected = [
+      {id: 'a301463e-74ba-6e2a-3424d30ef508a488', text: 'Andy Bay, Dunedin, Otago'},
       {id: '920a7f6a-d01d-5cfe-7c9182fe6551322a', text: 'Maori Hill, Dunedin, Otago'},
-      {id: '920a7f6a-d01d-5cfe-7c9182fe65516194', text: 'Sumner, Christchurch, Canterbury'},
-      {id: 'a301463e-74ba-6e2a-3424d30ef508a488', text: 'Andy Bay, Dunedin, Otago'}
+      {id: '920a7f6a-d01d-5cfe-7c9182fe65516194', text: 'Sumner, Christchurch, Canterbury'}
     ];
 
     service.get().then(
@@ -71,8 +71,8 @@ describe('Facility service', function() {
     ];
 
     var expected = [
-      {id: '920a7f6a-d01d-5cfe-7c9182fe6551322a', text: 'Maori Hill, Dunedin, Otago'},
-      {id: 'a301463e-74ba-6e2a-3424d30ef508a488', text: 'Andy Bay, Dunedin, Otago'}
+      {id: 'a301463e-74ba-6e2a-3424d30ef508a488', text: 'Andy Bay, Dunedin, Otago'},
+      {id: '920a7f6a-d01d-5cfe-7c9182fe6551322a', text: 'Maori Hill, Dunedin, Otago'}
     ];
 
     service.get({ userDistrict: 'a301463e-74ba-6e2a-3424d30ef5087d1c' }).then(

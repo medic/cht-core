@@ -169,6 +169,12 @@
               });
             }
 
+            facilities.sort(function(lhs, rhs) {
+              var lhsName = lhs.text.toUpperCase();
+              var rhsName = rhs.text.toUpperCase();
+              return lhsName.localeCompare(rhsName);
+            });
+
             deferred.resolve(facilities);
           });
 
