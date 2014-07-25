@@ -20,6 +20,24 @@
   overflow-x: hidden;
 }
 
+body.inbox {
+  &.messages {
+    .header .tabs .selected, .filters {
+      background-color: @messages-color;
+    }
+  }
+  &.forms {
+    .header .tabs .selected, .filters {
+      background-color: @forms-color;
+    }
+  }
+  &.reports {
+    .header .tabs .selected, .filters {
+      background-color: @reports-color;
+    }
+  }
+}
+
 .row .inner {
   max-width: @content-width;
   margin: 0 auto;
@@ -82,8 +100,14 @@
     line-height: 1.5em;
   }
 
-  .dropdown-menu {
-    margin: 3.4em 1em;
+  .options .dropdown-menu {
+    width: 200px;
+    left: auto;
+    a {
+      text-shadow: none;
+      padding: 3px 20px;
+      color: #262626;
+    }
   }
 
   .tabs {
@@ -102,12 +126,26 @@
       cursor: pointer;
 
       &.selected {
-        background-color: @option-color;
-        .button-label {
+        .button-label, .mm-icon:hover {
           .button-text;
         }
-        .mm-icon:hover {
-          .button-text;
+      }
+
+      &:hover {
+        &#messages-tab {
+          &, .mm-icon-inverse, .mm-icon-inverse:hover {
+            color: @messages-color;
+          }
+        }
+        &#forms-tab {
+          &, .mm-icon-inverse, .mm-icon-inverse:hover {
+            color: @forms-color;
+          }
+        }
+        &#reports-tab {
+          &, .mm-icon-inverse, .mm-icon-inverse:hover {
+            color: @reports-color;
+          }
         }
       }
 
@@ -120,13 +158,10 @@
 }
 
 .filters {
-  background-color: @option-color;
   height: @filters-height;
   font-size: 0.95em;
   padding: 0px 2.5em 0px 2em;
   white-space: nowrap;
-  box-shadow: 0 5px 2px -2px #aaa;
-  margin: 0 -3em;
 
   .inner {
     position: relative;
@@ -159,8 +194,9 @@
 
   .filter-actions {
     float: right;
-    .mm-button {
-      width: 3.5em;
+    .mm-button-icon {
+      padding-top: 0.3em;
+      padding-right: 0.65em;
     }
   }
 
@@ -213,7 +249,7 @@
 
 .row.content {
   .inbox, .reporting {
-    top: @header-height + @filters-height + 0.1em;
+    top: 8.75em;
     bottom: 0;
     position: absolute;
     width: 100%;
@@ -254,8 +290,12 @@
     white-space: nowrap;
     overflow: hidden;
 
-    &.selected, &:hover {
+    &:hover {
       background-color: @highlight-color;
+    }
+
+    &.selected {
+      background-color: @option-selected-color;
     }
 
     &.read .sender .name {
@@ -429,6 +469,7 @@
     margin: 0 auto 2em;
     overflow: hidden;
     pointer-events: auto;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.63);
 
     .mm-icon {
       width: 23%;
@@ -571,7 +612,7 @@
   }
   .row.content {
     .inbox, .reporting {
-      top: 6.25em;
+      top: 5.75em;
     }
     .meta {
       padding-bottom: 0;

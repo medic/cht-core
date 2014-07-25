@@ -7,17 +7,15 @@
 .mm-dropdown-menu {
   top: 0;
   right: 0;
-  min-width: 0;
   padding: 1em 0;
-  margin: 3.675em 2em;
+  margin: 3.6em 0.5em;
   font-size: 0.85em;
   position: absolute;
   overflow: hidden;
-  border-radius: 0 0 8pt 8pt;
-  border-width: 0 1px 1px 1px;
-  border-style: solid;
-  border-color: rgba(0, 0, 0, 0.5);
-  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 0;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  background-color: #fff;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.25);
 
   li a {
     font-size: 1.1em;
@@ -25,8 +23,7 @@
     overflow: hidden;
     cursor: pointer;
     &:hover {
-      color: #fff;
-      background-color: rgba(0, 0, 0, 0.75);
+      background-color: @highlight-color;
     }
   }
 
@@ -38,8 +35,16 @@
 
 }
 
-.dropdown.mm-dropdown {
-  &.pair-left {
+.mm-dropdown {
+
+  display: inline-block;
+
+  &.multidropdown .selected {
+    text-decoration: none;
+    background-color: @option-selected-color;
+  }
+
+  &.dropdown.pair-left {
     padding-right: 0;
     .mm-button {
       border-top-right-radius: 0;
@@ -55,7 +60,7 @@
     }
   }
 
-  &.pair-right {
+  &.dropdown.pair-right {
     padding-left: 0;
     .mm-button {
       border-top-left-radius: 0;
@@ -88,22 +93,16 @@
   margin: 0;
   position: fixed;
   display: block;
-  padding: 2em 1em;
+  padding: 1em 0;
   font-size: 1.25em;
   border-width: 1px;
 
   li a {
-    color: #fff;
     padding: 0.5em 1em;
     text-shadow: none;
     font-weight: bold;
   }
 
-  li a:hover {
-    color: #000;
-    border-radius: 3pt;
-    background-color: rgba(0, 0, 0, 0.85);
-  }
 }
 
 @media (max-width: 767px) {
@@ -115,25 +114,6 @@
     left: 2em;
     right: 2em;
     .mm-dropdown-menu-modal
-  }
-  .open .mm-dropdown-menu-inverse li a:hover {
-    background-color: rgba(255, 255, 255, 0.85);
-  }
-}
-
-@media (min-width: 767px) {
-  .open .mm-dropdown-menu-fullscreen {
-    border-radius: 7pt;
-  }
-  .open .mm-dropdown-menu-fullscreen {
-    top: 7em;
-    left: 25%;
-    right: 25%;
-    text-align: center;
-    .mm-dropdown-menu-modal
-  }
-  .mm-dropdown-menu-fullscreen.mm-dropdown-menu-inverse li a:hover {
-    background-color: rgba(255, 255, 255, 0.85);
   }
 }
 

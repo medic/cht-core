@@ -228,6 +228,7 @@
         _currentQuery = options.query;
         $animate.enabled(!!options.changes);
         if (options.changes) {
+          updateReadStatus();
           var changedRows = options.changes.results;
           for (var i = 0; i < changedRows.length; i++) {
             if (changedRows[i].deleted) {
@@ -254,7 +255,6 @@
               console.log('Error loading messages', err);
             } else {
               $scope.error = false;
-              updateReadStatus();
               $scope.update(data.rows);
               $scope.totalMessages = data.total_rows;
               if (_selectedDoc) {
@@ -281,6 +281,7 @@
         $scope.initialized = true;
         $scope.userDistrict = options.district;
         $scope.filter();
+        updateReadStatus();
         updateAvailableFacilities();
       };
     }

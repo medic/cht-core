@@ -41,8 +41,6 @@ $(function () {
     // Change position when rendering in mobile
     if ($('#back').is(':visible')) {
       $('.datepicker').css({
-        left: '3em',
-        right: '3em',
         top: '9em'
       });
     } else {
@@ -50,7 +48,7 @@ $(function () {
         'margin-left': $(this).is('#date-to') ? '-7%' : ''
       });
     }
-    $('.datepicker').addClass('open dropdown-menu mm-dropdown-menu mm-dropdown-menu-inverse');
+    $('.datepicker').addClass('open dropdown-menu mm-dropdown-menu');
   });
 
   var iframe = $('#add-record-panel iframe');

@@ -41,14 +41,13 @@
         </a>
       </span>
 
-      <span class="dropdown">
+      <span class="dropdown options">
         <a data-toggle="dropdown">
           <div class="mm-icon mm-icon-inverse">
             <span class="fa fa-cog"></span>
           </div>
         </a>
-        <ul role="menu" class="dropdown-menu mm-dropdown-menu
-                  mm-dropdown-menu-fullscreen mm-dropdown-menu-inverse">
+        <ul role="menu" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation">
             <a role="menuitem" tabindex="-1" href="#" rel="external" data-toggle="modal" data-target="#edit-user-profile">Edit User Profile</a>
           </li>
@@ -65,7 +64,7 @@
     </div>
 
     <div class="tabs">
-      <a href="#/messages/" ng-class="{'selected': filterModel.type === 'messages'}">
+      <a href="#/messages/" id="messages-tab" ng-class="{'selected': filterModel.type === 'messages'}">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'messages'}">
           <span class="fa fa-envelope"></span>
           <span class="mm-badge-overlay mm-badge-overlay-top" ng-hide="readStatus.messages.total - readStatus.messages.read <= 0">
@@ -74,7 +73,7 @@
         </div>
         <div class="button-label">Messages</div>
       </a>
-      <a href="#/forms/" ng-class="{'selected': filterModel.type === 'forms'}">
+      <a href="#/forms/" id="forms-tab" ng-class="{'selected': filterModel.type === 'forms'}">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'forms'}">
           <span class="fa fa-list-alt"></span>
           <span class="mm-badge-overlay mm-badge-overlay-top" ng-hide="readStatus.forms.total - readStatus.forms.read <= 0">
