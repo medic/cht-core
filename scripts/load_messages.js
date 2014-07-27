@@ -27,7 +27,7 @@ var usage = "\nUsage: load_messages.js <path> <url>\n\n"
     + "message,from,sent timestamp,locale\n"
     + "ANCR name Samantha,+3125551212 \n"
     + "ANCR LMP 10,+13125551212,1403965605868\n"
-    + "ANCR jina Maria,+13125551212,sw,\"Apr 11, 2021 18:00 +0800\",sw\n"
+    + "ANCR jina Maria,+13125551212,\"Apr 11, 2021 18:00 +0800\",sw\n"
     + "\"IMMR # mtoto Sandra Muragiri, III# mamaid 48892#dob 200\",+13125551212,not a date,sw\n";
 
 if (!args[2] || !args[3]) {

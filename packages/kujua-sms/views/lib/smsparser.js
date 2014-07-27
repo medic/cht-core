@@ -148,7 +148,7 @@ exports.parse = function (def, doc) {
          * not belong to the TextForms format but is just a convention to
          * identify the message.
          */
-        msg = msg.replace(new RegExp('^\\s*' + code + '\\s*','i'),'')
+        msg = msg.replace(new RegExp('^\\s*' + code + '[\\s!\\-,:#]*','i'),'')
 
         if (textforms_parser.isCompact(def, msg, doc.locale)) {
             msg_data = textforms_parser.parseCompact(def, msg);
@@ -221,7 +221,7 @@ exports.getFormCode = function(msg) {
         return msg.split('!')[1].toUpperCase();
     }
     // textforms
-    var match = msg.match(/^\s*([^\s!\-,:]+)[\s!\-,:]*.*/);
+    var match = msg.match(/^\s*([^\s!\-,:#]+)[\s!\-,:#]*.*/);
     if (match !== null && match.length === 2) {
         return match[1].toUpperCase();
     }

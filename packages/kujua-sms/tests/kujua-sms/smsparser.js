@@ -67,6 +67,13 @@ exports['get form with exlamation mark delimiter'] = function(test) {
     test.done();
 };
 
+exports['get form with hash code delimiter'] = function(test) {
+    var msg = 'YYYY#foo#2011#11#';
+    var form = smsparser.getFormCode(msg);
+    test.same('YYYY', form);
+    test.done();
+};
+
 exports['get form with non ascii name'] = function(test) {
     var msg = 'द CDT33';
     var form = smsparser.getFormCode(msg);
