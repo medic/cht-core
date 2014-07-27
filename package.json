@@ -22,6 +22,7 @@
     "karma-chrome-launcher": "~0.1",
     "karma-firefox-launcher": "~0.1",
     "karma-mocha": "~0.1.6",
+    "mocha": "1.21.0",
     "karma-ng-html2js-preprocessor": "~0.1",
     "karma-phantomjs-launcher": "~0.1"
   }
