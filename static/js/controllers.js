@@ -88,7 +88,11 @@
       };
 
       $scope.setMessage = function(id) {
-        $location.path('/' + $scope.filterModel.type + '/' + id);
+        var path = [ $scope.filterModel.type ];
+        if (id) {
+          path.push(id);
+        }
+        $location.path(path.join('/'));
       };
 
       $scope.selectMessage = function(id) {
