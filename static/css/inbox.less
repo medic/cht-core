@@ -74,13 +74,9 @@ body.inbox {
     img {
       height: 3.8em;
     }
-  }
-
-  .welcome {
-    float: left;
-    text-align: left;
-    padding-top: 0.5em;
-    font-size: 1.1em;
+    .logo-icon {
+      display: none;
+    }
   }
 
   .extras, .tabs {
@@ -713,13 +709,18 @@ body.inbox {
       left: 4em;
     }
   }
+  .row.header .logo {
+    .logo-icon {
+      display: inherit;
+    }
+    .logo-full {
+      display: none;
+    }
+  }
 }
 
 @media (max-width: 767px) {
   .row.header {
-    .welcome, .button-label {
-      display: none;
-    }
     .tabs a {
       width: 6em;
     }
