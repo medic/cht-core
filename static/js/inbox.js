@@ -45,6 +45,11 @@ $(function () {
         picker.hide();
       }
     }
+  })
+  .on('show.daterangepicker', function(e, picker) {
+    if (picker.element.is('.disabled')) {
+      picker.hide();
+    }
   });
   $('.daterangepicker').addClass('mm-dropdown-menu')
     .find('.ranges').hide();
