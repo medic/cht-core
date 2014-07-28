@@ -1,4 +1,4 @@
-describe('FormCtrl controller', function() {
+describe('AnalyticsCtrl controller', function() {
 
   'use strict';
 
@@ -10,23 +10,22 @@ describe('FormCtrl controller', function() {
   beforeEach(inject(function($rootScope, $controller) {
     scope = $rootScope.$new();
     scope.filterModel = {};
-    scope.selectedMessage = 'a';
+    scope.selectedMessage = { _id: 'a' };
     scope.selectMessage = function(msg) {
       scope.selectedMessage = msg;
     };
 
     createController = function() {
-      return $controller('FormCtrl', {
-        '$scope': scope,
-        '$route': { current: { params: { doc: 'x' } } }
+      return $controller('AnalyticsCtrl', {
+        '$scope': scope
       });
     };
   }));
 
   it('set up controller', function() {
     createController();
-    chai.expect(scope.filterModel.type).to.equal('forms');
-    chai.expect(scope.selectedMessage).to.equal('x');
+    chai.expect(scope.filterModel.type).to.equal('analytics');
+    chai.expect(scope.selectedMessage).to.equal(undefined);
   });
 
 });

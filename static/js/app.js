@@ -17,15 +17,15 @@
       $routeProvider
         .when('/messages/:doc?', {
           templateUrl: '/partials/messages.html',
-          controller: 'MessageCtrl'
+          controller: 'MessagesCtrl'
         })
-        .when('/forms/:doc?', {
+        .when('/reports/:doc?', {
           templateUrl: '/partials/messages.html',
-          controller: 'FormCtrl'
+          controller: 'ReportsCtrl'
         })
-        .when('/reports', {
+        .when('/analytics', {
           templateUrl: '/partials/reports.html',
-          controller: 'ReportCtrl'
+          controller: 'AnalyticsCtrl'
         })
         .otherwise({
           redirectTo: '/messages'

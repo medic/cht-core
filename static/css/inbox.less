@@ -27,14 +27,14 @@ body.inbox {
       background-color: @messages-color;
     }
   }
-  &.forms {
-    .header .tabs .selected, .filters {
-      background-color: @forms-color;
-    }
-  }
   &.reports {
     .header .tabs .selected, .filters {
       background-color: @reports-color;
+    }
+  }
+  &.analytics {
+    .header .tabs .selected, .filters {
+      background-color: @analytics-color;
     }
   }
 }
@@ -144,14 +144,14 @@ body.inbox {
             color: @messages-color;
           }
         }
-        &#forms-tab {
-          &, .mm-icon-inverse, .mm-icon-inverse:hover {
-            color: @forms-color;
-          }
-        }
         &#reports-tab {
           &, .mm-icon-inverse, .mm-icon-inverse:hover {
             color: @reports-color;
+          }
+        }
+        &#analytics-tab {
+          &, .mm-icon-inverse, .mm-icon-inverse:hover {
+            color: @analytics-color;
           }
         }
       }

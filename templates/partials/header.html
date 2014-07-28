@@ -20,7 +20,7 @@
         </div>
       </a>
       <span>
-        <a id="send-record-button" href="#" rel="external" title="Send form" data-toggle="dropdown">
+        <a id="send-record-button" href="#" rel="external" title="Submit report" data-toggle="dropdown">
           <div class="mm-icon mm-icon-nudge-up mm-icon-inverse mm-icon-disabled">
             <span class="mm-icon-overlay mm-icon-overlay-before fa fa-plus-circle"></span>
             <span class="fa fa-list-alt"></span>
@@ -73,20 +73,20 @@
         </div>
         <div class="button-label">Messages</div>
       </a>
-      <a href="#/forms/" id="forms-tab" ng-class="{'selected': filterModel.type === 'forms'}">
-        <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'forms'}">
+      <a href="#/reports/" id="reports-tab" ng-class="{'selected': filterModel.type === 'reports'}">
+        <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'reports'}">
           <span class="fa fa-list-alt"></span>
           <span class="mm-badge-overlay mm-badge-overlay-top" ng-hide="readStatus.forms.total - readStatus.forms.read <= 0">
             <span class="mm-badge mm-badge-red mm-badge-border">{~lb}{~lb}readStatus.forms.total - readStatus.forms.read{~rb}{~rb}</span>
           </span>
         </div>
-        <div class="button-label">Forms</div>
+        <div class="button-label">Reports</div>
       </a>
-      <a href="#/reports/" id="reports-tab" ng-class="{'selected': filterModel.type === 'reports'}">
-        <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'reports'}">
+      <a href="#/analytics/" id="analytics-tab" ng-class="{'selected': filterModel.type === 'analytics'}">
+        <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'analytics'}">
           <span class="fa fa-bar-chart-o"></span>
         </div>
-        <div class="button-label">Reports</div>
+        <div class="button-label">Analytics</div>
       </a>
     </div>
   </div>

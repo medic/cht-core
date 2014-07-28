@@ -1,4 +1,4 @@
-describe('MessageCtrl controller', function() {
+describe('MessagesCtrl controller', function() {
 
   'use strict';
 
@@ -16,7 +16,7 @@ describe('MessageCtrl controller', function() {
     };
 
     createController = function() {
-      return $controller('MessageCtrl', {
+      return $controller('MessagesCtrl', {
         '$scope': scope,
         '$route': { current: { params: { doc: 'x' } } }
       });

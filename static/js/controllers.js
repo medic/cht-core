@@ -291,7 +291,7 @@
     }
   ]);
 
-  inboxControllers.controller('MessageCtrl', 
+  inboxControllers.controller('MessagesCtrl', 
     ['$scope', '$route', 
     function ($scope, $route) {
       $scope.filterModel.type = 'messages';
@@ -300,19 +300,19 @@
   ]);
 
 
-  inboxControllers.controller('FormCtrl', 
+  inboxControllers.controller('ReportsCtrl', 
     ['$scope', '$route', 
     function ($scope, $route) {
-      $scope.filterModel.type = 'forms';
+      $scope.filterModel.type = 'reports';
       $scope.selectMessage($route.current.params.doc);
     }
   ]);
 
 
-  inboxControllers.controller('ReportCtrl', 
+  inboxControllers.controller('AnalyticsCtrl', 
     ['$scope', 
     function ($scope) {
-      $scope.filterModel.type = 'reports';
+      $scope.filterModel.type = 'analytics';
       $scope.selectMessage();
       $('body').trigger('renderReports');
     }
