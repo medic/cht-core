@@ -7,7 +7,7 @@ module.exports = function(grunt) {
     bower: {
       install: {
         options: {
-          targetDir: 'bower_components'
+          copy: false
         }
       }
     },
@@ -103,9 +103,6 @@ module.exports = function(grunt) {
           return 'kanso push http://' + auth + 'localhost:5984/medic';
         }
       },
-      bower: {
-        cmd: 'bower install'
-      },
       phantom: {
         cmd: 'phantomjs scripts/nodeunit_runner.js http://localhost:5984/medic/_design/medic/_rewrite/test'
       }
@@ -154,16 +151,17 @@ module.exports = function(grunt) {
   });
 
   // Load the plugins
+  grunt.loadNpmTasks('grunt-autoprefixer');
   grunt.loadNpmTasks('grunt-bower-concat');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-bower-task');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-less');
-  grunt.loadNpmTasks('grunt-exec');
-  grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-notify');
+  grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-karma');
-  grunt.loadNpmTasks('grunt-autoprefixer');
+  grunt.loadNpmTasks('grunt-notify');
 
   grunt.task.run('notify_hooks');
 
@@ -179,7 +177,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('mmbower', [
-    'exec:bower',
+    'bower:install',
     'bower_concat',
     'copy:inbox',
     'copy:admin'
