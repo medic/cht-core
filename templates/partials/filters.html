@@ -49,24 +49,16 @@
         </ul>
       </span>
 
-      <span class="dropdown mm-dropdown pair-left">
-        <span id="date-from" class="mm-button" data-date="{~lb}{~lb}filterModel.date.from | date : 'yyyy-MM-dd'{~rb}{~rb}" data-date-format="yyyy-mm-dd" ng-class="{'mm-button-disabled': filterModel.type === 'reports', disabled: filterModel.type === 'reports'}">
+      <span class="dropdown mm-dropdown">
+        <span id="date-filter" class="mm-button" data-start="{~lb}{~lb}filterModel.date.from | date : 'yyyy-MM-dd'{~rb}{~rb}" data-end="{~lb}{~lb}filterModel.date.to | date : 'yyyy-MM-dd'{~rb}{~rb}" ng-class="{'mm-button-disabled': filterModel.type === 'reports', disabled: filterModel.type === 'reports'}">
+          <span class="mm-button-icon">
+            <span class="fa fa-calendar"></span>
+          </span>
           <span class="mm-button-dropdown">
             <span class="fa fa-chevron-down"></span>
           </span>
           <span class="mm-button-text">
-            {~lb}{~lb}filterModel.date.from | date : 'mediumDate'{~rb}{~rb}
-          </span>
-        </span>
-      </span><!--
-      comment required to keep dropdowns flush
-      --><span class="dropdown mm-dropdown pair-right">
-        <span id="date-to" class="mm-button" data-date="{~lb}{~lb}filterModel.date.to | date : 'yyyy-MM-dd'{~rb}{~rb}" data-date-format="yyyy-mm-dd" ng-class="{'mm-button-disabled': filterModel.type === 'reports', disabled: filterModel.type === 'reports'}">
-          <span class="mm-button-dropdown">
-            <span class="fa fa-chevron-down"></span>
-          </span>
-          <span class="mm-button-text">
-            {~lb}{~lb}filterModel.date.to | date : 'mediumDate'{~rb}{~rb}
+            {~lb}{~lb}filterModel.date.from | date : 'd MMM'{~rb}{~rb} - {~lb}{~lb}filterModel.date.to | date : 'd MMM'{~rb}{~rb}
           </span>
         </span>
       </span>

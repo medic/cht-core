@@ -3,6 +3,7 @@
 @import "bower_components/bootstrap/less/bootstrap";
 @import "bower_components/fontawesome/less/font-awesome";
 @import (inline) "bower_components/select2/select2.css";
+@import (inline) "bower_components/bootstrap-daterangepicker/daterangepicker-bs3.css";
 
 @import "variables";
 @import "mixins";
@@ -169,17 +170,9 @@ body.inbox {
   }
 
   .dropdown {
-    width: 22%;
+    width: 25%;
     padding: 0 0.5em;
     text-align: left;
-
-    &.pair-left, &.pair-right {
-      width: 13%;
-
-      .mm-button-text {
-        width: 100%;
-      }
-    }
   }
 
   .mm-button-text {
@@ -544,12 +537,19 @@ body.inbox {
   }
 
   .modal-body {
-      min-height: 50px;
-      textarea {
-          margin: 0;
-          width: 100%;
-      }
+    min-height: 50px;
+    textarea {
+      margin: 0;
+      width: 100%;
+    }
   }
+}
+
+.daterangepicker.dropdown-menu {
+  width: 490px;
+  padding: 0;
+  margin: 0;
+  margin-left: -13em;
 }
 
 @media (max-width: 767px) {
@@ -575,6 +575,7 @@ body.inbox {
   .filters {
     text-align: right;
     height: 3.15em;
+    padding: 0;
     padding-bottom: 1em;
     .dropdown {
       width: 6.25em;
@@ -582,9 +583,6 @@ body.inbox {
       font-size: 0.77em;
       padding: 0 0.25em;
       vertical-align: top;
-      &.pair-left, &.pair-right {
-        width: 3em;
-      }
     }
     .mm-button-text {
       width: 0;
@@ -686,6 +684,13 @@ body.inbox {
 
   .row.header .extras a {
     padding-top: 0.3em;
+  }
+
+  .daterangepicker.dropdown-menu {
+    width: 245px;
+    &.show-calendar .right {
+      display: none;
+    }
   }
 }
 

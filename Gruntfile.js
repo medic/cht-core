@@ -17,6 +17,16 @@ module.exports = function(grunt) {
         exclude: [ 'fontawesome' ]
       }
     },
+    replace: {
+      monkeypatch: {
+        src: ['bower_components/concat.js'],
+        overwrite: true,
+        replacements: [{
+          from: /clickDate: function \(e\) \{/g,
+          to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'dateSelected.daterangepicker\', this);\n'
+        }]
+      }
+    },
     uglify: {
       options: {
         banner: '/*! Medic Mobile <%= grunt.template.today("yyyy-mm-dd") %> */\n'
@@ -162,6 +172,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-notify');
+  grunt.loadNpmTasks('grunt-text-replace');
 
   grunt.task.run('notify_hooks');
 
@@ -179,6 +190,7 @@ module.exports = function(grunt) {
   grunt.registerTask('mmbower', [
     'bower:install',
     'bower_concat',
+    'replace:monkeypatch',
     'copy:inbox',
     'copy:admin'
   ]);

@@ -20,36 +20,34 @@ $(function () {
     $('#validDropdown .mm-button-text').text($(this).text());
   });
 
-  $('#date-from').datepicker().on('changeDate', function(ev) {
-    $(this).datepicker('hide');
+  $('#date-filter').daterangepicker({
+    startDate: moment($('#date-filter').data('start')),
+    endDate: moment($('#date-filter').data('end')),
+    maxDate: moment()
+  },
+  function(start, end) {
     angular.element($('body')).scope().$apply(function(scope) {
-      scope.filterModel.date.from = ev.date.getTime();
+      scope.filterModel.date.from = start.valueOf();
+      scope.filterModel.date.to = end.valueOf();
     });
-  });
-  $('#date-to').datepicker().on('changeDate', function(ev) {
-    $(this).datepicker('hide');
-    angular.element($('body')).scope().$apply(function(scope) {
-      scope.filterModel.date.to = ev.date.getTime();
-    });
-  });
-  $('#date-from, #date-to').datepicker().on('show', function(ev) {
-    if ($(ev.target).is('.disabled')) {
-      $('.datepicker').hide();
-      return;
-    }
-    $('.dropdown.open .dropdown-menu').dropdown('toggle');
-    // Change position when rendering in mobile
+  })
+  .on('dateSelected.daterangepicker', function(e, picker) {
     if ($('#back').is(':visible')) {
-      $('.datepicker').css({
-        top: '9em'
-      });
-    } else {
-      $('.datepicker').css({
-        'margin-left': $(this).is('#date-to') ? '-7%' : ''
-      });
+      // mobile version - only show one calendar at a time
+      var fromCalendar = picker.container.find('.left');
+      var toCalendar = picker.container.find('.right');
+      if (fromCalendar.is(':visible')) {
+        fromCalendar.hide();
+        toCalendar.show();
+      } else {
+        toCalendar.hide();
+        fromCalendar.show();
+        picker.hide();
+      }
     }
-    $('.datepicker').addClass('open dropdown-menu mm-dropdown-menu');
   });
+  $('.daterangepicker').addClass('mm-dropdown-menu')
+    .find('.ranges').hide();
 
   var iframe = $('#add-record-panel iframe');
   var src = iframe.data('src');
