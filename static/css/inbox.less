@@ -46,12 +46,15 @@ body.inbox {
 
 .row.header {
   background-color: @medic-slate-color;
-  height: @header-height;
   text-align: center;
   padding-top: 0.25em;
   z-index: 3;
   position: relative;
   .button-text-inverse;
+
+  .inner {
+    height: 4.5em;
+  }
 
   a {
     .button-text-inverse;
@@ -80,9 +83,13 @@ body.inbox {
     font-size: 1.1em;
   }
 
-  .extras a, .tabs a {
-    display: inline-block;
-    height: 4.5em;
+  .extras, .tabs {
+    &, a {
+      height: 100%;
+    }
+    a {
+      display: inline-block;
+    }
   }
 
   .extras {
@@ -113,7 +120,6 @@ body.inbox {
 
   .tabs {
     overflow: hidden;
-    max-height: @header-height;
     white-space: nowrap;
 
     .button-label {
@@ -159,14 +165,13 @@ body.inbox {
 }
 
 .filters {
-  height: @filters-height;
+  height: 4.2em;
   font-size: 0.95em;
   padding: 0 1em;
   white-space: nowrap;
 
   .inner {
     position: relative;
-    height: @filters-height;
   }
 
   .dropdown {
@@ -193,7 +198,7 @@ body.inbox {
     }
   }
 
-  .basic-filters, .advanced-filters, .filter-actions, .slide-back {
+  .basic-filters, .filter-actions, .slide-back {
     padding-top: 0.65em;
   }
   
@@ -206,6 +211,7 @@ body.inbox {
   }
 
   .advanced-filters {
+    padding-top: 0.5em;
     top: 4em;
 
     .input-group {
@@ -574,7 +580,6 @@ body.inbox {
   }
   .filters {
     text-align: right;
-    height: 3.15em;
     padding: 0;
     padding-bottom: 1em;
     .dropdown {
@@ -596,10 +601,7 @@ body.inbox {
         width: auto;
       }
     }
-    .inner {
-      height: 3.15em;
-    }
-    .basic-filters, .advanced-filters, .filter-actions, .slide-back {
+    .basic-filters, .filter-actions, .slide-back {
       padding-top: 0.4em;
     }
     .basic-filters, .advanced-filters {
@@ -607,6 +609,7 @@ body.inbox {
       left: 6em;
     }
     .advanced-filters {
+      padding-top: 0.2em;
       .input-group {
         margin: 0
       }
