@@ -250,16 +250,14 @@ exports.data_records_read_by_type = {
             dh;
         if (doc.type === 'data_record') {
             type = doc.form ? 'forms' : 'messages';
-            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent');
-            if (dh && dh.type === 'district_hospital') {
-                emit(['_total', type, dh._id], 1);
-                if (doc.read) {
-                    doc.read.forEach(function(user) {
-                        if (user) {
-                            emit([user, type, dh._id], 1);
-                        }
-                    });
-                }
+            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
+            emit(['_total', type, dh], 1);
+            if (doc.read) {
+                doc.read.forEach(function(user) {
+                    if (user) {
+                        emit([user, type, dh], 1);
+                    }
+                });
             }
         }
     },
