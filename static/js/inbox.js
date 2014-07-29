@@ -80,6 +80,7 @@ $(function () {
       val.push(to);
     }
     $('#send-message [name=phone]').select2('val', val);
+    $('#send-message [name=message]').val('');
     $('#send-message').modal('show');
   });
 
