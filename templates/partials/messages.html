@@ -54,8 +54,8 @@
               <label>Messages</label>
               <ul>
                 <li ng-repeat="task in selected.tasks">
+                  <span class="task-state" ng-bind-html="task | state"></span>
                   <ul>
-                    <li ng-bind-html="task | state"></li>
                     <li ng-repeat="message in task.messages">
                       {~lb}{~lb}message.message{~rb}{~rb}
                     </li>
@@ -70,10 +70,10 @@
                   <p>{~lb}{~lb}group.group{~rb}{~rb}</p>
                   <ul>
                     <li ng-repeat="task in group.rows">
+                      <span class="task-state" ng-bind-html="task | state"></span>
                       <ul>
-                        <li ng-bind-html="task | state"></li>
-                        <li ng-repeat="m in task.messages">
-                          {~lb}{~lb}m.message{~rb}{~rb}
+                        <li ng-repeat="message in task.messages">
+                          {~lb}{~lb}message.message{~rb}{~rb}
                         </li>
                       </ul>
                     </li>

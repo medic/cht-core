@@ -17,7 +17,7 @@ describe('state filter', function() {
   it('should render nothing when no task', function() {
     scope.task = {};
 
-    var element = compile('<li ng-bind-html="task | state"></li>')(scope);
+    var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('');
   });
@@ -27,22 +27,24 @@ describe('state filter', function() {
       state: 'pending'
     };
 
-    var element = compile('<li ng-bind-html="task | state"></li>')(scope);
+    var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
     scope.$digest();
-    chai.expect(element.find('.task-state').text()).to.equal('pending');
-    chai.expect(element.find('.task-state').attr('title')).to.equal('');
+    chai.expect(element.find('.state').text()).to.equal('pending');
+    chai.expect(element.find('.relative-date').length).to.equal(0);
   });
 
   it('should render due date', function() {
+    var date = moment().add('days', 7);
     scope.task = {
       state: 'scheduled',
-      due: moment().add('days', 7).valueOf()
+      due: date.valueOf()
     };
 
-    var element = compile('<li ng-bind-html="task | state"></li>')(scope);
+    var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
     scope.$digest();
-    chai.expect(element.find('.task-state').text()).to.equal('scheduled');
-    chai.expect(element.find('.task-state').attr('title')).to.equal('in 7 days');
+    chai.expect(element.find('.state').text()).to.equal('scheduled');
+    chai.expect(element.find('.relative-date').text()).to.equal('in 7 days');
+    chai.expect(element.find('.relative-date').attr('title')).to.equal(date.format('DD-MMM-YYYY hh:mm'));
   });
 
 

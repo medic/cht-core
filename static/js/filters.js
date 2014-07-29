@@ -4,10 +4,9 @@
 
   var module = angular.module('inboxFilters', ['ngSanitize']);
 
-  var getRelativeDate = function(moment, dateFormat) {
-    return '<span title="' + moment.format(dateFormat) + '">' + 
-      moment.fromNow() + 
-      '</span>';
+  var getRelativeDate = function(date, format) {
+    var m = moment(date);
+    return '<span class="relative-date" title="' + m.format(format) + '">' + m.fromNow() + '</span>';
   };
 
   module.filter('relativeDate', ['RememberService',
@@ -16,22 +15,25 @@
         if (!date) { 
           return ''; 
         }
-        return getRelativeDate(moment(date), RememberService.dateFormat);
+        return getRelativeDate(date, RememberService.dateFormat);
       };
     }
   ]);
 
-  module.filter('state', function () {
-    return function (task) {
-      if (!task || !task.state) {
-        return '';
-      }
-      var title = task.due ? moment(task.due).fromNow() : '';
-      return '<span class="task-state" title="' + title + '">' +
-        task.state +
-        '</span>';
-    };
-  });
+  module.filter('state', ['RememberService',
+    function (RememberService) {
+      return function (task) {
+        if (!task || !task.state) {
+          return '';
+        }
+        var date = '';
+        if (task.due) {
+          date = '<br/>' + getRelativeDate(task.due, RememberService.dateFormat);
+        }
+        return '<span class="state">' + task.state + '</span>' + date;
+      };
+    }
+  ]);
 
   module.filter('messageField', ['RememberService',
     function (RememberService) {
@@ -42,7 +44,7 @@
         var label = field.label;
         var value = field.value;
         if (['Child Birth Date', 'Expected Date', 'Birth Date'].indexOf(label) !== -1) {
-          value = getRelativeDate(moment(value), RememberService.dateFormat);
+          value = getRelativeDate(value, RememberService.dateFormat);
         }
         return '<label>' + label + '</label><p>' + value + '</p>';
       };
