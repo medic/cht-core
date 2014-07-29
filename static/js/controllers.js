@@ -99,9 +99,9 @@
         if ($scope.selected && $scope.selected._id === id) {
           return;
         }
-        $scope.selected = undefined;
         _selectedDoc = id;
         if (id) {
+          $scope.selected = undefined;
           $scope.messages.forEach(function(message) {
             if (message._id === id) {
               if (!$scope.isRead(message)) {
@@ -116,6 +116,16 @@
               $scope.selected = message;
             }
           });
+          window.setTimeout(function() {
+            $('body').addClass('show-content');
+          }, 1);
+        } else {
+          window.setTimeout(function() {
+            $('body').removeClass('show-content');
+          }, 1);
+          if (!$('#back').is(':visible')) {
+            $scope.selected = undefined;
+          }
         }
       };
 
