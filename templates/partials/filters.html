@@ -11,8 +11,33 @@
     </span>
 
     <span class="basic-filters">
-      <span id="formTypeDropdown" class="dropdown mm-dropdown multidropdown" data-label-no-filter="All form types" data-filter-label="form types">
-        <span id="form_type" class="mm-button mm-button-nudge-down" data-toggle="dropdown" ng-class="{'mm-button-disabled': filterModel.type !== 'reports', disabled: filterModel.type !== 'reports'}">
+
+      <span class="dropdown mm-dropdown" ng-show="filterModel.type === 'messages'">
+        <span class="mm-button mm-button-nudge-down" data-toggle="dropdown">
+          <span class="mm-button-icon">
+            <span class="fa fa-exchange"></span>
+          </span>
+          <span class="mm-button-dropdown">
+            <span class="fa fa-chevron-down"></span>
+          </span>
+          <span class="mm-button-text">Incoming Only</span>
+        </span>
+        <ul role="menu" aria-labelledby="status"
+          class="dropdown-menu mm-dropdown-menu">
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" ng-click="filterModel.incoming = undefined">Incoming and Outgoing</a>
+          </li>
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" ng-click="filterModel.incoming = true">Incoming Only</a>
+          </li>
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" ng-click="filterModel.incoming = false">Outgoing Only</a>
+          </li>
+        </ul>
+      </span>
+
+      <span id="formTypeDropdown" class="dropdown mm-dropdown multidropdown" data-label-no-filter="All form types" data-filter-label="form types" ng-show="filterModel.type === 'reports'">
+        <span id="form_type" class="mm-button mm-button-nudge-down" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-list-alt"></span>
           </span>
@@ -31,8 +56,8 @@
         </ul>
       </span>
 
-      <span id="facilityDropdown" class="dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="facilities">
-        <span id="facility" class="mm-button" data-toggle="dropdown" ng-class="{'mm-button-disabled': filterModel.type === 'analytics', disabled: filterModel.type === 'analytics'}">
+      <span id="facilityDropdown" class="dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="facilities" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports'">
+        <span id="facility" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-hospital-o"></span>
           </span>
@@ -49,8 +74,8 @@
         </ul>
       </span>
 
-      <span class="dropdown mm-dropdown">
-        <span id="date-filter" class="mm-button" data-start="{~lb}{~lb}filterModel.date.from | date : 'yyyy-MM-dd'{~rb}{~rb}" data-end="{~lb}{~lb}filterModel.date.to | date : 'yyyy-MM-dd'{~rb}{~rb}" ng-class="{'mm-button-disabled': filterModel.type === 'analytics', disabled: filterModel.type === 'analytics'}">
+      <span class="dropdown mm-dropdown" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports'">
+        <span id="date-filter" class="mm-button" data-start="{~lb}{~lb}filterModel.date.from | date : 'yyyy-MM-dd'{~rb}{~rb}" data-end="{~lb}{~lb}filterModel.date.to | date : 'yyyy-MM-dd'{~rb}{~rb}">
           <span class="mm-button-icon">
             <span class="fa fa-calendar"></span>
           </span>
@@ -63,8 +88,8 @@
         </span>
       </span>
 
-      <span id="validDropdown" class="dropdown mm-dropdown">
-        <span id="status" class="mm-button" data-toggle="dropdown" ng-class="{'mm-button-disabled': filterModel.type === 'analytics', disabled: filterModel.type === 'analytics'}">
+      <span id="validDropdown" class="dropdown mm-dropdown" ng-show="filterModel.type === 'reports'">
+        <span id="status" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-check-circle-o"></span>
           </span>
@@ -103,8 +128,8 @@
     </span>
 
     <span class="filter-actions">
-      <a href="#" id="download" title="Download all" rel="external">
-        <span class="mm-button" ng-class="{'mm-button-disabled': filterModel.type === 'analytics', disabled: filterModel.type === 'analytics'}">
+      <a href="#" id="download" title="Download all" rel="external" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports'">
+        <span class="mm-button">
           <span class="mm-button-icon">
             <span class="fa fa-arrow-down"></span>
           </span>

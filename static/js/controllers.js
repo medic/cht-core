@@ -30,6 +30,7 @@
         forms: [],
         facilities: [],
         valid: true,
+        incoming: true,
         date: {
           from: moment().subtract('months', 1).valueOf(),
           to: moment().valueOf()
@@ -198,8 +199,17 @@
         );
 
         if ($scope.filterModel.type === 'messages') {
-          filters.push('-form:[* TO *]');
+          var type = '';
+          if ($scope.filterModel.incoming === true) {
+            type = 'messageincoming';
+          } else if ($scope.filterModel.incoming === false) {
+            type = 'messageoutgoing';
+          } else {
+            type = 'message*';
+          }
+          filters.push('type:' + type);
         } else {
+          filters.push('type:report');
           var selectedForms = $scope.filterModel.forms.length;
           if (selectedForms > 0 && selectedForms < $scope.forms.length) {
             var formCodes = [];
@@ -207,15 +217,15 @@
               formCodes.push(form.code);
             });
             filters.push('form:(' + formCodes.join(' OR ') + ')');
-          } else {
-            filters.push('form:[* TO *]');
           }
         }
 
-        if ($scope.filterModel.valid === true) {
-          filters.push('errors<int>:0');
-        } else if ($scope.filterModel.valid === false) {
-          filters.push('NOT errors<int>:0');
+        if ($scope.filterModel.type === 'reports') {
+          if ($scope.filterModel.valid === true) {
+            filters.push('errors<int>:0');
+          } else if ($scope.filterModel.valid === false) {
+            filters.push('NOT errors<int>:0');
+          }
         }
 
         var selectedFacilities = $scope.filterModel.facilities.length;
