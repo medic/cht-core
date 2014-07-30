@@ -10,7 +10,7 @@
             </span>
             <div class="detail">
               <mm-sender message="message"></mm-sender>
-              <div class="description" ng-bind-html="message | messageType:forms"></div>
+              <div class="description" ng-bind-html="message | summary:forms"></div>
             </div>
           </div>
         </li>
@@ -35,7 +35,7 @@
           </span>
         </div>
         <div class="body">
-          <h2 ng-bind-html="selected | messageType:forms"></h2>
+          <h2 ng-bind-html="selected | title:forms"></h2>
           <ul>
             <li ng-if="!selected.form && selected.sms_message.message">
               <label>Content</label>
