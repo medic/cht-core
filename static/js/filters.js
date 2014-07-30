@@ -57,6 +57,15 @@
         return '';
       }
       if (!message.form) {
+        if (message.sms_message) {
+          return message.sms_message.message;
+        }
+        if (message.tasks && 
+            message.tasks[0] && 
+            message.tasks[0].messages && 
+            message.tasks[0].messages[0]) {
+          return message.tasks[0].messages[0].message;
+        }
         return 'Message';
       }
       for (var i = 0; i < forms.length; i++) {
