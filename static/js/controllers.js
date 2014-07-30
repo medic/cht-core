@@ -280,7 +280,9 @@
             } else {
               $scope.error = false;
               $scope.update(data.rows);
-              $scope.totalMessages = data.total_rows;
+              if (!options.changes) {
+                $scope.totalMessages = data.total_rows;
+              }
               if (_selectedDoc) {
                 $scope.selectMessage(_selectedDoc);
               }
