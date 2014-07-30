@@ -54,7 +54,7 @@ $(function () {
     url: src,
     success: function() {
       var btn = $('#send-record-button');
-      btn.find('.mm-icon').removeClass('mm-icon-disabled');
+      btn.closest('li').removeClass('disabled');
       btn.on('click', function(e) {
         e.preventDefault();
         $('#add-record-panel .dropdown-menu').toggle();

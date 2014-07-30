@@ -9,33 +9,43 @@
     </a>
 
     <div class="extras">
-      <a href="#" rel="external" title="Send message" class="send-message">
-        <div class="mm-icon mm-icon-nudge-up mm-icon-inverse">
-          <span class="mm-icon-overlay mm-icon-overlay-before fa fa-plus-circle"></span>
-          <span class="fa fa-envelope"></span>
+
+      <span class="dropdown options">
+        <a data-toggle="dropdown">
+          <div class="mm-icon mm-icon-inverse">
+            <span class="fa fa-plus"></span>
+          </div>
+        </a>
+        <ul role="menu" class="dropdown-menu mm-dropdown-menu">
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" class="send-message">
+              <span class="fa fa-envelope"></span>
+              Send Message
+            </a>
+          </li>
+          <li role="presentation" class="disabled">
+            <a role="menuitem" tabindex="-1" id="send-record-button">
+              <span class="fa fa-list-alt"></span>
+              Submit Report
+            </a>
+          </li>
+        </ul>
+      </span>
+      
+      <span id="add-record-panel">
+        <ul class="dropdown-menu">
+          <li>
+            <button type="button" class="cancel close">×</button>
+            <iframe data-src="{info.muvuku_webapp_url}"></iframe>
+          </li>
+        </ul>
+      </span>
+
+      <a id="toggle-filters" href="#" rel="external" title="Search">
+        <div class="mm-icon mm-icon-inverse" ng-class="{'mm-icon-disabled': filterModel.type === 'analytics'}">
+          <span class="fa fa-search"></span>
         </div>
       </a>
-      <span>
-        <a id="send-record-button" href="#" rel="external" title="Submit report" data-toggle="dropdown">
-          <div class="mm-icon mm-icon-nudge-up mm-icon-inverse mm-icon-disabled">
-            <span class="mm-icon-overlay mm-icon-overlay-before fa fa-plus-circle"></span>
-            <span class="fa fa-list-alt"></span>
-          </div>
-        </a>
-        <span id="add-record-panel">
-          <ul class="dropdown-menu">
-            <li>
-              <button type="button" class="cancel close">×</button>
-              <iframe data-src="{info.muvuku_webapp_url}"></iframe>
-            </li>
-          </ul>
-        </span>
-        <a id="toggle-filters" href="#" rel="external" title="Search">
-          <div class="mm-icon mm-icon-inverse" ng-class="{'mm-icon-disabled': filterModel.type === 'analytics'}">
-            <span class="fa fa-search"></span>
-          </div>
-        </a>
-      </span>
 
       <span class="dropdown options">
         <a data-toggle="dropdown">
