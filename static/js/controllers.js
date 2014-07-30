@@ -137,6 +137,7 @@
         for (var i = 0; i < $scope.messages.length; i++) {
           if (id === $scope.messages[i]._id) {
             $scope.messages.splice(i, 1);
+            return;
           }
         }
       };
@@ -254,10 +255,15 @@
         if (options.changes) {
           updateReadStatus();
           var changedRows = options.changes.results;
-          for (var i = 0; i < changedRows.length; i++) {
+          for (var i = changedRows.length - 1; i >= 0; i--) {
             if (changedRows[i].deleted) {
               _deleteMessage(changedRows[i].id);
+              changedRows.splice(i, 1);
             }
+          }
+          if (!changedRows.length) {
+            // nothing to update
+            return;
           }
         }
         if (!options.silent) {
