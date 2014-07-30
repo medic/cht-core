@@ -94,7 +94,7 @@ exports['Phone number passes validation'] = function(test) {
   };
   $message.val('Some valid message');
   var result = data_record.validateSms($phone, $message);
-  test.equals($phone.find('.help-block').css('display'), 'none');
+  test.equals($phone.find('.help-block').text(), '');
   test.equals(result, true);
   test.done();
 };
@@ -141,7 +141,7 @@ exports['Recipient `everyone at` is valid if at least one child has valid phone'
   };
   $message.val('Some valid message');
   var result = data_record.validateSms($phone, $message);
-  test.equals($phone.find('.help-block').css('display'), 'none');
+  test.equals($phone.find('.help-block').text(), '');
   test.equals(result, true);
   test.done();
 };
