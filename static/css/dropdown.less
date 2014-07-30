@@ -27,12 +27,6 @@
     }
   }
 
-  &.datepicker {
-    right: inherit;
-    margin-top: 0;
-    padding: 1em;
-  }
-
 }
 
 .mm-dropdown {
@@ -71,11 +65,7 @@
   }
 }
 
-.mm-dropdown-menu-inverse li a:hover, 
-.datepicker td.day:hover,
-.datepicker thead tr:first-child th:hover,
-.datepicker.mm-dropdown-menu-inverse td.active,
-.datepicker.mm-dropdown-menu-inverse td.active:hover {
+.mm-dropdown-menu-inverse li a:hover {
   color: #000;
   background-color: rgba(255, 255, 255, 0.8);
   background-image: none;
@@ -106,11 +96,8 @@
 }
 
 @media (max-width: 767px) {
-  .open .mm-dropdown-menu, .datepicker.mm-dropdown-menu {
-    border-radius: 7pt;
-  }
   .open .mm-dropdown-menu {
-    top: 9em;
+    top: 6em;
     left: 2em;
     right: 2em;
     .mm-dropdown-menu-modal

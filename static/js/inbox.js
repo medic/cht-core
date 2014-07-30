@@ -19,7 +19,9 @@ $(function () {
   $('#date-filter').daterangepicker({
     startDate: moment($('#date-filter').data('start')),
     endDate: moment($('#date-filter').data('end')),
-    maxDate: moment()
+    maxDate: moment(),
+    applyClass: 'btn-primary',
+    cancelClass: 'btn-link'
   },
   function(start, end) {
     angular.element($('body')).scope().$apply(function(scope) {
@@ -30,14 +32,10 @@ $(function () {
   .on('dateSelected.daterangepicker', function(e, picker) {
     if ($('#back').is(':visible')) {
       // mobile version - only show one calendar at a time
-      var fromCalendar = picker.container.find('.left');
-      var toCalendar = picker.container.find('.right');
-      if (fromCalendar.is(':visible')) {
-        fromCalendar.hide();
-        toCalendar.show();
+      if (picker.container.is('.show-from')) {
+        picker.container.removeClass('show-from').addClass('show-to');
       } else {
-        toCalendar.hide();
-        fromCalendar.show();
+        picker.container.removeClass('show-to').addClass('show-from');
         picker.hide();
       }
     }
@@ -47,8 +45,7 @@ $(function () {
       picker.hide();
     }
   });
-  $('.daterangepicker').addClass('mm-dropdown-menu')
-    .find('.ranges').hide();
+  $('.daterangepicker').addClass('mm-dropdown-menu show-from');
 
   var iframe = $('#add-record-panel iframe');
   var src = iframe.data('src');
