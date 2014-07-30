@@ -20,7 +20,15 @@
           <span class="mm-button-dropdown">
             <span class="fa fa-chevron-down"></span>
           </span>
-          <span class="mm-button-text">Incoming Only</span>
+          <span class="mm-button-text" ng-show="filterModel.incoming === undefined">
+            Incoming and Outgoing
+          </span>
+          <span class="mm-button-text" ng-show="filterModel.incoming === true">
+            Incoming Only
+          </span>
+          <span class="mm-button-text" ng-show="filterModel.incoming === false">
+            Outgoing Only
+          </span>
         </span>
         <ul role="menu" aria-labelledby="status"
           class="dropdown-menu mm-dropdown-menu">
@@ -96,7 +104,15 @@
           <span class="mm-button-dropdown">
             <span class="fa fa-chevron-down"></span>
           </span>
-          <span class="mm-button-text">Valid Only</span>
+          <span class="mm-button-text" ng-show="filterModel.valid === undefined">
+            Any Status
+          </span>
+          <span class="mm-button-text" ng-show="filterModel.valid === true">
+            Valid Only
+          </span>
+          <span class="mm-button-text" ng-show="filterModel.valid === false">
+            Invalid Only
+          </span>
         </span>
         <ul role="menu" aria-labelledby="status"
           class="dropdown-menu mm-dropdown-menu">

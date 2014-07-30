@@ -16,10 +16,6 @@ $(function () {
     });
   });
 
-  $('#validDropdown [role=menuitem]').on('click', function() {
-    $('#validDropdown .mm-button-text').text($(this).text());
-  });
-
   $('#date-filter').daterangepicker({
     startDate: moment($('#date-filter').data('start')),
     endDate: moment($('#date-filter').data('end')),
