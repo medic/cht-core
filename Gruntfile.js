@@ -27,21 +27,27 @@ module.exports = function(grunt) {
         }]
       }
     },
+    concat: {
+      js: {
+        src: [
+          'bower_components/concat.js',
+          'static/js/bootstrap-multidropdown.js',
+          'static/js/inbox.js',
+          'static/js/app.js',
+          'static/js/filters.js',
+          'static/js/controllers.js',
+          'static/js/services.js'
+        ],
+        dest: 'static/dist/inbox.js',
+      }
+    },
     uglify: {
       options: {
         banner: '/*! Medic Mobile <%= grunt.template.today("yyyy-mm-dd") %> */\n'
       },
       build: {
         files: {
-          'static/dist/inbox.js': [
-            'bower_components/concat.js',
-            'static/js/bootstrap-multidropdown.js',
-            'static/js/inbox.js',
-            'static/js/app.js',
-            'static/js/filters.js',
-            'static/js/controllers.js',
-            'static/js/services.js'
-          ]
+          'static/dist/inbox.js': ['static/dist/inbox.js']
         }
       }
     },
@@ -164,6 +170,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-autoprefixer');
   grunt.loadNpmTasks('grunt-bower-concat');
   grunt.loadNpmTasks('grunt-bower-task');
+  grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-less');
@@ -179,7 +186,7 @@ module.exports = function(grunt) {
   // Default tasks
   grunt.registerTask('mmjs', [
     'jshint',
-    'uglify'
+    'concat:js'
   ]);
 
   grunt.registerTask('mmcss', [
@@ -203,6 +210,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci', [
     'default',
+    'uglify',
     'karma:unit_ci',
     'exec:deploy',
     'exec:phantom'

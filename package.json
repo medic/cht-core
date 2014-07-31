@@ -11,6 +11,7 @@
     "grunt-autoprefixer": "^0.8.2",
     "grunt-bower-concat": "^0.3.0",
     "grunt-bower-task": "^0.4.0",
+    "grunt-contrib-concat": "^0.5.0",
     "grunt-contrib-copy": "^0.5.0",
     "grunt-contrib-jshint": "^0.10.0",
     "grunt-contrib-less": "^0.11.3",
