@@ -26,21 +26,25 @@
           class="dropdown-menu mm-dropdown-menu">
           <li role="presentation">
             <a role="menuitem" class="selected" tabindex="-1" data-value='{~lb}"type": "messageincoming"{~rb}'>
+              <span class="fa fa-long-arrow-left"></span>
               Incoming
             </a>
           </li>
           <li role="presentation">
             <a role="menuitem" tabindex="-1" data-value='{~lb}"type": "messageoutgoing"{~rb}'>
+              <span class="fa fa-long-arrow-right"></span>
               Outgoing
             </a>
           </li>
           <li role="presentation" class="dropdown-child">
             <a role="menuitem" tabindex="-1" data-value='{~lb}"type": "messageoutgoing", "state": "pending"{~rb}'>
+              <span class="fa fa-ellipsis-h"></span>
               Pending
             </a>
           </li>
           <li role="presentation" class="dropdown-child">
             <a role="menuitem" tabindex="-1" data-value='{~lb}"type": "messageoutgoing", "state": "sent"{~rb}'>
+              <span class="fa fa-check"></span>
               Sent
             </a>
           </li>
@@ -101,8 +105,14 @@
 
       <span id="validDropdown" class="dropdown mm-dropdown" ng-show="filterModel.type === 'reports'">
         <span id="status" class="mm-button" data-toggle="dropdown">
-          <span class="mm-button-icon">
+          <span class="mm-button-icon" ng-show="filterModel.valid === undefined">
+            <span class="fa fa-circle-o"></span>
+          </span>
+          <span class="mm-button-icon" ng-show="filterModel.valid === true">
             <span class="fa fa-check-circle-o"></span>
+          </span>
+          <span class="mm-button-icon" ng-show="filterModel.valid === false">
+            <span class="fa fa-times-circle-o"></span>
           </span>
           <span class="mm-button-dropdown">
             <span class="fa fa-chevron-down"></span>
@@ -120,13 +130,22 @@
         <ul role="menu" aria-labelledby="status"
           class="dropdown-menu mm-dropdown-menu">
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" ng-click="filterModel.valid = undefined">Any Status</a>
+            <a role="menuitem" tabindex="-1" ng-click="filterModel.valid = undefined">
+              <span class="fa fa-circle-o"></span>
+              Any Status
+            </a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" ng-click="filterModel.valid = true">Valid Only</a>
+            <a role="menuitem" tabindex="-1" ng-click="filterModel.valid = true">
+              <span class="fa fa-check-circle-o"></span>
+              Valid Only
+            </a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" ng-click="filterModel.valid = false">Invalid Only</a>
+            <a role="menuitem" tabindex="-1" ng-click="filterModel.valid = false">
+              <span class="fa fa-times-circle-o"></span>
+              Invalid Only
+            </a>
           </li>
         </ul>
       </span>
