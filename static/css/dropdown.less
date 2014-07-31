@@ -33,9 +33,14 @@
 
   display: inline-block;
 
-  &.multidropdown .selected {
-    text-decoration: none;
-    background-color: @option-selected-color;
+  &.multidropdown {
+    .selected {
+      text-decoration: none;
+      background-color: @option-selected-color;
+    }
+    .dropdown-child a {
+      text-indent: 1em;
+    }
   }
 
   &.dropdown.pair-left {

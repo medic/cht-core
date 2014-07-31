@@ -16,6 +16,13 @@ $(function () {
     });
   });
 
+  $('#messageTypeDropdown').on('update', function() {
+    var types = $(this).multiDropdown().val();
+    angular.element($('body')).scope().$apply(function(scope) {
+      scope.filterModel.messageTypes = types;
+    });
+  });
+
   $('#date-filter').daterangepicker({
     startDate: moment($('#date-filter').data('start')),
     endDate: moment($('#date-filter').data('end')),

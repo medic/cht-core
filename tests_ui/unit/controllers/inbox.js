@@ -21,7 +21,7 @@ describe('InboxCtrl controller', function() {
     scope.filter(options);
     chai.expect(options.query).to.equal(
       'reported_date<date>:[' + from + ' TO ' + to + '] ' +
-      'AND type:messageincoming'
+      'AND (type:messageincoming)'
     );
   });
 
@@ -30,6 +30,7 @@ describe('InboxCtrl controller', function() {
       type: 'messages',
       forms: [],
       facilities: [],
+      messageTypes: [],
       date: {
         from: moment('2013-02-08'),
         to: moment('2013-06-12')
@@ -192,13 +193,15 @@ describe('InboxCtrl controller', function() {
     };
     scope.filter(options);
     chai.expect(options.query).to.equal(
-      'reported_date<date>:[2013-02-08 TO 2013-06-13] AND type:report'
+      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+      'AND type:report'
     );
   });
 
   it('creates filter query for incoming messages', function() {
     scope.filterModel = {
       type: 'messages',
+      messageTypes: [{ type: 'messageincoming' }],
       incoming: true,
       facilities: [],
       date: {
@@ -208,13 +211,15 @@ describe('InboxCtrl controller', function() {
     };
     scope.filter(options);
     chai.expect(options.query).to.equal(
-      'reported_date<date>:[2013-02-08 TO 2013-06-13] AND type:messageincoming'
+      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+      'AND (type:messageincoming)'
     );
   });
 
   it('creates filter query for outgoing messages', function() {
     scope.filterModel = {
       type: 'messages',
+      messageTypes: [{ type: 'messageoutgoing' }],
       incoming: false,
       facilities: [],
       date: {
@@ -224,14 +229,18 @@ describe('InboxCtrl controller', function() {
     };
     scope.filter(options);
     chai.expect(options.query).to.equal(
-      'reported_date<date>:[2013-02-08 TO 2013-06-13] AND type:messageoutgoing'
+      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+      'AND (type:messageoutgoing)'
     );
   });
 
   it('creates filter query for outgoing and incoming messages', function() {
     scope.filterModel = {
       type: 'messages',
-      incoming: undefined,
+      messageTypes: [
+        { type: 'messageincoming' },
+        { type: 'messageoutgoing' }
+      ],
       facilities: [],
       date: {
         from: moment('2013-02-08'),
@@ -240,14 +249,35 @@ describe('InboxCtrl controller', function() {
     };
     scope.filter(options);
     chai.expect(options.query).to.equal(
-      'reported_date<date>:[2013-02-08 TO 2013-06-13] AND type:message*'
+      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+      'AND (type:messageincoming OR type:messageoutgoing)'
+    );
+  });
+
+  it('creates filter query for outgoing messages with states', function() {
+    scope.filterModel = {
+      type: 'messages',
+      messageTypes: [
+        { type: 'messageincoming' },
+        { type: 'messageoutgoing', state: 'pending' }
+      ],
+      facilities: [],
+      date: {
+        from: moment('2013-02-08'),
+        to: moment('2013-06-12')
+      }
+    };
+    scope.filter(options);
+    chai.expect(options.query).to.equal(
+      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+      'AND (type:messageincoming OR (type:messageoutgoing AND state:pending))'
     );
   });
 
   it('creates filter query for advanced messages search', function() {
     scope.filterModel = {
       type: 'messages',
-      incoming: undefined,
+      messageTypes: [{ type: 'messageincoming' }],
       facilities: [],
       date: {
         from: moment('2013-02-08'),

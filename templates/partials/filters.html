@@ -12,7 +12,7 @@
 
     <span class="basic-filters">
 
-      <span class="dropdown mm-dropdown" ng-show="filterModel.type === 'messages'">
+      <span id="messageTypeDropdown" class="dropdown mm-dropdown multidropdown" ng-show="filterModel.type === 'messages'" data-label-no-filter="All types" data-filter-label="types">
         <span class="mm-button mm-button-nudge-down" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-exchange"></span>
@@ -20,26 +20,29 @@
           <span class="mm-button-dropdown">
             <span class="fa fa-chevron-down"></span>
           </span>
-          <span class="mm-button-text" ng-show="filterModel.incoming === undefined">
-            Incoming and Outgoing
-          </span>
-          <span class="mm-button-text" ng-show="filterModel.incoming === true">
-            Incoming Only
-          </span>
-          <span class="mm-button-text" ng-show="filterModel.incoming === false">
-            Outgoing Only
-          </span>
+          <span class="mm-button-text"></span>
         </span>
         <ul role="menu" aria-labelledby="status"
           class="dropdown-menu mm-dropdown-menu">
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" ng-click="filterModel.incoming = undefined">Incoming and Outgoing</a>
+            <a role="menuitem" class="selected" tabindex="-1" data-value='{~lb}"type": "messageincoming"{~rb}'>
+              Incoming
+            </a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" ng-click="filterModel.incoming = true">Incoming Only</a>
+            <a role="menuitem" tabindex="-1" data-value='{~lb}"type": "messageoutgoing"{~rb}'>
+              Outgoing
+            </a>
           </li>
-          <li role="presentation">
-            <a role="menuitem" tabindex="-1" ng-click="filterModel.incoming = false">Outgoing Only</a>
+          <li role="presentation" class="dropdown-child">
+            <a role="menuitem" tabindex="-1" data-value='{~lb}"type": "messageoutgoing", "state": "pending"{~rb}'>
+              Pending
+            </a>
+          </li>
+          <li role="presentation" class="dropdown-child">
+            <a role="menuitem" tabindex="-1" data-value='{~lb}"type": "messageoutgoing", "state": "sent"{~rb}'>
+              Sent
+            </a>
           </li>
         </ul>
       </span>
