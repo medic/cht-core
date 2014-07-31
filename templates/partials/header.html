@@ -41,7 +41,7 @@
         </ul>
       </span>
 
-      <a id="toggle-filters" href="#" rel="external" title="Search">
+      <a title="Search" ng-click="filterSimple = !filterSimple || filterModel.type === 'analytics'">
         <div class="mm-icon mm-icon-inverse" ng-class="{'mm-icon-disabled': filterModel.type === 'analytics'}">
           <span class="fa fa-search"></span>
         </div>

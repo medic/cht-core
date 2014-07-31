@@ -19,6 +19,7 @@
       $scope.initialized = false;
       $scope.userDistrict = undefined;
       $scope.filterQuery = undefined;
+      $scope.filterSimple = true;
 
       $scope.readStatus = {
         forms: { total: 0, read: 0 },
@@ -181,7 +182,7 @@
         return false;
       };
 
-      var _setFilterString = function() {
+      var _getFilterString = function() {
 
         var formatDate = function(date) {
           return date.format('YYYY-MM-DD');
@@ -189,63 +190,69 @@
 
         var filters = [];
 
-        // increment end date so it's inclusive
-        var to = moment($scope.filterModel.date.to).add('days', 1);
-        var from = moment($scope.filterModel.date.from);
+        if ($scope.filterSimple) {
 
-        filters.push(
-          'reported_date<date>:[' + 
-          formatDate(from) + ' TO ' + formatDate(to) + 
-          ']'
-        );
+          // increment end date so it's inclusive
+          var to = moment($scope.filterModel.date.to).add('days', 1);
+          var from = moment($scope.filterModel.date.from);
 
-        if ($scope.filterModel.type === 'messages') {
-          var type = '';
-          if ($scope.filterModel.incoming === true) {
-            type = 'messageincoming';
-          } else if ($scope.filterModel.incoming === false) {
-            type = 'messageoutgoing';
+          filters.push(
+            'reported_date<date>:[' + 
+            formatDate(from) + ' TO ' + formatDate(to) + 
+            ']'
+          );
+
+          if ($scope.filterModel.type === 'messages') {
+            if ($scope.filterModel.incoming === true) {
+              filters.push('type:messageincoming');
+            } else if ($scope.filterModel.incoming === false) {
+              filters.push('type:messageoutgoing');
+            } else {
+              filters.push('type:message*');
+            }
           } else {
-            type = 'message*';
+            filters.push('type:report');
+            var selectedForms = $scope.filterModel.forms.length;
+            if (selectedForms > 0 && selectedForms < $scope.forms.length) {
+              var formCodes = [];
+              $scope.filterModel.forms.forEach(function(form) {
+                formCodes.push(form.code);
+              });
+              filters.push('form:(' + formCodes.join(' OR ') + ')');
+            }
+            if ($scope.filterModel.valid === true) {
+              filters.push('errors<int>:0');
+            } else if ($scope.filterModel.valid === false) {
+              filters.push('NOT errors<int>:0');
+            }
           }
-          filters.push('type:' + type);
+
+          var selectedFacilities = $scope.filterModel.facilities.length;
+          if (selectedFacilities > 0 && selectedFacilities < $scope.facilities.length) {
+            filters.push('clinic:(' + $scope.filterModel.facilities.join(' OR ') + ')');
+          }
+
         } else {
-          filters.push('type:report');
-          var selectedForms = $scope.filterModel.forms.length;
-          if (selectedForms > 0 && selectedForms < $scope.forms.length) {
-            var formCodes = [];
-            $scope.filterModel.forms.forEach(function(form) {
-              formCodes.push(form.code);
-            });
-            filters.push('form:(' + formCodes.join(' OR ') + ')');
+
+          if ($scope.filterQuery && $scope.filterQuery.trim()) {
+            filters.push($scope.filterQuery);
           }
+          var type = $scope.filterModel.type === 'messages' ?
+            'message*' : 'report';
+          filters.push('type:' + type);
+
         }
 
-        if ($scope.filterModel.type === 'reports') {
-          if ($scope.filterModel.valid === true) {
-            filters.push('errors<int>:0');
-          } else if ($scope.filterModel.valid === false) {
-            filters.push('NOT errors<int>:0');
-          }
-        }
-
-        var selectedFacilities = $scope.filterModel.facilities.length;
-        if (selectedFacilities > 0 && selectedFacilities < $scope.facilities.length) {
-          filters.push('clinic:(' + $scope.filterModel.facilities.join(' OR ') + ')');
-        }
-
-        $scope.filterQuery = filters.join(' AND ');
+        return filters.join(' AND ');
       };
 
       var _currentQuery;
       var _selectedDoc;
 
-      $scope.advancedFilter = function(options) {
+      $scope.query = function(options) {
         if (!$scope.initialized) {
           return;
         }
-        options = options || {};
-        options.query = $scope.filterQuery;
         if (options.query === _currentQuery && !options.changes) {
           // debounce as same query already running
           return;
@@ -300,13 +307,17 @@
       };
 
       $scope.filter = function(options) {
-        _setFilterString();
-        $scope.advancedFilter(options);
+        options = options || {};
+        options.query = _getFilterString();
+        $scope.query(options);
       };
 
       $scope.$watch('filterModel', $scope.filter, true);
       $scope.$watch('filterModel.type', function() { 
         $scope.selected = undefined; 
+        if ($scope.filterModel.type === 'analytics') {
+          $scope.filterSimple = true;
+        }
       });
 
       $scope.init = function(options) {

@@ -1,4 +1,4 @@
-describe('messageType filter', function() {
+describe('summary filter', function() {
 
   'use strict';
 
@@ -22,7 +22,7 @@ describe('messageType filter', function() {
     ];
     scope.message = undefined;
 
-    var element = compile('<div ng-bind-html="message | messageType:forms"></div>')(scope);
+    var element = compile('<div ng-bind-html="message | summary:forms"></div>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('');
   });
@@ -35,7 +35,7 @@ describe('messageType filter', function() {
     ];
     scope.message = {};
 
-    var element = compile('<div ng-bind-html="message | messageType:forms"></div>')(scope);
+    var element = compile('<div ng-bind-html="message | summary:forms"></div>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('Message');
   });
@@ -50,7 +50,7 @@ describe('messageType filter', function() {
       form: 'B'
     };
 
-    var element = compile('<div ng-bind-html="message | messageType:forms"></div>')(scope);
+    var element = compile('<div ng-bind-html="message | summary:forms"></div>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('bee');
   });

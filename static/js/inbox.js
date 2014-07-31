@@ -95,33 +95,27 @@ $(function () {
   var _applyFilter = function(options) {
     options = options || {};
     angular.element($('body')).scope().$apply(function(scope) {
-      if (options.updateFilter) {
-        scope.filter(options);
-      } else {
-        scope.advancedFilter(options);
-      }
+      scope.filter(options);
     });
   };
-  _applyFilter({updateFilter: true});
+  _applyFilter();
 
   $(document).on('data-record-updated', function(e, data) {
-    _applyFilter({ 
-      silent: true, 
+    _applyFilter({
+      silent: true,
       changes: data
     });
-  });
-
-  $('#toggle-filters').on('click', function(e) {
-    e.preventDefault();
-    if ($('#toggle-filters').find('.mm-icon.mm-icon-disabled').length) {
-      return;
-    }
-    $('.row.filters').toggleClass('advanced');
   });
 
   $('.advanced-filters .btn').on('click', function(e) {
     e.preventDefault();
     _applyFilter();
+  });
+
+  $('#advanced').on('keypress', function(e) {
+    if (e.which === 13) {
+      _applyFilter();
+    }
   });
 
   $('body').on('dataRecordsInitialized', function(e, options) {
@@ -131,12 +125,6 @@ $(function () {
   });
   // Notify data_records.js that inbox is ready
   $('body').trigger('inboxInitialized');
-
-  $('#advanced').on('keypress', function(e) {
-    if (e.which === 13) {
-      _applyFilter();
-    }
-  });
 
   var itemPanel = $('.inbox-items');
   itemPanel.on('scroll', function () {
