@@ -8,6 +8,7 @@
 
 - allow hash symbol to separate form code and data in structured textform message
 
+- modified build to bundle npm dependencies with attached node modules.
 
 ## 0.4.0
 
