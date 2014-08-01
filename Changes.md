@@ -1,5 +1,14 @@
 # Medic Mobile Release Notes
 
+## 0.4.1
+
+### Jul 31, 2014
+
+- minor UI clean up
+
+- allow hash symbol to separate form code and data in structured textform message
+
+
 ## 0.4.0
 
 ### Jul 10, 2014
