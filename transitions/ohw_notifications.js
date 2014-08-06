@@ -2,8 +2,8 @@ if (global.GENTLY) {
     require = GENTLY.hijack(require);
 }
 
-var mustache = require('mustache'),
-    async = require('async'),
+var async = require('async'),
+    template = require('../lib/template'),
     utils = require('../lib/utils'),
     i18n = require('../i18n'),
     clinicContactName,
@@ -42,7 +42,7 @@ var updateSchedule = function() {
     if (mute) {
         utils.muteScheduledMessages(registration);
         utils.addError(doc, {
-            message: mustache.to_html('Need to confirm deactivation.', {
+            message: template.render('Need to confirm deactivation.', {
                 patient_id: doc.patient_id
             })
         });
@@ -58,7 +58,7 @@ var checkRegistration = function(callback) {
     utils.getOHWRegistration(doc.patient_id, function(err, data) {
         if (err || !data) {
             utils.addError(doc, {
-                message: mustache.to_html(msg, {
+                message: template.render(msg, {
                     patient_id: doc.patient_id
                 })
             });

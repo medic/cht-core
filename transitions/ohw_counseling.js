@@ -3,12 +3,12 @@ if (global.GENTLY) {
 }
 
 var async = require('async'),
-    mustache = require('mustache'),
     moment = require('moment'),
     config = require('../config'),
     i18n = require('../i18n'),
     date = require('../date'),
     utils = require('../lib/utils'),
+    template = require('../lib/template'),
     clinicContactName,
     registration,
     clinicPhone,
@@ -20,7 +20,7 @@ var checkRegistration = function(callback) {
     utils.getOHWRegistration(doc.patient_id, function(err, data) {
         if (err || !data) {
             utils.addError(doc, {
-                message: mustache.to_html(msg, {
+                message: template.render(msg, {
                     patient_id: doc.patient_id
                 })
             });

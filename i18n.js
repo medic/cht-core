@@ -1,6 +1,6 @@
 var async = require('async'),
     config = require('./config'),
-    mustache = require('mustache'),
+    template = require('./lib/template'),
     _ = require('underscore'),
     values = {};
 
@@ -25,6 +25,6 @@ module.exports = function(key, context) {
         values[key] = key;
     }
 
-    return mustache.to_html(s, context);
+    return template.render(s, context);
 };
 
