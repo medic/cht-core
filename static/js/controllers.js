@@ -1,5 +1,6 @@
 var db = require('db').current(),
     _ = require('underscore'),
+    utils = require('kujua-utils'),
     sms_utils = require('kujua-sms/utils'),
     reporting = require('kujua-reporting/shows');
 
@@ -12,8 +13,8 @@ require('views/lib/couchfti').addFTI(db);
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', 'Facility', 'Settings', 'Form', 'Contact', 'Language', 'ReadMessages', 'MarkRead', 'Verified', 'DeleteMessage', 'UpdateFacility', 'UpdateUser', 'SendMessage', 'User', 'UserNameService', 'RememberService',
-    function ($scope, $route, $location, $translate, $animate, Facility, Settings, Form, Contact, Language, ReadMessages, MarkRead, Verified, DeleteMessage, UpdateFacility, UpdateUser, SendMessage, User, UserNameService, RememberService) {
+    ['$scope', '$route', '$location', '$translate', '$animate', 'Facility', 'Settings', 'Form', 'Contact', 'Language', 'ReadMessages', 'MarkRead', 'Verified', 'DeleteMessage', 'UpdateFacility', 'UpdateUser', 'SendMessage', 'User', 'UserCtxService', 'RememberService',
+    function ($scope, $route, $location, $translate, $animate, Facility, Settings, Form, Contact, Language, ReadMessages, MarkRead, Verified, DeleteMessage, UpdateFacility, UpdateUser, SendMessage, User, UserCtxService, RememberService) {
 
       $scope.forms = [];
       $scope.facilities = [];
@@ -23,13 +24,12 @@ require('views/lib/couchfti').addFTI(db);
       $scope.appending = false;
       $scope.messages = [];
       $scope.totalMessages = undefined;
-      $scope.userDistrict = undefined;
       $scope.filterQuery = undefined;
       $scope.filterSimple = true;
 
       $scope.permissions = {
-        admin: false,
-        districtAdmin: false,
+        admin: utils.isUserAdmin(UserCtxService()),
+        districtAdmin: utils.isUserDistrictAdmin(UserCtxService()),
         distict: undefined
       };
 
@@ -50,23 +50,36 @@ require('views/lib/couchfti').addFTI(db);
         }
       };
 
-
-      // TODO permissions
-      // User.query(function(user) {
-      //   $scope.permissions.admin = utils.isUserAdmin(req.userCtx);
-      //   $scope.permissions.districtAdmin = utils.isUserDistrictAdmin(req.userCtx);
-      //   $scope.permissions.district = user.facility_id;
-      //   console.log('user', user);
-      // });
-
-      Contact.get().then(
-        function(rows) {
-          $('#send-message [name=phone]').data('options', rows);
-        },
-        function() {
-          console.log('Failed to retrieve contacts');
+      utils.checkDistrictConstraint(UserCtxService(), db, function(err, district) {
+        if (err) {
+          console.log(err);
         }
-      );
+        $scope.permissions.district = $scope.permissions.admin ? undefined : district;
+        updateAvailableFacilities();
+        updateContacts();
+      });
+
+      var updateContacts = function() {
+        Contact.get($scope.permissions.district).then(
+          function(rows) {
+            $('#send-message [name=phone]').data('options', rows);
+          },
+          function() {
+            console.log('Failed to retrieve contacts');
+          }
+        );
+      };
+
+      var updateAvailableFacilities = function() {
+        Facility.get($scope.permissions.district).then(
+          function(res) {
+            $scope.facilities = res;
+          },
+          function() {
+            console.log('Failed to retrieve facilities');
+          }
+        );
+      };
 
       Form.get().then(
         function(res) {
@@ -92,23 +105,9 @@ require('views/lib/couchfti').addFTI(db);
         }
       );
 
-      var updateAvailableFacilities = function() {
-        Facility.get({
-          userDistrict: $scope.userDistrict
-        }).then(
-          function(res) {
-            $scope.facilities = res;
-          },
-          function() {
-            console.log('Failed to retrieve facilities');
-          }
-        );
-      };
-
       var updateReadStatus = function () {
         ReadMessages.get({
-          user: UserNameService(),
-          userDistrict: $scope.userDistrict
+          user: UserCtxService().name
         }).then(
           function(res) {
             $scope.readStatus = res;
@@ -214,8 +213,9 @@ require('views/lib/couchfti').addFTI(db);
         if ($scope.selected && $scope.selected._id === message._id) {
           return true;
         }
+        var user = UserCtxService().name;
         for (var i = 0; i < message.read.length; i++) {
-          if (message.read[i] === UserNameService()) {
+          if (message.read[i] === user) {
             return true;
           }
         }
@@ -534,7 +534,6 @@ require('views/lib/couchfti').addFTI(db);
 
       $scope.filter();
       updateReadStatus();
-      updateAvailableFacilities();
 
     }
   ]);

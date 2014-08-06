@@ -21,34 +21,32 @@ var db = require('db').current(),
     }
   ]);
 
-  inboxServices.factory('ContactRaw', ['$resource', 'BaseUrlService',
+  inboxServices.factory('FacilityRaw', ['$resource', 'BaseUrlService',
     function($resource, BaseUrlService) {
-      // TODO append user district
-      return $resource(BaseUrlService() + '/facilities.json', {}, {
-        query: {
-          method: 'GET',
-          isArray: false,
-          cache: true,
-          // TODO combine with FacilityRaw service
-          // params: {
-          //   startkey: '["clinic"]',
-          //   endkey: '["clinic"]'
-          // }
+      return function(district) {
+        var url = BaseUrlService() + '/facilities.json';
+        if (district) {
+          url += '/' + district;
         }
-      });
+
+        return $resource(url, {}, {
+          query: {
+            method: 'GET',
+            isArray: false,
+            cache: true
+          }
+        });
+      };
     }
   ]);
 
-  inboxServices.factory('Contact', ['$q', 'ContactRaw',
-    function($q, ContactRaw) {
-      // TODO query by user district only
-
+  inboxServices.factory('Contact', ['$q', 'FacilityRaw',
+    function($q, FacilityRaw) {
       return {
-        get: function() {
-
+        get: function(district) {
           var deferred = $q.defer();
 
-          ContactRaw.query(function(res) {
+          FacilityRaw(district).query(function(res) {
             var contacts = [];
             _.each(res.rows, function(contact) {
               if (contact.doc.contact && contact.doc.contact.phone) {
@@ -74,9 +72,56 @@ var db = require('db').current(),
     }
   ]);
 
-  inboxServices.factory('User', ['$resource', 'UserNameService',
-    function($resource, UserNameService) {
-      return $resource('/_users/org.couchdb.user%3A' + UserNameService(), {}, {
+  inboxServices.factory('Facility', ['$q', 'FacilityRaw',
+    function($q, FacilityRaw) {
+
+      var getName = function(clinic) {
+        var parts = [];
+        do {
+          parts.push(clinic.name);
+          clinic = clinic.parent;
+        } while( clinic.name );
+        return parts.join(', ');
+      };
+
+      return {
+        get: function(district) {
+
+          var deferred = $q.defer();
+
+          FacilityRaw(district).query(function(res) {
+
+            var facilities = [];
+
+            if (res.rows) {
+              res.rows.forEach(function(clinic) {
+                if (clinic.doc.type === 'clinic') {
+                  facilities.push({
+                    id: clinic.id,
+                    text: getName(clinic.doc)
+                  });
+                }
+              });
+            }
+
+            facilities.sort(function(lhs, rhs) {
+              var lhsName = lhs.text.toUpperCase();
+              var rhsName = rhs.text.toUpperCase();
+              return lhsName.localeCompare(rhsName);
+            });
+
+            deferred.resolve(facilities);
+          });
+
+          return deferred.promise;
+        }
+      };
+    }
+  ]);
+
+  inboxServices.factory('User', ['$resource', 'UserCtxService',
+    function($resource, UserCtxService) {
+      return $resource('/_users/org.couchdb.user%3A' + UserCtxService().name, {}, {
         query: {
           method: 'GET',
           isArray: false,
@@ -86,8 +131,8 @@ var db = require('db').current(),
     }
   ]);
 
-  inboxServices.factory('UpdateUser', ['$cacheFactory', 'User', 'UserNameService',
-    function($cacheFactory, User, UserNameService) {
+  inboxServices.factory('UpdateUser', ['$cacheFactory', 'User', 'UserCtxService',
+    function($cacheFactory, User, UserCtxService) {
       return {
         update: function(updates) {
           User.query(function(user) {
@@ -96,26 +141,11 @@ var db = require('db').current(),
                 return console.log(err);
               }
               $cacheFactory.get('$http')
-                .remove('/_users/org.couchdb.user%3A' + UserNameService());
+                .remove('/_users/org.couchdb.user%3A' + UserCtxService().name);
             });
           });
         }
       };
-    }
-  ]);
-
-  inboxServices.factory('FacilityRaw', ['$resource', 'BaseUrlService',
-    function($resource, BaseUrlService) {
-      return $resource(BaseUrlService() + '/facilities.json', {}, {
-        query: {
-          method: 'GET',
-          isArray: false,
-          params: {
-            startkey: '["clinic"]',
-            endkey: '["clinic"]'
-          }
-        }
-      });
     }
   ]);
 
@@ -199,8 +229,8 @@ var db = require('db').current(),
     }
   );
 
-  inboxServices.factory('MarkRead', ['UserNameService',
-    function(UserNameService) {
+  inboxServices.factory('MarkRead', ['UserCtxService',
+    function(UserCtxService) {
       return {
         update: function(messageId, read) {
           db.getDoc(messageId, function(err, message) {
@@ -210,7 +240,7 @@ var db = require('db').current(),
             if (!message.read) {
                 message.read = [];
             }
-            var user = UserNameService();
+            var user = UserCtxService().name;
             var index = message.read.indexOf(user);
             if ((index !== -1) === read) {
                 // nothing to update, return without calling callback
@@ -422,62 +452,6 @@ var db = require('db').current(),
     }
   ]);
 
-  inboxServices.factory('Facility', ['$q', 'FacilityRaw',
-    function($q, FacilityRaw) {
-
-      var inDistrict = function(userDistrict, clinic) {
-        if (!userDistrict) {
-          return true;
-        }
-        return userDistrict === clinic.parent.parent._id;
-      };
-
-      var getName = function(clinic) {
-        var parts = [];
-        do {
-          parts.push(clinic.name);
-          clinic = clinic.parent;
-        } while( clinic.name );
-        return parts.join(', ');
-      };
-
-      return {
-        get: function(options) {
-
-          options = options || {};
-
-          var deferred = $q.defer();
-
-          FacilityRaw.query(function(res) {
-
-            var facilities = [];
-
-            if (res.rows) {
-              res.rows.forEach(function(clinic) {
-                if (inDistrict(options.userDistrict, clinic.doc)) {
-                  facilities.push({
-                    id: clinic.id,
-                    text: getName(clinic.doc)
-                  });
-                }
-              });
-            }
-
-            facilities.sort(function(lhs, rhs) {
-              var lhsName = lhs.text.toUpperCase();
-              var rhsName = rhs.text.toUpperCase();
-              return lhsName.localeCompare(rhsName);
-            });
-
-            deferred.resolve(facilities);
-          });
-
-          return deferred.promise;
-        }
-      };
-    }
-  ]);
-
   inboxServices.factory('ReadMessagesRaw', ['$resource', 'BaseUrlService',
     function($resource, BaseUrlService) {
       return $resource(BaseUrlService() + '/../_view/data_records_read_by_type', {}, {
@@ -549,9 +523,9 @@ var db = require('db').current(),
     };
   });
 
-  inboxServices.factory('UserNameService', function() {
+  inboxServices.factory('UserCtxService', function() {
     return function() {
-      return $('html').data('user').name;
+      return $('html').data('user');
     };
   });
 
