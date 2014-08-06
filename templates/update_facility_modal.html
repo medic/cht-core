@@ -7,7 +7,6 @@
       </div>
       <div class="modal-body">
         <form action="" method="POST"> 
-          <input type="hidden" name="messageId" value="{~lb}{~lb}selected._id{~rb}{~rb}"/>
           <fieldset>
             <div class="control-group">
               <select name="facility" style="width:100%;">
@@ -18,9 +17,9 @@
         </form>
       </div>
       <div class="modal-footer">
-        <p class="pull-left note">{note}</p>
-        <a href="#" class="btn cancel" data-dismiss="modal">Cancel</a>
-        <a href="#" class="btn submit btn-primary">Submit</a>
+        <p class="pull-left note"></p>
+        <a class="btn cancel" data-dismiss="modal">Cancel</a>
+        <a class="btn submit btn-primary" ng-click="updateFacility()">Submit</a>
       </div>
     </div>
   </div>

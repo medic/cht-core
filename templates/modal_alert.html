@@ -1,4 +1,4 @@
-<div id="delete-confirm" class="modal fade" tabindex="-1" role="dialog" data-record-id="{~lb}{~lb}selected._id{~rb}{~rb}">
+<div id="delete-confirm" class="modal fade" tabindex="-1" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -10,8 +10,8 @@
       </div>
       <div class="modal-footer">
         <p class="pull-left note"></p>
-        <a href="#" class="btn cancel" data-dismiss="modal">Cancel</a>
-        <a href="#" class="btn submit btn-danger">Delete</a>
+        <a class="btn cancel" data-dismiss="modal">Cancel</a>
+        <a class="btn submit btn-danger" ng-click="deleteMessage()">Delete</a>
       </div>
     </div>
   </div>

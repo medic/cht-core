@@ -32,22 +32,12 @@
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="password">Change Password</label>
-            <input id="password" type="password" class="form-control" autocomplete="off" />
-          </div>
-
-          <div class="form-group">
-            <label for="password-confirm">Confirm Password</label>
-            <input id="password-confirm" type="password" class="form-control" autocomplete="off" />
-          </div>
-
         </form>
       </div>
       <div class="modal-footer">
         <p class="pull-left note"></p>
-        <a href="#" class="btn cancel" data-dismiss="modal">Cancel</a>
-        <a href="#" class="btn submit btn-primary">Submit</a>
+        <a class="btn cancel" data-dismiss="modal">Cancel</a>
+        <a class="btn submit btn-primary" ng-click="editUser()">Submit</a>
       </div>
     </div>
   </div>

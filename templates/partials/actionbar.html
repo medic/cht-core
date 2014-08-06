@@ -4,23 +4,23 @@
       <div class="col-sm-4"></div>
       <div class="col-sm-8 column">
         <div class="actions">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" href="#" rel="external" data-send-to="{~lb}{~lb}selected.from{~rb}{~rb}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" data-send-to="{~lb}{~lb}selected.from{~rb}{~rb}">
             <span class="fa fa-mail-reply"></span>
             <p>{~lb}{~lb}'Reply' | translate{~rb}{~rb}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" href="#" rel="external" id="update-facility-btn">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" id="update-facility-btn">
             <span class="fa fa-pencil"></span>
             <p>{~lb}{~lb}'Edit' | translate{~rb}{~rb}</p>
           </a>
-          <a id="verify" class="mm-icon mm-icon-inverse mm-icon-caption" href="#" rel="external" ng-class="{'mm-icon-disabled': selected && !selected.form}" data-record-id="{~lb}{~lb}selected._id{~rb}{~rb}" ng-show="!selected.verified">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-class="{'mm-icon-disabled': selected && !selected.form}" ng-show="!selected.verified" ng-click="verify(true)">
             <span class="fa fa-check"></span>
             <p>{~lb}{~lb}'Verify' | translate{~rb}{~rb}</p>
           </a>
-          <a id="unverify" class="mm-icon mm-icon-inverse mm-icon-caption" href="#" rel="external" ng-class="{'mm-icon-disabled': selected && !selected.form}" data-record-id="{~lb}{~lb}selected._id{~rb}{~rb}" ng-show="selected.verified">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-class="{'mm-icon-disabled': selected && !selected.form}" ng-show="selected.verified" ng-click="verify(false)">
             <span class="fa fa-times"></span>
             <p>{~lb}{~lb}'Unverify' | translate{~rb}{~rb}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" href="#" rel="external" data-toggle="modal" data-target="#delete-confirm">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" data-toggle="modal" data-target="#delete-confirm">
             <span class="fa fa-trash-o"></span>
             <p>{~lb}{~lb}'Delete' | translate{~rb}{~rb}</p>
           </a>

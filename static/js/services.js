@@ -1,3 +1,8 @@
+var db = require('db').current(),
+    audit = require('couchdb-audit/kanso').withKanso(db),
+    _ = require('underscore'),
+    utils = require('kujua-utils');
+
 (function () {
 
   'use strict';
@@ -16,6 +21,59 @@
     }
   ]);
 
+  inboxServices.factory('ContactRaw', ['$resource', 'BaseUrlService',
+    function($resource, BaseUrlService) {
+      // TODO append user district
+      return $resource(BaseUrlService() + '/facilities.json', {}, {
+        query: {
+          method: 'GET',
+          isArray: false,
+          cache: true,
+          // TODO combine with FacilityRaw service
+          // params: {
+          //   startkey: '["clinic"]',
+          //   endkey: '["clinic"]'
+          // }
+        }
+      });
+    }
+  ]);
+
+  inboxServices.factory('Contact', ['$q', 'ContactRaw',
+    function($q, ContactRaw) {
+      // TODO query by user district only
+
+      return {
+        get: function() {
+
+          var deferred = $q.defer();
+
+          ContactRaw.query(function(res) {
+            var contacts = [];
+            _.each(res.rows, function(contact) {
+              if (contact.doc.contact && contact.doc.contact.phone) {
+                contacts.push(contact);
+              }
+              if (contact.doc.type === 'health_center') {
+                var clinics = _.filter(res.rows, function(child) {
+                  return child.doc.parent && 
+                    child.doc.parent._id === contact.id;
+                });
+                contacts.push(_.extend({ 
+                  everyoneAt: true,
+                  clinics: clinics
+                }, contact));
+              }
+            });
+            deferred.resolve(contacts);
+          });
+
+          return deferred.promise;
+        }
+      };
+    }
+  ]);
+
   inboxServices.factory('User', ['$resource', 'UserNameService',
     function($resource, UserNameService) {
       return $resource('/_users/org.couchdb.user%3A' + UserNameService(), {}, {
@@ -25,6 +83,24 @@
           cache: true
         }
       });
+    }
+  ]);
+
+  inboxServices.factory('UpdateUser', ['$cacheFactory', 'User', 'UserNameService',
+    function($cacheFactory, User, UserNameService) {
+      return {
+        update: function(updates) {
+          User.query(function(user) {
+            db.use('_users').saveDoc(_.extend(user, updates), function(err) {
+              if (err) {
+                return console.log(err);
+              }
+              $cacheFactory.get('$http')
+                .remove('/_users/org.couchdb.user%3A' + UserNameService());
+            });
+          });
+        }
+      };
     }
   ]);
 
@@ -62,6 +138,224 @@
       };
     }
   ]);
+
+  inboxServices.factory('DeleteMessage',
+    function() {
+      return {
+        delete: function(messageId) {
+          db.getDoc(messageId, function(err, message) {
+            if (err) {
+              return console.log(err);
+            }
+            message._deleted = true;
+            audit.saveDoc(message, function(err) {
+              if (err) {
+                console.log(err);
+              }
+            });
+          });
+        }
+      };
+    }
+  );
+
+  inboxServices.factory('UpdateFacility',
+    function() {
+      return {
+        update: function(messageId, facilityId) {
+          db.getDoc(messageId, function(err, message) {
+            if (err) {
+              return console.log(err);
+            }
+            db.getDoc(facilityId, function(err, facility) {
+              if (err) {
+                return console.log(err);
+              }
+              if (!message.related_entities) {
+                message.related_entities = {};
+              }
+              if (!message.related_entities.clinic) {
+                message.related_entities.clinic = {};
+              }
+              if (facility.type === 'health_center') {
+                message.related_entities.clinic = { parent: facility };
+              } else {
+                message.related_entities.clinic = facility;
+              }
+              if (message.related_entities.clinic) {
+                message.errors = _.filter(message.errors, function(error) {
+                  return error.code !== 'sys.facility_not_found';
+                });
+              }
+              audit.saveDoc(message, function(err) {
+                if (err) {
+                  console.log(err);
+                }
+              });
+            });
+          });
+        }
+      };
+    }
+  );
+
+  inboxServices.factory('MarkRead', ['UserNameService',
+    function(UserNameService) {
+      return {
+        update: function(messageId, read) {
+          db.getDoc(messageId, function(err, message) {
+            if (err) {
+              return console.log(err);
+            }
+            if (!message.read) {
+                message.read = [];
+            }
+            var user = UserNameService();
+            var index = message.read.indexOf(user);
+            if ((index !== -1) === read) {
+                // nothing to update, return without calling callback
+                return;
+            }
+            if (read) {
+                message.read.push(user);
+            } else {
+                message.read.splice(index, 1);
+            }
+            audit.saveDoc(message, function(err) {
+              if (err) {
+                console.log(err);
+              }
+            });
+          });
+        }
+      };
+    }
+  ]);
+
+  inboxServices.factory('Verified',
+    function() {
+      return {
+        update: function(messageId, verified) {
+          db.getDoc(messageId, function(err, message) {
+            if (err) {
+              return console.log(err);
+            }
+            message.verified = verified;
+            audit.saveDoc(message, function(err) {
+              if (err) {
+                console.log(err);
+              }
+            });
+          });
+        }
+      };
+    }
+  );
+
+  inboxServices.factory('SendMessage', ['$q', 'User',
+    function($q, User) {
+
+      var createMessageDoc = function(user, recipients) {
+        var name = user && user.name;
+        var doc = {
+          errors: [],
+          form: null,
+          from: user && user.phone,
+          reported_date: Date.now(),
+          related_entities: {},
+          tasks: [],
+          read: [ name ],
+          kujua_message: true,
+          type: 'data_record',
+          sent_by: name || 'unknown'
+        };
+
+        var facility = _.find(recipients, function(data) {
+          return data.doc && data.doc.type;
+        });
+        if (facility && facility.type) {
+          doc.related_entities[facility.type] = facility;
+        }
+
+        return doc;
+      };
+
+      var formatRecipients = function(recipients) {
+        return _.uniq(
+          _.flatten(_.map(recipients, function(r) {
+            if (r.everyoneAt) {
+              var ret = [];
+              _.each(r.clinics, function(d) {
+                if (d.doc.contact && d.doc.contact.phone) {
+                  ret.push({
+                    phone: d.doc.contact.phone,
+                    facility: d.doc
+                  });
+                }
+              });
+              return ret;
+            } else {
+              return [{
+                phone: r.doc.contact.phone,
+                facility: r.doc
+              }];
+            }
+          })),
+          false,
+          function(r) {
+            return r.phone;
+          }
+        );
+      };
+
+      return {
+        send: function(recipients, message) {
+
+          var deferred = $q.defer();
+
+          User.query(function(user) {
+
+            var doc = createMessageDoc(user, recipients);
+            var explodedRecipients = formatRecipients(recipients);
+
+            // TODO use async
+            _.each(explodedRecipients, function(data, idx) {
+              db.newUUID(100, function (err, uuid) {
+                if (err) {
+                  return deferred.reject(err);
+                }
+                var task = {
+                  messages: [{
+                    from: user && user.phone,
+                    sent_by: user && user.name || 'unknown',
+                    to: data.phone,
+                    facility: data.facility,
+                    message: message,
+                    uuid: uuid
+                  }]
+                };
+                utils.setTaskState(task, 'pending');
+                doc.tasks.push(task);
+                // save doc only after all tasks have been added.
+                if (idx+1 === explodedRecipients.length) {
+                  audit.saveDoc(doc, function(err) {
+                    if (err) {
+                      deferred.reject(err);
+                    } else {
+                      deferred.resolve();
+                    }
+                  });
+                }
+              });
+            });
+          });
+
+          return deferred.promise;
+        }
+      };
+    }
+  ]);
+
 
   inboxServices.factory('Form', ['$q', 'Language', 'Settings',
     function($q, Language, Settings) {
@@ -257,7 +551,7 @@
 
   inboxServices.factory('UserNameService', function() {
     return function() {
-      return $('html').data('user');
+      return $('html').data('user').name;
     };
   });
 

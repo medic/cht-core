@@ -1,3 +1,7 @@
+require('./services');
+require('./controllers');
+require('./filters');
+
 (function () {
 
   'use strict';

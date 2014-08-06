@@ -1,15 +1,14 @@
 var db = require('db'),
     utils = require('./utils'),
+    dust = require('dust'),
     kutils = require('kujua-utils'),
     sms_utils = require('kujua-sms/utils'),
     appname = require('settings/root').name,
-    duality = require('duality/core'),
     charts = require('./ui/charts'),
-    templates = require('duality/templates'),
+    session = require('session'),
     appinfo = require('views/lib/appinfo');
 
 var facility_doc, 
-    _req, 
     dates, 
     isAdmin, 
     isDistrictAdmin, 
@@ -23,8 +22,7 @@ var getViewReports = function(doc, dates, callback) {
         view = 'data_records_by_form_year_week_facility';
     }
 
-    var appdb = db.use(duality.getDBURL());
-    appdb.getView(appname, view, args, function(err, data) {
+    db.getView(appname, view, args, function(err, data) {
         if (err) {
             callback(
                 'Error: '+ err + '\n' + 'Args: ' + JSON.stringify(args)
@@ -71,8 +69,7 @@ var getViewChildFacilities = function(doc, callback) {
     args.startkey = startkey;
     args.endkey = endkey;
 
-    var appdb = db.use(duality.getDBURL());
-    appdb.getView(appname, view, args, function(err, data) {
+    db.getView(appname, view, args, function(err, data) {
         if (err) {
             callback(err);
         } else {
@@ -97,30 +94,31 @@ var getViewSiblingFacilities = function(doc, callback) {
     args.startkey.push(doc.type, doc.parent._id);
     args.endkey.push(doc.type, doc.parent._id, {}); // {} couchdb endkey trick
 
-    var appdb = db.use(duality.getDBURL());
-    appdb.getView(appname, 'facilities_by_parent', args, function(err, data) {
+    db.getView(appname, 'facilities_by_parent', args, function(err, data) {
         if (err) { return alert(err); }
         callback(data);
     });
 
 };
 
-var renderRelatedFacilities = function(req, doc, selector) {
+var renderRelatedFacilities = function(doc, selector) {
     selector = selector || '#facilities_related';
     var related = [];
     var appendRelated = function(d) {
         var p = d.related_entities ? d.related_entities.clinic : d.parent;
         if(p && p.name) {
             related.push({
-                title: $.kansotranslate(utils.viewHeading(p.type)),
+                title: utils.viewHeading(p.type),
                 name: p.name
             });
-            if (p.parent) { appendRelated(p); }
+            if (p.parent) { 
+                appendRelated(p); 
+            }
         }
     };
     appendRelated(doc);
     $(selector).html(
-        templates.render('kujua-reporting/facilities_related.html', req, {
+        render('kujua-reporting/facilities_related.html', {
             related: related
         })
     );
@@ -251,9 +249,8 @@ var renderReportingTotals = function(totals, doc) {
 };
 
 function renderFacility(formCode, facilityId) {
-    var appdb = db.use(duality.getDBURL());
     dates.form = formCode;
-    appdb.getDoc(facilityId, function(err, facility) {
+    db.getDoc(facilityId, function(err, facility) {
         if (err) {
             return console.log(err);
         }
@@ -263,7 +260,7 @@ function renderFacility(formCode, facilityId) {
 };
 
 function registerInboxListeners() {
-    var appdb = db.use(duality.getDBURL());
+    charts.initPieChart();
     $('body').on('click', '#reporting-district-choice .facility', function(e) {
         e.preventDefault();
         var row = $(e.target).closest('.facility');
@@ -290,7 +287,7 @@ function registerInboxListeners() {
     });
 };
 
-function renderDistrictChoice(appdb, config) {
+function renderDistrictChoice(config) {
 
     var f = [];
 
@@ -306,7 +303,7 @@ function renderDistrictChoice(appdb, config) {
 
     config = f;
 
-    appdb.getView(appname, 'facilities_by_type', {
+    db.getView(appname, 'facilities_by_type', {
         startkey: ['health_center'],
         endkey: ['health_center', {}],
         reduce: false,
@@ -345,7 +342,7 @@ function renderDistrictChoice(appdb, config) {
         });
 
         $('[data-page=reporting_rates] #content').html(
-            templates.render("kujua-reporting/reporting_district_choice.html", {}, {
+            render("kujua-reporting/reporting_district_choice.html", {
                 forms: config,
                 one_form: config.length === 1,
                 districts: districts_list
@@ -368,8 +365,7 @@ var renderReports = function(err, facilities) {
         ev.preventDefault();
         ev.stopPropagation();
         var $tr = $(ev.target).closest('tr'),
-            id = $tr.attr('rel'),
-            req = {};
+            id = $tr.attr('rel');;
         // get target el from event context
         var row = $tr.next('.data-record-details'),
             cell = row.children('td'),
@@ -379,8 +375,7 @@ var renderReports = function(err, facilities) {
             row.show();
             cell.show();
             cell.html('<div class="loading">Loading...</div>');
-            var appdb = db.use(duality.getDBURL());
-            appdb.getDoc(id, function(err, resp) {
+            db.getDoc(id, function(err, resp) {
                 if (err) {
                     var msg = 'Error fetching record with id '+ id +'.  '
                                 + 'Try a refresh or check the database connection. '
@@ -389,9 +384,8 @@ var renderReports = function(err, facilities) {
                     return alert(msg);
                 }
                 cell.html(
-                    templates.render(
+                    render(
                         "kujua-reporting/data_records_table.html",
-                        req,
                         {data_records: sms_utils.makeDataRecordReadable(resp)}
                     )
                 );
@@ -402,7 +396,6 @@ var renderReports = function(err, facilities) {
     };
 
     var doc = facility_doc
-        , req = _req
         , rows = []
         , template = 'kujua-reporting/facility.html'
         , data_template = 'kujua-reporting/facility_data.html'
@@ -419,7 +412,7 @@ var renderReports = function(err, facilities) {
         code: dates.form
     });
     $('[data-page=reporting_rates] #content').html(
-        templates.render(template, req, {
+        render(template, {
             doc: doc,
             date_nav: utils.getDateNav(dates, form_config.reporting_freq),
             form: dates.form
@@ -436,7 +429,7 @@ var renderReports = function(err, facilities) {
         rows = getReportingData(facilities, reports, dates, doc);
 
         $('#reporting-data').html(
-            templates.render(data_template, req, {
+            render(data_template, {
                 rows: rows,
                 doc: doc
             })
@@ -486,7 +479,7 @@ var renderReports = function(err, facilities) {
             }
         });
 
-        renderRelatedFacilities(req, doc);
+        renderRelatedFacilities(doc);
 
         // only render sibling menu if we are admin and looking at a district
         if (isAdmin || doc.type !== 'district_hospital') {
@@ -495,10 +488,9 @@ var renderReports = function(err, facilities) {
 
             getViewSiblingFacilities(doc, function(data) {
                 $('.nav.facilities .dropdown-menu').html(
-                    templates.render(
-                        'kujua-reporting/siblings-umenu-item.html', req, {
-                            rows: data.rows,
-                            form: req.query.form
+                    render('kujua-reporting/siblings-umenu-item.html', {
+                        rows: data.rows,
+                        form: dates.form
                     })
                 );
             });
@@ -506,20 +498,30 @@ var renderReports = function(err, facilities) {
     });
 }
 
-exports.init = function(req, options) {
-    sms_utils.info = appinfo.getAppInfo.apply(this);
-    dates = utils.getDates(req.query);
-    _req = req;
-    isAdmin = options.isAdmin;
-    isDistrictAdmin = options.isDistrictAdmin;
-    userDistrict = options.district;
+var render = function (name, context) {
+    var r = '';
+    dust.render(name, context, function (err, result) {
+        if (err) {
+            throw err;
+        }
+        r = result;
+    });
+    return r;
 };
 
 exports.render_page = function() {
-    if (_req) {
-        var appdb = db.use(duality.getDBURL()),
-            config = sms_utils.info['kujua-reporting'];
-        renderDistrictChoice(appdb, config);
-    }
+    require('../../../lib/dust-helpers');
+
+    db = db.current();
     registerInboxListeners();
+    sms_utils.info = appinfo.getAppInfo();
+    dates = utils.getDates({});
+    session.info(function(err, info) {
+        isAdmin = kutils.isUserAdmin(info.userCtx);
+        isDistrictAdmin = kutils.isUserDistrictAdmin(info.userCtx);
+        kutils.getUserDistrict(info.userCtx, function(err, district) {
+            userDistrict = district;
+            renderDistrictChoice(sms_utils.info['kujua-reporting']);
+        });
+    });
 };

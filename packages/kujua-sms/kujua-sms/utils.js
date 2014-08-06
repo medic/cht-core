@@ -2,8 +2,7 @@
  * Utility functions for Medic Mobile
  */
 var utils = require('kujua-utils'),
-    settings = require('settings/root'),
-    logger = require('kujua-utils').logger,
+    logger = utils.logger,
     _ = require('underscore'),
     moment = require('moment'),
     objectpath = require('views/lib/objectpath');

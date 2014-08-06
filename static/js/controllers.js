@@ -1,3 +1,10 @@
+var db = require('db').current(),
+    _ = require('underscore'),
+    sms_utils = require('kujua-sms/utils'),
+    reporting = require('kujua-reporting/shows');
+
+require('views/lib/couchfti').addFTI(db);
+
 (function () {
 
   'use strict';
@@ -5,8 +12,8 @@
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', 'Facility', 'Settings', 'Form', 'Language', 'ReadMessages', 'UserNameService', 'RememberService',
-    function ($scope, $route, $location, $translate, $animate, Facility, Settings, Form, Language, ReadMessages, UserNameService, RememberService) {
+    ['$scope', '$route', '$location', '$translate', '$animate', 'Facility', 'Settings', 'Form', 'Contact', 'Language', 'ReadMessages', 'MarkRead', 'Verified', 'DeleteMessage', 'UpdateFacility', 'UpdateUser', 'SendMessage', 'User', 'UserNameService', 'RememberService',
+    function ($scope, $route, $location, $translate, $animate, Facility, Settings, Form, Contact, Language, ReadMessages, MarkRead, Verified, DeleteMessage, UpdateFacility, UpdateUser, SendMessage, User, UserNameService, RememberService) {
 
       $scope.forms = [];
       $scope.facilities = [];
@@ -16,10 +23,15 @@
       $scope.appending = false;
       $scope.messages = [];
       $scope.totalMessages = undefined;
-      $scope.initialized = false;
       $scope.userDistrict = undefined;
       $scope.filterQuery = undefined;
       $scope.filterSimple = true;
+
+      $scope.permissions = {
+        admin: false,
+        districtAdmin: false,
+        distict: undefined
+      };
 
       $scope.readStatus = {
         forms: { total: 0, read: 0 },
@@ -37,6 +49,24 @@
           to: moment().valueOf()
         }
       };
+
+
+      // TODO permissions
+      // User.query(function(user) {
+      //   $scope.permissions.admin = utils.isUserAdmin(req.userCtx);
+      //   $scope.permissions.districtAdmin = utils.isUserDistrictAdmin(req.userCtx);
+      //   $scope.permissions.district = user.facility_id;
+      //   console.log('user', user);
+      // });
+
+      Contact.get().then(
+        function(rows) {
+          $('#send-message [name=phone]').data('options', rows);
+        },
+        function() {
+          console.log('Failed to retrieve contacts');
+        }
+      );
 
       Form.get().then(
         function(res) {
@@ -89,6 +119,20 @@
         );
       };
 
+      var disableModal = function(modal) {
+        modal.find('.submit').text('Updating...');
+        modal.find('.btn, [name]').attr('disabled', true);
+      };
+
+      var enableModal = function(modal, err) {
+        if (!err) {
+          modal.modal('hide');
+        }
+        modal.find('.modal-footer .note').text(err || '');  
+        modal.find('.submit').text('Submit');
+        modal.find('.btn, [name]').attr('disabled', false);
+      };
+
       $scope.setMessage = function(id) {
         var path = [ $scope.filterModel.type ];
         if (id) {
@@ -109,11 +153,7 @@
               if (!$scope.isRead(message)) {
                 var type = message.form ? 'forms' : 'messages';
                 $scope.readStatus[type].read++;
-                $('body').trigger('markRead', {
-                  read: true,
-                  messageId: id,
-                  username: UserNameService()
-                });
+                MarkRead.update(id, true);
               }
               $scope.selected = message;
             }
@@ -260,7 +300,8 @@
       var _selectedDoc;
 
       $scope.query = function(options) {
-        if (!$scope.initialized) {
+        if ($scope.filterModel.type === 'analytics') {
+          // no search available for analytics
           return;
         }
         if (options.query === _currentQuery && !options.changes) {
@@ -293,33 +334,194 @@
         } else if (!options.silent) {
           $scope.messages = [];
         }
-        options.callback = function(err, data) {
-          _currentQuery = null;
-          angular.element($('body')).scope().$apply(function($scope) {
-            $scope.loading = false;
-            if (err) {
-              $scope.error = true;
-              console.log('Error loading messages', err);
-            } else {
-              $scope.error = false;
-              $scope.update(data.rows);
-              if (!options.changes) {
-                $scope.totalMessages = data.total_rows;
-              }
-              if (_selectedDoc) {
-                $scope.selectMessage(_selectedDoc);
-              }
+/*
+        if (options.district) {
+            options.query += ' AND district:' + options.district
+        }
+*/
+        if (options.changes && options.changes.results.length) {
+            var updatedIds = _.map(options.changes.results, function(result) {
+                return '"' + result.id + '"';
+            });
+            options.query += ' AND uuid:(' + updatedIds.join(' OR ') + ')';
+        }
+        db.getFTI(
+          'medic',
+          'data_records',
+          {
+              limit: 50,
+              q: options.query,
+              skip: options.skip || 0,
+              sort: '\\reported_date',
+              include_docs: true
+          },
+          function(err, data) {
+            _currentQuery = null;
+            if ($scope.filterModel.type === 'analytics') {
+              // no search available for analytics
+              return;
             }
-            $scope.appending = false;
-          });
-        };
-        $('body').trigger('updateMessages', options);
+            angular.element($('body')).scope().$apply(function($scope) {
+              $scope.loading = false;
+              if (err) {
+                $scope.error = true;
+                console.log('Error loading messages', err);
+              } else {
+                $scope.error = false;
+                data.rows = _.map(data.rows, function(row) {
+                    return sms_utils.makeDataRecordReadable(row.doc, sms_utils.info);
+                });
+                $scope.update(data.rows);
+                if (!options.changes) {
+                  $scope.totalMessages = data.total_rows;
+                }
+                if (_selectedDoc) {
+                  $scope.selectMessage(_selectedDoc);
+                }
+              }
+              $scope.appending = false;
+            });
+          }
+        );
       };
 
       $scope.filter = function(options) {
         options = options || {};
         options.query = _getFilterString();
         $scope.query(options);
+      };
+
+      $scope.verify = function(verify) {
+        if ($scope.selected.form) {
+          Verified.update($scope.selected._id, verify);
+        }
+      };
+
+      $scope.deleteMessage = function() {
+        DeleteMessage.delete($scope.selected._id);
+        $('#delete-confirm').modal('hide');
+      };
+
+      $scope.updateFacility = function() {
+        var facilityId = $('#update-facility [name=facility]').val();
+        if (!facilityId) {
+            $('#update-facility .modal-footer .note').text('Please select a facility');
+            return;
+        }
+        UpdateFacility.update($scope.selected._id, facilityId);
+        $('#update-facility').modal('hide');
+      };
+
+      $scope.editUser = function() {
+        var $modal = $('#edit-user-profile');
+        UpdateUser.update({
+          fullname: $modal.find('#fullname').val(),
+          email: $modal.find('#email').val(),
+          phone: $modal.find('#phone').val(),
+          language: $modal.find('#language').val()
+        });
+        $modal.modal('hide');
+      };
+
+      $scope.sendMessage = function() {
+
+        var validateSms = function($phoneField, $messageField) {
+
+          var validateMessage = function(message) {
+            return {
+              valid: !!message,
+              message: 'Please include a message.'
+            };
+          };
+
+          var validatePhoneNumber = function(data) {
+            var phoneValidationRegex = /.*?(\+?[\d]{5,15}).*/;
+            var contact = data.doc.contact;
+            return data.everyoneAt || (
+              contact && phoneValidationRegex.test(contact.phone)
+            );
+          };
+
+          var validatePhoneNumbers = function(recipients) {
+
+            // recipients is mandatory
+            if (!recipients || recipients.length === 0) {
+              return {
+                valid: false,
+                message: 'Please include a valid phone number, ' +
+                         'e.g. +9779875432123'
+              };
+            }
+
+            // all recipients must have a valid phone number
+            var errors = _.filter(recipients, function(data) {
+              return !validatePhoneNumber(data);
+            });
+            if (errors.length > 0) {
+              var errorRecipients = _.map(errors, function(error) {
+                return error.text;
+              }).join(', ');
+              return {
+                valid: false,
+                message: 'These recipients do not have a valid ' + 
+                         'contact number: ' + errorRecipients
+              };
+            }
+
+            return {
+              valid: true,
+              message: '',
+              value: recipients
+            };
+          };
+
+          var updateValidationResult = function(fn, elem, value) {
+            var result = fn.call(this, value);
+            elem.closest('.control-group')
+                .toggleClass('error', !result.valid)
+                .find('.help-block')
+                .text(result.valid ? '' : result.message);
+
+            return result.valid;
+          };
+
+          var phone = updateValidationResult(
+              validatePhoneNumbers,
+              $phoneField, 
+              $phoneField.select2('data')
+          );
+          var message = updateValidationResult(
+              validateMessage, 
+              $messageField, 
+              $messageField.val().trim()
+          );
+
+          return phone && message;
+
+        };
+
+        if ($('#send-message').find('.submit [disabled]').length) {
+          return;
+        }
+
+        var $modal = $('#send-message');
+        var $phone = $modal.find('[name=phone]');
+        var $message = $modal.find('[name=message]');
+
+        if (!validateSms($phone, $message)) {
+          return;
+        }
+
+        disableModal($modal);
+
+        SendMessage.send($phone.select2('data'), $message.val().trim()).then(
+          function() {
+            enableModal($modal);
+          },
+          function(err) {
+            enableModal($modal, err);
+          }
+        );
       };
 
       $scope.$watch('filterModel', $scope.filter, true);
@@ -330,13 +532,10 @@
         }
       });
 
-      $scope.init = function(options) {
-        $scope.initialized = true;
-        $scope.userDistrict = options.district;
-        $scope.filter();
-        updateReadStatus();
-        updateAvailableFacilities();
-      };
+      $scope.filter();
+      updateReadStatus();
+      updateAvailableFacilities();
+
     }
   ]);
 
@@ -363,7 +562,7 @@
     function ($scope) {
       $scope.filterModel.type = 'analytics';
       $scope.selectMessage();
-      $('body').trigger('renderReports');
+      reporting.render_page();
     }
   ]);
 

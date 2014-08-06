@@ -179,19 +179,17 @@ exports.hasPerm = function(userCtx, perm) {
 };
 
 exports.getUserDistrict = function(userCtx, callback) {
-    var district = '';
-    if (userCtx.facility_id)
-        district = userCtx.facility_id;
-    else
+    var district = userCtx.facility_id;
+    if (!district && typeof(window) !== 'undefined') {
         district = cookies.readBrowserCookies()['facility_id'];
-    if (!district) {
-        users.get(userCtx.name, function(err, user) {
-            if (err) return callback(err);
-            callback(null, user.facility_id);
-        });
-    } else {
-        callback(null, district);
     }
+    if (district) {
+        return callback(null, district);
+    }
+    users.get(userCtx.name, function(err, user) {
+        if (err) return callback(err);
+        callback(null, user.facility_id);
+    });
 };
 
 /**

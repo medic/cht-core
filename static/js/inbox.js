@@ -1,3 +1,10 @@
+var db = require('db').current(),
+    _ = require('underscore'),
+    session = require('session');
+
+require('../dist/reporting-views');
+require('./app');
+
 $(function () {
 
   'use strict';
@@ -74,14 +81,21 @@ $(function () {
 
   $('body').on('click', '.send-message', function(e) {
     e.preventDefault();
-    var val = [];
     var to = $(e.target).closest('.send-message').attr('data-send-to');
+    var $modal = $('#send-message');
+    var val = [];
     if (to) {
-      val.push(to);
+      var options = $modal.find('[name=phone]').data('options');
+      var doc = _.find(options, function(option) {
+        return option.doc.contact && option.doc.contact.phone === to;
+      });
+      if (doc) {
+        val.push(doc);
+      }
     }
-    $('#send-message [name=phone]').select2('val', val);
-    $('#send-message [name=message]').val('');
-    $('#send-message').modal('show');
+    $modal.find('[name=phone]').select2('data', val);
+    $modal.find('[name=message]').val('');
+    $modal.modal('show');
   });
 
   $('#update-facility-btn').on('click', function(e) {
@@ -107,11 +121,13 @@ $(function () {
   };
   _applyFilter();
 
-  $(document).on('data-record-updated', function(e, data) {
-    _applyFilter({
-      silent: true,
-      changes: data
-    });
+  db.changes({
+    include_docs: true,
+    filter: 'medic/data_records'
+  }, function(err, data) {
+    if (!err && data && data.results) {
+      _applyFilter({ silent: true, changes: data });
+    }
   });
 
   $('.advanced-filters .btn').on('click', function(e) {
@@ -124,14 +140,6 @@ $(function () {
       _applyFilter();
     }
   });
-
-  $('body').on('dataRecordsInitialized', function(e, options) {
-    angular.element($('body')).scope().$apply(function(scope) {
-      scope.init(options);
-    });
-  });
-  // Notify data_records.js that inbox is ready
-  $('body').trigger('inboxInitialized');
 
   var itemPanel = $('.inbox-items');
   itemPanel.on('scroll', function () {
@@ -163,5 +171,90 @@ $(function () {
       $('#download').attr('href', url);
     });
   });
+
+  function setupPhoneTypeahead(el) {
+
+    el.parent().show();
+
+    var format = function(row) {
+      if (row.everyoneAt) {
+        return 'Everyone at ' + row.doc.name;
+      }
+      var name = row.doc.name,
+          contact = row.doc.contact,
+          contactName = contact && contact.name,
+          code = contact && contact.rc_code,
+          phone = contact && contact.phone;
+      return _.compact([name, contactName, code, phone]).join(', ');
+    };
+
+    el.select2({
+      multiple: true,
+      allowClear: true,
+      formatResult: format,
+      formatSelection: format,
+      query: function(options) {
+        var vals = options.element.data('options');
+        var terms = options.term.toLowerCase().split(/w+/);
+        var matches = _.filter(vals, function(val) {
+          var contact = val.doc.contact;
+          var name = contact && contact.name;
+          var phone = contact && contact.phone;
+          var tags = [ val.doc.name, name, phone ].join(' ').toLowerCase();
+          return _.every(terms, function(term) {
+            return tags.indexOf(term) > -1;
+          });
+        });
+        matches.sort(function(a, b) {
+          var aName = a.everyoneAt ? a.doc.name + 'z' : format(a);
+          var bName = b.everyoneAt ? b.doc.name + 'z' : format(b);
+          return aName.toLowerCase().localeCompare(bName.toLowerCase());
+        });
+        options.callback({ results: matches });
+      }
+    });
+
+  }
+
+  setupPhoneTypeahead($('#send-message [name=phone]'));
+
+  $('#send-message [name=message]').on('keyup', function(e) {
+    var target = $(e.target);
+    var count = target.val().length;
+    var msg = '';
+    if (count > 50) {
+        msg = count + '/160 characters';
+    }
+    target.closest('.modal-content').find('.modal-footer .note').text(msg);
+  });
+
+
+  var redirectToLogin = function() {
+    window.location = '/dashboard/_design/dashboard/_rewrite/login' +
+      '?redirect=' + window.location;
+  };
+  $('#logout').on('click', function(e) {
+    e.preventDefault();
+    session.logout(redirectToLogin);
+  });
+  session.on('change', function (userCtx) {
+    if (!userCtx.name) {
+      redirectToLogin();
+    }
+  });
+  var user = $('html').data('user').name;
+  if (user) {
+    db.use('_users').getDoc('org.couchdb.user:' + user, function(err, user) {
+      if (err) {
+        return console.log('Error fetching user', err);
+      }
+      $('#edit-user-profile #fullname').val(user.fullname);
+      $('#edit-user-profile #email').val(user.email);
+      $('#edit-user-profile #phone').val(user.phone);
+      $('#edit-user-profile #language').val(user.language);
+    });
+  } else {
+    redirectToLogin();
+  }
 
 });
