@@ -1,19 +1,18 @@
-describe('Unit: Testing mmSender', function() {
+describe('mmSender', function() {
 
   'use strict';
 
   var compile,
       scope;
 
-  beforeEach(module('inboxApp'));
-  beforeEach(module('templates'));
-
-  beforeEach(inject(['$compile','$rootScope', 
-    function($compile, $rootScope) {
-      compile = $compile;
-      scope = $rootScope.$new();
-    }
-  ]));
+  beforeEach(function (){
+    module('inboxApp');
+    module('templates');
+    inject(function(_$compile_, _$rootScope_) {
+      compile = _$compile_;
+      scope = _$rootScope_;
+    });
+  });
 
   it('should render nothing when no message', function() {
     var element = compile('<mm-sender message="message"></mm-sender>')(scope);

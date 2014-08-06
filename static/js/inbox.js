@@ -1,5 +1,4 @@
-var db = require('db').current(),
-    _ = require('underscore'),
+var _ = require('underscore'),
     session = require('session');
 
 require('../dist/reporting-views');
@@ -9,23 +8,31 @@ $(function () {
 
   'use strict';
 
+  // TODO we should eliminate the need for this function as much as possible
+  var angularApply = function(callback) {
+    var scope = angular.element($('body')).scope();
+    if (scope) {
+      scope.$apply(callback);
+    }
+  };
+
   $('#formTypeDropdown').on('update', function() {
     var forms = $(this).multiDropdown().val();
-    angular.element($('body')).scope().$apply(function(scope) {
+    angularApply(function(scope) {
       scope.filterModel.forms = forms;
     });
   });
 
   $('#facilityDropdown').on('update', function() {
     var ids = $(this).multiDropdown().val();
-    angular.element($('body')).scope().$apply(function(scope) {
+    angularApply(function(scope) {
       scope.filterModel.facilities = ids;
     });
   });
 
   $('#messageTypeDropdown').on('update', function() {
     var types = $(this).multiDropdown().val();
-    angular.element($('body')).scope().$apply(function(scope) {
+    angularApply(function(scope) {
       scope.filterModel.messageTypes = types;
     });
   });
@@ -38,7 +45,7 @@ $(function () {
     cancelClass: 'btn-link'
   },
   function(start, end) {
-    angular.element($('body')).scope().$apply(function(scope) {
+    angularApply(function(scope) {
       scope.filterModel.date.from = start.valueOf();
       scope.filterModel.date.to = end.valueOf();
     });
@@ -100,7 +107,7 @@ $(function () {
 
   $('#update-facility-btn').on('click', function(e) {
     e.preventDefault();
-    angular.element($('body')).scope().$apply(function(scope) {
+    angularApply(function(scope) {
       var val = '';
       if (scope.selected && 
         scope.selected.related_entities && 
@@ -115,20 +122,11 @@ $(function () {
 
   var _applyFilter = function(options) {
     options = options || {};
-    angular.element($('body')).scope().$apply(function(scope) {
+    angularApply(function(scope) {
       scope.filter(options);
     });
   };
   _applyFilter();
-
-  db.changes({
-    include_docs: true,
-    filter: 'medic/data_records'
-  }, function(err, data) {
-    if (!err && data && data.results) {
-      _applyFilter({ silent: true, changes: data });
-    }
-  });
 
   $('.advanced-filters .btn').on('click', function(e) {
     e.preventDefault();
@@ -156,7 +154,7 @@ $(function () {
       e.preventDefault();
       return;
     }
-    angular.element($('body')).scope().$apply(function(scope) {
+    angularApply(function(scope) {
       var url = $('html').data('base-url');
       var type = scope.filterModel.type === 'message' ? 'messages' : 'forms';
       url += '/export/' + type;
@@ -237,24 +235,14 @@ $(function () {
     e.preventDefault();
     session.logout(redirectToLogin);
   });
-  session.on('change', function (userCtx) {
-    if (!userCtx.name) {
-      redirectToLogin();
-    }
-  });
-  var user = $('html').data('user').name;
-  if (user) {
-    db.use('_users').getDoc('org.couchdb.user:' + user, function(err, user) {
-      if (err) {
-        return console.log('Error fetching user', err);
-      }
-      $('#edit-user-profile #fullname').val(user.fullname);
-      $('#edit-user-profile #email').val(user.email);
-      $('#edit-user-profile #phone').val(user.phone);
-      $('#edit-user-profile #language').val(user.language);
-    });
-  } else {
+  if ($('html').data('user') && !$('html').data('user').name) {
     redirectToLogin();
+  } else {
+    session.on('change', function (userCtx) {
+      if (!userCtx.name) {
+        redirectToLogin();
+      }
+    });
   }
 
 });

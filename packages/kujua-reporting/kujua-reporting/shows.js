@@ -259,7 +259,7 @@ function renderFacility(formCode, facilityId) {
     });
 };
 
-function registerInboxListeners() {
+function registerListeners() {
     charts.initPieChart();
     $('body').on('click', '#reporting-district-choice .facility', function(e) {
         e.preventDefault();
@@ -511,9 +511,8 @@ var render = function (name, context) {
 
 exports.render_page = function() {
     require('../../../lib/dust-helpers');
-
     db = db.current();
-    registerInboxListeners();
+    registerListeners();
     sms_utils.info = appinfo.getAppInfo();
     dates = utils.getDates({});
     session.info(function(err, info) {

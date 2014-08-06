@@ -7,6 +7,33 @@ describe('InboxCtrl controller', function() {
 
   beforeEach(module('inboxApp'));
 
+  beforeEach(function () {
+    module(function ($provide) {
+      $provide.value('User', {
+        query: function(callback) {
+          callback({});
+        }
+      });
+      $provide.value('db', {
+        getFTI: function() {},
+        changes: function() {}
+      });
+      $provide.value('UserDistrict', function() {
+        return {
+          then: function() {}
+        };
+      });
+      $provide.value('UserCtxService', function() {
+        return {};
+      });
+      $provide.value('Language', { 
+        get: function() {
+          return {then: function(){}};
+        }
+      });
+    });
+  });
+
   beforeEach(inject(function($rootScope, $controller) {
     scope = $rootScope.$new();
     options = {};
@@ -14,8 +41,6 @@ describe('InboxCtrl controller', function() {
   }));
 
   it('init', function() {
-    scope.init({ district: 'columbia' });
-    chai.expect(scope.userDistrict).to.equal('columbia');
     var to = moment().add('days', 1).format('YYYY-MM-DD');
     var from = moment().subtract('months', 1).format('YYYY-MM-DD');
     scope.filter(options);

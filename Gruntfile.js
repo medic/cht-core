@@ -308,7 +308,6 @@ module.exports = function(grunt) {
         src: './kujua-utils.js',
         expose: ''
       },
-      // TODO just trust moment will be there?
       {
         cwd: 'bower_components/moment',
         src: './moment.js',
@@ -359,11 +358,6 @@ module.exports = function(grunt) {
         src: './cookies.js',
         expose: ''
       },
-    //   {
-    //     cwd: 'packages/moment',
-    //     src: './moment.js',
-    //     expose: ''
-    //   },
       {
         cwd: 'packages/sha1',
         src: './sha1.js',
@@ -379,11 +373,6 @@ module.exports = function(grunt) {
         src: './locale.js',
         expose: ''
       },
-    //   {
-    //     cwd: 'lib',
-    //     src: './data_records.js',
-    //     expose: ''
-    //   }
     ];
   };
 

@@ -20,21 +20,11 @@ module.exports = function(config) {
     },
     
     files: [
-      // 3rd party code
+      // used to query html
       'bower_components/jquery/dist/jquery.js',
-      'bower_components/angular/angular.js',
-      'bower_components/angular-animate/angular-animate.js',
-      'bower_components/angular-route/angular-route.js',
-      'bower_components/angular-resource/angular-resource.js',
-      'bower_components/angular-sanitize/angular-sanitize.js',
-      'bower_components/angular-translate/angular-translate.js',
-      'bower_components/moment/moment.js',
 
-      // app-specific code
-      'static/js/filters.js',
-      'static/js/controllers.js',
-      'static/js/services.js',
-      'static/js/app.js',
+      // application code
+      'static/dist/inbox.js',
 
       // test-specific code
       'node_modules/chai/chai.js',

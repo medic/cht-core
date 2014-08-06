@@ -1,5 +1,5 @@
-var db = require('db').current(),
-    audit = require('couchdb-audit/kanso').withKanso(db),
+var db = require('db'),
+    audit = require('couchdb-audit/kanso'),
     _ = require('underscore'),
     utils = require('kujua-utils');
 
@@ -8,6 +8,20 @@ var db = require('db').current(),
   'use strict';
 
   var inboxServices = angular.module('inboxServices', ['ngResource']);
+
+  inboxServices.factory('db',
+    function() {
+      var result = db.use('http://localhost:5984/_db');
+      require('views/lib/couchfti').addFTI(result);
+      return result;
+    }
+  );
+
+  inboxServices.factory('audit', ['db',
+    function(db) {
+      return audit.withKanso(db);
+    }
+  ]);
 
   inboxServices.factory('Settings', ['$resource', 'BaseUrlService',
     function($resource, BaseUrlService) {
@@ -119,6 +133,16 @@ var db = require('db').current(),
     }
   ]);
 
+  inboxServices.factory('UserDistrict', ['$q', 'db', 'UserCtxService',
+    function($q, db, UserCtxService) {
+      return function() {
+        var deferred = $q.defer();
+        utils.checkDistrictConstraint(UserCtxService(), db, deferred.resolve);
+        return deferred.promise;
+      };
+    }
+  ]);
+
   inboxServices.factory('User', ['$resource', 'UserCtxService',
     function($resource, UserCtxService) {
       return $resource('/_users/org.couchdb.user%3A' + UserCtxService().name, {}, {
@@ -131,8 +155,8 @@ var db = require('db').current(),
     }
   ]);
 
-  inboxServices.factory('UpdateUser', ['$cacheFactory', 'User', 'UserCtxService',
-    function($cacheFactory, User, UserCtxService) {
+  inboxServices.factory('UpdateUser', ['$cacheFactory', 'db', 'User', 'UserCtxService',
+    function($cacheFactory, db, User, UserCtxService) {
       return {
         update: function(updates) {
           User.query(function(user) {
@@ -169,8 +193,8 @@ var db = require('db').current(),
     }
   ]);
 
-  inboxServices.factory('DeleteMessage',
-    function() {
+  inboxServices.factory('DeleteMessage', ['db', 'audit',
+    function(db, audit) {
       return {
         delete: function(messageId) {
           db.getDoc(messageId, function(err, message) {
@@ -186,11 +210,11 @@ var db = require('db').current(),
           });
         }
       };
-    }
+    }]
   );
 
-  inboxServices.factory('UpdateFacility',
-    function() {
+  inboxServices.factory('UpdateFacility', ['db', 'audit',
+    function(db, audit) {
       return {
         update: function(messageId, facilityId) {
           db.getDoc(messageId, function(err, message) {
@@ -226,11 +250,11 @@ var db = require('db').current(),
           });
         }
       };
-    }
+    }]
   );
 
-  inboxServices.factory('MarkRead', ['UserCtxService',
-    function(UserCtxService) {
+  inboxServices.factory('MarkRead', ['db', 'audit', 'UserCtxService',
+    function(db, audit, UserCtxService) {
       return {
         update: function(messageId, read) {
           db.getDoc(messageId, function(err, message) {
@@ -262,8 +286,8 @@ var db = require('db').current(),
     }
   ]);
 
-  inboxServices.factory('Verified',
-    function() {
+  inboxServices.factory('Verified', ['db', 'audit',
+    function(db, audit) {
       return {
         update: function(messageId, verified) {
           db.getDoc(messageId, function(err, message) {
@@ -279,11 +303,11 @@ var db = require('db').current(),
           });
         }
       };
-    }
+    }]
   );
 
-  inboxServices.factory('SendMessage', ['$q', 'User',
-    function($q, User) {
+  inboxServices.factory('SendMessage', ['$q', 'db', 'audit', 'User',
+    function($q, db, audit, User) {
 
       var createMessageDoc = function(user, recipients) {
         var name = user && user.name;
@@ -493,6 +517,8 @@ var db = require('db').current(),
               var name = row.key[0];
               var type = row.key[1];
               var dist = row.key[2];
+
+              // TODO I think this doesn't work
               if (!options.userDistrict || options.userDistrict === dist) {
                 var username = getUsername(name, options.user);
                 if (username) {

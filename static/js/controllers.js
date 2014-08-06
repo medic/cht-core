@@ -1,10 +1,7 @@
-var db = require('db').current(),
-    _ = require('underscore'),
+var _ = require('underscore'),
     utils = require('kujua-utils'),
     sms_utils = require('kujua-sms/utils'),
     reporting = require('kujua-reporting/shows');
-
-require('views/lib/couchfti').addFTI(db);
 
 (function () {
 
@@ -13,8 +10,8 @@ require('views/lib/couchfti').addFTI(db);
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', 'Facility', 'Settings', 'Form', 'Contact', 'Language', 'ReadMessages', 'MarkRead', 'Verified', 'DeleteMessage', 'UpdateFacility', 'UpdateUser', 'SendMessage', 'User', 'UserCtxService', 'RememberService',
-    function ($scope, $route, $location, $translate, $animate, Facility, Settings, Form, Contact, Language, ReadMessages, MarkRead, Verified, DeleteMessage, UpdateFacility, UpdateUser, SendMessage, User, UserCtxService, RememberService) {
+    ['$scope', '$route', '$location', '$translate', '$animate', 'db', 'Facility', 'Settings', 'Form', 'Contact', 'Language', 'ReadMessages', 'MarkRead', 'Verified', 'DeleteMessage', 'UpdateFacility', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'RememberService',
+    function ($scope, $route, $location, $translate, $animate, db, Facility, Settings, Form, Contact, Language, ReadMessages, MarkRead, Verified, DeleteMessage, UpdateFacility, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, RememberService) {
 
       $scope.forms = [];
       $scope.facilities = [];
@@ -50,7 +47,7 @@ require('views/lib/couchfti').addFTI(db);
         }
       };
 
-      utils.checkDistrictConstraint(UserCtxService(), db, function(err, district) {
+      UserDistrict().then(function(err, district) {
         if (err) {
           console.log(err);
         }
@@ -335,6 +332,7 @@ require('views/lib/couchfti').addFTI(db);
           $scope.messages = [];
         }
 /*
+        // TODO append user district!!
         if (options.district) {
             options.query += ' AND district:' + options.district
         }
@@ -532,6 +530,23 @@ require('views/lib/couchfti').addFTI(db);
         }
       });
 
+      db.changes({
+        include_docs: true,
+        filter: 'medic/data_records'
+      }, function(err, data) {
+        if (!err && data && data.results) {
+          $scope.filter({ silent: true, changes: data });
+        }
+      });
+
+      User.query(function(user) {
+        // TODO bind these to scope
+        $('#edit-user-profile #fullname').val(user.fullname);
+        $('#edit-user-profile #email').val(user.email);
+        $('#edit-user-profile #phone').val(user.phone);
+        $('#edit-user-profile #language').val(user.language);
+      });
+
       $scope.filter();
       updateReadStatus();
 
@@ -557,7 +572,7 @@ require('views/lib/couchfti').addFTI(db);
 
 
   inboxControllers.controller('AnalyticsCtrl', 
-    ['$scope', 
+    ['$scope',
     function ($scope) {
       $scope.filterModel.type = 'analytics';
       $scope.selectMessage();
