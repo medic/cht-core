@@ -27,7 +27,7 @@ var _ = require('underscore'),
       $scope.permissions = {
         admin: utils.isUserAdmin(UserCtxService()),
         districtAdmin: utils.isUserDistrictAdmin(UserCtxService()),
-        distict: undefined
+        district: undefined
       };
 
       $scope.readStatus = {
@@ -47,13 +47,19 @@ var _ = require('underscore'),
         }
       };
 
-      UserDistrict().then(function(err, district) {
-        if (err) {
-          console.log(err);
+      UserDistrict().then(function(res) {
+        if (res.error) {
+          console.log(res.error);
+          if (!$scope.permissions.admin) {
+            $('body').html(res.error);
+          }
+        } else {
+          $scope.permissions.district = $scope.permissions.admin ? undefined : res.district;
+          $scope.filter();
+          updateAvailableFacilities();
+          updateContacts();
+          updateReadStatus();
         }
-        $scope.permissions.district = $scope.permissions.admin ? undefined : district;
-        updateAvailableFacilities();
-        updateContacts();
       });
 
       var updateContacts = function() {
@@ -104,7 +110,8 @@ var _ = require('underscore'),
 
       var updateReadStatus = function () {
         ReadMessages.get({
-          user: UserCtxService().name
+          user: UserCtxService().name,
+          district: $scope.permissions.district
         }).then(
           function(res) {
             $scope.readStatus = res;
@@ -331,12 +338,11 @@ var _ = require('underscore'),
         } else if (!options.silent) {
           $scope.messages = [];
         }
-/*
-        // TODO append user district!!
-        if (options.district) {
-            options.query += ' AND district:' + options.district
+
+        if ($scope.permissions.districtAdmin) {
+            options.query += ' AND district:' + $scope.permissions.district;
         }
-*/
+
         if (options.changes && options.changes.results.length) {
             var updatedIds = _.map(options.changes.results, function(result) {
                 return '"' + result.id + '"';
@@ -546,9 +552,6 @@ var _ = require('underscore'),
         $('#edit-user-profile #phone').val(user.phone);
         $('#edit-user-profile #language').val(user.language);
       });
-
-      $scope.filter();
-      updateReadStatus();
 
     }
   ]);

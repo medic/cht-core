@@ -11,7 +11,7 @@ var db = require('db'),
 
   inboxServices.factory('db',
     function() {
-      var result = db.use('http://localhost:5984/_db');
+      var result = db.current();
       require('views/lib/couchfti').addFTI(result);
       return result;
     }
@@ -137,7 +137,10 @@ var db = require('db'),
     function($q, db, UserCtxService) {
       return function() {
         var deferred = $q.defer();
-        utils.checkDistrictConstraint(UserCtxService(), db, deferred.resolve);
+        utils.checkDistrictConstraint(UserCtxService(), db, function(err, fac) {
+          console.log('dist', err, fac);
+          deferred.resolve({ error: err, district: fac });
+        });
         return deferred.promise;
       };
     }
@@ -518,8 +521,7 @@ var db = require('db'),
               var type = row.key[1];
               var dist = row.key[2];
 
-              // TODO I think this doesn't work
-              if (!options.userDistrict || options.userDistrict === dist) {
+              if (!options.district || options.district === dist) {
                 var username = getUsername(name, options.user);
                 if (username) {
                   status[type][username] += row.value;

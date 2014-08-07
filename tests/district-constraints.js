@@ -61,6 +61,7 @@ exports['when district that exists but not district_hospital callback with error
         getDoc: function() {}
     };
     getDoc = sinon.stub(db, 'getDoc').callsArgWithAsync(1, null, {
+        name: 'horsepiddle',
         type: 'quack'
     });
 
@@ -68,7 +69,7 @@ exports['when district that exists but not district_hospital callback with error
         db: db
     }, function(err) {
         test.equals(err,
-            'Facility with id \'abc\' is not a district hospital. Your admin needs to update the Facility Id in your user details.'
+            'horsepiddle (id: \'abc\') is not a district hospital. Your admin needs to update the Facility Id in your user details.'
         );
         getUserDistrict.restore();
         test.done();

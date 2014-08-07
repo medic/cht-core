@@ -27,7 +27,7 @@ describe('ReadMessages service', function() {
 
     service.get({
       user: 'gareth',
-      userDistrict: 'dunedin'
+      district: 'dunedin'
     }).then(
       function(res) {
         chai.expect(res).to.deep.equal({
@@ -84,7 +84,7 @@ describe('ReadMessages service', function() {
 
     service.get({
       user: 'gareth',
-      userDistrict: 'dunedin'
+      district: 'dunedin'
     }).then(
       function(res) {
         chai.expect(res).to.deep.equal({

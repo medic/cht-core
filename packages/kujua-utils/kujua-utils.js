@@ -195,7 +195,7 @@ exports.checkDistrictConstraint = function(userCtx, db, callback) {
                 return callback(err);
             }
             if (doc.type !== 'district_hospital') {
-                return callback("Facility with id '" + facility + "' is not a district hospital. Your admin needs to update the Facility Id in your user details.");
+                return callback(doc.name + " (id: '" + facility + "') is not a district hospital. Your admin needs to update the Facility Id in your user details.");
             }
             callback(null, facility);
         });
