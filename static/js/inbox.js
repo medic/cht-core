@@ -172,52 +172,6 @@ $(function () {
     });
   });
 
-  function setupPhoneTypeahead(el) {
-
-    el.parent().show();
-
-    var format = function(row) {
-      if (row.everyoneAt) {
-        return 'Everyone at ' + row.doc.name;
-      }
-      var name = row.doc.name,
-          contact = row.doc.contact,
-          contactName = contact && contact.name,
-          code = contact && contact.rc_code,
-          phone = contact && contact.phone;
-      return _.compact([name, contactName, code, phone]).join(', ');
-    };
-
-    el.select2({
-      multiple: true,
-      allowClear: true,
-      formatResult: format,
-      formatSelection: format,
-      query: function(options) {
-        var vals = options.element.data('options');
-        var terms = options.term.toLowerCase().split(/w+/);
-        var matches = _.filter(vals, function(val) {
-          var contact = val.doc.contact;
-          var name = contact && contact.name;
-          var phone = contact && contact.phone;
-          var tags = [ val.doc.name, name, phone ].join(' ').toLowerCase();
-          return _.every(terms, function(term) {
-            return tags.indexOf(term) > -1;
-          });
-        });
-        matches.sort(function(a, b) {
-          var aName = a.everyoneAt ? a.doc.name + 'z' : format(a);
-          var bName = b.everyoneAt ? b.doc.name + 'z' : format(b);
-          return aName.toLowerCase().localeCompare(bName.toLowerCase());
-        });
-        options.callback({ results: matches });
-      }
-    });
-
-  }
-
-  setupPhoneTypeahead($('#send-message [name=phone]'));
-
   $('#send-message [name=message]').on('keyup', function(e) {
     var target = $(e.target);
     var count = target.val().length;

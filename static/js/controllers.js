@@ -1,7 +1,8 @@
 var _ = require('underscore'),
     utils = require('kujua-utils'),
     sms_utils = require('kujua-sms/utils'),
-    reporting = require('kujua-reporting/shows');
+    reporting = require('kujua-reporting/shows'),
+    sendMessage = require('./send-message');
 
 (function () {
 
@@ -51,7 +52,9 @@ var _ = require('underscore'),
         if (res.error) {
           console.log(res.error);
           if (!$scope.permissions.admin) {
-            $('body').html(res.error);
+            if (res.error.indexOf('Returned status code') === -1) {
+              $('body').html(res.error);
+            }
             return;
           }
         }
@@ -429,105 +432,21 @@ var _ = require('underscore'),
         $modal.modal('hide');
       };
 
+      sendMessage.init();
       $scope.sendMessage = function() {
+        sendMessage.validate(function(recipients, message) {
+          var $modal = $('#send-message');
+          disableModal($modal);
 
-        var validateSms = function($phoneField, $messageField) {
-
-          var validateMessage = function(message) {
-            return {
-              valid: !!message,
-              message: 'Please include a message.'
-            };
-          };
-
-          var validatePhoneNumber = function(data) {
-            var phoneValidationRegex = /.*?(\+?[\d]{5,15}).*/;
-            var contact = data.doc.contact;
-            return data.everyoneAt || (
-              contact && phoneValidationRegex.test(contact.phone)
-            );
-          };
-
-          var validatePhoneNumbers = function(recipients) {
-
-            // recipients is mandatory
-            if (!recipients || recipients.length === 0) {
-              return {
-                valid: false,
-                message: 'Please include a valid phone number, ' +
-                         'e.g. +9779875432123'
-              };
+          SendMessage.send(recipients, message).then(
+            function() {
+              enableModal($modal);
+            },
+            function(err) {
+              enableModal($modal, err);
             }
-
-            // all recipients must have a valid phone number
-            var errors = _.filter(recipients, function(data) {
-              return !validatePhoneNumber(data);
-            });
-            if (errors.length > 0) {
-              var errorRecipients = _.map(errors, function(error) {
-                return error.text;
-              }).join(', ');
-              return {
-                valid: false,
-                message: 'These recipients do not have a valid ' + 
-                         'contact number: ' + errorRecipients
-              };
-            }
-
-            return {
-              valid: true,
-              message: '',
-              value: recipients
-            };
-          };
-
-          var updateValidationResult = function(fn, elem, value) {
-            var result = fn.call(this, value);
-            elem.closest('.control-group')
-                .toggleClass('error', !result.valid)
-                .find('.help-block')
-                .text(result.valid ? '' : result.message);
-
-            return result.valid;
-          };
-
-          var phone = updateValidationResult(
-              validatePhoneNumbers,
-              $phoneField, 
-              $phoneField.select2('data')
           );
-          var message = updateValidationResult(
-              validateMessage, 
-              $messageField, 
-              $messageField.val().trim()
-          );
-
-          return phone && message;
-
-        };
-
-        if ($('#send-message').find('.submit [disabled]').length) {
-          return;
-        }
-
-        var $modal = $('#send-message');
-        var $phone = $modal.find('[name=phone]');
-        var $message = $modal.find('[name=message]');
-
-        if (!validateSms($phone, $message)) {
-          return;
-        }
-
-        disableModal($modal);
-
-        SendMessage.send($phone.select2('data'), $message.val().trim()).then(
-          function() {
-            enableModal($modal);
-          },
-          function(err) {
-            enableModal($modal, err);
-          }
-        );
+        });
       };
 
       $scope.$watch('filterModel.type', function() { 
@@ -558,7 +477,7 @@ var _ = require('underscore'),
   ]);
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$route', 
+    ['$scope', '$route',
     function ($scope, $route) {
       $scope.filterModel.type = 'messages';
       $scope.selectMessage($route.current.params.doc);
