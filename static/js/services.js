@@ -138,7 +138,6 @@ var db = require('db'),
       return function() {
         var deferred = $q.defer();
         utils.checkDistrictConstraint(UserCtxService(), db, function(err, fac) {
-          console.log('dist', err, fac);
           deferred.resolve({ error: err, district: fac });
         });
         return deferred.promise;

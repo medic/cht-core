@@ -52,14 +52,14 @@ var _ = require('underscore'),
           console.log(res.error);
           if (!$scope.permissions.admin) {
             $('body').html(res.error);
+            return;
           }
-        } else {
-          $scope.permissions.district = $scope.permissions.admin ? undefined : res.district;
-          $scope.filter();
-          updateAvailableFacilities();
-          updateContacts();
-          updateReadStatus();
         }
+        $scope.permissions.district = $scope.permissions.admin ? undefined : res.district;
+        $scope.filter();
+        updateAvailableFacilities();
+        updateContacts();
+        updateReadStatus();
       });
 
       var updateContacts = function() {
