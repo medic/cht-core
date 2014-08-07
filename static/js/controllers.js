@@ -56,10 +56,12 @@ var _ = require('underscore'),
           }
         }
         $scope.permissions.district = $scope.permissions.admin ? undefined : res.district;
-        $scope.filter();
         updateAvailableFacilities();
         updateContacts();
         updateReadStatus();
+        $scope.$watch('filterModel', function() {
+          $scope.filter();
+        }, true);
       });
 
       var updateContacts = function() {
@@ -528,7 +530,6 @@ var _ = require('underscore'),
         );
       };
 
-      $scope.$watch('filterModel', $scope.filter, true);
       $scope.$watch('filterModel.type', function() { 
         $scope.selected = undefined; 
         if ($scope.filterModel.type === 'analytics') {

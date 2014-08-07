@@ -129,7 +129,6 @@ $(function () {
       scope.filter(options);
     });
   };
-  _applyFilter();
 
   $('.advanced-filters .btn').on('click', function(e) {
     e.preventDefault();
