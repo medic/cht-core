@@ -183,7 +183,6 @@ exports.checkDistrictConstraint = function(userCtx, db, callback) {
         if (err) {
             return callback(err);
         }
-        district = facility;
         if (!facility) {
             return callback('No district assigned to district admin.');
         }

@@ -1,98 +1,81 @@
 var _ = require('underscore'),
     sinon = require('sinon'),
+    users = require('users'),
     utils = require('kujua-utils'),
-    shows = require('lib/shows');
+    db;
+
+exports.setUp = function(callback) {
+    db = { 
+        getDoc: function() {}
+    };
+    callback();
+}
+
+exports.tearDown = function(callback) {
+    if (users.get.restore) {
+        users.get.restore();
+    }
+    callback();
+};
 
 exports['checkDistrictConstraint exposed'] = function(test) {
-    test.ok(_.isFunction(shows.checkDistrictConstraint));
-    test.equals(shows.checkDistrictConstraint.length, 2);
+    test.ok(_.isFunction(utils.checkDistrictConstraint));
+    test.equals(utils.checkDistrictConstraint.length, 3);
     test.done();
 };
 
 exports['when getUserDistrict returns error, callback with error'] = function(test) {
-    var getUserDistrict = sinon.stub(utils, 'getUserDistrict').callsArgWithAsync(1, 'd e d dead');
+    sinon.stub(users, 'get').callsArgWithAsync(1, 'd e d dead');
 
-    shows.checkDistrictConstraint({}, function(err) {
+    utils.checkDistrictConstraint({ }, db, function(err) {
         test.equals(err, 'd e d dead');
-        getUserDistrict.restore();
         test.done();
     });
-}
+};
 
 exports['when no district, callback with error'] = function(test) {
-    var getUserDistrict = sinon.stub(utils, 'getUserDistrict').callsArgWithAsync(1, null, null);
+    sinon.stub(users, 'get').callsArgWithAsync(1, null, {});
 
-    shows.checkDistrictConstraint({}, function(err) {
+    utils.checkDistrictConstraint({ }, db, function(err) {
         test.equals(err, 'No district assigned to district admin.');
-        getUserDistrict.restore();
         test.done();
     });
-}
+};
 
 exports['when district that does not exist callback with error'] = function(test) {
-    var db,
-        getDoc,
-        getUserDistrict = sinon.stub(utils, 'getUserDistrict').callsArgWithAsync(1, null, 'abc');
+    sinon.stub(users, 'get').callsArgWithAsync(1, null, { facility_id: 'abc' });
+    sinon.stub(db, 'getDoc').callsArgWithAsync(1, { error: 'not_found' });
 
-    db = {
-        getDoc: function() {}
-    };
-    getDoc = sinon.stub(db, 'getDoc').callsArgWithAsync(1, {
-        error: 'not_found'
-    });
-
-    shows.checkDistrictConstraint({
-        db: db
-    }, function(err) {
+    utils.checkDistrictConstraint({ }, db, function(err) {
         test.equals(err,
             'No facility found with id \'abc\'. Your admin needs to update the Facility Id in your user details.'
         );
-        getUserDistrict.restore();
         test.done();
     });
 }
 
 exports['when district that exists but not district_hospital callback with error'] = function(test) {
-    var db,
-        getDoc,
-        getUserDistrict = sinon.stub(utils, 'getUserDistrict').callsArgWithAsync(1, null, 'abc');
-
-    db = {
-        getDoc: function() {}
-    };
-    getDoc = sinon.stub(db, 'getDoc').callsArgWithAsync(1, null, {
+    sinon.stub(users, 'get').callsArgWithAsync(1, null, { facility_id: 'abc' });
+    sinon.stub(db, 'getDoc').callsArgWithAsync(1, null, {
         name: 'horsepiddle',
         type: 'quack'
     });
 
-    shows.checkDistrictConstraint({
-        db: db
-    }, function(err) {
+    utils.checkDistrictConstraint({ }, db, function(err) {
         test.equals(err,
             'horsepiddle (id: \'abc\') is not a district hospital. Your admin needs to update the Facility Id in your user details.'
         );
-        getUserDistrict.restore();
         test.done();
     });
 }
 
 exports['when district that exists callback with no error'] = function(test) {
-    var db,
-        getDoc,
-        getUserDistrict = sinon.stub(utils, 'getUserDistrict').callsArgWithAsync(1, null, 'abc');
+    sinon.stub(users, 'get').callsArgWithAsync(1, null, { facility_id: 'abc' });
+    sinon.stub(db, 'getDoc').callsArgWithAsync(1, null, { type: 'district_hospital' });
 
-    db = {
-        getDoc: function() {}
-    };
-    getDoc = sinon.stub(db, 'getDoc').callsArgWithAsync(1, null, {
-        type: 'district_hospital'
-    });
-
-    shows.checkDistrictConstraint({
-        db: db
-    }, function(err) {
+    utils.checkDistrictConstraint({ }, db, function(err, facility) {
         test.equals(err, null);
-        getUserDistrict.restore();
+        test.equals(facility, 'abc');
         test.done();
     });
 }
