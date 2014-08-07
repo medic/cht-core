@@ -83,6 +83,9 @@ $(function () {
           iframe.attr('src', src);
         }
       });
+      $('#add-record-panel .close').on('click', function() {
+        $('#add-record-panel .dropdown-menu').toggle();
+      });
     }
   });
 
@@ -244,5 +247,6 @@ $(function () {
       }
     });
   }
+
 
 });
