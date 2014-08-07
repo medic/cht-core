@@ -1,9 +1,4 @@
-/**
- * Bindings to Duality events
- **/
-
-var events = require('duality/events'),
-    _ = require('underscore')._;
+var _ = require('underscore')._;
 
 exports.pie = function (values, opts) {
     var opts = opts || {},

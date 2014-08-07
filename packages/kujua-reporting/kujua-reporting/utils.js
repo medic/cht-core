@@ -1,5 +1,4 @@
 var _ = require('underscore')._,
-    duality = require('duality/core'),
     moment = require('moment'),
     utils = require('kujua-utils');
 

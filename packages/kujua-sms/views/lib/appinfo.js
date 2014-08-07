@@ -31,7 +31,7 @@ exports.getAppInfo = function(req) {
     function getSettings(req) {
         var settings = {},
             locale = require('locale'),
-            baseURL = require('duality/core').getBaseURL();
+            baseURL = require('duality/utils').getBaseURL();
 
 
         if (this.app_settings) {
@@ -182,7 +182,7 @@ exports.getAppInfo = function(req) {
 
     var muvuku = url.parse(app_settings.muvuku_webapp_url, true);
     muvuku.search = null;
-    muvuku.query._sync_url = require('duality/core').getBaseURL() + '/add';
+    muvuku.query._sync_url = require('duality/utils').getBaseURL() + '/add';
 
     if (app_settings.gateway_number) {
         muvuku.query._gateway_num = app_settings.gateway_number;

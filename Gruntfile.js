@@ -340,12 +340,7 @@ module.exports = function(grunt) {
       },
       {
         cwd: 'packages/duality/duality',
-        src: './*.js',
-        expose: 'duality'
-      },
-      {
-        cwd: 'packages/duality-dust/duality',
-        src: './templates.js',
+        src: './utils.js',
         expose: 'duality'
       },
       {
