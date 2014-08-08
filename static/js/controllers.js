@@ -43,7 +43,7 @@ var _ = require('underscore'),
         valid: true,
         messageTypes: [{ type: 'messageincoming' }],
         date: {
-          from: moment().subtract('months', 1).valueOf(),
+          from: moment().subtract(1, 'months').valueOf(),
           to: moment().valueOf()
         }
       };
@@ -63,7 +63,7 @@ var _ = require('underscore'),
         updateContacts();
         updateReadStatus();
         $scope.$watch('filterModel', function() {
-          $scope.filter();
+          $scope.query();
         }, true);
       });
 
@@ -234,7 +234,7 @@ var _ = require('underscore'),
       var _getFilterString = function() {
 
         var formatDate = function(date) {
-          return date.format('YYYY-MM-DD');
+          return date.zone(0).format('YYYY-MM-DD');
         };
 
         var filters = [];
@@ -242,7 +242,7 @@ var _ = require('underscore'),
         if ($scope.filterSimple) {
 
           // increment end date so it's inclusive
-          var to = moment($scope.filterModel.date.to).add('days', 1);
+          var to = moment($scope.filterModel.date.to).add(1, 'days');
           var from = moment($scope.filterModel.date.from);
 
           filters.push(
@@ -309,10 +309,12 @@ var _ = require('underscore'),
       var _selectedDoc;
 
       $scope.query = function(options) {
+        options = options || {};
         if ($scope.filterModel.type === 'analytics') {
           // no search available for analytics
           return;
         }
+        options.query = _getFilterString();
         if (options.query === _currentQuery && !options.changes) {
           // debounce as same query already running
           return;
@@ -394,12 +396,6 @@ var _ = require('underscore'),
         );
       };
 
-      $scope.filter = function(options) {
-        options = options || {};
-        options.query = _getFilterString();
-        $scope.query(options);
-      };
-
       $scope.verify = function(verify) {
         if ($scope.selected.form) {
           Verified.update($scope.selected._id, verify);
@@ -461,7 +457,7 @@ var _ = require('underscore'),
         filter: 'medic/data_records'
       }, function(err, data) {
         if (!err && data && data.results) {
-          $scope.filter({ silent: true, changes: data });
+          $scope.query({ silent: true, changes: data });
         }
       });
 

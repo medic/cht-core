@@ -126,7 +126,7 @@ $(function () {
   var _applyFilter = function(options) {
     options = options || {};
     angularApply(function(scope) {
-      scope.filter(options);
+      scope.query(options);
     });
   };
 

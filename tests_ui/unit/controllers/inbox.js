@@ -5,6 +5,9 @@ describe('InboxCtrl controller', function() {
   var scope,
       options;
 
+  var date20130208 = 1360321199999;
+  var date20130612 = 1371038399999;
+
   beforeEach(module('inboxApp'));
 
   beforeEach(function () {
@@ -43,7 +46,7 @@ describe('InboxCtrl controller', function() {
   it('init', function() {
     var to = moment().add('days', 1).format('YYYY-MM-DD');
     var from = moment().subtract('months', 1).format('YYYY-MM-DD');
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'reported_date<date>:[' + from + ' TO ' + to + '] ' +
       'AND (type:messageincoming)'
@@ -57,11 +60,11 @@ describe('InboxCtrl controller', function() {
       facilities: [],
       messageTypes: [],
       date: {
-        from: moment('2013-02-08'),
-        to: moment('2013-06-12')
+        from: date20130208,
+        to: date20130612
       }
     };
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:message*'
@@ -74,11 +77,11 @@ describe('InboxCtrl controller', function() {
       forms: [],
       facilities: [],
       date: {
-        from: moment('2013-02-08'),
-        to: moment('2013-06-12')
+        from: date20130208,
+        to: date20130612
       }
     };
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report'
@@ -101,11 +104,11 @@ describe('InboxCtrl controller', function() {
       ],
       facilities: [],
       date: {
-        from: moment('2013-02-08'),
-        to: moment('2013-06-12')
+        from: date20130208,
+        to: date20130612
       }
     };
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report ' +
@@ -128,11 +131,11 @@ describe('InboxCtrl controller', function() {
       ],
       facilities: [],
       date: {
-        from: moment('2013-02-08'),
-        to: moment('2013-06-12')
+        from: date20130208,
+        to: date20130612
       }
     };
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report'
@@ -146,11 +149,11 @@ describe('InboxCtrl controller', function() {
       forms: [],
       facilities: [],
       date: {
-        from: moment('2013-02-08'),
-        to: moment('2013-06-12')
+        from: date20130208,
+        to: date20130612
       }
     };
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report ' +
@@ -165,11 +168,11 @@ describe('InboxCtrl controller', function() {
       forms: [],
       facilities: [],
       date: {
-        from: moment('2013-02-08'),
-        to: moment('2013-06-12')
+        from: date20130208,
+        to: date20130612
       }
     };
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report ' +
@@ -189,11 +192,11 @@ describe('InboxCtrl controller', function() {
       forms: [],
       facilities: ['a', 'b', 'c'],
       date: {
-        from: moment('2013-02-08'),
-        to: moment('2013-06-12')
+        from: date20130208,
+        to: date20130612
       }
     };
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report ' +
@@ -212,11 +215,11 @@ describe('InboxCtrl controller', function() {
       forms: [],
       facilities: ['c', 'a', 'b'],
       date: {
-        from: moment('2013-02-08'),
-        to: moment('2013-06-12')
+        from: date20130208,
+        to: date20130612
       }
     };
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report'
@@ -230,11 +233,11 @@ describe('InboxCtrl controller', function() {
       incoming: true,
       facilities: [],
       date: {
-        from: moment('2013-02-08'),
-        to: moment('2013-06-12')
+        from: date20130208,
+        to: date20130612
       }
     };
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND (type:messageincoming)'
@@ -248,11 +251,11 @@ describe('InboxCtrl controller', function() {
       incoming: false,
       facilities: [],
       date: {
-        from: moment('2013-02-08'),
-        to: moment('2013-06-12')
+        from: date20130208,
+        to: date20130612
       }
     };
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND (type:messageoutgoing)'
@@ -268,11 +271,11 @@ describe('InboxCtrl controller', function() {
       ],
       facilities: [],
       date: {
-        from: moment('2013-02-08'),
-        to: moment('2013-06-12')
+        from: date20130208,
+        to: date20130612
       }
     };
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND (type:messageincoming OR type:messageoutgoing)'
@@ -288,11 +291,11 @@ describe('InboxCtrl controller', function() {
       ],
       facilities: [],
       date: {
-        from: moment('2013-02-08'),
-        to: moment('2013-06-12')
+        from: date20130208,
+        to: date20130612
       }
     };
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND (type:messageincoming OR (type:messageoutgoing AND state:pending))'
@@ -305,13 +308,13 @@ describe('InboxCtrl controller', function() {
       messageTypes: [{ type: 'messageincoming' }],
       facilities: [],
       date: {
-        from: moment('2013-02-08'),
-        to: moment('2013-06-12')
+        from: date20130208,
+        to: date20130612
       }
     };
     scope.filterSimple = false;
     scope.filterQuery = 'sara*';
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'sara* AND type:message*'
     );
@@ -323,15 +326,33 @@ describe('InboxCtrl controller', function() {
       incoming: undefined,
       facilities: [],
       date: {
-        from: moment('2013-02-08'),
-        to: moment('2013-06-12')
+        from: date20130208,
+        to: date20130612
       }
     };
     scope.filterSimple = false;
     scope.filterQuery = 'sara*';
-    scope.filter(options);
+    scope.query(options);
     chai.expect(options.query).to.equal(
       'sara* AND type:report'
+    );
+  });
+
+  it('creates filter query for date in UTC', function() {
+    scope.filterModel = {
+      type: 'messages',
+      forms: [],
+      facilities: [],
+      messageTypes: [],
+      date: {
+        from: moment('2013-02-08T00:30:26.123 Z').valueOf(),
+        to: moment('2013-06-12T23:30:26.123 Z').valueOf()
+      }
+    };
+    scope.query(options);
+    chai.expect(options.query).to.equal(
+      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+      'AND type:message*'
     );
   });
 });
