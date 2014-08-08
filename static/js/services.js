@@ -535,3 +535,5 @@ var db = require('db'),
   });
 
 }());
+
+require('./services/generate-search-query');

@@ -11,8 +11,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', 'db', 'Facility', 'Settings', 'Form', 'Contact', 'Language', 'ReadMessages', 'MarkRead', 'Verified', 'DeleteMessage', 'UpdateFacility', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'RememberService',
-    function ($scope, $route, $location, $translate, $animate, db, Facility, Settings, Form, Contact, Language, ReadMessages, MarkRead, Verified, DeleteMessage, UpdateFacility, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, RememberService) {
+    ['$scope', '$route', '$location', '$translate', '$animate', 'db', 'Facility', 'Settings', 'Form', 'Contact', 'Language', 'ReadMessages', 'MarkRead', 'Verified', 'DeleteMessage', 'UpdateFacility', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'RememberService', 'GenerateSearchQuery',
+    function ($scope, $route, $location, $translate, $animate, db, Facility, Settings, Form, Contact, Language, ReadMessages, MarkRead, Verified, DeleteMessage, UpdateFacility, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, RememberService, GenerateSearchQuery) {
 
       $scope.forms = [];
       $scope.facilities = [];
@@ -231,80 +231,6 @@ var _ = require('underscore'),
         return false;
       };
 
-      var _getFilterString = function() {
-
-        var formatDate = function(date) {
-          return date.zone(0).format('YYYY-MM-DD');
-        };
-
-        var filters = [];
-
-        if ($scope.filterSimple) {
-
-          // increment end date so it's inclusive
-          var to = moment($scope.filterModel.date.to).add(1, 'days');
-          var from = moment($scope.filterModel.date.from);
-
-          filters.push(
-            'reported_date<date>:[' + 
-            formatDate(from) + ' TO ' + formatDate(to) + 
-            ']'
-          );
-
-          if ($scope.filterModel.type === 'messages') {
-
-            if ($scope.filterModel.messageTypes.length) {
-              var types = [];
-              $scope.filterModel.messageTypes.forEach(function(value) {
-                var filter = 'type:' + value.type;
-                if (value.state) {
-                  filter = '(' + filter + ' AND state:' + value.state + ')';
-                }
-                types.push(filter);
-              });
-              filters.push('(' + types.join(' OR ') + ')');
-            } else {
-              filters.push('type:message*');
-            }
-
-          } else {
-
-            filters.push('type:report');
-            var selectedForms = $scope.filterModel.forms.length;
-            if (selectedForms > 0 && selectedForms < $scope.forms.length) {
-              var formCodes = [];
-              $scope.filterModel.forms.forEach(function(form) {
-                formCodes.push(form.code);
-              });
-              filters.push('form:(' + formCodes.join(' OR ') + ')');
-            }
-            if ($scope.filterModel.valid === true) {
-              filters.push('errors<int>:0');
-            } else if ($scope.filterModel.valid === false) {
-              filters.push('NOT errors<int>:0');
-            }
-
-          }
-
-          var selectedFacilities = $scope.filterModel.facilities.length;
-          if (selectedFacilities > 0 && selectedFacilities < $scope.facilities.length) {
-            filters.push('clinic:(' + $scope.filterModel.facilities.join(' OR ') + ')');
-          }
-
-        } else {
-
-          if ($scope.filterQuery && $scope.filterQuery.trim()) {
-            filters.push($scope.filterQuery);
-          }
-          var type = $scope.filterModel.type === 'messages' ?
-            'message*' : 'report';
-          filters.push('type:' + type);
-
-        }
-
-        return filters.join(' AND ');
-      };
-
       var _currentQuery;
       var _selectedDoc;
 
@@ -314,7 +240,7 @@ var _ = require('underscore'),
           // no search available for analytics
           return;
         }
-        options.query = _getFilterString();
+        options.query = GenerateSearchQuery($scope);
         if (options.query === _currentQuery && !options.changes) {
           // debounce as same query already running
           return;

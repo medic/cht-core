@@ -1,53 +1,43 @@
-describe('InboxCtrl controller', function() {
+describe('GenerateSearchQuery service', function() {
 
   'use strict';
 
-  var scope,
-      options;
+  var service,
+      scope;
 
   var date20130208 = 1360321199999;
   var date20130612 = 1371038399999;
 
-  beforeEach(module('inboxApp'));
-
-  beforeEach(function () {
-    module(function ($provide) {
-      $provide.value('User', {
-        query: function(callback) {
-          callback({});
-        }
-      });
-      $provide.value('db', {
-        getFTI: function() {},
-        changes: function() {}
-      });
-      $provide.value('UserDistrict', function() {
-        return {
-          then: function() {}
-        };
-      });
-      $provide.value('UserCtxService', function() {
-        return {};
-      });
-      $provide.value('Language', function() {
-        return {
-          then: function() {}
-        };
-      });
+  beforeEach(function (){
+    module('inboxApp');
+    inject(function(_GenerateSearchQuery_) {
+      service = _GenerateSearchQuery_;
     });
+    scope = {
+      forms: [],
+      facilities: [],
+      filterSimple: true,
+      filterQuery: undefined,
+      filterModel: {}
+    };
   });
 
-  beforeEach(inject(function($rootScope, $controller) {
-    scope = $rootScope.$new();
-    options = {};
-    $controller('InboxCtrl', { '$scope': scope });
-  }));
-
-  it('init', function() {
+  it('inbox controller defaults', function() {
+    scope.filterModel = {
+      type: 'messages',
+      forms: [],
+      facilities: [],
+      valid: true,
+      messageTypes: [{ type: 'messageincoming' }],
+      date: {
+        from: moment().subtract(1, 'months').valueOf(),
+        to: moment().valueOf()
+      }
+    };
     var to = moment().add('days', 1).format('YYYY-MM-DD');
     var from = moment().subtract('months', 1).format('YYYY-MM-DD');
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'reported_date<date>:[' + from + ' TO ' + to + '] ' +
       'AND (type:messageincoming)'
     );
@@ -64,8 +54,8 @@ describe('InboxCtrl controller', function() {
         to: date20130612
       }
     };
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:message*'
     );
@@ -81,8 +71,8 @@ describe('InboxCtrl controller', function() {
         to: date20130612
       }
     };
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report'
     );
@@ -108,8 +98,8 @@ describe('InboxCtrl controller', function() {
         to: date20130612
       }
     };
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report ' +
       'AND form:(A OR B OR C)'
@@ -135,8 +125,8 @@ describe('InboxCtrl controller', function() {
         to: date20130612
       }
     };
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report'
     );
@@ -153,8 +143,8 @@ describe('InboxCtrl controller', function() {
         to: date20130612
       }
     };
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report ' +
       'AND NOT errors<int>:0'
@@ -172,8 +162,8 @@ describe('InboxCtrl controller', function() {
         to: date20130612
       }
     };
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report ' +
       'AND errors<int>:0'
@@ -196,8 +186,8 @@ describe('InboxCtrl controller', function() {
         to: date20130612
       }
     };
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report ' +
       'AND clinic:(a OR b OR c)'
@@ -219,8 +209,8 @@ describe('InboxCtrl controller', function() {
         to: date20130612
       }
     };
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report'
     );
@@ -237,8 +227,8 @@ describe('InboxCtrl controller', function() {
         to: date20130612
       }
     };
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND (type:messageincoming)'
     );
@@ -255,8 +245,8 @@ describe('InboxCtrl controller', function() {
         to: date20130612
       }
     };
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND (type:messageoutgoing)'
     );
@@ -275,8 +265,8 @@ describe('InboxCtrl controller', function() {
         to: date20130612
       }
     };
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND (type:messageincoming OR type:messageoutgoing)'
     );
@@ -295,8 +285,8 @@ describe('InboxCtrl controller', function() {
         to: date20130612
       }
     };
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND (type:messageincoming OR (type:messageoutgoing AND state:pending))'
     );
@@ -314,8 +304,8 @@ describe('InboxCtrl controller', function() {
     };
     scope.filterSimple = false;
     scope.filterQuery = 'sara*';
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'sara* AND type:message*'
     );
   });
@@ -332,8 +322,8 @@ describe('InboxCtrl controller', function() {
     };
     scope.filterSimple = false;
     scope.filterQuery = 'sara*';
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'sara* AND type:report'
     );
   });
@@ -349,8 +339,8 @@ describe('InboxCtrl controller', function() {
         to: moment('2013-06-12T23:30:26.123 Z').valueOf()
       }
     };
-    scope.query(options);
-    chai.expect(options.query).to.equal(
+    var query = service(scope);
+    chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:message*'
     );
