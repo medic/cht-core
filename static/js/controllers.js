@@ -286,11 +286,11 @@ var _ = require('underscore'),
           'medic',
           'data_records',
           {
-              limit: 50,
-              q: options.query,
-              skip: options.skip || 0,
-              sort: '\\reported_date',
-              include_docs: true
+            limit: 50,
+            q: options.query,
+            skip: options.skip || 0,
+            sort: '\\reported_date',
+            include_docs: true
           },
           function(err, data) {
             _currentQuery = null;
@@ -306,7 +306,7 @@ var _ = require('underscore'),
               } else {
                 $scope.error = false;
                 data.rows = _.map(data.rows, function(row) {
-                    return sms_utils.makeDataRecordReadable(row.doc, sms_utils.info);
+                  return sms_utils.makeDataRecordReadable(row.doc, sms_utils.info);
                 });
                 $scope.update(data.rows);
                 if (!options.changes) {
@@ -341,17 +341,6 @@ var _ = require('underscore'),
         }
         UpdateFacility($scope.selected._id, facilityId);
         $('#update-facility').modal('hide');
-      };
-
-      $scope.editUser = function() {
-        var $modal = $('#edit-user-profile');
-        UpdateUser({
-          fullname: $modal.find('#fullname').val(),
-          email: $modal.find('#email').val(),
-          phone: $modal.find('#phone').val(),
-          language: $modal.find('#language').val()
-        });
-        $modal.modal('hide');
       };
 
       sendMessage.init();
@@ -394,7 +383,16 @@ var _ = require('underscore'),
         $('#edit-user-profile #phone').val(user.phone);
         $('#edit-user-profile #language').val(user.language);
       });
-
+      $scope.editUser = function() {
+        var $modal = $('#edit-user-profile');
+        UpdateUser({
+          fullname: $modal.find('#fullname').val(),
+          email: $modal.find('#email').val(),
+          phone: $modal.find('#phone').val(),
+          language: $modal.find('#language').val()
+        });
+        $modal.modal('hide');
+      };
     }
   ]);
 
