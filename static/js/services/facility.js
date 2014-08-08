@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 (function () {
 
   'use strict';
@@ -71,26 +73,20 @@
 
         FacilityRaw(district).query(function(res) {
 
-          var facilities = [];
+          var clinics = _.filter(res.rows, function(row) {
+            return row.doc.type === 'clinic';
+          });
+          var results = _.map(clinics, function(clinic) {
+            return { id: clinic.id, text: getName(clinic.doc) };
+          });
 
-          if (res.rows) {
-            res.rows.forEach(function(clinic) {
-              if (clinic.doc.type === 'clinic') {
-                facilities.push({
-                  id: clinic.id,
-                  text: getName(clinic.doc)
-                });
-              }
-            });
-          }
-
-          facilities.sort(function(lhs, rhs) {
+          results.sort(function(lhs, rhs) {
             var lhsName = lhs.text.toUpperCase();
             var rhsName = rhs.text.toUpperCase();
             return lhsName.localeCompare(rhsName);
           });
 
-          deferred.resolve(facilities);
+          deferred.resolve(results);
         });
 
         return deferred.promise;
