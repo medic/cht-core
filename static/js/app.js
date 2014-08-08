@@ -1,6 +1,6 @@
-require('./services');
-require('./controllers');
-require('./filters');
+require('./services/index');
+require('./controllers/inbox');
+require('./filters/index');
 
 (function () {
 
