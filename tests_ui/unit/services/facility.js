@@ -28,7 +28,7 @@ describe('Facility service', function() {
     results = [];
     var expected = [];
 
-    service.get().then(
+    service().then(
       function(actual) {
         chai.expect(actual).to.deep.equal(expected);
         done();
@@ -53,7 +53,7 @@ describe('Facility service', function() {
       {id: '920a7f6a-d01d-5cfe-7c9182fe65516194', text: 'Sumner, Christchurch, Canterbury'}
     ];
 
-    service.get().then(
+    service().then(
       function(actual) {
         chai.expect(actual).to.deep.equal(expected);
         done();

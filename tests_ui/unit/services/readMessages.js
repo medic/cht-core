@@ -25,7 +25,7 @@ describe('ReadMessages service', function() {
 
     results = [];
 
-    service.get({
+    service({
       user: 'gareth',
       district: 'dunedin'
     }).then(
@@ -54,7 +54,7 @@ describe('ReadMessages service', function() {
       {'key': ['test3',  'messages', 'dunedin'],      'value': 2 }
     ];
 
-    service.get({
+    service({
       user: 'gareth'
     }).then(
       function(res) {
@@ -82,7 +82,7 @@ describe('ReadMessages service', function() {
       {'key': ['test3',  'messages', 'dunedin'],      'value': 2 }
     ];
 
-    service.get({
+    service({
       user: 'gareth',
       district: 'dunedin'
     }).then(

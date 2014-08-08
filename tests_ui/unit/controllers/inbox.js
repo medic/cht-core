@@ -29,10 +29,10 @@ describe('InboxCtrl controller', function() {
       $provide.value('UserCtxService', function() {
         return {};
       });
-      $provide.value('Language', { 
-        get: function() {
-          return {then: function(){}};
-        }
+      $provide.value('Language', function() {
+        return {
+          then: function() {}
+        };
       });
     });
   });

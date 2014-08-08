@@ -18,14 +18,12 @@ describe('Form service', function() {
       });
     });
     module(function ($provide) {
-      $provide.value('Language', {
-        get: function() {
-          return {
-            then: function(callback) {
-              callback(language);
-            }
-          };
-        }
+      $provide.value('Language', function() {
+        return {
+          then: function(callback) {
+            callback(language);
+          }
+        };
       });
     });
     inject(function(_Form_, _$rootScope_, _$translate_) {
@@ -40,7 +38,7 @@ describe('Form service', function() {
     results = {};
     var expected = [];
 
-    service.get().then(
+    service().then(
       function(actual) {
         chai.expect(actual).to.deep.equal(expected);
         done();
@@ -66,7 +64,7 @@ describe('Form service', function() {
       { code: 'C', name: 'Third'  }
     ];
 
-    service.get().then(
+    service().then(
       function(actual) {
         chai.expect(actual).to.deep.equal(expected);
         done();
@@ -91,7 +89,7 @@ describe('Form service', function() {
       { code: 'C', name: 'Third' }
     ];
 
-    service.get().then(
+    service().then(
       function(actual) {
         chai.expect(actual).to.deep.equal(expected);
         done();
@@ -118,7 +116,7 @@ describe('Form service', function() {
 
     language = 'sw';
 
-    service.get().then(
+    service().then(
       function(actual) {
         chai.expect(actual).to.deep.equal(expected);
         done();

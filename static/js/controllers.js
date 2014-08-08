@@ -68,7 +68,7 @@ var _ = require('underscore'),
       });
 
       var updateContacts = function() {
-        Contact.get($scope.permissions.district).then(
+        Contact($scope.permissions.district).then(
           function(rows) {
             $('#send-message [name=phone]').data('options', rows);
           },
@@ -79,7 +79,7 @@ var _ = require('underscore'),
       };
 
       var updateAvailableFacilities = function() {
-        Facility.get($scope.permissions.district).then(
+        Facility($scope.permissions.district).then(
           function(res) {
             $scope.facilities = res;
           },
@@ -89,7 +89,7 @@ var _ = require('underscore'),
         );
       };
 
-      Form.get().then(
+      Form().then(
         function(res) {
           $scope.forms = res;
         },
@@ -104,7 +104,7 @@ var _ = require('underscore'),
         }
       });
 
-      Language.get().then(
+      Language().then(
         function(language) {
           $translate.use(language);
         },
@@ -114,7 +114,7 @@ var _ = require('underscore'),
       );
 
       var updateReadStatus = function () {
-        ReadMessages.get({
+        ReadMessages({
           user: UserCtxService().name,
           district: $scope.permissions.district
         }).then(
@@ -161,7 +161,7 @@ var _ = require('underscore'),
               if (!$scope.isRead(message)) {
                 var type = message.form ? 'forms' : 'messages';
                 $scope.readStatus[type].read++;
-                MarkRead.update(id, true);
+                MarkRead(id, true);
               }
               $scope.selected = message;
             }
@@ -398,12 +398,12 @@ var _ = require('underscore'),
 
       $scope.verify = function(verify) {
         if ($scope.selected.form) {
-          Verified.update($scope.selected._id, verify);
+          Verified($scope.selected._id, verify);
         }
       };
 
       $scope.deleteMessage = function() {
-        DeleteMessage.delete($scope.selected._id);
+        DeleteMessage($scope.selected._id);
         $('#delete-confirm').modal('hide');
       };
 
@@ -413,13 +413,13 @@ var _ = require('underscore'),
             $('#update-facility .modal-footer .note').text('Please select a facility');
             return;
         }
-        UpdateFacility.update($scope.selected._id, facilityId);
+        UpdateFacility($scope.selected._id, facilityId);
         $('#update-facility').modal('hide');
       };
 
       $scope.editUser = function() {
         var $modal = $('#edit-user-profile');
-        UpdateUser.update({
+        UpdateUser({
           fullname: $modal.find('#fullname').val(),
           email: $modal.find('#email').val(),
           phone: $modal.find('#phone').val(),
@@ -434,7 +434,7 @@ var _ = require('underscore'),
           var $modal = $('#send-message');
           disableModal($modal);
 
-          SendMessage.send(recipients, message).then(
+          SendMessage(recipients, message).then(
             function() {
               enableModal($modal);
             },

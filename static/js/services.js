@@ -56,32 +56,30 @@ var db = require('db'),
 
   inboxServices.factory('Contact', ['$q', 'FacilityRaw',
     function($q, FacilityRaw) {
-      return {
-        get: function(district) {
-          var deferred = $q.defer();
+      return function(district) {
+        var deferred = $q.defer();
 
-          FacilityRaw(district).query(function(res) {
-            var contacts = [];
-            _.each(res.rows, function(contact) {
-              if (contact.doc.contact && contact.doc.contact.phone) {
-                contacts.push(contact);
-              }
-              if (contact.doc.type === 'health_center') {
-                var clinics = _.filter(res.rows, function(child) {
-                  return child.doc.parent && 
-                    child.doc.parent._id === contact.id;
-                });
-                contacts.push(_.extend({ 
-                  everyoneAt: true,
-                  clinics: clinics
-                }, contact));
-              }
-            });
-            deferred.resolve(contacts);
+        FacilityRaw(district).query(function(res) {
+          var contacts = [];
+          _.each(res.rows, function(contact) {
+            if (contact.doc.contact && contact.doc.contact.phone) {
+              contacts.push(contact);
+            }
+            if (contact.doc.type === 'health_center') {
+              var clinics = _.filter(res.rows, function(child) {
+                return child.doc.parent && 
+                  child.doc.parent._id === contact.id;
+              });
+              contacts.push(_.extend({ 
+                everyoneAt: true,
+                clinics: clinics
+              }, contact));
+            }
           });
+          deferred.resolve(contacts);
+        });
 
-          return deferred.promise;
-        }
+        return deferred.promise;
       };
     }
   ]);
@@ -98,37 +96,35 @@ var db = require('db'),
         return parts.join(', ');
       };
 
-      return {
-        get: function(district) {
+      return function(district) {
 
-          var deferred = $q.defer();
+        var deferred = $q.defer();
 
-          FacilityRaw(district).query(function(res) {
+        FacilityRaw(district).query(function(res) {
 
-            var facilities = [];
+          var facilities = [];
 
-            if (res.rows) {
-              res.rows.forEach(function(clinic) {
-                if (clinic.doc.type === 'clinic') {
-                  facilities.push({
-                    id: clinic.id,
-                    text: getName(clinic.doc)
-                  });
-                }
-              });
-            }
-
-            facilities.sort(function(lhs, rhs) {
-              var lhsName = lhs.text.toUpperCase();
-              var rhsName = rhs.text.toUpperCase();
-              return lhsName.localeCompare(rhsName);
+          if (res.rows) {
+            res.rows.forEach(function(clinic) {
+              if (clinic.doc.type === 'clinic') {
+                facilities.push({
+                  id: clinic.id,
+                  text: getName(clinic.doc)
+                });
+              }
             });
+          }
 
-            deferred.resolve(facilities);
+          facilities.sort(function(lhs, rhs) {
+            var lhsName = lhs.text.toUpperCase();
+            var rhsName = rhs.text.toUpperCase();
+            return lhsName.localeCompare(rhsName);
           });
 
-          return deferred.promise;
-        }
+          deferred.resolve(facilities);
+        });
+
+        return deferred.promise;
       };
     }
   ]);
@@ -159,123 +155,82 @@ var db = require('db'),
 
   inboxServices.factory('UpdateUser', ['$cacheFactory', 'db', 'User', 'UserCtxService',
     function($cacheFactory, db, User, UserCtxService) {
-      return {
-        update: function(updates) {
-          User.query(function(user) {
-            db.use('_users').saveDoc(_.extend(user, updates), function(err) {
-              if (err) {
-                return console.log(err);
-              }
-              $cacheFactory.get('$http')
-                .remove('/_users/org.couchdb.user%3A' + UserCtxService().name);
-            });
+      return function(updates) {
+        User.query(function(user) {
+          db.use('_users').saveDoc(_.extend(user, updates), function(err) {
+            if (err) {
+              return console.log(err);
+            }
+            $cacheFactory.get('$http')
+              .remove('/_users/org.couchdb.user%3A' + UserCtxService().name);
           });
-        }
+        });
       };
     }
   ]);
 
   inboxServices.factory('Language', ['$q', 'User', 'Settings',
     function($q, User, Settings) {
-      return {
-        get: function() {
-          var deferred = $q.defer();
-          User.query(function(res) {
-            if (res && res.language) {
-              deferred.resolve(res.language);
-            } else {
-              Settings.query(function(res) {
-                deferred.resolve((res.settings && res.settings.locale) || 'en');
-              });
-            }
-          });
-          return deferred.promise;
-        }
+      return function() {
+        var deferred = $q.defer();
+        User.query(function(res) {
+          if (res && res.language) {
+            deferred.resolve(res.language);
+          } else {
+            Settings.query(function(res) {
+              deferred.resolve((res.settings && res.settings.locale) || 'en');
+            });
+          }
+        });
+        return deferred.promise;
       };
     }
   ]);
 
   inboxServices.factory('DeleteMessage', ['db', 'audit',
     function(db, audit) {
-      return {
-        delete: function(messageId) {
-          db.getDoc(messageId, function(err, message) {
+      return function(messageId) {
+        db.getDoc(messageId, function(err, message) {
+          if (err) {
+            return console.log(err);
+          }
+          message._deleted = true;
+          audit.saveDoc(message, function(err) {
             if (err) {
-              return console.log(err);
+              console.log(err);
             }
-            message._deleted = true;
-            audit.saveDoc(message, function(err) {
-              if (err) {
-                console.log(err);
-              }
-            });
           });
-        }
+        });
       };
-    }]
-  );
+    }
+  ]);
 
   inboxServices.factory('UpdateFacility', ['db', 'audit',
     function(db, audit) {
-      return {
-        update: function(messageId, facilityId) {
-          db.getDoc(messageId, function(err, message) {
+      return function(messageId, facilityId) {
+        db.getDoc(messageId, function(err, message) {
+          if (err) {
+            return console.log(err);
+          }
+          db.getDoc(facilityId, function(err, facility) {
             if (err) {
               return console.log(err);
             }
-            db.getDoc(facilityId, function(err, facility) {
-              if (err) {
-                return console.log(err);
-              }
-              if (!message.related_entities) {
-                message.related_entities = {};
-              }
-              if (!message.related_entities.clinic) {
-                message.related_entities.clinic = {};
-              }
-              if (facility.type === 'health_center') {
-                message.related_entities.clinic = { parent: facility };
-              } else {
-                message.related_entities.clinic = facility;
-              }
-              if (message.related_entities.clinic) {
-                message.errors = _.filter(message.errors, function(error) {
-                  return error.code !== 'sys.facility_not_found';
-                });
-              }
-              audit.saveDoc(message, function(err) {
-                if (err) {
-                  console.log(err);
-                }
-              });
-            });
-          });
-        }
-      };
-    }]
-  );
-
-  inboxServices.factory('MarkRead', ['db', 'audit', 'UserCtxService',
-    function(db, audit, UserCtxService) {
-      return {
-        update: function(messageId, read) {
-          db.getDoc(messageId, function(err, message) {
-            if (err) {
-              return console.log(err);
+            if (!message.related_entities) {
+              message.related_entities = {};
             }
-            if (!message.read) {
-                message.read = [];
+            if (!message.related_entities.clinic) {
+              message.related_entities.clinic = {};
             }
-            var user = UserCtxService().name;
-            var index = message.read.indexOf(user);
-            if ((index !== -1) === read) {
-                // nothing to update, return without calling callback
-                return;
-            }
-            if (read) {
-                message.read.push(user);
+            if (facility.type === 'health_center') {
+              message.related_entities.clinic = { parent: facility };
             } else {
-                message.read.splice(index, 1);
+              message.related_entities.clinic = facility;
+            }
+            if (message.related_entities.clinic) {
+              message.errors = _.filter(message.errors, function(error) {
+                return error.code !== 'sys.facility_not_found';
+              });
             }
             audit.saveDoc(message, function(err) {
               if (err) {
@@ -283,30 +238,59 @@ var db = require('db'),
               }
             });
           });
-        }
+        });
+      };
+    }
+  ]);
+
+  inboxServices.factory('MarkRead', ['db', 'audit', 'UserCtxService',
+    function(db, audit, UserCtxService) {
+      return function(messageId, read) {
+        db.getDoc(messageId, function(err, message) {
+          if (err) {
+            return console.log(err);
+          }
+          if (!message.read) {
+              message.read = [];
+          }
+          var user = UserCtxService().name;
+          var index = message.read.indexOf(user);
+          if ((index !== -1) === read) {
+              // nothing to update, return without calling callback
+              return;
+          }
+          if (read) {
+              message.read.push(user);
+          } else {
+              message.read.splice(index, 1);
+          }
+          audit.saveDoc(message, function(err) {
+            if (err) {
+              console.log(err);
+            }
+          });
+        });
       };
     }
   ]);
 
   inboxServices.factory('Verified', ['db', 'audit',
     function(db, audit) {
-      return {
-        update: function(messageId, verified) {
-          db.getDoc(messageId, function(err, message) {
+      return function(messageId, verified) {
+        db.getDoc(messageId, function(err, message) {
+          if (err) {
+            return console.log(err);
+          }
+          message.verified = verified;
+          audit.saveDoc(message, function(err) {
             if (err) {
-              return console.log(err);
+              console.log(err);
             }
-            message.verified = verified;
-            audit.saveDoc(message, function(err) {
-              if (err) {
-                console.log(err);
-              }
-            });
           });
-        }
+        });
       };
-    }]
-  );
+    }
+  ]);
 
   inboxServices.factory('SendMessage', ['$q', 'db', 'audit', 'User',
     function($q, db, audit, User) {
@@ -364,50 +348,48 @@ var db = require('db'),
         );
       };
 
-      return {
-        send: function(recipients, message) {
+      return function(recipients, message) {
 
-          var deferred = $q.defer();
+        var deferred = $q.defer();
 
-          User.query(function(user) {
+        User.query(function(user) {
 
-            var doc = createMessageDoc(user, recipients);
-            var explodedRecipients = formatRecipients(recipients);
+          var doc = createMessageDoc(user, recipients);
+          var explodedRecipients = formatRecipients(recipients);
 
-            // TODO use async
-            _.each(explodedRecipients, function(data, idx) {
-              db.newUUID(100, function (err, uuid) {
-                if (err) {
-                  return deferred.reject(err);
-                }
-                var task = {
-                  messages: [{
-                    from: user && user.phone,
-                    sent_by: user && user.name || 'unknown',
-                    to: data.phone,
-                    facility: data.facility,
-                    message: message,
-                    uuid: uuid
-                  }]
-                };
-                utils.setTaskState(task, 'pending');
-                doc.tasks.push(task);
-                // save doc only after all tasks have been added.
-                if (idx+1 === explodedRecipients.length) {
-                  audit.saveDoc(doc, function(err) {
-                    if (err) {
-                      deferred.reject(err);
-                    } else {
-                      deferred.resolve();
-                    }
-                  });
-                }
-              });
+          // TODO use async
+          _.each(explodedRecipients, function(data, idx) {
+            db.newUUID(100, function (err, uuid) {
+              if (err) {
+                return deferred.reject(err);
+              }
+              var task = {
+                messages: [{
+                  from: user && user.phone,
+                  sent_by: user && user.name || 'unknown',
+                  to: data.phone,
+                  facility: data.facility,
+                  message: message,
+                  uuid: uuid
+                }]
+              };
+              utils.setTaskState(task, 'pending');
+              doc.tasks.push(task);
+              // save doc only after all tasks have been added.
+              if (idx+1 === explodedRecipients.length) {
+                audit.saveDoc(doc, function(err) {
+                  if (err) {
+                    deferred.reject(err);
+                  } else {
+                    deferred.resolve();
+                  }
+                });
+              }
             });
           });
+        });
 
-          return deferred.promise;
-        }
+        return deferred.promise;
       };
     }
   ]);
@@ -436,44 +418,42 @@ var db = require('db'),
         return label[Object.keys(label)[0]];
       };
 
-      return {
-        get: function() {
-          var deferred = $q.defer();
+      return function() {
+        var deferred = $q.defer();
 
-          Settings.query(function(res) {
+        Settings.query(function(res) {
 
-            Language.get().then(
-              function(language) {
+          Language().then(
+            function(language) {
 
-                var result = [];
+              var result = [];
 
-                if (res.settings && res.settings.forms) {
-                  var forms = res.settings.forms;
-                  for (var key in forms) {
-                    if (forms.hasOwnProperty(key)) {
-                      var form = forms[key];
-                      result.push({
-                        name: getLabel(form, language),
-                        code: form.meta.code
-                      });
-                    }
+              if (res.settings && res.settings.forms) {
+                var forms = res.settings.forms;
+                for (var key in forms) {
+                  if (forms.hasOwnProperty(key)) {
+                    var form = forms[key];
+                    result.push({
+                      name: getLabel(form, language),
+                      code: form.meta.code
+                    });
                   }
                 }
-
-                result.sort(function(lhs, rhs) {
-                  var lhsName = lhs.name.toUpperCase();
-                  var rhsName = rhs.name.toUpperCase();
-                  return lhsName.localeCompare(rhsName);
-                });
-
-                deferred.resolve(result);
               }
-            );
 
-          });
+              result.sort(function(lhs, rhs) {
+                var lhsName = lhs.name.toUpperCase();
+                var rhsName = rhs.name.toUpperCase();
+                return lhsName.localeCompare(rhsName);
+              });
 
-          return deferred.promise;
-        }
+              deferred.resolve(result);
+            }
+          );
+
+        });
+
+        return deferred.promise;
       };
     }
   ]);
@@ -503,36 +483,34 @@ var db = require('db'),
         }
       };
 
-      return {
-        get: function(options) {
+      return function(options) {
 
-          var deferred = $q.defer();
+        var deferred = $q.defer();
 
-          ReadMessagesRaw.query(function(res) {
-            
-            var status = {
-              forms: { total: 0, read: 0 },
-              messages: { total: 0, read: 0 }
-            };
-            
-            res.rows.forEach(function(row) {
-              var name = row.key[0];
-              var type = row.key[1];
-              var dist = row.key[2];
+        ReadMessagesRaw.query(function(res) {
+          
+          var status = {
+            forms: { total: 0, read: 0 },
+            messages: { total: 0, read: 0 }
+          };
+          
+          res.rows.forEach(function(row) {
+            var name = row.key[0];
+            var type = row.key[1];
+            var dist = row.key[2];
 
-              if (!options.district || options.district === dist) {
-                var username = getUsername(name, options.user);
-                if (username) {
-                  status[type][username] += row.value;
-                }
+            if (!options.district || options.district === dist) {
+              var username = getUsername(name, options.user);
+              if (username) {
+                status[type][username] += row.value;
               }
-            });
-
-            deferred.resolve(status);
+            }
           });
 
-          return deferred.promise;
-        }
+          deferred.resolve(status);
+        });
+
+        return deferred.promise;
       };
     }
   ]);
