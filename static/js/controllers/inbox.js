@@ -329,8 +329,14 @@ var _ = require('underscore'),
       };
 
       $scope.deleteMessage = function() {
-        DeleteMessage($scope.selected._id);
-        $('#delete-confirm').modal('hide');
+        DeleteMessage($scope.selected._id, function(err) {
+          if (err) {
+            console.log('Error deleting document', err);
+            $('#delete-confirm .modal-footer .note').text('Error deleting document');
+          } else {
+            $('#delete-confirm').modal('hide');
+          }
+        });
       };
 
       $scope.updateFacility = function() {

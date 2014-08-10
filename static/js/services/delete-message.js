@@ -6,16 +6,14 @@
 
   inboxServices.factory('DeleteMessage', ['db', 'audit',
     function(db, audit) {
-      return function(messageId) {
+      return function(messageId, callback) {
         db.getDoc(messageId, function(err, message) {
           if (err) {
-            return console.log(err);
+            return callback(err);
           }
           message._deleted = true;
           audit.saveDoc(message, function(err) {
-            if (err) {
-              console.log(err);
-            }
+            callback(err, message);
           });
         });
       };
