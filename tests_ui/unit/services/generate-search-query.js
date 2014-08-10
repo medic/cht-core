@@ -34,8 +34,8 @@ describe('GenerateSearchQuery service', function() {
         to: moment().valueOf()
       }
     };
-    var to = moment().add('days', 1).format('YYYY-MM-DD');
-    var from = moment().subtract('months', 1).format('YYYY-MM-DD');
+    var to = moment().add('days', 1).zone(0).format('YYYY-MM-DD');
+    var from = moment().subtract('months', 1).zone(0).format('YYYY-MM-DD');
     var query = service(scope);
     chai.expect(query).to.equal(
       'reported_date<date>:[' + from + ' TO ' + to + '] ' +
