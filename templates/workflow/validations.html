@@ -11,6 +11,7 @@
           <p>Send the following response message if the validations pass but the patient ID is not located.</p>
           <input type="hidden" name="event_type" value="registration_not_found"/>
           <textarea name="message" class="input-xxlarge translated" data-message="{message}" data-messages="{messages}">{message}</textarea>
+          <a href="{baseURL}/help/messages" target="_blank" class="help"><i class="icon-question-sign"></i></a>
         </div>
       {/eq}
     {/responses}
@@ -28,6 +29,7 @@
         <a href="{baseURL}/help/validation" target="_blank" class="help"><i class="icon-question-sign"></i></a>
       </p>
       <textarea name="content" class="input-xxlarge translated" data-message="{message}" data-messages="{messages}">{message}</textarea>
+      <a href="{baseURL}/help/messages" target="_blank" class="help"><i class="icon-question-sign"></i></a>
       <p>
         <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
       </p>

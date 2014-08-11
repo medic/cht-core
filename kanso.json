@@ -457,7 +457,7 @@
                                             "message": {
                                                 "type": "array",
                                                 "title": "Response Message",
-                                                "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
+                                                "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported.",
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
@@ -494,13 +494,13 @@
                                     "message": {
                                         "type": "array",
                                         "title": "Message",
+                                        "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported. e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
                                         "items": {
                                             "type": "object",
                                             "properties": {
                                                 "content": {
                                                     "type": "string",
                                                     "title": "Message Content",
-                                                    "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
                                                     "default": "",
                                                     "je:hint": "textarea",
                                                     "je:textarea": {
@@ -612,7 +612,7 @@
                                             "message": {
                                                 "title": "Response Message",
                                                 "type": "array",
-                                                "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
+                                                "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported.",
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
@@ -648,6 +648,7 @@
                                     "message": {
 										"type": "array",
                                         "title": "Message Text",
+                                        "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported. e.g. Greetings, {{chw_name}}. {{patient_id}} notification will be disabled.",
                                         "items": {
                                             "type": "object",
                                             "properties": {
@@ -735,6 +736,7 @@
                         "messages": {
                             "type": "array",
                             "title": "Messages",
+                            "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported. e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -746,7 +748,6 @@
                                                 "content": {
                                                     "type": "string",
                                                     "title": "Message Content",
-                                                    "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
                                                     "default": "",
                                                     "je:hint": "textarea",
                                                     "je:textarea": {
@@ -863,7 +864,7 @@
                                         "message": {
                                             "title": "Response Message",
                                             "type": "array",
-                                            "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
+                                            "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported.",
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
@@ -899,13 +900,13 @@
                                 "message": {
                                     "type": "array",
                                     "title": "Message",
+                                    "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported. e.g. Greetings, {{chw_name}}. {{patient_id}} notification will be disabled.",
                                     "items": {
                                         "type": "object",
                                         "properties": {
                                             "content": {
                                                 "type": "string",
                                                 "title": "Message Content",
-                                                "description": "e.g. Greetings, {{chw_name}}. {{patient_id}} notification will be disabled.",
                                                 "default": "",
                                                 "je:hint": "textarea",
                                                 "je:textarea": {
