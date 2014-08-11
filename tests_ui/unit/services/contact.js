@@ -1,4 +1,4 @@
-describe('Facility service', function() {
+describe('Contact service', function() {
 
   'use strict';
 
