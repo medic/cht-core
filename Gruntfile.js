@@ -55,7 +55,7 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'static/dist/inbox.js': ['static/js/inbox.js']
+          'static/dist/inbox.js': ['static/js/app.js']
         }
       }
     },

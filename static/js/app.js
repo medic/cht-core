@@ -1,6 +1,7 @@
 require('./services/index');
 require('./controllers/inbox');
 require('./filters/index');
+require('../dist/reporting-views');
 
 (function () {
 
