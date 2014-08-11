@@ -1,5 +1,15 @@
 # Medic Mobile Release Notes
 
+## 0.4.1
+
+### Jul 31, 2014
+
+- minor UI clean up
+
+- allow hash symbol to separate form code and data in structured textform message
+
+- modified build to bundle npm dependencies with attached node modules.
+
 ## 0.4.0
 
 ### Jul 10, 2014
@@ -58,6 +68,9 @@
 
 - deprecated `exclude_cols` parameter for export integrations. Migrate 
   applications to use the `columns` parameter instead.
+
+- No forms are included by default, you must upload your forms. As usual
+  configuration (settings and forms) persists through upgrades.
 
 
 ## 0.3.11
