@@ -91,6 +91,7 @@ var _ = require('underscore'),
         Facility($scope.permissions.district).then(
           function(res) {
             $scope.facilities = res;
+            $('#update-facility [name=facility]').select2();
           },
           function() {
             console.log('Failed to retrieve facilities');
@@ -529,12 +530,11 @@ var _ = require('underscore'),
         });
         $('#update-facility').modal('show');
       });
-      $('#update-facility [name=facility]').select2();
+
 
       var _applyFilter = function(options) {
-        options = options || {};
         angularApply(function(scope) {
-          scope.query(options);
+          scope.query(options || {});
         });
       };
 
