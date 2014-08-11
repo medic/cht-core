@@ -141,11 +141,15 @@ var _ = require('underscore'),
         modal.find('.btn, [name]').attr('disabled', true);
       };
 
-      var enableModal = function(modal, err) {
-        if (!err) {
+      var enableModal = function(modal, description, err) {
+        var message = '';
+        if (err) {
+          console.log(description, err);
+          message = description + ': ' + err;
+        } else {
           modal.modal('hide');
         }
-        modal.find('.modal-footer .note').text(err || '');  
+        modal.find('.modal-footer .note').text(message);
         modal.find('.submit').text('Submit');
         modal.find('.btn, [name]').attr('disabled', false);
       };
@@ -337,29 +341,33 @@ var _ = require('underscore'),
 
       $scope.verify = function(verify) {
         if ($scope.selected.form) {
-          Verified($scope.selected._id, verify);
+          Verified($scope.selected._id, verify, function(err) {
+            if (err) {
+              console.log('Error verifying message', err);
+            }
+          });
         }
       };
 
       $scope.deleteMessage = function() {
+        var $modal = $('#delete-confirm');
+        disableModal($modal);
         DeleteMessage($scope.selected._id, function(err) {
-          if (err) {
-            console.log('Error deleting document', err);
-            $('#delete-confirm .modal-footer .note').text('Error deleting document');
-          } else {
-            $('#delete-confirm').modal('hide');
-          }
+          enableModal($modal, 'Error deleting document', err);
         });
       };
 
       $scope.updateFacility = function() {
-        var facilityId = $('#update-facility [name=facility]').val();
+        var $modal = $('#update-facility');
+        var facilityId = $modal.find('[name=facility]').val();
         if (!facilityId) {
-            $('#update-facility .modal-footer .note').text('Please select a facility');
+            $modal.find('.modal-footer .note').text('Please select a facility');
             return;
         }
-        UpdateFacility($scope.selected._id, facilityId);
-        $('#update-facility').modal('hide');
+        disableModal($modal);
+        UpdateFacility($scope.selected._id, facilityId, function(err) {
+          enableModal($modal, 'Error updating facility', err);
+        });
       };
 
       sendMessage.init();
@@ -373,7 +381,7 @@ var _ = require('underscore'),
               enableModal($modal);
             },
             function(err) {
-              enableModal($modal, err);
+              enableModal($modal, 'Error sending message', err);
             }
           );
         });
@@ -404,13 +412,15 @@ var _ = require('underscore'),
       });
       $scope.editUser = function() {
         var $modal = $('#edit-user-profile');
+        disableModal($modal);
         UpdateUser({
           fullname: $modal.find('#fullname').val(),
           email: $modal.find('#email').val(),
           phone: $modal.find('#phone').val(),
           language: $modal.find('#language').val()
+        }, function(err) {
+          enableModal($modal, 'Error updating user', err);
         });
-        $modal.modal('hide');
       };
 
       $('#formTypeDropdown').on('update', function() {

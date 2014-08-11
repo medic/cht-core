@@ -6,7 +6,6 @@ var utils = require('kujua-utils');
 
   var inboxServices = angular.module('inboxServices');
   
-
   inboxServices.factory('UserDistrict', ['$q', 'db', 'UserCtxService',
     function($q, db, UserCtxService) {
       return function() {
@@ -19,9 +18,13 @@ var utils = require('kujua-utils');
     }
   ]);
 
+  var getUserResourceUrl = function(userCtx) {
+    return '/_users/org.couchdb.user%3A' + userCtx.name;
+  };
+
   inboxServices.factory('User', ['$resource', 'UserCtxService',
     function($resource, UserCtxService) {
-      return $resource('/_users/org.couchdb.user%3A' + UserCtxService().name, {}, {
+      return $resource(getUserResourceUrl(UserCtxService()), {}, {
         query: {
           method: 'GET',
           isArray: false,
@@ -33,14 +36,13 @@ var utils = require('kujua-utils');
 
   inboxServices.factory('UpdateUser', ['$cacheFactory', 'db', 'User', 'UserCtxService',
     function($cacheFactory, db, User, UserCtxService) {
-      return function(updates) {
+      return function(updates, callback) {
         User.query(function(user) {
-          db.use('_users').saveDoc(_.extend(user, updates), function(err) {
-            if (err) {
-              return console.log(err);
-            }
-            $cacheFactory.get('$http')
-              .remove('/_users/org.couchdb.user%3A' + UserCtxService().name);
+          var updated = _.extend(user, updates);
+          db.use('_users').saveDoc(updated, function(err) {
+            var cachename = getUserResourceUrl(UserCtxService());
+            $cacheFactory.get('$http').remove(cachename);
+            callback(err, updated);
           });
         });
       };

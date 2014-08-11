@@ -6,16 +6,14 @@
   
   inboxServices.factory('Verified', ['db', 'audit',
     function(db, audit) {
-      return function(messageId, verified) {
+      return function(messageId, verified, callback) {
         db.getDoc(messageId, function(err, message) {
           if (err) {
-            return console.log(err);
+            return callback(err);
           }
           message.verified = verified;
           audit.saveDoc(message, function(err) {
-            if (err) {
-              console.log(err);
-            }
+            callback(err, message);
           });
         });
       };

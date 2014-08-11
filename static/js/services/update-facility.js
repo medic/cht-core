@@ -6,14 +6,14 @@
   
   inboxServices.factory('UpdateFacility', ['db', 'audit',
     function(db, audit) {
-      return function(messageId, facilityId) {
+      return function(messageId, facilityId, callback) {
         db.getDoc(messageId, function(err, message) {
           if (err) {
-            return console.log(err);
+            return callback(err);
           }
           db.getDoc(facilityId, function(err, facility) {
             if (err) {
-              return console.log(err);
+              return callback(err);
             }
             if (!message.related_entities) {
               message.related_entities = {};
@@ -32,9 +32,7 @@
               });
             }
             audit.saveDoc(message, function(err) {
-              if (err) {
-                console.log(err);
-              }
+              callback(err, message);
             });
           });
         });
