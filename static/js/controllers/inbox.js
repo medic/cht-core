@@ -197,12 +197,12 @@ var _ = require('underscore'),
         }
       };
 
-      var _deleteMessage = function(id) {
-        if ($scope.selected && $scope.selected._id === id) {
+      var _deleteMessage = function(message) {
+        if ($scope.selected && $scope.selected._id === message.id) {
           $scope.selected = undefined;
         }
         for (var i = 0; i < $scope.messages.length; i++) {
-          if (id === $scope.messages[i]._id) {
+          if (message.id === $scope.messages[i]._id) {
             $scope.messages.splice(i, 1);
             return;
           }
@@ -236,17 +236,10 @@ var _ = require('underscore'),
       };
 
       $scope.isRead = function(message) {
-        message.read = message.read || [];
         if ($scope.selected && $scope.selected._id === message._id) {
           return true;
         }
-        var user = UserCtxService().name;
-        for (var i = 0; i < message.read.length; i++) {
-          if (message.read[i] === user) {
-            return true;
-          }
-        }
-        return false;
+        return _.contains(message.read, UserCtxService().name);
       };
 
       var _currentQuery;
@@ -267,14 +260,9 @@ var _ = require('underscore'),
         $animate.enabled(!!options.changes);
         if (options.changes) {
           updateReadStatus();
-          var changedRows = options.changes.results;
-          for (var i = changedRows.length - 1; i >= 0; i--) {
-            if (changedRows[i].deleted) {
-              _deleteMessage(changedRows[i].id);
-              changedRows.splice(i, 1);
-            }
-          }
-          if (!changedRows.length) {
+          var deletedRows = _.where(options.changes.results, {deleted: true});
+          _.each(deletedRows, _deleteMessage);
+          if (deletedRows.length === options.changes.results.length) {
             // nothing to update
             return;
           }
@@ -291,14 +279,14 @@ var _ = require('underscore'),
         }
 
         if ($scope.permissions.districtAdmin) {
-            options.query += ' AND district:' + $scope.permissions.district;
+          options.query += ' AND district:' + $scope.permissions.district;
         }
 
         if (options.changes && options.changes.results.length) {
-            var updatedIds = _.map(options.changes.results, function(result) {
-                return '"' + result.id + '"';
-            });
-            options.query += ' AND uuid:(' + updatedIds.join(' OR ') + ')';
+          var updatedIds = _.map(options.changes.results, function(result) {
+            return '"' + result.id + '"';
+          });
+          options.query += ' AND uuid:(' + updatedIds.join(' OR ') + ')';
         }
         db.getFTI(
           'medic',
@@ -530,7 +518,6 @@ var _ = require('underscore'),
         });
         $('#update-facility').modal('show');
       });
-
 
       var _applyFilter = function(options) {
         angularApply(function(scope) {
