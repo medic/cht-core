@@ -16,8 +16,6 @@ describe('Form service', function() {
           callback( { settings: { forms: results } } );
         }
       });
-    });
-    module(function ($provide) {
       $provide.value('Language', function() {
         return {
           then: function(callback) {

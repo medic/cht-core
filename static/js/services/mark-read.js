@@ -6,29 +6,26 @@
   
   inboxServices.factory('MarkRead', ['db', 'audit', 'UserCtxService',
     function(db, audit, UserCtxService) {
-      return function(messageId, read) {
+      return function(messageId, read, callback) {
         db.getDoc(messageId, function(err, message) {
           if (err) {
-            return console.log(err);
+            return callback(err);
           }
-          if (!message.read) {
-              message.read = [];
-          }
+          var readers = message.read || [];
           var user = UserCtxService().name;
-          var index = message.read.indexOf(user);
+          var index = readers.indexOf(user);
           if ((index !== -1) === read) {
-              // nothing to update, return without calling callback
-              return;
+            // already in the correct state
+            return callback(null, message);
           }
           if (read) {
-              message.read.push(user);
+            readers.push(user);
           } else {
-              message.read.splice(index, 1);
+            readers.splice(index, 1);
           }
+          message.read = readers;
           audit.saveDoc(message, function(err) {
-            if (err) {
-              console.log(err);
-            }
+            callback(err, message);
           });
         });
       };

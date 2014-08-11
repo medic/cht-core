@@ -8,8 +8,8 @@ describe('DeleteMessage service', function() {
       message;
 
   beforeEach(function() {
-    db = { getDoc: function() {} };
-    audit = { saveDoc: function() {} };
+    db = {};
+    audit = {};
     message = {};
     module('inboxApp');
     module(function ($provide) {
@@ -47,7 +47,7 @@ describe('DeleteMessage service', function() {
       callback('errcode1');
     };
 
-    service('abc', function(err, actual) {
+    service('abc', function(err) {
       chai.expect(err).to.equal('errcode1');
       done();
     });
@@ -63,7 +63,7 @@ describe('DeleteMessage service', function() {
       callback('errcode2');
     };
 
-    service('abc', function(err, actual) {
+    service('abc', function(err) {
       chai.expect(err).to.equal('errcode2');
       done();
     });

@@ -6,6 +6,7 @@
     "url": "git://github.com/medic/medic-webapp.git"
   },
   "devDependencies": {
+    "async": "^0.9.0",
     "chai": "~1.9.1",
     "grunt": "^0.4.5",
     "grunt-autoprefixer": "^0.8.2",
