@@ -476,9 +476,9 @@
             };
 
             if (update) {
-              options.save(doc, callback);
-            } else {
-              options.remove(doc, callback);
+                options.save(doc, callback);
+            } else if (doc._id && doc._rev) {
+                options.remove(doc, callback);
             }
         }
         if ($tr.data('save_queued')) {
