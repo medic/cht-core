@@ -25,6 +25,8 @@ var _ = require('underscore'),
       $scope.totalMessages = undefined;
       $scope.filterQuery = undefined;
       $scope.filterSimple = true;
+      $scope.languages = [];
+      $scope.editUserModel = {};
 
       $scope.permissions = {
         admin: utils.isUserAdmin(UserCtxService()),
@@ -109,8 +111,11 @@ var _ = require('underscore'),
       );
 
       Settings.query(function(res) {
-        if (res.settings && res.settings.reported_date_format) {
-          RememberService.dateFormat = res.settings.reported_date_format;
+        if (res.settings) {
+          $scope.languages = res.settings.locales;
+          if (res.settings.reported_date_format) {
+            RememberService.dateFormat = res.settings.reported_date_format;
+          }
         }
       });
 
@@ -393,20 +398,21 @@ var _ = require('underscore'),
       });
 
       User.query(function(user) {
-        // TODO bind these to scope
-        $('#edit-user-profile #fullname').val(user.fullname);
-        $('#edit-user-profile #email').val(user.email);
-        $('#edit-user-profile #phone').val(user.phone);
-        $('#edit-user-profile #language').val(user.language);
+        $scope.editUserModel = {
+          fullname: user.fullname,
+          email: user.email,
+          phone: user.phone,
+          language: { code: user.language }
+        };
       });
       $scope.editUser = function() {
         var $modal = $('#edit-user-profile');
         disableModal($modal);
         UpdateUser({
-          fullname: $modal.find('#fullname').val(),
-          email: $modal.find('#email').val(),
-          phone: $modal.find('#phone').val(),
-          language: $modal.find('#language').val()
+          fullname: $scope.editUserModel.fullname,
+          email: $scope.editUserModel.email,
+          phone: $scope.editUserModel.phone,
+          language: $scope.editUserModel.language.code
         }, function(err) {
           enableModal($modal, 'Error updating user', err);
         });
@@ -418,7 +424,6 @@ var _ = require('underscore'),
           scope.filterModel.forms = forms;
         });
       });
-
 
       $('#facilityDropdown').on('update', function() {
         var ids = $(this).multiDropdown().val();

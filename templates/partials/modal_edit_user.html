@@ -10,26 +10,22 @@
 
           <div class="form-group">
             <label for="fullname">Full Name</label>
-            <input id="fullname" type="text" class="form-control" />
+            <input id="fullname" type="text" class="form-control" ng-model="editUserModel.fullname" />
           </div>
 
           <div class="form-group">
             <label for="email">E-mail Address</label>
-            <input id="email" type="text" class="form-control" />
+            <input id="email" type="text" class="form-control" ng-model="editUserModel.email" />
           </div>
 
           <div class="form-group">
             <label for="phone">Phone Number</label>
-            <input id="phone" type="text" class="form-control" />
+            <input id="phone" type="text" class="form-control" ng-model="editUserModel.phone"/>
           </div>
 
           <div class="form-group">
             <label for="language">Language</label>
-            <select id="language" class="form-control">
-              {#locales}
-                <option value="{code}">{name}</option>
-              {/locales}
-            </select>
+            <select id="language" class="form-control" ng-model="editUserModel.language" ng-options="language.name for language in languages track by language.code"></select>
           </div>
 
         </form>
