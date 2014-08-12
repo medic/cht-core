@@ -1,0 +1,71 @@
+<div class="col-sm-8 item-content" ng-show="selected">
+  <div>
+    <div class="meta">
+      <span class="time" ng-bind-html="selected.reported_date | relativeDate"></span>
+      <mm-sender message="selected"></mm-sender>
+    </div>
+    <div class="status">
+      <span class="mm-badge mm-badge-round mm-badge-border" ng-class="selected.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
+        <span class="fa" ng-class="{'fa-check': selected.verified}"></span>
+      </span>
+    </div>
+    <div class="body">
+      <h2 ng-bind-html="selected | title:forms"></h2>
+      <ul>
+        <li ng-if="!selected.form && selected.sms_message.message">
+          <label>Content</label>
+          <p>{~lb}{~lb}selected.sms_message.message{~rb}{~rb}</p>
+        </li>
+        <li ng-if="selected.form" ng-repeat="field in selected.fields.data" ng-bind-html="field | messageField"></li>
+        <li ng-if="selected.errors.length">
+          <label>Errors</label>
+          <ul>
+            <li ng-repeat="error in selected.errors">
+              {~lb}{~lb}error.message{~rb}{~rb}
+            </li>
+          </ul>
+        </li>
+        <li ng-if="selected.kujua_message">
+          <label>Content</label>
+          <p>{~lb}{~lb}selected.tasks[0].messages[0].message{~rb}{~rb}</p>
+        </li>
+        <li ng-if="selected.sent_by">
+          <label>Sent By</label>
+          <p>{~lb}{~lb}selected.sent_by{~rb}{~rb}</p>
+        </li>
+        <li ng-if="selected.tasks.length">
+          <label ng-if="selected.kujua_message">Sent To</label>
+          <label ng-if="!selected.kujua_message">Messages</label>
+          <ul class="task-list">
+            <li ng-repeat="task in selected.tasks">
+              <span class="task-state" ng-bind-html="task | state"></span>
+              <ul>
+                <li ng-repeat="message in task.messages">
+                  {~lb}{~lb}selected.kujua_message ? message.to : message.message{~rb}{~rb}
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li ng-if="selected.scheduled_tasks_by_group.length">
+          <label>Scheduled Tasks</label>
+          <ul>
+            <li ng-repeat="group in selected.scheduled_tasks_by_group">
+              <p>{~lb}{~lb}group.group{~rb}{~rb}</p>
+              <ul class="task-list">
+                <li ng-repeat="task in group.rows | orderBy:'due'">
+                  <span class="task-state" ng-bind-html="task | state"></span>
+                  <ul>
+                    <li ng-repeat="message in task.messages">
+                      {~lb}{~lb}message.message{~rb}{~rb}
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
