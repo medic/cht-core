@@ -392,10 +392,7 @@ var _ = require('underscore'),
         }
       });
 
-      db.changes({
-        include_docs: true,
-        filter: 'medic/data_records'
-      }, function(err, data) {
+      db.changes({ filter: 'medic/data_records' }, function(err, data) {
         if (!err && data && data.results) {
           $scope.query({ silent: true, changes: data });
         }
@@ -491,13 +488,9 @@ var _ = require('underscore'),
         }
       });
 
-      var itemPanel = $('.inbox-items');
-      itemPanel.on('scroll', function () {
+      $('.inbox-items').on('scroll', function() {
         if (this.scrollHeight - this.scrollTop - 10 < this.clientHeight) {
-          _applyFilter({
-            silent: true,
-            skip: true
-          });
+          _applyFilter({ silent: true, skip: true });
         }
       });
 

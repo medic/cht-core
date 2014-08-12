@@ -66,8 +66,23 @@ var _ = require('underscore');
           return 'clinic:(' + $scope.filterModel.facilities.join(' OR ') + ')';
         }
       };
+      
+      var formatDistrict = function($scope) {
+        if ($scope.permissions.districtAdmin) {
+          return 'district:' + $scope.permissions.district;
+        }
+      };
 
-      return function($scope) {
+      var formatIds = function(options) {
+        if (options.changes && options.changes.results.length) {
+          var updatedIds = _.map(options.changes.results, function(result) {
+            return '"' + result.id + '"';
+          });
+          return 'uuid:(' + updatedIds.join(' OR ') + ')';
+        }
+      };
+
+      return function($scope, options) {
         var filters = [];
 
         if ($scope.filterSimple) {
@@ -75,7 +90,6 @@ var _ = require('underscore');
           filters.push(formatReportedDate($scope));
           filters.push(formatType($scope));
           filters.push(formatClinics($scope));
-
           if ($scope.filterModel.type === 'reports') {
             filters.push(formatForm($scope));
             filters.push(formatErrors($scope));
@@ -91,6 +105,9 @@ var _ = require('underscore');
           filters.push('type:' + type);
 
         }
+
+        filters.push(formatDistrict($scope));
+        filters.push(formatIds(options));
 
         return _.compact(filters).join(' AND ');
         

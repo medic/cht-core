@@ -3,6 +3,7 @@ describe('GenerateSearchQuery service', function() {
   'use strict';
 
   var service,
+      options,
       scope;
 
   var date20130208 = 1360321199999;
@@ -13,12 +14,14 @@ describe('GenerateSearchQuery service', function() {
     inject(function(_GenerateSearchQuery_) {
       service = _GenerateSearchQuery_;
     });
+    options = {};
     scope = {
       forms: [],
       facilities: [],
       filterSimple: true,
       filterQuery: undefined,
-      filterModel: {}
+      filterModel: {},
+      permissions: { districtAdmin: false }
     };
   });
 
@@ -36,7 +39,7 @@ describe('GenerateSearchQuery service', function() {
     };
     var to = moment().add('days', 1).zone(0).format('YYYY-MM-DD');
     var from = moment().subtract('months', 1).zone(0).format('YYYY-MM-DD');
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'reported_date<date>:[' + from + ' TO ' + to + '] ' +
       'AND (type:messageincoming)'
@@ -54,7 +57,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:message*'
@@ -71,7 +74,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report'
@@ -98,7 +101,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report ' +
@@ -125,7 +128,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report'
@@ -143,7 +146,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report ' +
@@ -162,7 +165,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report ' +
@@ -186,7 +189,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report ' +
@@ -209,7 +212,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:report'
@@ -227,7 +230,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND (type:messageincoming)'
@@ -245,7 +248,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND (type:messageoutgoing)'
@@ -265,7 +268,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND (type:messageincoming OR type:messageoutgoing)'
@@ -285,7 +288,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND (type:messageincoming OR (type:messageoutgoing AND state:pending))'
@@ -304,7 +307,7 @@ describe('GenerateSearchQuery service', function() {
     };
     scope.filterSimple = false;
     scope.filterQuery = 'sara*';
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'sara* AND type:message*'
     );
@@ -322,7 +325,7 @@ describe('GenerateSearchQuery service', function() {
     };
     scope.filterSimple = false;
     scope.filterQuery = 'sara*';
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'sara* AND type:report'
     );
@@ -339,10 +342,82 @@ describe('GenerateSearchQuery service', function() {
         to: moment('2013-06-12T23:30:26.123 Z').valueOf()
       }
     };
-    var query = service(scope);
+    var query = service(scope, options);
     chai.expect(query).to.equal(
       'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
       'AND type:message*'
     );
   });
+
+  it('creates filter query with district restriction', function() {
+    scope.filterModel = {
+      type: 'messages',
+      forms: [],
+      facilities: [],
+      messageTypes: [],
+      date: {
+        from: date20130208,
+        to: date20130612
+      }
+    };
+    scope.permissions = {
+      districtAdmin: true,
+      district: 'xyz'
+    };
+    var query = service(scope, options);
+    chai.expect(query).to.equal(
+      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+      'AND type:message* ' +
+      'AND district:xyz'
+    );
+  });
+
+  it('creates filter query with single id restriction', function() {
+    scope.filterModel = {
+      type: 'messages',
+      forms: [],
+      facilities: [],
+      messageTypes: [],
+      date: {
+        from: date20130208,
+        to: date20130612
+      }
+    };
+    options.changes = {
+      results: [{ id: 'abc' }]
+    };
+    var query = service(scope, options);
+    chai.expect(query).to.equal(
+      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+      'AND type:message* ' +
+      'AND uuid:("abc")'
+    );
+  });
+
+  it('creates filter query with multiple id restriction', function() {
+    scope.filterModel = {
+      type: 'messages',
+      forms: [],
+      facilities: [],
+      messageTypes: [],
+      date: {
+        from: date20130208,
+        to: date20130612
+      }
+    };
+    options.changes = {
+      results: [
+        { id: 'abc' },
+        { id: 'def' },
+        { id: 'hij' }
+      ]
+    };
+    var query = service(scope, options);
+    chai.expect(query).to.equal(
+      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+      'AND type:message* ' +
+      'AND uuid:("abc" OR "def" OR "hij")'
+    );
+  });
+
 });
