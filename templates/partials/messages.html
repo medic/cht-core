@@ -78,7 +78,7 @@
                 <li ng-repeat="group in selected.scheduled_tasks_by_group">
                   <p>{~lb}{~lb}group.group{~rb}{~rb}</p>
                   <ul class="task-list">
-                    <li ng-repeat="task in group.rows">
+                    <li ng-repeat="task in group.rows | orderBy:'due'">
                       <span class="task-state" ng-bind-html="task | state"></span>
                       <ul>
                         <li ng-repeat="message in task.messages">
