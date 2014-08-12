@@ -12,8 +12,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', 'db', 'Facility', 'Settings', 'Form', 'Contact', 'Language', 'ReadMessages', 'MarkRead', 'Verified', 'DeleteMessage', 'UpdateFacility', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'RememberService', 'GenerateSearchQuery',
-    function ($scope, $route, $location, $translate, $animate, db, Facility, Settings, Form, Contact, Language, ReadMessages, MarkRead, Verified, DeleteMessage, UpdateFacility, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, RememberService, GenerateSearchQuery) {
+    ['$scope', '$route', '$location', '$translate', '$animate', 'db', 'Facility', 'Settings', 'Form', 'Contact', 'Language', 'ReadMessages', 'MarkRead', 'Verified', 'DeleteMessage', 'UpdateFacility', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'RememberService', 'GenerateSearchQuery', 'DownloadUrl',
+    function ($scope, $route, $location, $translate, $animate, db, Facility, Settings, Form, Contact, Language, ReadMessages, MarkRead, Verified, DeleteMessage, UpdateFacility, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, RememberService, GenerateSearchQuery, DownloadUrl) {
 
       $scope.forms = [];
       $scope.facilities = [];
@@ -50,6 +50,8 @@ var _ = require('underscore'),
           to: moment().valueOf()
         }
       };
+
+      $scope.downloadUrl = DownloadUrl($scope.filterModel.type);
 
       UserDistrict().then(function(res) {
         if (res.error) {
@@ -214,18 +216,9 @@ var _ = require('underscore'),
         }
       };
 
-      var _findMessage = function(id) {
-        for (var i = 0; i < $scope.messages.length; i++) {
-          if (id === $scope.messages[i]._id) {
-            return $scope.messages[i];
-          }
-        }
-      };
-
       $scope.update = function(updated) {
-        for (var i = 0; i < updated.length; i++) {
-          var newMsg = updated[i];
-          var oldMsg = _findMessage(newMsg._id);
+        _.each(updated, function(newMsg) {
+          var oldMsg = _.findWhere($scope.messages, { _id: newMsg._id });
           if (oldMsg) {
             if (newMsg._rev !== oldMsg._rev) {
               for (var prop in newMsg) {
@@ -237,7 +230,7 @@ var _ = require('underscore'),
           } else {
             $scope.messages.push(newMsg);
           }
-        }
+        });
       };
 
       $scope.isRead = function(message) {
@@ -355,13 +348,23 @@ var _ = require('underscore'),
         var $modal = $('#update-facility');
         var facilityId = $modal.find('[name=facility]').val();
         if (!facilityId) {
-            $modal.find('.modal-footer .note').text('Please select a facility');
-            return;
+          $modal.find('.modal-footer .note').text('Please select a facility');
+          return;
         }
         disableModal($modal);
         UpdateFacility($scope.selected._id, facilityId, function(err) {
           enableModal($modal, 'Error updating facility', err);
         });
+      };
+      $scope.updateFacilityShow = function () {
+        var val = '';
+        if ($scope.selected && 
+          $scope.selected.related_entities && 
+          $scope.selected.related_entities.clinic) {
+          val = $scope.selected.related_entities.clinic._id;
+        }
+        $('#update-facility [name=facility]').select2('val', val);
+        $('#update-facility').modal('show');
       };
 
       sendMessage.init();
@@ -385,6 +388,8 @@ var _ = require('underscore'),
         $scope.selected = undefined; 
         if ($scope.filterModel.type === 'analytics') {
           $scope.filterSimple = true;
+        } else {
+          $scope.downloadUrl = DownloadUrl($scope.filterModel.type);
         }
       });
 
@@ -470,42 +475,6 @@ var _ = require('underscore'),
       });
       $('.daterangepicker').addClass('mm-dropdown-menu show-from');
 
-      var iframe = $('#add-record-panel iframe');
-      var src = iframe.data('src');
-      $.ajax({
-        type: 'head',
-        url: src,
-        success: function() {
-          var btn = $('#send-record-button');
-          btn.closest('li').removeClass('disabled');
-          btn.on('click', function(e) {
-            e.preventDefault();
-            $('#add-record-panel .dropdown-menu').toggle();
-            if (!iframe.attr('src')) {
-              iframe.attr('src', src);
-            }
-          });
-          $('#add-record-panel .close').on('click', function() {
-            $('#add-record-panel .dropdown-menu').toggle();
-          });
-        }
-      });
-
-
-      $('#update-facility-btn').on('click', function(e) {
-        e.preventDefault();
-        angularApply(function(scope) {
-          var val = '';
-          if (scope.selected && 
-            scope.selected.related_entities && 
-            scope.selected.related_entities.clinic) {
-            val = scope.selected.related_entities.clinic._id;
-          }
-          $('#update-facility [name=facility]').select2('val', val);
-        });
-        $('#update-facility').modal('show');
-      });
-
       var _applyFilter = function(options) {
         angularApply(function(scope) {
           scope.query(options || {});
@@ -533,27 +502,7 @@ var _ = require('underscore'),
         }
       });
 
-      $('#download').on('click', function(e) {
-        if ($('#download').find('.mm-button.disabled').length) {
-          e.preventDefault();
-          return;
-        }
-        angularApply(function(scope) {
-          var url = $('html').data('base-url');
-          var type = scope.filterModel.type === 'message' ? 'messages' : 'forms';
-          url += '/export/' + type;
-          var params = {
-            startkey: '[9999999999999,{}]',
-            endkey: '[0]',
-            tz: moment().zone(),
-            format: 'xml',
-            reduce: false
-          };
-          url += '?' + $.param(params);
-          $('#download').attr('href', url);
-        });
-      });
-
+      // TODO extract
       var redirectToLogin = function() {
         window.location = '/dashboard/_design/dashboard/_rewrite/login' +
           '?redirect=' + window.location;
@@ -571,6 +520,8 @@ var _ = require('underscore'),
           }
         });
       }
+
+      require('./add-record').init();
     }
   ]);
 
