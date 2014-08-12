@@ -58,27 +58,15 @@
               <label>Sent By</label>
               <p>{~lb}{~lb}selected.sent_by{~rb}{~rb}</p>
             </li>
-            <li ng-if="selected.kujua_message">
-              <label>Sent To</label>
-              <ul>
+            <li ng-if="selected.tasks.length">
+              <label ng-if="selected.kujua_message">Sent To</label>
+              <label ng-if="!selected.kujua_message">Messages</label>
+              <ul class="task-list">
                 <li ng-repeat="task in selected.tasks">
                   <span class="task-state" ng-bind-html="task | state"></span>
                   <ul>
                     <li ng-repeat="message in task.messages">
-                      {~lb}{~lb}message.to{~rb}{~rb}
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-            </li>
-            <li ng-if="!selected.kujua_message && selected.tasks.length">
-              <label>Messages</label>
-              <ul>
-                <li ng-repeat="task in selected.tasks">
-                  <span class="task-state" ng-bind-html="task | state"></span>
-                  <ul>
-                    <li ng-repeat="message in task.messages">
-                      {~lb}{~lb}message.message{~rb}{~rb}
+                      {~lb}{~lb}selected.kujua_message ? message.to : message.message{~rb}{~rb}
                     </li>
                   </ul>
                 </li>
@@ -89,7 +77,7 @@
               <ul>
                 <li ng-repeat="group in selected.scheduled_tasks_by_group">
                   <p>{~lb}{~lb}group.group{~rb}{~rb}</p>
-                  <ul>
+                  <ul class="task-list">
                     <li ng-repeat="task in group.rows">
                       <span class="task-state" ng-bind-html="task | state"></span>
                       <ul>

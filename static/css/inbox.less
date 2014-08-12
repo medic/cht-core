@@ -330,6 +330,7 @@ body.inbox {
       }
 
     }
+
   }
 
   .mm-badge-container {
@@ -358,8 +359,9 @@ body.inbox {
 
 .task-state {
   float: right;
-  margin-left: 0.5em;
   text-align: right;
+  margin-left: 0.5em;
+  margin-bottom: 0.5em;
   .state {
     border: 1px solid #aaa;
     border-radius: 1em;
@@ -410,7 +412,7 @@ body.inbox {
         margin: 1em 0 1em 0.5em;
       }
     }
-
+    
     label {
       display: block;
       margin: 0;
@@ -433,6 +435,11 @@ body.inbox {
   &.incomplete .body h2 {
     color: @error-color;
   }
+
+  .task-list > li {
+    clear: right;
+  }
+
 }
 
 .time {
