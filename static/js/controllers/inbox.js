@@ -1,5 +1,4 @@
 var _ = require('underscore'),
-    session = require('session'),
     utils = require('kujua-utils'),
     sms_utils = require('kujua-sms/utils'),
     reporting = require('kujua-reporting/shows'),
@@ -502,25 +501,7 @@ var _ = require('underscore'),
         }
       });
 
-      // TODO extract
-      var redirectToLogin = function() {
-        window.location = '/dashboard/_design/dashboard/_rewrite/login' +
-          '?redirect=' + window.location;
-      };
-      $('#logout').on('click', function(e) {
-        e.preventDefault();
-        session.logout(redirectToLogin);
-      });
-      if ($('html').data('user') && !$('html').data('user').name) {
-        redirectToLogin();
-      } else {
-        session.on('change', function (userCtx) {
-          if (!userCtx.name) {
-            redirectToLogin();
-          }
-        });
-      }
-
+      require('./manage-session').init();
       require('./add-record').init();
     }
   ]);
