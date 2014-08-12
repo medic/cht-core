@@ -248,7 +248,7 @@ var _ = require('underscore'),
           // no search available for analytics
           return;
         }
-        options.query = GenerateSearchQuery($scope);
+        options.query = GenerateSearchQuery($scope, options);
         if (options.query === _currentQuery && !options.changes) {
           // debounce as same query already running
           return;
@@ -275,21 +275,11 @@ var _ = require('underscore'),
           $scope.messages = [];
         }
 
-        if ($scope.permissions.districtAdmin) {
-          options.query += ' AND district:' + $scope.permissions.district;
-        }
-
-        if (options.changes && options.changes.results.length) {
-          var updatedIds = _.map(options.changes.results, function(result) {
-            return '"' + result.id + '"';
-          });
-          options.query += ' AND uuid:(' + updatedIds.join(' OR ') + ')';
-        }
         db.getFTI(
           'medic',
           'data_records',
           {
-            limit: 50,
+            limit: 10,
             q: options.query,
             skip: options.skip || 0,
             sort: '\\reported_date',
@@ -321,8 +311,17 @@ var _ = require('underscore'),
               }
               $scope.appending = false;
             });
+            $('.inbox-items')
+              .off('scroll', _checkScroll)
+              .on('scroll', _checkScroll);
           }
         );
+      };
+
+      var _checkScroll = function() {
+        if (this.scrollHeight - this.scrollTop - 10 < this.clientHeight) {
+          _applyFilter({ silent: true, skip: true });
+        }
       };
 
       $scope.verify = function(verify) {
@@ -488,11 +487,10 @@ var _ = require('underscore'),
         }
       });
 
-      $('.inbox-items').on('scroll', function() {
-        if (this.scrollHeight - this.scrollTop - 10 < this.clientHeight) {
-          _applyFilter({ silent: true, skip: true });
-        }
-      });
+      window.setTimeout(function() {
+
+        
+      }, 2000);
 
       require('./manage-session').init();
       require('./add-record').init();
