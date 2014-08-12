@@ -279,7 +279,7 @@ var _ = require('underscore'),
           'medic',
           'data_records',
           {
-            limit: 10,
+            limit: 50,
             q: options.query,
             skip: options.skip || 0,
             sort: '\\reported_date',
