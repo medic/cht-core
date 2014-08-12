@@ -486,24 +486,6 @@ var _ = require('underscore'),
         }
       });
 
-      $('body').on('click', '.send-message', function(e) {
-        e.preventDefault();
-        var to = $(e.target).closest('.send-message').attr('data-send-to');
-        var $modal = $('#send-message');
-        var val = [];
-        if (to) {
-          var options = $modal.find('[name=phone]').data('options');
-          var doc = _.find(options, function(option) {
-            return option.doc.contact && option.doc.contact.phone === to;
-          });
-          if (doc) {
-            val.push(doc);
-          }
-        }
-        $modal.find('[name=phone]').select2('data', val);
-        $modal.find('[name=message]').val('');
-        $modal.modal('show');
-      });
 
       $('#update-facility-btn').on('click', function(e) {
         e.preventDefault();
@@ -566,17 +548,6 @@ var _ = require('underscore'),
           $('#download').attr('href', url);
         });
       });
-
-      $('#send-message [name=message]').on('keyup', function(e) {
-        var target = $(e.target);
-        var count = target.val().length;
-        var msg = '';
-        if (count > 50) {
-            msg = count + '/160 characters';
-        }
-        target.closest('.modal-content').find('.modal-footer .note').text(msg);
-      });
-
 
       var redirectToLogin = function() {
         window.location = '/dashboard/_design/dashboard/_rewrite/login' +

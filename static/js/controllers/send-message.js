@@ -89,13 +89,30 @@
     return _.compact([name, contactName, code, phone]).join(', ');
   };
 
-  exports.init = function() {
+  var initListeners = function() {
+    $('body').on('click', '.send-message', function(e) {
+      e.preventDefault();
+      var to = $(e.target).closest('.send-message').attr('data-send-to');
+      var $modal = $('#send-message');
+      var val = [];
+      if (to) {
+        var options = $modal.find('[name=phone]').data('options');
+        var doc = _.find(options, function(option) {
+          return option.doc.contact && option.doc.contact.phone === to;
+        });
+        if (doc) {
+          val.push(doc);
+        }
+      }
+      $modal.find('[name=phone]').select2('data', val);
+      $modal.find('[name=message]').val('');
+      $modal.modal('show');
+    });
+  };
 
-    var el = $('#send-message [name=phone]');
-
-    el.parent().show();
-
-    el.select2({
+  var initPhoneField = function($phone) {
+    $phone.parent().show();
+    $phone.select2({
       multiple: true,
       allowClear: true,
       formatResult: formatContact,
@@ -132,7 +149,25 @@
         }
       }
     });
+  };
 
+  var initMessageField = function($message) {
+    $message.on('keyup', function(e) {
+      var target = $(e.target);
+      var count = target.val().length;
+      var msg = '';
+      if (count > 50) {
+          msg = count + '/160 characters';
+      }
+      target.closest('.modal-content').find('.modal-footer .note').text(msg);
+    });
+  };
+
+  exports.init = function() {
+    var $modal = $('#send-message');
+    initListeners();
+    initPhoneField($modal.find('[name=phone]'));
+    initMessageField($modal.find('[name=message]'));
   };
 
   exports.validate = function(callback) {
