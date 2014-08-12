@@ -6,7 +6,7 @@
   
   inboxServices.factory('ReadMessagesRaw', ['$resource', 'BaseUrlService',
     function($resource, BaseUrlService) {
-      return $resource(BaseUrlService() + '/../_view/data_records_read_by_type', {}, {
+      return $resource(BaseUrlService() + '/read_records', {}, {
         query: {
           isArray: false,
           params: {
