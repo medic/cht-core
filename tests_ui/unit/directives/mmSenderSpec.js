@@ -63,6 +63,6 @@ describe('mmSender', function() {
     var element = compile('<mm-sender message="message"/>')(scope);
     scope.$digest();
     chai.expect(element.find('div.name').text()).to.equal('Clark');
-    chai.expect(element.find('div.position').text()).to.equal('Smallville Metropolis');
+    chai.expect(element.find('div.position').text()).to.equal('Smallville › Metropolis');
   });
 });
