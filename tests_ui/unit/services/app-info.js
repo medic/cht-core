@@ -49,7 +49,7 @@ describe('AppInfo service', function() {
 
     service().then(function(appinfo) {
       var date = moment().add(1, 'years');
-      var expected = date.format('YYYY') + ' (in a year)'
+      var expected = date.format('YYYY') + ' (in a year)';
       var actual = appinfo.formatDate(date);
       chai.expect(actual).to.equal(expected);
       done();
