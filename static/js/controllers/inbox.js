@@ -470,10 +470,23 @@ var _ = require('underscore'),
         }
       });
 
-      window.setTimeout(function() {
-
-        
-      }, 2000);
+      $('body').on('mouseenter', '.item-content .relative-date', function() {
+        if ($(this).data('tooltipLoaded') !== true) {
+          $(this).data('tooltipLoaded', true)
+            .tooltip({
+              placement: 'top',
+              trigger: 'manual',
+              container: 'body'
+            })
+            .tooltip('show');
+        }
+      });
+      $('body').on('mouseleave', '.item-content .relative-date', function() {
+        if ($(this).data('tooltipLoaded') === true) {
+          $(this).data('tooltipLoaded', false)
+            .tooltip('hide');
+        }
+      });
 
       require('./manage-session').init();
       require('./add-record').init();

@@ -3,7 +3,9 @@
     ng-bind="message.related_entities.clinic.contact.name || message.from || message.sent_by">
   </div>
   <div class="position" 
-    ng-if="message.related_entities.clinic.parent.name" 
-    ng-bind="message.related_entities.clinic.parent.name + ' &rsaquo; ' + message.related_entities.clinic.parent.parent.name">
+    ng-if="message.related_entities.clinic.name"
+    ng-bind="message.related_entities.clinic.name + ' &rsaquo; ' +
+             message.related_entities.clinic.parent.name + ' &rsaquo; ' +
+             message.related_entities.clinic.parent.parent.name">
   </div>
 </div>

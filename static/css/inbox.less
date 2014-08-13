@@ -340,7 +340,7 @@ body.inbox {
 
   .detail {
     display: inline-block;
-    padding: 0 2em 0 0.5em;
+    padding: 0 3em 0 0.5em;
     width: 100%;
 
     .description {
@@ -368,6 +368,11 @@ body.inbox {
     background-color: #ddd;
     padding: 0.1em 0.5em;
     font-weight: bold;
+    float: right;
+  }
+  .relative-date-content {
+    float: right;
+    clear: right;
   }
 }
 
@@ -661,14 +666,11 @@ body.inbox {
       .body {
         padding-bottom: 0;
         margin-bottom: 6em;
+        > ul > li {
+          padding: 1em;
+        }
       }
     }
-  }
-
-  .action-container .column,
-  .row.content .inbox-items,
-  .row.content .item-content {
-    transition: left 500ms ease 0s;
   }
 
   .action-container .column {
@@ -756,7 +758,17 @@ body.inbox {
   }
   .task-state {
     width: 100%;
-    text-align: center;
-    margin-bottom: 1em;
+    text-align: left;
+    margin-top: 1em;
+    .state {
+      margin-right: 0.5em;
+      float: none;
+    }
+    .relative-date-content {
+      float: none;
+    }
+  }
+  .item-content .body > ul > li li {
+    margin-left: 0;
   }
 }

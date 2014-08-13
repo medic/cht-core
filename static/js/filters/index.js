@@ -4,17 +4,21 @@
 
   var module = angular.module('inboxFilters', ['ngSanitize']);
 
-  var getRelativeDate = function(date, format) {
+  var getRelativeDate = function(date, format, content) {
+    content = content || '';
+    if (!date) {
+      return '<div>' + content + '</div>';
+    }
     var m = moment(date);
-    return '<span class="relative-date" title="' + m.format(format) + '">' + m.fromNow() + '</span>';
+    return  '<div class="relative-date" title="' + m.format(format) + '">' +
+              content + 
+              '<span class="relative-date-content">' + m.fromNow() + '</span>' +
+            '</div>';
   };
 
   module.filter('relativeDate', ['RememberService',
     function (RememberService) {
       return function (date) {
-        if (!date) { 
-          return ''; 
-        }
         return getRelativeDate(date, RememberService.dateFormat);
       };
     }
@@ -36,12 +40,10 @@
         if (!task || !task.state) {
           return '';
         }
-        var result = '<span class="state">' + task.state + '</span>';
-        var date = getTaskDate(task);
-        if (date) {
-          result += '<br/>' + getRelativeDate(date, RememberService.dateFormat);
-        }
-        return result;
+        var content = '<span class="state">' + task.state + '</span>';
+        return getRelativeDate(
+          getTaskDate(task), RememberService.dateFormat, content
+        );
       };
     }
   ]);
