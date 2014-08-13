@@ -1,6 +1,5 @@
 var _ = require('underscore'),
     utils = require('kujua-utils'),
-    sms_utils = require('kujua-sms/utils'),
     reporting = require('kujua-reporting/shows'),
     sendMessage = require('./send-message');
 
@@ -11,8 +10,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', 'db', 'Facility', 'Settings', 'Form', 'Contact', 'Language', 'ReadMessages', 'MarkRead', 'Verified', 'DeleteMessage', 'UpdateFacility', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'RememberService', 'GenerateSearchQuery', 'DownloadUrl',
-    function ($scope, $route, $location, $translate, $animate, db, Facility, Settings, Form, Contact, Language, ReadMessages, MarkRead, Verified, DeleteMessage, UpdateFacility, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, RememberService, GenerateSearchQuery, DownloadUrl) {
+    ['$scope', '$route', '$location', '$translate', '$animate', '$timeout', 'db', 'Facility', 'Settings', 'Form', 'Contact', 'Language', 'ReadMessages', 'MarkRead', 'Verified', 'DeleteMessage', 'UpdateFacility', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'RememberService', 'GenerateSearchQuery', 'DownloadUrl', 'Search',
+    function ($scope, $route, $location, $translate, $animate, $timeout, db, Facility, Settings, Form, Contact, Language, ReadMessages, MarkRead, Verified, DeleteMessage, UpdateFacility, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, RememberService, GenerateSearchQuery, DownloadUrl, Search) {
 
       $scope.forms = [];
       $scope.facilities = [];
@@ -275,47 +274,31 @@ var _ = require('underscore'),
           $scope.messages = [];
         }
 
-        db.getFTI(
-          'medic',
-          'data_records',
-          {
-            limit: 50,
-            q: options.query,
-            skip: options.skip || 0,
-            sort: '\\reported_date',
-            include_docs: true
-          },
-          function(err, data) {
-            _currentQuery = null;
-            if ($scope.filterModel.type === 'analytics') {
-              // no search available for analytics
-              return;
+        Search(options, function(err, data) {
+          _currentQuery = null;
+          $scope.loading = false;
+          $scope.appending = false;
+          if ($scope.filterModel.type === 'analytics') {
+            // no search available for analytics
+            return;
+          }
+          if (err) {
+            $scope.error = true;
+            console.log('Error loading messages', err);
+          } else {
+            $scope.error = false;
+            $scope.update(data.results);
+            if (!options.changes) {
+              $scope.totalMessages = data.total_rows;
             }
-            angularApply(function($scope) {
-              $scope.loading = false;
-              if (err) {
-                $scope.error = true;
-                console.log('Error loading messages', err);
-              } else {
-                $scope.error = false;
-                data.rows = _.map(data.rows, function(row) {
-                  return sms_utils.makeDataRecordReadable(row.doc, sms_utils.info);
-                });
-                $scope.update(data.rows);
-                if (!options.changes) {
-                  $scope.totalMessages = data.total_rows;
-                }
-                if (_selectedDoc) {
-                  $scope.selectMessage(_selectedDoc);
-                }
-              }
-              $scope.appending = false;
-            });
+            if (_selectedDoc) {
+              $scope.selectMessage(_selectedDoc);
+            }
             $('.inbox-items')
               .off('scroll', _checkScroll)
               .on('scroll', _checkScroll);
           }
-        );
+        });
       };
 
       var _checkScroll = function() {
@@ -357,8 +340,8 @@ var _ = require('underscore'),
       $scope.updateFacilityShow = function () {
         var val = '';
         if ($scope.selected && 
-          $scope.selected.related_entities && 
-          $scope.selected.related_entities.clinic) {
+            $scope.selected.related_entities && 
+            $scope.selected.related_entities.clinic) {
           val = $scope.selected.related_entities.clinic._id;
         }
         $('#update-facility [name=facility]').select2('val', val);

@@ -15,13 +15,15 @@ var utils = require('kujua-utils'),
 */
 var prettyVal = function(data_record, key, def) {
 
-    if (!data_record || _.isUndefined(key) || _.isUndefined(data_record[key]))
+    if (!data_record || _.isUndefined(key) || _.isUndefined(data_record[key])) {
         return;
+    }
 
-    var val  = data_record[key];
+    var val = data_record[key];
 
-    if (!def)
+    if (!def) {
         return val;
+    }
 
     if (def.fields && def.fields[key]) {
         def = def.fields[key];
@@ -29,16 +31,9 @@ var prettyVal = function(data_record, key, def) {
 
     switch (def.type) {
         case 'boolean':
-            if (val === true)
-                return 'True';
-            if (val === false)
-                return 'False';
+            return val === true ? 'True' : 'False';
         case 'date':
-            if (val) {
-                var m = moment(data_record[key]);
-                return m.format('DD, MMM YYYY');
-            }
-            return;
+            return exports.info.formatDate(data_record[key]);
         case 'integer':
             // use list value for month
             if (def.validate && def.validate.is_numeric_month) {
@@ -109,18 +104,32 @@ var includeNonFormFields = function(doc, form_keys) {
         { key:'patient_id', label: 'Patient ID'}
     ];
 
+    var dateFields = [
+        'child_birth_date',
+        'expected_date',
+        'birth_date'
+    ];
+
     _.each(fields, function(obj) {
         var key = obj.key,
-            label = obj.label;
+            label = obj.label,
+            value = doc[key];
 
         // Only include the property if we find it on the doc and not as a form
         // key since then it would be duplicated.
-        if (!doc[key] || form_keys.indexOf(key) !== -1) return;
+        if (!value || form_keys.indexOf(key) !== -1) {
+            return;
+        }
+
+        if (_.contains(dateFields, key)) {
+            value = exports.info.formatDate(value);
+        }
 
         doc.fields.data.unshift({
-            isArray: false,
             label: label,
-            value: doc[key]
+            value: value,
+            isArray: false,
+            generated: true
         });
 
         doc.fields.headers.unshift({

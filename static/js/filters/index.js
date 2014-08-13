@@ -35,22 +35,6 @@
     }
   ]);
 
-  module.filter('messageField', ['RememberService',
-    function (RememberService) {
-      return function (field) {
-        if (!field) { 
-          return ''; 
-        }
-        var label = field.label;
-        var value = field.value;
-        if (['Child Birth Date', 'Expected Date', 'Birth Date'].indexOf(label) !== -1) {
-          value = getRelativeDate(value, RememberService.dateFormat);
-        }
-        return '<label>' + label + '</label><p>' + value + '</p>';
-      };
-    }
-  ]);
-
   var getFormName = function(message, forms) {
     for (var i = 0; i < forms.length; i++) {
       if (message.form === forms[i].code) {

@@ -167,11 +167,11 @@ module.exports = function(grunt) {
         tasks: ['mmcss', 'exec:deploy', 'notify:deployed']
       },
       js: {
-        files: ['static/js/**/*', 'packages/kujua-reporting/**/*'],
+        files: ['static/js/**/*', 'packages/kujua-*/**/*'],
         tasks: ['mmjs', 'exec:deploy', 'notify:deployed']
       },
       other: {
-        files: ['templates/**/*', 'lib/**/*', 'packages/kujua-utils/**/*', 'packages/kujua-sms/**/*'],
+        files: ['templates/**/*', 'lib/**/*'],
         tasks: ['exec:deploy', 'notify:deployed']
       }
     },
