@@ -1,18 +1,9 @@
 <div class="sender" ng-if="message">
-  <div class="name" 
-    ng-if="message.related_entities.clinic.contact.name" 
-    ng-bind="message.related_entities.clinic.contact.name">
-  </div>
   <div class="name"
-    ng-if="!message.related_entities.clinic.contact.name && message.from"
-    ng-bind="message.from">
-  </div>
-  <div class="name" 
-    ng-if="!message.related_entities.clinic.contact.name && !message.from" 
-    ng-bind="message.sent_by">
+    ng-bind="message.related_entities.clinic.contact.name || message.from || message.sent_by">
   </div>
   <div class="position" 
     ng-if="message.related_entities.clinic.parent.name" 
-    ng-bind="message.related_entities.clinic.parent.name + ' ' + message.related_entities.clinic.parent.parent.name">
+    ng-bind="message.related_entities.clinic.parent.name + ' &rsaquo; ' + message.related_entities.clinic.parent.parent.name">
   </div>
 </div>

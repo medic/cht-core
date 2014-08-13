@@ -20,17 +20,28 @@
     }
   ]);
 
+  var getTaskDate = function(task) {
+    if (task.state === 'scheduled') {
+      return task.due;
+    }
+    if (task.state_history && task.state_history.length) {
+      return task.state_history[task.state_history.length - 1].timestamp;
+    }
+    return task.due;
+  };
+
   module.filter('state', ['RememberService',
     function (RememberService) {
       return function (task) {
         if (!task || !task.state) {
           return '';
         }
-        var date = '';
-        if (task.due) {
-          date = '<br/>' + getRelativeDate(task.due, RememberService.dateFormat);
+        var result = '<span class="state">' + task.state + '</span>';
+        var date = getTaskDate(task);
+        if (date) {
+          result += '<br/>' + getRelativeDate(date, RememberService.dateFormat);
         }
-        return '<span class="state">' + task.state + '</span>' + date;
+        return result;
       };
     }
   ]);

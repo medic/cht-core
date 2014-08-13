@@ -41,7 +41,7 @@
         </li>
         <li ng-if="selected.tasks.length">
           <label ng-if="selected.kujua_message">Sent To</label>
-          <label ng-if="!selected.kujua_message">Messages</label>
+          <label ng-if="!selected.kujua_message">Automated Reply</label>
           <ul class="task-list">
             <li ng-repeat="task in selected.tasks">
               <span class="task-state" ng-bind-html="task | state"></span>
@@ -54,7 +54,7 @@
           </ul>
         </li>
         <li ng-if="selected.scheduled_tasks_by_group.length">
-          <label>Scheduled Tasks</label>
+          <label>Scheduled Messages</label>
           <ul>
             <li ng-repeat="group in selected.scheduled_tasks_by_group">
               <p>{~lb}{~lb}group.group{~rb}{~rb}</p>
