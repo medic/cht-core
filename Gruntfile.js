@@ -104,6 +104,17 @@ module.exports = function(grunt) {
         }
       }
     },
+    cssmin: {
+      all: {
+        options: {
+          keepSpecialComments: 0
+        },
+        files: {
+          'static/dist/app.css': 'static/dist/app.css',
+          'static/dist/inbox.css': 'static/dist/inbox.css'
+        }
+      }
+    },
     autoprefixer: {
       all: {
         src: 'static/dist/*.css'
@@ -211,6 +222,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -254,6 +266,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci', [
     'default',
     'uglify',
+    'cssmin',
     'karma:unit_ci',
     'exec:deploy',
     'exec:phantom'
