@@ -113,9 +113,6 @@ var _ = require('underscore'),
       Settings.query(function(res) {
         if (res.settings) {
           $scope.languages = res.settings.locales;
-          if (res.settings.reported_date_format) {
-            RememberService.dateFormat = res.settings.reported_date_format;
-          }
         }
       });
 

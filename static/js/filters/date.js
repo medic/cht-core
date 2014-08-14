@@ -1,20 +1,17 @@
-var moment = require('moment');
-
 (function () {
 
   'use strict';
 
   var module = angular.module('inboxFilters');
 
-  var getRelativeDate = function(date, format, content) {
+  var getRelativeDate = function(date, FormatDate, content) {
     content = content || '';
     if (!date) {
       return '<div>' + content + '</div>';
     }
-    var m = moment(date);
-    return  '<div class="relative-date" title="' + m.format(format) + '">' +
+    return  '<div class="relative-date" title="' + FormatDate.datetime(date) + '">' +
               content + 
-              '<span class="relative-date-content">' + m.fromNow() + '</span>' +
+              '<span class="relative-date-content">' + FormatDate.relative(date) + '</span>' +
             '</div>';
   };
 
@@ -28,37 +25,36 @@ var moment = require('moment');
     return task.due;
   };
 
-  module.filter('state', ['RememberService',
-    function (RememberService) {
+  module.filter('state', ['FormatDate',
+    function (FormatDate) {
       return function (task) {
         if (!task || !task.state) {
           return '';
         }
         var content = '<span class="state">' + task.state + '</span>';
         return getRelativeDate(
-          getTaskDate(task), RememberService.dateFormat, content
+          getTaskDate(task), FormatDate, content
         );
       };
     }
   ]);
 
-  module.filter('relativeDate', ['RememberService',
-    function (RememberService) {
+  module.filter('relativeDate', ['FormatDate',
+    function (FormatDate) {
       return function (date) {
-        return getRelativeDate(date, RememberService.dateFormat);
+        return getRelativeDate(date, FormatDate);
       };
     }
   ]);
 
-  module.filter('fullDate', ['RememberService',
-    function (RememberService) {
+  module.filter('fullDate', ['FormatDate',
+    function (FormatDate) {
       return function (date) {
         if (!date) {
           return '';
         }
-        var m = moment(date);
-        return  '<div class="relative-date-content">' + m.fromNow() + '</div>' +
-                '<div class="full-date">' + m.format(RememberService.dateFormat) + '</div>';
+        return  '<div class="relative-date-content">' + FormatDate.relative(date) + '</div>' +
+                '<div class="full-date">' + FormatDate.datetime(date) + '</div>';
       };
     }
   ]);

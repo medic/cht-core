@@ -11,6 +11,7 @@
   require('./facility');
   require('./form');
   require('./format-data-record');
+  require('./format-date');
   require('./generate-search-query');
   require('./mark-read');
   require('./read-messages');

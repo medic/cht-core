@@ -5,14 +5,23 @@ describe('state filter', function() {
   var compile,
       scope;
 
-  beforeEach(module('inboxApp'));
-
-  beforeEach(inject(['$compile', '$rootScope', 
-    function($compile, $rootScope) {
-      compile = $compile;
-      scope = $rootScope.$new();
-    }
-  ]));
+  beforeEach(function() {
+    module('inboxApp');
+    module(function ($provide) {
+      $provide.value('FormatDate', {
+        datetime: function() {
+          return 'day 0';
+        },
+        relative: function() {
+          return 'sometime';
+        }
+      });
+    });
+    inject(function(_$compile_, _$rootScope_) {
+      compile = _$compile_;
+      scope = _$rootScope_.$new();
+    });
+  });
 
   it('should render nothing when no task', function() {
     scope.task = {};
@@ -34,17 +43,16 @@ describe('state filter', function() {
   });
 
   it('should render due date', function() {
-    var date = moment().add('days', 7);
     scope.task = {
       state: 'scheduled',
-      due: date.valueOf()
+      due: moment().valueOf()
     };
 
     var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
     scope.$digest();
     chai.expect(element.find('.state').text()).to.equal('scheduled');
-    chai.expect(element.find('.relative-date-content').text()).to.equal('in 7 days');
-    chai.expect(element.find('.relative-date').attr('title')).to.equal(date.format('DD-MMM-YYYY hh:mm'));
+    chai.expect(element.find('.relative-date-content').text()).to.equal('sometime');
+    chai.expect(element.find('.relative-date').attr('title')).to.equal('day 0');
   });
 
 
