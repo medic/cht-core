@@ -12,7 +12,7 @@
     <div class="body">
       <h2 ng-bind-html="selected | title:forms"></h2>
       <ul>
-        <li ng-if="!selected.form && selected.sms_message.message">
+        <li ng-if="selected.sms_message.message">
           <label>Content</label>
           <p>{~lb}{~lb}selected.sms_message.message{~rb}{~rb}</p>
         </li>
