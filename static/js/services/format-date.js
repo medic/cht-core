@@ -20,7 +20,8 @@ var moment = require('moment');
           running = true;
           Settings.query(function(res) {
             config = {
-              datetime: res.settings.reported_date_format
+              datetime: res.settings.reported_date_format,
+              date: res.settings.date_format
             };
           });
         }
@@ -28,6 +29,9 @@ var moment = require('moment');
 
       return {
 
+        date: function(date) {
+          return format(date, 'date');
+        },
         datetime: function(date) {
           return format(date, 'datetime');
         },

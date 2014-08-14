@@ -149,11 +149,17 @@
                 "title": "Medic Reporter URL",
                 "default": "/medic-reporter/_design/medic-reporter/_rewrite/?_embed_mode=2#/examples.json"
             },
+            "date_format": {
+                "type": "string",
+                "title": "Date Format",
+                "default": "DD-MMM-YYYY",
+                "description": "Format used to display dates."
+            },
             "reported_date_format": {
                 "type": "string",
-                "title": "Reported Date Format",
+                "title": "DateTime Format",
                 "default": "DD-MMM-YYYY hh:mm:ss",
-                "description": "Format used to display the reported date field."
+                "description": "Format used to display dates and times."
             },
             "forms_only_mode": {
                 "type": "boolean",

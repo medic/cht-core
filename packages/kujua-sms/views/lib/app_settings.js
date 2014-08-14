@@ -34,6 +34,7 @@ module.exports = {
    ],
    "locale": "en",
    "muvuku_webapp_url": "/medic-reporter/_design/medic-reporter/_rewrite/?_embed_mode=2",
+   "date_format": "DD-MMM-YYYY",
    "reported_date_format": "DD-MMM-YYYY hh:mm:ss",
    "forms_only_mode": false,
    "public_access": false,

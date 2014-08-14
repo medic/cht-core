@@ -25,12 +25,24 @@
       {#date_formats}
       <option 
         value="{.}" 
-        {@if cond="'{reported_date_format}' === '{.}'"}selected="true"{/if}>
-          {.}
+        {@if cond="'{date_format}' === '{.}'"}selected="true"{/if}>
+        {.}
       </option>
       {/date_formats}
     </select>
     eg: <span id="date-format-example">{date_format_example}</span>
+
+    <label for="datetime-display-format">Datetime display format</label>
+    <select id="datetime-display-format">
+      {#datetime_formats}
+      <option 
+        value="{.}" 
+        {@if cond="'{reported_date_format}' === '{.}'"}selected="true"{/if}>
+          {.}
+      </option>
+      {/datetime_formats}
+    </select>
+    eg: <span id="datetime-format-example">{datetime_format_example}</span>
 
     <label>Phone number conversion</label>
     Replace the country code for {>"configuration/countrycodes.html"/}

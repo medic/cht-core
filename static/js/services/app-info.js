@@ -103,7 +103,7 @@ var _ = require('underscore');
         return;
     }
     var m = moment(date);
-    return m.format(settings.reported_date_format) + 
+    return m.format(settings.date_format) + 
       ' (' + m.fromNow() + ')';
   };
 

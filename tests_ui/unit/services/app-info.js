@@ -44,7 +44,7 @@ describe('AppInfo service', function() {
   it('formats the date', function(done) {
 
     settings = {
-      reported_date_format: 'YYYY'
+      date_format: 'YYYY'
     };
 
     service().then(function(appinfo) {
