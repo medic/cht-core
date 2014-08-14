@@ -1,7 +1,7 @@
 <div class="col-sm-8 item-content" ng-show="selected">
   <div>
     <div class="meta">
-      <span class="time" ng-bind-html="selected.reported_date | relativeDate"></span>
+      <div class="time" ng-bind-html="selected.reported_date | fullDate"></div>
       <mm-sender message="selected"></mm-sender>
     </div>
     <div class="status">
