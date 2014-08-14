@@ -19,7 +19,7 @@ describe('relativeDate filter', function() {
 
     var element = compile('<div ng-bind-html="date | relativeDate"></div>')(scope);
     scope.$digest();
-    chai.expect(element.html()).to.equal('');
+    chai.expect(element.html()).to.equal('<div></div>');
   });
 
   it('should render date', function() {
@@ -35,7 +35,7 @@ describe('relativeDate filter', function() {
 
     var element = compile('<div ng-bind-html="date | relativeDate"></div>')(scope);
     scope.$digest();
-    chai.expect(element.find('span').attr('title')).to.equal(m.format(format));
+    chai.expect(element.find('div').attr('title')).to.equal(m.format(format));
     chai.expect(element.text()).to.equal(m.fromNow());
   });
 

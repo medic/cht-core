@@ -43,7 +43,7 @@ describe('state filter', function() {
     var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
     scope.$digest();
     chai.expect(element.find('.state').text()).to.equal('scheduled');
-    chai.expect(element.find('.relative-date').text()).to.equal('in 7 days');
+    chai.expect(element.find('.relative-date-content').text()).to.equal('in 7 days');
     chai.expect(element.find('.relative-date').attr('title')).to.equal(date.format('DD-MMM-YYYY hh:mm'));
   });
 
