@@ -45,17 +45,12 @@ if [ "$TRAVIS_BRANCH" == "master" ]; then
     push 'http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-release/upload'
 fi;
 
-#if [ "$TRAVIS_BRANCH" == "develop" ]; then
-#    prep "-alpha.$TRAVIS_BUILD_NUMBER" && \
-#    push 'http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-alpha/upload'
-#fi;
-
 if [ "$TRAVIS_BRANCH" == "testing" ]; then
     prep "beta.$TRAVIS_BUILD_NUMBER" && \
     push 'http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-beta/upload'
 fi;
 
-if [ "$TRAVIS_BRANCH" == "inbox-design" ]; then
+if [ "$TRAVIS_BRANCH" == "develop" ]; then
     prep "alpha.$TRAVIS_BUILD_NUMBER" && \
     push 'http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-alpha/upload'
 fi;
