@@ -21,15 +21,15 @@ require('../dist/reporting-views');
      
       $routeProvider
         .when('/messages/:doc?', {
-          templateUrl: '/partials/messages.html',
+          templateUrl: '/partials/reports.html',
           controller: 'MessagesCtrl'
         })
         .when('/reports/:doc?', {
-          templateUrl: '/partials/messages.html',
+          templateUrl: '/partials/reports.html',
           controller: 'ReportsCtrl'
         })
         .when('/analytics', {
-          templateUrl: '/partials/reports.html',
+          templateUrl: '/partials/analytics.html',
           controller: 'AnalyticsCtrl'
         })
         .otherwise({
