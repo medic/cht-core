@@ -135,7 +135,7 @@ exports.data_records_read_by_type = {
         var objectpath = require('views/lib/objectpath'),
             type,
             dh;
-            
+
         var emitRead = function(doc, type, dh) {
             emit(['_total', type, dh], 1);
             if (doc.read) {
@@ -152,11 +152,13 @@ exports.data_records_read_by_type = {
             dh = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
             if (dh) {
                 emitRead(doc, type, dh);
-            } else {
+            } else if (doc.tasks) {
                 doc.tasks.forEach(function(task) {
                     dh = objectpath.get(task.messages[0], 'facility.parent.parent._id');
                     emitRead(doc, type, dh);
                 });
+            } else {
+                emitRead(doc, type);
             }
         }
     },

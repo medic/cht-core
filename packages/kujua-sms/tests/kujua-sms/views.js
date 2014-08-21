@@ -51,18 +51,40 @@ exports['data_records_read_by_type map emits empty dh id when no facility'] = fu
   test.done();
 };
 
+exports['data_records_read_by_type map emits one record per task'] = function (test) {
+  var doc = {
+    type: 'data_record',
+    tasks: [
+      { 
+        messages: [
+         { facility: { parent: { parent: { _id: 'a' } } } }
+        ]
+      }, { 
+        messages: [
+         { facility: { parent: { parent: { _id: 'b' } } } }
+        ]
+      }
+    ]
+  };
+  views.data_records_read_by_type.map(doc);
+  test.same(results.length, 2);
+  test.same(results[0].key[0], '_total');
+  test.same(results[0].key[1], 'messages');
+  test.same(results[0].key[2], 'a');
+  test.same(results[0].val, 1);
+  test.same(results[1].key[0], '_total');
+  test.same(results[1].key[1], 'messages');
+  test.same(results[1].key[2], 'b');
+  test.same(results[1].val, 1);
+  test.done();
+};
+
 exports['data_records_read_by_type map emits dh id'] = function (test) {
   var doc = {
     type: 'data_record',
     form: 'ZYX',
     related_entities: {
-      clinic: {
-        parent: {
-          parent: {
-            _id: 'abc'
-          }
-        }
-      }
+      clinic: { parent: { parent: { _id: 'abc' } } }
     }
   };
   views.data_records_read_by_type.map(doc);
