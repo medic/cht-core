@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 (function () {
 
   'use strict';
@@ -14,21 +16,21 @@
   };
 
   module.filter('summary', function () {
-    return function (message, forms) {
-      if (!message || !forms) { 
+    return function (record, forms) {
+      if (!record || !forms) { 
         return '';
       }
-      if (message.form) {
-        return getFormName(message, forms);
+      if (record.form) {
+        return getFormName(record, forms);
       }
-      if (message.sms_message) {
-        return message.sms_message.message;
+      if (record.message && record.message.message) {
+        return record.message.message;
       }
-      if (message.tasks &&
-          message.tasks[0] &&
-          message.tasks[0].messages &&
-          message.tasks[0].messages[0]) {
-        return message.tasks[0].messages[0].message;
+      if (record.tasks &&
+          record.tasks[0] &&
+          record.tasks[0].messages &&
+          record.tasks[0].messages[0]) {
+        return record.tasks[0].messages[0].message;
       }
       return 'Message';
     };
@@ -46,6 +48,24 @@
         return 'Outgoing Message';
       }
       return 'Incoming Message';
+    };
+  });
+
+  module.filter('clinic', function () {
+    return function (entity) {
+      var parts;
+      if (_.isArray(entity)) {
+        parts = entity;
+      } else {
+        parts = [];
+        while (entity) {
+          if (entity.name) {
+            parts.push(entity.name);
+          }
+          entity = entity.parent;
+        }
+      }
+      return parts.join(' › ');
     };
   });
 

@@ -21,7 +21,7 @@ require('../dist/reporting-views');
      
       $routeProvider
         .when('/messages/:doc?', {
-          templateUrl: '/partials/reports.html',
+          templateUrl: '/partials/messages.html',
           controller: 'MessagesCtrl'
         })
         .when('/reports/:doc?', {

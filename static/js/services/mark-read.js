@@ -1,8 +1,26 @@
+var _ = require('underscore');
+
 (function () {
 
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
+
+  var updateReadStatus = function(message, user, read) {
+    var readers = message.read || [];
+    var index = readers.indexOf(user);
+    if ((index !== -1) === read) {
+      // already in the correct state
+      return false;
+    }
+    if (read) {
+      readers.push(user);
+    } else {
+      readers.splice(index, 1);
+    }
+    message.read = readers;
+    return true;
+  };
   
   inboxServices.factory('MarkRead', ['db', 'audit', 'UserCtxService',
     function(db, audit, UserCtxService) {
@@ -11,23 +29,29 @@
           if (err) {
             return callback(err);
           }
-          var readers = message.read || [];
-          var user = UserCtxService().name;
-          var index = readers.indexOf(user);
-          if ((index !== -1) === read) {
-            // already in the correct state
-            return callback(null, message);
-          }
-          if (read) {
-            readers.push(user);
+          if (updateReadStatus(message, UserCtxService().name, read)) {
+            audit.saveDoc(message, function(err) {
+              callback(err, message);
+            });
           } else {
-            readers.splice(index, 1);
+            callback(null, message);
           }
-          message.read = readers;
-          audit.saveDoc(message, function(err) {
-            callback(err, message);
-          });
         });
+      };
+    }
+  ]);
+  
+  inboxServices.factory('MarkAllRead', ['audit', 'UserCtxService',
+    function(audit, UserCtxService) {
+      return function(messages, read, callback) {
+        var updated = _.filter(messages, function(message) {
+          return updateReadStatus(message, UserCtxService().name, read);
+        });
+        if (updated.length) {
+          audit.bulkSave(updated, function(err) {
+            callback(err, updated);
+          });
+        }
       };
     }
   ]);

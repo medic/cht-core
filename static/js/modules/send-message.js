@@ -5,7 +5,8 @@
   var validateMessage = function(message) {
     return {
       valid: !!message,
-      message: 'Please include a message.'
+      message: 'Please include a message.',
+      value: message,
     };
   };
 
@@ -50,31 +51,13 @@
     };
   };
 
-  var updateValidationResult = function(fn, elem, value) {
+  var updateValidation = function(fn, elem, value) {
     var result = fn.call(this, value);
     elem.closest('.control-group')
         .toggleClass('error', !result.valid)
         .find('.help-block')
         .text(result.valid ? '' : result.message);
-
-    return result.valid;
-  };
-
-  var validateSms = function($phoneField, $messageField) {
-
-    var phone = updateValidationResult(
-        validatePhoneNumbers,
-        $phoneField, 
-        $phoneField.select2('data')
-    );
-    var message = updateValidationResult(
-        validateMessage, 
-        $messageField, 
-        $messageField.val().trim()
-    );
-
-    return phone && message;
-
+    return result;
   };
 
   var formatContact = function(row) {
@@ -111,6 +94,9 @@
   };
 
   var initPhoneField = function($phone) {
+    if (!$phone) {
+      return;
+    }
     $phone.parent().show();
     $phone.select2({
       multiple: true,
@@ -159,32 +145,56 @@
       if (count > 50) {
           msg = count + '/160 characters';
       }
-      target.closest('.modal-content').find('.modal-footer .note').text(msg);
+      target.closest('.message-form').find('.note').text(msg);
     });
   };
 
+  var recipients = [];
+
   exports.init = function() {
-    var $modal = $('#send-message');
+    var $modal = $('.message-form');
     initListeners();
-    initPhoneField($modal.find('[name=phone]'));
+    var $phone = $modal.find('[name=phone]');
+    if (!$phone.is('[type=hidden]')) {
+      initPhoneField($phone);
+    }
     initMessageField($modal.find('[name=message]'));
   };
 
-  exports.validate = function(callback) {
+  exports.setRecipients = function(_recipients) {
+    recipients = _recipients;
+  };
 
-    if ($('#send-message').find('.submit [disabled]').length) {
+  exports.validate = function(target, callback) {
+
+    var $modal = $(target).closest('.message-form');
+
+    if ($modal.find('.submit [disabled]').length) {
       return;
     }
 
-    var $modal = $('#send-message');
-    var $phone = $modal.find('[name=phone]');
-    var $message = $modal.find('[name=message]');
+    var $phoneField = $modal.find('[name=phone]');
+    var $messageField = $modal.find('[name=message]');
 
-    if (!validateSms($phone, $message)) {
-      return;
+    var phone;
+    if ($modal.is('.modal')) {
+      phone = updateValidation(
+        validatePhoneNumbers, $phoneField, $phoneField.select2('data')
+      );
+    } else {
+      phone = {
+        valid: true,
+        value: recipients
+      };
     }
 
-    callback($phone.select2('data'), $message.val().trim());
+    var message = updateValidation(
+      validateMessage, $messageField, $messageField.val().trim()
+    );
+
+    if (phone.valid && message.valid) {
+      callback(phone.value, message.value);
+    }
   };
 
 }());

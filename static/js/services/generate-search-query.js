@@ -26,18 +26,7 @@ var _ = require('underscore');
         if ($scope.filterModel.type === 'reports') {
           return 'type:report';
         }
-        if ($scope.filterModel.messageTypes.length === 0) {
-          return 'type:message*';
-        }
-        var types = [];
-        $scope.filterModel.messageTypes.forEach(function(value) {
-          var filter = 'type:' + value.type;
-          if (value.state) {
-            filter = '(' + filter + ' AND state:' + value.state + ')';
-          }
-          types.push(filter);
-        });
-        return '(' + types.join(' OR ') + ')';
+        return 'type:message*';
       };
 
       var formatForm = function($scope) {
@@ -85,27 +74,11 @@ var _ = require('underscore');
       return function($scope, options) {
         var filters = [];
 
-        if ($scope.filterSimple) {
-
-          filters.push(formatReportedDate($scope));
-          filters.push(formatType($scope));
-          filters.push(formatClinics($scope));
-          if ($scope.filterModel.type === 'reports') {
-            filters.push(formatForm($scope));
-            filters.push(formatErrors($scope));
-          }
-
-        } else {
-
-          if ($scope.filterQuery && $scope.filterQuery.trim()) {
-            filters.push($scope.filterQuery);
-          }
-          var type = $scope.filterModel.type === 'messages' ?
-            'message*' : 'report';
-          filters.push('type:' + type);
-
-        }
-
+        filters.push(formatReportedDate($scope));
+        filters.push(formatType($scope));
+        filters.push(formatClinics($scope));
+        filters.push(formatForm($scope));
+        filters.push(formatErrors($scope));
         filters.push(formatDistrict($scope));
         filters.push(formatIds(options));
 

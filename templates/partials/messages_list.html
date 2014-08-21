@@ -1,0 +1,18 @@
+<div class="col-sm-4 inbox-items" scroller>
+  <ul>
+    <li class="animate-repeat" ng-show="!loading || appending" ng-repeat="contact in contacts | orderBy:'-value.date'" ng-click="setMessage(contact.key[1])" data-record-id="{~lb}{~lb}contact.key[1]{~rb}{~rb}" ng-class="{'selected': contact.key[1] === selected.id, 'read': isRead(contact.value)}">
+      <div class="message-wrapper">
+        <div class="detail">
+          <span class="time" ng-bind-html="contact.value.date | relativeDate"></span>
+          <mm-sender message="contact.value"></mm-sender>
+          <div class="description" ng-bind-html="contact.value.message"></div>
+        </div>
+      </div>
+    </li>
+  </ul>
+  <p ng-show="error" class="alert alert-danger" role="alert">Error fetching messages</p>
+  <p ng-show="!error && !loading && !contacts.length">No messages found</p>
+  <span class="mm-loader" ng-show="loading">
+    <span class="fa fa-spinner fa-spin"></span>
+  </span>
+</div>

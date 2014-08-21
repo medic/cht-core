@@ -23,12 +23,12 @@ describe('state filter', function() {
     });
   });
 
-  it('should render nothing when no task', function() {
+  it('should render received when no task', function() {
     scope.task = {};
 
     var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
     scope.$digest();
-    chai.expect(element.html()).to.equal('');
+    chai.expect(element.find('.state').text()).to.equal('received');
   });
 
   it('should render state', function() {

@@ -1,4 +1,4 @@
-<div class="row filters" ng-class="{advanced: !filterSimple}">
+<div class="row filters">
   <div class="inner">
 
     <span class="dropdown mm-dropdown slide-back" ng-click="setMessage()">
@@ -11,45 +11,6 @@
     </span>
 
     <span class="basic-filters">
-
-      <span id="messageTypeDropdown" class="dropdown mm-dropdown multidropdown" ng-show="filterModel.type === 'messages'" data-label-no-filter="All types" data-filter-label="types">
-        <span class="mm-button mm-button-nudge-down" data-toggle="dropdown">
-          <span class="mm-button-icon">
-            <span class="fa fa-exchange"></span>
-          </span>
-          <span class="mm-button-dropdown">
-            <span class="fa fa-chevron-down"></span>
-          </span>
-          <span class="mm-button-text"></span>
-        </span>
-        <ul role="menu" aria-labelledby="status"
-          class="dropdown-menu mm-dropdown-menu">
-          <li role="presentation">
-            <a role="menuitem" class="selected" tabindex="-1" data-value='{~lb}"type": "messageincoming"{~rb}'>
-              <span class="fa fa-long-arrow-left"></span>
-              Incoming
-            </a>
-          </li>
-          <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value='{~lb}"type": "messageoutgoing"{~rb}'>
-              <span class="fa fa-long-arrow-right"></span>
-              Outgoing
-            </a>
-          </li>
-          <li role="presentation" class="dropdown-child">
-            <a role="menuitem" tabindex="-1" data-value='{~lb}"type": "messageoutgoing", "state": "pending"{~rb}'>
-              <span class="fa fa-ellipsis-h"></span>
-              Pending
-            </a>
-          </li>
-          <li role="presentation" class="dropdown-child">
-            <a role="menuitem" tabindex="-1" data-value='{~lb}"type": "messageoutgoing", "state": "sent"{~rb}'>
-              <span class="fa fa-check"></span>
-              Sent
-            </a>
-          </li>
-        </ul>
-      </span>
 
       <span id="formTypeDropdown" class="dropdown mm-dropdown multidropdown" data-label-no-filter="All form types" data-filter-label="form types" ng-show="filterModel.type === 'reports'">
         <span id="form_type" class="mm-button mm-button-nudge-down" data-toggle="dropdown">
@@ -71,7 +32,7 @@
         </ul>
       </span>
 
-      <span id="facilityDropdown" class="dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="facilities" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports'">
+      <span id="facilityDropdown" class="dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="facilities" ng-show="filterModel.type === 'reports'">
         <span id="facility" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-hospital-o"></span>
@@ -89,7 +50,7 @@
         </ul>
       </span>
 
-      <span class="dropdown mm-dropdown" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports'">
+      <span class="dropdown mm-dropdown" ng-show="filterModel.type === 'reports'">
         <span id="date-filter" class="mm-button">
           <span class="mm-button-icon">
             <span class="fa fa-calendar"></span>
@@ -151,29 +112,5 @@
       </span>
     </span>
 
-    <span class="advanced-filters">
-      <div class="input-group">
-        <input id="advanced" type="text" class="form-control" ng-disabled="filterModel.type === 'analytics'" ng-model="filterQuery">
-        <span class="input-group-btn">
-          <button class="btn btn-default" type="button" ng-class="{disabled: filterModel.type === 'analytics'}">
-            <span class="fa fa-search"></span>
-          </button>
-        </span>
-        <a href="{baseURL}/help/search" target="_blank" rel="external" class="input-group-btn help">
-          <span class="fa fa-question-circle"></span>
-        </a>
-      </div>
-    </span>
-
-    <span class="filter-actions">
-      <a ng-href="{~lb}{~lb}downloadUrl{~rb}{~rb}" title="Download all" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports'">
-        <span class="mm-button">
-          <span class="mm-button-icon">
-            <span class="fa fa-arrow-down"></span>
-          </span>
-          <span class="mm-button-text">Export</span>
-        </span>
-      </a>
-    </span>
   </div>
 </div>

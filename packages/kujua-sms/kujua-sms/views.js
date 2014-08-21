@@ -135,9 +135,8 @@ exports.data_records_read_by_type = {
         var objectpath = require('views/lib/objectpath'),
             type,
             dh;
-        if (doc.type === 'data_record') {
-            type = doc.form ? 'forms' : 'messages';
-            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
+            
+        var emitRead = function(doc, type, dh) {
             emit(['_total', type, dh], 1);
             if (doc.read) {
                 doc.read.forEach(function(user) {
@@ -146,10 +145,116 @@ exports.data_records_read_by_type = {
                     }
                 });
             }
+        };
+
+        if (doc.type === 'data_record') {
+            type = doc.form ? 'forms' : 'messages';
+            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
+            if (dh) {
+                emitRead(doc, type, dh);
+            } else {
+                doc.tasks.forEach(function(task) {
+                    dh = objectpath.get(task.messages[0], 'facility.parent.parent._id');
+                    emitRead(doc, type, dh);
+                });
+            }
         }
     },
     reduce: function(key, counts) {
         return sum(counts);
+    }
+};
+
+
+exports.data_records_by_contact = {
+    map: function(doc) {
+        var getName = function(facility) {
+            if (facility) {
+                var nameParts = [];
+                while (facility) {
+                    if (facility.name) {
+                        nameParts.push(facility.name);
+                    }
+                    facility = facility.parent;
+                }
+                if (nameParts.length) {
+                    return nameParts;
+                }
+            }
+        };
+        var emitContact = function(districtId, key, value) {
+            if (key) {
+                if (districtId) {
+                    emit([districtId, key], value);
+                }
+                emit(['admin', key], value);
+            }
+        };
+        var objectpath = require('views/lib/objectpath'),
+            districtId,
+            message,
+            facility,
+            contact,
+            key,
+            name;
+        if (doc.type === 'data_record') {
+            if (!doc.form) {
+                // TODO use objectpath widely
+                if (doc.kujua_message) {
+                    doc.tasks.forEach(function(task) {
+                        message = task.messages[0];
+                        facility = message.facility;
+                        districtId = objectpath.get(facility, 'parent.parent._id');
+                        key = (facility && facility._id) || message.to;
+                        name = getName(facility) || message.to;
+                        contact = facility && facility.contact && facility.contact.name;
+                        emitContact(districtId, key, {
+                            date: doc.reported_date,
+                            read: doc.read,
+                            contact: contact,
+                            facility: facility,
+                            name: name,
+                            message: message.message
+                        });
+                    });
+                } else if (doc.sms_message) {
+                    districtId = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
+                    message = doc.sms_message;
+                    facility = doc.related_entities &&
+                               doc.related_entities.clinic;
+                    name = getName(facility) || message.from;
+                    contact = facility && facility.contact && facility.contact.name;
+                    key = (facility && facility._id) || message.from;
+                    emitContact(districtId, key, {
+                        date: doc.reported_date,
+                        read: doc.read,
+                        contact: contact,
+                        facility: facility,
+                        name: name,
+                        message: message.message
+                    });
+                }
+            }
+        }
+    },
+    reduce: function(key, values) {
+        var max = { date: 0 };
+        var read;
+        values.forEach(function(value) {
+            if (!read || !value.read) {
+                read = value.read || [];
+            } else {
+                read = read.filter(function(user) {
+                    return value.read.indexOf(user) !== -1;
+                });
+            }
+            if (value.date > max.date) {
+                max = value;
+            }
+        });
+        max.read = read;
+        max.facility = undefined; // needed to reduce object size
+        return max;
     }
 };
 

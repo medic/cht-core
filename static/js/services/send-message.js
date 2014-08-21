@@ -77,8 +77,10 @@ var utils = require('kujua-utils'),
 
         User.query(function(user) {
 
+
           var doc = createMessageDoc(user, recipients);
-          var explodedRecipients = formatRecipients(recipients);
+          var explodedRecipients = _.isArray(recipients) ? 
+            formatRecipients(recipients) : [recipients];
 
           async.forEachSeries(
             explodedRecipients, 

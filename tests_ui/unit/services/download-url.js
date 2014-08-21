@@ -17,7 +17,7 @@ describe('DownloadUrl service', function() {
   });
 
   it('builds url for messages', function() {
-    var actual = decodeURIComponent(service('messages'));
+    var actual = decodeURIComponent(service(true));
     chai.expect(actual).to.equal(
       '/medic/export/messages?startkey=[9999999999999,{}]&endkey=[0]&tz=' +
       moment().zone() + '&format=xml&reduce=false'
@@ -25,7 +25,7 @@ describe('DownloadUrl service', function() {
   });
 
   it('builds url for forms', function() {
-    var actual = decodeURIComponent(service('reports'));
+    var actual = decodeURIComponent(service(false));
     chai.expect(actual).to.equal(
       '/medic/export/forms?startkey=[9999999999999,{}]&endkey=[0]&tz=' +
       moment().zone() + '&format=xml&reduce=false'

@@ -14,6 +14,7 @@
   require('./format-date');
   require('./generate-search-query');
   require('./mark-read');
+  require('./message-contacts');
   require('./read-messages');
   require('./search');
   require('./send-message');

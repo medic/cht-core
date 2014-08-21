@@ -22,16 +22,16 @@
     if (task.state_history && task.state_history.length) {
       return task.state_history[task.state_history.length - 1].timestamp;
     }
-    return task.due;
+    return task.due || task.reported_date;
   };
 
   module.filter('state', ['FormatDate',
     function (FormatDate) {
       return function (task) {
-        if (!task || !task.state) {
+        if (!task) {
           return '';
         }
-        var content = '<span class="state">' + task.state + '</span>';
+        var content = '<span class="state">' + (task.state || 'received') + '</span>';
         return getRelativeDate(
           getTaskDate(task), FormatDate, content
         );

@@ -81,6 +81,7 @@
 
         // tests_ui globals
         "beforeEach": true,
+        "afterEach" : true,
         "it"        : true,
         "describe"  : true,
         "inject"    : true,

@@ -13,9 +13,9 @@
       </div>
     </li>
   </ul>
-  <p ng-show="error" class="alert alert-danger" role="alert">Error fetching {~lb}{~lb}filterModel.type{~rb}{~rb}.</p>
-  <p ng-show="!error && !loading && !messages.length">No {~lb}{~lb}filterModel.type{~rb}{~rb} found</p>
-  <p ng-show="!loading && messages.length && messages.length === totalMessages">No more {~lb}{~lb}filterModel.type{~rb}{~rb}</p>
+  <p ng-show="error" class="alert alert-danger" role="alert">Error fetching reports</p>
+  <p ng-show="!error && !loading && !messages.length">No reports found</p>
+  <p ng-show="!loading && messages.length && messages.length === totalMessages">No more reports</p>
   <span class="mm-loader" ng-show="loading">
     <span class="fa fa-spinner fa-spin"></span>
   </span>

@@ -41,12 +41,6 @@
         </ul>
       </span>
 
-      <a title="Search" ng-click="filterSimple = !filterSimple || filterModel.type === 'analytics'">
-        <div class="mm-icon mm-icon-inverse" ng-class="{'mm-icon-disabled': filterModel.type === 'analytics'}">
-          <span class="fa fa-search"></span>
-        </div>
-      </a>
-
       <span class="dropdown options">
         <a data-toggle="dropdown">
           <div class="mm-icon mm-icon-inverse">
@@ -56,6 +50,12 @@
         <ul role="menu" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation">
             <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#edit-user-profile">Edit User Profile</a>
+          </li>
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" ng-href="{~lb}{~lb}messagesDownloadUrl{~rb}{~rb}" rel="external">Export Messages</a>
+          </li>
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" ng-href="{~lb}{~lb}reportsDownloadUrl{~rb}{~rb}" rel="external">Export Reports</a>
           </li>
           <li role="presentation" ng-show="permissions.admin">
             <a role="menuitem" tabindex="-1" href="{baseURL}/settings" rel="external">Administrative Options</a>
