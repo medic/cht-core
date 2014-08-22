@@ -92,9 +92,9 @@ var _ = require('underscore'),
         $animate.enabled(!!options.changes);
         if (options.changes) {
           $scope.updateReadStatus();
-          var deletedRows = _.where(options.changes.results, {deleted: true});
+          var deletedRows = _.where(options.changes, {deleted: true});
           _.each(deletedRows, _deleteMessage);
-          if (deletedRows.length === options.changes.results.length) {
+          if (deletedRows.length === options.changes.length) {
             // nothing to update
             return;
           }
@@ -187,7 +187,7 @@ var _ = require('underscore'),
 
       db.changes({ filter: 'medic/data_records' }, function(err, data) {
         if (!err && data && data.results) {
-          $scope.query({ silent: true, changes: data });
+          $scope.query({ silent: true, changes: data.results });
         }
       });
 

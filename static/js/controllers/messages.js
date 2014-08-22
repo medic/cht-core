@@ -8,8 +8,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$route', 'MessageContacts', 'MarkAllRead', 'UserDistrict',
-    function ($scope, $route, MessageContacts, MarkAllRead, UserDistrict) {
+    ['$scope', '$route', '$animate', 'db', 'MessageContacts', 'MarkAllRead', 'UserDistrict',
+    function ($scope, $route, $animate, db, MessageContacts, MarkAllRead, UserDistrict) {
 
       var markAllRead = function() {
         var docs = _.pluck($scope.selected.messages, 'doc');
@@ -61,26 +61,64 @@ var _ = require('underscore'),
           if (err) {
             $scope.loadingContent = false;
             $scope.error = true;
+            console.log(err);
             return;
           }
           var facility = findMostRecentFacility(messages);
           sendMessage.setRecipients([{ doc: facility }]);
-
           $scope.loadingContent = false;
           $scope.error = false;
+          $animate.enabled(false);
           $scope.selected.messages = messages;
           window.setTimeout(updateRead, 1);
         });
       };
 
+      var updateContact = function() {
+        if ($scope.selected && $scope.selected.id) {
+          UserDistrict().then(function(res) {
+            var district = $scope.permissions.admin ? undefined : res.district;
+            MessageContacts(district, $scope.selected.id, function(err, messages) {
+              _.each(messages, function(updated) {
+                var match = _.findWhere($scope.selected.messages, { id: updated.id });
+                $animate.enabled(true);
+                if (match) {
+                  angular.extend(match, updated);
+                } else {
+                  $scope.selected.messages.push(updated);
+                }
+              });
+            });
+          });
+        }
+      };
+
+      var updateContacts = function(options) {
+        options = options || {};
+        UserDistrict().then(function(res) {
+          var district = $scope.permissions.admin ? undefined : res.district;
+          MessageContacts(district, null, function(err, contacts) {
+            options.contacts = contacts;
+
+            $scope.setContacts(options);
+          });
+        });
+      };
+
+      if (!$scope.contacts || !$route.current.params.doc) {
+        updateContacts();
+      }
+
       $scope.filterModel.type = 'messages';
       UserDistrict().then(function(res) {
         var district = $scope.permissions.admin ? undefined : res.district;
         selectContact(district, $route.current.params.doc);
-        if (!$scope.contacts || !$route.current.params.doc) {
-          MessageContacts(district, null, function(err, contacts) {
-            $scope.setContacts(contacts);
-          });
+      });
+
+      db.changes({ filter: 'medic/data_records' }, function(err, data) {
+        if (!err && data && data.results) {
+          updateContacts({ changes: true });
+          updateContact();
         }
       });
     }

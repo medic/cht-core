@@ -1,6 +1,7 @@
 var utils = require('kujua-utils'),
     sendMessage = require('../modules/send-message'),
-    modal = require('../modules/modal');
+    modal = require('../modules/modal'),
+    _ = require('underscore');
 
 (function () {
 
@@ -56,10 +57,23 @@ var utils = require('kujua-utils'),
         }
       };
 
-      $scope.setContacts = function(contacts) {
-        $animate.enabled(false);
+      $scope.setContacts = function(options) {
         $scope.loading = false;
-        $scope.contacts = contacts;
+        $animate.enabled(!!options.changes);
+        if (options.changes) {
+          _.each(options.contacts, function(updated) {
+            var match = _.find($scope.contacts, function(existing) {
+              return existing.key[1] === updated.key[1];
+            });
+            if (match) {
+              angular.extend(match, updated);
+            } else {
+              $scope.contacts.push(updated);
+            }
+          });
+        } else {
+          $scope.contacts = options.contacts;
+        }
       };
 
       $scope.setMessages = function(messages) {

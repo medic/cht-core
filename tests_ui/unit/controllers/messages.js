@@ -5,7 +5,8 @@ describe('MessagesCtrl controller', function() {
   var createController,
       scope,
       UserDistrict,
-      MessageContacts;
+      MessageContacts,
+      db;
 
   beforeEach(module('inboxApp'));
 
@@ -32,10 +33,15 @@ describe('MessagesCtrl controller', function() {
       };
     };
 
+    db = {
+      changes: function() {}
+    };
+
     createController = function() {
       return $controller('MessagesCtrl', {
         '$scope': scope,
         '$route': { current: { params: { doc: 'x' } } },
+        'db': db,
         'MessageContacts': MessageContacts,
         'MarkAllRead': {},
         'UserDistrict': UserDistrict
