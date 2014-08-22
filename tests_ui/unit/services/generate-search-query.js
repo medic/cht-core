@@ -179,4 +179,22 @@ describe('GenerateSearchQuery service', function() {
     );
   });
 
+  it('creates filter query with freetext', function() {
+    scope.filterModel = {
+      type: 'reports',
+      forms: [],
+      facilities: [],
+      date: {
+        from: date20130208,
+        to: date20130612
+      }
+    };
+    scope.filterQuery = 'pref';
+    var query = service(scope, options);
+    chai.expect(query).to.equal(
+      'pref* ' +
+      'AND reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+      'AND type:report'
+    );
+  });
 });

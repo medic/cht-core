@@ -173,10 +173,12 @@ body.inbox {
     position: relative;
   }
 
-  .dropdown {
-    width: 25%;
-    padding: 0 0.5em;
+  .filter {
+    width: 20%;
+    padding: 0 0.2em;
     text-align: left;
+    display: inline-block;
+    vertical-align: top;
   }
 
   .dropdown-menu .fa {
@@ -193,7 +195,7 @@ body.inbox {
     width: 100%;
   }
 
-  .basic-filters, .slide-back {
+  .basic-filters, .slide-back, .filter-actions {
     padding-top: 0.65em;
   }
   
@@ -201,7 +203,23 @@ body.inbox {
     position: absolute;
     top: 0;
     left: 0;
-    right: 11em;
+    right: 5em;
+  }
+
+  #freetext {
+    height: inherit;
+    padding: 0.6em;
+    vertical-align: top;
+    width: 90%;
+  }
+
+  .help {
+    line-height: 3em;
+  }
+
+  .filter-actions {
+    float: right;
+    margin-top: 0.15em;
   }
 
 }
@@ -675,7 +693,7 @@ body.inbox {
     .basic-filters, .filter-actions, .slide-back {
       padding-top: 0.4em;
     }
-    .basic-filters, .advanced-filters {
+    .basic-filters {
       right: 0;
       left: 6em;
     }
@@ -685,7 +703,7 @@ body.inbox {
         margin: 0
       }
     }
-    .filter-actions {
+    .filter-actions, .freetext-filter {
       display: none;
     }
   }
@@ -743,7 +761,7 @@ body.inbox {
   .row.content .item-content, .action-container .column {
     left: 100%;
   }
-  .action-container {
+  .reports .action-container {
     display: block;
   }
 

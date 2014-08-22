@@ -71,9 +71,16 @@ var _ = require('underscore');
         }
       };
 
+      var formatFreetext = function($scope) {
+        if ($scope.filterQuery) {
+          return $scope.filterQuery + '*';
+        }
+      };
+
       return function($scope, options) {
         var filters = [];
 
+        filters.push(formatFreetext($scope));
         filters.push(formatReportedDate($scope));
         filters.push(formatType($scope));
         filters.push(formatClinics($scope));

@@ -11,13 +11,17 @@
         scope: {},
         link: function(scope, elm) {
           var raw = elm[0];
+
+          if (!RememberService.scrollTop) {
+            RememberService.scrollTop = {};
+          }
           
           elm.bind('scroll', function() {
-            RememberService.scrollTop = raw.scrollTop;
+            RememberService.scrollTop[elm.id] = raw.scrollTop;
           });
 
           $timeout(function() {
-            raw.scrollTop = RememberService.scrollTop;
+            raw.scrollTop = RememberService.scrollTop[elm.id];
           });
         }
       };

@@ -11,7 +11,6 @@ var _ = require('underscore'),
     ['$scope', '$route', '$location', '$animate', 'db', 'UserDistrict', 'UserCtxService', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Verified', 'DeleteMessage', 'UpdateFacility',
     function ($scope, $route, $location, $animate, db, UserDistrict, UserCtxService, MarkRead, GenerateSearchQuery, Search, Verified, DeleteMessage, UpdateFacility) {
 
-      $scope.filterQuery = undefined;
       $scope.filterModel.type = 'reports';
 
       UserDistrict().then(function() {
@@ -251,6 +250,17 @@ var _ = require('underscore'),
         }
       });
       $('.daterangepicker').addClass('mm-dropdown-menu show-from');
+
+      $('#search').on('click', function(e) {
+        e.preventDefault();
+        $scope.query();
+      });
+      $('#freetext').on('keypress', function(e) {
+        if (e.which === 13) {
+          e.preventDefault();
+          $scope.query();
+        }
+      });
 
       if (!$scope.messages || !$route.current.params.doc) {
         $scope.query();

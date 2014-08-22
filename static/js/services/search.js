@@ -18,6 +18,8 @@ var _ = require('underscore');
           include_docs: true
         });
 
+        options.query = undefined;
+
         db.getFTI(
           'medic',
           'data_records',

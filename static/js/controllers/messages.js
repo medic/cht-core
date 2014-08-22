@@ -48,12 +48,14 @@ var _ = require('underscore'),
       };
 
       var selectContact = function(district, id) {
+        
         if (!id) {
           $scope.error = false;
           $scope.loadingContent = false;
           $scope.setSelected();
           return;
         }
+        $scope.loadingContent = true;
         $scope.setSelected({ id: id });
         MessageContacts(district, id, function(err, messages) {
           if (err) {
@@ -72,7 +74,6 @@ var _ = require('underscore'),
       };
 
       $scope.filterModel.type = 'messages';
-      $scope.loadingContent = true;
       UserDistrict().then(function(res) {
         var district = $scope.permissions.admin ? undefined : res.district;
         selectContact(district, $route.current.params.doc);

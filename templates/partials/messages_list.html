@@ -1,4 +1,4 @@
-<div class="col-sm-4 inbox-items" scroller>
+<div id="message-list" class="col-sm-4 inbox-items" scroller>
   <ul>
     <li class="animate-repeat" ng-show="!loading || appending" ng-repeat="contact in contacts | orderBy:'-value.date'" ng-click="setMessage(contact.key[1])" data-record-id="{~lb}{~lb}contact.key[1]{~rb}{~rb}" ng-class="{'selected': contact.key[1] === selected.id, 'read': isRead(contact.value)}">
       <div class="message-wrapper">

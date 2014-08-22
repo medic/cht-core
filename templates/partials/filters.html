@@ -1,8 +1,8 @@
 <div class="row filters">
   <div class="inner">
 
-    <span class="dropdown mm-dropdown slide-back" ng-click="setMessage()">
-      <span id="back" class="mm-button mm-button-nudge-down" ng-class="{'mm-button-disabled': !selected}">
+    <span class="dropdown mm-dropdown slide-back" ng-click="setMessage()" ng-show="filterModel.type === 'reports' || filterModel.type === 'messages'">
+      <span id="back" class="mm-button mm-button-nudge-down mm-button-disabled">
         <span class="mm-button-icon">
           <span class="fa fa-chevron-left"></span>
         </span>
@@ -10,9 +10,9 @@
       </span>
     </span>
 
-    <span class="basic-filters">
+    <span class="basic-filters" ng-show="filterModel.type === 'reports'">
 
-      <span id="formTypeDropdown" class="dropdown mm-dropdown multidropdown" data-label-no-filter="All form types" data-filter-label="form types" ng-show="filterModel.type === 'reports'">
+      <span id="formTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All form types" data-filter-label="form types">
         <span id="form_type" class="mm-button mm-button-nudge-down" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-list-alt"></span>
@@ -32,7 +32,7 @@
         </ul>
       </span>
 
-      <span id="facilityDropdown" class="dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="facilities" ng-show="filterModel.type === 'reports'">
+      <span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="facilities">
         <span id="facility" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-hospital-o"></span>
@@ -50,7 +50,7 @@
         </ul>
       </span>
 
-      <span class="dropdown mm-dropdown" ng-show="filterModel.type === 'reports'">
+      <span class="filter dropdown mm-dropdown">
         <span id="date-filter" class="mm-button">
           <span class="mm-button-icon">
             <span class="fa fa-calendar"></span>
@@ -64,7 +64,7 @@
         </span>
       </span>
 
-      <span id="validDropdown" class="dropdown mm-dropdown" ng-show="filterModel.type === 'reports'">
+      <span id="validDropdown" class="filter dropdown mm-dropdown">
         <span id="status" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon" ng-show="filterModel.valid === undefined">
             <span class="fa fa-circle-o"></span>
@@ -110,7 +110,20 @@
           </li>
         </ul>
       </span>
+
+      <span class="filter input-group freetext-filter">
+        <input id="freetext" type="text" ng-model="filterQuery" placeholder="Search">
+        <a href="{baseURL}/help/search" target="_blank" rel="external" class="help">
+          <span class="fa fa-question-circle"></span>
+        </a>
+      </span>
+
     </span>
 
+    <span class="filter-actions" ng-show="filterModel.type === 'reports'">
+      <button id="search" class="btn btn-default" type="button" ng-class="{disabled: filterModel.type === 'analytics'}">
+        <span class="fa fa-search"></span>
+      </button>
+    </span>
   </div>
 </div>

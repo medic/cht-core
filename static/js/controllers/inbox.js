@@ -22,6 +22,7 @@ var utils = require('kujua-utils'),
       $scope.contacts = undefined;
       $scope.messages = undefined;
       $scope.selected = undefined;
+      $scope.filterQuery = undefined;
 
       var delayIfMobile = function(callback) {
         if($('#back').is(':visible')) {
@@ -35,14 +36,22 @@ var utils = require('kujua-utils'),
         if (selected) {
           delayIfMobile(function() {
             $('body').addClass('show-content');
+            $('#back').removeClass('mm-button-disabled');
           });
           $scope.selected = selected;
         } else {
           delayIfMobile(function() {
             $('body').removeClass('show-content');
+            $('#back').addClass('mm-button-disabled');
           });
           if (!$('#back').is(':visible')) {
             $scope.selected = undefined;
+          } else {
+            var itemList = $('.inbox-items');
+            var selectedItem = itemList.find('.selected');
+            if (selectedItem.length) {
+              itemList.scrollTop(selectedItem.offset().top);
+            }
           }
         }
       };
@@ -77,6 +86,7 @@ var utils = require('kujua-utils'),
       };
 
       $scope.filterModel = {
+        freetext: '',
         type: 'messages',
         forms: [],
         facilities: [],
