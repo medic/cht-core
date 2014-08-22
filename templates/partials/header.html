@@ -51,10 +51,10 @@
           <li role="presentation">
             <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#edit-user-profile">Edit User Profile</a>
           </li>
-          <li role="presentation">
+          <li role="presentation" ng-show="permissions.admin">
             <a role="menuitem" tabindex="-1" ng-href="{~lb}{~lb}messagesDownloadUrl{~rb}{~rb}" rel="external">Export Messages</a>
           </li>
-          <li role="presentation">
+          <li role="presentation" ng-show="permissions.admin">
             <a role="menuitem" tabindex="-1" ng-href="{~lb}{~lb}reportsDownloadUrl{~rb}{~rb}" rel="external">Export Reports</a>
           </li>
           <li role="presentation" ng-show="permissions.admin">
