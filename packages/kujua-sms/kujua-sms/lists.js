@@ -81,7 +81,7 @@ function sendHeaderRow(options, extraColumns) {
     });
 
     if (options.format === 'xml') {
-        var formName = _s.capitalize(options.formName);
+        var formName = _s.capitalize(options.formName || 'Reports');
         send('<?xml version="1.0" encoding="UTF-8"?>\n' +
              '<?mso-application progid="Excel.Sheet"?>\n' +
              '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
