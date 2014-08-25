@@ -243,11 +243,6 @@ var _ = require('underscore'),
             picker.hide();
           }
         }
-      })
-      .on('show.daterangepicker', function(e, picker) {
-        if (picker.element.is('.disabled')) {
-          picker.hide();
-        }
       });
       $('.daterangepicker').addClass('mm-dropdown-menu show-from');
 
