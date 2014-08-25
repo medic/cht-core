@@ -82,22 +82,25 @@ var _ = require('underscore');
           // no search available for analytics
           return;
         }
+        $animate.enabled(!!options.changes);
+        if (options.changes) {
+          $scope.updateReadStatus();
+          var deletedRows = _.where(options.changes, { deleted: true });
+          _.each(deletedRows, _deleteMessage);
+          if (deletedRows.length === options.changes.length) {
+            // nothing to update
+            return;
+          }
+          options.changes = _.filter(options.changes, function(change) {
+            return !change.deleted;
+          });
+        }
         options.query = GenerateSearchQuery($scope, options);
         if (options.query === _currentQuery && !options.changes) {
           // debounce as same query already running
           return;
         }
         _currentQuery = options.query;
-        $animate.enabled(!!options.changes);
-        if (options.changes) {
-          $scope.updateReadStatus();
-          var deletedRows = _.where(options.changes, {deleted: true});
-          _.each(deletedRows, _deleteMessage);
-          if (deletedRows.length === options.changes.length) {
-            // nothing to update
-            return;
-          }
-        }
         if (!options.silent) {
           $scope.error = false;
           $scope.loading = true;
@@ -113,26 +116,22 @@ var _ = require('underscore');
           _currentQuery = null;
           $scope.loading = false;
           $scope.appending = false;
-          if ($scope.filterModel.type === 'analytics') {
-            // no search available for analytics
-            return;
-          }
           if (err) {
             $scope.error = true;
             console.log('Error loading messages', err);
-          } else {
-            $scope.error = false;
-            $scope.update(data.results);
-            if (!options.changes) {
-              $scope.totalMessages = data.total_rows;
-            }
-            if (_selectedDoc) {
-              $scope.selectMessage(_selectedDoc);
-            }
-            $('.inbox-items')
-              .off('scroll', _checkScroll)
-              .on('scroll', _checkScroll);
+            return;
           }
+          $scope.error = false;
+          $scope.update(data.results);
+          if (!options.changes) {
+            $scope.totalMessages = data.total_rows;
+          }
+          if (_selectedDoc) {
+            $scope.selectMessage(_selectedDoc);
+          }
+          $('.inbox-items')
+            .off('scroll', _checkScroll)
+            .on('scroll', _checkScroll);
         });
       };
 
