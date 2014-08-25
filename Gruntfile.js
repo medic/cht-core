@@ -99,7 +99,7 @@ module.exports = function(grunt) {
     less: {
       all: {
         files: {
-          'static/dist/app.css': 'static/css/app.less',
+          'static/dist/admin.css': 'static/css/admin.less',
           'static/dist/inbox.css': 'static/css/inbox.less'
         }
       }
@@ -110,7 +110,7 @@ module.exports = function(grunt) {
           keepSpecialComments: 0
         },
         files: {
-          'static/dist/app.css': 'static/dist/app.css',
+          'static/dist/admin.css': 'static/dist/admin.css',
           'static/dist/inbox.css': 'static/dist/inbox.css'
         }
       }
