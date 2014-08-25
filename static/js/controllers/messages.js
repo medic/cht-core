@@ -8,8 +8,11 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$route', '$animate', 'db', 'MessageContacts', 'MarkAllRead', 'UserDistrict',
-    function ($scope, $route, $animate, db, MessageContacts, MarkAllRead, UserDistrict) {
+    ['$scope', '$route', '$animate', 'db', 'MessageContact', 'ContactConversation', 'MarkAllRead', 'UserDistrict',
+    function ($scope, $route, $animate, db, MessageContact, ContactConversation, MarkAllRead, UserDistrict) {
+
+      $scope.loadingContent = false;
+      $scope.allLoaded = false;
 
       var markAllRead = function() {
         var docs = _.pluck($scope.selected.messages, 'doc');
@@ -22,7 +25,7 @@ var _ = require('underscore'),
       };
 
       var placeUnreadMarker = function() {
-        var content = $('body .item-content');
+        var content = $('.item-content');
         var firstUnread = content.find('.body .unread').filter(':first');
         var scrollTo;
         if (firstUnread.length) {
@@ -32,6 +35,7 @@ var _ = require('underscore'),
           scrollTo = content[0].scrollHeight;
         }
         content.scrollTop(scrollTo);
+        $('#message-content').on('scroll', _checkScroll);
       };
 
       var updateRead = function() {
@@ -55,39 +59,56 @@ var _ = require('underscore'),
           $scope.setSelected();
           return;
         }
+        $('#message-content').off('scroll', _checkScroll);
         $scope.loadingContent = true;
         $scope.setSelected({ id: id });
-        MessageContacts(district, id, function(err, messages) {
+        ContactConversation(district, id, null, function(err, data) {
           if (err) {
             $scope.loadingContent = false;
             $scope.error = true;
             console.log(err);
             return;
           }
-          var facility = findMostRecentFacility(messages);
+          var facility = findMostRecentFacility(data.rows);
           sendMessage.setRecipients([{ doc: facility }]);
           $scope.loadingContent = false;
           $scope.error = false;
           $animate.enabled(false);
-          $scope.selected.messages = messages;
+          $scope.selected.messages = data.rows;
           window.setTimeout(updateRead, 1);
         });
       };
 
-      var updateContact = function() {
-        if ($scope.selected && $scope.selected.id) {
+      var updateContact = function(options) {
+        var selectedId = $scope.selected && $scope.selected.id;
+        if (selectedId) {
+          options = options || {};
           UserDistrict().then(function(res) {
             var district = $scope.permissions.admin ? undefined : res.district;
-            MessageContacts(district, $scope.selected.id, function(err, messages) {
-              _.each(messages, function(updated) {
+            var skip = null;
+            if (options.skip) {
+              skip = $scope.selected.messages.length;
+              $scope.loadingContent = true;
+            }
+            ContactConversation(district, selectedId, skip, function(err, data) {
+              $animate.enabled(!options.skip);
+              $scope.loadingContent = false;
+              var first = $('.item-content .body > ul > li').filter(':first');
+              _.each(data.rows, function(updated) {
                 var match = _.findWhere($scope.selected.messages, { id: updated.id });
-                $animate.enabled(true);
                 if (match) {
                   angular.extend(match, updated);
                 } else {
                   $scope.selected.messages.push(updated);
                 }
               });
+              $scope.allLoaded = data.rows.length === 0;
+              if (first.length) {
+                window.setTimeout(function() {
+                  $('.item-content').scrollTop(first.offset().top - 140);
+                }, 1);
+              }
+              markAllRead();
             });
           });
         }
@@ -97,12 +118,17 @@ var _ = require('underscore'),
         options = options || {};
         UserDistrict().then(function(res) {
           var district = $scope.permissions.admin ? undefined : res.district;
-          MessageContacts(district, null, function(err, contacts) {
-            options.contacts = contacts;
-
+          MessageContact(district, function(err, data) {
+            options.contacts = data.rows;
             $scope.setContacts(options);
           });
         });
+      };
+
+      var _checkScroll = function() {
+        if (this.scrollTop === 0 && !$scope.allLoaded) {
+          updateContact({ skip: true });
+        }
       };
 
       if (!$scope.contacts || !$route.current.params.doc) {
@@ -118,7 +144,7 @@ var _ = require('underscore'),
       db.changes({ filter: 'medic/data_records' }, function(err, data) {
         if (!err && data && data.results) {
           updateContacts({ changes: true });
-          updateContact();
+          updateContact({ changes: true });
         }
       });
     }

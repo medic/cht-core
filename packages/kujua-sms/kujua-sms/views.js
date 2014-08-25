@@ -184,14 +184,15 @@ exports.data_records_by_contact = {
                 }
             }
         };
-        var emitContact = function(districtId, key, value) {
+        var emitContact = function(districtId, key, date, value) {
             if (key) {
                 if (districtId) {
-                    emit([districtId, key], value);
+                    emit([districtId, key, date], value);
                 }
-                emit(['admin', key], value);
+                emit(['admin', key, date], value);
             }
         };
+
         var objectpath = require('views/lib/objectpath'),
             districtId,
             message,
@@ -201,7 +202,6 @@ exports.data_records_by_contact = {
             name;
         if (doc.type === 'data_record') {
             if (!doc.form) {
-                // TODO use objectpath widely
                 if (doc.kujua_message) {
                     doc.tasks.forEach(function(task) {
                         message = task.messages[0];
@@ -209,8 +209,8 @@ exports.data_records_by_contact = {
                         districtId = objectpath.get(facility, 'parent.parent._id');
                         key = (facility && facility._id) || message.to;
                         name = getName(facility) || message.to;
-                        contact = facility && facility.contact && facility.contact.name;
-                        emitContact(districtId, key, {
+                        contact = objectpath.get(facility, 'contact.name');
+                        emitContact(districtId, key, doc.reported_date, {
                             date: doc.reported_date,
                             read: doc.read,
                             contact: contact,
@@ -222,12 +222,11 @@ exports.data_records_by_contact = {
                 } else if (doc.sms_message) {
                     districtId = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
                     message = doc.sms_message;
-                    facility = doc.related_entities &&
-                               doc.related_entities.clinic;
+                    facility = objectpath.get(doc, 'related_entities.clinic');
                     name = getName(facility) || message.from;
-                    contact = facility && facility.contact && facility.contact.name;
+                    contact = objectpath.get(facility, 'contact.name');
                     key = (facility && facility._id) || message.from;
-                    emitContact(districtId, key, {
+                    emitContact(districtId, key, doc.reported_date, {
                         date: doc.reported_date,
                         read: doc.read,
                         contact: contact,

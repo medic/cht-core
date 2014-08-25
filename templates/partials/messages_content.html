@@ -1,5 +1,11 @@
 <div id="message-content" class="col-sm-8 item-content" scroller>
-  <div ng-show="!loadingContent && selected.messages">
+  <p class="loading-status" ng-show="allLoaded">
+    No more messages
+  </p>
+  <span class="mm-loader" ng-show="loadingContent">
+    <span class="fa fa-spinner fa-spin"></span>
+  </span>
+  <div ng-show="selected.messages">
     <div class="body">
       <ul>
         <li class="animate-repeat" ng-repeat="message in selected.messages | orderBy:'doc.reported_date'" data-record-id="{~lb}{~lb}message.doc._id{~rb}{~rb}" ng-class="{'outgoing': message.doc.kujua_message, 'incoming': !message.doc.kujua_message, 'unread': !isRead(message.doc)}">
@@ -29,7 +35,4 @@
       </div>
     </div>
   </div>
-  <span class="mm-loader ng-hide" ng-show="loadingContent">
-    <span class="fa fa-spinner fa-spin"></span>
-  </span>
 </div>

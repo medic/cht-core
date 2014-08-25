@@ -278,8 +278,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('default', [
     'mmbower',
-    'mmjs',
-    'mmcss'
+    'mmcss',
+    'mmjs'
   ]);
 
   grunt.registerTask('ci', [

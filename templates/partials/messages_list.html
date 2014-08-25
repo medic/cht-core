@@ -11,7 +11,7 @@
     </li>
   </ul>
   <p ng-show="error" class="alert alert-danger" role="alert">Error fetching messages</p>
-  <p ng-show="!error && !loading && !contacts.length">No messages found</p>
+  <p class="loading-status" ng-show="!error && !loading && !contacts.length">No messages found</p>
   <span class="mm-loader" ng-show="loading">
     <span class="fa fa-spinner fa-spin"></span>
   </span>
