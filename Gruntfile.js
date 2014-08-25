@@ -105,10 +105,13 @@ module.exports = function(grunt) {
       }
     },
     lesslint: {
-      src: ['static/css/inbox.less'],
+      src: [
+        'static/css/!(angular|admin|spreadsheet).less'
+      ],
       options: {
         csslint: {
           'adjoining-classes': false,
+          'fallback-colors': false,
           'floats': false,
           'font-sizes': false,
           'important': false,
