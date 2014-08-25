@@ -63,8 +63,8 @@ var _ = require('underscore');
       };
 
       var formatIds = function(options) {
-        if (options.changes && options.changes.results.length) {
-          var updatedIds = _.map(options.changes.results, function(result) {
+        if (options.changes && options.changes.length) {
+          var updatedIds = _.map(options.changes, function(result) {
             return '"' + result.id + '"';
           });
           return 'uuid:(' + updatedIds.join(' OR ') + ')';

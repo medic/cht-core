@@ -31,14 +31,6 @@
             </li>
           </ul>
         </li>
-        <li ng-if="selected.kujua_message">
-          <label>Content</label>
-          <p>{~lb}{~lb}selected.tasks[0].messages[0].message{~rb}{~rb}</p>
-        </li>
-        <li ng-if="selected.sent_by">
-          <label>Sent By</label>
-          <p>{~lb}{~lb}selected.sent_by{~rb}{~rb}</p>
-        </li>
         <li ng-if="selected.tasks.length">
           <label ng-if="selected.kujua_message">Sent To</label>
           <label ng-if="!selected.kujua_message">Automated Reply</label>
@@ -51,6 +43,7 @@
                 </li>
               </ul>
             </li>
+            <li class="clear"></li>
           </ul>
         </li>
         <li ng-if="selected.scheduled_tasks_by_group.length">
@@ -67,6 +60,7 @@
                     </li>
                   </ul>
                 </li>
+                <li class="clear"></li>
               </ul>
             </li>
           </ul>

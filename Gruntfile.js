@@ -104,6 +104,20 @@ module.exports = function(grunt) {
         }
       }
     },
+    lesslint: {
+      src: ['static/css/inbox.less'],
+      options: {
+        csslint: {
+          'adjoining-classes': false,
+          'floats': false,
+          'font-sizes': false,
+          'important': false,
+          'outline-none': false,
+          'qualified-headings': false,
+          'unique-headings': false,
+        }
+      }
+    },
     cssmin: {
       all: {
         options: {
@@ -212,7 +226,7 @@ module.exports = function(grunt) {
         singleRun: true,
         browsers: ['PhantomJS']
       }
-    },
+    }
   });
 
   // Load the plugins
@@ -230,6 +244,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-dustjs');
   grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-karma');
+  grunt.loadNpmTasks('grunt-lesslint');
   grunt.loadNpmTasks('grunt-notify');
   grunt.loadNpmTasks('grunt-text-replace');
 
@@ -245,6 +260,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('mmcss', [
+    'lesslint',
     'less',
     'autoprefixer'
   ]);

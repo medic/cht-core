@@ -197,4 +197,26 @@ describe('GenerateSearchQuery service', function() {
       'AND type:report'
     );
   });
+
+  it('creates filter query with specific ids', function() {
+    scope.filterModel = {
+      type: 'reports',
+      forms: [],
+      facilities: [],
+      date: {
+        from: date20130208,
+        to: date20130612
+      }
+    };
+    options.changes = [
+      {id: 'a'},
+      {id: 'b'}
+    ];
+    var query = service(scope, options);
+    chai.expect(query).to.equal(
+      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+      'AND type:report ' +
+      'AND uuid:("a" OR "b")'
+    );
+  });
 });

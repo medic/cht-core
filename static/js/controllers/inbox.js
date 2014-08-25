@@ -10,8 +10,8 @@ var utils = require('kujua-utils'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', '$timeout', 'Facility', 'Form', 'Settings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'DownloadUrl',
-    function ($scope, $route, $location, $translate, $animate, $timeout, Facility, Form, Settings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, DownloadUrl) {
+    ['$scope', '$route', '$location', '$translate', '$animate', '$timeout', 'Facility', 'Form', 'Settings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'DownloadUrl', 'Verified', 'DeleteMessage', 'UpdateFacility',
+    function ($scope, $route, $location, $translate, $animate, $timeout, Facility, Form, Settings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, DownloadUrl, Verified, DeleteMessage, UpdateFacility) {
 
       $scope.loading = true;
       $scope.error = false;
@@ -234,6 +234,46 @@ var utils = require('kujua-utils'),
         }, function(err) {
           pane.done('Error updating user', err);
         });
+      };
+
+      $scope.verify = function(verify) {
+        if ($scope.selected.form) {
+          Verified($scope.selected._id, verify, function(err) {
+            if (err) {
+              console.log('Error verifying message', err);
+            }
+          });
+        }
+      };
+
+      $scope.deleteMessage = function() {
+        var pane = modal.start($('#delete-confirm'));
+        DeleteMessage($scope.selected._id, function(err) {
+          pane.done('Error deleting document', err);
+        });
+      };
+
+      $scope.updateFacility = function() {
+        var $modal = $('#update-facility');
+        var facilityId = $modal.find('[name=facility]').val();
+        if (!facilityId) {
+          $modal.find('.modal-footer .note').text('Please select a facility');
+          return;
+        }
+        var pane = modal.start($modal);
+        UpdateFacility($scope.selected._id, facilityId, function(err) {
+          pane.done('Error updating facility', err);
+        });
+      };
+      $scope.updateFacilityShow = function () {
+        var val = '';
+        if ($scope.selected && 
+            $scope.selected.related_entities && 
+            $scope.selected.related_entities.clinic) {
+          val = $scope.selected.related_entities.clinic._id;
+        }
+        $('#update-facility [name=facility]').select2('val', val);
+        $('#update-facility').modal('show');
       };
 
       $('body').on('mouseenter', '.item-content .relative-date', function() {

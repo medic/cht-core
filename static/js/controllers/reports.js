@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    modal = require('../modules/modal');
+var _ = require('underscore');
 
 (function () {
 
@@ -8,8 +7,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$route', '$location', '$animate', 'db', 'UserDistrict', 'UserCtxService', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Verified', 'DeleteMessage', 'UpdateFacility',
-    function ($scope, $route, $location, $animate, db, UserDistrict, UserCtxService, MarkRead, GenerateSearchQuery, Search, Verified, DeleteMessage, UpdateFacility) {
+    ['$scope', '$route', '$location', '$animate', 'db', 'UserDistrict', 'UserCtxService', 'MarkRead', 'GenerateSearchQuery', 'Search',
+    function ($scope, $route, $location, $animate, db, UserDistrict, UserCtxService, MarkRead, GenerateSearchQuery, Search) {
 
       $scope.filterModel.type = 'reports';
 
@@ -143,46 +142,6 @@ var _ = require('underscore'),
             scope.query();
           });
         }
-      };
-
-      $scope.verify = function(verify) {
-        if ($scope.selected.form) {
-          Verified($scope.selected._id, verify, function(err) {
-            if (err) {
-              console.log('Error verifying message', err);
-            }
-          });
-        }
-      };
-
-      $scope.deleteMessage = function() {
-        var pane = modal.start($('#delete-confirm'));
-        DeleteMessage($scope.selected._id, function(err) {
-          pane.done('Error deleting document', err);
-        });
-      };
-
-      $scope.updateFacility = function() {
-        var $modal = $('#update-facility');
-        var facilityId = $modal.find('[name=facility]').val();
-        if (!facilityId) {
-          $modal.find('.modal-footer .note').text('Please select a facility');
-          return;
-        }
-        var pane = modal.start($modal);
-        UpdateFacility($scope.selected._id, facilityId, function(err) {
-          pane.done('Error updating facility', err);
-        });
-      };
-      $scope.updateFacilityShow = function () {
-        var val = '';
-        if ($scope.selected && 
-            $scope.selected.related_entities && 
-            $scope.selected.related_entities.clinic) {
-          val = $scope.selected.related_entities.clinic._id;
-        }
-        $('#update-facility [name=facility]').select2('val', val);
-        $('#update-facility').modal('show');
       };
 
       db.changes({ filter: 'medic/data_records' }, function(err, data) {

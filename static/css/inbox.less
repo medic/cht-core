@@ -9,17 +9,13 @@
 @import "theme";
 @import "packages/kujua-reporting/css/base";
 @import "spreadsheet";
-
-/* Angular JS directive to hide elements until model is bound */
-[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
-  display: none !important;
-}
+@import "angular";
 
 .container-fluid {
   overflow-x: hidden;
 }
 
-body.inbox {
+body {
   &.messages {
     .header .tabs .selected, .filters {
       background-color: @messages-color;
@@ -43,7 +39,7 @@ body.inbox {
   margin: 0 auto;
 }
 
-.row.header {
+.header {
   background-color: @medic-slate-color;
   text-align: center;
   padding-top: 0.25em;
@@ -137,17 +133,17 @@ body.inbox {
       }
 
       &:hover {
-        &#messages-tab {
+        &.messages-tab {
           &, .mm-icon-inverse, .mm-icon-inverse:hover {
             color: @messages-color;
           }
         }
-        &#reports-tab {
+        &.reports-tab {
           &, .mm-icon-inverse, .mm-icon-inverse:hover {
             color: @reports-color;
           }
         }
-        &#analytics-tab {
+        &.analytics-tab {
           &, .mm-icon-inverse, .mm-icon-inverse:hover {
             color: @analytics-color;
           }
@@ -174,7 +170,7 @@ body.inbox {
 
   .filter {
     width: 20%;
-    padding: 0 0.2em;
+    margin: 0 0.2em;
     text-align: left;
     display: inline-block;
     vertical-align: top;
@@ -205,13 +201,6 @@ body.inbox {
     right: 5em;
   }
 
-  #freetext {
-    height: inherit;
-    padding: 0.6em;
-    vertical-align: top;
-    width: 90%;
-  }
-
   .help {
     line-height: 3em;
   }
@@ -221,7 +210,14 @@ body.inbox {
     margin-top: 0.15em;
   }
 
+  input {
+    height: inherit;
+    padding: 0.6em;
+    vertical-align: top;
+    width: 80%;
+  }
 }
+
 
 .container-fluid {
   background-color: @background-color;
@@ -232,7 +228,7 @@ body.inbox {
   right: 0;
 }
 
-.row.content {
+.content {
   .inbox, .reporting {
     top: 8.75em;
     bottom: 0;
@@ -265,16 +261,12 @@ body.inbox {
     white-space: nowrap;
     overflow: hidden;
 
+    .mm-badge {
+      float: left;
+    }
+
     &:hover {
       background-color: @highlight-color;
-    }
-
-    &.selected {
-      background-color: @option-selected-color;
-    }
-
-    &.read .sender .name {
-      font-weight: normal;
     }
 
     .message-wrapper {
@@ -282,21 +274,18 @@ body.inbox {
     }
   }
 
-  .mm-badge-container {
-    display: inline-block;
-    vertical-align: top;
+  .selected {
+    background-color: @option-selected-color;
   }
 
-  .detail {
-    display: inline-block;
-    padding: 0 3em 0 0.5em;
-    width: 100%;
+  .read .sender .name {
+    font-weight: normal;
+  }
 
-    .description {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+  .detail .description {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   p {
@@ -306,17 +295,19 @@ body.inbox {
   }
 }
 
+.reports .inbox-items .detail {
+  margin-left: 3em;
+}
+
 .inbox-items, .item-content {
-
   .animate-repeat {
-
     &.ng-move,
     &.ng-enter,
     &.ng-leave {
       transition: all 500ms ease 0s;
     }
 
-    &.ng-leave.ng-leave-active,
+    &.ng-leave-active,
     &.ng-move,
     &.ng-enter {
       opacity: 0;
@@ -324,12 +315,11 @@ body.inbox {
     }
 
     &.ng-leave,
-    &.ng-move.ng-move-active,
-    &.ng-enter.ng-enter-active {
+    &.ng-move-active,
+    &.ng-enter-active {
       opacity: 1;
       max-height: 70px;
     }
-
   }
 }
 
@@ -423,27 +413,27 @@ body.inbox {
     }
 
     .missing p {
-      color: rgba(0, 0, 0, 0.15);
+      color: @lightgrey;
     }
   }
 
-  &.incomplete .body h2 {
-    color: @error-color;
-  }
-
-  .task-list > li {
+  .task-list > li, .clear {
     clear: right;
   }
 
+}
+
+.incomplete .body h2 {
+  color: @error-color;
 }
 
 .messages .item-content .body {
   p {
     padding: 0.75em;
   }
-  & > ul > li {
+  & > ul > {
 
-    &.marker {
+    .marker {
       font-size: 0.8em;
       font-weight: bold;
       background-color: @seperator-color;
@@ -452,7 +442,7 @@ body.inbox {
       text-align: center;
     }
 
-    &.incoming, &.outgoing {
+    .incoming, .outgoing {
       background-color: #ffffff;
       border: 1px solid @seperator-color;
       border-radius: @radius-size;
@@ -460,7 +450,7 @@ body.inbox {
       padding: 1em;
     }
 
-    &.incoming {
+    .incoming {
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
       border-right: 0;
@@ -468,7 +458,7 @@ body.inbox {
       padding-right: 2em;
     }
 
-    &.outgoing {
+    .outgoing {
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
       border-left: 0;
@@ -537,8 +527,10 @@ body.inbox {
 
   .column .actions {
     min-height: 5em;
+    background-color: @grey;
     background-color: rgba(0, 0, 0, 0.65);
     border-radius: @radius-size;
+    border-color: @lightgrey;
     border-color: rgba(0, 0, 0, 0.8);
     border-width: 1px;
     border-style: solid;
@@ -547,11 +539,11 @@ body.inbox {
     margin: 0 auto 2em;
     overflow: hidden;
     pointer-events: auto;
-    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.63);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.63);
 
     .mm-icon {
       width: 23%;
-      padding: 0.85em 0 0 0;
+      margin: 0.85em 0 0 0;
       display: inline-block;
       outline: 0;
       vertical-align: top;
@@ -580,7 +572,7 @@ body.inbox {
   padding: 20px;
 }
 
-#add-record-panel {
+.add-record-panel {
   position: fixed;
   top: 80px;
   width: 300px;
@@ -589,15 +581,15 @@ body.inbox {
 
   iframe {
     height: 450px;
-    border: medium none;
+    border: 0;
   }
 
   .close {
-    border: medium none;
-    background: none repeat scroll 0% 0% transparent;
+    border: 0;
+    background: none repeat scroll 0 0 transparent;
     position: absolute;
     right: 18px;
-    top: 0px;
+    top: 0;
     &:hover, &:focus {
       color: #000;
       text-decoration: none;
@@ -628,7 +620,7 @@ body.inbox {
   }
 }
 
-.daterangepicker.dropdown-menu {
+.daterangepicker {
   padding: 0;
   margin: 0;
   margin-left: -15em;
@@ -636,15 +628,15 @@ body.inbox {
 
 @media (max-width: 767px) {
   .inbox-items li {
-    /* Hover fires incorrectly on touch devices */
     &:hover {
+      /* Hover fires incorrectly on touch devices */
       background-color: inherit;
     }
     &.selected {
       background-color: inherit;
     }
   }
-  .row.header, .row.filters {
+  .header, .filters {
     .dropdown .mm-dropdown-menu {
       text-align: left;
       a {
@@ -652,7 +644,7 @@ body.inbox {
       }
     }
   }
-  .row.header {
+  .header {
     font-size: 0.65em;
     .dropdown-menu {
       font-size: 1.5em;
@@ -672,12 +664,12 @@ body.inbox {
     text-align: right;
     padding: 0;
     padding-bottom: 1em;
+    .dropdown, .slide-back .mm-button {
+      font-size: 0.77em;
+      vertical-align: top;
+    }
     .dropdown {
       width: 6.25em;
-      display: inline-block;
-      font-size: 0.77em;
-      padding: 0 0.25em;
-      vertical-align: top;
     }
     .mm-button-text {
       width: 0;
@@ -685,14 +677,15 @@ body.inbox {
       padding-right: 0.75em;
     }
     .slide-back {
-      width: 7em;
+      width: 5em;
+      display: inline-block;
       .mm-button-text {
         visibility: visible;
         width: auto;
       }
     }
     .basic-filters, .filter-actions, .slide-back {
-      padding-top: 0.4em;
+      padding-top: 0.2em;
     }
     .basic-filters {
       right: 0;
@@ -708,7 +701,7 @@ body.inbox {
       display: none;
     }
   }
-  .row.content {
+  .content {
     .inbox, .reporting {
       top: 5.75em;
     }
@@ -731,7 +724,7 @@ body.inbox {
       }
     }
   }
-  .messages .row.content .item-content .body {
+  .messages .content .item-content .body {
     margin-bottom: 0;
   }
   .item-content .reply .note {
@@ -751,15 +744,15 @@ body.inbox {
   }
 
   .action-container .column,
-  .row.content .inbox-items,
-  .row.content .item-content {
+  .content .inbox-items,
+  .content .item-content {
     transition: left 500ms ease 0s;
   }
 
-  .row.content .inbox-items {
+  .content .inbox-items {
     left: 0;
   }
-  .row.content .item-content, .action-container .column {
+  .content .item-content, .action-container .column {
     left: 100%;
   }
   .reports .action-container {
@@ -768,19 +761,19 @@ body.inbox {
 
   body.show-content {
 
-    .row.content .inbox-items {
+    .content .inbox-items {
       left: -100%;
     }
-    .row.content .item-content, .action-container .column {
+    .content .item-content, .action-container .column {
       left: 0;
     }
   }
 
-  .row.header .extras a {
+  .header .extras a {
     padding-top: 0.3em;
   }
 
-  .daterangepicker.dropdown-menu {
+  .daterangepicker {
     width: 245px;
     height: 240px;
     .calendar {
@@ -788,42 +781,42 @@ body.inbox {
       position: absolute;
       float: none;
     }
-    &.show-from {
-      .left {
-        left: 0;
-      }
-      .right {
-        left: 100%;
-      }
-    }
-    &.show-to {
-      .left {
-        left: -100%;
-      }
-      .right {
-        left: 0;
-      }
-    }
     .range_inputs {
       display: none;
+    }
+  }
+  .show-from {
+    .left {
+      left: 0;
+    }
+    .right {
+      left: 100%;
+    }
+  }
+  .show-to {
+    .left {
+      left: -100%;
+    }
+    .right {
+      left: 0;
     }
   }
 }
 
 @media (max-width: 400px) {
-  .row.filters .slide-back {
-    width: 4em;
+  .filters .slide-back {
+    width: 2.5em;
     .mm-button-text {
       width: 0;
       visibility: hidden;
     }
   }
-  .row.filters {
+  .filters {
     .basic-filters, .advanced-filters {
       left: 4em;
     }
   }
-  .row.header .logo {
+  .header .logo {
     .logo-icon {
       display: inherit;
     }
