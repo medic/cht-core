@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    changes = require('../modules/changes');
 
 (function () {
 
@@ -143,10 +144,8 @@ var _ = require('underscore');
         }
       };
 
-      db.changes({ filter: 'medic/data_records' }, function(err, data) {
-        if (!err && data && data.results) {
-          $scope.query({ silent: true, changes: data.results });
-        }
+      changes.register(db, function(data) {
+        $scope.query({ silent: true, changes: data });
       });
 
       // TODO we should eliminate the need for this function as much as possible

@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    sendMessage = require('../modules/send-message');
+    sendMessage = require('../modules/send-message'),
+    changes = require('../modules/changes');
 
 (function () {
 
@@ -142,12 +143,11 @@ var _ = require('underscore'),
         selectContact(district, $route.current.params.doc);
       });
 
-      db.changes({ filter: 'medic/data_records' }, function(err, data) {
-        if (!err && data && data.results) {
-          updateContacts({ changes: true });
-          updateContact({ changes: true });
-        }
+      changes.register(db, function() {
+        updateContacts({ changes: true });
+        updateContact({ changes: true });
       });
+
     }
   ]);
 
