@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    sendMessage = require('../modules/send-message'),
-    changes = require('../modules/changes');
+    sendMessage = require('../modules/send-message');
 
 (function () {
 
@@ -9,8 +8,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$route', '$animate', 'db', 'MessageContact', 'ContactConversation', 'MarkAllRead', 'UserDistrict',
-    function ($scope, $route, $animate, db, MessageContact, ContactConversation, MarkAllRead, UserDistrict) {
+    ['$scope', '$route', '$animate', 'MessageContact', 'ContactConversation', 'MarkAllRead', 'UserDistrict', 'Changes',
+    function ($scope, $route, $animate, MessageContact, ContactConversation, MarkAllRead, UserDistrict, Changes) {
 
       $scope.loadingContent = false;
       $scope.allLoaded = false;
@@ -143,7 +142,7 @@ var _ = require('underscore'),
         selectContact(district, $route.current.params.doc);
       });
 
-      changes.register(db, function() {
+      Changes(function() {
         updateContacts({ changes: true });
         updateContact({ changes: true });
       });

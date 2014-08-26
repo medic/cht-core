@@ -6,6 +6,7 @@
 
   require('./app-info');
   require('./base');
+  require('./changes');
   require('./delete-message');
   require('./download-url');
   require('./facility');

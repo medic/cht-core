@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    changes = require('../modules/changes');
+var _ = require('underscore');
 
 (function () {
 
@@ -8,8 +7,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$route', '$location', '$animate', 'db', 'UserDistrict', 'UserCtxService', 'MarkRead', 'GenerateSearchQuery', 'Search',
-    function ($scope, $route, $location, $animate, db, UserDistrict, UserCtxService, MarkRead, GenerateSearchQuery, Search) {
+    ['$scope', '$route', '$location', '$animate', 'UserDistrict', 'UserCtxService', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes',
+    function ($scope, $route, $location, $animate, UserDistrict, UserCtxService, MarkRead, GenerateSearchQuery, Search, Changes) {
 
       $scope.filterModel.type = 'reports';
 
@@ -144,7 +143,7 @@ var _ = require('underscore'),
         }
       };
 
-      changes.register(db, function(data) {
+      Changes(function(data) {
         $scope.query({ silent: true, changes: data });
       });
 

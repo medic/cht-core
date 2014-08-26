@@ -9,7 +9,7 @@ describe('ReportsCtrl controller', function() {
       GenerateSearchQuery,
       MarkRead,
       Search,
-      db,
+      Changes,
       changesCallback;
 
   beforeEach(module('inboxApp'));
@@ -48,10 +48,8 @@ describe('ReportsCtrl controller', function() {
       callback(null, { });
     };
 
-    db = { 
-      changes: function(options, callback) {
-        changesCallback = callback;
-      }
+    Changes = function(callback) {
+      changesCallback = callback;
     };
 
     changesCallback = undefined;
@@ -61,7 +59,7 @@ describe('ReportsCtrl controller', function() {
         '$scope': scope,
         '$route': { current: { params: { doc: 'x' } } },
         'UserDistrict': UserDistrict,
-        'db': db,
+        'Changes': Changes,
         'MarkRead': MarkRead,
         'GenerateSearchQuery': GenerateSearchQuery,
         'Search': Search,
@@ -113,7 +111,7 @@ describe('ReportsCtrl controller', function() {
     };
     
     createController();
-    changesCallback(null, { results: changedObjects });
+    changesCallback(changedObjects);
     chai.expect(scope.messages).to.deep.equal([
       { 
         _id: 'a',
@@ -146,7 +144,7 @@ describe('ReportsCtrl controller', function() {
     };
 
     createController();
-    changesCallback(null, { results: changedObjects });
+    changesCallback(changedObjects);
     chai.expect(scope.messages).to.deep.equal([
       { _id: 'c' }
     ]);
@@ -178,7 +176,7 @@ describe('ReportsCtrl controller', function() {
     };
 
     createController();
-    changesCallback(null, { results: changedObjects });
+    changesCallback(changedObjects);
     chai.expect(scope.messages).to.deep.equal([
       { _id: 'c' },
       { _id: 'b' }
