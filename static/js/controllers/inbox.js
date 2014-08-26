@@ -82,7 +82,9 @@ var utils = require('kujua-utils'),
       };
 
       $scope.isRead = function(message) {
-        if ($scope.selected && $scope.selected._id === message._id) {
+        if ($scope.filterModel.type === 'reports' &&
+            $scope.selected &&
+            $scope.selected._id === message._id) {
           return true;
         }
         return _.contains(message.read, UserCtxService().name);
