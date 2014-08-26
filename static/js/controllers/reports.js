@@ -12,7 +12,7 @@ var _ = require('underscore');
 
       $scope.filterModel.type = 'reports';
 
-      UserDistrict().then(function() {
+      UserDistrict(function() {
         $scope.$watch('filterModel', function(prev, curr) {
           if (prev !== curr) {
             $scope.query();

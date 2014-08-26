@@ -83,8 +83,7 @@ var _ = require('underscore'),
         var selectedId = $scope.selected && $scope.selected.id;
         if (selectedId) {
           options = options || {};
-          UserDistrict().then(function(res) {
-            var district = $scope.permissions.admin ? undefined : res.district;
+          UserDistrict(function(err, district) {
             var skip = null;
             if (options.skip) {
               skip = $scope.selected.messages.length;
@@ -104,7 +103,9 @@ var _ = require('underscore'),
                 }
               });
               $scope.allLoaded = data.rows.length === 0;
-              $('#unread-marker').remove();
+              if (options.skip) {
+                $('#unread-marker').remove();
+              }
               if (userNotScrolled && first.length) {
                 window.setTimeout(function() {
                   $('.item-content').scrollTop(first.offset().top - 140);
@@ -118,8 +119,7 @@ var _ = require('underscore'),
 
       var updateContacts = function(options) {
         options = options || {};
-        UserDistrict().then(function(res) {
-          var district = $scope.permissions.admin ? undefined : res.district;
+        UserDistrict(function(err, district) {
           MessageContact(district, function(err, data) {
             options.contacts = data.rows;
             $scope.setContacts(options);
@@ -138,8 +138,7 @@ var _ = require('underscore'),
       }
 
       $scope.filterModel.type = 'messages';
-      UserDistrict().then(function(res) {
-        var district = $scope.permissions.admin ? undefined : res.district;
+      UserDistrict(function(err, district) {
         selectContact(district, $route.current.params.doc);
       });
 

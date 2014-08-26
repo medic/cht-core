@@ -124,32 +124,6 @@ var utils = require('kujua-utils'),
       $scope.messagesDownloadUrl = DownloadUrl(true);
       $scope.reportsDownloadUrl = DownloadUrl(false);
 
-      UserDistrict().then(function(res) {
-        if (res.error) {
-          console.log(res.error);
-          if (!$scope.permissions.admin) {
-            if (res.error.indexOf('Returned status code') === -1) {
-              $('body').html(res.error);
-            }
-            return;
-          }
-        }
-        $scope.permissions.district = $scope.permissions.admin ? undefined : res.district;
-        updateAvailableFacilities();
-        updateContacts();
-        $scope.updateReadStatus();
-        sendMessage.init();
-      });
-
-      Form().then(
-        function(res) {
-          $scope.forms = res;
-        },
-        function() {
-          console.log('Failed to retrieve forms');
-        }
-      );
-
       var updateAvailableFacilities = function() {
         Facility($scope.permissions.district).then(
           function(res) {
@@ -174,6 +148,44 @@ var utils = require('kujua-utils'),
         );
       };
 
+      $scope.updateReadStatus = function () {
+        ReadMessages({
+          user: UserCtxService().name,
+          district: $scope.permissions.district
+        }).then(
+          function(res) {
+            $scope.readStatus = res;
+          },
+          function() {
+            console.log('Failed to retrieve read status');
+          }
+        );
+      };
+      
+      UserDistrict(function(err, district) {
+        if (err) {
+          console.log('Error fetching user district', err);
+          if (err.indexOf('Returned status code') === -1) {
+            $('body').html(err);
+          }
+          return;
+        }
+        $scope.permissions.district = district;
+        updateAvailableFacilities();
+        updateContacts();
+        $scope.updateReadStatus();
+        sendMessage.init();
+      });
+
+      Form().then(
+        function(res) {
+          $scope.forms = res;
+        },
+        function() {
+          console.log('Failed to retrieve forms');
+        }
+      );
+
       Settings.query(function(res) {
         if (res.settings) {
           $scope.languages = res.settings.locales;
@@ -188,20 +200,6 @@ var utils = require('kujua-utils'),
           console.log('Failed to retrieve language');
         }
       );
-
-      $scope.updateReadStatus = function () {
-        ReadMessages({
-          user: UserCtxService().name,
-          district: $scope.permissions.district
-        }).then(
-          function(res) {
-            $scope.readStatus = res;
-          },
-          function() {
-            console.log('Failed to retrieve read status');
-          }
-        );
-      };
 
       $scope.sendMessage = function(event) {
         sendMessage.validate(event.target, function(recipients, message) {

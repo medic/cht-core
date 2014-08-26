@@ -6,14 +6,17 @@ var utils = require('kujua-utils');
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('UserDistrict', ['$q', 'db', 'UserCtxService',
-    function($q, db, UserCtxService) {
-      return function() {
-        var deferred = $q.defer();
-        utils.checkDistrictConstraint(UserCtxService(), db, function(err, fac) {
-          deferred.resolve({ error: err, district: fac });
-        });
-        return deferred.promise;
+  inboxServices.factory('UserDistrict', ['db', 'UserCtxService',
+    function(db, UserCtxService) {
+      return function(callback) {
+        var userCtx = UserCtxService();
+        if (utils.isUserAdmin(userCtx)) {
+          return callback();
+        }
+        if (utils.isUserDistrictAdmin(userCtx)) {
+          return utils.checkDistrictConstraint(userCtx, db, callback);
+        }
+        callback('The administrator needs to give you additional privileges to use this site.');
       };
     }
   ]);
