@@ -89,19 +89,20 @@ http://localhost:5984/medic/_design/medic/_rewrite/
 
 ### Loading Data
 
-You can load your form definitions in the settings interface but you can also do that from command line, see:
+Loading your form definitions in the settings interface is suported but you can
+also do that from command line.
 
 ```
 node scripts/load_forms.js
 ```
 
-Simialrly you can bulk load messages from a csv file on the command line, see:
+To bulk load messages from a CSV file run:
 
 ```
 node scripts/load_messages.js
 ```
 
-You can also add a message using curl:
+Use curl to submit a single message:
 
 ```
 curl -i -u gateway:123qwe \
