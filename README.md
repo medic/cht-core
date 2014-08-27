@@ -19,6 +19,17 @@ Assuming you have [Nodejs](http://nodejs.org), [CouchDB](http://couchdb.apache.o
 npm install kanso -g
 ```
 
+Create a `.kansorc` file with your credentials, eg:
+
+```
+exports.env = {
+  default: {
+    db: "http://admin:pass@localhost:5984/medic",
+    overrides: {loglevel:"debug"}
+  }
+};
+```
+
 ### Grunt
 
 [Grunt](http://gruntjs.com) is required to build.
@@ -40,13 +51,13 @@ npm install
 ### Push the couchapp
 
 ```
-grunt dev --user=admin --pass=pass
+grunt dev
 ```
 
 Or you can watch and automatically update the app on changes
 
 ```
-grunt watch --user=admin --pass=pass
+grunt watch
 ```
 
 ### Start medic-sentinel
