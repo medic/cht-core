@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    logger = require('../lib/logger');
 
 /**
  * Update clinic data on new data records, use refid for clinic lookup otherwise
@@ -11,10 +12,13 @@ var _ = require('underscore');
 module.exports = {
     filter: function(doc) {
         return Boolean(
-            doc.related_entities && !doc.related_entities.clinic
+            doc &&
+            doc.related_entities &&
+            !doc.related_entities.clinic
         );
     },
     onMatch: function(change, db, audit, callback) {
+        logger.debug('calling onMatch in transition' + __filename);
         var self = module.exports,
             doc = change.doc,
             q = {

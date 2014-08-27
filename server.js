@@ -1,6 +1,13 @@
 var _ = require('underscore'),
     db = require('./db'),
-    config = require('./config');
+    config = require('./config'),
+    logger = require('./lib/logger'),
+    arg = process.argv[2];
+
+if (arg === 'debug') {
+    logger.info('setting loglevel to %s.', arg);
+    logger.transports.console.level = arg;
+}
 
 function completeSetup(err, design) {
     if (err) {
@@ -12,10 +19,16 @@ function completeSetup(err, design) {
                 console.error('error loading config', err);
                 process.exit(1);
             }
+            logger.info('loaded config.');
+            if (!arg) {
+                logger.transports.console.level = config.get('loglevel');
+                logger.debug('loglevel is %s.', logger.transports.console.level);
+            }
+            logger.info('attaching transitions...');
             require('./transitions').attach(design);
             require('./schedule').checkSchedule();
             config.listen();
-            console.log('Kujua Sentinel startup complete.');
+            logger.info('startup complete.');
         });
     }
 }
@@ -30,9 +43,10 @@ db.getDoc('_design/kujua-sentinel', function(err, doc) {
                 completeSetup(err, base);
             });
         } else {
-            console.error("Could not find design document", err);
+            logger.error("Failed to create design document: %s", err);
         }
     } else {
+        logger.debug('found sentinel design doc.');
         matches = _.all(_.keys(base), function(key) {
             return key.substring(0, 1) === '_' || JSON.stringify(base[key]) === JSON.stringify(doc[key]);
         });

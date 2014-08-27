@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    config = require('./defaults');
+    config = require('./defaults'),
+    logger = require('./lib/logger');
 
 function reload() {
     // Hack until figure out a better way to reload config data in all the
@@ -61,8 +62,7 @@ function fetchConfig(callback) {
                 settings.translations = config.translations.concat(settings.translations);
             }
             _.extend(config, settings);
-            console.log('loaded config');
-            console.log(
+            logger.debug(
                 'Reminder messages allowed between %s:%s and %s:%s',
                 config['schedule_morning_hours'],
                 config['schedule_morning_minutes'],

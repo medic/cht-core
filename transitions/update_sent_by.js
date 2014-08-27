@@ -3,7 +3,12 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc) {
-        return doc.from && doc.type === 'data_record' && doc.sent_by === undefined;
+        return Boolean(
+            doc &&
+            doc.from &&
+            doc.type === 'data_record' &&
+            doc.sent_by === undefined
+        );
     },
     onMatch: function(change, db, audit, callback) {
         var doc = change.doc;

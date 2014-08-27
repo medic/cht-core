@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     async = require('async'),
     utils = require('../lib/utils'),
+    logger = require('../lib/logger'),
     messages = require('../lib/messages'),
     validation = require('../lib/validation'),
     schedules = require('../lib/schedules'),
@@ -12,7 +13,7 @@ var _ = require('underscore'),
 module.exports = {
     filter: function(doc) {
         var self = module.exports;
-        if (!doc.form) {
+        if (!doc || !doc.form) {
             return false;
         }
         var config = self.getRegistrationConfig(self.getConfig(), doc.form);

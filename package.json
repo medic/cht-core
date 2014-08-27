@@ -15,7 +15,8 @@
     "uuid": "1.4.x",
     "later": "~1.1.3",
     "couchmark": "~0.1.0",
-    "couchdb-audit": "0.1.x"
+    "couchdb-audit": "0.1.x",
+    "winston": "~0.7.3"
   },
   "devDependencies": {
     "kanso": "0.3.x",
@@ -26,6 +27,7 @@
   "version": "0.1.0",
   "scripts": {
     "start": "node server.js",
+    "debug": "node server.js debug",
     "test": "node_modules/nodeunit/bin/nodeunit test/unit test/functional"
   }
 }

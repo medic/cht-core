@@ -91,6 +91,7 @@ var getDuplicates = function(db, callback) {
 module.exports = {
     filter: function(doc) {
         return Boolean(
+            doc &&
             doc.form &&
             utils.getClinicPhone(doc) &&
             (doc.errors ? doc.errors.length === 0 : true) &&

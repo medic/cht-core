@@ -114,7 +114,46 @@ var defaults = {
     schedule_evening_hours: 23,
     schedule_evening_minutes: 0,
     synthetic_date: null,
-    translations: translations
+    translations: translations,
+    transitions: {
+        accept_patient_reports: {
+            load: './transitions/accept_patient_reports.js'
+        },
+        conditional_alerts: {
+            load: './transitions/conditional_alerts.js'
+        },
+        update_sent_by: {
+            load: './transitions/update_sent_by.js'
+        },
+        ohw_counseling: {
+            load: './transitions/ohw_counseling.js'
+        },
+        ohw_emergency_report: {
+            load: './transitions/ohw_emergency_report.js'
+        },
+        ohw_notifications: {
+            load: './transitions/ohw_notifications.js'
+        },
+        registration: {
+            load: './transitions/registration.js'
+        },
+        twilio_message: {
+            load: './transitions/twilio_message.js'
+        },
+        update_clinics: {
+            load: './transitions/update_clinics.js'
+        },
+        update_notifications: {
+            load: './transitions/update_notifications.js'
+        },
+        update_scheduled_reports: {
+            load: './transitions/update_scheduled_reports.js'
+        },
+        update_sent_forms: {
+            load: './transitions/update_sent_forms.js'
+        }
+    },
+    loglevel: 'info'
 };
 
 module.exports = defaults;

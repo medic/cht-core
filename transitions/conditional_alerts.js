@@ -3,6 +3,7 @@ var config = require('../config'),
     mustache = require('mustache'),
     messages = require('../lib/messages'),
     utils = require('../lib/utils'),
+    logger = require('../lib/logger'),
     async = require('async'),
     vm = require('vm');
 
@@ -41,7 +42,11 @@ module.exports = {
         }
     },
     filter: function(doc) {
-        return Boolean(doc.form && doc.type === 'data_record');
+        return Boolean(
+            doc &&
+            doc.form &&
+            doc.type === 'data_record'
+        );
     },
     onMatch: function(change, db, audit, cb) {
         var doc = change.doc,

@@ -4,6 +4,7 @@ var _ = require('underscore'),
     messages = require('../lib/messages'),
     moment = require('moment'),
     validation = require('../lib/validation'),
+    logger = require('../lib/logger'),
     utils = require('../lib/utils'),
     date = require('../date');
 
@@ -17,6 +18,7 @@ module.exports = {
             return Boolean(report);
         }
         return Boolean(
+            doc &&
             doc.form &&
             doc.reported_date &&
             hasConfig(doc) &&

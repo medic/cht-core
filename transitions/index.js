@@ -1,27 +1,25 @@
-var _ = require('underscore'),
+var couchmark = require('couchmark'),
+    _ = require('underscore'),
     async = require('async'),
-    fs = require('fs'),
     path = require('path'),
-    transitions = {},
+    fs = require('fs'),
     date = require('../date'),
     utils = require('../lib/utils'),
-    couchmark = require('couchmark'),
+    logger = require('../lib/logger'),
+    config = require('../config'),
+    transitions = {},
     queue;
 
 if (!process.env.TEST_ENV) {
-    // read all files in this directory and use every one except index.js as a transition
-    _.each(fs.readdirSync(__dirname), function(file) {
-        var transition,
-        key = path.basename(file, path.extname(file));
-
+    _.each(config.get('transitions'), function(conf, key) {
+        if (conf.disabled) {
+            return;
+        }
         try {
-            if (file !== 'index.js') {
-                transition = require('./' + key);
-                transitions[key] = transition;
-            }
+            transitions[key] = require('../' + conf.load);
         } catch(e) {
             // only log exceptions
-            console.error(e);
+            logger.error(e);
         }
     });
 }
@@ -40,9 +38,16 @@ queue = async.queue(function(job, callback) {
         key = job.key,
         change = job.change;
 
-    console.log('loading queue %s', key);
+    logger.debug(
+        'calling transition.onMatch for doc %s seq %s and transition %s',
+        change.id, change.seq, key
+    );
 
     transition.onMatch(change, db, audit, function(err, complete) {
+        logger.debug(
+            'finished transition.onMatch for doc %s seq %s transition %s',
+            change.id, change.seq, job.key
+        );
         if (err || complete) {
             module.exports.finalize({
                 key: key,
@@ -53,13 +58,14 @@ queue = async.queue(function(job, callback) {
             callback();
         }
     });
+
 }, 1);
 
 module.exports = {
     // determines whether a transition is okay to run on a document
     canRun: function(transition, key, doc) {
-        // repeatable and has transitions object
-        // returns true if revs don't match
+        // repeatable and has transitions object returns true if revs don't
+        // match
         if (transition.repeatable && doc.transitions && doc.transitions[key]) {
             return parseInt(doc._rev) !== doc.transitions[key].last_rev;
         // not repeatable and has transitions object
@@ -82,6 +88,11 @@ module.exports = {
             filter = 'kujua-sentinel/' + key;
         }
 
+        logger.debug(
+            'subscribing to changes for transition %s with filter type %s',
+            key, typeof(filter)
+        );
+
         feed = new couchmark.Feed({
             db: process.env.COUCH_URL,
             filter: filter,
@@ -89,16 +100,28 @@ module.exports = {
         });
 
         feed.on('change', function(change) {
+
             // ignore documents that have been deleted; there's nothing to update
             if (change.deleted) {
                 return;
             }
 
+            logger.debug(
+                'change on %s feed for doc %s sequence %s',
+                key, change.id, change.seq
+            );
+
             // get the latest document
             db.getDoc(change.id, function(err, doc) {
+
                 if (err || !doc) {
-                    return console.error('sentinel getDoc failed with error: %s', err);
+                    return logger.error('failed to get doc: %s', err);
                 }
+
+                logger.debug(
+                    'fetched doc %s for seq %s and transition %s',
+                    change.id, change.seq, key
+                );
 
                 if (module.exports.canRun(transition, key, doc)) {
                     // modify reported_date if we are running in
@@ -109,18 +132,31 @@ module.exports = {
 
                     change.doc = doc;
 
+                    logger.debug(
+                        'loading queue for doc %s seq %s and transition %s',
+                        change.id, change.seq, key
+                    );
+
                     queue.push({
                         change: change,
                         db: db,
                         key: key,
                         transition: transition
                     });
+                } else {
+                    logger.debug(
+                        'skipping doc %s seq %s and transition %s',
+                        change.id, change.seq, key
+                    );
                 }
             });
         });
 
         feed.on('ready', function() {
-            console.log('Listening for changes for the ' + key + ' transition from sequence number ' + feed.since);
+            logger.info(
+                'Listening to changes on transition %s and seq %s',
+                key, feed.since
+            );
             feed.follow();
         });
     },
@@ -153,19 +189,34 @@ module.exports = {
             last_rev: parseInt(doc._rev) + 1 // because it's the revision AFTER a save
         };
 
+        logger.debug(
+            'called finalize for doc %s seq %s transition %s',
+            change.id, change.seq, key
+        );
+
         db.getDoc(doc._id, function(err, latest) {
             if (err) {
-                console.log("Error fetching doc: %s", JSON.stringify(err));
+                logger.error("Error fetching doc %s", JSON.stringify(err));
                 callback(err);
             } else {
                 if (utils.updateable(doc, latest)) {
+                    logger.debug(
+                        'calling audit.saveDoc for doc %s seq %s transition %s',
+                        change.id, change.seq, key
+                    );
                     audit.saveDoc(doc, function(err, result) {
                         if (err) {
-                            console.log(JSON.stringify(err));
+                            logger.error(
+                                "Error saving doc %s", JSON.stringify(err)
+                            );
                         }
                         callback(err);
                     });
                 } else {
+                    logger.debug(
+                        'skipping audit.saveDoc for doc %s seq %s transition %s',
+                        change.id, change.seq, key
+                    );
                     callback();
                 }
             }

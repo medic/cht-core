@@ -1,14 +1,16 @@
 var async = require('async'),
-    config = require('../config'),
-    mustache = require('mustache'),
-    utils = require('../lib/utils'),
     _ = require('underscore'),
+    mustache = require('mustache'),
+    config = require('../config'),
+    utils = require('../lib/utils'),
+    logger = require('../lib/logger'),
     messages = require('../lib/messages'),
     validation = require('../lib/validation');
 
 module.exports = {
     filter: function(doc) {
         return Boolean(
+            doc &&
             doc.form &&
             doc.patient_id &&
             utils.getClinicPhone(doc)

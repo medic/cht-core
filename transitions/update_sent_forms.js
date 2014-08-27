@@ -8,6 +8,7 @@ var _ = require('underscore'),
 module.exports = {
     filter: function(doc) {
         return Boolean(
+            doc &&
             doc.form &&
             doc.reported_date &&
             doc.related_entities &&

@@ -2,6 +2,7 @@ var async = require('async'),
     config = require('../config'),
     request = require('request'),
     utils = require('../lib/utils'),
+    logger = require('../lib/logger'),
     moment = require('moment');
 
 module.exports = {
@@ -21,7 +22,11 @@ module.exports = {
                 twilioToken = config.get('twilio_token');
             return twilioSid && twilioToken;
         }
-        return Boolean(hasPending(doc) && hasConfig(doc));
+        return Boolean(
+            doc &&
+            hasPending(doc) &&
+            hasConfig(doc)
+        );
     },
     onMatch: function(change, db, audit, callback) {
         var doc = change.doc,

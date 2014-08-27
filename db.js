@@ -1,6 +1,8 @@
-var _ = require('underscore'),
-    couchdb = require('felix-couchdb'),
-	url = require('url'),
+var couchdb = require('felix-couchdb'),
+    _ = require('underscore'),
+	url = require('url');
+
+var logger = require('./lib/logger'),
     settings = {};
 
 if (process.env.COUCH_URL) {
@@ -21,9 +23,9 @@ if (process.env.COUCH_URL) {
         });
 	}
 } else if (!process.env.TEST_ENV) {
-    console.log(
+    logger.error(
         "Please define a COUCH_URL in your environment e.g. \n" +
-        "export COUCH_URL='http://admin:123qwe@localhost:5984/medic'\n\n" +
+        "export COUCH_URL='http://admin:123qwe@localhost:5984/medic'\n" +
         "If you are running tests use TEST_ENV=1 in your environment.\n"
     );
     process.exit(1);

@@ -5,6 +5,7 @@ if (global.GENTLY) {
 var mustache = require('mustache'),
     async = require('async'),
     utils = require('../lib/utils'),
+    logger = require('../lib/logger'),
     i18n = require('../i18n'),
     clinicContactName,
     registration,
