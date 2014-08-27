@@ -10,6 +10,9 @@ var utils = require('kujua-utils');
     function(db, UserCtxService) {
       return function(callback) {
         var userCtx = UserCtxService();
+        if (!userCtx.name) {
+          return callback('Not logged in');
+        }
         if (utils.isUserAdmin(userCtx)) {
           return callback();
         }
