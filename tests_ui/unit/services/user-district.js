@@ -28,6 +28,7 @@ describe('UserDistrict service', function() {
   it('returns nothing for db admin', function(done) {
 
     userCtx = {
+      name: 'greg',
       roles: ['_admin']
     };
 
@@ -42,6 +43,7 @@ describe('UserDistrict service', function() {
   it('returns nothing for national admin', function(done) {
 
     userCtx = {
+      name: 'greg',
       roles: ['national_admin']
     };
 
@@ -87,5 +89,15 @@ describe('UserDistrict service', function() {
 
   });
 
+  it('returns error for not logged in', function(done) {
+
+    userCtx = {};
+
+    service(function(err) {
+      chai.expect(err).to.equal('Not logged in');
+      done();
+    });
+
+  });
 
 });

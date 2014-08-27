@@ -25,6 +25,8 @@ var utils = require('kujua-utils'),
       $scope.selected = undefined;
       $scope.filterQuery = undefined;
 
+      require('../modules/manage-session').init();
+
       var delayIfMobile = function(callback) {
         if($('#back').is(':visible')) {
           window.setTimeout(callback, 1);
@@ -165,7 +167,7 @@ var utils = require('kujua-utils'),
       UserDistrict(function(err, district) {
         if (err) {
           console.log('Error fetching user district', err);
-          if (err.indexOf('Returned status code') === -1) {
+          if (err !== 'Not logged in') {
             $('body').html(err);
           }
           return;
@@ -294,7 +296,6 @@ var utils = require('kujua-utils'),
         }
       });
 
-      require('../modules/manage-session').init();
       require('../modules/add-record').init();
     }
   ]);
