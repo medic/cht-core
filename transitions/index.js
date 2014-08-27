@@ -12,7 +12,7 @@ var couchmark = require('couchmark'),
 
 if (!process.env.TEST_ENV) {
     _.each(config.get('transitions'), function(conf, key) {
-        if (conf.disabled) {
+        if (conf.disable) {
             return;
         }
         try {

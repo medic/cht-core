@@ -126,18 +126,22 @@ var defaults = {
             load: './transitions/update_sent_by.js'
         },
         ohw_counseling: {
+            disable: true,
             load: './transitions/ohw_counseling.js'
         },
         ohw_emergency_report: {
+            disable: true,
             load: './transitions/ohw_emergency_report.js'
         },
         ohw_notifications: {
+            disable: true,
             load: './transitions/ohw_notifications.js'
         },
         registration: {
             load: './transitions/registration.js'
         },
         twilio_message: {
+            disable: true,
             load: './transitions/twilio_message.js'
         },
         update_clinics: {
