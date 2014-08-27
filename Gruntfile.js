@@ -177,13 +177,10 @@ module.exports = function(grunt) {
     },
     exec: {
       deploy: {
-        cmd: function() {
-          var auth = '';
-          if (grunt.option('user') && grunt.option('pass')) {
-            auth = grunt.option('user') + ':' + grunt.option('pass') + '@';
-          }
-          return 'kanso push http://' + auth + 'localhost:5984/medic';
-        }
+        cmd: 'kanso push'
+      },
+      deployci: {
+        cmd: 'kanso push http://localhost:5984/medic'
       },
       phantom: {
         cmd: 'phantomjs scripts/nodeunit_runner.js http://localhost:5984/medic/_design/medic/_rewrite/test'
@@ -287,7 +284,7 @@ module.exports = function(grunt) {
     'uglify',
     'cssmin',
     'karma:unit_ci',
-    'exec:deploy',
+    'exec:deployci',
     'exec:phantom'
   ]);
 
