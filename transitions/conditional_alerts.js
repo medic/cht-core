@@ -1,6 +1,5 @@
 var config = require('../config'),
     _ = require('underscore'),
-    mustache = require('mustache'),
     messages = require('../lib/messages'),
     utils = require('../lib/utils'),
     logger = require('../lib/logger'),
