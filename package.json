@@ -3,11 +3,12 @@
   "description": "Provides a server side API.",
   "private": true,
   "dependencies": {
-    "http-proxy": "1.0.x",
-    "felix-couchdb": "1.0.x",
-    "underscore": "1.4.x",
     "couchdb-audit": "0.1.x",
-    "pass-stream": "0.1.x"
+    "express": "4.x",
+    "felix-couchdb": "1.0.x",
+    "http-proxy": "1.0.x",
+    "pass-stream": "0.1.x",
+    "underscore": "1.4.x"
   },
   "devDependencies": {
     "nodeunit": "latest"

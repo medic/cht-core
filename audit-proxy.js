@@ -23,18 +23,6 @@ var getUsername = function(req, cb) {
 module.exports = {
 
   /**
-   * Tests the given request to determine if this proxy should be applied.
-   * 
-   * @name filter(req)
-   * @param req The http request object to test
-   * @api public
-   */
-  filter: function(req) {
-    return req.url.indexOf(db.name) === 0 
-        && ['PUT','POST','DELETE'].indexOf(req.method) !== -1
-  },
-
-  /**
    * Audits the request before proxying it on to the target.
    * 
    * @name onMatch(proxy, req, res, target)

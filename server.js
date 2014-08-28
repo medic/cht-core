@@ -1,23 +1,36 @@
-var http = require('http'),
-  httpProxy = require('http-proxy'),
-  auditProxy = require('./audit-proxy'),
-  db = require('./db'),
-  target = 'http://' + db.client.host + ':' + db.client.port;
+var app = require('express')(),
+    proxy = require('http-proxy').createProxyServer({}),
+    auditProxy = require('./audit-proxy'),
+    db = require('./db'),
+    target = 'http://' + db.client.host + ':' + db.client.port;
+  
+var audit = function(req, res) {
+  auditProxy.onMatch(proxy, req, res, target);
+};
 
-var server = http.createServer(function(req, res) {
+var auditPath = '/' + db.name + '/*';
+app.put(auditPath, audit);
+app.post(auditPath, audit);
+app.delete(auditPath, audit);
 
-  if (auditProxy.filter(req)) {
-    auditProxy.onMatch(proxy, req, res, target);
-  } else {
-    proxy.web(req, res, { target: target });
-  }
-
+app.all('*', function(req, res) {
+  proxy.web(req, res, { target: target });
 });
 
-var proxy = httpProxy.createProxyServer({});
-proxy.on('error', function(e) { 
-  console.log(JSON.stringify(e));
-  process.exit(1);
+var error = function(err, res) {
+  console.error(err);
+  res.writeHead(500, { 'Content-Type': 'text/plain' });
+  res.end('Server error');
+};
+
+app.use(function(err, req, res, next) {
+  error(err.stack, res);
 });
-console.log("proxying requests on port 5988 to " + target);
-server.listen(5988);
+
+proxy.on('error', function(err, req, res) { 
+  error(JSON.stringify(err), res);
+});
+
+app.listen(5988, function() {
+  console.log('Listening on port 5988');
+});
