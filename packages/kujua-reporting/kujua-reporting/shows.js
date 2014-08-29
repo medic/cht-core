@@ -287,21 +287,23 @@ function registerListeners() {
     });
 };
 
-function renderDistrictChoice(config) {
-
+function getForms() {
+    var def, formName;
     var f = [];
-
-    _.each(config, function(form, idx) {
-        var def = sms_utils.info.getForm(form.code),
-            formName = sms_utils.getFormTitle(form.code);
+    _.each(sms_utils.info['kujua-reporting'], function(form) {
+        def = sms_utils.info.getForm(form.code);
         if (def) {
             f.push(_.extend(form, {
-                formName: formName
+                formName: sms_utils.getFormTitle(form.code)
             }));
         }
     });
+    return f;
+};
 
-    config = f;
+function renderDistrictChoice() {
+
+    var config = getForms();
 
     db.getView(appname, 'facilities_by_type', {
         startkey: ['health_center'],
@@ -509,6 +511,11 @@ var render = function (name, context) {
     return r;
 };
 
+exports.available = function() {
+    sms_utils.info = appinfo.getAppInfo();
+    return !!getForms().length;
+};
+
 exports.render_page = function() {
     require('../../../lib/dust-helpers');
     db = db.current();
@@ -520,7 +527,7 @@ exports.render_page = function() {
         isDistrictAdmin = kutils.isUserDistrictAdmin(info.userCtx);
         kutils.getUserDistrict(info.userCtx, function(err, district) {
             userDistrict = district;
-            renderDistrictChoice(sms_utils.info['kujua-reporting']);
+            renderDistrictChoice();
         });
     });
 };

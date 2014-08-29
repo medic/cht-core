@@ -10,8 +10,8 @@ var utils = require('kujua-utils'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', '$timeout', 'Facility', 'Form', 'Settings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'DownloadUrl', 'Verified', 'DeleteMessage', 'UpdateFacility',
-    function ($scope, $route, $location, $translate, $animate, $timeout, Facility, Form, Settings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, DownloadUrl, Verified, DeleteMessage, UpdateFacility) {
+    ['$scope', '$route', '$location', '$translate', '$animate', 'Facility', 'Form', 'Settings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'DownloadUrl', 'Verified', 'DeleteMessage', 'UpdateFacility',
+    function ($scope, $route, $location, $translate, $animate, Facility, Form, Settings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, DownloadUrl, Verified, DeleteMessage, UpdateFacility) {
 
       $scope.loading = true;
       $scope.error = false;
@@ -24,6 +24,7 @@ var utils = require('kujua-utils'),
       $scope.messages = undefined;
       $scope.selected = undefined;
       $scope.filterQuery = undefined;
+      $scope.analyticsModules = undefined;
 
       require('../modules/manage-session').init();
 
@@ -33,6 +34,14 @@ var utils = require('kujua-utils'),
         } else {
           callback();
         }
+      };
+
+      $scope.setAnalyticsModules = function(modules) {
+        $scope.analyticsModules = modules;
+      };
+
+      $scope.setSelectedModule = function(module) {
+        $scope.filterModel.module = module;
       };
 
       $scope.setSelected = function(selected) {

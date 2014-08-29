@@ -28,7 +28,7 @@ require('../dist/reporting-views');
           templateUrl: '/partials/reports.html',
           controller: 'ReportsCtrl'
         })
-        .when('/analytics', {
+        .when('/analytics/:module?', {
           templateUrl: '/partials/analytics.html',
           controller: 'AnalyticsCtrl'
         })

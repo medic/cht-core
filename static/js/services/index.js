@@ -4,6 +4,7 @@
 
   angular.module('inboxServices', ['ngResource']);
 
+  require('./analytics-modules');
   require('./app-info');
   require('./base');
   require('./changes');

@@ -1,4 +1,4 @@
-var reporting = require('kujua-reporting/shows');
+var _ = require('underscore');
 
 (function () {
 
@@ -6,11 +6,28 @@ var reporting = require('kujua-reporting/shows');
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('AnalyticsCtrl', 
-    ['$scope',
-    function ($scope) {
+  var findSelectedModule = function(id, modules) {
+    if (!modules.length) {
+      return undefined;
+    }
+    if (!id) {
+      return modules[0];
+    }
+    return _.findWhere(modules, { id: id });
+  };
+
+  inboxControllers.controller('AnalyticsCtrl',
+    ['$scope', '$route', 'AnalyticsModules',
+    function ($scope, $route, AnalyticsModules) {
+      $scope.setSelectedModule();
       $scope.filterModel.type = 'analytics';
-      reporting.render_page();
+      $scope.setAnalyticsModules(AnalyticsModules());
+      $scope.setSelectedModule(findSelectedModule(
+        $route.current.params.module, $scope.analyticsModules
+      ));
+      if ($scope.filterModel.module) {
+        $scope.filterModel.module.render($scope);
+      }
     }
   ]);
 
