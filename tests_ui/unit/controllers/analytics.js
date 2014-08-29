@@ -13,6 +13,13 @@ describe('AnalyticsCtrl controller', function() {
   beforeEach(inject(function($rootScope, $controller) {
     scope = $rootScope.$new();
     scope.filterModel = { };
+    scope.setSelectedModule = function (module) {
+      scope.filterModel.module = module;
+    };
+    scope.analyticsModules = undefined;
+    scope.setAnalyticsModules = function (modules) {
+      scope.analyticsModules = modules;
+    };
     createController = function() {
       return $controller('AnalyticsCtrl', {
         '$scope': scope,
@@ -30,7 +37,7 @@ describe('AnalyticsCtrl controller', function() {
   it('set up controller with no modules', function() {
     createController();
     chai.expect(scope.filterModel.type).to.equal('analytics');
-    chai.expect(scope.selectedModule).to.equal(undefined);
+    chai.expect(scope.filterModel.module).to.equal(undefined);
   });
 
   it('renders first module', function(done) {
@@ -39,7 +46,7 @@ describe('AnalyticsCtrl controller', function() {
         id: 'anc',
         render: function() {
           chai.expect(scope.filterModel.type).to.equal('analytics');
-          chai.expect(scope.selectedModule.id).to.equal('anc');
+          chai.expect(scope.filterModel.module.id).to.equal('anc');
           done();
         }
       },
@@ -60,7 +67,7 @@ describe('AnalyticsCtrl controller', function() {
         id: 'anc',
         render: function() {
           chai.expect(scope.filterModel.type).to.equal('analytics');
-          chai.expect(scope.selectedModule.id).to.equal('anc');
+          chai.expect(scope.filterModel.module.id).to.equal('anc');
           done();
         }
       }
