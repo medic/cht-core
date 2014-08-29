@@ -2,7 +2,8 @@ var app = require('express')(),
     proxy = require('http-proxy').createProxyServer({}),
     auditProxy = require('./audit-proxy'),
     db = require('./db'),
-    target = 'http://' + db.client.host + ':' + db.client.port;
+    target = 'http://' + db.client.host + ':' + db.client.port,
+    activePregnancies = require('./controllers/activePregnancies');
   
 var audit = function(req, res) {
   auditProxy.onMatch(proxy, req, res, target);
@@ -12,6 +13,15 @@ var auditPath = '/' + db.name + '/*';
 app.put(auditPath, audit);
 app.post(auditPath, audit);
 app.delete(auditPath, audit);
+
+app.get('/api/active-pregnancies', function(req, res) {
+  activePregnancies.get(function(err, obj) {
+    if (err) {
+      return error(err, res);
+    }
+    res.json(obj);
+  })
+});
 
 app.all('*', function(req, res) {
   proxy.web(req, res, { target: target });
