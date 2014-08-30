@@ -7,15 +7,22 @@
     <legend>Registrations</legend>
     {#registrations}
       <div class="registration" data-form="{form}">
-        <p>
-          Register for this message workflow by sending an SMS with the following format: 
-          <span class="pre">{form} &lt;patientname&gt;</span>
-        </p>
+        <div class="registration-help">
+        {#help}
+          {help|s}
+        {:else}
+          <p>
+            Register for this message workflow by sending an SMS with the following format: 
+            <span class="pre">{form} &lt;patientname&gt;</span>
+          </p>
 
-        <p>
-          For example, to register "Maria Soleil" you would send:
-          <span class="pre">{form} Maria Soleil</span>
-        </p>
+          <p>
+            For example, to register "Maria Soleil" you would send:
+            <span class="pre">{form} Maria Soleil</span>
+          </p>
+        {/help}
+        </div>
+
         {>"workflow/validations.html"/}
 
         <div class="toggle responses">

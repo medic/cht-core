@@ -389,6 +389,16 @@
                             },
                             "default": []
                         },
+                        "help": {
+                            "title": "Help",
+                            "type": "string",
+                            "description": "Instructions explaining how to use this form, including description and form submission examples in <a href=\"http://daringfireball.net/projects/markdown/syntax\">Markdown format</a>.",
+                            "default": "Register for this message workflow by sending an SMS with the following format: `ANCR <patientname>`.\n\nFor example, to register \"Maria Soleil\" you would send: `ANCR Maria Soleil`",
+                            "je:hint": "textarea",
+                            "je:textarea": {
+                                "rows": 4
+                            }
+                        },
                         "events": {
                             "type": "array",
                             "items": {
