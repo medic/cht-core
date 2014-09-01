@@ -8,8 +8,8 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('AnalyticsModules',
-    ['$resource',
-    function($resource) {
+    ['$resource', 'UserDistrict',
+    function($resource, UserDistrict) {
       return function() {
         var modules = [
           {
@@ -30,34 +30,42 @@ var _ = require('underscore'),
             },
             render: function(scope) {
 
-              $resource('/api/active-pregnancies', {}, { query: {
-                method: 'GET',
-                isArray: false,
-                cache: true
-              }}).query(function(data) {
-                scope.activePregnancies = data;
-              });
+              UserDistrict(function(err, district) {
 
-              $resource('/api/upcoming-appointments', {}, { query: {
-                method: 'GET',
-                isArray: true,
-                cache: true
-              }}).query(function(data) {
-                scope.upcomingAppointments = {
-                  data: data,
-                  order: 'date'
-                };
-              });
+                if (err) {
+                  return console.log('Error fetching district', err);
+                }
 
-              $resource('/api/missed-appointments', {}, { query: {
-                method: 'GET',
-                isArray: true,
-                cache: true
-              }}).query(function(data) {
-                scope.missedAppointments = {
-                  data: data,
-                  order: 'date'
-                };
+                $resource('/api/active-pregnancies', { district: district }, { query: {
+                  method: 'GET',
+                  isArray: false,
+                  cache: true
+                }}).query(function(data) {
+                  scope.activePregnancies = data;
+                });
+
+                $resource('/api/upcoming-appointments', { district: district }, { query: {
+                  method: 'GET',
+                  isArray: true,
+                  cache: true
+                }}).query(function(data) {
+                  scope.upcomingAppointments = {
+                    data: data,
+                    order: 'date'
+                  };
+                });
+
+                $resource('/api/missed-appointments', { district: district }, { query: {
+                  method: 'GET',
+                  isArray: true,
+                  cache: true
+                }}).query(function(data) {
+                  scope.missedAppointments = {
+                    data: data,
+                    order: 'date'
+                  };
+                });
+
               });
 
             }
