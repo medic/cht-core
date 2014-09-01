@@ -12,6 +12,7 @@
     "underscore": "1.4.x"
   },
   "devDependencies": {
+    "sinon": "latest",
     "nodeunit": "latest"
   },
   "version": "0.1.0",

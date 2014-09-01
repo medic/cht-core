@@ -3,9 +3,9 @@ var app = require('express')(),
     auditProxy = require('./audit-proxy'),
     db = require('./db'),
     target = 'http://' + db.client.host + ':' + db.client.port,
-    activePregnancies = require('./controllers/activePregnancies'),
-    upcomingAppointments = require('./controllers/upcomingAppointments'),
-    missedAppointments = require('./controllers/missedAppointments');
+    activePregnancies = require('./controllers/active-pregnancies'),
+    upcomingAppointments = require('./controllers/upcoming-appointments'),
+    missedAppointments = require('./controllers/missed-appointments');
   
 var audit = function(req, res) {
   auditProxy.onMatch(proxy, req, res, target);

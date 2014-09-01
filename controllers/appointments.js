@@ -50,6 +50,9 @@ var getAppointments = function(options, callback) {
 };
 
 var removeDeliveries = function(appointments, callback) {
+  if (!appointments.length) {
+    return callback(null, []);
+  }
   var patientIds = _.pluck(appointments, 'patient_id');
   utils.getAllDeliveries(_.pluck(appointments, 'patient_id'), { include_docs: true }, function(err, deliveries) {
     if (err) {
@@ -64,6 +67,9 @@ var removeDeliveries = function(appointments, callback) {
 };
 
 var removeVisits = function(appointments, callback) {
+  if (!appointments.length) {
+    return callback(null, []);
+  }
   var patientIds = _.pluck(appointments, 'patient_id');
   utils.getRecentVisits(patientIds, function(err, visits) {
     if (err) {

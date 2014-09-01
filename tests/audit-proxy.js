@@ -1,4 +1,4 @@
-var auditProxy = require('../audit-proxy.js'),
+var auditProxy = require('../audit-proxy'),
   events = require('events');
 
 exports['onMatch audits the request'] = function(test) {

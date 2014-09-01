@@ -7,6 +7,9 @@ module.exports = {
       if (err) {
         return callback(err);
       }
+      if (!registrations.rows.length) {
+        return callback(null, { count: 0 });
+      }
       var patientIds = _.map(registrations.rows, function(row) {
         return row.doc.patient_id;
       });
