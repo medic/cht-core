@@ -36,6 +36,10 @@ var utils = require('kujua-utils'),
         }
       };
 
+      $scope.setFilterQuery = function(query) {
+        $scope.filterQuery = query;
+      };
+
       $scope.setAnalyticsModules = function(modules) {
         $scope.analyticsModules = modules;
       };
@@ -118,10 +122,7 @@ var utils = require('kujua-utils'),
         forms: [],
         facilities: [],
         valid: true,
-        date: {
-          from: moment().subtract(1, 'months').valueOf(),
-          to: moment().valueOf()
-        }
+        date: { }
       };
 
       $scope.setMessage = function(id) {
@@ -287,7 +288,7 @@ var utils = require('kujua-utils'),
         $('#update-facility').modal('show');
       };
 
-      $('body').on('mouseenter', '.item-content .relative-date', function() {
+      $('body').on('mouseenter', '.relative-date', function() {
         if ($(this).data('tooltipLoaded') !== true) {
           $(this).data('tooltipLoaded', true)
             .tooltip({
@@ -298,7 +299,7 @@ var utils = require('kujua-utils'),
             .tooltip('show');
         }
       });
-      $('body').on('mouseleave', '.item-content .relative-date', function() {
+      $('body').on('mouseleave', '.relative-date', function() {
         if ($(this).data('tooltipLoaded') === true) {
           $(this).data('tooltipLoaded', false)
             .tooltip('hide');

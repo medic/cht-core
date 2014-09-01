@@ -30,6 +30,7 @@ describe('ReportsCtrl controller', function() {
     scope.setSelected = function(obj) {
       scope.selected = obj;
     };
+    scope.setFilterQuery = function() { };
     scope.messages = [ message, { _id: 'a' } ];
 
     UserDistrict = function() {

@@ -12,8 +12,34 @@
       font-size: 1.5em;
     }
   }
+  .content {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .approximate:before {
+    content: '~';
+  }
+  .sortable {
+    cursor: pointer;
+    &:after {
+      content: '\f0dd';
+      font-family: FontAwesome;
+      vertical-align: text-bottom;
+      margin-left: 0.2em;
+      color: #FFFFFF;
+      color: rgba(0, 0, 0, 0);
+    }
+  }
+  .sorted:after {
+    color: #000000;
+  }
 }
+
 
 .active-pregnancies .title {
   color: #5A339E;
+}
+
+.upcoming-appointments .title {
+  color: #1D86F0;
 }

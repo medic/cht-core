@@ -14,12 +14,14 @@ var _ = require('underscore');
       };
 
       var formatReportedDate = function($scope) {
-        // increment end date so it's inclusive
-        var to = moment($scope.filterModel.date.to).add(1, 'days');
-        var from = moment($scope.filterModel.date.from);
-        return 'reported_date<date>:[' + 
-            formatDate(from) + ' TO ' + formatDate(to) + 
-            ']';
+        if ($scope.filterModel.date.to || $scope.filterModel.date.from) {
+          // increment end date so it's inclusive
+          var to = moment($scope.filterModel.date.to).add(1, 'days');
+          var from = moment($scope.filterModel.date.from || 0);
+          return 'reported_date<date>:[' + 
+              formatDate(from) + ' TO ' + formatDate(to) + 
+              ']';
+        }
       };
 
       var formatType = function($scope) {
@@ -72,9 +74,11 @@ var _ = require('underscore');
       };
 
       var formatFreetext = function($scope) {
-        if ($scope.filterQuery) {
-          return $scope.filterQuery + '*';
+        var result = $scope.filterQuery;
+        if (result && result.indexOf(':') === -1) {
+          result += '*';
         }
+        return result;
       };
 
       return function($scope, options) {

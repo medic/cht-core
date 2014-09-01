@@ -176,8 +176,10 @@ var _ = require('underscore');
         });
       });
 
+      var start = $scope.filterModel.date.from ?
+        moment($scope.filterModel.date.from) : moment().subtract(1, 'months');
       $('#date-filter').daterangepicker({
-        startDate: moment($scope.filterModel.date.from),
+        startDate: start,
         endDate: moment($scope.filterModel.date.to),
         maxDate: moment(),
         applyClass: 'btn-primary',
@@ -212,6 +214,8 @@ var _ = require('underscore');
           $scope.query();
         }
       });
+
+      $scope.setFilterQuery($route.current.params.query);
 
       if (!$scope.messages || !$route.current.params.doc) {
         $scope.query();

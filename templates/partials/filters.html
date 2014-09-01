@@ -58,8 +58,11 @@
           <span class="mm-button-dropdown">
             <span class="fa fa-chevron-down"></span>
           </span>
-          <span class="mm-button-text">
+          <span class="mm-button-text" ng-show="filterModel.date.from && filterModel.date.to">
             {~lb}{~lb}filterModel.date.from | date : 'd MMM'{~rb}{~rb} - {~lb}{~lb}filterModel.date.to | date : 'd MMM'{~rb}{~rb}
+          </span>
+          <span class="mm-button-text" ng-show="!filterModel.date.from || !filterModel.date.to">
+            Any date
           </span>
         </span>
       </span>

@@ -29,6 +29,7 @@ var _ = require('underscore'),
               return true;
             },
             render: function(scope) {
+
               $resource('/api/active-pregnancies', {}, { query: {
                 method: 'GET',
                 isArray: false,
@@ -36,6 +37,18 @@ var _ = require('underscore'),
               }}).query(function(data) {
                 scope.activePregnancies = data;
               });
+
+              $resource('/api/upcoming-appointments', {}, { query: {
+                method: 'GET',
+                isArray: true,
+                cache: true
+              }}).query(function(data) {
+                scope.upcomingAppointments = {
+                  data: data,
+                  order: 'date'
+                };
+              });
+
             }
           }
         ];
