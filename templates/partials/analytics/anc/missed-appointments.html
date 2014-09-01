@@ -1,0 +1,34 @@
+<div class="col-sm-6 analytics-widget missed-appointments table-responsive">
+  <div class="title">
+    <p class="count">{~lb}{~lb}missedAppointments.data.length{~rb}{~rb}</p>
+    <p class="name">Recent Missed Appointments</p>
+  </div>
+  <div class="content">
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="sortable" ng-class="{'sorted':missedAppointments.order==='patient_name'}" ng-click="missedAppointments.order='patient_name'">Name</th>
+          <th class="sortable" ng-class="{'sorted':missedAppointments.order==='clinic.contact.name'}" ng-click="missedAppointments.order='clinic.contact.name'">CHW</th>
+          <th class="sortable" ng-class="{'sorted':missedAppointments.order==='date'}" ng-click="missedAppointments.order='date'">Appointment Date</th>
+          <th class="sortable" ng-class="{'sorted':missedAppointments.order==='-weeks.number'}" ng-click="missedAppointments.order='-weeks.number'">Weeks Pregnant</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="appointment in missedAppointments.data | orderBy:missedAppointments.order">
+          <td>{~lb}{~lb}appointment.patient_name{~rb}{~rb}</td>
+          <td>{~lb}{~lb}appointment.clinic.contact.name{~rb}{~rb}</td>
+          <td ng-bind-html="appointment.date | relativeDate"></td>
+          <td>
+            <span ng-class="{'approximate': appointment.weeks.approximate}">
+              {~lb}{~lb}appointment.weeks.number{~rb}{~rb}
+            </span>
+          </td>
+          <td>
+            <a href="#" class="send-message" data-send-to="{~lb}{~lb}appointment.clinic.contact.phone{~rb}{~rb}" title="Send message to CHW" ng-show="appointment.clinic.contact.phone"><i class="fa fa-envelope"></i></a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

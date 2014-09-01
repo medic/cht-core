@@ -49,6 +49,17 @@ var _ = require('underscore'),
                 };
               });
 
+              $resource('/api/missed-appointments', {}, { query: {
+                method: 'GET',
+                isArray: true,
+                cache: true
+              }}).query(function(data) {
+                scope.missedAppointments = {
+                  data: data,
+                  order: 'date'
+                };
+              });
+
             }
           }
         ];
