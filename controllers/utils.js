@@ -15,7 +15,7 @@ var formatDateRange = function(startDate, endDate) {
   return 'reported_date<date>:[' + start + ' TO ' + end + ']';
 };
 
-var generateQuery = function(form, startDate, endDate) {
+var generateRegistrationQuery = function(form, startDate, endDate) {
   return 'form:' + form + ' ' +
      'AND errors<int>:0 ' +
      'AND ' + formatDateRange(startDate, endDate);
@@ -23,10 +23,13 @@ var generateQuery = function(form, startDate, endDate) {
 
 module.exports = {
 
-  getAllRecentRegistrations: function(callback) {
+  getAllRecentRegistrations: function(options, callback) {
     var today = moment().startOf('day');
-    var query = '(' + generateQuery('R', today.clone().subtract(42, 'weeks'), today) + ') ' +
-             'OR (' + generateQuery('P', today.clone().subtract(44, 'weeks'), today) + ')';
+    var query = '((' + generateRegistrationQuery('R', today.clone().subtract(42, 'weeks'), today) + ') ' +
+              'OR (' + generateRegistrationQuery('P', today.clone().subtract(44, 'weeks'), today) + '))';
+    if (options.district) {
+      query += ' AND district:"' + options.district + '"';
+    }
     db.fti('data_records', {
       q: query,
       include_docs: true,

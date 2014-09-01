@@ -2,7 +2,7 @@ var utils = require('./utils'),
     _ = require('underscore'),
     moment = require('moment');
 
-var getAppointmentDate = function(start, end, registration) {
+var getAppointmentDate = function(options, registration) {
   var seenGroups = [];
   var appointment = _.find(registration.scheduled_tasks, function(task) {
     if (_.contains(seenGroups, task.group)) {
@@ -10,20 +10,20 @@ var getAppointmentDate = function(start, end, registration) {
     }
     seenGroups.push(task.group);
     var due = moment(task.due);
-    return due.isAfter(start) && due.isBefore(end);
+    return due.isAfter(options.startDate) && due.isBefore(options.endDate);
   });
   return appointment ? moment(appointment.due) : null;
 };
 
-var getAppointments = function(startDate, endDate, callback) {
-  utils.getAllRecentRegistrations(function(err, registrations) {
+var getAppointments = function(options, callback) {
+  utils.getAllRecentRegistrations(options, function(err, registrations) {
     if (err) {
       return callback(err);
     }
     callback(null, _.compact(
       _.map(registrations.rows, function(registration) {
         var doc = registration.doc;
-        var date = getAppointmentDate(startDate, endDate, doc);
+        var date = getAppointmentDate(options, doc);
         if (date) {
           var weeks;
           if (doc.form === 'R') {
@@ -79,8 +79,8 @@ var removeVisits = function(appointments, callback) {
 
 // TODO restrict to district for district admin and filters
 module.exports = {
-  get: function(startDate, endDate, callback) {
-    getAppointments(startDate, endDate, function(err, appointments) {
+  get: function(options, callback) {
+    getAppointments(options, function(err, appointments) {
       if (err) {
         return callback(err);
       }

@@ -17,7 +17,7 @@ app.post(auditPath, audit);
 app.delete(auditPath, audit);
 
 app.get('/api/active-pregnancies', function(req, res) {
-  activePregnancies.get(function(err, obj) {
+  activePregnancies.get({ district: req.query.district }, function(err, obj) {
     if (err) {
       return error(err, res);
     }
@@ -26,7 +26,7 @@ app.get('/api/active-pregnancies', function(req, res) {
 });
 
 app.get('/api/upcoming-appointments', function(req, res) {
-  upcomingAppointments.get(function(err, obj) {
+  upcomingAppointments.get({ district: req.query.district }, function(err, obj) {
     if (err) {
       return error(err, res);
     }
@@ -35,7 +35,7 @@ app.get('/api/upcoming-appointments', function(req, res) {
 });
 
 app.get('/api/missed-appointments', function(req, res) {
-  missedAppointments.get(function(err, obj) {
+  missedAppointments.get({ district: req.query.district }, function(err, obj) {
     if (err) {
       return error(err, res);
     }

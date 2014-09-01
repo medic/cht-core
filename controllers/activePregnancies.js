@@ -1,10 +1,9 @@
 var utils = require('./utils'),
     _ = require('underscore');
 
-// TODO restrict to district for district admin and filters
 module.exports = {
-  get: function(callback) {
-    utils.getAllRecentRegistrations(function(err, registrations) {
+  get: function(options, callback) {
+    utils.getAllRecentRegistrations(options, function(err, registrations) {
       if (err) {
         return callback(err);
       }
