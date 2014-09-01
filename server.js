@@ -4,7 +4,8 @@ var app = require('express')(),
     db = require('./db'),
     target = 'http://' + db.client.host + ':' + db.client.port,
     activePregnancies = require('./controllers/activePregnancies'),
-    upcomingAppointments = require('./controllers/upcomingAppointments');
+    upcomingAppointments = require('./controllers/upcomingAppointments'),
+    missedAppointments = require('./controllers/missedAppointments');
   
 var audit = function(req, res) {
   auditProxy.onMatch(proxy, req, res, target);
@@ -15,7 +16,6 @@ app.put(auditPath, audit);
 app.post(auditPath, audit);
 app.delete(auditPath, audit);
 
-// TODO permissions
 app.get('/api/active-pregnancies', function(req, res) {
   activePregnancies.get(function(err, obj) {
     if (err) {
@@ -27,6 +27,15 @@ app.get('/api/active-pregnancies', function(req, res) {
 
 app.get('/api/upcoming-appointments', function(req, res) {
   upcomingAppointments.get(function(err, obj) {
+    if (err) {
+      return error(err, res);
+    }
+    res.json(obj);
+  })
+});
+
+app.get('/api/missed-appointments', function(req, res) {
+  missedAppointments.get(function(err, obj) {
     if (err) {
       return error(err, res);
     }
