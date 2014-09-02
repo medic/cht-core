@@ -88,6 +88,14 @@ var _ = require('underscore'),
                   };
                 });
 
+                $resource('/api/total-births', { district: district }, { query: {
+                  method: 'GET',
+                  isArray: false,
+                  cache: true
+                }}).query(function(data) {
+                  scope.totalBirths = data;
+                });
+
               });
 
             }
