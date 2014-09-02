@@ -66,6 +66,16 @@ var _ = require('underscore'),
                   };
                 });
 
+                $resource('/api/upcoming-due-dates', { district: district }, { query: {
+                  method: 'GET',
+                  isArray: true,
+                  cache: true
+                }}).query(function(data) {
+                  scope.upcomingDueDates = {
+                    data: data,
+                    order: 'edd'
+                  };
+                });
               });
 
             }

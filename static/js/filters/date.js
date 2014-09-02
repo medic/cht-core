@@ -47,6 +47,14 @@
     }
   ]);
 
+  module.filter('simpleDate', ['FormatDate',
+    function (FormatDate) {
+      return function (date) {
+        return FormatDate.date(date);
+      };
+    }
+  ]);
+
   module.filter('fullDate', ['FormatDate',
     function (FormatDate) {
       return function (date) {

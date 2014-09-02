@@ -1,0 +1,40 @@
+<div class="col-sm-6 analytics-widget upcoming-due-dates table-responsive">
+  <div class="title">
+    <p class="count">{~lb}{~lb}upcomingDueDates.data.length || 0{~rb}{~rb}</p>
+    <p class="name">Women With Upcoming EDDs</p>
+  </div>
+  <div class="content" ng-show="upcomingDueDates.data">
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="sortable" ng-class="{'sorted':upcomingDueDates.order==='patient_name'}" ng-click="upcomingDueDates.order='patient_name'">Name</th>
+          <th class="sortable" ng-class="{'sorted':upcomingDueDates.order==='-weeks.number'}" ng-click="upcomingDueDates.order='-weeks.number'">Weeks Pregnant</th>
+          <th class="sortable" ng-class="{'sorted':upcomingDueDates.order==='date'}" ng-click="upcomingDueDates.order='date'">Last Appointment</th>
+          <th class="sortable" ng-class="{'sorted':upcomingDueDates.order==='edd'}" ng-click="upcomingDueDates.order='edd'">EDD</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="pregnancy in upcomingDueDates.data | orderBy:upcomingDueDates.order">
+          <td>{~lb}{~lb}pregnancy.patient_name{~rb}{~rb}</td>
+          <td>
+            <span ng-class="{'approximate': pregnancy.weeks.approximate}">
+              {~lb}{~lb}pregnancy.weeks.number{~rb}{~rb}
+            </span>
+          </td>
+          <td ng-bind-html="pregnancy.lastAppointmentDate | relativeDate"></td>
+          <td>
+            <span ng-class="{'approximate': pregnancy.edd.approximate}">
+              <span ng-bind-html="pregnancy.edd | simpleDate"></span>
+            </span>
+          </td>
+          <td>
+            <a href="#/reports?query=patient_id:{~lb}{~lb}pregnancy.patient_id{~rb}{~rb}" title="View patient history">
+              <span class="fa fa-list-alt"></span>
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

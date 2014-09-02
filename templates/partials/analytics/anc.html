@@ -1,7 +1,16 @@
-<div class="col-sm-12 reporting ng-hide" ng-show="filterModel.module.id === 'anc'">
+<div class="reporting ng-hide" ng-show="filterModel.module.id === 'anc'">
 
-  {>"partials/analytics/anc/active-pregnancies.html"/}
-  {>"partials/analytics/anc/upcoming-appointments.html"/}
-  {>"partials/analytics/anc/missed-appointments.html"/}
+  <div class="col-sm-12">
+    {>"partials/analytics/anc/active-pregnancies.html"/}
+  </div>
+
+  <div class="col-sm-12">
+    {>"partials/analytics/anc/upcoming-appointments.html"/}
+    {>"partials/analytics/anc/missed-appointments.html"/}
+  </div>
+
+  <div class="col-sm-12">
+    {>"partials/analytics/anc/upcoming-due-dates.html"/}
+  </div>
 
 </div>

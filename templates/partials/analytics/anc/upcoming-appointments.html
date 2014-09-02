@@ -1,9 +1,9 @@
 <div class="col-sm-6 analytics-widget upcoming-appointments table-responsive">
   <div class="title">
-    <p class="count">{~lb}{~lb}upcomingAppointments.data.length{~rb}{~rb}</p>
+    <p class="count">{~lb}{~lb}upcomingAppointments.data.length || 0{~rb}{~rb}</p>
     <p class="name">Upcoming Appointments</p>
   </div>
-  <div class="content">
+  <div class="content" ng-show="upcomingAppointments.data">
     <table class="table">
       <thead>
         <tr>
