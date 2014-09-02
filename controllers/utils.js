@@ -65,13 +65,21 @@ module.exports = {
 
   getVisits: function(options, callback) {
     if (!options || !options.patientIds || !options.patientIds.length) {
-      callback(null, []);
+      return callback(null, []);
     }
     var startDate = options.startDate;
     var endDate = options.endDate || moment();
     var query = 'form:V ' +
            'AND ' + formatDateRange('reported_date', startDate, endDate) + ' ' +
            'AND ' + formatPatientIds(options.patientIds);
+    db.fti('data_records', { q: query, limit: 1000, include_docs: true }, callback);
+  },
+
+  getHighRisk: function(options, callback) {
+    if (!options || !options.patientIds || !options.patientIds.length) {
+      return callback(null, []);
+    }
+    var query = 'form:F AND ' + formatPatientIds(options.patientIds);
     db.fti('data_records', { q: query, limit: 1000, include_docs: true }, callback);
   },
 

@@ -6,7 +6,8 @@ var app = require('express')(),
     activePregnancies = require('./controllers/active-pregnancies'),
     upcomingAppointments = require('./controllers/upcoming-appointments'),
     missedAppointments = require('./controllers/missed-appointments'),
-    upcomingDueDates = require('./controllers/upcoming-due-dates');
+    upcomingDueDates = require('./controllers/upcoming-due-dates'),
+    highRisk = require('./controllers/high-risk');
   
 var audit = function(req, res) {
   auditProxy.onMatch(proxy, req, res, target);
@@ -17,40 +18,33 @@ app.put(auditPath, audit);
 app.post(auditPath, audit);
 app.delete(auditPath, audit);
 
-app.get('/api/active-pregnancies', function(req, res) {
-  activePregnancies.get({ district: req.query.district }, function(err, obj) {
+var handleApiCall = function(req, res, controller) {
+  controller.get({ district: req.query.district }, function(err, obj) {
     if (err) {
       return error(err, res);
     }
     res.json(obj);
   })
+};
+
+app.get('/api/active-pregnancies', function(req, res) {
+  handleApiCall(req, res, activePregnancies);
 });
 
 app.get('/api/upcoming-appointments', function(req, res) {
-  upcomingAppointments.get({ district: req.query.district }, function(err, obj) {
-    if (err) {
-      return error(err, res);
-    }
-    res.json(obj);
-  })
+  handleApiCall(req, res, upcomingAppointments);
 });
 
 app.get('/api/missed-appointments', function(req, res) {
-  missedAppointments.get({ district: req.query.district }, function(err, obj) {
-    if (err) {
-      return error(err, res);
-    }
-    res.json(obj);
-  })
+  handleApiCall(req, res, missedAppointments);
 });
 
 app.get('/api/upcoming-due-dates', function(req, res) {
-  upcomingDueDates.get({ district: req.query.district }, function(err, obj) {
-    if (err) {
-      return error(err, res);
-    }
-    res.json(obj);
-  })
+  handleApiCall(req, res, upcomingDueDates);
+});
+
+app.get('/api/high-risk', function(req, res) {
+  handleApiCall(req, res, highRisk);
 });
 
 app.all('*', function(req, res) {
