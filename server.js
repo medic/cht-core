@@ -5,7 +5,8 @@ var app = require('express')(),
     target = 'http://' + db.client.host + ':' + db.client.port,
     activePregnancies = require('./controllers/active-pregnancies'),
     upcomingAppointments = require('./controllers/upcoming-appointments'),
-    missedAppointments = require('./controllers/missed-appointments');
+    missedAppointments = require('./controllers/missed-appointments'),
+    upcomingDueDates = require('./controllers/upcoming-due-dates');
   
 var audit = function(req, res) {
   auditProxy.onMatch(proxy, req, res, target);
@@ -36,6 +37,15 @@ app.get('/api/upcoming-appointments', function(req, res) {
 
 app.get('/api/missed-appointments', function(req, res) {
   missedAppointments.get({ district: req.query.district }, function(err, obj) {
+    if (err) {
+      return error(err, res);
+    }
+    res.json(obj);
+  })
+});
+
+app.get('/api/upcoming-due-dates', function(req, res) {
+  upcomingDueDates.get({ district: req.query.district }, function(err, obj) {
     if (err) {
       return error(err, res);
     }

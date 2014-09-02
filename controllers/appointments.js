@@ -25,23 +25,12 @@ var getAppointments = function(options, callback) {
         var doc = registration.doc;
         var date = getAppointmentDate(options, doc);
         if (date) {
-          var weeks;
-          if (doc.form === 'R') {
-            weeks = {
-              number: moment().diff(moment(doc.reported_date), 'weeks'),
-              approximate: true
-            }
-          } else {
-            weeks = {
-              number: moment().diff(moment(doc.lmp_date), 'weeks') - 2
-            }
-          }
           return {
             patient_name: doc.patient_name,
             patient_id: doc.patient_id,
             clinic: doc.related_entities && doc.related_entities.clinic,
             date: date,
-            weeks: weeks
+            weeks: utils.getWeeksPregnant(doc)
           }
         }
       })
@@ -49,29 +38,15 @@ var getAppointments = function(options, callback) {
   });
 };
 
-var removeDeliveries = function(appointments, callback) {
+var rejectVisits = function(appointments, callback) {
   if (!appointments.length) {
     return callback(null, []);
   }
-  var patientIds = _.pluck(appointments, 'patient_id');
-  utils.getAllDeliveries(_.pluck(appointments, 'patient_id'), { include_docs: true }, function(err, deliveries) {
-    if (err) {
-      return callback(err);
-    }
-    callback(null, _.reject(appointments, function(appointment) {
-      return _.some(deliveries.rows, function(delivery) {
-        return delivery.doc.patient_id === appointment.patient_id;
-      });
-    }));
-  });
-};
-
-var removeVisits = function(appointments, callback) {
-  if (!appointments.length) {
-    return callback(null, []);
+  var options = {
+    patientIds: _.pluck(appointments, 'patient_id'),
+    startDate: moment().subtract(7, 'days')
   }
-  var patientIds = _.pluck(appointments, 'patient_id');
-  utils.getRecentVisits(patientIds, function(err, visits) {
+  utils.getVisits(options, function(err, visits) {
     if (err) {
       return callback(err);
     }
@@ -83,18 +58,17 @@ var removeVisits = function(appointments, callback) {
   });
 };
 
-// TODO restrict to district for district admin and filters
 module.exports = {
   get: function(options, callback) {
     getAppointments(options, function(err, appointments) {
       if (err) {
         return callback(err);
       }
-      removeDeliveries(appointments, function(err, withoutDelivery) {
+      utils.rejectDeliveries(appointments, function(err, withoutDelivery) {
         if (err) {
           return callback(err);
         }
-        removeVisits(withoutDelivery, callback);
+        rejectVisits(withoutDelivery, callback);
       });
     });
   }

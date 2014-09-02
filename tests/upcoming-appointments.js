@@ -3,7 +3,15 @@ var controller = require('../controllers/upcoming-appointments'),
     moment = require('moment'),
     sinon = require('sinon');
 
+var clock;
+
+exports.setUp = function(callback) {
+  clock = sinon.useFakeTimers();
+  callback();
+};
+
 exports.tearDown = function (callback) {
+  clock.restore();
   if (db.fti.restore) {
     db.fti.restore();
   }
