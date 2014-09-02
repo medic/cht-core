@@ -8,7 +8,8 @@ var app = require('express')(),
     missedAppointments = require('./controllers/missed-appointments'),
     upcomingDueDates = require('./controllers/upcoming-due-dates'),
     highRisk = require('./controllers/high-risk'),
-    totalBirths = require('./controllers/total-births');
+    totalBirths = require('./controllers/total-births'),
+    missingDeliveryReports = require('./controllers/missing-delivery-reports');
   
 var audit = function(req, res) {
   auditProxy.onMatch(proxy, req, res, target);
@@ -50,6 +51,10 @@ app.get('/api/high-risk', function(req, res) {
 
 app.get('/api/total-births', function(req, res) {
   handleApiCall(req, res, totalBirths);
+});
+
+app.get('/api/missing-delivery-reports', function(req, res) {
+  handleApiCall(req, res, missingDeliveryReports);
 });
 
 app.all('*', function(req, res) {

@@ -102,6 +102,18 @@ module.exports = {
     return {
       number: moment().diff(moment(doc.lmp_date), 'weeks') - 2
     }
+  },
+
+  getEDD: function(doc) {
+    if (doc.form === 'R') {
+      return {
+        date: moment(doc.reported_date).add(40, 'weeks'),
+        approximate: true
+      }
+    }
+    return {
+      date: moment(doc.lmp_date).add(42, 'weeks')
+    }
   }
 
 };

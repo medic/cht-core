@@ -2,18 +2,6 @@ var _ = require('underscore'),
     moment = require('moment'),
     utils = require('./utils');
 
-var getEDD = function(doc) {
-  if (doc.form === 'R') {
-    return {
-      date: moment(doc.reported_date).add(40, 'weeks'),
-      approximate: true
-    }
-  }
-  return {
-    date: moment(doc.lmp_date).add(42, 'weeks')
-  }
-};
-
 var getPregnancies = function(options, callback) {
   options.minWeeksPregnant = 37;
   options.maxWeeksPregnant = 42;
@@ -27,7 +15,7 @@ var getPregnancies = function(options, callback) {
         patient_name: doc.patient_name,
         patient_id: doc.patient_id,
         weeks: utils.getWeeksPregnant(doc),
-        edd: getEDD(doc)
+        edd: utils.getEDD(doc)
       };
     }));
   });
