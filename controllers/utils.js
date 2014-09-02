@@ -18,7 +18,7 @@ var formatDateRange = function(field, startDate, endDate) {
 
 module.exports = {
 
-  getAllRecentRegistrations: function(options, callback) {
+  getAllRegistrations: function(options, callback) {
     var minWeeksPregnant = options.minWeeksPregnant || 0;
     var maxWeeksPregnant = options.maxWeeksPregnant || 42;
     var startDate = moment().subtract(maxWeeksPregnant, 'weeks');
@@ -36,13 +36,19 @@ module.exports = {
     }, callback);
   },
 
-  getAllDeliveries: function(patientIds, options, callback) {
+  getDeliveries: function(options, callback) {
     if (!callback) {
       callback = options;
       options = {};
     }
     options.limit = 1000;
-    options.q = 'form:D AND ' + formatPatientIds(patientIds);
+    options.q = 'form:D';
+    if (options.patientIds) {
+      options.q += ' AND ' + formatPatientIds(options.patientIds);
+    }
+    if (options.district) {
+      options.q += ' AND district:"' + options.district + '"';
+    }
     db.fti('data_records', options, callback);
   },
 
@@ -51,7 +57,10 @@ module.exports = {
       return callback(null, []);
     }
     var patientIds = _.pluck(objects, 'patient_id');
-    module.exports.getAllDeliveries(patientIds, { include_docs: true }, function(err, deliveries) {
+    module.exports.getDeliveries({ 
+      patientIds: patientIds,
+      include_docs: true
+    }, function(err, deliveries) {
       if (err) {
         return callback(err);
       }

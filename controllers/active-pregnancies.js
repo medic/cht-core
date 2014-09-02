@@ -3,7 +3,7 @@ var utils = require('./utils'),
 
 module.exports = {
   get: function(options, callback) {
-    utils.getAllRecentRegistrations(options, function(err, registrations) {
+    utils.getAllRegistrations(options, function(err, registrations) {
       if (err) {
         return callback(err);
       }
@@ -13,7 +13,7 @@ module.exports = {
       var patientIds = _.map(registrations.rows, function(row) {
         return row.doc.patient_id;
       });
-      utils.getAllDeliveries(patientIds, function(err, deliveries) {
+      utils.getDeliveries({ patientIds: patientIds }, function(err, deliveries) {
         if (err) {
           return callback(err);
         }

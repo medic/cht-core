@@ -17,7 +17,7 @@ var getEDD = function(doc) {
 var getPregnancies = function(options, callback) {
   options.minWeeksPregnant = 37;
   options.maxWeeksPregnant = 42;
-  utils.getAllRecentRegistrations(options, function(err, registrations) {
+  utils.getAllRegistrations(options, function(err, registrations) {
     if (err) {
       return callback(err);
     }

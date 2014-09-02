@@ -3,7 +3,7 @@ var _ = require('underscore'),
     utils = require('./utils');
 
 var getPregnancies = function(options, callback) {
-  utils.getAllRecentRegistrations(options, function(err, registrations) {
+  utils.getAllRegistrations(options, function(err, registrations) {
     if (err) {
       return callback(err);
     }

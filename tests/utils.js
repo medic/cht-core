@@ -18,7 +18,7 @@ exports.tearDown = function (callback) {
   callback();
 };
 
-exports['getAllRecentRegistrations generates correct query'] = function(test) {
+exports['getAllRegistrations generates correct query'] = function(test) {
   test.expect(3);
   var fti = sinon.stub(db, 'fti').callsArgWith(2, null, 'results');
   var start = moment().subtract(20, 'weeks').zone(0);
@@ -30,7 +30,7 @@ exports['getAllRecentRegistrations generates correct query'] = function(test) {
   var expected = 'errors<int>:0 AND ' +
       '((form:R AND reported_date<date>:[' + rStart + ' TO ' + rEnd + ']) OR ' +
       '(form:P AND lmp_date<date>:[' + pStart + ' TO ' + pEnd + ']))';
-  utils.getAllRecentRegistrations({
+  utils.getAllRegistrations({
     minWeeksPregnant: 10,
     maxWeeksPregnant: 20
   }, function(err, results) {
