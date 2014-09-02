@@ -76,6 +76,18 @@ var _ = require('underscore'),
                     order: 'edd'
                   };
                 });
+
+                $resource('/api/high-risk', { district: district }, { query: {
+                  method: 'GET',
+                  isArray: true,
+                  cache: true
+                }}).query(function(data) {
+                  scope.highRisk = {
+                    data: data,
+                    order: 'date'
+                  };
+                });
+
               });
 
             }

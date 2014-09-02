@@ -1,0 +1,37 @@
+<div class="col-sm-6 analytics-widget high-risk table-responsive">
+  <div class="title">
+    <p class="count">
+      <span class="fa fa-exclamation-triangle"></span>
+      {~lb}{~lb}highRisk.data.length || 0{~rb}{~rb}
+    </p>
+    <p class="name">High Risk Pregnancies</p>
+  </div>
+  <div class="content" ng-show="highRisk.data">
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="sortable" ng-class="{'sorted':highRisk.order==='patient_name'}" ng-click="highRisk.order='patient_name'">Name</th>
+          <th class="sortable" ng-class="{'sorted':highRisk.order==='-weeks.number'}" ng-click="highRisk.order='-weeks.number'">Weeks Pregnant</th>
+          <th class="sortable" ng-class="{'sorted':highRisk.order==='clinic.contact.name'}" ng-click="highRisk.order='clinic.contact.name'">CHW</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="pregnancy in highRisk.data | orderBy:highRisk.order">
+          <td>{~lb}{~lb}pregnancy.patient_name{~rb}{~rb}</td>
+          <td>
+            <span ng-class="{'approximate': pregnancy.weeks.approximate}">
+              {~lb}{~lb}pregnancy.weeks.number{~rb}{~rb}
+            </span>
+          </td>
+          <td>{~lb}{~lb}pregnancy.clinic.contact.name{~rb}{~rb}</td>
+          <td>
+            <a href="#/reports?query=patient_id:{~lb}{~lb}pregnancy.patient_id{~rb}{~rb}" title="View patient history">
+              <span class="fa fa-list-alt"></span>
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
