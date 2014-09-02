@@ -96,6 +96,17 @@ var _ = require('underscore'),
                   scope.totalBirths = data;
                 });
 
+                $resource('/api/missing-delivery-reports', { district: district }, { query: {
+                  method: 'GET',
+                  isArray: true,
+                  cache: true
+                }}).query(function(data) {
+                  scope.missingDeliveryReports = {
+                    data: data,
+                    order: 'edd'
+                  };
+                });
+
               });
 
             }

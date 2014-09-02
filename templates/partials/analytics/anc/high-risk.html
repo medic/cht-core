@@ -26,9 +26,7 @@
           </td>
           <td>{~lb}{~lb}pregnancy.clinic.contact.name{~rb}{~rb}</td>
           <td>
-            <a href="#/reports?query=patient_id:{~lb}{~lb}pregnancy.patient_id{~rb}{~rb}" title="View patient history">
-              <span class="fa fa-list-alt"></span>
-            </a>
+            <a href="#" class="send-message" data-send-to="{~lb}{~lb}pregnancy.clinic.contact.phone{~rb}{~rb}" title="Send message to CHW" ng-show="pregnancy.clinic.contact.phone"><i class="fa fa-envelope"></i></a>
           </td>
         </tr>
       </tbody>
