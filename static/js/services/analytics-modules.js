@@ -116,26 +116,34 @@ var _ = require('underscore'),
                   scope.deliveryLocation = data;
                 });
 
-                scope.visitsCompletedChartLabelKey = function() {
+                scope.visitsChartLabelKey = function() {
                   return function(d) {
-                    console.log(d);
                     return (d + 1) + '+ visits';
                   };
                 };
-                scope.visitsCompletedChartLabelValue = function() {
+                scope.visitsChartLabelValue = function() {
                   return function(d) {
                     return d;
                   };
                 };
-                var visitsCompletedMap = ['#E33030', '#DB9A9A', '#9DC49D', '#49A349'];
-                scope.visitsCompletedChartColors = function() {
+                var visitsMap = ['#E33030', '#DB9A9A', '#9DC49D', '#49A349'];
+                scope.visitsChartColors = function() {
                   return function(d, i) {
-                    return visitsCompletedMap[i];
+                    return visitsMap[i];
                   };
                 };
 
                 request('/api/visits-completed', district, function(data) {
                   scope.visitsCompleted = [{
+                    key: 'item',
+                    values: _.map(data, function(d, i) {
+                      return [i, d];
+                    })
+                  }];
+                });
+
+                request('/api/visits-during', district, function(data) {
+                  scope.visitsDuring = [{
                     key: 'item',
                     values: _.map(data, function(d, i) {
                       return [i, d];
