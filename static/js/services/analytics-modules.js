@@ -116,6 +116,33 @@ var _ = require('underscore'),
                   scope.deliveryLocation = data;
                 });
 
+                scope.visitsCompletedChartLabelKey = function() {
+                  return function(d) {
+                    console.log(d);
+                    return (d + 1) + '+ visits';
+                  };
+                };
+                scope.visitsCompletedChartLabelValue = function() {
+                  return function(d) {
+                    return d;
+                  };
+                };
+                var visitsCompletedMap = ['#E33030', '#DB9A9A', '#9DC49D', '#49A349'];
+                scope.visitsCompletedChartColors = function() {
+                  return function(d, i) {
+                    return visitsCompletedMap[i];
+                  };
+                };
+
+                request('/api/visits-completed', district, function(data) {
+                  scope.visitsCompleted = [{
+                    key: 'item',
+                    values: _.map(data, function(d, i) {
+                      return [i, d];
+                    })
+                  }];
+                });
+
               });
 
             }
