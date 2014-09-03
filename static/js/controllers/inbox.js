@@ -121,7 +121,7 @@ var utils = require('kujua-utils'),
         type: 'messages',
         forms: [],
         facilities: [],
-        valid: true,
+        valid: undefined,
         date: { }
       };
 
