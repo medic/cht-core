@@ -14,13 +14,19 @@
     "angular-route": "~1.2.20",
     "angular-sanitize": "~1.2.20",
     "angular-translate": "~2.2.0",
+    "angularjs-nvd3-directives": "~0.0.7",
     "bootstrap": "3.2.x",
     "bootstrap-daterangepicker": "1.3.x",
+    "d3": "~3.4.11",
     "fontawesome": "4.1.x",
     "jquery": "2.1.x",
     "moment": "2.8.x",
+    "nvd3": "~1.1.15-beta",
     "raphael": "2.1.x",
     "select2": "3.5.x",
     "underscore": "1.6.x"
+  },
+  "resolutions": {
+    "d3": "~3.4.11"
   }
 }

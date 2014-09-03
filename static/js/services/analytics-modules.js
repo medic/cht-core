@@ -7,9 +7,25 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
+
   inboxServices.factory('AnalyticsModules',
     ['$resource', 'UserDistrict',
     function($resource, UserDistrict) {
+
+      var request = function(url, district, options, callback) {
+        if (!callback) {
+          callback = options;
+          options = {};
+        }
+        _.defaults(options, {
+          method: 'GET',
+          isArray: true,
+          cache: true
+        });
+        $resource(url, { district: district }, { query: options })
+          .query(callback);
+      };
+
       return function() {
         var modules = [
           {
@@ -36,75 +52,68 @@ var _ = require('underscore'),
                   return console.log('Error fetching district', err);
                 }
 
-                $resource('/api/active-pregnancies', { district: district }, { query: {
-                  method: 'GET',
-                  isArray: false,
-                  cache: true
-                }}).query(function(data) {
+                request('/api/active-pregnancies', district, { isArray: false }, function(data) {
                   scope.activePregnancies = data;
                 });
 
-                $resource('/api/upcoming-appointments', { district: district }, { query: {
-                  method: 'GET',
-                  isArray: true,
-                  cache: true
-                }}).query(function(data) {
-                  scope.upcomingAppointments = {
-                    data: data,
-                    order: 'date'
-                  };
+                request('/api/upcoming-appointments', district, function(data) {
+                  scope.upcomingAppointments = { data: data, order: 'date' };
                 });
 
-                $resource('/api/missed-appointments', { district: district }, { query: {
-                  method: 'GET',
-                  isArray: true,
-                  cache: true
-                }}).query(function(data) {
-                  scope.missedAppointments = {
-                    data: data,
-                    order: 'date'
-                  };
+                request('/api/missed-appointments', district, function(data) {
+                  scope.missedAppointments = { data: data, order: 'date' };
                 });
 
-                $resource('/api/upcoming-due-dates', { district: district }, { query: {
-                  method: 'GET',
-                  isArray: true,
-                  cache: true
-                }}).query(function(data) {
-                  scope.upcomingDueDates = {
-                    data: data,
-                    order: 'edd'
-                  };
+                request('/api/upcoming-due-dates', district, function(data) {
+                  scope.upcomingDueDates = { data: data, order: 'edd' };
                 });
 
-                $resource('/api/high-risk', { district: district }, { query: {
-                  method: 'GET',
-                  isArray: true,
-                  cache: true
-                }}).query(function(data) {
-                  scope.highRisk = {
-                    data: data,
-                    order: 'date'
-                  };
+                request('/api/high-risk', district, function(data) {
+                  scope.highRisk = { data: data, order: 'date' };
                 });
 
-                $resource('/api/total-births', { district: district }, { query: {
-                  method: 'GET',
-                  isArray: false,
-                  cache: true
-                }}).query(function(data) {
+                request('/api/total-births', district, { isArray: false }, function(data) {
                   scope.totalBirths = data;
                 });
 
-                $resource('/api/missing-delivery-reports', { district: district }, { query: {
-                  method: 'GET',
-                  isArray: true,
-                  cache: true
-                }}).query(function(data) {
-                  scope.missingDeliveryReports = {
-                    data: data,
-                    order: 'edd'
+                request('/api/missing-delivery-reports', district, function(data) {
+                  scope.missingDeliveryReports = { data: data, order: 'edd' };
+                });
+
+                var deliveryCodeMap = {
+                  F: {
+                    label: 'Institutional Delivery',
+                    color: '#49A349'
+                  },
+                  S: {
+                    label: 'At home with SBA',
+                    color: '#D19D2E'
+                  },
+                  NS: {
+                    label: 'At home without SBA',
+                    color: '#E33030'
+                  }
+                };
+                scope.deliveryCodeChartLabelKey = function() {
+                  return function(elem) {
+                    return deliveryCodeMap[elem.key].label;
                   };
+                };
+                scope.deliveryCodeChartLabelValue = function() {
+                  return function(elem) {
+                    return elem.value;
+                  };
+                };
+                scope.deliveryCodeChartColors = function() {
+                  return function(elem) {
+                    // coloring the legend => elem
+                    // coloring the chart  => elem.data
+                    var data = elem.data || elem;
+                    return deliveryCodeMap[data.key].color;
+                  };
+                };
+                request('/api/delivery-location', district, function(data) {
+                  scope.deliveryLocation = data;
                 });
 
               });

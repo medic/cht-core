@@ -1,0 +1,19 @@
+<div class="col-sm-6 analytics-widget delivery-location">
+  <div class="title">
+    <p class="name">Reported Delivery Locations</p>
+  </div>
+  <div class="content" ng-show="deliveryLocation">
+    <nvd3-pie-chart
+      data="deliveryLocation"
+      width="300"
+      height="250"
+      x="deliveryCodeChartLabelKey()"
+      y="deliveryCodeChartLabelValue()"
+      color="deliveryCodeChartColors()"
+      showLegend="true"
+      showLabels="true"
+      labelType="value">
+        <svg height="250"></svg>
+    </nvd3-pie-chart>
+  </div>
+</div>

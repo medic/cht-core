@@ -25,6 +25,7 @@ var _ = require('underscore');
       $scope.setSelectedModule(findSelectedModule(
         $route.current.params.module, $scope.analyticsModules
       ));
+
       if ($scope.filterModel.module) {
         $scope.filterModel.module.render($scope);
       }

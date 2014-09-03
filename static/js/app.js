@@ -13,7 +13,8 @@ require('../dist/reporting-views');
     'inboxFilters',
     'inboxControllers',
     'inboxServices',
-    'pascalprecht.translate'
+    'pascalprecht.translate',
+    'nvd3ChartDirectives'
   ]);
 
   app.config(['$routeProvider', '$translateProvider',
