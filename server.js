@@ -10,7 +10,8 @@ var app = require('express')(),
     highRisk = require('./controllers/high-risk'),
     totalBirths = require('./controllers/total-births'),
     missingDeliveryReports = require('./controllers/missing-delivery-reports'),
-    deliveryLocation = require('./controllers/delivery-location');
+    deliveryLocation = require('./controllers/delivery-location'),
+    visitsCompleted = require('./controllers/visits-completed');
   
 var audit = function(req, res) {
   auditProxy.onMatch(proxy, req, res, target);
@@ -60,6 +61,10 @@ app.get('/api/missing-delivery-reports', function(req, res) {
 
 app.get('/api/delivery-location', function(req, res) {
   handleApiCall(req, res, deliveryLocation);
+});
+
+app.get('/api/visits-completed', function(req, res) {
+  handleApiCall(req, res, visitsCompleted);
 });
 
 app.all('*', function(req, res) {

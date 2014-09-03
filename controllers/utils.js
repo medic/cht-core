@@ -16,6 +16,12 @@ var formatDateRange = function(field, startDate, endDate) {
   return field + '<date>:[' + start + ' TO ' + end + ']';
 };
 
+var collectPatientIds = function(records) {
+  return _.map(records.rows, function(row) {
+    return row.doc.patient_id;
+  });
+};
+
 module.exports = {
 
   getAllRegistrations: function(options, callback) {
@@ -50,6 +56,26 @@ module.exports = {
       options.q += ' AND district:"' + options.district + '"';
     }
     db.fti('data_records', options, callback);
+  },
+
+  getBirthPatientIds: function(options, callback) {
+    options.minWeeksPregnant = 42;
+    options.maxWeeksPregnant = 10000;
+    module.exports.getAllRegistrations(options, function(err, registrations) {
+      if (err) {
+        return callback(err);
+      }
+      options.include_docs = true;
+      module.exports.getDeliveries(options, function(err, deliveries) {
+        if (err) {
+          return callback(err);
+        }
+        callback(null, _.union(
+          collectPatientIds(deliveries),
+          collectPatientIds(registrations)
+        ));
+      });
+    });
   },
 
   rejectDeliveries: function(objects, callback) {
