@@ -9,7 +9,8 @@ if (process.env.COUCH_URL) {
     _.extend(settings, {
         port: couch_url.port,
         host: couch_url.hostname,
-        db: couch_url.path
+        db: couch_url.path,
+        ddoc: 'medic'
     });
 
     if (couch_url.auth) {
@@ -38,10 +39,12 @@ var client = couchdb.createClient(
 module.exports = client.db(settings.db);
 module.exports.user = settings.username;
 module.exports.fti = function(index, data, cb) {
-    var path = '/_fti/local' + settings.db 
-        + '/_design' + settings.db + '/' + index;
+    var path = '/_fti/local' + settings.db + '/_design/' + settings.ddoc + '/' + index;
     client.request({
         path: path,
         query: data
     }, cb);
 };
+module.exports.getView = function(view, query, callback) {
+    module.exports.view(settings.ddoc, view, query, callback);
+}
