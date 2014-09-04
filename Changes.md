@@ -1,5 +1,11 @@
 # Medic Mobile Release Notes
 
+## 0.4.2
+
+### Sep 4, 2014
+
+- fixed bug when searching for Patient IDs the field was not indexed correctly.
+
 ## 0.4.1
 
 ### Jul 31, 2014
