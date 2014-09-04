@@ -28,7 +28,7 @@ exports['get returns errors'] = function(test) {
   });
 };
 
-exports['get returns total births count'] = function(test) {
+exports['get returns monthly registrations count'] = function(test) {
   test.expect(2);
   var fti = sinon.stub(db, 'fti').callsArgWith(2, null, {
     rows: [

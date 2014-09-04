@@ -52,6 +52,9 @@ module.exports = {
     if (options.patientIds) {
       options.q += ' AND ' + formatPatientIds(options.patientIds);
     }
+    if (options.startDate && options.endDate) {
+      options.q += ' AND ' + module.exports.formatDateRange('reported_date', options.startDate, options.endDate);
+    };
     if (options.district) {
       options.q += ' AND district:"' + options.district + '"';
     }
@@ -60,7 +63,7 @@ module.exports = {
 
   getBirthPatientIds: function(options, callback) {
     options.minWeeksPregnant = 42;
-    options.maxWeeksPregnant = 10000;
+    options.maxWeeksPregnant = options.maxWeeksPregnant || 10000;
     module.exports.getAllRegistrations(options, function(err, registrations) {
       if (err) {
         return callback(err);
