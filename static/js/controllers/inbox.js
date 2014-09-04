@@ -135,9 +135,6 @@ var utils = require('kujua-utils'),
         $location.path(path.join('/'));
       };
 
-      $scope.messagesDownloadUrl = DownloadUrl(true);
-      $scope.reportsDownloadUrl = DownloadUrl(false);
-
       var updateAvailableFacilities = function() {
         Facility($scope.permissions.district).then(
           function(res) {
@@ -175,7 +172,7 @@ var utils = require('kujua-utils'),
           }
         );
       };
-      
+
       UserDistrict(function(err, district) {
         if (err) {
           console.log('Error fetching user district', err);
@@ -185,6 +182,13 @@ var utils = require('kujua-utils'),
           return;
         }
         $scope.permissions.district = district;
+        $scope.messagesDownloadUrl = DownloadUrl({
+            messages: true,
+            district: district
+        });
+        $scope.reportsDownloadUrl = DownloadUrl({
+            district: district
+        });
         updateAvailableFacilities();
         updateContacts();
         $scope.updateReadStatus();

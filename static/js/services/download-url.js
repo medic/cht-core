@@ -8,19 +8,26 @@ var moment = require('moment');
 
   inboxServices.factory('DownloadUrl', ['BaseUrlService',
     function(BaseUrlService) {
-      return function(messages) {
+      return function(options) {
+        options = options || {};
         var url = BaseUrlService();
-        url += '/export/' + (messages ? 'messages' : 'forms');
-        url += '?' + $.param({
-          startkey: '[9999999999999,{}]',
-          endkey: '[0]',
-          tz: moment().zone(),
-          format: 'xml',
+        url += '/export/' + (options.messages ? 'messages' : 'forms');
+        var params = {
+          startkey: [9999999999999,{}],
+          endkey: [0],
+          tz: options.tz || moment().zone(),
+          format: options.format || 'xml',
           reduce: false
-        });
-        return url;
+        };
+        if (options.district) {
+            params.startkey.unshift(options.district);
+            params.endkey.unshift(options.district);
+        }
+        params.startkey = JSON.stringify(params.startkey);
+        params.endkey = JSON.stringify(params.endkey);
+        return url + '?' + $.param(params);
       };
     }
   ]);
-  
+
 }()); 
