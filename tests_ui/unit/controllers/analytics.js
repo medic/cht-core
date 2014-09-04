@@ -6,7 +6,8 @@ describe('AnalyticsCtrl controller', function() {
       scope,
       modules,
       moduleId,
-      AnalyticsModules;
+      AnalyticsModules,
+      Settings;
 
   beforeEach(module('inboxApp'));
 
@@ -24,6 +25,7 @@ describe('AnalyticsCtrl controller', function() {
       return $controller('AnalyticsCtrl', {
         '$scope': scope,
         '$route': { current: { params: { module: moduleId } } },
+        'Settings': Settings,
         'AnalyticsModules': AnalyticsModules
       });
     };
@@ -31,6 +33,11 @@ describe('AnalyticsCtrl controller', function() {
     moduleId = undefined;
     AnalyticsModules = function() {
       return modules;
+    };
+    Settings = {
+      query: function(callback) {
+        callback({ settings: {} });
+      }
     };
   }));
 
