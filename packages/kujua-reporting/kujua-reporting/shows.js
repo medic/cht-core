@@ -511,11 +511,6 @@ var render = function (name, context) {
     return r;
 };
 
-exports.available = function() {
-    sms_utils.info = appinfo.getAppInfo();
-    return !!getForms().length;
-};
-
 exports.render_page = function() {
     require('../../../lib/dust-helpers');
     db = db.current();

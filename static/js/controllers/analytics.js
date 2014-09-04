@@ -17,18 +17,19 @@ var _ = require('underscore');
   };
 
   inboxControllers.controller('AnalyticsCtrl',
-    ['$scope', '$route', 'AnalyticsModules',
-    function ($scope, $route, AnalyticsModules) {
+    ['$scope', '$route', 'Settings', 'AnalyticsModules',
+    function ($scope, $route, Settings, AnalyticsModules) {
       $scope.setSelectedModule();
       $scope.filterModel.type = 'analytics';
-      $scope.setAnalyticsModules(AnalyticsModules());
-      $scope.setSelectedModule(findSelectedModule(
-        $route.current.params.module, $scope.analyticsModules
-      ));
-
-      if ($scope.filterModel.module) {
-        $scope.filterModel.module.render($scope);
-      }
+      Settings.query(function(res) {
+        $scope.setAnalyticsModules(AnalyticsModules(res.settings));
+        $scope.setSelectedModule(findSelectedModule(
+          $route.current.params.module, $scope.analyticsModules
+        ));
+        if ($scope.filterModel.module) {
+          $scope.filterModel.module.render($scope);
+        }
+      });
     }
   ]);
 

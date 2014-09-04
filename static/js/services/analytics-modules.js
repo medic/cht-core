@@ -27,23 +27,15 @@ var _ = require('underscore'),
           .query(callback);
       };
 
-      return function() {
+      return function(settings) {
         var modules = [
-          {
-            id: 'stock',
-            label: 'Stock Monitoring',
-            available: function() {
-              // TODO implement this based off Settings service instead
-              return stock.available();
-            },
-            render: stock.render_page
-          },
           {
             id: 'anc',
             label: 'Antenatal Care',
             available: function() {
-              // TODO implement some check for forms?
-              return true;
+              var forms = settings.forms;
+              return !!forms && !!forms.D && !!forms.F &&
+                     !!forms.R && !!forms.P && !!forms.V;
             },
             render: function(scope) {
 
@@ -192,6 +184,18 @@ var _ = require('underscore'),
               });
 
             }
+          },
+          {
+            id: 'stock',
+            label: 'Stock Monitoring',
+            available: function() {
+              var forms = settings.forms;
+              var stockForms = settings['kujua-reporting'];
+              return _.some(stockForms, function(stockForm) {
+                return !!forms[stockForm.code];
+              });
+            },
+            render: stock.render_page
           }
         ];
         return _.filter(modules, function(module) {
