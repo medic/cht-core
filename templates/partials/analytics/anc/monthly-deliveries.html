@@ -1,0 +1,22 @@
+<div class="col-sm-6 analytics-widget monthly-deliveries">
+  <div class="title">
+    <p class="name">Monthly Births</p>
+  </div>
+  <div class="content" ng-show="monthlyDeliveries">
+    <nvd3-line-chart
+      data="monthlyDeliveries"
+      width="300"
+      height="250"
+      showXAxis="true"
+      showYAxis="true"
+      xAxisTickFormat="monthlyChartLabelKey()"
+      x="monthlyChartX()"
+      y="monthlyChartY()"
+      interpolate="monotone"
+      interactive="true"
+      tooltips="true"
+      tooltipcontent="monthlyChartToolTip()">
+        <svg></svg>
+    </nvd3-line-chart>
+  </div>
+</div>

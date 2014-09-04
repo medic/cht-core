@@ -182,6 +182,13 @@ var _ = require('underscore'),
                   }];
                 });
 
+                request('/api/monthly-deliveries', district, function(data) {
+                  scope.monthlyDeliveries = [{
+                    key: 'item',
+                    values: data
+                  }];
+                });
+
               });
 
             }
