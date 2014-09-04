@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    stock = require('kujua-reporting/shows');
+    stock = require('kujua-reporting/shows'),
+    moment = require('moment');
 
 (function () {
 
@@ -148,6 +149,36 @@ var _ = require('underscore'),
                     values: _.map(data, function(d, i) {
                       return [i, d];
                     })
+                  }];
+                });
+
+                scope.monthlyChartLabelKey = function() {
+                  return function(d) {
+                    return moment()
+                      .subtract(12 - d, 'months')
+                      .format('MMM YYYY');
+                  };
+                };
+                scope.monthlyChartX = function() {
+                  return function(d, i) {
+                    return i;
+                  };
+                };
+                scope.monthlyChartY = function() {
+                  return function(d) {
+                    return d.count;
+                  };
+                };
+                scope.monthlyChartToolTip = function() {
+                  return function(key, x, y) {
+                    return '<p>' + y + ' in ' + x + '</p>';
+                  };
+                };
+
+                request('/api/monthly-registrations', district, function(data) {
+                  scope.monthlyRegistrations = [{
+                    key: 'item',
+                    values: data
                   }];
                 });
 
