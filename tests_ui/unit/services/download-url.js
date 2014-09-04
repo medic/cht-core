@@ -37,16 +37,16 @@ describe('DownloadUrl service', function() {
         district: 'abc123'
     }));
     chai.expect(actualForms).to.equal(
-      '/medic/export/forms?startkey=["abc123",9999999999999,{}]'
-      + '&endkey=["abc123",0]&tz=' + moment().zone() + '&format=xml&reduce=false'
+      '/medic/export/forms?startkey=["abc123",9999999999999,{}]' +
+      '&endkey=["abc123",0]&tz=' + moment().zone() + '&format=xml&reduce=false'
     );
     var actualMessages = decodeURIComponent(service({
         messages: true,
         district: 'abc123'
     }));
     chai.expect(actualMessages).to.equal(
-      '/medic/export/messages?startkey=["abc123",9999999999999,{}]'
-      + '&endkey=["abc123",0]&tz=' + moment().zone() + '&format=xml&reduce=false'
+      '/medic/export/messages?startkey=["abc123",9999999999999,{}]' +
+      '&endkey=["abc123",0]&tz=' + moment().zone() + '&format=xml&reduce=false'
     );
   });
 
