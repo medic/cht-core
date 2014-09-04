@@ -32,10 +32,9 @@
                 <span ng-bind-html="pregnancy.edd | simpleDate"></span>
               </span>
             </td>
-            <td>
-              <a href="#/reports?query=patient_id:{~lb}{~lb}pregnancy.patient_id{~rb}{~rb}" title="View patient history">
-                <span class="fa fa-list-alt"></span>
-              </a>
+            <td class="actions">
+              <a href="#" class="btn btn-link send-message" data-send-to="{~lb}{~lb}pregnancy.clinic.contact.phone{~rb}{~rb}" title="Send message to CHW" ng-class="{'disabled': !pregnancy.clinic.contact.phone}"><i class="fa fa-envelope"></i></a>
+              <a href="#/reports?query=patient_id:{~lb}{~lb}pregnancy.patient_id{~rb}{~rb}" class="btn btn-link" title="View patient history"><i class="fa fa-list-alt"></i></a>
             </td>
           </tr>
         </tbody>

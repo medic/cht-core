@@ -25,8 +25,9 @@
             </td>
             <td>{~lb}{~lb}appointment.clinic.contact.name{~rb}{~rb}</td>
             <td ng-bind-html="appointment.date | relativeDate"></td>
-            <td>
-              <a href="#" class="send-message" data-send-to="{~lb}{~lb}appointment.clinic.contact.phone{~rb}{~rb}" title="Send message to CHW" ng-show="appointment.clinic.contact.phone"><i class="fa fa-envelope"></i></a>
+            <td class="actions">
+              <a href="#" class="btn btn-link send-message" data-send-to="{~lb}{~lb}appointment.clinic.contact.phone{~rb}{~rb}" title="Send message to CHW" ng-class="{'disabled': !appointment.clinic.contact.phone}"><i class="fa fa-envelope"></i></a>
+              <a href="#/reports?query=patient_id:{~lb}{~lb}appointment.patient_id{~rb}{~rb}" class="btn btn-link" title="View patient history"><i class="fa fa-list-alt"></i></a>
             </td>
           </tr>
         </tbody>

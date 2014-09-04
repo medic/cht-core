@@ -26,8 +26,9 @@
               </span>
             </td>
             <td>{~lb}{~lb}pregnancy.clinic.contact.name{~rb}{~rb}</td>
-            <td>
-              <a href="#" class="send-message" data-send-to="{~lb}{~lb}pregnancy.clinic.contact.phone{~rb}{~rb}" title="Send message to CHW" ng-show="pregnancy.clinic.contact.phone"><i class="fa fa-envelope"></i></a>
+            <td class="actions">
+              <a href="#" class="btn btn-link send-message" data-send-to="{~lb}{~lb}pregnancy.clinic.contact.phone{~rb}{~rb}" title="Send message to CHW" ng-class="{'disabled': !pregnancy.clinic.contact.phone}"><i class="fa fa-envelope"></i></a>
+              <a href="#/reports?query=patient_id:{~lb}{~lb}pregnancy.patient_id{~rb}{~rb}" class="btn btn-link" title="View patient history"><i class="fa fa-list-alt"></i></a>
             </td>
           </tr>
         </tbody>
