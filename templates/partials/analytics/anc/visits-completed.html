@@ -1,19 +1,21 @@
 <div class="col-sm-6 analytics-widget visits-completed">
-  <div class="title">
-    <p class="name">Visits Completed During Pregnancy</p>
-    <p class="description">Completed pregnancies that have had...</p>
-  </div>
-  <div class="content" ng-show="visitsCompleted">
-    <nvd3-discrete-bar-chart
-      data="visitsCompleted"
-      width="300"
-      height="250"
-      showXAxis="true"
-      showValues="true"
-      color="visitsChartColors()"
-      xAxisTickFormat="visitsChartLabelKey()"
-      valueFormat="visitsChartLabelValue()">
-        <svg height="250"></svg>
-    </nvd3-discrete-bar-chart>
+  <div class="widget-body">
+    <div class="title">
+      <p class="name">Visits Completed During Pregnancy</p>
+      <p class="description">Completed pregnancies that have had...</p>
+    </div>
+    <div class="content" ng-show="visitsCompleted">
+      <nvd3-discrete-bar-chart
+        data="visitsCompleted"
+        width="300"
+        height="250"
+        showXAxis="true"
+        showValues="true"
+        color="visitsChartColors()"
+        xAxisTickFormat="visitsChartLabelKey()"
+        valueFormat="visitsChartLabelValue()">
+          <svg></svg>
+      </nvd3-discrete-bar-chart>
+    </div>
   </div>
 </div>

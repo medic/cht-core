@@ -1,38 +1,40 @@
 <div class="col-sm-6 analytics-widget upcoming-appointments table-responsive">
-  <div class="title">
-    <p class="count">
-      {~lb}{~lb}upcomingAppointments.data.length || 0{~rb}{~rb}
-    </p>
-    <p class="name">Upcoming Appointments</p>
-  </div>
-  <div class="content" ng-show="upcomingAppointments.data">
-    <table class="table">
-      <thead>
-        <tr>
-          <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='patient_name'}" ng-click="upcomingAppointments.order='patient_name'">Name</th>
-          <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='-weeks.number'}" ng-click="upcomingAppointments.order='-weeks.number'">Weeks Pregnant</th>
-          <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='clinic.contact.name'}" ng-click="upcomingAppointments.order='clinic.contact.name'">CHW</th>
-          <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='date'}" ng-click="upcomingAppointments.order='date'">Appointment Date</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr ng-repeat="appointment in upcomingAppointments.data | orderBy:upcomingAppointments.order">
-          <td>{~lb}{~lb}appointment.patient_name{~rb}{~rb}</td>
-          <td>
-            <span ng-class="{'approximate': appointment.weeks.approximate}">
-              {~lb}{~lb}appointment.weeks.number{~rb}{~rb}
-            </span>
-          </td>
-          <td>{~lb}{~lb}appointment.clinic.contact.name{~rb}{~rb}</td>
-          <td ng-bind-html="appointment.date | relativeDate"></td>
-          <td>
-            <a href="#/reports?query=patient_id:{~lb}{~lb}appointment.patient_id{~rb}{~rb}" title="View patient history">
-              <span class="fa fa-list-alt"></span>
-            </a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="widget-body">
+    <div class="title">
+      <p class="count">
+        {~lb}{~lb}upcomingAppointments.data.length || 0{~rb}{~rb}
+      </p>
+      <p class="name">Upcoming Appointments</p>
+    </div>
+    <div class="content" ng-show="upcomingAppointments.data">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='patient_name'}" ng-click="upcomingAppointments.order='patient_name'">Name</th>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='-weeks.number'}" ng-click="upcomingAppointments.order='-weeks.number'">Weeks Pregnant</th>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='clinic.contact.name'}" ng-click="upcomingAppointments.order='clinic.contact.name'">CHW</th>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='date'}" ng-click="upcomingAppointments.order='date'">Appointment Date</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="appointment in upcomingAppointments.data | orderBy:upcomingAppointments.order">
+            <td>{~lb}{~lb}appointment.patient_name{~rb}{~rb}</td>
+            <td>
+              <span ng-class="{'approximate': appointment.weeks.approximate}">
+                {~lb}{~lb}appointment.weeks.number{~rb}{~rb}
+              </span>
+            </td>
+            <td>{~lb}{~lb}appointment.clinic.contact.name{~rb}{~rb}</td>
+            <td ng-bind-html="appointment.date | relativeDate"></td>
+            <td>
+              <a href="#/reports?query=patient_id:{~lb}{~lb}appointment.patient_id{~rb}{~rb}" title="View patient history">
+                <span class="fa fa-list-alt"></span>
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

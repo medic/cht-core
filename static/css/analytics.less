@@ -1,8 +1,9 @@
 .analytics-widget {
-  padding: 2em;
+  padding: 1em;
   .title {
     font-weight: bold;
     text-align: center;
+    padding: 1em;
     .count {
       margin: 0;
       line-height: 0.9em;
@@ -38,8 +39,14 @@
     color: #000000;
   }
   svg {
-    width: 300px;
+    max-width: 300px;
     margin: 0 auto;
+  }
+  .table {
+    margin-bottom: 0;
+  }
+  .widget-body {
+    box-shadow: 0 0 0.5em #AAA;
   }
 }
 
@@ -72,12 +79,13 @@
   color: #1D86F0;
 }
 
-.delivery-location .title {
-  color: #1D86F0;
-}
-
 @media (max-width: 767px) {
   .analytics-widget {
-    padding: 2em 0;
+    padding: 1em 0;
+  }
+  .table-responsive {
+    border: 0;
+    margin-bottom: 0;
+    overflow: inherit;
   }
 }

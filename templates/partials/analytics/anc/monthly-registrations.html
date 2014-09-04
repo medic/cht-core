@@ -1,22 +1,24 @@
 <div class="col-sm-6 analytics-widget monthly-registrations">
-  <div class="title">
-    <p class="name">Monthly Pregnancies Registered</p>
-  </div>
-  <div class="content" ng-show="monthlyRegistrations">
-    <nvd3-line-chart
-      data="monthlyRegistrations"
-      width="300"
-      height="250"
-      showXAxis="true"
-      showYAxis="true"
-      xAxisTickFormat="monthlyChartLabelKey()"
-      x="monthlyChartX()"
-      y="monthlyChartY()"
-      interpolate="monotone"
-      interactive="true"
-      tooltips="true"
-      tooltipcontent="monthlyChartToolTip()">
-        <svg></svg>
-    </nvd3-line-chart>
+  <div class="widget-body">
+    <div class="title">
+      <p class="name">Monthly Pregnancies Registered</p>
+    </div>
+    <div class="content" ng-show="monthlyRegistrations">
+      <nvd3-line-chart
+        data="monthlyRegistrations"
+        width="300"
+        height="250"
+        showXAxis="true"
+        showYAxis="true"
+        xAxisTickFormat="monthlyChartLabelKey()"
+        x="monthlyChartX()"
+        y="monthlyChartY()"
+        interpolate="monotone"
+        interactive="true"
+        tooltips="true"
+        tooltipcontent="monthlyChartToolTip()">
+          <svg></svg>
+      </nvd3-line-chart>
+    </div>
   </div>
 </div>
