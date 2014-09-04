@@ -12,7 +12,8 @@ var app = require('express')(),
     missingDeliveryReports = require('./controllers/missing-delivery-reports'),
     deliveryLocation = require('./controllers/delivery-location'),
     visitsCompleted = require('./controllers/visits-completed'),
-    visitsDuring = require('./controllers/visits-during');
+    visitsDuring = require('./controllers/visits-during'),
+    monthlyRegistrations = require('./controllers/monthly-registrations');
   
 var audit = function(req, res) {
   auditProxy.onMatch(proxy, req, res, target);
@@ -70,6 +71,10 @@ app.get('/api/visits-completed', function(req, res) {
 
 app.get('/api/visits-during', function(req, res) {
   handleApiCall(req, res, visitsDuring);
+});
+
+app.get('/api/monthly-registrations', function(req, res) {
+  handleApiCall(req, res, monthlyRegistrations);
 });
 
 app.all('*', function(req, res) {

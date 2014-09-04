@@ -10,12 +10,6 @@ var formatDate = function(date) {
   return date.zone(0).format('YYYY-MM-DD');
 };
 
-var formatDateRange = function(field, startDate, endDate) {
-  var start = formatDate(startDate);
-  var end = formatDate(endDate.clone().add(1, 'days'));
-  return field + '<date>:[' + start + ' TO ' + end + ']';
-};
-
 var collectPatientIds = function(records) {
   return _.map(records.rows, function(row) {
     return row.doc.patient_id;
@@ -24,13 +18,19 @@ var collectPatientIds = function(records) {
 
 module.exports = {
 
+  formatDateRange: function(field, startDate, endDate) {
+    var start = formatDate(startDate);
+    var end = formatDate(endDate.clone().add(1, 'days'));
+    return field + '<date>:[' + start + ' TO ' + end + ']';
+  },
+
   getAllRegistrations: function(options, callback) {
     var minWeeksPregnant = options.minWeeksPregnant || 0;
     var maxWeeksPregnant = options.maxWeeksPregnant || 42;
     var startDate = moment().subtract(maxWeeksPregnant, 'weeks');
     var endDate = moment().subtract(minWeeksPregnant, 'weeks');
-    var rDateCriteria = formatDateRange('reported_date', startDate, endDate);
-    var pDateCriteria = formatDateRange('lmp_date', startDate.subtract(2, 'weeks'), endDate.subtract(2, 'weeks'));
+    var rDateCriteria = module.exports.formatDateRange('reported_date', startDate, endDate);
+    var pDateCriteria = module.exports.formatDateRange('lmp_date', startDate.subtract(2, 'weeks'), endDate.subtract(2, 'weeks'));
     var query = 'errors<int>:0 AND ((form:R AND ' + rDateCriteria + ') OR (form:P AND ' + pDateCriteria + '))';
     if (options.district) {
       query += ' AND district:"' + options.district + '"';
@@ -105,7 +105,7 @@ module.exports = {
     var startDate = options.startDate;
     var endDate = options.endDate || moment();
     var query = 'form:V ' +
-           'AND ' + formatDateRange('reported_date', startDate, endDate) + ' ' +
+           'AND ' + module.exports.formatDateRange('reported_date', startDate, endDate) + ' ' +
            'AND ' + formatPatientIds(options.patientIds);
     db.fti('data_records', { q: query, limit: 1000, include_docs: true }, callback);
   },
