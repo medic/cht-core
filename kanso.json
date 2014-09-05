@@ -282,6 +282,37 @@
                     }
                 ]
             },
+            "anc_forms": {
+                "title": "ANC Reports",
+                "type": "object",
+                "properties": {
+                    "registration": {
+                        "type": "string",
+                        "title": "Pregnancy Registration Form Code",
+                        "default": "R"
+                    },
+                    "registrationLmp": {
+                        "type": "string",
+                        "title": "Pregnancy Registration LMP Form Code",
+                        "default": "P"
+                    },
+                    "visit": {
+                        "type": "string",
+                        "title": "Completed ANC Visit Form Code",
+                        "default": "V"
+                    },
+                    "delivery": {
+                        "type": "string",
+                        "title": "Delivery Report Form Code",
+                        "default": "D"
+                    },
+                    "flag": {
+                        "type": "string",
+                        "title": "Flag Pregnancy Form Code",
+                        "default": "F"
+                    }
+                }
+            },
             "alerts": {
                 "title": "Alerts",
                 "type": "array",

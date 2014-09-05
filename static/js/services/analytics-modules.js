@@ -8,7 +8,6 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-
   inboxServices.factory('AnalyticsModules',
     ['$resource', 'UserDistrict',
     function($resource, UserDistrict) {
@@ -33,9 +32,12 @@ var _ = require('underscore'),
             id: 'anc',
             label: 'Antenatal Care',
             available: function() {
-              var forms = settings.forms;
-              return !!forms && !!forms.D && !!forms.F &&
-                     !!forms.R && !!forms.P && !!forms.V;
+              return _.every([
+                'registration', 'registrationLmp', 'visit', 'delivery', 'flag'
+              ], function(prop) {
+                var formCode = settings.anc_forms[prop];
+                return !!settings.forms[formCode];
+              });
             },
             render: function(scope) {
 

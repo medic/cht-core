@@ -45,6 +45,13 @@ module.exports = {
            "reporting_freq": "weekly"
        }
    ],
+   "anc_forms": {
+      "registration": "R",
+      "registrationLmp": "P",
+      "visit": "V",
+      "delivery": "D",
+      "flag": "F"
+   },
    "schedule_morning_hours": 0,
    "schedule_morning_minutes": 0,
    "schedule_evening_hours": 23,
