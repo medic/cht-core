@@ -14,6 +14,7 @@
             <th class="sortable" ng-class="{'sorted':upcomingDueDates.order==='patient_name'}" ng-click="upcomingDueDates.order='patient_name'">Name</th>
             <th class="sortable" ng-class="{'sorted':upcomingDueDates.order==='-weeks.number'}" ng-click="upcomingDueDates.order='-weeks.number'">Weeks Pregnant</th>
             <th class="sortable" ng-class="{'sorted':upcomingDueDates.order==='date'}" ng-click="upcomingDueDates.order='date'">Last Appointment</th>
+            <th class="sortable" ng-class="{'sorted':upcomingDueDates.order==='visits'}" ng-click="upcomingDueDates.order='visits'">Visits</th>
             <th class="sortable" ng-class="{'sorted':upcomingDueDates.order==='edd'}" ng-click="upcomingDueDates.order='edd'">EDD</th>
             <th></th>
           </tr>
@@ -27,6 +28,7 @@
               </span>
             </td>
             <td ng-bind-html="pregnancy.lastAppointmentDate | relativeDate"></td>
+            <td>{~lb}{~lb}pregnancy.visits{~rb}{~rb}</td>
             <td>
               <span ng-class="{'approximate': pregnancy.edd.approximate}">
                 <span ng-bind-html="pregnancy.edd | simpleDate"></span>

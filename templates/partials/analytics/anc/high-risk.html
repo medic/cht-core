@@ -14,6 +14,7 @@
             <th class="sortable" ng-class="{'sorted':highRisk.order==='patient_name'}" ng-click="highRisk.order='patient_name'">Name</th>
             <th class="sortable" ng-class="{'sorted':highRisk.order==='-weeks.number'}" ng-click="highRisk.order='-weeks.number'">Weeks Pregnant</th>
             <th class="sortable" ng-class="{'sorted':highRisk.order==='clinic.contact.name'}" ng-click="highRisk.order='clinic.contact.name'">CHW</th>
+            <th class="sortable" ng-class="{'sorted':highRisk.order==='visits'}" ng-click="highRisk.order='visits'">Visits</th>
             <th></th>
           </tr>
         </thead>
@@ -26,6 +27,7 @@
               </span>
             </td>
             <td>{~lb}{~lb}pregnancy.clinic.contact.name{~rb}{~rb}</td>
+            <td>{~lb}{~lb}pregnancy.visits{~rb}{~rb}</td>
             <td class="actions">
               <a href="#" class="btn btn-link send-message" data-send-to="{~lb}{~lb}pregnancy.clinic.contact.phone{~rb}{~rb}" title="Send message to CHW" ng-class="{'disabled': !pregnancy.clinic.contact.phone}"><i class="fa fa-envelope"></i></a>
               <a href="#/reports?query=patient_id:{~lb}{~lb}pregnancy.patient_id{~rb}{~rb}" class="btn btn-link" title="View patient history"><i class="fa fa-list-alt"></i></a>

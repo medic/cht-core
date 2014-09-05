@@ -14,6 +14,7 @@
             <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='-weeks.number'}" ng-click="upcomingAppointments.order='-weeks.number'">Weeks Pregnant</th>
             <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='clinic.contact.name'}" ng-click="upcomingAppointments.order='clinic.contact.name'">CHW</th>
             <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='date'}" ng-click="upcomingAppointments.order='date'">Appointment Date</th>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='visits'}" ng-click="upcomingAppointments.order='visits'">Visits</th>
             <th></th>
           </tr>
         </thead>
@@ -27,6 +28,7 @@
             </td>
             <td>{~lb}{~lb}appointment.clinic.contact.name{~rb}{~rb}</td>
             <td ng-bind-html="appointment.date | relativeDate"></td>
+            <td>{~lb}{~lb}appointment.visits{~rb}{~rb}</td>
             <td class="actions">
               <a href="#" class="btn btn-link send-message" data-send-to="{~lb}{~lb}appointment.clinic.contact.phone{~rb}{~rb}" title="Send message to CHW" ng-class="{'disabled': !appointment.clinic.contact.phone}"><i class="fa fa-envelope"></i></a>
               <a href="#/reports?query=patient_id:{~lb}{~lb}appointment.patient_id{~rb}{~rb}" class="btn btn-link" title="View patient history"><i class="fa fa-list-alt"></i></a>
