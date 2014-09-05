@@ -1,6 +1,12 @@
 var controller = require('../controllers/visits-completed'),
     db = require('../db'),
+    config = require('../config'),
     sinon = require('sinon');
+
+exports.setUp = function(callback) {
+  sinon.stub(config, 'get').returns({});
+  callback();
+};
 
 exports.tearDown = function (callback) {
   if (db.fti.restore) {
@@ -8,6 +14,9 @@ exports.tearDown = function (callback) {
   }
   if (db.getView.restore) {
     db.getView.restore();
+  }
+  if (config.get.restore) {
+    config.get.restore();
   }
   callback();
 };

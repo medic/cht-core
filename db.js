@@ -47,4 +47,8 @@ module.exports.fti = function(index, data, cb) {
 };
 module.exports.getView = function(view, query, callback) {
     module.exports.view(settings.ddoc, view, query, callback);
-}
+};
+module.exports.getSettings = function(cb) {
+    var path = settings.db + '/_design/' + settings.ddoc + '/_rewrite/app_settings/' + settings.ddoc;
+    client.request({ path: path }, cb);
+};

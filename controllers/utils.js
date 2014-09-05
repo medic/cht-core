@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     moment = require('moment'),
-    db = require('../db');
+    db = require('../db'),
+    config = require('../config');
 
 var formatPatientIds = function(patientIds) {
   return 'patient_id:(' + patientIds.join(' OR ') + ')';
@@ -16,7 +17,13 @@ var collectPatientIds = function(records) {
   });
 };
 
+var getFormCode = function(key) {
+  return config.get('anc_forms')[key];
+};
+
 module.exports = {
+
+  getFormCode: getFormCode,
 
   formatDateRange: function(field, startDate, endDate) {
     var start = formatDate(startDate);
@@ -31,7 +38,11 @@ module.exports = {
     var endDate = moment().subtract(minWeeksPregnant, 'weeks');
     var rDateCriteria = module.exports.formatDateRange('reported_date', startDate, endDate);
     var pDateCriteria = module.exports.formatDateRange('lmp_date', startDate.subtract(2, 'weeks'), endDate.subtract(2, 'weeks'));
-    var query = 'errors<int>:0 AND ((form:R AND ' + rDateCriteria + ') OR (form:P AND ' + pDateCriteria + '))';
+    var query = 'errors<int>:0 AND (' +
+      '(form:' + getFormCode('registration') + ' AND ' + rDateCriteria + ')' +
+      ' OR ' +
+      '(form:' + getFormCode('registrationLmp') + ' AND ' + pDateCriteria + ')' +
+      ')';
     if (options.district) {
       query += ' AND district:"' + options.district + '"';
     }
@@ -48,7 +59,7 @@ module.exports = {
       options = {};
     }
     options.limit = 1000;
-    options.q = 'form:D';
+    options.q = 'form:' + getFormCode('delivery');
     if (options.patientIds) {
       options.q += ' AND ' + formatPatientIds(options.patientIds);
     }
@@ -105,7 +116,7 @@ module.exports = {
     if (!options || !options.patientIds || !options.patientIds.length) {
       return callback(null, []);
     }
-    var query = 'form:V AND ' + formatPatientIds(options.patientIds);
+    var query = 'form:' + getFormCode('visit') + ' AND ' + formatPatientIds(options.patientIds);
     if (options.startDate) {
       query += ' AND ' + module.exports.formatDateRange(
         'reported_date', options.startDate, options.endDate || moment().add(2, 'days')
@@ -118,7 +129,7 @@ module.exports = {
     if (!options || !options.patientIds || !options.patientIds.length) {
       return callback(null, []);
     }
-    var query = 'form:F AND ' + formatPatientIds(options.patientIds);
+    var query = 'form:' + getFormCode('flag') + ' AND ' + formatPatientIds(options.patientIds);
     db.fti('data_records', { q: query, limit: 1000, include_docs: true }, callback);
   },
 

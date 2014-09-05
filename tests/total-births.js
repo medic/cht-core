@@ -1,10 +1,19 @@
 var controller = require('../controllers/total-births'),
     db = require('../db'),
+    config = require('../config'),
     sinon = require('sinon');
+
+exports.setUp = function(callback) {
+  sinon.stub(config, 'get').returns({});
+  callback();
+};
 
 exports.tearDown = function (callback) {
   if (db.fti.restore) {
     db.fti.restore();
+  }
+  if (config.get.restore) {
+    config.get.restore();
   }
   callback();
 };

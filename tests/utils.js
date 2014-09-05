@@ -1,5 +1,6 @@
 var utils = require('../controllers/utils'),
     db = require('../db'),
+    config = require('../config'),
     moment = require('moment'),
     sinon = require('sinon');
 
@@ -15,11 +16,18 @@ exports.tearDown = function (callback) {
   if (db.fti.restore) {
     db.fti.restore();
   }
+  if (config.get.restore) {
+    config.get.restore();
+  }
   callback();
 };
 
 exports['getAllRegistrations generates correct query'] = function(test) {
   test.expect(3);
+  var get = sinon.stub(config, 'get').returns({
+    registration: 'R',
+    registrationLmp: 'P'
+  });
   var fti = sinon.stub(db, 'fti').callsArgWith(2, null, 'results');
   var start = moment().subtract(20, 'weeks').zone(0);
   var end = moment().subtract(10, 'weeks').add(1, 'days').zone(0);

@@ -1,12 +1,14 @@
 var controller = require('../controllers/upcoming-due-dates'),
-    db = require('../db'),
     moment = require('moment'),
+    db = require('../db'),
+    config = require('../config'),
     sinon = require('sinon');
 
 var clock;
 
 exports.setUp = function(callback) {
   clock = sinon.useFakeTimers();
+  sinon.stub(config, 'get').returns({});
   callback();
 };
 
@@ -14,6 +16,9 @@ exports.tearDown = function(callback) {
   clock.restore();
   if (db.fti.restore) {
     db.fti.restore();
+  }
+  if (config.get.restore) {
+    config.get.restore();
   }
   callback();
 };

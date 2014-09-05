@@ -2,6 +2,7 @@ var app = require('express')(),
     proxy = require('http-proxy').createProxyServer({}),
     auditProxy = require('./audit-proxy'),
     db = require('./db'),
+    config = require('./config'),
     auth = require('./auth'),
     target = 'http://' + db.client.host + ':' + db.client.port,
     activePregnancies = require('./controllers/active-pregnancies'),
@@ -16,7 +17,8 @@ var app = require('express')(),
     visitsDuring = require('./controllers/visits-during'),
     monthlyRegistrations = require('./controllers/monthly-registrations'),
     monthlyDeliveries = require('./controllers/monthly-deliveries');
-  
+
+
 var audit = function(req, res) {
   auditProxy.onMatch(proxy, req, res, target);
 };
@@ -29,16 +31,14 @@ app.delete(auditPath, audit);
 var handleApiCall = function(req, res, controller) {
   auth.getUsername(req, function(err) {
     if (err) {
-      notLoggedIn(err, res);
-    } else {
-      controller.get({ district: req.query.district }, function(err, obj) {
-        if (err) {
-          serverError(err, res);
-        } else {
-          res.json(obj);
-        }
-      });
+      return notLoggedIn(err, res);
     }
+    controller.get({ district: req.query.district }, function(err, obj) {
+      if (err) {
+        return serverError(err, res);
+      }
+      res.json(obj);
+    });
   });
 };
 
@@ -116,6 +116,13 @@ proxy.on('error', function(err, req, res) {
   serverError(JSON.stringify(err), res);
 });
 
-app.listen(5988, function() {
-  console.log('Listening on port 5988');
+config.load(function(err) {
+  if (err) {
+    console.error('error loading config', err);
+    process.exit(1);
+  }
+  config.listen();
+  app.listen(5988, function() {
+    console.log('Medic API listening on port 5988');
+  });
 });
