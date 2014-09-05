@@ -105,11 +105,12 @@ module.exports = {
     if (!options || !options.patientIds || !options.patientIds.length) {
       return callback(null, []);
     }
-    var startDate = options.startDate;
-    var endDate = options.endDate || moment();
-    var query = 'form:V ' +
-           'AND ' + module.exports.formatDateRange('reported_date', startDate, endDate) + ' ' +
-           'AND ' + formatPatientIds(options.patientIds);
+    var query = 'form:V AND ' + formatPatientIds(options.patientIds);
+    if (options.startDate) {
+      query += ' AND ' + module.exports.formatDateRange(
+        'reported_date', options.startDate, options.endDate || moment().add(2, 'days')
+      );
+    }
     db.fti('data_records', { q: query, limit: 1000, include_docs: true }, callback);
   },
 
@@ -143,6 +144,22 @@ module.exports = {
     return {
       date: moment(doc.lmp_date).add(42, 'weeks')
     }
+  },
+
+  injectVisits: function(objects, callback) {
+    var patientIds = _.pluck(objects, 'patient_id');
+    module.exports.getVisits({ patientIds: patientIds }, function(err, visits) {
+      if (err) {
+        return callback(err);
+      }
+      var count = _.countBy(visits.rows, function(visit) {
+        return visit.doc.patient_id;
+      });
+      _.each(objects, function(object) {
+        object.visits = count[object.patient_id] || 0;
+      });
+      callback(null, objects);
+    });
   }
 
 };

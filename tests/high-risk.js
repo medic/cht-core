@@ -79,10 +79,10 @@ exports['get returns empty if all registrations have delivered'] = function(test
 };
 
 exports['get returns all high risk pregnancies'] = function(test) {
-  test.expect(12);
+  test.expect(14);
   var fti = sinon.stub(db, 'fti');
   var today = moment();
-  fti.onFirstCall().callsArgWith(2, null, {
+  fti.onCall(0).callsArgWith(2, null, {
     rows: [
       { 
         doc: { 
@@ -122,15 +122,21 @@ exports['get returns all high risk pregnancies'] = function(test) {
       }
     ]
   });
-  fti.onSecondCall().callsArgWith(2, null, {
+  fti.onCall(1).callsArgWith(2, null, {
     rows: [
       { doc: { patient_id: 4 } }
     ]
   });
-  fti.onThirdCall().callsArgWith(2, null, {
+  fti.onCall(2).callsArgWith(2, null, {
     rows: [
       { doc: { patient_id: 1 } },
       { doc: { patient_id: 3 } }
+    ]
+  });
+  fti.onCall(3).callsArgWith(2, null, {
+    rows: [
+      { doc: { patient_id: 1 } },
+      { doc: { patient_id: 1 } }
     ]
   });
   controller.get({}, function(err, results) {
@@ -141,14 +147,16 @@ exports['get returns all high risk pregnancies'] = function(test) {
     test.equals(results[0].weeks.number, 38);
     test.equals(results[0].weeks.approximate, true);
     test.equals(results[0].clinic.id, 'x');
+    test.equals(results[0].visits, 2);
 
     test.equals(results[1].patient_id, 3);
     test.equals(results[1].patient_name, 'sharon');
     test.equals(results[1].weeks.number, 40);
     test.equals(results[1].weeks.approximate, undefined);
     test.equals(results[1].clinic.id, 'y');
+    test.equals(results[1].visits, 0);
 
-    test.equals(fti.callCount, 3);
+    test.equals(fti.callCount, 4);
     test.done();
   });
 };

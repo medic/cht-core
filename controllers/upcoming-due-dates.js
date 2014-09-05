@@ -26,23 +26,25 @@ var getAppointmentDates = function(pregnancies, callback) {
     return callback(null, []);
   }
   var options = {
-    patientIds: _.pluck(pregnancies, 'patient_id'),
-    startDate: moment().subtract(42, 'weeks')
+    patientIds: _.pluck(pregnancies, 'patient_id')
   };
   utils.getVisits(options, function(err, visits) {
     if (err) {
       return callback(err);
     }
     _.each(pregnancies, function(pregnancy) {
+      var count = 0;
       _.each(visits.rows, function(visit) {
         if (visit.doc.patient_id === pregnancy.patient_id) {
+          count++;
           var appointmentDate = moment(visit.doc.reported_date);
           if (!pregnancy.lastAppointmentDate || 
               pregnancy.lastAppointmentDate.isBefore(appointmentDate)) {
             pregnancy.lastAppointmentDate = appointmentDate;
           }
-        } 
+        }
       });
+      pregnancy.visits = count;
     });
     callback(null, pregnancies);
   });

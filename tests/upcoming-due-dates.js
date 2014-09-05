@@ -79,7 +79,7 @@ exports['get returns zero if all registrations have delivered'] = function(test)
 };
 
 exports['get returns all women with upcoming due dates'] = function(test) {
-  test.expect(16);
+  test.expect(18);
   var fti = sinon.stub(db, 'fti');
   var today = moment();
   fti.onFirstCall().callsArgWith(2, null, {
@@ -131,6 +131,7 @@ exports['get returns all women with upcoming due dates'] = function(test) {
     test.equals(results[0].lastAppointmentDate.toISOString(), today.clone().subtract(2, 'weeks').toISOString());
     test.equals(results[0].edd.date.toISOString(), today.clone().add(2, 'weeks').toISOString());
     test.equals(results[0].edd.approximate, true);
+    test.equals(results[0].visits, 2);
 
     test.equals(results[1].patient_id, 2);
     test.equals(results[1].patient_name, 'sally');
@@ -139,6 +140,7 @@ exports['get returns all women with upcoming due dates'] = function(test) {
     test.equals(results[1].lastAppointmentDate, undefined);
     test.equals(results[1].edd.date.toISOString(), today.toISOString());
     test.equals(results[1].edd.approximate, undefined);
+    test.equals(results[1].visits, 0);
 
     test.equals(fti.callCount, 3);
     test.done();

@@ -48,7 +48,12 @@ module.exports = {
         if (err) {
           return callback(err);
         }
-        findFlagged(withoutDelivery, callback);
+        findFlagged(withoutDelivery, function(err, flagged) {
+          if (err) {
+            return callback(err);
+          }
+          utils.injectVisits(flagged, callback);
+        });
       });
     });
   }
