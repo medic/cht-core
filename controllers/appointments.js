@@ -68,11 +68,16 @@ module.exports = {
         if (err) {
           return callback(err);
         }
-        rejectVisits(withoutDelivery, function(err, withoutVisits) {
+        rejectVisits(withoutDelivery, function(err, withoutVisit) {
           if (err) {
             return callback(err);
           }
-          utils.injectVisits(withoutVisits, callback);
+          utils.injectVisits(withoutVisit, function(err, withVisit) {
+            if (err) {
+              return callback(err);
+            }
+            utils.injectRisk(withVisit, callback);
+          });
         });
       });
     });

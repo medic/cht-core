@@ -13,7 +13,8 @@ var getPregnancies = function(options, callback) {
         patient_name: doc.patient_name,
         patient_id: doc.patient_id,
         weeks: utils.getWeeksPregnant(doc),
-        clinic: doc.related_entities && doc.related_entities.clinic
+        clinic: doc.related_entities && doc.related_entities.clinic,
+        high_risk: true
       };
     }));
   });

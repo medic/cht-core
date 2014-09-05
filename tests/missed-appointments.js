@@ -159,7 +159,7 @@ exports['get ignores registrations with no missed appointments'] = function(test
 };
 
 exports['get returns all registrations with missed appointments'] = function(test) {
-  test.expect(16);
+  test.expect(18);
   var fti = sinon.stub(db, 'fti');
   var today = moment();
   fti.onFirstCall().callsArgWith(2, null, {
@@ -208,6 +208,13 @@ exports['get returns all registrations with missed appointments'] = function(tes
       { doc: { patient_id: 2 } }
     ]
   });
+  fti.onCall(4).callsArgWith(2, null, {
+    rows: [
+      { doc: { patient_id: 1 } },
+      { doc: { patient_id: 1 } },
+      { doc: { patient_id: 3 } }
+    ]
+  });
   controller.get({}, function(err, results) {
     test.equals(results.length, 2);
 
@@ -218,6 +225,7 @@ exports['get returns all registrations with missed appointments'] = function(tes
     test.equals(results[0].weeks.approximate, true);
     test.equals(results[0].date.toISOString(), today.clone().subtract(20, 'days').toISOString());
     test.equals(results[0].visits, 1);
+    test.equals(results[0].high_risk, true);
 
     test.equals(results[1].patient_id, 2);
     test.equals(results[1].patient_name, 'sally');
@@ -226,8 +234,9 @@ exports['get returns all registrations with missed appointments'] = function(tes
     test.equals(results[1].weeks.approximate, undefined);
     test.equals(results[1].date.toISOString(), today.clone().subtract(20, 'days').toISOString());
     test.equals(results[1].visits, 1);
+    test.equals(results[1].high_risk, undefined);
 
-    test.equals(fti.callCount, 4);
+    test.equals(fti.callCount, 5);
     test.done();
   });
 };

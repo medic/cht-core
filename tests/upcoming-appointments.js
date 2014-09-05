@@ -200,7 +200,7 @@ exports['get ignores registrations with upcoming appointment reminders'] = funct
 };
 
 exports['get returns all registrations with upcoming appointments'] = function(test) {
-  test.expect(16);
+  test.expect(18);
   var fti = sinon.stub(db, 'fti');
   var today = moment();
   fti.onFirstCall().callsArgWith(2, null, {
@@ -249,6 +249,11 @@ exports['get returns all registrations with upcoming appointments'] = function(t
   fti.onCall(3).callsArgWith(2, null, {
     rows: []
   });
+  fti.onCall(4).callsArgWith(2, null, {
+    rows: [
+      { doc: { patient_id: 2 } }
+    ]
+  });
   controller.get({}, function(err, results) {
     test.equals(results.length, 2);
 
@@ -259,6 +264,7 @@ exports['get returns all registrations with upcoming appointments'] = function(t
     test.equals(results[0].weeks.approximate, true);
     test.equals(results[0].date.toISOString(), today.toISOString());
     test.equals(results[0].visits, 0);
+    test.equals(results[0].high_risk, undefined);
 
     test.equals(results[1].patient_id, 2);
     test.equals(results[1].patient_name, 'sally');
@@ -267,8 +273,9 @@ exports['get returns all registrations with upcoming appointments'] = function(t
     test.equals(results[1].weeks.approximate, undefined);
     test.equals(results[1].date.toISOString(), today.toISOString());
     test.equals(results[1].visits, 0);
+    test.equals(results[1].high_risk, true);
 
-    test.equals(fti.callCount, 4);
+    test.equals(fti.callCount, 5);
     test.done();
   });
 };

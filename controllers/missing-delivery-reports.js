@@ -28,7 +28,12 @@ module.exports = {
       if (err) {
         return callback(err);
       }
-      utils.rejectDeliveries(pregnancies, callback);
+      utils.rejectDeliveries(pregnancies, function(err, withoutDelivery) {
+        if (err) {
+          return callback(err);
+        }
+        utils.injectRisk(withoutDelivery, callback);
+      });
     });
   }
 };

@@ -60,7 +60,12 @@ module.exports = {
         if (err) {
           return callback(err);
         }
-        getAppointmentDates(withoutDelivery, callback);
+        getAppointmentDates(withoutDelivery, function(err, withDate) {
+          if (err) {
+            return callback(err);
+          }
+          utils.injectRisk(withDate, callback);
+        });
       });
     });
   }

@@ -160,6 +160,22 @@ module.exports = {
       });
       callback(null, objects);
     });
+  },
+
+  injectRisk: function(objects, callback) {
+    var patientIds = _.pluck(objects, 'patient_id');
+    module.exports.getHighRisk({ patientIds: patientIds }, function(err, risks) {
+      if (err) {
+        return callback(err);
+      }
+      _.each(risks.rows, function(risk) {
+        var object = _.findWhere(objects, { patient_id: risk.doc.patient_id });
+        if (object) {
+          object.high_risk = true;
+        }
+      });
+      callback(null, objects);
+    });
   }
 
 };

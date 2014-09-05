@@ -80,7 +80,7 @@ exports['get returns zero if all registrations have delivered'] = function(test)
 };
 
 exports['get returns all registrations with missed delivery reports'] = function(test) {
-  test.expect(12);
+  test.expect(14);
   var fti = sinon.stub(db, 'fti');
   var today = moment();
   fti.onFirstCall().callsArgWith(2, null, {
@@ -131,6 +131,12 @@ exports['get returns all registrations with missed delivery reports'] = function
       { doc: { patient_id: 2 } }
     ]
   });
+  fti.onThirdCall().callsArgWith(2, null, {
+    rows: [
+      { doc: { patient_id: 2 } },
+      { doc: { patient_id: 1 } }
+    ]
+  });
   controller.get({}, function(err, results) {
     test.equals(results.length, 2);
 
@@ -139,14 +145,16 @@ exports['get returns all registrations with missed delivery reports'] = function
     test.equals(results[0].clinic.id, 'x');
     test.equals(results[0].edd.date.toISOString(), today.clone().add(2, 'weeks').toISOString());
     test.equals(results[0].edd.approximate, true);
+    test.equals(results[0].high_risk, true);
 
     test.equals(results[1].patient_id, 3);
     test.equals(results[1].patient_name, 'sharon');
     test.equals(results[1].clinic.id, 'y');
     test.equals(results[1].edd.date.toISOString(), today.toISOString());
     test.equals(results[1].edd.approximate, undefined);
+    test.equals(results[1].high_risk, undefined);
 
-    test.equals(fti.callCount, 2);
+    test.equals(fti.callCount, 3);
     test.done();
   });
 };

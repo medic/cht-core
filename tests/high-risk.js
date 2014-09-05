@@ -79,7 +79,7 @@ exports['get returns empty if all registrations have delivered'] = function(test
 };
 
 exports['get returns all high risk pregnancies'] = function(test) {
-  test.expect(14);
+  test.expect(16);
   var fti = sinon.stub(db, 'fti');
   var today = moment();
   fti.onCall(0).callsArgWith(2, null, {
@@ -148,6 +148,7 @@ exports['get returns all high risk pregnancies'] = function(test) {
     test.equals(results[0].weeks.approximate, true);
     test.equals(results[0].clinic.id, 'x');
     test.equals(results[0].visits, 2);
+    test.equals(results[0].high_risk, true);
 
     test.equals(results[1].patient_id, 3);
     test.equals(results[1].patient_name, 'sharon');
@@ -155,6 +156,7 @@ exports['get returns all high risk pregnancies'] = function(test) {
     test.equals(results[1].weeks.approximate, undefined);
     test.equals(results[1].clinic.id, 'y');
     test.equals(results[1].visits, 0);
+    test.equals(results[1].high_risk, true);
 
     test.equals(fti.callCount, 4);
     test.done();
