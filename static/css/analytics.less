@@ -1,3 +1,5 @@
+@import "variables";
+
 .analytics-widget {
   padding: 1em;
   .title {
@@ -60,6 +62,9 @@
     text-align: right;
     white-space: nowrap;
   }
+  .upcoming-edd {
+    color: @birth-color;
+  }
 }
 
 
@@ -72,19 +77,19 @@
 }
 
 .missed-appointments .title {
-  color: #D19D2E;
+  color: @warning-color;
 }
 
 .upcoming-due-dates .title {
-  color: #49A349;
+  color: @birth-color;
 }
 
 .high-risk .title {
-  color: #E33030;
+  color: @high-risk-color;
 }
 
 .total-births .title {
-  color: #49A349;
+  color: @birth-color;
 }
 
 .missing-delivery-reports .title {

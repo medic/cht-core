@@ -2,10 +2,12 @@
   <div class="widget-body">
     <div class="title">
       <p class="count">
-        <span class="fa fa-exclamation-triangle"></span>
         {~lb}{~lb}highRisk.data.length || 0{~rb}{~rb}
       </p>
-      <p class="name">High Risk Pregnancies</p>
+      <p class="name">
+        <span class="fa fa-exclamation-triangle"></span>
+        High Risk Pregnancies
+      </p>
     </div>
     <div class="content" ng-show="highRisk.data">
       <table class="table">
@@ -21,11 +23,7 @@
         <tbody>
           <tr ng-repeat="pregnancy in highRisk.data | orderBy:highRisk.order">
             <td>{~lb}{~lb}pregnancy.patient_name{~rb}{~rb}</td>
-            <td>
-              <span ng-class="{'approximate': pregnancy.weeks.approximate}">
-                {~lb}{~lb}pregnancy.weeks.number{~rb}{~rb}
-              </span>
-            </td>
+            <td ng-bind-html="pregnancy.weeks | weeksPregnant"></td>
             <td>{~lb}{~lb}pregnancy.clinic.contact.name{~rb}{~rb}</td>
             <td>{~lb}{~lb}pregnancy.visits{~rb}{~rb}</td>
             <td class="actions">

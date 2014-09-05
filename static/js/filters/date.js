@@ -67,4 +67,23 @@
     }
   ]);
 
+  module.filter('weeksPregnant', ['FormatDate',
+    function () {
+      return function (weeks) {
+        if (!weeks || !weeks.number) {
+          return '';
+        }
+        var classes = [];
+        if (weeks.number >= 37) {
+          classes.push('upcoming-edd');
+        }
+        if (weeks.approximate) {
+          classes.push('approximate');
+        }
+        var attr = classes.length ? ' class="' + classes.join(' ') + '"' : '';
+        return  '<span' + attr + '>' + weeks.number + '</span>';
+      };
+    }
+  ]);
+
 }());

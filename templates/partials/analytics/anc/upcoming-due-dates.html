@@ -2,7 +2,6 @@
   <div class="widget-body">
     <div class="title">
       <p class="count">
-        <span class="fa fa-circle"></span>
         {~lb}{~lb}upcomingDueDates.data.length || 0{~rb}{~rb}
       </p>
       <p class="name">Women With Upcoming EDDs</p>
@@ -22,11 +21,7 @@
         <tbody>
           <tr ng-repeat="pregnancy in upcomingDueDates.data | orderBy:upcomingDueDates.order">
             <td>{~lb}{~lb}pregnancy.patient_name{~rb}{~rb}</td>
-            <td>
-              <span ng-class="{'approximate': pregnancy.weeks.approximate}">
-                {~lb}{~lb}pregnancy.weeks.number{~rb}{~rb}
-              </span>
-            </td>
+            <td ng-bind-html="pregnancy.weeks | weeksPregnant"></td>
             <td ng-bind-html="pregnancy.lastAppointmentDate | relativeDate"></td>
             <td>{~lb}{~lb}pregnancy.visits{~rb}{~rb}</td>
             <td>
