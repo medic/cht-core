@@ -1,7 +1,6 @@
 var app = require('express')(),
     proxy = require('http-proxy').createProxyServer({}),
     auditProxy = require('./audit-proxy'),
-    http = require('http'),
     db = require('./db'),
     auth = require('./auth'),
     target = 'http://' + db.client.host + ':' + db.client.port,
