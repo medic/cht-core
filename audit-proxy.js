@@ -1,24 +1,7 @@
-var http = require('http'),
-  passStream = require('pass-stream'),
-  db = require('./db'),
-  couchdbAudit = require('couchdb-audit');
-
-var getUsername = function(req, cb) {
-  http.get({
-    host: db.client.host,
-    port: db.client.port,
-    path: '/_session',
-    headers: req.headers
-  }, function(res) {
-    res
-      .on('data', function (chunk) {
-        cb(null, JSON.parse(chunk).userCtx.name);
-      })
-      .on('error', function(e) {
-        cb(e);
-      });
-  });
-};
+var passStream = require('pass-stream'),
+    auth = require('./auth'),
+    db = require('./db'),
+    couchdbAudit = require('couchdb-audit');
 
 module.exports = {
 
@@ -51,7 +34,7 @@ module.exports = {
       try {
         var doc = JSON.parse(dataBuffer);
         var audit = couchdbAudit.withNode(db, function(cb) {
-          getUsername(req, cb);
+          auth.getUsername(req, cb);
         });
         audit.log([doc], function(err) {
           if (err) {
@@ -87,7 +70,7 @@ module.exports = {
     passStream = deps.passStream;
     db = deps.db;
     couchdbAudit = deps.audit;
-    http = deps.http;
+    auth = deps.auth;
   }
 
 }

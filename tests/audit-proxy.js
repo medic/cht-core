@@ -1,5 +1,4 @@
-var auditProxy = require('../audit-proxy'),
-  events = require('events');
+var auditProxy = require('../audit-proxy');
 
 exports['onMatch audits the request'] = function(test) {
   test.expect(5);
@@ -58,14 +57,12 @@ exports['onMatch audits the request'] = function(test) {
       port: 5984
     }
   };
-  var res = new events.EventEmitter();
-  var http = {
-    get: function(options, cb) {
-      cb(res);
-      res.emit('data', '{"userCtx": {"name": "' + username + '"}}');
+  var auth = {
+    getUsername: function(req, cb) {
+      cb(null, username);
     }
   };
-  auditProxy.setup({audit: audit, passStream: passStreamFn, db: db, http: http});
+  auditProxy.setup({audit: audit, passStream: passStreamFn, db: db, auth: auth});
   auditProxy.onMatch(proxy, req, {}, target);
   test.done();
 };

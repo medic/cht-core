@@ -1,7 +1,9 @@
 var app = require('express')(),
     proxy = require('http-proxy').createProxyServer({}),
     auditProxy = require('./audit-proxy'),
+    http = require('http'),
     db = require('./db'),
+    auth = require('./auth'),
     target = 'http://' + db.client.host + ':' + db.client.port,
     activePregnancies = require('./controllers/active-pregnancies'),
     upcomingAppointments = require('./controllers/upcoming-appointments'),
@@ -26,12 +28,19 @@ app.post(auditPath, audit);
 app.delete(auditPath, audit);
 
 var handleApiCall = function(req, res, controller) {
-  controller.get({ district: req.query.district }, function(err, obj) {
+  auth.getUsername(req, function(err) {
     if (err) {
-      return error(err, res);
+      notLoggedIn(err, res);
+    } else {
+      controller.get({ district: req.query.district }, function(err, obj) {
+        if (err) {
+          serverError(err, res);
+        } else {
+          res.json(obj);
+        }
+      });
     }
-    res.json(obj);
-  })
+  });
 };
 
 app.get('/api/active-pregnancies', function(req, res) {
@@ -86,18 +95,26 @@ app.all('*', function(req, res) {
   proxy.web(req, res, { target: target });
 });
 
-var error = function(err, res) {
-  console.error(err);
-  res.writeHead(500, { 'Content-Type': 'text/plain' });
-  res.end('Server error');
+var error = function(res, code, message) {
+  res.writeHead(code, { 'Content-Type': 'text/plain' });
+  res.end(message);
+};
+
+var serverError = function(err, res) {
+  console.error('Server error : ' + err);
+  error(res, 500, 'Server error');
+};
+
+var notLoggedIn = function(err, res) {
+  error(res, 403, 'Not logged in');
 };
 
 app.use(function(err, req, res, next) {
-  error(err.stack, res);
+  serverError(err.stack, res);
 });
 
 proxy.on('error', function(err, req, res) { 
-  error(JSON.stringify(err), res);
+  serverError(JSON.stringify(err), res);
 });
 
 app.listen(5988, function() {
