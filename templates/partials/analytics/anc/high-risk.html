@@ -22,7 +22,7 @@
         </thead>
         <tbody>
           <tr ng-repeat="pregnancy in highRisk.data | orderBy:highRisk.order">
-            <td>{~lb}{~lb}pregnancy.patient_name{~rb}{~rb}</td>
+            <td ng-class="{'high-risk': pregnancy.high_risk}">{~lb}{~lb}pregnancy.patient_name{~rb}{~rb}</td>
             <td ng-bind-html="pregnancy.weeks | weeksPregnant"></td>
             <td>{~lb}{~lb}pregnancy.clinic.contact.name{~rb}{~rb}</td>
             <td>{~lb}{~lb}pregnancy.visits{~rb}{~rb}</td>

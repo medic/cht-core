@@ -18,12 +18,10 @@
         </thead>
         <tbody>
           <tr ng-repeat="appointment in missingDeliveryReports.data | orderBy:missingDeliveryReports.order">
-            <td>{~lb}{~lb}appointment.patient_name{~rb}{~rb}</td>
+            <td ng-class="{'high-risk': appointment.high_risk}">{~lb}{~lb}appointment.patient_name{~rb}{~rb}</td>
             <td>{~lb}{~lb}appointment.clinic.contact.name{~rb}{~rb}</td>
             <td>
-              <span ng-class="{'approximate': pregnancy.edd.approximate}">
-                <span ng-bind-html="pregnancy.edd | simpleDate"></span>
-              </span>
+              <span ng-class="{'approximate': pregnancy.edd.approximate}"><span ng-bind-html="pregnancy.edd | simpleDate"></span></span>
             </td>
             <td class="actions">
               <a href="#" class="btn btn-link send-message" data-send-to="{~lb}{~lb}appointment.clinic.contact.phone{~rb}{~rb}" title="Send message to CHW" ng-class="{'disabled': !appointment.clinic.contact.phone}"><i class="fa fa-envelope"></i></a>

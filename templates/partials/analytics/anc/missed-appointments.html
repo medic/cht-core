@@ -18,7 +18,7 @@
         </thead>
         <tbody>
           <tr ng-repeat="appointment in missedAppointments.data | orderBy:missedAppointments.order">
-            <td>{~lb}{~lb}appointment.patient_name{~rb}{~rb}</td>
+            <td ng-class="{'high-risk': appointment.high_risk}">{~lb}{~lb}appointment.patient_name{~rb}{~rb}</td>
             <td ng-bind-html="appointment.weeks | weeksPregnant"></td>
             <td>{~lb}{~lb}appointment.clinic.contact.name{~rb}{~rb}</td>
             <td ng-bind-html="appointment.date | relativeDate"></td>
