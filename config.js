@@ -2,6 +2,16 @@ var _ = require('underscore'),
     db = require('./db'),
     settings;
 
+var defaults = {
+  "anc_forms": {
+    "registration": "R",
+    "registrationLmp": "P",
+    "visit": "V",
+    "delivery": "D",
+    "flag": "F"
+  }
+};
+
 module.exports = {
   get: function(key) {
     return settings[key];
@@ -12,6 +22,7 @@ module.exports = {
         return callback(err);
       }
       settings = data.settings;
+      _.defaults(settings, defaults);
       callback();
     });
   },
