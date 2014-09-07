@@ -1,12 +1,17 @@
 <div class="col-sm-6 analytics-widget missing-delivery-reports table-responsive">
-  <div class="widget-body">
+  <div class="widget-body" ng-hide="!missingDeliveryReports.loading">
+    <div class="loading">
+      <span class="fa fa-spinner fa-spin"></span>
+    </div>
+  </div>
+  <div class="widget-body" ng-show="!missingDeliveryReports.loading">
     <div class="title">
       <p class="count">
         {~lb}{~lb}missingDeliveryReports.data.length || 0{~rb}{~rb}
       </p>
       <p class="name">Missing Birth Reports</p>
     </div>
-    <div class="content" ng-show="missingDeliveryReports.data">
+    <div class="content">
       <table class="table">
         <thead>
           <tr>

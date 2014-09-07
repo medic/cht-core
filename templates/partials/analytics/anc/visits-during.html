@@ -1,12 +1,17 @@
 <div class="col-sm-6 analytics-widget visits-during">
-  <div class="widget-body">
+  <div class="widget-body" ng-hide="!visitsDuring.loading">
+    <div class="loading">
+      <span class="fa fa-spinner fa-spin"></span>
+    </div>
+  </div>
+  <div class="widget-body" ng-show="!visitsDuring.loading">
     <div class="title">
       <p class="name">Visits Completed So Far</p>
       <p class="description">Active pregnancies that have had...</p>
     </div>
-    <div class="content" ng-show="visitsDuring">
+    <div class="content">
       <nvd3-discrete-bar-chart
-        data="visitsDuring"
+        data="visitsDuring.data"
         width="300"
         height="250"
         showXAxis="true"

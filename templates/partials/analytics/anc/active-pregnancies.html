@@ -1,5 +1,10 @@
 <div class="col-sm-12 analytics-widget active-pregnancies">
-  <div class="widget-body">
+  <div class="widget-body" ng-hide="!activePregnancies.loading">
+    <div class="loading">
+      <span class="fa fa-spinner fa-spin"></span>
+    </div>
+  </div>
+  <div class="widget-body" ng-show="!activePregnancies.loading">
     <div class="title">
       <p class="count">{~lb}{~lb}activePregnancies.count || 0{~rb}{~rb}</p>
       <p class="name">Active Pregnancies</p>

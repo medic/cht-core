@@ -1,11 +1,16 @@
 <div class="col-sm-6 analytics-widget delivery-location">
-  <div class="widget-body">
+  <div class="widget-body" ng-hide="!deliveryLocation.loading">
+    <div class="loading">
+      <span class="fa fa-spinner fa-spin"></span>
+    </div>
+  </div>
+  <div class="widget-body" ng-show="!deliveryLocation.loading">
     <div class="title">
       <p class="name">Reported Delivery Locations</p>
     </div>
-    <div class="content" ng-show="deliveryLocation">
+    <div class="content">
       <nvd3-pie-chart
-        data="deliveryLocation"
+        data="deliveryLocation.data"
         width="300"
         height="250"
         x="deliveryCodeChartLabelKey()"

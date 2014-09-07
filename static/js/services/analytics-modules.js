@@ -41,6 +41,19 @@ var _ = require('underscore'),
             },
             render: function(scope) {
 
+              scope.activePregnancies = { loading: true };
+              scope.upcomingAppointments = { loading: true };
+              scope.missedAppointments = { loading: true };
+              scope.upcomingDueDates = { loading: true };
+              scope.highRisk = { loading: true };
+              scope.totalBirths = { loading: true };
+              scope.missingDeliveryReports = { loading: true };
+              scope.deliveryLocation = { loading: true };
+              scope.visitsCompleted = { loading: true };
+              scope.visitsDuring = { loading: true };
+              scope.monthlyRegistrations = { loading: true };
+              scope.monthlyDeliveries = { loading: true };
+              
               UserDistrict(function(err, district) {
 
                 if (err) {
@@ -108,7 +121,7 @@ var _ = require('underscore'),
                   };
                 };
                 request('/api/delivery-location', district, function(data) {
-                  scope.deliveryLocation = data;
+                  scope.deliveryLocation = { data: data };
                 });
 
                 scope.visitsChartLabelKey = function() {
@@ -129,21 +142,25 @@ var _ = require('underscore'),
                 };
 
                 request('/api/visits-completed', district, function(data) {
-                  scope.visitsCompleted = [{
-                    key: 'item',
-                    values: _.map(data, function(d, i) {
-                      return [i, d];
-                    })
-                  }];
+                  scope.visitsCompleted = {
+                    data: [{
+                      key: 'item',
+                      values: _.map(data, function(d, i) {
+                        return [i, d];
+                      })
+                    }]
+                  };
                 });
 
                 request('/api/visits-during', district, function(data) {
-                  scope.visitsDuring = [{
-                    key: 'item',
-                    values: _.map(data, function(d, i) {
-                      return [i, d];
-                    })
-                  }];
+                  scope.visitsDuring = {
+                    data: [{
+                      key: 'item',
+                      values: _.map(data, function(d, i) {
+                        return [i, d];
+                      })
+                    }]
+                  };
                 });
 
                 scope.monthlyChartLabelKey = function() {
@@ -170,17 +187,21 @@ var _ = require('underscore'),
                 };
 
                 request('/api/monthly-registrations', district, function(data) {
-                  scope.monthlyRegistrations = [{
-                    key: 'item',
-                    values: data
-                  }];
+                  scope.monthlyRegistrations = {
+                    data: [{
+                      key: 'item',
+                      values: data
+                    }]
+                  };
                 });
 
                 request('/api/monthly-deliveries', district, function(data) {
-                  scope.monthlyDeliveries = [{
-                    key: 'item',
-                    values: data
-                  }];
+                  scope.monthlyDeliveries = {
+                    data: [{
+                      key: 'item',
+                      values: data
+                    }]
+                  };
                 });
 
               });
@@ -208,3 +229,4 @@ var _ = require('underscore'),
   ]);
   
 }()); 
+

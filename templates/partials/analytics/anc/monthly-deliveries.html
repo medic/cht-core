@@ -1,11 +1,16 @@
 <div class="col-sm-6 analytics-widget monthly-deliveries">
-  <div class="widget-body">
+  <div class="widget-body" ng-hide="!monthlyDeliveries.loading">
+    <div class="loading">
+      <span class="fa fa-spinner fa-spin"></span>
+    </div>
+  </div>
+  <div class="widget-body" ng-show="!monthlyDeliveries.loading">
     <div class="title">
       <p class="name">Monthly Births</p>
     </div>
-    <div class="content" ng-show="monthlyDeliveries">
+    <div class="content">
       <nvd3-line-chart
-        data="monthlyDeliveries"
+        data="monthlyDeliveries.data"
         width="300"
         height="250"
         showXAxis="true"

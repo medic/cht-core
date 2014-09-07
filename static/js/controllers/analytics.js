@@ -21,11 +21,13 @@ var _ = require('underscore');
     function ($scope, $route, Settings, AnalyticsModules) {
       $scope.setSelectedModule();
       $scope.filterModel.type = 'analytics';
+      $scope.loading = true;
       Settings.query(function(res) {
         $scope.setAnalyticsModules(AnalyticsModules(res.settings));
         $scope.setSelectedModule(findSelectedModule(
           $route.current.params.module, $scope.analyticsModules
         ));
+        $scope.loading = false;
         if ($scope.filterModel.module) {
           $scope.filterModel.module.render($scope);
         }

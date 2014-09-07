@@ -1,5 +1,10 @@
 <div class="col-sm-12 analytics-widget total-births">
-  <div class="widget-body">
+  <div class="widget-body" ng-hide="!totalBirths.loading">
+    <div class="loading">
+      <span class="fa fa-spinner fa-spin"></span>
+    </div>
+  </div>
+  <div class="widget-body" ng-show="!totalBirths.loading">
     <div class="title">
       <p class="count">{~lb}{~lb}totalBirths.count || 0{~rb}{~rb}</p>
       <p class="name">Total Births</p>

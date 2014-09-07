@@ -1,12 +1,17 @@
 <div class="col-sm-6 analytics-widget upcoming-due-dates table-responsive">
-  <div class="widget-body">
+  <div class="widget-body" ng-hide="!upcomingDueDates.loading">
+    <div class="loading">
+      <span class="fa fa-spinner fa-spin"></span>
+    </div>
+  </div>
+  <div class="widget-body" ng-show="!upcomingDueDates.loading">
     <div class="title">
       <p class="count">
         {~lb}{~lb}upcomingDueDates.data.length || 0{~rb}{~rb}
       </p>
       <p class="name">Women With Upcoming EDDs</p>
     </div>
-    <div class="content" ng-show="upcomingDueDates.data">
+    <div class="content">
       <table class="table">
         <thead>
           <tr>
