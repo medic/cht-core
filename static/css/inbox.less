@@ -252,12 +252,22 @@ body {
   background-color: @background-color;
 }
 
-.messages .inbox-items li.selected {
-  background-color: lighten(@messages-color, 30%);
+.messages .inbox-items li {
+  &:hover {
+    border-left-color: @messages-color;
+  }
+  &.selected {
+    background-color: lighten(@messages-color, 30%);
+  }
 }
 
-.reports .inbox-items li.selected {
-  background-color: lighten(@reports-color, 30%);
+.reports .inbox-items li {
+  &:hover {
+    border-left-color: @reports-color;
+  }
+  &.selected {
+    background-color: lighten(@reports-color, 30%);
+  }
 }
 
 .inbox-items {
@@ -267,16 +277,13 @@ body {
 
   li {
     border-bottom: 1px solid @seperator-color;
+    border-left: 5px solid transparent;
     cursor: pointer;
     white-space: nowrap;
     overflow: hidden;
 
     .mm-badge {
       float: left;
-    }
-
-    &:hover {
-      background-color: @highlight-color;
     }
 
     .message-wrapper {
@@ -522,17 +529,22 @@ body {
   }
 }
 
-.reports .item-content .body {
-  padding-bottom: 2em;
-  background-color: @form-background-color;
-  border: 1px solid @seperator-color;
-  border-radius: @radius-size;
-  margin: 0 1em 4.5em 1em;
+.reports .item-content {
+  > div {
+    margin-bottom: 4.5em;
+  }
+  .body {
+    padding-bottom: 2em;
+    background-color: @form-background-color;
+    border: 1px solid @seperator-color;
+    border-radius: @radius-size;
+    margin: 0 1em 1em 1em;
 
-  p {
-    word-wrap: break-word;
-    font-weight: bold;
-    font-size: 1.4em;
+    p {
+      word-wrap: break-word;
+      font-weight: bold;
+      font-size: 1.4em;
+    }
   }
 }
 
@@ -584,7 +596,6 @@ body {
     min-height: 5em;
     background-color: @grey;
     background-color: rgba(0, 0, 0, 0.65);
-    border-radius: @radius-size;
     border-color: @lightgrey;
     border-color: rgba(0, 0, 0, 0.8);
     border-width: 1px;
@@ -597,14 +608,17 @@ body {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.63);
 
     .mm-icon {
-      width: 23%;
-      margin: 0.85em 0 0 0;
+      width: 25%;
+      margin: 1.5em 0 0;
       display: inline-block;
       outline: 0;
-      vertical-align: top;
-
+      border-bottom: 5px solid transparent;
       .fa {
         font-size: 3em;
+      }
+      &:hover {
+        text-decoration: none;
+        border-bottom-color: @reports-color;
       }
     }
   }

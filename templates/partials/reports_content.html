@@ -1,14 +1,17 @@
 <div class="col-sm-8 item-content" ng-show="selected">
   <div>
+
     <div class="meta">
       <div class="time" ng-bind-html="selected.reported_date | fullDate"></div>
       <mm-sender message="selected"></mm-sender>
     </div>
+
     <div class="status">
       <span class="mm-badge mm-badge-round mm-badge-border" ng-class="selected.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
         <span class="fa" ng-class="{'fa-check': selected.verified}"></span>
       </span>
     </div>
+
     <div class="body">
       <h2 ng-bind-html="selected | title:forms"></h2>
       <ul>
@@ -46,26 +49,28 @@
             <li class="clear"></li>
           </ul>
         </li>
-        <li ng-if="selected.scheduled_tasks_by_group.length">
-          <label>Scheduled Messages</label>
-          <ul>
-            <li ng-repeat="group in selected.scheduled_tasks_by_group">
-              <p>{~lb}{~lb}group.group{~rb}{~rb}</p>
-              <ul class="task-list">
-                <li ng-repeat="task in group.rows | orderBy:'due'">
-                  <span class="task-state" ng-bind-html="task | state"></span>
-                  <ul>
-                    <li ng-repeat="message in task.messages">
-                      {~lb}{~lb}message.message{~rb}{~rb}
-                    </li>
-                  </ul>
+      </ul>
+    </div>
+
+    <div class="body" ng-if="selected.scheduled_tasks_by_group.length">
+      <h2>Messages</h2>
+      <ul>
+        <li ng-repeat="group in selected.scheduled_tasks_by_group">
+          <p>{~lb}{~lb}group.group{~rb}{~rb}</p>
+          <ul class="task-list">
+            <li ng-repeat="task in group.rows | orderBy:'due'">
+              <span class="task-state" ng-bind-html="task | state"></span>
+              <ul>
+                <li ng-repeat="message in task.messages">
+                  {~lb}{~lb}message.message{~rb}{~rb}
                 </li>
-                <li class="clear"></li>
               </ul>
             </li>
+            <li class="clear"></li>
           </ul>
         </li>
       </ul>
     </div>
+    
   </div>
 </div>
