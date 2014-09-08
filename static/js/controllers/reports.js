@@ -131,7 +131,6 @@ var _ = require('underscore');
           if (_selectedDoc) {
             $scope.selectMessage(_selectedDoc);
           } else {
-          // if (data.results.length && !$scope.isSelected()) {
             window.setTimeout(function() {
               $scope.$apply(function(scope) {
                 var id = $('.inbox-items li').first().attr('data-record-id');
@@ -147,8 +146,8 @@ var _ = require('underscore');
 
       var _checkScroll = function() {
         if (this.scrollHeight - this.scrollTop - 10 < this.clientHeight) {
-          angularApply(function(scope) {
-            scope.query();
+          $scope.$apply(function(scope) {
+            scope.query({ skip: true });
           });
         }
       };
