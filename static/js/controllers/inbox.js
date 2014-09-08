@@ -53,7 +53,6 @@ var utils = require('kujua-utils'),
       };
 
       $scope.setSelected = function(selected) {
-        console.log(selected);
         if (selected) {
           delayIfMobile(function() {
             $('body').addClass('show-content');

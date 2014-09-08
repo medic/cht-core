@@ -8,8 +8,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$route', '$animate', 'MessageContact', 'ContactConversation', 'MarkAllRead', 'UserDistrict', 'Changes',
-    function ($scope, $route, $animate, MessageContact, ContactConversation, MarkAllRead, UserDistrict, Changes) {
+    ['$scope', '$route', '$animate', 'MessageContact', 'ContactConversation', 'MarkAllRead', 'UserDistrict', 'Changes', 'RememberService',
+    function ($scope, $route, $animate, MessageContact, ContactConversation, MarkAllRead, UserDistrict, Changes, RememberService) {
 
       $scope.loadingContent = false;
       $scope.allLoaded = false;
@@ -140,6 +140,10 @@ var _ = require('underscore'),
 
       if (!$scope.contacts || !$route.current.params.doc) {
         updateContacts();
+      }
+      
+      if (!$route.current.params.doc) {
+        RememberService.scrollTop = {};
       }
 
       $scope.filterModel.type = 'messages';

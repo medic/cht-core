@@ -7,8 +7,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$route', '$location', '$animate', 'UserDistrict', 'UserCtxService', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes',
-    function ($scope, $route, $location, $animate, UserDistrict, UserCtxService, MarkRead, GenerateSearchQuery, Search, Changes) {
+    ['$scope', '$route', '$location', '$animate', 'UserDistrict', 'UserCtxService', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes', 'RememberService',
+    function ($scope, $route, $location, $animate, UserDistrict, UserCtxService, MarkRead, GenerateSearchQuery, Search, Changes, RememberService) {
 
       $scope.filterModel.type = 'reports';
 
@@ -230,7 +230,12 @@ var _ = require('underscore');
         $scope.query();
       }
 
+      if (!$route.current.params.doc) {
+        RememberService.scrollTop = {};
+      }
+      
       $scope.selectMessage($route.current.params.doc);
+
     }
   ]);
 

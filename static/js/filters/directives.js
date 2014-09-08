@@ -15,13 +15,13 @@
           if (!RememberService.scrollTop) {
             RememberService.scrollTop = {};
           }
-          
+
           elm.bind('scroll', function() {
-            RememberService.scrollTop[elm.id] = raw.scrollTop;
+            RememberService.scrollTop[raw.id] = raw.scrollTop;
           });
 
           $timeout(function() {
-            raw.scrollTop = RememberService.scrollTop[elm.id];
+            raw.scrollTop = RememberService.scrollTop[raw.id];
           });
         }
       };
