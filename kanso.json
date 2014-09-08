@@ -29,7 +29,7 @@
         "base_template": "base.html"
     },
     "changelog": "Changes.md",
-    "node_module_folders" : "sentinel,api",
+    "node_module_folders" : "api,sentinel",
     "bundledDependencies": [
         "packages/underscore"
     ],
