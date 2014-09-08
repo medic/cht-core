@@ -233,7 +233,8 @@ var _ = require('underscore');
       if (!$route.current.params.doc) {
         RememberService.scrollTop = {};
       }
-      
+      $('.tooltip').remove();
+
       $scope.selectMessage($route.current.params.doc);
 
     }

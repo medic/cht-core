@@ -141,10 +141,11 @@ var _ = require('underscore'),
       if (!$scope.contacts || !$route.current.params.doc) {
         updateContacts();
       }
-      
+
       if (!$route.current.params.doc) {
         RememberService.scrollTop = {};
       }
+      $('.tooltip').remove();
 
       $scope.filterModel.type = 'messages';
       UserDistrict(function(err, district) {
