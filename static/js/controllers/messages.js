@@ -122,7 +122,7 @@ var _ = require('underscore'),
           MessageContact(district, function(err, data) {
             options.contacts = data.rows;
             $scope.setContacts(options);
-            if (data.rows.length && !$scope.isSelected()) {
+            if (data.rows.length && !$scope.isSelected() && !$('#back').is(':visible')) {
               window.setTimeout(function() {
                 var id = $('.inbox-items li').first().attr('data-record-id');
                 selectContact(district, id);

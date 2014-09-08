@@ -502,28 +502,24 @@ body {
       margin: 0 auto;
     }
   }
-  & > ul > {
-    .incoming, .outgoing {
-      background-color: #ffffff;
-      border: 1px solid @seperator-color;
-      border-radius: @radius-size;
-      margin-top: 1em;
-      padding: 1em;
-    }
-    .incoming {
+  & > ul > li {
+    background-color: #ffffff;
+    border: 1px solid @seperator-color;
+    border-radius: @radius-size;
+    margin-top: 1em;
+    padding: 1em 2em;
+    &.incoming {
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
       border-right: 0;
       margin-left: 1em;
-      padding-right: 2em;
       border-color: @received-state-color;
     }
-    .outgoing {
+    &.outgoing {
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
       border-left: 0;
       margin-right: 1em;
-      padding-left: 2em;
       border-color: @messages-color;
     }
   }
@@ -738,7 +734,7 @@ body {
       vertical-align: top;
     }
     .dropdown {
-      width: 6.25em;
+      width: 5.5em;
     }
     .mm-button-text {
       width: 0;
@@ -893,17 +889,25 @@ body {
       display: none;
     }
   }
-  .task-state {
-    width: 100%;
-    text-align: left;
-    margin-top: 1em;
-    .state {
-      margin-right: 0.5em;
-      float: none;
+  .outgoing, .incoming {
+    .task-state {
+      width: 100%;
+      text-align: left;
+      margin-top: 1em;
+      .state {
+        margin-right: 0.5em;
+        float: none;
+      }
+      .relative-date-content {
+        float: none;
+      }
     }
-    .relative-date-content {
-      float: none;
-    }
+  }
+  .content .item-content .body > ul > li {
+    padding: 0.5em 1em;
+  }
+  .messages .item-content .body p {
+    padding: 0.75em 0;
   }
   .item-content .body > ul > li li {
     margin-left: 0;

@@ -130,7 +130,7 @@ var _ = require('underscore');
           }
           if (_selectedDoc) {
             $scope.selectMessage(_selectedDoc);
-          } else {
+          } else if (!$('#back').is(':visible')) {
             window.setTimeout(function() {
               $scope.$apply(function(scope) {
                 var id = $('.inbox-items li').first().attr('data-record-id');
