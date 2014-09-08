@@ -1,4 +1,4 @@
-<div class="col-sm-8 item-content" ng-show="selected">
+<div class="col-sm-8 item-content" ng-show="selected && selected.form !== undefined">
   <div>
 
     <div class="meta">
@@ -39,12 +39,12 @@
           <label ng-if="!selected.kujua_message">Automated Reply</label>
           <ul class="task-list">
             <li ng-repeat="task in selected.tasks">
-              <span class="task-state" ng-bind-html="task | state"></span>
               <ul>
                 <li ng-repeat="message in task.messages">
                   {~lb}{~lb}selected.kujua_message ? message.to : message.message{~rb}{~rb}
                 </li>
               </ul>
+              <span class="task-state" ng-bind-html="task | state"></span>
             </li>
             <li class="clear"></li>
           </ul>
@@ -59,12 +59,12 @@
           <p>{~lb}{~lb}group.group{~rb}{~rb}</p>
           <ul class="task-list">
             <li ng-repeat="task in group.rows | orderBy:'due'">
-              <span class="task-state" ng-bind-html="task | state"></span>
               <ul>
                 <li ng-repeat="message in task.messages">
                   {~lb}{~lb}message.message{~rb}{~rb}
                 </li>
               </ul>
+              <span class="task-state" ng-bind-html="task | state"></span>
             </li>
             <li class="clear"></li>
           </ul>

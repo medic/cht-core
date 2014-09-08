@@ -345,53 +345,33 @@ body {
 }
 
 .task-state {
-  float: right;
-  clear: right;
-  text-align: right;
-  margin-left: 2em;
-  margin-bottom: 0.5em;
+  color: #AAAAAA;
   .state {
-    padding: 0.1em 0.5em;
     font-weight: bold;
-    color: #FFFFFF;
-    float: right;
-    &.received {
-      background-color: @received-state-color;
+    &:before {
+      content: '\f111';
+      font-family: FontAwesome;
+      font-size: 0.8em;
+      margin-right: 0.5em;
     }
-    &.pending {
-      background-color: @pending-state-color;
+    &.received:before {
+      color: @received-state-color;
     }
-    &.muted {
-      background-color: @muted-state-color;
+    &.pending:before {
+      color: @pending-state-color;
     }
-    &.cleared {
-      background-color: @cleared-state-color;
+    &.muted:before {
+      color: @muted-state-color;
     }
-    &.sent {
-      background-color: @sent-state-color;
+    &.cleared:before {
+      color: @cleared-state-color;
     }
-    &.scheduled {
-      background-color: @scheduled-state-color;
+    &.sent:before {
+      color: @sent-state-color;
     }
-  }
-  .relative-date-content {
-    float: right;
-    clear: right;
-  }
-}
-
-.outgoing .task-state {
-  float: left;
-  clear: left;
-  text-align: left;
-  margin-right: 2em;
-  margin-left: 0;
-  .state {
-    float: left;
-  }
-  .relative-date-content {
-    float: left;
-    clear: left;
+    &.scheduled:before {
+      color: @scheduled-state-color;
+    }
   }
 }
 
@@ -465,8 +445,8 @@ body {
     }
   }
 
-  .task-list > li, .clear {
-    clear: right;
+  .task-list > li {
+    margin-top: 1em;
   }
 
 }
@@ -476,9 +456,6 @@ body {
 }
 
 .messages .item-content .body {
-  p {
-    padding: 0.75em;
-  }
   .marker {
     color: @grey;
     font-size: 0.8em;
@@ -502,32 +479,34 @@ body {
       margin: 0 auto;
     }
   }
-  & > ul > li {
-    background-color: #ffffff;
-    border: 1px solid @seperator-color;
-    border-radius: @radius-size;
-    margin-top: 1em;
-    padding: 1em 2em;
-    &.incoming {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-      border-right: 0;
-      margin-left: 1em;
-      border-color: @received-state-color;
+  & > ul {
+    > li {
+      background-color: #ffffff;
+      border: 1px solid @seperator-color;
+      border-radius: @radius-size;
+      margin-top: 1em;
+      padding: 1em 1.5em;
     }
-    &.outgoing {
+    .incoming {
+      border-color: @received-state-color;
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
       border-left: 0;
       margin-right: 1em;
+    }
+    .outgoing {
       border-color: @messages-color;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      border-right: 0;
+      margin-left: 1em;
     }
   }
 }
 
 .reports .item-content {
   > div {
-    margin-bottom: 4.5em;
+    margin-bottom: 5em;
   }
   .body {
     padding-bottom: 2em;
@@ -889,25 +868,8 @@ body {
       display: none;
     }
   }
-  .outgoing, .incoming {
-    .task-state {
-      width: 100%;
-      text-align: left;
-      margin-top: 1em;
-      .state {
-        margin-right: 0.5em;
-        float: none;
-      }
-      .relative-date-content {
-        float: none;
-      }
-    }
-  }
   .content .item-content .body > ul > li {
     padding: 0.5em 1em;
-  }
-  .messages .item-content .body p {
-    padding: 0.75em 0;
   }
   .item-content .body > ul > li li {
     margin-left: 0;

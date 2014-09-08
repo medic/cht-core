@@ -28,7 +28,7 @@ describe('state filter', function() {
 
     var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
     scope.$digest();
-    chai.expect(element.find('.state').text()).to.equal('RECEIVED');
+    chai.expect(element.find('.state').text()).to.equal('received');
   });
 
   it('should render state', function() {
@@ -38,7 +38,7 @@ describe('state filter', function() {
 
     var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
     scope.$digest();
-    chai.expect(element.find('.state').text()).to.equal('PENDING');
+    chai.expect(element.find('.state').text()).to.equal('pending');
     chai.expect(element.find('.relative-date').length).to.equal(0);
   });
 
@@ -50,7 +50,7 @@ describe('state filter', function() {
 
     var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
     scope.$digest();
-    chai.expect(element.find('.state').text()).to.equal('SCHEDULED');
+    chai.expect(element.find('.state').text()).to.equal('scheduled');
     chai.expect(element.find('.relative-date-content').text()).to.equal('sometime');
     chai.expect(element.find('.relative-date').attr('title')).to.equal('day 0');
   });

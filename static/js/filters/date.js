@@ -7,12 +7,12 @@
   var getRelativeDate = function(date, FormatDate, content) {
     content = content || '';
     if (!date) {
-      return '<div>' + content + '</div>';
+      return '<span>' + content + '</span>';
     }
-    return  '<div class="relative-date" title="' + FormatDate.datetime(date) + '">' +
+    return  '<span class="relative-date" title="' + FormatDate.datetime(date) + '">' +
               content + 
               '<span class="relative-date-content">' + FormatDate.relative(date) + '</span>' +
-            '</div>';
+            '</span>';
   };
 
   var getTaskDate = function(task) {
@@ -32,10 +32,7 @@
           return '';
         }
         var state = (task.state || 'received');
-        var content = 
-          '<span class="state ' + state + '">' +
-            state.toUpperCase() +
-          '</span>';
+        var content = '<span class="state ' + state + '">' + state + '</span>&nbsp;';
         return getRelativeDate(
           getTaskDate(task), FormatDate, content
         );
