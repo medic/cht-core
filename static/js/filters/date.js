@@ -31,7 +31,11 @@
         if (!task) {
           return '';
         }
-        var content = '<span class="state">' + (task.state || 'received') + '</span>';
+        var state = (task.state || 'received');
+        var content = 
+          '<span class="state ' + state + '">' +
+            state.toUpperCase() +
+          '</span>';
         return getRelativeDate(
           getTaskDate(task), FormatDate, content
         );

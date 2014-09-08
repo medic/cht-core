@@ -29,7 +29,7 @@ var _ = require('underscore'),
         var firstUnread = content.find('.body .unread').filter(':first');
         var scrollTo;
         if (firstUnread.length) {
-          firstUnread.before('<li id="unread-marker" class="marker">Unread messages below</li>');
+          firstUnread.before('<li id="unread-marker" class="marker">Unread below</li>');
           scrollTo = $('#unread-marker').offset().top - 150;
         } else {
           scrollTo = content[0].scrollHeight;

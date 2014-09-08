@@ -341,19 +341,50 @@ body {
   float: right;
   clear: right;
   text-align: right;
-  margin-left: 0.5em;
+  margin-left: 2em;
   margin-bottom: 0.5em;
   .state {
-    border: 1px solid #aaa;
-    border-radius: 1em;
-    background-color: #ddd;
     padding: 0.1em 0.5em;
     font-weight: bold;
+    color: #FFFFFF;
     float: right;
+    &.received {
+      background-color: @received-state-color;
+    }
+    &.pending {
+      background-color: @pending-state-color;
+    }
+    &.muted {
+      background-color: @muted-state-color;
+    }
+    &.cleared {
+      background-color: @cleared-state-color;
+    }
+    &.sent {
+      background-color: @sent-state-color;
+    }
+    &.scheduled {
+      background-color: @scheduled-state-color;
+    }
   }
   .relative-date-content {
     float: right;
     clear: right;
+  }
+}
+
+.outgoing .task-state {
+  float: left;
+  clear: left;
+  text-align: left;
+  margin-right: 2em;
+  margin-left: 0;
+  .state {
+    float: left;
+  }
+  .relative-date-content {
+    float: left;
+    clear: left;
   }
 }
 
@@ -441,17 +472,30 @@ body {
   p {
     padding: 0.75em;
   }
-  & > ul > {
-
-    .marker {
-      font-size: 0.8em;
-      font-weight: bold;
-      background-color: @seperator-color;
-      margin: 1em 0;
-      padding: 0.5em;
-      text-align: center;
+  .marker {
+    color: @grey;
+    font-size: 0.8em;
+    font-weight: bold;
+    background-color: @background-color;
+    margin: 1em 0;
+    padding: 0.5em;
+    text-align: center;
+    box-shadow: 0 5px 5px 0 rgba(50, 50, 50, 0.45);
+    position: relative;
+    &:after {
+      position: absolute;
+      bottom: -1em;
+      left: 49%;
+      border-style: solid;
+      border-color: @background-color transparent;
+      display: block;
+      width: 0;
+      border-width: 15px 15px 0;
+      content: "";
+      margin: 0 auto;
     }
-
+  }
+  & > ul > {
     .incoming, .outgoing {
       background-color: #ffffff;
       border: 1px solid @seperator-color;
@@ -459,21 +503,21 @@ body {
       margin-top: 1em;
       padding: 1em;
     }
-
     .incoming {
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
       border-right: 0;
       margin-left: 1em;
       padding-right: 2em;
+      border-color: @received-state-color;
     }
-
     .outgoing {
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
       border-left: 0;
       margin-right: 1em;
       padding-left: 2em;
+      border-color: @messages-color;
     }
   }
 }
