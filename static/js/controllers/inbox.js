@@ -48,6 +48,10 @@ var utils = require('kujua-utils'),
         $scope.filterModel.module = module;
       };
 
+      $scope.isSelected = function() {
+        return !!$scope.selected;
+      };
+
       $scope.setSelected = function(selected) {
         if (selected) {
           delayIfMobile(function() {

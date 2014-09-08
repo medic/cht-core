@@ -52,7 +52,6 @@ var _ = require('underscore'),
       };
 
       var selectContact = function(district, id) {
-        
         if (!id) {
           $scope.error = false;
           $scope.loadingContent = false;
@@ -123,6 +122,12 @@ var _ = require('underscore'),
           MessageContact(district, function(err, data) {
             options.contacts = data.rows;
             $scope.setContacts(options);
+            if (data.rows.length && !$scope.isSelected()) {
+              window.setTimeout(function() {
+                var id = $('.inbox-items li').first().attr('data-record-id');
+                selectContact(district, id);
+              }, 1);
+            }
           });
         });
       };

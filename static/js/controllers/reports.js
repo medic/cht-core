@@ -38,18 +38,20 @@ var _ = require('underscore');
       };
 
       $scope.selectMessage = function(id) {
-        if (!id) {
-          $scope.setSelected();
+        if ($scope.selected && $scope.selected._id === id) {
           return;
         }
-        if ($scope.selected && $scope.selected._id === id) {
+        if (!id) {
+          $scope.setSelected();
           return;
         }
         _selectedDoc = id;
         $scope.setSelected();
         $scope.messages.forEach(function(message) {
           if (message._id === id) {
-            $scope.readStatus.forms.read++;
+            if (!$scope.isRead(message)) {
+              $scope.readStatus.forms.read++;
+            }
             MarkRead(id, true, function(err) {
               if (err) {
                 console.log(err);
@@ -128,6 +130,14 @@ var _ = require('underscore');
           }
           if (_selectedDoc) {
             $scope.selectMessage(_selectedDoc);
+          } else {
+          // if (data.results.length && !$scope.isSelected()) {
+            window.setTimeout(function() {
+              $scope.$apply(function(scope) {
+                var id = $('.inbox-items li').first().attr('data-record-id');
+                scope.selectMessage(id);
+              });
+            }, 1);
           }
           $('.inbox-items')
             .off('scroll', _checkScroll)

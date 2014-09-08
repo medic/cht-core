@@ -252,6 +252,14 @@ body {
   background-color: @background-color;
 }
 
+.messages .inbox-items li.selected {
+  background-color: lighten(@messages-color, 30%);
+}
+
+.reports .inbox-items li.selected {
+  background-color: lighten(@reports-color, 30%);
+}
+
 .inbox-items {
   padding: 0;
   background-color: @form-background-color;
@@ -276,12 +284,11 @@ body {
     }
   }
 
-  li.selected {
-    background-color: @option-selected-color;
-  }
-
-  .read .sender .name {
-    font-weight: normal;
+  .read {
+    background-color: @background-color;
+    .sender .name {
+      font-weight: normal;
+    }
   }
 
   .detail .description {
