@@ -541,7 +541,7 @@
                                     "message": {
                                         "type": "array",
                                         "title": "Message",
-                                        "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported. e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
+                                        "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported",
                                         "items": {
                                             "type": "object",
                                             "properties": {
@@ -695,7 +695,7 @@
                                     "message": {
 										"type": "array",
                                         "title": "Message Text",
-                                        "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported. e.g. Greetings, {{chw_name}}. {{patient_id}} notification will be disabled.",
+                                        "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported",
                                         "items": {
                                             "type": "object",
                                             "properties": {
@@ -783,7 +783,7 @@
                         "messages": {
                             "type": "array",
                             "title": "Messages",
-                            "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported. e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
+                            "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -947,7 +947,7 @@
                                 "message": {
                                     "type": "array",
                                     "title": "Message",
-                                    "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported. e.g. Greetings, {{chw_name}}. {{patient_id}} notification will be disabled.",
+                                    "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported",
                                     "items": {
                                         "type": "object",
                                         "properties": {
