@@ -302,7 +302,7 @@ var utils = require('kujua-utils'),
         if ($(this).data('tooltipLoaded') !== true) {
           $(this).data('tooltipLoaded', true)
             .tooltip({
-              placement: 'top',
+              placement: 'bottom',
               trigger: 'manual',
               container: 'body'
             })

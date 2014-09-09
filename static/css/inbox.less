@@ -505,25 +505,50 @@ body {
   }
   & > ul {
     > li {
-      background-color: #ffffff;
-      border: 1px solid @seperator-color;
-      border-radius: @radius-size;
-      margin-top: 1em;
-      padding: 1em 1.5em;
+      padding: 0;
+      border: 0;
+      clear: both;
+      &:last-child .message-body {
+        margin-bottom: 2em;
+      }
+      > span {
+        background-color: #ffffff;
+        border: 1px solid @seperator-color;
+        border-radius: @radius-size;
+        margin-top: 1em;
+        padding: 1em 1.5em;
+      }
+    }
+    .message-body {
+      display: inline-block;
+    }
+    .message-body, .message-body p {
+      max-width: 100%;
     }
     .incoming {
-      border-color: @received-state-color;
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-      border-left: 0;
-      margin-right: 1em;
+      padding-right: 1em;
+      .message-body {
+        border-color: @received-state-color;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        border-left: 0;
+      }
     }
     .outgoing {
-      border-color: @messages-color;
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-      border-right: 0;
-      margin-left: 1em;
+      padding-left: 1em;
+      .message-body {
+        border-color: @messages-color;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-right: 0;
+        &, p {
+          float: right;
+        }
+      }
+    }
+    .task-state {
+      clear: right;
+      display: block;
     }
   }
 }
@@ -782,7 +807,7 @@ body {
     padding-top: 0;
   }
   .message-content-wrapper .item-content {
-    bottom: 130px;
+    bottom: 100px;
   }
   .content {
     .inbox, .reporting {
@@ -794,16 +819,20 @@ body {
     .item-content .body {
       padding-bottom: 0;
       margin-bottom: 6em;
-      > ul > li {
-        padding: 1em;
-      }
     }
+  }
+  .reports .content .item-content .body > ul > li {
+    padding: 1em;
   }
   .messages .content .item-content .body {
     margin-bottom: 0;
   }
   .item-content .reply .note {
     display: inline;
+  }
+  .message-content-wrapper .reply textarea {
+    width: 100%;
+    height: 3em;
   }
 
   .action-container .column {
@@ -904,9 +933,6 @@ body {
     .logo-full {
       display: none;
     }
-  }
-  .content .item-content .body > ul > li {
-    padding: 0.5em 1em;
   }
   .item-content .body > ul > li li {
     margin-left: 0;

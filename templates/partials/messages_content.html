@@ -13,12 +13,13 @@
       <div class="body">
         <ul>
           <li class="animate-repeat" ng-repeat="message in selected.messages | orderBy:'doc.reported_date'" data-record-id="{~lb}{~lb}message.doc._id{~rb}{~rb}" ng-class="{'outgoing': message.doc.kujua_message, 'incoming': !message.doc.kujua_message, 'unread': !isRead(message.doc)}">
-            <p>
-              {~lb}{~lb}message.doc.sms_message.message{~rb}{~rb}
-              {~lb}{~lb}message.doc.tasks[0].messages[0].message{~rb}{~rb}
-              &nbsp;
-            </p>
-            <span class="task-state" ng-bind-html="message.doc.tasks[0] || message.doc | state"></span>
+            <span class="message-body">
+              <p>
+                {~lb}{~lb}message.doc.sms_message.message{~rb}{~rb}
+                {~lb}{~lb}message.doc.tasks[0].messages[0].message{~rb}{~rb}
+              </p>
+              <span class="task-state" ng-bind-html="message.doc.tasks[0] || message.doc | state"></span>
+            </span>
           </li>
         </ul>
       </div>
