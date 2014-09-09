@@ -115,10 +115,12 @@
       </span>
       
       <span class="filter input-group freetext-filter" ng-show="filterModel.type === 'reports'">
-        <input id="freetext" type="text" ng-model="filterQuery" placeholder="Search">
-        <a href="{baseURL}/help/search" target="_blank" rel="external" class="help">
-          <span class="fa fa-question-circle"></span>
-        </a>
+        <input id="freetext" class="form-control" type="text" ng-model="filterQuery" placeholder="Extra search words">
+        <span class="input-group-btn">
+          <button id="search" class="btn btn-default" type="button">
+            <span class="fa fa-search"></span>
+          </button>
+        </span>
       </span>
 
       <span class="filter dropdown mm-dropdown" ng-show="filterModel.type === 'analytics' && analyticsModules.length">
@@ -142,10 +144,5 @@
 
     </span>
 
-    <span class="filter-actions" ng-show="filterModel.type === 'reports'">
-      <button id="search" class="btn btn-default" type="button">
-        <span class="fa fa-search"></span>
-      </button>
-    </span>
   </div>
 </div>

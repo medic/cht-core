@@ -192,7 +192,7 @@ body {
     width: 100%;
   }
 
-  .basic-filters, .slide-back, .filter-actions {
+  .basic-filters, .slide-back {
     padding-top: 0.65em;
   }
   
@@ -207,16 +207,17 @@ body {
     line-height: 3em;
   }
 
-  .filter-actions {
-    float: right;
-    margin-top: 0.15em;
-  }
-
-  input {
-    height: inherit;
-    padding: 0.6em;
-    vertical-align: top;
-    width: 80%;
+  .freetext-filter {
+    input, .btn {
+      height: 3em;
+      background-color: rgba(255, 255, 255, 0.45);
+      border: 0;
+    }
+    input {
+      padding: 0.6em;
+      width: 73%;
+      color: #000000;
+    }
   }
 }
 
@@ -749,7 +750,7 @@ body {
         width: auto;
       }
     }
-    .basic-filters, .filter-actions, .slide-back {
+    .basic-filters, .slide-back {
       padding-top: 0.2em;
     }
     .basic-filters {
@@ -762,7 +763,7 @@ body {
         margin: 0
       }
     }
-    .filter-actions, .freetext-filter {
+    .freetext-filter {
       display: none;
     }
   }
