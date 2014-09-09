@@ -42,6 +42,11 @@ var handleApiCall = function(req, res, controller) {
   });
 };
 
+app.get('/api/info', function(req, res) {
+  var p = require('./package.json');
+  res.json({ version: p.version });
+});
+
 app.get('/api/active-pregnancies', function(req, res) {
   handleApiCall(req, res, activePregnancies);
 });
