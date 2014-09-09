@@ -252,6 +252,44 @@ body {
   background-color: @background-color;
 }
 
+.message-content-wrapper {
+  height: 100%;
+  .item-content {
+    bottom: 100px;
+    top: 2em;
+    position: absolute;
+    height: auto;
+    right: 0;
+  }
+  .reply {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: 1em;
+    div {
+      padding: 0;
+    }
+    textarea {
+      width: 99%;
+      height: 5em;
+      padding: 0.5em;
+      resize: none;
+    }
+  }
+  .name-header, .reply {
+    background-color: @lightgrey;
+  }
+  .name-header {
+    height: 2em;
+    line-height: 2em;
+    .sender .position {
+      position: absolute;
+      top: 0;
+      right: 15px;
+    }
+  }
+}
+
 .messages .inbox-items li {
   &:hover {
     border-left-color: @messages-color;
@@ -390,23 +428,6 @@ body {
     font-size: 1.5em;
     text-align: center;
     margin-bottom: -1.3em;
-  }
-
-  .reply {
-    padding: 1em;
-    div {
-      padding: 0;
-      margin-bottom: 1em;
-    }
-    textarea {
-      width: 99%;
-      height: 6em;
-      padding: 0.5em;
-      resize: none;
-    }
-    .note {
-      display: block;
-    }
   }
 
   .body {
@@ -745,20 +766,28 @@ body {
       display: none;
     }
   }
+  .inbox-items,
+  .reports .item-content,
+  .messages .message-content-wrapper,
+  .message-content-wrapper .item-content,
+  .message-content-wrapper .reply {
+    width: 100%;
+  }
+  .inbox-items,
+  .reports .item-content,
+  .messages .message-content-wrapper {
+    position: absolute;
+    padding-top: 0;
+  }
+  .message-content-wrapper .item-content {
+    bottom: 130px;
+  }
   .content {
     .inbox, .reporting {
       top: 5.75em;
     }
     .meta {
       padding-bottom: 0;
-    }
-    .inbox-items, .item-content {
-      position: absolute;
-      padding-top: 0;
-      width: 100%;
-    }
-    .inbox-items {
-      left: 0;
     }
     .item-content .body {
       padding-bottom: 0;
@@ -789,14 +818,17 @@ body {
 
   .action-container .column,
   .content .inbox-items,
-  .content .item-content {
+  .content .message-content-wrapper,
+  .reports .content .item-content {
     transition: left 500ms ease 0s;
   }
 
   .content .inbox-items {
     left: 0;
   }
-  .content .item-content, .action-container .column {
+  .action-container .column,
+  .reports .content .item-content,
+  .content .message-content-wrapper { 
     left: 100%;
   }
   .reports .action-container {
@@ -808,9 +840,12 @@ body {
     .content .inbox-items {
       left: -100%;
     }
-    .content .item-content, .action-container .column {
+    .action-container .column,
+    &.reports .content .item-content,
+    .content .message-content-wrapper {
       left: 0;
     }
+
   }
 
   .header .extras a {
@@ -873,5 +908,18 @@ body {
   }
   .item-content .body > ul > li li {
     margin-left: 0;
+  }
+  .message-content-wrapper {
+    .item-content {
+      top: 3em;
+    }
+    .name-header {
+      height: 3em;
+      line-height: 1.2em;
+      padding-top: 0.5em;
+      .sender .position {
+        position: inherit;
+      }
+    }
   }
 }

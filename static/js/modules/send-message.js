@@ -72,27 +72,6 @@
     return _.compact([name, contactName, code, phone]).join(', ');
   };
 
-  var initListeners = function() {
-    $('body').on('click', '.send-message', function(e) {
-      e.preventDefault();
-      var to = $(e.target).closest('.send-message').attr('data-send-to');
-      var $modal = $('#send-message');
-      var val = [];
-      if (to) {
-        var options = $modal.find('[name=phone]').data('options');
-        var doc = _.find(options, function(option) {
-          return option.doc.contact && option.doc.contact.phone === to;
-        });
-        if (doc) {
-          val.push(doc);
-        }
-      }
-      $modal.find('[name=phone]').select2('data', val);
-      $modal.find('[name=message]').val('');
-      $modal.modal('show');
-    });
-  };
-
   var initPhoneField = function($phone) {
     if (!$phone) {
       return;
@@ -137,8 +116,8 @@
     });
   };
 
-  var initMessageField = function($message) {
-    $message.on('keyup', function(e) {
+  var initMessageField = function() {
+    $('body').on('keyup', '[name=message]', function(e) {
       var target = $(e.target);
       var count = target.val().length;
       var msg = '';
@@ -152,13 +131,26 @@
   var recipients = [];
 
   exports.init = function() {
-    var $modal = $('.message-form');
-    initListeners();
-    var $phone = $modal.find('[name=phone]');
-    if (!$phone.is('[type=hidden]')) {
-      initPhoneField($phone);
-    }
-    initMessageField($modal.find('[name=message]'));
+    $('body').on('click', '.send-message', function(e) {
+      e.preventDefault();
+      var to = $(e.target).closest('.send-message').attr('data-send-to');
+      var $modal = $('#send-message');
+      var val = [];
+      if (to) {
+        var options = $modal.find('[name=phone]').data('options');
+        var doc = _.find(options, function(option) {
+          return option.doc.contact && option.doc.contact.phone === to;
+        });
+        if (doc) {
+          val.push(doc);
+        }
+      }
+      $modal.find('[name=phone]').select2('data', val);
+      $modal.find('[name=message]').val('');
+      $modal.modal('show');
+    });
+    initPhoneField($('#send-message [name=phone]'));
+    initMessageField();
   };
 
   exports.setRecipients = function(_recipients) {
