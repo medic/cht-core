@@ -254,7 +254,11 @@ exports.data_records_by_contact = {
             }
         });
         max.read = read;
-        max.facility = undefined; // needed to reduce object size
+
+        // needed to reduce object size
+        max.facility = undefined;
+        max.message = max.message.substring(0, 100);
+
         return max;
     }
 };
