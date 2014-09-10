@@ -219,6 +219,9 @@ body {
       color: #000000;
     }
   }
+  .mobile-freetext-filter {
+    display: none;
+  }
 }
 
 
@@ -764,12 +767,12 @@ body {
     text-align: right;
     padding: 0;
     padding-bottom: 1em;
+    font-size: 0.77em;
     .dropdown, .slide-back .mm-button {
-      font-size: 0.77em;
       vertical-align: top;
     }
     .dropdown {
-      width: 5.5em;
+      width: 4.5em;
     }
     .mm-button-text {
       width: 0;
@@ -799,6 +802,30 @@ body {
     }
     .freetext-filter {
       display: none;
+    }
+    .mobile-freetext-filter {
+      width: 3em;
+      display: inline-block;
+
+      .search-pane {
+        display: none;
+        float: left;
+        min-width: 160px;
+        padding: 1em;
+        margin: 2px 0 0;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        background-color: #FFF;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        border-radius: 4px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+        background-clip: padding-box;
+      }
+      &.mm-open .search-pane {
+        display: block;
+      }
     }
   }
   .inbox-items,
@@ -919,11 +946,20 @@ body {
       left: 0;
     }
   }
+  .mm-button {
+    padding-left: 0.8em;
+  }
+  .mm-button-dropdown {
+    padding-right: 0.8em;
+  }
+  .mm-button-icon {
+    padding-right: 0.22em;
+  }
 }
 
 @media (max-width: 400px) {
   .filters .slide-back {
-    width: 2.5em;
+    width: 3em;
     .mm-button-text {
       width: 0;
       visibility: hidden;

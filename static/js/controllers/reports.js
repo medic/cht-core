@@ -223,6 +223,22 @@ var _ = require('underscore');
           $scope.query();
         }
       });
+      $('#mobile-search-go').on('click', function(e) {
+        e.preventDefault();
+        $scope.query();
+        $(e.target).closest('.filter').removeClass('mm-open');
+      });
+      $('#mobile-freetext').on('keypress', function(e) {
+        if (e.which === 13) {
+          e.preventDefault();
+          $scope.query();
+          $(e.target).closest('.filter').removeClass('mm-open');
+        }
+      });
+      $('#mobile-search').on('click', function(e) {
+        e.preventDefault();
+        $(e.target).closest('.filter').toggleClass('mm-open');
+      });
 
       $scope.setFilterQuery($route.current.params.query);
 

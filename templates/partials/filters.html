@@ -123,6 +123,24 @@
         </span>
       </span>
 
+      <span class="filter mobile-freetext-filter" ng-show="filterModel.type === 'reports'">
+        <span id="mobile-search" class="mm-button" data-toggle="dropdown">
+          <span class="mm-button-icon">
+            <span class="fa fa-pencil"></span>
+          </span>
+        </span>
+        <div id="mobile-search-pane" class="search-pane">
+          <span class="input-group">
+            <input id="mobile-freetext" class="form-control" type="text" ng-model="filterQuery" placeholder="Extra search words">
+            <span class="input-group-btn">
+              <button id="mobile-search-go" class="btn btn-default" type="button">
+                <span class="fa fa-search"></span>
+              </button>
+            </span>
+          </span>
+        </div>
+      </span>
+
       <span class="filter dropdown mm-dropdown" ng-show="filterModel.type === 'analytics' && analyticsModules.length">
         <span id="module" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">
