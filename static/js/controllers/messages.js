@@ -44,11 +44,19 @@ var _ = require('underscore'),
       };
 
       var findMostRecentFacility = function(messages) {
-        for (var i = messages.length - 1; i >= 0; i--) {
-          if (messages[i].value.facility) {
-            return messages[i].value.facility;
-          }
+        var message = _.find(messages, function(message) {
+          return message.value.facility;
+        });
+        if (message) {
+          return [{ doc: message.value.facility }];
         }
+        message = _.find(messages, function(message) {
+          return message.value.name;
+        });
+        if (message) {
+          return [{ doc: { contact: { phone: message.value.name } } }];
+        }
+        return [];
       };
 
       var selectContact = function(district, id) {
@@ -69,7 +77,7 @@ var _ = require('underscore'),
             return;
           }
           var facility = findMostRecentFacility(data.rows);
-          sendMessage.setRecipients([{ doc: facility }]);
+          sendMessage.setRecipients(facility);
           $scope.loadingContent = false;
           $scope.error = false;
           $animate.enabled(false);

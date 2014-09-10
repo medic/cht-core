@@ -75,12 +75,13 @@ var utils = require('kujua-utils'),
 
         var deferred = $q.defer();
 
+        if (!_.isArray(recipients)) {
+          recipients = [recipients];
+        }
+
         User.query(function(user) {
-
-
           var doc = createMessageDoc(user, recipients);
-          var explodedRecipients = _.isArray(recipients) ? 
-            formatRecipients(recipients) : [recipients];
+          var explodedRecipients = formatRecipients(recipients);
 
           async.forEachSeries(
             explodedRecipients, 
