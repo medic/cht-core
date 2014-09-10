@@ -28,7 +28,7 @@ describe('mmSender', function() {
 
     var element = compile('<mm-sender message="message"/>')(scope);
     scope.$digest();
-    chai.expect(element.find('div.name').text()).to.equal('+123');
+    chai.expect(element.find('div .name').text()).to.equal('+123');
   });
 
   it('should render sender when message has sent by', function() {
@@ -38,7 +38,7 @@ describe('mmSender', function() {
 
     var element = compile('<mm-sender message="message"/>')(scope);
     scope.$digest();
-    chai.expect(element.find('div.name').text()).to.equal('+789');
+    chai.expect(element.find('div .name').text()).to.equal('+789');
   });
 
   it('should render sender when message has related entities', function() {
@@ -49,7 +49,8 @@ describe('mmSender', function() {
         clinic: {
           name: 'Clarks House',
           contact: {
-            name: 'Clark'
+            name: 'Clark',
+            phone: '+123'
           },
           parent: {
             name: 'Smallville',
@@ -63,7 +64,8 @@ describe('mmSender', function() {
 
     var element = compile('<mm-sender message="message"/>')(scope);
     scope.$digest();
-    chai.expect(element.find('div.name').text()).to.equal('Clark');
-    chai.expect(element.find('div.position').text()).to.equal('Clarks House › Smallville › Metropolis');
+    chai.expect(element.find('div .name').text()).to.equal('Clark');
+    chai.expect(element.find('div .phone').text()).to.equal('+123');
+    chai.expect(element.find('div .position').text()).to.equal('Clarks House › Smallville › Metropolis');
   });
 });
