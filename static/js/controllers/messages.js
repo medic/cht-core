@@ -76,6 +76,10 @@ var _ = require('underscore'),
             console.log(err);
             return;
           }
+          if ($scope.selected && $scope.selected.id !== id) {
+            // ignore response for previous request
+            return;
+          }
           var facility = findMostRecentFacility(data.rows);
           sendMessage.setRecipients(facility);
           $scope.loadingContent = false;
