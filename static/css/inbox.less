@@ -292,7 +292,7 @@ body {
 }
 
 .messages .inbox-items li {
-  &:hover {
+  .message-wrapper:hover {
     border-left-color: @messages-color;
   }
   &.selected {
@@ -301,7 +301,7 @@ body {
 }
 
 .reports .inbox-items li {
-  &:hover {
+  .message-wrapper:hover {
     border-left-color: @reports-color;
   }
   &.selected {
@@ -316,7 +316,6 @@ body {
 
   li {
     border-bottom: 1px solid @seperator-color;
-    border-left: 5px solid transparent;
     cursor: pointer;
     white-space: nowrap;
     overflow: hidden;
@@ -326,7 +325,8 @@ body {
     }
 
     .message-wrapper {
-      margin: 1em;
+      padding: 1em;
+      border-left: 5px solid transparent;
     }
   }
 
