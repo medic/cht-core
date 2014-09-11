@@ -56,7 +56,16 @@
       <h2>Messages</h2>
       <ul>
         <li ng-repeat="group in selected.scheduled_tasks_by_group">
-          <p>{~lb}{~lb}group.group{~rb}{~rb}</p>
+          <p>
+            {~lb}{~lb}group.group{~rb}{~rb}
+            <span ng-hide="group.loading">
+              <a class="btn btn-link" ng-show="canMute(group)" ng-click="mute(group)">mute</a>
+              <a class="btn btn-link" ng-show="canSchedule(group)" ng-click="schedule(group)">schedule</a>
+            </span>
+            <span class="loading-button" ng-show="group.loading">
+              <span class="fa fa-spinner fa-spin"></span>
+            </span>
+          </p>
           <ul class="task-list">
             <li ng-repeat="task in group.rows | orderBy:'due'">
               <ul>

@@ -17,6 +17,7 @@
   require('./generate-search-query');
   require('./mark-read');
   require('./message-contacts');
+  require('./message-state');
   require('./read-messages');
   require('./search');
   require('./send-message');

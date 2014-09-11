@@ -66,7 +66,8 @@ describe('ReportsCtrl controller', function() {
         'Search': Search,
         'Verified': {},
         'DeleteMessage': {},
-        'UpdateFacility': {}
+        'UpdateFacility': {},
+        'MessageState': {}
       });
     };
   }));

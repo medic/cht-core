@@ -7,8 +7,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$route', '$location', '$animate', 'UserDistrict', 'UserCtxService', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes', 'RememberService',
-    function ($scope, $route, $location, $animate, UserDistrict, UserCtxService, MarkRead, GenerateSearchQuery, Search, Changes, RememberService) {
+    ['$scope', '$route', '$location', '$animate', 'UserDistrict', 'UserCtxService', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes', 'RememberService', 'MessageState',
+    function ($scope, $route, $location, $animate, UserDistrict, UserCtxService, MarkRead, GenerateSearchQuery, Search, Changes, RememberService, MessageState) {
 
       $scope.filterModel.type = 'reports';
 
@@ -142,6 +142,33 @@ var _ = require('underscore');
             .off('scroll', _checkScroll)
             .on('scroll', _checkScroll);
         });
+      };
+
+      $scope.canMute = function(group) {
+        return MessageState.any(group, 'scheduled');
+      };
+
+      $scope.canSchedule = function(group) {
+       return MessageState.any(group, 'muted');
+      };
+
+      var setMessageState = function(group, from, to) {
+        group.loading = true;
+        var id = $scope.selected._id;
+        var groupNumber = group.rows[0].group;
+        MessageState.set(id, groupNumber, from, to, function(err) {
+          if (err) {
+            console.log(err);
+          }
+        });
+      };
+
+      $scope.mute = function(group) {
+        setMessageState(group, 'scheduled', 'muted');
+      };
+
+      $scope.schedule = function(group) {
+        setMessageState(group, 'muted', 'scheduled');
       };
 
       var _checkScroll = function() {
