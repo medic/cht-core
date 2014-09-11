@@ -227,7 +227,7 @@ var _ = require('underscore');
           scope.filterModel.date.to = end.valueOf();
         });
       })
-      .on('dateSelected.daterangepicker', function(e, picker) {
+      .on('mm.dateSelected.daterangepicker', function(e, picker) {
         if ($('#back').is(':visible')) {
           // mobile version - only show one calendar at a time
           if (picker.container.is('.show-from')) {

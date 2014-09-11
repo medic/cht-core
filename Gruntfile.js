@@ -25,7 +25,7 @@ module.exports = function(grunt) {
         overwrite: true,
         replacements: [{
           from: /clickDate: function \(e\) \{/g,
-          to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'dateSelected.daterangepicker\', this);\n'
+          to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'mm.dateSelected.daterangepicker\', this);\n'
         }]
       }
     },
