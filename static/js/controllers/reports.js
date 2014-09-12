@@ -242,13 +242,6 @@ var _ = require('underscore'),
         });
       });
 
-      $('#messageTypeDropdown').on('update', function() {
-        var types = $(this).multiDropdown().val();
-        angularApply(function(scope) {
-          scope.filterModel.messageTypes = types;
-        });
-      });
-
 
       var start = $scope.filterModel.date.from ?
         moment($scope.filterModel.date.from) : moment().subtract(1, 'months');

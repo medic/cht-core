@@ -123,12 +123,21 @@ var utils = require('kujua-utils'),
       };
 
       $scope.filterModel = {
-        freetext: '',
         type: 'messages',
         forms: [],
         facilities: [],
         valid: undefined,
         date: { }
+      };
+
+      $scope.resetFilterModel = function() {
+        $scope.filterModel.forms = [];
+        $scope.filterModel.facilities = [];
+        $scope.filterModel.valid = undefined;
+        $scope.filterModel.date = {};
+        $scope.filterQuery = '';
+        $('#formTypeDropdown').multiDropdown().reset();
+        $('#facilityDropdown').multiDropdown().reset();
       };
 
       $scope.setMessage = function(id) {

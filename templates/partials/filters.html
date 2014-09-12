@@ -160,6 +160,22 @@
         </ul>
       </span>
 
+      <span class="filter dropdown mm-dropdown advanced-filter" ng-show="filterModel.type === 'reports'">
+        <span id="advanced" class="mm-button" data-toggle="dropdown">
+          <span class="mm-button-icon">
+            <span class="fa fa-bars"></span>
+          </span>
+        </span>
+        <ul role="menu" aria-labelledby="advanced" class="dropdown-menu mm-dropdown-menu pull-right">
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" ng-click="resetFilterModel()">
+              <span class="fa fa-minus-circle"></span>
+              Clear all filters
+            </a>
+          </li>
+        </ul>
+      </span>
+
     </span>
 
   </div>

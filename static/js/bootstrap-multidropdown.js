@@ -20,6 +20,10 @@
         return $element.find('[role=menuitem].selected').map(function() {
           return $(this).data('value');
         }).get();
+      },
+      reset: function() {
+        $element.find('[role=menuitem].selected').removeClass('selected');
+        updateMultipleSelect();
       }
     };
 
