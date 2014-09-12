@@ -59,8 +59,9 @@
           <p>
             {~lb}{~lb}group.group{~rb}{~rb}
             <span ng-hide="group.loading">
-              <a class="btn btn-link" ng-show="canMute(group)" ng-click="mute(group)">mute</a>
-              <a class="btn btn-link" ng-show="canSchedule(group)" ng-click="schedule(group)">schedule</a>
+              <a class="btn btn-link" ng-click="edit(group)">edit</a>
+              <a class="btn btn-link" ng-click="mute(group)" ng-show="canMute(group)">mute</a>
+              <a class="btn btn-link" ng-click="schedule(group)" ng-show="canSchedule(group)">schedule</a>
             </span>
             <span class="loading-button" ng-show="group.loading">
               <span class="fa fa-spinner fa-spin"></span>

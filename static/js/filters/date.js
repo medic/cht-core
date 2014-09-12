@@ -56,6 +56,14 @@
     }
   ]);
 
+  module.filter('simpleDateTime', ['FormatDate',
+    function (FormatDate) {
+      return function (date) {
+        return FormatDate.datetime(date);
+      };
+    }
+  ]);
+
   module.filter('fullDate', ['FormatDate',
     function (FormatDate) {
       return function (date) {

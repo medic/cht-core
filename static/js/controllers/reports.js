@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    moment = require('moment');
 
 (function () {
 
@@ -7,8 +8,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$route', '$location', '$animate', 'UserDistrict', 'UserCtxService', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes', 'RememberService', 'MessageState',
-    function ($scope, $route, $location, $animate, UserDistrict, UserCtxService, MarkRead, GenerateSearchQuery, Search, Changes, RememberService, MessageState) {
+    ['$scope', '$route', '$location', '$animate', 'UserDistrict', 'UserCtxService', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes', 'RememberService', 'MessageState', 'Settings', 'EditGroup',
+    function ($scope, $route, $location, $animate, UserDistrict, UserCtxService, MarkRead, GenerateSearchQuery, Search, Changes, RememberService, MessageState, Settings, EditGroup) {
 
       $scope.filterModel.type = 'reports';
 
@@ -171,6 +172,42 @@ var _ = require('underscore');
         setMessageState(group, 'muted', 'scheduled');
       };
 
+      $scope.edit = function(group) {
+        $scope.selectedGroup = group;
+        $('#edit-message-group').modal('show');
+        window.setTimeout(function() {
+          Settings.query(function(res) {
+            if (res.settings) {
+              $('#edit-message-group .datepicker').daterangepicker({
+                singleDatePicker: true,
+                timePicker: true,
+                applyClass: 'btn-primary',
+                cancelClass: 'btn-link',
+                parentEl: '#edit-message-group .modal-dialog .modal-content',
+                format: res.settings.reported_date_format,
+                minDate: moment()
+              },
+              function(date) {
+                var i = this.element.closest('fieldset').attr('data-index');
+                $scope.selectedGroup.rows[i].due = date.toISOString();
+              });
+            }
+          });
+        });
+      };
+
+      $scope.updateGroup = function(group) {
+        EditGroup($scope.selected._id, group, function(err) {
+          if (err) {
+            console.log(err);
+            $('#edit-message-group .modal-footer .note')
+              .text('Error saving group');
+          } else {
+            $('#edit-message-group').modal('hide');
+          }
+        });
+      };
+
       var _checkScroll = function() {
         if (this.scrollHeight - this.scrollTop - 10 < this.clientHeight) {
           $scope.$apply(function(scope) {
@@ -212,6 +249,7 @@ var _ = require('underscore');
         });
       });
 
+
       var start = $scope.filterModel.date.from ?
         moment($scope.filterModel.date.from) : moment().subtract(1, 'months');
       $('#date-filter').daterangepicker({
@@ -238,7 +276,7 @@ var _ = require('underscore');
           }
         }
       });
-      $('.daterangepicker').addClass('mm-dropdown-menu show-from');
+      $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
 
       $('#search').on('click', function(e) {
         e.preventDefault();

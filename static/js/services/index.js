@@ -10,6 +10,7 @@
   require('./changes');
   require('./delete-message');
   require('./download-url');
+  require('./edit-group');
   require('./facility');
   require('./form');
   require('./format-data-record');

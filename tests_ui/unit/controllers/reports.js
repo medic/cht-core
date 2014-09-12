@@ -67,7 +67,8 @@ describe('ReportsCtrl controller', function() {
         'Verified': {},
         'DeleteMessage': {},
         'UpdateFacility': {},
-        'MessageState': {}
+        'MessageState': {},
+        'EditGroup': {}
       });
     };
   }));
