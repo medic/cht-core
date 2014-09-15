@@ -16,7 +16,7 @@
           </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-class="{'mm-icon-disabled': selected && !selected.form}" ng-show="selected.verified" ng-click="verify(false)">
             <span class="fa fa-times"></span>
             <p>{~lb}{~lb}'Unverify' | translate{~rb}{~rb}</p>
-          </a><a class="mm-icon mm-icon-inverse mm-icon-caption" data-toggle="modal" data-target="#delete-confirm">
+          </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="deleteDoc(selected._id)">
             <span class="fa fa-trash-o"></span>
             <p>{~lb}{~lb}'Delete' | translate{~rb}{~rb}</p>
           </a>
