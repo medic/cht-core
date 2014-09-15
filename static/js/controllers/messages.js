@@ -94,6 +94,15 @@ var _ = require('underscore'),
         var selectedId = $scope.selected && $scope.selected.id;
         if (selectedId) {
           options = options || {};
+          if (options.changes && options.changes.length) {
+            $animate.enabled(true);
+            for (var i = $scope.selected.messages.length - 1; i >= 0; i--) {
+              var msgId = $scope.selected.messages[i].id;
+              if (_.findWhere(options.changes, { id: msgId, deleted: true })) {
+                $scope.selected.messages.splice(i, 1);
+              }
+            }
+          }
           UserDistrict(function(err, district) {
             var skip = null;
             if (options.skip) {
@@ -164,9 +173,9 @@ var _ = require('underscore'),
         selectContact(district, $route.current.params.doc);
       });
 
-      Changes(function() {
-        updateContacts({ changes: true });
-        updateContact({ changes: true });
+      Changes(function(data) {
+        updateContacts({ changes: data });
+        updateContact({ changes: data });
       });
 
     }

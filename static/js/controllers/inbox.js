@@ -278,10 +278,17 @@ var utils = require('kujua-utils'),
       };
 
       $scope.deleteMessage = function() {
-        var pane = modal.start($('#delete-confirm'));
-        DeleteMessage($scope.selected._id, function(err) {
-          pane.done('Error deleting document', err);
-        });
+        if ($scope.selected) {
+          var id = $scope.selected.form ? $scope.selected._id : $scope.selectedDoc;
+          var pane = modal.start($('#delete-confirm'));
+          DeleteMessage(id, function(err) {
+            pane.done('Error deleting document', err);
+          });
+        }
+      };
+
+      $scope.setSelectedDoc = function(id) {
+        $scope.selectedDoc = id;
       };
 
       $scope.updateFacility = function() {
@@ -323,6 +330,20 @@ var utils = require('kujua-utils'),
           $(this).data('tooltipLoaded', false)
             .tooltip('hide');
         }
+      });
+
+      $('body').on('click', '#message-content .message-body', function(e) {
+        var elem = $(e.target).closest('.message-body');
+        if (!elem.is('.selected')) {
+          $('#message-content .selected').removeClass('selected');
+          elem.addClass('selected');
+        }
+      });
+
+      $('body').on('click', '#message-content .message-body .delete', function(e) {
+        var id = $(e.target).closest('li').attr('data-record-id');
+        $scope.setSelectedDoc(id);
+        $('#delete-confirm').modal('show');
       });
 
       require('../modules/add-record').init();

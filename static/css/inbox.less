@@ -501,6 +501,21 @@ body {
 }
 
 .messages .item-content .body {
+  .actions {
+    width: 2em;
+    float: right;
+    visibility: hidden;
+    a {
+      padding: 0.5em;
+      &:hover {
+        text-decoration: none;
+      }
+    }
+  }
+  .data {
+    padding: 1em;
+    margin-right: 1.5em;
+  }
   .marker {
     color: @grey;
     font-size: 0.8em;
@@ -537,7 +552,11 @@ body {
         border: 1px solid @seperator-color;
         border-radius: @radius-size;
         margin-top: 1em;
-        padding: 1em 1.5em;
+      }
+    }
+    .message-body:hover, .selected {
+      .actions {
+        visibility: visible;
       }
     }
     .message-body {
