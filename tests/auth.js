@@ -25,9 +25,50 @@ exports['auth returns error when not logged in'] = function(test) {
     test.done();
   });
 
-  callbacks.data(JSON.stringify({
-    userCtx: { name: null }
-  }));
+  callbacks.data(JSON.stringify({ userCtx: { name: null } }));
+  callbacks.end();
+
+};
+
+exports['auth returns error when cannot parse json'] = function(test) {
+  test.expect(2);
+
+  var callbacks = {};
+  var get = sinon.stub(http, 'get').callsArgWith(1, {
+    on: function(eventType, callback) {
+      callbacks[eventType] = callback;
+    }
+  });
+
+  auth.getUsername({ }, function(err) {
+    test.equals(get.callCount, 1);
+    test.equals(err, 'Not logged in');
+    test.done();
+  });
+
+  callbacks.data('not valid json');
+  callbacks.end();
+
+};
+
+exports['auth returns error when no user context'] = function(test) {
+  test.expect(2);
+
+  var callbacks = {};
+  var get = sinon.stub(http, 'get').callsArgWith(1, {
+    on: function(eventType, callback) {
+      callbacks[eventType] = callback;
+    }
+  });
+
+  auth.getUsername({ }, function(err) {
+    test.equals(get.callCount, 1);
+    test.equals(err, 'Not logged in');
+    test.done();
+  });
+
+  callbacks.data(JSON.stringify({ roles: [] }));
+  callbacks.end();
 
 };
 
@@ -68,8 +109,7 @@ exports['auth returns username'] = function(test) {
     test.done();
   });
 
-  callbacks.data(JSON.stringify({
-    userCtx: { name: 'steve' }
-  }));
+  callbacks.data(JSON.stringify({ userCtx: { name: 'steve' } }));
+  callbacks.end();
 
 };
