@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    modal = require('../modules/modal'),
     moment = require('moment');
 
 (function () {
@@ -173,7 +174,7 @@ var _ = require('underscore'),
       };
 
       $scope.edit = function(group) {
-        $scope.selectedGroup = group;
+        $scope.selectedGroup = angular.copy(group);
         $('#edit-message-group').modal('show');
         window.setTimeout(function() {
           Settings.query(function(res) {
@@ -197,14 +198,9 @@ var _ = require('underscore'),
       };
 
       $scope.updateGroup = function(group) {
+        var pane = modal.start($('#edit-message-group'));
         EditGroup($scope.selected._id, group, function(err) {
-          if (err) {
-            console.log(err);
-            $('#edit-message-group .modal-footer .note')
-              .text('Error saving group');
-          } else {
-            $('#edit-message-group').modal('hide');
-          }
+          pane.done('Error updating group', err);
         });
       };
 

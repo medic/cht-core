@@ -13,7 +13,11 @@ describe('EditGroup service', function() {
         callback(null, doc);
       }
     };
-    audit = {};
+    audit = {
+      saveDoc: function(record, callback) {
+        callback();
+      }
+    };
     module('inboxApp');
     module(function ($provide) {
       $provide.value('db', db);
@@ -79,9 +83,6 @@ describe('EditGroup service', function() {
         { group: 3, due: '4', messages: [ { message: 'd' } ] }
       ]
     };
-    audit.saveDoc = function(record, callback) {
-      callback();
-    };
     var group = {
       rows: [ 
         { group: 2, state: 'scheduled', due: '5', messages: [ { message: 'e' } ] },
@@ -111,6 +112,32 @@ describe('EditGroup service', function() {
       chai.expect(actual.scheduled_tasks[3].due).to.equal('4');
       chai.expect(actual.scheduled_tasks[3].messages.length).to.equal(1);
       chai.expect(actual.scheduled_tasks[3].messages[0].message).to.equal('d');
+    });
+  });
+
+  it('removes deleted messages', function() {
+    doc = {
+      scheduled_tasks: [
+        { group: 2, due: '2', messages: [ { message: 'b' } ] },
+        { group: 2, due: '3', messages: [ { message: 'c' } ] },
+        { group: 2, due: '4', messages: [ { message: 'd' } ] }
+      ]
+    };
+    var group = {
+      rows: [
+        { group: 2, state: 'scheduled', due: '5', messages: [ { message: 'e' } ], deleted: true },
+        { group: 2, state: 'scheduled', due: '6', messages: [ { message: 'f' } ] },
+        { group: 2, state: 'scheduled', due: '7', messages: [ { message: 'g' } ], deleted: true }
+      ]
+    };
+    service('123', group, function(err, actual) {
+      chai.expect(err).to.equal(undefined);
+      chai.expect(actual.scheduled_tasks.length).to.equal(1);
+
+      chai.expect(actual.scheduled_tasks[0].group).to.equal(2);
+      chai.expect(actual.scheduled_tasks[0].due).to.equal('6');
+      chai.expect(actual.scheduled_tasks[0].messages.length).to.equal(1);
+      chai.expect(actual.scheduled_tasks[0].messages[0].message).to.equal('f');
     });
   });
 

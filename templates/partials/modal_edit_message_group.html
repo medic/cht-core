@@ -8,10 +8,13 @@
       <div class="modal-body">
         <form action="" method="POST">
 
-          <fieldset ng-repeat="task in selectedGroup.rows" ng-disabled="task.state !== 'scheduled' && task.state !== 'muted'" data-index="{~lb}{~lb}$index{~rb}{~rb}">
+          <fieldset ng-repeat="task in selectedGroup.rows" ng-hide="task.deleted" ng-disabled="task.state !== 'scheduled' && task.state !== 'muted'" data-index="{~lb}{~lb}$index{~rb}{~rb}">
 
             <div class="form-group">
-              <label>Message</label>
+              <label>
+                Message
+                <a class="btn btn-link fa fa-trash-o" ng-hide="task.state !== 'scheduled' && task.state !== 'muted'" ng-click="task.deleted = true"></a>
+              </label>
               <input type="text" class="form-control" ng-repeat="message in task.messages" ng-model="message.message" />
             </div>
 
