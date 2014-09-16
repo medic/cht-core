@@ -123,9 +123,6 @@ var _ = require('underscore'),
                 }
               });
               $scope.allLoaded = data.rows.length === 0;
-              if (options.skip) {
-                $('#unread-marker').remove();
-              }
               if (userNotScrolled && first.length) {
                 window.setTimeout(function() {
                   $('.item-content').scrollTop(first.offset().top - 140);
