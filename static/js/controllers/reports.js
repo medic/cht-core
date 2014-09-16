@@ -173,9 +173,7 @@ var _ = require('underscore'),
         setMessageState(group, 'muted', 'scheduled');
       };
 
-      $scope.edit = function(group) {
-        $scope.selectedGroup = angular.copy(group);
-        $('#edit-message-group').modal('show');
+      var initEditMessageModal = function() {
         window.setTimeout(function() {
           Settings.query(function(res) {
             if (res.settings) {
@@ -195,6 +193,23 @@ var _ = require('underscore'),
             }
           });
         });
+      };
+
+      $scope.edit = function(group) {
+        $scope.selectedGroup = angular.copy(group);
+        $('#edit-message-group').modal('show');
+        initEditMessageModal();
+      };
+
+      $scope.addTask = function(group) {
+        group.rows.push({
+          due: moment(),
+          added: true,
+          group: group.number,
+          state: 'scheduled',
+          messages: [ { message: '' } ]
+        });
+        initEditMessageModal();
       };
 
       $scope.updateGroup = function(group) {

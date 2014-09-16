@@ -181,11 +181,15 @@ exports.makeDataRecordReadable = function(doc, appinfo) {
 
             // setup scheduled groups
             var group_name = t.type;
-            if (t.group)
-                group_name += ":"+t.group;
+            if (t.group) {
+                group_name += ":" + t.group;
+            }
+
             if (!groups[group_name]) {
                 groups[group_name] = {
                     group: group_name,
+                    type: t.type,
+                    number: t.group,
                     rows: []
                 };
             }

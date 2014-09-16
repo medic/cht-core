@@ -67,6 +67,7 @@ describe('EditGroup service', function() {
       callback('audit borked');
     };
     var group = {
+      number: 1,
       rows: [ { group: 1, state: 'scheduled' } ]
     };
     service('123', group, function(err) {
@@ -84,7 +85,8 @@ describe('EditGroup service', function() {
       ]
     };
     var group = {
-      rows: [ 
+      number: 2,
+      rows: [
         { group: 2, state: 'scheduled', due: '5', messages: [ { message: 'e' } ] },
         { group: 2, state: 'muted', due: '6', messages: [ { message: 'f' } ] }
       ]
@@ -124,6 +126,7 @@ describe('EditGroup service', function() {
       ]
     };
     var group = {
+      number: 2,
       rows: [
         { group: 2, state: 'scheduled', due: '5', messages: [ { message: 'e' } ], deleted: true },
         { group: 2, state: 'scheduled', due: '6', messages: [ { message: 'f' } ] },
@@ -141,4 +144,33 @@ describe('EditGroup service', function() {
     });
   });
 
+  it('adds new messages', function() {
+    doc = {
+      scheduled_tasks: [
+        { group: 2, due: '2', messages: [ { message: 'b' } ] }
+      ]
+    };
+    var group = {
+      number: 2,
+      rows: [
+        { group: 2, state: 'scheduled', due: '6', messages: [ { message: 'f' } ] },
+        { group: 2, state: 'scheduled', due: '5', messages: [ { message: 'e' } ], added: true, deleted: true },
+        { group: 2, state: 'scheduled', due: '7', messages: [ { message: 'g' } ], added: true }
+      ]
+    };
+    service('123', group, function(err, actual) {
+      chai.expect(err).to.equal(undefined);
+      chai.expect(actual.scheduled_tasks.length).to.equal(2);
+
+      chai.expect(actual.scheduled_tasks[0].group).to.equal(2);
+      chai.expect(actual.scheduled_tasks[0].due).to.equal('6');
+      chai.expect(actual.scheduled_tasks[0].messages.length).to.equal(1);
+      chai.expect(actual.scheduled_tasks[0].messages[0].message).to.equal('f');
+
+      chai.expect(actual.scheduled_tasks[1].group).to.equal(2);
+      chai.expect(actual.scheduled_tasks[1].due).to.equal('7');
+      chai.expect(actual.scheduled_tasks[1].messages.length).to.equal(1);
+      chai.expect(actual.scheduled_tasks[1].messages[0].message).to.equal('g');
+    });
+  });
 });
