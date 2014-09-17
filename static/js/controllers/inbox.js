@@ -195,12 +195,17 @@ var utils = require('kujua-utils'),
           return;
         }
         $scope.permissions.district = district;
-        $scope.messagesDownloadUrl = DownloadUrl({
-            messages: true,
-            district: district
-        });
-        $scope.reportsDownloadUrl = DownloadUrl({
-            district: district
+        Form().then(function(forms) {
+          $scope.downloadModels = _.map(forms, function(form) {
+            return {
+              label: 'Form: ' + form.name,
+              url: DownloadUrl({ form: form, district: district })
+            };
+          });
+          $scope.downloadModels.unshift({
+            label: 'Messages',
+            url: DownloadUrl({ messages: true, district: district })
+          });
         });
         updateAvailableFacilities();
         updateContacts();
@@ -209,8 +214,8 @@ var utils = require('kujua-utils'),
       });
 
       Form().then(
-        function(res) {
-          $scope.forms = res;
+        function(forms) {
+          $scope.forms = forms;
         },
         function() {
           console.log('Failed to retrieve forms');

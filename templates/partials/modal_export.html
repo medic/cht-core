@@ -1,0 +1,20 @@
+<div class="modal fade" id="modal-export" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
+        <h3>Export</h3>
+      </div>
+      <div class="modal-body">
+        <ul>
+          <li ng-repeat="model in downloadModels">
+            <a href="{~lb}{~lb}model.url{~rb}{~rb}">{~lb}{~lb}model.label{~rb}{~rb}</a>
+          </li>
+        <ul>
+      </div>
+      <div class="modal-footer">
+        <a class="btn cancel" data-dismiss="modal">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>

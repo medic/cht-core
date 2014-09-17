@@ -22,19 +22,19 @@
       <span class="dropdown options">
         <a data-toggle="dropdown">
           <div class="mm-icon mm-icon-inverse">
-            <span class="fa fa-plus"></span>
+            <i class="fa fa-plus"></i>
           </div>
         </a>
         <ul role="menu" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation">
             <a role="menuitem" tabindex="-1" class="send-message">
-              <span class="fa fa-envelope"></span>
+              <i class="fa fa-envelope"></i>
               Send Message
             </a>
           </li>
           <li role="presentation" class="disabled">
             <a role="menuitem" tabindex="-1" id="send-record-button">
-              <span class="fa fa-list-alt"></span>
+              <i class="fa fa-list-alt"></i>
               Submit Report
             </a>
           </li>
@@ -49,19 +49,28 @@
         </a>
         <ul role="menu" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#edit-user-profile">Edit User Profile</a>
+            <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#edit-user-profile">
+              <i class="fa fa-user"></i>
+              Edit User Profile
+            </a>
           </li>
           <li role="presentation" ng-show="permissions.can_export_messages">
-            <a role="menuitem" tabindex="-1" ng-href="{~lb}{~lb}messagesDownloadUrl{~rb}{~rb}" rel="external">Export Messages</a>
-          </li>
-          <li role="presentation" ng-show="permissions.can_export_forms">
-            <a role="menuitem" tabindex="-1" ng-href="{~lb}{~lb}reportsDownloadUrl{~rb}{~rb}" rel="external">Export Reports</a>
+            <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#modal-export">
+              <i class="fa fa-arrow-circle-o-down"></i>
+              Export
+            </a>
           </li>
           <li role="presentation" ng-show="permissions.admin">
-            <a role="menuitem" tabindex="-1" href="{baseURL}/settings" rel="external">Administrative Options</a>
+            <a role="menuitem" tabindex="-1" href="{baseURL}/settings" rel="external">
+              <i class="fa fa-cog"></i>
+              Administrative Options
+            </a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" rel="external" id="logout">Log Out</a>
+            <a role="menuitem" tabindex="-1" rel="external" id="logout">
+              <i class="fa fa-power-off"></i>
+              Log Out
+            </a>
           </li>
         </ul>
       </span>
