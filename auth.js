@@ -2,7 +2,8 @@ var http = require('http'),
     db = require('./db');
 
 module.exports = {
-  getUsername: function(req, callback) {
+
+  getUserCtx: function(req, callback) {
     http.get({
       host: db.client.host,
       port: db.client.port,
@@ -24,7 +25,7 @@ module.exports = {
           return callback('Not logged in');
         }
         if (auth && auth.userCtx && auth.userCtx.name) {
-          callback(null, auth.userCtx.name);
+          callback(null, auth.userCtx);
         } else {
           callback('Not logged in');
         }
@@ -33,6 +34,31 @@ module.exports = {
       res.on('error', function(e) {
         callback(e);
       });
+
     });
+  },
+
+  checkUrl: function(req, callback) {
+
+    if (!req.params || !req.params.path) {
+      return callback('No path given');
+    }
+
+    var req = http.request({
+      method: 'HEAD',
+      host: db.client.host,
+      port: db.client.port,
+      path: req.params.path,
+      headers: req.headers
+    }, function(res) {
+      callback(null, { status: res.statusCode } );
+    });
+
+    req.on('error', function(e) {
+      callback(e.message);
+    });
+
+    req.end();
   }
+
 };

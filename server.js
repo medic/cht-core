@@ -29,9 +29,9 @@ app.post(auditPath, audit);
 app.delete(auditPath, audit);
 
 var handleApiCall = function(req, res, controller) {
-  auth.getUsername(req, function(err) {
+  auth.getUserCtx(req, function(err) {
     if (err) {
-      return notLoggedIn(err, res);
+      return notLoggedIn(res);
     }
     controller.get({ district: req.query.district }, function(err, obj) {
       if (err) {
@@ -45,6 +45,18 @@ var handleApiCall = function(req, res, controller) {
 app.get('/api/info', function(req, res) {
   var p = require('./package.json');
   res.json({ version: p.version });
+});
+
+app.get('/api/auth/:path', function(req, res) {
+  auth.checkUrl(req, function(err, output) {
+    if (err) {
+      return serverError(err, res);
+    }
+    if (output.status >= 400 && output.status < 500) {
+      return notLoggedIn(res);
+    }
+    res.json(output);
+  });
 });
 
 app.get('/api/active-pregnancies', function(req, res) {
@@ -109,7 +121,7 @@ var serverError = function(err, res) {
   error(res, 500, 'Server error');
 };
 
-var notLoggedIn = function(err, res) {
+var notLoggedIn = function(res) {
   error(res, 403, 'Not logged in');
 };
 

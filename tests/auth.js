@@ -19,7 +19,7 @@ exports['auth returns error when not logged in'] = function(test) {
     }
   });
 
-  auth.getUsername({ }, function(err) {
+  auth.getUserCtx({ }, function(err) {
     test.equals(get.callCount, 1);
     test.equals(err, 'Not logged in');
     test.done();
@@ -40,7 +40,7 @@ exports['auth returns error when cannot parse json'] = function(test) {
     }
   });
 
-  auth.getUsername({ }, function(err) {
+  auth.getUserCtx({ }, function(err) {
     test.equals(get.callCount, 1);
     test.equals(err, 'Not logged in');
     test.done();
@@ -61,7 +61,7 @@ exports['auth returns error when no user context'] = function(test) {
     }
   });
 
-  auth.getUsername({ }, function(err) {
+  auth.getUserCtx({ }, function(err) {
     test.equals(get.callCount, 1);
     test.equals(err, 'Not logged in');
     test.done();
@@ -82,7 +82,7 @@ exports['auth returns error when http errors'] = function(test) {
     }
   });
 
-  auth.getUsername({ }, function(err) {
+  auth.getUserCtx({ }, function(err) {
     test.equals(get.callCount, 1);
     test.equals(err, 'some error');
     test.done();
@@ -102,14 +102,33 @@ exports['auth returns username'] = function(test) {
     }
   });
 
-  auth.getUsername({ }, function(err, name) {
+  auth.getUserCtx({ }, function(err, ctx) {
     test.equals(get.callCount, 1);
     test.equals(err, null);
-    test.equals(name, 'steve');
+    test.equals(ctx.name, 'steve');
     test.done();
   });
 
   callbacks.data(JSON.stringify({ userCtx: { name: 'steve' } }));
   callbacks.end();
+
+};
+
+exports['checkUrl requests the given url and returns status'] = function(test) {
+  test.expect(4);
+
+  var callbacks = {};
+  var request = sinon.stub(http, 'request').returns({
+    on: function() {},
+    end: function() {}
+  }).callsArgWith(1, { statusCode: 444 });
+
+  auth.checkUrl({ params: { path: '/home/screen' } }, function(err, output) {
+    test.equals(request.callCount, 1);
+    test.equals(request.firstCall.args[0].path, '/home/screen');
+    test.equals(err, null);
+    test.equals(output.status, 444);
+    test.done();
+  });
 
 };
