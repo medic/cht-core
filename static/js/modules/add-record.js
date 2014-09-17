@@ -9,7 +9,7 @@
     if (src) {
       $.ajax({
         type: 'head',
-        url: src,
+        url: '/api/auth/' + encodeURIComponent(src),
         success: function() {
           var btn = $('#send-record-button');
           btn.closest('li').removeClass('disabled');
