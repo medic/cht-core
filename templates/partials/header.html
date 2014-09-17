@@ -54,13 +54,19 @@
               Edit User Profile
             </a>
           </li>
-          <li role="presentation" ng-show="permissions.can_export_messages">
+          <li role="presentation" ng-show="permissions.canExport">
             <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#modal-export">
               <i class="fa fa-arrow-circle-o-down"></i>
               Export
             </a>
           </li>
-          <li role="presentation" ng-show="permissions.admin">
+          <li role="presentation" ng-show="permissions.nationalAdmin">
+            <a role="menuitem" tabindex="-1" href="{baseURL}/forms" rel="external">
+              <i class="fa fa-cog"></i>
+              Administrative Options
+            </a>
+          </li>
+          <li role="presentation" ng-show="permissions.admin && !permissions.nationalAdmin">
             <a role="menuitem" tabindex="-1" href="{baseURL}/settings" rel="external">
               <i class="fa fa-cog"></i>
               Administrative Options

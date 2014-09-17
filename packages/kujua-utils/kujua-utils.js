@@ -133,7 +133,11 @@ exports.dumper = {
 
 /* poorly named */
 exports.isUserAdmin = function(userCtx) {
-    return exports.hasRole(userCtx, 'national_admin') || exports.isDbAdmin(userCtx);
+    return exports.isUserNationalAdmin(userCtx) || exports.isDbAdmin(userCtx);
+};
+
+exports.isUserNationalAdmin = function(userCtx) {
+    return exports.hasRole(userCtx, 'national_admin');
 };
 
 exports.isUserDistrictAdmin = function(userCtx) {

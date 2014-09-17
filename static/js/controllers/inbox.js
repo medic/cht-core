@@ -111,10 +111,11 @@ var utils = require('kujua-utils'),
 
       $scope.permissions = {
         admin: utils.isUserAdmin(UserCtxService()),
+        nationalAdmin: utils.isUserNationalAdmin(UserCtxService()),
         districtAdmin: utils.isUserDistrictAdmin(UserCtxService()),
         district: undefined,
-        can_export_messages: utils.hasPerm(UserCtxService(), 'can_export_messages'),
-        can_export_forms: utils.hasPerm(UserCtxService(), 'can_export_forms')
+        canExport: utils.hasPerm(UserCtxService(), 'can_export_messages') || 
+                   utils.hasPerm(UserCtxService(), 'can_export_forms')
       };
 
       $scope.readStatus = {
