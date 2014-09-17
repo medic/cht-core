@@ -48,7 +48,7 @@ module.exports = {
       return callback('No path given');
     }
 
-    var req = http.request({
+    http.request({
       method: 'HEAD',
       host: db.client.host,
       port: db.client.port,
