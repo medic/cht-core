@@ -4,6 +4,7 @@ var http = require('http'),
 module.exports = {
 
   getUserCtx: function(req, callback) {
+
     http.get({
       host: db.client.host,
       port: db.client.port,
@@ -35,7 +36,10 @@ module.exports = {
         callback(e);
       });
 
+    }).on('error', function(e) {
+      callback(e.message);
     });
+
   },
 
   checkUrl: function(req, callback) {
@@ -52,13 +56,10 @@ module.exports = {
       headers: req.headers
     }, function(res) {
       callback(null, { status: res.statusCode } );
-    });
-
-    req.on('error', function(e) {
+    }).on('error', function(e) {
       callback(e.message);
-    });
+    }).end();
 
-    req.end();
   }
 
 };
