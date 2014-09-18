@@ -1,4 +1,5 @@
-var utils = require('kujua-utils');
+var _ = require('underscore'),
+    utils = require('kujua-utils');
 
 (function () {
 

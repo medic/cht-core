@@ -16,7 +16,8 @@ module.exports = function(grunt) {
     bower_concat: {
       all: {
         dest: 'bower_components/concat.js',
-        exclude: [ 'fontawesome' ]
+        // ignore packages loaded by browserify
+        exclude: [ 'fontawesome', 'underscore', 'moment' ]
       }
     },
     replace: {
@@ -49,7 +50,9 @@ module.exports = function(grunt) {
       options: {
         preBundleCB: function (b) {
           b
+          // optional package
           .ignore('./flashmessages')
+          // map the kanso packages manually
           .plugin(remapify, getBrowserifyMappings());
         }
       },
@@ -302,25 +305,28 @@ module.exports = function(grunt) {
 
   var getBrowserifyMappings = function() {
     return [
-      {
-        cwd: 'packages/db',
-        src: './db.js',
-        expose: ''
-      },
-      {
-        cwd: 'packages/underscore',
-        src: './underscore.js',
-        expose: ''
-      },
-      {
-        cwd: 'packages/underscore',
-        src: './underscore.js',
-        expose: ''
-      },
+      // default settings file
       {
         cwd: 'static/dist',
         src: './root.js',
         expose: 'settings'
+      },
+      // modules in bower and kanso
+      {
+        cwd: 'bower_components/underscore',
+        src: './underscore.js',
+        expose: ''
+      },
+      {
+        cwd: 'bower_components/moment',
+        src: './moment.js',
+        expose: ''
+      },
+      // kanso packages required for inbox
+      {
+        cwd: 'packages/db',
+        src: './db.js',
+        expose: ''
       },
       {
         cwd: 'packages/kujua-sms/views/lib',
@@ -335,11 +341,6 @@ module.exports = function(grunt) {
       {
         cwd: 'packages/kujua-utils',
         src: './kujua-utils.js',
-        expose: ''
-      },
-      {
-        cwd: 'bower_components/moment',
-        src: './moment.js',
         expose: ''
       },
       {

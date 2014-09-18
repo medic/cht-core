@@ -29,6 +29,7 @@ module.exports = function(config) {
       // test-specific code
       'node_modules/chai/chai.js',
       'bower_components/angular-mocks/angular-mocks.js',
+      'bower_components/moment/moment.js',
 
       // templates
       'templates/partials/sender.html',
