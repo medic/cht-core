@@ -3,58 +3,67 @@ var passStream = require('pass-stream'),
     db = require('./db'),
     couchdbAudit = require('couchdb-audit');
 
+var parse = function(data) {
+  try {
+    return JSON.parse(data);
+  } catch(e) {}
+};
+
+var audit = function(req, doc, cb) {
+  var audit = couchdbAudit.withNode(db, function(_cb) {
+    auth.getUserCtx(req, function(err, ctx) {
+      _cb(err, ctx && ctx.name);
+    })
+  });
+  audit.log([doc], cb);
+};
+
 module.exports = {
 
   /**
-   * Audits the request before proxying it on to the target.
+   * Audits the request before proxying it on.
    * 
-   * @name onMatch(proxy, req, res, target)
+   * @name onMatch(proxy, req, res)
    * @param proxy The proxy itself
    * @param res The http request object
    * @param req The http response object
-   * @param target The target url to proxy the request on to
    * @api public
    */
-  onMatch: function(proxy, req, res, target) {
+  onMatch: function(proxy, req, res) {
 
-    var dataBuffer = '';
+    var dataBuffer = [];
 
     function writeFn(data, encoding, cb) {
-      // do not push data until audited
-      dataBuffer += data;
+      dataBuffer.push(data);
       cb();
     }
 
     function endFn(cb) {
       var self = this;
-      var options = {
-        target: target, 
-        buffer: buffer
-      };
-      try {
-        var doc = JSON.parse(dataBuffer);
-        var audit = couchdbAudit.withNode(db, function(cb) {
-          auth.getUsername(req, cb);
-        });
-        audit.log([doc], function(err) {
-          if (err) {
-            return cb(err);
-          }
-          dataBuffer = JSON.stringify(doc);
-          // audit might modify the doc (eg: generating an id)
-          // so we need to update the content-length header
-          options.headers = {
-            'content-length': Buffer.byteLength(dataBuffer)
-          };
-          proxy.web(req, res, options);
-          self.push(dataBuffer);
-        });
-      } catch(e) {
+      var options = { buffer: buffer };
+      var data = dataBuffer.join('');
+      var doc = parse(data);
+      if (!doc) {
         // ignore non-json requests
         proxy.web(req, res, options);
-        self.push(dataBuffer);
+        self.push(data);
+        return cb();
       }
-      cb();
+
+      audit(req, doc, function(err) {
+        if (err) {
+          console.log('error: ' + err);
+          return cb(err);
+        }
+        data = JSON.stringify(doc);
+        // audit might modify the doc (eg: generating an id)
+        // so we need to update the content-length header
+        req.headers['content-length'] = Buffer.byteLength(data);
+        proxy.web(req, res, options);
+        self.push(data);
+        return cb();
+      });
+
     }
 
     var ps = passStream(writeFn, endFn);

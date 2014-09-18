@@ -1,7 +1,7 @@
 var auditProxy = require('../audit-proxy');
 
 exports['onMatch audits the request'] = function(test) {
-  test.expect(5);
+  test.expect(4);
   var target = 'http://localhost:4444';
   var generatedId = 'abc';
   var username = 'steve';
@@ -30,10 +30,9 @@ exports['onMatch audits the request'] = function(test) {
   };
   var proxy = {
     web: function(req, res, options) {
-      test.equals(target, options.target);
       test.equals(
         Buffer.byteLength(JSON.stringify(auditedDoc)), 
-        options.headers['content-length']
+        req.headers['content-length']
       );
     }
   };
@@ -47,6 +46,7 @@ exports['onMatch audits the request'] = function(test) {
     }}, function(err) {});
   };
   var req = {
+    headers: {},
     pipe: function(ps) {
       return {};
     }
@@ -58,8 +58,8 @@ exports['onMatch audits the request'] = function(test) {
     }
   };
   var auth = {
-    getUsername: function(req, cb) {
-      cb(null, username);
+    getUserCtx: function(req, cb) {
+      cb(null, { name: username });
     }
   };
   auditProxy.setup({audit: audit, passStream: passStreamFn, db: db, auth: auth});
@@ -69,15 +69,13 @@ exports['onMatch audits the request'] = function(test) {
 
 
 exports['onMatch does not audit non json request'] = function(test) {
-  test.expect(2);
+  test.expect(1);
   var target = 'http://localhost:4444';
   var generatedId = 'abc';
   var username = 'steve';
   var doc = 'message_id=15095&sent_timestamp=1396224953456&message=ANCR+jessiec+18+18&from=%2B13125551212';
   var proxy = {
-    web: function(req, res, options) {
-      test.equals(target, options.target);
-    }
+    web: function(req, res, options) {}
   };
   var passStreamFn = function(writeFn, endFn) {
     var chunks = doc.match(/.{1,4}/g);

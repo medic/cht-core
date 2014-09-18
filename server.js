@@ -1,10 +1,10 @@
 var app = require('express')(),
-    proxy = require('http-proxy').createProxyServer({}),
-    auditProxy = require('./audit-proxy'),
     db = require('./db'),
     config = require('./config'),
     auth = require('./auth'),
+    auditProxy = require('./audit-proxy'),
     target = 'http://' + db.client.host + ':' + db.client.port,
+    proxy = require('http-proxy').createProxyServer({ target: target }),
     activePregnancies = require('./controllers/active-pregnancies'),
     upcomingAppointments = require('./controllers/upcoming-appointments'),
     missedAppointments = require('./controllers/missed-appointments'),
@@ -20,10 +20,10 @@ var app = require('express')(),
 
 
 var audit = function(req, res) {
-  auditProxy.onMatch(proxy, req, res, target);
+  auditProxy.onMatch(proxy, req, res);
 };
 
-var auditPath = '/' + db.name + '/*';
+var auditPath = db.name + '*';
 app.put(auditPath, audit);
 app.post(auditPath, audit);
 app.delete(auditPath, audit);
@@ -108,7 +108,7 @@ app.get('/api/monthly-deliveries', function(req, res) {
 });
 
 app.all('*', function(req, res) {
-  proxy.web(req, res, { target: target });
+  proxy.web(req, res);
 });
 
 var error = function(res, code, message) {
