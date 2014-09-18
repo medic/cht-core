@@ -3,16 +3,13 @@ describe('Verified service', function() {
   'use strict';
 
   var service,
-      db,
-      audit;
+      db;
 
   beforeEach(function() {
     db = {};
-    audit = {};
     module('inboxApp');
     module(function ($provide) {
       $provide.value('db', db);
-      $provide.value('audit', audit);
     });
     inject(function(_Verified_) {
       service = _Verified_;
@@ -28,7 +25,7 @@ describe('Verified service', function() {
       });
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       chai.expect(message).to.deep.equal(expected);
       callback();
     };
@@ -55,7 +52,7 @@ describe('Verified service', function() {
       });
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       chai.expect(message).to.deep.equal(expected);
       callback();
     };
@@ -82,7 +79,7 @@ describe('Verified service', function() {
       });
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       chai.expect(message).to.deep.equal(expected);
       callback();
     };
@@ -122,7 +119,7 @@ describe('Verified service', function() {
       });
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       chai.expect(message).to.deep.equal(expected);
       callback('errcode2');
     };

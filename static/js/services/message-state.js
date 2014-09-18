@@ -7,8 +7,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('MessageState', ['db', 'audit',
-    function(db, audit) {
+  inboxServices.factory('MessageState', ['db',
+    function(db) {
       return {
         any: function(group, state) {
           return _.some(group.rows, function(msg) {
@@ -30,7 +30,7 @@ var _ = require('underscore'),
             if (!changed) {
               return callback(null, dataRecord);
             }
-            audit.saveDoc(dataRecord, function(err) {
+            db.saveDoc(dataRecord, function(err) {
               callback(err, dataRecord);
             });
           });

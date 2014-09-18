@@ -4,17 +4,14 @@ describe('MarkRead service', function() {
 
   var service,
       db,
-      audit,
       message;
 
   beforeEach(function() {
     db = {};
-    audit = {};
     message = {};
     module('inboxApp');
     module(function ($provide) {
       $provide.value('db', db);
-      $provide.value('audit', audit);
       $provide.value('UserCtxService', function() {
         return { name: 'james' };
       });
@@ -31,7 +28,7 @@ describe('MarkRead service', function() {
       callback(null, { _id: 'xyz' });
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       callback(null);
     };
 
@@ -50,7 +47,7 @@ describe('MarkRead service', function() {
       callback(null, { _id: 'xyz', read: [ 'james' ] });
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       callback(null);
     };
 
@@ -111,7 +108,7 @@ describe('MarkRead service', function() {
       callback(null, { _id: 'xyz' });
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       callback('errcode2');
     };
 

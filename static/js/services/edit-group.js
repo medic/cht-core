@@ -54,8 +54,8 @@ var _ = require('underscore');
     return changed;
   };
 
-  inboxServices.factory('EditGroup', ['db', 'audit',
-    function(db, audit) {
+  inboxServices.factory('EditGroup', ['db',
+    function(db) {
       return function(recordId, group, callback) {
         db.getDoc(recordId, function(err, dataRecord) {
           if (err) {
@@ -67,7 +67,7 @@ var _ = require('underscore');
           if (!additions && !mutations && !deletions) {
             return callback(null, dataRecord);
           }
-          audit.saveDoc(dataRecord, function(err) {
+          db.saveDoc(dataRecord, function(err) {
             callback(err, dataRecord);
           });
         });

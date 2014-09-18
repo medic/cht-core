@@ -3,16 +3,13 @@ describe('UpdateFacility service', function() {
   'use strict';
 
   var service,
-      db,
-      audit;
+      db;
 
   beforeEach(function() {
     db = {};
-    audit = {};
     module('inboxApp');
     module(function ($provide) {
       $provide.value('db', db);
-      $provide.value('audit', audit);
     });
     inject(function(_UpdateFacility_) {
       service = _UpdateFacility_;
@@ -39,7 +36,7 @@ describe('UpdateFacility service', function() {
       chai.fail(id, 'abc or xyz');
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       callback(null);
     };
 
@@ -82,7 +79,7 @@ describe('UpdateFacility service', function() {
       chai.fail(id, 'abc or xyz');
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       callback(null);
     };
 
@@ -143,7 +140,7 @@ describe('UpdateFacility service', function() {
       return callback(null, {});
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       callback('errcode3');
     };
 

@@ -358,11 +358,6 @@ module.exports = function(grunt) {
         expose: ''
       },
       {
-        cwd: 'packages/couchdb-audit/couchdb-audit',
-        src: './*.js',
-        expose: 'couchdb-audit'
-      },
-      {
         cwd: 'packages/session',
         src: './session.js',
         expose: ''

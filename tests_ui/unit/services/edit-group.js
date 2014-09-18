@@ -4,16 +4,13 @@ describe('EditGroup service', function() {
 
   var service,
       db,
-      audit,
       doc;
 
   beforeEach(function() {
     db = {
       getDoc: function(recordId, callback) {
         callback(null, doc);
-      }
-    };
-    audit = {
+      },
       saveDoc: function(record, callback) {
         callback();
       }
@@ -21,7 +18,6 @@ describe('EditGroup service', function() {
     module('inboxApp');
     module(function ($provide) {
       $provide.value('db', db);
-      $provide.value('audit', audit);
     });
     inject(function(_EditGroup_) {
       service = _EditGroup_;
@@ -63,7 +59,7 @@ describe('EditGroup service', function() {
         { group: 3 }
       ]
     };
-    audit.saveDoc = function(record, callback) {
+    db.saveDoc = function(record, callback) {
       callback('audit borked');
     };
     var group = {

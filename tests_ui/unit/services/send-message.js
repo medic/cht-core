@@ -3,7 +3,6 @@ describe('SendMessage service', function() {
   'use strict';
 
   var db, 
-      audit,
       service,
       $rootScope,
       recipients,
@@ -12,12 +11,10 @@ describe('SendMessage service', function() {
 
   beforeEach(function () {
     db = {};
-    audit = {};
     count = 0;
     module('inboxApp');
     module(function ($provide) {
       $provide.value('db', db);
-      $provide.value('audit', audit);
       $provide.value('User', {
         query: function(callback) {
           callback({ 
@@ -50,7 +47,7 @@ describe('SendMessage service', function() {
       callback(null, count++);
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       chai.expect(message.tasks.length).to.equal(1);
       assertMessage(message.tasks[0], {
         from: '+5551',
@@ -87,7 +84,7 @@ describe('SendMessage service', function() {
       callback(null, count++);
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       chai.expect(message.tasks.length).to.equal(2);
       assertMessage(message.tasks[0], {
         from: '+5551',
@@ -141,7 +138,7 @@ describe('SendMessage service', function() {
       callback(null, count++);
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       chai.expect(message.tasks.length).to.equal(3);
       assertMessage(message.tasks[0], {
         from: '+5551',
@@ -252,7 +249,7 @@ describe('SendMessage service', function() {
       callback(null, count++);
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       callback('errcode2');
     };
 

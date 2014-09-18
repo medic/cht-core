@@ -3,15 +3,15 @@ describe('MarkAllRead service', function() {
   'use strict';
 
   var service,
-      audit,
+      db,
       message;
 
   beforeEach(function() {
-    audit = {};
+    db = {};
     message = {};
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('audit', audit);
+      $provide.value('db', db);
       $provide.value('UserCtxService', function() {
         return { name: 'james' };
       });
@@ -33,7 +33,7 @@ describe('MarkAllRead service', function() {
       { _id: 'c', read: [ 'jack', 'james' ] }
     ];
 
-    audit.bulkSave = function(messages, callback) {
+    db.bulkSave = function(messages, callback) {
       chai.expect(messages).to.deep.equal(expected);
       callback(null);
     };
@@ -56,7 +56,7 @@ describe('MarkAllRead service', function() {
       { _id: 'c', read: [ 'jack' ] }
     ];
 
-    audit.bulkSave = function(messages, callback) {
+    db.bulkSave = function(messages, callback) {
       chai.expect(messages).to.deep.equal(expected);
       callback(null);
     };
@@ -69,7 +69,7 @@ describe('MarkAllRead service', function() {
 
   it('returns audit errors', function(done) {
 
-    audit.bulkSave = function(messages, callback) {
+    db.bulkSave = function(messages, callback) {
       callback('errcode1');
     };
 

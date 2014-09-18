@@ -4,7 +4,6 @@ describe('MessageState service', function() {
 
   var service,
       db,
-      audit,
       doc;
 
   beforeEach(function() {
@@ -13,11 +12,9 @@ describe('MessageState service', function() {
         callback(null, doc);
       }
     };
-    audit = {};
     module('inboxApp');
     module(function ($provide) {
       $provide.value('db', db);
-      $provide.value('audit', audit);
     });
     inject(function(_MessageState_) {
       service = _MessageState_;
@@ -84,7 +81,7 @@ describe('MessageState service', function() {
         { group: 3, state: 'sent' }
       ]
     };
-    audit.saveDoc = function(record, callback) {
+    db.saveDoc = function(record, callback) {
       callback('audit borked');
     };
     service.set('123', 2, 'muted', 'scheduled', function(err) {
@@ -102,7 +99,7 @@ describe('MessageState service', function() {
         { group: 3, state: 'sent' }
       ]
     };
-    audit.saveDoc = function(record, callback) {
+    db.saveDoc = function(record, callback) {
       callback();
     };
     service.set('123', 2, 'muted', 'scheduled', function(err, actual) {

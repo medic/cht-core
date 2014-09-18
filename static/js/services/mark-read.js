@@ -22,15 +22,15 @@ var _ = require('underscore');
     return true;
   };
   
-  inboxServices.factory('MarkRead', ['db', 'audit', 'UserCtxService',
-    function(db, audit, UserCtxService) {
+  inboxServices.factory('MarkRead', ['db', 'UserCtxService',
+    function(db, UserCtxService) {
       return function(messageId, read, callback) {
         db.getDoc(messageId, function(err, message) {
           if (err) {
             return callback(err);
           }
           if (updateReadStatus(message, UserCtxService().name, read)) {
-            audit.saveDoc(message, function(err) {
+            db.saveDoc(message, function(err) {
               callback(err, message);
             });
           } else {
@@ -41,14 +41,14 @@ var _ = require('underscore');
     }
   ]);
   
-  inboxServices.factory('MarkAllRead', ['audit', 'UserCtxService',
-    function(audit, UserCtxService) {
+  inboxServices.factory('MarkAllRead', ['db', 'UserCtxService',
+    function(db, UserCtxService) {
       return function(messages, read, callback) {
         var updated = _.filter(messages, function(message) {
           return updateReadStatus(message, UserCtxService().name, read);
         });
         if (updated.length) {
-          audit.bulkSave(updated, function(err) {
+          db.bulkSave(updated, function(err) {
             callback(err, updated);
           });
         }

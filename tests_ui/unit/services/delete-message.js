@@ -4,17 +4,14 @@ describe('DeleteMessage service', function() {
 
   var service,
       db,
-      audit,
       message;
 
   beforeEach(function() {
     db = {};
-    audit = {};
     message = {};
     module('inboxApp');
     module(function ($provide) {
       $provide.value('db', db);
-      $provide.value('audit', audit);
     });
     inject(function(_DeleteMessage_) {
       service = _DeleteMessage_;
@@ -28,7 +25,7 @@ describe('DeleteMessage service', function() {
       callback(null, { _id: 'xyz' });
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       callback(null);
     };
 
@@ -59,7 +56,7 @@ describe('DeleteMessage service', function() {
       callback(null, { _id: 'xyz' });
     };
 
-    audit.saveDoc = function(message, callback) {
+    db.saveDoc = function(message, callback) {
       callback('errcode2');
     };
 

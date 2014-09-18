@@ -1,5 +1,4 @@
-var db = require('db'),
-    audit = require('couchdb-audit/kanso');
+var db = require('db');
 
 (function () {
 
@@ -14,12 +13,6 @@ var db = require('db'),
       return result;
     }
   );
-
-  inboxServices.factory('audit', ['db',
-    function(db) {
-      return audit.withKanso(db);
-    }
-  ]);
 
   inboxServices.factory('RememberService', function() {
     return {

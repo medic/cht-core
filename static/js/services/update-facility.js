@@ -4,8 +4,8 @@
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('UpdateFacility', ['db', 'audit',
-    function(db, audit) {
+  inboxServices.factory('UpdateFacility', ['db',
+    function(db) {
       return function(messageId, facilityId, callback) {
         db.getDoc(messageId, function(err, message) {
           if (err) {
@@ -31,7 +31,7 @@
                 return error.code !== 'sys.facility_not_found';
               });
             }
-            audit.saveDoc(message, function(err) {
+            db.saveDoc(message, function(err) {
               callback(err, message);
             });
           });

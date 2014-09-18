@@ -7,8 +7,8 @@ var utils = require('kujua-utils'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('SendMessage', ['$q', 'db', 'audit', 'User',
-    function($q, db, audit, User) {
+  inboxServices.factory('SendMessage', ['$q', 'db', 'User',
+    function($q, db, User) {
 
       var createMessageDoc = function(user, recipients) {
         var name = user && user.name;
@@ -97,7 +97,7 @@ var utils = require('kujua-utils'),
               if (err) {
                 return deferred.reject(err);
               }
-              audit.saveDoc(doc, function(err) {
+              db.saveDoc(doc, function(err) {
                 if (err) {
                   deferred.reject(err);
                 } else {
