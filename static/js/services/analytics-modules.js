@@ -22,8 +22,15 @@ var _ = require('underscore'),
           isArray: true,
           cache: true
         });
-        $resource(url, { district: district }, { query: options })
-          .query(callback);
+        $resource(url, { district: district }, { query: options }).query(
+          function(data) {
+            callback(null, data);
+          },
+          function(err) {
+            console.log('Error requesting module', err);
+            callback(err);
+          }
+        );
       };
 
       return function(settings) {
@@ -60,32 +67,32 @@ var _ = require('underscore'),
                   return console.log('Error fetching district', err);
                 }
 
-                request('/api/active-pregnancies', district, { isArray: false }, function(data) {
-                  scope.activePregnancies = data;
+                request('/api/active-pregnancies', district, { isArray: false }, function(err, data) {
+                  scope.activePregnancies = { error: err, data: data };
                 });
 
-                request('/api/upcoming-appointments', district, function(data) {
-                  scope.upcomingAppointments = { data: data, order: 'date' };
+                request('/api/upcoming-appointments', district, function(err, data) {
+                  scope.upcomingAppointments = { error: err, data: data, order: 'date' };
                 });
 
-                request('/api/missed-appointments', district, function(data) {
-                  scope.missedAppointments = { data: data, order: 'date' };
+                request('/api/missed-appointments', district, function(err, data) {
+                  scope.missedAppointments = { error: err, data: data, order: 'date' };
                 });
 
-                request('/api/upcoming-due-dates', district, function(data) {
-                  scope.upcomingDueDates = { data: data, order: 'edd' };
+                request('/api/upcoming-due-dates', district, function(err, data) {
+                  scope.upcomingDueDates = { error: err, data: data, order: 'edd' };
                 });
 
-                request('/api/high-risk', district, function(data) {
-                  scope.highRisk = { data: data, order: 'date' };
+                request('/api/high-risk', district, function(err, data) {
+                  scope.highRisk = { error: err, data: data, order: 'date' };
                 });
 
-                request('/api/total-births', district, { isArray: false }, function(data) {
-                  scope.totalBirths = data;
+                request('/api/total-births', district, { isArray: false }, function(err, data) {
+                  scope.totalBirths = { error: err, data: data };
                 });
 
-                request('/api/missing-delivery-reports', district, function(data) {
-                  scope.missingDeliveryReports = { data: data, order: 'edd' };
+                request('/api/missing-delivery-reports', district, function(err, data) {
+                  scope.missingDeliveryReports = { error: err, data: data, order: 'edd' };
                 });
 
                 var deliveryCodeMap = {
@@ -120,8 +127,8 @@ var _ = require('underscore'),
                     return deliveryCodeMap[data.key].color;
                   };
                 };
-                request('/api/delivery-location', district, function(data) {
-                  scope.deliveryLocation = { data: data };
+                request('/api/delivery-location', district, function(err, data) {
+                  scope.deliveryLocation = { error: err, data: data };
                 });
 
                 scope.visitsChartLabelKey = function() {
@@ -141,8 +148,9 @@ var _ = require('underscore'),
                   };
                 };
 
-                request('/api/visits-completed', district, function(data) {
+                request('/api/visits-completed', district, function(err, data) {
                   scope.visitsCompleted = {
+                    error: err,
                     data: [{
                       key: 'item',
                       values: _.map(data, function(d, i) {
@@ -152,8 +160,9 @@ var _ = require('underscore'),
                   };
                 });
 
-                request('/api/visits-during', district, function(data) {
+                request('/api/visits-during', district, function(err, data) {
                   scope.visitsDuring = {
+                    error: err,
                     data: [{
                       key: 'item',
                       values: _.map(data, function(d, i) {
@@ -186,8 +195,9 @@ var _ = require('underscore'),
                   };
                 };
 
-                request('/api/monthly-registrations', district, function(data) {
+                request('/api/monthly-registrations', district, function(err, data) {
                   scope.monthlyRegistrations = {
+                    error: err,
                     data: [{
                       key: 'item',
                       values: data
@@ -195,8 +205,9 @@ var _ = require('underscore'),
                   };
                 });
 
-                request('/api/monthly-deliveries', district, function(data) {
+                request('/api/monthly-deliveries', district, function(err, data) {
                   scope.monthlyDeliveries = {
+                    error: err,
                     data: [{
                       key: 'item',
                       values: data

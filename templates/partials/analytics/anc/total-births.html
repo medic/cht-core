@@ -1,12 +1,15 @@
 <div class="col-sm-12 analytics-widget total-births">
+  <div class="widget-body error" ng-show="totalBirths.error">
+    Could not retrieve data at this time.
+  </div>
   <div class="widget-body" ng-hide="!totalBirths.loading">
     <div class="loading">
       <span class="fa fa-spinner fa-spin"></span>
     </div>
   </div>
-  <div class="widget-body" ng-show="!totalBirths.loading">
+  <div class="widget-body" ng-if="!totalBirths.loading && !totalBirths.error">
     <div class="title">
-      <p class="count">{~lb}{~lb}totalBirths.count || 0{~rb}{~rb}</p>
+      <p class="count">{~lb}{~lb}totalBirths.data.count || 0{~rb}{~rb}</p>
       <p class="name">Total Births</p>
     </div>
   </div>

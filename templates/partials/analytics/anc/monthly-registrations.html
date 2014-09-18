@@ -1,10 +1,13 @@
 <div class="col-sm-6 analytics-widget monthly-registrations">
+  <div class="widget-body error" ng-show="monthlyRegistrations.error">
+    Could not retrieve data at this time.
+  </div>
   <div class="widget-body" ng-hide="!monthlyRegistrations.loading">
     <div class="loading">
       <span class="fa fa-spinner fa-spin"></span>
     </div>
   </div>
-  <div class="widget-body" ng-show="!monthlyRegistrations.loading">
+  <div class="widget-body" ng-if="!monthlyRegistrations.loading && !monthlyRegistrations.error">
     <div class="title">
       <p class="name">Monthly Pregnancies Registered</p>
     </div>

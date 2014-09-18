@@ -1,10 +1,13 @@
 <div class="col-sm-6 analytics-widget high-risk table-responsive">
+  <div class="widget-body error" ng-show="highRisk.error">
+    Could not retrieve data at this time.
+  </div>
   <div class="widget-body" ng-hide="!highRisk.loading">
     <div class="loading">
       <span class="fa fa-spinner fa-spin"></span>
     </div>
   </div>
-  <div class="widget-body" ng-show="!highRisk.loading">
+  <div class="widget-body" ng-if="!highRisk.loading && !highRisk.error">
     <div class="title">
       <p class="count">
         {~lb}{~lb}highRisk.data.length || 0{~rb}{~rb}

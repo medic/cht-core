@@ -1,10 +1,13 @@
 <div class="col-sm-6 analytics-widget upcoming-appointments table-responsive">
+  <div class="widget-body error" ng-show="upcomingAppointments.error">
+    Could not retrieve data at this time.
+  </div>
   <div class="widget-body" ng-hide="!upcomingAppointments.loading">
     <div class="loading">
       <span class="fa fa-spinner fa-spin"></span>
     </div>
   </div>
-  <div class="widget-body" ng-show="!upcomingAppointments.loading">
+  <div class="widget-body" ng-if="!upcomingAppointments.loading && !upcomingAppointments.error">
     <div class="title">
       <p class="count">
         {~lb}{~lb}upcomingAppointments.data.length || 0{~rb}{~rb}
