@@ -470,7 +470,7 @@ var json_headers = {
  *
  * @api public
  */
-exports.data_record = function (head, req) {
+exports.old_data_record = function (head, req) {
     start({code: 200, headers: json_headers});
 
     var _id = JSON.parse(req.body).uuid,

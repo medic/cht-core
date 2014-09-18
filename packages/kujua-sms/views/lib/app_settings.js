@@ -756,8 +756,10 @@ module.exports = {
              * e.g: [{to: '+123', message: 'foo'},...]
              * context includes: phone, clinic, keys, labels, values
              * Health Center -> Hospital
-             */
+            */
+            /* deprecated
             messages_task: "function() {var msg = [], ignore = [], dh_ph = clinic && clinic.parent && clinic.parent.parent && clinic.parent.parent.contact && clinic.parent.parent.contact.phone; keys.forEach(function(key) { if (ignore.indexOf(key) === -1) { msg.push(labels.shift() + ': ' + values.shift()); } else { labels.shift(); values.shift(); } }); return {to:dh_ph, message:msg.join(', ')}; }"
+             */
         },
         "YYYZ": {
             meta: {code: "YYYZ", label: 'Test Form - Required fields'},

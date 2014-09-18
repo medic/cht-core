@@ -52,30 +52,55 @@ function getDataRecord(doc, form_data) {
         form: form,
         related_entities: {clinic: null},
         errors: [],
-        responses: [],
         tasks: [],
-        reported_date: new Date().valueOf(),
+        reported_date: parseSentTimestamp(doc.sent_timestamp) || new Date().valueOf(),
         // keep message data part of record
         sms_message: doc
     };
 
-    if (!def) {
+    function isMessageEmpty() {
+        return !doc.message || !doc.message.trim();
+    }
+
+    if (isMessageEmpty()) {
+        utils.addError(record, 'sys.empty');
+        record.tasks.push({
+            state: 'pending',
+            messages: [{
+                to: doc.from,
+                message: utils.info.translate('empty', doc.locale)
+            }]
+        });
+    }
+
+    // if form is undefined but we have message content then treat as
+    // unstructured message and add proper error response.
+    if (!def && !isMessageEmpty()) {
         if (utils.info.forms_only_mode) {
             utils.addError(record, 'sys.form_not_found');
+            record.tasks.push({
+                state: 'pending',
+                messages: [{
+                    to: doc.from,
+                    message: utils.info.translate('form_not_found', doc.locale)
+                }]
+            });
         } else {
-            // if form is undefined we treat as a regular message
             record.form = undefined;
+            record.tasks.push({
+                state: 'pending',
+                messages: [{
+                    to: doc.from,
+                    message: utils.info.translate('sms_received', doc.locale)
+                }]
+            });
         }
     }
 
-    // try to parse timestamp from gateway
-    var ts = parseSentTimestamp(doc.sent_timestamp);
-    if (ts)
-        record.reported_date = ts;
-
     if (def) {
-        if (def.facility_reference)
+        if (def.facility_reference) {
             record.refid = getRefID(form, form_data);
+        }
 
         for (var k in def.fields) {
             var field = def.fields[k];
@@ -87,11 +112,9 @@ function getDataRecord(doc, form_data) {
         });
     }
 
-    if (form_data && form_data._extra_fields)
+    if (form_data && form_data._extra_fields) {
         utils.addError(record, 'extra_fields');
-
-    if (!doc.message || !doc.message.trim())
-        utils.addError(record, 'sys.empty');
+    }
 
     return record;
 };
@@ -103,7 +126,7 @@ function getDataRecord(doc, form_data) {
  * @returns {String} - Path for callback
  * @api private
  */
-var getCallbackPath = function(phone, form, form_data, def) {
+var old_getCallbackPath = function(phone, form, form_data, def) {
 
     def = def ? def : utils.info.getForm(form);
 
@@ -179,7 +202,7 @@ var parseSentTimestamp = function(str) {
  * Always limit outgoing message to 160 chars and only send one message.
  *
  */
-var getSMSResponse = function(doc) {
+var old_getSMSResponse = function(doc) {
     var locale = doc.sms_message && doc.sms_message.locale,
         msg = utils.info.translate('sms_received', locale),
         def = doc.form && utils.info.getForm(doc.form),
@@ -271,7 +294,7 @@ var getSMSResponse = function(doc) {
  *                               messages/nothing to send.
  *
  */
-var getMessagesTask = function(record) {
+var old_getMessagesTask = function(record) {
     var def = utils.info.getForm(record.form),
         phone = record.from,
         clinic = record.related_entities.clinic,
@@ -307,10 +330,10 @@ function getDefaultResponse(doc) {
  * response to update facility data in next response.
  */
 var req = {};
-exports.add_sms = function(doc, request) {
+exports.add_sms = function(doc, request, _info) {
 
     req = request;
-    utils.info = info.getAppInfo.call(this);
+    utils.info = _info ? _info : info.getAppInfo.call(this);
 
     var sms_message = {
         type: "sms_message",
@@ -345,12 +368,10 @@ exports.add_sms = function(doc, request) {
         });
     }
 
-    delete doc.responses;
     return [doc, JSON.stringify(resp)];
 
     /*
-     * callbacks are legacy by leaving for potential future need
-     */
+     * removed callbacks support on add_sms
 
     // provide callback for next part of record creation.
     resp.callback = {
@@ -372,13 +393,14 @@ exports.add_sms = function(doc, request) {
 
     // create doc and send response
     return [doc, JSON.stringify(resp)];
+    */
 };
 
 
 /*
  * Update data record properties and create message tasks.
  */
-exports.updateRelated = function(doc, request) {
+exports.old_updateRelated = function(doc, request) {
 
     utils.info = info.getAppInfo.call(this);
     req = request;
