@@ -20,7 +20,7 @@ module.exports = {
         if (!config) {
             return false;
         }
-        var form = self.getForm(doc.form);
+        var form = utils.getForm(doc.form);
         return Boolean(utils.getClinicPhone(doc) || (form && form.public_form));
     },
     getWeeksSinceDOB: function(doc) {
@@ -73,10 +73,6 @@ module.exports = {
             start = moment(date.getDate()).startOf('week');
         start.subtract(Number(weeks_since), 'weeks');
         doc.birth_date = start.toISOString();
-    },
-    getForm: function(form_code) {
-        var forms = config.get('forms');
-        return forms && forms[form_code];
     },
     getConfig: function() {
         return _.extend({}, config.get('registrations'));
