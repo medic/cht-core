@@ -122,6 +122,9 @@ var defaults = {
         conditional_alerts: {
             load: './transitions/conditional_alerts.js'
         },
+        default_responses: {
+            load: './transitions/default_responses.js'
+        },
         update_sent_by: {
             load: './transitions/update_sent_by.js'
         },
