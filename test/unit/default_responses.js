@@ -142,10 +142,10 @@ exports['add response if form not found and respect locale'] = function(test) {
     var messageFn = sinon.spy(messages, 'addMessage');
     test.expect(4);
 
-    // locale is on doc
+    // locale value should be somewhere on the doc but will test that
+    // functionality elsewhere.
     var doc = {
         from: '+444',
-        locale: 'fr',
         type: 'data_record',
         errors: [
             {
