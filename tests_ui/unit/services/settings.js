@@ -67,14 +67,11 @@ describe('Settings service', function() {
 
   it('returns errors', function(done) {
 
-    var expected = {
-      date_format: 'YYYY'
-    };
     $httpBackend
       .when('GET', 'BASEURL/app_settings/medic')
       .respond(404, '');
 
-    service(function(err, actual) {
+    service(function(err) {
       chai.expect(err).to.not.equal(null);
       chai.expect(err.status).to.equal(404);
       done();
