@@ -6,20 +6,37 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc) {
-        return doc
-            && doc.type === 'data_record';
+        return Boolean(
+            doc
+            && doc.from
+            && doc.errors.length > 0
+            && doc.type === 'data_record'
+        );
     },
-    isMessageEmpty: function(doc) {
+    _isMessageEmpty: function(doc) {
         return Boolean(_.find(doc.errors, function(err) {
             return err.code === 'sys.empty';
         }));
     },
-    isFormNotFound: function(doc) {
+    _isFormNotFound: function(doc) {
         return Boolean(_.find(doc.errors, function(err) {
             return err.code === 'sys.form_not_found';
         }));
     },
-    addMessage: function(doc, msg) {
+    _isConfigFormsOnlyMode: function() {
+        var self = module.exports;
+        return self._getConfig('forms_only_mode');
+    },
+    _getConfig: function(key) {
+        return config.get(key);
+    },
+    _getLocale: function(doc) {
+        return utils.getLocale(doc);
+    },
+    _translate: function(key, locale) {
+        return utils.translate(key, locale);
+    },
+    _addMessage: function(doc, msg) {
         messages.addMessage({
             doc: doc,
             phone: doc.from,
@@ -30,14 +47,14 @@ module.exports = {
 
         var self = module.exports,
             doc = change.doc,
-            locale = utils.getLocale(doc);
+            locale = self._getLocale(doc);
 
-        if (self.isMessageEmpty(doc)) {
-            addMessage(doc, utils.translate('empty', locale));
-        } else if (config.get('forms_only_mode') && self.isFormNotFound(doc)) {
-            addMessage(doc, utils.translate('form_not_found', locale));
-        } else if (self.isFormNotFound(doc)) {
-            addMessage(doc, utils.translate('sms_recieved', locale));
+        if (self._isMessageEmpty(doc)) {
+            self._addMessage(doc, self._translate('empty', locale));
+        } else if (self._isConfigFormsOnlyMode() && self._isFormNotFound(doc)) {
+            self._addMessage(doc, self._translate('form_not_found', locale));
+        } else if (self._isFormNotFound(doc)) {
+            self._addMessage(doc, self._translate('sms_received', locale));
         }
 
         callback(null, true);
