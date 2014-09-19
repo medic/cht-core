@@ -134,9 +134,19 @@ exports['add response if form not found and respect locale'] = function(test) {
     // stub the translations config
     sinon.stub(config, 'get').returns([
         {
-            'key': 'sms_received',
-            'default': 'SMS message rcvd',
-            'fr': 'Merci, votre message a été bien reçu.'
+            key: 'sms_received',
+            default: 'SMS message rcvd',
+            translations: [
+                {
+                    locale: 'fr',
+                    content: 'Merci, votre message a été bien reçu.'
+                },
+                {
+                    locale: 'es',
+                    content: 'Recibimos tu mensaje.'
+
+                }
+            ]
         }
     ]);
     var messageFn = sinon.spy(messages, 'addMessage');
