@@ -17,10 +17,8 @@ describe('Language service', function() {
           callback(user);
         }
       });
-      $provide.value('Settings', {
-        query: function(callback) {
-          callback({ settings: settings });
-        }
+      $provide.value('Settings', function(callback) {
+        callback(null, settings);
       });
     });
     inject(function(_Language_, _$rootScope_) {

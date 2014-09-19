@@ -14,14 +14,6 @@ var _ = require('underscore'),
 
       $scope.filterModel.type = 'reports';
 
-      UserDistrict(function() {
-        $scope.$watch('filterModel', function(prev, curr) {
-          if (prev !== curr) {
-            $scope.query();
-          }
-        }, true);
-      });
-
       $scope.update = function(updated) {
         _.each(updated, function(newMsg) {
           var oldMsg = _.findWhere($scope.messages, { _id: newMsg._id });
@@ -99,50 +91,55 @@ var _ = require('underscore'),
             return !change.deleted;
           });
         }
-        options.query = GenerateSearchQuery($scope, options);
-        if (options.query === _currentQuery && !options.changes) {
-          // debounce as same query already running
-          return;
-        }
-        _currentQuery = options.query;
-        if (!options.silent) {
-          $scope.error = false;
-          $scope.loading = true;
-        }
-        if (options.skip) {
-          $scope.appending = true;
-          options.skip = $scope.messages.length;
-        } else if (!options.silent) {
-          $scope.setMessages([]);
-        }
-
-        Search(options, function(err, data) {
-          _currentQuery = null;
-          $scope.loading = false;
-          $scope.appending = false;
+        GenerateSearchQuery($scope, options, function(err, query) {
           if (err) {
-            $scope.error = true;
-            console.log('Error loading messages', err);
+            return console.log(err);
+          }
+          options.query = query;
+          if (options.query === _currentQuery && !options.changes) {
+            // debounce as same query already running
             return;
           }
-          $scope.error = false;
-          $scope.update(data.results);
-          if (!options.changes) {
-            $scope.totalMessages = data.total_rows;
+          _currentQuery = options.query;
+          if (!options.silent) {
+            $scope.error = false;
+            $scope.loading = true;
           }
-          if (_selectedDoc) {
-            $scope.selectMessage(_selectedDoc);
-          } else if (!$('#back').is(':visible')) {
-            window.setTimeout(function() {
-              $scope.$apply(function(scope) {
-                var id = $('.inbox-items li').first().attr('data-record-id');
-                scope.selectMessage(id);
-              });
-            }, 1);
+          if (options.skip) {
+            $scope.appending = true;
+            options.skip = $scope.messages.length;
+          } else if (!options.silent) {
+            $scope.setMessages([]);
           }
-          $('.inbox-items')
-            .off('scroll', _checkScroll)
-            .on('scroll', _checkScroll);
+
+          Search(options, function(err, data) {
+            _currentQuery = null;
+            $scope.loading = false;
+            $scope.appending = false;
+            if (err) {
+              $scope.error = true;
+              console.log('Error loading messages', err);
+              return;
+            }
+            $scope.error = false;
+            $scope.update(data.results);
+            if (!options.changes) {
+              $scope.totalMessages = data.total_rows;
+            }
+            if (_selectedDoc) {
+              $scope.selectMessage(_selectedDoc);
+            } else if (!$('#back').is(':visible')) {
+              window.setTimeout(function() {
+                $scope.$apply(function(scope) {
+                  var id = $('.inbox-items li').first().attr('data-record-id');
+                  scope.selectMessage(id);
+                });
+              }, 1);
+            }
+            $('.inbox-items')
+              .off('scroll', _checkScroll)
+              .on('scroll', _checkScroll);
+          });
         });
       };
 
@@ -175,15 +172,15 @@ var _ = require('underscore'),
 
       var initEditMessageModal = function() {
         window.setTimeout(function() {
-          Settings.query(function(res) {
-            if (res.settings) {
+          Settings(function(err, res) {
+            if (!err) {
               $('#edit-message-group .datepicker').daterangepicker({
                 singleDatePicker: true,
                 timePicker: true,
                 applyClass: 'btn-primary',
                 cancelClass: 'btn-link',
                 parentEl: '#edit-message-group .modal-dialog .modal-content',
-                format: res.settings.reported_date_format,
+                format: res.reported_date_format,
                 minDate: moment()
               },
               function(date) {
@@ -311,10 +308,6 @@ var _ = require('underscore'),
 
       $scope.setFilterQuery($route.current.params.query);
 
-      if (!$scope.messages || !$route.current.params.doc) {
-        $scope.query();
-      }
-
       if (!$route.current.params.doc) {
         RememberService.scrollTop = {};
       }
@@ -322,8 +315,17 @@ var _ = require('underscore'),
 
       $scope.selectMessage($route.current.params.doc);
 
+      UserDistrict(function() {
+        $scope.$watch('filterModel', function(prev, curr) {
+          if (prev !== curr) {
+            $scope.query();
+          }
+        }, true);
+        if (!$scope.messages || !$route.current.params.doc) {
+          $scope.query();
+        }
+      });
     }
   ]);
-
 
 }());

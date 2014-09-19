@@ -22,8 +22,11 @@ var _ = require('underscore');
       $scope.setSelectedModule();
       $scope.filterModel.type = 'analytics';
       $scope.loading = true;
-      Settings.query(function(res) {
-        $scope.setAnalyticsModules(AnalyticsModules(res.settings));
+      Settings(function(err, res) {
+        if (err) {
+          return console.log('Error fetching settings', err);
+        }
+        $scope.setAnalyticsModules(AnalyticsModules(res));
         $scope.setSelectedModule(findSelectedModule(
           $route.current.params.module, $scope.analyticsModules
         ));

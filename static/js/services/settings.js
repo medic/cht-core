@@ -9,20 +9,19 @@ var _ = require('underscore'),
 
   inboxServices.factory('Settings', ['$resource', 'BaseUrlService',
     function($resource, BaseUrlService) {
-      return {
-        query: function(callback) {
-          $resource(BaseUrlService() + '/app_settings/medic', {}, {
-            query: {
-              method: 'GET',
-              isArray: false,
-              cache: true
-            }
-          }).query(function(res) {
-            callback({
-              settings: _.defaults(res.settings, defaults)
-            });
-          });
-        }
+      return function(callback) {
+        $resource(BaseUrlService() + '/app_settings/medic', {}, {
+          query: {
+            method: 'GET',
+            isArray: false,
+            cache: true
+          }
+        }).query(
+          function(res) {
+            callback(null, _.defaults(res.settings, defaults));
+          },
+          callback
+        );
       };
     }
   ]);

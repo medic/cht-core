@@ -34,10 +34,8 @@ describe('AnalyticsCtrl controller', function() {
     AnalyticsModules = function() {
       return modules;
     };
-    Settings = {
-      query: function(callback) {
-        callback({ settings: {} });
-      }
+    Settings = function(callback) {
+      callback(null, {});
     };
   }));
 

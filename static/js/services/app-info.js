@@ -16,8 +16,11 @@ var _ = require('underscore');
     function($q, Settings) {
       return function() {
         var deferred = $q.defer();
-        Settings.query(function(res) {
-          settings = res.settings;
+        Settings(function(err, res) {
+          if (err) {
+            return deferred.reject(err);
+          }
+          settings = res;
           deferred.resolve({
             getForm: getForm,
             getMessage: getMessage,

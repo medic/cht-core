@@ -11,10 +11,8 @@ describe('Form service', function() {
   beforeEach(function (){
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('Settings', {
-        query: function(callback) {
-          callback( { settings: { forms: results } } );
-        }
+      $provide.value('Settings', function(callback) {
+        callback(null, { forms: results });
       });
       $provide.value('Language', function() {
         return {

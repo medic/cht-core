@@ -64,8 +64,11 @@ var _ = require('underscore'),
           if (res && res.language) {
             deferred.resolve(res.language);
           } else {
-            Settings.query(function(res) {
-              deferred.resolve((res.settings && res.settings.locale) || 'en');
+            Settings(function(err, res) {
+              if (err) {
+                return deferred.reject(err);
+              }
+              deferred.resolve(res.locale || 'en');
             });
           }
         });

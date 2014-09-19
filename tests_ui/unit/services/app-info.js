@@ -10,10 +10,8 @@ describe('AppInfo service', function() {
     settings = {};
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('Settings', {
-        query: function(callback) {
-          callback({ settings: settings });
-        }
+      $provide.value('Settings', function(callback) {
+        callback(null, settings);
       });
     });
     inject(function(_$rootScope_, _AppInfo_) {

@@ -30,18 +30,20 @@
       return function() {
         var deferred = $q.defer();
 
-        Settings.query(function(res) {
+        Settings(function(err, res) {
+          if (err) {
+            return deferred.reject(err);
+          }
 
           Language().then(
             function(language) {
 
               var result = [];
 
-              if (res.settings && res.settings.forms) {
-                var forms = res.settings.forms;
-                for (var key in forms) {
-                  if (forms.hasOwnProperty(key)) {
-                    var form = forms[key];
+              if (res.forms) {
+                for (var key in res.forms) {
+                  if (res.forms.hasOwnProperty(key)) {
+                    var form = res.forms[key];
                     result.push({
                       name: getLabel(form, language),
                       code: form.meta.code

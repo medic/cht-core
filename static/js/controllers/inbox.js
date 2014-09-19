@@ -223,10 +223,11 @@ var utils = require('kujua-utils'),
         }
       );
 
-      Settings.query(function(res) {
-        if (res.settings) {
-          $scope.languages = res.settings.locales;
+      Settings(function(err, res) {
+        if (err) {
+          return console.log('Error fetching settings', err);
         }
+        $scope.languages = res.locales;
       });
 
       Language().then(

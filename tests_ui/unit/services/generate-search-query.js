@@ -4,6 +4,7 @@ describe('GenerateSearchQuery service', function() {
 
   var service,
       options,
+      settings,
       scope;
 
   var date20130208 = 1360321199999;
@@ -11,10 +12,16 @@ describe('GenerateSearchQuery service', function() {
 
   beforeEach(function (){
     module('inboxApp');
+    module(function ($provide) {
+      $provide.value('Settings', function(callback) {
+        callback(null, settings);
+      });
+    });
     inject(function(_GenerateSearchQuery_) {
       service = _GenerateSearchQuery_;
     });
     options = {};
+    settings = {};
     scope = {
       forms: [],
       facilities: [],
@@ -34,11 +41,12 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope, options);
-    chai.expect(query).to.equal(
-      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
-      'AND type:report'
-    );
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report'
+      );
+    });
   });
 
   it('creates filter query for selected forms', function() {
@@ -61,12 +69,13 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope, options);
-    chai.expect(query).to.equal(
-      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
-      'AND type:report ' +
-      'AND form:(A OR B OR C)'
-    );
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report ' +
+        'AND form:(A OR B OR C)'
+      );
+    });
   });
 
   it('creates filter query for all forms when all are selected', function() {
@@ -88,11 +97,12 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope, options);
-    chai.expect(query).to.equal(
-      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
-      'AND type:report'
-    );
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report'
+      );
+    });
   });
 
   it('creates filter query for invalid', function() {
@@ -106,12 +116,13 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope, options);
-    chai.expect(query).to.equal(
-      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
-      'AND type:report ' +
-      'AND NOT errors<int>:0'
-    );
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report ' +
+        'AND NOT errors<int>:0'
+      );
+    });
   });
 
   it('creates filter query for valid', function() {
@@ -125,12 +136,13 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope, options);
-    chai.expect(query).to.equal(
-      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
-      'AND type:report ' +
-      'AND errors<int>:0'
-    );
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report ' +
+        'AND errors<int>:0'
+      );
+    });
   });
 
   it('creates filter query for selected clinics', function() {
@@ -149,12 +161,13 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope, options);
-    chai.expect(query).to.equal(
-      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
-      'AND type:report ' +
-      'AND clinic:(a OR b OR c)'
-    );
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report ' +
+        'AND clinic:(a OR b OR c)'
+      );
+    });
   });
 
   it('creates filter query for all clinics when all selected', function() {
@@ -172,11 +185,12 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    var query = service(scope, options);
-    chai.expect(query).to.equal(
-      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
-      'AND type:report'
-    );
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report'
+      );
+    });
   });
 
   it('creates filter query with freetext', function() {
@@ -190,12 +204,13 @@ describe('GenerateSearchQuery service', function() {
       }
     };
     scope.filterQuery = 'pref';
-    var query = service(scope, options);
-    chai.expect(query).to.equal(
-      'pref* ' +
-      'AND reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
-      'AND type:report'
-    );
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'pref* ' +
+        'AND reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report'
+      );
+    });
   });
 
   it('creates filter query with freetext referencing a specific field', function() {
@@ -209,12 +224,13 @@ describe('GenerateSearchQuery service', function() {
       }
     };
     scope.filterQuery = 'patient_id:12345';
-    var query = service(scope, options);
-    chai.expect(query).to.equal(
-      'patient_id:12345 ' +
-      'AND reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
-      'AND type:report'
-    );
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'patient_id:12345 ' +
+        'AND reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report'
+      );
+    });
   });
 
   it('creates filter query with specific ids', function() {
@@ -231,11 +247,79 @@ describe('GenerateSearchQuery service', function() {
       {id: 'a'},
       {id: 'b'}
     ];
-    var query = service(scope, options);
-    chai.expect(query).to.equal(
-      'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
-      'AND type:report ' +
-      'AND uuid:("a" OR "b")'
-    );
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report ' +
+        'AND uuid:("a" OR "b")'
+      );
+    });
   });
+
+  it('creates filter query with specific ids', function() {
+    scope.filterModel = {
+      type: 'reports',
+      forms: [],
+      facilities: [],
+      date: {
+        from: date20130208,
+        to: date20130612
+      }
+    };
+    options.changes = [
+      {id: 'a'},
+      {id: 'b'}
+    ];
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report ' +
+        'AND uuid:("a" OR "b")'
+      );
+    });
+  });
+
+  it('creates filter query for district admin', function() {
+    scope.filterModel = {
+      type: 'reports',
+      forms: [],
+      facilities: [],
+      date: {
+        from: date20130208,
+        to: date20130612
+      }
+    };
+    scope.permissions.districtAdmin = true;
+    scope.permissions.district = 'abc';
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report ' +
+        'AND district:(abc)'
+      );
+    });
+  });
+
+  it('creates filter query for district OR unallocated', function() {
+    scope.filterModel = {
+      type: 'reports',
+      forms: [],
+      facilities: [],
+      date: {
+        from: date20130208,
+        to: date20130612
+      }
+    };
+    scope.permissions.districtAdmin = true;
+    scope.permissions.district = 'abc';
+    settings.district_admins_access_unallocated_messages = true;
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report ' +
+        'AND district:(abc OR none)'
+      );
+    });
+  });
+
 });

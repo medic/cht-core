@@ -93,9 +93,9 @@ describe('ReportsCtrl controller', function() {
       }
     ];
 
-    GenerateSearchQuery = function(scope, options) {
+    GenerateSearchQuery = function(scope, options, callback) {
       chai.expect(options.changes).to.deep.equal(changedObjects);
-      return query;
+      callback(null, query);
     };
 
     Search = function(options, callback) {
@@ -141,9 +141,9 @@ describe('ReportsCtrl controller', function() {
       { _id: 'c' }
     ];
 
-    GenerateSearchQuery = function(scope, options) {
+    GenerateSearchQuery = function(scope, options, callback) {
       chai.expect(options.changes).to.deep.equal(changedObjects);
-      return 'myquery';
+      callback(null, 'myquery');
     };
 
     createController();
@@ -167,9 +167,9 @@ describe('ReportsCtrl controller', function() {
       { _id: 'c' }
     ];
 
-    GenerateSearchQuery = function(scope, options) {
+    GenerateSearchQuery = function(scope, options, callback) {
       chai.expect(options.changes).to.deep.equal([{ id: 'b' }]);
-      return 'myquery';
+      callback(null, 'myquery');
     };
 
     Search = function(options, callback) {

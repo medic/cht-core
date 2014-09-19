@@ -166,6 +166,12 @@
                 "title": "Only Expect Forms",
                 "default": false
             },
+            "district_admins_access_unallocated_messages": {
+                "type": "boolean",
+                "title": "Allow District Admins To View Unallocated Messages",
+                "default": false,
+                "description": "If ticked, district administrators will be able to view messages with no allocated facility as well as messages from their district."
+            },
             "gateway_number": {
                 "type": "string",
                 "title": "Gateway Number"

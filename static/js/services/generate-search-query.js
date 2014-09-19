@@ -7,8 +7,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('GenerateSearchQuery', [
-    function() {
+  inboxServices.factory('GenerateSearchQuery', ['Settings',
+    function(Settings) {
 
       var formatDate = function(date) {
         return date.zone(0).format('YYYY-MM-DD');
@@ -59,9 +59,13 @@ var _ = require('underscore'),
         }
       };
       
-      var formatDistrict = function($scope) {
+      var formatDistrict = function($scope, showUnallocated) {
         if ($scope.permissions.districtAdmin) {
-          return 'district:' + $scope.permissions.district;
+          var value = $scope.permissions.district;
+          if (showUnallocated) {
+            value += ' OR none';
+          }
+          return 'district:(' + value + ')';
         }
       };
 
@@ -82,19 +86,28 @@ var _ = require('underscore'),
         return result;
       };
 
-      return function($scope, options) {
-        var filters = [];
+      return function($scope, options, callback) {
 
-        filters.push(formatFreetext($scope));
-        filters.push(formatReportedDate($scope));
-        filters.push(formatType($scope));
-        filters.push(formatClinics($scope));
-        filters.push(formatForm($scope));
-        filters.push(formatErrors($scope));
-        filters.push(formatDistrict($scope));
-        filters.push(formatIds(options));
+        Settings(function(err, res) {
 
-        return _.compact(filters).join(' AND ');
+          if (err) {
+            return callback(err);
+          }
+
+          var filters = [];
+
+          filters.push(formatFreetext($scope));
+          filters.push(formatReportedDate($scope));
+          filters.push(formatType($scope));
+          filters.push(formatClinics($scope));
+          filters.push(formatForm($scope));
+          filters.push(formatErrors($scope));
+          filters.push(formatDistrict($scope, res.district_admins_access_unallocated_messages));
+          filters.push(formatIds(options));
+
+          callback(null, _.compact(filters).join(' AND '));
+
+        });
         
       };
     }

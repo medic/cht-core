@@ -37,6 +37,7 @@ module.exports = {
    "date_format": "DD-MMM-YYYY",
    "reported_date_format": "DD-MMM-YYYY hh:mm:ss",
    "forms_only_mode": false,
+   "district_admins_access_unallocated_messages": false,
    "public_access": false,
    "gateway_number": "+13125551212",
    "kujua-reporting": [

@@ -49,10 +49,13 @@ require('../dist/reporting-views');
 
       var deferred = $q.defer();
 
-      Settings.query(function(res) {
-        if (res.settings && res.settings.translations) {
-          var data = {};
-          res.settings.translations.forEach(function(translation) {
+      Settings(function(err, res) {
+        if (err) {
+          return deferred.reject(err);
+        }
+        var data = {};
+        if (res.translations) {
+          res.translations.forEach(function(translation) {
             var key = translation.key;
             var value = translation.default || translation.key;
             translation.translations.forEach(function(val) {
@@ -62,10 +65,8 @@ require('../dist/reporting-views');
             });
             data[key] = value;
           });
-          deferred.resolve(data);
-        } else {
-          deferred.reject(options.key);
         }
+        deferred.resolve(data);
       });
       
       return deferred.promise;

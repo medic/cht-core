@@ -18,10 +18,13 @@ var moment = require('moment');
         }
         if (!running) {
           running = true;
-          Settings.query(function(res) {
+          Settings(function(err, res) {
+            if (err) {
+              return console.log('Error fetching settings', err);
+            }
             config = {
-              datetime: res.settings.reported_date_format,
-              date: res.settings.date_format
+              datetime: res.reported_date_format,
+              date: res.date_format
             };
           });
         }
