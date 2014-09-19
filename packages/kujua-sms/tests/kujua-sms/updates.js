@@ -41,8 +41,7 @@ exports.assert_timestamp_parsed = function(test)  {
     test.done();
 };
 
-exports.deep_keys_parsed = function(test)  {
-    test.expect(2);
+exports['deep keys parsed'] = function(test)  {
     var req = {
         headers: {"Host": window.location.host},
         form: {
@@ -68,15 +67,12 @@ exports.deep_keys_parsed = function(test)  {
         zinc: 4
     };
     var doc = updates.add_sms(null, req)[0];
-
     test.same(doc.days_stocked_out, days_stocked_out);
     test.same(doc.quantity_dispensed, quantity_dispensed);
-
     test.done();
 };
 
-exports.sms_message_attr_on_doc = function(test) {
-    test.expect(1);
+exports['add sms creates sms_message property on doc'] = function(test) {
     var req = {
         headers: {"Host": window.location.host},
         form: {
@@ -86,20 +82,118 @@ exports.sms_message_attr_on_doc = function(test) {
         }
     };
     var doc = updates.add_sms(null, req)[0];
-
     test.same(doc.sms_message, req.form);
     test.done();
 };
 
-exports.add_sms_check_resp_body = function (test) {
+exports['add sms returns payload'] = function (test) {
 
-    // smssync post
     var req = {
         headers: {"Host": window.location.host},
         uuid: "13f58b9c648b9a997248cba27aa00fdf",
         form: {
             "from":"+888",
             "message":"hmm this is test",
+            "sent_timestamp":"1352399720000"
+        }
+    };
+
+    var expResp = {
+        payload: {
+          "id": "13f58b9c648b9a997248cba27aa00fdf",
+          "success": true
+        }
+    };
+
+    var ret = updates.add_sms(null, req);
+    var resp = JSON.parse(ret[1]);
+    test.same(resp.payload, expResp.payload);
+    test.same(resp, expResp);
+    test.done();
+};
+
+exports['unstructured message has undefined form prop and facility error'] = function(test) {
+
+    var req = {
+        headers: {"Host": window.location.host},
+        form: {
+            from:"+888",
+            message: "hello world! anyone there?"
+        }
+    };
+
+    var expResp = {
+        payload: {
+          "success": true
+        }
+    };
+
+    var resp = fakerequest.update(updates.add_sms, null, req),
+        resp_body = JSON.parse(resp[1].body),
+        doc = resp[0];
+
+    // unstructured message has form of null
+    test.same(doc.form, undefined);
+    test.same(resp_body, expResp);
+    test.same(doc.errors[0],
+        {
+            code: "sys.facility_not_found",
+            message: "Facility not found."
+        }
+    );
+    test.done();
+
+};
+
+exports['add default response if form not found'] = function(test) {
+
+    var req = {
+        headers: {"Host": window.location.host},
+        uuid: "13f58b9c648b9a997248cba27aa00fdf",
+        form: {
+            "from":"+888",
+            "message":"foo bar baz",
+            "sent_timestamp":"1352399720000"
+        }
+    };
+
+    var expResp = {
+        payload: {
+          "id": "13f58b9c648b9a997248cba27aa00fdf",
+          "success": true
+        }
+    };
+
+    var expTasks = [
+        {
+          "state": "pending",
+          "messages": [
+            {
+              "to": "+888",
+              "message": "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again.",
+            }
+          ]
+        }
+    ];
+
+    var ret = updates.add_sms(null, req);
+    var resp = JSON.parse(ret[1]);
+    var doc = ret[0];
+
+    test.same(resp, expResp);
+    test.same(resp.payload, expResp.payload);
+    test.same(doc.tasks, expTasks);
+    test.done();
+};
+
+exports['add default response if form not found - muvuku message encoding'] = function(test) {
+    // smssync post
+    var req = {
+        headers: {"Host": window.location.host},
+        uuid: "13f58b9c648b9a997248cba27aa00fdf",
+        form: {
+            "from":"+888",
+            "message": "1!0000!2012#2#20#foo#bar",
             "sent_timestamp":"1352399720000"
         }
     };
@@ -112,18 +206,226 @@ exports.add_sms_check_resp_body = function (test) {
         }
     };
 
-    var ret = updates.add_sms(null, req);
-    resp = JSON.parse(ret[1]);
+    var expTasks = [
+        {
+          "state": "pending",
+          "messages": [
+            {
+              "to": "+888",
+              "message": "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again.",
+            }
+          ]
+        }
+    ];
 
-    test.same(resp.payload, expResp.payload);
+    var ret = updates.add_sms(null, req);
+    var resp = JSON.parse(ret[1]);
+    var doc = ret[0];
+
     test.same(resp, expResp);
+    test.same(resp.payload, expResp.payload);
+    test.same(doc.tasks, expTasks);
+    test.done();
+};
+
+exports['support locale in default response if form not found'] = function(test) {
+    // smssync post
+    var req = {
+        headers: {"Host": window.location.host},
+        uuid: "13f58b9c648b9a997248cba27aa00fdf",
+        form: {
+            "from":"+888",
+            "message":"foo",
+            "sent_timestamp":"1352399720000"
+        },
+        query: {
+            locale: "fr"
+        }
+    };
+
+    // updates.add_sms generates a callback and payload
+    var expResp = {
+        payload: {
+          "id": "13f58b9c648b9a997248cba27aa00fdf",
+          "success": true
+        }
+    };
+
+    var expTasks = [
+        {
+          "state": "pending",
+          "messages": [
+            {
+              "to": "+888",
+              "message": "Merci, votre message a été bien reçu."
+            }
+          ]
+        }
+    ];
+
+    var ret = updates.add_sms(null, req);
+    var resp = JSON.parse(ret[1]);
+    var doc = ret[0];
+
+    test.same(resp, expResp);
+    test.same(resp.payload, expResp.payload);
+    test.same(doc.tasks, expTasks);
+    test.done();
+};
+
+exports['add error response if form not found and forms_only_mode'] = function(test) {
+    // smssync post
+    var req = {
+        headers: {"Host": window.location.host},
+        uuid: "13f58b9c648b9a997248cba27aa00fdf",
+        form: {
+            "from":"+888",
+            "message":"walrus"
+        }
+    };
+
+    // updates.add_sms generates a callback and payload
+    var expResp = {
+        payload: {
+          "id": "13f58b9c648b9a997248cba27aa00fdf",
+          "success": true
+        }
+    };
+
+    var expTasks = [
+        {
+          "state": "pending",
+          "messages": [
+            {
+              "to": "+888",
+              "message": "The form sent 'walrus' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
+            }
+          ]
+        }
+    ];
+
+    utils.info.forms_only_mode = true;
+
+    var ret = updates.add_sms(null, req);
+    var resp = JSON.parse(ret[1]);
+    var doc = ret[0];
+
+    test.same(resp, expResp);
+    test.same(resp.payload, expResp.payload);
+    test.same(doc.tasks, expTasks);
+    test.done();
+};
+
+exports['form property on doc is undefined for one word message'] = function (test) {
+    var req = {
+        headers: { "Host": window.location.host },
+        form: {
+            "from":"+888",
+            "message": 'seal'
+        }
+    };
+    var ret = updates.add_sms(null, req);
+    var resp = JSON.parse(ret[1]);
+    var doc = ret[0];
+    test.same(doc.form, undefined);
+    test.same(resp.payload, {success:true});
     test.done();
 };
 
 
+exports['use default response on one word message'] = function (test) {
+    var req = {
+        headers: { "Host": window.location.host },
+        form: {
+            "from":"+888",
+            "message": 'bear'
+        }
+    };
+    var ret = updates.add_sms(null, req);
+    var resp = JSON.parse(ret[1]);
+    var doc = ret[0];
+    var expTasks = [
+        {
+          "state": "pending",
+          "messages": [
+            {
+              "to": "+888",
+              "message": "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again.",
+            }
+          ]
+        }
+    ];
+    test.same(doc.tasks, expTasks);
+    test.done();
+};
+
+exports['add error response to empty messages'] = function (test) {
+    var req = {
+        headers: { "Host": window.location.host },
+        form: {
+            "from":"+888",
+            "message": ''
+        }
+    };
+    var ret = updates.add_sms(null, req);
+    var resp = JSON.parse(ret[1]);
+    var doc = ret[0];
+
+    var expTasks = [
+        {
+          "state": "pending",
+          "messages": [
+            {
+              "to": "+888",
+              "message": "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor."
+            }
+          ]
+        }
+    ];
+
+    test.same(resp.payload, {success:true});
+    test.same(doc.tasks, expTasks);
+    test.done();
+
+};
+
+exports['add error response to empty message and respect locale param'] = function (test) {
+    var req = {
+        headers: { "Host": window.location.host },
+        form: {
+            "from":"+9997",
+            "message": ''
+        },
+        query: {
+            locale: "fr"
+        }
+    };
+    var ret = updates.add_sms(null, req);
+    var resp = JSON.parse(ret[1]);
+    var doc = ret[0];
+
+    var expTasks = [
+        {
+          "state": "pending",
+          "messages": [
+            {
+              "to": "+9997",
+              "mesasge": "Nous avons des troubles avec votre message, SVP renvoyer. Si vous continuez à avoir des problèmes contactez votre superviseur."
+            }
+          ]
+        }
+    ];
+
+    test.same(resp.payload, {success:true});
+    test.same(doc.tasks, expTasks);
+    test.done();
+
+};
+
 //
 // use YYYY form to create tasks on a document.
 //
+/* deprecated testing of messages_task on form
 exports.update_related_and_tasks = function (test) {
     test.expect(6);
     var req = {
@@ -178,11 +480,13 @@ exports.update_related_and_tasks = function (test) {
     test.same(resp.payload.task, 'send');
     test.done();
 }
+*/
 
 /*
  * this doc is missing the district level of facility so we should still have a
  * message recipient not found error.
  */
+/* deprecated testing of dh recipient on messages_task on form
 exports.update_related_and_recipient_missing = function (test) {
     test.expect(1);
     var req = {
@@ -224,6 +528,7 @@ exports.update_related_and_recipient_missing = function (test) {
     test.same(ret[0].errors[0], newError);
     test.done();
 }
+*/
 
 /*
  * Check response and payloads
@@ -235,6 +540,8 @@ exports.update_related_and_recipient_missing = function (test) {
  * finalized in the second/final request.
  */
 
+/* success response moved to sentinel and basic add_sms payload check already
+ * happened above.
 exports.success_response = function (test) {
     test.expect(4);
     var req = {
@@ -270,7 +577,10 @@ exports.success_response = function (test) {
         test.done();
     }
 };
+*/
 
+/* autoreply on form deprecated sys.sms_recieved used by sentinel instead
+ *
 exports.success_response_w_autoreply = function (test) {
     test.expect(6);
     var req = {
@@ -305,7 +615,9 @@ exports.success_response_w_autoreply = function (test) {
         test.done();
     }
 };
+*/
 
+/* moved functionality to add_sms
 exports.form_not_found_response = function(test) {
     test.expect(4);
     var req = {
@@ -341,7 +653,9 @@ exports.form_not_found_response = function(test) {
     }
 
 };
+*/
 
+/* moved to add_sms 
 exports.payload_form_not_found_muvuku = function (test) {
     test.expect(5);
     var req = {
@@ -379,7 +693,9 @@ exports.payload_form_not_found_muvuku = function (test) {
     }
 
 };
+*/
 
+/* moved to add_sms
 exports.form_not_found_fr_responses = function (test) {
     test.expect(5);
     var req = {
@@ -418,122 +734,11 @@ exports.form_not_found_fr_responses = function (test) {
         test.done();
     }
 };
+*/
 
-exports.empty_message_response = function (test) {
-    test.expect(5);
-    var req = {
-        headers: { "Host": window.location.host },
-        form: {
-            "from":"+888",
-            "message": ''
-        }
-    };
-    var ret = updates.add_sms(null, req),
-        resp = JSON.parse(ret[1]);
 
-    test.same(resp.payload, {success:true});
-    part2(ret[0]);
 
-    function part2(doc) {
-        var req = {
-            headers: {"Host": window.location.host},
-            body: JSON.stringify({}) // related_entities not found
-        };
-
-        var ret = updates.updateRelated(doc, req),
-            newDoc = ret[0],
-            resp = JSON.parse(ret[1]);
-
-        test.same(resp.payload.success, true);
-        test.same(resp.payload.task, 'send');
-        test.same(resp.payload.messages[0].to, "+888");
-        test.same(
-            resp.payload.messages[0].message,
-            "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor."
-        );
-        test.done();
-    }
-
-};
-
-exports.empty_message_resonses_fr = function (test) {
-    test.expect(5);
-    var req = {
-        headers: { "Host": window.location.host },
-        form: {
-            "from":"+888",
-            "message": ''
-        },
-        query: {
-            locale: "fr"
-        }
-    };
-    var ret = updates.add_sms(null, req),
-        resp = JSON.parse(ret[1]);
-
-    test.same(resp.payload, {success:true});
-    part2(ret[0]);
-
-    function part2(doc) {
-        var req = {
-            headers: {"Host": window.location.host},
-            body: JSON.stringify({}) // related_entities not found
-        };
-
-        var ret = updates.updateRelated(doc, req),
-            newDoc = ret[0],
-            resp = JSON.parse(ret[1]);
-
-        test.same(resp.payload.success, true);
-        test.same(resp.payload.task, 'send');
-        test.same(resp.payload.messages[0].to, "+888");
-        test.same(
-            resp.payload.messages[0].message,
-            "Nous avons des troubles avec votre message, SVP renvoyer. Si vous continuez à avoir des problèmes contactez votre superviseur."
-        );
-        test.done();
-    }
-};
-
-// one word messages get an undefined `form` property
-exports.payload_one_word = function (test) {
-    test.expect(6);
-    var req = {
-        headers: { "Host": window.location.host },
-        form: {
-            "from":"+888",
-            "message": 'foo'
-        }
-    };
-    var ret = updates.add_sms(null, req),
-        resp = JSON.parse(ret[1]),
-        doc = ret[0];
-
-    test.same(doc.form, undefined);
-    test.same(resp.payload, {success:true});
-    part2(doc);
-
-    function part2(doc) {
-        var req = {
-            headers: {"Host": window.location.host},
-            body: JSON.stringify({}) // related_entities not found
-        };
-
-        var ret = updates.updateRelated(doc, req),
-            newDoc = ret[0],
-            resp = JSON.parse(ret[1]);
-
-        test.same(resp.payload.success, true);
-        test.same(resp.payload.task, 'send');
-        test.same(resp.payload.messages[0].to, "+888");
-        test.same(
-            resp.payload.messages[0].message,
-            "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again."
-        );
-        test.done();
-    }
-};
-
+/* form validation is moved to sentinel
 exports.payload_missing_fields = function (test) {
     test.expect(6);
     var req = {
@@ -571,8 +776,6 @@ exports.payload_missing_fields = function (test) {
         test.done();
     }
 };
-
-
 
 exports.extra_fields = function(test) {
 
@@ -682,11 +885,15 @@ exports.missing_fields_response_msg = function(test) {
     );
     test.done();
 };
+*/
+
+
 
 /*
  * When a form generates messages but the recipient phone numbers for that
  * message cannot be resolved/found.
  */
+/* messages_task feature on a form is deprecated
 exports.missing_recipient_response_msg = function(test) {
     test.expect(3);
     var req = {
@@ -710,10 +917,12 @@ exports.missing_recipient_response_msg = function(test) {
     test.same(resp.payload.messages[0].message, 'Zikomo!');
     test.done();
 };
+*/
 
 /*
  * We do not notify the reporter of missing facility errors by default.
  */
+/* response property on doc is deprecated
 exports.missing_facility_response_msg = function(test) {
     test.expect(6);
     var req = {
@@ -747,38 +956,4 @@ exports.missing_facility_response_msg = function(test) {
     test.same(newDoc.responses[0].message, 'Zikomo!');
     test.done();
 };
-
-
-/*
- * If parsing fails then assume unstructured message
- */
-exports.unstructured_message = function(test) {
-
-    test.expect(5);
-
-    var req = {
-        headers: {"Host": window.location.host},
-        form: {
-            from:"+888",
-            message: "hello world! anyone there?"
-        }
-    };
-
-    var resp = fakerequest.update(updates.add_sms, null, req);
-        resp_body = JSON.parse(resp[1].body),
-        doc = resp[0];
-
-    // unstructured message has form of null
-    test.same(doc.form, undefined);
-    test.same(doc.sms_message.message, "hello world! anyone there?");
-    test.same(resp_body.payload.success, true);
-    test.same(resp_body.payload.messages, undefined);
-    test.same(doc.errors[0],
-        {
-            code: "sys.facility_not_found",
-            message: "Facility not found."
-        }
-    );
-    test.done();
-
-};
+*/
