@@ -16,8 +16,7 @@ module.exports = function(grunt) {
     bower_concat: {
       all: {
         dest: 'bower_components/concat.js',
-        // ignore packages loaded by browserify
-        exclude: [ 'fontawesome', 'underscore', 'moment' ]
+        exclude: [ 'fontawesome', 'async' ]
       }
     },
     replace: {
@@ -322,6 +321,11 @@ module.exports = function(grunt) {
         src: './moment.js',
         expose: ''
       },
+      {
+        cwd: 'bower_components/async/lib',
+        src: './async.js',
+        expose: ''
+      },
       // kanso packages required for inbox
       {
         cwd: 'packages/db',
@@ -351,11 +355,6 @@ module.exports = function(grunt) {
       {
         cwd: 'packages/underscore-string',
         src: './underscore-string.js',
-        expose: ''
-      },
-      {
-        cwd: 'packages/async',
-        src: './async.js',
         expose: ''
       },
       {
