@@ -3,6 +3,7 @@ var app = require('express')(),
     config = require('./config'),
     auth = require('./auth'),
     auditProxy = require('./audit-proxy'),
+    cacheResponse = require('./cache-response'),
     target = 'http://' + db.client.host + ':' + db.client.port,
     proxy = require('http-proxy').createProxyServer({ target: target }),
     activePregnancies = require('./controllers/active-pregnancies'),
@@ -106,6 +107,8 @@ app.get('/api/monthly-registrations', function(req, res) {
 app.get('/api/monthly-deliveries', function(req, res) {
   handleApiCall(req, res, monthlyDeliveries);
 });
+
+app.use('*/static/*', cacheResponse(target, { maxAge: '1y' }));
 
 app.all('*', function(req, res) {
   proxy.web(req, res);
