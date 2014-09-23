@@ -126,7 +126,7 @@
     var createRow = function (columns, doc) {
         var tr = $('<tr/>');
         tr.data('_id', doc._id);
-        tr.append('<th class="handle"><div class="control"><a class="btn btn-mini btn-danger delete-row" href="#"><i class="icon-trash"></i></a></div></th>');
+        tr.append('<th class="handle"><div class="control"><a class="btn btn-mini btn-danger delete-row" href="#"><i class="fa fa-trash-o"></i></a></div></th>');
         _.each(columns, function (c) {
             var p = getProperty(doc, c.property),
                 td,
@@ -926,7 +926,7 @@
         }
 
         help =  '<div class="spreadsheet-help">' +
-                '<i class="icon-question-sign"></i>' +
+                '<i class="fa fa-question-circle"></i>' +
                 '<ul>' +
                 '<li><b>Double click</b> or enter key to edit a cell.</li>' +
                 '<li><b>Enter</b> key to save.</li>' +
@@ -952,7 +952,7 @@
             $table.append(
                 '<div class="spreadsheet-actions">' +
                     '<a href="#" class="btn add-row-btn">' +
-                        '<i class="icon-plus-sign"></i> Add row' +
+                        '<i class="fa fa-plus"></i> Add row' +
                     '</a>' +
                     '<span class="row-counter"></span>' +
                 '</div>'

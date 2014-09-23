@@ -1,12 +1,11 @@
 @import "elements";
 @import "bootstrap/bootstrap";
+@import "bower_components/fontawesome/less/font-awesome";
 @import "packages/kujua-branding/css/base";
 @import "packages/kujua-reporting/css/base";
 @import (inline) "bower_components/select2/select2.css";
 @import "spreadsheet";
 
-// avoid header bug to bypass rewrite and directly access attachment
-@baseFontPath: "../../../bootstrap/fonts/";
 @gridColumns: 12;
 @errorColor: #A50000;
 
@@ -35,7 +34,7 @@ body {
             content: '\f110';
             font-family: FontAwesome;
             font-size: 72px;
-            .icon-spin;
+            .fa-spin;
             z-index: 100000;
         }
     }
@@ -374,7 +373,7 @@ label {
 .edit-mode.active {
   .btn-warning;
 }
-.icon-exclamation-sign {
+.fa-exclamation-triangle {
     color: @red;
     &:hover { cursor: pointer; }
 }
@@ -418,7 +417,7 @@ table.spreadsheet .dropdown-menu {
 
 .spreadsheet-help {
   color: @grayLight;
-  .icon-question-sign {
+  .fa-question-circle {
     &:after { content:" Help" }
     .pull-right;
     padding-right: 20px;
@@ -656,17 +655,17 @@ span.pre {
             vertical-align: middle;
         }
     }
-    .toggle-body, .toggle-head .icon-chevron-up {
+    .toggle-body, .toggle-head .fa-chevron-up {
         display: none;
     }
     &.expanded {
         .toggle-body {
             display: block;
         }
-        .toggle-head .icon-chevron-up {
+        .toggle-head .fa-chevron-up {
             display: inline;
         }
-        .toggle-head .icon-chevron-down {
+        .toggle-head .fa-chevron-down {
             display: none;
         }
     }
