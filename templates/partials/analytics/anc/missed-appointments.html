@@ -12,7 +12,7 @@
       <p class="count">{~lb}{~lb}missedAppointments.data.length || 0{~rb}{~rb}</p>
       <p class="name">Recent Missed Appointments</p>
     </div>
-    <div class="content">
+    <div class="content" ng-if="missedAppointments.data">
       <table class="table">
         <thead>
           <tr>
