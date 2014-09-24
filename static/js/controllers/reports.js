@@ -41,19 +41,21 @@ var _ = require('underscore'),
         }
         _selectedDoc = id;
         $scope.setSelected();
-        $scope.messages.forEach(function(message) {
-          if (message._id === id) {
-            if (!$scope.isRead(message)) {
-              $scope.readStatus.forms.read++;
-            }
-            MarkRead(id, true, function(err) {
-              if (err) {
-                console.log(err);
+        if ($scope.messages) {
+          $scope.messages.forEach(function(message) {
+            if (message._id === id) {
+              if (!$scope.isRead(message)) {
+                $scope.readStatus.forms.read++;
               }
-            });
-            $scope.setSelected(message);
-          }
-        });
+              MarkRead(id, true, function(err) {
+                if (err) {
+                  console.log(err);
+                }
+              });
+              $scope.setSelected(message);
+            }
+          });
+        }
       };
 
 
