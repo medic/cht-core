@@ -1,5 +1,5 @@
 <div class="message-content-wrapper">
-  <div class="col-sm-8 name-header">
+  <div class="col-sm-8 name-header" ng-if="selected.messages[0]">
     <mm-sender message="selected.messages[0].value"></mm-sender>
   </div>
   <div id="message-content" class="col-sm-8 item-content" scroller>
@@ -30,7 +30,7 @@
       </div>
     </div>
   </div>
-  <div class="reply message-form col-sm-8">
+  <div class="reply message-form col-sm-8" ng-if="selected.messages[0]">
     <div class="col-sm-10 control-group">
       <div class="controls">
         <textarea name="message" placeholder="Enter message"></textarea>
