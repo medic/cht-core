@@ -26,8 +26,14 @@ module.exports = {
         return Boolean(typeof doc.form !== 'string');
     },
     _isConfigFormsOnlyMode: function() {
-        var self = module.exports;
-        return self._getConfig('forms_only_mode');
+        module.exports._getConfig('forms_only_mode');
+    },
+    _isConfigAutoreplyEnabled: function() {
+        var bool = module.exports._getConfig('use_autoreply');
+        if (typeof bool === 'boolean') {
+            return bool;
+        }
+        return true;
     },
     _getConfig: function(key) {
         return config.get(key);
@@ -55,7 +61,11 @@ module.exports = {
             self._addMessage(doc, self._translate('empty', locale));
         } else if (self._isConfigFormsOnlyMode() && self._isFormNotFound(doc)) {
             self._addMessage(doc, self._translate('form_not_found', locale));
-        } else if (self._isFormNotFound(doc) || self._isValidUnstructuredMessage(doc)) {
+        } else if (self._isFormNotFound(doc)) {
+            self._addMessage(doc, self._translate('sms_received', locale));
+        } else if (
+                self._isValidUnstructuredMessage(doc)
+                && self._isConfigAutoreplyEnabled()) {
             self._addMessage(doc, self._translate('sms_received', locale));
         }
 

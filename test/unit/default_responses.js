@@ -13,7 +13,16 @@ var restore = function(objs) {
 
 exports.tearDown = function(callback) {
     restore([
+        transition.filter,
+        transition._isMessageEmpty,
+        transition._isFormNotFound,
+        transition._isValidUnstructuredMessage,
         transition._isConfigFormsOnlyMode,
+        transition._isConfigAutoreplyEnabled,
+        transition._getConfig,
+        transition._getLocale,
+        transition._translate,
+        transition._addMessage,
         config.get,
         messages.addMessage
     ]);
@@ -103,6 +112,24 @@ exports['add response if unstructured message'] = function(test) {
             phone: '+23',
             message: 'SMS rcvd, thx!'
         }));
+        test.equals(err, null);
+        test.equals(changed, true);
+        test.done();
+    });
+};
+
+exports['do not add response if unstructured message and setting is disabled'] = function(test) {
+    sinon.stub(transition, '_isConfigAutoreplyEnabled').returns(false);
+    var messageFn = sinon.spy(messages, 'addMessage');
+    test.expect(3);
+    var doc = {
+        form: null,
+        from: '+23',
+        type: 'data_record',
+        errors: []
+    };
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+        test.equals(messageFn.called, false);
         test.equals(err, null);
         test.equals(changed, true);
         test.done();
