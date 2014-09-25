@@ -530,7 +530,7 @@ a.fa:hover {
     &:after {
       position: absolute;
       bottom: -1em;
-      left: 49%;
+      left: 48%;
       border-style: solid;
       border-color: @background-color transparent;
       display: block;
@@ -545,9 +545,6 @@ a.fa:hover {
       padding: 0;
       border: 0;
       clear: both;
-      &:last-child .message-body {
-        margin-bottom: 2em;
-      }
       > span {
         background-color: #ffffff;
         border: 1px solid @seperator-color;
@@ -566,25 +563,21 @@ a.fa:hover {
     .message-body, .message-body p {
       max-width: 100%;
     }
-    .incoming {
-      padding-right: 1em;
-      .message-body {
-        border-color: @received-state-color;
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-        border-left: 0;
-      }
+    .incoming .message-body {
+      border-color: @received-state-color;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-left: 0;
+      margin-right: 1em;
     }
-    .outgoing {
-      padding-left: 1em;
-      .message-body {
-        border-color: @messages-color;
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-        border-right: 0;
-        &, p {
-          float: right;
-        }
+    .outgoing .message-body {
+      border-color: @messages-color;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      border-right: 0;
+      margin-left: 1em;
+      &, p {
+        float: right;
       }
     }
     .task-state {

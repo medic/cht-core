@@ -18,29 +18,23 @@ var _ = require('underscore'),
         var docs = _.pluck($scope.selected.messages, 'doc');
         MarkAllRead(docs, true, function(err) {
           if (err) {
-            console.log('Error marking all as read', err);
+            return console.log('Error marking all as read', err);
           }
           $scope.updateReadStatus();
         });
       };
 
-      var placeUnreadMarker = function() {
+      var scrollToUnread = function() {
         var content = $('.item-content');
-        var firstUnread = content.find('.body .unread').filter(':first');
+        var markers = content.find('.marker');
         var scrollTo;
-        if (firstUnread.length) {
-          firstUnread.before('<li id="unread-marker" class="marker">Unread below</li>');
-          scrollTo = $('#unread-marker').offset().top - 150;
+        if (markers.length) {
+          scrollTo = markers.filter(':first').offset().top - 150;
         } else {
           scrollTo = content[0].scrollHeight;
         }
         content.scrollTop(scrollTo);
         $('#message-content').on('scroll', _checkScroll);
-      };
-
-      var updateRead = function() {
-        placeUnreadMarker();
-        markAllRead();
       };
 
       var findMostRecentFacility = function(messages) {
@@ -85,8 +79,12 @@ var _ = require('underscore'),
           $scope.loadingContent = false;
           $scope.error = false;
           $animate.enabled(false);
+          $scope.firstUnread = _.min(data.rows, function(message) {
+            return $scope.isRead(message.doc) ? Infinity : message.doc.reported_date;
+          });
           $scope.selected.messages = data.rows;
-          window.setTimeout(updateRead, 1);
+          markAllRead();
+          window.setTimeout(scrollToUnread, 1);
         });
       };
 
@@ -124,7 +122,7 @@ var _ = require('underscore'),
               });
               $scope.allLoaded = data.rows.length === 0;
               if (options.skip) {
-                $('#unread-marker').remove();
+                $scope.firstUnread = undefined;
               }
               if (userNotScrolled && first.length) {
                 window.setTimeout(function() {
