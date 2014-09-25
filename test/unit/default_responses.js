@@ -62,6 +62,112 @@ exports['when document type and errors matches pass filter'] = function(test) {
     test.done();
 };
 
+exports['when doc has no errors the message is not empty'] = function(test) {
+    test.equals(transition._isMessageEmpty({
+        from: '+222',
+        type: 'data_record',
+        errors: []
+    }), false);
+    test.done();
+};
+
+exports['when doc has no errors, form is not found returns false'] = function(test) {
+    test.equals(transition._isFormNotFound({
+        from: '+222',
+        type: 'data_record',
+        errors: []
+    }), false);
+    test.done();
+};
+
+exports['add response if unstructured message'] = function(test) {
+    // stub the translations config
+    sinon.stub(config, 'get').returns([
+        {
+            'key': 'sms_received',
+            'default': 'SMS rcvd, thx!'
+        }
+    ]);
+    var messageFn = sinon.spy(messages, 'addMessage');
+    test.expect(4);
+    var doc = {
+        form: null,
+        from: '+23',
+        type: 'data_record',
+        errors: []
+    };
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+        test.ok(messageFn.calledOnce);
+        test.ok(messageFn.calledWith({
+            doc: doc,
+            phone: '+23',
+            message: 'SMS rcvd, thx!'
+        }));
+        test.equals(err, null);
+        test.equals(changed, true);
+        test.done();
+    });
+};
+
+exports['add response if unstructured message (form prop is undefined)'] = function(test) {
+    // stub the translations config
+    sinon.stub(config, 'get').returns([
+        {
+            'key': 'sms_received',
+            'default': 'SMS rcvd, thx!'
+        }
+    ]);
+    var messageFn = sinon.spy(messages, 'addMessage');
+    test.expect(4);
+    var doc = {
+        from: '+23',
+        type: 'data_record',
+        errors: []
+    };
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+        test.ok(messageFn.calledOnce);
+        test.ok(messageFn.calledWith({
+            doc: doc,
+            phone: '+23',
+            message: 'SMS rcvd, thx!'
+        }));
+        test.equals(err, null);
+        test.equals(changed, true);
+        test.done();
+    });
+};
+
+exports['do not add response if valid form'] = function(test) {
+
+    /*
+     * If we receive a valid form submission (errors array is empty) then we
+     * skip response handling here because validation and responses are handled
+     * on different transition.
+     */
+
+    // stub the translations config
+    sinon.stub(config, 'get').returns([
+        {
+            'key': 'sms_received',
+            'default': 'SMS rcvd, thx!'
+        }
+    ]);
+    var messageFn = sinon.spy(messages, 'addMessage');
+    test.expect(3);
+    var doc = {
+        form: 'V',
+        from: '+23',
+        type: 'data_record',
+        errors: []
+    };
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+        test.equals(messageFn.called, false);
+        test.equals(err, null);
+        test.equals(changed, true);
+        test.done();
+    });
+};
+
 exports['add response if form not found'] = function(test) {
     sinon.stub(transition, '_isConfigFormsOnlyMode').returns(false);
     // stub the translations config

@@ -9,7 +9,6 @@ module.exports = {
         return Boolean(
             doc
             && doc.from
-            && doc.errors.length > 0
             && doc.type === 'data_record'
         );
     },
@@ -22,6 +21,9 @@ module.exports = {
         return Boolean(_.find(doc.errors, function(err) {
             return err.code === 'sys.form_not_found';
         }));
+    },
+    _isValidUnstructuredMessage: function(doc) {
+        return Boolean(typeof doc.form !== 'string');
     },
     _isConfigFormsOnlyMode: function() {
         var self = module.exports;
@@ -53,7 +55,7 @@ module.exports = {
             self._addMessage(doc, self._translate('empty', locale));
         } else if (self._isConfigFormsOnlyMode() && self._isFormNotFound(doc)) {
             self._addMessage(doc, self._translate('form_not_found', locale));
-        } else if (self._isFormNotFound(doc)) {
+        } else if (self._isFormNotFound(doc) || self._isValidUnstructuredMessage(doc)) {
             self._addMessage(doc, self._translate('sms_received', locale));
         }
 
