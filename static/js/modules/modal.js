@@ -3,8 +3,9 @@
   'use strict';
 
   exports.start = function(modal) {
-    var label = modal.find('.submit').text();
-    modal.find('.submit').text('Updating...');
+    var submit = modal.find('.submit');
+    var label = submit.text();
+    submit.text(submit.attr('data-working-label') || 'Updating...');
     modal.find('.btn, [name]').attr('disabled', true);
     return {
       done: function(description, err) {
