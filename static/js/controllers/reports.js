@@ -218,6 +218,12 @@ var _ = require('underscore'),
         });
       };
 
+      $scope.$on('filters-reset', function() {
+        $('#formTypeDropdown').multiDropdown().reset();
+        $('#facilityDropdown').multiDropdown().reset();
+        $scope.query();
+      });
+
       var _checkScroll = function() {
         if (this.scrollHeight - this.scrollTop - 10 < this.clientHeight) {
           $scope.$apply(function(scope) {

@@ -137,8 +137,7 @@ var utils = require('kujua-utils'),
         $scope.filterModel.facilities = [];
         $scope.filterModel.valid = undefined;
         $scope.filterModel.date = {};
-        $('#formTypeDropdown').multiDropdown().reset();
-        $('#facilityDropdown').multiDropdown().reset();
+        $scope.$broadcast('filters-reset');
       };
 
       $scope.setMessage = function(id) {
@@ -160,7 +159,6 @@ var utils = require('kujua-utils'),
           }
         );
       };
-
 
       var updateContacts = function() {
         Contact($scope.permissions.district).then(
