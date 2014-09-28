@@ -132,11 +132,11 @@ var utils = require('kujua-utils'),
       };
 
       $scope.resetFilterModel = function() {
+        $scope.filterQuery = '';
         $scope.filterModel.forms = [];
         $scope.filterModel.facilities = [];
         $scope.filterModel.valid = undefined;
         $scope.filterModel.date = {};
-        $scope.filterQuery = '';
         $('#formTypeDropdown').multiDropdown().reset();
         $('#facilityDropdown').multiDropdown().reset();
       };
