@@ -76,20 +76,38 @@ var utils = require('kujua-utils'),
         }
       };
 
+      var removeDeletedContacts = function(contacts) {
+        var existingKey;
+        var checkExisting = function(updated) {
+          return existingKey === updated.key[1];
+        };
+        for (var i = $scope.contacts.length - 1; i >= 0; i--) {
+          existingKey = $scope.contacts[i].key[1];
+          if (!_.some(contacts, checkExisting)) {
+            $scope.contacts.splice(i, 1);
+          }
+        }
+      };
+
+      var mergeUpdatedContacts = function(contacts) {
+        _.each(contacts, function(updated) {
+          var match = _.find($scope.contacts, function(existing) {
+            return existing.key[1] === updated.key[1];
+          });
+          if (match) {
+            angular.extend(match, updated);
+          } else {
+            $scope.contacts.push(updated);
+          }
+        });
+      };
+
       $scope.setContacts = function(options) {
         $scope.loading = false;
         $animate.enabled(!!options.changes);
         if (options.changes) {
-          _.each(options.contacts, function(updated) {
-            var match = _.find($scope.contacts, function(existing) {
-              return existing.key[1] === updated.key[1];
-            });
-            if (match) {
-              angular.extend(match, updated);
-            } else {
-              $scope.contacts.push(updated);
-            }
-          });
+          removeDeletedContacts(options.contacts);
+          mergeUpdatedContacts(options.contacts);
         } else {
           $scope.contacts = options.contacts;
         }
