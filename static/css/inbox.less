@@ -439,18 +439,28 @@ body {
 .item-content {
 
   padding: 0;
-  border: 1px solid @seperator-color;
-  border-width: 0 1px;
-
-  .meta {
-    padding: 2em;
-  }
 
   .status {
     clear: both;
     font-size: 1.5em;
     text-align: center;
     margin-bottom: -1.3em;
+  }
+
+  .body p {
+    word-wrap: break-word;
+    margin: 0;
+  }
+
+}
+
+.reports .item-content {
+
+  border: 1px solid @seperator-color;
+  border-width: 0 1px;
+
+  .meta {
+    padding: 2em;
   }
 
   .body {
@@ -478,11 +488,6 @@ body {
       font-weight: normal;
       font-style: italic;
       color: @label-color;
-    }
-
-    p {
-      word-wrap: break-word;
-      margin: 0;
     }
 
     .missing p {
@@ -542,8 +547,6 @@ a.fa:hover {
   }
   & > ul {
     > li {
-      padding: 0;
-      border: 0;
       clear: both;
       > span {
         background-color: #ffffff;
