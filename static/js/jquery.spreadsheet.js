@@ -129,8 +129,7 @@
         tr.append('<th class="handle"><div class="control"><a class="btn btn-mini btn-danger delete-row" href="#"><i class="fa fa-trash-o"></i></a></div></th>');
         _.each(columns, function (c) {
             var p = getProperty(doc, c.property),
-                td,
-                validation = createValidation(c);
+                td;
 
 
             // validation only available for "normal" cells
@@ -139,8 +138,9 @@
             } else {
                 td = $('<td/>');
                 td.data({
-                    'validation': validation,
-                    'validation-hint': c.validationHint
+                    'validation': createValidation(c),
+                    'validation-hint': c.validationHint,
+                    'formatter': c.formatter
                 });
                 setValue(td, p, { silent: true });
             }
@@ -315,11 +315,16 @@
         options = options || {};
 
         var $td = $(td),
-            validation = $td.data('validation');
+            validation = $td.data('validation'),
+            formatter = $td.data('formatter');
 
         _.defaults(options, {
             silent: false // whether to trigger an event
         });
+
+        if (_.isFunction(formatter)) {
+            val = formatter(val);
+        }
 
         if (_.isFunction(validation)) {
             $td.toggleClass('error', !validation(val));

@@ -8,19 +8,36 @@ var _cleanPhone = function(phone) {
   return prefix + phone;
 };
 
-var _format = function(countryCode, phone) {
-  var phoneUtil = i18n.phonenumbers.PhoneNumberUtil.getInstance();
-  var countryCode = phoneUtil.getRegionCodeForCountryCode(countryCode);
-  var number = phoneUtil.parseAndKeepRawInput(phone, countryCode);
-  return phoneUtil.format(number, standardFormat).toString();
+var _init = function(settings, phone) {
+  return {
+    util: i18n.phonenumbers.PhoneNumberUtil.getInstance(),
+    phone: _cleanPhone(phone),
+    countryCode: settings.default_country_code,
+    country: function() {
+      return this.util.getRegionCodeForCountryCode(this.countryCode);
+    },
+    parse: function() {
+      return this.util.parseAndKeepRawInput(this.phone, this.country());
+    },
+    format: function() {
+      return this.util.format(this.parse(), standardFormat).toString();
+    },
+    validate: function() {
+      return this.util.isValidNumber(this.parse());
+    }
+  };
 };
 
 exports.format = function(settings, phone) {
-  var countryCode = settings.default_country_code;
-  if (countryCode) {
-    try {
-      return _format(countryCode, _cleanPhone(phone));
-    } catch(e) {}
-  }
+  try {
+    return _init(settings, phone).format();
+  } catch (e) {}
+  return false;
+};
+
+exports.validate = function(settings, phone) {
+  try {
+    return _init(settings, phone).validate();
+  } catch (e) {}
   return false;
 };

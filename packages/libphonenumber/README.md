@@ -7,3 +7,5 @@ To rebuild the `phoneformat.js` with the latest version of the Google libphonenu
 - Hit "compile"
 - Paste the result into libphonenumber/phoneformat.js without overwriting the last line: `exports.phonenumbers = i18n.phonenumbers;`
 - Bump the version number in kanso.json
+
+Inspired by: https://github.com/albeebe/phoneformat.js
