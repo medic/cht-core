@@ -8,6 +8,7 @@
     "felix-couchdb": "1.0.x",
     "http-proxy": "1.0.x",
     "moment": "2.8.x",
+    "morgan": "^1.3.2",
     "pass-stream": "0.1.x",
     "underscore": "1.4.x"
   },

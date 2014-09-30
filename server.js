@@ -1,4 +1,6 @@
-var app = require('express')(),
+var express = require('express'),
+    morgan = require('morgan'),
+    app = express(),
     db = require('./db'),
     config = require('./config'),
     auth = require('./auth'),
@@ -18,6 +20,8 @@ var app = require('express')(),
     monthlyRegistrations = require('./controllers/monthly-registrations'),
     monthlyDeliveries = require('./controllers/monthly-deliveries');
 
+
+app.use(morgan('combined'));
 
 var audit = function(req, res) {
   auditProxy.onMatch(proxy, req, res);
