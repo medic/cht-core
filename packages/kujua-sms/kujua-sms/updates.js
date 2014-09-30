@@ -7,6 +7,7 @@ var _ = require('underscore'),
     logger = require('kujua-utils').logger,
     info = require('views/lib/appinfo'),
     smsparser = require('views/lib/smsparser'),
+    libphonenumber = require('libphonenumber/utils'),
     validate = require('./validate'),
     utils = require('./utils');
 
@@ -48,7 +49,7 @@ function getDataRecord(doc, form_data) {
     var record = {
         _id: req.uuid,
         type: 'data_record',
-        from: doc.from,
+        from: libphonenumber.format(utils.info, doc.from) || doc.from,
         form: form,
         related_entities: {clinic: null},
         errors: [],

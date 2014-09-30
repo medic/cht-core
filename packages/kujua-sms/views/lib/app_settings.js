@@ -39,6 +39,7 @@ module.exports = {
    "forms_only_mode": false,
    "district_admins_access_unallocated_messages": false,
    "public_access": false,
+   "default_country_code": 1,
    "gateway_number": "+13125551212",
    "kujua-reporting": [
        {

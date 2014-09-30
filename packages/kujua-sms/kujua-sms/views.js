@@ -223,9 +223,9 @@ exports.data_records_by_contact = {
                     districtId = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
                     message = doc.sms_message;
                     facility = objectpath.get(doc, 'related_entities.clinic');
-                    name = getName(facility) || message.from;
+                    name = getName(facility) || doc.from;
                     contact = objectpath.get(facility, 'contact.name');
-                    key = (facility && facility._id) || message.from;
+                    key = (facility && facility._id) || doc.from;
                     emitContact(districtId, key, doc.reported_date, {
                         date: doc.reported_date,
                         read: doc.read,

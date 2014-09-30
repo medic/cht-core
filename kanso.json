@@ -49,6 +49,7 @@
         "kujua-sms": null,
         "kujua-utils": null,
         "kujua-reporting": null,
+        "libphonenumber": null,
         "jsDump": null,
         "git-info": null,
         "showdown": null,
@@ -171,6 +172,12 @@
                 "title": "Allow District Admins To View Unallocated Messages",
                 "default": false,
                 "description": "If ticked, district administrators will be able to view messages with no allocated facility as well as messages from their district."
+            },
+            "default_country_code": {
+                "type": "integer",
+                "title": "Default Country Code",
+                "description": "Messages received without a country code will be assigned this country code.",
+                "default": 1
             },
             "gateway_number": {
                 "type": "string",
