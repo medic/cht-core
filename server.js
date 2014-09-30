@@ -21,7 +21,9 @@ var express = require('express'),
     monthlyDeliveries = require('./controllers/monthly-deliveries');
 
 
-app.use(morgan('combined'));
+app.use(morgan('combined'), {
+  immediate: true
+});
 
 var audit = function(req, res) {
   auditProxy.onMatch(proxy, req, res);
