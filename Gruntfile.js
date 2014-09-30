@@ -392,6 +392,11 @@ module.exports = function(grunt) {
         src: './locale.js',
         expose: ''
       },
+      {
+        cwd: 'packages/libphonenumber/libphonenumber',
+        src: './*.js',
+        expose: 'libphonenumber'
+      }
     ];
   };
 

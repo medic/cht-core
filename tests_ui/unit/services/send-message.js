@@ -7,10 +7,12 @@ describe('SendMessage service', function() {
       $rootScope,
       recipients,
       count,
+      settings,
       message = 'hello';
 
   beforeEach(function () {
     db = {};
+    settings = {};
     count = 0;
     module('inboxApp');
     module(function ($provide) {
@@ -22,6 +24,9 @@ describe('SendMessage service', function() {
             name: 'jack'
           });
         }
+      });
+      $provide.value('Settings', function(callback) {
+        callback(null, settings);
       });
     });
     inject(function(_SendMessage_, _$rootScope_) {
@@ -67,6 +72,45 @@ describe('SendMessage service', function() {
         }
       }
     }];
+
+    service(recipients, message).then(
+      function() {
+        done();
+      }
+    );
+
+    // needed to resolve the promise
+    $rootScope.$digest();
+  });
+
+  it('normalizes phone numbers', function(done) {
+
+    db.newUUID = function(number, callback) {
+      callback(null, count++);
+    };
+
+    db.saveDoc = function(message, callback) {
+      chai.expect(message.tasks.length).to.equal(1);
+      assertMessage(message.tasks[0], {
+        from: '+5551',
+        sent_by: 'jack',
+        to: '+2545552',
+        uuid: 0
+      });
+      callback(null);
+    };
+
+    recipients = [{
+      doc: {
+        contact: {
+          phone: '5552'
+        }
+      }
+    }];
+
+    settings = {
+      default_country_code: 254
+    };
 
     service(recipients, message).then(
       function() {
@@ -214,7 +258,7 @@ describe('SendMessage service', function() {
     $rootScope.$digest();
   });
 
-  it('returns db errors', function(done) {
+  it('returns newUUID errors', function(done) {
 
     db.newUUID = function(number, callback) {
       callback('errcode1');
@@ -243,7 +287,7 @@ describe('SendMessage service', function() {
     $rootScope.$digest();
   });
 
-  it('returns audit errors', function(done) {
+  it('returns saveDoc errors', function(done) {
 
     db.newUUID = function(number, callback) {
       callback(null, count++);
