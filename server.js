@@ -46,6 +46,27 @@ var handleApiCall = function(req, res, controller) {
   });
 };
 
+app.get('/setup/poll', function(req, res) {
+  var p = require('./package.json');
+  res.json({
+    ready: true,
+    handler: 'medic-api', version: p.version,
+    detail: 'All required services are running normally'
+  });
+});
+
+app.all('/setup', function(req, res) {
+  res.status(503).send('Setup services are not currently available');
+});
+
+app.all('/setup/password', function(req, res) {
+  res.status(503).send('Setup services are not currently available');
+});
+
+app.all('/setup/finish', function(req, res) {
+  res.redirect('/').send();
+});
+
 app.get('/api/info', function(req, res) {
   var p = require('./package.json');
   res.json({ version: p.version });
