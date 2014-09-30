@@ -32,16 +32,12 @@ var _ = require('underscore'),
       };
 
       $scope.selectMessage = function(id) {
-        if ($scope.selected && $scope.selected._id === id) {
-          return;
-        }
-        if (!id) {
-          $scope.setSelected();
+        if ($scope.selected && $scope.selected._id && $scope.selected._id === id) {
           return;
         }
         _selectedDoc = id;
         $scope.setSelected();
-        if ($scope.messages) {
+        if (id && $scope.messages) {
           $scope.messages.forEach(function(message) {
             if (message._id === id) {
               if (!$scope.isRead(message)) {
