@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     utils = require('kujua-utils'),
-    async = require('async');
+    async = require('async'),
+    libphonenumber = require('libphonenumber/utils');
 
 (function () {
 
@@ -8,8 +9,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('SendMessage', ['$q', 'db', 'User',
-    function($q, db, User) {
+  inboxServices.factory('SendMessage', ['$q', 'db', 'User', 'Settings',
+    function($q, db, User, Settings) {
 
       var createMessageDoc = function(user, recipients) {
         var name = user && user.name;
@@ -57,13 +58,13 @@ var _ = require('underscore'),
         });
       };
 
-      var createTask = function(data, message, user, uuid) {
+      var createTask = function(settings, data, message, user, uuid) {
         var task = {
           messages: [{
             from: user && user.phone,
             sent_by: user && user.name || 'unknown',
-            to: data.phone,
-            facility: data.facility,
+            to: libphonenumber.format(settings, data.phone) || data.phone,
+            facility: data.facility.id ? data.facility : undefined,
             message: message,
             uuid: uuid
           }]
@@ -81,32 +82,38 @@ var _ = require('underscore'),
         }
 
         User.query(function(user) {
-          var doc = createMessageDoc(user, recipients);
-          var explodedRecipients = formatRecipients(recipients);
 
-          async.forEachSeries(
-            explodedRecipients, 
-            function(data, callback) {
-              db.newUUID(100, function (err, uuid) {
-                if (!err) {
-                  doc.tasks.push(createTask(data, message, user, uuid));
-                }
-                callback(err);
-              });
-            },
-            function(err) {
-              if (err) {
-                return deferred.reject(err);
-              }
-              db.saveDoc(doc, function(err) {
-                if (err) {
-                  deferred.reject(err);
-                } else {
-                  deferred.resolve();
-                }
-              });
+          Settings(function(err, settings) {
+            if (err) {
+              return console.log('Error fetching settings', err);
             }
-          );
+
+            var doc = createMessageDoc(user, recipients);
+            var explodedRecipients = formatRecipients(recipients);
+            async.forEachSeries(
+              explodedRecipients,
+              function(data, callback) {
+                db.newUUID(100, function (err, uuid) {
+                  if (!err) {
+                    doc.tasks.push(createTask(settings, data, message, user, uuid));
+                  }
+                  callback(err);
+                });
+              },
+              function(err) {
+                if (err) {
+                  return deferred.reject(err);
+                }
+                db.saveDoc(doc, function(err) {
+                  if (err) {
+                    deferred.reject(err);
+                  } else {
+                    deferred.resolve();
+                  }
+                });
+              }
+            );
+          });
         });
 
         return deferred.promise;
