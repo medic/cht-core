@@ -66,7 +66,7 @@ describe('SendMessage service', function() {
 
     recipients = [{
       doc: {
-        id: 'abc',
+        _id: 'abc',
         contact: {
           phone: '+5552'
         }
@@ -150,7 +150,7 @@ describe('SendMessage service', function() {
     recipients = [
       {
         doc: {
-          id: 'abc',
+          _id: 'abc',
           contact: {
             phone: '+5552'
           }
@@ -158,7 +158,7 @@ describe('SendMessage service', function() {
       },
       {
         doc: {
-          id: 'efg',
+          _id: 'efg',
           contact: {
             phone: '+5553'
           }
@@ -211,7 +211,7 @@ describe('SendMessage service', function() {
     recipients = [
       {
         doc: {
-          id: 'abc',
+          _id: 'abc',
           contact: {
             phone: '+5552'
           }
@@ -222,7 +222,7 @@ describe('SendMessage service', function() {
         clinics: [
           {
             doc: {
-              id: 'efg',
+              _id: 'efg',
               contact: {
                 phone: '+5553'
               }
@@ -230,7 +230,7 @@ describe('SendMessage service', function() {
           },
           {
             doc: {
-              id: 'hij',
+              _id: 'hij',
               contact: {
                 phone: '+5552' // duplicate phone number should be removed
               }
@@ -238,7 +238,7 @@ describe('SendMessage service', function() {
           }, 
           {
             doc: {
-              id: 'klm',
+              _id: 'klm',
               contact: {
                 phone: '+5554'
               }
@@ -266,7 +266,7 @@ describe('SendMessage service', function() {
 
     recipients = [{
       doc: {
-        id: 'abc',
+        _id: 'abc',
         contact: {
           phone: '+5552'
         }
@@ -299,7 +299,7 @@ describe('SendMessage service', function() {
 
     recipients = [{
       doc: {
-        id: 'abc',
+        _id: 'abc',
         contact: {
           phone: '+5552'
         }
