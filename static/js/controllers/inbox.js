@@ -146,6 +146,7 @@ var utils = require('kujua-utils'),
         forms: [],
         facilities: [],
         valid: undefined,
+        verified: undefined,
         date: { }
       };
 
@@ -366,6 +367,80 @@ var utils = require('kujua-utils'),
           $('#message-content .selected').removeClass('selected');
           elem.addClass('selected');
         }
+      });
+
+      // TODO we should eliminate the need for this function as much as possible
+      var angularApply = function(callback) {
+        var scope = angular.element($('body')).scope();
+        if (scope) {
+          scope.$apply(callback);
+        }
+      };
+
+      $('#formTypeDropdown, #facilityDropdown').each(function() {
+        $(this).multiDropdown();
+      });
+
+      $('#statusDropdown').multiDropdown({
+        label: function(selected, total) {
+          var values = {};
+          selected.each(function() {
+            var elem = $(this);
+            values[elem.data('value')] = elem.text();
+          });
+          var parts = [];
+          if (values.valid && !values.invalid) {
+            parts.push(values.valid);
+          } else if (!values.valid && values.invalid) {
+            parts.push(values.invalid);
+          }
+          if (values.verified && !values.unverified) {
+            parts.push(values.verified);
+          } else if (!values.verified && values.unverified) {
+            parts.push(values.unverified);
+          }
+          if (parts.length === 0 || parts.length === total) {
+            return $('#statusDropdown').data('label-no-filter');
+          }
+          return parts.join(', ');
+        }
+      });
+
+      $('#formTypeDropdown').on('update', function() {
+        var forms = $(this).multiDropdown().val();
+        angularApply(function(scope) {
+          scope.filterModel.forms = forms;
+        });
+      });
+
+      $('#facilityDropdown').on('update', function() {
+        var ids = $(this).multiDropdown().val();
+        angularApply(function(scope) {
+          scope.filterModel.facilities = ids;
+        });
+      });
+
+      var getTernaryValue = function(positive, negative) {
+        if (positive && !negative) {
+          return true;
+        }
+        if (!positive && negative) {
+          return false;
+        }
+      };
+
+      $('#statusDropdown').on('update', function() {
+        var values = $(this).multiDropdown().val();
+        angularApply(function(scope) {
+          scope.filterModel.valid = getTernaryValue(
+            _.contains(values, 'valid'),
+            _.contains(values, 'invalid')
+          );
+          scope.filterModel.verified = getTernaryValue(
+            _.contains(values, 'verified'),
+            _.contains(values, 'unverified')
+          );
+        });
       });
 
       require('../modules/add-record').init();

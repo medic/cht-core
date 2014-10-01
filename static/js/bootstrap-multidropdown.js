@@ -11,7 +11,21 @@
       '<a href="#" class="btn btn-link reset">clear</a>' +
     '</p>';
 
-  $.fn.multiDropdown = function () {
+  $.fn.multiDropdown = function(options) {
+
+    options = options || {};
+
+    if (!options.label) {
+      options.label = function(selected, total) {
+        if (selected.length === 0 || selected.length === total) {
+          return $element.data('label-no-filter');
+        }
+        if (selected.length === 1) {
+          return selected.first().text();
+        }
+        return selected.length + ' ' + $element.data('filter-label');
+      };
+    }
 
     var state = $(this).data('multidropdown');
 
@@ -40,26 +54,24 @@
     var getTitle = function() {
       var all = $element.find('[role=menuitem]');
       var selected = $element.find('[role=menuitem].selected');
-      if (selected.length === 0 || selected.length === all.length) {
-        return $element.data('label-no-filter');
-      }
-      if (selected.length > 1) {
-        return selected.length + ' ' + $element.data('filter-label');
-      }
-      return selected.first().text();
+      return options.label(selected, all.length);
     };
 
     var updateMultipleSelect = function() {
       $element.find('.mm-button-text').text(getTitle());
     };
 
+    var updateSelected = function() {
+      $element.trigger({ type: 'update' });
+      updateMultipleSelect();
+      state.blockSelectHide = true;
+    };
+
     var selectItem = function() {
       var item = $(this);
       item.blur();
       item.toggleClass('selected');
-      $element.trigger({ type: 'update' });
-      updateMultipleSelect();
-      state.blockSelectHide = true;
+      updateSelected();
     };
 
     var hideMenu = function(e) {
@@ -80,21 +92,17 @@
     $element.find('[role=menu]').append(actionsBar);
     $element.find('[role=menu] .actions .select-all').on('click', function(e) {
       e.preventDefault();
-      state.blockSelectHide = true;
       state.selectAll();
+      updateSelected();
     });
     $element.find('[role=menu] .actions .reset').on('click', function(e) {
       e.preventDefault();
-      state.blockSelectHide = true;
       state.reset();
+      updateSelected();
     });
 
     return state;
 
   };
-
-  $('.multidropdown').each(function() {
-    $(this).multiDropdown();
-  });
 
 }(window.jQuery));

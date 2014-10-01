@@ -52,6 +52,15 @@ var _ = require('underscore'),
         }
       };
 
+      var formatVerified = function($scope) {
+        if ($scope.filterModel.verified === true) {
+          return 'verified:true';
+        }
+        if ($scope.filterModel.verified === false) {
+          return 'verified:false';
+        }
+      };
+
       var formatClinics = function($scope) {
         var selectedFacilities = $scope.filterModel.facilities.length;
         if (selectedFacilities > 0 && selectedFacilities < $scope.facilities.length) {
@@ -102,6 +111,7 @@ var _ = require('underscore'),
           filters.push(formatClinics($scope));
           filters.push(formatForm($scope));
           filters.push(formatErrors($scope));
+          filters.push(formatVerified($scope));
           filters.push(formatDistrict($scope, res.district_admins_access_unallocated_messages));
           filters.push(formatIds(options));
 

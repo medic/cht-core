@@ -145,6 +145,46 @@ describe('GenerateSearchQuery service', function() {
     });
   });
 
+  it('creates filter query for unverified', function() {
+    scope.filterModel = {
+      verified: false,
+      type: 'reports',
+      forms: [],
+      facilities: [],
+      date: {
+        from: date20130208,
+        to: date20130612
+      }
+    };
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report ' +
+        'AND verified:false'
+      );
+    });
+  });
+
+  it('creates filter query for verified', function() {
+    scope.filterModel = {
+      verified: true,
+      type: 'reports',
+      forms: [],
+      facilities: [],
+      date: {
+        from: date20130208,
+        to: date20130612
+      }
+    };
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
+        'AND type:report ' +
+        'AND verified:true'
+      );
+    });
+  });
+
   it('creates filter query for selected clinics', function() {
     scope.facilities = [
       { code: 'a'},

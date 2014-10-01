@@ -240,21 +240,6 @@ var _ = require('underscore'),
         }
       };
 
-      $('#formTypeDropdown').on('update', function() {
-        var forms = $(this).multiDropdown().val();
-        angularApply(function(scope) {
-          scope.filterModel.forms = forms;
-        });
-      });
-
-      $('#facilityDropdown').on('update', function() {
-        var ids = $(this).multiDropdown().val();
-        angularApply(function(scope) {
-          scope.filterModel.facilities = ids;
-        });
-      });
-
-
       var start = $scope.filterModel.date.from ?
         moment($scope.filterModel.date.from) : moment().subtract(1, 'months');
       $('#date-filter').daterangepicker({

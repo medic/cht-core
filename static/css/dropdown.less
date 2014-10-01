@@ -18,7 +18,7 @@
   background-color: #fff;
   box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.25);
 
-  li a {
+  li a, li.dropdown-header a {
     font-size: 1.1em;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -37,9 +37,15 @@
   &.multidropdown .dropdown-menu {
     padding-bottom: 0;
     li {
-      a {
+      a, &.dropdown-header {
         padding-left: 1em;
         padding-right: 1em;
+      }
+      &.dropdown-header {
+        margin-top: 1em;
+        &:first-child {
+          margin-top: 0;
+        }
       }
       a:before {
         content: '\f096';

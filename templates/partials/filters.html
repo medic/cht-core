@@ -65,48 +65,30 @@
         </span>
       </span>
 
-      <span class="filter dropdown mm-dropdown" ng-show="filterModel.type === 'reports'">
+      <span id="statusDropdown" class="filter dropdown mm-dropdown multidropdown" ng-show="filterModel.type === 'reports'" data-label-no-filter="Any status">
         <span id="status" class="mm-button" data-toggle="dropdown">
-          <span class="mm-button-icon" ng-show="filterModel.valid === undefined">
+          <span class="mm-button-icon">
             <span class="fa fa-circle-o"></span>
-          </span>
-          <span class="mm-button-icon" ng-show="filterModel.valid === true">
-            <span class="fa fa-check-circle-o"></span>
-          </span>
-          <span class="mm-button-icon" ng-show="filterModel.valid === false">
-            <span class="fa fa-times-circle-o"></span>
           </span>
           <span class="mm-button-dropdown">
             <span class="fa fa-chevron-down"></span>
           </span>
-          <span class="mm-button-text" ng-show="filterModel.valid === undefined">
-            Any Status
-          </span>
-          <span class="mm-button-text" ng-show="filterModel.valid === true">
-            Valid Only
-          </span>
-          <span class="mm-button-text" ng-show="filterModel.valid === false">
-            Invalid Only
-          </span>
+          <span class="mm-button-text"></span>
         </span>
         <ul role="menu" aria-labelledby="status" class="dropdown-menu mm-dropdown-menu">
+          <li role="presentation" class="dropdown-header">Validity</li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" ng-click="filterModel.valid = undefined">
-              <span class="fa fa-circle-o"></span>
-              Any Status
-            </a>
+            <a role="menuitem" tabindex="-1" data-value="valid">Valid</a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" ng-click="filterModel.valid = true">
-              <span class="fa fa-check-circle-o"></span>
-              Valid Only
-            </a>
+            <a role="menuitem" tabindex="-1" data-value="invalid">Invalid</a>
+          </li>
+          <li role="presentation" class="dropdown-header">Verification</li>
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" data-value="verified">Verified</a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" ng-click="filterModel.valid = false">
-              <span class="fa fa-times-circle-o"></span>
-              Invalid Only
-            </a>
+            <a role="menuitem" tabindex="-1" data-value="unverified">Unverified</a>
           </li>
         </ul>
       </span>
