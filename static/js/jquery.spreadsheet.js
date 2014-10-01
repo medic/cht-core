@@ -464,13 +464,12 @@
                 $tr.removeClass('saving');
                 if (err) {
                     $tr.addClass('error');
+                    console.log('Error saving doc', err);
                     // TODO: do something better than alert
-                    return alert(err.toString());
+                    return alert('Error: your changes have not been saved. Please check your connection and try again.');
                 }
                 if (!doc || !doc._id) {
-                    throw new Error(
-                        'new doc must be returned to save callback'
-                    );
+                    throw new Error('new doc must be returned to save callback');
                 }
                 if (update) {
                     updateDoc(doc, options);
