@@ -34,13 +34,28 @@
 
   display: inline-block;
 
-  &.multidropdown {
-    .selected {
-      text-decoration: none;
-      background-color: @option-selected-color;
+  &.multidropdown .dropdown-menu {
+    padding-bottom: 0;
+    li {
+      a {
+        padding-left: 1em;
+        padding-right: 1em;
+      }
+      a:before {
+        content: '\f096';
+        font-family: FontAwesome;
+        margin-right: 4px;
+      }
+      .selected:before {
+        content: '\f046';
+        margin-right: 2px;
+      }
     }
     .dropdown-child a {
       text-indent: 1em;
+    }
+    .actions {
+      text-align: center;
     }
   }
 

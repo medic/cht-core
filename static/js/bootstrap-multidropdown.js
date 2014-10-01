@@ -5,6 +5,12 @@
 
   'use strict';
 
+  var actionsBar =
+    '<p class="actions">' +
+      '<a href="#" class="btn btn-link select-all">select all</a>' +
+      '<a href="#" class="btn btn-link reset">clear</a>' +
+    '</p>';
+
   $.fn.multiDropdown = function () {
 
     var state = $(this).data('multidropdown');
@@ -23,6 +29,10 @@
       },
       reset: function() {
         $element.find('[role=menuitem].selected').removeClass('selected');
+        updateMultipleSelect();
+      },
+      selectAll: function() {
+        $element.find('[role=menuitem]').addClass('selected');
         updateMultipleSelect();
       }
     };
@@ -66,6 +76,18 @@
     updateMultipleSelect();
     
     $element.data('multidropdown', state);
+
+    $element.find('[role=menu]').append(actionsBar);
+    $element.find('[role=menu] .actions .select-all').on('click', function(e) {
+      e.preventDefault();
+      state.blockSelectHide = true;
+      state.selectAll();
+    });
+    $element.find('[role=menu] .actions .reset').on('click', function(e) {
+      e.preventDefault();
+      state.blockSelectHide = true;
+      state.reset();
+    });
 
     return state;
 
