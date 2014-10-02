@@ -2,7 +2,7 @@ var app = require('express')(),
     db = require('./db'),
     config = require('./config'),
     auth = require('./auth'),
-    auditProxy = require('./audit-proxy'),
+    AuditProxy = require('./audit-proxy'),
     cacheResponse = require('./cache-response'),
     target = 'http://' + db.client.host + ':' + db.client.port,
     proxy = require('http-proxy').createProxyServer({ target: target }),
@@ -21,7 +21,14 @@ var app = require('express')(),
 
 
 var audit = function(req, res) {
-  auditProxy.onMatch(proxy, req, res);
+  var ap = new AuditProxy();
+  ap.on('error', function(e) {
+    serverError(err, res);
+  });
+  ap.on('not-authorized', function() {
+    notLoggedIn(res);
+  });
+  ap.audit(proxy, req, res);
 };
 
 var auditPath = db.name + '*';
@@ -114,18 +121,20 @@ app.all('*', function(req, res) {
   proxy.web(req, res);
 });
 
-var error = function(res, code, message) {
-  res.writeHead(code, { 'Content-Type': 'text/plain' });
-  res.end(message);
-};
-
 var serverError = function(err, res) {
   console.error('Server error : ' + err);
-  error(res, 500, 'Server error');
+  res.writeHead(500, {
+    'Content-Type': 'text/plain'
+  });
+  res.end('Server error');
 };
 
 var notLoggedIn = function(res) {
-  error(res, 403, 'Not logged in');
+  res.writeHead(401, {
+    'Content-Type': 'text/plain',
+    'WWW-Authenticate': 'Basic realm="server"'
+  });
+  res.end('Not logged in');
 };
 
 app.use(function(err, req, res, next) {
