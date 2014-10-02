@@ -115,8 +115,6 @@ app.get('/api/monthly-deliveries', function(req, res) {
   handleApiCall(req, res, monthlyDeliveries);
 });
 
-app.use('*/static/*', cacheResponse(target, { maxAge: '1y' }));
-
 app.all('*', function(req, res) {
   proxy.web(req, res);
 });
