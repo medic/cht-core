@@ -1,7 +1,18 @@
-var passStream = require('pass-stream'),
+var EventEmitter = require('events').EventEmitter,
+    util = require('util'),
+    passStream = require('pass-stream'),
     auth = require('./auth'),
     db = require('./db'),
     couchdbAudit = require('couchdb-audit');
+
+module.exports = AuditProxy;
+util.inherits(AuditProxy, EventEmitter);
+
+function AuditProxy() {
+  if (!(this instanceof AuditProxy)) {
+    return new AuditProxy();
+  }
+}
 
 var parse = function(data) {
   try {
@@ -9,36 +20,33 @@ var parse = function(data) {
   } catch(e) {}
 };
 
-var audit = function(req, doc, cb) {
-  var audit = couchdbAudit.withNode(db, function(_cb) {
-    auth.getUserCtx(req, function(err, ctx) {
-      _cb(err, ctx && ctx.name);
-    })
-  });
-  audit.log([doc], cb);
-};
+/**
+ * Audits the request before proxying it on.
+ *
+ * @name onMatch(proxy, req, res)
+ * @param proxy The proxy itself
+ * @param res The http request object
+ * @param req The http response object
+ * @api public
+ */
+AuditProxy.prototype.audit = function(proxy, req, res) {
 
-module.exports = {
+  var self = this;
 
-  /**
-   * Audits the request before proxying it on.
-   * 
-   * @name onMatch(proxy, req, res)
-   * @param proxy The proxy itself
-   * @param res The http request object
-   * @param req The http response object
-   * @api public
-   */
-  onMatch: function(proxy, req, res) {
+  auth.getUserCtx(req, function(err, ctx) {
+    if (err || !ctx || !ctx.name) {
+      self.emit('not-authorized');
+      return;
+    }
 
     var dataBuffer = [];
 
-    function writeFn(data, encoding, cb) {
+    var writeFn = function(data, encoding, cb) {
       dataBuffer.push(data);
       cb();
-    }
+    };
 
-    function endFn(cb) {
+    var endFn = function(cb) {
       var self = this;
       var options = { buffer: buffer };
       var data = dataBuffer.join('');
@@ -50,9 +58,8 @@ module.exports = {
         return cb();
       }
 
-      audit(req, doc, function(err) {
+      couchdbAudit.withNode(db, ctx.name).log([doc], function(err) {
         if (err) {
-          console.log('error: ' + err);
           return cb(err);
         }
         data = JSON.stringify(doc);
@@ -63,23 +70,24 @@ module.exports = {
         self.push(data);
         return cb();
       });
-
-    }
+    };
 
     var ps = passStream(writeFn, endFn);
     var buffer = req.pipe(ps);
+    buffer.on('error', function(e) {
+      self.emit('error', e);
+    });
     buffer.destroy = function() {};
+  });
 
-  },
+};
 
-  /**
-   * Exposed for testing
-   */
-  setup: function(deps) {
-    passStream = deps.passStream;
-    db = deps.db;
-    couchdbAudit = deps.audit;
-    auth = deps.auth;
-  }
-
-}
+/**
+ * Exposed for testing
+ */
+AuditProxy.prototype.setup = function(deps) {
+  passStream = deps.passStream;
+  db = deps.db;
+  couchdbAudit = deps.audit;
+  auth = deps.auth;
+};
