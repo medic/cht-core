@@ -73,7 +73,7 @@ app.all('/setup/password', function(req, res) {
 });
 
 app.all('/setup/finish', function(req, res) {
-  res.redirect('/').send();
+  res.status(200);
 });
 
 app.get('/api/info', function(req, res) {
