@@ -12,7 +12,7 @@ var _init = function(settings, phone) {
   return {
     util: i18n.phonenumbers.PhoneNumberUtil.getInstance(),
     phone: _cleanPhone(phone),
-    countryCode: settings.default_country_code,
+    countryCode: settings && settings.default_country_code,
     country: function() {
       return this.util.getRegionCodeForCountryCode(this.countryCode);
     },
