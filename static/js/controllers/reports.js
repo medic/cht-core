@@ -217,6 +217,7 @@ var _ = require('underscore'),
       $scope.$on('filters-reset', function() {
         $('#formTypeDropdown').multiDropdown().reset();
         $('#facilityDropdown').multiDropdown().reset();
+        $('#statusDropdown').multiDropdown().reset();
         $scope.query();
       });
 
@@ -281,7 +282,7 @@ var _ = require('underscore'),
       $('#mobile-search-go').on('click', function(e) {
         e.preventDefault();
         $scope.query();
-        $(e.target).closest('.filter').removeClass('mm-open');
+        $(e.target).closest('.filter').removeClass('open');
       });
       $('#mobile-freetext').on('keypress', function(e) {
         if (e.which === 13) {
@@ -289,10 +290,6 @@ var _ = require('underscore'),
           $scope.query();
           $(e.target).closest('.filter').removeClass('mm-open');
         }
-      });
-      $('#mobile-search').on('click', function(e) {
-        e.preventDefault();
-        $(e.target).closest('.filter').toggleClass('mm-open');
       });
 
       $scope.setFilterQuery($route.current.params.query);
