@@ -226,9 +226,12 @@ var utils = require('kujua-utils'),
           });
         });
         updateAvailableFacilities();
-        updateContacts();
         $scope.updateReadStatus();
-        sendMessage.init();
+
+        Settings(function(err, res) {
+          sendMessage.init(res);
+          updateContacts();
+        });
       });
 
       Form().then(
