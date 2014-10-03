@@ -39,7 +39,7 @@
                 ></span>
                 <span 
                   class="task-state autoreply" 
-                  ng-if="!message.doc.kujua_message" 
+                  ng-if="!message.doc.kujua_message && message.doc.tasks[0]" 
                   ng-bind-html="message.doc.tasks[0] | state"
                   data-message="{~lb}{~lb}message.doc.tasks[0].messages[0].message{~rb}{~rb}"
                 ></span>
