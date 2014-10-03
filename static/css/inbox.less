@@ -406,6 +406,11 @@ body {
 
 .task-state {
   color: #AAAAAA;
+  &.autoreply {
+    .relative-date-content:before {
+        content: 'autoreply ';
+    }
+  }
   .state {
     font-weight: bold;
     &:before {

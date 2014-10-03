@@ -23,9 +23,26 @@
               <div class="data">
                 <p>
                   {~lb}{~lb}message.doc.sms_message.message{~rb}{~rb}
-                  {~lb}{~lb}message.doc.tasks[0].messages[0].message{~rb}{~rb}
+                  <span ng-if="message.doc.kujua_message">
+                    {~lb}{~lb}message.doc.tasks[0].messages[0].message{~rb}{~rb}
+                  </span>
                 </p>
-                <span class="task-state" ng-bind-html="message.doc.tasks[0] || message.doc | state"></span>
+                <span 
+                  class="task-state" 
+                  ng-if="message.doc.kujua_message" 
+                  ng-bind-html="message.doc.tasks[0] || message.doc | state"
+                ></span>
+                <span 
+                  class="task-state" 
+                  ng-if="!message.doc.kujua_message" 
+                  ng-bind-html="message.doc | state"
+                ></span>
+                <span 
+                  class="task-state autoreply" 
+                  ng-if="!message.doc.kujua_message" 
+                  ng-bind-html="message.doc.tasks[0] | state"
+                  data-message="{~lb}{~lb}message.doc.tasks[0].messages[0].message{~rb}{~rb}"
+                ></span>
               </div>
             </span>
           </li>
