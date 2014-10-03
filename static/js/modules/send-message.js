@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    libphonenumber = require('libphonenumber/utils');
 
 (function () {
 
@@ -13,11 +14,11 @@ var _ = require('underscore');
   };
 
   var validatePhoneNumber = function(data) {
-    var phoneValidationRegex = /.*?(\+?[\d]{5,15}).*/;
+    if (data.everyoneAt) {
+      return true;
+    }
     var contact = data.doc.contact;
-    return data.everyoneAt || (
-      contact && phoneValidationRegex.test(contact.phone)
-    );
+    return contact && libphonenumber.validate(settings, contact.phone);
   };
 
   var validatePhoneNumbers = function(recipients) {
@@ -26,8 +27,7 @@ var _ = require('underscore');
     if (!recipients || recipients.length === 0) {
       return {
         valid: false,
-        message: 'Please include a valid phone number, ' +
-                 'e.g. +9779875432123'
+        message: 'Please include a valid phone number'
       };
     }
 
@@ -56,7 +56,7 @@ var _ = require('underscore');
   var updateValidation = function(fn, elem, value) {
     var result = fn.call(this, value);
     elem.closest('.control-group')
-        .toggleClass('error', !result.valid)
+        .toggleClass('has-error', !result.valid)
         .find('.help-block')
         .text(result.valid ? '' : result.message);
     return result;
@@ -86,7 +86,12 @@ var _ = require('underscore');
       formatSelection: formatContact,
       query: function(options) {
         var vals = options.element.data('options');
-        var terms = options.term.toLowerCase().split(/w+/);
+        var terms = _.map(options.term.toLowerCase().split(/w+/), function(term) {
+          if (libphonenumber.validate(settings, term)) {
+            return libphonenumber.format(settings, term);
+          }
+          return term;
+        });
         var matches = _.filter(vals, function(val) {
           var contact = val.doc.contact;
           var name = contact && contact.name;
@@ -131,12 +136,15 @@ var _ = require('underscore');
   };
 
   var recipients = [];
+  var settings = {};
 
-  exports.init = function() {
+  exports.init = function(_settings) {
     $('body').on('click', '.send-message', function(e) {
       e.preventDefault();
       var to = $(e.target).closest('.send-message').attr('data-send-to');
       var $modal = $('#send-message');
+      $modal.find('.has-error').removeClass('has-error');
+      $modal.find('.help-block').text('');
       var val = [];
       if (to) {
         var options = $modal.find('[name=phone]').data('options');
@@ -153,6 +161,7 @@ var _ = require('underscore');
     });
     initPhoneField($('#send-message [name=phone]'));
     initMessageField();
+    settings = _settings;
   };
 
   exports.setRecipients = function(_recipients) {
