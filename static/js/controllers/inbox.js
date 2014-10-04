@@ -346,7 +346,7 @@ var utils = require('kujua-utils'),
         $('#update-facility').modal('show');
       };
 
-      $('body').on('mouseenter', '.relative-date', function() {
+      $('body').on('mouseenter', '.relative-date, .autoreply', function() {
         if ($(this).data('tooltipLoaded') !== true) {
           $(this).data('tooltipLoaded', true)
             .tooltip({
@@ -357,7 +357,7 @@ var utils = require('kujua-utils'),
             .tooltip('show');
         }
       });
-      $('body').on('mouseleave', '.relative-date', function() {
+      $('body').on('mouseleave', '.relative-date, .autoreply', function() {
         if ($(this).data('tooltipLoaded') === true) {
           $(this).data('tooltipLoaded', false)
             .tooltip('hide');

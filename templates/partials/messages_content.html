@@ -27,21 +27,23 @@
                     {~lb}{~lb}message.doc.tasks[0].messages[0].message{~rb}{~rb}
                   </span>
                 </p>
+                <!-- outgoing message //-->
                 <span 
                   class="task-state" 
                   ng-if="message.doc.kujua_message" 
-                  ng-bind-html="message.doc.tasks[0] || message.doc | state"
+                  ng-bind-html="message.doc.tasks[0] | state"
                 ></span>
+                <!-- incoming message //-->
                 <span 
                   class="task-state" 
                   ng-if="!message.doc.kujua_message" 
                   ng-bind-html="message.doc | state"
                 ></span>
+                <!-- incoming message autoreply //-->
                 <span 
-                  class="task-state autoreply" 
+                  class="task-state" 
                   ng-if="!message.doc.kujua_message && message.doc.tasks[0]" 
-                  ng-bind-html="message.doc.tasks[0] | state"
-                  data-message="{~lb}{~lb}message.doc.tasks[0].messages[0].message{~rb}{~rb}"
+                  ng-bind-html="message.doc.tasks[0] | autoreply"
                 ></span>
               </div>
             </span>
