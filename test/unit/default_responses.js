@@ -11,6 +11,11 @@ var restore = function(objs) {
     });
 }
 
+exports.setUp = function(callback) {
+    sinon.stub(transition, '_isReportedAfterStartDate').returns(true);
+    callback();
+}
+
 exports.tearDown = function(callback) {
     restore([
         transition.filter,
@@ -18,7 +23,7 @@ exports.tearDown = function(callback) {
         transition._isFormNotFound,
         transition._isValidUnstructuredMessage,
         transition._isConfigFormsOnlyMode,
-        transition._isConfigAutoreplyEnabled,
+        transition._isReportedAfterStartDate,
         transition._getConfig,
         transition._getLocale,
         transition._translate,
@@ -62,12 +67,22 @@ exports['when doc has no from property do nothing'] = function(test) {
     test.done();
 };
 
-exports['when document type and errors matches pass filter'] = function(test) {
+exports['when doc has errors still pass filter'] = function(test) {
     test.equals(transition.filter({
         from: '+222',
         type: 'data_record',
         errors: ['foo']
     }), true);
+    test.done();
+};
+
+exports['do nothing if reported date is not after config start date'] = function(test) {
+    transition._isReportedAfterStartDate.restore();
+    sinon.stub(transition, '_isReportedAfterStartDate').returns(false);
+    test.equals(transition.filter({
+        from: '+222',
+        type: 'data_record',
+    }), false);
     test.done();
 };
 
@@ -89,15 +104,44 @@ exports['when doc has no errors, form is not found returns false'] = function(te
     test.done();
 };
 
-exports['add response if unstructured message'] = function(test) {
-    // stub the translations config
+
+exports['isReportedAfterStartDate returns false if config start date is whitespace'] = function(test) {
+    transition._isReportedAfterStartDate.restore();
+    sinon.stub(transition, '_getConfig').returns({ start_date: ' ' });
+    test.equals(transition._isReportedAfterStartDate({}), false);
+    test.done();
+};
+
+exports['isReportedAfterStartDate returns true when reported date is after start date'] = function(test) {
+    transition._isReportedAfterStartDate.restore();
+    sinon.stub(transition, '_getConfig').returns({ start_date: '2014-01-01' });
+    test.equals(transition._isReportedAfterStartDate({
+        reported_date: 1412641215000
+    }), true);
+    test.done();
+};
+
+exports['isReportedAfterStartDate returns false when reported date is before start date'] = function(test) {
+    transition._isReportedAfterStartDate.restore();
+    sinon.stub(transition, '_getConfig').returns({ start_date: '2014-12-01' });
+    test.equals(transition._isReportedAfterStartDate({
+        reported_date: 1412641215000
+    }), false);
+    test.done();
+};
+
+exports['add response if unstructured message and setting enabled'] = function(test) {
+
+    sinon.stub(transition, '_isConfigFormsOnlyMode').returns(false);
     sinon.stub(config, 'get').returns([
         {
             'key': 'sms_received',
             'default': 'SMS rcvd, thx!'
         }
     ]);
+
     var messageFn = sinon.spy(messages, 'addMessage');
+
     test.expect(4);
     var doc = {
         form: null,
@@ -112,24 +156,6 @@ exports['add response if unstructured message'] = function(test) {
             phone: '+23',
             message: 'SMS rcvd, thx!'
         }));
-        test.equals(err, null);
-        test.equals(changed, true);
-        test.done();
-    });
-};
-
-exports['do not add response if unstructured message and setting is disabled'] = function(test) {
-    sinon.stub(transition, '_isConfigAutoreplyEnabled').returns(false);
-    var messageFn = sinon.spy(messages, 'addMessage');
-    test.expect(3);
-    var doc = {
-        form: null,
-        from: '+23',
-        type: 'data_record',
-        errors: []
-    };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
-        test.equals(messageFn.called, false);
         test.equals(err, null);
         test.equals(changed, true);
         test.done();
@@ -172,7 +198,6 @@ exports['do not add response if valid form'] = function(test) {
      * on different transition.
      */
 
-    // stub the translations config
     sinon.stub(config, 'get').returns([
         {
             'key': 'sms_received',

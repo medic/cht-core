@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    moment = require('moment'),
     config = require('../config'),
     utils = require('../lib/utils'),
     logger = require('../lib/logger'),
@@ -6,11 +7,35 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc) {
+        var self = module.exports;
         return Boolean(
             doc
             && doc.from
             && doc.type === 'data_record'
+            && self._isReportedAfterStartDate(doc)
         );
+    },
+    _isReportedAfterStartDate: function(doc) {
+        var self = module.exports,
+            config = self._getConfig('default_responses'),
+            start_date = moment(config.start_date, 'YYYY-MM-DD');
+
+        function isEmpty() {
+            return !Boolean(
+                config.start_date
+                && config.start_date.trim()
+            );
+        }
+
+        if (!isEmpty()) {
+            if (start_date.isValid() && doc.reported_date) {
+                return moment(doc.reported_date).isAfter(start_date);
+            } else {
+                logger.error('Invalid default_responses start date: ' + start_date);
+            }
+        }
+
+        return false;
     },
     _isMessageEmpty: function(doc) {
         return Boolean(_.find(doc.errors, function(err) {
@@ -27,13 +52,6 @@ module.exports = {
     },
     _isConfigFormsOnlyMode: function() {
         module.exports._getConfig('forms_only_mode');
-    },
-    _isConfigAutoreplyEnabled: function() {
-        var bool = module.exports._getConfig('use_autoreply');
-        if (typeof bool === 'boolean') {
-            return bool;
-        }
-        return true;
     },
     _getConfig: function(key) {
         return config.get(key);
@@ -63,9 +81,7 @@ module.exports = {
             self._addMessage(doc, self._translate('form_not_found', locale));
         } else if (self._isFormNotFound(doc)) {
             self._addMessage(doc, self._translate('sms_received', locale));
-        } else if (
-                self._isValidUnstructuredMessage(doc)
-                && self._isConfigAutoreplyEnabled()) {
+        } else if (self._isValidUnstructuredMessage(doc)) {
             self._addMessage(doc, self._translate('sms_received', locale));
         }
 
