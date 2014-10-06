@@ -167,6 +167,19 @@
                 "title": "Only Expect Forms",
                 "default": false
             },
+            "default_responses": {
+                "title": "Auto-replies",
+                "type": "object",
+                "properties": {
+                    "start_date": {
+                        "type": "string",
+                        "title": "Start Date",
+                        "default": "",
+                        "description": "Auto-replies are added to messages received after this date.  If left empty auto-replies are not added.  Use the format YYYY-MM-DD to define the date, for example 2014-03-27.  This setting only applies to unstructured messages, not forms.  Error replies are added when a message is empty or a form is not found and we are in forms only mode.  Otherwise you will get a default reply. All reply messages are generated based on translation and locale settings.",
+                        "pattern": "(^[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}\\s*$|^\\s*$)"
+                    }
+                }
+            },
             "district_admins_access_unallocated_messages": {
                 "type": "boolean",
                 "title": "Allow District Admins To View Unallocated Messages",
