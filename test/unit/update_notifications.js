@@ -167,3 +167,64 @@ exports['validation failure adds error and response'] = function(test) {
         test.done();
     });
 };
+
+exports['mute responds correctly'] = function(test) {
+
+    var doc = {
+        form: 'off',
+        patient_id: '123',
+        related_entities: {
+            clinic: {
+                contact: {
+                    phone: '+1234',
+                    name: 'woot'
+                }
+            }
+        }
+    };
+
+    var regDoc = {
+        patient_name: 'Agatha',
+        scheduled_tasks: [{
+            state: 'scheduled'
+        }]
+    };
+
+    sinon.stub(transition, 'getConfig').returns({
+        messages: [{
+            event_type: 'on_mute',
+            message: [{
+                content: 'Thank you {{contact.name}}, no further notifications regarding {{patient_name}} will be sent until you submit START {{patient_id}}.',
+                locale: 'en'
+            }]
+        }],
+        off_form: 'off'
+    });
+
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [{
+        _id: 'x',
+        doc: regDoc
+    }]);
+
+    var audit = {
+        saveDoc: function(doc, callback) {
+            callback();
+        }
+    };
+
+    transition.onMatch({
+        doc: doc,
+        form: 'off'
+    }, {}, audit, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.equals(doc.errors, undefined);
+        test.equals(doc.tasks.length, 1);
+        test.equals(
+            doc.tasks[0].messages[0].message,
+            'Thank you woot, no further notifications regarding Agatha will be sent until you submit START 123.'
+        );
+        test.equals(regDoc.scheduled_tasks[0].state, 'muted');
+        test.done();
+    });
+};

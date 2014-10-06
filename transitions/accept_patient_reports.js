@@ -63,7 +63,8 @@ module.exports = {
                     messages.addMessage({
                         doc: doc,
                         message: messages.getMessage(msg.message, locale),
-                        phone: messages.getRecipientPhone(doc, msg.recipient)
+                        phone: messages.getRecipientPhone(doc, msg.recipient),
+                        registrations: registrations
                     });
                 }
             });

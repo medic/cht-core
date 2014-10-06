@@ -82,7 +82,7 @@ exports['matchRegistrations with no registrations adds error msg and response'] 
 
     var doc = {
         patient_id: 'x',
-        from: "+123",
+        from: '+123',
         related_entities: {
             clinic: {
                 contact: {
@@ -122,7 +122,7 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
     var doc;
 
     doc = {
-        patient_id: 'x',
+        patient_id: '559',
         related_entities: {
             clinic: {
                 contact: {
@@ -134,13 +134,15 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
     };
 
     transition.matchRegistrations({
-        registrations: [{}],
+        registrations: [{
+            doc: { patient_name: 'Archibald' }
+        }],
         doc: doc,
         report: {
             messages: [{
                 event_type: 'report_accepted',
                 message: [{
-                    content: 'Thank you, {{contact.name}}. ANC visit for {{patient_id}} has been recorded.',
+                    content: 'Thank you, {{contact.name}}. ANC visit for {{patient_name}} ({{patient_id}}) has been recorded.',
                     locale: 'en'
                 }],
                 recipient: 'reporting_unit'
@@ -150,7 +152,7 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
         test.ok(doc.tasks);
         test.equals(
             _.first(_.first(doc.tasks).messages).message,
-            'Thank you, woot. ANC visit for x has been recorded.'
+            'Thank you, woot. ANC visit for Archibald (559) has been recorded.'
         );
         test.done();
     });
