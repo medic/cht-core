@@ -10,8 +10,8 @@ var utils = require('kujua-utils'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', 'Facility', 'Form', 'Settings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'DownloadUrl', 'Verified', 'DeleteMessage', 'UpdateFacility',
-    function ($scope, $route, $location, $translate, $animate, Facility, Form, Settings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, DownloadUrl, Verified, DeleteMessage, UpdateFacility) {
+    ['$scope', '$route', '$location', '$translate', '$animate', 'Facility', 'Form', 'Settings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
+    function ($scope, $route, $location, $translate, $animate, Facility, Form, Settings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
 
       $scope.loading = true;
       $scope.error = false;
@@ -213,18 +213,6 @@ var utils = require('kujua-utils'),
           return;
         }
         $scope.permissions.district = district;
-        Form().then(function(forms) {
-          $scope.downloadModels = _.map(forms, function(form) {
-            return {
-              label: 'Form: ' + form.name,
-              url: DownloadUrl({ form: form, district: district })
-            };
-          });
-          $scope.downloadModels.unshift({
-            label: 'Messages',
-            url: DownloadUrl({ messages: true, district: district })
-          });
-        });
         updateAvailableFacilities();
         $scope.updateReadStatus();
 
@@ -238,10 +226,17 @@ var utils = require('kujua-utils'),
         function(forms) {
           $scope.forms = forms;
         },
-        function() {
-          console.log('Failed to retrieve forms');
+        function(err) {
+          console.log('Failed to retrieve forms', err);
         }
       );
+
+      Exports(function(err, exports) {
+        if (err) {
+          return console.log('Failed to retrieve exports', err);
+        }
+        $scope.exports = exports;
+      });
 
       Settings(function(err, res) {
         if (err) {
