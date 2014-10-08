@@ -37,6 +37,9 @@ module.exports = {
    "date_format": "DD-MMM-YYYY",
    "reported_date_format": "DD-MMM-YYYY hh:mm:ss",
    "forms_only_mode": false,
+   "default_responses": {
+       "start_date": ""
+   },
    "district_admins_access_unallocated_messages": false,
    "public_access": false,
    "default_country_code": 1,
