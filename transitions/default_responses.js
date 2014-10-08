@@ -12,6 +12,7 @@ module.exports = {
             doc
             && doc.from
             && doc.type === 'data_record'
+            && !doc.kujua_message
             && self._isReportedAfterStartDate(doc)
         );
     },

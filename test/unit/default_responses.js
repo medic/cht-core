@@ -21,7 +21,6 @@ exports.tearDown = function(callback) {
         transition.filter,
         transition._isMessageEmpty,
         transition._isFormNotFound,
-        transition._isValidUnstructuredMessage,
         transition._isConfigFormsOnlyMode,
         transition._isReportedAfterStartDate,
         transition._getConfig,
@@ -81,6 +80,14 @@ exports['do nothing if reported date is not after config start date'] = function
     sinon.stub(transition, '_isReportedAfterStartDate').returns(false);
     test.equals(transition.filter({
         from: '+222',
+        type: 'data_record',
+    }), false);
+    test.done();
+};
+
+exports['do nothing if outgoing message'] = function(test) {
+    test.equals(transition.filter({
+        kujua_message: true,
         type: 'data_record',
     }), false);
     test.done();
