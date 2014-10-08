@@ -8,8 +8,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$route', '$animate', 'MessageContact', 'ContactConversation', 'MarkAllRead', 'UserDistrict', 'Changes', 'RememberService',
-    function ($scope, $route, $animate, MessageContact, ContactConversation, MarkAllRead, UserDistrict, Changes, RememberService) {
+    ['$scope', '$route', '$animate', 'MessageContact', 'ContactConversation', 'MarkAllRead', 'UserDistrict', 'Changes', 'RememberService', 'UserCtxService',
+    function ($scope, $route, $animate, MessageContact, ContactConversation, MarkAllRead, UserDistrict, Changes, RememberService, UserCtxService) {
 
       $scope.loadingContent = false;
       $scope.allLoaded = false;
@@ -111,7 +111,7 @@ var _ = require('underscore'),
               $animate.enabled(!options.skip);
               $scope.loadingContent = false;
               var contentElem = $('#message-content');
-              var contentAtBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
+              var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
               var first = $('.item-content .body > ul > li').filter(':first');
               _.each(data.rows, function(updated) {
                 var match = _.findWhere($scope.selected.messages, { id: updated.id });
@@ -119,13 +119,16 @@ var _ = require('underscore'),
                   angular.extend(match, updated);
                 } else {
                   $scope.selected.messages.push(updated);
+                  if (updated.doc.sent_by === UserCtxService().name) {
+                    scrollToBottom = true;
+                  }
                 }
               });
               $scope.allLoaded = data.rows.length === 0;
               if (options.skip) {
                 $scope.firstUnread = undefined;
               }
-              if (first.length && contentAtBottom) {
+              if (first.length && scrollToBottom) {
                 window.setTimeout(function() {
                   $('#message-content').scrollTop($('#message-content')[0].scrollHeight);
                 }, 1);
