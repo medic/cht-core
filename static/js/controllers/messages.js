@@ -111,7 +111,7 @@ var _ = require('underscore'),
               $animate.enabled(!options.skip);
               $scope.loadingContent = false;
               var contentElem = $('#message-content');
-              var contentAtBottom = contentElem.scrollTop() + contentElem.height() + 10 > contentElem[0].scrollHeight;
+              var contentAtBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
               var first = $('.item-content .body > ul > li').filter(':first');
               _.each(data.rows, function(updated) {
                 var match = _.findWhere($scope.selected.messages, { id: updated.id });
