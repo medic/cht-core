@@ -110,7 +110,8 @@ var _ = require('underscore'),
             ContactConversation(district, selectedId, skip, function(err, data) {
               $animate.enabled(!options.skip);
               $scope.loadingContent = false;
-              var userNotScrolled = $('#message-content').scrollTop < 200;
+              var contentElem = $('#message-content');
+              var contentAtBottom = contentElem.scrollTop() + contentElem.height() + 10 > contentElem[0].scrollHeight;
               var first = $('.item-content .body > ul > li').filter(':first');
               _.each(data.rows, function(updated) {
                 var match = _.findWhere($scope.selected.messages, { id: updated.id });
@@ -124,9 +125,9 @@ var _ = require('underscore'),
               if (options.skip) {
                 $scope.firstUnread = undefined;
               }
-              if (userNotScrolled && first.length) {
+              if (first.length && contentAtBottom) {
                 window.setTimeout(function() {
-                  $('.item-content').scrollTop(first.offset().top - 140);
+                  $('#message-content').scrollTop($('#message-content')[0].scrollHeight);
                 }, 1);
               }
               markAllRead();
