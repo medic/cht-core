@@ -95,7 +95,10 @@ var utils = require('kujua-utils'),
             return existing.key[1] === updated.key[1];
           });
           if (match) {
-            angular.extend(match, updated);
+            if (!_.isEqual(updated.value, match.value)) {
+              match.key = updated.key;
+              match.value = updated.value;
+            }
           } else {
             $scope.contacts.push(updated);
           }
