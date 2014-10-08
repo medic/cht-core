@@ -61,7 +61,7 @@
         "moment-timezone": ">=0.0.3",
         "kanso-app-settings": null,
         "garden-app-support": null,
-        "app-settings": null,
+        "app-settings": ">=0.0.2",
         "locale": null,
         "couchdb-audit": null,
         "js-migrations": ">=1.0.0"
