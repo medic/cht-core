@@ -96,7 +96,6 @@ var utils = require('kujua-utils'),
           });
           if (match) {
             if (!_.isEqual(updated.value, match.value)) {
-              match.key = updated.key;
               match.value = updated.value;
             }
           } else {
@@ -107,7 +106,7 @@ var utils = require('kujua-utils'),
 
       $scope.setContacts = function(options) {
         $scope.loading = false;
-        $animate.enabled(!!options.changes);
+        $animate.enabled(false);
         if (options.changes) {
           removeDeletedContacts(options.contacts);
           mergeUpdatedContacts(options.contacts);
