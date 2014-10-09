@@ -269,7 +269,7 @@ module.exports = {
            "fr": "Le formulaire envoyé '{{form}}' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
            "es": "No se reconocio el reporte enviado '{{form}}'. Por favor intente de nuevo. Si el problema persiste, informe al director.",
            "ne": "फारम मिलेन​। कृपया फेरि प्रयास गर्नुहोला।",
-           "sw": ""
+           "sw": "Ujumbe huu wa {{form}} si sahihi. Tafadhali urekebishe na utume tena. Shida hii ikiendela wasiliana na CHEW wako."
        },
        {
            "key": "form_invalid",
@@ -332,7 +332,7 @@ module.exports = {
            "fr": "Merci, votre message a été bien reçu.",
            "es": "Recibimos tu mensaje, lo procesaremos pronto. Si querias mandar un reporte, intentalo nuevamente en el formato adecuado.",
            "ne": "सन्देश​ प्राप्त भयो। रिपोर्ट पठाउनुभएको हो भने मिलेन; ​पुन:​ पठाउनुहोला।",
-           "sw": ""
+           "sw": "Ujumbe wako tumeupokea na unakaguliwa. Kama ujumbe huu ni wa kusajilisha, kuthibitisha, kurudisha au kusitisha vikumbusho ama kuripoti kuzaa, tafadhali urekebishe na utume."
        },
        {
            "key": "reporting_unit_not_found",
