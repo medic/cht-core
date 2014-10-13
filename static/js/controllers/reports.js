@@ -1,6 +1,7 @@
 var _ = require('underscore'),
+    moment = require('moment'),
     modal = require('../modules/modal'),
-    moment = require('moment');
+    tour = require('../modules/tour');
 
 (function () {
 
@@ -311,6 +312,8 @@ var _ = require('underscore'),
           $scope.query();
         }
       });
+
+      tour.start({ name: 'reports', start: $route.current.params.tour });
     }
   ]);
 

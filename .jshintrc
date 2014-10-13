@@ -85,6 +85,7 @@
         "it"        : true,
         "describe"  : true,
         "inject"    : true,
-        "chai"      : true
+        "chai"      : true,
+        "Tour"      : true
     }
 }

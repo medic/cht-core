@@ -4,6 +4,7 @@
 @import (inline) "bower_components/select2/select2.css";
 @import (inline) "bower_components/bootstrap-daterangepicker/daterangepicker-bs3.css";
 @import (inline) "bower_components/nvd3/nv.d3.css";
+@import (inline) "bower_components/bootstrap-tour/build/css/bootstrap-tour.css";
 
 @import "variables";
 @import "mixins";
@@ -765,6 +766,35 @@ a.fa:hover {
   max-width: 200px;
 }
 
+.tour-select {
+  z-index: 2000;
+  .tour-option {
+    width: 120px;
+    margin: 1em;
+    padding: 0.5em 0;
+    .button-text;
+  }
+  .modal-body {
+    text-align: center;
+  }
+  .fa {
+    font-size: 2em;
+  }
+  .tour-option-messages {
+    background-color: @messages-color;
+  }
+  .tour-option-reports {
+    background-color: @reports-color;
+  }
+  .tour-option-analytics {
+    background-color: @analytics-color;
+  }
+}
+
+.daterangepicker.dropdown-menu {
+  z-index: 1050;
+}
+
 @media (max-width: 767px) {
   .inbox-items li {
     &:hover {
@@ -973,7 +1003,7 @@ a.fa:hover {
     padding-right: 0.8em;
   }
   .mm-button-icon {
-    padding-right: 0.22em;
+    padding-right: 0.2em;
   }
 }
 

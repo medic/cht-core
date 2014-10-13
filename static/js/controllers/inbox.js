@@ -443,6 +443,10 @@ var utils = require('kujua-utils'),
         });
       });
 
+      $('#tour-select').on('click', 'a.tour-option', function() {
+        $('#tour-select').modal('hide');
+      });
+
       require('../modules/add-record').init();
     }
   ]);

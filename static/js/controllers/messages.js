@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    tour = require('../modules/tour'),
     sendMessage = require('../modules/send-message');
 
 (function () {
@@ -180,6 +181,7 @@ var _ = require('underscore'),
         updateContact({ changes: data });
       });
 
+      tour.start({ name: 'messages', start: $route.current.params.tour });
     }
   ]);
 

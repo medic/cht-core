@@ -16,7 +16,11 @@ module.exports = function(grunt) {
     bower_concat: {
       all: {
         dest: 'bower_components/concat.js',
-        exclude: [ 'fontawesome', 'async' ]
+        exclude: [
+          'fontawesome',
+          'async',
+          'bootstrap-tour' // Including this includes two copies. Manually included in concat.
+        ]
       }
     },
     replace: {
@@ -65,6 +69,7 @@ module.exports = function(grunt) {
       js: {
         src: [
           'bower_components/concat.js',
+          'bower_components/bootstrap-tour/build/js/bootstrap-tour.js',
           'static/js/bootstrap-multidropdown.js',
           'static/dist/inbox.js'
         ],
