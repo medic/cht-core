@@ -16,7 +16,9 @@
         "small": "static/img/promo/promo_small.png"
     },
     "screenshots": [
-        "static/img/promo/screenshot1.png"
+        "static/img/promo/promo-messages.png",
+        "static/img/promo/promo-reports.png",
+        "static/img/promo/promo-analytics.png"
     ],
     "loglevel": "info",
     "load": "lib/app",
