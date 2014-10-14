@@ -21,9 +21,24 @@ var getFormCode = function(key) {
   return config.get('anc_forms')[key];
 };
 
+var fti = function(options, callback) {
+  db.fti('data_records', options, function(err, result) {
+    if (err) {
+      return callback(err);
+    }
+    if (!result) {
+      result = { total_rows: 0, rows: [] };
+    } else if (!result.rows) {
+      result.rows = [];
+    }
+    callback(null, result);
+  });
+};
+
 module.exports = {
 
   getFormCode: getFormCode,
+  fti: fti,
 
   formatDateRange: function(field, startDate, endDate) {
     var start = formatDate(startDate);
@@ -46,11 +61,7 @@ module.exports = {
     if (options.district) {
       query += ' AND district:"' + options.district + '"';
     }
-    db.fti('data_records', {
-      q: query,
-      include_docs: true,
-      limit: 1000
-    }, callback);
+    fti({ q: query, include_docs: true, limit: 1000 }, callback);
   },
 
   getDeliveries: function(options, callback) {
@@ -69,7 +80,7 @@ module.exports = {
     if (options.district) {
       options.q += ' AND district:"' + options.district + '"';
     }
-    db.fti('data_records', options, callback);
+    fti(options, callback);
   },
 
   getBirthPatientIds: function(options, callback) {
@@ -104,11 +115,12 @@ module.exports = {
       if (err) {
         return callback(err);
       }
-      callback(null, _.reject(objects, function(object) {
+      var undelivered = _.reject(objects, function(object) {
         return _.some(deliveries.rows, function(delivery) {
           return delivery.doc.patient_id === object.patient_id;
         });
-      }));
+      });
+      callback(null, undelivered);
     });
   },
 
@@ -122,7 +134,7 @@ module.exports = {
         'reported_date', options.startDate, options.endDate || moment().add(2, 'days')
       );
     }
-    db.fti('data_records', { q: query, limit: 1000, include_docs: true }, callback);
+    fti({ q: query, limit: 1000, include_docs: true }, callback);
   },
 
   getHighRisk: function(options, callback) {
@@ -130,7 +142,7 @@ module.exports = {
       return callback(null, []);
     }
     var query = 'form:' + getFormCode('flag') + ' AND ' + formatPatientIds(options.patientIds);
-    db.fti('data_records', { q: query, limit: 1000, include_docs: true }, callback);
+    fti({ q: query, limit: 1000, include_docs: true }, callback);
   },
 
   getWeeksPregnant: function(doc) {

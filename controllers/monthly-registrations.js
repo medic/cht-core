@@ -1,7 +1,6 @@
 var _ = require('underscore'),
     moment = require('moment'),
-    utils = require('./utils'),
-    db = require('../db');
+    utils = require('./utils');
 
 var addMissingData = function(counts) {
   var end = moment().startOf('month');
@@ -41,7 +40,7 @@ module.exports = {
     if (options.district) {
       query += ' AND district:"' + options.district + '"';
     }
-    db.fti('data_records', {
+    utils.fti({
       q: query,
       include_docs: true,
       limit: 10000

@@ -18,12 +18,26 @@ var express = require('express'),
     visitsCompleted = require('./controllers/visits-completed'),
     visitsDuring = require('./controllers/visits-during'),
     monthlyRegistrations = require('./controllers/monthly-registrations'),
-    monthlyDeliveries = require('./controllers/monthly-deliveries');
-
+    monthlyDeliveries = require('./controllers/monthly-deliveries'),
+    createDomain = require('domain').create;
 
 app.use(morgan('combined', {
-    immediate: true
+  immediate: true
 }));
+
+app.use(function(req, res, next) {
+  var domain = createDomain();
+  domain.on('error', function(err) {
+    serverError(err, res);
+    domain.dispose();
+  });
+  domain.enter();
+  next();
+});
+
+app.use(function(err, req, res, next) {
+  serverError(err.stack, res);
+});
 
 var audit = function(req, res) {
   var ap = new AuditProxy();
@@ -145,6 +159,10 @@ app.all('*', function(req, res) {
   proxy.web(req, res);
 });
 
+proxy.on('error', function(err, req, res) {
+  serverError(JSON.stringify(err), res);
+});
+
 var serverError = function(err, res) {
   console.error('Server error : ' + err);
   res.writeHead(500, {
@@ -160,14 +178,6 @@ var notLoggedIn = function(res) {
   });
   res.end('Not logged in');
 };
-
-app.use(function(err, req, res, next) {
-  serverError(err.stack, res);
-});
-
-proxy.on('error', function(err, req, res) { 
-  serverError(JSON.stringify(err), res);
-});
 
 config.load(function(err) {
   if (err) {
