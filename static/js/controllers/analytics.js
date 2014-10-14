@@ -36,7 +36,7 @@ var _ = require('underscore'),
           $scope.filterModel.module.render($scope);
         }
       });
-      tour.start({ name: 'analytics', start: $route.current.params.tour });
+      tour.start($route.current.params.tour);
     }
   ]);
 

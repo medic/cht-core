@@ -313,7 +313,7 @@ var _ = require('underscore'),
         }
       });
 
-      tour.start({ name: 'reports', start: $route.current.params.tour });
+      tour.start($route.current.params.tour);
     }
   ]);
 

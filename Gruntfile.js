@@ -175,7 +175,8 @@ module.exports = function(grunt) {
             flatten: true,
             src: [
               'bower_components/select2/select2.js',
-              'bower_components/raphael/raphael.js'
+              'bower_components/raphael/raphael.js',
+              'bower_components/bootstrap-tour/build/js/bootstrap-tour.js'
             ], 
             dest: 'static/dist/'
           }

@@ -181,7 +181,7 @@ var _ = require('underscore'),
         updateContact({ changes: data });
       });
 
-      tour.start({ name: 'messages', start: $route.current.params.tour });
+      tour.start($route.current.params.tour);
     }
   ]);
 

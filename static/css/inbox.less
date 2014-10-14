@@ -769,7 +769,7 @@ a.fa:hover {
 .tour-select {
   z-index: 2000;
   .tour-option {
-    width: 120px;
+    width: 100px;
     margin: 1em;
     padding: 0.5em 0;
     .button-text;
@@ -789,6 +789,9 @@ a.fa:hover {
   .tour-option-analytics {
     background-color: @analytics-color;
   }
+  .tour-option-admin {
+    background-color: @admin-color;
+  }
 }
 
 .daterangepicker.dropdown-menu {
@@ -796,6 +799,13 @@ a.fa:hover {
 }
 
 @media (max-width: 767px) {
+  .modal-header h3 {
+    margin: 0;
+  }
+  .modal-footer {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
   .inbox-items li {
     &:hover {
       /* Hover fires incorrectly on touch devices */

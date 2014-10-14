@@ -289,7 +289,7 @@ var _ = require('underscore');
     var tour = new Tour(settings);
     tour._scrollIntoView = function(element, callback) {
       // override scrollIntoView as it doesn't handle scolling containers
-      this._debug("Not scrolling into view - overridden by Medic Mobile custom tour.js");
+      this._debug('Not scrolling into view - overridden by Medic Mobile custom tour.js');
       callback();
     };
     tour.init();
@@ -309,15 +309,15 @@ var _ = require('underscore');
     }
   };
 
-  exports.start = function(options) {
-    if (current && current.name && current.name === options.name) {
+  exports.start = function(name) {
+    if (current && current.name && current.name === name) {
       // the tour is already running
       return;
     }
     endCurrent();
-    if (options.start) {
+    if (name) {
       window.setTimeout(function() {
-        createTour(options.name);
+        createTour(name);
       }, 1);
     }
   };
