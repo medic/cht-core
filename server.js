@@ -28,6 +28,7 @@ app.use(morgan('combined', {
 app.use(function(req, res, next) {
   var domain = createDomain();
   domain.on('error', function(err) {
+    console.error('UNCAUGHT EXCEPTION!');
     serverError(err, res);
     domain.dispose();
   });
