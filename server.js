@@ -31,6 +31,7 @@ app.use(function(req, res, next) {
     console.error('UNCAUGHT EXCEPTION!');
     serverError(err, res);
     domain.dispose();
+    process.exit(1);
   });
   domain.enter();
   next();
