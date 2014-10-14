@@ -165,7 +165,7 @@ proxy.on('error', function(err, req, res) {
 });
 
 var serverError = function(err, res) {
-  console.error('Server error : ' + err);
+  console.error('Server error: ' + (err.stack || JSON.stringify(err)));
   res.writeHead(500, {
     'Content-Type': 'text/plain'
   });
