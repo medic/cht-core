@@ -313,7 +313,6 @@ var utils = require('kujua-utils'),
         if (deleteMessageId) {
           DeleteMessage(deleteMessageId, function(err) {
             pane.done('Error deleting document', err);
-            deleteMessageId = undefined;
           });
         } else {
           pane.done('Error deleting document', 'No deleteMessageId set');
