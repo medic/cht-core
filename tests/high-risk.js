@@ -33,7 +33,7 @@ exports['get returns errors'] = function(test) {
   });
 };
 
-exports['get returns empty if no registrations'] = function(test) {
+exports['get returns empty if no flag reports'] = function(test) {
   test.expect(2);
   var fti = sinon.stub(db, 'fti').callsArgWith(2, null, {
     rows: []
@@ -45,7 +45,7 @@ exports['get returns empty if no registrations'] = function(test) {
   });
 };
 
-exports['get returns empty if all registrations have delivered'] = function(test) {
+exports['get returns empty if no registrations'] = function(test) {
   test.expect(2);
   var fti = sinon.stub(db, 'fti');
   fti.onFirstCall().callsArgWith(2, null, {
@@ -71,10 +71,7 @@ exports['get returns empty if all registrations have delivered'] = function(test
     ]
   });
   fti.onSecondCall().callsArgWith(2, null, {
-    rows: [
-      { doc: { patient_id: 1 } },
-      { doc: { patient_id: 2 } }
-    ]
+    rows: []
   });
   controller.get({}, function(err, results) {
     test.equals(results.length, 0);
@@ -90,7 +87,17 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
   test.expect(16);
   var fti = sinon.stub(db, 'fti');
   var today = moment();
+
+  // flagged
   fti.onCall(0).callsArgWith(2, null, {
+    rows: [
+      { doc: { patient_id: 1 } },
+      { doc: { patient_id: 3 } }
+    ]
+  });
+  
+  // registrations
+  fti.onCall(1).callsArgWith(2, null, {
     rows: [
       {
         doc: {
@@ -99,15 +106,6 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
           form: 'R',
           reported_date: today.clone().subtract(38, 'weeks').toISOString(),
           related_entities: { clinic: { id: 'x' } }
-        }
-      },
-      {
-        doc: {
-          patient_id: 2,
-          patient_name: 'sally',
-          form: 'P',
-          lmp_date: today.clone().subtract(42, 'weeks').toISOString(),
-          related_entities: { clinic: { id: 'y' } }
         }
       },
       {
@@ -121,19 +119,18 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
       }
     ]
   });
-  fti.onCall(1).callsArgWith(2, null, null);
-  fti.onCall(2).callsArgWith(2, null, {
-    rows: [
-      { doc: { patient_id: 1 } },
-      { doc: { patient_id: 3 } }
-    ]
-  });
+
+  // deliveries
+  fti.onCall(2).callsArgWith(2, null, null);
+
+  // visits
   fti.onCall(3).callsArgWith(2, null, {
     rows: [
       { doc: { patient_id: 1 } },
       { doc: { patient_id: 1 } }
     ]
   });
+
   controller.get({}, function(err, results) {
     test.equals(results.length, 2);
 
@@ -164,6 +161,13 @@ exports['get returns all high risk pregnancies'] = function(test) {
   var today = moment();
   fti.onCall(0).callsArgWith(2, null, {
     rows: [
+      { doc: { patient_id: 1 } },
+      { doc: { patient_id: 3 } },
+      { doc: { patient_id: 4 } }
+    ]
+  });
+  fti.onCall(1).callsArgWith(2, null, {
+    rows: [
       {
         doc: {
           patient_id: 1,
@@ -171,15 +175,6 @@ exports['get returns all high risk pregnancies'] = function(test) {
           form: 'R',
           reported_date: today.clone().subtract(38, 'weeks').toISOString(),
           related_entities: { clinic: { id: 'x' } }
-        }
-      },
-      {
-        doc: {
-          patient_id: 2,
-          patient_name: 'sally',
-          form: 'P',
-          lmp_date: today.clone().subtract(42, 'weeks').toISOString(),
-          related_entities: { clinic: { id: 'y' } }
         }
       },
       {
@@ -202,15 +197,9 @@ exports['get returns all high risk pregnancies'] = function(test) {
       }
     ]
   });
-  fti.onCall(1).callsArgWith(2, null, {
-    rows: [
-      { doc: { patient_id: 4 } }
-    ]
-  });
   fti.onCall(2).callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 1 } },
-      { doc: { patient_id: 3 } }
+      { doc: { patient_id: 4 } }
     ]
   });
   fti.onCall(3).callsArgWith(2, null, {

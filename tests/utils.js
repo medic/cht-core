@@ -48,3 +48,32 @@ exports['getAllRegistrations generates correct query'] = function(test) {
     test.done();
   });
 };
+
+exports['getAllRegistrations generates correct query when patientIds provided'] = function(test) {
+  test.expect(3);
+  var get = sinon.stub(config, 'get').returns({
+    registration: 'R',
+    registrationLmp: 'P'
+  });
+  var fti = sinon.stub(db, 'fti').callsArgWith(2, null, 'results');
+  var start = moment().subtract(20, 'weeks').zone(0);
+  var end = moment().subtract(10, 'weeks').add(1, 'days').zone(0);
+  var rStart = start.format('YYYY-MM-DD');
+  var rEnd = end.format('YYYY-MM-DD');
+  var pStart = start.subtract(2, 'weeks').format('YYYY-MM-DD');
+  var pEnd = end.subtract(2, 'weeks').format('YYYY-MM-DD');
+  var expected = 'errors<int>:0 AND ' +
+      '((form:R AND reported_date<date>:[' + rStart + ' TO ' + rEnd + ']) OR ' +
+      '(form:P AND lmp_date<date>:[' + pStart + ' TO ' + pEnd + '])) AND ' +
+      'patient_id:(1345 OR 532)';
+  utils.getAllRegistrations({
+    patientIds: ['1345', '532'],
+    minWeeksPregnant: 10,
+    maxWeeksPregnant: 20
+  }, function(err, results) {
+    test.equals(results, 'results');
+    test.equals(fti.callCount, 1);
+    test.equals(fti.args[0][1].q, expected);
+    test.done();
+  });
+};

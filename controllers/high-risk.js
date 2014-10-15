@@ -20,40 +20,35 @@ var getPregnancies = function(options, callback) {
   });
 };
 
-var findFlagged = function(pregnancies, callback) {
-  if (!pregnancies.length) {
-    return callback(null, []);
+var findFlagged = function(options, callback) {
+  var startDate = moment().subtract(44, 'weeks');
+  var endDate = moment();
+  var dateCriteria = utils.formatDateRange('reported_date', startDate, endDate);
+  var query = 'errors<int>:0 AND form:' + utils.getFormCode('flag') + ' AND ' + dateCriteria;
+  if (options.district) {
+    query += ' AND district:"' + options.district + '"';
   }
-  var options = {
-    patientIds: _.pluck(pregnancies, 'patient_id')
-  };
-  utils.getHighRisk(options, function(err, highRisks) {
-    if (err) {
-      return callback(err);
-    }
-    callback(null, _.filter(pregnancies, function(pregnancy) {
-      return _.some(highRisks.rows, function(highRisk) {
-        return highRisk.doc.patient_id === pregnancy.patient_id;
-      });
-    }));
-  });
+  utils.fti({ q: query, include_docs: true, limit: 1000 }, callback);
 };
 
 module.exports = {
   get: function(options, callback) {
-    getPregnancies(options, function(err, pregnancies) {
+    findFlagged(options, function(err, flagged) {
       if (err) {
         return callback(err);
       }
-      utils.rejectDeliveries(pregnancies, function(err, withoutDelivery) {
+      options.patientIds = _.map(flagged.rows, function(row) {
+        return row.doc.patient_id;
+      });
+      getPregnancies(options, function(err, pregnancies) {
         if (err) {
           return callback(err);
         }
-        findFlagged(withoutDelivery, function(err, flagged) {
+        utils.rejectDeliveries(pregnancies, function(err, withoutDelivery) {
           if (err) {
             return callback(err);
           }
-          utils.injectVisits(flagged, callback);
+          utils.injectVisits(withoutDelivery, callback);
         });
       });
     });

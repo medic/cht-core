@@ -35,6 +35,14 @@ var fti = function(options, callback) {
   });
 };
 
+var getHighRisk = function(options, callback) {
+  if (!options || !options.patientIds || !options.patientIds.length) {
+    return callback(null, []);
+  }
+  var query = 'form:' + getFormCode('flag') + ' AND ' + formatPatientIds(options.patientIds);
+  fti({ q: query, limit: 1000, include_docs: true }, callback);
+};
+
 module.exports = {
 
   getFormCode: getFormCode,
@@ -60,6 +68,13 @@ module.exports = {
       ')';
     if (options.district) {
       query += ' AND district:"' + options.district + '"';
+    }
+    if (options.patientIds) {
+      if (options.patientIds.length === 0) {
+        return callback(null, { total_rows: 0, rows: [] });
+      } else {
+        query += ' AND ' + formatPatientIds(options.patientIds);
+      }
     }
     fti({ q: query, include_docs: true, limit: 1000 }, callback);
   },
@@ -137,13 +152,6 @@ module.exports = {
     fti({ q: query, limit: 1000, include_docs: true }, callback);
   },
 
-  getHighRisk: function(options, callback) {
-    if (!options || !options.patientIds || !options.patientIds.length) {
-      return callback(null, []);
-    }
-    var query = 'form:' + getFormCode('flag') + ' AND ' + formatPatientIds(options.patientIds);
-    fti({ q: query, limit: 1000, include_docs: true }, callback);
-  },
 
   getWeeksPregnant: function(doc) {
     if (doc.form === 'R') {
@@ -187,7 +195,7 @@ module.exports = {
 
   injectRisk: function(objects, callback) {
     var patientIds = _.pluck(objects, 'patient_id');
-    module.exports.getHighRisk({ patientIds: patientIds }, function(err, risks) {
+    getHighRisk({ patientIds: patientIds }, function(err, risks) {
       if (err) {
         return callback(err);
       }
