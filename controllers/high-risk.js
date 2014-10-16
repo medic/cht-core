@@ -28,7 +28,7 @@ var findFlagged = function(options, callback) {
   if (options.district) {
     query += ' AND district:"' + options.district + '"';
   }
-  utils.fti({ q: query, include_docs: true, limit: 1000 }, callback);
+  utils.fti({ q: query, include_docs: true }, callback);
 };
 
 module.exports = {

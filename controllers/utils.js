@@ -40,7 +40,7 @@ var getHighRisk = function(options, callback) {
     return callback(null, []);
   }
   var query = 'form:' + getFormCode('flag') + ' AND ' + formatPatientIds(options.patientIds);
-  fti({ q: query, limit: 1000, include_docs: true }, callback);
+  fti({ q: query, include_docs: true }, callback);
 };
 
 module.exports = {
@@ -76,7 +76,7 @@ module.exports = {
         query += ' AND ' + formatPatientIds(options.patientIds);
       }
     }
-    fti({ q: query, include_docs: true, limit: 1000 }, callback);
+    fti({ q: query, include_docs: true }, callback);
   },
 
   getDeliveries: function(options, callback) {
@@ -84,7 +84,6 @@ module.exports = {
       callback = options;
       options = {};
     }
-    options.limit = 1000;
     options.q = 'form:' + getFormCode('delivery');
     if (options.patientIds) {
       options.q += ' AND ' + formatPatientIds(options.patientIds);
@@ -149,7 +148,7 @@ module.exports = {
         'reported_date', options.startDate, options.endDate || moment().add(2, 'days')
       );
     }
-    fti({ q: query, limit: 1000, include_docs: true }, callback);
+    fti({ q: query, include_docs: true }, callback);
   },
 
 
