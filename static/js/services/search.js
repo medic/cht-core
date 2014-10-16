@@ -14,7 +14,7 @@ var _ = require('underscore');
           limit: 50,
           q: options.query,
           skip: 0,
-          sort: '\\reported_date',
+          sort: '\\reported_date<date>',
           include_docs: true
         });
 
