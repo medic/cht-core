@@ -40,6 +40,9 @@ module.exports = client.db(settings.db);
 module.exports.user = settings.username;
 module.exports.fti = function(index, data, cb) {
     var path = '/_fti/local' + settings.db + '/_design/' + settings.ddoc + '/' + index;
+    if (!data.limit) {
+        data.limit = 10000;
+    }
     client.request({
         method: 'post',
         path: path,
