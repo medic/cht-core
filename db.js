@@ -41,8 +41,10 @@ module.exports.user = settings.username;
 module.exports.fti = function(index, data, cb) {
     var path = '/_fti/local' + settings.db + '/_design/' + settings.ddoc + '/' + index;
     client.request({
+        method: 'post',
         path: path,
-        query: data
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        data: couchdb.toQuery(data)
     }, cb);
 };
 module.exports.getView = function(view, query, callback) {
