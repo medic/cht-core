@@ -50,12 +50,12 @@ exports['getAllRegistrations generates correct query'] = function(test) {
 };
 
 exports['getAllRegistrations generates correct query when patientIds provided'] = function(test) {
-  test.expect(3);
+  test.expect(5);
   var get = sinon.stub(config, 'get').returns({
     registration: 'R',
     registrationLmp: 'P'
   });
-  var fti = sinon.stub(db, 'fti').callsArgWith(2, null, 'results');
+  var fti = sinon.stub(db, 'fti').callsArgWith(2, null, { rows: [ 'result' ], total_rows: 1 });
   var start = moment().subtract(20, 'weeks').zone(0);
   var end = moment().subtract(10, 'weeks').add(1, 'days').zone(0);
   var rStart = start.format('YYYY-MM-DD');
@@ -71,9 +71,45 @@ exports['getAllRegistrations generates correct query when patientIds provided'] 
     minWeeksPregnant: 10,
     maxWeeksPregnant: 20
   }, function(err, results) {
-    test.equals(results, 'results');
+    test.equals(results.total_rows, 1);
+    test.equals(results.rows.length, 1);
+    test.equals(results.rows[0], 'result');
     test.equals(fti.callCount, 1);
     test.equals(fti.args[0][1].q, expected);
+    test.done();
+  });
+};
+
+exports['getAllRegistrations generates multiple queries when over limit'] = function(test) {
+  test.expect(6);
+  var get = sinon.stub(config, 'get').returns({
+    registration: 'R',
+    registrationLmp: 'P'
+  });
+  var fti = sinon.stub(db, 'fti');
+  fti.onFirstCall().callsArgWith(2, null, { rows: [ '1', '2', '3' ], total_rows: 3 })
+  fti.onSecondCall().callsArgWith(2, null, { rows: [ '4', '5' ], total_rows: 2 });
+  var start = moment().subtract(20, 'weeks').zone(0);
+  var end = moment().subtract(10, 'weeks').add(1, 'days').zone(0);
+  var rStart = start.format('YYYY-MM-DD');
+  var rEnd = end.format('YYYY-MM-DD');
+  var pStart = start.subtract(2, 'weeks').format('YYYY-MM-DD');
+  var pEnd = end.subtract(2, 'weeks').format('YYYY-MM-DD');
+  var expected = 'errors<int>:0 AND ' +
+      '((form:R AND reported_date<date>:[' + rStart + ' TO ' + rEnd + ']) OR ' +
+      '(form:P AND lmp_date<date>:[' + pStart + ' TO ' + pEnd + ']))';
+  utils.setup(3);
+  utils.getAllRegistrations({
+    patientIds: ['3', '1', '2', '5', '4'],
+    minWeeksPregnant: 10,
+    maxWeeksPregnant: 20
+  }, function(err, results) {
+    test.equals(results.total_rows, 5);
+    test.equals(results.rows.length, 5);
+    test.same(results.rows.sort(), ['1', '2', '3', '4', '5']);
+    test.equals(fti.callCount, 2);
+    test.equals(fti.args[0][1].q, expected + ' AND patient_id:(3 OR 1 OR 2)');
+    test.equals(fti.args[1][1].q, expected + ' AND patient_id:(5 OR 4)');
     test.done();
   });
 };

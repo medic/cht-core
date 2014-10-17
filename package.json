@@ -3,6 +3,7 @@
   "description": "Provides a server side API.",
   "private": true,
   "dependencies": {
+    "async": "~0.9.0",
     "couchdb-audit": "0.1.x",
     "express": "4.x",
     "felix-couchdb": "1.0.x",

@@ -1,11 +1,9 @@
 var _ = require('underscore'),
     moment = require('moment'),
+    async = require('async'),
     db = require('../db'),
-    config = require('../config');
-
-var formatPatientIds = function(patientIds) {
-  return 'patient_id:(' + patientIds.join(' OR ') + ')';
-};
+    config = require('../config'),
+    luceneConditionalLimit = 1000;
 
 var formatDate = function(date) {
   return date.zone(0).format('YYYY-MM-DD');
@@ -22,7 +20,12 @@ var getFormCode = function(key) {
 };
 
 var fti = function(options, callback) {
-  db.fti('data_records', options, function(err, result) {
+  var queryOptions = {
+    q: options.q,
+    include_docs: options.include_docs,
+    limit: options.limit
+  };
+  db.fti('data_records', queryOptions, function(err, result) {
     if (err) {
       return callback(err);
     }
@@ -35,12 +38,48 @@ var fti = function(options, callback) {
   });
 };
 
+var ftiWithPatientIds = function(options, callback) {
+  if (options.patientIds) {
+    if (options.patientIds.length === 0) {
+      return callback(null, { total_rows: 0, rows: [] });
+    }
+    // lucene allows a maximum of 1024 boolean conditions per query
+    var chunks = chunk(options.patientIds, luceneConditionalLimit);
+    async.reduce(chunks, { rows: [], total_rows: 0 }, function(memo, ids, callback) {
+      var queryOptions = {
+        q: options.q + ' AND patient_id:(' + ids.join(' OR ') + ')',
+        include_docs: options.include_docs
+      };
+      fti(queryOptions, function(err, result) {
+        if (err) {
+          return callback(err);
+        }
+        callback(null, {
+          rows: memo.rows.concat(result.rows),
+          total_rows: memo.total_rows + result.total_rows
+        });
+      });
+    }, callback);
+  } else {
+    fti(options, callback);
+  }
+};
+
 var getHighRisk = function(options, callback) {
   if (!options || !options.patientIds || !options.patientIds.length) {
     return callback(null, []);
   }
-  var query = 'form:' + getFormCode('flag') + ' AND ' + formatPatientIds(options.patientIds);
-  fti({ q: query, include_docs: true }, callback);
+  options.include_docs = true;
+  options.q = 'form:' + getFormCode('flag');
+  ftiWithPatientIds(options, callback);
+};
+
+var chunk = function(items, size) {
+  var chunks = [];
+  for (var i = 0, j = items.length; i < j; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
 };
 
 module.exports = {
@@ -69,14 +108,11 @@ module.exports = {
     if (options.district) {
       query += ' AND district:"' + options.district + '"';
     }
-    if (options.patientIds) {
-      if (options.patientIds.length === 0) {
-        return callback(null, { total_rows: 0, rows: [] });
-      } else {
-        query += ' AND ' + formatPatientIds(options.patientIds);
-      }
-    }
-    fti({ q: query, include_docs: true }, callback);
+    ftiWithPatientIds({
+      q: query,
+      patientIds: options.patientIds,
+      include_docs: true
+    }, callback);
   },
 
   getDeliveries: function(options, callback) {
@@ -85,16 +121,13 @@ module.exports = {
       options = {};
     }
     options.q = 'form:' + getFormCode('delivery');
-    if (options.patientIds) {
-      options.q += ' AND ' + formatPatientIds(options.patientIds);
-    }
     if (options.startDate && options.endDate) {
       options.q += ' AND ' + module.exports.formatDateRange('reported_date', options.startDate, options.endDate);
     };
     if (options.district) {
       options.q += ' AND district:"' + options.district + '"';
     }
-    fti(options, callback);
+    ftiWithPatientIds(options, callback);
   },
 
   getBirthPatientIds: function(options, callback) {
@@ -121,9 +154,8 @@ module.exports = {
     if (!objects.length) {
       return callback(null, []);
     }
-    var patientIds = _.pluck(objects, 'patient_id');
     module.exports.getDeliveries({ 
-      patientIds: patientIds,
+      patientIds: _.pluck(objects, 'patient_id'),
       include_docs: true
     }, function(err, deliveries) {
       if (err) {
@@ -142,13 +174,13 @@ module.exports = {
     if (!options || !options.patientIds || !options.patientIds.length) {
       return callback(null, []);
     }
-    var query = 'form:' + getFormCode('visit') + ' AND ' + formatPatientIds(options.patientIds);
+    var query = 'form:' + getFormCode('visit');
     if (options.startDate) {
       query += ' AND ' + module.exports.formatDateRange(
         'reported_date', options.startDate, options.endDate || moment().add(2, 'days')
       );
     }
-    fti({ q: query, include_docs: true }, callback);
+    ftiWithPatientIds({ q: query, include_docs: true, patientIds: options.patientIds }, callback);
   },
 
 
@@ -206,6 +238,11 @@ module.exports = {
       });
       callback(null, objects);
     });
+  },
+
+  // exposed for testing
+  setup: function(limit) {
+    luceneConditionalLimit = limit;
   }
 
 };
