@@ -162,7 +162,7 @@
             "reported_date_format": {
                 "type": "string",
                 "title": "DateTime Format",
-                "default": "DD-MMM-YYYY hh:mm:ss",
+                "default": "DD-MMM-YYYY HH:mm:ss",
                 "description": "Format used to display dates and times."
             },
             "forms_only_mode": {
