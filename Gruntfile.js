@@ -200,7 +200,7 @@ module.exports = function(grunt) {
         tasks: ['mmcss', 'exec:deploy', 'notify:deployed']
       },
       js: {
-        files: ['static/js/**/*', 'packages/kujua-*/**/*'],
+        files: ['static/js/**/*', 'packages/kujua-*/**/*', 'packages/feedback/**/*'],
         tasks: ['mmjs', 'exec:deploy', 'notify:deployed']
       },
       other: {
@@ -319,24 +319,20 @@ module.exports = function(grunt) {
       // modules in bower and kanso
       {
         cwd: 'bower_components/underscore',
-        src: './underscore.js',
-        expose: ''
+        src: './underscore.js'
       },
       {
         cwd: 'bower_components/moment',
-        src: './moment.js',
-        expose: ''
+        src: './moment.js'
       },
       {
         cwd: 'bower_components/async/lib',
-        src: './async.js',
-        expose: ''
+        src: './async.js'
       },
       // kanso packages required for inbox
       {
         cwd: 'packages/db',
-        src: './db.js',
-        expose: ''
+        src: './db.js'
       },
       {
         cwd: 'packages/kujua-sms/views/lib',
@@ -350,8 +346,7 @@ module.exports = function(grunt) {
       },
       {
         cwd: 'packages/kujua-utils',
-        src: './kujua-utils.js',
-        expose: ''
+        src: './kujua-utils.js'
       },
       {
         cwd: 'packages/kujua-reporting/kujua-reporting',
@@ -360,13 +355,11 @@ module.exports = function(grunt) {
       },
       {
         cwd: 'packages/underscore-string',
-        src: './underscore-string.js',
-        expose: ''
+        src: './underscore-string.js'
       },
       {
         cwd: 'packages/session',
-        src: './session.js',
-        expose: ''
+        src: './session.js'
       },
       {
         cwd: 'packages/duality/duality',
@@ -375,33 +368,32 @@ module.exports = function(grunt) {
       },
       {
         cwd: 'packages/users',
-        src: './users.js',
-        expose: ''
+        src: './users.js'
       },
       {
         cwd: 'packages/cookies',
-        src: './cookies.js',
-        expose: ''
+        src: './cookies.js'
       },
       {
         cwd: 'packages/sha1',
-        src: './sha1.js',
-        expose: ''
+        src: './sha1.js'
       },
       {
         cwd: 'packages/dust',
-        src: './dust.js',
-        expose: ''
+        src: './dust.js'
       },
       {
         cwd: 'packages/locale',
-        src: './locale.js',
-        expose: ''
+        src: './locale.js'
       },
       {
         cwd: 'packages/libphonenumber/libphonenumber',
         src: './*.js',
         expose: 'libphonenumber'
+      },
+      {
+        cwd: 'packages/feedback',
+        src: './feedback.js'
       }
     ];
   };

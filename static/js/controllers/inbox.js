@@ -1,4 +1,5 @@
 var utils = require('kujua-utils'),
+    feedback = require('feedback'),
     sendMessage = require('../modules/send-message'),
     modal = require('../modules/modal'),
     _ = require('underscore');
@@ -444,6 +445,14 @@ var utils = require('kujua-utils'),
 
       $('#tour-select').on('click', 'a.tour-option', function() {
         $('#tour-select').modal('hide');
+      });
+
+      $('#feedback').on('click', '.submit', function() {
+        var pane = modal.start($('#feedback'));
+        var message = $('#feedback [name=feedback]').val();
+        feedback.submit({ message: message }, function(err) {
+          pane.done('Error saving feedback', err);
+        });
       });
 
       require('../modules/add-record').init();
