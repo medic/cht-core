@@ -33,7 +33,7 @@ var registerUnhandledErrorHandler = function() {
   // listen for unhandled errors
   window.onerror = function(message, file, line) {
     try {
-      exports.submit({ message: message, file: file, line: line }, function(err) {
+      module.exports.submit({ message: message, file: file, line: line }, function(err) {
         if (err) {
           console.error('Error saving feedback', err);
         }

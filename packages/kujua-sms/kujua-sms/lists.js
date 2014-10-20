@@ -331,6 +331,61 @@ exports.export_messages = function (head, req) {
     return '';
 };
 
+
+exports.export_feedback = function (head, req) {
+
+    if (!kutils.hasPerm(req.userCtx, 'can_export_feedback')) {
+        log('feedback export sending 403');
+        start({code: 403});
+        return send('');
+    }
+
+    utils.info = appinfo.getAppInfo.call(this); // replace fake info with real from context
+
+    var options = getOptions(req, 'feedback');
+
+    options.columns = [
+        '_id',
+        'reported_date',
+        'User',
+        'App Version',
+        'URL',
+        'Info',
+        'Log'
+    ];
+
+    var filename = _s.sprintf(
+        'feedback-%s.%s',
+        moment().format('YYYYMMDDHHmm'),
+        options.format
+    );
+
+    startExportHeaders(options, filename);
+    sendHeaderRow(options);
+
+    var row;
+    while (row = getRow()) {
+        var doc = row.doc;
+        if (doc) {
+            sendValuesRow([
+                doc._id,
+                formatDate(doc.meta.time, options.timezone),
+                doc.meta.user.name,
+                doc.meta.version,
+                doc.meta.url,
+                safeStringify(doc.info),
+                safeStringify(doc.log)
+            ], options);
+        }
+    }
+
+    sendClosing(options);
+
+    return '';
+
+};
+
+
 function sendError(json, code) {
     start({
         code: code || 400,
@@ -387,6 +442,14 @@ exports.export_data_records = function (head, req) {
     sendClosing(options);
 
     return '';
+};
+
+var safeStringify = function(obj) {
+    try {
+        return JSON.stringify(obj);
+    } catch(e) {
+        return obj;
+    }
 };
 
 exports.export_audit = function (head, req) {

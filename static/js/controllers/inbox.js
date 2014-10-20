@@ -450,7 +450,7 @@ var utils = require('kujua-utils'),
       $('#feedback').on('click', '.submit', function() {
         var pane = modal.start($('#feedback'));
         var message = $('#feedback [name=feedback]').val();
-        feedback.submit({ message: message }, function(err) {
+        feedback.submit(message, function(err) {
           pane.done('Error saving feedback', err);
         });
       });
