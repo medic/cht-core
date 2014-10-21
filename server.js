@@ -1,5 +1,6 @@
 var express = require('express'),
     morgan = require('morgan'),
+    var http = require('http'),
     app = express(),
     db = require('./db'),
     config = require('./config'),
@@ -20,6 +21,8 @@ var express = require('express'),
     monthlyRegistrations = require('./controllers/monthly-registrations'),
     monthlyDeliveries = require('./controllers/monthly-deliveries'),
     createDomain = require('domain').create;
+
+http.globalAgent.maxSockets = 100;
 
 app.use(morgan('combined', {
   immediate: true
