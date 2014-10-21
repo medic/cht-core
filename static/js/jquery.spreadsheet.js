@@ -644,6 +644,7 @@
                 else if (offset.left < scroll_x) {
                     $(window).scrollLeft(offset.left);
                 }
+                editCell.call($table, s);
             }
         });
         $table.bind('change', function () {
@@ -802,10 +803,6 @@
                     }
                 }, 0);
             }
-        });
-        $(document).on('dblclick', '#spreadsheet_select', function () {
-            var td = $table.data('spreadsheet:selected-td');
-            editCell.call($table, td);
         });
         $(document).on('click', function() {
             clearSelection.call($table);
