@@ -176,7 +176,7 @@ var serverError = function(err, res) {
 var notLoggedIn = function(res) {
   res.writeHead(401, {
     'Content-Type': 'text/plain',
-    'WWW-Authenticate': 'Basic realm="server"'
+    'WWW-Authenticate': 'Basic realm="Medic Mobile Web Services"'
   });
   res.end('Not logged in');
 };
