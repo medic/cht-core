@@ -1,6 +1,6 @@
 var express = require('express'),
     morgan = require('morgan'),
-    var http = require('http'),
+    http = require('http'),
     app = express(),
     db = require('./db'),
     config = require('./config'),
