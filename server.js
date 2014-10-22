@@ -47,7 +47,7 @@ app.use(function(err, req, res, next) {
 var audit = function(req, res) {
   var ap = new AuditProxy();
   ap.on('error', function(e) {
-    serverError(err, res);
+    serverError(e, res);
   });
   ap.on('not-authorized', function() {
     notLoggedIn(res);
