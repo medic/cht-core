@@ -70,6 +70,7 @@
         "feedback": ">=1.0.0"
     },
     "migration_path": "/medic/_design/medic/_rewrite/migration",
+    "status_path": "/status",
     "user_data": {
         "db_prefix": false,
         "available_roles" : ["kujua_user","national_admin","district_admin","kujua_gateway","data_entry"],
