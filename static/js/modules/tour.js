@@ -316,9 +316,13 @@ var _ = require('underscore');
     }
     endCurrent();
     if (name) {
-      window.setTimeout(function() {
-        createTour(name);
-      }, 1);
+      if (name === 'intro') {
+        $('#tour-select').modal('show');
+      } else {
+        window.setTimeout(function() {
+          createTour(name);
+        }, 1);
+      }
     }
   };
 
