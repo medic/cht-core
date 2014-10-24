@@ -1,6 +1,7 @@
 var utils = require('kujua-utils'),
     feedback = require('feedback'),
     sendMessage = require('../modules/send-message'),
+    tour = require('../modules/tour'),
     modal = require('../modules/modal'),
     _ = require('underscore');
 
@@ -272,6 +273,16 @@ var utils = require('kujua-utils'),
       };
 
       User.query(function(user) {
+
+        if (!user.known) {
+          tour.start('intro');
+          UpdateUser({ known: true }, function(err) {
+            if (err) {
+              console.log('Error updating user', err);
+            }
+          });
+        }
+
         $scope.editUserModel = {
           fullname: user.fullname,
           email: user.email,
