@@ -1,5 +1,5 @@
 # Medic Mobile Release Notes
- 
+
 ## 0.4.2
 
 ### Sep 4, 2014
