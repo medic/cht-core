@@ -1,0 +1,32 @@
+<div class="col-sm-6 analytics-widget monthly-registrations">
+  <div class="widget-body error" ng-show="monthlyRegistrations.error">
+    Could not retrieve data at this time.
+  </div>
+  <div class="widget-body" ng-hide="!monthlyRegistrations.loading">
+    <div class="loading">
+      <span class="fa fa-spinner fa-spin"></span>
+    </div>
+  </div>
+  <div class="widget-body" ng-if="!monthlyRegistrations.loading && !monthlyRegistrations.error">
+    <div class="title">
+      <p class="name">Monthly Pregnancies Registered</p>
+    </div>
+    <div class="content">
+      <nvd3-line-chart
+        data="monthlyRegistrations.data"
+        width="300"
+        height="250"
+        showXAxis="true"
+        showYAxis="true"
+        xAxisTickFormat="monthlyChartLabelKey()"
+        x="monthlyChartX()"
+        y="monthlyChartY()"
+        interpolate="monotone"
+        interactive="true"
+        tooltips="true"
+        tooltipcontent="monthlyChartToolTip()">
+          <svg></svg>
+      </nvd3-line-chart>
+    </div>
+  </div>
+</div>

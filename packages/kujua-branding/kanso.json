@@ -1,8 +1,5 @@
 {
     "name": "kujua-branding",
     "version": "0.0.2",
-    "description": "Medic Mobile shared branding style and fonts.",
-    "dependencies": {
-        "less-precompiler": null
-    }
+    "description": "Medic Mobile shared branding style and fonts."
 }

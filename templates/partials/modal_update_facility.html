@@ -1,0 +1,26 @@
+<div class="modal fade" id="update-facility" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
+        <h3>Update Facility</h3>
+      </div>
+      <div class="modal-body">
+        <form action="" method="POST"> 
+          <fieldset>
+            <div class="control-group">
+              <select name="facility" style="width:100%;">
+                <option value="{~lb}{~lb}clinic.id{~rb}{~rb}" ng-repeat="clinic in facilities">{~lb}{~lb}clinic.text{~rb}{~rb}</option>
+              </select>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <p class="note"></p>
+        <a class="btn cancel" data-dismiss="modal">Cancel</a>
+        <a class="btn submit btn-primary" ng-click="updateFacility()">Submit</a>
+      </div>
+    </div>
+  </div>
+</div>

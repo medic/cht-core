@@ -75,6 +75,9 @@
 - deprecated `exclude_cols` parameter for export integrations. Migrate 
   applications to use the `columns` parameter instead.
 
+- No forms are included by default, you must upload your forms. As usual
+  configuration (settings and forms) persists through upgrades.
+
 
 ## 0.3.11
 

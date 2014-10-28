@@ -1,40 +1,23 @@
 <div id="reporting-district-choice">
 <div class="row-fluid">
-  <div class="span12">
+  <div>
     {?districts}
     {#forms}
     <div class="row-fluid">
-      <div class="span8 offset2">
+      <div class="offset2">
         <h4 class="form-name">
-          <a href="#"><label class="label"
-              ><i class="icon-file-alt"></i> {code}</label> {formName}</a>
+          <a href="#"><i class="fa fa-file-o"></i> {formName}</a>
         </h4>
         {#districts}
         <div class="row-fluid district {^one_form}hide{/one_form}">
-          <div class="span6">
-            <div class="district-name">
-              <h5><i class="icon-building"></i> {name}</h5>
-            </div>
-          </div>
-          <div class="span6">
-            <div class="district-link">
-              <a href="{baseURL}/reporting/{code}/{id}" class="btn"
-                ><i class="icon-bar-chart"></i> View </a>
-            </div>
+          <div class="district-name facility" data-form-code="{code}" rel="{id}">
+            <h5><i class="fa fa-building"></i> {name}</h5>
           </div>
         </div>
           {#children}
           <div class="row-fluid {^one_form}hide{/one_form}">
-            <div class="span6">
-              <div class="child-name">
-                <i class="icon-plus-sign-alt"></i> {name}
-              </div>
-            </div>
-            <div class="span6">
-              <div class="child-link">
-                <a href="{baseURL}/reporting/{code}/{_id}" class="btn"
-                  ><i class="icon-bar-chart"></i> View </a>
-              </div>
+            <div class="child-name facility" data-form-code="{code}" rel="{_id}">
+              <i class="fa fa-plus-square"></i> {name}
             </div>
           </div>
           {/children}
@@ -42,13 +25,11 @@
       </div>
     {:else}
     <div class="no-records">
-        <i class="icon-star-empty"></i>
+        <i class="fa fa-star-o"></i>
         No scheduled reports are defined in your settings.
     </div>
     </div>
     {/forms}
-    {:else}
-    <a href="{baseURL}/facilities/districts" class="btn btn-block btn-large btn-primary">Add {@translate value="District"/} facility data</a>
     {/districts}
   </div>
 </div>

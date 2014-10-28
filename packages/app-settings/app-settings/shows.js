@@ -30,7 +30,8 @@ exports.app_settings = function(ddoc, req) {
   return {
     body: JSON.stringify({
       settings: settings,
-      schema: schema
+      schema: schema,
+      meta: meta
     }),
     headers: {
       'Content-Type': 'application/json;charset=utf-8'

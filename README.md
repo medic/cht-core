@@ -19,14 +19,45 @@ Assuming you have [Nodejs](http://nodejs.org), [CouchDB](http://couchdb.apache.o
 npm install kanso -g
 ```
 
+Create a `.kansorc` file with your credentials, eg:
+
+```
+exports.env = {
+  default: {
+    db: "http://admin:pass@localhost:5984/medic",
+    overrides: {loglevel:"debug"}
+  }
+};
+```
+
+### Grunt
+
+[Grunt](http://gruntjs.com) is required to build.
+
+```
+npm install grunt-cli -g
+```
+
 ## Develop
 
-### Push the couchapp
+### Build
 
 ```
 git clone --recursive https://github.com/medic/medic-webapp
 cd medic-webapp
-kanso push http://admin:pass@localhost:5984/medic
+npm install
+```
+
+### Push the couchapp
+
+```
+grunt dev
+```
+
+Or you can watch and automatically update the app on changes
+
+```
+grunt watch
 ```
 
 ### Start medic-sentinel
@@ -69,19 +100,20 @@ http://localhost:5984/medic/_design/medic/_rewrite/
 
 ### Loading Data
 
-You can load your form definitions in the settings interface but you can also do that from command line, see:
+Loading your form definitions in the settings interface is suported but you can
+also do that from command line.
 
 ```
 node scripts/load_forms.js
 ```
 
-Simialrly you can bulk load messages from a csv file on the command line, see:
+To bulk load messages from a CSV file run:
 
 ```
 node scripts/load_messages.js
 ```
 
-You can also add a message using curl:
+Use curl to submit a single message:
 
 ```
 curl -i -u gateway:123qwe \
@@ -140,7 +172,7 @@ after a push.  To run them from commandline you will need to install
 
 ```
 npm install phantomjs -g
-./scripts/phantom_test.sh http://localhost:5984/medic
+grunt test
 ```
 
 ## Help

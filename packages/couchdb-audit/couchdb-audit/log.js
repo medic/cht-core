@@ -35,27 +35,30 @@ function init(appname, client, db, nameFn) {
       callback = actionOverride;
       actionOverride = undefined;
     }
+
     nameFn(function(err, userName) {
       if (err) {
         return callback('Failed getting user name. ' + err);
       }
-      async.map(docs, function(_doc, _cb) {
-        if (!_doc._id) {
-          client.uuids(1, function(err, ids) {
-            if (err) {
-              return _cb('Failed generating a new database ID. ' + err);
-            }
-            _doc._id = ids.uuids[0];
-            var audit = createAudit(_doc);
-            appendHistory(audit.history, 'create', userName, _doc);
-            _cb(null, audit);
-          });
-        } else {
-          get(_doc._id, function(err, result) {
-            if (err) {
-              return _cb('Failed retrieving existing audit log. ' + err);
-            }
-            if (!result) {
+
+      getAllRecords(docs, function(err, _records) {
+        if (err) {
+          return _cb('Failed retrieving existing audit logs. ' + err);
+        }
+        async.map(docs, function(_doc, _cb) {
+          if (!_doc._id) {
+            client.uuids(1, function(err, ids) {
+              if (err) {
+                return _cb('Failed generating a new database ID. ' + err);
+              }
+              _doc._id = ids.uuids[0];
+              var audit = createAudit(_doc);
+              appendHistory(audit.history, 'create', userName, _doc);
+              _cb(null, audit);
+            });
+          } else {
+            var record = findRecord(_doc, _records);
+            if (!record) {
               var audit = createAudit(_doc);
               if (_doc._rev) {
                 // no existing audit, but existing revision - log current
@@ -76,20 +79,41 @@ function init(appname, client, db, nameFn) {
               }
             } else {
               // existing audit
-              var audit = result.doc;
+              var audit = record.doc;
               var action = actionOverride || _doc._deleted ? 'delete' : 'update';
               appendHistory(audit.history, action, userName, _doc);
               _cb(null, audit);
             }
-          });
-        }
-      }, function(err, auditRecords) {
-        if (err) {
-          return callback(err);
-        }
-        db.bulkDocs({docs: auditRecords}, callback);
+          }
+        }, function(err, auditRecords) {
+          if (err) {
+            return callback(err);
+          }
+          db.bulkDocs({docs: auditRecords}, callback);
+        });
       });
     });
+  };
+
+  function findRecord(doc, records) {
+    for (var i = 0; i < records.length; i++) {
+      if (records[i].key[0] === doc._id) {
+        return records[i];
+      }
+    }
+  };
+
+  function getAllRecords(docs, callback) {
+    var ids = [];
+    docs.forEach(function(_doc) {
+      if (_doc._id) {
+        ids.push(_doc._id);
+      }
+    });
+    if (!ids.length) {
+      return callback(null, []);
+    }
+    getAll(ids, callback);
   };
 
   function clone(obj) {
@@ -98,11 +122,11 @@ function init(appname, client, db, nameFn) {
         if (obj.hasOwnProperty(attr)) clone[attr] = obj[attr];
     }
     return clone;
-  }
+  };
 
   function isInitialRev(doc) {
     return doc._rev.indexOf('1-') === 0;
-  }
+  };
 
   function createAudit(record) {
     return {
@@ -110,7 +134,7 @@ function init(appname, client, db, nameFn) {
       record_id: record._id,
       history: []
     };
-  }
+  };
 
   function appendHistory(history, action, user, doc) {
     if (history.length > 0) {
@@ -124,18 +148,26 @@ function init(appname, client, db, nameFn) {
       timestamp: new Date().toISOString(),
       doc: doc
     });
-  }
+  };
 
   function get(docId, callback) {
+    getAll([docId], function(err, result) {
+      callback(err, result && result[0]);
+    });
+  };
+
+  function getAll(docIds, callback) {
+    var keys = docIds.map(function(docId) {
+      return [docId];
+    });
     db.view(appname, 'audit_records_by_doc', {
       include_docs: true,
-      startkey: [docId],
-      endkey: [docId, {}]
+      keys: keys
     }, function(err, result) {
       if (err) {
         return callback(err);
       }
-      callback(null, result.rows[0]);
+      callback(null, result.rows);
     });
   };
 

@@ -1,0 +1,30 @@
+<div class="col-sm-6 analytics-widget delivery-location">
+  <div class="widget-body error" ng-show="deliveryLocation.error">
+    Could not retrieve data at this time.
+  </div>
+  <div class="widget-body" ng-hide="!deliveryLocation.loading">
+    <div class="loading">
+      <span class="fa fa-spinner fa-spin"></span>
+    </div>
+  </div>
+  <div class="widget-body" ng-if="!deliveryLocation.loading && !deliveryLocation.error">
+    <div class="title">
+      <p class="name">Reported Delivery Locations</p>
+    </div>
+    <div class="content">
+      <nvd3-pie-chart
+        data="deliveryLocation.data"
+        width="300"
+        height="250"
+        x="deliveryCodeChartLabelKey()"
+        y="deliveryCodeChartLabelValue()"
+        color="deliveryCodeChartColors()"
+        legendcolor="deliveryCodeChartColors()"
+        showLegend="true"
+        showLabels="true"
+        labelType="value">
+          <svg></svg>
+      </nvd3-pie-chart>
+    </div>
+  </div>
+</div>

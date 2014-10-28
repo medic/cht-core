@@ -607,8 +607,8 @@ dust.escapeJs = function(s) {
 })(dust);
 
 if (typeof exports !== "undefined") {
-  if (typeof process !== "undefined") {
-      require('./server')(dust);
-  }
+  // if (typeof process !== "undefined") {
+  //     require('./server')(dust);
+  // }
   module.exports = dust;
 }

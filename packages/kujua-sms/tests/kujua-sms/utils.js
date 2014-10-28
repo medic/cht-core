@@ -485,8 +485,7 @@ exports.getFormKeys = function(test) {
 exports.fieldsToHtml = function(test) {
     test.expect(1);
     var keys = utils.getFormKeys(utils.info.getForm('YYYY')),
-        labels = utils.getLabels(keys, 'YYYY'),
-        data_records = require('lib/data_records');
+        labels = utils.getLabels(keys, 'YYYY');
 
     var expected = {
       "headers": [
@@ -708,8 +707,7 @@ exports.getLabelsForMessages = function(test) {
 exports.labelsMissingLocale = function(test) {
     test.expect(1);
     var keys = utils.getFormKeys(utils.info.getForm('YYYV')),
-        labels = utils.getLabels(keys, 'YYYV', 'en'),
-        data_records = require('lib/data_records');
+        labels = utils.getLabels(keys, 'YYYV', 'en');
 
     var expected = {
       "headers": [

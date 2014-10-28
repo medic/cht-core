@@ -34,9 +34,15 @@ module.exports = {
    ],
    "locale": "en",
    "muvuku_webapp_url": "/medic-reporter/_design/medic-reporter/_rewrite/?_embed_mode=2",
-   "reported_date_format": "DD-MMM-YYYY hh:mm:ss",
+   "date_format": "DD-MMM-YYYY",
+   "reported_date_format": "DD-MMM-YYYY HH:mm:ss",
    "forms_only_mode": false,
+   "default_responses": {
+       "start_date": ""
+   },
+   "district_admins_access_unallocated_messages": false,
    "public_access": false,
+   "default_country_code": 1,
    "gateway_number": "+13125551212",
    "kujua-reporting": [
        {
@@ -44,6 +50,13 @@ module.exports = {
            "reporting_freq": "weekly"
        }
    ],
+   "anc_forms": {
+      "registration": "R",
+      "registrationLmp": "P",
+      "visit": "V",
+      "delivery": "D",
+      "flag": "F"
+   },
    "schedule_morning_hours": 0,
    "schedule_morning_minutes": 0,
    "schedule_evening_hours": 23,
@@ -256,7 +269,7 @@ module.exports = {
            "fr": "Le formulaire envoyé '{{form}}' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur.",
            "es": "No se reconocio el reporte enviado '{{form}}'. Por favor intente de nuevo. Si el problema persiste, informe al director.",
            "ne": "फारम मिलेन​। कृपया फेरि प्रयास गर्नुहोला।",
-           "sw": ""
+           "sw": "Ujumbe huu wa {{form}} si sahihi. Tafadhali urekebishe na utume tena. Shida hii ikiendela wasiliana na CHEW wako."
        },
        {
            "key": "form_invalid",
@@ -319,7 +332,7 @@ module.exports = {
            "fr": "Merci, votre message a été bien reçu.",
            "es": "Recibimos tu mensaje, lo procesaremos pronto. Si querias mandar un reporte, intentalo nuevamente en el formato adecuado.",
            "ne": "सन्देश​ प्राप्त भयो। रिपोर्ट पठाउनुभएको हो भने मिलेन; ​पुन:​ पठाउनुहोला।",
-           "sw": ""
+           "sw": "Ujumbe wako tumeupokea na unakaguliwa. Kama ujumbe huu ni wa kusajilisha, kuthibitisha, kurudisha au kusitisha vikumbusho ama kuripoti kuzaa, tafadhali urekebishe na utume."
        },
        {
            "key": "reporting_unit_not_found",
@@ -576,7 +589,32 @@ module.exports = {
            "key": "task.state",
            "default": "Message State",
            "en": "Message State"
-       }
+       },
+      {
+          "key": "Reply",
+          "default": "Reply",
+          "en": "Reply"
+      },
+      {
+          "key": "Verify",
+          "default": "Verify",
+          "en": "Verify"
+      },
+      {
+          "key": "Unverify",
+          "default": "Unverify",
+          "en": "Unverify"
+      },
+      {
+          "key": "Delete",
+          "default": "Delete",
+          "en": "Delete"
+      },
+      {
+          "key": "Edit",
+          "default": "Edit",
+          "en": "Edit"
+      }
    ],
    "forms": {
         "YYYY": {

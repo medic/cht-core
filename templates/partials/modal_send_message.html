@@ -1,0 +1,33 @@
+<div id="send-message" class="modal fade message-form" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
+        <h3>Send Message</h3>
+      </div>
+      <div class="modal-body">
+        <form action="" method="POST">
+          <fieldset>
+            <div class="control-group">
+              <div class="controls">
+                <input style="width:100%;" class="input-xlarge" type="text" name="phone" autocomplete="off" placeholder="Phone"/>
+              </div>
+              <span class="help-block"></span>
+            </div>
+            <div class="control-group">
+              <div class="controls">
+                <textarea name="message" placeholder="Enter message"></textarea>
+              </div>
+              <span class="help-block"></span>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <p class="note">{note}</p>
+        <a href="#" class="btn cancel" data-dismiss="modal">Cancel</a>
+        <a class="btn submit btn-primary" ng-click="sendMessage($event)" data-working-label="Sending...">Send</a>
+      </div>
+    </div>
+  </div>
+</div>

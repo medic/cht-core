@@ -9,9 +9,9 @@ before_script:
   - sleep 3
   - curl -X PUT localhost:5984/medic
   - npm install kanso -g
-  - kanso push http://localhost:5984/medic
+  - npm install grunt-cli -g
 
-script: ./scripts/ci/run_build.sh
+script: grunt ci
 
 after_success:
   - bash ./scripts/ci/after_success.sh

@@ -1,0 +1,44 @@
+<div class="modal fade" id="edit-message-group" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
+        <h3>Edit {~lb}{~lb}selectedGroup.group{~rb}{~rb}</h3>
+      </div>
+      <div class="modal-body">
+        <form action="" method="POST">
+
+          <fieldset ng-repeat="task in selectedGroup.rows" ng-hide="task.deleted" ng-disabled="task.state !== 'scheduled' && task.state !== 'muted'" data-index="{~lb}{~lb}$index{~rb}{~rb}">
+
+            <div class="form-group">
+              <label>
+                Message
+                <a class="btn btn-link fa fa-trash-o" ng-hide="task.state !== 'scheduled' && task.state !== 'muted'" ng-click="task.deleted = true"></a>
+              </label>
+              <input type="text" class="form-control" ng-repeat="message in task.messages" ng-model="message.message" />
+            </div>
+
+            <div class="form-group">
+              <div class="input-group">
+                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                <input type="text" class="form-control datepicker" ng-value="task.due | simpleDateTime" />
+              </div>
+            </div>
+
+          </fieldset>
+
+          <a class="btn" ng-click="addTask(selectedGroup)">
+            <i class="fa fa-plus"></i>
+            Add Message
+          </a>
+
+        </form>
+      </div>
+      <div class="modal-footer">
+        <p class="note"></p>
+        <a class="btn cancel" data-dismiss="modal">Cancel</a>
+        <a class="btn submit btn-primary" ng-click="updateGroup(selectedGroup)">Submit</a>
+      </div>
+    </div>
+  </div>
+</div>

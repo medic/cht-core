@@ -30,8 +30,24 @@ exports.rules = [
         }
     },
     {
+        from: '/export/feedback',
+        to: '_list/export_feedback/feedback',
+        query: {
+            include_docs: 'true',
+            descending: 'true'
+        }
+    },
+    {
         from: '/export/audit',
         to: '_list/export_audit/audit_records_by_doc',
+        query: {
+            include_docs: 'true',
+            descending: 'true'
+        }
+    },
+    {
+        from: '/export/forms',
+        to: '_list/export_data_records/data_records',
         query: {
             include_docs: 'true',
             descending: 'true'

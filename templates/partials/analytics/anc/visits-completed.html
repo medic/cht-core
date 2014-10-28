@@ -1,0 +1,29 @@
+<div class="col-sm-6 analytics-widget visits-completed">
+  <div class="widget-body error" ng-show="visitsCompleted.error">
+    Could not retrieve data at this time.
+  </div>
+  <div class="widget-body" ng-hide="!visitsCompleted.loading">
+    <div class="loading">
+      <span class="fa fa-spinner fa-spin"></span>
+    </div>
+  </div>
+  <div class="widget-body" ng-if="!visitsCompleted.loading && !visitsCompleted.error">
+    <div class="title">
+      <p class="name">Visits Completed During Pregnancy</p>
+      <p class="description">Completed pregnancies that have had...</p>
+    </div>
+    <div class="content">
+      <nvd3-discrete-bar-chart
+        data="visitsCompleted.data"
+        width="300"
+        height="250"
+        showXAxis="true"
+        showValues="true"
+        color="visitsChartColors()"
+        xAxisTickFormat="visitsChartLabelKey()"
+        valueFormat="visitsChartLabelValue()">
+          <svg></svg>
+      </nvd3-discrete-bar-chart>
+    </div>
+  </div>
+</div>

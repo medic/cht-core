@@ -59,10 +59,10 @@ exports['getDates list - no query params'] = function (test) {
 
 /*
  *  reporting_freq: month
- *  query string: {startmonth:'2011-8', months:3}
+ *  query string: {startmonth:'2011-8', quantity:3}
  */
-exports['getDates list - month/startmonth/months:3'] = function (test){
-    var q = {startmonth:'2011-8', months:3};
+exports['getDates list - month/startmonth/quantity:3'] = function (test){
+    var q = {startmonth:'2011-8', quantity:3};
     var dates = utils.getDates(q);
     test.expect(4);
     test.strictEqual(dates.list.length, 3);
@@ -75,10 +75,10 @@ exports['getDates list - month/startmonth/months:3'] = function (test){
 
 /*
  *  reporting_freq: month
- *  query string: {startmonth:'2011-8', months:12}
+ *  query string: {startmonth:'2011-8', quantity:12}
  */
-exports['getDates list - month/startmonth/months:12'] = function (test){
-    var q = {startmonth:'2011-8', months:12};
+exports['getDates list - month/startmonth/quantity:12'] = function (test){
+    var q = {startmonth:'2011-8', quantity:12};
     var dates = utils.getDates(q);
     test.expect(3);
     test.strictEqual(dates.list.length, 12);
@@ -218,11 +218,11 @@ exports['interprets "monthly" reporting_freq as by month'] = function(test) {
 
 /*
  *  reporting_freq: month
- *  query string: {time_unit: 'month', month: 6}
+ *  query string: {time_unit: 'month', quantity: 6}
  */
-exports['getDates - month/month/months:6'] = function (test) {
+exports['getDates - month/month/quantity:6'] = function (test) {
     test.expect(1);
-    var dates = utils.getDates({time_unit: 'month', months: 6}, 'month');
+    var dates = utils.getDates({time_unit: 'month', quantity: 6}, 'month');
     test.equal(dates.list.length, 6);
     test.done();
 }
@@ -240,14 +240,14 @@ exports['getDates - month/quarter'] = function (test) {
 
 /*
  *  reporting_freq: month
- *  query string: {time_unit: 'quarter', quarters: 3}
+ *  query string: {time_unit: 'quarter', quantity: 3}
  */
-exports['getDates - month/quarter/quarters:3'] = function (test) {
+exports['getDates - month/quarter/quantity:3'] = function (test) {
     test.expect(3);
     // selected/reporting time unit is quarter and reporting freq is month and quarters is 3
     var now = moment(new Date());
     var copy = moment(new Date(now.year(), now.month(), 2));
-    var dates = utils.getDates({time_unit: 'quarter', quarters: 3}, 'month');
+    var dates = utils.getDates({time_unit: 'quarter', quantity: 3}, 'month');
     test.equal(dates.list.length, 9);
     test.equal(dates.list[0].valueOf(), copy.clone().subtract('months',1).valueOf());
     test.equal(dates.list[8].valueOf(), copy.clone().subtract('months',9).valueOf());
@@ -280,7 +280,7 @@ exports['getDates - month, no reporting freq'] = function (test) {
 /****************************
  * utils.getReportingViewArgs
  *
- *  query: {months: 1}
+ *  query: {quantity: 1}
  *
  *  example view params for Apr 2013:
  *    {
@@ -304,7 +304,7 @@ exports['utils.getReportingViewArgs -- no startmonth'] = function(test) {
         endkey: ['TEST', end.year(), end.month()+1, ''],
         descending: true
     };
-    var q = {months: 1, form: 'TEST'};
+    var q = {quantity: 1, form: 'TEST'};
     var dates = utils.getDates(q);
     var args = utils.getReportingViewArgs(dates);
 
@@ -316,7 +316,7 @@ exports['utils.getReportingViewArgs -- no startmonth'] = function(test) {
 
 exports['utils.getReportingViewArgs -- startmonth is January'] = function(test) {
     test.expect(3);
-    var q = {months:1, startmonth:'2011-1', form:'TEST'};
+    var q = {quantity:1, startmonth:'2011-1', form:'TEST'};
     var expect = {
         startkey: ['TEST', 2011, 1, {}],
         endkey: ['TEST', 2010, 12, ''],
@@ -332,7 +332,7 @@ exports['utils.getReportingViewArgs -- startmonth is January'] = function(test) 
 
 exports['utils.getReportingViewArgs -- startmonth is August and 6 months prior'] = function(test) {
     test.expect(3);
-    var q = {startmonth:'2011-8', months:'6', form:'TEST'};
+    var q = {startmonth:'2011-8', quantity:'6', form:'TEST'};
     var expect = {
         startkey: ['TEST', 2011, 8, {}],
         endkey: ['TEST', 2011, 2, ''],
@@ -351,7 +351,7 @@ exports['utils.getReportingViewArgs -- startmonth is August and 6 months prior']
  */
 exports['reporting.getRows - three months'] = function (test) {
     test.expect(8);
-    var q = {startmonth:'2011-10', months:3, form:'TEST'},
+    var q = {startmonth:'2011-10', quantity:3, form:'TEST'},
         dates = utils.getDates(q);
 
     var facilities = [
@@ -424,29 +424,25 @@ exports['reporting.getRows - three months'] = function (test) {
           {
             "year": 2011,
             "not_submitted": true,
-            "url": getBaseURL('add/data_record?clinic=947f3d&month=9'),
             "month": 9,
             "name": "September 2011"
           },
           {
             "year": 2011,
             "not_submitted": true,
-            "url": getBaseURL('add/data_record?clinic=947f3d&month=8'),
             "month": 8,
             "name": "August 2011"
           },
           {
             "year": 2011,
             "not_submitted": true,
-            "url": getBaseURL('add/data_record?clinic=947f3d&month=7'),
             "month": 7,
             "name": "July 2011"
           }
         ],
         "clinics": [ "b42c21", "b42ffc" ],
         "valid": 0,
-        "valid_percent": 0,
-        "url": "reporting/TEST/947f3d?startmonth=2011-10&months=3&time_unit=month"
+        "valid_percent": 0
       },
       {
         "id": "947322",
@@ -455,14 +451,12 @@ exports['reporting.getRows - three months'] = function (test) {
           {
             "year": 2011,
             "not_submitted": true,
-            "url": getBaseURL('add/data_record?clinic=947322&month=9'),
             "month": 9,
             "name": "September 2011"
           },
           {
             "year": 2011,
             "not_submitted": true,
-            "url": getBaseURL('add/data_record?clinic=947322&month=8'),
             "month": 8,
             "name": "August 2011"
           },
@@ -518,8 +512,7 @@ exports['reporting.getRows - three months'] = function (test) {
           "b40cd2"
         ],
         "valid": 3,
-        "valid_percent": 33,
-        "url": "reporting/TEST/947322?startmonth=2011-10&months=3&time_unit=month"
+        "valid_percent": 33
       }
     ];
 
@@ -544,7 +537,7 @@ exports['reporting.getRowsHC - three months'] = function (test) {
 
     test.expect(59);
 
-    var q = {startmonth:'2011-10', months:3, form:'TEST'},
+    var q = {startmonth:'2011-10', quantity:3, form:'TEST'},
         dates = utils.getDates(q);
 
     var reports = [
@@ -693,7 +686,7 @@ exports['reporting.getRowsHC - rows are 1-indexed months'] = function (test) {
 
     test.expect(3);
 
-    var q = {startmonth:'2011-10', months:3},
+    var q = {startmonth:'2011-10', quantity:3},
         dates = utils.getDates(q),
         reports = [];
 
@@ -741,7 +734,7 @@ exports['reporting.getRowsHC - rows are 1-indexed weeks'] = function (test) {
 exports['utils.processNotSubmitted -- check january'] = function (test) {
     test.expect(6);
 
-    var q = {startmonth:'2011-1', months:3, form:'TEST'},
+    var q = {startmonth:'2011-1', quantity:3, form:'TEST'},
         dates = utils.getDates(q);
 
     var rows = [{
@@ -767,7 +760,7 @@ exports['utils.processNotSubmitted -- missing two months'] = function (test){
 
     test.expect(7);
 
-    var q = {startmonth:'2011-10', months:3, form:'TEST'};
+    var q = {startmonth:'2011-10', quantity:3, form:'TEST'};
     var dates = utils.getDates(q);
 
     var rows = [{
@@ -821,7 +814,7 @@ exports['utils.processNotSubmitted -- missing two months'] = function (test){
  */
 exports['reporting.getTotals - weekly time unit and frequency'] = function (test) {
     test.expect(1);
-    var q = {startweek:'2012-34', weeks:3, time_unit:'week', form:'TEST'},
+    var q = {startweek:'2012-34', quantity:3, time_unit:'week', form:'TEST'},
         reporting_freq = 'week',
         dates = utils.getDates(q, reporting_freq);
 
@@ -875,7 +868,7 @@ exports['reporting.getTotals - weekly time unit and frequency'] = function (test
 
 exports['reporting.getTotals - months time unit, weekly report frequency'] = function (test) {
     test.expect(1);
-    var q = {startmonth: '2012-08', months: 3, form:'TEST'},
+    var q = {startmonth: '2012-08', quantity: 3, form:'TEST'},
         reporting_freq = 'week',
         dates = utils.getDates(q, reporting_freq);
 
@@ -931,7 +924,7 @@ exports['reporting.getTotals - months time unit, weekly report frequency'] = fun
 exports['reporting.getTotals - single health center, three months'] = function (test) {
 
     test.expect(1);
-    var q = {startmonth:'2011-10', months:3, form:'TEST'},
+    var q = {startmonth:'2011-10', quantity:3, form:'TEST'},
         dates = utils.getDates(q);
 
     var reports = [

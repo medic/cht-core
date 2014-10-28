@@ -1,7 +1,6 @@
-
-<div id="user-management">
+<div id="user-management" class="tab-content">
   <a id="add-user" href="#" class="btn btn-primary">
-    <i class="icon-user"></i>
+    <i class="fa fa-user"></i>
     Add User
   </a>
 
@@ -61,8 +60,7 @@
           <optgroup label="People">
             <option value="national-manager">Full access</option>
             <option value="district-manager">Restricted to group of facilities</option>
-            <!--option value="facility-manager">Restricted to individual facility</option-->
-            <option value="data-entry">Data entry - access to Muvuku only</option>
+            <option value="data-entry">Data entry - access to Medic Reporter only</option>
           </optgroup>
           <optgroup label="Computers">
             <option value="analytics">Analytics - Data export via URL only</option>
@@ -91,7 +89,7 @@
     </form>
   </div>
   <div class="modal-footer">
-    <p class="pull-left note">{note}</p>
+    <p class="note">{note}</p>
     <button type="button" class="btn cancel" data-dismiss="modal">Cancel</button>
     <button type="button" class="btn submit btn-primary">Save</button>
   </div>

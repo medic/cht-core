@@ -1,0 +1,43 @@
+<div class="col-sm-6 analytics-widget missing-delivery-reports table-responsive">
+  <div class="widget-body error" ng-show="missingDeliveryReports.error">
+    Could not retrieve data at this time.
+  </div>
+  <div class="widget-body" ng-hide="!missingDeliveryReports.loading">
+    <div class="loading">
+      <span class="fa fa-spinner fa-spin"></span>
+    </div>
+  </div>
+  <div class="widget-body" ng-if="!missingDeliveryReports.loading && !missingDeliveryReports.error">
+    <div class="title">
+      <p class="count">
+        {~lb}{~lb}missingDeliveryReports.data.length || 0{~rb}{~rb}
+      </p>
+      <p class="name">Missing Birth Reports</p>
+    </div>
+    <div class="content" ng-if="missingDeliveryReports.data">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="sortable" ng-class="{'sorted':missingDeliveryReports.order==='patient_name'}" ng-click="missingDeliveryReports.order='patient_name'">Name</th>
+            <th class="sortable" ng-class="{'sorted':missingDeliveryReports.order==='clinic.contact.name'}" ng-click="missingDeliveryReports.order='clinic.contact.name'">CHW</th>
+            <th class="sortable" ng-class="{'sorted':upcomingDueDates.order==='edd'}" ng-click="upcomingDueDates.order='edd'">EDD</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="appointment in missingDeliveryReports.data | orderBy:missingDeliveryReports.order">
+            <td ng-class="{'high-risk': appointment.high_risk}">{~lb}{~lb}appointment.patient_name{~rb}{~rb}</td>
+            <td>{~lb}{~lb}appointment.clinic.contact.name{~rb}{~rb}</td>
+            <td>
+              <span ng-class="{'approximate': pregnancy.edd.approximate}"><span ng-bind-html="pregnancy.edd | simpleDate"></span></span>
+            </td>
+            <td class="actions">
+              <a href="#" class="btn btn-link send-message" data-send-to="{~lb}{~lb}appointment.clinic.contact.phone{~rb}{~rb}" title="Send message to CHW" ng-class="{'disabled': !appointment.clinic.contact.phone}"><i class="fa fa-envelope"></i></a>
+              <a href="#/reports?query=patient_id:{~lb}{~lb}appointment.patient_id{~rb}{~rb}" class="btn btn-link" title="View patient history"><i class="fa fa-list-alt"></i></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,48 @@
+<div id="help-search">
+  <div class="row">
+    <div class="span10 offset1">
+      <h3>Messages</h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="span10 offset1">
+      
+      <h4>Configuration</h4>
+
+      <p>Outgoing messages can be configured to include data from the document by wrapping the field name in braces, eg:</p>
+
+      <pre>Thank you {~lb}{~lb}contact.name{~rb}{~rb}, {~lb}{~lb}patient_name{~rb}{~rb} has been registered.</pre>
+
+      <p><a href="http://mustache.github.io/mustache.5.html" target="_blank">More information</a>.</p>
+
+      <h4>Available Fields</h4>
+
+      <dl class="horizontal">
+        <dt><span class="pre">contact</span></dt>
+        <dd>The contact at the clinic. Use contact.name or contact.phone.</dd>
+        <dt><span class="pre">clinic</span></dt>
+        <dd>The clinic</dd>
+        <dt><span class="pre">parent</span></dt>
+        <dd>The parent facility of the clinic</dd>
+        <dt><span class="pre">grandparent</span></dt>
+        <dd>The grandparent facility of the clinic</dd>
+        <dt><span class="pre">health_center</span></dt>
+        <dd>The health center</dd>
+        <dt><span class="pre">district</span></dt>
+        <dd>The district</dd>
+        <dt></dt>
+        <dd>All other fields on the document are included</dd>
+      </dl>
+
+      <h4>Formatters</h4>
+
+      <p>To format dates using the configured date format:</p>
+
+      <pre>Expected due date is {~lb}{~lb}#date{~rb}{~rb}{~lb}{~lb}expected_date{~rb}{~rb}{~lb}{~lb}/date{~rb}{~rb}</pre>
+
+      <p>Or the configured datetime format:</p>
+      
+      <pre>Message received at {~lb}{~lb}#datetime{~rb}{~rb}{~lb}{~lb}reported_date{~rb}{~rb}{~lb}{~lb}/datetime{~rb}{~rb}</pre>
+    </div>
+  </div>
+</div>

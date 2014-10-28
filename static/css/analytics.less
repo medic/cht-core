@@ -1,0 +1,123 @@
+@import "variables";
+
+.analytics-widget {
+  padding: 1em;
+  .title {
+    font-weight: bold;
+    text-align: center;
+    padding: 1em;
+    padding-top: 2em;
+    .count {
+      margin: 0;
+      line-height: 0.9em;
+      font-size: 4em;
+    }
+    .name {
+      font-size: 1.5em;
+    }
+    .fa {
+      font-size: 0.7em;
+      vertical-align: middle;
+    }
+  }
+  .content {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .approximate:before {
+    content: '~';
+  }
+  .sortable {
+    cursor: pointer;
+    &:after {
+      content: '\f0dd';
+      font-family: FontAwesome;
+      vertical-align: text-bottom;
+      margin-left: 0.2em;
+      color: #FFFFFF;
+      color: rgba(0, 0, 0, 0);
+    }
+  }
+  .sorted:after {
+    color: #000000;
+  }
+  svg {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  .table {
+    margin-bottom: 0;
+  }
+  .widget-body {
+    box-shadow: 0 0 0.5em #AAA;
+  }
+  .btn-link {
+    padding: 0;
+    line-height: 1em;
+  }
+  .fa-list-alt {
+    padding-top: 1px;
+  }
+  .actions {
+    text-align: right;
+    white-space: nowrap;
+  }
+  .upcoming-edd {
+    color: @birth-color;
+  }
+  .high-risk {
+    color: @high-risk-color;
+  }
+  .loading {
+    font-size: 4em;
+    padding: 0.5em;
+  }
+  .error {
+    padding: 1em;
+  }
+  .loading, .error {
+    text-align: center;
+    color: @label-color;
+    color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+
+.active-pregnancies .title {
+  color: #5A339E;
+}
+
+.upcoming-appointments .title {
+  color: #1D86F0;
+}
+
+.missed-appointments .title {
+  color: @warning-color;
+}
+
+.upcoming-due-dates .title {
+  color: @birth-color;
+}
+
+.high-risk .title {
+  color: @high-risk-color;
+}
+
+.total-births .title {
+  color: @birth-color;
+}
+
+.missing-delivery-reports .title {
+  color: #1D86F0;
+}
+
+@media (max-width: 767px) {
+  .analytics-widget {
+    padding: 1em 0;
+  }
+  .table-responsive {
+    border: 0;
+    margin-bottom: 0;
+    overflow: inherit;
+  }
+}
