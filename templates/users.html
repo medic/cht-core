@@ -44,10 +44,8 @@
         <input id="iterations" type="hidden" />
         <input id="known" type="hidden" />
 
-        <div class="control-group">
-          <label for="name">User Name *</label>
-          <input id="name" type="text" />
-        </div>
+        <label for="name">User Name *</label>
+        <input id="name" type="text" />
 
         <label for="fullname">Full Name</label>
         <input id="fullname" type="text" />
@@ -82,10 +80,11 @@
         <label for="phone">Phone Number</label>
         <input id="phone" type="text" />
 
-        <div class="control-group">
-          <label for="password">Password <span id="password-required">*</span></label>
-          <input id="password" type="password" autocomplete="off" />
-        </div>
+        <label for="password">Password <span class="password-required">*</span></label>
+        <input id="password" type="password" autocomplete="off" />
+
+        <label for="password-confirm">Confirm Password <span class="password-required">*</span></label>
+        <input id="password-confirm" type="password" autocomplete="off" />
       </div>
     </form>
   </div>
