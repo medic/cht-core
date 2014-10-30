@@ -10,6 +10,7 @@
 
     <label for="gateway-number">Gateway number</label>
     <input id="gateway-number" type="text" value="{gateway_number}" />
+    <span class="help-block">This is number where mobile reporters should send their reports. It is also the number they will receive messages from.</span>
 
     <label for="default-country-code">Default Country Code</label>
     <input id="default-country-code" type="text" value="{default_country_code}" />
@@ -20,9 +21,9 @@
   <fieldset>
     <legend>Advanced Settings</legend>
 
-    <label for="accept-messages">Accept messages</label>
+    <label for="accept-messages">Accept plain-text messages</label>
     <input id="accept-messages" type="checkbox" {@eq key="forms_only_mode" value="false"}checked="true"{/eq}>
-    <span class="help-block">if unchecked an error message will be sent to anyone who submits anything other than a report</span>
+    <span class="help-block">Check this box if you want to accept regular SMS messages in addition to reports. If unchecked, an error message will be sent to anyone who submits anything other than a report.</span>
 
     <label for="date-display-format">Date display format</label>
     <select id="date-display-format">
@@ -63,6 +64,7 @@
 
   <fieldset>
     <legend>Languages</legend>
+    <p>You can edit the translations for each language on the <a href="#translations" class="tab-link">Translations</a> tab.</p>
     <div id="languages" class="repeat-container">
       {#locales}
       <div class="repeat-element">
