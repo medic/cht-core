@@ -14,6 +14,12 @@ var _ = require('underscore'),
         return date.zone(0).format('YYYY-MM-DD');
       };
 
+      var createDisjunction = function(arr) {
+        return _.map(arr, function(str) {
+          return '"' + str + '"';
+        }).join(' OR ');
+      };
+
       var formatReportedDate = function($scope) {
         if ($scope.filterModel.date.to || $scope.filterModel.date.from) {
           // increment end date so it's inclusive
@@ -39,7 +45,7 @@ var _ = require('underscore'),
           $scope.filterModel.forms.forEach(function(form) {
             formCodes.push(form.code);
           });
-          return 'form:(' + formCodes.join(' OR ') + ')';
+          return 'form:(' + createDisjunction(formCodes) + ')';
         }
       };
 
@@ -64,26 +70,23 @@ var _ = require('underscore'),
       var formatClinics = function($scope) {
         var selectedFacilities = $scope.filterModel.facilities.length;
         if (selectedFacilities > 0 && selectedFacilities < $scope.facilities.length) {
-          return 'clinic:(' + $scope.filterModel.facilities.join(' OR ') + ')';
+          return 'clinic:(' + createDisjunction($scope.filterModel.facilities) + ')';
         }
       };
       
       var formatDistrict = function($scope, showUnallocated) {
         if ($scope.permissions.districtAdmin) {
-          var value = $scope.permissions.district;
+          var values = [ $scope.permissions.district ];
           if (showUnallocated) {
-            value += ' OR none';
+            values.push('none');
           }
-          return 'district:(' + value + ')';
+          return 'district:(' + createDisjunction(values) + ')';
         }
       };
 
       var formatIds = function(options) {
         if (options.changes && options.changes.length) {
-          var updatedIds = _.map(options.changes, function(result) {
-            return '"' + result.id + '"';
-          });
-          return 'uuid:(' + updatedIds.join(' OR ') + ')';
+          return 'uuid:(' + createDisjunction(_.pluck(options.changes, 'id')) + ')';
         }
       };
 

@@ -73,7 +73,7 @@ describe('GenerateSearchQuery service', function() {
       chai.expect(query).to.equal(
         'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
         'AND type:report ' +
-        'AND form:(A OR B OR C)'
+        'AND form:("A" OR "B" OR "C")'
       );
     });
   });
@@ -205,7 +205,7 @@ describe('GenerateSearchQuery service', function() {
       chai.expect(query).to.equal(
         'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
         'AND type:report ' +
-        'AND clinic:(a OR b OR c)'
+        'AND clinic:("a" OR "b" OR "c")'
       );
     });
   });
@@ -335,7 +335,7 @@ describe('GenerateSearchQuery service', function() {
       chai.expect(query).to.equal(
         'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
         'AND type:report ' +
-        'AND district:(abc)'
+        'AND district:("abc")'
       );
     });
   });
@@ -357,7 +357,7 @@ describe('GenerateSearchQuery service', function() {
       chai.expect(query).to.equal(
         'reported_date<date>:[2013-02-08 TO 2013-06-13] ' +
         'AND type:report ' +
-        'AND district:(abc OR none)'
+        'AND district:("abc" OR "none")'
       );
     });
   });
