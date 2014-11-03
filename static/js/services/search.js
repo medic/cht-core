@@ -6,8 +6,21 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('Search', ['db', 'FormatDataRecord',
-    function(db, FormatDataRecord) {
+  inboxServices.factory('Search', ['$rootScope', 'db', 'FormatDataRecord',
+    function($rootScope, db, FormatDataRecord) {
+
+      var formatResults = function(err, data, callback) {
+        if (err) {
+          return callback(err);
+        }
+        FormatDataRecord(data.rows).then(function(res) {
+          callback(null, {
+            results: res,
+            total_rows: data.total_rows
+          });
+        });
+      };
+
       return function(options, callback) {
 
         _.defaults(options, {
@@ -25,14 +38,11 @@ var _ = require('underscore');
           'data_records',
           options,
           function(err, data) {
-            if (err) {
-              return callback(err);
-            }
-            FormatDataRecord(data.rows).then(function(res) {
-              callback(null, {
-                results: res,
-                total_rows: data.total_rows
-              });
+            formatResults(err, data, function(err, data) {
+              callback(err, data);
+              if (!$rootScope.$$phase) {
+                $rootScope.$apply();
+              }
             });
           }
         );

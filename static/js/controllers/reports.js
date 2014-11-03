@@ -115,9 +115,7 @@ var _ = require('underscore'),
             $scope.appending = false;
             if (err) {
               $scope.error = true;
-              $scope.loading = false;
-              console.log('Error loading messages', err);
-              return;
+              return console.log('Error loading messages', err);
             }
             $scope.error = false;
             $scope.update(data.results);
