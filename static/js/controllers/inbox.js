@@ -17,6 +17,7 @@ var utils = require('kujua-utils'),
 
       $scope.loading = true;
       $scope.error = false;
+      $scope.errorSyntax = false;
       $scope.appending = false;
       $scope.languages = [];
       $scope.editUserModel = {};

@@ -100,7 +100,7 @@ var _ = require('underscore'),
 
       return function($scope, options, callback) {
 
-        Settings(function(err, res) {
+        Settings(function(err, settings) {
 
           if (err) {
             return callback(err);
@@ -115,7 +115,7 @@ var _ = require('underscore'),
           filters.push(formatForm($scope));
           filters.push(formatErrors($scope));
           filters.push(formatVerified($scope));
-          filters.push(formatDistrict($scope, res.district_admins_access_unallocated_messages));
+          filters.push(formatDistrict($scope, settings.district_admins_access_unallocated_messages));
           filters.push(formatIds(options));
 
           callback(null, _.compact(filters).join(' AND '));

@@ -13,7 +13,10 @@
       </div>
     </li>
   </ul>
-  <p ng-show="error" class="alert alert-danger" role="alert">Error fetching reports</p>
+  <p ng-show="error" class="alert alert-danger" role="alert">
+    <span ng-show="errorSyntax">That query is invalid. Read our <a href="{baseURL}/help/search" target="_blank" rel="external">advanced search help page</a> for more information on query syntax.</span>
+    <span ng-hide="errorSyntax">Error fetching reports</span>
+  </p>
   <p class="loading-status" ng-show="!error && !loading && !messages.length">No reports found</p>
   <p class="loading-status" ng-show="!loading && messages.length && messages.length === totalMessages">No more reports</p>
   <span class="mm-loader" ng-show="loading">

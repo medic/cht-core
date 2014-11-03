@@ -100,6 +100,7 @@ var _ = require('underscore'),
           _currentQuery = options.query;
           if (!options.silent) {
             $scope.error = false;
+            $scope.errorSyntax = false;
             $scope.loading = true;
           }
           if (options.skip) {
@@ -115,9 +116,17 @@ var _ = require('underscore'),
             $scope.appending = false;
             if (err) {
               $scope.error = true;
+              if ($scope.filterQuery &&
+                  err.reason &&
+                  err.reason.toLowerCase().indexOf('bad query syntax') !== -1) {
+                // invalid freetext filter query
+                $scope.errorSyntax = true;
+              }
               return console.log('Error loading messages', err);
             }
             $scope.error = false;
+            $scope.errorSyntax = false;
+
             $scope.update(data.results);
             if (!options.changes) {
               $scope.totalMessages = data.total_rows;
