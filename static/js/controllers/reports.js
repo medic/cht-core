@@ -39,22 +39,20 @@ var _ = require('underscore'),
         _selectedDoc = id;
         $scope.setSelected();
         if (id && $scope.messages) {
-          $scope.messages.forEach(function(message) {
-            if (message._id === id) {
-              if (!$scope.isRead(message)) {
-                $scope.readStatus.forms.read++;
-              }
-              MarkRead(id, true, function(err) {
-                if (err) {
-                  console.log(err);
-                }
-              });
-              $scope.setSelected(message);
+          var message = _.findWhere($scope.messages, { _id: id });
+          if (message) {
+            if (!$scope.isRead(message)) {
+              $scope.readStatus.forms.read++;
             }
-          });
+            MarkRead(id, true, function(err) {
+              if (err) {
+                console.log(err);
+              }
+            });
+            $scope.setSelected(message);
+          }
         }
       };
-
 
       var _deleteMessage = function(message) {
         if ($scope.selected && $scope.selected._id === message.id) {

@@ -39,7 +39,9 @@ var utils = require('kujua-utils'),
       };
 
       $scope.setFilterQuery = function(query) {
-        $scope.filterQuery = query;
+        if (!$scope.filterQuery && query) {
+          $scope.filterQuery = query;
+        }
       };
 
       $scope.setAnalyticsModules = function(modules) {
