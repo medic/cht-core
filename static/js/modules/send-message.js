@@ -168,6 +168,24 @@ var _ = require('underscore'),
     recipients = _recipients;
   };
 
+  var resolveRecipients = function(recipients) {
+    return _.map(recipients, function(recipient) {
+      if (recipient.doc._id) {
+        // already a facility object
+        return recipient;
+      } else {
+        // see if we can resolve the facility
+        var contacts = $('#send-message [name=phone]').data('options');
+        var match = _.find(contacts, function(contact) {
+          return contact.doc.contact &&
+                 recipient.doc.contact &&
+                 contact.doc.contact.phone === recipient.doc.contact.phone;
+        });
+        return match || recipient;
+      }
+    });
+  };
+
   exports.validate = function(target, callback) {
 
     var $modal = $(target).closest('.message-form');
@@ -176,18 +194,18 @@ var _ = require('underscore'),
       return;
     }
 
-    var $phoneField = $modal.find('[name=phone]');
     var $messageField = $modal.find('[name=message]');
 
     var phone;
     if ($modal.is('.modal')) {
+      var $phoneField = $modal.find('[name=phone]');
       phone = updateValidation(
         validatePhoneNumbers, $phoneField, $phoneField.select2('data')
       );
     } else {
       phone = {
         valid: true,
-        value: recipients
+        value: resolveRecipients(recipients)
       };
     }
 
