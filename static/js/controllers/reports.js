@@ -42,7 +42,7 @@ var _ = require('underscore'),
           var message = _.findWhere($scope.messages, { _id: id });
           if (message) {
             if (!$scope.isRead(message)) {
-              $scope.readStatus.forms.read++;
+              $scope.readStatus.forms--;
             }
             MarkRead(id, true, function(err) {
               if (err) {

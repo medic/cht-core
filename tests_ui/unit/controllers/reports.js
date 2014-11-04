@@ -19,10 +19,7 @@ describe('ReportsCtrl controller', function() {
     scope.filterModel = { date: {} };
     scope.selected = { _id: 'a' };
     message = { _id: 'x' };
-    scope.readStatus = {
-      forms: { total: 0, read: 0 },
-      messages: { total: 0, read: 0 }
-    };
+    scope.readStatus = { forms: 0, messages: 0 };
     scope.updateReadStatus = function() {};
     scope.isRead = function() {
       return true;

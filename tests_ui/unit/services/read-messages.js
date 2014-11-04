@@ -31,8 +31,8 @@ describe('ReadMessages service', function() {
     }).then(
       function(res) {
         chai.expect(res).to.deep.equal({
-          forms: { total: 0, read: 0 },
-          messages: { total: 0, read: 0 }
+          forms: 0,
+          messages: 0
         });
         done();
       }
@@ -59,8 +59,8 @@ describe('ReadMessages service', function() {
     }).then(
       function(res) {
         chai.expect(res).to.deep.equal({
-          forms: { total: 36, read: 26 },
-          messages: { total: 10, read: 5 }
+          forms: 10,
+          messages: 5
         });
         done();
       }
@@ -88,8 +88,8 @@ describe('ReadMessages service', function() {
     }).then(
       function(res) {
         chai.expect(res).to.deep.equal({
-          forms: { total: 31, read: 23 },
-          messages: { total: 10, read: 5 }
+          forms: 8,
+          messages: 5
         });
         done();
       }

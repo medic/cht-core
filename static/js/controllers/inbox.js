@@ -143,10 +143,7 @@ var utils = require('kujua-utils'),
                    utils.hasPerm(UserCtxService(), 'can_export_forms')
       };
 
-      $scope.readStatus = {
-        forms: { total: 0, read: 0 },
-        messages: { total: 0, read: 0 }
-      };
+      $scope.readStatus = { forms: 0, messages: 0 };
 
       $scope.filterModel = {
         type: 'messages',

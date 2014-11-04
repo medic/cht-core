@@ -20,12 +20,12 @@
   inboxServices.factory('ReadMessages', ['$q', 'ReadMessagesRaw',
     function($q, ReadMessagesRaw) {
 
-      var getUsername = function(key, user) {
+      var getMultiplier = function(key, user) {
         if (key === '_total') {
-          return 'total';
+          return 1;
         }
         if (key === user) {
-          return 'read';
+          return -1;
         }
       };
 
@@ -35,10 +35,7 @@
 
         ReadMessagesRaw.query(function(res) {
           
-          var status = {
-            forms: { total: 0, read: 0 },
-            messages: { total: 0, read: 0 }
-          };
+          var status = { forms: 0, messages: 0 };
           
           res.rows.forEach(function(row) {
             var name = row.key[0];
@@ -46,9 +43,9 @@
             var dist = row.key[2];
 
             if (!options.district || options.district === dist) {
-              var username = getUsername(name, options.user);
-              if (username) {
-                status[type][username] += row.value;
+              var multiplier = getMultiplier(name, options.user);
+              if (multiplier) {
+                status[type] += (row.value * multiplier);
               }
             }
           });
