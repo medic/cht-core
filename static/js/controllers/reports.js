@@ -320,6 +320,7 @@ var _ = require('underscore'),
       });
 
       tour.start($route.current.params.tour);
+      $location.url($location.path());
     }
   ]);
 

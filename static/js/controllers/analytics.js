@@ -18,8 +18,8 @@ var _ = require('underscore'),
   };
 
   inboxControllers.controller('AnalyticsCtrl',
-    ['$scope', '$route', 'Settings', 'AnalyticsModules',
-    function ($scope, $route, Settings, AnalyticsModules) {
+    ['$scope', '$route', '$location', 'Settings', 'AnalyticsModules',
+    function ($scope, $route, $location, Settings, AnalyticsModules) {
       $scope.setSelectedModule();
       $scope.filterModel.type = 'analytics';
       $scope.loading = true;
@@ -37,6 +37,7 @@ var _ = require('underscore'),
         }
       });
       tour.start($route.current.params.tour);
+      $location.url($location.path());
     }
   ]);
 

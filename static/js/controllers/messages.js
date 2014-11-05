@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$route', '$animate', 'MessageContact', 'ContactConversation', 'MarkAllRead', 'UserDistrict', 'Changes', 'RememberService', 'UserCtxService',
-    function ($scope, $route, $animate, MessageContact, ContactConversation, MarkAllRead, UserDistrict, Changes, RememberService, UserCtxService) {
+    ['$scope', '$route', '$animate', '$location', 'MessageContact', 'ContactConversation', 'MarkAllRead', 'UserDistrict', 'Changes', 'RememberService', 'UserCtxService',
+    function ($scope, $route, $animate, $location, MessageContact, ContactConversation, MarkAllRead, UserDistrict, Changes, RememberService, UserCtxService) {
 
       $scope.loadingContent = false;
       $scope.allLoaded = false;
@@ -182,6 +182,7 @@ var _ = require('underscore'),
       });
 
       tour.start($route.current.params.tour);
+      $location.url($location.path());
     }
   ]);
 
