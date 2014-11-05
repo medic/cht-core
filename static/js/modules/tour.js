@@ -172,7 +172,7 @@ var _ = require('underscore');
             }
           },
           onHide: function() {
-            $('#date-filter').trigger('click');
+            $('#date-filter').trigger('hide.daterangepicker');
           }
         },
         {
