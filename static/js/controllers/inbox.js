@@ -175,6 +175,7 @@ var utils = require('kujua-utils'),
       var updateAvailableFacilities = function() {
         Facility($scope.permissions.district).then(
           function(res) {
+            $scope.facilities = res;
             function formatResult(row) {
               return format.contact(row.doc);
             }

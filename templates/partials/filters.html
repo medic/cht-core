@@ -43,7 +43,7 @@
         </span>
         <ul role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="facility in facilities">
-            <a role="menuitem" tabindex="-1" data-value="{~lb}{~lb}facility.id{~rb}{~rb}">{~lb}{~lb}facility.text{~rb}{~rb}</a>
+            <a role="menuitem" tabindex="-1" data-value="{~lb}{~lb}facility.id{~rb}{~rb}" ng-bind="facility.doc | clinic"></a>
           </li>
         </ul>
       </span>
