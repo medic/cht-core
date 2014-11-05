@@ -496,6 +496,11 @@ var utils = require('kujua-utils'),
         });
       });
 
+      // stop bootstrap closing the search pane on click
+      $('.filters .mobile-freetext-filter .search-pane').on('click', function(e) {
+        e.stopPropagation();
+      });
+
       $('#tour-select').on('click', 'a.tour-option', function() {
         $('#tour-select').modal('hide');
       });

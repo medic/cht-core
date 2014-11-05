@@ -286,17 +286,20 @@ var _ = require('underscore'),
           $scope.query();
         }
       });
-      $('#mobile-search-go').on('click', function(e) {
+
+      var performMobileSearch = function(e) {
         e.preventDefault();
         $scope.query();
         $(e.target).closest('.filter').removeClass('open');
-      });
+      };
+      $('#mobile-search-go').on('click', performMobileSearch);
       $('#mobile-freetext').on('keypress', function(e) {
         if (e.which === 13) {
-          e.preventDefault();
-          $scope.query();
-          $(e.target).closest('.filter').removeClass('mm-open');
+          performMobileSearch(e);
         }
+      });
+      $('.mobile-freetext-filter').on('shown.bs.dropdown', function () {
+        $('#mobile-freetext').focus();
       });
 
       $scope.setFilterQuery($route.current.params.query);
