@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    libphonenumber = require('libphonenumber/utils');
+    libphonenumber = require('libphonenumber/utils'),
+    format = require('./format');
 
 (function () {
 
@@ -37,7 +38,7 @@ var _ = require('underscore'),
     });
     if (errors.length > 0) {
       var errorRecipients = _.map(errors, function(error) {
-        return formatContact(error);
+        return formatSelection(error);
       }).join(', ');
       return {
         valid: false,
@@ -62,16 +63,33 @@ var _ = require('underscore'),
     return result;
   };
 
-  var formatContact = function(row) {
+  var formatResult = function(row) {
     if (row.everyoneAt) {
       return 'Everyone at ' + row.doc.name;
     }
-    var name = row.doc.name,
-        contact = row.doc.contact,
-        contactName = contact && contact.name,
-        code = contact && contact.rc_code,
-        phone = contact && contact.phone;
-    return _.compact([name, contactName, code, phone]).join(', ');
+    var parts = [];
+    var contact = row.doc.contact;
+    if (contact && contact.name) {
+      parts.push('<span class="name">' + _.escape(contact.name) + '</span>');
+    }
+    if (contact && contact.phone) {
+      parts.push('<span>' + _.escape(contact.phone) + '</span>');
+    }
+    var name = format.clinic(row.doc);
+    if (name) {
+      parts.push('<span class="position">' + name + '</span>');
+    }
+    return '<span class="sender">' + parts.join('') + '</span>';
+  };
+
+  var formatSelection = function(row) {
+    if (row.everyoneAt) {
+      return 'Everyone at ' + row.doc.name;
+    }
+    var contact = row.doc.contact;
+    return (contact && contact.name) ||
+           row.doc.name ||
+           (contact && contact.phone);
   };
 
   var initPhoneField = function($phone) {
@@ -82,8 +100,8 @@ var _ = require('underscore'),
     $phone.select2({
       multiple: true,
       allowClear: true,
-      formatResult: formatContact,
-      formatSelection: formatContact,
+      formatResult: formatResult,
+      formatSelection: formatSelection,
       query: function(options) {
         var vals = options.element.data('options');
         var terms = _.map(options.term.toLowerCase().split(/w+/), function(term) {
@@ -102,8 +120,8 @@ var _ = require('underscore'),
           });
         });
         matches.sort(function(a, b) {
-          var aName = a.everyoneAt ? a.doc.name + 'z' : formatContact(a);
-          var bName = b.everyoneAt ? b.doc.name + 'z' : formatContact(b);
+          var aName = a.everyoneAt ? a.doc.name + 'z' : formatResult(a);
+          var bName = b.everyoneAt ? b.doc.name + 'z' : formatResult(b);
           return aName.toLowerCase().localeCompare(bName.toLowerCase());
         });
         options.callback({ results: matches });

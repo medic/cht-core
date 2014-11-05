@@ -1,4 +1,4 @@
-var _ = require('underscore');
+var format = require('../modules/format');
 
 (function () {
 
@@ -52,21 +52,7 @@ var _ = require('underscore');
   });
 
   module.filter('clinic', function () {
-    return function (entity) {
-      var parts;
-      if (_.isArray(entity)) {
-        parts = entity;
-      } else {
-        parts = [];
-        while (entity) {
-          if (entity.name) {
-            parts.push(entity.name);
-          }
-          entity = entity.parent;
-        }
-      }
-      return parts.join(' › ');
-    };
+    return format.clinic;
   });
 
 }());
