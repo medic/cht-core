@@ -20,4 +20,20 @@ var _ = require('underscore');
     return _.map(parts, _.escape).join(' › ');
   };
 
+  exports.contact = function(doc) {
+    var parts = [];
+    var contact = doc.contact;
+    if (contact && contact.name) {
+      parts.push('<span class="name">' + _.escape(contact.name) + '</span>');
+    }
+    if (contact && contact.phone) {
+      parts.push('<span>' + _.escape(contact.phone) + '</span>');
+    }
+    var name = exports.clinic(doc);
+    if (name) {
+      parts.push('<span class="position">' + name + '</span>');
+    }
+    return '<span class="sender">' + parts.join('') + '</span>';
+  };
+
 }());

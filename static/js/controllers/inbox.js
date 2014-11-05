@@ -1,9 +1,10 @@
 var utils = require('kujua-utils'),
     feedback = require('feedback'),
+    _ = require('underscore'),
     sendMessage = require('../modules/send-message'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
-    _ = require('underscore');
+    format = require('../modules/format');
 
 (function () {
 
@@ -174,8 +175,49 @@ var utils = require('kujua-utils'),
       var updateAvailableFacilities = function() {
         Facility($scope.permissions.district).then(
           function(res) {
-            $scope.facilities = res;
-            $('#update-facility [name=facility]').select2();
+            function formatResult(row) {
+              return format.contact(row.doc);
+            }
+            $('#update-facility [name=facility]').select2({
+              width: '100%',
+              escapeMarkup: function(m) {
+                return m;
+              },
+              formatResult: formatResult,
+              formatSelection: formatResult,
+              initSelection: function (element, callback) {
+                var e = element.val();
+                if (!e) {
+                  return callback();
+                }
+                var row = _.findWhere(res, { id: e });
+                if (!row) {
+                  return callback();
+                }
+                callback(row);
+              },
+              query: function(options) {
+                var terms = options.term.toLowerCase().split(/\s+/);
+                var matches = _.filter(res, function(val) {
+                  var contact = val.doc.contact;
+                  var name = contact && contact.name;
+                  var phone = contact && contact.phone;
+                  var tags = [ val.doc.name, name, phone ].join(' ').toLowerCase();
+                  return _.every(terms, function(term) {
+                    return tags.indexOf(term) > -1;
+                  });
+                });
+                options.callback({ results: matches });
+              },
+              sortResults: function(results) {
+                results.sort(function(a, b) {
+                  var aName = formatResult(a).toLowerCase();
+                  var bName = formatResult(b).toLowerCase();
+                  return aName.localeCompare(bName);
+                });
+                return results;
+              }
+            });
           },
           function() {
             console.log('Failed to retrieve facilities');

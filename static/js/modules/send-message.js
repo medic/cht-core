@@ -67,19 +67,7 @@ var _ = require('underscore'),
     if (row.everyoneAt) {
       return 'Everyone at ' + row.doc.name;
     }
-    var parts = [];
-    var contact = row.doc.contact;
-    if (contact && contact.name) {
-      parts.push('<span class="name">' + _.escape(contact.name) + '</span>');
-    }
-    if (contact && contact.phone) {
-      parts.push('<span>' + _.escape(contact.phone) + '</span>');
-    }
-    var name = format.clinic(row.doc);
-    if (name) {
-      parts.push('<span class="position">' + name + '</span>');
-    }
-    return '<span class="sender">' + parts.join('') + '</span>';
+    return format.contact(row.doc);
   };
 
   var formatSelection = function(row) {
@@ -104,7 +92,7 @@ var _ = require('underscore'),
       formatSelection: formatSelection,
       query: function(options) {
         var vals = options.element.data('options');
-        var terms = _.map(options.term.toLowerCase().split(/w+/), function(term) {
+        var terms = _.map(options.term.toLowerCase().split(/\s+/), function(term) {
           if (libphonenumber.validate(settings, term)) {
             return libphonenumber.format(settings, term);
           }

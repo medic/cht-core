@@ -1,4 +1,4 @@
-<div class="modal fade" id="update-facility" role="dialog">
+<div class="modal fade update-facility-dialog" id="update-facility" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -9,9 +9,7 @@
         <form action="" method="POST"> 
           <fieldset>
             <div class="control-group">
-              <select name="facility" style="width:100%;">
-                <option value="{~lb}{~lb}clinic.id{~rb}{~rb}" ng-repeat="clinic in facilities">{~lb}{~lb}clinic.text{~rb}{~rb}</option>
-              </select>
+              <input type="hidden" name="facility" autocomplete="off" />
             </div>
           </fieldset>
         </form>

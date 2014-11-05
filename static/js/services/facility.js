@@ -58,35 +58,15 @@ var _ = require('underscore');
   inboxServices.factory('Facility', ['$q', 'FacilityRaw',
     function($q, FacilityRaw) {
 
-      var getName = function(clinic) {
-        var parts = [];
-        do {
-          parts.push(clinic.name);
-          clinic = clinic.parent;
-        } while( clinic.name );
-        return parts.join(', ');
-      };
-
       return function(district) {
 
         var deferred = $q.defer();
 
         FacilityRaw(district).query(function(res) {
 
-          var clinics = _.filter(res.rows, function(row) {
+          deferred.resolve(_.filter(res.rows, function(row) {
             return row.doc.type === 'clinic';
-          });
-          var results = _.map(clinics, function(clinic) {
-            return { id: clinic.id, text: getName(clinic.doc) };
-          });
-
-          results.sort(function(lhs, rhs) {
-            var lhsName = lhs.text.toUpperCase();
-            var rhsName = rhs.text.toUpperCase();
-            return lhsName.localeCompare(rhsName);
-          });
-
-          deferred.resolve(results);
+          }));
         });
 
         return deferred.promise;
