@@ -25,7 +25,8 @@
         <ul role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="form in forms">
             <a role="menuitem" tabindex="-1" data-value="{~lb}{~lb}form{~rb}{~rb}">
-              {~lb}{~lb}form.name{~rb}{~rb}
+              <span ng-show="form.name">{~lb}{~lb}form.code{~rb}{~rb}: {~lb}{~lb}form.name{~rb}{~rb}</span>
+              <span ng-show="!form.name">{~lb}{~lb}form.code{~rb}{~rb}</span>
             </a>
           </li>
         </ul>

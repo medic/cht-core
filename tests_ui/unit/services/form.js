@@ -55,9 +55,9 @@ describe('Form service', function() {
     };
     var expected = [
       { code: 'A', name: 'First'  },
-      { code: 'D', name: 'Fourth' },
       { code: 'B', name: 'Second' },
-      { code: 'C', name: 'Third'  }
+      { code: 'C', name: 'Third'  },
+      { code: 'D', name: 'Fourth' }
     ];
 
     service().then(
@@ -70,7 +70,7 @@ describe('Form service', function() {
     $rootScope.$digest();
   });
 
-  it('returns forms with code if no label', function(done) {
+  it('handles forms with no label', function(done) {
 
     results = {
       A: { meta: { code: 'A' } },
@@ -79,11 +79,12 @@ describe('Form service', function() {
       D: { meta: { code: 'D' } }
     };
     var expected = [
-      { code: 'A', name: 'A' },
-      { code: 'B', name: 'B' },
-      { code: 'D', name: 'D' },
-      { code: 'C', name: 'Third' }
+      { code: 'A' },
+      { code: 'B' },
+      { name: 'Third', code: 'C' },
+      { code: 'D' }
     ];
+
 
     service().then(
       function(actual) {
@@ -104,10 +105,10 @@ describe('Form service', function() {
       D: { meta: { code: 'D', label: { en: 'Fourth', sw: 'htruoF' } } }
     };
     var expected = [
+      { code: 'A', name: 'tsriF'  },
       { code: 'B', name: 'dnoceS' },
       { code: 'C', name: 'drihT'  },
-      { code: 'D', name: 'htruoF' },
-      { code: 'A', name: 'tsriF'  }
+      { code: 'D', name: 'htruoF' }
     ];
 
     language = 'sw';

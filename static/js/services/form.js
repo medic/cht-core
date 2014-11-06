@@ -10,7 +10,7 @@
       var getLabel = function(form, language) {
         var label = form.meta.label;
         if (!label) {
-          return form.meta.code;
+          return undefined;
         }
         if (angular.isString(label)) {
           return label;
@@ -35,32 +35,26 @@
             return deferred.reject(err);
           }
 
-          Language().then(
-            function(language) {
+          Language().then(function(language) {
 
-              var result = [];
+            var result = [];
 
-              if (res.forms) {
-                for (var key in res.forms) {
-                  if (res.forms.hasOwnProperty(key)) {
-                    var form = res.forms[key];
-                    result.push({
-                      name: getLabel(form, language),
-                      code: form.meta.code
-                    });
+            if (res.forms) {
+              for (var key in res.forms) {
+                if (res.forms.hasOwnProperty(key)) {
+                  var form = res.forms[key];
+                  var r = { code: form.meta.code };
+                  var name = getLabel(form, language);
+                  if (name) {
+                    r.name = name;
                   }
+                  result.push(r);
                 }
               }
-
-              result.sort(function(lhs, rhs) {
-                var lhsName = lhs.name.toUpperCase();
-                var rhsName = rhs.name.toUpperCase();
-                return lhsName.localeCompare(rhsName);
-              });
-
-              deferred.resolve(result);
             }
-          );
+
+            deferred.resolve(result);
+          });
 
         });
 
