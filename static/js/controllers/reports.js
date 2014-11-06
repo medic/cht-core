@@ -32,6 +32,18 @@ var _ = require('underscore'),
         });
       };
 
+      var _setSelected = function(message) {
+        $scope.setSelected(message);
+        if (!$scope.isRead(message)) {
+          $scope.readStatus.forms--;
+          MarkRead(message._id, true, function(err) {
+            if (err) {
+              console.log(err);
+            }
+          });
+        }
+      };
+
       $scope.selectMessage = function(id) {
         if ($scope.selected && $scope.selected._id && $scope.selected._id === id) {
           return;
@@ -41,15 +53,28 @@ var _ = require('underscore'),
         if (id && $scope.messages) {
           var message = _.findWhere($scope.messages, { _id: id });
           if (message) {
-            if (!$scope.isRead(message)) {
-              $scope.readStatus.forms--;
-            }
-            MarkRead(id, true, function(err) {
+            _setSelected(message);
+          } else {
+            var options = {
+              changes: [ { id: id } ],
+              ignoreFilter: true
+            };
+            GenerateSearchQuery($scope, options, function(err, query) {
               if (err) {
-                console.log(err);
+                return console.log(err);
               }
+              Search({ query: query }, function(err, data) {
+                if (err) {
+                  return console.log(err);
+                }
+                if (data.results.length) {
+                  _setSelected(data.results[0]);
+                  $('.inbox-items')
+                    .off('scroll', _checkScroll)
+                    .on('scroll', _checkScroll);
+                }
+              });
             });
-            $scope.setSelected(message);
           }
         }
       };

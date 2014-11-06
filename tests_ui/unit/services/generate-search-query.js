@@ -362,4 +362,27 @@ describe('GenerateSearchQuery service', function() {
     });
   });
 
+  it('creates filter query ignoring filters', function() {
+    scope.filterModel = {
+      type: 'reports',
+      forms: [],
+      facilities: [],
+      date: {
+        from: date20130208,
+        to: date20130612
+      }
+    };
+    scope.permissions.districtAdmin = true;
+    scope.permissions.district = 'abc';
+    options.ignoreFilter = true;
+    options.changes = [
+      {id: 'a'}
+    ];
+    service(scope, options, function(err, query) {
+      chai.expect(query).to.equal(
+        'district:("abc") ' +
+        'AND uuid:("a")'
+      );
+    });
+  });
 });

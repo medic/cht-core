@@ -108,13 +108,16 @@ var _ = require('underscore'),
 
           var filters = [];
 
-          filters.push(formatFreetext($scope));
-          filters.push(formatReportedDate($scope));
-          filters.push(formatType($scope));
-          filters.push(formatClinics($scope));
-          filters.push(formatForm($scope));
-          filters.push(formatErrors($scope));
-          filters.push(formatVerified($scope));
+          if (!options.ignoreFilter) {
+            filters.push(formatFreetext($scope));
+            filters.push(formatReportedDate($scope));
+            filters.push(formatType($scope));
+            filters.push(formatClinics($scope));
+            filters.push(formatForm($scope));
+            filters.push(formatErrors($scope));
+            filters.push(formatVerified($scope));
+          }
+
           filters.push(formatDistrict($scope, settings.district_admins_access_unallocated_messages));
           filters.push(formatIds(options));
 
