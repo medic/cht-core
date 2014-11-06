@@ -36,12 +36,12 @@ var _ = require('underscore'),
         $scope.setSelected(message);
         if (!$scope.isRead(message)) {
           $scope.readStatus.forms--;
-          MarkRead(message._id, true, function(err) {
-            if (err) {
-              console.log(err);
-            }
-          });
         }
+        MarkRead(message._id, true, function(err) {
+          if (err) {
+            console.log(err);
+          }
+        });
       };
 
       $scope.selectMessage = function(id) {
