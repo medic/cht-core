@@ -67,9 +67,9 @@
         <dt><span class="pre">regex</span></dt>
         <dd>A custom regular expression</dd>
         <dt><span class="pre">unique</span></dt>
-        <dd>Used to specify one or more fields which must be unique, eg: "unique('patient_id')". To check uniqueness within a form type, include 'form' as a parameter.</dd>
+        <dd>Used to specify one or more fields which must be unique, eg: "unique('patient_id', 'lmp')". To check uniqueness within a form type, include 'form' as a parameter, eg: "unique('patient_id','form')".</dd>
         <dt><span class="pre">uniqueWithin</span></dt>
-        <dd>Used to specify one or more fields which must be unique within a given time frame, eg: "uniqueWithin('patient_id', '1 months')"</dd>
+        <dd>Used to specify one or more fields which must be unique within a given time frame, eg: "uniqueWithin('patient_id', 'name', '1 months')"</dd>
         <dt><span class="pre">exists</span></dt>
         <dd>Validates that the provided value matches an existing document, eg: "exists('ANCR', 'patient_id')"</dd>
       </dl>
