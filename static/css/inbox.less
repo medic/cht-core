@@ -92,8 +92,22 @@ body {
     padding-right: 0.5em;
 
     a {
-      padding-top: 0.75em;
       width: 3em;
+      height: 3em;
+      margin-top: 0.75em;
+      border-radius: .5em .5em 0 0;
+
+      .mm-icon {
+        width: inherit;
+      }
+    }
+
+    .open > a {
+      background-color: #FFFFFF;
+
+      .mm-icon {
+        color: @medic-slate-color;
+      }
     }
   }
 
@@ -106,10 +120,12 @@ body {
   .options .dropdown-menu {
     width: 200px;
     left: auto;
+    margin-top: 1.9em;
     a {
       text-shadow: none;
       padding: 3px 20px;
       color: #262626;
+      margin-top: 0;
     }
     .disabled a {
       color: #999999;
