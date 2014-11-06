@@ -186,9 +186,7 @@ exports.data_records_by_contact = {
         };
         var emitContact = function(districtId, key, date, value) {
             if (key) {
-                if (districtId) {
-                    emit([districtId, key, date], value);
-                }
+                emit([districtId || 'none', key, date], value);
                 emit(['admin', key, date], value);
             }
         };

@@ -3,7 +3,9 @@ describe('ContactConversation service', function() {
   'use strict';
 
   var service,
-      $httpBackend;
+      $httpBackend,
+      district,
+      districtErr;
 
   beforeEach(function() {
     module('inboxApp');
@@ -11,11 +13,16 @@ describe('ContactConversation service', function() {
       $provide.value('BaseUrlService', function() {
         return 'BASEURL';
       });
+      $provide.value('UserDistrict', function(callback) {
+        callback(districtErr, district);
+      });
     });
     inject(function($injector) {
       $httpBackend = $injector.get('$httpBackend');
       service = $injector.get('ContactConversation');
     });
+    district = null;
+    districtErr = null;
   });
 
   afterEach(function() {
@@ -45,7 +52,7 @@ describe('ContactConversation service', function() {
       .when('GET', makeUrl('admin', 'abc'))
       .respond(expected);
 
-    service(null, 'abc', null, function(err, actual) {
+    service({ id: 'abc'}, function(err, actual) {
       chai.expect(actual.rows).to.deep.equal(expected.rows);
       done();
     });
@@ -59,11 +66,12 @@ describe('ContactConversation service', function() {
     var expected = {
       rows: [ 'a', 'b' ]
     };
+    district = 'xyz';
     $httpBackend
       .when('GET', makeUrl('xyz', 'abc'))
       .respond(expected);
 
-    service('xyz', 'abc', null, function(err, actual) {
+    service({ id: 'abc' }, function(err, actual) {
       chai.expect(actual.rows).to.deep.equal(expected.rows);
       done();
     });
@@ -81,13 +89,35 @@ describe('ContactConversation service', function() {
       .when('GET', makeUrl('admin', 'abc', 45))
       .respond(expected);
 
-    service(null, 'abc', 45, function(err, actual) {
+    service({ id: 'abc', skip: 45 }, function(err, actual) {
       chai.expect(actual.rows).to.deep.equal(expected.rows);
       done();
     });
 
     $httpBackend.flush();
 
+  });
+
+  it('returns errors from user district', function(done) {
+    districtErr = 'no connection';
+    service({ id: 'abc' }, function(err) {
+      chai.expect(err).to.equal('no connection');
+      done();
+    });
+  });
+
+  it('returns errors from db query', function(done) {
+
+    $httpBackend
+      .when('GET', makeUrl('admin', 'abc'))
+      .respond(503, 'server error');
+
+    service({ id: 'abc' }, function(err) {
+      chai.expect(err.data).to.equal('server error');
+      done();
+    });
+
+    $httpBackend.flush();
   });
 
 });

@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$route', '$animate', '$location', 'MessageContact', 'ContactConversation', 'MarkAllRead', 'UserDistrict', 'Changes', 'RememberService', 'UserCtxService',
-    function ($scope, $route, $animate, $location, MessageContact, ContactConversation, MarkAllRead, UserDistrict, Changes, RememberService, UserCtxService) {
+    ['$scope', '$route', '$animate', '$location', 'MessageContact', 'ContactConversation', 'MarkAllRead', 'Changes', 'RememberService', 'UserCtxService',
+    function ($scope, $route, $animate, $location, MessageContact, ContactConversation, MarkAllRead, Changes, RememberService, UserCtxService) {
 
       $scope.loadingContent = false;
       $scope.allLoaded = false;
@@ -54,7 +54,7 @@ var _ = require('underscore'),
         return [];
       };
 
-      var selectContact = function(district, id) {
+      var selectContact = function(id) {
         if (!id) {
           $scope.error = false;
           $scope.loadingContent = false;
@@ -64,7 +64,7 @@ var _ = require('underscore'),
         $('#message-content').off('scroll', _checkScroll);
         $scope.loadingContent = true;
         $scope.setSelected({ id: id });
-        ContactConversation(district, id, null, function(err, data) {
+        ContactConversation({ id: id }, function(err, data) {
           if (err) {
             $scope.loadingContent = false;
             $scope.error = true;
@@ -102,57 +102,53 @@ var _ = require('underscore'),
               }
             }
           }
-          UserDistrict(function(err, district) {
-            var skip = null;
-            if (options.skip) {
-              skip = $scope.selected.messages.length;
-              $scope.loadingContent = true;
-            }
-            ContactConversation(district, selectedId, skip, function(err, data) {
-              $animate.enabled(!options.skip);
-              $scope.loadingContent = false;
-              var contentElem = $('#message-content');
-              var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
-              var first = $('.item-content .body > ul > li').filter(':first');
-              _.each(data.rows, function(updated) {
-                var match = _.findWhere($scope.selected.messages, { id: updated.id });
-                if (match) {
-                  angular.extend(match, updated);
-                } else {
-                  $scope.selected.messages.push(updated);
-                  if (updated.doc.sent_by === UserCtxService().name) {
-                    scrollToBottom = true;
-                  }
+          var opts = { id: selectedId };
+          if (options.skip) {
+            opts.skip = $scope.selected.messages.length;
+            $scope.loadingContent = true;
+          }
+          ContactConversation(opts, function(err, data) {
+            $animate.enabled(!options.skip);
+            $scope.loadingContent = false;
+            var contentElem = $('#message-content');
+            var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
+            var first = $('.item-content .body > ul > li').filter(':first');
+            _.each(data.rows, function(updated) {
+              var match = _.findWhere($scope.selected.messages, { id: updated.id });
+              if (match) {
+                angular.extend(match, updated);
+              } else {
+                $scope.selected.messages.push(updated);
+                if (updated.doc.sent_by === UserCtxService().name) {
+                  scrollToBottom = true;
                 }
-              });
-              $scope.allLoaded = data.rows.length === 0;
-              if (options.skip) {
-                $scope.firstUnread = undefined;
               }
-              if (first.length && scrollToBottom) {
-                window.setTimeout(function() {
-                  $('#message-content').scrollTop($('#message-content')[0].scrollHeight);
-                }, 1);
-              }
-              markAllRead();
             });
+            $scope.allLoaded = data.rows.length === 0;
+            if (options.skip) {
+              $scope.firstUnread = undefined;
+            }
+            if (first.length && scrollToBottom) {
+              window.setTimeout(function() {
+                $('#message-content').scrollTop($('#message-content')[0].scrollHeight);
+              }, 1);
+            }
+            markAllRead();
           });
         }
       };
 
       var updateContacts = function(options) {
         options = options || {};
-        UserDistrict(function(err, district) {
-          MessageContact(district, function(err, data) {
-            options.contacts = data.rows;
-            $scope.setContacts(options);
-            if (data.rows.length && !$scope.isSelected() && !$('#back').is(':visible')) {
-              window.setTimeout(function() {
-                var id = $('.inbox-items li').first().attr('data-record-id');
-                selectContact(district, id);
-              }, 1);
-            }
-          });
+        MessageContact(function(err, data) {
+          options.contacts = data.rows;
+          $scope.setContacts(options);
+          if (data.rows.length && !$scope.isSelected() && !$('#back').is(':visible')) {
+            window.setTimeout(function() {
+              var id = $('.inbox-items li').first().attr('data-record-id');
+              selectContact(id);
+            }, 1);
+          }
         });
       };
 
@@ -172,9 +168,7 @@ var _ = require('underscore'),
       $('.tooltip').remove();
 
       $scope.filterModel.type = 'messages';
-      UserDistrict(function(err, district) {
-        selectContact(district, $route.current.params.doc);
-      });
+      selectContact($route.current.params.doc);
 
       Changes(function(data) {
         updateContacts({ changes: data });

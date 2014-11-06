@@ -3,7 +3,9 @@ describe('MessageContact service', function() {
   'use strict';
 
   var service,
-      $httpBackend;
+      $httpBackend,
+      district,
+      districtErr;
 
   beforeEach(function() {
     module('inboxApp');
@@ -11,11 +13,16 @@ describe('MessageContact service', function() {
       $provide.value('BaseUrlService', function() {
         return 'BASEURL';
       });
+      $provide.value('UserDistrict', function(callback) {
+        callback(districtErr, district);
+      });
     });
     inject(function($injector) {
       $httpBackend = $injector.get('$httpBackend');
       service = $injector.get('MessageContact');
     });
+    district = null;
+    districtErr = null;
   });
 
   afterEach(function() {
@@ -41,7 +48,7 @@ describe('MessageContact service', function() {
       .when('GET', makeUrl('admin'))
       .respond(expected);
 
-    service(null, function(err, actual) {
+    service(function(err, actual) {
       chai.expect(actual.rows).to.deep.equal(expected.rows);
       done();
     });
@@ -55,17 +62,40 @@ describe('MessageContact service', function() {
     var expected = {
       rows: [ 'a', 'b' ]
     };
+    district = 'xyz';
     $httpBackend
       .when('GET', makeUrl('xyz'))
       .respond(expected);
 
-    service('xyz', function(err, actual) {
+    service(function(err, actual) {
       chai.expect(actual.rows).to.deep.equal(expected.rows);
       done();
     });
 
     $httpBackend.flush();
 
+  });
+
+  it('returns errors from user district', function(done) {
+    districtErr = 'no connection';
+    service(function(err) {
+      chai.expect(err).to.equal('no connection');
+      done();
+    });
+  });
+
+  it('returns errors from db query', function(done) {
+
+    $httpBackend
+      .when('GET', makeUrl('admin'))
+      .respond(503, 'server error');
+
+    service(function(err) {
+      chai.expect(err.data).to.equal('server error');
+      done();
+    });
+
+    $httpBackend.flush();
   });
 
 });

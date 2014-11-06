@@ -12,39 +12,54 @@
             isArray: false,
             params: params
           }
-        }).query(function(res) {
-          callback(null, res);
+        }).query(
+          function(res) {
+            callback(null, res);
+          },
+          function(err) {
+            callback(err);
+          }
+        );
+      };
+    }
+  ]);
+  
+  inboxServices.factory('MessageContact', ['MessageContactsRaw', 'UserDistrict',
+    function(MessageContactsRaw, UserDistrict) {
+      return function(callback) {
+        UserDistrict(function(err, districtId) {
+          if (err) {
+            return callback(err);
+          }
+          districtId = districtId || 'admin';
+          MessageContactsRaw({
+            group_level: 2,
+            startkey: '["' + districtId + '"]',
+            endkey: '["' + districtId + '",{}]'
+          }, callback);
         });
       };
     }
   ]);
   
-  inboxServices.factory('MessageContact', ['MessageContactsRaw',
-    function(MessageContactsRaw) {
-      return function(districtId, callback) {
-        districtId = districtId || 'admin';
-        MessageContactsRaw({
-          group_level: 2,
-          startkey: '["' + districtId + '"]',
-          endkey: '["' + districtId + '",{}]'
-        }, callback);
-      };
-    }
-  ]);
-  
-  inboxServices.factory('ContactConversation', ['MessageContactsRaw',
-    function(MessageContactsRaw) {
-      return function(districtId, contactId, skip, callback) {
-        districtId = districtId || 'admin';
-        MessageContactsRaw({
-          reduce: false,
-          descending: true,
-          include_docs: true,
-          skip: skip,
-          limit: 50,
-          endkey: '["' + districtId + '","' + contactId + '"]',
-          startkey: '["' + districtId + '","' + contactId + '",{}]'
-        }, callback);
+  inboxServices.factory('ContactConversation', ['MessageContactsRaw', 'UserDistrict',
+    function(MessageContactsRaw, UserDistrict) {
+      return function(options, callback) {
+        UserDistrict(function(err, districtId) {
+          if (err) {
+            return callback(err);
+          }
+          districtId = districtId || 'admin';
+          MessageContactsRaw({
+            reduce: false,
+            descending: true,
+            include_docs: true,
+            skip: options.skip,
+            limit: 50,
+            endkey: '["' + districtId + '","' + options.id + '"]',
+            startkey: '["' + districtId + '","' + options.id + '",{}]'
+          }, callback);
+        });
       };
     }
   ]);
