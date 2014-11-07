@@ -59,6 +59,8 @@ exports.rules = [
         query: {
             include_docs: 'true',
             descending: 'true',
+            startkey: [true, ':form', {}],
+            endkey: [true, ':form'],
             form: ':form'
         }
     },
