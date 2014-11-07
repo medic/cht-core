@@ -279,6 +279,7 @@ var _ = require('underscore'),
         startDate: start,
         endDate: moment($scope.filterModel.date.to),
         maxDate: moment(),
+        opens: 'center',
         applyClass: 'btn-primary',
         cancelClass: 'btn-link'
       },
