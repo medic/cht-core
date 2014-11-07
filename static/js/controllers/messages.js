@@ -68,7 +68,7 @@ var _ = require('underscore'),
           if (err) {
             $scope.loadingContent = false;
             $scope.error = true;
-            console.log(err);
+            console.log('Error fetching contact conversation', err);
             return;
           }
           if ($scope.selected && $scope.selected.id !== id) {
@@ -108,6 +108,9 @@ var _ = require('underscore'),
             $scope.loadingContent = true;
           }
           ContactConversation(opts, function(err, data) {
+            if (err) {
+              return console.log('Error fetching contact conversation', err);
+            }
             $animate.enabled(!options.skip);
             $scope.loadingContent = false;
             var contentElem = $('#message-content');
@@ -141,6 +144,9 @@ var _ = require('underscore'),
       var updateContacts = function(options) {
         options = options || {};
         MessageContact(function(err, data) {
+          if (err) {
+            return console.log('Error fetching contact', err);
+          }
           options.contacts = data.rows;
           $scope.setContacts(options);
           if (data.rows.length && !$scope.isSelected() && !$('#back').is(':visible')) {
