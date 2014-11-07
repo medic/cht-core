@@ -64,7 +64,7 @@ var _ = require('underscore'),
         $('#message-content').off('scroll', _checkScroll);
         $scope.loadingContent = true;
         $scope.setSelected({ id: id });
-        ContactConversation({ id: id }, function(err, data) {
+        ContactConversation({ id: id, districtAdmin: $scope.permissions.districtAdmin }, function(err, data) {
           if (err) {
             $scope.loadingContent = false;
             $scope.error = true;
@@ -75,15 +75,15 @@ var _ = require('underscore'),
             // ignore response for previous request
             return;
           }
-          var facility = findMostRecentFacility(data.rows);
+          var facility = findMostRecentFacility(data);
           sendMessage.setRecipients(facility);
           $scope.loadingContent = false;
           $scope.error = false;
           $animate.enabled(false);
-          $scope.firstUnread = _.min(data.rows, function(message) {
+          $scope.firstUnread = _.min(data, function(message) {
             return $scope.isRead(message.doc) ? Infinity : message.doc.reported_date;
           });
-          $scope.selected.messages = data.rows;
+          $scope.selected.messages = data;
           markAllRead();
           window.setTimeout(scrollToUnread, 1);
         });
@@ -102,7 +102,10 @@ var _ = require('underscore'),
               }
             }
           }
-          var opts = { id: selectedId };
+          var opts = {
+            id: selectedId,
+            districtAdmin: $scope.permissions.districtAdmin
+          };
           if (options.skip) {
             opts.skip = $scope.selected.messages.length;
             $scope.loadingContent = true;
@@ -116,7 +119,7 @@ var _ = require('underscore'),
             var contentElem = $('#message-content');
             var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
             var first = $('.item-content .body > ul > li').filter(':first');
-            _.each(data.rows, function(updated) {
+            _.each(data, function(updated) {
               var match = _.findWhere($scope.selected.messages, { id: updated.id });
               if (match) {
                 angular.extend(match, updated);
@@ -127,7 +130,7 @@ var _ = require('underscore'),
                 }
               }
             });
-            $scope.allLoaded = data.rows.length === 0;
+            $scope.allLoaded = data.length === 0;
             if (options.skip) {
               $scope.firstUnread = undefined;
             }
@@ -143,13 +146,13 @@ var _ = require('underscore'),
 
       var updateContacts = function(options) {
         options = options || {};
-        MessageContact(function(err, data) {
+        MessageContact({ districtAdmin: $scope.permissions.districtAdmin }, function(err, data) {
           if (err) {
             return console.log('Error fetching contact', err);
           }
-          options.contacts = data.rows;
+          options.contacts = data;
           $scope.setContacts(options);
-          if (data.rows.length && !$scope.isSelected() && !$('#back').is(':visible')) {
+          if (data.length && !$scope.isSelected() && !$('#back').is(':visible')) {
             window.setTimeout(function() {
               var id = $('.inbox-items li').first().attr('data-record-id');
               selectContact(id);

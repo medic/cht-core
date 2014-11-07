@@ -5,7 +5,9 @@ describe('MessageContact service', function() {
   var service,
       $httpBackend,
       district,
-      districtErr;
+      districtErr,
+      unallocated,
+      settingsErr;
 
   beforeEach(function() {
     module('inboxApp');
@@ -16,6 +18,9 @@ describe('MessageContact service', function() {
       $provide.value('UserDistrict', function(callback) {
         callback(districtErr, district);
       });
+      $provide.value('Settings', function(callback) {
+        callback(settingsErr, { district_admins_access_unallocated_messages: unallocated });
+      });
     });
     inject(function($injector) {
       $httpBackend = $injector.get('$httpBackend');
@@ -23,6 +28,8 @@ describe('MessageContact service', function() {
     });
     district = null;
     districtErr = null;
+    unallocated = false;
+    settingsErr = null;
   });
 
   afterEach(function() {
@@ -48,8 +55,8 @@ describe('MessageContact service', function() {
       .when('GET', makeUrl('admin'))
       .respond(expected);
 
-    service(function(err, actual) {
-      chai.expect(actual.rows).to.deep.equal(expected.rows);
+    service({}, function(err, actual) {
+      chai.expect(actual).to.deep.equal(expected.rows);
       done();
     });
 
@@ -67,8 +74,28 @@ describe('MessageContact service', function() {
       .when('GET', makeUrl('xyz'))
       .respond(expected);
 
-    service(function(err, actual) {
-      chai.expect(actual.rows).to.deep.equal(expected.rows);
+    service({}, function(err, actual) {
+      chai.expect(actual).to.deep.equal(expected.rows);
+      done();
+    });
+
+    $httpBackend.flush();
+
+  });
+
+  it('requests unallocated for district admins', function(done) {
+
+    unallocated = true;
+    district = 'xyz';
+    $httpBackend
+      .when('GET', makeUrl('xyz', 'abc'))
+      .respond({ rows: [ 'a', 'b' ] });
+    $httpBackend
+      .when('GET', makeUrl('none', 'abc'))
+      .respond({ rows: [ 'c', 'd' ] });
+
+    service({ districtAdmin: true }, function(err, actual) {
+      chai.expect(actual).to.deep.equal([ 'a', 'b', 'c', 'd' ]);
       done();
     });
 
@@ -78,7 +105,7 @@ describe('MessageContact service', function() {
 
   it('returns errors from user district', function(done) {
     districtErr = 'no connection';
-    service(function(err) {
+    service({}, function(err) {
       chai.expect(err).to.equal('no connection');
       done();
     });
@@ -87,11 +114,27 @@ describe('MessageContact service', function() {
   it('returns errors from db query', function(done) {
 
     $httpBackend
-      .when('GET', makeUrl('admin'))
+      .when('GET', makeUrl('admin', 'abc'))
       .respond(503, 'server error');
 
-    service(function(err) {
+    service({}, function(err) {
       chai.expect(err.data).to.equal('server error');
+      done();
+    });
+
+    $httpBackend.flush();
+  });
+
+  it('returns errors from settings query', function(done) {
+
+    settingsErr = 'gremlins! send for help!';
+    district = 'xyz';
+    $httpBackend
+      .when('GET', makeUrl('xyz', 'abc'))
+      .respond({ rows: [ 'a', 'b' ] });
+
+    service({ districtAdmin: true }, function(err) {
+      chai.expect(err).to.equal('gremlins! send for help!');
       done();
     });
 

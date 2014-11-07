@@ -1,3 +1,6 @@
+var async = require('async'),
+    _ = require('underscore');
+
 (function () {
 
   'use strict';
@@ -14,7 +17,7 @@
           }
         }).query(
           function(res) {
-            callback(null, res);
+            callback(null, res.rows);
           },
           function(err) {
             callback(err);
@@ -24,44 +27,79 @@
     }
   ]);
 
-  var query = function(MessageContactsRaw, UserDistrict, queryOptions, conversationId, callback) {
-    UserDistrict(function(err, districtId) {
-      if (err) {
-        return callback(err);
+  var generateQuery = function(options, districtId) {
+    var startkey = [ districtId ];
+    var endkey = [ districtId ];
+    if (options.id) {
+      startkey.push(options.id);
+      endkey.push(options.id);
+    }
+    (options.queryOptions.descending ? startkey : endkey).push({});
+
+    var query = _.clone(options.queryOptions);
+    query.startkey = JSON.stringify(startkey);
+    query.endkey = JSON.stringify(endkey);
+    return query;
+  };
+
+  var query = function($rootScope, MessageContactsRaw, UserDistrict, Settings, options, callback) {
+    async.auto({
+      district: function(callback) {
+        UserDistrict(callback);
+      },
+      request: ['district', function(callback, results) {
+        var query = generateQuery(options, results.district || 'admin');
+        MessageContactsRaw(query, callback);
+      }],
+      unallocated: function(callback) {
+        if (!options.districtAdmin) {
+          return callback(null, false);
+        }
+        Settings(function(err, settings) {
+          var result = settings && settings.district_admins_access_unallocated_messages;
+          callback(err, result);
+        });
+      },
+      requestUnallocated: ['unallocated', function(callback, results) {
+        if (!results.unallocated) {
+          return callback();
+        }
+        MessageContactsRaw(generateQuery(options, 'none'), callback);
+      }]
+    }, function(err, results) {
+      var merged;
+      if (results.request && results.requestUnallocated) {
+        merged = results.request.concat(results.requestUnallocated);
+      } else {
+        merged = results.request;
       }
-      districtId = districtId || 'admin';
-      var startkey = [ districtId ];
-      var endkey = [ districtId ];
-      if (conversationId) {
-        startkey.push(conversationId);
-        endkey.push(conversationId);
+      callback(err, merged);
+      if (!$rootScope.$$phase) {
+        $rootScope.$apply();
       }
-      (queryOptions.descending ? startkey : endkey).push({});
-      queryOptions.startkey = JSON.stringify(startkey);
-      queryOptions.endkey = JSON.stringify(endkey);
-      MessageContactsRaw(queryOptions, callback);
     });
   };
   
-  inboxServices.factory('MessageContact', ['MessageContactsRaw', 'UserDistrict',
-    function(MessageContactsRaw, UserDistrict) {
-      return function(callback) {
-        query(MessageContactsRaw, UserDistrict, { group_level: 2 }, null, callback);
+  inboxServices.factory('MessageContact', ['$rootScope', 'MessageContactsRaw', 'UserDistrict', 'Settings',
+    function($rootScope, MessageContactsRaw, UserDistrict, Settings) {
+      return function(options, callback) {
+        options.queryOptions = { group_level: 2 };
+        query($rootScope, MessageContactsRaw, UserDistrict, Settings, options, callback);
       };
     }
   ]);
   
-  inboxServices.factory('ContactConversation', ['MessageContactsRaw', 'UserDistrict',
-    function(MessageContactsRaw, UserDistrict) {
+  inboxServices.factory('ContactConversation', ['$rootScope', 'MessageContactsRaw', 'UserDistrict', 'Settings',
+    function($rootScope, MessageContactsRaw, UserDistrict, Settings) {
       return function(options, callback) {
-        var queryOptions = {
+        options.queryOptions = {
           reduce: false,
           descending: true,
           include_docs: true,
           skip: options.skip,
           limit: 50
         };
-        query(MessageContactsRaw, UserDistrict, queryOptions, options.id, callback);
+        query($rootScope, MessageContactsRaw, UserDistrict, Settings, options, callback);
       };
     }
   ]);

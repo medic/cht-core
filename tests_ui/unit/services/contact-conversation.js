@@ -5,7 +5,9 @@ describe('ContactConversation service', function() {
   var service,
       $httpBackend,
       district,
-      districtErr;
+      districtErr,
+      unallocated,
+      settingsErr;
 
   beforeEach(function() {
     module('inboxApp');
@@ -16,6 +18,9 @@ describe('ContactConversation service', function() {
       $provide.value('UserDistrict', function(callback) {
         callback(districtErr, district);
       });
+      $provide.value('Settings', function(callback) {
+        callback(settingsErr, { district_admins_access_unallocated_messages: unallocated });
+      });
     });
     inject(function($injector) {
       $httpBackend = $injector.get('$httpBackend');
@@ -23,6 +28,8 @@ describe('ContactConversation service', function() {
     });
     district = null;
     districtErr = null;
+    unallocated = false;
+    settingsErr = null;
   });
 
   afterEach(function() {
@@ -53,7 +60,7 @@ describe('ContactConversation service', function() {
       .respond(expected);
 
     service({ id: 'abc'}, function(err, actual) {
-      chai.expect(actual.rows).to.deep.equal(expected.rows);
+      chai.expect(actual).to.deep.equal(expected.rows);
       done();
     });
 
@@ -72,7 +79,7 @@ describe('ContactConversation service', function() {
       .respond(expected);
 
     service({ id: 'abc' }, function(err, actual) {
-      chai.expect(actual.rows).to.deep.equal(expected.rows);
+      chai.expect(actual).to.deep.equal(expected.rows);
       done();
     });
 
@@ -90,7 +97,27 @@ describe('ContactConversation service', function() {
       .respond(expected);
 
     service({ id: 'abc', skip: 45 }, function(err, actual) {
-      chai.expect(actual.rows).to.deep.equal(expected.rows);
+      chai.expect(actual).to.deep.equal(expected.rows);
+      done();
+    });
+
+    $httpBackend.flush();
+
+  });
+
+  it('requests unallocated for district admins', function(done) {
+
+    unallocated = true;
+    district = 'xyz';
+    $httpBackend
+      .when('GET', makeUrl('xyz', 'abc'))
+      .respond({ rows: [ 'a', 'b' ] });
+    $httpBackend
+      .when('GET', makeUrl('none', 'abc'))
+      .respond({ rows: [ 'c', 'd' ] });
+
+    service({ id: 'abc', districtAdmin: true }, function(err, actual) {
+      chai.expect(actual).to.deep.equal([ 'a', 'b', 'c', 'd' ]);
       done();
     });
 
@@ -114,6 +141,22 @@ describe('ContactConversation service', function() {
 
     service({ id: 'abc' }, function(err) {
       chai.expect(err.data).to.equal('server error');
+      done();
+    });
+
+    $httpBackend.flush();
+  });
+
+  it('returns errors from settings query', function(done) {
+
+    settingsErr = 'gremlins! send for help!';
+    district = 'xyz';
+    $httpBackend
+      .when('GET', makeUrl('xyz', 'abc'))
+      .respond({ rows: [ 'a', 'b' ] });
+
+    service({ id: 'abc', districtAdmin: true }, function(err) {
+      chai.expect(err).to.equal('gremlins! send for help!');
       done();
     });
 
