@@ -21,7 +21,7 @@ Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 
 ## Test
 
-`npm test`
+`TEST_ENV=1 grunt test`
 
 ## Build Status
 

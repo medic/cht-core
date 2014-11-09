@@ -11,7 +11,7 @@ var addMissingData = function(counts) {
       counts[key] = 0;
     }
     date.add(1, 'months');
-  };
+  }
 };
 
 var formatDates = function(dates) {

@@ -23,7 +23,7 @@ exports['audit audits the request'] = function(test) {
           docs[0]._id = generatedId;
           _cb();
         }
-      }
+      };
     }
   };
   var proxy = {
@@ -139,7 +139,7 @@ exports['audit emits errors when stream emits errors'] = function(test) {
         log: function(docs, _cb) {
           _cb('SOME ERROR');
         }
-      }
+      };
     }
   };
   var proxy = {

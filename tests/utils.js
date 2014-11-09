@@ -87,7 +87,7 @@ exports['getAllRegistrations generates multiple queries when over limit'] = func
     registrationLmp: 'P'
   });
   var fti = sinon.stub(db, 'fti');
-  fti.onFirstCall().callsArgWith(2, null, { rows: [ '1', '2', '3' ], total_rows: 3 })
+  fti.onFirstCall().callsArgWith(2, null, { rows: [ '1', '2', '3' ], total_rows: 3 });
   fti.onSecondCall().callsArgWith(2, null, { rows: [ '4', '5' ], total_rows: 2 });
   var start = moment().subtract(20, 'weeks').zone(0);
   var end = moment().subtract(10, 'weeks').add(1, 'days').zone(0);

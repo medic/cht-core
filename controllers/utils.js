@@ -123,7 +123,7 @@ module.exports = {
     options.q = 'form:' + getFormCode('delivery');
     if (options.startDate && options.endDate) {
       options.q += ' AND ' + module.exports.formatDateRange('reported_date', options.startDate, options.endDate);
-    };
+    }
     if (options.district) {
       options.q += ' AND district:"' + options.district + '"';
     }
@@ -189,11 +189,11 @@ module.exports = {
       return {
         number: moment().diff(moment(doc.reported_date), 'weeks'),
         approximate: true
-      }
+      };
     }
     return {
       number: moment().diff(moment(doc.lmp_date), 'weeks') - 2
-    }
+    };
   },
 
   getEDD: function(doc) {
@@ -201,11 +201,11 @@ module.exports = {
       return {
         date: moment(doc.reported_date).add(40, 'weeks'),
         approximate: true
-      }
+      };
     }
     return {
       date: moment(doc.lmp_date).add(42, 'weeks')
-    }
+    };
   },
 
   injectVisits: function(objects, callback) {

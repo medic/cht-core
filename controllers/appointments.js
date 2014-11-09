@@ -31,7 +31,7 @@ var getAppointments = function(options, callback) {
             clinic: doc.related_entities && doc.related_entities.clinic,
             date: date,
             weeks: utils.getWeeksPregnant(doc)
-          }
+          };
         }
       })
     ));
@@ -45,7 +45,7 @@ var rejectVisits = function(appointments, callback) {
   var options = {
     patientIds: _.pluck(appointments, 'patient_id'),
     startDate: moment().subtract(7, 'days')
-  }
+  };
   utils.getVisits(options, function(err, visits) {
     if (err) {
       return callback(err);

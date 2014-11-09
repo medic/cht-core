@@ -11,7 +11,7 @@ var addMissingData = function(counts) {
       counts[key] = 0;
     }
     date.add(1, 'months');
-  };
+  }
 };
 
 var formatRegistrations = function(registrations) {
@@ -35,8 +35,8 @@ module.exports = {
     var endDate = moment().startOf('month');
     var startDate = endDate.clone().subtract(1, 'years');
     var query = 'errors<int>:0 AND ' +
-              'form:(' + utils.getFormCode('registration') + ' OR ' + utils.getFormCode('registrationLmp') + ') AND '
-              + utils.formatDateRange('reported_date', startDate, endDate);
+              'form:(' + utils.getFormCode('registration') + ' OR ' + utils.getFormCode('registrationLmp') + ') AND ' +
+              utils.formatDateRange('reported_date', startDate, endDate);
     if (options.district) {
       query += ' AND district:"' + options.district + '"';
     }

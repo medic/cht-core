@@ -156,7 +156,7 @@ exports['checkUrl requests the given url and returns status'] = function(test) {
           end: function() {
             test.done();
           }
-        }
+        };
       }
     })
     .callsArgWith(1, { statusCode: 444 });
