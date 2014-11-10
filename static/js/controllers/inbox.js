@@ -13,8 +13,8 @@ var utils = require('kujua-utils'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', 'Facility', 'Form', 'Settings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
-    function ($scope, $route, $location, $translate, $animate, Facility, Form, Settings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
+    ['$scope', '$route', '$location', '$translate', '$animate', '$rootScope', 'Facility', 'Form', 'Settings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
+    function ($scope, $route, $location, $translate, $animate, $rootScope, Facility, Form, Settings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
 
       $scope.loading = true;
       $scope.error = false;
@@ -31,14 +31,6 @@ var utils = require('kujua-utils'),
       $scope.analyticsModules = undefined;
 
       require('../modules/manage-session').init();
-
-      var delayIfMobile = function(callback) {
-        if($('#back').is(':visible')) {
-          window.setTimeout(callback, 1);
-        } else {
-          callback();
-        }
-      };
 
       $scope.setFilterQuery = function(query) {
         if (!$scope.filterQuery && query) {
@@ -60,17 +52,19 @@ var utils = require('kujua-utils'),
 
       $scope.setSelected = function(selected) {
         if (selected) {
-          delayIfMobile(function() {
-            $('body').addClass('show-content');
-            $('#back').removeClass('mm-button-disabled');
-          });
           $scope.selected = selected;
-        } else {
-          delayIfMobile(function() {
+        } else if($scope.selected) {
+          if ($('#back').is(':visible')) {
             $('body').removeClass('show-content');
-            $('#back').addClass('mm-button-disabled');
-          });
-          $scope.selected = undefined;
+            window.setTimeout(function() {
+              $scope.selected = undefined;
+              if (!$rootScope.$$phase) {
+                $rootScope.$apply();
+              }
+            }, 500);
+          } else {
+            $scope.selected = undefined;
+          }
         }
       };
 

@@ -33,6 +33,9 @@ var _ = require('underscore'),
           var oldMsg = _.findWhere($scope.messages, { _id: newMsg._id });
           if (oldMsg) {
             _merge(oldMsg, newMsg);
+            if (!$scope.selected && $route.current.params.doc === oldMsg._id) {
+              _setSelected(oldMsg);
+            }
           } else {
             $scope.messages.push(newMsg);
           }
