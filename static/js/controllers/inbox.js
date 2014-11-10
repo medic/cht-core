@@ -70,15 +70,7 @@ var utils = require('kujua-utils'),
             $('body').removeClass('show-content');
             $('#back').addClass('mm-button-disabled');
           });
-          if (!$('#back').is(':visible')) {
-            $scope.selected = undefined;
-          } else {
-            var itemList = $('.inbox-items');
-            var selectedItem = itemList.find('.selected');
-            if (selectedItem.length) {
-              itemList.scrollTop(selectedItem.offset().top);
-            }
-          }
+          $scope.selected = undefined;
         }
       };
 
@@ -165,11 +157,16 @@ var utils = require('kujua-utils'),
       };
 
       $scope.setMessage = function(id) {
-        var path = [ $scope.filterModel.type ];
+        var parts = [ $scope.filterModel.type ];
         if (id) {
-          path.push(id);
+          parts.push(id);
         }
-        $location.path(path.join('/'));
+        var path = '/' + parts.join('/');
+        if ($location.path() === path) {
+          $scope.setSelected(_.findWhere($scope.messages, { _id: id }));
+        } else {
+          $location.path(path);
+        }
       };
 
       var updateAvailableFacilities = function() {

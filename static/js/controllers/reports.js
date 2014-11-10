@@ -10,22 +10,29 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$route', '$location', '$animate', 'UserDistrict', 'UserCtxService', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes', 'RememberService', 'MessageState', 'Settings', 'EditGroup',
-    function ($scope, $route, $location, $animate, UserDistrict, UserCtxService, MarkRead, GenerateSearchQuery, Search, Changes, RememberService, MessageState, Settings, EditGroup) {
+    ['$scope', '$route', '$location', '$animate', '$rootScope', 'UserDistrict', 'UserCtxService', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes', 'RememberService', 'MessageState', 'Settings', 'EditGroup',
+    function ($scope, $route, $location, $animate, $rootScope, UserDistrict, UserCtxService, MarkRead, GenerateSearchQuery, Search, Changes, RememberService, MessageState, Settings, EditGroup) {
 
       $scope.filterModel.type = 'reports';
 
+      var _merge = function(to, from) {
+        if (from._rev !== to._rev) {
+          for (var prop in from) {
+            if (from.hasOwnProperty(prop)) {
+              to[prop] = from[prop];
+            }
+          }
+        }
+      };
+
       $scope.update = function(updated) {
         _.each(updated, function(newMsg) {
+          if ($scope.selected && $scope.selected._id === newMsg._id) {
+            _merge($scope.selected, newMsg);
+          }
           var oldMsg = _.findWhere($scope.messages, { _id: newMsg._id });
           if (oldMsg) {
-            if (newMsg._rev !== oldMsg._rev) {
-              for (var prop in newMsg) {
-                if (newMsg.hasOwnProperty(prop)) {
-                  oldMsg[prop] = newMsg[prop];
-                }
-              }
-            }
+            _merge(oldMsg, newMsg);
           } else {
             $scope.messages.push(newMsg);
           }
@@ -36,6 +43,9 @@ var _ = require('underscore'),
         $scope.setSelected(message);
         if (!$scope.isRead(message)) {
           $scope.readStatus.forms--;
+        }
+        if (!$rootScope.$$phase) {
+          $rootScope.$apply();
         }
         MarkRead(message._id, true, function(err) {
           if (err) {
@@ -112,6 +122,8 @@ var _ = require('underscore'),
           options.changes = _.filter(options.changes, function(change) {
             return !change.deleted;
           });
+        } else if ($('#back').is(':visible')) {
+          $scope.selectMessage();
         }
         GenerateSearchQuery($scope, options, function(err, query) {
           if (err) {
@@ -155,16 +167,21 @@ var _ = require('underscore'),
             $scope.update(data.results);
             if (!options.changes) {
               $scope.totalMessages = data.total_rows;
-            }
-            if (_selectedDoc) {
-              $scope.selectMessage(_selectedDoc);
-            } else if (!$('#back').is(':visible')) {
-              window.setTimeout(function() {
-                $scope.$apply(function(scope) {
-                  var id = $('.inbox-items li').first().attr('data-record-id');
-                  scope.selectMessage(id);
+              if (!data.results.length) {
+                $scope.selectMessage();
+              } else {
+                var curr = _.find(data.results, function(result) {
+                  return result._id === _selectedDoc;
                 });
-              }, 1);
+                if (curr) {
+                  $scope.selectMessage(curr._id);
+                } else if (!$('#back').is(':visible')) {
+                  window.setTimeout(function() {
+                    var id = $('.inbox-items li').first().attr('data-record-id');
+                    $scope.selectMessage(id);
+                  }, 1);
+                }
+              }
             }
             $('.inbox-items')
               .off('scroll', _checkScroll)
