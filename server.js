@@ -106,9 +106,10 @@ app.get('/api/auth/:path', function(req, res) {
       return serverError(err, res);
     }
     if (output.status >= 400 && output.status < 500) {
-      return notLoggedIn(res);
+      res.status(403).send('Forbidden');
+    } else {
+      res.json(output);
     }
-    res.json(output);
   });
 });
 
