@@ -1,6 +1,6 @@
 var db = require('db'),
     utils = require('./utils'),
-    dust = require('dust'),
+    dust = require('dust-core'),
     kutils = require('kujua-utils'),
     sms_utils = require('kujua-sms/utils'),
     appname = require('settings/root').name,
