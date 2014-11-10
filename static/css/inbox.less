@@ -842,13 +842,10 @@ a.fa:hover {
     padding-top: 5px;
     padding-bottom: 5px;
   }
-  .inbox-items li {
-    &:hover {
-      /* Hover fires incorrectly on touch devices */
-      background-color: inherit;
-    }
-    &.selected {
-      background-color: inherit;
+  .inbox .inbox-items li.selected {
+    background-color: inherit;
+    &.read {
+      background-color: @background-color;
     }
   }
   .header {
