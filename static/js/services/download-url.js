@@ -23,9 +23,6 @@ var moment = require('moment');
   var getKey = function(options, date) {
     var key = [];
 
-    // valid
-    key.push(true);
-
     // district
     if (options.district) {
       key.push(options.district);

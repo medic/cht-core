@@ -22,8 +22,8 @@ describe('DownloadUrl service', function() {
     }));
     chai.expect(actual).to.equal(
       '/medic/export/messages?' +
-      'startkey=[true,"null_form",9999999999999]&' +
-      'endkey=[true,"null_form",0]&' +
+      'startkey=["null_form",9999999999999]&' +
+      'endkey=["null_form",0]&' +
       'tz=' + moment().zone() + '&' +
       'format=xml&reduce=false'
     );
@@ -33,8 +33,8 @@ describe('DownloadUrl service', function() {
     var actual = decodeURIComponent(service());
     chai.expect(actual).to.equal(
       '/medic/export/forms?' +
-      'startkey=[true,"*",9999999999999]&' +
-      'endkey=[true,"*",0]&' +
+      'startkey=["*",9999999999999]&' +
+      'endkey=["*",0]&' +
       'tz=' + moment().zone() + '&' +
       'format=xml&reduce=false'
     );
@@ -46,8 +46,8 @@ describe('DownloadUrl service', function() {
     ));
     chai.expect(actual).to.equal(
       '/medic/export/forms/X?' +
-      'startkey=[true,"X",9999999999999]&' +
-      'endkey=[true,"X",0]&' +
+      'startkey=["X",9999999999999]&' +
+      'endkey=["X",0]&' +
       'tz=' + moment().zone() + '&' +
       'format=xml&reduce=false'
     );
@@ -60,8 +60,8 @@ describe('DownloadUrl service', function() {
     }));
     chai.expect(actualMessages).to.equal(
       '/medic/export/messages?' +
-      'startkey=[true,"abc123","null_form",9999999999999]&' +
-      'endkey=[true,"abc123","null_form",0]&' +
+      'startkey=["abc123","null_form",9999999999999]&' +
+      'endkey=["abc123","null_form",0]&' +
       'tz=' + moment().zone() + '&' +
       'format=xml&reduce=false'
     );
@@ -73,8 +73,8 @@ describe('DownloadUrl service', function() {
     }));
     chai.expect(actualForms).to.equal(
       '/medic/export/forms?' +
-      'startkey=[true,"abc123","*",9999999999999]&' +
-      'endkey=[true,"abc123","*",0]&' +
+      'startkey=["abc123","*",9999999999999]&' +
+      'endkey=["abc123","*",0]&' +
       'tz=' + moment().zone() + '&' +
       'format=xml&reduce=false'
     );
@@ -87,8 +87,8 @@ describe('DownloadUrl service', function() {
     }));
     chai.expect(actual).to.equal(
       '/medic/export/forms/X?' +
-      'startkey=[true,"abc123","X",9999999999999]&' +
-      'endkey=[true,"abc123","X",0]&' +
+      'startkey=["abc123","X",9999999999999]&' +
+      'endkey=["abc123","X",0]&' +
       'tz=' + moment().zone() + '&' +
       'format=xml&reduce=false'
     );
