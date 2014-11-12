@@ -18,8 +18,8 @@ require('../dist/reporting-views');
     'nvd3ChartDirectives'
   ]);
 
-  app.config(['$stateProvider', '$translateProvider',
-    function($stateProvider, $translateProvider) {
+  app.config(['$stateProvider', '$urlRouterProvider', '$translateProvider',
+    function($stateProvider, $urlRouterProvider, $translateProvider) {
 
       $stateProvider
         .state('messages', {
@@ -55,7 +55,8 @@ require('../dist/reporting-views');
           controller: 'AnalyticsCtrl',
           templateUrl: '/partials/analytics.html'
         });
-     
+
+      $urlRouterProvider.when('', '/messages');
       $translateProvider.useLoader('SettingsLoader', {});
 
     }
