@@ -1,5 +1,4 @@
-var moment = require('moment'),
-    modal = require('../modules/modal');
+var moment = require('moment');
 
 (function () {
 
@@ -8,8 +7,8 @@ var moment = require('moment'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsContentCtrl', 
-    ['$scope', '$stateParams', 'Settings', 'MessageState', 'EditGroup',
-    function ($scope, $stateParams, Settings, MessageState, EditGroup) {
+    ['$scope', '$stateParams', 'Settings', 'MessageState',
+    function ($scope, $stateParams, Settings, MessageState) {
       
       $scope.selectMessage($stateParams.id);
       $('.tooltip').remove();
@@ -64,7 +63,7 @@ var moment = require('moment'),
       };
 
       $scope.edit = function(group) {
-        $scope.selectedGroup = angular.copy(group);
+        $scope.setSelectedGroup(group);
         $('#edit-message-group').modal('show');
         initEditMessageModal();
       };
@@ -80,12 +79,6 @@ var moment = require('moment'),
         initEditMessageModal();
       };
 
-      $scope.updateGroup = function(group) {
-        var pane = modal.start($('#edit-message-group'));
-        EditGroup($scope.selected._id, group, function(err) {
-          pane.done('Error updating group', err);
-        });
-      };
     }
   ]);
 

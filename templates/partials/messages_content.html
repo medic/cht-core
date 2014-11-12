@@ -1,64 +1,66 @@
-<div id="message-header" class="col-sm-8 name-header" ng-if="selected.messages[0]">
-  <mm-sender message="selected.messages[0].value"></mm-sender>
-</div>
-<div id="message-content" class="col-sm-8 item-content">
-  <span class="mm-loader" ng-show="loadingContent">
-    <span class="fa fa-spinner fa-spin"></span>
-  </span>
-  <p class="loading-status" ng-show="allLoaded">
-    No more messages
-  </p>
-  <div>
-    <div class="body">
-      <ul>
-        <li class="animate-repeat" ng-repeat="message in selected.messages | orderBy:'doc.reported_date'" data-record-id="{~lb}{~lb}message.doc._id{~rb}{~rb}" ng-class="{'outgoing': message.doc.kujua_message, 'incoming': !message.doc.kujua_message}">
-          <div class="marker" ng-if="firstUnread.id === message.doc._id">
-            Unread below
-          </div>
-          <span class="message-body">
-            <div class="actions">
-              <a class="btn btn-link fa fa-trash-o" title="Delete message" ng-click="deleteDoc(message.doc._id)"></a>
+<div class="message-content-wrapper">
+  <div id="message-header" class="col-sm-8 name-header" ng-if="selected.messages[0]">
+    <mm-sender message="selected.messages[0].value"></mm-sender>
+  </div>
+  <div id="message-content" class="col-sm-8 item-content">
+    <span class="mm-loader" ng-show="loadingContent">
+      <span class="fa fa-spinner fa-spin"></span>
+    </span>
+    <p class="loading-status" ng-show="allLoaded">
+      No more messages
+    </p>
+    <div>
+      <div class="body">
+        <ul>
+          <li class="animate-repeat" ng-repeat="message in selected.messages | orderBy:'doc.reported_date'" data-record-id="{~lb}{~lb}message.doc._id{~rb}{~rb}" ng-class="{'outgoing': message.doc.kujua_message, 'incoming': !message.doc.kujua_message}">
+            <div class="marker" ng-if="firstUnread.id === message.doc._id">
+              Unread below
             </div>
-            <div class="data">
-              <p>
-                {~lb}{~lb}message.doc.sms_message.message{~rb}{~rb}
-                <span ng-if="message.doc.kujua_message">
-                  {~lb}{~lb}message.doc.tasks[0].messages[0].message{~rb}{~rb}
-                </span>
-              </p>
-              <!-- outgoing message //-->
-              <span
-                class="task-state"
-                ng-if="message.doc.kujua_message"
-                ng-bind-html="message.doc.tasks[0] | state"
-              ></span>
-              <!-- incoming message //-->
-              <span
-                class="task-state"
-                ng-if="!message.doc.kujua_message"
-                ng-bind-html="message.doc | state"
-              ></span>
-              <!-- incoming message autoreply //-->
-              <span
-                class="task-state"
-                ng-if="!message.doc.kujua_message && message.doc.tasks[0]"
-                ng-bind-html="message.doc.tasks[0] | autoreply"
-              ></span>
-            </div>
-          </span>
-        </li>
-      </ul>
+            <span class="message-body">
+              <div class="actions">
+                <a class="btn btn-link fa fa-trash-o" title="Delete message" ng-click="deleteDoc(message.doc._id)"></a>
+              </div>
+              <div class="data">
+                <p>
+                  {~lb}{~lb}message.doc.sms_message.message{~rb}{~rb}
+                  <span ng-if="message.doc.kujua_message">
+                    {~lb}{~lb}message.doc.tasks[0].messages[0].message{~rb}{~rb}
+                  </span>
+                </p>
+                <!-- outgoing message //-->
+                <span
+                  class="task-state"
+                  ng-if="message.doc.kujua_message"
+                  ng-bind-html="message.doc.tasks[0] | state"
+                ></span>
+                <!-- incoming message //-->
+                <span
+                  class="task-state"
+                  ng-if="!message.doc.kujua_message"
+                  ng-bind-html="message.doc | state"
+                ></span>
+                <!-- incoming message autoreply //-->
+                <span
+                  class="task-state"
+                  ng-if="!message.doc.kujua_message && message.doc.tasks[0]"
+                  ng-bind-html="message.doc.tasks[0] | autoreply"
+                ></span>
+              </div>
+            </span>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
-</div>
-<div id="message-footer" class="reply message-form col-sm-8" ng-if="selected.messages[0]">
-  <div class="col-sm-10 control-group">
-    <div class="controls">
-      <textarea name="message" placeholder="Enter message"></textarea>
+  <div id="message-footer" class="reply message-form col-sm-8" ng-if="selected.messages[0]">
+    <div class="col-sm-10 control-group">
+      <div class="controls">
+        <textarea name="message" placeholder="Enter message"></textarea>
+      </div>
     </div>
-  </div>
-  <div class="col-sm-2">
-    <a class="btn submit btn-primary" ng-click="sendMessage($event)" data-working-label="Sending...">Send</a>
-    <span class="note"></span>
+    <div class="col-sm-2">
+      <a class="btn submit btn-primary" ng-click="sendMessage($event)" data-working-label="Sending...">Send</a>
+      <span class="note"></span>
+    </div>
   </div>
 </div>

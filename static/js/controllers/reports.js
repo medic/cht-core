@@ -1,5 +1,6 @@
 var _ = require('underscore'),
     moment = require('moment'),
+    modal = require('../modules/modal'),
     tour = require('../modules/tour');
 
 (function () {
@@ -9,10 +10,22 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$state', '$stateParams', '$location', '$animate', '$rootScope', 'UserDistrict', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes',
-    function ($scope, $state, $stateParams, $location, $animate, $rootScope, UserDistrict, MarkRead, GenerateSearchQuery, Search, Changes) {
+    ['$scope', '$state', '$stateParams', '$location', '$animate', '$rootScope', 'UserDistrict', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes', 'EditGroup',
+    function ($scope, $state, $stateParams, $location, $animate, $rootScope, UserDistrict, MarkRead, GenerateSearchQuery, Search, Changes, EditGroup) {
 
       $scope.filterModel.type = 'reports';
+      $scope.selectedGroup = undefined;
+
+      $scope.setSelectedGroup = function(group) {
+        $scope.selectedGroup = angular.copy(group);
+      };
+
+      $scope.updateGroup = function(group) {
+        var pane = modal.start($('#edit-message-group'));
+        EditGroup($scope.selected._id, group, function(err) {
+          pane.done('Error updating group', err);
+        });
+      };
 
       var _merge = function(to, from) {
         if (from._rev !== to._rev) {

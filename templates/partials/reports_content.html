@@ -1,83 +1,85 @@
-<div ng-show="selected && selected.form !== undefined">
+<div id="reports-content" class="col-sm-8 item-content">
+  <div ng-show="selected && selected.form !== undefined">
 
-  <div class="meta">
-    <div class="time" ng-bind-html="selected.reported_date | fullDate"></div>
-    <mm-sender message="selected"></mm-sender>
-  </div>
+    <div class="meta">
+      <div class="time" ng-bind-html="selected.reported_date | fullDate"></div>
+      <mm-sender message="selected"></mm-sender>
+    </div>
 
-  <div class="status">
-    <span class="mm-badge mm-badge-round mm-badge-border" ng-class="selected.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
-      <span class="fa" ng-class="{'fa-check': selected.verified}"></span>
-    </span>
-  </div>
+    <div class="status">
+      <span class="mm-badge mm-badge-round mm-badge-border" ng-class="selected.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
+        <span class="fa" ng-class="{'fa-check': selected.verified}"></span>
+      </span>
+    </div>
 
-  <div class="body">
-    <h2 ng-bind-html="selected | title:forms"></h2>
-    <ul>
-      <li ng-if="selected.sms_message.message">
-        <label>Content</label>
-        <p>{~lb}{~lb}selected.sms_message.message{~rb}{~rb}</p>
-      </li>
-      <li ng-if="selected.form" ng-repeat="field in selected.fields.data">
-        <label>
-          {~lb}{~lb}field.label{~rb}{~rb}
-          <span class="fa fa-cogs" ng-show="field.generated" title="Generated report field"></span>
-        </label>
-        <p>{~lb}{~lb}field.value{~rb}{~rb}</p>
-      </li>
-      <li ng-if="selected.errors.length">
-        <label>Errors</label>
-        <ul>
-          <li ng-repeat="error in selected.errors">
-            {~lb}{~lb}error.message{~rb}{~rb}
-          </li>
-        </ul>
-      </li>
-      <li ng-if="selected.tasks.length">
-        <label ng-if="selected.kujua_message">Sent To</label>
-        <label ng-if="!selected.kujua_message">Automated Reply</label>
-        <ul class="task-list">
-          <li ng-repeat="task in selected.tasks">
-            <ul>
-              <li ng-repeat="message in task.messages">
-                {~lb}{~lb}selected.kujua_message ? message.to : message.message{~rb}{~rb}
-              </li>
-            </ul>
-            <span class="task-state" ng-bind-html="task | state"></span>
-          </li>
-          <li class="clear"></li>
-        </ul>
-      </li>
-    </ul>
-  </div>
+    <div class="body">
+      <h2 ng-bind-html="selected | title:forms"></h2>
+      <ul>
+        <li ng-if="selected.sms_message.message">
+          <label>Content</label>
+          <p>{~lb}{~lb}selected.sms_message.message{~rb}{~rb}</p>
+        </li>
+        <li ng-if="selected.form" ng-repeat="field in selected.fields.data">
+          <label>
+            {~lb}{~lb}field.label{~rb}{~rb}
+            <span class="fa fa-cogs" ng-show="field.generated" title="Generated report field"></span>
+          </label>
+          <p>{~lb}{~lb}field.value{~rb}{~rb}</p>
+        </li>
+        <li ng-if="selected.errors.length">
+          <label>Errors</label>
+          <ul>
+            <li ng-repeat="error in selected.errors">
+              {~lb}{~lb}error.message{~rb}{~rb}
+            </li>
+          </ul>
+        </li>
+        <li ng-if="selected.tasks.length">
+          <label ng-if="selected.kujua_message">Sent To</label>
+          <label ng-if="!selected.kujua_message">Automated Reply</label>
+          <ul class="task-list">
+            <li ng-repeat="task in selected.tasks">
+              <ul>
+                <li ng-repeat="message in task.messages">
+                  {~lb}{~lb}selected.kujua_message ? message.to : message.message{~rb}{~rb}
+                </li>
+              </ul>
+              <span class="task-state" ng-bind-html="task | state"></span>
+            </li>
+            <li class="clear"></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
 
-  <div class="body" ng-if="selected.scheduled_tasks_by_group.length">
-    <h2>Messages</h2>
-    <ul>
-      <li ng-repeat="group in selected.scheduled_tasks_by_group">
-        <p>
-          {~lb}{~lb}group.group{~rb}{~rb}
-          <span ng-hide="group.loading">
-            <a class="btn btn-link" ng-click="edit(group)">edit</a>
-            <a class="btn btn-link" ng-click="mute(group)" ng-show="canMute(group)">mute</a>
-            <a class="btn btn-link" ng-click="schedule(group)" ng-show="canSchedule(group)">schedule</a>
-          </span>
-          <span class="loading-button" ng-show="group.loading">
-            <span class="fa fa-spinner fa-spin"></span>
-          </span>
-        </p>
-        <ul class="task-list">
-          <li ng-repeat="task in group.rows | orderBy:'due'">
-            <ul>
-              <li ng-repeat="message in task.messages">
-                {~lb}{~lb}message.message{~rb}{~rb}
-              </li>
-            </ul>
-            <span class="task-state" ng-bind-html="task | state"></span>
-          </li>
-          <li class="clear"></li>
-        </ul>
-      </li>
-    </ul>
+    <div class="body" ng-if="selected.scheduled_tasks_by_group.length">
+      <h2>Messages</h2>
+      <ul>
+        <li ng-repeat="group in selected.scheduled_tasks_by_group">
+          <p>
+            {~lb}{~lb}group.group{~rb}{~rb}
+            <span ng-hide="group.loading">
+              <a class="btn btn-link" ng-click="edit(group)">edit</a>
+              <a class="btn btn-link" ng-click="mute(group)" ng-show="canMute(group)">mute</a>
+              <a class="btn btn-link" ng-click="schedule(group)" ng-show="canSchedule(group)">schedule</a>
+            </span>
+            <span class="loading-button" ng-show="group.loading">
+              <span class="fa fa-spinner fa-spin"></span>
+            </span>
+          </p>
+          <ul class="task-list">
+            <li ng-repeat="task in group.rows | orderBy:'due'">
+              <ul>
+                <li ng-repeat="message in task.messages">
+                  {~lb}{~lb}message.message{~rb}{~rb}
+                </li>
+              </ul>
+              <span class="task-state" ng-bind-html="task | state"></span>
+            </li>
+            <li class="clear"></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
   </div>
 </div>
