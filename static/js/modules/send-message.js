@@ -80,6 +80,17 @@ var _ = require('underscore'),
            (contact && contact.phone);
   };
 
+  var createChoiceFromNumber = function(phone) {
+    return {
+      id: phone,
+      doc: {
+        contact: {
+          phone: phone
+        }
+      }
+    };
+  };
+
   var initPhoneField = function($phone) {
     if (!$phone) {
       return;
@@ -116,14 +127,7 @@ var _ = require('underscore'),
       },
       createSearchChoice: function(term, data) {
         if (/^\+?\d*$/.test(term) && data.length === 0) {
-          return {
-            id: term,
-            doc: {
-              contact: {
-                phone: term
-              }
-            }
-          };
+          return createChoiceFromNumber(term);
         }
       }
     });
@@ -159,6 +163,8 @@ var _ = require('underscore'),
         });
         if (doc) {
           val.push(doc);
+        } else {
+          val.push(createChoiceFromNumber(to));
         }
       }
       $modal.find('[name=phone]').select2('data', val);

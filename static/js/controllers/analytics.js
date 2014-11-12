@@ -18,8 +18,8 @@ var _ = require('underscore'),
   };
 
   inboxControllers.controller('AnalyticsCtrl',
-    ['$scope', '$route', '$location', 'Settings', 'AnalyticsModules',
-    function ($scope, $route, $location, Settings, AnalyticsModules) {
+    ['$scope', '$stateParams', '$location', 'Settings', 'AnalyticsModules',
+    function ($scope, $stateParams, $location, Settings, AnalyticsModules) {
       $scope.setSelectedModule();
       $scope.filterModel.type = 'analytics';
       $scope.loading = true;
@@ -29,14 +29,15 @@ var _ = require('underscore'),
         }
         $scope.setAnalyticsModules(AnalyticsModules(res));
         $scope.setSelectedModule(findSelectedModule(
-          $route.current.params.module, $scope.analyticsModules
+          $stateParams.module, $scope.analyticsModules
         ));
         $scope.loading = false;
         if ($scope.filterModel.module) {
           $scope.filterModel.module.render($scope);
         }
       });
-      tour.start($route.current.params.tour);
+
+      tour.start($stateParams.tour);
       $location.url($location.path());
     }
   ]);

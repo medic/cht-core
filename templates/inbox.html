@@ -14,7 +14,7 @@
     <div class="container-fluid">
       {>"partials/header.html"/}
       {>"partials/filters.html"/}
-      <div class="row content" ng-view></div>
+      <div class="row content" ui-view></div>
     </div>
 
     {>"partials/modal_send_message.html"/}
@@ -28,9 +28,15 @@
     <script type="text/ng-template" id="/partials/messages.html">
       {>"partials/messages.html"/}
     </script>
+    <script type="text/ng-template" id="/partials/messages_content.html">
+      {>"partials/messages_content.html"/}
+    </script>
     
     <script type="text/ng-template" id="/partials/reports.html">
       {>"partials/reports.html"/}
+    </script>
+    <script type="text/ng-template" id="/partials/reports_content.html">
+      {>"partials/reports_content.html"/}
     </script>
 
     <script type="text/ng-template" id="/partials/analytics.html">

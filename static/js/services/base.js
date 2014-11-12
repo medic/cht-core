@@ -14,13 +14,6 @@ var db = require('db');
     }
   );
 
-  inboxServices.factory('RememberService', function() {
-    return {
-      scrollTop: undefined,
-      dateFormat: 'DD-MMM-YYYY hh:mm'
-    };
-  });
-
   inboxServices.factory('BaseUrlService', function() {
     return function() {
       return $('html').data('base-url');

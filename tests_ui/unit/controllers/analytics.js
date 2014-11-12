@@ -24,7 +24,7 @@ describe('AnalyticsCtrl controller', function() {
     createController = function() {
       return $controller('AnalyticsCtrl', {
         '$scope': scope,
-        '$route': { current: { params: { module: moduleId } } },
+        '$stateParams': { module: moduleId },
         'Settings': Settings,
         'AnalyticsModules': AnalyticsModules
       });

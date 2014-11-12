@@ -1,6 +1,5 @@
 var _ = require('underscore'),
     moment = require('moment'),
-    modal = require('../modules/modal'),
     tour = require('../modules/tour');
 
 (function () {
@@ -10,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$route', '$location', '$animate', '$rootScope', 'UserDistrict', 'UserCtxService', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes', 'RememberService', 'MessageState', 'Settings', 'EditGroup',
-    function ($scope, $route, $location, $animate, $rootScope, UserDistrict, UserCtxService, MarkRead, GenerateSearchQuery, Search, Changes, RememberService, MessageState, Settings, EditGroup) {
+    ['$scope', '$state', '$stateParams', '$location', '$animate', '$rootScope', 'UserDistrict', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes',
+    function ($scope, $state, $stateParams, $location, $animate, $rootScope, UserDistrict, MarkRead, GenerateSearchQuery, Search, Changes) {
 
       $scope.filterModel.type = 'reports';
 
@@ -33,7 +32,7 @@ var _ = require('underscore'),
           var oldMsg = _.findWhere($scope.messages, { _id: newMsg._id });
           if (oldMsg) {
             _merge(oldMsg, newMsg);
-            if (!$scope.selected && $route.current.params.doc === oldMsg._id) {
+            if (!$scope.selected && $stateParams.id === oldMsg._id) {
               _setSelected(oldMsg);
             }
           } else {
@@ -82,9 +81,7 @@ var _ = require('underscore'),
                 }
                 if (data.results.length) {
                   _setSelected(data.results[0]);
-                  $('.inbox-items')
-                    .off('scroll', _checkScroll)
-                    .on('scroll', _checkScroll);
+                  _initScroll();
                 }
               });
             });
@@ -170,6 +167,8 @@ var _ = require('underscore'),
             $scope.update(data.results);
             if (!options.changes) {
               $scope.totalMessages = data.total_rows;
+            }
+            if (!options.changes && !options.skip) {
               if (!data.results.length) {
                 $scope.selectMessage();
               } else {
@@ -177,92 +176,17 @@ var _ = require('underscore'),
                   return result._id === _selectedDoc;
                 });
                 if (curr) {
-                  $scope.selectMessage(curr._id);
+                  $scope.setSelected(curr);
                 } else if (!$('#back').is(':visible')) {
                   window.setTimeout(function() {
                     var id = $('.inbox-items li').first().attr('data-record-id');
-                    $scope.selectMessage(id);
+                    $state.go('reports.detail', { id: id });
                   }, 1);
                 }
               }
             }
-            $('.inbox-items')
-              .off('scroll', _checkScroll)
-              .on('scroll', _checkScroll);
+            _initScroll();
           });
-        });
-      };
-
-      $scope.canMute = function(group) {
-        return MessageState.any(group, 'scheduled');
-      };
-
-      $scope.canSchedule = function(group) {
-       return MessageState.any(group, 'muted');
-      };
-
-      var setMessageState = function(group, from, to) {
-        group.loading = true;
-        var id = $scope.selected._id;
-        var groupNumber = group.rows[0].group;
-        MessageState.set(id, groupNumber, from, to, function(err) {
-          if (err) {
-            console.log(err);
-          }
-        });
-      };
-
-      $scope.mute = function(group) {
-        setMessageState(group, 'scheduled', 'muted');
-      };
-
-      $scope.schedule = function(group) {
-        setMessageState(group, 'muted', 'scheduled');
-      };
-
-      var initEditMessageModal = function() {
-        window.setTimeout(function() {
-          Settings(function(err, res) {
-            if (!err) {
-              $('#edit-message-group .datepicker').daterangepicker({
-                singleDatePicker: true,
-                timePicker: true,
-                applyClass: 'btn-primary',
-                cancelClass: 'btn-link',
-                parentEl: '#edit-message-group .modal-dialog .modal-content',
-                format: res.reported_date_format,
-                minDate: moment()
-              },
-              function(date) {
-                var i = this.element.closest('fieldset').attr('data-index');
-                $scope.selectedGroup.rows[i].due = date.toISOString();
-              });
-            }
-          });
-        });
-      };
-
-      $scope.edit = function(group) {
-        $scope.selectedGroup = angular.copy(group);
-        $('#edit-message-group').modal('show');
-        initEditMessageModal();
-      };
-
-      $scope.addTask = function(group) {
-        group.rows.push({
-          due: moment(),
-          added: true,
-          group: group.number,
-          state: 'scheduled',
-          messages: [ { message: '' } ]
-        });
-        initEditMessageModal();
-      };
-
-      $scope.updateGroup = function(group) {
-        var pane = modal.start($('#edit-message-group'));
-        EditGroup($scope.selected._id, group, function(err) {
-          pane.done('Error updating group', err);
         });
       };
 
@@ -273,25 +197,21 @@ var _ = require('underscore'),
         $scope.query();
       });
 
+      var _initScroll = function() {
+        $('.inbox-items')
+          .off('scroll', _checkScroll)
+          .on('scroll', _checkScroll);
+      };
+
       var _checkScroll = function() {
         if (this.scrollHeight - this.scrollTop - 10 < this.clientHeight) {
-          $scope.$apply(function(scope) {
-            scope.query({ skip: true });
-          });
+          $scope.query({ skip: true });
         }
       };
 
       Changes(function(data) {
         $scope.query({ silent: true, changes: data });
       });
-
-      // TODO we should eliminate the need for this function as much as possible
-      var angularApply = function(callback) {
-        var scope = angular.element($('body')).scope();
-        if (scope) {
-          scope.$apply(callback);
-        }
-      };
 
       var start = $scope.filterModel.date.from ?
         moment($scope.filterModel.date.from) : moment().subtract(1, 'months');
@@ -304,10 +224,13 @@ var _ = require('underscore'),
         cancelClass: 'btn-link'
       },
       function(start, end) {
-        angularApply(function(scope) {
-          scope.filterModel.date.from = start.valueOf();
-          scope.filterModel.date.to = end.valueOf();
-        });
+        var scope = angular.element($('body')).scope();
+        if (scope) {
+          scope.$apply(function() {
+            scope.filterModel.date.from = start.valueOf();
+            scope.filterModel.date.to = end.valueOf();
+          });
+        }
       })
       .on('mm.dateSelected.daterangepicker', function(e, picker) {
         if ($('#back').is(':visible')) {
@@ -348,14 +271,6 @@ var _ = require('underscore'),
         $('#mobile-freetext').focus();
       });
 
-      $scope.setFilterQuery($route.current.params.query);
-
-      if (!$route.current.params.doc) {
-        RememberService.scrollTop = {};
-      }
-      $('.tooltip').remove();
-
-      $scope.selectMessage($route.current.params.doc);
 
       UserDistrict(function() {
         $scope.$watch('filterModel', function(prev, curr) {
@@ -363,13 +278,17 @@ var _ = require('underscore'),
             $scope.query();
           }
         }, true);
-        if (!$scope.messages || !$route.current.params.doc) {
-          $scope.query();
-        }
+        $scope.query();
       });
 
-      tour.start($route.current.params.tour);
+      if (!$stateParams.id) {
+        $scope.selectMessage();
+      }
+
+      $scope.setFilterQuery($stateParams.query);
+      tour.start($stateParams.tour);
       $location.url($location.path());
+
     }
   ]);
 

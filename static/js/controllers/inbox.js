@@ -13,8 +13,8 @@ var utils = require('kujua-utils'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', '$rootScope', 'Facility', 'Form', 'Settings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
-    function ($scope, $route, $location, $translate, $animate, $rootScope, Facility, Form, Settings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
+    ['$scope', '$route', '$location', '$translate', '$animate', '$rootScope', '$state', 'Facility', 'Form', 'Settings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
+    function ($scope, $route, $location, $translate, $animate, $rootScope, $state, Facility, Form, Settings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
 
       $scope.loading = true;
       $scope.error = false;
@@ -151,16 +151,7 @@ var utils = require('kujua-utils'),
       };
 
       $scope.setMessage = function(id) {
-        var parts = [ $scope.filterModel.type ];
-        if (id) {
-          parts.push(id);
-        }
-        var path = '/' + parts.join('/');
-        if ($location.path() === path) {
-          $scope.setSelected(_.findWhere($scope.messages, { _id: id }));
-        } else {
-          $location.path(path);
-        }
+        $state.go($scope.filterModel.type + '.detail', { id: id });
       };
 
       var updateAvailableFacilities = function() {
@@ -510,7 +501,9 @@ var utils = require('kujua-utils'),
   ]);
 
   require('./messages');
+  require('./messages-content');
   require('./reports');
+  require('./reports-content');
   require('./analytics');
 
 }());

@@ -10,8 +10,7 @@ describe('ReportsCtrl controller', function() {
       MarkRead,
       Search,
       Changes,
-      changesCallback,
-      selectedDoc;
+      changesCallback;
 
   beforeEach(module('inboxApp'));
 
@@ -52,12 +51,10 @@ describe('ReportsCtrl controller', function() {
     };
 
     changesCallback = undefined;
-    selectedDoc = undefined;
 
     createController = function() {
       return $controller('ReportsCtrl', {
         '$scope': scope,
-        '$route': { current: { params: { doc: selectedDoc } } },
         'UserDistrict': UserDistrict,
         'Changes': Changes,
         'MarkRead': MarkRead,
@@ -73,10 +70,8 @@ describe('ReportsCtrl controller', function() {
   }));
 
   it('set up controller', function() {
-    selectedDoc = 'x';
     createController();
     chai.expect(scope.filterModel.type).to.equal('reports');
-    chai.expect(scope.selected).to.equal(message);
   });
 
   it('updated messages when changed', function() {

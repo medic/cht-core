@@ -7,15 +7,15 @@
       </div>
       <div class="modal-body">
         <p>You can start a tour at any time by clicking the cog in the top right corner. Which tour would you like to run?</p>
-        <a href="#/messages/?tour=messages" class="tour-option tour-option-messages btn">
+        <a ui-sref="messages.detail({ tour: 'messages' })" class="tour-option tour-option-messages btn">
           <div class="fa fa-envelope"></div>
           <div class="button-label">Messages</div>
         </a>
-        <a href="#/reports/?tour=reports" class="tour-option tour-option-reports btn">
+        <a ui-sref="reports.detail({ tour: 'reports' })" class="tour-option tour-option-reports btn">
           <div class="fa fa-list-alt"></div>
           <div class="button-label">Reports</div>
         </a>
-        <a href="#/analytics/?tour=analytics" class="tour-option tour-option-analytics btn">
+        <a ui-sref="analytics({ tour: 'analytics' })" class="tour-option tour-option-analytics btn">
           <div class="fa fa-bar-chart-o"></div>
           <div class="button-label">Analytics</div>
         </a>

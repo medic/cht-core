@@ -33,7 +33,6 @@ describe('MessagesCtrl controller', function() {
     createController = function() {
       return $controller('MessagesCtrl', {
         '$scope': scope,
-        '$route': { current: { params: { doc: 'x' } } },
         'Changes': Changes,
         'MarkAllRead': {},
         'ContactConversation': ContactConversation,
@@ -45,7 +44,6 @@ describe('MessagesCtrl controller', function() {
   it('set up controller', function() {
     createController();
     chai.expect(scope.filterModel.type).to.equal('messages');
-    chai.expect(scope.selected.id).to.equal('x');
   });
 
 });
