@@ -53,9 +53,14 @@ var utils = require('kujua-utils'),
       $scope.setSelected = function(selected) {
         if (selected) {
           $scope.selected = selected;
+          window.setTimeout(function() {
+            $('body').addClass('show-content');
+          }, 1);
         } else if($scope.selected) {
-          if ($('#back').is(':visible')) {
+          window.setTimeout(function() {
             $('body').removeClass('show-content');
+          }, 1);
+          if ($('#back').is(':visible')) {
             window.setTimeout(function() {
               $scope.selected = undefined;
               if (!$rootScope.$$phase) {
