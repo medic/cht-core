@@ -834,6 +834,113 @@ a.fa:hover {
   color: #fff;
 }
 
+.guided-setup {
+  .horizontal-options {
+    a {
+      display: inline-block;
+      outline: none;
+      margin: 0 1em;
+    }
+    .circle, .rectangle {
+      display: inline-block;
+      background-color: @background-color;
+      border: 1px solid @seperator-color;
+    }
+    .circle {
+      border-radius: 100px;
+    }
+    .rectangle {
+      padding: 0.5em 1em;
+    }
+    .selected .circle, .selected .rectangle {
+      background-color: @ok-color;
+      color: #ffffff;
+    }
+    .icon {
+      background-size: contain;
+      background-repeat: no-repeat;
+      padding-top: 150px;
+    }
+    .contact-pregnant {
+      background-image: url('../img/icon-pregnant.svg');
+      &.selected {
+        background-image: url('../img/icon-pregnant-selected.svg');
+      }
+    }
+    .contact-chw {
+      background-image: url('../img/icon-chw.svg');
+      &.selected {
+        background-image: url('../img/icon-chw-selected.svg');
+      }
+    }
+    .contact-nurse {
+      background-image: url('../img/icon-nurse.svg');
+      &.selected {
+        background-image: url('../img/icon-nurse-selected.svg');
+      }
+    }
+  }
+  .introduction-content .panel-body {
+    text-align: left;
+  }
+  .introduction-heading .panel-title a {
+    margin-left: 2em;
+  }
+  .screenshot {
+    margin-bottom: 1em;
+    float: right;
+  }
+  .navigation {
+    clear: right;
+  }
+  .primary-contact-content .horizontal-options a {
+    width: 150px;
+    vertical-align: top;
+    .circle {
+      height: 150px;
+      width: 150px;
+    }
+  }
+  .language-preference-content .horizontal-options a {
+    width: 100px;
+    .rectangle {
+      width: 100px;
+    }
+  }
+  .registration-form-content .horizontal-options a {
+    width: 150px;
+    vertical-align: top;
+    .circle {
+      height: 2em;
+      width: 2em;
+      .fa {
+        visibility: hidden;
+        line-height: 1.25em;
+        font-size: 1.5em;
+      }
+    }
+    .description {
+      display: inline-block;
+      margin-top: 0.5em;
+    }
+    .heading {
+      font-size: 1.5em;
+      width: 100%;
+      display: inline-block;
+      font-weight: bold;
+    }
+    &.selected .fa {
+      visibility: visible;
+    }
+  }
+  .complete-setup-content .navigation .error {
+    float: right;
+    clear: both;
+    font-weight: bold;
+    color: @error-color;
+  }
+}
+
 @media (max-width: 767px) {
   .modal-header h3 {
     margin: 0;

@@ -13,8 +13,8 @@ var utils = require('kujua-utils'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', '$rootScope', '$state', 'Facility', 'Form', 'Settings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
-    function ($scope, $route, $location, $translate, $animate, $rootScope, $state, Facility, Form, Settings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
+    ['$scope', '$route', '$location', '$translate', '$animate', '$rootScope', '$state', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
+    function ($scope, $route, $location, $translate, $animate, $rootScope, $state, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
 
       $scope.loading = true;
       $scope.error = false;
@@ -276,6 +276,14 @@ var utils = require('kujua-utils'),
         if (err) {
           return console.log('Error fetching settings', err);
         }
+        if (!res.setup_complete) {
+          $('#guided-setup').modal('show');
+          UpdateSettings({ setup_complete: true }, function(err) {
+            if (err) {
+              console.log('Error marking setup_complete', err);
+            }
+          });
+        }
         $scope.languages = res.locales;
       });
 
@@ -498,6 +506,48 @@ var utils = require('kujua-utils'),
         var message = $('#feedback [name=feedback]').val();
         feedback.submit(message, function(err) {
           pane.done('Error saving feedback', err);
+        });
+      });
+
+      $('#guided-setup').on('click', '.horizontal-options a', function(e) {
+        e.preventDefault();
+        var elem = $(this);
+        elem.closest('.horizontal-options')
+          .find('.selected')
+          .removeClass('selected');
+        elem.addClass('selected');
+        elem.closest('.panel')
+          .addClass('panel-complete')
+          .find('.panel-heading .value')
+          .text(elem.text());
+      });
+
+      $('#setup-wizard-save').on('click', function(e) {
+        e.preventDefault();
+        $('#setup-wizard-save').addClass('disabled');
+        $('#complete-setup-content .error').hide();
+        var settings = {};
+        var val;
+        val = $('#language-preference-content .horizontal-options .selected').attr('data-value');
+        if (val) {
+          settings.locale = val;
+        }
+        val = $('#primary-contact-content .horizontal-options .selected').attr('data-value');
+        if (val) {
+          settings.care_coordinator = val;
+        }
+        val = $('#registration-form-content .horizontal-options .selected').attr('data-value');
+        if (val) {
+          settings.anc_registration_lmp = val === 'true';
+        }
+        UpdateSettings(settings, function(err) {
+          $('#setup-wizard-save').removeClass('disabled');
+          if (err) {
+            console.log('Error updating settings', err);
+            $('#complete-setup-content .error').show();
+            return;
+          }
+          $('#guided-setup').modal('hide');
         });
       });
 

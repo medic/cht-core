@@ -25,5 +25,5 @@ var _ = require('underscore'),
       };
     }
   ]);
-  
+
 }()); 

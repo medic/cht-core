@@ -25,6 +25,7 @@
   require('./send-message');
   require('./settings');
   require('./update-facility');
+  require('./update-settings');
   require('./user');
   require('./verified');
 

@@ -48,6 +48,12 @@
           </div>
         </a>
         <ul role="menu" class="dropdown-menu mm-dropdown-menu">
+          <li role="presentation" ng-show="permissions.admin">
+            <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#guided-setup">
+              <i class="fa fa-fw fa-list-ol"></i>
+              Easy Setup Wizard
+            </a>
+          </li>
           <li role="presentation">
             <a id="startTour" role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#tour-select">
               <i class="fa fa-fw fa-graduation-cap"></i>

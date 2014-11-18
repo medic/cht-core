@@ -56,7 +56,7 @@ describe('ContactConversation service', function() {
       rows: [ 'a', 'b' ]
     };
     $httpBackend
-      .when('GET', makeUrl('admin', 'abc'))
+      .expect('GET', makeUrl('admin', 'abc'))
       .respond(expected);
 
     service({ id: 'abc'}, function(err, actual) {
@@ -75,7 +75,7 @@ describe('ContactConversation service', function() {
     };
     district = 'xyz';
     $httpBackend
-      .when('GET', makeUrl('xyz', 'abc'))
+      .expect('GET', makeUrl('xyz', 'abc'))
       .respond(expected);
 
     service({ id: 'abc' }, function(err, actual) {
@@ -93,7 +93,7 @@ describe('ContactConversation service', function() {
       rows: [ 'a', 'b' ]
     };
     $httpBackend
-      .when('GET', makeUrl('admin', 'abc', 45))
+      .expect('GET', makeUrl('admin', 'abc', 45))
       .respond(expected);
 
     service({ id: 'abc', skip: 45 }, function(err, actual) {
@@ -110,10 +110,10 @@ describe('ContactConversation service', function() {
     unallocated = true;
     district = 'xyz';
     $httpBackend
-      .when('GET', makeUrl('xyz', 'abc'))
+      .expect('GET', makeUrl('xyz', 'abc'))
       .respond({ rows: [ 'a', 'b' ] });
     $httpBackend
-      .when('GET', makeUrl('none', 'abc'))
+      .expect('GET', makeUrl('none', 'abc'))
       .respond({ rows: [ 'c', 'd' ] });
 
     service({ id: 'abc', districtAdmin: true }, function(err, actual) {
@@ -152,7 +152,7 @@ describe('ContactConversation service', function() {
     settingsErr = 'gremlins! send for help!';
     district = 'xyz';
     $httpBackend
-      .when('GET', makeUrl('xyz', 'abc'))
+      .expect('GET', makeUrl('xyz', 'abc'))
       .respond({ rows: [ 'a', 'b' ] });
 
     service({ id: 'abc', districtAdmin: true }, function(err) {

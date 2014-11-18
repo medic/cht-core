@@ -52,7 +52,7 @@ describe('MessageContact service', function() {
       rows: [ 'a', 'b' ]
     };
     $httpBackend
-      .when('GET', makeUrl('admin'))
+      .expect('GET', makeUrl('admin'))
       .respond(expected);
 
     service({}, function(err, actual) {
@@ -71,7 +71,7 @@ describe('MessageContact service', function() {
     };
     district = 'xyz';
     $httpBackend
-      .when('GET', makeUrl('xyz'))
+      .expect('GET', makeUrl('xyz'))
       .respond(expected);
 
     service({}, function(err, actual) {
@@ -88,10 +88,10 @@ describe('MessageContact service', function() {
     unallocated = true;
     district = 'xyz';
     $httpBackend
-      .when('GET', makeUrl('xyz', 'abc'))
+      .expect('GET', makeUrl('xyz', 'abc'))
       .respond({ rows: [ 'a', 'b' ] });
     $httpBackend
-      .when('GET', makeUrl('none', 'abc'))
+      .expect('GET', makeUrl('none', 'abc'))
       .respond({ rows: [ 'c', 'd' ] });
 
     service({ districtAdmin: true }, function(err, actual) {
@@ -114,7 +114,7 @@ describe('MessageContact service', function() {
   it('returns errors from db query', function(done) {
 
     $httpBackend
-      .when('GET', makeUrl('admin', 'abc'))
+      .expect('GET', makeUrl('admin', 'abc'))
       .respond(503, 'server error');
 
     service({}, function(err) {
@@ -130,7 +130,7 @@ describe('MessageContact service', function() {
     settingsErr = 'gremlins! send for help!';
     district = 'xyz';
     $httpBackend
-      .when('GET', makeUrl('xyz', 'abc'))
+      .expect('GET', makeUrl('xyz', 'abc'))
       .respond({ rows: [ 'a', 'b' ] });
 
     service({ districtAdmin: true }, function(err) {

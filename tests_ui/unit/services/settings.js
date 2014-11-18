@@ -30,7 +30,7 @@ describe('Settings service', function() {
       isString: 'hello'
     };
     $httpBackend
-      .when('GET', 'BASEURL/app_settings/medic')
+      .expect('GET', 'BASEURL/app_settings/medic')
       .respond({ settings: expected });
 
     service(function(err, actual) {
@@ -50,7 +50,7 @@ describe('Settings service', function() {
       date_format: 'YYYY'
     };
     $httpBackend
-      .when('GET', 'BASEURL/app_settings/medic')
+      .expect('GET', 'BASEURL/app_settings/medic')
       .respond({ settings: expected });
 
     service(function(err, actual) {
@@ -68,7 +68,7 @@ describe('Settings service', function() {
   it('returns errors', function(done) {
 
     $httpBackend
-      .when('GET', 'BASEURL/app_settings/medic')
+      .expect('GET', 'BASEURL/app_settings/medic')
       .respond(404, '');
 
     service(function(err) {
