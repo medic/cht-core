@@ -283,6 +283,11 @@ var utils = require('kujua-utils'),
               console.log('Error marking setup_complete', err);
             }
           });
+        } else {
+          // prepopulate selections
+          $('#primary-contact-content .horizontal-options a[data-value=' + res.care_coordinator + ']').trigger('click');
+          $('#language-preference-content .horizontal-options a[data-value=' + res.locale + ']').trigger('click');
+          $('#registration-form-content .horizontal-options a[data-value=' + res.anc_registration_lmp + ']').trigger('click');
         }
         $scope.languages = res.locales;
       });
@@ -528,13 +533,13 @@ var utils = require('kujua-utils'),
         $('#complete-setup-content .error').hide();
         var settings = {};
         var val;
-        val = $('#language-preference-content .horizontal-options .selected').attr('data-value');
-        if (val) {
-          settings.locale = val;
-        }
         val = $('#primary-contact-content .horizontal-options .selected').attr('data-value');
         if (val) {
           settings.care_coordinator = val;
+        }
+        val = $('#language-preference-content .horizontal-options .selected').attr('data-value');
+        if (val) {
+          settings.locale = val;
         }
         val = $('#registration-form-content .horizontal-options .selected').attr('data-value');
         if (val) {
