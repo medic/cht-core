@@ -25,14 +25,15 @@
       &:hover, &:focus {
         text-decoration: none;
       }
-      &:hover.count {
+      &:hover .count {
         background-color: @seperator-color;
       }
     }
     a:before {
       content: '\f0d7';
-      display: inline-block;
+      color: @medic-slate-color;
       font-family: FontAwesome;
+      display: inline-block;
       transition: all .5s ease;
     }
     .collapsed:before {

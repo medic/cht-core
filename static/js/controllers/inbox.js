@@ -285,9 +285,15 @@ var utils = require('kujua-utils'),
           });
         } else {
           // prepopulate selections
-          $('#primary-contact-content .horizontal-options a[data-value=' + res.care_coordinator + ']').trigger('click');
-          $('#language-preference-content .horizontal-options a[data-value=' + res.locale + ']').trigger('click');
-          $('#registration-form-content .horizontal-options a[data-value=' + res.anc_registration_lmp + ']').trigger('click');
+          $('#gateway-number').val(res.gateway_number);
+          $('#default-country-code').val(res.default_country_code);
+          $('#gateway-number').trigger('input');
+          $('#primary-contact-content a[data-value=' + res.care_coordinator + ']')
+            .trigger('click');
+          $('#language-preference-content a[data-value=' + res.locale + ']')
+            .trigger('click');
+          $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']')
+            .trigger('click');
         }
         $scope.languages = res.locales;
       });
@@ -527,12 +533,31 @@ var utils = require('kujua-utils'),
           .text(elem.text());
       });
 
+      $('#modem-setup-content').on('input', 'input', function() {
+        var gatewayNumber = $('#gateway-number').val();
+        var defaultCountryCode = $('#default-country-code').val();
+        if (gatewayNumber && defaultCountryCode) {
+          $(this).closest('.panel')
+            .addClass('panel-complete')
+            .find('.panel-heading .value')
+            .text(gatewayNumber + ', ' + defaultCountryCode);
+        }
+      });
+
       $('#setup-wizard-save').on('click', function(e) {
         e.preventDefault();
         $('#setup-wizard-save').addClass('disabled');
         $('#complete-setup-content .error').hide();
         var settings = {};
         var val;
+        val = $('#gateway-number').val();
+        if (val) {
+          settings.gateway_number = val;
+        }
+        val = $('#default-country-code').val();
+        if (val) {
+          settings.default_country_code = val;
+        }
         val = $('#primary-contact-content .horizontal-options .selected').attr('data-value');
         if (val) {
           settings.care_coordinator = val;

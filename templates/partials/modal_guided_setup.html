@@ -8,20 +8,46 @@
       <div class="modal-body">
         <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
 
-          <!-- 1. Identify care coordinators -->
+          <!-- 1. Modem setup -->
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="modem-setup-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#modem-setup-content" aria-controls="modem-setup-content" aria-expanded="true" target="_self">
+                  <span class="count">
+                    <span class="number">1</span>
+                    <i class="fa fa-check"></i>
+                  </span>Modem setup
+                  <span class="value"></span>
+                </a>
+              </h4>
+            </div>
+            <div id="modem-setup-content" class="modem-setup-content panel-collapse collapse in" role="tabpanel" aria-labelledby="modem-setup-heading">
+              <div class="panel-body">
+                <h5>You will need a USB GSM modem with an active SIM card to send and receive text messages.</h5>
+                <img src="static/img/platform-icon-gsm.svg" width="100" height="100" />
+                <img src="static/img/platform-icon-laptop.svg" width="100" height="100" />
+                <label for="gateway-number">Gateway number</label>
+                <input id="gateway-number" type="text"/>
+                <label for="default-country-code">Default country code</label>
+                <input id="default-country-code" type="text" value="1" class="small-field"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Identify care coordinators -->
           <div class="panel panel-default">
             <div class="panel-heading" role="tab" id="primary-contact-heading">
               <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#primary-contact-content" aria-controls="primary-contact-content" aria-expanded="true" target="_self">
+                <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#primary-contact-content" aria-controls="primary-contact-content" aria-expanded="true" target="_self">
                   <span class="count">
-                    <span class="number">1</span>
+                    <span class="number">2</span>
                     <i class="fa fa-check"></i>
                   </span>Identify care coordinators
                   <span class="value"></span>
                 </a>
               </h4>
             </div>
-            <div id="primary-contact-content" class="primary-contact-content panel-collapse collapse in" role="tabpanel" aria-labelledby="primary-contact-heading">
+            <div id="primary-contact-content" class="primary-contact-content panel-collapse collapse" role="tabpanel" aria-labelledby="primary-contact-heading">
               <div class="panel-body">
                 <h5>Select who will be registering and tracking pregnancies in your community.</h5>
                 <p>They will need a mobile phone with a texting plan.</p>
@@ -36,17 +62,18 @@
                     Facility nurse
                   </a>
                 </p>
+                <p>If you don't know what to choose, refer to the ANC user guide.</p>
               </div>
             </div>
           </div>
 
-          <!-- 2. Language preference -->
+          <!-- 3. Language preference -->
           <div class="panel panel-default">
             <div class="panel-heading" role="tab" id="language-preference-heading">
               <h4 class="panel-title">
                 <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#language-preference-content" aria-expanded="false" aria-controls="language-preference-content" target="_self">
                   <span class="count">
-                    <span class="number">2</span>
+                    <span class="number">3</span>
                     <i class="fa fa-check"></i>
                   </span>Language preference
                   <span class="value"></span>
@@ -78,13 +105,13 @@
             </div>
           </div>
 
-          <!-- 3. Registration form -->
+          <!-- 4. Registration form -->
           <div class="panel panel-default">
             <div class="panel-heading" role="tab" id="registration-form-heading">
               <h4 class="panel-title">
                 <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#registration-form-content" aria-expanded="false" aria-controls="registration-form-content" target="_self">
                   <span class="count">
-                    <span class="number">3</span>
+                    <span class="number">4</span>
                     <i class="fa fa-check"></i>
                   </span>Registration form
                   <span class="value"></span>
@@ -111,6 +138,7 @@
                     </span>
                   </a>
                 </p>
+                <p>If you don't know what to choose, refer to the ANC user guide.</p>
               </div>
             </div>
           </div>
@@ -120,7 +148,7 @@
       <div class="modal-footer">
         <a id="setup-wizard-save" class="btn btn-primary">START</a>
         <span class="error" style="display:none">There was an error saving your settings, please try again.</span>
-        <a href="#" class="btn cancel" data-dismiss="modal">Exit the setup wizard without saving and start using Medic Mobile</a>
+        <a href="#" class="btn cancel" data-dismiss="modal">Skip the setup wizard</a>
       </div>
     </div>
   </div>

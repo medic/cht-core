@@ -193,7 +193,7 @@
             "default_country_code": {
                 "type": "integer",
                 "title": "Default Country Code",
-                "description": "Messages received without a country code will be assigned this country code.",
+                "description": "Messages without a country code will be assigned this country code.",
                 "default": 1
             },
             "gateway_number": {
