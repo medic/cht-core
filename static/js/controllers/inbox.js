@@ -277,7 +277,7 @@ var utils = require('kujua-utils'),
           return console.log('Error fetching settings', err);
         }
         if (!res.setup_complete) {
-          $('#guided-setup').modal('show');
+          $('#welcome').modal('show');
           UpdateSettings({ setup_complete: true }, function(err) {
             if (err) {
               console.log('Error marking setup_complete', err);

@@ -22,10 +22,23 @@
       padding: 0.5em;
       outline: 0;
       font-size: 1.2em;
-      &:hover .count {
+      &:hover, &:focus {
+        text-decoration: none;
+      }
+      &:hover.count {
         background-color: @seperator-color;
       }
     }
+    a:before {
+      content: '\f0d7';
+      display: inline-block;
+      font-family: FontAwesome;
+      transition: all .5s ease;
+    }
+    .collapsed:before {
+      transform: rotate(-90deg);
+    }
+
     .count {
       box-sizing: border-box;
       display: inline-block;
@@ -64,24 +77,6 @@
     margin-bottom: 1em;
     h5 {
       font-size: 1.2em;
-    }
-    .navigation {
-      a {
-        display: inline-block;
-        width: 10em;
-      }
-      .previous {
-        float: left;
-        .fa {
-          margin-right: 1em;
-        }
-      }
-      .next {
-        float: right;
-        .fa {
-          margin-left: 1em;
-        }
-      }
     }
   }
 }

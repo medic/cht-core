@@ -834,6 +834,22 @@ a.fa:hover {
   color: #fff;
 }
 
+.welcome {
+  img, p {
+    margin: 1em;
+  }
+  p {
+    margin-top: 4.5em;
+    width: 300px;
+  }
+  .screenshot {
+    float: right;
+  }
+  .modal-footer {
+    clear: right;
+  }
+}
+
 .guided-setup {
   .horizontal-options {
     a {
@@ -880,18 +896,9 @@ a.fa:hover {
       }
     }
   }
-  .introduction-content .panel-body {
-    text-align: left;
-  }
-  .introduction-heading .panel-title a {
-    margin-left: 2em;
-  }
   .screenshot {
     margin-bottom: 1em;
     float: right;
-  }
-  .navigation {
-    clear: right;
   }
   .primary-contact-content .horizontal-options a {
     width: 150px;
@@ -933,11 +940,16 @@ a.fa:hover {
       visibility: visible;
     }
   }
-  .complete-setup-content .navigation .error {
-    float: right;
-    clear: both;
-    font-weight: bold;
-    color: @error-color;
+  .modal-footer {
+    text-align: left;
+    .btn-primary, .error {
+      float: right;
+    }
+    .error {
+      clear: both;
+      font-weight: bold;
+      color: @error-color;
+    }
   }
 }
 

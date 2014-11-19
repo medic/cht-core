@@ -7,34 +7,12 @@
       </div>
       <div class="modal-body">
         <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-          
-          <!-- Introduction -->
-          <div class="panel panel-default">
-            <div class="panel-heading introduction-heading" role="tab" id="introduction-heading">
-              <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#introduction-content" aria-expanded="true" aria-controls="introduction-content" target="_self">
-                  Hello {~lb}{~lb}editUserModel.fullname{~rb}{~rb}
-                </a>
-              </h4>
-            </div>
-            <div id="introduction-content" class="introduction-content panel-collapse collapse in" role="tabpanel" aria-labelledby="introduction-heading">
-              <div class="panel-body">
-                <img src="static/img/setup-wizard-demo.png" class="screenshot" width="343" height="180" />
-                <p>You can access this easy setup wizard again from the settings icon in the upper right.</p>
-                <p class="navigation">
-                  <a class="btn btn-primary next" data-toggle="collapse" data-parent="#accordion" href="#primary-contact-content" aria-controls="primary-contact-content" target="_self">
-                    NEXT<i class="fa fa-angle-right"></i>
-                  </a>
-                </p>
-              </div>
-            </div>
-          </div>
 
           <!-- 1. Identify care coordinators -->
           <div class="panel panel-default">
             <div class="panel-heading" role="tab" id="primary-contact-heading">
               <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#primary-contact-content" aria-controls="primary-contact-content" target="_self">
+                <a data-toggle="collapse" data-parent="#accordion" href="#primary-contact-content" aria-controls="primary-contact-content" aria-expanded="true" target="_self">
                   <span class="count">
                     <span class="number">1</span>
                     <i class="fa fa-check"></i>
@@ -43,7 +21,7 @@
                 </a>
               </h4>
             </div>
-            <div id="primary-contact-content" class="primary-contact-content panel-collapse collapse" role="tabpanel" aria-labelledby="primary-contact-heading">
+            <div id="primary-contact-content" class="primary-contact-content panel-collapse collapse in" role="tabpanel" aria-labelledby="primary-contact-heading">
               <div class="panel-body">
                 <h5>Select who will be registering and tracking pregnancies in your community.</h5>
                 <p>They will need a mobile phone with a texting plan.</p>
@@ -56,14 +34,6 @@
                   </a>
                   <a href="#" class="icon contact-nurse" data-value="nurse">
                     Facility nurse
-                  </a>
-                </p>
-                <p class="navigation">
-                  <a class="btn btn-default previous" data-toggle="collapse" data-parent="#accordion" href="#introduction-content" aria-controls="introduction-content" target="_self">
-                    <i class="fa fa-angle-left"></i>PREVIOUS
-                  </a>
-                  <a class="btn btn-primary next" data-toggle="collapse" data-parent="#accordion" href="#language-preference-content" aria-controls="language-preference-content" target="_self">
-                    NEXT<i class="fa fa-angle-right"></i>
                   </a>
                 </p>
               </div>
@@ -104,14 +74,6 @@
                     <span class="rectangle">Nepali</span>
                   </a>
                 </p>
-                <p class="navigation">
-                  <a class="btn btn-default previous" data-toggle="collapse" data-parent="#accordion" href="#primary-contact-content" aria-controls="primary-contact-content" target="_self">
-                    <i class="fa fa-angle-left"></i>PREVIOUS
-                  </a>
-                  <a class="btn btn-primary next" data-toggle="collapse" data-parent="#accordion" href="#registration-form-content" aria-controls="registration-form-content" target="_self">
-                    NEXT<i class="fa fa-angle-right"></i>
-                  </a>
-                </p>
               </div>
             </div>
           </div>
@@ -149,43 +111,6 @@
                     </span>
                   </a>
                 </p>
-                <p class="navigation">
-                  <a class="btn btn-default previous" data-toggle="collapse" data-parent="#accordion" href="#language-preference-content" aria-controls="language-preference-content" target="_self">
-                    <i class="fa fa-angle-left"></i>PREVIOUS
-                  </a>
-                  <a class="btn btn-primary next" data-toggle="collapse" data-parent="#accordion" href="#complete-setup-content" aria-controls="complete-setup-content" target="_self">
-                    NEXT<i class="fa fa-angle-right"></i>
-                  </a>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 4. Complete Setup -->
-          <div class="panel panel-default">
-            <div class="panel-heading" role="tab" id="complete-setup-heading">
-              <h4 class="panel-title">
-                <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#complete-setup-content" aria-expanded="false" aria-controls="complete-setup-content" target="_self">
-                  <span class="count">
-                    <span class="number">4</span>
-                    <i class="fa fa-check"></i>
-                  </span>Complete setup
-                </a>
-              </h4>
-            </div>
-            <div id="complete-setup-content" class="complete-setup-content panel-collapse collapse" role="tabpanel" aria-labelledby="complete-setup-heading">
-              <div class="panel-body">
-                <h5>You are all set up!</h5>
-                <p>Click start to save these settings and start using Medic Mobile.</p>
-                <p class="navigation">
-                  <a class="btn btn-default previous" data-toggle="collapse" data-parent="#accordion" href="#registration-form-content" aria-controls="registration-form-content" target="_self">
-                    <i class="fa fa-angle-left"></i>PREVIOUS
-                  </a>
-                  <a id="setup-wizard-save" class="btn btn-primary next">
-                    START<i class="fa fa-angle-right"></i>
-                  </a>
-                  <span class="error" style="display:none">There was an error saving your settings, please try again.</span>
-                </p>
               </div>
             </div>
           </div>
@@ -193,6 +118,8 @@
         </div>
       </div>
       <div class="modal-footer">
+        <a id="setup-wizard-save" class="btn btn-primary">START</a>
+        <span class="error" style="display:none">There was an error saving your settings, please try again.</span>
         <a href="#" class="btn cancel" data-dismiss="modal">Exit the setup wizard without saving and start using Medic Mobile</a>
       </div>
     </div>
