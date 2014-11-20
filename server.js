@@ -16,7 +16,7 @@ function completeSetup(err, design) {
     } else {
         config.load(function(err) {
             if (err) {
-                console.error('error loading config', err);
+                logger.error('Error loading config: ', err);
                 process.exit(1);
             }
             logger.info('loaded config.');

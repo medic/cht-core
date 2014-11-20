@@ -79,19 +79,13 @@ module.exports = {
     },
     attachTransition: function(transition, key) {
         var db = require('../db'),
-            filter,
+            filter = transition.filter,
             feed;
 
-        if (_.isFunction(transition.filter)) {
-            filter = transition.filter;
-        } else {
-            filter = 'kujua-sentinel/' + key;
+        if (!_.isFunction(filter)) {
+            logger.error('Skipping transition %s: filter should be a function.', key);
+            return;
         }
-
-        logger.debug(
-            'subscribing to changes for transition %s with filter type %s',
-            key, typeof(filter)
-        );
 
         feed = new couchmark.Feed({
             db: process.env.COUCH_URL,
@@ -163,14 +157,7 @@ module.exports = {
     // Attach a transition to a stream of changes from the database.
     attach: function(design) {
         _.each(transitions, function(transition, key) {
-            // don't attach if it doesn't have a filter
-            if (!_.isFunction(transition.filter) && (!design.filters || !design.filters[key])) {
-                console.warn("MISSING " + key + " filter, skipping transition!");
-                return;
-            }
-
             module.exports.attachTransition(transition, key);
-
         });
     },
     // mark the transition as completed
