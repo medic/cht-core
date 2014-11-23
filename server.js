@@ -44,6 +44,11 @@ app.use(function(err, req, res, next) {
   serverError(err.stack, res);
 });
 
+app.all(db.name + '*/update_settings/*', function(req, res) {
+  // don't audit the app settings
+  proxy.web(req, res);
+});
+
 var audit = function(req, res) {
   var ap = new AuditProxy();
   ap.on('error', function(e) {
