@@ -1,6 +1,6 @@
-var controller = require('../controllers/missing-delivery-reports'),
-    db = require('../db'),
-    config = require('../config'),
+var controller = require('../../controllers/upcoming-due-dates'),
+    db = require('../../db'),
+    config = require('../../config'),
     moment = require('moment'),
     sinon = require('sinon');
 
@@ -12,7 +12,7 @@ exports.setUp = function(callback) {
   callback();
 };
 
-exports.tearDown = function (callback) {
+exports.tearDown = function(callback) {
   clock.restore();
   if (db.fti.restore) {
     db.fti.restore();
@@ -22,7 +22,6 @@ exports.tearDown = function (callback) {
   }
   callback();
 };
-
 
 exports['get returns errors'] = function(test) {
   test.expect(2);
@@ -56,7 +55,7 @@ exports['get returns zero if all registrations have delivered'] = function(test)
           patient_id: 1,
           scheduled_tasks: [ {
             group: 1,
-            due: moment().subtract(20, 'days').toISOString()
+            due: moment().toISOString()
           } ]
         } 
       },
@@ -65,7 +64,7 @@ exports['get returns zero if all registrations have delivered'] = function(test)
           patient_id: 2,
           scheduled_tasks: [ {
             group: 1,
-            due: moment().subtract(20, 'days').toISOString()
+            due: moment().toISOString()
           } ]
         } 
       }
@@ -84,8 +83,8 @@ exports['get returns zero if all registrations have delivered'] = function(test)
   });
 };
 
-exports['get returns all registrations with missed delivery reports'] = function(test) {
-  test.expect(14);
+exports['get returns all women with upcoming due dates'] = function(test) {
+  test.expect(20);
   var fti = sinon.stub(db, 'fti');
   var today = moment();
   fti.onFirstCall().callsArgWith(2, null, {
@@ -96,11 +95,7 @@ exports['get returns all registrations with missed delivery reports'] = function
           patient_name: 'sarah',
           form: 'R',
           reported_date: today.clone().subtract(38, 'weeks').toISOString(),
-          related_entities: { clinic: { id: 'x' } },
-          scheduled_tasks: [ {
-            group: 1,
-            due: moment().subtract(20, 'days').toISOString()
-          } ]
+          related_entities: { clinic: { id: 'x' } }
         } 
       },
       { 
@@ -108,35 +103,30 @@ exports['get returns all registrations with missed delivery reports'] = function
           patient_id: 2,
           patient_name: 'sally',
           form: 'P',
-          lmp_date: today.clone().subtract(14, 'weeks').toISOString(),
-          related_entities: { clinic: { id: 'y' } },
-          scheduled_tasks: [ {
-            group: 1,
-            due: moment().subtract(20, 'days').toISOString()
-          } ]
-        } 
-      },
-      { 
-        doc: { 
-          patient_id: 3,
-          patient_name: 'sharon',
-          form: 'P',
           lmp_date: today.clone().subtract(42, 'weeks').toISOString(),
-          related_entities: { clinic: { id: 'y' } },
-          scheduled_tasks: [ {
-            group: 1,
-            due: moment().subtract(20, 'days').toISOString()
-          } ]
+          related_entities: { clinic: { id: 'y' } }
         } 
       }
     ]
   });
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 2 } }
+      { doc: { patient_id: 4 } }
     ]
   });
   fti.onThirdCall().callsArgWith(2, null, {
+    rows: [
+      { doc: { 
+        patient_id: 1,
+        reported_date: today.clone().subtract(2, 'weeks').toISOString()
+      } },
+      { doc: { 
+        patient_id: 1,
+        reported_date: today.clone().subtract(6, 'weeks').toISOString()
+      } }
+    ]
+  });
+  fti.onCall(3).callsArgWith(2, null, {
     rows: [
       { doc: { patient_id: 2 } },
       { doc: { patient_id: 1 } }
@@ -147,19 +137,25 @@ exports['get returns all registrations with missed delivery reports'] = function
 
     test.equals(results[0].patient_id, 1);
     test.equals(results[0].patient_name, 'sarah');
-    test.equals(results[0].clinic.id, 'x');
+    test.equals(results[0].weeks.number, 38);
+    test.equals(results[0].weeks.approximate, true);
+    test.equals(results[0].lastAppointmentDate.toISOString(), today.clone().subtract(2, 'weeks').toISOString());
     test.equals(results[0].edd.date.toISOString(), today.clone().add(2, 'weeks').toISOString());
     test.equals(results[0].edd.approximate, true);
+    test.equals(results[0].visits, 2);
     test.equals(results[0].high_risk, true);
 
-    test.equals(results[1].patient_id, 3);
-    test.equals(results[1].patient_name, 'sharon');
-    test.equals(results[1].clinic.id, 'y');
+    test.equals(results[1].patient_id, 2);
+    test.equals(results[1].patient_name, 'sally');
+    test.equals(results[1].weeks.number, 40);
+    test.equals(results[1].weeks.approximate, undefined);
+    test.equals(results[1].lastAppointmentDate, undefined);
     test.equals(results[1].edd.date.toISOString(), today.toISOString());
     test.equals(results[1].edd.approximate, undefined);
-    test.equals(results[1].high_risk, undefined);
+    test.equals(results[1].visits, 0);
+    test.equals(results[1].high_risk, true);
 
-    test.equals(fti.callCount, 3);
+    test.equals(fti.callCount, 4);
     test.done();
   });
 };

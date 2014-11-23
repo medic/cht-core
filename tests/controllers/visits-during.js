@@ -1,6 +1,6 @@
-var controller = require('../controllers/visits-during'),
-    db = require('../db'),
-    config = require('../config'),
+var controller = require('../../controllers/visits-during'),
+    db = require('../../db'),
+    config = require('../../config'),
     sinon = require('sinon');
 
 exports.setUp = function(callback) {

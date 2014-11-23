@@ -1,5 +1,5 @@
-var controller = require('../controllers/delivery-location'),
-    db = require('../db'),
+var controller = require('../../controllers/delivery-location'),
+    db = require('../../db'),
     sinon = require('sinon');
 
 exports.tearDown = function (callback) {

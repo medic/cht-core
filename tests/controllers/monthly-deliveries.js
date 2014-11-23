@@ -1,7 +1,7 @@
-var controller = require('../controllers/monthly-deliveries'),
-    db = require('../db'),
+var controller = require('../../controllers/monthly-deliveries'),
+    db = require('../../db'),
+    config = require('../../config'),
     moment = require('moment'),
-    config = require('../config'),
     sinon = require('sinon');
 
 var clock;

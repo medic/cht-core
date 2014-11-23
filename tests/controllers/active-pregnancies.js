@@ -1,6 +1,6 @@
-var controller = require('../controllers/active-pregnancies'),
-    db = require('../db'),
-    config = require('../config'),
+var controller = require('../../controllers/active-pregnancies'),
+    db = require('../../db'),
+    config = require('../../config'),
     sinon = require('sinon');
 
 exports.setUp = function(callback) {

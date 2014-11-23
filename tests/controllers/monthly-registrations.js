@@ -1,6 +1,6 @@
-var controller = require('../controllers/monthly-registrations'),
-    db = require('../db'),
-    config = require('../config'),
+var controller = require('../../controllers/monthly-registrations'),
+    db = require('../../db'),
+    config = require('../../config'),
     moment = require('moment'),
     sinon = require('sinon');
 
