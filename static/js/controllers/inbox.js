@@ -272,18 +272,25 @@ var utils = require('kujua-utils'),
         $scope.exports = exports;
       });
 
+      var startTour = function() {
+        User.query(function(user) {
+          if (!user.known) {
+            tour.start('intro');
+            UpdateUser({ known: true }, function(err) {
+              if (err) {
+                console.log('Error updating user', err);
+              }
+            });
+          }
+        });
+      };
+
       Settings(function(err, res) {
         if (err) {
           return console.log('Error fetching settings', err);
         }
-        if (!res.setup_complete) {
-          $('#welcome').modal('show');
-          UpdateSettings({ setup_complete: true }, function(err) {
-            if (err) {
-              console.log('Error marking setup_complete', err);
-            }
-          });
-        } else {
+        if (res.setup_complete) {
+          startTour();
           // prepopulate selections
           $('#gateway-number').val(res.gateway_number);
           $('#default-country-code').val(res.default_country_code);
@@ -294,7 +301,24 @@ var utils = require('kujua-utils'),
             .trigger('click');
           $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']')
             .trigger('click');
+        } else {
+          $('#welcome').modal('show');
+          // show the tour after the Setup Wizard
+          $('#guided-setup').on('hide.bs.modal', startTour);
+          UpdateSettings({ setup_complete: true }, function(err) {
+            if (err) {
+              console.log('Error marking setup_complete', err);
+            }
+          });
         }
+        User.query(function(user) {
+          $scope.editUserModel = {
+            fullname: user.fullname,
+            email: user.email,
+            phone: user.phone,
+            language: { code: user.language }
+          };
+        });
         $scope.languages = res.locales;
       });
 
@@ -322,16 +346,6 @@ var utils = require('kujua-utils'),
       };
 
       User.query(function(user) {
-
-        if (!user.known) {
-          tour.start('intro');
-          UpdateUser({ known: true }, function(err) {
-            if (err) {
-              console.log('Error updating user', err);
-            }
-          });
-        }
-
         $scope.editUserModel = {
           fullname: user.fullname,
           email: user.email,
