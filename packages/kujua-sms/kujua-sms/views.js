@@ -130,6 +130,28 @@ exports.data_records_valid_by_district_and_form = {
     }
 };
 
+exports.usage_stats_by_year_month = {
+     map: function(doc) {
+        if (doc.type === 'usage_stats') {
+            emit([doc.year, doc.month], 1);
+        }
+    }
+};
+
+exports.data_records_valid_by_year_month_and_form = {
+     map: function(doc) {
+        if (doc.type === 'data_record' && doc.form) {
+            if (!doc.errors || doc.errors.length === 0) {
+                var date = new Date(doc.reported_date);
+                emit([date.getFullYear(), date.getMonth(), doc.form], 1);
+            }
+        }
+    },
+    reduce: function(key, counts) {
+        return sum(counts);
+    }
+};
+
 exports.data_records_read_by_type = {
     map: function(doc) {
         var objectpath = require('views/lib/objectpath'),
