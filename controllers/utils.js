@@ -9,6 +9,12 @@ var formatDate = function(date) {
   return date.zone(0).format('YYYY-MM-DD');
 };
 
+var formatDateRange = function(field, startDate, endDate) {
+  var start = formatDate(startDate);
+  var end = formatDate(endDate.clone().add(1, 'days'));
+  return field + '<date>:[' + start + ' TO ' + end + ']';
+};
+
 var collectPatientIds = function(records) {
   return _.map(records.rows, function(row) {
     return row.doc.patient_id;
@@ -86,25 +92,18 @@ module.exports = {
 
   getFormCode: getFormCode,
   fti: fti,
-
-  formatDateRange: function(field, startDate, endDate) {
-    var start = formatDate(startDate);
-    var end = formatDate(endDate.clone().add(1, 'days'));
-    return field + '<date>:[' + start + ' TO ' + end + ']';
-  },
+  formatDateRange: formatDateRange,
 
   getAllRegistrations: function(options, callback) {
-    var minWeeksPregnant = options.minWeeksPregnant || 0;
-    var maxWeeksPregnant = options.maxWeeksPregnant || 42;
-    var startDate = moment().subtract(maxWeeksPregnant, 'weeks');
-    var endDate = moment().subtract(minWeeksPregnant, 'weeks');
-    var rDateCriteria = module.exports.formatDateRange('reported_date', startDate, endDate);
-    var pDateCriteria = module.exports.formatDateRange('lmp_date', startDate.subtract(2, 'weeks'), endDate.subtract(2, 'weeks'));
-    var query = 'errors<int>:0 AND (' +
-      '(form:' + getFormCode('registration') + ' AND ' + rDateCriteria + ')' +
-      ' OR ' +
-      '(form:' + getFormCode('registrationLmp') + ' AND ' + pDateCriteria + ')' +
-      ')';
+    var startDate = options.startDate;
+    var endDate = options.endDate;
+    if (!startDate || !endDate) {
+      startDate = moment().subtract(options.maxWeeksPregnant || 42, 'weeks');
+      endDate = moment().subtract(options.minWeeksPregnant || 0, 'weeks');
+    }
+    var query = 'errors<int>:0 ' +
+      'AND form:("' + getFormCode('registration') + '" OR "' + getFormCode('registrationLmp') + '") ' +
+      'AND ' + formatDateRange('expected_date', startDate, endDate);
     if (options.district) {
       query += ' AND district:"' + options.district + '"';
     }
@@ -122,7 +121,7 @@ module.exports = {
     }
     options.q = 'form:' + getFormCode('delivery');
     if (options.startDate && options.endDate) {
-      options.q += ' AND ' + module.exports.formatDateRange('reported_date', options.startDate, options.endDate);
+      options.q += ' AND ' + formatDateRange('reported_date', options.startDate, options.endDate);
     }
     if (options.district) {
       options.q += ' AND district:"' + options.district + '"';
@@ -176,7 +175,7 @@ module.exports = {
     }
     var query = 'form:' + getFormCode('visit');
     if (options.startDate) {
-      query += ' AND ' + module.exports.formatDateRange(
+      query += ' AND ' + formatDateRange(
         'reported_date', options.startDate, options.endDate || moment().add(2, 'days')
       );
     }

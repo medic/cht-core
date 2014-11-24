@@ -5,6 +5,7 @@
   "dependencies": {
     "async": "~0.9.0",
     "couchdb-audit": "0.1.x",
+    "cron": "~1.0.5",
     "express": "4.x",
     "felix-couchdb": "1.0.x",
     "grunt": "^0.4.5",

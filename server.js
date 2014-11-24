@@ -5,6 +5,7 @@ var express = require('express'),
     db = require('./db'),
     config = require('./config'),
     auth = require('./auth'),
+    scheduler = require('./scheduler'),
     AuditProxy = require('./audit-proxy'),
     target = 'http://' + db.client.host + ':' + db.client.port,
     proxy = require('http-proxy').createProxyServer({ target: target }),
@@ -196,6 +197,7 @@ config.load(function(err) {
     process.exit(1);
   }
   config.listen();
+  scheduler.init();
   app.listen(5988, function() {
     console.log('Medic API listening on port 5988');
   });

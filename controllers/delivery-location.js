@@ -16,7 +16,7 @@ module.exports = {
       if (!response || !response.rows) {
         return callback(null, []);
       }
-      callback(err, _.map(['F','S','NS'], function(code) {
+      callback(null, _.map(['F','S','NS'], function(code) {
         var row = _.find(response.rows, function(row) {
           return row.key[1] === code;
         });
