@@ -377,6 +377,48 @@ require('moment/locales');
               clearLabel: translateFilter('clear')
             });
 
+
+            var start = $scope.filterModel.date.from ?
+              moment($scope.filterModel.date.from) : moment().subtract(1, 'months');
+            $('#date-filter').daterangepicker({
+              startDate: start,
+              endDate: moment($scope.filterModel.date.to),
+              maxDate: moment(),
+              opens: 'center',
+              applyClass: 'btn-primary',
+              cancelClass: 'btn-link',
+              locale: {
+                applyLabel: translateFilter('Apply'),
+                cancelLabel: translateFilter('Cancel'),
+                fromLabel: translateFilter('date.from'),
+                toLabel: translateFilter('date.to'),
+                daysOfWeek: moment.weekdaysMin(),
+                monthNames: moment.monthsShort(),
+                firstDay: moment.localeData()._week.dow
+              }
+            },
+            function(start, end) {
+              var scope = angular.element($('body')).scope();
+              if (scope) {
+                scope.$apply(function() {
+                  scope.filterModel.date.from = start.valueOf();
+                  scope.filterModel.date.to = end.valueOf();
+                });
+              }
+            })
+            .on('mm.dateSelected.daterangepicker', function(e, picker) {
+              if ($('#back').is(':visible')) {
+                // mobile version - only show one calendar at a time
+                if (picker.container.is('.show-from')) {
+                  picker.container.removeClass('show-from').addClass('show-to');
+                } else {
+                  picker.container.removeClass('show-to').addClass('show-from');
+                  picker.hide();
+                }
+              }
+            });
+            $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
+
           });
 
         },
@@ -542,6 +584,7 @@ require('moment/locales');
           );
         });
       });
+
 
       // stop bootstrap closing the search pane on click
       $('.filters .mobile-freetext-filter .search-pane').on('click', function(e) {

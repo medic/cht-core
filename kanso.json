@@ -3230,6 +3230,46 @@
                                 "content": "clear"
                             }
                         ]
+                    },
+                    {
+                        "key": "Cancel",
+                        "default": "Cancel",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Cancel"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Apply",
+                        "default": "Apply",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Apply"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "date.from",
+                        "default": "From",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "From"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "date.to",
+                        "default": "To",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "To"
+                            }
+                        ]
                     }
                 ]
             }

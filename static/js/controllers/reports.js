@@ -1,5 +1,4 @@
 var _ = require('underscore'),
-    moment = require('moment'),
     modal = require('../modules/modal'),
     tour = require('../modules/tour');
 
@@ -225,38 +224,6 @@ var _ = require('underscore'),
       Changes(function(data) {
         $scope.query({ silent: true, changes: data });
       });
-
-      var start = $scope.filterModel.date.from ?
-        moment($scope.filterModel.date.from) : moment().subtract(1, 'months');
-      $('#date-filter').daterangepicker({
-        startDate: start,
-        endDate: moment($scope.filterModel.date.to),
-        maxDate: moment(),
-        opens: 'center',
-        applyClass: 'btn-primary',
-        cancelClass: 'btn-link'
-      },
-      function(start, end) {
-        var scope = angular.element($('body')).scope();
-        if (scope) {
-          scope.$apply(function() {
-            scope.filterModel.date.from = start.valueOf();
-            scope.filterModel.date.to = end.valueOf();
-          });
-        }
-      })
-      .on('mm.dateSelected.daterangepicker', function(e, picker) {
-        if ($('#back').is(':visible')) {
-          // mobile version - only show one calendar at a time
-          if (picker.container.is('.show-from')) {
-            picker.container.removeClass('show-from').addClass('show-to');
-          } else {
-            picker.container.removeClass('show-to').addClass('show-from');
-            picker.hide();
-          }
-        }
-      });
-      $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
 
       $('#search').on('click', function(e) {
         e.preventDefault();
