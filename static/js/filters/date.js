@@ -9,7 +9,7 @@
     if (!date) {
       return '<span>' + content + '</span>';
     }
-    return  content +
+    return content +
       '<span class="relative-date" title="' + FormatDate.datetime(date) + '">' +
       '<span class="relative-date-content">' + FormatDate.relative(date) + '</span>' +
       '</span>';
@@ -25,31 +25,34 @@
     return task.due || task.reported_date;
   };
 
-  module.filter('autoreply', ['FormatDate',
-    function (FormatDate) {
+  var getState = function(state, translate) {
+    return '<span class="state ' + state + '">' + translate('state.' + state) + '</span>';
+  };
+
+  module.filter('autoreply', ['FormatDate', 'translateFilter',
+    function (FormatDate, translateFilter) {
       return function (task) {
         if (!task || !task.state) {
           return '';
         }
-        var content = '<span class="state ' + task.state + '">' + task.state + '</span>&nbsp;' +
-          '<span class="autoreply" title="' + task.messages[0].message +
-          '"><span class="autoreply-content">autoreply</span></span>&nbsp';
+        var content = getState(task.state, translateFilter) + '&nbsp;' +
+          '<span class="autoreply" title="' + task.messages[0].message + '">' +
+            '<span class="autoreply-content">' + translateFilter('autoreply') + '</span>' +
+          '</span>&nbsp';
         return getRelativeDate(getTaskDate(task), FormatDate, content);
       };
     }
   ]);
 
-  module.filter('state', ['FormatDate',
-    function (FormatDate) {
+  module.filter('state', ['FormatDate', 'translateFilter',
+    function (FormatDate, translateFilter) {
       return function (task) {
         if (!task) {
           return '';
         }
         var state = (task.state || 'received');
-        var content = '<span class="state ' + state + '">' + state + '</span>&nbsp;';
-        return getRelativeDate(
-          getTaskDate(task), FormatDate, content
-        );
+        var content = getState(state, translateFilter) + '&nbsp;';
+        return getRelativeDate(getTaskDate(task), FormatDate, content);
       };
     }
   ]);

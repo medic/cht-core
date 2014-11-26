@@ -1,10 +1,13 @@
 var utils = require('kujua-utils'),
     feedback = require('feedback'),
     _ = require('underscore'),
+    moment = require('moment'),
     sendMessage = require('../modules/send-message'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
     format = require('../modules/format');
+
+require('moment/locales');
 
 (function () {
 
@@ -13,8 +16,8 @@ var utils = require('kujua-utils'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', '$rootScope', '$state', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
-    function ($scope, $route, $location, $translate, $animate, $rootScope, $state, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
+    ['$scope', '$route', '$location', '$translate', '$animate', '$rootScope', '$state', 'translateFilter', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
+    function ($scope, $route, $location, $translate, $animate, $rootScope, $state, translateFilter, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
 
       $scope.loading = true;
       $scope.error = false;
@@ -324,7 +327,58 @@ var utils = require('kujua-utils'),
 
       Language().then(
         function(language) {
-          $translate.use(language);
+
+          moment.locale(language);
+
+          $translate.use(language).then(function() {
+
+            $('#formTypeDropdown, #facilityDropdown').each(function() {
+              $(this).multiDropdown({
+                label: function(state, callback) {
+                  if (state.selected.length === 0 || state.selected.length === state.total.length) {
+                    return callback(translateFilter(state.menu.data('label-no-filter')));
+                  }
+                  if (state.selected.length === 1) {
+                    return callback(state.selected.first().text());
+                  }
+                  callback(translateFilter(
+                    state.menu.data('filter-label'), { number: state.selected.length }
+                  ));
+                },
+                selectAllLabel: translateFilter('select all'),
+                clearLabel: translateFilter('clear')
+              });
+            });
+
+            $('#statusDropdown').multiDropdown({
+              label: function(state, callback) {
+                var values = {};
+                state.selected.each(function() {
+                  var elem = $(this);
+                  values[elem.data('value')] = elem.text();
+                });
+                var parts = [];
+                if (values.valid && !values.invalid) {
+                  parts.push(values.valid);
+                } else if (!values.valid && values.invalid) {
+                  parts.push(values.invalid);
+                }
+                if (values.verified && !values.unverified) {
+                  parts.push(values.verified);
+                } else if (!values.verified && values.unverified) {
+                  parts.push(values.unverified);
+                }
+                if (parts.length === 0 || parts.length === state.total.length) {
+                  return callback(state.menu.data('label-no-filter'));
+                }
+                return callback(parts.join(', '));
+              },
+              selectAllLabel: translateFilter('select all'),
+              clearLabel: translateFilter('clear')
+            });
+
+          });
+
         },
         function() {
           console.log('Failed to retrieve language');
@@ -451,34 +505,6 @@ var utils = require('kujua-utils'),
         }
       };
 
-      $('#formTypeDropdown, #facilityDropdown').each(function() {
-        $(this).multiDropdown();
-      });
-
-      $('#statusDropdown').multiDropdown({
-        label: function(selected, total) {
-          var values = {};
-          selected.each(function() {
-            var elem = $(this);
-            values[elem.data('value')] = elem.text();
-          });
-          var parts = [];
-          if (values.valid && !values.invalid) {
-            parts.push(values.valid);
-          } else if (!values.valid && values.invalid) {
-            parts.push(values.invalid);
-          }
-          if (values.verified && !values.unverified) {
-            parts.push(values.verified);
-          } else if (!values.verified && values.unverified) {
-            parts.push(values.unverified);
-          }
-          if (parts.length === 0 || parts.length === total) {
-            return $('#statusDropdown').data('label-no-filter');
-          }
-          return parts.join(', ');
-        }
-      });
 
       $('#formTypeDropdown').on('update', function() {
         var forms = $(this).multiDropdown().val();

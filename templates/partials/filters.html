@@ -6,13 +6,13 @@
         <span class="mm-button-icon">
           <span class="fa fa-chevron-left"></span>
         </span>
-        <span class="mm-button-text">Back</span>
+        <span class="mm-button-text">{~lb}{~lb}'Back' | translate{~rb}{~rb}</span>
       </span>
     </span>
 
     <span class="basic-filters">
 
-      <span id="formTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All form types" data-filter-label="form types" ng-show="filterModel.type === 'reports'">
+      <span id="formTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All form types" data-filter-label="Number of form types" ng-show="filterModel.type === 'reports'">
         <span id="form_type" class="mm-button mm-button-nudge-down" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-list-alt"></span>
@@ -32,7 +32,7 @@
         </ul>
       </span>
 
-      <span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="facilities" ng-show="filterModel.type === 'reports'">
+      <span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="Number of facilities" ng-show="filterModel.type === 'reports'">
         <span id="facility" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-hospital-o"></span>
@@ -61,7 +61,7 @@
             {~lb}{~lb}filterModel.date.from | date : 'd MMM'{~rb}{~rb} - {~lb}{~lb}filterModel.date.to | date : 'd MMM'{~rb}{~rb}
           </span>
           <span class="mm-button-text" ng-show="!filterModel.date.from || !filterModel.date.to">
-            Any date
+            {~lb}{~lb}'Any date' | translate{~rb}{~rb}
           </span>
         </span>
       </span>
@@ -77,25 +77,25 @@
           <span class="mm-button-text"></span>
         </span>
         <ul role="menu" aria-labelledby="status" class="dropdown-menu mm-dropdown-menu">
-          <li role="presentation" class="dropdown-header">Validity</li>
+          <li role="presentation" class="dropdown-header">{~lb}{~lb}'Validity' | translate{~rb}{~rb}</li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="valid">Valid</a>
+            <a role="menuitem" tabindex="-1" data-value="valid">{~lb}{~lb}'Valid' | translate{~rb}{~rb}</a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="invalid">Invalid</a>
+            <a role="menuitem" tabindex="-1" data-value="invalid">{~lb}{~lb}'Invalid' | translate{~rb}{~rb}</a>
           </li>
-          <li role="presentation" class="dropdown-header">Verification</li>
+          <li role="presentation" class="dropdown-header">{~lb}{~lb}'Verification' | translate{~rb}{~rb}</li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="verified">Verified</a>
+            <a role="menuitem" tabindex="-1" data-value="verified">{~lb}{~lb}'Verified' | translate{~rb}{~rb}</a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="unverified">Unverified</a>
+            <a role="menuitem" tabindex="-1" data-value="unverified">{~lb}{~lb}'Unverified' | translate{~rb}{~rb}</a>
           </li>
         </ul>
       </span>
       
       <span class="filter input-group freetext-filter" ng-show="filterModel.type === 'reports'">
-        <input id="freetext" class="form-control" type="text" ng-model="filterQuery" placeholder="Extra search words">
+        <input id="freetext" class="form-control" type="text" ng-model="filterQuery" ng-attr-placeholder="{~lb}{~lb}'Extra search words' | translate{~rb}{~rb}">
         <span class="input-group-btn">
           <button id="search" class="btn btn-default" type="button">
             <span class="fa fa-search"></span>
@@ -111,7 +111,7 @@
         </span>
         <div class="search-pane dropdown-menu mm-dropdown-menu" role="menu" aria-labelledby="mobile-search">
           <span class="input-group">
-            <input id="mobile-freetext" class="form-control" type="text" ng-model="filterQuery" placeholder="Extra search words">
+            <input id="mobile-freetext" class="form-control" type="text" ng-model="filterQuery" ng-attr-placeholder="{~lb}{~lb}'Extra search words' | translate{~rb}{~rb}">
             <span class="input-group-btn">
               <button id="mobile-search-go" class="btn btn-default" type="button">
                 <span class="fa fa-search"></span>
@@ -150,7 +150,7 @@
           <li role="presentation">
             <a role="menuitem" tabindex="-1" ng-click="resetFilterModel()">
               <span class="fa fa-minus-circle"></span>
-              Clear all filters
+              {~lb}{~lb}'Clear all filters' | translate{~rb}{~rb}
             </a>
           </li>
         </ul>

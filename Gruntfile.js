@@ -328,6 +328,11 @@ module.exports = function(grunt) {
         src: './moment.js'
       },
       {
+        cwd: 'bower_components/moment/min/',
+        src: './locales.js',
+        expose: 'moment'
+      },
+      {
         cwd: 'bower_components/async/lib',
         src: './async.js'
       },

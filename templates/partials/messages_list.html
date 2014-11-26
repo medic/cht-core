@@ -5,13 +5,13 @@
         <div class="detail">
           <span class="time" ng-bind-html="contact.value.date | relativeDate"></span>
           <mm-sender message="contact.value"></mm-sender>
-          <div class="description" ng-bind-html="contact.value.message"></div>
+          <div class="description" ng-bind="contact.value.message"></div>
         </div>
       </div>
     </li>
   </ul>
-  <p ng-show="error" class="alert alert-danger" role="alert">Error fetching messages</p>
-  <p class="loading-status" ng-show="!error && !loading && !contacts.length">No messages found</p>
+  <p ng-show="error" class="alert alert-danger" role="alert">{~lb}{~lb}'Error fetching messages' | translate{~rb}{~rb}</p>
+  <p class="loading-status" ng-show="!error && !loading && !contacts.length">{~lb}{~lb}'No messages found' | translate{~rb}{~rb}</p>
   <span class="mm-loader" ng-show="loading">
     <span class="fa fa-spinner fa-spin"></span>
   </span>

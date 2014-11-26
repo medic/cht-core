@@ -2820,6 +2820,416 @@
                                 "content": "Edit"
                             }
                         ]
+                    },
+                    {
+                        "key": "Send Message",
+                        "default": "Send Message",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Send Message"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Submit Report",
+                        "default": "Submit Report",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Submit Report"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Easy Setup Wizard",
+                        "default": "Easy Setup Wizard",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Easy Setup Wizard"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Guided Tour",
+                        "default": "Guided Tour",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Guided Tour"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Edit User Profile",
+                        "default": "Edit User Profile",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Edit User Profile"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Configuration",
+                        "default": "Configuration",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Configuration"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Report Bug",
+                        "default": "Report Bug",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Report Bug"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Log Out",
+                        "default": "Log Out",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Log Out"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Messages",
+                        "default": "Messages",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Messages"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Reports",
+                        "default": "Reports",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Reports"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Analytics",
+                        "default": "Analytics",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Analytics"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Back",
+                        "default": "Back",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Back"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "All facilities",
+                        "default": "All facilities",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "All facilities"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Number of facilities",
+                        "default": "{{number}} facilities",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "{{number}} facilities"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "All form types",
+                        "default": "All form types",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "All form types"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Number of form types",
+                        "default": "{{number}} form types",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "{{number}} form types"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Any date",
+                        "default": "Any date",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Any date"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Validity",
+                        "default": "Validity",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Validity"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Valid",
+                        "default": "Valid",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Valid"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Invalid",
+                        "default": "Invalid",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Invalid"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Verification",
+                        "default": "Verification",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Verification"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Verified",
+                        "default": "Verified",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Verified"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Unverified",
+                        "default": "Unverified",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Unverified"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Extra search words",
+                        "default": "Extra search words",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Extra search words"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Clear all filters",
+                        "default": "Clear all filters",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Clear all filters"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Error fetching messages",
+                        "default": "Error fetching messages",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Error fetching messages"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "No messages found",
+                        "default": "No messages found",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "No messages found"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "No more messages",
+                        "default": "No more messages",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "No more messages"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Unread below",
+                        "default": "Unread below",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Unread below"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Enter message",
+                        "default": "Enter message",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Enter message"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Sending",
+                        "default": "Sending...",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Sending..."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Send",
+                        "default": "Send",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Send"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "autoreply",
+                        "default": "autoreply",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "autoreply"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "state.pending",
+                        "default": "pending",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "pending"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "state.received",
+                        "default": "received",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "received"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "state.muted",
+                        "default": "muted",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "muted"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "state.cleared",
+                        "default": "cleared",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "cleared"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "state.sent",
+                        "default": "sent",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "sent"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "state.scheduled",
+                        "default": "scheduled",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "scheduled"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "select all",
+                        "default": "select all",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "select all"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "clear",
+                        "default": "clear",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "clear"
+                            }
+                        ]
                     }
                 ]
             }

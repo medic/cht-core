@@ -5,25 +5,20 @@
 
   'use strict';
 
-  var actionsBar =
-    '<p class="actions">' +
-      '<a href="#" class="btn btn-link select-all">select all</a>' +
-      '<a href="#" class="btn btn-link reset">clear</a>' +
-    '</p>';
 
   $.fn.multiDropdown = function(options) {
 
     options = options || {};
 
     if (!options.label) {
-      options.label = function(selected, total) {
-        if (selected.length === 0 || selected.length === total) {
-          return $element.data('label-no-filter');
+      options.label = function(state, callback) {
+        if (state.selected.length === 0 || state.selected.length === state.total.length) {
+          return callback(state.menu.data('label-no-filter'));
         }
-        if (selected.length === 1) {
-          return selected.first().text();
+        if (state.selected.length === 1) {
+          return callback(state.selected.first().text());
         }
-        return selected.length + ' ' + $element.data('filter-label');
+        return callback(state.selected.length + ' ' + state.menu.data('filter-label'));
       };
     }
 
@@ -51,14 +46,17 @@
       }
     };
 
-    var getTitle = function() {
-      var all = $element.find('[role=menuitem]');
-      var selected = $element.find('[role=menuitem].selected');
-      return options.label(selected, all.length);
-    };
-
     var updateMultipleSelect = function() {
-      $element.find('.mm-button-text').text(getTitle());
+      return options.label(
+        {
+          total: $element.find('[role=menuitem]'),
+          selected: $element.find('[role=menuitem].selected'),
+          menu: $element
+        },
+        function(result) {
+          $element.find('.mm-button-text').text(result);
+        }
+      );
     };
 
     var updateSelected = function() {
@@ -89,6 +87,13 @@
     
     $element.data('multidropdown', state);
 
+    var selectAllLabel = options.selectAllLabel || 'select all';
+    var clearLabel = options.clearLabel || 'clear';
+    var actionsBar =
+      '<p class="actions">' +
+        '<a href="#" class="btn btn-link select-all">' + selectAllLabel + '</a>' +
+        '<a href="#" class="btn btn-link reset">' + clearLabel + '</a>' +
+      '</p>';
     $element.find('[role=menu]').append(actionsBar);
     $element.find('[role=menu] .actions .select-all').on('click', function(e) {
       e.preventDefault();

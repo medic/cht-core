@@ -1,3 +1,4 @@
+
 require('./services/index');
 require('./controllers/inbox');
 require('./filters/index');
@@ -65,19 +66,20 @@ require('../dist/reporting-views');
   app.factory('SettingsLoader', ['$q', 'Settings', function ($q, Settings) {
     return function (options) {
 
-      options.key = options.key || 'en';
-
       var deferred = $q.defer();
 
       Settings(function(err, res) {
         if (err) {
           return deferred.reject(err);
         }
+
+        options.key = options.key || res.locale || 'en';
+
         var data = {};
         if (res.translations) {
           res.translations.forEach(function(translation) {
             var key = translation.key;
-            var value = translation.default || translation.key;
+            var value = translation.default || key;
             translation.translations.forEach(function(val) {
               if (val.locale === options.key) {
                 value = val.content;

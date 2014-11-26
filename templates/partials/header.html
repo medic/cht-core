@@ -29,13 +29,13 @@
           <li role="presentation">
             <a role="menuitem" tabindex="-1" class="send-message">
               <i class="fa fa-fw fa-envelope"></i>
-              Send Message
+              {~lb}{~lb}'Send Message' | translate{~rb}{~rb}
             </a>
           </li>
           <li role="presentation" class="disabled">
             <a role="menuitem" tabindex="-1" id="send-record-button">
               <i class="fa fa-fw fa-list-alt"></i>
-              Submit Report
+              {~lb}{~lb}'Submit Report' | translate{~rb}{~rb}
             </a>
           </li>
         </ul>
@@ -51,49 +51,49 @@
           <li role="presentation" ng-show="permissions.admin">
             <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#guided-setup">
               <i class="fa fa-fw fa-list-ol"></i>
-              Easy Setup Wizard
+              {~lb}{~lb}'Easy Setup Wizard' | translate{~rb}{~rb}
             </a>
           </li>
           <li role="presentation">
             <a id="startTour" role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#tour-select">
               <i class="fa fa-fw fa-graduation-cap"></i>
-              Start Tour
+              {~lb}{~lb}'Guided Tour' | translate{~rb}{~rb}
             </a>
           </li>
           <li role="presentation">
             <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#edit-user-profile">
               <i class="fa fa-fw fa-user"></i>
-              Edit User Profile
+              {~lb}{~lb}'Edit User Profile' | translate{~rb}{~rb}
             </a>
           </li>
           <li role="presentation" ng-show="permissions.canExport">
             <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#modal-export">
               <i class="fa fa-fw fa-arrow-circle-o-down"></i>
-              Export
+              {~lb}{~lb}'Export' | translate{~rb}{~rb}
             </a>
           </li>
           <li role="presentation" ng-show="permissions.nationalAdmin">
             <a role="menuitem" tabindex="-1" href="{baseURL}/forms" rel="external">
               <i class="fa fa-fw fa-cog"></i>
-              Configuration
+              {~lb}{~lb}'Configuration' | translate{~rb}{~rb}
             </a>
           </li>
           <li role="presentation" ng-show="permissions.admin && !permissions.nationalAdmin">
             <a role="menuitem" tabindex="-1" href="{baseURL}/settings" rel="external">
               <i class="fa fa-fw fa-cog"></i>
-              Configuration
+              {~lb}{~lb}'Configuration' | translate{~rb}{~rb}
             </a>
           </li>
           <li role="presentation">
             <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#feedback">
               <i class="fa fa-fw fa-bug"></i>
-              Report Bug
+              {~lb}{~lb}'Report Bug' | translate{~rb}{~rb}
             </a>
           </li>
           <li role="presentation">
             <a role="menuitem" tabindex="-1" rel="external" id="logout">
               <i class="fa fa-fw fa-power-off"></i>
-              Log Out
+              {~lb}{~lb}'Log Out' | translate{~rb}{~rb}
             </a>
           </li>
         </ul>
@@ -109,7 +109,7 @@
             <span class="mm-badge mm-badge-red mm-badge-border" ng-show="readStatus.messages >= 100">100+</span>
           </span>
         </div>
-        <div class="button-label">Messages</div>
+        <div class="button-label">{~lb}{~lb}'Messages' | translate{~rb}{~rb}</div>
       </a>
       <a ui-sref="reports.detail" id="reports-tab" class="reports-tab" ng-class="{'selected': filterModel.type === 'reports'}">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'reports'}">
@@ -119,13 +119,13 @@
             <span class="mm-badge mm-badge-red mm-badge-border" ng-show="readStatus.forms >= 100">100+</span>
           </span>
         </div>
-        <div class="button-label">Reports</div>
+        <div class="button-label">{~lb}{~lb}'Reports' | translate{~rb}{~rb}</div>
       </a>
       <a ui-sref="analytics" id="analytics-tab" class="analytics-tab" ng-class="{'selected': filterModel.type === 'analytics'}">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'analytics'}">
           <span class="fa fa-bar-chart-o"></span>
         </div>
-        <div class="button-label">Analytics</div>
+        <div class="button-label">{~lb}{~lb}'Analytics' | translate{~rb}{~rb}</div>
       </a>
     </div>
   </div>
