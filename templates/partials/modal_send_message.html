@@ -3,20 +3,20 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>Send Message</h3>
+        <h3>{~lb}{~lb}'Send Message' | translate{~rb}{~rb}</h3>
       </div>
       <div class="modal-body">
         <form action="" method="POST">
           <fieldset>
             <div class="control-group">
               <div class="controls">
-                <input style="width:100%;" class="input-xlarge" type="text" name="phone" autocomplete="off" placeholder="Phone"/>
+                <input style="width:100%;" class="input-xlarge" type="text" name="phone" autocomplete="off" ng-attr-placeholder="{~lb}{~lb}'Phone Number' | translate{~rb}{~rb}"/>
               </div>
               <span class="help-block"></span>
             </div>
             <div class="control-group">
               <div class="controls">
-                <textarea name="message" placeholder="Enter message"></textarea>
+                <textarea name="message" ng-attr-placeholder="{~lb}{~lb}'Enter message' | translate{~rb}{~rb}"></textarea>
               </div>
               <span class="help-block"></span>
             </div>
@@ -25,8 +25,8 @@
       </div>
       <div class="modal-footer">
         <p class="note">{note}</p>
-        <a href="#" class="btn cancel" data-dismiss="modal">Cancel</a>
-        <a class="btn submit btn-primary" ng-click="sendMessage($event)" data-working-label="Sending...">Send</a>
+        <a href="#" class="btn cancel" data-dismiss="modal">{~lb}{~lb}'Cancel' | translate{~rb}{~rb}</a>
+        <a class="btn submit btn-primary" ng-click="sendMessage($event)" ng-attr-data-working-label="{~lb}{~lb}'Sending' | translate{~rb}{~rb}">{~lb}{~lb}'Send' | translate{~rb}{~rb}</a>
       </div>
     </div>
   </div>

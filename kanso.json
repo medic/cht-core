@@ -2812,6 +2812,16 @@
                         ]
                     },
                     {
+                        "key": "Deleting",
+                        "default": "Deleting...",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Deleting..."
+                            }
+                        ]
+                    },
+                    {
                         "key": "Edit",
                         "default": "Edit",
                         "translations": [
@@ -3408,6 +3418,102 @@
                             {
                                 "locale": "en",
                                 "content": "Submit"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Confirm",
+                        "default": "Confirm",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Confirm"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "confirm.delete",
+                        "default": "Are you sure you want to delete this message?",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Are you sure you want to delete this message?"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Full Name",
+                        "default": "Full Name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Full Name"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Email Address",
+                        "default": "E-mail Address",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "E-mail Address"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Language",
+                        "default": "Language",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Language"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Phone Number",
+                        "default": "Phone number",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Phone number"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Téléphone"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Teléfono"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सम्पर्क टेलिफोन"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Namba ya Simu"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Bug description",
+                        "default": "Bug description",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Bug description"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Update Facility",
+                        "default": "Update Facility",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Update Facility"
                             }
                         ]
                     }

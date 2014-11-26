@@ -3,15 +3,15 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>Confirm</h3>
+        <h3>{~lb}{~lb}'Confirm' | translate{~rb}{~rb}</h3>
       </div>
       <div class="modal-body">
-        <p>Are you sure you want to delete this message?</p>
+        <p>{~lb}{~lb}'confirm.delete' | translate{~rb}{~rb}</p>
       </div>
       <div class="modal-footer">
         <p class="note"></p>
-        <a class="btn cancel" data-dismiss="modal">Cancel</a>
-        <a class="btn submit btn-danger" ng-click="deleteDocConfirm()" data-working-label="Deleting...">Delete</a>
+        <a class="btn cancel" data-dismiss="modal">{~lb}{~lb}'Cancel' | translate{~rb}{~rb}</a>
+        <a class="btn submit btn-danger" ng-click="deleteDocConfirm()" ng-attr-data-working-label="{~lb}{~lb}'Deleting' | translate{~rb}{~rb}">{~lb}{~lb}'Delete' | translate{~rb}{~rb}</a>
       </div>
     </div>
   </div>
