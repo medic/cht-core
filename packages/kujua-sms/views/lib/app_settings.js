@@ -2259,6 +2259,146 @@ module.exports = {
                   "content": "To"
               }
           ]
+      },
+      {
+          "key": "No reports found",
+          "default": "No reports found",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "No reports found"
+              }
+          ]
+      },
+      {
+          "key": "No more reports",
+          "default": "No more reports",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "No more reports"
+              }
+          ]
+      },
+      {
+          "key": "Error fetching reports",
+          "default": "Error fetching reports",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Error fetching reports"
+              }
+          ]
+      },
+      {
+          "key": "invalid.query",
+          "default": "That query is invalid. Read our advanced search help page for more information on query syntax.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "That query is invalid. Read our advanced search help page for more information on query syntax."
+              }
+          ]
+      },
+      {
+          "key": "Help",
+          "default": "Help",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Help"
+              }
+          ]
+      },
+      {
+          "key": "Content",
+          "default": "Content",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Content"
+              }
+          ]
+      },
+      {
+          "key": "Errors",
+          "default": "Errors",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Errors"
+              }
+          ]
+      },
+      {
+          "key": "Automated Reply",
+          "default": "Automated Reply",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Automated Reply"
+              }
+          ]
+      },
+      {
+          "key": "Automated Reply",
+          "default": "Automated Reply",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Automated Reply"
+              }
+          ]
+      },
+      {
+          "key": "Automated Reply",
+          "default": "Automated Reply",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Automated Reply"
+              }
+          ]
+      },
+      {
+          "key": "Mute",
+          "default": "Mute",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Mute"
+              }
+          ]
+      },
+      {
+          "key": "Schedule",
+          "default": "Schedule",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Schedule"
+              }
+          ]
+      },
+      {
+          "key": "Add Message",
+          "default": "Add Message",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Add Message"
+              }
+          ]
+      },
+      {
+          "key": "Submit",
+          "default": "Submit",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Submit"
+              }
+          ]
       }
    ],
    "forms": {

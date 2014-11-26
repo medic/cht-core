@@ -14,11 +14,20 @@
     </li>
   </ul>
   <p ng-show="error" class="alert alert-danger" role="alert">
-    <span ng-show="errorSyntax">That query is invalid. Read our <a href="{baseURL}/help/search" target="_blank" rel="external">advanced search help page</a> for more information on query syntax.</span>
-    <span ng-hide="errorSyntax">Error fetching reports</span>
+    <span ng-show="errorSyntax">
+      {~lb}{~lb}'invalid.query' | translate{~rb}{~rb}
+      <a href="{baseURL}/help/search" target="_blank" rel="external">{~lb}{~lb}'Help' | translate{~rb}{~rb}</a>.
+    </span>
+    <span ng-hide="errorSyntax">
+      {~lb}{~lb}'Error fetching reports' | translate{~rb}{~rb}
+    </span>
   </p>
-  <p class="loading-status" ng-show="!error && !loading && !messages.length">No reports found</p>
-  <p class="loading-status" ng-show="!loading && messages.length && messages.length === totalMessages">No more reports</p>
+  <p class="loading-status" ng-show="!error && !loading && !messages.length">
+    {~lb}{~lb}'No reports found' | translate{~rb}{~rb}
+  </p>
+  <p class="loading-status" ng-show="!loading && messages.length && messages.length === totalMessages">
+    {~lb}{~lb}'No more reports' | translate{~rb}{~rb}
+  </p>
   <span class="mm-loader" ng-show="loading">
     <span class="fa fa-spinner fa-spin"></span>
   </span>

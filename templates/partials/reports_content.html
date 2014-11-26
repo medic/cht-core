@@ -16,7 +16,7 @@
       <h2 ng-bind-html="selected | title:forms"></h2>
       <ul>
         <li ng-if="selected.sms_message.message">
-          <label>Content</label>
+          <label>{~lb}{~lb}'Content' | translate{~rb}{~rb}</label>
           <p>{~lb}{~lb}selected.sms_message.message{~rb}{~rb}</p>
         </li>
         <li ng-if="selected.form" ng-repeat="field in selected.fields.data">
@@ -27,7 +27,7 @@
           <p>{~lb}{~lb}field.value{~rb}{~rb}</p>
         </li>
         <li ng-if="selected.errors.length">
-          <label>Errors</label>
+          <label>{~lb}{~lb}'Errors' | translate{~rb}{~rb}</label>
           <ul>
             <li ng-repeat="error in selected.errors">
               {~lb}{~lb}error.message{~rb}{~rb}
@@ -35,8 +35,8 @@
           </ul>
         </li>
         <li ng-if="selected.tasks.length">
-          <label ng-if="selected.kujua_message">Sent To</label>
-          <label ng-if="!selected.kujua_message">Automated Reply</label>
+          <label ng-if="selected.kujua_message">{~lb}{~lb}'tasks.0.messages.0.to' | translate{~rb}{~rb}</label>
+          <label ng-if="!selected.kujua_message">{~lb}{~lb}'Automated Reply' | translate{~rb}{~rb}</label>
           <ul class="task-list">
             <li ng-repeat="task in selected.tasks">
               <ul>
@@ -53,15 +53,15 @@
     </div>
 
     <div class="body" ng-if="selected.scheduled_tasks_by_group.length">
-      <h2>Messages</h2>
+      <h2>{~lb}{~lb}'Outgoing Messages' | translate{~rb}{~rb}</h2>
       <ul>
         <li ng-repeat="group in selected.scheduled_tasks_by_group">
           <p>
             {~lb}{~lb}group.group{~rb}{~rb}
             <span ng-hide="group.loading">
-              <a class="btn btn-link" ng-click="edit(group)">edit</a>
-              <a class="btn btn-link" ng-click="mute(group)" ng-show="canMute(group)">mute</a>
-              <a class="btn btn-link" ng-click="schedule(group)" ng-show="canSchedule(group)">schedule</a>
+              <a class="btn btn-link" ng-click="edit(group)">{~lb}{~lb}'Edit' | translate{~rb}{~rb}</a>
+              <a class="btn btn-link" ng-click="mute(group)" ng-show="canMute(group)">{~lb}{~lb}'Mute' | translate{~rb}{~rb}</a>
+              <a class="btn btn-link" ng-click="schedule(group)" ng-show="canSchedule(group)">{~lb}{~lb}'Schedule' | translate{~rb}{~rb}</a>
             </span>
             <span class="loading-button" ng-show="group.loading">
               <span class="fa fa-spinner fa-spin"></span>
