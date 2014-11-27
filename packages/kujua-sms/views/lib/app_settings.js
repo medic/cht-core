@@ -2765,6 +2765,16 @@ module.exports = {
                   "content": "There was an error saving your settings, please try again."
               }
           ]
+      },
+      {
+          "key": "Generated report field",
+          "default": "Generated report field",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Generated report field"
+              }
+          ]
       }
    ],
    "forms": {

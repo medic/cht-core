@@ -22,7 +22,7 @@
         <li ng-if="selected.form" ng-repeat="field in selected.fields.data">
           <label>
             {~lb}{~lb}field.label{~rb}{~rb}
-            <span class="fa fa-cogs" ng-show="field.generated" title="Generated report field"></span>
+            <span class="fa fa-cogs" ng-show="field.generated" ng-attr-title="{~lb}{~lb}'Generated report field' | translate{~rb}{~rb}"></span>
           </label>
           <p>{~lb}{~lb}field.value{~rb}{~rb}</p>
         </li>
