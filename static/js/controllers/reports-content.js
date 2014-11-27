@@ -1,5 +1,3 @@
-var moment = require('moment');
-
 (function () {
 
   'use strict';
@@ -7,8 +5,8 @@ var moment = require('moment');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsContentCtrl', 
-    ['$scope', '$stateParams', 'Settings', 'MessageState',
-    function ($scope, $stateParams, Settings, MessageState) {
+    ['$scope', '$stateParams', 'MessageState',
+    function ($scope, $stateParams, MessageState) {
       
       $scope.selectMessage($stateParams.id);
       $('.tooltip').remove();
@@ -38,45 +36,6 @@ var moment = require('moment');
 
       $scope.schedule = function(group) {
         setMessageState(group, 'muted', 'scheduled');
-      };
-
-      var initEditMessageModal = function() {
-        window.setTimeout(function() {
-          Settings(function(err, res) {
-            if (!err) {
-              $('#edit-message-group .datepicker').daterangepicker({
-                singleDatePicker: true,
-                timePicker: true,
-                applyClass: 'btn-primary',
-                cancelClass: 'btn-link',
-                parentEl: '#edit-message-group .modal-dialog .modal-content',
-                format: res.reported_date_format,
-                minDate: moment()
-              },
-              function(date) {
-                var i = this.element.closest('fieldset').attr('data-index');
-                $scope.selectedGroup.rows[i].due = date.toISOString();
-              });
-            }
-          });
-        });
-      };
-
-      $scope.edit = function(group) {
-        $scope.setSelectedGroup(group);
-        $('#edit-message-group').modal('show');
-        initEditMessageModal();
-      };
-
-      $scope.addTask = function(group) {
-        group.rows.push({
-          due: moment(),
-          added: true,
-          group: group.number,
-          state: 'scheduled',
-          messages: [ { message: '' } ]
-        });
-        initEditMessageModal();
       };
 
     }

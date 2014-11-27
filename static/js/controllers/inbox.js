@@ -331,7 +331,7 @@ require('moment/locales');
       Language().then(
         function(language) {
 
-          moment.locale(language);
+          moment.locale([language, 'en']);
 
           $translate.use(language).then(function() {
 

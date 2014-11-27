@@ -75,6 +75,12 @@ require('../dist/reporting-views');
 
         options.key = options.key || res.locale || 'en';
 
+        var test = false;
+        if (options.key === 'test') {
+          options.key = 'en';
+          test = true;
+        }
+
         var data = {};
         if (res.translations) {
           res.translations.forEach(function(translation) {
@@ -85,6 +91,9 @@ require('../dist/reporting-views');
                 value = val.content;
               }
             });
+            if (test) {
+              value = '-' + value + '-';
+            }
             data[key] = value;
           });
         }

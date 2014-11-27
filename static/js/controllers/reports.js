@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$state', '$stateParams', '$location', '$animate', '$rootScope', 'UserDistrict', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes', 'EditGroup',
-    function ($scope, $state, $stateParams, $location, $animate, $rootScope, UserDistrict, MarkRead, GenerateSearchQuery, Search, Changes, EditGroup) {
+    ['$scope', '$state', '$stateParams', '$location', '$animate', '$rootScope', 'Settings', 'UserDistrict', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes', 'EditGroup',
+    function ($scope, $state, $stateParams, $location, $animate, $rootScope, Settings, UserDistrict, MarkRead, GenerateSearchQuery, Search, Changes, EditGroup) {
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = undefined;
@@ -269,6 +269,44 @@ var _ = require('underscore'),
       tour.start($stateParams.tour);
       $location.url($location.path());
 
+      var initEditMessageModal = function() {
+        window.setTimeout(function() {
+          Settings(function(err, res) {
+            if (!err) {
+              $('#edit-message-group .datepicker').daterangepicker({
+                singleDatePicker: true,
+                timePicker: true,
+                applyClass: 'btn-primary',
+                cancelClass: 'btn-link',
+                parentEl: '#edit-message-group .modal-dialog .modal-content',
+                format: res.reported_date_format,
+                minDate: moment()
+              },
+              function(date) {
+                var i = this.element.closest('fieldset').attr('data-index');
+                $scope.selectedGroup.rows[i].due = date.toISOString();
+              });
+            }
+          });
+        });
+      };
+
+      $scope.edit = function(group) {
+        $scope.setSelectedGroup(group);
+        $('#edit-message-group').modal('show');
+        initEditMessageModal();
+      };
+
+      $scope.addTask = function(group) {
+        group.rows.push({
+          due: moment(),
+          added: true,
+          group: group.number,
+          state: 'scheduled',
+          messages: [ { message: '' } ]
+        });
+        initEditMessageModal();
+      };
     }
   ]);
 
