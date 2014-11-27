@@ -3,14 +3,14 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>Hello {~lb}{~lb}editUserModel.fullname{~rb}{~rb}</h3>
+        <h3>{~lb}{~lb}'welcome' | translate:'{name: editUserModel.fullname}'</h3>
       </div>
       <div class="modal-body">
         <img src="static/img/setup-wizard-demo.png" class="screenshot" width="343" height="180" />
-        <p>You can access the guided tour or the easy setup wizard from the settings icon in the upper right.</p>
+        <p>{~lb}{~lb}'welcome.description' | translate{~rb}{~rb}</p>
       </div>
       <div class="modal-footer">
-        <a class="btn btn-primary" data-dismiss="modal" data-toggle="modal" data-target="#guided-setup">Start Medic Mobile</a>
+        <a class="btn btn-primary" data-dismiss="modal" data-toggle="modal" data-target="#guided-setup">{~lb}{~lb}'Start' | translate{~rb}{~rb}</a>
       </div>
     </div>
   </div>

@@ -2495,6 +2495,36 @@ module.exports = {
                   "content": "Update Facility"
               }
           ]
+      },
+      {
+          "key": "Start",
+          "default": "Start",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Start"
+              }
+          ]
+      },
+      {
+          "key": "welcome",
+          "default": "Hello {{name}}",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Hello {{name}}"
+              }
+          ]
+      },
+      {
+          "key": "welcome.description",
+          "default": "You can access the guided tour or the easy setup wizard from the settings icon in the upper right.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "You can access the guided tour or the easy setup wizard from the settings icon in the upper right."
+              }
+          ]
       }
    ],
    "forms": {
