@@ -2525,6 +2525,26 @@ module.exports = {
                   "content": "You can access the guided tour or the easy setup wizard from the settings icon in the upper right."
               }
           ]
+      },
+      {
+          "key": "tour.select",
+          "default": "Select Tour",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Select Tour"
+              }
+          ]
+      },
+      {
+          "key": "tour.select.description",
+          "default": "You can start a tour at any time by clicking the cog in the top right corner. Which tour would you like to run?",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "You can start a tour at any time by clicking the cog in the top right corner. Which tour would you like to run?"
+              }
+          ]
       }
    ],
    "forms": {
