@@ -3,7 +3,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>Easy Setup Wizard</h3>
+        <h3>{~lb}{~lb}'Easy Setup Wizard' | translate{~rb}{~rb}</h3>
       </div>
       <div class="modal-body">
         <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
@@ -16,19 +16,19 @@
                   <span class="count">
                     <span class="number">1</span>
                     <i class="fa fa-check"></i>
-                  </span>Modem setup
+                  </span>{~lb}{~lb}'setup.modem.title' | translate{~rb}{~rb}
                   <span class="value"></span>
                 </a>
               </h4>
             </div>
             <div id="modem-setup-content" class="modem-setup-content panel-collapse collapse in" role="tabpanel" aria-labelledby="modem-setup-heading">
               <div class="panel-body">
-                <h5>You will need a USB GSM modem with an active SIM card to send and receive text messages.</h5>
+                <h5>{~lb}{~lb}'setup.modem.subtitle' | translate{~rb}{~rb}</h5>
                 <img src="static/img/platform-icon-gsm.svg" width="100" height="100" />
                 <img src="static/img/platform-icon-laptop.svg" width="100" height="100" />
-                <label for="gateway-number">Gateway number</label>
+                <label for="gateway-number">{~lb}{~lb}'Gateway number' | translate{~rb}{~rb}</label>
                 <input id="gateway-number" type="text"/>
-                <label for="default-country-code">Default country code</label>
+                <label for="default-country-code">{~lb}{~lb}'Default country code' | translate{~rb}{~rb}</label>
                 <input id="default-country-code" type="text" value="1" class="small-field"/>
               </div>
             </div>
@@ -42,27 +42,27 @@
                   <span class="count">
                     <span class="number">2</span>
                     <i class="fa fa-check"></i>
-                  </span>Identify care coordinators
+                  </span>{~lb}{~lb}'setup.contact.title' | translate{~rb}{~rb}
                   <span class="value"></span>
                 </a>
               </h4>
             </div>
             <div id="primary-contact-content" class="primary-contact-content panel-collapse collapse" role="tabpanel" aria-labelledby="primary-contact-heading">
               <div class="panel-body">
-                <h5>Select who will be registering and tracking pregnancies in your community.</h5>
-                <p>They will need a mobile phone with a texting plan.</p>
+                <h5>{~lb}{~lb}'setup.contact.subtitle' | translate{~rb}{~rb}</h5>
+                <p>{~lb}{~lb}'setup.contact.description' | translate{~rb}{~rb}</p>
                 <p class="horizontal-options">
                   <a href="#" class="icon contact-pregnant" data-value="patient">
-                    The pregnant patient
+                    {~lb}{~lb}'Pregnant patient' | translate{~rb}{~rb}
                   </a>
                   <a href="#" class="icon contact-chw" data-value="chw">
-                    Community Health Worker
+                    {~lb}{~lb}'Clinic' | translate{~rb}{~rb}
                   </a>
                   <a href="#" class="icon contact-nurse" data-value="nurse">
-                    Facility nurse
+                    {~lb}{~lb}'Facility nurse' | translate{~rb}{~rb}
                   </a>
                 </p>
-                <p>If you don't know what to choose, refer to the ANC user guide.</p>
+                <p>{~lb}{~lb}'setup.contact.help' | translate{~rb}{~rb}</p>
               </div>
             </div>
           </div>
@@ -75,30 +75,18 @@
                   <span class="count">
                     <span class="number">3</span>
                     <i class="fa fa-check"></i>
-                  </span>Language preference
+                  </span>{~lb}{~lb}'setup.language.title' | translate{~rb}{~rb}
                   <span class="value"></span>
                 </a>
               </h4>
             </div>
             <div id="language-preference-content" class="language-preference-content panel-collapse collapse" role="tabpanel" aria-labelledby="language-preference-heading">
               <div class="panel-body">
-                <h5>Select the language that your primary point of contact will be using.</h5>
-                <p>If you don’t see your language, you can always add a custom language from Administrative Settings.</p>
+                <h5>{~lb}{~lb}'setup.language.subtitle' | translate{~rb}{~rb}</h5>
+                <p>{~lb}{~lb}'setup.language.description' | translate{~rb}{~rb}</p>
                 <p class="horizontal-options">
-                  <a href="#" data-value="en">
-                    <span class="rectangle">English</span>
-                  </a>
-                  <a href="#" data-value="fr">
-                    <span class="rectangle">French</span>
-                  </a>
-                  <a href="#" data-value="es">
-                    <span class="rectangle">Spanish</span>
-                  </a>
-                  <a href="#" data-value="sw">
-                    <span class="rectangle">Swahili</span>
-                  </a>
-                  <a href="#" data-value="ne">
-                    <span class="rectangle">Nepali</span>
+                  <a href="#" ng-repeat="language in languages" ng-attr-data-value="{~lb}{~lb}language.code{~rb}{~rb}">
+                    <span class="rectangle" ng-bind="language.name"></span>
                   </a>
                 </p>
               </div>
@@ -113,32 +101,32 @@
                   <span class="count">
                     <span class="number">4</span>
                     <i class="fa fa-check"></i>
-                  </span>Registration form
+                  </span>{~lb}{~lb}'setup.registration.title' | translate{~rb}{~rb}
                   <span class="value"></span>
                 </a>
               </h4>
             </div>
             <div id="registration-form-content" class="registration-form-content panel-collapse collapse" role="tabpanel" aria-labelledby="registration-form-heading">
               <div class="panel-body">
-                <h5>Will your primary point of contact for registration be able to report using Last Menstrual Period (LMP).</h5>
-                <p>Women in some cultures may not want to share this information.</p>
+                <h5>{~lb}{~lb}'setup.registration.subtitle' | translate{~rb}{~rb}</h5>
+                <p>{~lb}{~lb}'setup.registration.description' | translate{~rb}{~rb}</p>
                 <p class="horizontal-options">
                   <a href="#" data-value="true">
                     <span class="circle"><i class="fa fa-check"></i></span>
                     <span class="description">
-                      <span class="heading">With</span>
-                      Last Menstrual Period (LMP)
+                      <span class="heading">{~lb}{~lb}'With' | translate{~rb}{~rb}</span>
+                      {~lb}{~lb}'Last Menstrual Period' | translate{~rb}{~rb}
                     </span>
                   </a>
                   <a href="#" data-value="false">
                     <span class="circle"><i class="fa fa-check"></i></span>
                     <span class="description">
-                      <span class="heading">Without</span>
-                      Last Menstrual Period (LMP)
+                      <span class="heading">{~lb}{~lb}'Without' | translate{~rb}{~rb}</span>
+                      {~lb}{~lb}'Last Menstrual Period' | translate{~rb}{~rb}
                     </span>
                   </a>
                 </p>
-                <p>If you don't know what to choose, refer to the ANC user guide.</p>
+                <p>{~lb}{~lb}'setup.registration.help' | translate{~rb}{~rb}</p>
               </div>
             </div>
           </div>
@@ -147,8 +135,8 @@
       </div>
       <div class="modal-footer">
         <a id="setup-wizard-save" class="btn btn-primary">{~lb}{~lb}'Start' | translate{~rb}{~rb}</a>
-        <span class="error" style="display:none">There was an error saving your settings, please try again.</span>
-        <a href="#" class="btn cancel" data-dismiss="modal">Skip the setup wizard</a>
+        <span class="error" style="display:none">{~lb}{~lb}'Error saving settings' | translate{~rb}{~rb}</span>
+        <a href="#" class="btn cancel" data-dismiss="modal">{~lb}{~lb}'setup.skip' | translate{~rb}{~rb}</a>
       </div>
     </div>
   </div>

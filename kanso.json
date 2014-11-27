@@ -3548,6 +3548,146 @@
                         ]
                     },
                     {
+                        "key": "setup.modem.title",
+                        "default": "Modem setup",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Modem setup"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "setup.modem.subtitle",
+                        "default": "You will need a USB GSM modem with an active SIM card to send and receive text messages.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "You will need a USB GSM modem with an active SIM card to send and receive text messages."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "setup.contact.title",
+                        "default": "Identify care coordinators",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Identify care coordinators"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "setup.contact.subtitle",
+                        "default": "Select who will be registering and tracking pregnancies in your community.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Select who will be registering and tracking pregnancies in your community."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "setup.contact.description",
+                        "default": "They will need a mobile phone with a texting plan.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "They will need a mobile phone with a texting plan."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "setup.contact.help",
+                        "default": "If you don't know what to choose, refer to the ANC user guide.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "If you don't know what to choose, refer to the ANC user guide."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "setup.language.title",
+                        "default": "Language preference",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Language preference"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "setup.language.subtitle",
+                        "default": "Select the language that your primary point of contact will be using.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Select the language that your primary point of contact will be using."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "setup.language.description",
+                        "default": "If you don't see your language, you can always add a custom language from Administrative Settings.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "If you don't see your language, you can always add a custom language from Administrative Settings."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "setup.registration.title",
+                        "default": "Registration form",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Registration form"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "setup.registration.subtitle",
+                        "default": "Will your primary point of contact for registration be able to report using Last Menstrual Period (LMP).",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Will your primary point of contact for registration be able to report using Last Menstrual Period (LMP)."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "setup.registration.description",
+                        "default": "Women in some cultures may not want to share this information.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Women in some cultures may not want to share this information."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "setup.registration.help",
+                        "default": "If you don't know what to choose, refer to the ANC user guide.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "If you don't know what to choose, refer to the ANC user guide."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "setup.skip",
+                        "default": "Skip the setup wizard",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Skip the setup wizard"
+                            }
+                        ]
+                    },
+                    {
                         "key": "tour.select",
                         "default": "Select Tour",
                         "translations": [
@@ -3564,6 +3704,86 @@
                             {
                                 "locale": "en",
                                 "content": "You can start a tour at any time by clicking the cog in the top right corner. Which tour would you like to run?"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Gateway number",
+                        "default": "Gateway number",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Gateway number"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Default country code",
+                        "default": "Default country code",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Default country code"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Pregnant patient",
+                        "default": "The pregnant patient",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "The pregnant patient"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Facility nurse",
+                        "default": "Facility nurse",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Facility nurse"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Last Menstrual Period",
+                        "default": "Last Menstrual Period (LMP)",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Last Menstrual Period (LMP)"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "With",
+                        "default": "With",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "With"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Without",
+                        "default": "Without",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Without"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Error saving settings",
+                        "default": "There was an error saving your settings, please try again.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "There was an error saving your settings, please try again."
                             }
                         ]
                     }

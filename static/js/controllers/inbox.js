@@ -292,18 +292,22 @@ require('moment/locales');
         if (err) {
           return console.log('Error fetching settings', err);
         }
+        $scope.languages = res.locales;
         if (res.setup_complete) {
           startTour();
-          // prepopulate selections
-          $('#gateway-number').val(res.gateway_number);
-          $('#default-country-code').val(res.default_country_code);
-          $('#gateway-number').trigger('input');
-          $('#primary-contact-content a[data-value=' + res.care_coordinator + ']')
-            .trigger('click');
-          $('#language-preference-content a[data-value=' + res.locale + ']')
-            .trigger('click');
-          $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']')
-            .trigger('click');
+
+          window.setTimeout(function() {
+            // prepopulate selections
+            $('#gateway-number').val(res.gateway_number);
+            $('#default-country-code').val(res.default_country_code);
+            $('#gateway-number').trigger('input');
+            $('#primary-contact-content a[data-value=' + res.care_coordinator + ']')
+              .trigger('click');
+            $('#language-preference-content a[data-value=' + res.locale + ']')
+              .trigger('click');
+            $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']')
+              .trigger('click');
+          }, 1);
         } else {
           $('#welcome').modal('show');
           // show the tour after the Setup Wizard
@@ -322,7 +326,6 @@ require('moment/locales');
             language: { code: user.language }
           };
         });
-        $scope.languages = res.locales;
       });
 
       Language().then(
