@@ -2835,6 +2835,256 @@ module.exports = {
                   "content": "Expected Date"
               }
           ]
+      },
+      {
+          "key": "Any status",
+          "default": "Any status",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Any status"
+              }
+          ]
+      },
+      {
+          "key": "Patient Name",
+          "default": "Patient Name",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Patient Name"
+              }
+          ]
+      },
+      {
+          "key": "Weeks Pregnant",
+          "default": "Weeks Pregnant",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Weeks Pregnant"
+              }
+          ]
+      },
+      {
+          "key": "Visits",
+          "default": "Visits",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Visits"
+              }
+          ]
+      },
+      {
+          "key": "contact.short",
+          "default": "CHW",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "CHW"
+              }
+          ]
+      },
+      {
+          "key": "EDD",
+          "default": "EDD",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "EDD"
+              }
+          ]
+      },
+      {
+          "key": "Appointment Date",
+          "default": "Appointment Date",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Appointment Date"
+              }
+          ]
+      },
+      {
+          "key": "Patient History",
+          "default": "Patient History",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Patient History"
+              }
+          ]
+      },
+      {
+          "key": "Last Appointment",
+          "default": "Last Appointment",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Last Appointment"
+              }
+          ]
+      },
+      {
+          "key": "analytics.unconfigured",
+          "default": "No analytics modules are configured.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "No analytics modules are configured."
+              }
+          ]
+      },
+      {
+          "key": "analytics.connection.error",
+          "default": "Could not retrieve data at this time.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Could not retrieve data at this time."
+              }
+          ]
+      },
+      {
+          "key": "analytics.anc.active-pregnancies",
+          "default": "Active Pregnancies",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Active Pregnancies"
+              }
+          ]
+      },
+      {
+          "key": "analytics.anc.delivery-locations",
+          "default": "Reported Delivery Locations",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Reported Delivery Locations"
+              }
+          ]
+      },
+      {
+          "key": "analytics.anc.high-risk",
+          "default": "High Risk Pregnancies",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "High Risk Pregnancies"
+              }
+          ]
+      },
+      {
+          "key": "analytics.anc.missed-appointments",
+          "default": "Recent Missed Appointments",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Recent Missed Appointments"
+              }
+          ]
+      },
+      {
+          "key": "analytics.anc.missing-reports",
+          "default": "Missing Birth Reports",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Missing Birth Reports"
+              }
+          ]
+      },
+      {
+          "key": "analytics.anc.monthly-births",
+          "default": "Monthly Births",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Monthly Births"
+              }
+          ]
+      },
+      {
+          "key": "analytics.anc.monthly-registrations",
+          "default": "Monthly Pregnancies Registered",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Monthly Pregnancies Registered"
+              }
+          ]
+      },
+      {
+          "key": "analytics.anc.total-births",
+          "default": "Total Births",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Total Births"
+              }
+          ]
+      },
+      {
+          "key": "analytics.anc.upcoming-appointments",
+          "default": "Upcoming Appointments",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Upcoming Appointments"
+              }
+          ]
+      },
+      {
+          "key": "analytics.anc.upcoming-edds",
+          "default": "Women With Upcoming EDDs",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Women With Upcoming EDDs"
+              }
+          ]
+      },
+      {
+          "key": "analytics.anc.visits-completed",
+          "default": "Visits Completed During Pregnancy",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Visits Completed During Pregnancy"
+              }
+          ]
+      },
+      {
+          "key": "analytics.anc.visits-completed.description",
+          "default": "Completed pregnancies that have had...",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Completed pregnancies that have had..."
+              }
+          ]
+      },
+      {
+          "key": "analytics.anc.visits-during",
+          "default": "Visits Completed So Far",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Visits Completed So Far"
+              }
+          ]
+      },
+      {
+          "key": "analytics.anc.visits-during.description",
+          "default": "Active pregnancies that have had...",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Active pregnancies that have had..."
+              }
+          ]
       }
    ],
    "forms": {

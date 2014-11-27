@@ -1,6 +1,6 @@
 <div class="col-xs-12 col-md-6 analytics-widget high-risk table-responsive">
   <div class="widget-body error" ng-show="highRisk.error">
-    Could not retrieve data at this time.
+    {~lb}{~lb}'analytics.connection.error' | translate{~rb}{~rb}
   </div>
   <div class="widget-body" ng-hide="!highRisk.loading">
     <div class="loading">
@@ -14,17 +14,17 @@
       </p>
       <p class="name">
         <span class="fa fa-exclamation-triangle"></span>
-        High Risk Pregnancies
+        {~lb}{~lb}'analytics.anc.high-risk' | translate{~rb}{~rb}
       </p>
     </div>
     <div class="content" ng-if="highRisk.data">
       <table class="table">
         <thead>
           <tr>
-            <th class="sortable" ng-class="{'sorted':highRisk.order==='patient_name'}" ng-click="highRisk.order='patient_name'">Name</th>
-            <th class="sortable" ng-class="{'sorted':highRisk.order==='-weeks.number'}" ng-click="highRisk.order='-weeks.number'">Weeks Pregnant</th>
-            <th class="sortable" ng-class="{'sorted':highRisk.order==='clinic.contact.name'}" ng-click="highRisk.order='clinic.contact.name'">CHW</th>
-            <th class="sortable" ng-class="{'sorted':highRisk.order==='visits'}" ng-click="highRisk.order='visits'">Visits</th>
+            <th class="sortable" ng-class="{'sorted':highRisk.order==='patient_name'}" ng-click="highRisk.order='patient_name'">{~lb}{~lb}'Patient Name' | translate{~rb}{~rb}</th>
+            <th class="sortable" ng-class="{'sorted':highRisk.order==='-weeks.number'}" ng-click="highRisk.order='-weeks.number'">{~lb}{~lb}'Weeks Pregnant' | translate{~rb}{~rb}</th>
+            <th class="sortable" ng-class="{'sorted':highRisk.order==='clinic.contact.name'}" ng-click="highRisk.order='clinic.contact.name'">{~lb}{~lb}'contact.short' | translate{~rb}{~rb}</th>
+            <th class="sortable" ng-class="{'sorted':highRisk.order==='visits'}" ng-click="highRisk.order='visits'">{~lb}{~lb}'Visits' | translate{~rb}{~rb}</th>
             <th></th>
           </tr>
         </thead>
@@ -35,8 +35,8 @@
             <td>{~lb}{~lb}pregnancy.clinic.contact.name{~rb}{~rb}</td>
             <td>{~lb}{~lb}pregnancy.visits{~rb}{~rb}</td>
             <td class="actions">
-              <a href="#" class="btn btn-link send-message" data-send-to="{~lb}{~lb}pregnancy.clinic.contact.phone{~rb}{~rb}" title="Send message to CHW" ng-class="{'disabled': !pregnancy.clinic.contact.phone}"><i class="fa fa-envelope"></i></a>
-              <a href="#/reports?query=patient_id:{~lb}{~lb}pregnancy.patient_id{~rb}{~rb}" class="btn btn-link" title="View patient history"><i class="fa fa-list-alt"></i></a>
+              <a href="#" class="btn btn-link send-message" data-send-to="{~lb}{~lb}pregnancy.clinic.contact.phone{~rb}{~rb}" ng-attr-title="{~lb}{~lb}'Send Message' | translate{~rb}{~rb}" ng-class="{'disabled': !pregnancy.clinic.contact.phone}"><i class="fa fa-envelope"></i></a>
+              <a href="#/reports?query=patient_id:{~lb}{~lb}pregnancy.patient_id{~rb}{~rb}" class="btn btn-link" ng-attr-title="{~lb}{~lb}'Patient History' | translate{~rb}{~rb}"><i class="fa fa-list-alt"></i></a>
             </td>
           </tr>
         </tbody>

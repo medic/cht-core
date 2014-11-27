@@ -372,7 +372,7 @@ require('moment/locales');
                   parts.push(values.unverified);
                 }
                 if (parts.length === 0 || parts.length === state.total.length) {
-                  return callback(state.menu.data('label-no-filter'));
+                  return callback(translateFilter(state.menu.data('label-no-filter')));
                 }
                 return callback(parts.join(', '));
               },

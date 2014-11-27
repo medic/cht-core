@@ -1,6 +1,6 @@
 <div class="col-xs-12 col-md-6 analytics-widget monthly-deliveries">
   <div class="widget-body error" ng-show="monthlyDeliveries.error">
-    Could not retrieve data at this time.
+    {~lb}{~lb}'analytics.connection.error' | translate{~rb}{~rb}
   </div>
   <div class="widget-body" ng-hide="!monthlyDeliveries.loading">
     <div class="loading">
@@ -9,7 +9,7 @@
   </div>
   <div class="widget-body" ng-if="!monthlyDeliveries.loading && !monthlyDeliveries.error">
     <div class="title">
-      <p class="name">Monthly Births</p>
+      <p class="name">{~lb}{~lb}'analytics.anc.monthly-births' | translate{~rb}{~rb}</p>
     </div>
     <div class="content">
       <nvd3-line-chart
