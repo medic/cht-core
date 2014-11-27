@@ -3796,6 +3796,66 @@
                                 "content": "Generated report field"
                             }
                         ]
+                    },
+                    {
+                        "key": "birth_date",
+                        "default": "Birth Date",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Birth Date"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "mother_outcome",
+                        "default": "Mother Outcome",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Mother Outcome"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "child_birth_outcome",
+                        "default": "Child Birth Outcome",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Child Birth Outcome"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "child_birth_weight",
+                        "default": "Child Birth Weight",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Child Birth Weight"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "child_birth_date",
+                        "default": "Child Birth Date",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Child Birth Date"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "expected_date",
+                        "default": "Expected Date",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Expected Date"
+                            }
+                        ]
                     }
                 ]
             }

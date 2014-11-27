@@ -92,16 +92,16 @@ exports.makeDataRecordOriginal = function(doc) {
  * records screen/render even though they are not defined in the form.
  *
  */
-var includeNonFormFields = function(doc, form_keys) {
+var includeNonFormFields = function(doc, form_keys, locale) {
 
     var fields = [
-        { key:'mother_outcome', label: 'Mother Outcome'},
-        { key:'child_birth_outcome', label: 'Child Birth Outcome'},
-        { key:'child_birth_weight', label: 'Child Birth Weight'},
-        { key:'child_birth_date', label: 'Child Birth Date'},
-        { key:'expected_date', label: 'Expected Date'},
-        { key:'birth_date', label: 'Birth Date'},
-        { key:'patient_id', label: 'Patient ID'}
+        'mother_outcome',
+        'child_birth_outcome',
+        'child_birth_weight',
+        'child_birth_date',
+        'expected_date',
+        'birth_date',
+        'patient_id'
     ];
 
     var dateFields = [
@@ -110,18 +110,17 @@ var includeNonFormFields = function(doc, form_keys) {
         'birth_date'
     ];
 
-    _.each(fields, function(obj) {
-        var key = obj.key,
-            label = obj.label,
-            value = doc[key];
+    _.each(fields, function(field) {
+        var label = exports.info.translate(field, locale),
+            value = doc[field];
 
         // Only include the property if we find it on the doc and not as a form
         // key since then it would be duplicated.
-        if (!value || form_keys.indexOf(key) !== -1) {
+        if (!value || form_keys.indexOf(field) !== -1) {
             return;
         }
 
-        if (_.contains(dateFields, key)) {
+        if (_.contains(dateFields, field)) {
             value = exports.info.formatDate(value);
         }
 
@@ -146,18 +145,19 @@ var includeNonFormFields = function(doc, form_keys) {
  * makeDataRecordOriginal.
  *
  */
-exports.makeDataRecordReadable = function(doc, appinfo) {
+exports.makeDataRecordReadable = function(doc, appinfo, language) {
 
     exports.info = appinfo || exports.info;
 
     var data_record = doc;
+    var language = language || getLocale(doc);
 
     // adding a fields property for ease of rendering code
     if(data_record.form) {
         var keys = getFormKeys(exports.info.getForm(data_record.form));
-        var labels = exports.getLabels(keys, data_record.form, getLocale(doc));
+        var labels = exports.getLabels(keys, data_record.form, language);
         data_record.fields = exports.fieldsToHtml(keys, labels, data_record);
-        includeNonFormFields(data_record, keys);
+        includeNonFormFields(data_record, keys, language);
     }
 
     if(data_record.scheduled_tasks) {

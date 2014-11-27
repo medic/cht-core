@@ -55,6 +55,12 @@ var _ = require('underscore');
       return value;
     }
 
+    var test = false;
+    if (locale === 'test') {
+      test = true;
+      locale = 'en';
+    }
+
     var result =
 
       // 1) Look for the requested locale
@@ -72,6 +78,10 @@ var _ = require('underscore');
 
       // 5) Look for the first value
       value[_.first(_.keys(value))];
+
+    if (test) {
+      result = '-' + result + '-';
+    }
 
     return result;
   };
