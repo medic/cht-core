@@ -97,7 +97,7 @@ module.exports = {
             isIdOnly = self.isIdOnly(doc);
 
         if (!config) {
-            return callback(null, false);
+            return callback();
         }
 
         self.validate(config, doc, function(errors) {
@@ -120,8 +120,7 @@ module.exports = {
                     var err = _.first(errors);
                     messages.addReply(doc, err.message || err);
                 }
-                // if validation errors then stop processign registration
-                return callback(null, true);
+                return callback(null, doc);
             }
 
             var series = [];
@@ -146,12 +145,13 @@ module.exports = {
             async.series(series, function(err, results) {
                 //callback(null, true);
                 if (err) {
-                    callback(err, false);
+                    //callback(err, false);
+                    callback(err);
                 } else {
                     // add messages is done last so data on doc can be used in
                     // messages
                     self.addMessages(config, doc);
-                    callback(null, true);
+                    callback(null, doc);
                 }
             });
         });
