@@ -3515,6 +3515,46 @@ module.exports = {
                   "content": "Medic Mobile organizes the data from your reports into charts and graphs to help you track pregnancies, monitor danger signs, and identify trends in your community - so you can make well-informed decisions and take action when it is needed."
               }
           ]
+      },
+      {
+          "key": "Institutional Delivery",
+          "default": "Institutional Delivery",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Institutional Delivery"
+              }
+          ]
+      },
+      {
+          "key": "At home with SBA",
+          "default": "At home with SBA",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "At home with SBA"
+              }
+          ]
+      },
+      {
+          "key": "At home without SBA",
+          "default": "At home without SBA",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "At home without SBA"
+              }
+          ]
+      },
+      {
+          "key": "Number of visits",
+          "default": "{{number}}+ visits",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "{{number}}+ visits"
+              }
+          ]
       }
    ],
    "forms": {

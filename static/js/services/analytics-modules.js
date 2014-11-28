@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('AnalyticsModules',
-    ['$resource', 'UserDistrict',
-    function($resource, UserDistrict) {
+    ['$resource', 'translateFilter', 'UserDistrict',
+    function($resource, translateFilter, UserDistrict) {
 
       var request = function(url, district, options, callback) {
         if (!callback) {
@@ -111,7 +111,7 @@ var _ = require('underscore'),
                 };
                 scope.deliveryCodeChartLabelKey = function() {
                   return function(elem) {
-                    return deliveryCodeMap[elem.key].label;
+                    return translateFilter(deliveryCodeMap[elem.key].label);
                   };
                 };
                 scope.deliveryCodeChartLabelValue = function() {
@@ -133,7 +133,7 @@ var _ = require('underscore'),
 
                 scope.visitsChartLabelKey = function() {
                   return function(d) {
-                    return (d + 1) + '+ visits';
+                    return translateFilter('Number of visits', { number: d + 1 });
                   };
                 };
                 scope.visitsChartLabelValue = function() {
