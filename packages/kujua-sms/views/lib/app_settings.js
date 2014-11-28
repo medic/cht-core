@@ -3085,6 +3085,436 @@ module.exports = {
                   "content": "Active pregnancies that have had..."
               }
           ]
+      },
+      {
+          "key": "Previous",
+          "default": "Prev",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Prev"
+              }
+          ]
+      },
+      {
+          "key": "Next",
+          "default": "Next",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Next"
+              }
+          ]
+      },
+      {
+          "key": "End tour",
+          "default": "End tour",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "End tour"
+              }
+          ]
+      },
+      {
+          "key": "tour.messages.unstructured.title",
+          "default": "Unstructured Messages",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Unstructured Messages"
+              }
+          ]
+      },
+      {
+          "key": "tour.messages.unstructured.description",
+          "default": "Here you can communicate with patients, community health workers, and community members to schedule trainings, ask and respond to questions, and provide additional information — just like regular SMS. You can also send bulk messages to groups of people.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Here you can communicate with patients, community health workers, and community members to schedule trainings, ask and respond to questions, and provide additional information — just like regular SMS. You can also send bulk messages to groups of people."
+              }
+          ]
+      },
+      {
+          "key": "tour.messages.list.title",
+          "default": "Message Contacts List",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Message Contacts List"
+              }
+          ]
+      },
+      {
+          "key": "tour.messages.list.description",
+          "default": "This is a list of all your message contacts with the most recent one on top. The light blue highlight indicates which message is being displayed on the right. If the name is bold it means you haven't read one or more messages with this contact.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "This is a list of all your message contacts with the most recent one on top. The light blue highlight indicates which message is being displayed on the right. If the name is bold it means you haven't read one or more messages with this contact."
+              }
+          ]
+      },
+      {
+          "key": "tour.messages.exchange.title",
+          "default": "Message Exchange",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Message Exchange"
+              }
+          ]
+      },
+      {
+          "key": "tour.messages.exchange.description",
+          "default": "This pane shows the exchange of messages from the selected health worker or phone number on the left.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "This pane shows the exchange of messages from the selected health worker or phone number on the left."
+              }
+          ]
+      },
+      {
+          "key": "tour.messages.contact.title",
+          "default": "Contact's Information",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Contact's Information"
+              }
+          ]
+      },
+      {
+          "key": "tour.messages.contact.description",
+          "default": "This bar contains the contact's name and phone number on the left, and their location on the right.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "This bar contains the contact's name and phone number on the left, and their location on the right."
+              }
+          ]
+      },
+      {
+          "key": "tour.messages.outgoing.title",
+          "default": "Outgoing Messages",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Outgoing Messages"
+              }
+          ]
+      },
+      {
+          "key": "tour.messages.outgoing.description",
+          "default": "The blue border indicates an outgoing message sent by you, another user, or an automated message from Medic Mobile.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "The blue border indicates an outgoing message sent by you, another user, or an automated message from Medic Mobile."
+              }
+          ]
+      },
+      {
+          "key": "tour.messages.incoming.title",
+          "default": "Incoming Messages",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Incoming Messages"
+              }
+          ]
+      },
+      {
+          "key": "tour.messages.incoming.description",
+          "default": "The yellow border indicates an incoming message sent by the selected contact.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "The yellow border indicates an incoming message sent by the selected contact."
+              }
+          ]
+      },
+      {
+          "key": "tour.messages.send.title",
+          "default": "Send Message To Contact",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Send Message To Contact"
+              }
+          ]
+      },
+      {
+          "key": "tour.messages.send.description",
+          "default": "Use this box to quickly send an SMS message to the contact.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Use this box to quickly send an SMS message to the contact."
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.forms.title",
+          "default": "Report Forms",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Report Forms"
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.forms.description",
+          "default": "All of the reports submitted by community health workers live here. Depending on how you are using Medic Mobile in your community, these reports may be for pregnancy registrations, completed visits, or stock outs.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "All of the reports submitted by community health workers live here. Depending on how you are using Medic Mobile in your community, these reports may be for pregnancy registrations, completed visits, or stock outs."
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.types-filter.title",
+          "default": "Form Types Filter",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Form Types Filter"
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.types-filter.description",
+          "default": "Select one or more form types to filter the list of reports to only those for the chosen forms.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Select one or more form types to filter the list of reports to only those for the chosen forms."
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.facilities-filter.title",
+          "default": "Facilities Filter",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Facilities Filter"
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.facilities-filter.description",
+          "default": "Select one or more facilities to filter the list of reports to only those from the chosen facilities.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Select one or more facilities to filter the list of reports to only those from the chosen facilities."
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.date-filter.title",
+          "default": "Date Range Filter",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Date Range Filter"
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.date-filter.description",
+          "default": "To view reports within a specified date range, select a start and ending date.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "To view reports within a specified date range, select a start and ending date."
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.status-filter.title",
+          "default": "Status Filter",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Status Filter"
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.status-filter.description",
+          "default": "To filter by validity or verification, select one or more options.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "To filter by validity or verification, select one or more options."
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.freetext-filter.title",
+          "default": "Freetext Filter",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Freetext Filter"
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.freetext-filter.description",
+          "default": "To add additional search terms type them here and click the search button.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "To add additional search terms type them here and click the search button."
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.list.title",
+          "default": "Incoming Reports",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Incoming Reports"
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.list.description",
+          "default": "This is a list of all your report messages from health workers with the most recent first.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "This is a list of all your report messages from health workers with the most recent first."
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.status.title",
+          "default": "Report Status",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Report Status"
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.status.description",
+          "default": "This icon shows the status of the report. A green circle means the report is valid, and red means invalid. A tick in the circle means someone has verified this report.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "This icon shows the status of the report. A green circle means the report is valid, and red means invalid. A tick in the circle means someone has verified this report."
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.details.title",
+          "default": "Report Details",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Report Details"
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.details.description",
+          "default": "You can see the details of the selected report in this pane.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "You can see the details of the selected report in this pane."
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.information.title",
+          "default": "Report Information",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Report Information"
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.information.description",
+          "default": "On the left hand side is the reporter's details. On the right hand side is the reported date.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "On the left hand side is the reporter's details. On the right hand side is the reported date."
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.content.title",
+          "default": "Report Content",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Report Content"
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.content.description",
+          "default": "The content of the report including the form type, submitted fields, generated fields, and any generated messages.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "The content of the report including the form type, submitted fields, generated fields, and any generated messages."
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.actions.title",
+          "default": "Actions",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Actions"
+              }
+          ]
+      },
+      {
+          "key": "tour.reports.actions.description",
+          "default": "Actions you can perform on this report.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Actions you can perform on this report."
+              }
+          ]
+      },
+      {
+          "key": "tour.analytics.overview.title",
+          "default": "Data Visualization Analytics",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Data Visualization Analytics"
+              }
+          ]
+      },
+      {
+          "key": "tour.analytics.overview.description",
+          "default": "Medic Mobile organizes the data from your reports into charts and graphs to help you track pregnancies, monitor danger signs, and identify trends in your community - so you can make well-informed decisions and take action when it is needed.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Medic Mobile organizes the data from your reports into charts and graphs to help you track pregnancies, monitor danger signs, and identify trends in your community - so you can make well-informed decisions and take action when it is needed."
+              }
+          ]
       }
    ],
    "forms": {

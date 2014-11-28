@@ -63,38 +63,38 @@ var _ = require('underscore');
         {
           element: '#messages-tab',
           placement: 'bottom',
-          title: 'Unstructured Messages',
-          content: 'Here you can communicate with patients, community health workers, and community members to schedule trainings, ask and respond to questions, and provide additional information — just like regular SMS. You can also send bulk messages to groups of people.',
+          title: 'tour.messages.unstructured.title',
+          content: 'tour.messages.unstructured.description',
           onShow: mmShowMessageList
         },
         {
           element: '#message-list',
           placement: 'right',
           mobilePlacement: 'orphan',
-          title: 'Message Contacts List',
-          content: 'This is a list of all your message contacts with the most recent one on top. The light blue highlight indicates which message is being displayed on the right. If the name is bold it means you haven\'t read one or more messages with this contact.',
+          title: 'tour.messages.list.title',
+          content: 'tour.messages.list.description',
           onShow: mmShowMessageList
         },
         {
           element: '#message-content',
           placement: 'left',
           mobilePlacement: 'orphan',
-          title: 'Message Exchange',
-          content: 'This pane shows the exchange of messages from the selected health worker or phone number on the left.',
+          title: 'tour.messages.exchange.title',
+          content: 'tour.messages.exchange.description',
           onShow: mmShowMessageContent
         },
         {
           element: '#message-header',
           placement: 'bottom',
-          title: 'Contact\'s Information',
-          content: 'This bar contains the contact\'s name and phone number on the left, and their location on the right.',
+          title: 'tour.messages.contact.title',
+          content: 'tour.messages.contact.description',
           onShow: mmShowMessageContent
         },
         {
           element: '#message-content .outgoing:last .message-body',
           placement: 'top',
-          title: 'Outgoing Messages',
-          content: 'The blue border indicates an outgoing message sent by you, another user, or an automated message from Medic Mobile.',
+          title: 'tour.messages.outgoing.title',
+          content: 'tour.messages.outgoing.description',
           onShow: function() {
             mmShowMessageContent();
             mmScroll('#message-content', '.outgoing:last');
@@ -103,8 +103,8 @@ var _ = require('underscore');
         {
           element: '#message-content .incoming:last .message-body',
           placement: 'top',
-          title: 'Incoming Messages',
-          content: 'The yellow border indicates an incoming message sent by the selected contact.',
+          title: 'tour.messages.incoming.title',
+          content: 'tour.messages.incoming.description',
           onShow: function() {
             mmShowMessageContent();
             mmScroll('#message-content', '.incoming:last');
@@ -113,8 +113,8 @@ var _ = require('underscore');
         {
           element: '#message-footer',
           placement: 'top',
-          title: 'Send Message To Contact',
-          content: 'Use this box to quickly send an SMS message to the contact.',
+          title: 'tour.messages.send.title',
+          content: 'tour.messages.send.description',
           onShow: mmShowMessageContent
         }
       ]
@@ -127,16 +127,16 @@ var _ = require('underscore');
         {
           element: '#reports-tab',
           placement: 'bottom',
-          title: 'Report Forms',
-          content: 'All of the reports submitted by community health workers live here. Depending on how you are using Medic Mobile in your community, these reports may be for pregnancy registrations, completed visits, or stock outs.',
+          title: 'tour.reports.forms.title',
+          content: 'tour.reports.forms.description',
           onShow: mmShowReportList
         },
         {
           element: '#formTypeDropdown',
           placement: 'right',
           mobilePlacement: 'bottom',
-          title: 'Form Types Filter',
-          content: 'Select one or more form types to filter the list of reports to only those for the chosen forms.',
+          title: 'tour.reports.types-filter.title',
+          content: 'tour.reports.types-filter.description',
           onShow: mmShowReportList,
           onShown: function() {
             mmOpenDropdown('#formTypeDropdown');
@@ -149,8 +149,8 @@ var _ = require('underscore');
           element: '#facilityDropdown',
           placement: 'right',
           mobilePlacement: 'bottom',
-          title: 'Facilities Filter',
-          content: 'Select one or more facilities to filter the list of reports to only those from the chosen facilities.',
+          title: 'tour.reports.facilities-filter.title',
+          content: 'tour.reports.facilities-filter.description',
           onShow: mmShowReportList,
           onShown: function() {
             mmOpenDropdown('#facilityDropdown');
@@ -163,8 +163,8 @@ var _ = require('underscore');
           element: '#dateRangeDropdown',
           placement: 'left',
           mobilePlacement: 'bottom',
-          title: 'Date Range Filter',
-          content: 'To view reports within a specified date range, select a start and ending date.',
+          title: 'tour.reports.date-filter.title',
+          content: 'tour.reports.date-filter.description',
           onShow: mmShowReportList,
           onShown: function() {
             if (!isMobile()) {
@@ -179,8 +179,8 @@ var _ = require('underscore');
           element: '#statusDropdown',
           placement: 'left',
           mobilePlacement: 'bottom',
-          title: 'Status Filter',
-          content: 'To filter by validity or verification, select one or more options.',
+          title: 'tour.reports.status-filter.title',
+          content: 'tour.reports.status-filter.description',
           onShow: mmShowReportList,
           onShown: function() {
             mmOpenDropdown('#statusDropdown');
@@ -194,55 +194,55 @@ var _ = require('underscore');
           mobileElement: '#mobile-search',
           placement: 'left',
           mobilePlacement: 'bottom',
-          title: 'Freetext Filter',
-          content: 'To add additional search terms type them here and click the search button.',
+          title: 'tour.reports.freetext-filter.title',
+          content: 'tour.reports.freetext-filter.description',
           onShow: mmShowReportList
         },
         {
           element: '#reports-list',
           placement: 'right',
           mobilePlacement: 'orphan',
-          title: 'Incoming Reports',
-          content: 'This is a list of all your report messages from health workers with the most recent first.',
+          title: 'tour.reports.list.title',
+          content: 'tour.reports.list.description',
           onShow: mmShowReportList
         },
         {
           element: '#reports-list li:first-child .mm-badge',
           placement: 'right',
           mobilePlacement: 'bottom',
-          title: 'Report Status',
-          content: 'This icon shows the status of the report. A green circle means the report is valid, and red means invalid. A tick in the circle means someone has verified this report.',
+          title: 'tour.reports.status.title',
+          content: 'tour.reports.status.description',
           onShow: mmShowReportList
         },
         {
           element: '#reports-content',
           placement: 'left',
           mobilePlacement: 'orphan',
-          title: 'Report Details',
-          content: 'You can see the details of the selected report in this pane.',
+          title: 'tour.reports.details.title',
+          content: 'tour.reports.details.description',
           onShow: mmShowReportContent
         },
         {
           element: '#reports-content .meta',
           placement: 'left',
           mobilePlacement: 'bottom',
-          title: 'Report Information',
-          content: 'On the left hand side is the reporter\'s details. On the right hand side is the reported date.',
+          title: 'tour.reports.information.title',
+          content: 'tour.reports.information.description',
           onShow: mmShowReportContent
         },
         {
           element: '#reports-content .body',
           placement: 'left',
           mobilePlacement: 'top',
-          title: 'Report Content',
-          content: 'The content of the report including the form type, submitted fields, generated fields, and any generated messages.',
+          title: 'tour.reports.content.title',
+          content: 'tour.reports.content.description',
           onShow: mmShowReportContent
         },
         {
           element: '.action-container .actions',
           placement: 'top',
-          title: 'Actions',
-          content: 'Actions you can perform on this report.',
+          title: 'tour.reports.actions.title',
+          content: 'tour.reports.actions.description',
           onShow: mmShowReportContent
         }
       ]
@@ -255,8 +255,8 @@ var _ = require('underscore');
         {
           element: '#analytics-tab',
           placement: 'bottom',
-          title: 'Data Visualization Analytics',
-          content: 'Medic Mobile organizes the data from your reports into charts and graphs to help you track pregnancies, monitor danger signs, and identify trends in your community - so you can make well-informed decisions and take action when it is needed.'
+          title: 'tour.analytics.overview.title',
+          content: 'tour.analytics.overview.description'
         }
       ]
     }
@@ -264,11 +264,38 @@ var _ = require('underscore');
 
   var current;
 
-  var getSettings = function(name) {
+  var createTemplate = function(translationFn) {
+    return  '<div class="popover">' +
+              '<div class="arrow"></div>' +
+              '<h3 class="popover-title"></h3>' +
+              '<div class="popover-content"></div>' +
+              '<div class="popover-navigation">' +
+                '<div class="btn-group">' +
+                  '<button class="btn btn-sm btn-default" data-role="prev">' +
+                    '&laquo; ' + translationFn('Previous') +
+                  '</button>' +
+                  '<button class="btn btn-sm btn-default" data-role="next">' +
+                    translationFn('Next') + ' &raquo;' +
+                  '</button>' +
+                '</div>' +
+                '<button class="btn btn-sm btn-link" data-role="end">' +
+                  translationFn('End tour') +
+                '</button>' +
+              '</div>' +
+            '</div>';
+  };
+
+  var getSettings = function(name, translationFn) {
     var settings = _.findWhere(tours, { name: name }) || tours[0];
-    if (isMobile()) {
+
+    settings.template = createTemplate(translationFn);
+
+    var mobile = isMobile();
+    _.each(settings.steps, function(step) {
+      step.title = translationFn(step.title);
+      step.content = translationFn(step.content);
+      if (mobile) {
       // there's no room to show steps to the left or right on a mobile device
-      _.each(settings.steps, function(step) {
         if (step.mobileElement) {
           step.element = step.mobileElement;
         }
@@ -279,13 +306,13 @@ var _ = require('underscore');
             step.placement = step.mobilePlacement;
           }
         }
-      });
-    }
+      }
+    });
     return settings;
   };
 
-  var createTour = function(name) {
-    var settings = getSettings(name);
+  var createTour = function(name, translationFn) {
+    var settings = getSettings(name, translationFn);
     var tour = new Tour(settings);
     tour._scrollIntoView = function(element, callback) {
       // override scrollIntoView as it doesn't handle scolling containers
@@ -309,10 +336,15 @@ var _ = require('underscore');
     }
   };
 
-  exports.start = function(name) {
+  exports.start = function(name, translationFn) {
     if (current && current.name && current.name === name) {
       // the tour is already running
       return;
+    }
+    if (!translationFn) {
+      translationFn = function(key) {
+        return key;
+      };
     }
     endCurrent();
     if (name) {
@@ -320,7 +352,7 @@ var _ = require('underscore');
         $('#tour-select').modal('show');
       } else {
         window.setTimeout(function() {
-          createTour(name);
+          createTour(name, translationFn);
         }, 1);
       }
     }

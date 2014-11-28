@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$state', '$stateParams', '$location', '$animate', '$rootScope', 'Settings', 'UserDistrict', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes', 'EditGroup',
-    function ($scope, $state, $stateParams, $location, $animate, $rootScope, Settings, UserDistrict, MarkRead, GenerateSearchQuery, Search, Changes, EditGroup) {
+    ['$scope', '$state', '$stateParams', '$location', '$animate', '$rootScope', 'translateFilter', 'Settings', 'UserDistrict', 'MarkRead', 'GenerateSearchQuery', 'Search', 'Changes', 'EditGroup',
+    function ($scope, $state, $stateParams, $location, $animate, $rootScope, translateFilter, Settings, UserDistrict, MarkRead, GenerateSearchQuery, Search, Changes, EditGroup) {
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = undefined;
@@ -266,7 +266,7 @@ var _ = require('underscore'),
       }
 
       $scope.setFilterQuery($stateParams.query);
-      tour.start($stateParams.tour);
+      tour.start($stateParams.tour, translateFilter);
       $location.url($location.path());
 
       var initEditMessageModal = function() {

@@ -7,8 +7,8 @@ var tour = require('../modules/tour');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$state', '$location', '$stateParams', 'MessageContact', 'Changes',
-    function ($scope, $state, $location, $stateParams, MessageContact, Changes) {
+    ['$scope', '$state', '$location', '$stateParams', 'translateFilter', 'MessageContact', 'Changes',
+    function ($scope, $state, $location, $stateParams, translateFilter, MessageContact, Changes) {
 
       $scope.loadingContent = false;
       $scope.allLoaded = false;
@@ -37,7 +37,7 @@ var tour = require('../modules/tour');
         updateContacts({ changes: data });
       });
 
-      tour.start($stateParams.tour);
+      tour.start($stateParams.tour, translateFilter);
       $location.url($location.path());
     }
   ]);

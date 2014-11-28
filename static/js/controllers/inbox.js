@@ -278,7 +278,7 @@ require('moment/locales');
       var startTour = function() {
         User.query(function(user) {
           if (!user.known) {
-            tour.start('intro');
+            tour.start('intro', translateFilter);
             UpdateUser({ known: true }, function(err) {
               if (err) {
                 console.log('Error updating user', err);
