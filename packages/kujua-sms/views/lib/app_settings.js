@@ -1448,11 +1448,11 @@ module.exports = {
       },
       {
           "key": "from",
-          "default": "From",
+          "default": "Reported From",
           "translations": [
               {
                   "locale": "en",
-                  "content": "From"
+                  "content": "Reported From"
               },
               {
                   "locale": "fr",
