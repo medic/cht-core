@@ -311,10 +311,10 @@ var req = {};
 exports.add_sms = function(doc, request) {
 
     req = request;
-    utils.info = info.getAppInfo.call(this);
+    utils.info = utils.info || info.getAppInfo.call(this);
 
     var sms_message = {
-        type: "sms_message",
+        type: 'sms_message',
         form: smsparser.getFormCode(req.form.message)
     };
     sms_message = _.extend(req.form, sms_message);
@@ -326,7 +326,7 @@ exports.add_sms = function(doc, request) {
 
     var form_data = null,
         baseURL = require('duality/core').getBaseURL(),
-        headers = req.headers.Host.split(":"),
+        headers = req.headers.Host.split(':'),
         def = utils.info.getForm(sms_message.form),
         resp;
 
@@ -341,8 +341,8 @@ exports.add_sms = function(doc, request) {
     // by default related entities are null so also include errors on the record.
     if (!def || !def.public_form) {
         doc.errors.push({
-            code: "sys.facility_not_found",
-            message: utils.info.translate("sys.facility_not_found", sms_message.locale)
+            code: 'sys.facility_not_found',
+            message: utils.info.translate('sys.facility_not_found', sms_message.locale)
         });
     }
 
@@ -381,7 +381,7 @@ exports.add_sms = function(doc, request) {
  */
 exports.updateRelated = function(doc, request) {
 
-    utils.info = info.getAppInfo.call(this);
+    utils.info = utils.info || info.getAppInfo.call(this);
     req = request;
 
     var data = JSON.parse(req.body),

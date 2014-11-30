@@ -1,6 +1,23 @@
-var updates = require('kujua-sms/updates');
+var utils = require('kujua-sms/utils'),
+    updates = require('kujua-sms/updates'),
+    sinon = require('sinon'),
+    definitions = require('../../test-helpers/form_definitions');
 
-exports.publicFormHasNoFacilityNotFoundError = function(test) {
+exports.setUp = function (callback) {
+    utils.info = require('views/lib/appinfo').getAppInfo.call(this);
+    callback();
+};
+
+exports.tearDown = function(callback) {
+    if (utils.info.getForm.restore) {
+        utils.info.getForm.restore();
+    }
+    callback();
+};
+
+exports['public form has no facility not found error'] = function(test) {
+    test.expect(5);
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYW);
     var req = {
         headers: {"Host": window.location.host},
         form: {
@@ -11,17 +28,18 @@ exports.publicFormHasNoFacilityNotFoundError = function(test) {
     };
     var doc = updates.add_sms(null, req)[0];
 
+    test.ok(getForm.alwaysCalledWith('YYYW'));
     test.equals(doc.foo, 'foo'); // make sure form parsed correctly
     test.equals(doc.from, req.form.from);
-    test.same(doc.related_entities, {
-        clinic: null
-    });
+    test.same(doc.related_entities, { clinic: null });
     test.equals(doc.errors.length, 0);
 
     test.done();
 };
 
-exports.privateFormHasFacilityNotFoundError = function(test) {
+exports['private form has facility not found error'] = function(test) {
+    test.expect(5);
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYZ);
     var req = {
         headers: {"Host": window.location.host},
         form: {
@@ -32,11 +50,10 @@ exports.privateFormHasFacilityNotFoundError = function(test) {
     };
     var doc = updates.add_sms(null, req)[0];
 
+    test.ok(getForm.alwaysCalledWith('YYYZ'));
     test.equals(doc.two, 'two'); // make sure form parsed correctly
     test.equals(doc.from, req.form.from);
-    test.same(doc.related_entities, {
-        clinic: null
-    });
+    test.same(doc.related_entities, { clinic: null });
     test.equals(doc.errors.length, 1);
 
     test.done();

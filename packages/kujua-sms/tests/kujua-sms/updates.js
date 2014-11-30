@@ -2,31 +2,41 @@ var utils = require('kujua-sms/utils'),
     updates = require('kujua-sms/updates'),
     querystring = require('querystring'),
     fakerequest = require('couch-fakerequest'),
+    sinon = require('sinon'),
+    definitions = require('../../test-helpers/form_definitions'),
     baseURL = require('duality/core').getBaseURL(),
     host = window.location.host.split(':')[0],
     port = window.location.host.split(':')[1] || '';
-
 
 exports.setUp = function (callback) {
     utils.info = require('views/lib/appinfo').getAppInfo.call(this);
     callback();
 };
 
-exports.assert_month_is_integer = function(test) {
-    test.expect(1);
+exports.tearDown = function(callback) {
+    if (utils.info.getForm.restore) {
+        utils.info.getForm.restore();
+    }
+    callback();
+};
+
+exports['assert month is integer'] = function(test) {
+    test.expect(2);
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var req = {
-        headers: { "Host": window.location.host },
+        headers: { 'Host': window.location.host },
         form: {
-            "from":"+888",
-            "message": '1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4'
+            from: '+888',
+            message: '1!YYYY!facility#2011#11'
         }
     };
     var doc = updates.add_sms(null, req)[0];
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(11, doc.month);
     test.done();
 };
 
-exports.assert_timestamp_parsed = function(test)  {
+exports['assert timestamp parsed'] = function(test) {
     test.expect(1);
     var req = {
         headers: { "Host": window.location.host },
@@ -41,8 +51,9 @@ exports.assert_timestamp_parsed = function(test)  {
     test.done();
 };
 
-exports.deep_keys_parsed = function(test)  {
-    test.expect(2);
+exports['deep keys parsed'] = function(test) {
+    test.expect(3);
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var req = {
         headers: {"Host": window.location.host},
         form: {
@@ -69,13 +80,14 @@ exports.deep_keys_parsed = function(test)  {
     };
     var doc = updates.add_sms(null, req)[0];
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(doc.days_stocked_out, days_stocked_out);
     test.same(doc.quantity_dispensed, quantity_dispensed);
 
     test.done();
 };
 
-exports.sms_message_attr_on_doc = function(test) {
+exports['sms message attr on doc'] = function(test) {
     test.expect(1);
     var req = {
         headers: {"Host": window.location.host},
@@ -91,7 +103,7 @@ exports.sms_message_attr_on_doc = function(test) {
     test.done();
 };
 
-exports.add_sms_check_resp_body = function (test) {
+exports['add sms check resp body'] = function (test) {
 
     // smssync post
     var req = {
@@ -124,8 +136,9 @@ exports.add_sms_check_resp_body = function (test) {
 //
 // use YYYY form to create tasks on a document.
 //
-exports.update_related_and_tasks = function (test) {
-    test.expect(6);
+exports['update related and tasks'] = function (test) {
+    test.expect(7);
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var req = {
         headers: {"Host": window.location.host},
         body: JSON.stringify({
@@ -169,6 +182,8 @@ exports.update_related_and_tasks = function (test) {
         }
     ];
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
+
     test.same(updateDoc.tasks[0].messages[0].to, "+14155551212");
     test.same(updateDoc.tasks[0].state, 'pending');
     test.same(updateDoc.tasks, tasks);
@@ -176,6 +191,7 @@ exports.update_related_and_tasks = function (test) {
     test.same(resp.payload.messages[0].message, "Zikomo!");
     test.same(resp.payload.success, true);
     test.same(resp.payload.task, 'send');
+
     test.done();
 }
 
@@ -183,8 +199,9 @@ exports.update_related_and_tasks = function (test) {
  * this doc is missing the district level of facility so we should still have a
  * message recipient not found error.
  */
-exports.update_related_and_recipient_missing = function (test) {
-    test.expect(1);
+exports['update related and recipient missing'] = function (test) {
+    test.expect(2);
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var req = {
         headers: {"Host": host},
         body: JSON.stringify({
@@ -221,6 +238,7 @@ exports.update_related_and_recipient_missing = function (test) {
         "code":"sys.recipient_not_found",
         "message":"Could not find message recipient."
     };
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(ret[0].errors[0], newError);
     test.done();
 }
@@ -235,8 +253,9 @@ exports.update_related_and_recipient_missing = function (test) {
  * finalized in the second/final request.
  */
 
-exports.success_response = function (test) {
-    test.expect(4);
+exports['success response'] = function (test) {
+    test.expect(5);
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYZ);
     var req = {
         headers: { "Host": window.location.host },
         form: {
@@ -261,6 +280,8 @@ exports.success_response = function (test) {
             newDoc = ret[0],
             resp = JSON.parse(ret[1]);
 
+        test.ok(getForm.alwaysCalledWith('YYYZ'));
+
         test.same(resp.payload.success, true);
         test.same(resp.payload.task, 'send');
         test.same(
@@ -271,8 +292,9 @@ exports.success_response = function (test) {
     }
 };
 
-exports.success_response_w_autoreply = function (test) {
-    test.expect(6);
+exports['success response with autoreply'] = function (test) {
+    test.expect(7);
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var req = {
         headers: { "Host": window.location.host },
         form: {
@@ -298,6 +320,7 @@ exports.success_response_w_autoreply = function (test) {
             newDoc = ret[0],
             resp = JSON.parse(ret[1]);
 
+        test.ok(getForm.alwaysCalledWith('YYYY'));
         test.same(resp.payload.success, true);
         test.same(resp.payload.task, 'send');
         test.same(resp.payload.messages[0].to, "+888");
@@ -306,7 +329,7 @@ exports.success_response_w_autoreply = function (test) {
     }
 };
 
-exports.form_not_found_response = function(test) {
+exports['form not found response'] = function(test) {
     test.expect(4);
     var req = {
         headers: { "Host": window.location.host },
@@ -342,7 +365,7 @@ exports.form_not_found_response = function(test) {
 
 };
 
-exports.payload_form_not_found_muvuku = function (test) {
+exports['payload form not found muvuku'] = function (test) {
     test.expect(5);
     var req = {
         headers: { "Host": window.location.host },
@@ -380,7 +403,7 @@ exports.payload_form_not_found_muvuku = function (test) {
 
 };
 
-exports.form_not_found_fr_responses = function (test) {
+exports['form not found response locale from query'] = function (test) {
     test.expect(5);
     var req = {
         headers: { "Host": window.location.host },
@@ -419,7 +442,7 @@ exports.form_not_found_fr_responses = function (test) {
     }
 };
 
-exports.empty_message_response = function (test) {
+exports['empty message response'] = function (test) {
     test.expect(5);
     var req = {
         headers: { "Host": window.location.host },
@@ -456,7 +479,7 @@ exports.empty_message_response = function (test) {
 
 };
 
-exports.empty_message_resonses_fr = function (test) {
+exports['empty message resonses fr'] = function (test) {
     test.expect(5);
     var req = {
         headers: { "Host": window.location.host },
@@ -496,7 +519,7 @@ exports.empty_message_resonses_fr = function (test) {
 };
 
 // one word messages get an undefined `form` property
-exports.payload_one_word = function (test) {
+exports['payload one word'] = function (test) {
     test.expect(6);
     var req = {
         headers: { "Host": window.location.host },
@@ -534,8 +557,9 @@ exports.payload_one_word = function (test) {
     }
 };
 
-exports.payload_missing_fields = function (test) {
-    test.expect(6);
+exports['payload missing fields'] = function (test) {
+    test.expect(7);
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var req = {
         headers: { "Host": window.location.host },
         form: {
@@ -561,6 +585,7 @@ exports.payload_missing_fields = function (test) {
             newDoc = ret[0],
             resp = JSON.parse(ret[1]);
 
+        test.ok(getForm.alwaysCalledWith('YYYY'));
         test.same(resp.payload.success, true);
         test.same(resp.payload.task, 'send');
         test.same(resp.payload.messages[0].to, "+888");
@@ -572,11 +597,10 @@ exports.payload_missing_fields = function (test) {
     }
 };
 
+exports['extra fields'] = function(test) {
 
-
-exports.extra_fields = function(test) {
-
-    test.expect(3);
+    test.expect(4);
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var req = {
         headers: {"Host": window.location.host},
         uuid: "13f58b9c648b9a997248cba27aa00fdf",
@@ -591,6 +615,7 @@ exports.extra_fields = function(test) {
         resp_body = JSON.parse(resp[1].body),
         doc = resp[0];
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(resp_body.payload.success, true);
     test.same(doc.errors.length, 2);
     test.same(
@@ -602,7 +627,7 @@ exports.extra_fields = function(test) {
 
 };
 
-exports.extra_fields_response_msg = function(test) {
+exports['extra fields response msg'] = function(test) {
     test.expect(1);
     var req = {
         headers: {"Host": window.location.host},
@@ -626,9 +651,10 @@ exports.extra_fields_response_msg = function(test) {
     test.done();
 };
 
-exports.missing_fields = function(test) {
+exports['missing fields'] = function(test) {
 
-    test.expect(3);
+    test.expect(4);
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
 
     var req = {
         headers: {"Host": window.location.host},
@@ -642,6 +668,7 @@ exports.missing_fields = function(test) {
         resp_body = JSON.parse(resp[1].body),
         doc = resp[0];
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(resp_body.payload.success, true);
     test.same(resp_body.payload.messages, undefined);
     test.same(doc.errors[0],
@@ -655,7 +682,7 @@ exports.missing_fields = function(test) {
 
 };
 
-exports.missing_fields_response_msg = function(test) {
+exports['missing fields response msg'] = function(test) {
     test.expect(3);
     var req = {
         headers: {"Host": window.location.host},
@@ -687,8 +714,9 @@ exports.missing_fields_response_msg = function(test) {
  * When a form generates messages but the recipient phone numbers for that
  * message cannot be resolved/found.
  */
-exports.missing_recipient_response_msg = function(test) {
-    test.expect(3);
+exports['missing recipient response msg'] = function(test) {
+    test.expect(4);
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var req = {
         headers: {"Host": window.location.host},
         body: JSON.stringify({}) // related_entities not found
@@ -705,6 +733,7 @@ exports.missing_recipient_response_msg = function(test) {
     var newDoc = ret[0];
     var resp = JSON.parse(ret[1]);
     // no messages since we don't have a recipient
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(resp.payload.success, true);
     test.same(resp.payload.task, 'send');
     test.same(resp.payload.messages[0].message, 'Zikomo!');
@@ -714,8 +743,9 @@ exports.missing_recipient_response_msg = function(test) {
 /*
  * We do not notify the reporter of missing facility errors by default.
  */
-exports.missing_facility_response_msg = function(test) {
-    test.expect(6);
+exports['missing facility response msg'] = function(test) {
+    test.expect(7);
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var req = {
         headers: {"Host": window.location.host},
         body: JSON.stringify({}) // related_entities not found
@@ -737,6 +767,7 @@ exports.missing_facility_response_msg = function(test) {
     var newDoc = ret[0];
     var resp = JSON.parse(ret[1]);
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(resp.payload.success, true);
     test.same(resp.payload.task, 'send');
     test.same(resp.payload.messages[0].to, "+999");
@@ -752,7 +783,7 @@ exports.missing_facility_response_msg = function(test) {
 /*
  * If parsing fails then assume unstructured message
  */
-exports.unstructured_message = function(test) {
+exports['unstructured message'] = function(test) {
 
     test.expect(5);
 
@@ -782,3 +813,4 @@ exports.unstructured_message = function(test) {
     test.done();
 
 };
+
