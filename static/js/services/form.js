@@ -8,9 +8,14 @@
     function($q, Language, Settings) {
 
       var getLabel = function(form, language) {
+        var test = false;
+        if (language === 'test') {
+          language = 'en';
+          test = true;
+        }
         var label = form.meta.label;
         if (!label) {
-          return undefined;
+          return;
         }
         if (angular.isString(label)) {
           return label;
@@ -18,13 +23,13 @@
         if (!Object.keys(label).length) {
           return form.meta.code;
         }
-        if (label[language]) {
-          return label[language];
+        var value = label[language] ||
+                    label.en ||
+                    label[Object.keys(label)[0]];
+        if (test) {
+          value = '-' + value + '-';
         }
-        if (label.en) {
-          return label.en;
-        }
-        return label[Object.keys(label)[0]];
+        return value;
       };
 
       return function() {
