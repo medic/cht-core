@@ -437,7 +437,7 @@ exports['form not found response locale from query'] = function (test) {
         test.same(resp.payload.messages[0].to, "+888");
         test.same(
             resp.payload.messages[0].message,
-            "Le formulaire envoyé n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur."
+            "Le formulaire envoyé '0000' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur."
         );
         test.done();
     }
@@ -478,7 +478,7 @@ exports['form not found response locale from form'] = function (test) {
         test.same(resp.payload.messages[0].to, '+888');
         test.same(
             resp.payload.messages[0].message,
-            'No se reconocio el reporte enviado. Por favor intente de nuevo. Si el problema persiste, informe al director.'
+            "No se reconocio el reporte enviado '0000'. Por favor intente de nuevo. Si el problema persiste, informe al director."
         );
         test.done();
     }
@@ -556,7 +556,7 @@ exports['form not found response locale undefined'] = function (test) {
         test.same(resp.payload.messages[0].to, '+888');
         test.same(
             resp.payload.messages[0].message,
-            "The form sent was not recognized. Please complete it again and resend. If this problem persists contact your supervisor."
+            "The form sent '0000' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor."
         );
         test.done();
     }
