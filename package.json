@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "gently": "~0.9.2",
-    "kanso": "0.3.1",
+    "kanso": "~0.4.0",
     "nodeunit": "0.9.x",
     "sinon": "~1.8.1"
   },
