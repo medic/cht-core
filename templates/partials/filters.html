@@ -130,12 +130,12 @@
             <span class="fa fa-chevron-down"></span>
           </span>
           <span class="mm-button-text">
-            {~lb}{~lb}filterModel.module.label{~rb}{~rb}
+            {~lb}{~lb}filterModel.module.label | translate{~rb}{~rb}
           </span>
         </span>
         <ul role="menu" aria-labelledby="module" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="module in analyticsModules">
-            <a href="#/analytics/{~lb}{~lb}module.id{~rb}{~rb}" role="menuitem" tabindex="-1">{~lb}{~lb}module.label{~rb}{~rb}</a>
+            <a href="#/analytics/{~lb}{~lb}module.id{~rb}{~rb}" role="menuitem" tabindex="-1">{~lb}{~lb}module.label | translate{~rb}{~rb}</a>
           </li>
         </ul>
       </span>

@@ -3555,6 +3555,106 @@ module.exports = {
                   "content": "{{number}}+ visits"
               }
           ]
+      },
+      {
+          "key": "Error sending message",
+          "default": "Error sending message",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Error sending message"
+              }
+          ]
+      },
+      {
+          "key": "Error updating user",
+          "default": "Error updating user",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Error updating user"
+              }
+          ]
+      },
+      {
+          "key": "Error deleting document",
+          "default": "Error deleting document",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Error deleting document"
+              }
+          ]
+      },
+      {
+          "key": "Error updating facility",
+          "default": "Error updating facility",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Error updating facility"
+              }
+          ]
+      },
+      {
+          "key": "Please select a facility",
+          "default": "Please select a facility",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Please select a facility"
+              }
+          ]
+      },
+      {
+          "key": "Error saving feedback",
+          "default": "Error saving feedback",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Error saving feedback"
+              }
+          ]
+      },
+      {
+          "key": "Error updating group",
+          "default": "Error updating group",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Error updating group"
+              }
+          ]
+      },
+      {
+          "key": "Antenatal Care",
+          "default": "Antenatal Care",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Antenatal Care"
+              }
+          ]
+      },
+      {
+          "key": "Stock Monitoring",
+          "default": "Stock Monitoring",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Stock Monitoring"
+              }
+          ]
+      },
+      {
+          "key": "Number in month",
+          "default": "{{count}} in {{month}}",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "{{count}} in {{month}}"
+              }
+          ]
       }
    ],
    "forms": {

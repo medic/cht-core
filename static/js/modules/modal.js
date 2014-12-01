@@ -11,7 +11,10 @@
   exports.start = function(modal) {
     var submit = modal.find('.submit');
     var label = submit.text();
-    submit.text(submit.attr('data-working-label') || 'Updating...');
+    var workingLabel = submit.attr('data-working-label');
+    if (workingLabel) {
+      submit.text(workingLabel);
+    }
     modal.find('.btn, [name]').attr('disabled', true);
     modal.on('hidden.bs.modal', function () {
       resetModal(modal, label);

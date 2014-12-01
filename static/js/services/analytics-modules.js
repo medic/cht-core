@@ -191,7 +191,9 @@ var _ = require('underscore'),
                 };
                 scope.monthlyChartToolTip = function() {
                   return function(key, x, y) {
-                    return '<p>' + y + ' in ' + x + '</p>';
+                    return  '<p>' +
+                              translateFilter('Number in month', { count: y, month: x }) +
+                            '</p>';
                   };
                 };
 

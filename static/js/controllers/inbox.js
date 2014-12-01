@@ -438,7 +438,7 @@ require('moment/locales');
               pane.done();
             },
             function(err) {
-              pane.done('Error sending message', err);
+              pane.done(translateFilter('Error sending message'), err);
             }
           );
         });
@@ -461,7 +461,7 @@ require('moment/locales');
           phone: $scope.editUserModel.phone,
           language: $scope.editUserModel.language.code
         }, function(err) {
-          pane.done('Error updating user', err);
+          pane.done(translateFilter('Error updating user'), err);
         });
       };
 
@@ -486,10 +486,10 @@ require('moment/locales');
         var pane = modal.start($('#delete-confirm'));
         if (deleteMessageId) {
           DeleteMessage(deleteMessageId, function(err) {
-            pane.done('Error deleting document', err);
+            pane.done(translateFilter('Error deleting document'), err);
           });
         } else {
-          pane.done('Error deleting document', 'No deleteMessageId set');
+          pane.done(translateFilter('Error deleting document'), 'No deleteMessageId set');
         }
       };
 
@@ -497,12 +497,13 @@ require('moment/locales');
         var $modal = $('#update-facility');
         var facilityId = $modal.find('[name=facility]').val();
         if (!facilityId) {
-          $modal.find('.modal-footer .note').text('Please select a facility');
+          $modal.find('.modal-footer .note')
+            .text(translateFilter('Please select a facility'));
           return;
         }
         var pane = modal.start($modal);
         UpdateFacility($scope.selected._id, facilityId, function(err) {
-          pane.done('Error updating facility', err);
+          pane.done(translateFilter('Error updating facility'), err);
         });
       };
       $scope.updateFacilityShow = function () {
@@ -550,7 +551,6 @@ require('moment/locales');
         }
       };
 
-
       $('#formTypeDropdown').on('update', function() {
         var forms = $(this).multiDropdown().val();
         angularApply(function(scope) {
@@ -588,7 +588,6 @@ require('moment/locales');
         });
       });
 
-
       // stop bootstrap closing the search pane on click
       $('.filters .mobile-freetext-filter .search-pane').on('click', function(e) {
         e.stopPropagation();
@@ -602,7 +601,7 @@ require('moment/locales');
         var pane = modal.start($('#feedback'));
         var message = $('#feedback [name=feedback]').val();
         feedback.submit(message, function(err) {
-          pane.done('Error saving feedback', err);
+          pane.done(translateFilter('Error saving feedback'), err);
         });
       });
 
