@@ -405,6 +405,7 @@ exports['payload form not found muvuku'] = function (test) {
 
 exports['form not found response locale from query'] = function (test) {
     test.expect(5);
+    utils.info.forms_only_mode = true;
     var req = {
         headers: { "Host": window.location.host },
         form: {
@@ -436,7 +437,126 @@ exports['form not found response locale from query'] = function (test) {
         test.same(resp.payload.messages[0].to, "+888");
         test.same(
             resp.payload.messages[0].message,
-            'Merci, votre message a été bien reçu.'
+            "Le formulaire envoyé n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur."
+        );
+        test.done();
+    }
+};
+
+exports['form not found response locale from form'] = function (test) {
+    test.expect(5);
+    utils.info.forms_only_mode = true;
+    var req = {
+        headers: { Host: window.location.host },
+        form: {
+            locale: 'es',
+            from: '+888',
+            message: '1!0000!2012#2#20#foo#bar'
+        },
+        query: {
+            locale: 'fr'
+        }
+    };
+    var ret = updates.add_sms(null, req),
+        resp = JSON.parse(ret[1]);
+
+    test.same(resp.payload, { success:true });
+    part2(ret[0]);
+
+    function part2(doc) {
+        var req = {
+            headers: { Host: window.location.host },
+            body: JSON.stringify({}) // related_entities not found
+        };
+
+        var ret = updates.updateRelated(doc, req),
+            newDoc = ret[0],
+            resp = JSON.parse(ret[1]);
+
+        test.same(resp.payload.success, true);
+        test.same(resp.payload.task, 'send');
+        test.same(resp.payload.messages[0].to, '+888');
+        test.same(
+            resp.payload.messages[0].message,
+            'No se reconocio el reporte enviado. Por favor intente de nuevo. Si el problema persiste, informe al director.'
+        );
+        test.done();
+    }
+};
+
+exports['form not found response locale falls back to default'] = function (test) {
+    test.expect(5);
+
+    utils.info.locale = 'ne';
+    utils.info.forms_only_mode = true;
+    var req = {
+        headers: { Host: window.location.host },
+        form: {
+            from: '+888',
+            message: '1!0000!2012#2#20#foo#bar'
+        }
+    };
+    var ret = updates.add_sms(null, req),
+        resp = JSON.parse(ret[1]);
+
+    test.same(resp.payload, { success:true });
+    part2(ret[0]);
+
+    function part2(doc) {
+        var req = {
+            headers: { Host: window.location.host },
+            body: JSON.stringify({}) // related_entities not found
+        };
+
+        var ret = updates.updateRelated(doc, req),
+            newDoc = ret[0],
+            resp = JSON.parse(ret[1]);
+
+        test.same(resp.payload.success, true);
+        test.same(resp.payload.task, 'send');
+        test.same(resp.payload.messages[0].to, '+888');
+        test.same(
+            resp.payload.messages[0].message,
+            'फारम मिलेन​। कृपया फेरि प्रयास गर्नुहोला।'
+        );
+        test.done();
+    }
+};
+
+exports['form not found response locale undefined'] = function (test) {
+    test.expect(5);
+
+    utils.info.locale = undefined;
+    utils.info.forms_only_mode = true;
+    var req = {
+        headers: { Host: window.location.host },
+        form: {
+            from: '+888',
+            message: '1!0000!2012#2#20#foo#bar'
+        }
+    };
+    var ret = updates.add_sms(null, req),
+        resp = JSON.parse(ret[1]);
+
+    test.same(resp.payload, { success:true });
+    part2(ret[0]);
+
+    function part2(doc) {
+        var req = {
+            headers: { Host: window.location.host },
+            body: JSON.stringify({}) // related_entities not found
+        };
+
+        var ret = updates.updateRelated(doc, req),
+            newDoc = ret[0],
+            resp = JSON.parse(ret[1]);
+
+        test.same(resp.payload.success, true);
+        test.same(resp.payload.task, 'send');
+        test.same(resp.payload.messages[0].to, '+888');
+        test.same(
+            resp.payload.messages[0].message,
+            "The form sent was not recognized. Please complete it again and resend. If this problem persists contact your supervisor."
         );
         test.done();
     }

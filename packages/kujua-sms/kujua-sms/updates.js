@@ -321,7 +321,7 @@ exports.add_sms = function(doc, request) {
 
     // if locale was not passed in form data then check query string
     if (!sms_message.locale) {
-        sms_message.locale = (req.query && req.query.locale) || 'en'
+        sms_message.locale = (req.query && req.query.locale) || utils.info.locale;
     }
 
     var form_data = null,

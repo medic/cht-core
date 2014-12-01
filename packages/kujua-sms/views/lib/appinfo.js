@@ -28,7 +28,7 @@ exports.getAppInfo = function(req) {
      *
      * returns object
      */
-    function getSettings(req) {
+    function getSettings() {
         var settings = {};
 
         if (this.app_settings) {
