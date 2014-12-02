@@ -160,7 +160,7 @@ module.exports = {
             });
             audit.saveDoc(registration, callback);
         } else {
-            callback(null);
+            callback();
         }
     },
     validate: function(config, doc, callback) {
@@ -194,7 +194,7 @@ module.exports = {
         });
 
         if (!report) {
-            return callback(null, false);
+            return callback();
         }
 
         module.exports.validate(report, doc, function(errors) {
