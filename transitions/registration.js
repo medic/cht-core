@@ -120,7 +120,7 @@ module.exports = {
                     var err = _.first(errors);
                     messages.addReply(doc, err.message || err);
                 }
-                return callback(null, doc);
+                return callback(null, true);
             }
 
             var series = [];
@@ -143,15 +143,13 @@ module.exports = {
             });
 
             async.series(series, function(err, results) {
-                //callback(null, true);
                 if (err) {
-                    //callback(err, false);
                     callback(err);
                 } else {
                     // add messages is done last so data on doc can be used in
                     // messages
                     self.addMessages(config, doc);
-                    callback(null, doc);
+                    callback(null, true);
                 }
             });
         });

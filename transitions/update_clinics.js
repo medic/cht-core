@@ -34,7 +34,7 @@ module.exports = {
             q.key = [ doc.from ];
             view = 'clinic_by_phone';
         } else {
-            return callback(null, false);
+            return callback();
         }
 
         db.view('kujua-sentinel', view, q, function(err, data) {
@@ -51,12 +51,12 @@ module.exports = {
             existing = doc.related_entities.clinic || {};
 
             if (!clinic) {
-                return callback(null, false);
+                return callback();
             }
 
             // reporting phone stayed the same and clinic data is up to date
             if (doc.from === clinic.contact.phone && clinic._id === existing._id && clinic._rev === existing._rev) {
-                return callback(null, false);
+                return callback();
             }
 
             if (clinic.contact.phone !== doc.from) {

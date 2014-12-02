@@ -24,20 +24,22 @@ if (!process.env.TEST_ENV) {
 }
 
 module.exports = {
-    // determines whether a transition is okay to run on a document
-    canRun: function(transition, key, doc) {
-        // repeatable and has transitions object returns true if revs don't
-        // match
-        if (transition.repeatable && doc.transitions && doc.transitions[key]) {
-            return parseInt(doc._rev) !== doc.transitions[key].last_rev;
-        // not repeatable and has transitions object
-        // return by key value being ok
-        } else if (!doc.repeatable && doc.transitions && doc.transitions[key]) {
-            return !doc.transitions[key].ok;
-        // otherwise, can run
-        } else {
-            return true;
+    /*
+     * Determines whether a transition is okay to run on a document.
+     * Removed repeatable logic, assuming all transitions are repeatable
+     * without adverse effects.
+     */
+    canRun: function(options) {
+        var doc = options.change.doc,
+            key = options.key;
+        if (options.change.deleted) {
+            // ignore deleted records
+            return false;
         }
+        if (doc.transitions && doc.transitions[key]) {
+            return parseInt(doc._rev) !== doc.transitions[key].last_rev;
+        }
+        return true;
     },
     attach: function(design) {
         var db = require('../db'),
@@ -50,6 +52,10 @@ module.exports = {
             stream: stream
         });
 
+        /*
+         * All transitions reference the same change.doc and work in series to
+         * apply changes to it.
+         */
         var applyTransition = function(options, callback) {
 
             var key = options.key,
@@ -61,20 +67,20 @@ module.exports = {
                 change.id, change.seq, key
             );
 
-            // transitions are async and should return a doc if the document
-            // was modified.
-            transition.onMatch(change, db, audit, function(err, doc) {
+            /*
+             * Transitions are async and should return a doc if the document
+             * was modified.
+             */
+            transition.onMatch(change, db, audit, function(err, changed) {
                 logger.debug(
                     'finished transition for doc %s seq %s transition %s',
                     change.id, change.seq, key
                 );
-                if (err) {
+                logger.debug('err is %s, doc is %s', err, doc);
+                if (err || !changed) {
                     return callback(err);
                 }
-                if (!_.isObject(doc)) {
-                    return callback('transition returned doc that is not an object');
-                }
-                doc = doc || change.doc;
+                var doc = change.doc;
                 //console.log('doc', JSON.stringify(doc,null,2));
                 _.defaults(doc, {
                     transitions: {}
@@ -84,64 +90,92 @@ module.exports = {
                     ok: !err,
                     last_rev: parseInt(doc._rev) + 1 // because it's the revision AFTER a save
                 };
-                // triggers next transition in queue
-                callback();
+                // return doc
+                logger.debug('transition %s returned %s', key, doc);
+                callback(null, changed);
             });
         }
 
-        var queue = async.queue(function(task, callback){
-            var change = task.change;
-            logger.debug('task: ', JSON.stringify(task,null,2));
-            if (task.transition) {
-                applyTransition(task, callback);
-            } else {
-                logger.debug(
-                    'calling audit.saveDoc for doc %s seq %s transition %s',
-                    change.id, change.seq, task.key
-                );
-                audit.saveDoc(change.doc, callback);
-            }
+        /*
+         * Putting all saves in a queue, not sure why but feels safer right
+         * now. Letting the saves race (run in parallel) might provide a little
+         * more performance, need to test a bit more.
+         */
+        var saveQueue = async.queue(function(options, callback) {
+            audit.saveDoc(options.change.doc, callback);
         }, 1);
 
         feed.on('change', function(change) {
-
-            // ignore documents that have been deleted; there's nothing to update
-            if (change.deleted) {
-                return;
-            }
 
             logger.debug(
                 'change on %s feed for doc %s sequence %s',
                 stream, change.id, change.seq
             );
 
-            // push transitions onto queue
+            var operations = [];
             _.each(transitions, function(transition, key) {
-                queue.push({
+                var opts = {
+                    key: key,
                     change: change,
-                    transition: transition,
-                    key: key
-                }, function(err) {
-                    if (err) {
-                        logger.error(
-                            'transition for doc %s seq %s transition %s returned error %s',
-                            change.id, change.seq, key, JSON.stringify(err)
-                        );
-                    }
+                    transition: transition
+                };
+                if (!module.exports.canRun(opts)) {
+                    logger.debug('skipping transition on this change.');
+                    return;
+                }
+                // apply transition filters
+                if (!transition.filter(change.doc)) {
+                    return;
+                }
+                operations.push(function(cb) {
+                    applyTransition(opts, function(err, changed) {
+                        /*
+                         * Do not short circuit async.series by transition
+                         * errors, continue applying transitions.  Transition
+                         * will be retried on next change event on doc.
+                         */
+                        if (err) {
+                            logger.debug(
+                                "transition returned error %s",
+                                JSON.stringify(err)
+                            );
+                        }
+                        cb(null, changed);
+                    });
                 });
             });
 
-            // push save onto queue
-            queue.push({
-                change: change
-            }, function(err) {
-                if (err) {
-                    logger.error(
-                        "Error saving doc %s", JSON.stringify(err)
+            /*
+             * Run transitions in a series and save the doc if we have changes.
+             * Otherwise transitions did nothing and saving is unnecessary.  If
+             * results has a true value in it then a change was made.
+             */
+            async.series(operations, function(err, results) {
+                logger.debug('series results', JSON.stringify(results));
+                var changed = _.some(results, function(i) {
+                    return Boolean(i);
+                });
+                if (changed) {
+                    logger.debug(
+                        'pushing to saveQueue doc %s seq %s',
+                        change.id, change.seq
+                    );
+                    saveQueue.push({
+                        change: change
+                    }, function(err) {
+                        if (err) {
+                            logger.error(
+                                "Error saving doc %s", JSON.stringify(err)
+                            );
+                        }
+                    });
+                } else {
+                    logger.debug(
+                        'skipping saveQueue for doc %s seq %s',
+                        change.id, change.seq
                     );
                 }
             });
-
         });
 
         feed.on('ready', function() {

@@ -18,20 +18,16 @@ module.exports = {
         }, function(err, result) {
             var clinic,
                 sent_by;
-
             if (err) {
-                callback(err);
-            } else {
-                clinic = _.result(_.first(result.rows), 'doc'); // _.result handles falsey first row
-                sent_by = utils.getClinicContactName(clinic, true) || utils.getClinicName(clinic, true);
-
-                if (sent_by != null) {
-                    doc.sent_by = sent_by;
-                    callback(null, true);
-                } else {
-                    callback(null, false);
-                }
+                return callback(err);
             }
+            clinic = _.result(_.first(result.rows), 'doc'); // _.result handles falsey first row
+            sent_by = utils.getClinicContactName(clinic, true) || utils.getClinicName(clinic, true);
+            if (sent_by != null) {
+                doc.sent_by = sent_by;
+                return callback(null, true);
+            }
+            callback();
         });
     },
     repeatable: true
