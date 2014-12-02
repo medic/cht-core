@@ -3,22 +3,26 @@ var couchr = require('couchr');
 module.exports = {
     after: "modules/cleanup",
     run : function(root, path, settings, doc, callback) {
-        var ddoc_url = settings._url + '/_design/' + settings.name;
-        var ddoc_url = 'http://gareth:pass@localhost:5984/medic/_design/medic';
-        console.log(ddoc_url);
+        var ddoc_url;
         // for older kanso versions
-        if (!ddoc_url) callback(null, doc);
-        get_doc(ddoc_url, settings, function(err, ddoc) {
-            if (ddoc.app_settings) doc.app_settings = ddoc.app_settings;
-            callback(null, doc);
-        });
+        if (settings._url) {
+            ddoc_url = settings._url + '/_design/' + settings.name;
+            get_doc(ddoc_url, settings, function(err, ddoc) {
+                if (err) return callback(err);
+                doc.app_settings = ddoc.app_settings ? ddoc.app_settings : {};
+                callback(null, doc);
+            });
+        } else {
+            return callback(null, doc);
+        }
     }
-}
+};
 
 
 function get_doc(ddoc_url, settings, callback) {
     couchr.get(ddoc_url, function(err, resp){
         if (err && err.error === 'unauthorized') return auth(ddoc_url, settings, callback);
+        if (err && err.error === 'not_found') return callback(null, {}); // no design doc. First push.
         if (err) return callback(err);
         callback(null, resp);
     });
