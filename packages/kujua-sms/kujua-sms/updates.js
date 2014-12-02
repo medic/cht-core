@@ -311,7 +311,7 @@ var req = {};
 exports.add_sms = function(doc, request) {
 
     req = request;
-    utils.info = utils.info || info.getAppInfo.call(this);
+    utils.info = info.getAppInfo.call(this);
 
     var sms_message = {
         type: 'sms_message',
@@ -381,7 +381,7 @@ exports.add_sms = function(doc, request) {
  */
 exports.updateRelated = function(doc, request) {
 
-    utils.info = utils.info || info.getAppInfo.call(this);
+    utils.info = info.getAppInfo.call(this);
     req = request;
 
     var data = JSON.parse(req.body),
@@ -428,7 +428,7 @@ exports.updateRelated = function(doc, request) {
     }
 
     // smssync-compat sms response
-    resp.payload = getSMSResponse(doc, utils.info);
+    resp.payload = getSMSResponse(doc);
 
     // save response to record
     doc.responses = _.filter(resp.payload.messages, function(message) {
