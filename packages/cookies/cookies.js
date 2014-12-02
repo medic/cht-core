@@ -27,7 +27,7 @@ exports.readBrowserCookies = function () {
     var cookies = {};
     var parts = document.cookie.split(';');
     for (var i = 0, len = parts.length; i < len; i++) {
-        var name = parts[i].split('=')[0];
+        var name = parts[i].split('=')[0].trim();
         var value = parts[i].split('=').slice(1).join('=');
         cookies[name] = value;
     }

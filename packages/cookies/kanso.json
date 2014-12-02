@@ -1,6 +1,6 @@
 {
     "name": "cookies",
-    "version": "0.0.9",
+    "version": "0.0.10",
     "categories": ["utils"],
     "description": "Cookie utilities for use in the browser and server-side on CouchDB",
     "modules": "cookies.js",
