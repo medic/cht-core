@@ -30,10 +30,16 @@ module.exports = {
      * without adverse effects.
      */
     canRun: function(options) {
-        var doc = options.change.doc,
-            key = options.key;
+        var key = options.key,
+            change = options.change,
+            doc = change.doc,
+            transition = options.transition;
         if (options.change.deleted) {
             // ignore deleted records
+            return false;
+        }
+        // apply transition filters
+        if (!transition.filter(doc)) {
             return false;
         }
         if (doc.transitions && doc.transitions[key]) {
@@ -68,15 +74,14 @@ module.exports = {
             );
 
             /*
-             * Transitions are async and should return a doc if the document
-             * was modified.
+             * Transitions are async and should return true if the document was
+             * modified.
              */
             transition.onMatch(change, db, audit, function(err, changed) {
                 logger.debug(
                     'finished transition for doc %s seq %s transition %s',
                     change.id, change.seq, key
                 );
-                logger.debug('err is %s, doc is %s', err, doc);
                 if (err || !changed) {
                     return callback(err);
                 }
@@ -90,8 +95,6 @@ module.exports = {
                     ok: !err,
                     last_rev: parseInt(doc._rev) + 1 // because it's the revision AFTER a save
                 };
-                // return doc
-                logger.debug('transition %s returned %s', key, doc);
                 callback(null, changed);
             });
         }
@@ -120,11 +123,7 @@ module.exports = {
                     transition: transition
                 };
                 if (!module.exports.canRun(opts)) {
-                    logger.debug('skipping transition on this change.');
-                    return;
-                }
-                // apply transition filters
-                if (!transition.filter(change.doc)) {
+                    logger.debug('skipping transition %s %s', key, change.seq);
                     return;
                 }
                 operations.push(function(cb) {
