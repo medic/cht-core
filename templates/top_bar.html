@@ -2,42 +2,48 @@
   {?isDbAdmin}
   <li class="settings">
     <a href="{baseURL}/settings">
-      <i class="fa fa-cog"></i> {labels.settings}
+      <i class="fa fa-cog"></i>
+      {@translate value="Configuration"/}
     </a>
   </li>
   {/isDbAdmin}
   {?isDbAdmin}
   <li class="schedules">
     <a href="{baseURL}/schedules">
-      <i class="fa fa-clock-o"></i> {labels.schedules}
+      <i class="fa fa-clock-o"></i>
+      {@translate value="Schedules"/}
     </a>
   </li>
   {/isDbAdmin}
   <li class="sms-forms-data">
     <a href="{baseURL}/forms">
-      <i class="fa fa-arrow-circle-o-down"></i> {labels.export}
+      <i class="fa fa-arrow-circle-o-down"></i>
+      {@translate value="Export"/}
     </a>
   </li>
   {?isDbAdmin}
   <li class="users">
     <a href="{baseURL}/users">
-      <i class="fa fa-user"></i> {labels.users}
+      <i class="fa fa-user"></i>
+      {@translate value="Users"/}
     </a>
   </li>
   {/isDbAdmin}
   <li class="facilities">
     <a href="{baseURL}/facilities">
-      <i class="fa fa-home"></i> {labels.facilities}
+      <i class="fa fa-home"></i>
+      {@translate value="Facilities"/}
     </a>
   </li>
   <li>
-    <a href="#" title="Report Bug" data-toggle="modal" data-target="#feedback">
+    <a href="#" title="{@translate value="Report Bug"/}" data-toggle="modal" data-target="#feedback">
       <i class="fa fa-bug"></i>
     </a>
   </li>
   <li class="logout">
     <a href="#" id="logout">
-      <i class="fa fa-power-off"></i> {labels.logout}
+      <i class="fa fa-power-off"></i>
+      {@translate value="Log Out"/}
     </a>
   </li>
 </ul>

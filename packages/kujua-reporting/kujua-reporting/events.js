@@ -26,10 +26,10 @@ duality_events.on('init', function (ev) {
 
         var isAdmin = kutils.hasPerm(info.userCtx, 'can_edit_any_facility'),
             isDistrictAdmin = kutils.hasPerm(info.userCtx, 'can_edit_facility'),
-            configs = $.kansoconfig('kujua-reporting', true),
+            appInfo = appinfo.getAppInfo.call(this),
             hasValidConfig;
 
-        _.each(configs, function(conf) {
+        _.each(appInfo['kujua-reporting'], function(conf) {
             if (conf.code && conf.reporting_freq) {
                 hasValidConfig = true;
             }

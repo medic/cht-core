@@ -231,13 +231,9 @@ exports.titleize = function (s) {
     return _s.titleize(_s.humanize(s));
 };
 
-exports.updateTopNav = function(key, title, suffix) {
-    if (!_.isNull(title)) {
-        title = title || exports.titleize(key);
-        suffix = suffix || '';
-        $('.page-header h1').replaceWith(
-            '<h1 class="pull-left">' + $.kansotranslate(title) + suffix + '</h1>'
-        );
+exports.updateTopNav = function(key, title) {
+    if (title) {
+        $('.page-header h1').text(title).show();
     } else {
         $('.page-header h1').hide();
     }

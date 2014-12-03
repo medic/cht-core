@@ -2371,12 +2371,12 @@ module.exports = {
           ]
       },
       {
-          "key": "Schedule",
-          "default": "Schedule",
+          "key": "Schedule name",
+          "default": "Schedule: {{name}}",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Schedule"
+                  "content": "Schedule: {{name}}"
               }
           ]
       },
@@ -3723,6 +3723,26 @@ module.exports = {
               {
                   "locale": "en",
                   "content": "Basic Settings"
+              }
+          ]
+      },
+      {
+          "key": "External ID",
+          "default": "External ID",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "External ID"
+              }
+          ]
+      },
+      {
+          "key": "Districts",
+          "default": "Districts",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Districts"
               }
           ]
       }
