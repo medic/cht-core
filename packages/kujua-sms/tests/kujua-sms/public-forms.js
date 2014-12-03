@@ -7,7 +7,6 @@ var utils = require('kujua-sms/utils'),
 exports.setUp = function (callback) {
     utils = require('views/lib/appinfo');
     appInfo = utils.getAppInfo();
-    sinon.stub(utils, 'getAppInfo').returns(appInfo);
     callback();
 };
 
@@ -24,6 +23,8 @@ exports.tearDown = function(callback) {
 exports['public form has no facility not found error'] = function(test) {
     test.expect(5);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYW);
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
+
     var req = {
         headers: {"Host": window.location.host},
         form: {
@@ -46,6 +47,8 @@ exports['public form has no facility not found error'] = function(test) {
 exports['private form has facility not found error'] = function(test) {
     test.expect(5);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYZ);
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
+    
     var req = {
         headers: {"Host": window.location.host},
         form: {

@@ -12,7 +12,7 @@ var utils = require('kujua-sms/utils'),
 exports.setUp = function (callback) {
     utils = require('views/lib/appinfo');
     appInfo = utils.getAppInfo();
-    sinon.stub(utils, 'getAppInfo').returns(appInfo);
+    
     callback();
 };
 
@@ -29,6 +29,7 @@ exports.tearDown = function(callback) {
 exports['assert month is integer'] = function(test) {
     test.expect(2);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
     var req = {
         headers: { 'Host': window.location.host },
         form: {
@@ -60,6 +61,7 @@ exports['assert timestamp parsed'] = function(test) {
 exports['deep keys parsed'] = function(test) {
     test.expect(3);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
     var req = {
         headers: {"Host": window.location.host},
         form: {
@@ -145,6 +147,7 @@ exports['add sms check resp body'] = function (test) {
 exports['update related and tasks'] = function (test) {
     test.expect(7);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
     var req = {
         headers: {"Host": window.location.host},
         body: JSON.stringify({
@@ -208,6 +211,7 @@ exports['update related and tasks'] = function (test) {
 exports['update related and recipient missing'] = function (test) {
     test.expect(2);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
     var req = {
         headers: {"Host": host},
         body: JSON.stringify({
@@ -262,6 +266,7 @@ exports['update related and recipient missing'] = function (test) {
 exports['success response'] = function (test) {
     test.expect(5);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYZ);
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
     var req = {
         headers: { "Host": window.location.host },
         form: {
@@ -301,6 +306,7 @@ exports['success response'] = function (test) {
 exports['success response with autoreply'] = function (test) {
     test.expect(7);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
     var req = {
         headers: { "Host": window.location.host },
         form: {
@@ -412,6 +418,8 @@ exports['payload form not found muvuku'] = function (test) {
 exports['form not found response locale from query'] = function (test) {
     test.expect(5);
     appInfo.forms_only_mode = true;
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
+
     var req = {
         headers: { "Host": window.location.host },
         form: {
@@ -452,6 +460,8 @@ exports['form not found response locale from query'] = function (test) {
 exports['form not found response locale from form'] = function (test) {
     test.expect(5);
     appInfo.forms_only_mode = true;
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
+
     var req = {
         headers: { Host: window.location.host },
         form: {
@@ -495,6 +505,8 @@ exports['form not found response locale falls back to default'] = function (test
 
     appInfo.locale = 'ne';
     appInfo.forms_only_mode = true;
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
+
     var req = {
         headers: { Host: window.location.host },
         form: {
@@ -534,6 +546,8 @@ exports['form not found response locale undefined'] = function (test) {
 
     appInfo.locale = undefined;
     appInfo.forms_only_mode = true;
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
+
     var req = {
         headers: { Host: window.location.host },
         form: {
@@ -686,6 +700,8 @@ exports['payload one word'] = function (test) {
 exports['payload missing fields'] = function (test) {
     test.expect(7);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
+
     var req = {
         headers: { "Host": window.location.host },
         form: {
@@ -727,6 +743,8 @@ exports['extra fields'] = function(test) {
 
     test.expect(4);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
+
     var req = {
         headers: {"Host": window.location.host},
         uuid: "13f58b9c648b9a997248cba27aa00fdf",
@@ -781,6 +799,7 @@ exports['missing fields'] = function(test) {
 
     test.expect(4);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
 
     var req = {
         headers: {"Host": window.location.host},
@@ -843,6 +862,8 @@ exports['missing fields response msg'] = function(test) {
 exports['missing recipient response msg'] = function(test) {
     test.expect(4);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
+
     var req = {
         headers: {"Host": window.location.host},
         body: JSON.stringify({}) // related_entities not found
@@ -872,6 +893,8 @@ exports['missing recipient response msg'] = function(test) {
 exports['missing facility response msg'] = function(test) {
     test.expect(7);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
+    
     var req = {
         headers: {"Host": window.location.host},
         body: JSON.stringify({}) // related_entities not found
