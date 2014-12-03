@@ -2,11 +2,12 @@
  * This has to run in the shows/list/update context for 'this' to work
  * Specifically, needs patched duality/core.js to have correct context
  */
-exports.getAppInfo = function(req) {
-    var defaults = require('views/lib/app_settings'),
-        app_settings = getSettings.call(this, req),
-        _ = _ || require('underscore'),
-        url = url || require('url');
+exports.getAppInfo = function() {
+    var _ = _ || require('underscore'),
+        url = url || require('url'),
+        cookies = cookies || require('cookies'),
+        defaults = require('views/lib/app_settings'),
+        app_settings = getSettings.call(this);
 
     // use mustache syntax
     _.templateSettings = {
@@ -161,13 +162,18 @@ exports.getAppInfo = function(req) {
     function translate(translations, key, locale, ctx) {
 
         var value,
-            ctx = ctx || {},
-            locale = locale || app_settings.locale;
+            ctx = ctx || {};
 
         if (_.isObject(locale)) {
             ctx = locale;
-            locale = app_settings.locale;
+            locale = null;
         }
+
+        if (!locale && typeof window !== 'undefined') {
+            locale = cookies.readBrowserCookie('locale');
+        }
+
+        locale = locale || app_settings.locale;
 
         if (_.isObject(key)) {
             return getMessage(key, locale) || key;

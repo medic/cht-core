@@ -4676,6 +4676,76 @@
                                 "content": "{{count}} in {{month}}"
                             }
                         ]
+                    },
+                    {
+                        "key": "Schedules",
+                        "default": "Schedules",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Schedules"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Users",
+                        "default": "Users",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Users"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Settings",
+                        "default": "Settings",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Settings"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Translations",
+                        "default": "Translations",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Translations"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Forms",
+                        "default": "Forms",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Forms"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Advanced",
+                        "default": "Advanced",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Advanced"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Basic Settings",
+                        "default": "Basic Settings",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Basic Settings"
+                            }
+                        ]
                     }
                 ]
             }
