@@ -75,8 +75,6 @@ exports.getAppInfo = function(req) {
             found = false;
         }
 
-        console.log('s', JSON.stringify(settings));
-
         return settings;
     }
 
