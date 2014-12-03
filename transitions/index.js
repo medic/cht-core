@@ -115,10 +115,10 @@ module.exports = {
          * Putting all saves in a queue, not sure why but feels safer right
          * now. Letting the saves race (run in parallel) might provide a little
          * more performance, need to test a bit more.
-         */
         var saveQueue = async.queue(function(options, callback) {
             audit.saveDoc(options.change.doc, callback);
         }, 1);
+         */
 
         feed.on('change', function(change) {
 
@@ -168,12 +168,12 @@ module.exports = {
                 });
                 if (changed) {
                     logger.debug(
-                        'pushing to saveQueue doc %s seq %s',
+                        'saving changes on doc %s seq %s',
                         change.id, change.seq
                     );
-                    saveQueue.push({
-                        change: change
-                    }, function(err) {
+                    audit.saveDoc(change.doc, function(err) {
+                        // todo: how to handle a failed save? for now just
+                        // waiting until next change.
                         if (err) {
                             logger.error(
                                 "Error saving doc %s", JSON.stringify(err)
