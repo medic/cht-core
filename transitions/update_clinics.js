@@ -11,10 +11,19 @@ var _ = require('underscore'),
  */
 module.exports = {
     filter: function(doc) {
+        var self = module.exports;
         return Boolean(
             doc &&
             doc.related_entities &&
-            !doc.related_entities.clinic
+            !doc.related_entities.clinic &&
+            !self._hasRun(doc)
+        );
+    },
+    _hasRun: function(doc) {
+        return Boolean(
+            doc &&
+            doc.transitions &&
+            doc.transitions['update_clinics']
         );
     },
     onMatch: function(change, db, audit, callback) {

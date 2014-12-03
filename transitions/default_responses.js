@@ -8,16 +8,20 @@ var _ = require('underscore'),
 module.exports = {
     filter: function(doc) {
         var self = module.exports;
-        // only run once
-        if (doc.transitions && doc.transitions['default_responses']) {
-            return false;
-        }
         return Boolean(
             doc
             && doc.from
             && doc.type === 'data_record'
             && !doc.kujua_message
             && self._isReportedAfterStartDate(doc)
+            && !self._hasRun(doc)
+        );
+    },
+    _hasRun: function(doc) {
+        return Boolean(
+            doc &&
+            doc.transitions &&
+            doc.transitions['default_responses']
         );
     },
     _isReportedAfterStartDate: function(doc) {

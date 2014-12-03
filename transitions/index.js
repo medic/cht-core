@@ -34,18 +34,30 @@ module.exports = {
             change = options.change,
             doc = change.doc,
             transition = options.transition;
-        if (options.change.deleted) {
-            // ignore deleted records
-            return false;
-        }
-        // apply transition filters
-        if (!transition.filter(doc)) {
-            return false;
-        }
-        if (doc.transitions && doc.transitions[key]) {
-            return parseInt(doc._rev) !== doc.transitions[key].last_rev;
-        }
-        return true;
+
+        var _isRevSame = function() {
+            if (doc.transitions && doc.transitions[key]) {
+                return parseInt(doc._rev) === doc.transitions[key].last_rev;
+            }
+        };
+
+        /*
+         * Ignore deleted records, confirm transition has filter function and
+         * skip transition if filter returns false.
+         *
+         * If transition was already applied then only run again if doc rev is
+         * not equal to transtion rev.
+         */
+        return Boolean(
+            doc &&
+            options &&
+            options.change &&
+            !options.change.deleted &&
+            transition &&
+            typeof transition.filter === 'function' &&
+            transition.filter(doc) &&
+            !_isRevSame()
+        );
     },
     attach: function(design) {
         var db = require('../db'),

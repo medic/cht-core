@@ -12,16 +12,21 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc) {
-        var self = module.exports;
-        if (!doc || !doc.form) {
-            return false;
-        }
-        var config = self.getRegistrationConfig(self.getConfig(), doc.form);
-        if (!config) {
-            return false;
-        }
-        var form = utils.getForm(doc.form);
-        return Boolean(utils.getClinicPhone(doc) || (form && form.public_form));
+        var self = module.exports,
+            form = utils.getForm(doc && doc.form);
+        return Boolean(
+            form &&
+            self.getRegistrationConfig(self.getConfig(), doc.form) &&
+            (utils.getClinicPhone(doc) || (form && form.public_form)) &&
+            !self._hasRun(doc)
+        );
+    },
+    _hasRun: function(doc) {
+        return Boolean(
+            doc &&
+            doc.transitions &&
+            doc.transitions['registration']
+        );
     },
     getWeeksSinceDOB: function(doc) {
         return String(

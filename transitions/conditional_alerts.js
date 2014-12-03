@@ -40,11 +40,20 @@ module.exports = {
             });
         }
     },
+    _hasRun: function(doc) {
+        return Boolean(
+            doc &&
+            doc.transitions &&
+            doc.transitions['conditional_alerts']
+        );
+    },
     filter: function(doc) {
+        var self = module.exports;
         return Boolean(
             doc &&
             doc.form &&
-            doc.type === 'data_record'
+            doc.type === 'data_record' &&
+            !self._hasRun(doc)
         );
     },
     onMatch: function(change, db, audit, cb) {

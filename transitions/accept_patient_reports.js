@@ -10,19 +10,27 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc) {
-        function hasConfig(doc) {
-            var reports = module.exports.getAcceptedReports();
-            report = _.findWhere(reports, {
-                form: doc.form
-            });
-            return Boolean(report);
-        }
+        var self = module.exports;
         return Boolean(
             doc &&
             doc.form &&
             doc.reported_date &&
-            hasConfig(doc) &&
+            !self._hasRun(doc) &&
+            self._hasConfig(doc) &&
             utils.getClinicPhone(doc)
+        );
+    },
+    _hasConfig: function(doc) {
+        var self = module.exports;
+        return Boolean(_.findWhere(self.getAcceptedReports(), {
+            form: doc.form
+        }));
+    },
+    _hasRun: function(doc) {
+        return Boolean(
+            doc &&
+            doc.transitions &&
+            doc.transitions['accept_patient_reports']
         );
     },
     getAcceptedReports: function() {

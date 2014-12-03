@@ -85,6 +85,5 @@ module.exports = {
         } else {
             callback();
         }
-    },
-    repeatable: true
+    }
 };
