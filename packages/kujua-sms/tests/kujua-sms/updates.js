@@ -32,6 +32,7 @@ exports.tearDown = function(callback) {
     if (appInfo.getForm.restore) {
         appInfo.getForm.restore();
     }
+    utils.info = info.getAppInfo.call(this);
     callback();
 };
 
