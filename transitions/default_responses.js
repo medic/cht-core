@@ -8,6 +8,10 @@ var _ = require('underscore'),
 module.exports = {
     filter: function(doc) {
         var self = module.exports;
+        // only run once
+        if (doc.transitions && doc.transitions['default_responses']) {
+            return false;
+        }
         return Boolean(
             doc
             && doc.from
