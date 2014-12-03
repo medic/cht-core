@@ -312,7 +312,6 @@ exports.add_sms = function(doc, request) {
 
     req = request;
     utils.info = info.getAppInfo.call(this);
-
     var sms_message = {
         type: 'sms_message',
         form: smsparser.getFormCode(req.form.message)
@@ -382,6 +381,7 @@ exports.add_sms = function(doc, request) {
 exports.updateRelated = function(doc, request) {
 
     utils.info = info.getAppInfo.call(this);
+
     req = request;
 
     var data = JSON.parse(req.body),
