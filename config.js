@@ -3,9 +3,12 @@ var _ = require('underscore'),
     logger = require('./lib/logger');
 
 function reload() {
-    // Hack until figure out a better way to reload config data in all the
-    // calling contexts.  Added 2 sec wait so gardener doesn't think the
-    // process is broken and exits.
+    /*
+     * Hack until figure out a better way to reload config data in all the
+     * calling contexts.  Added 2 sec wait so gardener doesn't think the
+     * process is broken and exits.  This also means we are processing docs
+     * with an old config for a few seconds.
+     */
     setTimeout(function() {
         process.exit(0);
     }, 2000);
