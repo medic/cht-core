@@ -1,23 +1,26 @@
 var utils = require('kujua-sms/utils'),
     updates = require('kujua-sms/updates'),
     sinon = require('sinon'),
-    definitions = require('../../test-helpers/form_definitions');
+    definitions = require('../../test-helpers/form_definitions'),
+    appInfo;
 
 exports.setUp = function (callback) {
-    utils.info = require('views/lib/appinfo').getAppInfo.call(this);
+    utils = require('views/lib/appinfo');
+    appInfo = utils.getAppInfo();
+    sinon.stub(utils, 'getAppInfo').returns(appInfo);
     callback();
 };
 
 exports.tearDown = function(callback) {
-    if (utils.info.getForm.restore) {
-        utils.info.getForm.restore();
+    if (utils.getAppInfo.restore) {
+        utils.getAppInfo.restore();
     }
     callback();
 };
 
 exports['public form has no facility not found error'] = function(test) {
     test.expect(5);
-    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYW);
+    var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYW);
     var req = {
         headers: {"Host": window.location.host},
         form: {
@@ -39,7 +42,7 @@ exports['public form has no facility not found error'] = function(test) {
 
 exports['private form has facility not found error'] = function(test) {
     test.expect(5);
-    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYZ);
+    var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYZ);
     var req = {
         headers: {"Host": window.location.host},
         form: {
