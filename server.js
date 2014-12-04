@@ -43,7 +43,10 @@ db.getDoc('_design/kujua-sentinel', function(err, doc) {
                 completeSetup(err, base);
             });
         } else {
-            logger.error("Failed to create design document: " + err);
+            logger.error(
+                "failed to create design document: %s",
+                JSON.stringify(err)
+            );
         }
     } else {
         logger.debug('found sentinel design doc.');
