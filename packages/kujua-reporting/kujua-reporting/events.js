@@ -1,10 +1,11 @@
 var duality_events = require('duality/events'),
     templates = require('duality/templates'),
-    utils = require('./utils'),
-    kutils = require('kujua-utils'),
     settings = require('settings/root'),
     session = require('session'),
     users = require('users'),
+    kutils = require('kujua-utils'),
+    appinfo = require('views/lib/appinfo'),
+    utils = require('./utils'),
     ddoc = settings.name;
 
 duality_events.on('init', function (ev) {
@@ -26,10 +27,10 @@ duality_events.on('init', function (ev) {
 
         var isAdmin = kutils.hasPerm(info.userCtx, 'can_edit_any_facility'),
             isDistrictAdmin = kutils.hasPerm(info.userCtx, 'can_edit_facility'),
-            appInfo = appinfo.getAppInfo.call(this),
+            config = appinfo.getAppInfo.call(this),
             hasValidConfig;
 
-        _.each(appInfo['kujua-reporting'], function(conf) {
+        _.each(config['kujua-reporting'], function(conf) {
             if (conf.code && conf.reporting_freq) {
                 hasValidConfig = true;
             }
