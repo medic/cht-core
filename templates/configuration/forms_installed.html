@@ -7,10 +7,10 @@
 {?forms}
 <p>
   <a href="#" id="forms-download" class="btn">
-    <i class="fa fa-arrow-circle-o-down"></i> Download
+    <i class="fa fa-arrow-circle-o-down"></i> {@translate value="Download"/}
   </a>
 </p>
 <ul>
-  {#forms}<li>{meta.code} {meta.label.en}</li>{/forms}
+  {#forms}<li>{meta.code} {@getMessage value=meta.label/}</li>{/forms}
 </ul>
 {/forms}

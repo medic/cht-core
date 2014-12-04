@@ -8,24 +8,24 @@
       {>"configuration/default-language.html"/}
     </div>
 
-    <label for="gateway-number">Gateway number</label>
+    <label for="gateway-number">{@translate value="Gateway number"/}</label>
     <input id="gateway-number" type="text" value="{gateway_number}" />
-    <span class="help-block">This is number where mobile reporters should send their reports. It is also the number they will receive messages from.</span>
+    <span class="help-block">{@translate value="Gateway number help"/}</span>
 
-    <label for="default-country-code">Default Country Code</label>
+    <label for="default-country-code">{@translate value="Default country code"/}</label>
     <input id="default-country-code" type="text" value="{default_country_code}" />
-    <span class="help-block">Messages without a country code will be assigned this country code.</span>
+    <span class="help-block">{@translate value="Default country code help"/}</span>
 
   </fieldset>
 
   <fieldset>
-    <legend>Advanced Settings</legend>
+    <legend>{@translate value="Advanced Settings"/}</legend>
 
-    <label for="accept-messages">Accept plain-text messages</label>
+    <label for="accept-messages">{@translate value="Accept plain-text messages"/}</label>
     <input id="accept-messages" type="checkbox" {@eq key="forms_only_mode" value="false"}checked="true"{/eq}>
-    <span class="help-block">Check this box if you want to accept regular SMS messages in addition to reports. If unchecked, an error message will be sent to anyone who submits anything other than a report.</span>
+    <span class="help-block">{@translate value="Accept plain-text messages help"/}</span>
 
-    <label for="date-display-format">Date display format</label>
+    <label for="date-display-format">{@translate value="Date display format"/}</label>
     <select id="date-display-format">
       {#date_formats}
       <option 
@@ -35,9 +35,10 @@
       </option>
       {/date_formats}
     </select>
-    eg: <span id="date-format-example">{date_format_example}</span>
+    {@translate value="For example"/}
+    <span id="date-format-example">{date_format_example}</span>
 
-    <label for="datetime-display-format">Datetime display format</label>
+    <label for="datetime-display-format">{@translate value="Datetime display format"/}</label>
     <select id="datetime-display-format">
       {#datetime_formats}
       <option 
@@ -47,17 +48,20 @@
       </option>
       {/datetime_formats}
     </select>
-    eg: <span id="datetime-format-example">{datetime_format_example}</span>
+    {@translate value="For example"/}
+    <span id="datetime-format-example">{datetime_format_example}</span>
 
-    <label>Phone number conversion</label>
-    Replace the country code for {>"configuration/countrycodes.html"/}
-    with <input id="phone-filters-replace" type="text" value="{outgoing_phone_replace.replace}" class="input-mini"/>
+    <label>{@translate value="Phone number conversion"/}</label>
+    {@translate value="Replace country code for"/}
+    {>"configuration/countrycodes.html"/}
+    {@translate value="With"/}
+    <input id="phone-filters-replace" type="text" value="{outgoing_phone_replace.replace}" class="input-mini"/>
 
-    <label>Messaging window</label>
+    <label>{@translate value="Messaging window"/}</label>
     <p class="inline-form control-group" id="messaging-window">
-      Send scheduled messages between 
+      {@translate value="Send scheduled messages between"/}
       <span id="schedule-morning">{#scheduleMorning}{>"partials/time.html"/}{/scheduleMorning}</span>
-      and
+      {@translate value="and"/}
       <span id="schedule-evening">{#scheduleEvening}{>"partials/time.html"/}{/scheduleEvening}</span>.
     </p>
   </fieldset>
@@ -93,7 +97,7 @@
   </fieldset>
 
   <div class="footer control-group">
-    <button type="button" class="btn submit btn-primary">Save</button>
+    <button type="button" class="btn submit btn-primary">{@translate value="Submit"/}</button>
     <span class="status help-inline"></span>
   </div>
 </form>

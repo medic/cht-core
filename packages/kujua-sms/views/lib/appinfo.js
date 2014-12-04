@@ -118,6 +118,11 @@ exports.getAppInfo = function() {
             return value;
         }
 
+        if (!locale && typeof window !== 'undefined') {
+          locale = cookies.readBrowserCookie('locale');
+        }
+        locale = locale || app_settings.locale;
+
         var test = false;
         if (locale === 'test') {
             test = true;
@@ -168,12 +173,6 @@ exports.getAppInfo = function() {
             ctx = locale;
             locale = null;
         }
-
-        if (!locale && typeof window !== 'undefined') {
-            locale = cookies.readBrowserCookie('locale');
-        }
-
-        locale = locale || app_settings.locale;
 
         if (_.isObject(key)) {
             return getMessage(key, locale) || key;

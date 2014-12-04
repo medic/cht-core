@@ -3718,12 +3718,32 @@
                         ]
                     },
                     {
+                        "key": "Gateway number help",
+                        "default": "This is number where mobile reporters should send their reports. It is also the number they will receive messages from.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "This is number where mobile reporters should send their reports. It is also the number they will receive messages from."
+                            }
+                        ]
+                    },
+                    {
                         "key": "Default country code",
                         "default": "Default country code",
                         "translations": [
                             {
                                 "locale": "en",
                                 "content": "Default country code"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Default country code help",
+                        "default": "Messages without a country code will be assigned this country code.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Messages without a country code will be assigned this country code."
                             }
                         ]
                     },
@@ -4764,6 +4784,206 @@
                             {
                                 "locale": "en",
                                 "content": "Districts"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Accept plain-text messages",
+                        "default": "Accept plain-text messages",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Accept plain-text messages"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Accept plain-text messages help",
+                        "default": "Check this box if you want to accept regular SMS messages in addition to reports. If unchecked, an error message will be sent to anyone who submits anything other than a report.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Check this box if you want to accept regular SMS messages in addition to reports. If unchecked, an error message will be sent to anyone who submits anything other than a report."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Date display format",
+                        "default": "Date display format",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Date display format"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Datetime display format",
+                        "default": "Datetime display format",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Datetime display format"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "For example",
+                        "default": "Eg:",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Eg:"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Phone number conversion",
+                        "default": "Phone number conversion",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Phone number conversion"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Replace country code for",
+                        "default": "Replace country code for",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Replace country code for"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Messaging window",
+                        "default": "Messaging window",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Messaging window"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Send scheduled messages between",
+                        "default": "Send scheduled messages between",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Send scheduled messages between"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "and",
+                        "default": "and",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "and"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Upload Forms",
+                        "default": "Upload Forms",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Upload Forms"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Upload failed",
+                        "default": "Upload failed",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Upload failed"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Upload succeeded",
+                        "default": "Upload succeeded",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Upload succeeded"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Installed Forms",
+                        "default": "Installed Forms",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Installed Forms"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Choose file",
+                        "default": "Choose file",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Choose file"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Upload forms help",
+                        "default": "The file should contain a JSON encoded list of form definitions. Any existing forms will be overwritten.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "The file should contain a JSON encoded list of form definitions. Any existing forms will be overwritten."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Advanced settings intro",
+                        "default": "To check for and install newer versions of Medic Mobile or to adjust technical settings use the",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "To check for and install newer versions of Medic Mobile or to adjust technical settings use the"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Advanced settings outro",
+                        "default": "This is intended for users with a highly technical background.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "This is intended for users with a highly technical background."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Dashboard settings page",
+                        "default": "Dashboard settings page",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Dashboard settings page"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Download",
+                        "default": "Download",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Download"
                             }
                         ]
                     }
