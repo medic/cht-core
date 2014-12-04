@@ -123,7 +123,7 @@ module.exports = {
         feed.on('change', function(change) {
 
             logger.debug(
-                'change on %s feed for doc %s sequence %s',
+                'change on %s feed for doc %s seq %s',
                 stream, change.id, change.seq
             );
 
@@ -147,8 +147,8 @@ module.exports = {
                          */
                         if (err) {
                             logger.debug(
-                                "transition returned error %s",
-                                JSON.stringify(err)
+                                'transition %s returned error doc %s seq %s: %s',
+                                key, change.id, change.seq, JSON.stringify(err)
                             );
                         }
                         cb(null, changed);
@@ -162,7 +162,15 @@ module.exports = {
              * results has a true value in it then a change was made.
              */
             async.series(operations, function(err, results) {
-                logger.debug('series results', JSON.stringify(results));
+                logger.debug(
+                    'change results: %s', JSON.stringify(results)
+                );
+                if (err) {
+                    logger.error(
+                        'error in transition series for doc %s seq %s: %s',
+                        change.id, change.seq, JSON.stringify(err)
+                    )
+                }
                 var changed = _.some(results, function(i) {
                     return Boolean(i);
                 });
@@ -176,13 +184,14 @@ module.exports = {
                         // waiting until next change.
                         if (err) {
                             logger.error(
-                                "Error saving doc %s", JSON.stringify(err)
+                                'Error saving changes on doc %s seq %s: %s',
+                                change.id, change.seq, JSON.stringify(err)
                             );
                         }
                     });
                 } else {
                     logger.debug(
-                        'skipping saveQueue for doc %s seq %s',
+                        'skipping audit.save for doc %s seq %s',
                         change.id, change.seq
                     );
                 }
