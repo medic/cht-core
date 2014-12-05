@@ -4986,6 +4986,376 @@
                                 "content": "Download"
                             }
                         ]
+                    },
+                    {
+                        "key": "No schedules found",
+                        "default": "No schedules found",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "No schedules found"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Overview",
+                        "default": "Overview",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Overview"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Incoming Reports",
+                        "default": "Incoming Reports",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Incoming Reports"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Unsaved changes",
+                        "default": "Unsaved changes",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Unsaved changes"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Discard changes to current language",
+                        "default": "Would you like to continue and discard changes made to the current language?",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Would you like to continue and discard changes made to the current language?"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Continue",
+                        "default": "Continue",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Continue"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Registrations",
+                        "default": "Registrations",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Registrations"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Registration format",
+                        "default": "Register for this message workflow by sending an SMS with the following format:",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Register for this message workflow by sending an SMS with the following format:"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Registration example",
+                        "default": "For example, to register \"{{name}}\" you would send:",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "For example, to register \"{{name}}\" you would send:"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Validation message",
+                        "default": "If all the validations pass, this message will be sent to the sender:",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "If all the validations pass, this message will be sent to the sender:"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "No registrations found",
+                        "default": "No registrations found for this schedule. This indicates a problem with the configuration.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "No registrations found for this schedule. This indicates a problem with the configuration."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "No forms found",
+                        "default": "No forms found for this schedule.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "No forms found for this schedule."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Report format",
+                        "default": "Recorded by sending an SMS in the format:",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Recorded by sending an SMS in the format:"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Language to edit",
+                        "default": "Language to edit",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Language to edit"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Schedule",
+                        "default": "Schedule",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Schedule"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Start messages based on",
+                        "default": "Start messages based on",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Start messages based on"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Exactly",
+                        "default": "Exactly",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Exactly"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "On the day",
+                        "default": "On the {{day}}",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "On the {{day}}"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "minutes",
+                        "default": "minutes",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "minutes"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "hours",
+                        "default": "hours",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "hours"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "days",
+                        "default": "days",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "days"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "weeks",
+                        "default": "weeks",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "weeks"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "months",
+                        "default": "months",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "months"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "years",
+                        "default": "years",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "years"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "after the",
+                        "default": "after the",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "after the"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "send the following message to the",
+                        "default": "send the following message to the",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "send the following message to the"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "registration date",
+                        "default": "registration date",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "registration date"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "LMP date",
+                        "default": "LMP date",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "LMP date"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "registrant",
+                        "default": "registrant",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "registrant"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "registrants supervisor",
+                        "default": "registrant's supervisor",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "registrant's supervisor"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "This message is part of group",
+                        "default": "This message is part of group",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "This message is part of group"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "and should be sent at",
+                        "default": "and should be sent at",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "and should be sent at"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Validations",
+                        "default": "Validations",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Validations"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Add Validation",
+                        "default": "Add Validation",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Add Validation"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "patient id not found response",
+                        "default": "Send the following response message if the validations pass but the patient ID is not located.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Send the following response message if the validations pass but the patient ID is not located."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "failed validation response message",
+                        "default": "Send the following response message if the",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Send the following response message if the"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "field does not pass this validation",
+                        "default": "field does not pass this validation",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "field does not pass this validation"
+                            }
+                        ]
                     }
                 ]
             }

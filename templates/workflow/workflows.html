@@ -4,10 +4,10 @@
       <div class="schedule">
         <legend>{name}</legend>
         <p>{summary}</p>
-        <a href="{baseURL}/schedules/{name}">Edit</a>
+        <a href="{baseURL}/schedules/{name}">{@translate value="Edit"/}</a>
       </div>
     {/schedule}
   {:else}
-    <div class="no-records">No schedules found</div>
+    <div class="no-records">{@translate value="No schedules found"/}</div>
   {/workflows}
 </div>

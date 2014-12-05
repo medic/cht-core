@@ -5,53 +5,54 @@
 
   <fieldset>
   {#schedule}
-    <legend>Schedule</legend>
+    <legend>{@translate value="Schedule"/}</legend>
 
-    <label>Start messages based on</label>
+    <label>{@translate value="Start messages based on"/}</label>
     <select name="start_from">
     {#fields}
       <option value="{field_name}" {@if cond="'{start_from}' === '{field_name}'"}selected="true"{/if}>{title}</option>
     {/fields}
     </select>
 
-    <h4>Messages</h4>
+    <h4>{@translate value="Messages"/}</h4>
     <div class="repeat-container">
       {#messages}
         <div class="repeat-{@if cond="{template}"}template{:else}element{/if} message">
           <p class="inline-form control-group message-description">
             {#message}
             <select name="send_day">
-              <option value="">Exactly</option>
-              <option value="monday" {@eq key="send_day" value="monday"}selected="true"{/eq}>On the Monday</option>
-              <option value="tuesday" {@eq key="send_day" value="tuesday"}selected="true"{/eq}>On the Tuesday</option>
-              <option value="wednesday" {@eq key="send_day" value="wednesday"}selected="true"{/eq}>On the Wednesday</option>
-              <option value="thursday" {@eq key="send_day" value="thursday"}selected="true"{/eq}>On the Thursday</option>
-              <option value="friday" {@eq key="send_day" value="friday"}selected="true"{/eq}>On the Friday</option>
-              <option value="saturday" {@eq key="send_day" value="saturday"}selected="true"{/eq}>On the Saturday</option>
-              <option value="sunday" {@eq key="send_day" value="sunday"}selected="true"{/eq}>On the Sunday</option>
+              <option value="">{@translate value="Exactly"/}</option>
+              {#weekdays}
+              <option value="{code}" {@eq key="send_day" value=code}selected="true"{/eq}>
+                {@translate value="On the day" day=label/}
+              </option>
+              {/weekdays}
             </select>
             {/message}
             {#offset}
             <input name="offset_value" type="number" class="input-mini" value="{value}" min="0"/>
             <select name="offset_unit">
-              <option value="minutes" {@eq key="unit" value="minutes"}selected="true"{/eq}>minutes</option>
-              <option value="hours" {@eq key="unit" value="hours"}selected="true"{/eq}>hours</option>
-              <option value="days" {@eq key="unit" value="days"}selected="true"{/eq}>days</option>
-              <option value="weeks" {@eq key="unit" value="weeks"}selected="true"{/eq}>weeks</option>
-              <option value="months" {@eq key="unit" value="months"}selected="true"{/eq}>months</option>
-              <option value="years" {@eq key="unit" value="years"}selected="true"{/eq}>years</option>
+              {#timeunits}
+              <option value="{.}" {@eq key="unit" value=.}selected="true"{/eq}>
+                {@translate value=./}
+              </option>
+              {/timeunits}
             </select>
             {/offset}
-            after the
+            {@translate value="after the"/}
             <span class="date-property-name">
-              {@eq key="start_from" value="reported_date"}registration date{/eq}
-              {@eq key="start_from" value="lmp_date"}LMP date{/eq}
+              {@eq key="start_from" value="reported_date"}{@translate value="registration date"/}{/eq}
+              {@eq key="start_from" value="lmp_date"}{@translate value="LMP date"/}{/eq}
             </span>
-            send the following message to the
+            {@translate value="send the following message to the"/}
             {#message}
             <select name="recipient">
-              <option value="reporting_unit" {@eq key="recipient" value="reporting_unit"}selected="true"{/eq}>registrant</option>
-              <option value="parent" {@eq key="recipient" value="parent"}selected="true"{/eq}>registrant's supervisor</option>
+              <option value="reporting_unit" {@eq key="recipient" value="reporting_unit"}selected="true"{/eq}>
+                {@translate value="registrant"/}
+              </option>
+              <option value="parent" {@eq key="recipient" value="parent"}selected="true"{/eq}>
+                {@translate value="registrants supervisor"/}
+              </option>
             </select>
             {/message}
           </p>
@@ -61,40 +62,40 @@
 
           <div class="toggle">
             <h5 class="toggle-head">
-              Advanced
+              {@translate value="Advanced"/}
               <i class="fa fa-chevron-down"></i>
               <i class="fa fa-chevron-up"></i>
             </h5>
             <div class="toggle-body">
               <p class="inline-form group control-group">
-                This message is part of group
+                {@translate value="This message is part of group"/}
                 <input name="group" type="number" class="input-mini" value="{message.group}" min="0"/>
                 <span class="send_time" 
-                  {@if cond="['', 'hours', 'minutes'].indexOf('{offset.unit}') != -1"}style="display:none"{/if}
-                >
-                    and should be sent at {#sendTime}{>"partials/time.html"/}{/sendTime}
+                    {@if cond="['', 'hours', 'minutes'].indexOf('{offset.unit}') != -1"}style="display:none"{/if}>
+                  {@translate value="and should be sent at"/}
+                  {#sendTime}{>"partials/time.html"/}{/sendTime}
                 </span>
               </p>
             </div>
           </div>
 
           <p>
-            <a href="#" class="btn btn-small remove"><i class="fa fa-trash-o"></i> Remove</a>
+            <a href="#" class="btn btn-small remove"><i class="fa fa-trash-o"></i> {@translate value="Delete"/}</a>
           </p>
         </div>
       {/messages}
       <p>
-        <a href="#" class="add btn"><i class="fa fa-plus"></i> Add message</a>
+        <a href="#" class="add btn"><i class="fa fa-plus"></i> {@translate value="Add Message"/}</a>
       </p>
     </div>
     <p>
-      <a href="#" class="btn btn-small remove"><i class="fa fa-trash-o"></i> Remove</a>
+      <a href="#" class="btn btn-small remove"><i class="fa fa-trash-o"></i> {@translate value="Delete"/}</a>
     </p>
   {/schedule}
   </fieldset>
 
   <div class="footer">
-    <button type="button" class="btn submit btn-primary">Save</button>
+    <button type="button" class="btn submit btn-primary">{@translate value="Submit"/}</button>
     <span class="status"></span>
   </div>
 </form>

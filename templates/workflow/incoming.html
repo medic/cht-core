@@ -4,7 +4,7 @@
 
   <fieldset id="workflow-registrations">
 
-    <legend>Registrations</legend>
+    <legend>{@translate value="Registrations"/}</legend>
     {#registrations}
       <div class="registration" data-form="{form}">
         <div class="registration-help">
@@ -12,12 +12,12 @@
           {help|s}
         {:else}
           <p>
-            Register for this message workflow by sending an SMS with the following format: 
+            {@translate value="Registration format"/}
             <span class="pre">{form} &lt;patientname&gt;</span>
           </p>
 
           <p>
-            For example, to register "Maria Soleil" you would send:
+            {@translate value="Registration example" name="Maria Soleil"/}
             <span class="pre">{form} Maria Soleil</span>
           </p>
         {/help}
@@ -27,19 +27,19 @@
 
         <div class="toggle responses">
           <h4 class="toggle-head">
-            Responses
+            {@translate value="responses"/}
             <i class="fa fa-chevron-down"></i>
             <i class="fa fa-chevron-up"></i>
           </h4>
           <div class="toggle-body">
-            <p>If all the validations pass, this message will be sent to the sender:</p>
+            <p>{@translate value="Validation message"/}</p>
             <textarea name="content" class="input-xxlarge translated" data-message="{message}" data-messages="{messages}">{message}</textarea>
             <a href="{baseURL}/help/messages" target="_blank" class="help"><i class="fa fa-question-circle"></i></a>
           </div>
         </div>
       </div>
     {:else}
-      <p>No registrations found for this schedule. This indicates a problem with the configuration.<p>
+      <p>{@translate value="No registrations found"/}<p>
     {/registrations}
   </fieldset>
 
@@ -48,17 +48,17 @@
     <fieldset class="report" data-form="{form}">
       <legend>{name}</legend>
       {#format}
-      <p>Recorded by sending an SMS in the format <span class="pre">{.}</span>.</p>
+      <p>{@translate value="Report format"/} <span class="pre">{.}</span></p>
       {/format}
       {>"workflow/form.html"/}
     </fieldset>
   {:else}
-    <p>No forms found for this schedule.</p>
+    <p>{@translate value="No forms found"/}</p>
   {/reports}
   </div>
 
   <div class="footer">
-    <button type="button" class="btn submit btn-primary">Save</button>
+    <button type="button" class="btn submit btn-primary">{@translate value="Submit"/}</button>
     <span class="status"></span>
   </div>
 
