@@ -23,6 +23,10 @@ Default settings values are in `defaults.js`.
 
 `node ./server.js`
 
+Debug mode:
+
+`node ./server.js debug`
+
 ## Run Tests
 
 `npm test`
