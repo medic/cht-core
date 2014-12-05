@@ -7,13 +7,23 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc) {
+        var self = module.exports;
         return Boolean(
             doc &&
             doc.form &&
             doc.reported_date &&
             doc.related_entities &&
             doc.related_entities.clinic &&
-            doc.related_entities.clinic._id
+            doc.related_entities.clinic._id &&
+            doc.type === 'data_record' &&
+            !self._hasRun(doc)
+        );
+    },
+    _hasRun: function(doc) {
+        return Boolean(
+            doc &&
+            doc.transitions &&
+            doc.transitions['update_sent_forms']
         );
     },
     onMatch: function(change, db, audit, callback) {
@@ -38,9 +48,12 @@ module.exports = {
 
                 if (!latest || moment(latest) < reported) {
                     clinic.sent_forms[form] = moment(reported_date).toISOString();
+                } else {
+                    // nothing to do here
+                    return callback();
                 }
 
-                db.saveDoc(clinic, function(err) {
+                audit.saveDoc(clinic, function(err) {
                     if (err) {
                         callback(err);
                     } else {
