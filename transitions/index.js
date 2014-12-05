@@ -1,4 +1,4 @@
-var couchmark = require('couchmark'),
+var follow = require('follow'),
     _ = require('underscore'),
     async = require('async'),
     path = require('path'),
@@ -61,14 +61,7 @@ module.exports = {
     },
     attach: function(design) {
         var db = require('../db'),
-            audit = require('couchdb-audit').withNode(db, db.user),
-            stream = 'all_docs';
-
-        var feed = new couchmark.Feed({
-            db: process.env.COUCH_URL,
-            include_docs: true,
-            stream: stream
-        });
+            audit = require('couchdb-audit').withNode(db, db.user);
 
         /*
          * All transitions reference the same change.doc and work in series to
@@ -105,11 +98,36 @@ module.exports = {
                 // mark transitions as finished including error state
                 doc.transitions[key] = {
                     ok: !err,
-                    last_rev: parseInt(doc._rev) + 1 // because it's the revision AFTER a save
+                    last_rev: parseInt(doc._rev) + 1, // because it's the revision AFTER a save
+                    seq: change.seq
                 };
                 callback(null, changed);
             });
         }
+
+        var feed = new follow.Feed({
+            db: process.env.COUCH_URL,
+            include_docs: true,
+            since: 0
+        });
+
+        var match_types = [
+            'data_record',
+            'clinic',
+            'health_center',
+            'district'
+        ];
+
+        feed.filter = function(doc, req) {
+            /*
+             * req.query is the parameters from the _changes request and
+             * also feed.query_params.
+             */
+            if (match_types.indexOf(doc.type) >= 0) {
+                return true;
+            }
+            return false;
+        };
 
         /*
          * Putting all saves in a queue, not sure why but feels safer right
@@ -122,9 +140,9 @@ module.exports = {
 
         feed.on('change', function(change) {
 
-            logger.debug(
-                'change on %s feed for doc %s seq %s',
-                stream, change.id, change.seq
+            logger.info(
+                'change event on doc %s seq %s',
+                change.id, change.seq
             );
 
             var operations = [];
@@ -141,17 +159,17 @@ module.exports = {
                 operations.push(function(cb) {
                     applyTransition(opts, function(err, changed) {
                         /*
-                         * Do not short circuit async.series by transition
-                         * errors, continue applying transitions.  Transition
+                         * Transition error short circuits async.series,
+                         * effectively throwing away the changes.  Transition
                          * will be retried on next change event on doc.
                          */
                         if (err) {
-                            logger.debug(
+                            logger.error(
                                 'transition %s returned error doc %s seq %s: %s',
                                 key, change.id, change.seq, JSON.stringify(err)
                             );
                         }
-                        cb(null, changed);
+                        cb(err, changed);
                     });
                 });
             });
@@ -159,23 +177,24 @@ module.exports = {
             /*
              * Run transitions in a series and save the doc if we have changes.
              * Otherwise transitions did nothing and saving is unnecessary.  If
-             * results has a true value in it then a change was made.
+             * results has a true value in it then a change was made. If
+             * transition gives an error then we abort processing this change.
              */
             async.series(operations, function(err, results) {
                 logger.debug(
-                    'change results: %s', JSON.stringify(results)
+                    'transition results: %s', JSON.stringify(results)
                 );
                 if (err) {
-                    logger.error(
-                        'error in transition series for doc %s seq %s: %s',
+                    return logger.error(
+                        'transition error, skipping save for doc %s seq %s: %s',
                         change.id, change.seq, JSON.stringify(err)
-                    )
+                    );
                 }
                 var changed = _.some(results, function(i) {
                     return Boolean(i);
                 });
                 if (changed) {
-                    logger.debug(
+                    logger.info(
                         'saving changes on doc %s seq %s',
                         change.id, change.seq
                     );
@@ -191,19 +210,14 @@ module.exports = {
                     });
                 } else {
                     logger.debug(
-                        'skipping audit.save for doc %s seq %s',
+                        'nothing changed skipping audit.save for doc %s seq %s',
                         change.id, change.seq
                     );
                 }
             });
         });
 
-        feed.on('ready', function() {
-            logger.info(
-                'Listening to changes on feed %s and seq %s',
-                stream, feed.since
-            );
-            feed.follow();
-        });
+        feed.follow();
+
     }
 }
