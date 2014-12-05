@@ -901,11 +901,18 @@
         $table.data('spreadsheet:bound', true);
     };
 
+    var _en = {
+        'jquery.spreadsheet.addrow': 'Add row',
+        'jquery.spreadsheet.help.doubleclick': 'Double click: or enter key to edit a cell.',
+        'jquery.spreadsheet.help.enter': 'Enter: key to save.',
+        'jquery.spreadsheet.help.escape': 'Escape: key for undo.',
+        'jquery.spreadsheet.help.tab': 'Tab: cycles through cells.',
+        'jquery.spreadsheet.rows': 'rows'
+    };
 
     /**
      * Public init function
      */
-
     $.fn.spreadsheet = function (options) {
         var $table = $(this),
             table,
@@ -919,7 +926,10 @@
             data: [],
             remove: $.noop,
             save: $.noop,
-            removeConfirm: function(doc, cb) {cb();}
+            removeConfirm: function(doc, cb) {cb();},
+            translate: function(key) {
+                return _en[key] || key;
+            }
         });
 
         if (!options.columns) {
@@ -929,10 +939,10 @@
         help =  '<div class="spreadsheet-help">' +
                 '<i class="fa fa-question-circle"></i>' +
                 '<ul>' +
-                '<li><b>Double click</b> or enter key to edit a cell.</li>' +
-                '<li><b>Enter</b> key to save.</li>' +
-                '<li><b>Escape</b> key for undo.</li>' +
-                '<li><b>Tab</b> cycles through cells.</li>' +
+                '<li>' + options.translate('jquery.spreadsheet.help.doubleclick') + '</li>' +
+                '<li>' + options.translate('jquery.spreadsheet.help.enter') + '</li>' +
+                '<li>' + options.translate('jquery.spreadsheet.help.escape') + '</li>' +
+                '<li>' + options.translate('jquery.spreadsheet.help.tab') + '</li>' +
                 '</ul>' +
                 '</div>';
 
@@ -953,7 +963,8 @@
             $table.append(
                 '<div class="spreadsheet-actions">' +
                     '<a href="#" class="btn add-row-btn">' +
-                        '<i class="fa fa-plus"></i> Add row' +
+                        '<i class="fa fa-plus"></i> ' +
+                        options.translate('jquery.spreadsheet.addrow') +
                     '</a>' +
                     '<span class="row-counter"></span>' +
                 '</div>'
@@ -967,7 +978,7 @@
 
         bindDocumentEvents.call(this);
         bindTableEvents.call(this, options);
-        $('.row-counter', this).text(options.data.length + ' rows');
+        $('.row-counter', this).text(options.data.length + ' ' + options.translate('jquery.spreadsheet.rows'));
         $table.find('.spreadsheet-help').on('click', function(ev){ 
             var el = $(ev.target);
             el.siblings('ul').toggle();

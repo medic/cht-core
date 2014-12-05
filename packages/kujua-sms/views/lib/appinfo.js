@@ -79,6 +79,14 @@ exports.getAppInfo = function() {
         return settings;
     }
 
+    function getLocale() {
+        var locale;
+        if (typeof window !== 'undefined') {
+          locale = cookies.readBrowserCookie('locale');
+        }
+        return locale || app_settings.locale;
+    };
+
     /*
      * Value is object with locale strings, e.g.
      *
@@ -118,10 +126,7 @@ exports.getAppInfo = function() {
             return value;
         }
 
-        if (!locale && typeof window !== 'undefined') {
-          locale = cookies.readBrowserCookie('locale');
-        }
-        locale = locale || app_settings.locale;
+        locale = locale || getLocale();
 
         var test = false;
         if (locale === 'test') {
@@ -207,6 +212,7 @@ exports.getAppInfo = function() {
     app_settings.translate = _.partial(translate, app_settings.translations);
     app_settings.getMessage = getMessage;
     app_settings.getForm = getForm;
+    app_settings.getLocale = getLocale;
 
     return app_settings;
 };

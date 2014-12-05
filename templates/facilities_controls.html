@@ -2,19 +2,19 @@
 <div id="facilities-controls">
 <form class="pull-right form-inline" method="get">
   <div class="options">
-    <button type="button" class="btn btn-small backup" data-url="{baseURL}/facilities/backup">Backup</button>
-    <a class="btn btn-small restore">Restore</a>
+    <a type="button" class="btn btn-small backup" data-url="{baseURL}/facilities/backup">{@translate value="Backup"/}</a>
+    <a class="btn btn-small restore">{@translate value="Restore"/}</a>
   </div>
   <div class="options-restore hide">
       <fieldset>
         <label class="checkbox">
-          <input type="checkbox" name="overwrite"> Overwrite Existing Records
+          <input type="checkbox" name="overwrite">
+          {@translate value="Overwrite Existing Records"/}
         </label>
-        <button type="button" class="btn btn-small choose">Choose File</button>
+        <button type="button" class="btn btn-small choose">{@translate value="Choose File"/}</button>
         <button type="button" title="Cancel" class="cancel close">&times;</button>
       </fieldset>
   </div>
-  <!--div style="height:0; width:0; overflow:hidden;"-->
   <div class="hide">
     <input class="uploader" type="file" accept="application/json">
   </div>

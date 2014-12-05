@@ -1,7 +1,7 @@
 {#messages}
   <div class="row-fluid form-row">
     <h4 class="span8">
-      Messages
+      {@translate value="Messages"/}
       <i class="fa fa-envelope"></i>
     </h4>
     <div class="span3"><label></label></div>
@@ -15,7 +15,7 @@
   </div>
   {#districts}
     <div class="row-fluid district-form-row">
-      <h5 class="span8">{dh_name}</h5>
+      <h5 class="span8">{#dh_name}{.}{:else}{@translate value="No district"/}{/dh_name}</h5>
       <div class="span3"><label></label></div>
       <div class="span1">
         <form class="form-inline" method="get">

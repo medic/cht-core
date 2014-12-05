@@ -5,18 +5,21 @@
       <i data-time-icon="fa fa-clock-o" data-date-icon="fa fa-calendar"></i>
     </span>
   </div>
-  to
+  {@translate value="date.to"/}
   <div id="endDate" class="input-append" data-role="datetimepicker">
     <input class="input-small" placeholder="yyyy-mm-dd" data-format="yyyy-MM-dd" type="text">
     <span class="add-on">
       <i data-time-icon="fa fa-clock-o" data-date-icon="fa fa-calendar"></i>
     </span>
   </div>
-  <select name="format" class="input-medium">
-    <option value="csv">CSV (English)</option>
-    <option value="xml">Excel (English)</option>
-    <option value="csv,fr">CSV (French)</option>
-    <option value="xml,fr">Excel (French)</option>
+  <select name="format" class="input-small">
+    <option value="csv">CSV</option>
+    <option value="xml">Excel</option>
+  </select>
+  <select name="locale" class="input-medium">
+  {#locales}
+    <option value="{code}" {@if cond="'{code}' === '{locale}'"}selected="true"{/if}>{name}</option>
+  {/locales}
   </select>
   <a href="help/export" target="_blank" class="help"><i class="fa fa-question-circle"></i></a>
 </form>

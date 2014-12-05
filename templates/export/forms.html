@@ -1,10 +1,7 @@
 {#forms}
   <div class="row-fluid form-row">
-    <h4 class="span8">
-      {title}
-      <div class="label label-faded">{form}</div>
-    </h4>
-    <div class="span3"><label>{total} records</label></div>
+    <h4 class="span8">{form}: {title}</h4>
+    <div class="span3"><label>{@translate value="number records" number=total/}</label></div>
     <div class="span1">
       <form class="form-inline" method="get">
         <button class="btn btn-primary" type="submit" data-url="{baseURL}/export/forms/{form}" data-query="{q}">
@@ -15,8 +12,8 @@
   </div>
   {#districts}
     <div class="row-fluid district-form-row">
-      <h5 class="span8">{dh_name}</h5>
-      <div class="span3"><label>{total} records</label></div>
+      <h5 class="span8">{#dh_name}{.}{:else}{@translate value="No district"/}{/dh_name}</h5>
+      <div class="span3"><label>{@translate value="number records" number=total/}</label></div>
       <div class="span1">
         <form class="form-inline" method="get">
           <button class="btn btn-primary" type="submit" data-url="{baseURL}/export/forms/{form}" data-form="{form}" data-query="{q}">

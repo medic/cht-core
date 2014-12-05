@@ -5356,6 +5356,156 @@
                                 "content": "field does not pass this validation"
                             }
                         ]
+                    },
+                    {
+                        "key": "Audit Logs",
+                        "default": "Audit Logs",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Audit Logs"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "User Feedback",
+                        "default": "User Feedback",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "User Feedback"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Showing number of total",
+                        "default": "Showing {{number}} of {{total}}.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Showing {{number}} of {{total}}."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "number records",
+                        "default": "{{number}} records",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "{{number}} records"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "No district",
+                        "default": "No district",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "No district"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Backup",
+                        "default": "Backup",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Backup"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Restore",
+                        "default": "Restore",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Restore"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Overwrite Existing Records",
+                        "default": "Overwrite Existing Records",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Overwrite Existing Records"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Choose File",
+                        "default": "Choose File",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Choose File"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "jquery.spreadsheet.addrow",
+                        "default": "Add row",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Add row"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "jquery.spreadsheet.help.doubleclick",
+                        "default": "Double click: or enter key to edit a cell.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Double click: or enter key to edit a cell."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "jquery.spreadsheet.help.enter",
+                        "default": "Enter: key to save.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Enter: key to save."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "jquery.spreadsheet.help.escape",
+                        "default": "Escape: key for undo.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Escape: key for undo."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "jquery.spreadsheet.help.tab",
+                        "default": "Tab: cycles through cells.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Tab: cycles through cells."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "jquery.spreadsheet.rows",
+                        "default": "rows",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "rows"
+                            }
+                        ]
                     }
                 ]
             }
