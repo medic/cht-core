@@ -170,13 +170,15 @@ exports.makeDataRecordReadable = function(doc, appinfo, language) {
             // avoid crash if item is falsey
             if (!t) continue;
 
-            // format timestamp
             if (t.due) {
                 copy.due = t.due;
             }
 
+            // timestamp is used for sorting in the frontend
             if (t.timestamp) {
                 copy.timestamp = t.timestamp;
+            } else if (t.due) {
+                copy.timestamp = t.due;
             }
 
             // setup scheduled groups
@@ -200,13 +202,6 @@ exports.makeDataRecordReadable = function(doc, appinfo, language) {
             groups[group_name].rows.push(copy);
         }
         for (var k in groups) {
-            // sort by due date ascending
-            groups[k].rows.sort(function(l,r) {
-                if (!l._due_ts || !r._due_ts) {
-                    return 0
-                }
-                return (l._due_ts < r._due_ts) ? -1 : 1;
-            });
             data_record.scheduled_tasks_by_group.push(groups[k]);
         }
     }

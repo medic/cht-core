@@ -68,7 +68,7 @@
             </span>
           </p>
           <ul class="task-list">
-            <li ng-repeat="task in group.rows | orderBy:'due'">
+            <li ng-repeat="task in group.rows | orderBy:'timestamp'">
               <ul>
                 <li ng-repeat="message in task.messages">
                   {~lb}{~lb}message.message{~rb}{~rb}
