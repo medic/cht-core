@@ -1,7 +1,7 @@
 <div id="user-management" class="tab-content">
   <a id="add-user" href="#" class="btn btn-primary">
     <i class="fa fa-user"></i>
-    Add User
+    {@translate value="Add User"/}
   </a>
 
   <div id="user-list">
@@ -9,12 +9,12 @@
       <thead>
         <tr>
           <td>&nbsp;</td>
-          <td>User Name</td>
-          <td>Full Name</td>
-          <td>User Type</td>
-          <td>Facility</td>
-          <td>Email</td>
-          <td>Phone</td>
+          <td>{@translate value="User Name"/}</td>
+          <td>{@translate value="Full Name"/}</td>
+          <td>{@translate value="User Type"/}</td>
+          <td>{@translate value="Facility"/}</td>
+          <td>{@translate value="Email Address"/}</td>
+          <td>{@translate value="Phone Number"/}</td>
         </tr>
       </thead>
       <tbody>
@@ -28,7 +28,7 @@
 <div id="user-management-modal" class="modal hide fade" tabindex="-1">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal">&times;</button>
-    <h3>Add User</h3>
+    <h3>{@translate value="Add User"/}</h3>
   </div>
   <div class="modal-body">
     <form id="user-form">
@@ -43,54 +43,55 @@
         <input id="password_scheme" type="hidden" />
         <input id="known" type="hidden" />
 
-        <label for="name">User Name *</label>
+        <label for="name">{@translate value="User Name"/} *</label>
         <input id="name" type="text" />
 
-        <label for="fullname">Full Name</label>
+        <label for="fullname">{@translate value="Full Name"/}</label>
         <input id="fullname" type="text" />
 
-        <label for="email">E-mail Address</label>
-        <input id="email" type="text" />
-
-        <label for="type">User Type</label>
-        <select id="type">
+        <label for="type">{@translate value="User Type"/}</label>
+        <select id="type" data-placeholder="{@translate value="Select a type"/}">
           <option value=""></option>
-          <optgroup label="People">
-            <option value="national-manager">Full access</option>
-            <option value="district-manager">Restricted to group of facilities</option>
-            <option value="data-entry">Data entry - access to Medic Reporter only</option>
+          <optgroup label="{@translate value="usertype.people"/}">
+            <option value="national-manager">{@translate value="usertype.national-manager"/}</option>
+            <option value="district-manager">{@translate value="usertype.district-manager"/}</option>
+            <option value="data-entry">{@translate value="usertype.data-entry"/}</option>
           </optgroup>
-          <optgroup label="Computers">
-            <option value="analytics">Analytics - Data export via URL only</option>
-            <option value="gateway">Gateway - Limited access user for SMSSync</option>
+          <optgroup label="{@translate value="usertype.computers"/}">
+            <option value="analytics">{@translate value="usertype.analytics"/}</option>
+            <option value="gateway">{@translate value="usertype.gateway"/}</option>
           </optgroup>
         </select>
 
-        <label for="facility_id">Facility</label>
-        <div id="facility_id"></div>
+        <label for="facility_id">{@translate value="Facility"/}</label>
+        <div id="facility_id" data-placeholder="{@translate value="Select a facility"/}"></div>
 
-        <label for="language">Language</label>
-        <select id="language">
+        <label for="language">{@translate value="Language"/}</label>
+        <select id="language" data-placeholder="{@translate value="Select a language"/}">
+          <option value=""></option>
           {#locales}
             <option value="{code}">{name}</option>
           {/locales}
         </select>
 
-        <label for="phone">Phone Number</label>
+        <label for="email">{@translate value="Email Address"/}</label>
+        <input id="email" type="text" />
+
+        <label for="phone">{@translate value="Phone Number"/}</label>
         <input id="phone" type="text" />
 
-        <label for="password">Password <span class="password-required">*</span></label>
+        <label for="password">{@translate value="Password"/} <span class="password-required">*</span></label>
         <input id="password" type="password" autocomplete="off" />
 
-        <label for="password-confirm">Confirm Password <span class="password-required">*</span></label>
+        <label for="password-confirm">{@translate value="Confirm Password"/} <span class="password-required">*</span></label>
         <input id="password-confirm" type="password" autocomplete="off" />
       </div>
     </form>
   </div>
   <div class="modal-footer">
     <p class="note">{note}</p>
-    <button type="button" class="btn cancel btn-link" data-dismiss="modal">Cancel</button>
-    <button type="button" class="btn submit btn-primary">Save</button>
+    <button type="button" class="btn cancel btn-link" data-dismiss="modal">{@translate value="Cancel"/}</button>
+    <button type="button" class="btn submit btn-primary">{@translate value="Submit"/}</button>
   </div>
 </div>
 
@@ -102,8 +103,8 @@
         <h4 class="modal-title" id="user-delete-confirmation-label"></h4>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-danger btn-primary">Delete</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">{@translate value="Cancel"/}</button>
+        <button type="button" class="btn btn-danger btn-primary">{@translate value="Delete"/}</button>
       </div>
     </div>
   </div>

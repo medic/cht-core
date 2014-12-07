@@ -2422,21 +2422,21 @@ module.exports = {
       },
       {
           "key": "Full Name",
-          "default": "Full Name",
+          "default": "Full name",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Full Name"
+                  "content": "Full name"
               }
           ]
       },
       {
           "key": "Email Address",
-          "default": "E-mail Address",
+          "default": "E-mail address",
           "translations": [
               {
                   "locale": "en",
-                  "content": "E-mail Address"
+                  "content": "E-mail address"
               }
           ]
       },
@@ -4503,6 +4503,216 @@ module.exports = {
               {
                   "locale": "en",
                   "content": "rows"
+              }
+          ]
+      },
+      {
+          "key": "Add User",
+          "default": "Add User",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Add User"
+              }
+          ]
+      },
+      {
+          "key": "Edit User",
+          "default": "Edit User",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Edit User"
+              }
+          ]
+      },
+      {
+          "key": "User Name",
+          "default": "User name",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "User name"
+              }
+          ]
+      },
+      {
+          "key": "User Type",
+          "default": "User type",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "User type"
+              }
+          ]
+      },
+      {
+          "key": "Facility",
+          "default": "Facility",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Facility"
+              }
+          ]
+      },
+      {
+          "key": "Password",
+          "default": "Password",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Password"
+              }
+          ]
+      },
+      {
+          "key": "Confirm Password",
+          "default": "Confirm password",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Confirm password"
+              }
+          ]
+      },
+      {
+          "key": "usertype.people",
+          "default": "People",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "People"
+              }
+          ]
+      },
+      {
+          "key": "usertype.computers",
+          "default": "Computers",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Computers"
+              }
+          ]
+      },
+      {
+          "key": "usertype.national-manager",
+          "default": "Full access",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Full access"
+              }
+          ]
+      },
+      {
+          "key": "usertype.national-manager",
+          "default": "Full access",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Full access"
+              }
+          ]
+      },
+      {
+          "key": "usertype.district-manager",
+          "default": "Restricted to group of facilities",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Restricted to group of facilities"
+              }
+          ]
+      },
+      {
+          "key": "usertype.data-entry",
+          "default": "Data entry - access to Medic Reporter only",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Data entry - access to Medic Reporter only"
+              }
+          ]
+      },
+      {
+          "key": "usertype.analytics",
+          "default": "Analytics - Data export via URL only",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Analytics - Data export via URL only"
+              }
+          ]
+      },
+      {
+          "key": "usertype.gateway",
+          "default": "Gateway - Limited access user for SMSSync",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Gateway - Limited access user for SMSSync"
+              }
+          ]
+      },
+      {
+          "key": "Select a type",
+          "default": "Select a type",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Select a type"
+              }
+          ]
+      },
+      {
+          "key": "Select a facility",
+          "default": "Select a facility",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Select a facility"
+              }
+          ]
+      },
+      {
+          "key": "Select a language",
+          "default": "Select a language",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Select a language"
+              }
+          ]
+      },
+      {
+          "key": "field is required",
+          "default": "{{field}} is a required field.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "{{field}} is a required field."
+              }
+          ]
+      },
+      {
+          "key": "Passwords must match",
+          "default": "Passwords must match.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Passwords must match."
+              }
+          ]
+      },
+      {
+          "key": "Confirm delete user",
+          "default": "Are you sure you want to delete {{name}}? This operation cannot be undone.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Are you sure you want to delete {{name}}? This operation cannot be undone."
               }
           ]
       }
