@@ -3537,6 +3537,186 @@ module.exports = {
           ]
       },
       {
+          "key": "tour.admin.configuration.title",
+          "default": "Settings Configuration",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Settings Configuration"
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.configuration.description",
+          "default": "Here you can customize settings including translations, forms, and other general settings.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Here you can customize settings including translations, forms, and other general settings."
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.settings.title",
+          "default": "Settings",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Settings"
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.settings.description",
+          "default": "General configuration settings.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "General configuration settings."
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.translations.title",
+          "default": "Translations",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Translations"
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.translations.description",
+          "default": "Configure the translation values.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Configure the translation values."
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.forms.title",
+          "default": "Forms",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Forms"
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.forms.description",
+          "default": "Import and export the available forms.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Import and export the available forms."
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.advanced.title",
+          "default": "Advanced",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Advanced"
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.advanced.description",
+          "default": "Advanced settings and update application.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Advanced settings and update application."
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.schedules.title",
+          "default": "Schedules Configuration",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Schedules Configuration"
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.schedules.description",
+          "default": "Configure the messages that will be generated when a patient is registered.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Configure the messages that will be generated when a patient is registered."
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.export.title",
+          "default": "Export",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Export"
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.export.description",
+          "default": "Export messages, reports, or the audit log. The exports are divided into specific districts and can be filtered by date.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Export messages, reports, or the audit log. The exports are divided into specific districts and can be filtered by date."
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.user.title",
+          "default": "User Management",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "User Management"
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.user.description",
+          "default": "Here you can create, edit, or delete users.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Here you can create, edit, or delete users."
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.facilities.title",
+          "default": "Facilities and Health Workers",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Facilities and Health Workers"
+              }
+          ]
+      },
+      {
+          "key": "tour.admin.facilities.description",
+          "default": "Here is where you manage your facilities and field workers.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Here is where you manage your facilities and field workers."
+              }
+          ]
+      },
+      {
           "key": "Institutional Delivery",
           "default": "Institutional Delivery",
           "translations": [
