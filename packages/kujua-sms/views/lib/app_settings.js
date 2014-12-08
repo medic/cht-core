@@ -4887,7 +4887,7 @@ module.exports = {
           ]
       },
       {
-          "key": "Confirm delete user",
+          "key": "Confirm delete",
           "default": "Are you sure you want to delete {{name}}? This operation cannot be undone.",
           "translations": [
               {
@@ -4983,6 +4983,66 @@ module.exports = {
               {
                   "locale": "en",
                   "content": "<h4>Integration</h4> <p>You can export data by making requests to specific URLs.</p> <h5>Forms</h5> <p>Export a file containing all submitted forms.</p> <pre>/export/forms/&lt;formcode&gt;</pre> <p>Parameters:</p> <dl class=\"horizontal\"> <dt>format</dt> <dd>The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.</dd> <dt>locale</dt> <dd>Locale for translatable data. Defaults to 'en'.</dd> <dt>tz</dt> <dd>The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.</dd> <dt>skip_header_row</dt> <dd>'true' to omit the column headings. Defaults to 'false'.</dd> <dt>columns</dt> <dd> <p>An orderered array of columns to export, eg:</p> <pre>[\"reported_date\",\"from\",\"related_entities.clinic.name\"]</pre> <p>Defaults to:</p> <pre>[\"_id\",\"patient_id\",\"reported_date\", \"from\", \"related_entities.clinic.contact.name\", \"related_entities.clinic.name\", \"related_entities.clinic.parent.contact.name\", \"related_entities.clinic.parent.name\", \"related_entities.clinic.parent.parent.name\"]</pre> <p>Available columns:</p> <ul> <li>_id</li> <li>patient_id</li> <li>reported_date</li> <li>from</li> <li>related_entities.clinic.name</li> <li>related_entities.clinic.external_id</li> <li>related_entities.clinic.contact.name</li> <li>related_entities.clinic.parent.name</li> <li>related_entities.clinic.parent.external_id</li> <li>related_entities.clinic.parent.contact.name</li> <li>related_entities.clinic.parent.parent.name</li> <li>related_entities.clinic.parent.parent.external_id</li> </ul> <p>All form fields will be included as columns at the end regardless of the value for this parameter.</p> </dd> </dl> <h5>Messages</h5> <p>Export a file containing all messages</p> <pre>/export/messages</pre> <p>Examples:</p> <p>Return only rows that are scheduled to be sent in the next ten days.</p> <pre>/export/messages?filter_state=scheduled&amp;filter_state_to=10</pre> <p>Parameters:</p> <dl class=\"horizontal\"> <dt>format</dt> <dd>The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.</dd> <dt>locale</dt> <dd>Locale for translatable data. Defaults to 'en'.</dd> <dt>tz</dt> <dd>The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.</dd> <dt>skip_header_row</dt> <dd>'true' to omit the column headings. Defaults to 'false'.</dd> <dt>columns</dt> <dd> <p>An orderered array of columns to export, eg:</p> <pre>[\"reported_date\",\"from\",\"related_entities.clinic.name\"]</pre> <p>Defaults to:</p> <pre>[\"_id\",\"patient_id\",\"reported_date\", \"from\", \"related_entities.clinic.contact.name\", \"related_entities.clinic.name\", \"related_entities.clinic.parent.contact.name\", \"related_entities.clinic.parent.name\", \"related_entities.clinic.parent.parent.name\",\"task.type\",\"task.state\",\"received\",\"scheduled\",\"pending\",\"sent\",\"cleared\",\"muted\"]</pre> <p>Available columns:</p> <ul> <li>_id</li> <li>patient_id</li> <li>reported_date</li> <li>from</li> <li>related_entities.clinic.name</li> <li>related_entities.clinic.external_id</li> <li>related_entities.clinic.contact.name</li> <li>related_entities.clinic.parent.name</li> <li>related_entities.clinic.parent.external_id</li> <li>related_entities.clinic.parent.contact.name</li> <li>related_entities.clinic.parent.parent.name</li> <li>related_entities.clinic.parent.parent.external_id</li> <li>task.type</li> <li>task.state</li> <li>received</li> <li>scheduled</li> <li>pending</li> <li>sent</li> <li>cleared</li> <li>muted</li> </ul> <p>Regardless of the value for this parameter, for each message the following four columns will be appended</p> <ul> <li>Message UUID</li> <li>Sent By</li> <li>To phone</li> <li>Message Body</li> </ul> </dd> <dt>filter_state</dt> <dd>Used in conjunction with the parameters below to only return messages that were in a given state. Possible values are 'received', 'scheduled', 'pending', 'sent', 'cleared', or 'muted'.</dd> <dt>filter_state_from</dt> <dd>The number of days from now to use as a lower bound on the date that the message is in the given state. Defaults to no lower bound. Ignored if filter_state is not provided.</dd> <dt>filter_state_to</dt> <dd>The number of days from now to use as an upper bound on the date that the message is in the given state. Defaults to no upper bound. Ignored if filter_state is not provided.</dd> </dl> <h5>Audit Log</h5> <p>Export a file containing the audit log.</p> <pre>/export/audit</pre> <p>Parameters:</p> <dl class=\"horizontal\"> <dt>format</dt> <dd>The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.</dd> <dt>locale</dt> <dd>Locale for translatable data. Defaults to 'en'.</dd> <dt>tz</dt> <dd>The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.</dd> <dt>skip_header_row</dt> <dd>'true' to omit the column headings. Defaults to 'false'.</dd> </dl>"
+              }
+          ]
+      },
+      {
+          "key": "Phone number example",
+          "default": "Phone number, eg: +225558881111",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Phone number, eg: +225558881111"
+              }
+          ]
+      },
+      {
+          "key": "Reading file",
+          "default": "Reading file...",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Reading file..."
+              }
+          ]
+      },
+      {
+          "key": "Processed number of total records",
+          "default": "Processed {{number}}/{{total}} records...",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Processed {{number}}/{{total}} records..."
+              }
+          ]
+      },
+      {
+          "key": "Restored number of total records",
+          "default": "{{number}}/{{total}} facilities restored.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "{{number}}/{{total}} facilities restored."
+              }
+          ]
+      },
+      {
+          "key": "Skipped number of records",
+          "default": "Skipped {{number}} records.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Skipped {{number}} records."
+              }
+          ]
+      },
+      {
+          "key": "number errors",
+          "default": "We encountered {{number}} errors:",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "We encountered {{number}} errors:"
               }
           ]
       }

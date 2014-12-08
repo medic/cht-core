@@ -1,24 +1,25 @@
 <div id="facilities-restore">
   {?msg}
-    {?errors}
-    <div class="row">
-      <div class="offset2 span8">
-        <p class="msg">{msg} We encountered {errors.length} errors:</p>
-        <div class="alert alert-error">
-          <p class="errors">{#errors}{.}, {/errors}</p>
-        </div>
-      </div>
-    </div>
-    {:else}
     <div class="row">
       <div class="offset2 span8">
         <p class="msg">{msg}</p>
       </div>
     </div>
+    {?errors}
+    <div class="row">
+      <div class="offset2 span8">
+        <p class="msg">{@translate value="number errors" number=errors.length/}</p>
+        <div class="alert alert-error">
+          <p class="errors">{#errors}{.}, {/errors}</p>
+        </div>
+      </div>
+    </div>
     {/errors}
     <div class="row">
       <div class="offset2 span8">
-        <p class="continue"><a class="btn btn-primary" href="">Continue</a></p>
+        <p class="continue">
+          <a class="btn btn-primary" href="">{@translate value="Continue"/}</a>
+        </p>
       </div>
     </div>
   {/msg}
