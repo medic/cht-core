@@ -1,7 +1,7 @@
-<label for="language">Set Language for Outgoing Messages</label>
+<label for="language">{@translate value="setup.language.title"/}</label>
 <select id="language">
 {#locales}
   <option value="{code}" {@if cond="'{locale}' === '{code}'"}selected="true"{/if}>{name}</option>
 {/locales}
 </select>
-<span class="help-block">View and edit translations for this language by going to the Translations tab.</span>
+<span class="help-block">{@translate value="setup.language.subtitle"/}</span>

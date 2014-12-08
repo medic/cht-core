@@ -6046,6 +6046,96 @@
                                 "content": "We encountered {{number}} errors:"
                             }
                         ]
+                    },
+                    {
+                        "key": "Failed validation",
+                        "default": "Failed validation",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Failed validation"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Save failed",
+                        "default": "Save failed",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Save failed"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Saved",
+                        "default": "Saved",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Saved"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "The first time must be earlier than the second time",
+                        "default": "The first time must be earlier than the second time",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "The first time must be earlier than the second time"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "File not found",
+                        "default": "File not found",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "File not found"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "The unit must be an integer",
+                        "default": "The unit must be an integer",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "The unit must be an integer"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "The group must be an integer",
+                        "default": "The group must be an integer",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "The group must be an integer"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "The offset unit must be an integer",
+                        "default": "The offset unit must be an integer",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "The offset unit must be an integer"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Patient Report",
+                        "default": "Patient Report",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Patient Report"
+                            }
+                        ]
                     }
                 ]
             }
