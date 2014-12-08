@@ -1801,6 +1801,16 @@ module.exports = {
           ]
       },
       {
+          "key": "Deleting",
+          "default": "Deleting...",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Deleting..."
+              }
+          ]
+      },
+      {
           "key": "Edit",
           "default": "Edit",
           "translations": [
@@ -2327,26 +2337,6 @@ module.exports = {
               {
                   "locale": "en",
                   "content": "Errors"
-              }
-          ]
-      },
-      {
-          "key": "Automated Reply",
-          "default": "Automated Reply",
-          "translations": [
-              {
-                  "locale": "en",
-                  "content": "Automated Reply"
-              }
-          ]
-      },
-      {
-          "key": "Automated Reply",
-          "default": "Automated Reply",
-          "translations": [
-              {
-                  "locale": "en",
-                  "content": "Automated Reply"
               }
           ]
       },
@@ -4017,16 +4007,6 @@ module.exports = {
           ]
       },
       {
-          "key": "Replace country code with",
-          "default": "Replace the country code for {{country}} with {{code}}",
-          "translations": [
-              {
-                  "locale": "en",
-                  "content": "Replace the country code for {{country}} with {{code}}"
-              }
-          ]
-      },
-      {
           "key": "Replace country code for",
           "default": "Replace country code for",
           "translations": [
@@ -4773,16 +4753,6 @@ module.exports = {
               {
                   "locale": "en",
                   "content": "Computers"
-              }
-          ]
-      },
-      {
-          "key": "usertype.national-manager",
-          "default": "Full access",
-          "translations": [
-              {
-                  "locale": "en",
-                  "content": "Full access"
               }
           ]
       },

@@ -3,7 +3,7 @@ module.exports = function(config) {
   'use strict';
 
   config.set({
-    basePath: '../',
+    basePath: '../../',
     frameworks: ['mocha'],
     reporters: ['progress'],
     autoWatch: true,
@@ -35,7 +35,7 @@ module.exports = function(config) {
       'templates/partials/sender.html',
 
       // test files
-      'tests_ui/unit/**/*.js'
+      'tests/karma/unit/**/*.js'
     ]
   });
 

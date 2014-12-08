@@ -100,7 +100,7 @@ module.exports = function(grunt) {
       all: [
         'Gruntfile.js',
         'static/js/**/*.js',
-        'tests_ui/**/*.js'
+        'tests/**/*.js'
       ]
     },
     less: {
@@ -227,15 +227,18 @@ module.exports = function(grunt) {
     },
     karma: {
       unit: {
-        configFile: './tests_ui/karma-unit.conf.js',
+        configFile: './tests/karma/karma-unit.conf.js',
         singleRun: true,
         browsers: ['Chrome', 'Firefox']
       },
       unit_ci: {
-        configFile: './tests_ui/karma-unit.conf.js',
+        configFile: './tests/karma/karma-unit.conf.js',
         singleRun: true,
         browsers: ['PhantomJS']
       }
+    },
+    nodeunit: {
+      all: ['tests/nodeunit/*.js']
     }
   });
 
@@ -249,6 +252,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-less');
+  grunt.loadNpmTasks('grunt-contrib-nodeunit');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-dustjs');
@@ -304,7 +308,14 @@ module.exports = function(grunt) {
     'notify:deployed'
   ]);
 
+  grunt.registerTask('precommit', [
+    'jshint',
+    'nodeunit',
+    'karma:unit'
+  ]);
+
   grunt.registerTask('test', [
+    'nodeunit',
     'karma:unit',
     'exec:phantom'
   ]);

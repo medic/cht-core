@@ -1,3 +1,5 @@
+'use strict';
+
 var _ = require('underscore'),
     sinon = require('sinon'),
     users = require('users'),
@@ -10,7 +12,7 @@ exports.setUp = function(callback) {
         getDoc: function() {}
     };
     callback();
-}
+};
 
 exports.tearDown = function(callback) {
     if (users.get.restore) {

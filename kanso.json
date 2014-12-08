@@ -22,7 +22,7 @@
     ],
     "loglevel": "info",
     "load": "lib/app",
-    "modules": ["lib", "tests"],
+    "modules": ["lib", "tests/kanso"],
     "attachments": ["static"],
     "dust": {
         "templates": "templates"
@@ -3362,26 +3362,6 @@
                         ]
                     },
                     {
-                        "key": "Automated Reply",
-                        "default": "Automated Reply",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Automated Reply"
-                            }
-                        ]
-                    },
-                    {
-                        "key": "Automated Reply",
-                        "default": "Automated Reply",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Automated Reply"
-                            }
-                        ]
-                    },
-                    {
                         "key": "Mute",
                         "default": "Mute",
                         "translations": [
@@ -4948,6 +4928,16 @@
                         ]
                     },
                     {
+                        "key": "Advanced Settings",
+                        "default": "Advanced Settings",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Advanced Settings"
+                            }
+                        ]
+                    },
+                    {
                         "key": "External ID",
                         "default": "External ID",
                         "translations": [
@@ -5774,16 +5764,6 @@
                             {
                                 "locale": "en",
                                 "content": "Computers"
-                            }
-                        ]
-                    },
-                    {
-                        "key": "usertype.national-manager",
-                        "default": "Full access",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Full access"
                             }
                         ]
                     },
