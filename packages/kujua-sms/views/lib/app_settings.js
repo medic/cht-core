@@ -112,7 +112,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "kutoka"
+                  "content": "Kutoka kwa"
               }
           ]
       },
@@ -138,7 +138,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Mfanyakazi wa Afya ya Jamii"
               }
           ]
       },
@@ -164,7 +164,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Wafanyakazi wa Afya ya Jamii"
               }
           ]
       },
@@ -190,7 +190,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "Jina kijiji"
+                  "content": "Mji"
               }
           ]
       },
@@ -216,7 +216,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "Kliniki ya Mawasiliano Jina"
+                  "content": "Jina"
               }
           ]
       },
@@ -242,7 +242,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "Namba ya Simu"
+                  "content": "Nambari ya simu"
               }
           ]
       },
@@ -268,7 +268,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "RC Kanuni"
+                  "content": "Kodi"
               }
           ]
       },
@@ -294,7 +294,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "Kituo cha Afya cha"
+                  "content": "Vituo vya Afya"
               }
           ]
       },
@@ -320,7 +320,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "Kituo cha Afya cha"
+                  "content": "Kituo cha Afya"
               }
           ]
       },
@@ -346,7 +346,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "Kituo cha Afya cha Jina"
+                  "content": "Jina la Kituo cha Afya"
               }
           ]
       },
@@ -372,7 +372,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "Kituo cha Afya cha Mawasiliano Jina"
+                  "content": "Jina la mawasiliano"
               }
           ]
       },
@@ -398,7 +398,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "Namba ya Simu"
+                  "content": "Nambari ya simu"
               }
           ]
       },
@@ -424,7 +424,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "Wilaya ya"
+                  "content": "Wilaya"
               }
           ]
       },
@@ -450,7 +450,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "Wilaya ya"
+                  "content": "Wilaya"
               }
           ]
       },
@@ -476,7 +476,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "Wilaya ya Jina"
+                  "content": "Jina la Wilaya"
               }
           ]
       },
@@ -502,7 +502,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "Wilaya ya Mawasiliano Jina"
+                  "content": "Jina la Mawasiliano"
               }
           ]
       },
@@ -528,7 +528,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": "Namba ya Simu"
+                  "content": "Nambari ya simu"
               }
           ]
       },
@@ -575,10 +575,6 @@ module.exports = {
                   "content": "Exportar"
               },
               {
-                  "locale": "ne",
-                  "content": ""
-              },
-              {
                   "locale": "sw",
                   "content": "Kuuza nje"
               }
@@ -601,10 +597,6 @@ module.exports = {
                   "content": "Actividad"
               },
               {
-                  "locale": "ne",
-                  "content": ""
-              },
-              {
                   "locale": "sw",
                   "content": "Shughuli"
               }
@@ -620,19 +612,15 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Equipements"
+                  "content": "Établissement"
               },
               {
                   "locale": "es",
-                  "content": "Comodidades"
-              },
-              {
-                  "locale": "ne",
-                  "content": ""
+                  "content": "Institución"
               },
               {
                   "locale": "sw",
-                  "content": "Vifaa"
+                  "content": "Vituo"
               }
           ]
       },
@@ -646,19 +634,15 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Déclaration des taux de"
+                  "content": "Analyse des rapports envoyés"
               },
               {
                   "locale": "es",
-                  "content": "Informes de Cambio"
-              },
-              {
-                  "locale": "ne",
-                  "content": ""
+                  "content": "Análisis de los reportes enviados"
               },
               {
                   "locale": "sw",
-                  "content": "Taarifa ya Viwango"
+                  "content": "Viwango vya Kufanya Ripoti"
               }
           ]
       },
@@ -672,7 +656,7 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Le recipient du message n'a pas été trouvé."
+                  "content": "Le récipient du message n'a pas été trouvé."
               },
               {
                   "locale": "es",
@@ -684,7 +668,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Mpokezi wa ujumbe hapatikani."
               }
           ]
       },
@@ -710,7 +694,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Mahali pa kuandikia si halali au hapayuko"
               }
           ]
       },
@@ -736,7 +720,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Mahali pa kuandikia si halali au hapayuko"
               }
           ]
       },
@@ -750,7 +734,7 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Champs additionels."
+                  "content": "Champs additionnels."
               },
               {
                   "locale": "es",
@@ -762,7 +746,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Mahali ziada pa kunadikia"
               }
           ]
       },
@@ -788,25 +772,25 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Fomu '{{form}}' haipatikani."
               }
           ]
       },
       {
           "key": "form_not_found",
-          "default": "The form sent '{{form}}' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
+          "default": "The form sent was not recognized. Please complete it again and resend. If this problem persists contact your supervisor.",
           "translations": [
               {
                   "locale": "en",
-                  "content": "The form sent '{{form}}' was not recognized. Please complete it again and resend. If this problem persists contact your supervisor."
+                  "content": "The form sent was not recognized. Please complete it again and resend. If this problem persists contact your supervisor."
               },
               {
                   "locale": "fr",
-                  "content": "Le formulaire envoyé '{{form}}' n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur."
+                  "content": "Le formulaire envoyé n'est pas reconnu, SVP corriger et renvoyer. Si ce problème persiste contactez votre superviseur."
               },
               {
                   "locale": "es",
-                  "content": "No se reconocio el reporte enviado '{{form}}'. Por favor intente de nuevo. Si el problema persiste, informe al director."
+                  "content": "No se reconocio el reporte enviado. Por favor intente de nuevo. Si el problema persiste, informe al director."
               },
               {
                   "locale": "ne",
@@ -814,7 +798,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Fomu iliyowasilishwa haitambuliki. Tafadhali kamilisha na utume tena. Hitilafu hii ikiendelea muarifu msimamizi wako."
               }
           ]
       },
@@ -840,7 +824,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Fomu iliyowasilishwa '{{form}}' haikukamilishwa ipasavyo. Tafadhali kamilisha na utume tena. Hitilafu hii ikiendelea muarifu msimamizi wako."
               }
           ]
       },
@@ -866,7 +850,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Fomu iliyowasilishwa '{{form}}' haikukamilishwa ipasavyo. Tafadhali kamilisha na utume tena. Hitilafu hii ikiendelea muarifu msimamizi wako."
               }
           ]
       },
@@ -892,7 +876,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Kituo cha afya hakipatikani."
               }
           ]
       },
@@ -906,7 +890,7 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Le message recu est vide."
+                  "content": "Le message reçu est vide."
               },
               {
                   "locale": "es",
@@ -918,7 +902,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Ujumbe unaonekana kama ni mtupu."
               }
           ]
       },
@@ -932,11 +916,11 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Nous avons des troubles avec votre message, SVP renvoyer. Si vous continuez à avoir des problèmes contactez votre superviseur."
+                  "content": "Nous avons reçu un message vide. SVP réessayer et si vous continuez à avoir des problèmes contactez votre superviseur."
               },
               {
                   "locale": "es",
-                  "content": "El mensaje esta en blanco, por favor reenvielo. Si encuentra un problema, informe al director."
+                  "content": "El mensaje esta en blanco, por favor reenvielo. Si continúa teniendo problemas, informe al director."
               },
               {
                   "locale": "ne",
@@ -944,7 +928,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Yaonekana kama umetuma ujumbe mtupu, tafadhali jaribu kutuma tena. Ukiendelea kupata hitilafu hii tafadhali muarifu msimamizi wako."
               }
           ]
       },
@@ -970,7 +954,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Fomu uliyowasilisha imepokewa, asante."
               }
           ]
       },
@@ -984,7 +968,7 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Merci, votre message a été bien reçu."
+                  "content": "Merci, votre message a été bien reçu. Si vous étiez en train d'envoyer un rapport réessayez avec le bon code du rapport."
               },
               {
                   "locale": "es",
@@ -996,7 +980,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Ujumbe umepokewa; utasomwa hivi punde. Kama ulikuwa unajaribu kuwasilisha ujumbe wa muundo maalum, tafadhali weka kodi sahihi ya fomu na ujaribu tena."
               }
           ]
       },
@@ -1022,7 +1006,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "ID ya kitengo kinachoripoti si sahihi. Tafadhali rekebisha na uwasilishe fomu kamilifu tena."
               }
           ]
       },
@@ -1062,11 +1046,11 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Patient ID"
+                  "content": "Identification du patient"
               },
               {
                   "locale": "es",
-                  "content": "Patient ID"
+                  "content": "Identificación del paciente"
               },
               {
                   "locale": "ne",
@@ -1100,7 +1084,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Tarehe ya kuripoti."
               }
           ]
       },
@@ -1114,11 +1098,11 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Villages"
+                  "content": "Nom de la clinique"
               },
               {
                   "locale": "es",
-                  "content": ""
+                  "content": "Nombre de la clínica"
               },
               {
                   "locale": "ne",
@@ -1126,7 +1110,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Jina la Kliniki"
               }
           ]
       },
@@ -1140,19 +1124,15 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Personne-ressource Clinique"
+                  "content": "Nom du contact à la clinique"
               },
               {
                   "locale": "es",
-                  "content": ""
-              },
-              {
-                  "locale": "ne",
-                  "content": ""
+                  "content": "Nombre de Contacto en la Clínica"
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Jina la Mawasiliano la Kliniki"
               }
           ]
       },
@@ -1180,15 +1160,11 @@ module.exports = {
               },
               {
                   "locale": "es",
-                  "content": ""
-              },
-              {
-                  "locale": "ne",
-                  "content": ""
+                  "content": "Nombre del Centro de Salud"
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Jina la Kituo cha Afya"
               }
           ]
       },
@@ -1202,19 +1178,15 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Nom de la santé Contact Center"
+                  "content": "Nom du contact au centre de santé"
               },
               {
                   "locale": "es",
-                  "content": ""
-              },
-              {
-                  "locale": "ne",
-                  "content": ""
+                  "content": "Nombre de Contacto en el Centro de Salud"
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Jina la Mawasiliano la Kituo cha Afya"
               }
           ]
       },
@@ -1242,15 +1214,11 @@ module.exports = {
               },
               {
                   "locale": "es",
-                  "content": ""
-              },
-              {
-                  "locale": "ne",
-                  "content": ""
+                  "content": "Nombre Hospital de Distrito"
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Jina la Hospitali ya Wilaya"
               }
           ]
       },
@@ -1278,7 +1246,7 @@ module.exports = {
               },
               {
                   "locale": "es",
-                  "content": ""
+                  "content": "Nombre del Centro de Salud"
               },
               {
                   "locale": "ne",
@@ -1286,7 +1254,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Jina la Kituo cha Afya"
               }
           ]
       },
@@ -1300,11 +1268,11 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Nom de la santé Contact Center"
+                  "content": "Nom du contact au centre de santé"
               },
               {
                   "locale": "es",
-                  "content": ""
+                  "content": "Nombre de Contacto en el Centro de Salud"
               },
               {
                   "locale": "ne",
@@ -1312,7 +1280,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Jina la Mawasiliano la Kituo cha Afya"
               }
           ]
       },
@@ -1330,7 +1298,7 @@ module.exports = {
               },
               {
                   "locale": "es",
-                  "content": ""
+                  "content": "Nombre Hospital de Distrito"
               },
               {
                   "locale": "ne",
@@ -1338,7 +1306,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Jina la Hospitali ya Wilaya"
               }
           ]
       },
@@ -1352,11 +1320,11 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "State"
+                  "content": "Statut"
               },
               {
                   "locale": "es",
-                  "content": "State"
+                  "content": "Estado"
               },
               {
                   "locale": "ne",
@@ -1404,11 +1372,11 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "pour"
+                  "content": "À"
               },
               {
                   "locale": "es",
-                  "content": ""
+                  "content": "A"
               },
               {
                   "locale": "ne",
@@ -1416,7 +1384,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Kwa"
               }
           ]
       },
@@ -1434,7 +1402,7 @@ module.exports = {
               },
               {
                   "locale": "es",
-                  "content": ""
+                  "content": "Mensaje"
               },
               {
                   "locale": "ne",
@@ -1442,21 +1410,21 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Ujumbe"
               }
           ]
       },
       {
           "key": "from",
-          "default": "Reported From",
+          "default": "From",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Reported From"
+                  "content": "From"
               },
               {
                   "locale": "fr",
-                  "content": "Envoyé par"
+                  "content": "De"
               },
               {
                   "locale": "es",
@@ -1468,7 +1436,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Tukoka kwa"
               }
           ]
       },
@@ -1494,7 +1462,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Tarehe"
               }
           ]
       },
@@ -1512,7 +1480,7 @@ module.exports = {
               },
               {
                   "locale": "es",
-                  "content": ""
+                  "content": "Días desde la visita del paciente"
               },
               {
                   "locale": "ne",
@@ -1520,7 +1488,7 @@ module.exports = {
               },
               {
                   "locale": "sw",
-                  "content": ""
+                  "content": "Siku tangu kuhudhuria kwa mhudumiwa"
               }
           ]
       },
@@ -1534,11 +1502,11 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Patient ID"
+                  "content": "Identification du patient"
               },
               {
                   "locale": "es",
-                  "content": "Patient ID"
+                  "content": "Identificación del paciente"
               },
               {
                   "locale": "ne",
@@ -1560,11 +1528,11 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Responses"
+                  "content": "Réponses"
               },
               {
                   "locale": "es",
-                  "content": "Responses"
+                  "content": "Respuestas"
               },
               {
                   "locale": "ne",
@@ -1586,11 +1554,11 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Incoming Message"
+                  "content": "Messages entrants"
               },
               {
                   "locale": "es",
-                  "content": "Incoming Message"
+                  "content": "Mensajes entrantes"
               },
               {
                   "locale": "ne",
@@ -1612,11 +1580,11 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Outgoing Messages"
+                  "content": "Messages sortants"
               },
               {
                   "locale": "es",
-                  "content": "Outgoing Messages"
+                  "content": "Mensajes salientes"
               },
               {
                   "locale": "ne",
@@ -1638,7 +1606,7 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Scheduled Tasks"
+                  "content": "Messages prévus"
               },
               {
                   "locale": "es",
@@ -1664,11 +1632,11 @@ module.exports = {
               },
               {
                   "locale": "fr",
-                  "content": "Search"
+                  "content": "Recherche"
               },
               {
                   "locale": "es",
-                  "content": "Search"
+                  "content": "Buscar"
               },
               {
                   "locale": "ne",
