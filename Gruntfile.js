@@ -297,6 +297,7 @@ module.exports = function(grunt) {
     'default',
     'uglify',
     'cssmin',
+    'nodeunit',
     'karma:unit_ci',
     'exec:deployci',
     'exec:phantom'
