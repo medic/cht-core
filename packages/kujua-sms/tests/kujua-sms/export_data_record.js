@@ -1,8 +1,34 @@
-var lists = require('kujua-sms/lists'),
+var sinon = require('sinon'),
     moment = require('moment'),
     fakerequest = require('couch-fakerequest'),
-    helpers = require('../../test-helpers/helpers');
+    lists = require('kujua-sms/lists'),
+    info = require('views/lib/appinfo'),
+    utils = require('kujua-sms/utils'),
+    helpers = require('../../test-helpers/helpers'),
+    definitions = require('../../test-helpers/form_definitions'),
+    appInfo;
 
+exports.setUp = function (callback) {
+    appInfo = {
+        getForm: function() {},
+        translate: function(key, locale) {
+            return key + '|' + locale;
+        },
+        getMessage: function(value, locale) {
+            return value.en || value.fr || value;
+        }
+    };
+    sinon.stub(info, 'getAppInfo').returns(appInfo);
+    callback();
+};
+
+exports.tearDown = function(callback) {
+    if (info.getAppInfo.restore) {
+        info.getAppInfo.restore();
+    }
+    utils.info = info.getAppInfo.call(this);
+    callback();
+};
 
 exports['lists format date'] = function(test) {
     test.expect(3);
@@ -47,8 +73,8 @@ exports['lists export data records csv'] = function(test) {
 
     test.expect(1);
 
-    var expected = '"Record UUID","Patient ID","Reported Date","Reported From","Clinic Contact Name"'
-        +',"Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name"'
+    var expected = '"_id|en","patient_id|en","reported_date|en","from|en","related_entities.clinic.contact.name|en"'
+        +',"related_entities.clinic.name|en","related_entities.clinic.parent.contact.name|en","related_entities.clinic.parent.name|en","related_entities.clinic.parent.parent.name|en"'
         +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
         +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
         +'","Recommandations/Conseils","Précisions pour recommandations"'
@@ -120,16 +146,18 @@ exports['lists export data records csv'] = function(test) {
             endkey: 'bar',
             form: 'YYYU'
         },
-        method: "GET",
+        method: 'GET',
         userCtx: {
             roles: ['national_admin']
         }
     };
 
+    appInfo.getForm = function() {
+        return definitions.forms.YYYU;
+    };
+
     var resp = fakerequest.list(lists.export_data_records, viewdata, req);
-
     test.same(expected, resp.body);
-
     test.done()
 };
 
@@ -138,8 +166,8 @@ exports['lists export data records csv with excluded columns'] = function(test) 
 
     test.expect(1);
 
-    var expected = '"Reported Date","Clinic Contact Name"'
-        +',"Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name"'
+    var expected = '"reported_date|en","related_entities.clinic.contact.name|en"'
+        +',"related_entities.clinic.name|en","related_entities.clinic.parent.contact.name|en","related_entities.clinic.parent.name|en","related_entities.clinic.parent.parent.name|en"'
         +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
         +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
         +'","Recommandations/Conseils","Précisions pour recommandations"'
@@ -217,9 +245,12 @@ exports['lists export data records csv with excluded columns'] = function(test) 
         }
     };
 
+    appInfo.getForm = function() {
+        return definitions.forms.YYYU;
+    };
+
     var resp = fakerequest.list(lists.export_data_records, viewdata, req);
     test.same(expected, resp.body);
-
     test.done()
 };
 
@@ -227,11 +258,11 @@ exports['lists export data records fr'] = function(test) {
 
     test.expect(1);
 
-    var expected = '"Record UUID";"Patient ID";"Date envoyé";"Envoyé par";"Personne-ressource Clinique"'
-        +';"Villages";"Nom de la santé Contact Center";"Nom du centre de santé";"Nom de l\'hôpital de district"'
+    var expected = '"_id|fr";"patient_id|fr";"reported_date|fr";"from|fr";"related_entities.clinic.contact.name|fr"'
+        +';"related_entities.clinic.name|fr";"related_entities.clinic.parent.contact.name|fr";"related_entities.clinic.parent.name|fr";"related_entities.clinic.parent.parent.name|fr"'
         +';"Année";"Mois";"Jour";"Code du RC";"Type de patient";"Nom";"Age"'
-        +';"Nom de la mère ou de l\'accompagnant";"Patient traité pour"'
-        +';"Recommandations/Conseils";"Précisions pour recommandations"'
+        +';"Nom de la mère ou de l\'accompagnant";"Patient traité pour'
+        +'";"Recommandations/Conseils";"Précisions pour recommandations"'
         +';"Nom de l\'agent de santé"\n'
         +'"abc123z";"5597";"'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +';"+12229990000";"Paul";"Clinic 1";"Eric";"Health Center 1";"District 1"'
@@ -299,10 +330,12 @@ exports['lists export data records fr'] = function(test) {
         }
     };
 
+    appInfo.getForm = function() {
+        return definitions.forms.YYYU;
+    };
+
     var resp = fakerequest.list(lists.export_data_records, viewdata, req);
-
     test.same(expected, resp.body);
-
     test.done()
 };
 
@@ -376,10 +409,12 @@ exports['lists export data records skip header row'] = function(test) {
         }
     };
 
+    appInfo.getForm = function() {
+        return definitions.forms.YYYU;
+    };
+
     var resp = fakerequest.list(lists.export_data_records, viewdata, req);
-
     test.same(expected, resp.body);
-
     test.done()
 };
 
@@ -387,8 +422,8 @@ exports['lists export data records with tz'] = function(test) {
 
     test.expect(1);
 
-    var expected = '"Record UUID","Patient ID","Reported Date","Reported From","Clinic Contact Name"'
-        +',"Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name"'
+    var expected = '"_id|en","patient_id|en","reported_date|en","from|en","related_entities.clinic.contact.name|en"'
+        +',"related_entities.clinic.name|en","related_entities.clinic.parent.contact.name|en","related_entities.clinic.parent.name|en","related_entities.clinic.parent.parent.name|en"'
         +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
         +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
         +'","Recommandations/Conseils","Précisions pour recommandations"'
@@ -467,27 +502,25 @@ exports['lists export data records with tz'] = function(test) {
         }
     };
 
+    appInfo.getForm = function() {
+        return definitions.forms.YYYU;
+    };
+
     var resp = fakerequest.list(lists.export_data_records, viewdata, req);
     test.same(expected, resp.body);
-
     test.done()
 };
 
 exports['lists export data records with external facility id'] = function(test) {
 
     test.expect(1);
-    var expected = '"Reported Date","Reported From"'
-        + ',"Clinic Name","Clinic External ID","Record UUID"' 
-        + ',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
-        + ',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
-        + '","Recommandations/Conseils","Précisions pour recommandations"'
-        + ',"Nom de l\'agent de santé"\n'
+
+    var expected = '"reported_date|en","from|en"'
+        +',"related_entities.clinic.name|en","related_entities.clinic.external_id|en","_id|en"\n'
         + '"' + moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z') + '"'
-        + ',"+12229990000","Clinic 1","ZYX","abc123z"'
-        + ',"2012","1","16","","","","","","","","",""\n'
+        + ',"+12229990000","Clinic 1","ZYX","abc123z"\n'
         + '"' + moment(1331503850000).format('DD, MMM YYYY, HH:mm:ss Z') + '"'
-        + ',"+13331110000","Clinic 2","ASD","ssdk23z"'
-        + ',"2012","1","16","","","","","","","","",""\n'
+        + ',"+13331110000","Clinic 2","ASD","ssdk23z"\n'
 
     // mockup the view data
     var viewdata = {rows: [
@@ -556,10 +589,12 @@ exports['lists export data records with external facility id'] = function(test) 
         }
     };
 
+    appInfo.getForm = function() {
+        return definitions.forms.YYYU;
+    };
+
     var resp = fakerequest.list(lists.export_data_records, viewdata, req);
-
     test.same(expected, resp.body);
-
     test.done()
 };
 

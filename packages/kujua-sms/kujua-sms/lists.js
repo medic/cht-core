@@ -74,11 +74,11 @@ function excludeColumns(columns, options) {
 }
 
 function sendHeaderRow(options, extraColumns) {
-    var cols = options.columns.concat(extraColumns || []);
-    excludeColumns(cols, options);
-    var labels = _.map(cols, function(label) {
+    var cols = _.map(options.columns, function(label) {
         return utils.info.translate(label, options.locale);
     });
+    cols = cols.concat(extraColumns || []);
+    excludeColumns(cols, options);
 
     if (options.format === 'xml') {
         var formName = _s.capitalize(options.formName || 'Reports');
@@ -91,10 +91,10 @@ function sendHeaderRow(options, extraColumns) {
              ' xmlns:html="http://www.w3.org/TR/REC-html40">\n' +
              '<Worksheet ss:Name="' + formName + '"><Table>');
         if (!options.skipHeader) {
-            send(utils.arrayToXML([labels]));
+            send(utils.arrayToXML([cols]));
         }
     } else if (!options.skipHeader) {
-        send(utils.arrayToCSV([labels], options.delimiter) + '\n');
+        send(utils.arrayToCSV([cols], options.delimiter) + '\n');
     }
 }
 
@@ -420,7 +420,9 @@ exports.export_data_records = function (head, req) {
     ]);
     startExportHeaders(options, getFilename(options));
     var extraColumns;
-    if (form) {
+    if (req.query.columns) {
+        extraColumns = [];
+    } else if (form) {
         extraColumns = utils.getFormKeys(utils.info.getForm(form));
     } else {
         extraColumns = ['form'];
