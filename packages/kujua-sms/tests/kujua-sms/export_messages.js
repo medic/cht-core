@@ -1,9 +1,36 @@
-var lists = require('kujua-sms/lists'),
+var sinon = require('sinon'),
     moment = require('moment'),
+    info = require('views/lib/appinfo'),
+    utils = require('kujua-sms/utils'),
+    lists = require('kujua-sms/lists'),
     fakerequest = require('couch-fakerequest'),
-    helpers = require('../../test-helpers/helpers');
+    helpers = require('../../test-helpers/helpers'),
+    definitions = require('../../test-helpers/form_definitions'),
+    appInfo;
 
-var headers = '"Record UUID","Patient ID","Reported Date","Reported From","Clinic Contact Name","Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name","Message Type","Message State","Received Timestamp","Scheduled Timestamp","Pending Timestamp","Sent Timestamp","Cleared Timestamp","Muted Timestamp","Message UUID","Sent By","To Phone","Message Body"\n';
+var headers = '"_id|en","patient_id|en","reported_date|en","from|en","related_entities.clinic.contact.name|en","related_entities.clinic.name|en","related_entities.clinic.parent.contact.name|en","related_entities.clinic.parent.name|en","related_entities.clinic.parent.parent.name|en","task.type|en","task.state|en","received|en","scheduled|en","pending|en","sent|en","cleared|en","muted|en","Message UUID","Sent By","To Phone","Message Body"\n';
+
+exports.setUp = function (callback) {
+    appInfo = {
+        getForm: function() {},
+        translate: function(key, locale) {
+            return key + '|' + locale;
+        },
+        getMessage: function(value, locale) {
+            return value.en || value;
+        }
+    };
+    sinon.stub(info, 'getAppInfo').returns(appInfo);
+    callback();
+};
+
+exports.tearDown = function(callback) {
+    if (info.getAppInfo.restore) {
+        info.getAppInfo.restore();
+    }
+    utils.info = info.getAppInfo.call(this);
+    callback();
+};
 
 exports['requesting messages export fails if no user'] = function(test) {
     test.expect(2);
@@ -211,7 +238,7 @@ exports['requesting messages export in xml'] = function(test) {
     var mutedTimestamp = 1331503895461;
 
     var expected = '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40"><Worksheet ss:Name="Messages"><Table>' + 
-        '<Row><Cell><Data ss:Type="String">Record UUID</Data></Cell><Cell><Data ss:Type="String">Patient ID</Data></Cell><Cell><Data ss:Type="String">Reported Date</Data></Cell><Cell><Data ss:Type="String">Reported From</Data></Cell><Cell><Data ss:Type="String">Clinic Contact Name</Data></Cell><Cell><Data ss:Type="String">Clinic Name</Data></Cell><Cell><Data ss:Type="String">Health Center Contact Name</Data></Cell><Cell><Data ss:Type="String">Health Center Name</Data></Cell><Cell><Data ss:Type="String">District Hospital Name</Data></Cell><Cell><Data ss:Type="String">Message Type</Data></Cell><Cell><Data ss:Type="String">Message State</Data></Cell><Cell><Data ss:Type="String">Received Timestamp</Data></Cell><Cell><Data ss:Type="String">Scheduled Timestamp</Data></Cell><Cell><Data ss:Type="String">Pending Timestamp</Data></Cell><Cell><Data ss:Type="String">Sent Timestamp</Data></Cell><Cell><Data ss:Type="String">Cleared Timestamp</Data></Cell><Cell><Data ss:Type="String">Muted Timestamp</Data></Cell><Cell><Data ss:Type="String">Message UUID</Data></Cell><Cell><Data ss:Type="String">Sent By</Data></Cell><Cell><Data ss:Type="String">To Phone</Data></Cell><Cell><Data ss:Type="String">Message Body</Data></Cell></Row>' + 
+        '<Row><Cell><Data ss:Type="String">_id|en</Data></Cell><Cell><Data ss:Type="String">patient_id|en</Data></Cell><Cell><Data ss:Type="String">reported_date|en</Data></Cell><Cell><Data ss:Type="String">from|en</Data></Cell><Cell><Data ss:Type="String">related_entities.clinic.contact.name|en</Data></Cell><Cell><Data ss:Type="String">related_entities.clinic.name|en</Data></Cell><Cell><Data ss:Type="String">related_entities.clinic.parent.contact.name|en</Data></Cell><Cell><Data ss:Type="String">related_entities.clinic.parent.name|en</Data></Cell><Cell><Data ss:Type="String">related_entities.clinic.parent.parent.name|en</Data></Cell><Cell><Data ss:Type="String">task.type|en</Data></Cell><Cell><Data ss:Type="String">task.state|en</Data></Cell><Cell><Data ss:Type="String">received|en</Data></Cell><Cell><Data ss:Type="String">scheduled|en</Data></Cell><Cell><Data ss:Type="String">pending|en</Data></Cell><Cell><Data ss:Type="String">sent|en</Data></Cell><Cell><Data ss:Type="String">cleared|en</Data></Cell><Cell><Data ss:Type="String">muted|en</Data></Cell><Cell><Data ss:Type="String">Message UUID</Data></Cell><Cell><Data ss:Type="String">Sent By</Data></Cell><Cell><Data ss:Type="String">To Phone</Data></Cell><Cell><Data ss:Type="String">Message Body</Data></Cell></Row>' + 
         '<Row><Cell><Data ss:Type="String">abc123z</Data></Cell><Cell><Data ss:Type="String"></Data></Cell><Cell><Data ss:Type="String">' + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell><Cell><Data ss:Type="String">+12229990000</Data></Cell><Cell><Data ss:Type="String">Paul</Data></Cell><Cell><Data ss:Type="String">Clinic 1</Data></Cell><Cell><Data ss:Type="String">Eric</Data></Cell><Cell><Data ss:Type="String">Health Center 1</Data></Cell><Cell><Data ss:Type="String">District 1</Data></Cell><Cell><Data ss:Type="String">Test</Data></Cell><Cell><Data ss:Type="String">Pending</Data></Cell><Cell><Data ss:Type="String"></Data></Cell><Cell><Data ss:Type="String">' + moment(scheduledTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell><Cell><Data ss:Type="String">' + moment(pendingTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell><Cell><Data ss:Type="String">' + moment(sentTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell><Cell><Data ss:Type="String">' + moment(clearedTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell><Cell><Data ss:Type="String">' + moment(mutedTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell></Row></Table></Worksheet></Workbook>'
 
     var req = {
@@ -386,7 +413,7 @@ exports['requesting messages export with columns parameter'] = function(test) {
     var reportedDate = 1331503842461;
     var taskTimestamp = 1331503843461;
 
-    var expected = '"Reported Date","Reported From","Clinic Name","Clinic External ID","Pending Timestamp","Record UUID","Message UUID","Sent By","To Phone","Message Body"\n'
+    var expected = '"reported_date|en","from|en","related_entities.clinic.name|en","related_entities.clinic.external_id|en","pending|en","_id|en","Message UUID","Sent By","To Phone","Message Body"\n'
         + '"'
         + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z')
         + '","+12229990000","Clinic 1","AAA","'
@@ -450,7 +477,7 @@ exports['requesting messages export with columns parameter appends messages'] = 
     var reportedDate = 1331503842461;
     var taskTimestamp = 1331503843461;
 
-    var expected = '"Reported Date","Reported From","Clinic Name","Message UUID","Sent By","To Phone","Message Body"\n'
+    var expected = '"reported_date|en","from|en","related_entities.clinic.name|en","Message UUID","Sent By","To Phone","Message Body"\n'
         + '"' + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z') + '"'
         + ',"+12229990000","Clinic 1","z12","g man","bro","yo dawg"\n'
         + '"' + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z') + '"'
@@ -522,7 +549,7 @@ exports['requesting messages export filtered by state'] = function(test) {
     var pendingTimestampC = moment().subtract('days', 10).valueOf();
     var pendingTimestampD = moment().subtract('days', 9).valueOf();
 
-    var expected = '"Record UUID","Reported From","Message UUID","Sent By","To Phone","Message Body"\n'
+    var expected = '"_id|en","from|en","Message UUID","Sent By","To Phone","Message Body"\n'
         + '"b","+12229990000"\n'
         + '"c","+12229990000"\n';
 
@@ -652,7 +679,7 @@ exports['requesting messages export filtered by state in future with no upper bo
     var pendingTimestampC = moment().add('days', 30).valueOf();
     var pendingTimestampD = moment().add('days', 31).valueOf();
 
-    var expected = '"Record UUID","Reported From","Message UUID","Sent By","To Phone","Message Body"\n'
+    var expected = '"_id|en","from|en","Message UUID","Sent By","To Phone","Message Body"\n'
         + '"b","+12229990000"\n'
         + '"c","+12229990000"\n';
 
