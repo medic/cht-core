@@ -10,7 +10,7 @@
     <label>{@translate value="Start messages based on"/}</label>
     <select name="start_from">
     {#fields}
-      <option value="{field_name}" {@if cond="'{start_from}' === '{field_name}'"}selected="true"{/if}>{title}</option>
+      <option value="{field_name}" {@if cond="'{start_from}' === '{field_name}'"}selected="true"{/if}>{field_name}</option>
     {/fields}
     </select>
 
