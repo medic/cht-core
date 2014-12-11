@@ -232,17 +232,13 @@ exports.titleize = function (s) {
 };
 
 exports.updateTopNav = function(key, title) {
-    if (title) {
-        $('.page-header h1').text(title).show();
-    } else {
-        $('.page-header h1').hide();
-    }
     if (key) {
         $('body').attr('data-page', key);
     }
+    $('#topnavlinks .mm-button-text').text(title || '');
     $('.page-header .controls').hide();
     $('.page-header .container').attr('class', 'container');
-    $('body > .container div').filter(':first').attr('class','content');
+    $('body > .container div').filter(':first').attr('class', 'content');
 };
 
 exports.setTaskState = function(task, state) {

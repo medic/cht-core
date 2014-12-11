@@ -11,18 +11,61 @@
     <div id="topnav" class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <a href="{baseURL}/" rel="external" class="pull-left">
-            <img alt="Medic Mobile" class="logo-full" src="{baseURL}/static/img/medic-logo-light-full.svg" />
-          </a>
-          <span class="version pull-left" title="{info.sha}">{settings.version}</span>
-          <div id="topnavlinks"></div>
+          <img alt="Medic Mobile" class="logo-full" src="{baseURL}/static/img/medic-logo-light-full.svg" />
+          <span class="dropdown options pull-right">
+            <a data-toggle="dropdown">
+              <div class="mm-icon mm-icon-inverse">
+                <span class="fa fa-fw fa-cog"></span>
+              </div>
+            </a>
+            <ul role="menu" class="dropdown-menu mm-dropdown-menu">
+              <li role="presentation">
+                <a class="ng-binding" role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#feedback">
+                  <i class="fa fa-fw fa-bug"></i>
+                  {@translate value="Report Bug"/}
+                </a>
+              </li>
+              <li role="presentation">
+                <a class="ng-binding" role="menuitem" tabindex="-1" rel="external" id="logout">
+                  <i class="fa fa-fw fa-power-off"></i>
+                  {@translate value="Log Out"/}
+                </a>
+              </li>
+            </ul>
+          </span>
+          <div class="tabs">
+            <a href="{baseURL}/#/messages" id="messages-tab" class="messages-tab" rel="external">
+              <div class="mm-icon mm-icon-inverse">
+                <span class="fa fa-envelope"></span>
+              </div>
+              <div class="button-label">{@translate value="Messages"/}</div>
+            </a>
+            <a href="{baseURL}/#/reports" id="reports-tab" class="reports-tab" rel="external">
+              <div class="mm-icon mm-icon-inverse">
+                <span class="fa fa-list-alt"></span>
+              </div>
+              <div class="button-label">{@translate value="Reports"/}</div>
+            </a>
+            <a href="{baseURL}/#/analytics" id="analytics-tab" class="analytics-tab" rel="external">
+              <div class="mm-icon mm-icon-inverse">
+                <span class="fa fa-bar-chart-o"></span>
+              </div>
+              <div class="button-label">{@translate value="Analytics"/}</div>
+            </a>
+            <a href="{baseURL}/forms" class="admin-tab selected">
+              <div class="mm-icon">
+                <span class="fa fa-cog"></span>
+              </div>
+              <div class="button-label">{@translate value="Configuration"/}</div>
+            </a>
+          </div>
         </div>
       </div>
     </div>
     <div class="page-header navbar-fixed-top">
       <div class="container">
-        <h1 class="pull-left">&nbsp;</h1>
         <div class="controls hide"></div>
+        <div id="topnavlinks"></div>
       </div>
     </div>
     <div class="container">
@@ -31,12 +74,7 @@
           {content|s}
         </div>
       </div>
-      <div id="footer">
-        <div class="wrap">
-          <p class="logo"><img src="{baseURL}/static/img/medic-logo-50h.png"></p>
-          <p class="copy">&copy; <span id="year"></span> Medic Mobile, 501(c)(3)</p>
-        </div>
-      </div>
+      <div style="clear:both">&nbsp;</div>
     </div>
 
     <div id="feedback-wrapper"></div>

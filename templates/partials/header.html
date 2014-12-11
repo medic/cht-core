@@ -72,18 +72,6 @@
               {~lb}{~lb}'Export' | translate{~rb}{~rb}
             </a>
           </li>
-          <li role="presentation" ng-show="permissions.nationalAdmin">
-            <a role="menuitem" tabindex="-1" href="{baseURL}/forms" rel="external">
-              <i class="fa fa-fw fa-cog"></i>
-              {~lb}{~lb}'Configuration' | translate{~rb}{~rb}
-            </a>
-          </li>
-          <li role="presentation" ng-show="permissions.admin && !permissions.nationalAdmin">
-            <a role="menuitem" tabindex="-1" href="{baseURL}/settings" rel="external">
-              <i class="fa fa-fw fa-cog"></i>
-              {~lb}{~lb}'Configuration' | translate{~rb}{~rb}
-            </a>
-          </li>
           <li role="presentation">
             <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#feedback">
               <i class="fa fa-fw fa-bug"></i>
@@ -126,6 +114,18 @@
           <span class="fa fa-bar-chart-o"></span>
         </div>
         <div class="button-label">{~lb}{~lb}'Analytics' | translate{~rb}{~rb}</div>
+      </a>
+      <a href="{baseURL}/forms" class="configuration-tab" ng-show="permissions.nationalAdmin">
+        <div class="mm-icon mm-icon-inverse">
+          <span class="fa fa-cog"></span>
+        </div>
+        <div class="button-label">{~lb}{~lb}'Configuration' | translate{~rb}{~rb}</div>
+      </a>
+      <a href="{baseURL}/settings" class="configuration-tab" ng-show="permissions.admin && !permissions.nationalAdmin">
+        <div class="mm-icon mm-icon-inverse">
+          <span class="fa fa-cog"></span>
+        </div>
+        <div class="button-label">{~lb}{~lb}'Configuration' | translate{~rb}{~rb}</div>
       </a>
     </div>
   </div>

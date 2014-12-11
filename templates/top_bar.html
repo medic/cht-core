@@ -1,49 +1,40 @@
-<ul class="nav pull-right">
-  {?isDbAdmin}
-  <li class="settings">
-    <a href="{baseURL}/settings">
-      <i class="fa fa-cog"></i>
-      {@translate value="Configuration"/}
-    </a>
-  </li>
-  {/isDbAdmin}
-  {?isDbAdmin}
-  <li class="schedules">
-    <a href="{baseURL}/schedules">
-      <i class="fa fa-clock-o"></i>
-      {@translate value="Schedules"/}
-    </a>
-  </li>
-  {/isDbAdmin}
-  <li class="sms-forms-data">
-    <a href="{baseURL}/forms">
-      <i class="fa fa-arrow-circle-o-down"></i>
-      {@translate value="Export"/}
-    </a>
-  </li>
-  {?isDbAdmin}
-  <li class="users">
-    <a href="{baseURL}/users">
-      <i class="fa fa-user"></i>
-      {@translate value="Users"/}
-    </a>
-  </li>
-  {/isDbAdmin}
-  <li class="facilities">
-    <a href="{baseURL}/facilities">
-      <i class="fa fa-home"></i>
-      {@translate value="Facilities"/}
-    </a>
-  </li>
-  <li>
-    <a href="#" title="{@translate value="Report Bug"/}" data-toggle="modal" data-target="#feedback">
-      <i class="fa fa-bug"></i>
-    </a>
-  </li>
-  <li class="logout">
-    <a href="#" id="logout">
-      <i class="fa fa-power-off"></i>
-      {@translate value="Log Out"/}
-    </a>
-  </li>
-</ul>
+<span class="filter dropdown mm-dropdown">
+  <span class="mm-button mm-button-nudge-down" data-toggle="dropdown">
+    <span class="mm-button-dropdown">
+      <span class="fa fa-chevron-down"></span>
+    </span>
+    <span class="mm-button-text"></span>
+  </span>
+  <ul role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
+    <li class="ng-scope" role="presentation" ng-repeat="form in forms">
+      <a href="{baseURL}/settings" role="menuitem" tabindex="-1">
+        <i class="fa fa-fw fa-cog"></i>
+        <span>{@translate value="Configuration"/}</span>
+      </a>
+    </li>
+    <li class="ng-scope" role="presentation" ng-repeat="form in forms">
+      <a href="{baseURL}/schedules" role="menuitem" tabindex="-1">
+        <i class="fa fa-fw fa-clock-o"></i>
+        <span>{@translate value="Schedules"/}</span>
+      </a>
+    </li>
+    <li class="ng-scope" role="presentation" ng-repeat="form in forms">
+      <a href="{baseURL}/forms" role="menuitem" tabindex="-1">
+        <i class="fa fa-fw fa-arrow-circle-o-down"></i>
+        <span>{@translate value="Export"/}</span>
+      </a>
+    </li>
+    <li class="ng-scope" role="presentation" ng-repeat="form in forms">
+      <a href="{baseURL}/users" role="menuitem" tabindex="-1">
+        <i class="fa fa-fw fa-user"></i>
+        <span>{@translate value="Users"/}</span>
+      </a>
+    </li>
+    <li class="ng-scope" role="presentation" ng-repeat="form in forms">
+      <a href="{baseURL}/facilities" role="menuitem" tabindex="-1">
+        <i class="fa fa-fw fa-home"></i>
+        <span>{@translate value="Facilities"/}</span>
+      </a>
+    </li>
+  </ul>
+</span>
