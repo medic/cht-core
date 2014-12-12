@@ -44,9 +44,9 @@ exports['getDates list - no query params'] = function (test) {
     var copy = moment(new Date(now.year(), now.month(), 2));
     var dates = utils.getDates(q);
     var expected = [
-        copy.clone().subtract('months',1),
-        copy.clone().subtract('months',2),
-        copy.clone().subtract('months',3)
+        copy.clone().subtract(1, 'months'),
+        copy.clone().subtract(2, 'months'),
+        copy.clone().subtract(3, 'months')
     ];
     test.expect(4);
     test.strictEqual(dates.list.length, 3);
@@ -111,7 +111,7 @@ exports['getDates - week/month'] = function (test) {
     var dates = utils.getDates({time_unit: 'month'}, 'week');
     test.equal(dates.list.length, 13);
     test.equal(dates.list[0].valueOf(), date.valueOf());
-    test.equal(dates.list[12].valueOf(), date.subtract('weeks', 12).valueOf());
+    test.equal(dates.list[12].valueOf(), date.subtract(12, 'weeks').valueOf());
     test.done();
 }
 
@@ -126,7 +126,7 @@ exports['getDates - week/month/startmonth'] = function (test) {
     var dates = utils.getDates(q, 'week');
     test.equal(dates.list.length, 13);
     test.equal(dates.list[0].valueOf(), date.valueOf());
-    test.equal(dates.list[12].valueOf(), date.subtract('weeks', 12).valueOf());
+    test.equal(dates.list[12].valueOf(), date.subtract(12, 'weeks').valueOf());
     test.done();
 }
 
@@ -192,9 +192,9 @@ exports['getDates - month/month'] = function (test) {
     var dates = utils.getDates({time_unit: 'month'}, 'month');
     test.equal(dates.list.length, 3);
     test.equal(dates.time_unit, 'month');
-    test.equal(dates.list[0].valueOf(), copy.clone().subtract('months',1).valueOf());
-    test.equal(dates.list[1].valueOf(), copy.clone().subtract('months',2).valueOf());
-    test.equal(dates.list[2].valueOf(), copy.clone().subtract('months',3).valueOf());
+    test.equal(dates.list[0].valueOf(), copy.clone().subtract(1, 'months').valueOf());
+    test.equal(dates.list[1].valueOf(), copy.clone().subtract(2, 'months').valueOf());
+    test.equal(dates.list[2].valueOf(), copy.clone().subtract(3, 'months').valueOf());
     test.done();
 }
 
@@ -249,8 +249,8 @@ exports['getDates - month/quarter/quantity:3'] = function (test) {
     var copy = moment(new Date(now.year(), now.month(), 2));
     var dates = utils.getDates({time_unit: 'quarter', quantity: 3}, 'month');
     test.equal(dates.list.length, 9);
-    test.equal(dates.list[0].valueOf(), copy.clone().subtract('months',1).valueOf());
-    test.equal(dates.list[8].valueOf(), copy.clone().subtract('months',9).valueOf());
+    test.equal(dates.list[0].valueOf(), copy.clone().subtract(1, 'months').valueOf());
+    test.equal(dates.list[8].valueOf(), copy.clone().subtract(9, 'months').valueOf());
     test.done();
 }
 
@@ -298,7 +298,7 @@ exports['getDates - month, no reporting freq'] = function (test) {
 exports['utils.getReportingViewArgs -- no startmonth'] = function(test) {
     test.expect(3);
     var now = moment();
-    var end = now.clone().subtract('months',1);
+    var end = now.clone().subtract(1, 'months');
     var expect = {
         startkey: ['TEST', now.year(), now.month()+1, {}],
         endkey: ['TEST', end.year(), end.month()+1, ''],

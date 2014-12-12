@@ -93,7 +93,7 @@ var getYear = function(date) {
  * the month previous to it
  */
 var nextMonth = exports.nextMonth = function(date) {
-    return moment(date).add('months', 1);
+    return moment(date).add(1, 'months');
 };
 
 /**
@@ -102,7 +102,7 @@ var nextMonth = exports.nextMonth = function(date) {
  */
 
 var prevMonth = exports.prevMonth = function (date) {
-    return moment(date).subtract('months', 1).native();
+    return moment(date).subtract(1, 'months').native();
 };
 
 
@@ -256,7 +256,7 @@ exports.getDates = function (q, reporting_freq) {
 
             _.each(range, function() {
                 list.push(moment(date));
-                date.subtract(step, 1);
+                date.subtract(1, step);
             });
 
             _.extend(dates, {
@@ -286,7 +286,7 @@ exports.getDates = function (q, reporting_freq) {
 
             _.each(range, function() {
                 list.push(moment(date));
-                date.subtract(step, 1);
+                date.subtract(1, step);
             });
 
             _.extend(dates, {
@@ -315,7 +315,7 @@ exports.getDates = function (q, reporting_freq) {
 
             _.each(range, function() {
                 list.push(moment(date));
-                date.subtract(step, 1);
+                date.subtract(1, step);
             });
 
             _.extend(dates, {
@@ -343,7 +343,7 @@ exports.getDates = function (q, reporting_freq) {
 
             _.each(range, function() {
                 list.push(moment(date));
-                date.subtract(step, 1);
+                date.subtract(1, step);
             });
 
             _.extend(dates, {
@@ -646,9 +646,9 @@ var processNotSubmitted = exports.processNotSubmitted = function(rows, dates) {
             }
 
             if (weekly_reports)
-                date.subtract('weeks', 1);
+                date.subtract(1, 'weeks');
             else
-                date.subtract('months', 1);
+                date.subtract(1, 'months');
 
         };
 
