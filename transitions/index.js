@@ -1,5 +1,5 @@
-var follow = require('follow'),
-    _ = require('underscore'),
+var _ = require('underscore'),
+    follow = require('follow'),
     async = require('async'),
     path = require('path'),
     fs = require('fs'),
@@ -17,8 +17,9 @@ if (!process.env.TEST_ENV) {
         try {
             transitions[key] = require('../' + conf.load);
         } catch(e) {
-            // only log exceptions
+            // log exception and exit
             logger.error(e);
+            process.exit();
         }
     });
 }
@@ -78,9 +79,20 @@ module.exports = {
                 change.id, change.seq, key
             );
 
+            var _setProperty = function(property, value) {
+                var doc = change.doc;
+                if (!doc.transitions) {
+                    doc.transitions = {};
+                }
+                if (!doc.transitions[key]) {
+                    doc.transitions[key] = {};
+                }
+                doc.transitions[key][property] = value;
+            };
+
             /*
-             * Transitions are async and should return true if the document was
-             * modified.
+             * Transitions are async and should return true if the document
+             * should be saved.
              */
             transition.onMatch(change, db, audit, function(err, changed) {
                 logger.debug(
@@ -90,26 +102,18 @@ module.exports = {
                 if (err || !changed) {
                     return callback(err);
                 }
-                var doc = change.doc;
-                //console.log('doc', JSON.stringify(doc,null,2));
-                _.defaults(doc, {
-                    transitions: {}
-                });
                 // mark transitions as finished including error state
-                doc.transitions[key] = {
-                    ok: !err,
-                    last_rev: parseInt(doc._rev) + 1, // because it's the revision AFTER a save
-                    seq: change.seq
-                };
-                callback(null, changed);
+                var doc = change.doc,
+                    prop = doc.transitions && doc.transitions[key] ? doc.transitions[key] : {};
+                //_setProperty('tries', prop.tries ? prop.tries++ : 1)
+                _setProperty('last_rev', parseInt(doc._rev) + 1);
+                _setProperty('seq', change.seq);
+                // todo save couchdb uuid
+                //_setProperty('couch', 'todo');
+                _setProperty('ok', !err);
+                callback(err, changed);
             });
         }
-
-        var feed = new follow.Feed({
-            db: process.env.COUCH_URL,
-            include_docs: true,
-            since: 0
-        });
 
         var match_types = [
             'data_record',
@@ -118,32 +122,20 @@ module.exports = {
             'district'
         ];
 
-        feed.filter = function(doc, req) {
-            /*
-             * req.query is the parameters from the _changes request and
-             * also feed.query_params.
-             */
-            if (match_types.indexOf(doc.type) >= 0) {
-                return true;
-            }
-            return false;
-        };
+        var feed = new follow.Feed({
+            db: process.env.COUCH_URL,
+            include_docs: true,
+            // defaults to run transitions on last 50 changes on startup.
+            since: config.db_info.update_seq - 50
+        });
 
-        /*
-         * Putting all saves in a queue, not sure why but feels safer right
-         * now. Letting the saves race (run in parallel) might provide a little
-         * more performance, need to test a bit more.
-        var saveQueue = async.queue(function(options, callback) {
-            audit.saveDoc(options.change.doc, callback);
-        }, 1);
-         */
+        feed.filter = function(doc, req) {
+            return match_types.indexOf(doc.type) >= 0;
+        };
 
         feed.on('change', function(change) {
 
-            logger.info(
-                'change event on doc %s seq %s',
-                change.id, change.seq
-            );
+            logger.debug('change event on doc %s seq %s', change.id, change.seq);
 
             var operations = [];
             _.each(transitions, function(transition, key) {
@@ -194,23 +186,28 @@ module.exports = {
                     return Boolean(i);
                 });
                 if (changed) {
-                    logger.info(
-                        'saving changes on doc %s seq %s',
+                    logger.debug(
+                        'calling audit.saveDoc on doc %s seq %s',
                         change.id, change.seq
                     );
                     audit.saveDoc(change.doc, function(err) {
                         // todo: how to handle a failed save? for now just
-                        // waiting until next change.
+                        // waiting until next change and try again.
                         if (err) {
                             logger.error(
-                                'Error saving changes on doc %s seq %s: %s',
+                                'error saving changes on doc %s seq %s: %s',
                                 change.id, change.seq, JSON.stringify(err)
+                            );
+                        } else {
+                            logger.info(
+                                'saved changes on doc %s seq %s',
+                                change.id, change.seq
                             );
                         }
                     });
                 } else {
                     logger.debug(
-                        'nothing changed skipping audit.save for doc %s seq %s',
+                        'nothing changed skipping audit.saveDoc for doc %s seq %s',
                         change.id, change.seq
                     );
                 }

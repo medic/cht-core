@@ -14,7 +14,7 @@ function completeSetup(err, design) {
         console.error(JSON.stringify(err));
         process.exit(1);
     } else {
-        config.load(function(err) {
+        config.init(function(err) {
             if (err) {
                 logger.error('Error loading config: ', err);
                 process.exit(1);
@@ -27,7 +27,6 @@ function completeSetup(err, design) {
             logger.info('attaching transitions...');
             require('./transitions').attach(design);
             require('./schedule').checkSchedule();
-            config.listen();
             logger.info('startup complete.');
         });
     }
