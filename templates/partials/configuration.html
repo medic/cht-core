@@ -1,0 +1,26 @@
+<div class="inner" ng-cloak>
+  <div class="col-sm-12 configuration">
+    <div class="configuration-menu">
+      <a href="{baseURL}/settings" ng-show="permissions.admin">
+        <i class="fa fa-cog"></i>
+        {~lb}{~lb}'Settings' | translate{~rb}{~rb}
+      </a>
+      <a href="{baseURL}/schedules" ng-show="permissions.admin">
+        <i class="fa fa-clock-o"></i>
+        {~lb}{~lb}'Schedules' | translate{~rb}{~rb}
+      </a>
+      <a href="{baseURL}/forms" ng-show="permissions.admin || permissions.nationalAdmin">
+        <i class="fa fa-arrow-circle-o-down"></i>
+        {~lb}{~lb}'Export' | translate{~rb}{~rb}
+      </a>
+      <a href="{baseURL}/users" ng-show="permissions.admin">
+        <i class="fa fa-user"></i>
+        {~lb}{~lb}'Users' | translate{~rb}{~rb}
+      </a>
+      <a href="{baseURL}/facilities" ng-show="permissions.admin || permissions.nationalAdmin">
+        <i class="fa fa-home"></i>
+        {~lb}{~lb}'Facilities' | translate{~rb}{~rb}
+      </a>
+    </div>
+  </div>
+</div>

@@ -686,5 +686,6 @@ require('moment/locales');
   require('./reports');
   require('./reports-content');
   require('./analytics');
+  require('./configuration');
 
 }());

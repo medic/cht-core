@@ -144,6 +144,47 @@
         <i class="fa fa-times"></i>
       </a>
 
+      <span class="filter dropdown mm-dropdown" ng-show="filterModel.type === 'configuration'">
+        <span class="mm-button mm-button-nudge-down" data-toggle="dropdown">
+          <span class="mm-button-dropdown">
+            <span class="fa fa-chevron-down"></span>
+          </span>
+          <span class="mm-button-text">{~lb}{~lb}'Configuration' | translate{~rb}{~rb}</span>
+        </span>
+        <ul role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
+          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+            <a href="{baseURL}/settings" role="menuitem" tabindex="-1">
+              <i class="fa fa-fw fa-cog"></i>
+              <span>{~lb}{~lb}'Settings' | translate{~rb}{~rb}</span>
+            </a>
+          </li>
+          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+            <a href="{baseURL}/schedules" role="menuitem" tabindex="-1">
+              <i class="fa fa-fw fa-clock-o"></i>
+              <span>{~lb}{~lb}'Schedules' | translate{~rb}{~rb}</span>
+            </a>
+          </li>
+          <li class="ng-scope" role="presentation" ng-show="permissions.admin || permissions.nationalAdmin">
+            <a href="{baseURL}/forms" role="menuitem" tabindex="-1">
+              <i class="fa fa-fw fa-arrow-circle-o-down"></i>
+              <span>{~lb}{~lb}'Export' | translate{~rb}{~rb}</span>
+            </a>
+          </li>
+          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+            <a href="{baseURL}/users" role="menuitem" tabindex="-1">
+              <i class="fa fa-fw fa-user"></i>
+              <span>{~lb}{~lb}'Users' | translate{~rb}{~rb}</span>
+            </a>
+          </li>
+          <li class="ng-scope" role="presentation" ng-show="permissions.admin || permissions.nationalAdmin">
+            <a href="{baseURL}/facilities" role="menuitem" tabindex="-1">
+              <i class="fa fa-fw fa-home"></i>
+              <span>{~lb}{~lb}'Facilities' | translate{~rb}{~rb}</span>
+            </a>
+          </li>
+        </ul>
+      </span>
+
     </span>
 
   </div>

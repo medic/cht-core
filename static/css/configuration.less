@@ -1,0 +1,37 @@
+@import "variables";
+
+.row.content .configuration {
+  background-color: #FFF;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-style: solid;
+  border-color: @seperator-color;
+  border-width: 0 1px;
+}
+
+.configuration-menu {
+  text-align: center;
+  width: 60em;
+  margin: 2em auto;
+  a {
+    color: inherit;
+    cursor: pointer;
+    font-size: 1.5em;
+    background-color: @seperator-color;
+    border: 1px solid @admin-color;
+    display: inline-block;
+    width: 10em;
+    box-sizing: border-box;
+    text-align: center;
+    border-radius: @radius-size;
+    margin: 1em;
+    padding: 1em;
+    &:hover {
+      text-decoration: none;
+    }
+    .fa {
+      font-size: 1.5em;
+      display: block;
+    }
+  }
+}

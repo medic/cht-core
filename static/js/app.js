@@ -55,6 +55,11 @@ require('../dist/reporting-views');
           url: '/analytics/:module?tour',
           controller: 'AnalyticsCtrl',
           templateUrl: '/partials/analytics.html'
+        })
+        .state('configuration', {
+          url: '/configuration',
+          controller: 'ConfigurationCtrl',
+          templateUrl: '/partials/configuration.html'
         });
 
       $urlRouterProvider.when('', '/messages');

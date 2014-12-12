@@ -6,31 +6,37 @@
     <span class="mm-button-text"></span>
   </span>
   <ul role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
-    <li class="ng-scope" role="presentation" ng-repeat="form in forms">
+    {?isDbAdmin}
+    <li class="ng-scope" role="presentation">
       <a href="{baseURL}/settings" role="menuitem" tabindex="-1">
         <i class="fa fa-fw fa-cog"></i>
         <span>{@translate value="Configuration"/}</span>
       </a>
     </li>
-    <li class="ng-scope" role="presentation" ng-repeat="form in forms">
+    {/isDbAdmin}
+    {?isDbAdmin}
+    <li class="ng-scope" role="presentation">
       <a href="{baseURL}/schedules" role="menuitem" tabindex="-1">
         <i class="fa fa-fw fa-clock-o"></i>
         <span>{@translate value="Schedules"/}</span>
       </a>
     </li>
-    <li class="ng-scope" role="presentation" ng-repeat="form in forms">
+    {/isDbAdmin}
+    <li class="ng-scope" role="presentation">
       <a href="{baseURL}/forms" role="menuitem" tabindex="-1">
         <i class="fa fa-fw fa-arrow-circle-o-down"></i>
         <span>{@translate value="Export"/}</span>
       </a>
     </li>
-    <li class="ng-scope" role="presentation" ng-repeat="form in forms">
+    {?isDbAdmin}
+    <li class="ng-scope" role="presentation">
       <a href="{baseURL}/users" role="menuitem" tabindex="-1">
         <i class="fa fa-fw fa-user"></i>
         <span>{@translate value="Users"/}</span>
       </a>
     </li>
-    <li class="ng-scope" role="presentation" ng-repeat="form in forms">
+    {/isDbAdmin}
+    <li class="ng-scope" role="presentation">
       <a href="{baseURL}/facilities" role="menuitem" tabindex="-1">
         <i class="fa fa-fw fa-home"></i>
         <span>{@translate value="Facilities"/}</span>

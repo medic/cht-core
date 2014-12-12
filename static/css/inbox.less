@@ -13,6 +13,7 @@
 @import "spreadsheet";
 @import "angular";
 @import "analytics";
+@import "configuration";
 
 .container-fluid {
   overflow-x: hidden;
@@ -33,6 +34,11 @@ body {
   &.analytics {
     .header .tabs .selected, .filters {
       background-color: @analytics-color;
+    }
+  }
+  &.configuration {
+    .header .tabs .selected, .filters {
+      background-color: @admin-color;
     }
   }
 }
@@ -270,7 +276,7 @@ body {
 }
 
 .content {
-  .inbox, .reporting {
+  .inbox, .reporting, .configuration {
     top: 8.7em;
     bottom: 0;
     position: absolute;
