@@ -303,7 +303,9 @@ require('moment/locales');
             $('#gateway-number').trigger('input');
             $('#primary-contact-content a[data-value=' + res.care_coordinator + ']')
               .trigger('click');
-            $('#language-preference-content a[data-value=' + res.locale + ']')
+            $('#language-preference-content .locale a[data-value=' + res.locale + ']')
+              .trigger('click');
+            $('#language-preference-content .locale-outgoing a[data-value=' + res.locale_outgoing + ']')
               .trigger('click');
             $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']')
               .trigger('click');
@@ -612,10 +614,15 @@ require('moment/locales');
           .find('.selected')
           .removeClass('selected');
         elem.addClass('selected');
-        elem.closest('.panel')
+        var panel = elem.closest('.panel');
+        var label = [];
+        panel.find('.horizontal-options .selected').each(function() {
+          label.push($(this).text().trim());
+        });
+        panel
           .addClass('panel-complete')
           .find('.panel-heading .value')
-          .text(elem.text());
+          .text(label.join(', '));
       });
 
       $('#modem-setup-content').on('input', 'input', function() {
@@ -647,9 +654,13 @@ require('moment/locales');
         if (val) {
           settings.care_coordinator = val;
         }
-        val = $('#language-preference-content .horizontal-options .selected').attr('data-value');
+        val = $('#language-preference-content .locale .selected').attr('data-value');
         if (val) {
           settings.locale = val;
+        }
+        val = $('#language-preference-content .locale-outgoing .selected').attr('data-value');
+        if (val) {
+          settings.locale_outgoing = val;
         }
         val = $('#registration-form-content .horizontal-options .selected').attr('data-value');
         if (val) {

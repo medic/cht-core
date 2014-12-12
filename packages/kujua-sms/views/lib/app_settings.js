@@ -33,6 +33,7 @@ module.exports = {
       }
    ],
    "locale": "en",
+   "locale_outgoing": "en",
    "muvuku_webapp_url": "/medic-reporter/_design/medic-reporter/_rewrite/?_embed_mode=2",
    "date_format": "DD-MMM-YYYY",
    "reported_date_format": "DD-MMM-YYYY HH:mm:ss",
@@ -2556,6 +2557,16 @@ module.exports = {
       },
       {
           "key": "setup.language.subtitle",
+          "default": "Select the language that users logging in to the website will be using.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Select the language that users logging in to the website will be using."
+              }
+          ]
+      },
+      {
+          "key": "setup.language.outgoing.subtitle",
           "default": "Select the language that your primary point of contact will be using.",
           "translations": [
               {
@@ -5071,6 +5082,26 @@ module.exports = {
               {
                   "locale": "en",
                   "content": "Patient Report"
+              }
+          ]
+      },
+      {
+          "key": "Default Application Language",
+          "default": "Default Application Language",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Default Application Language"
+              }
+          ]
+      },
+      {
+          "key": "Language For Outgoing Messages",
+          "default": "Language For Outgoing Messages",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Language For Outgoing Messages"
               }
           ]
       }

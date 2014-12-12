@@ -83,12 +83,20 @@
             <div id="language-preference-content" class="language-preference-content panel-collapse collapse" role="tabpanel" aria-labelledby="language-preference-heading">
               <div class="panel-body">
                 <h5>{~lb}{~lb}'setup.language.subtitle' | translate{~rb}{~rb}</h5>
-                <p>{~lb}{~lb}'setup.language.description' | translate{~rb}{~rb}</p>
-                <p class="horizontal-options">
+                <p class="horizontal-options locale">
                   <a href="#" ng-repeat="language in languages" ng-attr-data-value="{~lb}{~lb}language.code{~rb}{~rb}">
                     <span class="rectangle" ng-bind="language.name"></span>
                   </a>
                 </p>
+
+                <h5>{~lb}{~lb}'setup.language.outgoing.subtitle' | translate{~rb}{~rb}</h5>
+                <p class="horizontal-options locale-outgoing">
+                  <a href="#" ng-repeat="language in languages" ng-attr-data-value="{~lb}{~lb}language.code{~rb}{~rb}">
+                    <span class="rectangle" ng-bind="language.name"></span>
+                  </a>
+                </p>
+
+                <p>{~lb}{~lb}'setup.language.description' | translate{~rb}{~rb}</p>
               </div>
             </div>
           </div>

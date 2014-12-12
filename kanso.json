@@ -144,9 +144,15 @@
                 ]
             },
             "locale": {
-                "title": "Default Locale Code",
+                "title": "Default Locale For Website",
                 "type": "string",
-                "description": "Default tries to use best option according to browser settings, you can override that here. Must be one of the codes specified in Locales above.",
+                "description": "The code of the default locale for users logging in to the website. Can be overridden in user settings. Must be one of the codes specified in Locales above.",
+                "default": "en"
+            },
+            "locale_outgoing": {
+                "title": "Default Locale For Outgoing Messages",
+                "type": "string",
+                "description": "The code of the default locale for outgoing messages. Must be one of the codes specified in Locales above.",
                 "default": "en"
             },
             "muvuku_webapp_url": {
@@ -3567,6 +3573,16 @@
                     },
                     {
                         "key": "setup.language.subtitle",
+                        "default": "Select the language that users logging in to the website will be using.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Select the language that users logging in to the website will be using."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "setup.language.outgoing.subtitle",
                         "default": "Select the language that your primary point of contact will be using.",
                         "translations": [
                             {
@@ -6082,6 +6098,26 @@
                             {
                                 "locale": "en",
                                 "content": "Patient Report"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Default Application Language",
+                        "default": "Default Application Language",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Default Application Language"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Language For Outgoing Messages",
+                        "default": "Language For Outgoing Messages",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Language For Outgoing Messages"
                             }
                         ]
                     }
