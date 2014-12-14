@@ -505,45 +505,39 @@ label {
   width: 920px;
 }
 
-table.spreadsheet {
-    margin: 20px 20px 10px 20px !important;
-    width: 900px !important;
-}
-table.spreadsheet .dropdown.open a.dropdown-toggle {
-  color: #333;
-  background-color: inherit;
-  height: 20px;
-}
-table.spreadsheet .dropdown-menu {
-  top: 25px;
-  left: -5px;
-}
-.spreadsheet-actions {
-    margin: 10px 20px;
+.spreadsheet {
+  margin: 20px 20px 10px 50px;
+  width: 900px;
+
+  .dropdown.open a.dropdown-toggle {
+    color: #333;
+    background-color: inherit;
+    height: 20px;
+  }
+  .dropdown-menu {
+    top: 25px;
+    left: -5px;
+  }
+  .spreadsheet-actions {
+    margin: 10px 0;
     padding-bottom: 20px;
+  }
+
+  .spreadsheet-help {
+    color: @grayLight;
+    ul {
+      margin: 0;
+      text-align: center;
+    }
+    li {
+     margin: 0;
+     padding: 0 10px 0 0;
+     display: inline;
+     list-style-type: none;
+    }
+  }
 }
 
-.spreadsheet-help {
-  color: @grayLight;
-  .fa-question-circle {
-    .pull-right;
-    padding-right: 20px;
-    margin-top: -45px;
-    font-style: normal;
-    &:hover { cursor: pointer; }
-  }
-  ul {
-    margin: 0;
-    text-align: center;
-    display: none;
-  }
-  li {
-   margin: 0;
-   padding: 0 10px 0 0;
-   display: inline;
-   list-style-type: none;
-  }
-}
 
 .facilities_msg {
   padding: 10px 20px;

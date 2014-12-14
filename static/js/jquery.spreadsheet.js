@@ -209,7 +209,7 @@
         var $input,
             $table = $(this),
             $td = $(td),
-            offset = $td.offset(),
+            offset = $td.position(),
             validation = $td.data('validation'),
             validationHint = $td.data('validation-hint');
 
@@ -220,7 +220,7 @@
             height: ($td.outerHeight() - 3) + 'px',
             minWidth: ($td.outerWidth() - 1) + 'px',
             position: 'absolute',
-            top: offset.top,
+            top: offset.top - 1,
             left: offset.left
         });
         $input.on('focus keyup mouseup blur', function() {
@@ -265,11 +265,11 @@
             div = $('<div id="spreadsheet_select" />');
             $td.parents('table').after(div);
         }
-        var offset = $td.offset();
+        var offset = $td.position();
         div.css({
             width: $td.outerWidth() - 3,
             height: $td.outerHeight() - 3,
-            top: offset.top,
+            top: offset.top - 1,
             left: offset.left,
             position: 'absolute'
         });
@@ -915,10 +915,12 @@
      */
     $.fn.spreadsheet = function (options) {
         var $table = $(this),
+            wrapper,
             table,
             tbody,
             textarea,
             thead,
+            actions,
             help;
 
         _.defaults(options, {
@@ -937,7 +939,6 @@
         }
 
         help =  '<div class="spreadsheet-help">' +
-                '<i class="fa fa-question-circle"></i>' +
                 '<ul>' +
                 '<li>' + options.translate('jquery.spreadsheet.help.doubleclick') + '</li>' +
                 '<li>' + options.translate('jquery.spreadsheet.help.enter') + '</li>' +
@@ -946,43 +947,34 @@
                 '</ul>' +
                 '</div>';
 
-        table = $('<table class="spreadsheet"></table>');
+        wrapper = $('<div class="spreadsheet"></div>');
+        table = $('<table></table>');
+        wrapper.append(help).append(table);
+
         thead = createHeadings(options.columns);
         tbody = createBody(options.columns, options.data);
-
         table.append(thead).append(tbody);
-        $table.append(help);
-        $table.append(table);
 
-        if (options.lockRows) {
-            $table.append(
-                '<div class="spreadsheet-actions">' +
-                '</div>'
-            );
-        } else {
-            $table.append(
-                '<div class="spreadsheet-actions">' +
-                    '<a href="#" class="btn add-row-btn">' +
-                        '<i class="fa fa-plus"></i> ' +
-                        options.translate('jquery.spreadsheet.addrow') +
-                    '</a>' +
-                    '<span class="row-counter"></span>' +
-                '</div>'
+        actions = $('<div class="spreadsheet-actions"></div>');
+        if (!options.lockRows) {
+            actions.append(
+                '<a href="#" class="btn add-row-btn">' +
+                    '<i class="fa fa-plus"></i> ' +
+                    options.translate('jquery.spreadsheet.addrow') +
+                '</a>' +
+                '<span class="row-counter"></span>'
             );
         }
-
+        wrapper.append(actions);
 
         textarea = $('<textarea id="spreadsheet_clipboard"></textarea>');
         $table.data('spreadsheet:clipboard', textarea);
-        $table.after(textarea);
+        wrapper.append(textarea);
+        $table.append(wrapper);
 
         bindDocumentEvents.call(this);
         bindTableEvents.call(this, options);
         $('.row-counter', this).text(options.data.length + ' ' + options.translate('jquery.spreadsheet.rows'));
-        $table.find('.spreadsheet-help').on('click', function(ev){ 
-            var el = $(ev.target);
-            el.siblings('ul').toggle();
-        });
 
         return this;
     };
