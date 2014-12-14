@@ -38,7 +38,7 @@ module.exports = {
 
         var _isRevSame = function() {
             if (doc.transitions && doc.transitions[key]) {
-                return parseInt(doc._rev) === doc.transitions[key].last_rev;
+                return parseInt(doc._rev) === parseInt(doc.transitions[key].last_rev);
             }
         };
 
@@ -60,60 +60,111 @@ module.exports = {
             !_isRevSame()
         );
     },
+    /*
+     * Get results from transitions and save the doc if we have changes.
+     * Otherwise transitions did nothing and saving is unnecessary.  If results
+     * has a true value in it then a change was made. If transition gives an
+     * error then we abort processing this change.
+     */
+    finalize: function(options) {
+        var change = options.change,
+            audit = options.audit,
+            err = options.err,
+            results = options.results;
+        logger.debug(
+            'transition results: %s', JSON.stringify(results)
+        );
+        if (err) {
+            return logger.error(
+                'transition error, skipping save for doc %s seq %s: %s',
+                change.id, change.seq, JSON.stringify(err)
+            );
+        }
+        var changed = _.some(results, function(i) {
+            return Boolean(i);
+        });
+        if (changed) {
+            logger.debug(
+                'calling audit.saveDoc on doc %s seq %s',
+                change.id, change.seq
+            );
+            audit.saveDoc(change.doc, function(err) {
+                // todo: how to handle a failed save? for now just
+                // waiting until next change and try again.
+                if (err) {
+                    logger.error(
+                        'error saving changes on doc %s seq %s: %s',
+                        change.id, change.seq, JSON.stringify(err)
+                    );
+                } else {
+                    logger.info(
+                        'saved changes on doc %s seq %s',
+                        change.id, change.seq
+                    );
+                }
+            });
+        } else {
+            logger.debug(
+                'nothing changed skipping audit.saveDoc for doc %s seq %s',
+                change.id, change.seq
+            );
+        }
+    },
+    /*
+     * All transitions reference the same change.doc and work in series to
+     * apply changes to it.
+     */
+    applyTransition: function(options, callback) {
+
+        var key = options.key,
+            change = options.change,
+            transition = options.transition,
+            audit = options.audit,
+            db = options.db;
+
+        function _setProperty(property, value) {
+            var doc = change.doc;
+            if (!doc.transitions) {
+                doc.transitions = {};
+            }
+            if (!doc.transitions[key]) {
+                doc.transitions[key] = {};
+            }
+            doc.transitions[key][property] = value;
+        }
+
+        logger.debug(
+            'calling transition.onMatch for doc %s seq %s and transition %s',
+            change.id, change.seq, key
+        );
+
+        /*
+         * Transitions are async and should return true if the document
+         * should be saved. If a transition errors the error is returned
+         * immediately.
+         */
+        transition.onMatch(change, db, audit, function(err, changed) {
+            logger.debug(
+                'finished transition for doc %s seq %s transition %s',
+                change.id, change.seq, key
+            );
+            if (err || !changed) {
+                return callback(err);
+            }
+            // todo?
+            // prop = doc.transitions && doc.transitions[key] ? doc.transitions[key] : {};
+            //_setProperty('tries', prop.tries ? prop.tries++ : 1)
+            //_setProperty('couch', 'uuid');
+            //
+            _setProperty('last_rev', parseInt(change.doc._rev) + 1);
+            _setProperty('seq', change.seq);
+            _setProperty('ok', !err);
+            callback(err, changed);
+        });
+    },
     attach: function(design) {
         var db = require('../db'),
             audit = require('couchdb-audit').withNode(db, db.user);
-
-        /*
-         * All transitions reference the same change.doc and work in series to
-         * apply changes to it.
-         */
-        var applyTransition = function(options, callback) {
-
-            var key = options.key,
-                change = options.change,
-                transition = options.transition;
-
-            logger.debug(
-                'calling transition.onMatch for doc %s seq %s and transition %s',
-                change.id, change.seq, key
-            );
-
-            var _setProperty = function(property, value) {
-                var doc = change.doc;
-                if (!doc.transitions) {
-                    doc.transitions = {};
-                }
-                if (!doc.transitions[key]) {
-                    doc.transitions[key] = {};
-                }
-                doc.transitions[key][property] = value;
-            };
-
-            /*
-             * Transitions are async and should return true if the document
-             * should be saved.
-             */
-            transition.onMatch(change, db, audit, function(err, changed) {
-                logger.debug(
-                    'finished transition for doc %s seq %s transition %s',
-                    change.id, change.seq, key
-                );
-                if (err || !changed) {
-                    return callback(err);
-                }
-                // mark transitions as finished including error state
-                var doc = change.doc,
-                    prop = doc.transitions && doc.transitions[key] ? doc.transitions[key] : {};
-                //_setProperty('tries', prop.tries ? prop.tries++ : 1)
-                _setProperty('last_rev', parseInt(doc._rev) + 1);
-                _setProperty('seq', change.seq);
-                // todo save couchdb uuid
-                //_setProperty('couch', 'todo');
-                _setProperty('ok', !err);
-                callback(err, changed);
-            });
-        }
 
         var match_types = [
             'data_record',
@@ -142,7 +193,9 @@ module.exports = {
                 var opts = {
                     key: key,
                     change: change,
-                    transition: transition
+                    transition: transition,
+                    audit: audit,
+                    db: db
                 };
                 if (!module.exports.canRun(opts)) {
                     logger.debug('skipping transition %s %s', key, change.seq);
@@ -167,50 +220,15 @@ module.exports = {
             });
 
             /*
-             * Run transitions in a series and save the doc if we have changes.
-             * Otherwise transitions did nothing and saving is unnecessary.  If
-             * results has a true value in it then a change was made. If
-             * transition gives an error then we abort processing this change.
+             * Run transitions in series and finalize.
              */
             async.series(operations, function(err, results) {
-                logger.debug(
-                    'transition results: %s', JSON.stringify(results)
-                );
-                if (err) {
-                    return logger.error(
-                        'transition error, skipping save for doc %s seq %s: %s',
-                        change.id, change.seq, JSON.stringify(err)
-                    );
-                }
-                var changed = _.some(results, function(i) {
-                    return Boolean(i);
+                module.exports.finalize({
+                    change: change,
+                    audit: audit,
+                    err: err,
+                    results: results
                 });
-                if (changed) {
-                    logger.debug(
-                        'calling audit.saveDoc on doc %s seq %s',
-                        change.id, change.seq
-                    );
-                    audit.saveDoc(change.doc, function(err) {
-                        // todo: how to handle a failed save? for now just
-                        // waiting until next change and try again.
-                        if (err) {
-                            logger.error(
-                                'error saving changes on doc %s seq %s: %s',
-                                change.id, change.seq, JSON.stringify(err)
-                            );
-                        } else {
-                            logger.info(
-                                'saved changes on doc %s seq %s',
-                                change.id, change.seq
-                            );
-                        }
-                    });
-                } else {
-                    logger.debug(
-                        'nothing changed skipping audit.saveDoc for doc %s seq %s',
-                        change.id, change.seq
-                    );
-                }
             });
         });
 
