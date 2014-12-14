@@ -10,6 +10,7 @@
 .navbar {
   overflow: visible;
   margin-bottom: @baseLineHeight;
+  background-color: @navbarBackground;
 
   // Fix for IE7's bad z-indexing so dropdowns don't appear below content that follows the navbar
   *position: relative;
@@ -20,12 +21,6 @@
 // Gradient is applied to its own element because overflow visible is not honored by IE when filter is present
 .navbar-inner {
   min-height: @navbarHeight;
-  padding-left:  20px;
-  padding-right: 20px;
-  background-color: @navbarBackground;
-  border: 1px solid @navbarBorder;
-  .border-radius(@baseBorderRadius);
-  .box-shadow(0 1px 4px rgba(0,0,0,.065));
 
   // Prevent floats from breaking the navbar
   .clearfix();
@@ -158,9 +153,6 @@
 .navbar-static-top {
   position: static;
   margin-bottom: 0; // remove 18px margin for default navbar
-  .navbar-inner {
-    .border-radius(0);
-  }
 }
 
 
@@ -191,14 +183,6 @@
   .border-radius(0);
 }
 
-// Reset container width
-// Required here as we reset the width earlier on and the grid mixins don't override early enough
-.navbar-static-top .container,
-.navbar-fixed-top .container,
-.navbar-fixed-bottom .container {
-  #grid > .core > .span(@gridColumns);
-}
-
 // Fixed to top
 .navbar-fixed-top {
   top: 0;
@@ -207,9 +191,6 @@
 // Fixed to bottom
 .navbar-fixed-bottom {
   bottom: 0;
-  .navbar-inner {
-    .box-shadow(~"0 -1px 10px rgba(0,0,0,.1)");
-  }
 }
 
 

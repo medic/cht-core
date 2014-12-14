@@ -1,5 +1,5 @@
-@import "elements";
 @import "bootstrap/bootstrap";
+@import "elements";
 @import "bower_components/fontawesome/less/font-awesome";
 @import "packages/kujua-branding/css/base";
 @import "packages/kujua-reporting/css/base";
@@ -40,6 +40,10 @@ body {
 
 }
 
+body, .content {
+  min-width: 800px;
+}
+
 label {
     font-weight: bold;
 }
@@ -58,18 +62,24 @@ label {
     }
 }
 
-.content {
-    background: #FFFFFF;
-    border: 1px solid #E0E0E0;
-    border-width: 0 1px;
-    position: absolute;
-    top: 8.5em;
-    bottom: 0;
-    overflow-y: auto;
+#content {
+  background: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  border-width: 0 1px;
+  position: absolute;
+  top: 9em;
+  bottom: 0;
+  overflow-y: auto;
+  min-width: 798px;
+  max-width: 1168px;
+  width: 100%;
 }
 
-.container, .content, .navbar-static-top .container, .navbar-fixed-top .container, .navbar-fixed-bottom .container {
-    width: 1170px;
+.container,
+.content,
+.navbar .container {
+  width: 100%;
+  max-width: 1170px;
 }
 
 /* Temp fix for dashboard z-index woes */
@@ -177,14 +187,15 @@ label {
   background-color: @white;
   padding: 8px 10px 7px 10px;
   margin: 0;
-    h1 {
-        margin-top: 0;
-        margin-bottom: 0;
-        font-size: 18px;
-    }
-    form.form-inline {
-        margin-bottom: 0;
-    }
+  border: 0;
+  h1 {
+      margin-top: 0;
+      margin-bottom: 0;
+      font-size: 18px;
+  }
+  form.form-inline {
+      margin-bottom: 0;
+  }
   .controls {
     .btn-group {
       margin: 5px 0 -5px 0;
@@ -214,12 +225,12 @@ label {
       right: 0;
     }
   }
-}
-.page-header.navbar-fixed-top {
+  &.navbar-top {
     top: 4.75em;
     height: 2.9em;
     z-index: 998;  /* allow dropdowns to show */
     background-color: @admin-color;
+  }
 }
 .admin-tab {
   background-color: @admin-color;
@@ -237,6 +248,7 @@ label {
 .navbar-inner {
   text-align: center;
   .tabs {
+    overflow: hidden;
     height: 4.75em;
     margin-top: 0.25em;
     a {
