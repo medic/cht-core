@@ -3,62 +3,83 @@ var _ = require('underscore'),
 
 exports['has canRun fn'] = function(test) {
     test.equals(_.isFunction(transitions.canRun), true);
-    test.equals(transitions.canRun.length, 3);
-
     test.done();
 };
 
-exports['returns true if not run before'] = function(test) {
-    test.equals(transitions.canRun({}, 'x', {}), true);
-    test.done();
-};
-
-exports['returns false if run before'] = function(test) {
-    test.equals(transitions.canRun({}, 'x', {
-        transitions: {
-            x: { ok: true }
+exports['canRun returns false if filter returns false'] = function(test) {
+    test.equals(transitions.canRun({
+        change: {
+            doc: {}
+        },
+        transition: {
+            filter: function() { return false; }
         }
     }), false);
     test.done();
 };
 
-exports['returns true if repeatable'] = function(test) {
+exports['canRun returns true if filter returns true'] = function(test) {
     test.equals(transitions.canRun({
-        repeatable: true
-    }, 'x', {
-        transitions: {
-            x: { ok: true }
+        change: {
+            doc: {}
+        },
+        transition: {
+            filter: function() { return true; }
         }
     }), true);
     test.done();
 };
 
-exports['returns false if repeatable and last rev matches'] = function(test) {
+exports['canRun returns false if change is deletion'] = function(test) {
     test.equals(transitions.canRun({
-        repeatable: true
-    }, 'x', {
-        _rev: '11-abcd',
-        transitions: {
-            x: {
-                ok: true,
-                last_rev: 11
-            }
+        change: {
+            doc: {},
+            deleted: true
+        },
+        transition: {
+            filter: function() { return true; }
         }
     }), false);
     test.done();
 };
 
-exports['returns true if repeatable and last rev does not match'] = function(test) {
+exports['canRun returns false if rev is same'] = function(test) {
     test.equals(transitions.canRun({
-        repeatable: true
-    }, 'x', {
-        _rev: '13-abcd',
-        transitions: {
-            x: {
-                ok: true,
-                last_rev: 11
+        key: 'x',
+        change: {
+            doc: {
+                _rev: '1',
+                transitions: {
+                    x: {
+                        last_rev: '1'
+                    }
+                }
             }
+        },
+        transition: {
+            filter: function() { return true; }
+        }
+    }), false);
+    test.done();
+};
+
+exports['canRun returns true if rev is different'] = function(test) {
+    test.equals(transitions.canRun({
+        key: 'x',
+        change: {
+            doc: {
+                _rev: '1',
+                transitions: {
+                    x: {
+                        last_rev: '2'
+                    }
+                }
+            }
+        },
+        transition: {
+            filter: function() { return true; }
         }
     }), true);
     test.done();
 };
+

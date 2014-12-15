@@ -157,6 +157,7 @@ exports['filter succeeds with no clinic phone if public form'] = function(test) 
 exports['filter succeeds with populated doc'] = function(test) {
     var doc = { form: 'y' };
     sinon.stub(utils, 'getClinicPhone').returns('somephone');
+    sinon.stub(utils, 'getForm').returns({});
     test.ok(transition.filter(doc));
     test.done();
 };
@@ -215,9 +216,9 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, {}, function(err, complete) {
+    }, {}, {}, function(err, changed) {
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.equals(doc.lmp_date, start.toISOString());
         test.ok(doc.patient_id);
         test.equals(doc.tasks, undefined);
@@ -239,9 +240,9 @@ exports['zero lmp value only registers patient'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, {}, function(err, complete) {
+    }, {}, {}, function(err, changed) {
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.equals(doc.lmp_date, null);
         test.ok(doc.patient_id);
         test.equals(doc.tasks, undefined);
@@ -263,9 +264,9 @@ exports['id only logic with valid name'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, {}, function(err, complete) {
+    }, {}, {}, function(err, changed) {
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.equals(doc.lmp_date, undefined);
         test.ok(doc.patient_id);
 
@@ -289,9 +290,9 @@ exports['id only logic with invalid name'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, {}, function(err, complete) {
+    }, {}, {}, function(err, changed) {
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.equals(doc.patient_id, undefined);
         test.ok(doc.tasks);
         test.equals(getMessage(doc), 'Invalid patient name.');
@@ -320,9 +321,9 @@ exports['invalid name valid LMP logic'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, {}, function(err, complete) {
+    }, {}, {}, function(err, changed) {
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.equals(doc.patient_id, undefined);
         test.equals(getMessage(doc), 'Invalid patient name.');
 
@@ -342,9 +343,9 @@ exports['valid name invalid LMP logic'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, {}, function(err, complete) {
+    }, {}, {}, function(err, changed) {
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.equals(doc.patient_id, undefined);
         test.equals(getMessage(doc), 'Invalid LMP; must be between 0-40 weeks.');
 
@@ -364,9 +365,9 @@ exports['invalid name invalid LMP logic'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, {}, {}, function(err, complete) {
+    }, {}, {}, function(err, changed) {
         test.equals(err, null);
-        test.equals(complete, true);
+        test.equals(changed, true);
         test.equals(doc.patient_id, undefined);
         test.equals(getMessage(doc), 'Invalid patient name.  Invalid LMP; must be between 0-40 weeks.');
 
@@ -379,9 +380,8 @@ exports['mismatched form returns false'] = function(test) {
         doc: {
             form: 'x'
         }
-    }, {}, {}, function(err, complete) {
-        test.equals(complete, false);
-
+    }, {}, {}, function(err, changed) {
+        test.equals(changed, undefined);
         test.done();
     })
 }
@@ -395,8 +395,8 @@ exports['missing all fields returns validation errors'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, {}, {}, function(err, complete) {
-        test.equals(complete, true);
+    }, {}, {}, function(err, changed) {
+        test.equals(changed, true);
         test.equals(
             getMessage(doc),
             'Invalid LMP; must be between 0-40 weeks.  Invalid patient name.'

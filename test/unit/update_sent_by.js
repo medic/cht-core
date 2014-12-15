@@ -16,8 +16,8 @@ exports['updates sent_by to contact name if both available'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, fakedb, fakeaudit, function(err, complete) {
-        test.ok(complete);
+    }, fakedb, fakeaudit, function(err, changed) {
+        test.ok(changed);
         test.equal(doc.sent_by, 'CCN');
         test.done();
     });
@@ -42,8 +42,8 @@ exports['updates sent_by to clinic name if contact name not available'] = functi
 
     transition.onMatch({
         doc: doc
-    }, fakedb, fakeaudit, function(err, complete) {
-        test.ok(complete);
+    }, fakedb, fakeaudit, function(err, changed) {
+        test.ok(changed);
         test.equal(doc.sent_by, 'Clinic');
         test.done();
     });
@@ -56,14 +56,9 @@ exports['sent_by untouched if nothing available'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, fakedb, fakeaudit, function(err, complete) {
-        test.equals(complete, false);
+    }, fakedb, fakeaudit, function(err, changed) {
+        test.ok(!changed);
         test.strictEqual(doc.sent_by, undefined);
         test.done();
     });
-}
-
-exports['is repeatable'] = function(test) {
-    test.equals(transition.repeatable, true);
-    test.done();
 }
