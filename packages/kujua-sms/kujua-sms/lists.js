@@ -134,11 +134,11 @@ function getOptions(req, formName, defaultColumns) {
         };
         if (query.filter_state_from) {
             options.filterState.from = 
-                moment().add('days', query.filter_state_from).startOf('day');
+                moment().add(query.filter_state_from, 'days').startOf('day');
         }
         if (query.filter_state_to) {
             options.filterState.to = 
-                moment().add('days', query.filter_state_to).endOf('day')
+                moment().add(query.filter_state_to, 'days').endOf('day')
         }
 
     }

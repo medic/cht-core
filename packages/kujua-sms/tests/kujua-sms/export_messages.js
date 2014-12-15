@@ -544,10 +544,10 @@ exports['requesting messages export filtered by state'] = function(test) {
     test.expect(1);
 
     var reportedDate = 1331503842461;
-    var pendingTimestampA = moment().subtract('days', 21).valueOf();
-    var pendingTimestampB = moment().subtract('days', 20).valueOf();
-    var pendingTimestampC = moment().subtract('days', 10).valueOf();
-    var pendingTimestampD = moment().subtract('days', 9).valueOf();
+    var pendingTimestampA = moment().subtract(21, 'days').valueOf();
+    var pendingTimestampB = moment().subtract(20, 'days').valueOf();
+    var pendingTimestampC = moment().subtract(10, 'days').valueOf();
+    var pendingTimestampD = moment().subtract(9, 'days').valueOf();
 
     var expected = '"_id|en","from|en","Message UUID","Sent By","To Phone","Message Body"\n'
         + '"b","+12229990000"\n'
@@ -674,10 +674,10 @@ exports['requesting messages export filtered by state in future with no upper bo
     test.expect(1);
 
     var reportedDate = 1331503842461;
-    var pendingTimestampA = moment().subtract('days', 11).valueOf();
+    var pendingTimestampA = moment().subtract(11, 'days').valueOf();
     var pendingTimestampB = moment().valueOf();
-    var pendingTimestampC = moment().add('days', 30).valueOf();
-    var pendingTimestampD = moment().add('days', 31).valueOf();
+    var pendingTimestampC = moment().add(30, 'days').valueOf();
+    var pendingTimestampD = moment().add(31, 'days').valueOf();
 
     var expected = '"_id|en","from|en","Message UUID","Sent By","To Phone","Message Body"\n'
         + '"b","+12229990000"\n'
