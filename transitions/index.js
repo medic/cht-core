@@ -164,7 +164,8 @@ module.exports = {
     },
     attach: function(design) {
         var db = require('../db'),
-            audit = require('couchdb-audit').withNode(db, db.user);
+            audit = require('couchdb-audit').withNode(db, db.user),
+            self = module.exports;
 
         var match_types = [
             'data_record',
@@ -202,7 +203,7 @@ module.exports = {
                     return;
                 }
                 operations.push(function(cb) {
-                    applyTransition(opts, function(err, changed) {
+                    self.applyTransition(opts, function(err, changed) {
                         /*
                          * Transition error short circuits async.series,
                          * effectively throwing away the changes.  Transition
