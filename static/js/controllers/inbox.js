@@ -5,6 +5,7 @@ var utils = require('kujua-utils'),
     sendMessage = require('../modules/send-message'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
+    version = require('settings/root').version,
     format = require('../modules/format');
 
 require('moment/locales');
@@ -32,6 +33,7 @@ require('moment/locales');
       $scope.selected = undefined;
       $scope.filterQuery = undefined;
       $scope.analyticsModules = undefined;
+      $scope.version = version;
 
       require('../modules/manage-session').init();
 

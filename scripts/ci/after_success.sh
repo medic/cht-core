@@ -8,51 +8,32 @@ if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     exit 0;
 fi
 
+cd sentinel && npm install && cd .. && \
+cd api && npm install && cd ..
+
 # Try pushing up to $MAX times.
 function push {
     ((COUNT++))
-    local URL="$1"
+    local market="$1"
     if [ $COUNT -le $MAX ]; then
-        kanso push --minify "$URL" && exit 0
-        push $URL
+        kanso push --minify "http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-$market/upload" && exit 0
+        push $market
     else
         echo 'Failed to push to market.'
         exit 1
     fi
 }
 
-function prep {
-    local meta="$1"
-    local args='this.dependencies["kanso-gardener"] = null;'
-    args+='this.dependencies_included = true;'
-
-    # Process meta portion of version string if provided
-    if [ -n "$meta" ]; then
-        args+="this.version += \"-${meta}\";"
-    fi
-
-    # Install npm deps in module directories and tweak kanso gardener related
-    # configs so it knows.
-    npm install -g json && \
-    cd sentinel && npm install && cd .. && \
-    cd api && npm install && cd .. && \
-    cat kanso.json | json -o json-4 -e "$args" > tmp.json && \
-    mv tmp.json kanso.json
-}
-
 if [ "$TRAVIS_BRANCH" == "master" ]; then
-    prep && \
-    push 'http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-release/upload'
+    push 'release'
 fi;
 
 if [ "$TRAVIS_BRANCH" == "testing" ]; then
-    prep "beta.$TRAVIS_BUILD_NUMBER" && \
-    push 'http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-beta/upload'
+    push 'beta'
 fi;
 
 if [ "$TRAVIS_BRANCH" == "develop" ]; then
-    prep "alpha.$TRAVIS_BUILD_NUMBER" && \
-    push 'http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-alpha/upload'
+    push 'alpha'
 fi;
 
 exit 0;

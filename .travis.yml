@@ -8,6 +8,7 @@ services:
 before_script:
   - sleep 3
   - curl -X PUT localhost:5984/medic
+  - bash ./scripts/ci/setup.sh
   - npm install kanso -g
   - npm install grunt-cli -g
 
