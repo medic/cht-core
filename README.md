@@ -45,7 +45,7 @@ the following rules:
 
 * is repeatable, it can run multiple times on the same document without
   negative effect.  You can use the `transitions` property on
-  a document to determine when a transition has run.
+  a document to determine if a transition has run.
 
 
 Callback arguments:
