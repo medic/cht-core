@@ -15,7 +15,8 @@ function initInfo(callback) {
         db.view('kujua-sentinel', 'last_valid_seq', {
             reduce: true
         }, function(err, data) {
-            self.last_valid_seq = data.rows[0].value.seq;
+            var first = data.rows.pop();
+            self.last_valid_seq = first && first.value.seq;
             callback(err);
         });
     });
