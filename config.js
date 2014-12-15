@@ -12,7 +12,12 @@ function initInfo(callback) {
             return callback(err);
         }
         self.db_info = info;
-        callback();
+        db.view('kujua-sentinel', 'last_valid_seq', {
+            reduce: true
+        }, function(err, data) {
+            self.last_valid_seq = data.rows[0].value.seq;
+            callback(err);
+        });
     });
 };
 
@@ -81,5 +86,6 @@ module.exports = {
         return config[key];
     },
     init: initConfig,
-    db_info: null
+    db_info: null,
+    last_valid_seq: null
 };

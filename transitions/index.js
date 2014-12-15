@@ -177,8 +177,9 @@ module.exports = {
         var feed = new follow.Feed({
             db: process.env.COUCH_URL,
             include_docs: true,
-            // defaults to run transitions on last 50 changes on startup.
-            since: config.db_info.update_seq - 50
+            // start from last valid transition ran, or the beginning of the
+            // changes feed. since: 0 will re-run through all changes.
+            since: config.last_valid_seq || 0
         });
 
         feed.filter = function(doc, req) {
