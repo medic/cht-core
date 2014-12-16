@@ -64,6 +64,16 @@ grunt watch
 
 ```
 cd sentinel
+npm install
+export COUCH_URL=http://admin:pass@localhost:5984/medic
+node ./server.js
+```
+
+### Start medic-api
+
+```
+cd api
+npm install
 export COUCH_URL=http://admin:pass@localhost:5984/medic
 node ./server.js
 ```
@@ -94,7 +104,7 @@ http://localhost:5985
 Navigate your browser to:
 
 ```
-http://localhost:5984/medic/_design/medic/_rewrite/
+http://localhost:5988/medic/_design/medic/_rewrite/
 ```
 
 
