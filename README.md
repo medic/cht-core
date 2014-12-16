@@ -110,7 +110,7 @@ http://localhost:5988/medic/_design/medic/_rewrite/
 
 ### Loading Data
 
-Loading your form definitions in the settings interface is suported but you can
+Loading your form definitions in the settings interface is supported but you can
 also do that from command line.
 
 ```
