@@ -79,7 +79,7 @@ export COUCH_URL=http://admin:pass@localhost:5984/medic
 node ./server.js
 ```
 
-## Push the dashboard
+### Push the dashboard
 
 Dashboard is required to load Medic Mobile. To install Dashboard:
 
