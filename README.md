@@ -68,6 +68,7 @@ npm install
 export COUCH_URL=http://admin:pass@localhost:5984/medic
 node ./server.js
 ```
+See [Medic Sentinel](https://github.com/medic/medic-sentinel) for more information.
 
 ### Start medic-api
 
@@ -77,6 +78,20 @@ npm install
 export COUCH_URL=http://admin:pass@localhost:5984/medic
 node ./server.js
 ```
+
+## Push the dashboard
+
+Dashboard is required to load Medic Mobile. To install Dashboard:
+
+First change the couch db configuration `secure_rewrites` to false.
+
+```
+git clone https://github.com/garden20/dashboard
+cd dashboard
+kanso install
+kanso push http://admin:pass@localhost:5984/dashboard
+```
+
 
 ### Configure lucene
 
@@ -162,17 +177,6 @@ Market](https://github.com/garden20/garden-market) run:
 ```
 kanso push http://staging.dev.medicmobile.org/markets-alpha/upload
 ```
-
-## Configure
-
-Dashboard is required to load Medic Mobile. To install Dashboard
-1) git clone https://github.com/garden20/dashboard
-2) cd dashboard
-3) kanso push $COUCH_URL
-4) change the couch db configuration secure_rewrites to false.
-
-
-See [Medic Sentinel](https://github.com/medic/medic-sentinel) for more information.
 
 ## Tests
 
