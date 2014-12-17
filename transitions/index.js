@@ -62,25 +62,17 @@ module.exports = {
         );
     },
     /*
-     * Get results from transitions and save the doc if we have changes.
-     * Otherwise transitions did nothing and saving is unnecessary.  If results
-     * has a true value in it then a change was made. If transition gives an
-     * error then we abort processing this change.
+     * Save the doc if we have changes from transitions, otherwise transitions
+     * did nothing and saving is unnecessary.  If results has a true value in
+     * it then a change was made.
      */
     finalize: function(options) {
         var change = options.change,
             audit = options.audit,
-            err = options.err,
             results = options.results;
         logger.debug(
             'transition results: %s', JSON.stringify(results)
         );
-        if (err) {
-            return logger.error(
-                'transition error, skipping save for doc %s seq %s: %s',
-                change.id, change.seq, JSON.stringify(err)
-            );
-        }
         var changed = _.some(results, function(i) {
             return Boolean(i);
         });
@@ -227,13 +219,15 @@ module.exports = {
             });
 
             /*
-             * Run transitions in series and finalize.
+             * Run transitions in series and finalize. We ignore err here
+             * because it is never returned, we process it within the operation
+             * function.  All we care about are results and whether we need to
+             * save or not.
              */
             async.series(operations, function(err, results) {
                 module.exports.finalize({
                     change: change,
                     audit: audit,
-                    err: err,
                     results: results
                 });
             });
