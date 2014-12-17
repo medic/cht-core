@@ -9,7 +9,7 @@ if (arg === 'debug') {
     logger.transports.console.level = arg;
 }
 
-function completeSetup(err, design) {
+function completeSetup(err) {
     if (err) {
         console.error(JSON.stringify(err));
         process.exit(1);
@@ -25,7 +25,7 @@ function completeSetup(err, design) {
                 logger.debug('loglevel is %s.', logger.transports.console.level);
             }
             logger.info('attaching transitions...');
-            require('./transitions').attach(design);
+            require('./transitions').attach();
             require('./schedule').checkSchedule();
             logger.info('startup complete.');
         });

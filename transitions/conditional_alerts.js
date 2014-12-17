@@ -10,6 +10,14 @@ module.exports = {
     _getConfig: function() {
         return _.extend({}, config.get('alerts'));
     },
+    _hasConfig: function(doc) {
+        var self = module.exports;
+        // confirm the form is defined on a reminder config
+        return _.find(self._getConfig(), function(obj) {
+            return obj.form &&
+                doc.form.match(new RegExp('^\\s*'+obj.form+'\\s*$','i'));
+        });
+    },
     _runCondition: function(condition, context, callback) {
         try {
             callback(null, vm.runInNewContext(condition, context));
@@ -53,6 +61,7 @@ module.exports = {
             doc &&
             doc.form &&
             doc.type === 'data_record' &&
+            self._hasConfig(doc) &&
             !self._hasRun(doc)
         );
     },

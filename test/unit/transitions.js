@@ -83,3 +83,39 @@ exports['canRun returns true if rev is different'] = function(test) {
     test.done();
 };
 
+exports['canRun returns true if transition is not defined'] = function(test) {
+    test.expect(2);
+    test.equals(transitions.canRun({
+        key: 'foo',
+        change: {
+            doc: {
+                _rev: '1',
+                transitions: {
+                    baz: {
+                        last_rev: '2'
+                    }
+                }
+            }
+        },
+        transition: {
+            filter: function() { return true; }
+        }
+    }), true);
+    test.equals(transitions.canRun({
+        key: 'foo',
+        change: {
+            doc: {
+                _rev: '1',
+                transitions: {}
+            }
+        },
+        transition: {
+            filter: function() { return true; }
+        }
+    }), true);
+    test.done();
+};
+
+
+
+

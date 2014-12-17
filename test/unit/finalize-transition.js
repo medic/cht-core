@@ -56,7 +56,7 @@ exports['save is called if transition results have changes'] = function(test) {
 };
 
 exports['applyTransition creates transitions property'] = function(test) {
-    test.expect(8);
+    test.expect(7);
     var doc = {
         _rev: '1'
     };
@@ -82,18 +82,17 @@ exports['applyTransition creates transitions property'] = function(test) {
     }, function(err, changed) {
         test.ok(!err);
         test.ok(changed);
-        test.ok(doc.transitions);
-        test.ok(doc.transitions.x);
         test.ok(doc.transitions.x.ok);
         test.ok(doc.transitions.x.last_rev);
         test.ok(doc.transitions.x.seq);
-        test.ok(doc.foo);
+        test.equals(doc.errors, undefined);
+        test.equals(doc.foo, 'bar');
         test.done();
     });
 }
 
-exports['applyTransition returns error and does not create transitions property'] = function(test) {
-    test.expect(3);
+exports['applyTransition handles errors'] = function(test) {
+    test.expect(5);
     var doc = {
         _rev: '1'
     };
@@ -115,71 +114,15 @@ exports['applyTransition returns error and does not create transitions property'
         transition: transition,
         audit: audit
     }, function(err, changed) {
-        test.ok(err);
-        test.ok(!changed);
-        test.ok(!doc.transitions);
+        test.equals(err, 'oops');
+        test.equals(changed, undefined);
+        // ok is set to false
+        test.ok(doc.transitions.x.ok === false);
+        // one error is created on doc
+        test.ok(doc.errors.length === 1);
+        // error message contains error
+        test.ok(doc.errors[0].message.match(/oops/));
         test.done();
     });
 }
 
-exports['same _rev returns false canRun'] = function(test) {
-    var db,
-        audit,
-        doc,
-        latest;
-
-    doc = {
-        _rev: '1',
-        transitions: {
-            x: {
-                last_rev: '1'
-            }
-        }
-    };
-
-    var transition = {
-        filter: function(doc) {
-            return true;
-        }
-    };
-
-    test.ok(!transitions.canRun({
-        change: {
-            doc: doc
-        },
-        key: 'x',
-        transition: transition
-    }));
-    test.done();
-}
-
-exports['different _rev returns true canRun'] = function(test) {
-    var db,
-        audit,
-        doc,
-        latest;
-
-    doc = {
-        _rev: '2',
-        transitions: {
-            x: {
-                last_rev: '1'
-            }
-        }
-    };
-
-    var transition = {
-        filter: function(doc) {
-            return true;
-        }
-    };
-
-    test.ok(transitions.canRun({
-        change: {
-            doc: doc
-        },
-        key: 'x',
-        transition: transition
-    }));
-    test.done();
-}

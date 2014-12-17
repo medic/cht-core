@@ -40,6 +40,7 @@ module.exports = {
             if (doc.transitions && doc.transitions[key]) {
                 return parseInt(doc._rev) === parseInt(doc.transitions[key].last_rev);
             }
+            return false;
         };
 
         /*
@@ -139,30 +140,40 @@ module.exports = {
         );
 
         /*
-         * Transitions are async and should return true if the document
-         * should be saved. If a transition errors the error is returned
-         * immediately.
+         * Transitions are async and should return true if the document has
+         * changed.  If a transition errors then log the error, but don't
+         * return it because that will stop the series and the other
+         * transitions won't run.
          */
         transition.onMatch(change, db, audit, function(err, changed) {
             logger.debug(
                 'finished transition for doc %s seq %s transition %s',
                 change.id, change.seq, key
             );
-            if (err || !changed) {
-                return callback(err);
-            }
             // todo?
             // prop = doc.transitions && doc.transitions[key] ? doc.transitions[key] : {};
             //_setProperty('tries', prop.tries ? prop.tries++ : 1)
             //_setProperty('couch', 'uuid');
             //
-            _setProperty('last_rev', parseInt(change.doc._rev) + 1);
-            _setProperty('seq', change.seq);
-            _setProperty('ok', !err);
+            if (err || changed) {
+                _setProperty('last_rev', parseInt(change.doc._rev) + 1);
+                _setProperty('seq', change.seq);
+                _setProperty('ok', !err);
+            }
+            if (err) {
+                utils.addError(change.doc, {
+                    code: key + '_error',
+                    message: 'Transition error on ' + key + ': ' + JSON.stringify(err)
+                });
+                logger.error(
+                    'transition %s returned error doc %s seq %s: %s',
+                    key, change.id, change.seq, JSON.stringify(err)
+                );
+            }
             callback(err, changed);
         });
     },
-    attach: function(design) {
+    attach: function() {
         var db = require('../db'),
             audit = require('couchdb-audit').withNode(db, db.user),
             self = module.exports;
@@ -203,20 +214,14 @@ module.exports = {
                     logger.debug('skipping transition %s %s', key, change.seq);
                     return;
                 }
+                /*
+                 * Transition error short circuits async.series, so we never
+                 * return errors on the callback but if there are errors we
+                 * save them.
+                 */
                 operations.push(function(cb) {
                     self.applyTransition(opts, function(err, changed) {
-                        /*
-                         * Transition error short circuits async.series,
-                         * effectively throwing away the changes.  Transition
-                         * will be retried on next change event on doc.
-                         */
-                        if (err) {
-                            logger.error(
-                                'transition %s returned error doc %s seq %s: %s',
-                                key, change.id, change.seq, JSON.stringify(err)
-                            );
-                        }
-                        cb(err, changed);
+                        cb(null, err || changed);
                     });
                 });
             });
