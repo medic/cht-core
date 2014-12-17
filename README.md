@@ -38,6 +38,31 @@ exports.env = {
 npm install grunt-cli -g
 ```
 
+### Configure Lucene
+
+Add the following to CouchDB config `httpd_global_handlers`:
+
+```
+_fti = {couch_httpd_proxy, handle_proxy_req, <<"http://127.0.0.1:5985">>}
+```
+
+Update `$lucene_home/conf/couchdb-lucene.ini` so the URL has credentials, eg:
+
+```
+url=http://foo:bar@localhost:5984/
+```
+
+Start lucene: `$lucene_home/bin/run`
+
+You should now see the same welcome message at:
+
+```
+curl http://localhost:5985
+{"couchdb-lucene":"Welcome","version":"1.0.2"}
+curl http://localhost:5984/_fti
+{"couchdb-lucene":"Welcome","version":"1.0.2"}
+```
+
 ## Develop
 
 ### Build
@@ -93,27 +118,6 @@ kanso push http://admin:pass@localhost:5984/dashboard
 ```
 
 
-### Configure lucene
-
-Add the following to couchdb httpd_global_handlers 
-```
-_fti = {couch_httpd_proxy, handle_proxy_req, <<"http://127.0.0.1:5985">>}
-```
-
-Update `<lucene_home>/conf/couchdb-lucene.ini` so the URL has credentials, eg:
-
-```
-url=http://foo:bar@localhost:5984/
-```
-
-Start lucene: `<lucene_home>/bin/run`
-
-You should now see a welcome message at 
-
-```
-http://localhost:5985
-```
-
 ### Try it out
 
 Navigate your browser to:
@@ -153,9 +157,11 @@ curl -i -u gateway:123qwe \
 ## Deploy to Market
 
 When deploying to market include the sentinel package in the couchapp so
-[gardener](https://github.com/garden20/gardener) can manage the process.
+[gardener](https://github.com/garden20/gardener) can manage the process. This
+is already automated in the CI scripts and runs on Travis CI but here is the
+manual process.
 
-First clone the repo recursively so you get both submodules `json-forms` and
+First clone the repo recursively so you get both submodules `api` and
 `sentinel`, then change directories:
 
 ```
@@ -163,19 +169,22 @@ git clone --recursive https://github.com/medic/medic-webapp
 cd medic-webapp
 ```
 
-Then edit `kanso.json` and add `"kanso-gardener":null` to the end of the list of dependencies.  You can use your editor but
+Then edit `kanso.json` and add `"kanso-gardener":null` to the end of the list
+of dependencies.  You can use your editor but
 [jsontool](https://github.com/trentm/json) has an edit mode that works to:
 
 ```
-cat kanso.json |json -e 'dependencies["kanso-gardener"] = null;' > new.json
+cat kanso.json |json \
+  -e 'this.dependencies["kanso-gardener"] = null; this.dependencies_included = true;' \
+  > new.json && \
 mv new.json kanso.json
 ```
 
-Finally push to the Medic [Garden
-Market](https://github.com/garden20/garden-market) run:
+Finally push to the [Medic Alpha 
+Market](https://staging.dev.medicmobile.org/markets-alpha) run:
 
 ```
-kanso push http://staging.dev.medicmobile.org/markets-alpha/upload
+kanso push https://staging.dev.medicmobile.org/markets-alpha/upload
 ```
 
 ## Tests
