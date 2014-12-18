@@ -253,7 +253,7 @@ var _ = require('underscore'),
 
 
       UserDistrict(function() {
-        $scope.$watch('filterModel', function(prev, curr) {
+        $scope.$watch('filterModel', function(curr, prev) {
           if (prev !== curr) {
             $scope.query();
           }

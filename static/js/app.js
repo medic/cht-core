@@ -23,6 +23,7 @@ require('../dist/reporting-views');
     function($stateProvider, $urlRouterProvider, $translateProvider) {
 
       $stateProvider
+        // messages
         .state('messages', {
           url: '/messages?tour',
           controller: 'MessagesCtrl',
@@ -37,6 +38,8 @@ require('../dist/reporting-views');
             }
           }
         })
+
+        // reports
         .state('reports', {
           url: '/reports?tour&query',
           controller: 'ReportsCtrl',
@@ -51,15 +54,71 @@ require('../dist/reporting-views');
             }
           }
         })
+
+        // analytics
         .state('analytics', {
           url: '/analytics/:module?tour',
           controller: 'AnalyticsCtrl',
           templateUrl: '/partials/analytics.html'
         })
+
+        // configuration
         .state('configuration', {
           url: '/configuration',
           controller: 'ConfigurationCtrl',
           templateUrl: '/partials/configuration.html'
+        })
+        .state('configuration.settings', {
+          url: '/settings',
+          views: {
+            content: {
+              templateUrl: '/partials/configuration_settings.html'
+            }
+          }
+        })
+        .state('configuration.settings.basic', {
+          url: '/basic',
+          views: {
+            tab: {
+              controller: 'ConfigurationSettingsBasicCtrl',
+              templateUrl: '/partials/configuration_settings_basic.html'
+            }
+          }
+        })
+        .state('configuration.settings.advanced', {
+          url: '/advanced',
+          views: {
+            tab: {
+              controller: 'ConfigurationSettingsAdvancedCtrl',
+              templateUrl: '/partials/configuration_settings_advanced.html'
+            }
+          }
+        })
+        .state('configuration.translation', {
+          url: '/translation',
+          views: {
+            content: {
+              templateUrl: '/partials/configuration_translation.html'
+            }
+          }
+        })
+        .state('configuration.translation.languages', {
+          url: '/languages',
+          views: {
+            tab: {
+              controller: 'ConfigurationTranslationLanguagesCtrl',
+              templateUrl: '/partials/configuration_translation_languages.html'
+            }
+          }
+        })
+        .state('configuration.translation.application', {
+          url: '/application',
+          views: {
+            tab: {
+              controller: 'ConfigurationTranslationApplicationCtrl',
+              templateUrl: '/partials/configuration_translation_application.html'
+            }
+          }
         });
 
       $urlRouterProvider.when('', '/messages');

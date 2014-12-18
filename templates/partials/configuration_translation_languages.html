@@ -1,0 +1,28 @@
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+  <div class="panel panel-default" ng-repeat="locale in languagesModel.locales">
+    <div class="panel-heading" role="tab" id="locale-{~lb}{~lb}locale.code{~rb}{~rb}">
+      <h4 class="panel-title">
+        <a class="collapsed" data-toggle="collapse" data-target="#locale-{~lb}{~lb}locale.code{~rb}{~rb}-body" data-parent="#accordion">
+          {~lb}{~lb}locale.name{~rb}{~rb}
+        </a>
+      </h4>
+    </div>
+    <div id="locale-{~lb}{~lb}locale.code{~rb}{~rb}-body" class="panel-collapse collapse" role="tabpanel">
+      <div class="panel-body">
+        <button type="button" class="btn btn-link" data-toggle="modal" data-target="#edit-language" ng-click="prepareEditLanguage(locale)">
+          <i class="fa fa-pencil"></i>
+          {~lb}{~lb}'Edit' | translate{~rb}{~rb}
+        </button>
+        <button type="button" class="btn btn-link" data-toggle="modal" data-target="#delete-language" ng-click="prepareDeleteLanguage(locale)">
+          <i class="fa fa-trash-o"></i>
+          {~lb}{~lb}'Delete' | translate{~rb}{~rb}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button type="button" class="btn btn-link" data-toggle="modal" data-target="#edit-language" ng-click="prepareEditLanguage()">
+  <i class="fa fa-plus"></i>
+  {~lb}{~lb}'Add new language' | translate{~rb}{~rb}
+</button>

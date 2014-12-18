@@ -2,10 +2,10 @@ var utils = require('kujua-utils'),
     feedback = require('feedback'),
     _ = require('underscore'),
     moment = require('moment'),
+    version = require('settings/root').version,
     sendMessage = require('../modules/send-message'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
-    version = require('settings/root').version,
     format = require('../modules/format');
 
 require('moment/locales');
@@ -689,5 +689,12 @@ require('moment/locales');
   require('./reports-content');
   require('./analytics');
   require('./configuration');
+  require('./edit-language');
+  require('./delete-language');
+  require('./edit-translation');
+  require('./configuration-settings-basic');
+  require('./configuration-settings-advanced');
+  require('./configuration-translation-languages');
+  require('./configuration-translation-application');
 
 }());

@@ -16,3 +16,70 @@
 .tooltip .tooltip-inner {
   text-align: left;
 }
+
+.nav-tabs {
+  padding: 0 1em;
+  a {
+    outline: 0;
+  }
+}
+
+.tab-content {
+  padding: 1em;
+}
+
+.form-control.medium {
+  width: 21em;
+}
+
+.form-control.small {
+  width: 14em;
+}
+
+.form-control.tiny {
+  width: 5em;
+}
+
+.form-control.inline {
+  display: inline-block;
+}
+
+.form-actions, .form-group {
+  .error {
+    color: @error-color;
+    font-weight: bold;
+  }
+}
+
+.form-actions {
+  line-height: 2em;
+  .loading {
+    font-size: 2em;
+    vertical-align: middle;
+  }
+  .success {
+    display: inline-block !important;
+    opacity: 1;
+    transition: all linear 0s;
+    &.ng-hide, &.ng-hide-add.ng-hide-add-active {
+      opacity: 0;
+    }
+    &.ng-hide-add {
+      transition: all linear 1s;
+      opacity: 1;
+    }
+  }
+}
+
+.select2-container .select2-choice {
+  height: 32px;
+  padding: 6px 12px;
+  line-height: 1.42857;
+  background-color: #FFF;
+  background-image: none;
+  box-sizing: border-box;
+}
+
+.select2-arrow b {
+  background-color: #FFF;
+}

@@ -3886,22 +3886,12 @@ module.exports = {
           ]
       },
       {
-          "key": "Basic Settings",
-          "default": "Basic Settings",
+          "key": "Basic",
+          "default": "Basic",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Basic Settings"
-              }
-          ]
-      },
-      {
-          "key": "Advanced Settings",
-          "default": "Advanced Settings",
-          "translations": [
-              {
-                  "locale": "en",
-                  "content": "Advanced Settings"
+                  "content": "Basic"
               }
           ]
       },
@@ -5102,6 +5092,126 @@ module.exports = {
               {
                   "locale": "en",
                   "content": "Language For Outgoing Messages"
+              }
+          ]
+      },
+      {
+          "key": "Languages",
+          "default": "Languages",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Languages"
+              }
+          ]
+      },
+      {
+          "key": "Application Text",
+          "default": "Application Text",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Application Text"
+              }
+          ]
+      },
+      {
+          "key": "Edit language",
+          "default": "Edit language",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Edit language"
+              }
+          ]
+      },
+      {
+          "key": "Add new language",
+          "default": "Add new language",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Add new language"
+              }
+          ]
+      },
+      {
+          "key": "Name",
+          "default": "Name",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Name"
+              }
+          ]
+      },
+      {
+          "key": "Language code",
+          "default": "Language code",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Language code"
+              }
+          ]
+      },
+      {
+          "key": "Error retrieving settings",
+          "default": "Error retrieving settings",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Error retrieving settings"
+              }
+          ]
+      },
+      {
+          "key": "Submitting",
+          "default": "Submitting...",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Submitting..."
+              }
+          ]
+      },
+      {
+          "key": "Language name help",
+          "default": "The display name for the language.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "The display name for the language."
+              }
+          ]
+      },
+      {
+          "key": "Language code help",
+          "default": "The 2 or 3 digit code for the language.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "The 2 or 3 digit code for the language."
+              }
+          ]
+      },
+      {
+          "key": "Edit translation",
+          "default": "Edit translation",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Edit translation"
+              }
+          ]
+      },
+      {
+          "key": "Default",
+          "default": "Default",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Default"
               }
           ]
       }

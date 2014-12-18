@@ -63,3 +63,4 @@ describe('UpdateSettings service', function() {
   });
 
 });
+
