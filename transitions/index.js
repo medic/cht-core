@@ -46,8 +46,8 @@ var canRun = function(options) {
      * Ignore deleted records, confirm transition has filter function and
      * skip transition if filter returns false.
      *
-     * If transition was already applied then only run again if doc rev is
-     * not equal to transtion rev.
+     * If transition was already applied then only run again if doc rev is not
+     * equal to transition rev.  If revs are the same then transition just ran.
      */
     return Boolean(
         doc &&
@@ -167,11 +167,51 @@ var applyTransition = function(options, callback) {
     });
 };
 
+var applyTransitions = function(options) {
+    var operations = [];
+    _.each(transitions, function(transition, key) {
+        var opts = {
+            key: key,
+            change: options.change,
+            transition: transition,
+            audit: options.audit,
+            db: options.db
+        };
+        if (!canRun(opts)) {
+            logger.debug('skipping transition %s %s', key, options.change.seq);
+            return;
+        }
+        /*
+         * Transition error short circuits async.series, so we never
+         * return errors on the callback but if there are errors we
+         * save them.
+         */
+        operations.push(function(cb) {
+            applyTransition(opts, function(err, changed) {
+                cb(null, err || changed);
+            });
+        });
+    });
+
+    /*
+     * Run transitions in series and finalize. We ignore err here
+     * because it is never returned, we process it within the operation
+     * function.  All we care about are results and whether we need to
+     * save or not.
+     */
+    async.series(operations, function(err, results) {
+        finalize({
+            change: options.change,
+            audit: options.audit,
+            results: results
+        });
+    });
+};
+
 var attach = function() {
 
     var db = require('../db'),
-        audit = require('couchdb-audit').withNode(db, db.user),
-        self = module.exports;
+        audit = require('couchdb-audit').withNode(db, db.user);
 
     var match_types = [
         'data_record',
@@ -193,56 +233,71 @@ var attach = function() {
     };
 
     feed.on('change', function(change) {
-
         logger.debug('change event on doc %s seq %s', change.id, change.seq);
-
-        var operations = [];
-        _.each(transitions, function(transition, key) {
-            var opts = {
-                key: key,
-                change: change,
-                transition: transition,
-                audit: audit,
-                db: db
-            };
-            if (!canRun(opts)) {
-                logger.debug('skipping transition %s %s', key, change.seq);
-                return;
-            }
-            /*
-             * Transition error short circuits async.series, so we never
-             * return errors on the callback but if there are errors we
-             * save them.
-             */
-            operations.push(function(cb) {
-                self.applyTransition(opts, function(err, changed) {
-                    cb(null, err || changed);
-                });
-            });
-        });
-
-        /*
-         * Run transitions in series and finalize. We ignore err here
-         * because it is never returned, we process it within the operation
-         * function.  All we care about are results and whether we need to
-         * save or not.
-         */
-        async.series(operations, function(err, results) {
-            finalize({
-                change: change,
-                audit: audit,
-                results: results
-            });
+        applyTransitions({
+            change: change,
+            audit: audit,
+            db: db
         });
     });
 
     feed.follow();
 
+    /*
+     * Process changes feed docs in the past where transitions have not run or
+     * transitions had errors.
+     */
+    db.changes({
+        feed: 'polling',
+        since: config.last_valid_seq || 'now',
+        descending: true
+    }, function (err, data) {
+        if (err) {
+            logger.error('backlog error: ', err);
+        }
+        data.results.forEach(function(change) {
+            // skip design docs
+            if (change.id.match(/_design/)) {
+                return;
+            }
+            setTimeout(function() {
+                db.getDoc(change.id, function(err, doc) {
+                    if (err) {
+                        logger.error('backlog fetch failed on %s: %s', change.id, err);
+                    }
+                    change.doc = doc;
+                    if (hasTransitionErrors(doc) || !hasTransitions(doc)) {
+                        logger.debug('backlog matched on %s seq %s', change.id, change.seq);
+                        applyTransitions({
+                            change: change,
+                            audit: audit,
+                            db: db
+                        });
+                    }
+                });
+            }, 500);
+        });
+    });
+};
+
+var hasTransitions = function(doc) {
+    return Object.keys(doc.transitions || {}).length > 0;
+};
+
+var hasTransitionErrors = function(doc) {
+    var transitions = doc.transitions || {},
+        keys = Object.keys(transitions);
+    for (var key in transitions) {
+        if (!transitions[key].ok) {
+            return true;
+        }
+    }
 };
 
 module.exports = {
     canRun: canRun,
     attach: attach,
     finalize: finalize,
-    applyTransition: applyTransition
+    applyTransition: applyTransition,
+    applyTransitions: applyTransitions
 }
