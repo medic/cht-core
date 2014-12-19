@@ -5214,6 +5214,26 @@ module.exports = {
                   "content": "Default"
               }
           ]
+      },
+      {
+          "key": "Set as default application language",
+          "default": "Set as default application language",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Set as default application language"
+              }
+          ]
+      },
+      {
+          "key": "Set as language for outgoing messages",
+          "default": "Set as language for outgoing messages",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Set as language for outgoing messages"
+              }
+          ]
       }
    ],
    "forms": {
