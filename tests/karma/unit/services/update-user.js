@@ -17,10 +17,8 @@ describe('UpdateUser service', function() {
       $provide.value('UserCtxService', function() {
         return { name: 'jerome' };
       });
-      $provide.value('User', {
-        query: function(callback) {
-          callback(user);
-        }
+      $provide.value('User', function(callback) {
+        callback(null, user);
       });
       $provide.value('$cacheFactory', {
         get: function(name) {

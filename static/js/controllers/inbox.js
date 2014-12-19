@@ -278,7 +278,10 @@ require('moment/locales');
       });
 
       var startTour = function() {
-        User.query(function(user) {
+        User(function(err, user) {
+          if (err) {
+            return console.log('Error fetching user', err);
+          }
           if (!user.known) {
             tour.start('intro', translateFilter);
             UpdateUser({ known: true }, function(err) {
@@ -322,7 +325,10 @@ require('moment/locales');
             }
           });
         }
-        User.query(function(user) {
+        User(function(err, user) {
+          if (err) {
+            return console.log('Error getting user', err);
+          }
           $scope.editUserModel = {
             fullname: user.fullname,
             email: user.email,
@@ -448,7 +454,10 @@ require('moment/locales');
         });
       };
 
-      User.query(function(user) {
+      User(function(err, user) {
+        if (err) {
+          return console.log('Error getting user', err);
+        }
         $scope.editUserModel = {
           fullname: user.fullname,
           email: user.email,

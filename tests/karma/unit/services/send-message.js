@@ -17,13 +17,8 @@ describe('SendMessage service', function() {
     module('inboxApp');
     module(function ($provide) {
       $provide.value('db', db);
-      $provide.value('User', {
-        query: function(callback) {
-          callback({ 
-            phone: '+5551',
-            name: 'jack'
-          });
-        }
+      $provide.value('User', function(callback) {
+        callback(null, { phone: '+5551', name: 'jack' });
       });
       $provide.value('Settings', function(callback) {
         callback(null, settings);

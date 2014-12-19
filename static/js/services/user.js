@@ -29,22 +29,27 @@ var _ = require('underscore'),
     return '/_users/org.couchdb.user%3A' + userCtx.name;
   };
 
-  inboxServices.factory('User', ['$resource', 'UserCtxService',
-    function($resource, UserCtxService) {
-      return $resource(getUserResourceUrl(UserCtxService()), {}, {
-        query: {
-          method: 'GET',
-          isArray: false,
-          cache: true
-        }
-      });
+  inboxServices.factory('User', ['$http', 'UserCtxService',
+    function($http, UserCtxService) {
+      return function(callback) {
+        $http.get(getUserResourceUrl(UserCtxService()), { cache:true })
+          .success(function(data) {
+            callback(null, data);
+          })
+          .error(function(data, status) {
+            callback('Error getting user: ' + status);
+          });
+      };
     }
   ]);
 
   inboxServices.factory('UpdateUser', ['$cacheFactory', 'db', 'User', 'UserCtxService',
     function($cacheFactory, db, User, UserCtxService) {
       return function(updates, callback) {
-        User.query(function(user) {
+        User(function(err, user) {
+          if (err) {
+            return callback(err);
+          }
           var updated = _.extend(user, updates);
           db.use('_users').saveDoc(updated, function(err) {
             var cachename = getUserResourceUrl(UserCtxService());
@@ -60,7 +65,10 @@ var _ = require('underscore'),
     function($q, User, Settings) {
       return function() {
         var deferred = $q.defer();
-        User.query(function(res) {
+        User(function(err, res) {
+          if (err) {
+            return deferred.reject(err);
+          }
           if (res && res.language) {
             deferred.resolve(res.language);
           } else {

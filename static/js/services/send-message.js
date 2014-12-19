@@ -81,7 +81,10 @@ var _ = require('underscore'),
           recipients = [recipients];
         }
 
-        User.query(function(user) {
+        User(function(err, user) {
+          if (err) {
+            return console.log('Error fetching user', err);
+          }
 
           Settings(function(err, settings) {
             if (err) {

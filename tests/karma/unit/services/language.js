@@ -12,10 +12,8 @@ describe('Language service', function() {
     settings = {};
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('User', {
-        query: function(callback) {
-          callback(user);
-        }
+      $provide.value('User', function(callback) {
+        callback(null, user);
       });
       $provide.value('Settings', function(callback) {
         callback(null, settings);
