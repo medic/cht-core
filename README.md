@@ -7,9 +7,28 @@ For latest changes and release announcements see the [change log](Changes.md).
 
 You will need to install the following:
 
-### Node and CouchDB
+[Nodejs](http://nodejs.org)
 
-Assuming you have [Nodejs](http://nodejs.org), [CouchDB](http://couchdb.apache.org), and [couchdb-lucene](https://github.com/rnewson/couchdb-lucene).
+[CouchDB](http://couchdb.apache.org)
+
+[couchdb-lucene](https://github.com/rnewson/couchdb-lucene) v1.0.2 or greater
+
+### Setup CouchDB
+
+
+Setup admin access
+```
+curl -X PUT http://localhost:5984/_config/admins/admin -d '"pass"'
+```
+In CouchDB's local.ini, force authentication
+```
+[couch_httpd_auth]
+require_valid_user = true
+```
+Create an admin user
+```
+curl -X POST http://admin:password@localhost:5984/_users -d '{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}' -H "Content-Type: application/json"
+```
 
 ### Kanso
 
@@ -49,7 +68,7 @@ _fti = {couch_httpd_proxy, handle_proxy_req, <<"http://127.0.0.1:5985">>}
 Update `$lucene_home/conf/couchdb-lucene.ini` so the URL has credentials, eg:
 
 ```
-url=http://foo:bar@localhost:5984/
+url=http://admin:pass@localhost:5984/
 ```
 
 Start lucene: `$lucene_home/bin/run`
@@ -182,7 +201,7 @@ cat kanso.json |json \
 mv new.json kanso.json
 ```
 
-Finally push to the [Medic Alpha 
+Finally push to the [Medic Alpha
 Market](https://staging.dev.medicmobile.org/markets-alpha/) run:
 
 ```
