@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    async = require('async'),
     follow = require('follow'),
     config = require('./defaults'),
     logger = require('./lib/logger');
@@ -6,20 +7,29 @@ var _ = require('underscore'),
 function initInfo(callback) {
     var db = require('./db'),
         self = module.exports;
-    db.info(function(err, info) {
-        logger.debug('database info: %s', info);
-        if (err) {
-            return callback(err);
+    async.series([
+        function(cb) {
+            db.config(function(err, res) {
+                self.couchdb = res.couchdb;
+                cb(err);
+            });
+        },
+        function(cb) {
+            db.info(function(err, info) {
+                self.db_info = info;
+                cb(err);
+            });
+        },
+        function(cb) {
+            db.view('kujua-sentinel', 'last_valid_seq', {
+                reduce: true
+            }, function(err, data) {
+                var first = data.rows.pop();
+                self.last_valid_seq = first && first.value.seq;
+                cb(err);
+            });
         }
-        self.db_info = info;
-        db.view('kujua-sentinel', 'last_valid_seq', {
-            reduce: true
-        }, function(err, data) {
-            var first = data.rows.pop();
-            self.last_valid_seq = first && first.value.seq;
-            callback(err);
-        });
-    });
+    ], callback);
 };
 
 function initFeed(callback) {
@@ -88,5 +98,6 @@ module.exports = {
     },
     init: initConfig,
     db_info: null,
+    couchdb: null,
     last_valid_seq: null
 };
