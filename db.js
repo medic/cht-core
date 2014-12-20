@@ -11,7 +11,7 @@ if (process.env.COUCH_URL) {
     _.extend(settings, {
 		port: couch_url.port,
 		host: couch_url.hostname,
-		db: couch_url.path
+		db: couch_url.path.replace('/','')
 	});
 
 	if (couch_url.auth) {
@@ -37,7 +37,7 @@ var client = couchdb.createClient(
     settings.username,
     settings.password
 );
-module.exports = client.db(settings.db.replace('/',''));
+module.exports = client.db(settings.db);
 module.exports.user = settings.username;
 module.exports.fti = function(index, data, cb) {
     var path = '/_fti/local' + settings.db
