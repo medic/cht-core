@@ -38,17 +38,6 @@ curl -X POST http://admin:password@localhost:5984/_users -d '{"_id": "org.couchd
 npm install kanso -g
 ```
 
-Create a `.kansorc` file with your credentials, eg:
-
-```
-exports.env = {
-  default: {
-    db: "http://admin:pass@localhost:5984/medic",
-    overrides: {loglevel:"debug"}
-  }
-};
-```
-
 ### Grunt
 
 [Grunt](http://gruntjs.com) is required to build.
@@ -91,6 +80,18 @@ git clone --recursive https://github.com/medic/medic-webapp
 cd medic-webapp
 npm install
 ```
+
+Create a `.kansorc` file in the app directory  with your credentials, eg:
+
+```
+exports.env = {
+  default: {
+    db: "http://admin:pass@localhost:5984/medic",
+    overrides: {loglevel:"debug"}
+  }
+};
+```
+
 
 ### Push the couchapp
 
