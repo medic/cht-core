@@ -25,7 +25,7 @@ function initInfo(callback) {
                 reduce: true
             }, function(err, data) {
                 var first = data.rows.pop();
-                self.last_valid_seq = first && first.value.seq;
+                self.last_valid_seq = (first && first.value.seq);
                 cb(err);
             });
         }
