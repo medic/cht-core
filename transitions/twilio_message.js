@@ -83,8 +83,7 @@ module.exports = {
                 callback(null, true);
             });
         } else {
-            callback(null, false);
+            callback();
         }
-    },
-    repeatable: true
+    }
 };

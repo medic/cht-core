@@ -37,6 +37,7 @@ exports['when document type is unknown do not pass filter'] = function(test) {
 };
 
 exports['when document type matches pass filter'] = function(test) {
+    sinon.stub(transition, '_getConfig').returns([{form: 'STCK'}]);
     test.equals(transition.filter({
         form: 'STCK',
         type: 'data_record'

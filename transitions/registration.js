@@ -12,16 +12,21 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc) {
-        var self = module.exports;
-        if (!doc || !doc.form) {
-            return false;
-        }
-        var config = self.getRegistrationConfig(self.getConfig(), doc.form);
-        if (!config) {
-            return false;
-        }
-        var form = utils.getForm(doc.form);
-        return Boolean(utils.getClinicPhone(doc) || (form && form.public_form));
+        var self = module.exports,
+            form = utils.getForm(doc && doc.form);
+        return Boolean(
+            form &&
+            self.getRegistrationConfig(self.getConfig(), doc.form) &&
+            (utils.getClinicPhone(doc) || (form && form.public_form)) &&
+            !self._hasRun(doc)
+        );
+    },
+    _hasRun: function(doc) {
+        return Boolean(
+            doc &&
+            doc.transitions &&
+            doc.transitions['registration']
+        );
     },
     getWeeksSinceDOB: function(doc) {
         return String(
@@ -97,7 +102,7 @@ module.exports = {
             isIdOnly = self.isIdOnly(doc);
 
         if (!config) {
-            return callback(null, false);
+            return callback();
         }
 
         self.validate(config, doc, function(errors) {
@@ -120,7 +125,6 @@ module.exports = {
                     var err = _.first(errors);
                     messages.addReply(doc, err.message || err);
                 }
-                // if validation errors then stop processign registration
                 return callback(null, true);
             }
 
@@ -144,9 +148,8 @@ module.exports = {
             });
 
             async.series(series, function(err, results) {
-                //callback(null, true);
                 if (err) {
-                    callback(err, false);
+                    callback(err);
                 } else {
                     // add messages is done last so data on doc can be used in
                     // messages

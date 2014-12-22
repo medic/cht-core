@@ -40,16 +40,16 @@ exports['filter validation'] = function(test) {
     test.done();
 }
 
-exports['onMatch returns false if form not included'] = function(test) {
+exports['onMatch callback empty if form not included'] = function(test) {
     sinon.stub(transition, 'getAcceptedReports').returns([ { form: 'x' }, { form: 'z' } ]);
 
     transition.onMatch({
         doc: {
             form: 'y'
         }
-    }, {}, {}, function(err, complete) {
-        test.equals(err, null);
-        test.equals(complete, false);
+    }, {}, {}, function(err, changed) {
+        test.equals(err, undefined);
+        test.equals(changed, undefined);
         test.done();
     });
 }

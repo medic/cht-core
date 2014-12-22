@@ -14,21 +14,31 @@ module.exports = {
             && doc.type === 'data_record'
             && !doc.kujua_message
             && self._isReportedAfterStartDate(doc)
+            && !self._hasRun(doc)
+        );
+    },
+    _hasRun: function(doc) {
+        return Boolean(
+            doc &&
+            doc.transitions &&
+            doc.transitions['default_responses']
         );
     },
     _isReportedAfterStartDate: function(doc) {
         var self = module.exports,
             config = self._getConfig('default_responses'),
-            start_date = moment(config.start_date, 'YYYY-MM-DD');
+            start_date;
 
         function isEmpty() {
             return !Boolean(
-                config.start_date
-                && config.start_date.trim()
+                config &&
+                config.start_date &&
+                config.start_date.trim()
             );
         }
 
         if (!isEmpty()) {
+            start_date = moment(config.start_date, 'YYYY-MM-DD');
             if (start_date.isValid() && doc.reported_date) {
                 return moment(doc.reported_date).isAfter(start_date);
             } else {

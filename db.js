@@ -11,7 +11,7 @@ if (process.env.COUCH_URL) {
     _.extend(settings, {
 		port: couch_url.port,
 		host: couch_url.hostname,
-		db: couch_url.path
+		db: couch_url.path.replace('/','')
 	});
 
 	if (couch_url.auth) {
@@ -23,7 +23,7 @@ if (process.env.COUCH_URL) {
         });
 	}
 } else if (!process.env.TEST_ENV) {
-    logger.error(
+    console.log(
         "Please define a COUCH_URL in your environment e.g. \n" +
         "export COUCH_URL='http://admin:123qwe@localhost:5984/medic'\n" +
         "If you are running tests use TEST_ENV=1 in your environment.\n"
@@ -40,10 +40,15 @@ var client = couchdb.createClient(
 module.exports = client.db(settings.db);
 module.exports.user = settings.username;
 module.exports.fti = function(index, data, cb) {
-    var path = '/_fti/local' + settings.db 
+    var path = '/_fti/local' + settings.db
         + '/_design' + settings.db + '/' + index;
     client.request({
         path: path,
         query: data
+    }, cb);
+};
+module.exports.config = function(cb) {
+    client.request({
+        path: '/_config',
     }, cb);
 };

@@ -9,14 +9,14 @@ if (arg === 'debug') {
     logger.transports.console.level = arg;
 }
 
-function completeSetup(err, design) {
+function completeSetup(err) {
     if (err) {
         console.error(JSON.stringify(err));
         process.exit(1);
     } else {
-        config.load(function(err) {
+        config.init(function(err) {
             if (err) {
-                console.error('error loading config', err);
+                logger.error('Error loading config: ', err);
                 process.exit(1);
             }
             logger.info('loaded config.');
@@ -25,9 +25,8 @@ function completeSetup(err, design) {
                 logger.debug('loglevel is %s.', logger.transports.console.level);
             }
             logger.info('attaching transitions...');
-            require('./transitions').attach(design);
+            require('./transitions').attach();
             require('./schedule').checkSchedule();
-            config.listen();
             logger.info('startup complete.');
         });
     }
@@ -43,7 +42,10 @@ db.getDoc('_design/kujua-sentinel', function(err, doc) {
                 completeSetup(err, base);
             });
         } else {
-            logger.error("Failed to create design document: " + err);
+            logger.error(
+                "failed to create design document: %s",
+                JSON.stringify(err)
+            );
         }
     } else {
         logger.debug('found sentinel design doc.');
