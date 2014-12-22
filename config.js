@@ -53,10 +53,8 @@ function initFeed(callback) {
      */
     feed.on('change', function(change) {
         logger.debug('change event on doc %s seq %s', change.id, change.seq);
-        setTimeout(function() {
-            logger.info('reload triggered, exiting...');
-            process.exit(0);
-        }, 2000);
+        logger.info('reload triggered, exiting...');
+        process.exit(0);
     });
 
     feed.follow();
