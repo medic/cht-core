@@ -36,8 +36,12 @@ Debug mode:
 A transition does async processing of a document once per rev/change, and obeys
 the following rules:
 
-* accepts a document as a reference and makes changes on the reference, copying
-  is discouraged.
+* accepts a document as a reference and makes changes using that reference,
+  copying is discouraged.
+  
+* does not have side effects outside of the document passed in.  This might be
+  extended in the future to manage changes to multiple documents, but for now
+  the transition is responsible for these types of changes.
 
 * guarantees the consistency of a document. 
 
