@@ -27,7 +27,7 @@ require_valid_user = true
 ```
 Create an admin user
 ```
-curl -X POST http://admin:password@localhost:5984/_users -d '{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}' -H "Content-Type: application/json"
+curl -X POST http://admin:pass@localhost:5984/_users -d '{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}' -H "Content-Type: application/json"
 ```
 
 ### Kanso
