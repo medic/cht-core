@@ -16,11 +16,10 @@
       </h4>
     </div>
     <div id="locale-{~lb}{~lb}locale.code{~rb}{~rb}-body" class="panel-collapse collapse" role="tabpanel">
-      <div class="panel-body">
+      <div class="panel-body action-list">
         <div>
           <button type="button" class="btn btn-link" data-toggle="modal" data-target="#edit-language" ng-click="prepareEditLanguage(locale)">
-            <i class="fa fa-pencil"></i>
-            {~lb}{~lb}'Edit' | translate{~rb}{~rb}
+            <i class="fa fa-pencil"></i>{~lb}{~lb}'Edit' | translate{~rb}{~rb}
           </button>
         </div>
         <div>
@@ -28,8 +27,7 @@
             <span class="fa-stack default" ng-attr-title="{~lb}{~lb}'Default Application Language' | translate{~rb}{~rb}">
               <i class="fa fa-file-o fa-stack-2x"></i>
               <i class="fa fa-star fa-stack-1x"></i>
-            </span>
-            {~lb}{~lb}'Set as default application language' | translate{~rb}{~rb}
+            </span>{~lb}{~lb}'Set as default application language' | translate{~rb}{~rb}
           </button>
         </div>
         <div>
@@ -37,14 +35,12 @@
             <span class="fa-stack default" ng-attr-title="{~lb}{~lb}'Language For Outgoing Messages' | translate{~rb}{~rb}">
               <i class="fa fa-envelope-o fa-stack-2x"></i>
               <i class="fa fa-star fa-stack-1x"></i>
-            </span>
-            {~lb}{~lb}'Set as language for outgoing messages' | translate{~rb}{~rb}
+            </span>{~lb}{~lb}'Set as language for outgoing messages' | translate{~rb}{~rb}
           </button>
         </div>
         <div>
-          <button type="button" class="btn btn-link" data-toggle="modal" data-target="#delete-language" ng-click="prepareDeleteLanguage(locale)">
-            <i class="fa fa-trash-o"></i>
-            {~lb}{~lb}'Delete' | translate{~rb}{~rb}
+          <button type="button" class="btn btn-link btn-danger" data-toggle="modal" data-target="#delete-language" ng-click="prepareDeleteLanguage(locale)">
+            <i class="fa fa-trash-o"></i>{~lb}{~lb}'Delete' | translate{~rb}{~rb}
           </button>
         </div>
       </div>
