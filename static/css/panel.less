@@ -3,6 +3,9 @@
 .panel-group {
   .panel {
     box-shadow: none;
+    &.disabled .panel-heading {
+      color: @muted-state-color;
+    }
   }
   .panel-default > .panel-heading {
     background-color: inherit;

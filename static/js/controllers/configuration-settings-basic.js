@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 (function () {
 
   'use strict';
@@ -35,7 +37,9 @@
           gateway_number: res.gateway_number,
           default_country_code: res.default_country_code
         };
-        $scope.locales = res.locales;
+        $scope.enabledLocales = _.reject(res.locales, function(locale) {
+          return !!locale.disabled;
+        });
       });
 
     }

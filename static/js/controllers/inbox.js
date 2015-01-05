@@ -297,7 +297,9 @@ require('moment/locales');
         if (err) {
           return console.log('Error fetching settings', err);
         }
-        $scope.languages = res.locales;
+        $scope.enabledLocales = _.reject(res.locales, function(locale) {
+          return !!locale.disabled;
+        });
         if (res.setup_complete) {
           startTour();
 

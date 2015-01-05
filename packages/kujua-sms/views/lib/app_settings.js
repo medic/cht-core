@@ -5234,6 +5234,26 @@ module.exports = {
                   "content": "Set as language for outgoing messages"
               }
           ]
+      },
+      {
+          "key": "Disable",
+          "default": "Disable",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Disable"
+              }
+          ]
+      },
+      {
+          "key": "Enable",
+          "default": "Enable",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Enable"
+              }
+          ]
       }
    ],
    "forms": {

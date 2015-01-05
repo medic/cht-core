@@ -2,14 +2,14 @@
 
   <div class="form-group">
     <label for="locale">{~lb}{~lb}'Default Application Language' | translate{~rb}{~rb}</label>
-    <select id="locale" class="form-control small" ng-model="basicSettingsModel.locale" ng-options="locale.code as locale.name for locale in locales">
+    <select id="locale" class="form-control small" ng-model="basicSettingsModel.locale" ng-options="locale.code as locale.name for locale in enabledLocales">
     </select>
     <p class="help-block">{~lb}{~lb}'setup.language.subtitle' | translate{~rb}{~rb}</p>
   </div>
 
   <div class="form-group">
     <label for="locale-outgoing">{~lb}{~lb}'Language For Outgoing Messages' | translate{~rb}{~rb}</label>
-    <select id="locale-outgoing" class="form-control small" ng-model="basicSettingsModel.locale_outgoing" ng-options="locale.code as locale.name for locale in locales">
+    <select id="locale-outgoing" class="form-control small" ng-model="basicSettingsModel.locale_outgoing" ng-options="locale.code as locale.name for locale in enabledLocales">
     </select>
     <p class="help-block">{~lb}{~lb}'setup.language.outgoing.subtitle' | translate{~rb}{~rb}</p>
   </div>

@@ -25,7 +25,7 @@
 
           <div class="form-group">
             <label for="language">{~lb}{~lb}'Language' | translate{~rb}{~rb}</label>
-            <select id="language" class="form-control" ng-model="editUserModel.language" ng-options="language.name for language in languages track by language.code"></select>
+            <select id="language" class="form-control" ng-model="editUserModel.language" ng-options="locale.name for locale in enabledLocales track by locale.code"></select>
           </div>
 
         </form>
