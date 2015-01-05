@@ -5254,6 +5254,16 @@ module.exports = {
                   "content": "Enable"
               }
           ]
+      },
+      {
+          "key": "Outgoing Message",
+          "default": "Outgoing Message",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Outgoing Message"
+              }
+          ]
       }
    ],
    "forms": {
