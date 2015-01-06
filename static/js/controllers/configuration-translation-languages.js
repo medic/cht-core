@@ -15,8 +15,6 @@ var _ = require('underscore');
           if (err) {
             return console.log('Error loading settings', err);
           }
-          console.log('locale', locale);
-          console.log('locales', res.locales);
           var update = _.findWhere(res.locales, { code: locale.code });
           if (!update) {
             return console.log('Could not find locale to update');

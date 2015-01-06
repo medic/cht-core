@@ -77,8 +77,11 @@ var _ = require('underscore'),
           $scope.loadingContent = false;
           $scope.error = false;
           $animate.enabled(false);
-          $scope.firstUnread = _.min(data, function(message) {
-            return $scope.isRead(message.doc) ? Infinity : message.doc.reported_date;
+          var unread = _.filter(data, function(message) {
+            return !$scope.isRead(message.doc);
+          });
+          $scope.firstUnread = _.min(unread, function(message) {
+            return message.doc.reported_date;
           });
           $scope.selected.messages = data;
           markAllRead();
