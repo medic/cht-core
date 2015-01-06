@@ -257,7 +257,7 @@ var attach = function() {
         }
         data.results.forEach(function(change) {
             // skip design docs
-            if (change.id.match(/_design/)) {
+            if (change.id.match(/_design/) || change.deleted) {
                 return;
             }
             setTimeout(function() {
