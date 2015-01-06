@@ -105,7 +105,7 @@ var _ = require('underscore');
     // underscore templates will return ReferenceError if all variables in
     // template are not defined.
     try {
-      return _.template(value, ctx);
+      return _.template(value)(ctx);
     } catch(e) {
       return value;
     }
