@@ -5264,6 +5264,16 @@ module.exports = {
                   "content": "Outgoing Message"
               }
           ]
+      },
+      {
+          "key": "Notifications",
+          "default": "Notifications",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Notifications"
+              }
+          ]
       }
    ],
    "forms": {

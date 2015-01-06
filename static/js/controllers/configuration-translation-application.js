@@ -34,11 +34,16 @@
     ['$scope', '$rootScope', 'Settings', 'Language',
     function ($scope, $rootScope, Settings, Language) {
 
-      var updateTranslationModels = function(translations) {
-        $scope.translationModels = createTranslationModels(
-          translations,
-          $scope.localeModel
-        );
+      var updateTranslationModels = function() {
+        Settings(function(err, settings) {
+          if (err) {
+            return console.log('Error loading settings', err);
+          }
+          $scope.translationModels = createTranslationModels(
+            settings.translations,
+            $scope.localeModel
+          );
+        });
       };
 
       Settings(function(err, res) {
@@ -50,10 +55,10 @@
 
         Language().then(function(language) {
           $scope.localeModel = createLanguageModel(language, res.locales);
-          updateTranslationModels(res.translations);
+          updateTranslationModels();
           $scope.$watch('localeModel', function(curr, prev) {
             if (prev.lhs !== curr.lhs || prev.rhs !== curr.rhs) {
-              updateTranslationModels(res.translations);
+              updateTranslationModels();
             }
           }, true);
         });
@@ -63,7 +68,9 @@
         $rootScope.$broadcast('EditTranslationInit', translation, $scope.locales);
       };
       $scope.$on('TranslationUpdated', function(e, data) {
-        updateTranslationModels(data.translations);
+        if (data.translations) {
+          updateTranslationModels();
+        }
       });
 
     }

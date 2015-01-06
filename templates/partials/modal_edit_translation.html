@@ -8,7 +8,7 @@
       <div class="modal-body">
         <form action="" method="POST">
 
-          <div class="form-group default">
+          <div class="form-group default" ng-hide="!translationModel.default">
             <label>{~lb}{~lb}'Default' | translate{~rb}{~rb}</label>
             <p>{~lb}{~lb}translationModel.default{~rb}{~rb}</p>
           </div>

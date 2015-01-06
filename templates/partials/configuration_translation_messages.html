@@ -1,0 +1,24 @@
+<div class="row language-selection">
+  <div class="col-xs-6">
+    <select class="form-control small" ng-model="localeModel.lhs" ng-options="locale.code as locale.name for locale in locales"></select>
+  </div>
+  <div class="col-xs-6">
+    <select class="form-control small" ng-model="localeModel.rhs" ng-options="locale.code as locale.name for locale in locales"></select>
+  </div>
+</div>
+
+<div ng-repeat="group in groupModels">
+  <div class="row translation-group">
+    <div class="col-xs-12">
+      {~lb}{~lb}group.label{~rb}{~rb}
+    </div>
+  </div>
+  <div class="row translation" ng-repeat="translation in group.translations" data-toggle="modal" data-target="#edit-translation" ng-click="prepareEditTranslation(translation.raw)">
+    <div class="col-xs-6">
+      {~lb}{~lb}translation.lhs{~rb}{~rb}
+    </div>
+    <div class="col-xs-6">
+      {~lb}{~lb}translation.rhs{~rb}{~rb}
+    </div>
+  <div>
+</div>

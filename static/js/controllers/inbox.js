@@ -707,5 +707,6 @@ require('moment/locales');
   require('./configuration-settings-advanced');
   require('./configuration-translation-languages');
   require('./configuration-translation-application');
+  require('./configuration-translation-messages');
 
 }());

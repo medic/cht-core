@@ -119,6 +119,15 @@ require('../dist/reporting-views');
               templateUrl: '/partials/configuration_translation_application.html'
             }
           }
+        })
+        .state('configuration.translation.messages', {
+          url: '/messages',
+          views: {
+            tab: {
+              controller: 'ConfigurationTranslationMessagesCtrl',
+              templateUrl: '/partials/configuration_translation_messages.html'
+            }
+          }
         });
 
       $urlRouterProvider.when('', '/messages');
