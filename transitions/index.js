@@ -253,7 +253,7 @@ var attach = function() {
         descending: true
     }, function (err, data) {
         if (err) {
-            logger.error('backlog error: ', err);
+            return logger.error('backlog error: ', err);
         }
         data.results.forEach(function(change) {
             // skip design docs
@@ -263,7 +263,7 @@ var attach = function() {
             setTimeout(function() {
                 db.getDoc(change.id, function(err, doc) {
                     if (err) {
-                        logger.error('backlog fetch failed on %s: %s', change.id, err);
+                        return logger.error('backlog fetch failed on %s: %s', change.id, err);
                     }
                     change.doc = doc;
                     if (hasTransitionErrors(doc) || !hasTransitions(doc)) {
