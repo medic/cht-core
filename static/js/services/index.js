@@ -20,6 +20,8 @@
   require('./mark-read');
   require('./message-contacts');
   require('./message-state');
+  require('./outgoing-messages-configuration');
+  require('./properties');
   require('./read-messages');
   require('./search');
   require('./send-message');

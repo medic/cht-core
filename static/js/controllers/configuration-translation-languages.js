@@ -7,8 +7,23 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationTranslationLanguagesCtrl',
-    ['$scope', '$rootScope', 'Settings', 'UpdateSettings',
-    function ($scope, $rootScope, Settings, UpdateSettings) {
+    ['$scope', '$rootScope', 'Settings', 'UpdateSettings', 'ExportProperties',
+    function ($scope, $rootScope, Settings, UpdateSettings, ExportProperties) {
+
+      var createLocaleModel = function(settings, locale) {
+        var result = {
+          locale: locale
+        };
+        var content = ExportProperties(settings, locale.code);
+        if (content) {
+          var blob = new Blob([ content ], { type: 'text/plain' });
+          result.export = {
+            name: 'messages-' + locale.code + '.properties',
+            url: (window.URL || window.webkitURL).createObjectURL(blob)
+          };
+        }
+        return result;
+      };
 
       var setLanguageStatus = function(locale, disabled) {
         Settings(function(err, res) {
@@ -41,7 +56,9 @@ var _ = require('underscore');
             locale: res.locale,
             outgoing: res.locale_outgoing
           },
-          locales: res.locales
+          locales: _.map(res.locales, function(locale) {
+            return createLocaleModel(res, locale);
+          })
         };
       });
       $scope.prepareEditLanguage = function(locale) {
@@ -75,6 +92,10 @@ var _ = require('underscore');
       $scope.enableLanguage = function(locale) {
         setLanguageStatus(locale, false);
       };
+      $scope.prepareImport = function(locale) {
+        $rootScope.$broadcast('ImportTranslationInit', locale);
+      };
+
     }
   ]);
 
