@@ -33,6 +33,7 @@ app.use(function(req, res, next) {
   var domain = createDomain();
   domain.on('error', function(err) {
     console.error('UNCAUGHT EXCEPTION!');
+    console.error(err);
     serverError(err, res);
     domain.dispose();
     process.exit(1);
