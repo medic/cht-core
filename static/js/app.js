@@ -16,11 +16,12 @@ require('../dist/reporting-views');
     'inboxControllers',
     'inboxServices',
     'pascalprecht.translate',
-    'nvd3ChartDirectives'
+    'nvd3ChartDirectives',
+    'angularFileUpload'
   ]);
 
-  app.config(['$stateProvider', '$urlRouterProvider', '$translateProvider',
-    function($stateProvider, $urlRouterProvider, $translateProvider) {
+  app.config(['$stateProvider', '$urlRouterProvider', '$translateProvider', '$compileProvider',
+    function($stateProvider, $urlRouterProvider, $translateProvider, $compileProvider) {
 
       $stateProvider
         // messages
@@ -132,7 +133,7 @@ require('../dist/reporting-views');
 
       $urlRouterProvider.when('', '/messages');
       $translateProvider.useLoader('SettingsLoader', {});
-
+      $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|file|blob):/);
     }
   ]);
 

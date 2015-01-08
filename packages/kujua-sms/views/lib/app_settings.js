@@ -582,6 +582,16 @@ module.exports = {
           ]
       },
       {
+          "key": "Import",
+          "default": "Import",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Import"
+              }
+          ]
+      },
+      {
           "key": "Activity",
           "default": "Activity",
           "translations": [
@@ -5272,6 +5282,46 @@ module.exports = {
               {
                   "locale": "en",
                   "content": "Notifications"
+              }
+          ]
+      },
+      {
+          "key": "Import translations",
+          "default": "Import translations",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Import translations"
+              }
+          ]
+      },
+      {
+          "key": "Translation file",
+          "default": "Translation file",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Translation file"
+              }
+          ]
+      },
+      {
+          "key": "Translation file help",
+          "default": "Select the .properties file to import to replace the translations for this language. The easiest way to generate a file with the correct format is to export the translations for this language, make any modifications, then import.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Select the .properties file to import to replace the translations for this language. The easiest way to generate a file with the correct format is to export the translations for this language, make any modifications, then import."
+              }
+          ]
+      },
+      {
+          "key": "Error parsing properties file",
+          "default": "Error parsing properties file",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Error parsing properties file"
               }
           ]
       }

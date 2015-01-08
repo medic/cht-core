@@ -703,6 +703,7 @@ require('moment/locales');
   require('./edit-language');
   require('./delete-language');
   require('./edit-translation');
+  require('./import-translation');
   require('./configuration-settings-basic');
   require('./configuration-settings-advanced');
   require('./configuration-translation-languages');

@@ -22,74 +22,24 @@ var _ = require('underscore');
   };
 
   inboxControllers.controller('ConfigurationTranslationMessagesCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'Settings', 'Language',
-    function ($scope, $rootScope, translateFilter, Settings, Language) {
-
-      var createGroupModel = function(labelParts, path, translations) {
-        $scope.groupModels.push({
-          label: labelParts.join(' › '),
-          translations: _.map(translations, function(translation, index) {
-            return {
-              lhs: findTranslation($scope.localeModel.lhs, translation.message),
-              rhs: findTranslation($scope.localeModel.rhs, translation.message),
-              raw: {
-                path: path + '[' + index + ']',
-                translations: translation.message
-              }
-            };
-          })
-        });
-      };
-
-      var createReportModel = function(settings, groupCode, groupLabel) {
-        settings[groupCode].forEach(function(report, index) {
-          var reportName = report.name || report.form;
-          createGroupModel(
-            [ groupLabel, reportName, translateFilter('Messages') ],
-            groupCode + '[' + index + '].messages',
-            report.messages
-          );
-          if (report.validations) {
-            createGroupModel(
-              [ groupLabel, reportName, translateFilter('Validations') ],
-              groupCode + '[' + index + '].validations.list',
-              report.validations.list
-            );
-          }
-        });
-      };
+    ['$scope', '$rootScope', 'translateFilter', 'Settings', 'Language', 'OutgoingMessagesConfiguration',
+    function ($scope, $rootScope, translateFilter, Settings, Language, OutgoingMessagesConfiguration) {
 
       var updateTranslationModels = function() {
         Settings(function(err, settings) {
           if (err) {
             return console.log('Error loading settings', err);
           }
-          $scope.groupModels = [];
-          createReportModel(
-            settings,
-            'registrations',
-            translateFilter('Registrations')
-          );
-          createReportModel(
-            settings,
-            'schedules',
-            translateFilter('Schedules')
-          );
-          createReportModel(
-            settings,
-            'patient_reports',
-            translateFilter('Patient Report')
-          );
-          createGroupModel(
-            [ translateFilter('Notifications'), translateFilter('Messages') ],
-            'notifications.messages',
-            settings.notifications.messages
-          );
-          createGroupModel(
-            [ translateFilter('Notifications'), translateFilter('Validations') ],
-            'notifications.validations.list',
-            settings.notifications.validations.list
-          );
+          var groupModels = OutgoingMessagesConfiguration(settings);
+          $scope.groupModels = _.each(groupModels, function(group) {
+            group.translations = _.map(group.translations, function(translation) {
+              return {
+                lhs: findTranslation($scope.localeModel.lhs, translation.translations),
+                rhs: findTranslation($scope.localeModel.rhs, translation.translations),
+                raw: translation
+              };
+            });
+          });
         });
       };
 
