@@ -231,3 +231,35 @@ exports['getRecipientPhone defaults to given default'] = function(test) {
     test.equals(result, phone);
     test.done();
 }
+
+exports['getMessage returns empty string on empty config'] = function(test) {
+    var config = [{
+        content: '',
+        locale: 'en'
+    }];
+    test.equals('', messages.getMessage(config, 'en'));
+    test.equals('', messages.getMessage(config));
+    test.done();
+}
+
+exports['getMessage returns first message when locale match fails'] = function(test) {
+    var config = [
+        {
+          content: 'Merci',
+          locale: 'fr'
+        },
+        {
+          content: 'Gracias',
+          locale: 'es'
+        }
+    ];
+    test.equals('Merci', messages.getMessage(config, 'en'));
+    test.equals('Merci', messages.getMessage(config));
+    test.done();
+}
+
+exports['getMessage returns empty string if passed empty array'] = function(test) {
+    test.equals('', messages.getMessage([], 'en'));
+    test.equals('', messages.getMessage([]));
+    test.done();
+}

@@ -70,7 +70,6 @@ exports['schedule generates two messages'] = function(test) {
         reported_date: moment().valueOf()
     };
 
-    debugger;
     var added = schedules.assignSchedule(doc, {
         name: 'duckland',
         start_from: 'reported_date',
