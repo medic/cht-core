@@ -242,6 +242,16 @@ exports['getMessage returns empty string on empty config'] = function(test) {
     test.done();
 }
 
+exports['getMessage returns empty string on bad config'] = function(test) {
+    var config = [{
+        itchy: '',
+        scratchy: 'en'
+    }];
+    test.equals('', messages.getMessage(config, 'en'));
+    test.equals('', messages.getMessage(config));
+    test.done();
+}
+
 exports['getMessage returns first message when locale match fails'] = function(test) {
     var config = [
         {
@@ -261,5 +271,21 @@ exports['getMessage returns first message when locale match fails'] = function(t
 exports['getMessage returns empty string if passed empty array'] = function(test) {
     test.equals('', messages.getMessage([], 'en'));
     test.equals('', messages.getMessage([]));
+    test.done();
+}
+
+exports['getMessage returns locale when matched'] = function(test) {
+    var config = [
+        {
+          content: 'Merci',
+          locale: 'fr'
+        },
+        {
+          content: 'Gracias',
+          locale: 'es'
+        }
+    ];
+    test.equals('Gracias', messages.getMessage(config, 'es'));
+    test.equals('Merci', messages.getMessage(config, 'fr'));
     test.done();
 }
