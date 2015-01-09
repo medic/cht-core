@@ -24,12 +24,20 @@ module.exports = function(grunt) {
       }
     },
     replace: {
-      monkeypatch: {
+      monkeypatchdate: {
         src: ['bower_components/concat.js'],
         overwrite: true,
         replacements: [{
           from: /clickDate: function \(e\) \{/g,
           to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'mm.dateSelected.daterangepicker\', this);\n'
+        }]
+      },
+      monkeypatchtour: {
+        src: ['bower_components/bootstrap-tour/build/js/bootstrap-tour.js'],
+        overwrite: true,
+        replacements: [{
+          from: /        selector: step.element/g,
+          to: '        // selector: step.element - MONKEY PATCH BY GRUNT: Patch to get bootstrap tour to work with latest bootstrap: https://github.com/sorich87/bootstrap-tour/issues/356'
         }]
       }
     },
@@ -282,7 +290,8 @@ module.exports = function(grunt) {
   grunt.registerTask('mmbower', [
     'bower:install',
     'bower_concat',
-    'replace:monkeypatch',
+    'replace:monkeypatchdate',
+    'replace:monkeypatchtour',
     'copy:inbox',
     'copy:admin'
   ]);

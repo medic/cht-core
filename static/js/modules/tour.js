@@ -231,7 +231,7 @@ var _ = require('underscore');
           onShow: mmShowReportContent
         },
         {
-          element: '#reports-content .body',
+          element: '#reports-content .report-body',
           placement: 'left',
           mobilePlacement: 'top',
           title: 'tour.reports.content.title',
@@ -320,7 +320,7 @@ var _ = require('underscore');
       callback();
     };
     tour.init();
-    tour.restart();
+    tour.start();
     current = {
       tour: tour,
       name: name
