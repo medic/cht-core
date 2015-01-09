@@ -84,14 +84,14 @@
               <div class="panel-body">
                 <h5>{~lb}{~lb}'setup.language.subtitle' | translate{~rb}{~rb}</h5>
                 <p class="horizontal-options locale">
-                  <a href="#" ng-repeat="language in languages" ng-attr-data-value="{~lb}{~lb}language.code{~rb}{~rb}">
+                  <a href="#" ng-repeat="language in enabledLocales" ng-attr-data-value="{~lb}{~lb}language.code{~rb}{~rb}">
                     <span class="rectangle" ng-bind="language.name"></span>
                   </a>
                 </p>
 
                 <h5>{~lb}{~lb}'setup.language.outgoing.subtitle' | translate{~rb}{~rb}</h5>
                 <p class="horizontal-options locale-outgoing">
-                  <a href="#" ng-repeat="language in languages" ng-attr-data-value="{~lb}{~lb}language.code{~rb}{~rb}">
+                  <a href="#" ng-repeat="language in enabledLocales" ng-attr-data-value="{~lb}{~lb}language.code{~rb}{~rb}">
                     <span class="rectangle" ng-bind="language.name"></span>
                   </a>
                 </p>
