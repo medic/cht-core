@@ -40,7 +40,10 @@
             return deferred.reject(err);
           }
 
-          Language().then(function(language) {
+          Language(function(err, language) {
+            if (err) {
+              return console.log('Error loading language', err);
+            }
 
             var result = [];
 

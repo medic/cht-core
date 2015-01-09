@@ -61,26 +61,28 @@ var _ = require('underscore'),
     }
   ]);
 
-  inboxServices.factory('Language', ['$q', 'User', 'Settings',
-    function($q, User, Settings) {
-      return function() {
-        var deferred = $q.defer();
+  inboxServices.factory('Language', ['$cookies', 'User', 'Settings',
+    function($cookies, User, Settings) {
+      return function(callback) {
+        if ($cookies.locale) {
+          return callback(null, $cookies.locale);
+        }
         User(function(err, res) {
           if (err) {
-            return deferred.reject(err);
+            return callback(err);
           }
           if (res && res.language) {
-            deferred.resolve(res.language);
-          } else {
-            Settings(function(err, res) {
-              if (err) {
-                return deferred.reject(err);
-              }
-              deferred.resolve(res.locale || 'en');
-            });
+            $cookies.locale = res.language;
+            return callback(null, res.language);
           }
+          Settings(function(err, res) {
+            if (err) {
+              return callback(err);
+            }
+            $cookies.locale = res.locale || 'en';
+            callback(null, res.locale || 'en');
+          });
         });
-        return deferred.promise;
       };
     }
   ]);

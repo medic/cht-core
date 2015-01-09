@@ -12,8 +12,10 @@ var _ = require('underscore'),
       return function(rows) {
         var deferred = $q.defer();
         AppInfo().then(function(appinfo) {
-          Language().then(function(language) {
-            language = language || 'en';
+          Language(function(err, language) {
+            if (err) {
+              return console.log('Error loading language', err);
+            }
             deferred.resolve(_.map(rows, function(row) {
               return sms_utils.makeDataRecordReadable(row.doc, appinfo, language);
             }));

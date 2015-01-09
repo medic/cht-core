@@ -53,7 +53,10 @@
 
         $scope.locales = res.locales;
 
-        Language().then(function(language) {
+        Language(function(err, language) {
+          if (err) {
+            return console.log('Error loading language', err);
+          }
           $scope.localeModel = createLanguageModel(language, res.locales);
           updateTranslationModels();
           $scope.$watch('localeModel', function(curr, prev) {

@@ -14,12 +14,8 @@ describe('Form service', function() {
       $provide.value('Settings', function(callback) {
         callback(null, { forms: results });
       });
-      $provide.value('Language', function() {
-        return {
-          then: function(callback) {
-            callback(language);
-          }
-        };
+      $provide.value('Language', function(callback) {
+        callback(null, language);
       });
     });
     inject(function(_Form_, _$rootScope_, _$translate_) {

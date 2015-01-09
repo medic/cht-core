@@ -4,8 +4,7 @@ describe('Language service', function() {
 
   var service,
       user,
-      settings,
-      $rootScope;
+      settings;
 
   beforeEach(function() {
     user = {};
@@ -19,8 +18,7 @@ describe('Language service', function() {
         callback(null, settings);
       });
     });
-    inject(function(_Language_, _$rootScope_) {
-      $rootScope = _$rootScope_;
+    inject(function(_Language_) {
       service = _Language_;
     });
   });
@@ -30,13 +28,11 @@ describe('Language service', function() {
     user = { language: 'latin' };
     settings = {};
 
-    service().then(function(actual) {
+    service(function(err, actual) {
       chai.expect(actual).to.equal('latin');
       done();
     });
 
-    // needed to resolve the promise
-    $rootScope.$digest();
   });
 
   it('uses the language configured in settings', function(done) {
@@ -44,13 +40,11 @@ describe('Language service', function() {
     user = {};
     settings = { locale: 'yiddish' };
 
-    service().then(function(actual) {
+    service(function(err, actual) {
       chai.expect(actual).to.equal('yiddish');
       done();
     });
 
-    // needed to resolve the promise
-    $rootScope.$digest();
   });
 
   it('defaults', function(done) {
@@ -58,13 +52,11 @@ describe('Language service', function() {
     user = {};
     settings = {};
 
-    service().then(function(actual) {
+    service(function(err, actual) {
       chai.expect(actual).to.equal('en');
       done();
     });
 
-    // needed to resolve the promise
-    $rootScope.$digest();
   });
 
 });
