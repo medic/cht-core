@@ -320,7 +320,7 @@ var _ = require('underscore');
       callback();
     };
     tour.init();
-    tour.start();
+    tour.restart();
     current = {
       tour: tour,
       name: name
