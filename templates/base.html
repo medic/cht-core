@@ -20,13 +20,19 @@
             </a>
             <ul role="menu" class="dropdown-menu mm-dropdown-menu">
               <li role="presentation">
-                <a class="ng-binding" role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#feedback">
+                <a role="menuitem" tabindex="-1" rel="external"  href="{baseURL}/help">
+                  <i class="fa fa-fw fa-question"></i>
+                  {@translate value="Help"/}
+                </a>
+              </li>
+              <li role="presentation">
+                <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#feedback">
                   <i class="fa fa-fw fa-bug"></i>
                   {@translate value="Report Bug"/}
                 </a>
               </li>
               <li role="presentation">
-                <a class="ng-binding" role="menuitem" tabindex="-1" rel="external" id="logout">
+                <a role="menuitem" tabindex="-1" rel="external" id="logout">
                   <i class="fa fa-fw fa-power-off"></i>
                   {@translate value="Log Out"/}
                 </a>
