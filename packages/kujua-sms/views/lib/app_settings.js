@@ -2477,11 +2477,11 @@ module.exports = {
       },
       {
           "key": "welcome",
-          "default": "Hello {{name}}",
+          "default": "Hello {{fullname}}",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Hello {{name}}"
+                  "content": "Hello {{fullname}}"
               }
           ]
       },
