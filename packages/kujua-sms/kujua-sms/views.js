@@ -408,22 +408,19 @@ exports.tasks_pending = {
 };
 
 
-exports.duplicate_form_submissions_with_count = {
+exports.duplicate_form_submissions = {
     map: function(doc) {
         if(doc.type == "data_record" && doc.sms_message.form){
-            emit([doc.sms_message.form, doc.sms_message.from, doc.sms_message.message],1);
+            emit([doc.sms_message.form, doc.sms_message.from, doc.sms_message.message], doc._rev);
         }
     },
 
-    reduce: function(keys, values){
-        return sum(values);
-    }
-};
-
-exports.form_submissions_for_scrutiny = {
-    map: function(doc){
-        if(doc.type == "data_record" && doc.sms_message.form){
-            emit([doc.sms_message.form, doc.sms_message.from,doc.sms_message.message], doc._rev);
+    reduce: function(keys, values, rereduce){
+        if (rereduce){
+            return sum(values);
+        }
+        else{
+            return values.length;
         }
     }
 };
