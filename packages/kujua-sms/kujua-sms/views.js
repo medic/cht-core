@@ -406,3 +406,24 @@ exports.tasks_pending = {
         }
     }
 };
+
+
+exports.duplicate_form_submissions_with_count = {
+    map: function(doc) {
+        if(doc.type == "data_record" && doc.sms_message.form){
+            emit([doc.sms_message.form, doc.sms_message.from, doc.sms_message.message],1);
+        }
+    },
+
+    reduce: function(keys, values){
+        return sum(values);
+    }
+};
+
+exports.form_submissions_for_scrutiny = {
+    map: function(doc){
+        if(doc.type == "data_record" && doc.sms_message.form){
+            emit([doc.sms_message.form, doc.sms_message.from,doc.sms_message.message], doc._rev);
+        }
+    }
+};

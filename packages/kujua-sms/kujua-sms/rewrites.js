@@ -109,5 +109,22 @@ exports.rules = [
             endkey: [':refid'],
             descending: 'true'
         }
+    },
+    {
+        from: '/duplicate_count/:form',
+        to:'_list/duplicate_form_submissions_with_count/duplicate_form_submissions_with_count',
+        query: {
+            group:'true',
+            startkey: [':form'],
+            endkey: [':form',{}]
+        }
+    },
+    {
+        from:'/duplicate_records/:form',
+        to:'_list/duplicate_individual_form_submissions/form_submissions_for_scrutiny',
+        query:{
+            startkey: [':form'],
+            endkey: [':form',{}]
+        }
     }
 ];
