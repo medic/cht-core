@@ -22,9 +22,8 @@
 
 - Refactored build process, added grunt, bower and jshint.
 
-- No forms are included by default
-  You must upload your forms. As usual configuration (settings and forms)
-  persists through upgrades.
+- No forms are included by default.  You must upload your forms.  As usual
+  configuration (settings and forms) persists through upgrades.
 
 - Added new translations
 
@@ -36,7 +35,7 @@
 
 - Gardener >= 1.1.0 
 
-- New [Nginx configuration](https://github.com/medic/medic-os/blob/master/platform/packages/medic-core/settings/medic-core/nginx/nginx.conf), close or redirect port 5984, proxy all requests through medic-api.
+- New [Nginx configuration](https://github.com/medic/medic-os/blob/3aedf0622eb0669aee2e5bbfba95a42faf05b9da/platform/packages/medic-core/settings/medic-core/nginx/nginx.conf), close or redirect port 5984, proxy all requests through medic-api.
 
 ## 0.4.2
 
