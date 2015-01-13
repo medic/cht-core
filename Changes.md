@@ -1,5 +1,43 @@
 # Medic Mobile Release Notes
 
+## 0.4.3
+
+### TBD
+
+#### Features
+
+- Major UI enhancements #370
+
+  - Inbox Style with advanced search bar
+  - Admin Panels
+  - Mobile device support
+
+- Configurable date format #577
+
+- Built-in ANC Analytics #586
+
+- Easy user feedback mechanism #19
+
+- Added help and tour
+
+- Refactored build process, added grunt, bower and jshint.
+
+- No forms are included by default
+  You must upload your forms. As usual configuration (settings and forms)
+  persists through upgrades.
+
+- Added new translations
+
+- Default auto-replies
+
+#### Upgrade Notes
+
+- CouchDB Lucene >= 1.0.2
+
+- Gardener >= 1.1.0 
+
+- New [Nginx configuration](https://github.com/medic/medic-os/blob/master/platform/packages/medic-core/settings/medic-core/nginx/nginx.conf), close or redirect port 5984, proxy all requests through medic-api.
+
 ## 0.4.2
 
 ### Sep 4, 2014
