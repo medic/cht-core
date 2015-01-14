@@ -4,12 +4,12 @@ var _ = require('underscore'),
     settings;
 
 var defaults = {
-  "anc_forms": {
-    "registration": "R",
-    "registrationLmp": "P",
-    "visit": "V",
-    "delivery": "D",
-    "flag": "F"
+  anc_forms: {
+    registration: 'R',
+    registrationLmp: 'P',
+    visit: 'V',
+    delivery: 'D',
+    flag: 'F'
   }
 };
 

@@ -39,7 +39,7 @@ exports['go returns errors from getView'] = function(test) {
 
 exports['go does nothing if already run'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { total_rows: 1 });
+  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [ { year: 2015 } ] });
   schedule.go(function(err) {
     test.equals(err, undefined);
     test.equals(getView.callCount, 1);
@@ -52,7 +52,7 @@ exports['go saves a doc with results'] = function(test) {
   var getView = sinon.stub(db, 'getView');
 
   // check if already run this month
-  getView.onCall(0).callsArgWith(2, null, { total_rows: 0 });
+  getView.onCall(0).callsArgWith(2, null, { rows: [] });
 
   // valid form submissions
   getView.onCall(1).callsArgWith(2, null, { rows: [

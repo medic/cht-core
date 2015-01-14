@@ -21,7 +21,7 @@ var runIfNeeded = function(callback) {
     if (err) {
       return callback(err);
     }
-    callback(null, response.total_rows === 0);
+    callback(null, response.rows.length === 0);
   });
 };
 
