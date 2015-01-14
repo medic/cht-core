@@ -316,6 +316,8 @@ require('moment/locales');
               .trigger('click');
             $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']')
               .trigger('click');
+            $('#anonymous-statistics-content a[data-value=' + res.statistics_submission + ']')
+              .trigger('click');
           }, 1);
         } else {
           $('#welcome').modal('show');
@@ -675,6 +677,10 @@ require('moment/locales');
         val = $('#registration-form-content .horizontal-options .selected').attr('data-value');
         if (val) {
           settings.anc_registration_lmp = val === 'true';
+        }
+        val = $('#anonymous-statistics-content .horizontal-options .selected').attr('data-value');
+        if (val) {
+          settings.statistics_submission = val;
         }
         UpdateSettings(settings, function(err) {
           $('#setup-wizard-save').removeClass('disabled');
