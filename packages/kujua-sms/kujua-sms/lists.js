@@ -734,36 +734,44 @@ exports.facilities_select2 = function(head, req) {
 
 };
 
-exports.duplicate_form_submissions_with_count = function(head, req){
-    start({code: 200, headers:{
-        'Content-Type':'text/json;charset=utf-8'
+exports.duplicate_form_submissions_with_count = function (head, req) {
+    start({code: 200, headers: {
+        'Content-Type': 'text/json;charset=utf-8'
     }});
 
     var row;
-    var rows = [];
-    while(row = getRow()){
-        if(row.value > 1) {
-            rows.push({key: row.key, count: row.value});
+    var first_element = true;
+
+    send('[');
+    while (row = getRow()) {
+        if (row.value > 1) {
+            var delimiter = first_element ? '' : ',';
+            send(delimiter + JSON.stringify({key: row.key, count: row.value}));
+            first_element = false;
         }
     }
-    send(JSON.stringify(rows));
+    send(']');
 };
 
-exports.duplicate_individual_form_submissions = function(head, req){
-    start({code: 200, headers:{
-        'Content-Type':'text/json;charset=utf-8'
+exports.duplicate_individual_form_submissions = function (head, req) {
+    start({code: 200, headers: {
+        'Content-Type': 'text/json;charset=utf-8'
     }});
 
     var row;
-    var duplicates = [];
     var original_submission = [];
-    while(row=getRow()){
-        if(original_submission.indexOf(JSON.stringify(row.key)) == -1){
+    var first_element = true;
+
+    send('{"duplicates":[');
+    while (row = getRow()) {
+        if (original_submission.indexOf(JSON.stringify(row.key)) == -1) {
             original_submission.push(JSON.stringify(row.key));
         }
-        else{
-            duplicates.push({'key':row.key, 'id': row.id, 'rev': row.value});
+        else {
+            var delimiter = first_element ? '' : ',';
+            send(delimiter + JSON.stringify({'key': row.key, 'id': row.id, 'rev': row.value}));
+            first_element = false;
         }
     }
-    send(JSON.stringify({'duplicates': duplicates}));
+    send(']}');
 };
