@@ -2,14 +2,8 @@
     "name": "kujua-reporting",
     "version": "0.0.1",
     "description": "Display graphs for reporting rates.",
-    "modules": ["kujua-reporting", "views", "tests"],
+    "modules": ["kujua-reporting", "views"],
     "load": "kujua-reporting/app",
-    "dust": {
-        "templates": "templates"
-    },
-    "attachments": [
-        "static/kujua-reporting"
-    ],
     "dependencies": {
         "settings": null,
         "properties": null,

@@ -61,27 +61,37 @@ var _ = require('underscore'),
     }
   ]);
 
-  inboxServices.factory('Language', ['$cookies', 'User', 'Settings',
-    function($cookies, User, Settings) {
-      return function(callback) {
-        if ($cookies.locale) {
-          return callback(null, $cookies.locale);
+  var fetchLocale = function(User, Settings, callback) {
+    User(function(err, res) {
+      if (err) {
+        return callback(err);
+      }
+      if (res && res.language) {
+        return callback(null, res.language);
+      }
+      Settings(function(err, res) {
+        if (err) {
+          return callback(err);
         }
-        User(function(err, res) {
+        callback(null, res.locale || 'en');
+      });
+    });
+  };
+
+  inboxServices.factory('Language', ['ipCookie', 'User', 'Settings',
+    function(ipCookie, User, Settings) {
+      var cookieKey = 'locale';
+      return function(callback) {
+        var cookieVal = ipCookie(cookieKey);
+        if (cookieVal) {
+          return callback(null, cookieVal);
+        }
+        fetchLocale(User, Settings, function(err, locale) {
           if (err) {
             return callback(err);
           }
-          if (res && res.language) {
-            $cookies.locale = res.language;
-            return callback(null, res.language);
-          }
-          Settings(function(err, res) {
-            if (err) {
-              return callback(err);
-            }
-            $cookies.locale = res.locale || 'en';
-            callback(null, res.locale || 'en');
-          });
+          ipCookie(cookieKey, locale, { expires: 365, path: '/' });
+          callback(null, locale);
         });
       };
     }

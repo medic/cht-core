@@ -9,7 +9,7 @@ require('../dist/reporting-views');
   'use strict';
 
   var app = angular.module('inboxApp', [
-    'ngCookies',
+    'ipCookie',
     'ngRoute',
     'ngAnimate',
     'ui.router',

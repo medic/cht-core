@@ -4,11 +4,15 @@ describe('Language service', function() {
 
   var service,
       user,
-      settings;
+      settings,
+      cookieVal,
+      cookieCalledWith;
 
   beforeEach(function() {
     user = {};
     settings = {};
+    cookieVal = null;
+    cookieCalledWith = null;
     module('inboxApp');
     module(function ($provide) {
       $provide.value('User', function(callback) {
@@ -16,6 +20,13 @@ describe('Language service', function() {
       });
       $provide.value('Settings', function(callback) {
         callback(null, settings);
+      });
+      $provide.value('ipCookie', function() {
+        if (arguments.length === 1) {
+          return cookieVal;
+        }
+        cookieCalledWith = arguments;
+        return null;
       });
     });
     inject(function(_Language_) {
@@ -30,6 +41,9 @@ describe('Language service', function() {
 
     service(function(err, actual) {
       chai.expect(actual).to.equal('latin');
+      chai.expect(cookieCalledWith[0]).to.equal('locale');
+      chai.expect(cookieCalledWith[1]).to.equal('latin');
+      chai.expect(cookieCalledWith[2]).to.deep.equal({ expires: 365, path: '/' });
       done();
     });
 
@@ -42,6 +56,9 @@ describe('Language service', function() {
 
     service(function(err, actual) {
       chai.expect(actual).to.equal('yiddish');
+      chai.expect(cookieCalledWith[0]).to.equal('locale');
+      chai.expect(cookieCalledWith[1]).to.equal('yiddish');
+      chai.expect(cookieCalledWith[2]).to.deep.equal({ expires: 365, path: '/' });
       done();
     });
 
@@ -53,7 +70,24 @@ describe('Language service', function() {
     settings = {};
 
     service(function(err, actual) {
+      chai.expect(cookieCalledWith[0]).to.equal('locale');
+      chai.expect(cookieCalledWith[1]).to.equal('en');
+      chai.expect(cookieCalledWith[2]).to.deep.equal({ expires: 365, path: '/' });
       chai.expect(actual).to.equal('en');
+      done();
+    });
+
+  });
+
+  it('uses cookie if set', function(done) {
+
+    user = {};
+    settings = {};
+    cookieVal = 'ca';
+
+    service(function(err, actual) {
+      chai.expect(actual).to.equal('ca');
+      chai.expect(cookieCalledWith).to.equal(null);
       done();
     });
 

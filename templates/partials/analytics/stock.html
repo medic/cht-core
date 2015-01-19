@@ -1,2 +1,134 @@
-<div class="col-sm-12 reporting ng-hide page" id="content" ng-show="filterModel.module.id === 'stock'">
+<div class="reporting stock-monitoring ng-hide page" ng-show="filterModel.module.id === 'stock'">
+
+  <div class="time-select">
+    <a class="btn btn-link" ng-class="{ 'disabled': time.time_unit === 'month' && time.quantity === 1 }" ng-click="setTime({ time_unit: 'month', quantity: 1 })">Last 1 Month</a>
+    <a class="btn btn-link" ng-class="{ 'disabled': time.time_unit === 'month' && time.quantity === 3 }" ng-click="setTime({ time_unit: 'month', quantity: 3 })">Last 3 Months</a>
+    <a class="btn btn-link" ng-class="{ 'disabled': time.time_unit === 'month' && time.quantity === 6 }" ng-click="setTime({ time_unit: 'month', quantity: 6 })">Last 6 Months</a>
+    <a class="btn btn-link" ng-class="{ 'disabled': time.time_unit === 'year' && time.quantity === 1 }" ng-click="setTime({ time_unit: 'year', quantity: 1 })">Last 1 Year</a>
+    <a class="btn btn-link" ng-class="{ 'disabled': time.time_unit === 'year' && time.quantity === 5 }" ng-click="setTime({ time_unit: 'year', quantity: 5 })">Last 5 Years</a>
+  </div>
+  
+  <div class="row facility-select" ng-show="!district">
+    <div class="col-sm-12 facility" ng-repeat="district in districts | orderBy:'name'" ng-click="setDistrict(district)">
+      {~lb}{~lb}district.name{~rb}{~rb}
+    </div>
+  </div>
+
+  <div ng-show="district" class="district-totals">
+    <div class="row">
+      <div class="col-sm-2 col-xs-6">
+        <i class="fa fa-medkit"></i>
+        <h4>{~lb}{~lb}totals.health_centers_size{~rb}{~rb}</h4>
+      </div>
+      <div class="col-sm-2 col-xs-6">
+        <i class="fa fa-check"></i>
+        <h4>{~lb}{~lb}totals.clinics_size{~rb}{~rb}</h4>
+      </div>
+      <div class="col-sm-4 col-xs-12">
+        <div class="large-pie">
+          <nvd3-pie-chart
+            data="chart"
+            width="220"
+            height="220"
+            margin="{left:0,top:20,bottom:0,right:0}"
+            x="xFunction()"
+            y="yFunction()"
+            color="colorFunction()"
+            labelType="percent"
+            showLabels="true">
+            <svg height="220"></svg>
+          </nvd3-pie-chart>
+        </div>
+      </div>
+      <div class="col-sm-2 col-xs-6">
+        <i class="fa fa-file-o"></i>
+        <h4>{~lb}{~lb}totals.not_submitted{~rb}{~rb}</h4>
+      </div>
+      <div class="col-sm-2 col-xs-6">
+        <i class="fa fa-exclamation-triangle"></i>
+        <h4>{~lb}{~lb}totals.incomplete{~rb}{~rb}</h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="facility-select" ng-show="district && district.type === 'district_hospital'">
+    <div class="row facility" ng-repeat="facility in facilities" ng-click="setDistrict(facility)">
+      <div class="col-sm-4">
+        {~lb}{~lb}facility.name{~rb}{~rb} ({~lb}{~lb}facility.clinics.length{~rb}{~rb})
+      </div>
+      <div class="col-sm-1">{~lb}{~lb}facility.valid{~rb}{~rb}</div>
+      <div class="col-sm-1">{~lb}{~lb}facility.valid_percent{~rb}{~rb}%</div>
+      <div class="col-sm-1">
+        <div class="mini-pie">
+          <nvd3-pie-chart
+            data="facility.chart"
+            width="40"
+            height="40"
+            margin="{left:0,top:0,bottom:0,right:0}"
+            x="xFunction()"
+            y="yFunction()"
+            color="colorFunction()"
+            showLabels="false">
+            <svg height="40"></svg>
+          </nvd3-pie-chart>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="facility-select" ng-show="district && district.clinics">
+    <div ng-repeat="clinic in clinics">
+      <div class="row facility" ng-click="expandClinic(clinic.id)">
+        <div class="col-sm-4">
+          <button class="btn btn-primary btn-sm send-message" ng-attr-data-send-to="{~lb}{~lb}clinic.phone{~rb}{~rb}"><i class="fa fa-envelope"></i></button>
+          {~lb}{~lb}clinic.name{~rb}{~rb}
+        </div>
+        <div class="col-sm-1">{~lb}{~lb}clinic.valid_percent{~rb}{~rb}%</div>
+        <div class="col-sm-1">
+          <div class="mini-pie">
+            <nvd3-pie-chart
+              data="clinic.chart"
+              width="40"
+              height="40"
+              margin="{left:0,top:0,bottom:0,right:0}"
+              x="xFunction()"
+              y="yFunction()"
+              color="colorFunction()"
+              showLabels="false">
+              <svg height="40"></svg>
+            </nvd3-pie-chart>
+          </div>
+        </div>
+      </div>
+      <div class="records" ng-show="expandedClinic === clinic.id">
+        <div ng-repeat="record in clinic.records">
+          <div class="row" ng-class="{ 'valid': record.is_valid }" ng-click="expandRecord(record.id)">
+            <div class="col-sm-4">{~lb}{~lb}record.name{~rb}{~rb}</div>
+            <div class="col-sm-4">{~lb}{~lb}record.reporter{~rb}{~rb}</div>
+          </div>
+          <div class="fields" ng-show="expandedRecord && expandedRecord === record.id">
+            <div class="row">
+              <div class="col-sm-12"><label>Fields</label></div>
+            </div>
+            <div class="row" ng-repeat="field in formattedRecord.fields.data">
+              <div class="col-sm-2">{~lb}{~lb}field.label{~rb}{~rb}</div>
+              <div class="col-sm-10">{~lb}{~lb}field.value{~rb}{~rb}</div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12"><label>Meta</label></div>
+            </div>
+            <div class="row">
+              <div class="col-sm-2">Reported Date</div>
+              <div class="col-sm-10">{~lb}{~lb}formattedRecord.reported_date{~rb}{~rb}</div>
+            </div>
+            <div class="row">
+              <div class="col-sm-2">Message</div>
+              <div class="col-sm-10">{~lb}{~lb}formattedRecord.sms_message.message{~rb}{~rb}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>

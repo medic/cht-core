@@ -342,6 +342,8 @@ require('moment/locales');
         });
       });
 
+      moment.locale(['en']);
+
       Language(function(err, language) {
         if (err) {
           return console.log('Error loading language', err);
