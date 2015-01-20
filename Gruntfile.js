@@ -337,11 +337,6 @@ module.exports = function(grunt) {
         src: './kujua-utils.js'
       },
       {
-        cwd: 'packages/kujua-reporting/kujua-reporting',
-        src: './shows.js',
-        expose: 'kujua-reporting'
-      },
-      {
         cwd: 'packages/underscore-string',
         src: './underscore-string.js'
       },
@@ -352,11 +347,6 @@ module.exports = function(grunt) {
       {
         cwd: 'packages/duality/duality',
         src: './utils.js',
-        expose: 'duality'
-      },
-      {
-        cwd: 'packages/duality-dust/duality',
-        src: './templates.js',
         expose: 'duality'
       },
       {
@@ -374,10 +364,6 @@ module.exports = function(grunt) {
       {
         cwd: 'packages/dust',
         src: './dust.js'
-      },
-      {
-        cwd: 'node_modules/grunt-dustjs/node_modules/dustjs-linkedin/dist',
-        src: './dust-core.js'
       },
       {
         cwd: 'packages/locale',
