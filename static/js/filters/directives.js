@@ -8,7 +8,7 @@
     return {
       restrict: 'E',
       scope: { message: '=' },
-      templateUrl: '/partials/sender.html'
+      templateUrl: 'templates/partials/sender.html'
     };
   });
 

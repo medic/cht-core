@@ -3,31 +3,31 @@
     <div class="configuration-menu">
       <a ui-sref="configuration.settings.basic" ng-show="permissions.admin">
         <i class="fa fa-cog"></i>
-        {~lb}{~lb}'Settings' | translate{~rb}{~rb}
+        {{'Settings' | translate}}
       </a>
       <a ui-sref="configuration.translation.languages" ng-show="permissions.admin">
         <i class="fa fa-language"></i>
-        {~lb}{~lb}'Languages' | translate{~rb}{~rb}
+        {{'Languages' | translate}}
       </a>
       <a href="{baseURL}/forms" ng-show="permissions.admin">
         <i class="fa fa-list-alt"></i>
-        {~lb}{~lb}'Forms' | translate{~rb}{~rb}
+        {{'Forms' | translate}}
       </a>
       <a href="{baseURL}/schedules" ng-show="permissions.admin">
         <i class="fa fa-clock-o"></i>
-        {~lb}{~lb}'Schedules' | translate{~rb}{~rb}
+        {{'Schedules' | translate}}
       </a>
       <a href="{baseURL}/export" ng-show="permissions.admin || permissions.nationalAdmin">
         <i class="fa fa-arrow-circle-o-down"></i>
-        {~lb}{~lb}'Export' | translate{~rb}{~rb}
+        {{'Export' | translate}}
       </a>
       <a href="{baseURL}/users" ng-show="permissions.admin">
         <i class="fa fa-user"></i>
-        {~lb}{~lb}'Users' | translate{~rb}{~rb}
+        {{'Users' | translate}}
       </a>
       <a href="{baseURL}/facilities" ng-show="permissions.admin || permissions.nationalAdmin">
         <i class="fa fa-home"></i>
-        {~lb}{~lb}'Facilities' | translate{~rb}{~rb}
+        {{'Facilities' | translate}}
       </a>
     </div>
   </div>

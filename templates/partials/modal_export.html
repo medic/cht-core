@@ -3,27 +3,27 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{~lb}{~lb}'Export' | translate{~rb}{~rb}</h3>
+        <h3>{{'Export' | translate}}</h3>
       </div>
       <div class="modal-body">
 
-        <h4>{~lb}{~lb}'Messages' | translate{~rb}{~rb}</h4>
+        <h4>{{'Messages' | translate}}</h4>
         <ul>
           <li>
-            <a href="{~lb}{~lb}exports.messages.url{~rb}{~rb}">{~lb}{~lb}exports.messages.label | translate{~rb}{~rb}</a>
+            <a href="{{exports.messages.url}}">{{exports.messages.label | translate}}</a>
           </li>
         </ul>
 
-        <h4>{~lb}{~lb}'Reports' | translate{~rb}{~rb}</h4>
+        <h4>{{'Reports' | translate}}</h4>
         <ul>
           <li ng-repeat="model in exports.reports">
-            <a href="{~lb}{~lb}model.url{~rb}{~rb}">{~lb}{~lb}model.label{~rb}{~rb}</a>
+            <a href="{{model.url}}">{{model.label}}</a>
           </li>
         </ul>
 
       </div>
       <div class="modal-footer">
-        <a class="btn cancel" data-dismiss="modal">{~lb}{~lb}'Cancel' | translate{~rb}{~rb}</a>
+        <a class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
       </div>
     </div>
   </div>

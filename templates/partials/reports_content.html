@@ -16,32 +16,32 @@
       <h2 ng-bind-html="selected | title:forms"></h2>
       <ul>
         <li ng-if="selected.sms_message.message">
-          <label>{~lb}{~lb}'Content' | translate{~rb}{~rb}</label>
-          <p>{~lb}{~lb}selected.sms_message.message{~rb}{~rb}</p>
+          <label>{{'Content' | translate}}</label>
+          <p>{{selected.sms_message.message}}</p>
         </li>
         <li ng-if="selected.form" ng-repeat="field in selected.fields.data">
           <label>
-            {~lb}{~lb}field.label{~rb}{~rb}
-            <span class="fa fa-cogs" ng-show="field.generated" ng-attr-title="{~lb}{~lb}'Generated report field' | translate{~rb}{~rb}"></span>
+            {{field.label}}
+            <span class="fa fa-cogs" ng-show="field.generated" ng-attr-title="{{'Generated report field' | translate}}"></span>
           </label>
-          <p>{~lb}{~lb}field.value{~rb}{~rb}</p>
+          <p>{{field.value}}</p>
         </li>
         <li ng-if="selected.errors.length">
-          <label>{~lb}{~lb}'Errors' | translate{~rb}{~rb}</label>
+          <label>{{'Errors' | translate}}</label>
           <ul>
             <li ng-repeat="error in selected.errors">
-              {~lb}{~lb}error.message{~rb}{~rb}
+              {{error.message}}
             </li>
           </ul>
         </li>
         <li ng-if="selected.tasks.length">
-          <label ng-if="selected.kujua_message">{~lb}{~lb}'tasks.0.messages.0.to' | translate{~rb}{~rb}</label>
-          <label ng-if="!selected.kujua_message">{~lb}{~lb}'Automated Reply' | translate{~rb}{~rb}</label>
+          <label ng-if="selected.kujua_message">{{'tasks.0.messages.0.to' | translate}}</label>
+          <label ng-if="!selected.kujua_message">{{'Automated Reply' | translate}}</label>
           <ul class="task-list">
             <li ng-repeat="task in selected.tasks">
               <ul>
                 <li ng-repeat="message in task.messages">
-                  {~lb}{~lb}selected.kujua_message ? message.to : message.message{~rb}{~rb}
+                  {{selected.kujua_message ? message.to : message.message}}
                 </li>
               </ul>
               <span class="task-state" ng-bind-html="task | state"></span>
@@ -53,15 +53,15 @@
     </div>
 
     <div class="body" ng-if="selected.scheduled_tasks_by_group.length">
-      <h2>{~lb}{~lb}'Outgoing Messages' | translate{~rb}{~rb}</h2>
+      <h2>{{'Outgoing Messages' | translate}}</h2>
       <ul>
         <li ng-repeat="group in selected.scheduled_tasks_by_group">
           <p>
-            {~lb}{~lb}group.group{~rb}{~rb}
+            {{group.group}}
             <span ng-hide="group.loading">
-              <a class="btn btn-link" ng-click="edit(group)">{~lb}{~lb}'Edit' | translate{~rb}{~rb}</a>
-              <a class="btn btn-link" ng-click="mute(group)" ng-show="canMute(group)">{~lb}{~lb}'Mute' | translate{~rb}{~rb}</a>
-              <a class="btn btn-link" ng-click="schedule(group)" ng-show="canSchedule(group)">{~lb}{~lb}'Schedule' | translate{~rb}{~rb}</a>
+              <a class="btn btn-link" ng-click="edit(group)">{{'Edit' | translate}}</a>
+              <a class="btn btn-link" ng-click="mute(group)" ng-show="canMute(group)">{{'Mute' | translate}}</a>
+              <a class="btn btn-link" ng-click="schedule(group)" ng-show="canSchedule(group)">{{'Schedule' | translate}}</a>
             </span>
             <span class="loading-button" ng-show="group.loading">
               <span class="fa fa-spinner fa-spin"></span>
@@ -71,7 +71,7 @@
             <li ng-repeat="task in group.rows | orderBy:'timestamp'">
               <ul>
                 <li ng-repeat="message in task.messages">
-                  {~lb}{~lb}message.message{~rb}{~rb}
+                  {{message.message}}
                 </li>
               </ul>
               <span class="task-state" ng-bind-html="task | state"></span>

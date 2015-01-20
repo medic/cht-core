@@ -23,7 +23,7 @@
     "loglevel": "info",
     "load": "lib/app",
     "modules": ["lib", "tests/kanso"],
-    "attachments": ["static"],
+    "attachments": ["static", "templates"],
     "dust": {
         "templates": "templates"
     },

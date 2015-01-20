@@ -1,6 +1,6 @@
 <div class="col-xs-12 col-md-6 analytics-widget visits-completed">
   <div class="widget-body error" ng-show="visitsCompleted.error">
-    {~lb}{~lb}'analytics.connection.error' | translate{~rb}{~rb}
+    {{'analytics.connection.error' | translate}}
   </div>
   <div class="widget-body" ng-hide="!visitsCompleted.loading">
     <div class="loading">
@@ -9,8 +9,8 @@
   </div>
   <div class="widget-body" ng-if="!visitsCompleted.loading && !visitsCompleted.error">
     <div class="title">
-      <p class="name">{~lb}{~lb}'analytics.anc.visits-completed' | translate{~rb}{~rb}</p>
-      <p class="description">{~lb}{~lb}'analytics.anc.visits-completed.description' | translate{~rb}{~rb}</p>
+      <p class="name">{{'analytics.anc.visits-completed' | translate}}</p>
+      <p class="description">{{'analytics.anc.visits-completed.description' | translate}}</p>
     </div>
     <div class="content">
       <nvd3-discrete-bar-chart

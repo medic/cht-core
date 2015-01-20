@@ -9,74 +9,27 @@
   </head>
   <body class="inbox {~lb}{~lb}filterModel.type{~rb}{~rb}" ng-controller="InboxCtrl" ng-cloak>
 
-    {>"partials/actionbar.html"/}
+    <ng-include src="'templates/partials/actionbar.html'"></ng-include>
 
     <div class="container-fluid">
-      {>"partials/header.html"/}
-      {>"partials/filters.html"/}
+      <ng-include src="'templates/partials/header.html'"></ng-include>
+      <ng-include src="'templates/partials/filters.html'"></ng-include>
       <div class="row content" ui-view></div>
     </div>
 
-    {>"partials/modal_send_message.html"/}
-    {>"partials/modal_update_facility.html"/}
-    {>"partials/modal_alert.html"/}
-    {>"partials/modal_edit_user.html"/}
-    {>"partials/modal_export.html"/}
-    {>"partials/modal_tour_select.html"/}
-    {>"partials/modal_feedback.html"/}
-    {>"partials/modal_welcome.html"/}
-    {>"partials/modal_guided_setup.html"/}
-    {>"partials/modal_edit_language.html"/}
-    {>"partials/modal_delete_language.html"/}
-    {>"partials/modal_edit_translation.html"/}
-    {>"partials/modal_import_translation.html"/}
-
-    <script type="text/ng-template" id="/partials/messages.html">
-      {>"partials/messages.html"/}
-    </script>
-    <script type="text/ng-template" id="/partials/messages_content.html">
-      {>"partials/messages_content.html"/}
-    </script>
-    
-    <script type="text/ng-template" id="/partials/reports.html">
-      {>"partials/reports.html"/}
-    </script>
-    <script type="text/ng-template" id="/partials/reports_content.html">
-      {>"partials/reports_content.html"/}
-    </script>
-
-    <script type="text/ng-template" id="/partials/analytics.html">
-      {>"partials/analytics.html"/}
-    </script>
-
-    <script type="text/ng-template" id="/partials/configuration.html">
-      {>"partials/configuration.html"/}
-    </script>
-    <script type="text/ng-template" id="/partials/configuration_settings.html">
-      {>"partials/configuration_settings.html"/}
-    </script>
-    <script type="text/ng-template" id="/partials/configuration_settings_basic.html">
-      {>"partials/configuration_settings_basic.html"/}
-    </script>
-    <script type="text/ng-template" id="/partials/configuration_settings_advanced.html">
-      {>"partials/configuration_settings_advanced.html"/}
-    </script>
-    <script type="text/ng-template" id="/partials/configuration_translation_languages.html">
-      {>"partials/configuration_translation_languages.html"/}
-    </script>
-    <script type="text/ng-template" id="/partials/configuration_translation.html">
-      {>"partials/configuration_translation.html"/}
-    </script>
-    <script type="text/ng-template" id="/partials/configuration_translation_application.html">
-      {>"partials/configuration_translation_application.html"/}
-    </script>
-    <script type="text/ng-template" id="/partials/configuration_translation_messages.html">
-      {>"partials/configuration_translation_messages.html"/}
-    </script>
-
-    <script type="text/ng-template" id="/partials/sender.html">
-      {>"partials/sender.html"/}
-    </script>
+    <ng-include src="'templates/partials/modal_feedback.html'"></ng-include>
+    <ng-include src="'templates/partials/modal_send_message.html'"></ng-include>
+    <ng-include src="'templates/partials/modal_update_facility.html'"></ng-include>
+    <ng-include src="'templates/partials/modal_alert.html'"></ng-include>
+    <ng-include src="'templates/partials/modal_edit_user.html'"></ng-include>
+    <ng-include src="'templates/partials/modal_export.html'"></ng-include>
+    <ng-include src="'templates/partials/modal_tour_select.html'"></ng-include>
+    <ng-include src="'templates/partials/modal_welcome.html'"></ng-include>
+    <ng-include src="'templates/partials/modal_guided_setup.html'" onload="setupGuidedSetup()"></ng-include>
+    <ng-include src="'templates/partials/modal_edit_language.html'"></ng-include>
+    <ng-include src="'templates/partials/modal_delete_language.html'"></ng-include>
+    <ng-include src="'templates/partials/modal_edit_translation.html'"></ng-include>
+    <ng-include src="'templates/partials/modal_import_translation.html'"></ng-include>
 
     <script src="{baseURL}/static/dist/inbox.js" type="text/javascript"></script>
 

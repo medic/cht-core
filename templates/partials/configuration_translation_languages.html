@@ -1,66 +1,66 @@
 <div id="language-accordion" class="panel-group" role="tablist">
   <div class="panel panel-default" ng-repeat="localeModel in languagesModel.locales" ng-class="{'disabled': localeModel.locale.disabled}">
-    <div class="panel-heading" role="tab" id="locale-{~lb}{~lb}localeModel.locale.code{~rb}{~rb}">
+    <div class="panel-heading" role="tab" id="locale-{{localeModel.locale.code}}">
       <h4 class="panel-title">
-        <a class="collapsed" data-toggle="collapse" data-target="#locale-{~lb}{~lb}localeModel.locale.code{~rb}{~rb}-body" data-parent="#language-accordion">
-          {~lb}{~lb}localeModel.locale.name{~rb}{~rb}
-          <span class="fa-stack default" ng-attr-title="{~lb}{~lb}'Default Application Language' | translate{~rb}{~rb}" ng-show="localeModel.locale.code === languagesModel.default.locale">
+        <a class="collapsed" data-toggle="collapse" data-target="#locale-{{localeModel.locale.code}}-body" data-parent="#language-accordion">
+          {{localeModel.locale.name}}
+          <span class="fa-stack default" ng-attr-title="{{'Default Application Language' | translate}}" ng-show="localeModel.locale.code === languagesModel.default.locale">
             <i class="fa fa-file-o fa-stack-2x"></i>
             <i class="fa fa-star fa-stack-1x"></i>
           </span>
-          <span class="fa-stack default" ng-attr-title="{~lb}{~lb}'Language For Outgoing Messages' | translate{~rb}{~rb}" ng-show="localeModel.locale.code === languagesModel.default.outgoing">
+          <span class="fa-stack default" ng-attr-title="{{'Language For Outgoing Messages' | translate}}" ng-show="localeModel.locale.code === languagesModel.default.outgoing">
             <i class="fa fa-envelope-o fa-stack-2x"></i>
             <i class="fa fa-star fa-stack-1x"></i>
           </span>
         </a>
       </h4>
     </div>
-    <div id="locale-{~lb}{~lb}localeModel.locale.code{~rb}{~rb}-body" class="panel-collapse collapse" role="tabpanel">
+    <div id="locale-{{localeModel.locale.code}}-body" class="panel-collapse collapse" role="tabpanel">
       <div class="panel-body action-list">
         <div>
           <button type="button" class="btn btn-link" data-toggle="modal" data-target="#edit-language" ng-click="prepareEditLanguage(localeModel.locale)">
-            <i class="fa fa-pencil"></i>{~lb}{~lb}'Edit' | translate{~rb}{~rb}
+            <i class="fa fa-pencil"></i>{{'Edit' | translate}}
           </button>
         </div>
         <div ng-hide="localeModel.locale.disabled">
           <button type="button" class="btn btn-link" ng-click="disableLanguage(localeModel.locale)">
-            <i class="fa fa-ban"></i>{~lb}{~lb}'Disable' | translate{~rb}{~rb}
+            <i class="fa fa-ban"></i>{{'Disable' | translate}}
           </button>
         </div>
         <div ng-hide="!localeModel.locale.disabled">
           <button type="button" class="btn btn-link" ng-click="enableLanguage(localeModel.locale)">
-            <i class="fa fa-circle-o"></i>{~lb}{~lb}'Enable' | translate{~rb}{~rb}
+            <i class="fa fa-circle-o"></i>{{'Enable' | translate}}
           </button>
         </div>
         <div ng-hide="localeModel.locale.disabled">
           <button type="button" class="btn btn-link" ng-click="setLocale(localeModel.locale)" ng-disabled="localeModel.locale.code === languagesModel.default.locale">
-            <span class="fa-stack default" ng-attr-title="{~lb}{~lb}'Default Application Language' | translate{~rb}{~rb}">
+            <span class="fa-stack default" ng-attr-title="{{'Default Application Language' | translate}}">
               <i class="fa fa-file-o fa-stack-2x"></i>
               <i class="fa fa-star fa-stack-1x"></i>
-            </span>{~lb}{~lb}'Set as default application language' | translate{~rb}{~rb}
+            </span>{{'Set as default application language' | translate}}
           </button>
         </div>
         <div ng-hide="localeModel.locale.disabled">
           <button type="button" class="btn btn-link" ng-click="setLocaleOutgoing(localeModel.locale)" ng-disabled="localeModel.locale.code === languagesModel.default.outgoing">
-            <span class="fa-stack default" ng-attr-title="{~lb}{~lb}'Language For Outgoing Messages' | translate{~rb}{~rb}">
+            <span class="fa-stack default" ng-attr-title="{{'Language For Outgoing Messages' | translate}}">
               <i class="fa fa-envelope-o fa-stack-2x"></i>
               <i class="fa fa-star fa-stack-1x"></i>
-            </span>{~lb}{~lb}'Set as language for outgoing messages' | translate{~rb}{~rb}
+            </span>{{'Set as language for outgoing messages' | translate}}
           </button>
         </div>
         <div>
-          <a class="btn btn-link" ng-attr-download="{~lb}{~lb}localeModel.export.name{~rb}{~rb}" ng-href="{~lb}{~lb}localeModel.export.url{~rb}{~rb}">
-            <i class="fa fa-arrow-circle-o-down"></i>{~lb}{~lb}'Export' | translate{~rb}{~rb}
+          <a class="btn btn-link" ng-attr-download="{{localeModel.export.name}}" ng-href="{{localeModel.export.url}}">
+            <i class="fa fa-arrow-circle-o-down"></i>{{'Export' | translate}}
           </a>
         </div>
         <div>
           <button type="button" class="btn btn-link" data-toggle="modal" data-target="#import-translation" ng-click="prepareImport(localeModel.locale)">
-            <i class="fa fa-arrow-circle-o-up"></i>{~lb}{~lb}'Import' | translate{~rb}{~rb}
+            <i class="fa fa-arrow-circle-o-up"></i>{{'Import' | translate}}
           </button>
         </div>
         <div>
           <button type="button" class="btn btn-link btn-danger" data-toggle="modal" data-target="#delete-language" ng-click="prepareDeleteLanguage(locale)">
-            <i class="fa fa-trash-o"></i>{~lb}{~lb}'Delete' | translate{~rb}{~rb}
+            <i class="fa fa-trash-o"></i>{{'Delete' | translate}}
           </button>
         </div>
       </div>
@@ -70,5 +70,5 @@
 
 <button type="button" class="btn btn-link" data-toggle="modal" data-target="#edit-language" ng-click="prepareEditLanguage()">
   <i class="fa fa-plus"></i>
-  {~lb}{~lb}'Add new language' | translate{~rb}{~rb}
+  {{'Add new language' | translate}}
 </button>

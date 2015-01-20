@@ -3,23 +3,23 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{~lb}{~lb}'Import translations' | translate{~rb}{~rb}</h3>
+        <h3>{{'Import translations' | translate}}</h3>
       </div>
       <div class="modal-body">
         <form action="" method="POST">
 
           <div class="form-group">
-            <label>{~lb}{~lb}'Translation file' | translate{~rb}{~rb}</label>
+            <label>{{'Translation file' | translate}}</label>
             <input type="file" ng-file-select ng-model="translationFile"/>
-            <p class="help-block">{~lb}{~lb}'Translation file help' | translate{~rb}{~rb}</p>
+            <p class="help-block">{{'Translation file help' | translate}}</p>
           </div>
 
         </form>
       </div>
       <div class="modal-footer">
         <p class="note"></p>
-        <a class="btn cancel" data-dismiss="modal">{~lb}{~lb}'Cancel' | translate{~rb}{~rb}</a>
-        <a class="btn submit btn-primary" ng-click="import()" ng-attr-data-working-label="{~lb}{~lb}'Submitting' | translate{~rb}{~rb}">{~lb}{~lb}'Submit' | translate{~rb}{~rb}</a>
+        <a class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
+        <a class="btn submit btn-primary" ng-click="import()" ng-attr-data-working-label="{{'Submitting' | translate}}">{{'Submit' | translate}}</a>
       </div>
     </div>
   </div>
