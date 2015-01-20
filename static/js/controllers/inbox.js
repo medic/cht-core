@@ -277,21 +277,6 @@ require('moment/locales');
         $scope.exports = exports;
       });
 
-      var startTour = function() {
-        User(function(err, user) {
-          if (err) {
-            return console.log('Error fetching user', err);
-          }
-          if (!user.known) {
-            tour.start('intro', translateFilter);
-            UpdateUser({ known: true }, function(err) {
-              if (err) {
-                console.log('Error updating user', err);
-              }
-            });
-          }
-        });
-      };
 
       $scope.setupGuidedSetup = function() {
         Settings(function(err, res) {
@@ -388,27 +373,126 @@ require('moment/locales');
             $('#guided-setup').modal('hide');
           });
         });
+
+        modalsInited.guidedSetup = true;
+        showModals();
       };
 
-      Settings(function(err, res) {
+      $scope.setupWelcome = function() {
+        modalsInited.welcome = true;
+        showModals();
+      };
+
+      $scope.setupUserLanguage = function() {
+        $('#user-language').on('click', '.horizontal-options a', function(e) {
+          e.preventDefault();
+          var elem = $(this);
+          elem.closest('.horizontal-options')
+            .find('.selected')
+            .removeClass('selected');
+          elem.addClass('selected');
+        });
+        $('#user-language .btn-primary').on('click', function(e) {
+          e.preventDefault();
+          var btn = $(this);
+          btn.addClass('disabled');
+          var selected = $(this).closest('.modal-content')
+                                .find('.selected')
+                                .attr('data-value');
+          UpdateUser({ language: selected }, function(err) {
+            btn.removeClass('disabled');
+            if (err) {
+              return console.log('Error updating user', err);
+            }
+            $('#user-language').modal('hide');
+          });
+        });
+        modalsInited.userLanguage = true;
+        showModals();
+      };
+
+      $scope.changeLanguage = function(code) {
+        moment.locale([code, 'en']);
+        $translate.use(code);
+      };
+
+      var startupModals = [
+        // select language
+        {
+          required: function(settings, user) {
+            return !user.language;
+          },
+          render: function(callback) {
+            $('#user-language').modal('show');
+            $('#user-language').on('hide.bs.modal', callback);
+          }
+        },
+        // welcome screen
+        {
+          required: function(settings) {
+            return !settings.setup_complete;
+          },
+          render: function(callback) {
+            $('#welcome').modal('show');
+            $('#welcome').on('hide.bs.modal', callback);
+          }
+        },
+        // guided setup
+        {
+          required: function(settings) {
+            return !settings.setup_complete;
+          },
+          render: function(callback) {
+            $('#guided-setup').modal('show');
+            $('#guided-setup').on('hide.bs.modal', callback);
+            UpdateSettings({ setup_complete: true }, function(err) {
+              if (err) {
+                console.log('Error marking setup_complete', err);
+              }
+            });
+          }
+        },
+        // tour
+        {
+          required: function(settings, user) {
+            return !user.known;
+          },
+          render: function() {
+            tour.start('intro', translateFilter);
+            UpdateUser({ known: true }, function(err) {
+              if (err) {
+                console.log('Error updating user', err);
+              }
+            });
+          }
+        },
+      ];
+
+      var filteredModals;
+      var modalsInited = {
+        guidedSetup: false,
+        welcome: false,
+        userLanguage: false
+      };
+
+      var showModals = function() {
+        if (filteredModals && _.every(_.values(modalsInited))) {
+          // render the first modal and recursively show the rest
+          if (filteredModals.length) {
+            filteredModals.shift().render(function() {
+              showModals(filteredModals);
+            });
+          }
+        }
+      };
+
+      Settings(function(err, settings) {
         if (err) {
           return console.log('Error fetching settings', err);
         }
-        $scope.enabledLocales = _.reject(res.locales, function(locale) {
+        $scope.enabledLocales = _.reject(settings.locales, function(locale) {
           return !!locale.disabled;
         });
-        if (res.setup_complete) {
-          startTour();
-        } else {
-          $('#welcome').modal('show');
-          // show the tour after the Setup Wizard
-          $('#guided-setup').on('hide.bs.modal', startTour);
-          UpdateSettings({ setup_complete: true }, function(err) {
-            if (err) {
-              console.log('Error marking setup_complete', err);
-            }
-          });
-        }
         User(function(err, user) {
           if (err) {
             return console.log('Error getting user', err);
@@ -419,6 +503,12 @@ require('moment/locales');
             phone: user.phone,
             language: { code: user.language }
           };
+
+          filteredModals = _.filter(startupModals, function(modal) {
+            return modal.required(settings, user);
+          });
+          showModals();
+
         });
       });
 
@@ -689,9 +779,11 @@ require('moment/locales');
         e.stopPropagation();
       });
 
-      $('#tour-select').on('click', 'a.tour-option', function() {
-        $('#tour-select').modal('hide');
-      });
+      $scope.setupTour = function() {
+        $('#tour-select').on('click', 'a.tour-option', function() {
+          $('#tour-select').modal('hide');
+        });
+      };
 
       $('#feedback').on('click', '.submit', function() {
         var pane = modal.start($('#feedback'));
