@@ -7,13 +7,25 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationTranslationLanguagesCtrl',
-    ['$scope', '$rootScope', 'Settings', 'UpdateSettings', 'ExportProperties',
-    function ($scope, $rootScope, Settings, UpdateSettings, ExportProperties) {
+    ['$scope', '$rootScope', 'Settings', 'UpdateSettings', 'ExportProperties', 'OutgoingMessagesConfiguration',
+    function ($scope, $rootScope, Settings, UpdateSettings, ExportProperties, OutgoingMessagesConfiguration) {
+
+      var countMissingTranslations = function(translations, locale) {
+        var result = 0;
+        _.each(translations, function(translation) {
+          if (!_.findWhere(translation.translations, { locale: locale.code })) {
+            result++;
+          }
+        });
+        return result;
+      };
 
       var createLocaleModel = function(settings, locale) {
+
         var result = {
           locale: locale
         };
+
         var content = ExportProperties(settings, locale.code);
         if (content) {
           var blob = new Blob([ content ], { type: 'text/plain' });
@@ -22,6 +34,14 @@ var _ = require('underscore');
             url: (window.URL || window.webkitURL).createObjectURL(blob)
           };
         }
+
+        var messages = _.flatten(
+          _.pluck(OutgoingMessagesConfiguration(settings), 'translations'),
+        true);
+        result.missing =
+          countMissingTranslations(settings.translations, locale) +
+          countMissingTranslations(messages, locale);
+
         return result;
       };
 

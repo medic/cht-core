@@ -17,6 +17,9 @@
     </div>
     <div id="locale-{{localeModel.locale.code}}-body" class="panel-collapse collapse" role="tabpanel">
       <div class="panel-body action-list">
+        <div class="alert alert-warning" role="alert" ng-show="{{localeModel.missing > 0}}">
+          {{'Missing translations' | translate:localeModel}}
+        </div>
         <div>
           <button type="button" class="btn btn-link" data-toggle="modal" data-target="#edit-language" ng-click="prepareEditLanguage(localeModel.locale)">
             <i class="fa fa-pencil"></i>{{'Edit' | translate}}

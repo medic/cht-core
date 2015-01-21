@@ -5374,6 +5374,16 @@ module.exports = {
                   "content": "Submit via web"
               }
           ]
+      },
+      {
+          "key": "Missing translations",
+          "default": "{{missing}} translations missing",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "{{missing}} translations missing"
+              }
+          ]
       }
    ],
    "forms": {
