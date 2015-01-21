@@ -29,6 +29,11 @@
 
 - Default auto-replies
 
+- There are now two ways to export stuff: 1) from the reports screen click on
+  export, or 2) on the Configuration > Export screen. The former is simplified
+  and has no way of changing facility, form, or file format. The latter is
+  functionally equivalent to 0.4.2.
+
 #### Upgrade Notes
 
 - CouchDB Lucene >= 1.0.2
@@ -36,6 +41,7 @@
 - Gardener >= 1.1.0 
 
 - New [Nginx configuration](https://github.com/medic/medic-os/blob/3aedf0622eb0669aee2e5bbfba95a42faf05b9da/platform/packages/medic-core/settings/medic-core/nginx/nginx.conf), close or redirect port 5984, proxy all requests through medic-api.
+
 
 ## 0.4.2
 
