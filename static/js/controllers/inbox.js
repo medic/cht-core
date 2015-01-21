@@ -31,15 +31,15 @@ require('moment/locales');
       $scope.contacts = undefined;
       $scope.messages = undefined;
       $scope.selected = undefined;
-      $scope.filterQuery = undefined;
+      $scope.filterQuery = { value: undefined };
       $scope.analyticsModules = undefined;
       $scope.version = version;
 
       require('../modules/manage-session').init();
 
       $scope.setFilterQuery = function(query) {
-        if (!$scope.filterQuery && query) {
-          $scope.filterQuery = query;
+        if (!$scope.filterQuery.value && query) {
+          $scope.filterQuery.value = query;
         }
       };
 
@@ -152,7 +152,7 @@ require('moment/locales');
       };
 
       $scope.resetFilterModel = function() {
-        $scope.filterQuery = '';
+        $scope.filterQuery.value = '';
         $scope.filterModel.forms = [];
         $scope.filterModel.facilities = [];
         $scope.filterModel.valid = undefined;

@@ -95,7 +95,7 @@
       </span>
       
       <span class="filter input-group freetext-filter" ng-show="filterModel.type === 'reports'">
-        <input id="freetext" class="form-control" type="text" ng-model="filterQuery" ng-attr-placeholder="{{'Extra search words' | translate}}">
+        <input id="freetext" class="form-control" type="text" ng-model="filterQuery.value" ng-attr-placeholder="{{'Extra search words' | translate}}">
         <span class="input-group-btn">
           <button id="search" class="btn btn-default" type="button">
             <span class="fa fa-search"></span>
@@ -111,7 +111,7 @@
         </span>
         <div class="search-pane dropdown-menu mm-dropdown-menu" role="menu" aria-labelledby="mobile-search">
           <span class="input-group">
-            <input id="mobile-freetext" class="form-control" type="text" ng-model="filterQuery" ng-attr-placeholder="{{'Extra search words' | translate}}">
+            <input id="mobile-freetext" class="form-control" type="text" ng-model="filterQuery.value" ng-attr-placeholder="{{'Extra search words' | translate}}">
             <span class="input-group-btn">
               <button id="mobile-search-go" class="btn btn-default" type="button">
                 <span class="fa fa-search"></span>
@@ -184,31 +184,31 @@
             </a>
           </li>
           <li class="ng-scope" role="presentation" ng-show="permissions.admin">
-            <a href="{baseURL}/forms" role="menuitem" tabindex="-1">
+            <a href="forms" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-list-alt"></i>
               <span>{{'Forms' | translate}}</span>
             </a>
           </li>
           <li class="ng-scope" role="presentation" ng-show="permissions.admin">
-            <a href="{baseURL}/schedules" role="menuitem" tabindex="-1">
+            <a href="schedules" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-clock-o"></i>
               <span>{{'Schedules' | translate}}</span>
             </a>
           </li>
           <li class="ng-scope" role="presentation" ng-show="permissions.admin || permissions.nationalAdmin">
-            <a href="{baseURL}/export" role="menuitem" tabindex="-1">
+            <a href="export" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-arrow-circle-o-down"></i>
               <span>{{'Export' | translate}}</span>
             </a>
           </li>
           <li class="ng-scope" role="presentation" ng-show="permissions.admin">
-            <a href="{baseURL}/users" role="menuitem" tabindex="-1">
+            <a href="users" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-user"></i>
               <span>{{'Users' | translate}}</span>
             </a>
           </li>
           <li class="ng-scope" role="presentation" ng-show="permissions.admin || permissions.nationalAdmin">
-            <a href="{baseURL}/facilities" role="menuitem" tabindex="-1">
+            <a href="facilities" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-home"></i>
               <span>{{'Facilities' | translate}}</span>
             </a>

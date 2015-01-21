@@ -25,7 +25,7 @@ describe('GenerateSearchQuery service', function() {
     scope = {
       forms: [],
       facilities: [],
-      filterQuery: undefined,
+      filterQuery: { value: undefined },
       filterModel: {},
       permissions: { districtAdmin: false }
     };
@@ -243,7 +243,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    scope.filterQuery = 'pref';
+    scope.filterQuery = { value: 'pref' };
     service(scope, options, function(err, query) {
       chai.expect(query).to.equal(
         'pref* ' +
@@ -263,7 +263,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    scope.filterQuery = 'patient_id:12345';
+    scope.filterQuery = { value: 'patient_id:12345' };
     service(scope, options, function(err, query) {
       chai.expect(query).to.equal(
         'patient_id:12345 ' +

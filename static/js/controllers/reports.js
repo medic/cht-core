@@ -137,6 +137,7 @@ var _ = require('underscore'),
         } else if ($('#back').is(':visible')) {
           $scope.selectMessage();
         }
+
         GenerateSearchQuery($scope, options, function(err, query) {
           if (err) {
             return console.log(err);
@@ -165,7 +166,7 @@ var _ = require('underscore'),
             $scope.appending = false;
             if (err) {
               $scope.error = true;
-              if ($scope.filterQuery &&
+              if ($scope.filterQuery.value &&
                   err.reason &&
                   err.reason.toLowerCase().indexOf('bad query syntax') !== -1) {
                 // invalid freetext filter query
