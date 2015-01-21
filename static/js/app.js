@@ -129,6 +129,15 @@ require('./filters/index');
               templateUrl: 'templates/partials/configuration_translation_messages.html'
             }
           }
+        })
+        .state('configuration.forms', {
+          url: '/forms',
+          views: {
+            content: {
+              controller: 'ConfigurationFormsCtrl',
+              templateUrl: 'templates/partials/configuration_forms.html'
+            }
+          }
         });
 
       $urlRouterProvider.when('', '/messages');

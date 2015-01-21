@@ -155,6 +155,9 @@
           <span class="mm-button-icon" ng-show="'configuration.translation' | includedByState">
             <i class="fa fa-language"></i>
           </span>
+          <span class="mm-button-icon" ng-show="'configuration.forms' | isState">
+            <i class="fa fa-list-alt"></i>
+          </span>
           <span class="mm-button-dropdown">
             <i class="fa fa-chevron-down"></i>
           </span>
@@ -167,6 +170,9 @@
             </span>
             <span ng-show="'configuration.translation' | includedByState">
               {{'Languages' | translate}}
+            </span>
+            <span ng-show="'configuration.forms' | isState">
+              {{'Forms' | translate}}
             </span>
           </span>
         </span>
@@ -184,7 +190,7 @@
             </a>
           </li>
           <li class="ng-scope" role="presentation" ng-show="permissions.admin">
-            <a href="forms" role="menuitem" tabindex="-1">
+            <a ui-sref="configuration.forms" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-list-alt"></i>
               <span>{{'Forms' | translate}}</span>
             </a>

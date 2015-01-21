@@ -812,5 +812,6 @@ require('moment/locales');
   require('./configuration-translation-languages');
   require('./configuration-translation-application');
   require('./configuration-translation-messages');
+  require('./configuration-forms');
 
 }());

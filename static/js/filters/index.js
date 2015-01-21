@@ -7,5 +7,6 @@
   require('./date');
   require('./message');
   require('./directives');
+  require('./translate-from');
 
 }());
