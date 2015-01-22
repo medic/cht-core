@@ -75,6 +75,30 @@ exports['when doc has errors still pass filter'] = function(test) {
     test.done();
 };
 
+exports['do not pass filter when message is from gateway'] = function(test) {
+    sinon.stub(transition, '_getConfig').returns('+774455558888');
+    test.equals(transition.filter({
+        from: '+222',
+        type: 'data_record',
+        sms_message: {
+            from: '+774455558888'
+        }
+    }), false);
+    test.done();
+};
+
+exports['pass filter when message is not from gateway'] = function(test) {
+    sinon.stub(transition, '_getConfig').returns('+774455558889')
+    test.equals(transition.filter({
+        from: '+222',
+        type: 'data_record',
+        sms_message: {
+            from: '+774455558888'
+        }
+    }), true);
+    test.done();
+};
+
 exports['do nothing if reported date is not after config start date'] = function(test) {
     transition._isReportedAfterStartDate.restore();
     sinon.stub(transition, '_isReportedAfterStartDate').returns(false);
