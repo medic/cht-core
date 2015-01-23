@@ -87,6 +87,18 @@ exports['do not pass filter when message is from gateway'] = function(test) {
     test.done();
 };
 
+exports['do not pass filter when numbers are same but different formats'] = function(test) {
+    sinon.stub(transition, '_getConfig').returns('77-44-5555-8888');
+    test.equals(transition.filter({
+        from: '+222',
+        type: 'data_record',
+        sms_message: {
+            from: '+774455558888'
+        }
+    }), false);
+    test.done();
+};
+
 exports['pass filter when message is not from gateway'] = function(test) {
     sinon.stub(transition, '_getConfig').returns('+774455558889')
     test.equals(transition.filter({

@@ -26,7 +26,7 @@ module.exports = {
             gw = self._getConfig('gateway_number'),
             from = doc.sms_message && doc.sms_message.from;
         if (typeof gw === 'string' && typeof from === 'string') {
-            return libphonenumber.phoneUtil.isNumberMatch(gw, from) > 3;
+            return libphonenumber.phoneUtil.isNumberMatch(gw, from) >= 3;
         }
         return false;
     },
