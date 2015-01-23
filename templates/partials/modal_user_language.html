@@ -1,0 +1,20 @@
+<div id="user-language" class="user-language modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
+        <h3>{{'Select a language' | translate}}</h3>
+      </div>
+      <div class="modal-body">
+        <p class="horizontal-options locale">
+          <a href="#" ng-repeat="language in enabledLocales" ng-attr-data-value="{{language.code}}" ng-click="changeLanguage(language.code)">
+            <span class="rectangle" ng-bind="language.name"></span>
+          </a>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-primary" data-dismiss="modal">{{'Submit' | translate}}</a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -7,6 +7,19 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
+  var merge = function(retrieved) {
+    var settings = _.defaults(retrieved, defaults);
+    if (settings.translations.length !== defaults.translations.length) {
+      var keys = _.pluck(settings.translations, 'key');
+      _.each(defaults.translations, function(translation) {
+        if (!_.contains(keys, translation.key)) {
+          settings.translations.push(translation);
+        }
+      });
+    }
+    return settings;
+  };
+
   inboxServices.factory('Settings', ['$resource', 'BaseUrlService',
     function($resource, BaseUrlService) {
       return function(callback) {
@@ -18,7 +31,7 @@ var _ = require('underscore'),
           }
         }).query(
           function(res) {
-            callback(null, _.defaults(res.settings, defaults));
+            callback(null, merge(res.settings));
           },
           callback
         );

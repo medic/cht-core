@@ -8,9 +8,9 @@
 </div>
 <div class="row translation" ng-repeat="translation in translationModels" data-toggle="modal" data-target="#edit-translation" ng-click="prepareEditTranslation(translation.raw)">
   <div class="col-xs-6">
-    {~lb}{~lb}translation.lhs{~rb}{~rb}
+    {{translation.lhs}}
   </div>
   <div class="col-xs-6">
-    {~lb}{~lb}translation.rhs{~rb}{~rb}
+    {{translation.rhs}}
   </div>
 </div>

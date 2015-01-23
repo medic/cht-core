@@ -406,3 +406,21 @@ exports.tasks_pending = {
         }
     }
 };
+
+
+exports.duplicate_form_submissions = {
+    map: function(doc) {
+        if(doc.type == "data_record" && doc.sms_message.form){
+            emit([doc.sms_message.form, doc.sms_message.from, doc.sms_message.message], doc._rev);
+        }
+    },
+
+    reduce: function(keys, values, rereduce){
+        if (rereduce){
+            return sum(values);
+        }
+        else{
+            return values.length;
+        }
+    }
+};

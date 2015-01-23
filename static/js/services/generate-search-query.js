@@ -91,7 +91,7 @@ var _ = require('underscore'),
       };
 
       var formatFreetext = function($scope) {
-        var result = $scope.filterQuery;
+        var result = $scope.filterQuery.value;
         if (result && result.indexOf(':') === -1) {
           result += '*';
         }

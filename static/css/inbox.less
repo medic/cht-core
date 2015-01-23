@@ -869,6 +869,32 @@ a.fa:hover {
     clear: right;
   }
 }
+.horizontal-options {
+  a {
+    display: inline-block;
+    outline: none;
+    margin: 0 1em;
+  }
+  .circle, .rectangle {
+    display: inline-block;
+    background-color: @background-color;
+    border: 1px solid @seperator-color;
+  }
+  .circle {
+    border-radius: 100px;
+  }
+  .rectangle {
+    padding: 0.5em 1em;
+  }
+  .selected .circle, .selected .rectangle {
+    background-color: @ok-color;
+    color: #ffffff;
+  }
+}
+
+.user-language .modal-body {
+  text-align: center;
+}
 
 .guided-setup {
   .panel-group .panel-body {
@@ -878,26 +904,6 @@ a.fa:hover {
     }
   }
   .horizontal-options {
-    a {
-      display: inline-block;
-      outline: none;
-      margin: 0 1em;
-    }
-    .circle, .rectangle {
-      display: inline-block;
-      background-color: @background-color;
-      border: 1px solid @seperator-color;
-    }
-    .circle {
-      border-radius: 100px;
-    }
-    .rectangle {
-      padding: 0.5em 1em;
-    }
-    .selected .circle, .selected .rectangle {
-      background-color: @ok-color;
-      color: #ffffff;
-    }
     .icon {
       background-size: contain;
       background-repeat: no-repeat;

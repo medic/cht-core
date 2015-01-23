@@ -1,0 +1,38 @@
+<div class="col-sm-12">
+  <form id="forms-upload-form">
+    <div>
+      <fieldset>
+        <legend>{{'Upload Forms' | translate}}</legend>
+        <div class="alert alert-danger alert-dismissible" role="alert" ng-show="error">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          {{'Upload failed' | translate}}
+        </div>
+        <div class="alert alert-success" role="alert" ng-show="success">
+          {{'Upload succeeded' | translate}}
+        </div>
+        <button type="button" class="btn btn-default choose" ng-disabled="uploading">
+          <i class="fa fa-arrow-circle-o-up"></i> {{'Choose file' | translate}}
+        </button>
+        <span class="loading-wrapper" ng-show="uploading">
+          <i class="fa fa-spin fa-spinner"></i>
+        </span>
+        <span class="help-block">{{'Upload forms help' | translate}}</span>
+        <div class="hide">
+          <input class="uploader" type="file" accept="application/json">
+        </div>
+      </fieldset>
+    </div>
+  </form>
+
+  <div>
+    <fieldset>
+      <legend>{{'Installed Forms' | translate}}</legend>
+      <ul>
+        <li ng-repeat="form in forms">{{form.meta.code}} {{form.meta.label | translateFrom}}</li>
+      </ul>
+      <a class="btn btn-default" ng-attr-download="{{download.name}}" ng-href="{{download.url}}">
+        <i class="fa fa-arrow-circle-o-down"></i> {{'Download' | translate}}
+      </a>
+    </fieldset>
+  </div>
+</div>

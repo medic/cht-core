@@ -65,6 +65,38 @@ describe('Settings service', function() {
 
   });
 
+  it('merges translations with defaults', function(done) {
+
+    var expected = {
+      translations: [
+        { key: 'test-a' },
+        { key: 'test-b' },
+        { key: 'test-c' }
+      ]
+    };
+    $httpBackend
+      .expect('GET', 'BASEURL/app_settings/medic')
+      .respond({ settings: expected });
+
+    service(function(err, actual) {
+      chai.expect(err).to.equal(null);
+      chai.expect(actual.translations.length).to.be.above(expected.translations.length);
+      var found = 0;
+      expected.translations.forEach(function(e) {
+        actual.translations.forEach(function(a) {
+          if (e.key === a.key) {
+            found++;
+          }
+        });
+      });
+
+      chai.expect(found).to.equal(expected.translations.length);
+      done();
+    });
+    $httpBackend.flush();
+
+  });
+
   it('returns errors', function(done) {
 
     $httpBackend

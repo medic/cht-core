@@ -31,15 +31,15 @@ require('moment/locales');
       $scope.contacts = undefined;
       $scope.messages = undefined;
       $scope.selected = undefined;
-      $scope.filterQuery = undefined;
+      $scope.filterQuery = { value: undefined };
       $scope.analyticsModules = undefined;
       $scope.version = version;
 
       require('../modules/manage-session').init();
 
       $scope.setFilterQuery = function(query) {
-        if (!$scope.filterQuery && query) {
-          $scope.filterQuery = query;
+        if (!$scope.filterQuery.value && query) {
+          $scope.filterQuery.value = query;
         }
       };
 
@@ -152,7 +152,7 @@ require('moment/locales');
       };
 
       $scope.resetFilterModel = function() {
-        $scope.filterQuery = '';
+        $scope.filterQuery.value = '';
         $scope.filterModel.forms = [];
         $scope.filterModel.facilities = [];
         $scope.filterModel.valid = undefined;
@@ -277,34 +277,13 @@ require('moment/locales');
         $scope.exports = exports;
       });
 
-      var startTour = function() {
-        User(function(err, user) {
+
+      $scope.setupGuidedSetup = function() {
+        Settings(function(err, res) {
           if (err) {
-            return console.log('Error fetching user', err);
+            return console.log('Error fetching settings', err);
           }
-          if (!user.known) {
-            tour.start('intro', translateFilter);
-            UpdateUser({ known: true }, function(err) {
-              if (err) {
-                console.log('Error updating user', err);
-              }
-            });
-          }
-        });
-      };
-
-      Settings(function(err, res) {
-        if (err) {
-          return console.log('Error fetching settings', err);
-        }
-        $scope.enabledLocales = _.reject(res.locales, function(locale) {
-          return !!locale.disabled;
-        });
-        if (res.setup_complete) {
-          startTour();
-
           window.setTimeout(function() {
-            // prepopulate selections
             $('#gateway-number').val(res.gateway_number);
             $('#default-country-code').val(res.default_country_code);
             $('#gateway-number').trigger('input');
@@ -316,17 +295,204 @@ require('moment/locales');
               .trigger('click');
             $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']')
               .trigger('click');
+            $('#anonymous-statistics-content a[data-value=' + res.statistics_submission + ']')
+              .trigger('click');
           }, 1);
-        } else {
-          $('#welcome').modal('show');
-          // show the tour after the Setup Wizard
-          $('#guided-setup').on('hide.bs.modal', startTour);
-          UpdateSettings({ setup_complete: true }, function(err) {
-            if (err) {
-              console.log('Error marking setup_complete', err);
-            }
+        });
+
+        $('#guided-setup').on('click', '.horizontal-options a', function(e) {
+          e.preventDefault();
+          var elem = $(this);
+          elem.closest('.horizontal-options')
+            .find('.selected')
+            .removeClass('selected');
+          elem.addClass('selected');
+          var panel = elem.closest('.panel');
+          var label = [];
+          panel.find('.horizontal-options .selected').each(function() {
+            label.push($(this).text().trim());
           });
+          panel
+            .addClass('panel-complete')
+            .find('.panel-heading .value')
+            .text(label.join(', '));
+        });
+
+        $('#modem-setup-content').on('input', 'input', function() {
+          var gatewayNumber = $('#gateway-number').val();
+          var defaultCountryCode = $('#default-country-code').val();
+          if (gatewayNumber && defaultCountryCode) {
+            $(this).closest('.panel')
+              .addClass('panel-complete')
+              .find('.panel-heading .value')
+              .text(gatewayNumber + ', ' + defaultCountryCode);
+          }
+        });
+
+        $('#setup-wizard-save').on('click', function(e) {
+          e.preventDefault();
+          $('#setup-wizard-save').addClass('disabled');
+          $('#complete-setup-content .error').hide();
+          var settings = {};
+          var val;
+          val = $('#gateway-number').val();
+          if (val) {
+            settings.gateway_number = val;
+          }
+          val = $('#default-country-code').val();
+          if (val) {
+            settings.default_country_code = val;
+          }
+          val = $('#primary-contact-content .horizontal-options .selected').attr('data-value');
+          if (val) {
+            settings.care_coordinator = val;
+          }
+          val = $('#language-preference-content .locale .selected').attr('data-value');
+          if (val) {
+            settings.locale = val;
+          }
+          val = $('#language-preference-content .locale-outgoing .selected').attr('data-value');
+          if (val) {
+            settings.locale_outgoing = val;
+          }
+          val = $('#registration-form-content .horizontal-options .selected').attr('data-value');
+          if (val) {
+            settings.anc_registration_lmp = val === 'true';
+          }
+          val = $('#anonymous-statistics-content .horizontal-options .selected').attr('data-value');
+          if (val) {
+            settings.statistics_submission = val;
+          }
+          UpdateSettings(settings, function(err) {
+            $('#setup-wizard-save').removeClass('disabled');
+            if (err) {
+              console.log('Error updating settings', err);
+              $('#complete-setup-content .error').show();
+              return;
+            }
+            $('#guided-setup').modal('hide');
+          });
+        });
+
+        modalsInited.guidedSetup = true;
+        showModals();
+      };
+
+      $scope.setupWelcome = function() {
+        modalsInited.welcome = true;
+        showModals();
+      };
+
+      $scope.setupUserLanguage = function() {
+        $('#user-language').on('click', '.horizontal-options a', function(e) {
+          e.preventDefault();
+          var elem = $(this);
+          elem.closest('.horizontal-options')
+            .find('.selected')
+            .removeClass('selected');
+          elem.addClass('selected');
+        });
+        $('#user-language .btn-primary').on('click', function(e) {
+          e.preventDefault();
+          var btn = $(this);
+          btn.addClass('disabled');
+          var selected = $(this).closest('.modal-content')
+                                .find('.selected')
+                                .attr('data-value');
+          UpdateUser({ language: selected }, function(err) {
+            btn.removeClass('disabled');
+            if (err) {
+              return console.log('Error updating user', err);
+            }
+            $('#user-language').modal('hide');
+          });
+        });
+        modalsInited.userLanguage = true;
+        showModals();
+      };
+
+      $scope.changeLanguage = function(code) {
+        moment.locale([code, 'en']);
+        $translate.use(code);
+      };
+
+      var startupModals = [
+        // select language
+        {
+          required: function(settings, user) {
+            return !user.language;
+          },
+          render: function(callback) {
+            $('#user-language').modal('show');
+            $('#user-language').on('hide.bs.modal', callback);
+          }
+        },
+        // welcome screen
+        {
+          required: function(settings) {
+            return !settings.setup_complete;
+          },
+          render: function(callback) {
+            $('#welcome').modal('show');
+            $('#welcome').on('hide.bs.modal', callback);
+          }
+        },
+        // guided setup
+        {
+          required: function(settings) {
+            return !settings.setup_complete;
+          },
+          render: function(callback) {
+            $('#guided-setup').modal('show');
+            $('#guided-setup').on('hide.bs.modal', callback);
+            UpdateSettings({ setup_complete: true }, function(err) {
+              if (err) {
+                console.log('Error marking setup_complete', err);
+              }
+            });
+          }
+        },
+        // tour
+        {
+          required: function(settings, user) {
+            return !user.known;
+          },
+          render: function() {
+            tour.start('intro', translateFilter);
+            UpdateUser({ known: true }, function(err) {
+              if (err) {
+                console.log('Error updating user', err);
+              }
+            });
+          }
+        },
+      ];
+
+      var filteredModals;
+      var modalsInited = {
+        guidedSetup: false,
+        welcome: false,
+        userLanguage: false
+      };
+
+      var showModals = function() {
+        if (filteredModals && _.every(_.values(modalsInited))) {
+          // render the first modal and recursively show the rest
+          if (filteredModals.length) {
+            filteredModals.shift().render(function() {
+              showModals(filteredModals);
+            });
+          }
         }
+      };
+
+      Settings(function(err, settings) {
+        if (err) {
+          return console.log('Error fetching settings', err);
+        }
+        $scope.enabledLocales = _.reject(settings.locales, function(locale) {
+          return !!locale.disabled;
+        });
         User(function(err, user) {
           if (err) {
             return console.log('Error getting user', err);
@@ -337,8 +503,16 @@ require('moment/locales');
             phone: user.phone,
             language: { code: user.language }
           };
+
+          filteredModals = _.filter(startupModals, function(modal) {
+            return modal.required(settings, user);
+          });
+          showModals();
+
         });
       });
+
+      moment.locale(['en']);
 
       Language(function(err, language) {
         if (err) {
@@ -605,85 +779,17 @@ require('moment/locales');
         e.stopPropagation();
       });
 
-      $('#tour-select').on('click', 'a.tour-option', function() {
-        $('#tour-select').modal('hide');
-      });
+      $scope.setupTour = function() {
+        $('#tour-select').on('click', 'a.tour-option', function() {
+          $('#tour-select').modal('hide');
+        });
+      };
 
       $('#feedback').on('click', '.submit', function() {
         var pane = modal.start($('#feedback'));
         var message = $('#feedback [name=feedback]').val();
         feedback.submit(message, function(err) {
           pane.done(translateFilter('Error saving feedback'), err);
-        });
-      });
-
-      $('#guided-setup').on('click', '.horizontal-options a', function(e) {
-        e.preventDefault();
-        var elem = $(this);
-        elem.closest('.horizontal-options')
-          .find('.selected')
-          .removeClass('selected');
-        elem.addClass('selected');
-        var panel = elem.closest('.panel');
-        var label = [];
-        panel.find('.horizontal-options .selected').each(function() {
-          label.push($(this).text().trim());
-        });
-        panel
-          .addClass('panel-complete')
-          .find('.panel-heading .value')
-          .text(label.join(', '));
-      });
-
-      $('#modem-setup-content').on('input', 'input', function() {
-        var gatewayNumber = $('#gateway-number').val();
-        var defaultCountryCode = $('#default-country-code').val();
-        if (gatewayNumber && defaultCountryCode) {
-          $(this).closest('.panel')
-            .addClass('panel-complete')
-            .find('.panel-heading .value')
-            .text(gatewayNumber + ', ' + defaultCountryCode);
-        }
-      });
-
-      $('#setup-wizard-save').on('click', function(e) {
-        e.preventDefault();
-        $('#setup-wizard-save').addClass('disabled');
-        $('#complete-setup-content .error').hide();
-        var settings = {};
-        var val;
-        val = $('#gateway-number').val();
-        if (val) {
-          settings.gateway_number = val;
-        }
-        val = $('#default-country-code').val();
-        if (val) {
-          settings.default_country_code = val;
-        }
-        val = $('#primary-contact-content .horizontal-options .selected').attr('data-value');
-        if (val) {
-          settings.care_coordinator = val;
-        }
-        val = $('#language-preference-content .locale .selected').attr('data-value');
-        if (val) {
-          settings.locale = val;
-        }
-        val = $('#language-preference-content .locale-outgoing .selected').attr('data-value');
-        if (val) {
-          settings.locale_outgoing = val;
-        }
-        val = $('#registration-form-content .horizontal-options .selected').attr('data-value');
-        if (val) {
-          settings.anc_registration_lmp = val === 'true';
-        }
-        UpdateSettings(settings, function(err) {
-          $('#setup-wizard-save').removeClass('disabled');
-          if (err) {
-            console.log('Error updating settings', err);
-            $('#complete-setup-content .error').show();
-            return;
-          }
-          $('#guided-setup').modal('hide');
         });
       });
 
@@ -706,5 +812,6 @@ require('moment/locales');
   require('./configuration-translation-languages');
   require('./configuration-translation-application');
   require('./configuration-translation-messages');
+  require('./configuration-forms');
 
 }());

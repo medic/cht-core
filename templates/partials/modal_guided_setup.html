@@ -3,7 +3,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{~lb}{~lb}'Easy Setup Wizard' | translate{~rb}{~rb}</h3>
+        <h3>{{'Easy Setup Wizard' | translate}}</h3>
       </div>
       <div class="modal-body">
         <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
@@ -16,19 +16,19 @@
                   <span class="count">
                     <span class="number">1</span>
                     <i class="fa fa-check"></i>
-                  </span>{~lb}{~lb}'setup.modem.title' | translate{~rb}{~rb}
+                  </span>{{'setup.modem.title' | translate}}
                   <span class="value"></span>
                 </a>
               </h4>
             </div>
             <div id="modem-setup-content" class="modem-setup-content panel-collapse collapse in" role="tabpanel" aria-labelledby="modem-setup-heading">
               <div class="panel-body">
-                <h5>{~lb}{~lb}'setup.modem.subtitle' | translate{~rb}{~rb}</h5>
+                <h5>{{'setup.modem.subtitle' | translate}}</h5>
                 <img src="static/img/platform-icon-gsm.svg" width="100" height="100" />
                 <img src="static/img/platform-icon-laptop.svg" width="100" height="100" />
-                <label for="gateway-number">{~lb}{~lb}'Gateway number' | translate{~rb}{~rb}</label>
+                <label for="gateway-number">{{'Gateway number' | translate}}</label>
                 <input id="gateway-number" type="text"/>
-                <label for="default-country-code">{~lb}{~lb}'Default country code' | translate{~rb}{~rb}</label>
+                <label for="default-country-code">{{'Default country code' | translate}}</label>
                 <input id="default-country-code" type="text" value="1" class="small-field"/>
               </div>
             </div>
@@ -42,27 +42,27 @@
                   <span class="count">
                     <span class="number">2</span>
                     <i class="fa fa-check"></i>
-                  </span>{~lb}{~lb}'setup.contact.title' | translate{~rb}{~rb}
+                  </span>{{'setup.contact.title' | translate}}
                   <span class="value"></span>
                 </a>
               </h4>
             </div>
             <div id="primary-contact-content" class="primary-contact-content panel-collapse collapse" role="tabpanel" aria-labelledby="primary-contact-heading">
               <div class="panel-body">
-                <h5>{~lb}{~lb}'setup.contact.subtitle' | translate{~rb}{~rb}</h5>
-                <p>{~lb}{~lb}'setup.contact.description' | translate{~rb}{~rb}</p>
+                <h5>{{'setup.contact.subtitle' | translate}}</h5>
+                <p>{{'setup.contact.description' | translate}}</p>
                 <p class="horizontal-options">
                   <a href="#" class="icon contact-pregnant" data-value="patient">
-                    {~lb}{~lb}'Pregnant patient' | translate{~rb}{~rb}
+                    {{'Pregnant patient' | translate}}
                   </a>
                   <a href="#" class="icon contact-chw" data-value="chw">
-                    {~lb}{~lb}'Clinic' | translate{~rb}{~rb}
+                    {{'Clinic' | translate}}
                   </a>
                   <a href="#" class="icon contact-nurse" data-value="nurse">
-                    {~lb}{~lb}'Facility nurse' | translate{~rb}{~rb}
+                    {{'Facility nurse' | translate}}
                   </a>
                 </p>
-                <p>{~lb}{~lb}'setup.contact.help' | translate{~rb}{~rb}</p>
+                <p>{{'setup.contact.help' | translate}}</p>
               </div>
             </div>
           </div>
@@ -75,28 +75,28 @@
                   <span class="count">
                     <span class="number">3</span>
                     <i class="fa fa-check"></i>
-                  </span>{~lb}{~lb}'setup.language.title' | translate{~rb}{~rb}
+                  </span>{{'setup.language.title' | translate}}
                   <span class="value"></span>
                 </a>
               </h4>
             </div>
             <div id="language-preference-content" class="language-preference-content panel-collapse collapse" role="tabpanel" aria-labelledby="language-preference-heading">
               <div class="panel-body">
-                <h5>{~lb}{~lb}'setup.language.subtitle' | translate{~rb}{~rb}</h5>
+                <h5>{{'setup.language.subtitle' | translate}}</h5>
                 <p class="horizontal-options locale">
-                  <a href="#" ng-repeat="language in enabledLocales" ng-attr-data-value="{~lb}{~lb}language.code{~rb}{~rb}">
+                  <a href="#" ng-repeat="language in enabledLocales" ng-attr-data-value="{{language.code}}">
                     <span class="rectangle" ng-bind="language.name"></span>
                   </a>
                 </p>
 
-                <h5>{~lb}{~lb}'setup.language.outgoing.subtitle' | translate{~rb}{~rb}</h5>
+                <h5>{{'setup.language.outgoing.subtitle' | translate}}</h5>
                 <p class="horizontal-options locale-outgoing">
-                  <a href="#" ng-repeat="language in enabledLocales" ng-attr-data-value="{~lb}{~lb}language.code{~rb}{~rb}">
+                  <a href="#" ng-repeat="language in enabledLocales" ng-attr-data-value="{{language.code}}">
                     <span class="rectangle" ng-bind="language.name"></span>
                   </a>
                 </p>
 
-                <p>{~lb}{~lb}'setup.language.description' | translate{~rb}{~rb}</p>
+                <p>{{'setup.language.description' | translate}}</p>
               </div>
             </div>
           </div>
@@ -109,32 +109,61 @@
                   <span class="count">
                     <span class="number">4</span>
                     <i class="fa fa-check"></i>
-                  </span>{~lb}{~lb}'setup.registration.title' | translate{~rb}{~rb}
+                  </span>{{'setup.registration.title' | translate}}
                   <span class="value"></span>
                 </a>
               </h4>
             </div>
             <div id="registration-form-content" class="registration-form-content panel-collapse collapse" role="tabpanel" aria-labelledby="registration-form-heading">
               <div class="panel-body">
-                <h5>{~lb}{~lb}'setup.registration.subtitle' | translate{~rb}{~rb}</h5>
-                <p>{~lb}{~lb}'setup.registration.description' | translate{~rb}{~rb}</p>
+                <h5>{{'setup.registration.subtitle' | translate}}</h5>
+                <p>{{'setup.registration.description' | translate}}</p>
                 <p class="horizontal-options">
                   <a href="#" data-value="true">
                     <span class="circle"><i class="fa fa-check"></i></span>
                     <span class="description">
-                      <span class="heading">{~lb}{~lb}'With' | translate{~rb}{~rb}</span>
-                      {~lb}{~lb}'Last Menstrual Period' | translate{~rb}{~rb}
+                      <span class="heading">{{'With' | translate}}</span>
+                      {{'Last Menstrual Period' | translate}}
                     </span>
                   </a>
                   <a href="#" data-value="false">
                     <span class="circle"><i class="fa fa-check"></i></span>
                     <span class="description">
-                      <span class="heading">{~lb}{~lb}'Without' | translate{~rb}{~rb}</span>
-                      {~lb}{~lb}'Last Menstrual Period' | translate{~rb}{~rb}
+                      <span class="heading">{{'Without' | translate}}</span>
+                      {{'Last Menstrual Period' | translate}}
                     </span>
                   </a>
                 </p>
-                <p>{~lb}{~lb}'setup.registration.help' | translate{~rb}{~rb}</p>
+                <p>{{'setup.registration.help' | translate}}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Anonymous statistics -->
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="anonymous-statistics-heading">
+              <h4 class="panel-title">
+                <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#anonymous-statistics-content" aria-expanded="false" aria-controls="anonymous-statistics-content" target="_self">
+                  <span class="count">
+                    <span class="number">5</span>
+                    <i class="fa fa-check"></i>
+                  </span>{{'setup.statistics.title' | translate}}
+                  <span class="value"></span>
+                </a>
+              </h4>
+            </div>
+            <div id="anonymous-statistics-content" class="anonymous-statistics-content panel-collapse collapse" role="tabpanel" aria-labelledby="anonymous-statistics-heading">
+              <div class="panel-body">
+                <h5>{{'setup.statistics.subtitle' | translate}}</h5>
+                <p>{{'setup.statistics.description' | translate}}</p>
+                <p class="horizontal-options">
+                  <a href="#" data-value="none">
+                    <span class="rectangle">{{'No submission' | translate}}</span>
+                  </a>
+                  <a href="#" data-value="web">
+                    <span class="rectangle">{{'Submit via web' | translate}}</span>
+                  </a>
+                </p>
               </div>
             </div>
           </div>
@@ -142,9 +171,9 @@
         </div>
       </div>
       <div class="modal-footer">
-        <a id="setup-wizard-save" class="btn btn-primary">{~lb}{~lb}'Start' | translate{~rb}{~rb}</a>
-        <span class="error" style="display:none">{~lb}{~lb}'Error saving settings' | translate{~rb}{~rb}</span>
-        <a href="#" class="btn cancel" data-dismiss="modal">{~lb}{~lb}'setup.skip' | translate{~rb}{~rb}</a>
+        <a id="setup-wizard-save" class="btn btn-primary">{{'Start' | translate}}</a>
+        <span class="error" style="display:none">{{'Error saving settings' | translate}}</span>
+        <a href="#" class="btn cancel" data-dismiss="modal">{{'setup.skip' | translate}}</a>
       </div>
     </div>
   </div>

@@ -1,7 +1,7 @@
 <div class="inner" data-page="reporting_rates" ng-cloak>
-  {>"partials/analytics/stock.html"/}
-  {>"partials/analytics/anc.html"/}
+  <ng-include src="'templates/partials/analytics/stock.html'"></ng-include>
+  <ng-include src="'templates/partials/analytics/anc.html'"></ng-include>
   <div class="col-sm-12 no-records" ng-show="!loading && !analyticsModules.length">
-    {~lb}{~lb}'analytics.unconfigured' | translate{~rb}{~rb}
+    {{'analytics.unconfigured' | translate}}
   </div>
 </div>

@@ -1,6 +1,6 @@
 var _ = require('underscore'),
-    stock = require('kujua-reporting/shows'),
-    moment = require('moment');
+    moment = require('moment'),
+    stockUtils = require('../modules/stock-reporting-utils');
 
 (function () {
 
@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('AnalyticsModules',
-    ['$resource', 'translateFilter', 'UserDistrict',
-    function($resource, translateFilter, UserDistrict) {
+    ['$rootScope', '$resource', 'translateFilter', 'db', 'UserDistrict', 'Facility', 'District', 'DbView', 'ChildFacility', 'FormatDataRecord',
+    function($rootScope, $resource, translateFilter, db, UserDistrict, Facility, District, DbView, ChildFacility, FormatDataRecord) {
 
       var request = function(url, district, options, callback) {
         if (!callback) {
@@ -231,7 +231,130 @@ var _ = require('underscore'),
                 return !!forms[stockForm.code];
               });
             },
-            render: stock.render_page
+            render: function(scope) {
+
+              scope.facilities = [];
+              scope.districts = [];
+              scope.time = { time_unit: 'month', quantity: 3 };
+              scope.$watch('time', function() {
+                if (scope.district) {
+                  scope.setDistrict(scope.district);
+                }
+              }, true);
+
+              scope.expandClinic = function(id) {
+                if (scope.expandedClinic === id) {
+                  scope.expandedClinic = null;
+                } else {
+                  scope.expandedClinic = id;
+                }
+              };
+
+              scope.expandRecord = function(id) {
+                if (!id) {
+                  return;
+                }
+                if (scope.expandedRecord === id) {
+                  scope.expandedRecord = null;
+                } else {
+                  db.getDoc(id, function(err, doc) {
+                    if (err) {
+                      return console.log(err);
+                    }
+                    FormatDataRecord([{ doc: doc }]).then(function(formatted) {
+                      scope.formattedRecord = formatted[0];
+                      scope.expandedRecord = id;
+                    });
+                  });
+                }
+              };
+
+              scope.setTime = function(time) {
+                scope.time = time;
+              };
+
+              var colours = {
+                valid: '#009900',
+                invalid: '#990000',
+                missing: '#999999'
+              };
+              scope.colorFunction = function() {
+                return function(d) {
+                  return colours[d.data.key];
+                };
+              };
+
+              scope.setDistrict = function(district) {
+                scope.district = district;
+                scope.time.form = settings['kujua-reporting'][0].code;
+                var dates = stockUtils.getDates(scope.time);
+                db.getDoc(district.id || district._id, function(err, district) {
+                  if (err) {
+                    return console.log(err);
+                  }
+                  ChildFacility(district, function(err, facilities) {
+                    if (err) {
+                      return console.log(err);
+                    }
+                    getViewReports(DbView, district, dates, function(err, reports) {
+                      scope.totals = stockUtils.getTotals(facilities, reports, dates);
+                      if (district.type === 'health_center') {
+                        scope.clinics = stockUtils.getRowsHC(facilities, reports, dates);
+                        _.each(scope.clinics, function(f) {
+                          f.chart = [
+                            { key: 'valid', y: f.valid_percent },
+                            { key: 'missing', y: 100 - f.valid_percent }
+                          ];
+                        });
+                      } else {
+                        scope.facilities = stockUtils.getRows(facilities, reports, dates);
+                        _.each(scope.facilities, function(f) {
+                          f.chart = [
+                            { key: 'valid', y: f.valid_percent },
+                            { key: 'missing', y: 100 - f.valid_percent }
+                          ];
+                        });
+                      }
+                      scope.chart = [
+                        { key: 'valid', y: scope.totals.complete },
+                        { key: 'missing', y: scope.totals.not_submitted },
+                        { key: 'invalid', y: scope.totals.incomplete }
+                      ];
+                      scope.xFunction = function() {
+                        return function(d) {
+                          return d.key;
+                        };
+                      };
+                      scope.yFunction = function() {
+                        return function(d) {
+                          return d.y;
+                        };
+                      };
+                    });
+                  });
+                });
+              };
+
+              UserDistrict(function(err, district) {
+
+                if (err) {
+                  return console.log('Error fetching district', err);
+                }
+
+                if (district) {
+                  scope.setDistrict(district);
+                } else {
+                  // national admin
+                  District(function(err, districts) {
+                    if (err) {
+                      console.log(err);
+                    }
+                    scope.districts = districts;
+                  });
+                }
+
+              });
+            }
           }
         ];
         return _.filter(modules, function(module) {
@@ -240,6 +363,30 @@ var _ = require('underscore'),
       };
     }
   ]);
-  
-}()); 
 
+  var getViewReports = function(DbView, doc, dates, callback) {
+    var args = stockUtils.getReportingViewArgs(dates),
+        view = 'data_records_by_form_year_month_facility';
+
+    if (dates.reporting_freq === 'week') {
+      view = 'data_records_by_form_year_week_facility';
+    }
+
+    DbView(view, args, function(err, data) {
+      if (err) {
+        return callback('Error fetching reports: '+ err);
+      }
+      // additional filtering for this facility
+      var saved_data = [];
+      var idx = doc.type === 'health_center' ? 4 : 3;
+      for (var i in data.rows) {
+        if (doc._id === data.rows[i].key[idx]) {
+          // keep orig ordering
+          saved_data.unshift(data.rows[i]);
+        }
+      }
+      callback(null, saved_data);
+    });
+  };
+
+}());

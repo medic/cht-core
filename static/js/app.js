@@ -2,14 +2,13 @@
 require('./services/index');
 require('./controllers/inbox');
 require('./filters/index');
-require('../dist/reporting-views');
 
 (function () {
 
   'use strict';
 
   var app = angular.module('inboxApp', [
-    'ngCookies',
+    'ipCookie',
     'ngRoute',
     'ngAnimate',
     'ui.router',
@@ -29,14 +28,14 @@ require('../dist/reporting-views');
         .state('messages', {
           url: '/messages?tour',
           controller: 'MessagesCtrl',
-          templateUrl: '/partials/messages.html'
+          templateUrl: 'templates/partials/messages.html'
         })
         .state('messages.detail', {
           url: '/:id',
           views: {
             content: {
               controller: 'MessagesContentCtrl',
-              templateUrl: '/partials/messages_content.html'
+              templateUrl: 'templates/partials/messages_content.html'
             }
           }
         })
@@ -45,14 +44,14 @@ require('../dist/reporting-views');
         .state('reports', {
           url: '/reports?tour&query',
           controller: 'ReportsCtrl',
-          templateUrl: '/partials/reports.html'
+          templateUrl: 'templates/partials/reports.html'
         })
         .state('reports.detail', {
           url: '/:id',
           views: {
             content: {
               controller: 'ReportsContentCtrl',
-              templateUrl: '/partials/reports_content.html'
+              templateUrl: 'templates/partials/reports_content.html'
             }
           }
         })
@@ -61,20 +60,20 @@ require('../dist/reporting-views');
         .state('analytics', {
           url: '/analytics/:module?tour',
           controller: 'AnalyticsCtrl',
-          templateUrl: '/partials/analytics.html'
+          templateUrl: 'templates/partials/analytics.html'
         })
 
         // configuration
         .state('configuration', {
           url: '/configuration',
           controller: 'ConfigurationCtrl',
-          templateUrl: '/partials/configuration.html'
+          templateUrl: 'templates/partials/configuration.html'
         })
         .state('configuration.settings', {
           url: '/settings',
           views: {
             content: {
-              templateUrl: '/partials/configuration_settings.html'
+              templateUrl: 'templates/partials/configuration_settings.html'
             }
           }
         })
@@ -83,7 +82,7 @@ require('../dist/reporting-views');
           views: {
             tab: {
               controller: 'ConfigurationSettingsBasicCtrl',
-              templateUrl: '/partials/configuration_settings_basic.html'
+              templateUrl: 'templates/partials/configuration_settings_basic.html'
             }
           }
         })
@@ -92,7 +91,7 @@ require('../dist/reporting-views');
           views: {
             tab: {
               controller: 'ConfigurationSettingsAdvancedCtrl',
-              templateUrl: '/partials/configuration_settings_advanced.html'
+              templateUrl: 'templates/partials/configuration_settings_advanced.html'
             }
           }
         })
@@ -100,7 +99,7 @@ require('../dist/reporting-views');
           url: '/translation',
           views: {
             content: {
-              templateUrl: '/partials/configuration_translation.html'
+              templateUrl: 'templates/partials/configuration_translation.html'
             }
           }
         })
@@ -109,7 +108,7 @@ require('../dist/reporting-views');
           views: {
             tab: {
               controller: 'ConfigurationTranslationLanguagesCtrl',
-              templateUrl: '/partials/configuration_translation_languages.html'
+              templateUrl: 'templates/partials/configuration_translation_languages.html'
             }
           }
         })
@@ -118,7 +117,7 @@ require('../dist/reporting-views');
           views: {
             tab: {
               controller: 'ConfigurationTranslationApplicationCtrl',
-              templateUrl: '/partials/configuration_translation_application.html'
+              templateUrl: 'templates/partials/configuration_translation_application.html'
             }
           }
         })
@@ -127,7 +126,16 @@ require('../dist/reporting-views');
           views: {
             tab: {
               controller: 'ConfigurationTranslationMessagesCtrl',
-              templateUrl: '/partials/configuration_translation_messages.html'
+              templateUrl: 'templates/partials/configuration_translation_messages.html'
+            }
+          }
+        })
+        .state('configuration.forms', {
+          url: '/forms',
+          views: {
+            content: {
+              controller: 'ConfigurationFormsCtrl',
+              templateUrl: 'templates/partials/configuration_forms.html'
             }
           }
         });

@@ -6,7 +6,7 @@
         <span class="mm-button-icon">
           <span class="fa fa-chevron-left"></span>
         </span>
-        <span class="mm-button-text">{~lb}{~lb}'Back' | translate{~rb}{~rb}</span>
+        <span class="mm-button-text">{{'Back' | translate}}</span>
       </span>
     </span>
 
@@ -24,9 +24,9 @@
         </span>
         <ul role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="form in forms">
-            <a role="menuitem" tabindex="-1" data-value="{~lb}{~lb}form{~rb}{~rb}">
-              <span ng-show="form.name">{~lb}{~lb}form.code{~rb}{~rb}: {~lb}{~lb}form.name{~rb}{~rb}</span>
-              <span ng-show="!form.name">{~lb}{~lb}form.code{~rb}{~rb}</span>
+            <a role="menuitem" tabindex="-1" data-value="{{form}}">
+              <span ng-show="form.name">{{form.code}}: {{form.name}}</span>
+              <span ng-show="!form.name">{{form.code}}</span>
             </a>
           </li>
         </ul>
@@ -44,7 +44,7 @@
         </span>
         <ul role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="facility in facilities">
-            <a role="menuitem" tabindex="-1" data-value="{~lb}{~lb}facility.id{~rb}{~rb}" ng-bind="facility.doc | clinic"></a>
+            <a role="menuitem" tabindex="-1" data-value="{{facility.id}}" ng-bind="facility.doc | clinic"></a>
           </li>
         </ul>
       </span>
@@ -58,10 +58,10 @@
             <span class="fa fa-chevron-down"></span>
           </span>
           <span class="mm-button-text" ng-show="filterModel.date.from && filterModel.date.to">
-            {~lb}{~lb}filterModel.date.from | date : 'd MMM'{~rb}{~rb} - {~lb}{~lb}filterModel.date.to | date : 'd MMM'{~rb}{~rb}
+            {{filterModel.date.from | date : 'd MMM'}} - {{filterModel.date.to | date : 'd MMM'}}
           </span>
           <span class="mm-button-text" ng-show="!filterModel.date.from || !filterModel.date.to">
-            {~lb}{~lb}'Any date' | translate{~rb}{~rb}
+            {{'Any date' | translate}}
           </span>
         </span>
       </span>
@@ -77,25 +77,25 @@
           <span class="mm-button-text"></span>
         </span>
         <ul role="menu" aria-labelledby="status" class="dropdown-menu mm-dropdown-menu">
-          <li role="presentation" class="dropdown-header">{~lb}{~lb}'Validity' | translate{~rb}{~rb}</li>
+          <li role="presentation" class="dropdown-header">{{'Validity' | translate}}</li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="valid">{~lb}{~lb}'Valid' | translate{~rb}{~rb}</a>
+            <a role="menuitem" tabindex="-1" data-value="valid">{{'Valid' | translate}}</a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="invalid">{~lb}{~lb}'Invalid' | translate{~rb}{~rb}</a>
+            <a role="menuitem" tabindex="-1" data-value="invalid">{{'Invalid' | translate}}</a>
           </li>
-          <li role="presentation" class="dropdown-header">{~lb}{~lb}'Verification' | translate{~rb}{~rb}</li>
+          <li role="presentation" class="dropdown-header">{{'Verification' | translate}}</li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="verified">{~lb}{~lb}'Verified' | translate{~rb}{~rb}</a>
+            <a role="menuitem" tabindex="-1" data-value="verified">{{'Verified' | translate}}</a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="unverified">{~lb}{~lb}'Unverified' | translate{~rb}{~rb}</a>
+            <a role="menuitem" tabindex="-1" data-value="unverified">{{'Unverified' | translate}}</a>
           </li>
         </ul>
       </span>
       
       <span class="filter input-group freetext-filter" ng-show="filterModel.type === 'reports'">
-        <input id="freetext" class="form-control" type="text" ng-model="filterQuery" ng-attr-placeholder="{~lb}{~lb}'Extra search words' | translate{~rb}{~rb}">
+        <input id="freetext" class="form-control" type="text" ng-model="filterQuery.value" ng-attr-placeholder="{{'Extra search words' | translate}}">
         <span class="input-group-btn">
           <button id="search" class="btn btn-default" type="button">
             <span class="fa fa-search"></span>
@@ -111,7 +111,7 @@
         </span>
         <div class="search-pane dropdown-menu mm-dropdown-menu" role="menu" aria-labelledby="mobile-search">
           <span class="input-group">
-            <input id="mobile-freetext" class="form-control" type="text" ng-model="filterQuery" ng-attr-placeholder="{~lb}{~lb}'Extra search words' | translate{~rb}{~rb}">
+            <input id="mobile-freetext" class="form-control" type="text" ng-model="filterQuery.value" ng-attr-placeholder="{{'Extra search words' | translate}}">
             <span class="input-group-btn">
               <button id="mobile-search-go" class="btn btn-default" type="button">
                 <span class="fa fa-search"></span>
@@ -130,17 +130,17 @@
             <span class="fa fa-chevron-down"></span>
           </span>
           <span class="mm-button-text">
-            {~lb}{~lb}filterModel.module.label | translate{~rb}{~rb}
+            {{filterModel.module.label | translate}}
           </span>
         </span>
         <ul role="menu" aria-labelledby="module" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="module in analyticsModules">
-            <a href="#/analytics/{~lb}{~lb}module.id{~rb}{~rb}" role="menuitem" tabindex="-1">{~lb}{~lb}module.label | translate{~rb}{~rb}</a>
+            <a href="#/analytics/{{module.id}}" role="menuitem" tabindex="-1">{{module.label | translate}}</a>
           </li>
         </ul>
       </span>
 
-      <a class="clear-all-button" tabindex="-1" ng-click="resetFilterModel()" ng-show="filterModel.type === 'reports'" ng-attr-title="{~lb}{~lb}'Clear all filters' | translate{~rb}{~rb}">
+      <a class="clear-all-button" tabindex="-1" ng-click="resetFilterModel()" ng-show="filterModel.type === 'reports'" ng-attr-title="{{'Clear all filters' | translate}}">
         <i class="fa fa-times"></i>
       </a>
 
@@ -155,18 +155,24 @@
           <span class="mm-button-icon" ng-show="'configuration.translation' | includedByState">
             <i class="fa fa-language"></i>
           </span>
+          <span class="mm-button-icon" ng-show="'configuration.forms' | isState">
+            <i class="fa fa-list-alt"></i>
+          </span>
           <span class="mm-button-dropdown">
             <i class="fa fa-chevron-down"></i>
           </span>
           <span class="mm-button-text">
             <span ng-show="'configuration' | isState">
-              {~lb}{~lb}'Configuration' | translate{~rb}{~rb}
+              {{'Configuration' | translate}}
             </span>
             <span ng-show="'configuration.settings' | includedByState">
-              {~lb}{~lb}'Settings' | translate{~rb}{~rb}
+              {{'Settings' | translate}}
             </span>
             <span ng-show="'configuration.translation' | includedByState">
-              {~lb}{~lb}'Languages' | translate{~rb}{~rb}
+              {{'Languages' | translate}}
+            </span>
+            <span ng-show="'configuration.forms' | isState">
+              {{'Forms' | translate}}
             </span>
           </span>
         </span>
@@ -174,43 +180,43 @@
           <li class="ng-scope" role="presentation" ng-show="permissions.admin">
             <a ui-sref="configuration.settings.basic" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-cog"></i>
-              <span>{~lb}{~lb}'Settings' | translate{~rb}{~rb}</span>
+              <span>{{'Settings' | translate}}</span>
             </a>
           </li>
           <li class="ng-scope" role="presentation" ng-show="permissions.admin">
             <a ui-sref="configuration.translation.languages" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-language"></i>
-              <span>{~lb}{~lb}'Languages' | translate{~rb}{~rb}</span>
+              <span>{{'Languages' | translate}}</span>
             </a>
           </li>
           <li class="ng-scope" role="presentation" ng-show="permissions.admin">
-            <a href="{baseURL}/forms" role="menuitem" tabindex="-1">
+            <a ui-sref="configuration.forms" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-list-alt"></i>
-              <span>{~lb}{~lb}'Forms' | translate{~rb}{~rb}</span>
+              <span>{{'Forms' | translate}}</span>
             </a>
           </li>
           <li class="ng-scope" role="presentation" ng-show="permissions.admin">
-            <a href="{baseURL}/schedules" role="menuitem" tabindex="-1">
+            <a href="schedules" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-clock-o"></i>
-              <span>{~lb}{~lb}'Schedules' | translate{~rb}{~rb}</span>
+              <span>{{'Schedules' | translate}}</span>
             </a>
           </li>
           <li class="ng-scope" role="presentation" ng-show="permissions.admin || permissions.nationalAdmin">
-            <a href="{baseURL}/export" role="menuitem" tabindex="-1">
+            <a href="export" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-arrow-circle-o-down"></i>
-              <span>{~lb}{~lb}'Export' | translate{~rb}{~rb}</span>
+              <span>{{'Export' | translate}}</span>
             </a>
           </li>
           <li class="ng-scope" role="presentation" ng-show="permissions.admin">
-            <a href="{baseURL}/users" role="menuitem" tabindex="-1">
+            <a href="users" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-user"></i>
-              <span>{~lb}{~lb}'Users' | translate{~rb}{~rb}</span>
+              <span>{{'Users' | translate}}</span>
             </a>
           </li>
           <li class="ng-scope" role="presentation" ng-show="permissions.admin || permissions.nationalAdmin">
-            <a href="{baseURL}/facilities" role="menuitem" tabindex="-1">
+            <a href="facilities" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-home"></i>
-              <span>{~lb}{~lb}'Facilities' | translate{~rb}{~rb}</span>
+              <span>{{'Facilities' | translate}}</span>
             </a>
           </li>
         </ul>

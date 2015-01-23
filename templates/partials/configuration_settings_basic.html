@@ -1,35 +1,35 @@
 <form role="form">
 
   <div class="form-group">
-    <label for="locale">{~lb}{~lb}'Default Application Language' | translate{~rb}{~rb}</label>
+    <label for="locale">{{'Default Application Language' | translate}}</label>
     <select id="locale" class="form-control small" ng-model="basicSettingsModel.locale" ng-options="locale.code as locale.name for locale in enabledLocales">
     </select>
-    <p class="help-block">{~lb}{~lb}'setup.language.subtitle' | translate{~rb}{~rb}</p>
+    <p class="help-block">{{'setup.language.subtitle' | translate}}</p>
   </div>
 
   <div class="form-group">
-    <label for="locale-outgoing">{~lb}{~lb}'Language For Outgoing Messages' | translate{~rb}{~rb}</label>
+    <label for="locale-outgoing">{{'Language For Outgoing Messages' | translate}}</label>
     <select id="locale-outgoing" class="form-control small" ng-model="basicSettingsModel.locale_outgoing" ng-options="locale.code as locale.name for locale in enabledLocales">
     </select>
-    <p class="help-block">{~lb}{~lb}'setup.language.outgoing.subtitle' | translate{~rb}{~rb}</p>
+    <p class="help-block">{{'setup.language.outgoing.subtitle' | translate}}</p>
   </div>
 
   <div class="form-group">
-    <label for="gateway-number">{~lb}{~lb}'Gateway number' | translate{~rb}{~rb}</label>
+    <label for="gateway-number">{{'Gateway number' | translate}}</label>
     <input type="text" class="form-control small" id="gateway-number" ng-model="basicSettingsModel.gateway_number">
-    <p class="help-block">{~lb}{~lb}'Gateway number help' | translate{~rb}{~rb}</p>
+    <p class="help-block">{{'Gateway number help' | translate}}</p>
   </div>
 
   <div class="form-group">
-    <label for="default-country-code">{~lb}{~lb}'Default country code' | translate{~rb}{~rb}</label>
+    <label for="default-country-code">{{'Default country code' | translate}}</label>
     <input type="text" class="form-control tiny" id="default-country-code" ng-model="basicSettingsModel.default_country_code">
-    <p class="help-block">{~lb}{~lb}'Default country code help' | translate{~rb}{~rb}</p>
+    <p class="help-block">{{'Default country code help' | translate}}</p>
   </div>
 
   <div class="form-actions">
-    <button type="submit" class="btn btn-primary" ng-click="submitBasicSettings()" ng-disabled="status.loading">{~lb}{~lb}'Submit' | translate{~rb}{~rb}</button>
-    <span ng-show="status.success" class="success">{~lb}{~lb}status.msg{~rb}{~rb}</span>
-    <span ng-show="status.error" class="error">{~lb}{~lb}status.msg{~rb}{~rb}</span>
+    <button type="submit" class="btn btn-primary" ng-click="submitBasicSettings()" ng-disabled="status.loading">{{'Submit' | translate}}</button>
+    <span ng-show="status.success" class="success">{{status.msg}}</span>
+    <span ng-show="status.error" class="error">{{status.msg}}</span>
     <span ng-show="status.loading" class="loading"><i class="fa fa-spin fa-spinner"></i></span>
   </div>
 

@@ -4,21 +4,21 @@
       <div class="col-sm-4"></div>
       <div class="col-sm-8 column">
         <div class="actions">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" data-send-to="{~lb}{~lb}selected.related_entities.clinic.contact.phone || selected.from{~rb}{~rb}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" data-send-to="{{selected.related_entities.clinic.contact.phone || selected.from}}">
             <span class="fa fa-mail-reply"></span>
-            <p>{~lb}{~lb}'Reply' | translate{~rb}{~rb}</p>
+            <p>{{'Reply' | translate}}</p>
           </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="updateFacilityShow()">
             <span class="fa fa-pencil"></span>
-            <p>{~lb}{~lb}'Edit' | translate{~rb}{~rb}</p>
+            <p>{{'Edit' | translate}}</p>
           </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-class="{'mm-icon-disabled': selected && !selected.form}" ng-show="!selected.verified" ng-click="verify(true)">
             <span class="fa fa-check"></span>
-            <p>{~lb}{~lb}'Verify' | translate{~rb}{~rb}</p>
+            <p>{{'Verify' | translate}}</p>
           </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-class="{'mm-icon-disabled': selected && !selected.form}" ng-show="selected.verified" ng-click="verify(false)">
             <span class="fa fa-times"></span>
-            <p>{~lb}{~lb}'Unverify' | translate{~rb}{~rb}</p>
+            <p>{{'Unverify' | translate}}</p>
           </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="deleteDoc(selected._id)">
             <span class="fa fa-trash-o"></span>
-            <p>{~lb}{~lb}'Delete' | translate{~rb}{~rb}</p>
+            <p>{{'Delete' | translate}}</p>
           </a>
         </div>
       </div>

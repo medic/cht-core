@@ -2636,6 +2636,36 @@ module.exports = {
           ]
       },
       {
+          "key": "setup.statistics.title",
+          "default": "Anonymous statistics submission",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Anonymous statistics submission"
+              }
+          ]
+      },
+      {
+          "key": "setup.statistics.subtitle",
+          "default": "Allow anonymous usage statistics to be submitted back to Medic Mobile.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Allow anonymous usage statistics to be submitted back to Medic Mobile."
+              }
+          ]
+      },
+      {
+          "key": "setup.statistics.description",
+          "default": "These statistics will be used to help us understand how to improve the software.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "These statistics will be used to help us understand how to improve the software."
+              }
+          ]
+      },
+      {
           "key": "setup.skip",
           "default": "Skip the setup wizard",
           "translations": [
@@ -5322,6 +5352,36 @@ module.exports = {
               {
                   "locale": "en",
                   "content": "Error parsing properties file"
+              }
+          ]
+      },
+      {
+          "key": "No submission",
+          "default": "No submission",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "No submission"
+              }
+          ]
+      },
+      {
+          "key": "Submit via web",
+          "default": "Submit via web",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Submit via web"
+              }
+          ]
+      },
+      {
+          "key": "Missing translations",
+          "default": "{{missing}} translations missing",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "{{missing}} translations missing"
               }
           ]
       }

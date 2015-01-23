@@ -1,71 +1,71 @@
 <form role="form">
 
   <div class="form-group">
-    <label for="accept-messages">{~lb}{~lb}'Accept plain-text messages' | translate{~rb}{~rb}</label>
+    <label for="accept-messages">{{'Accept plain-text messages' | translate}}</label>
     <div class="checkbox">
       <label>
         <input type="checkbox" id="accept-messages" ng-model="advancedSettingsModel.accept_messages"/>
-        {~lb}{~lb}'Accept plain-text messages help' | translate{~rb}{~rb}
+        {{'Accept plain-text messages help' | translate}}
       </label>
     </div>
   </div>
 
   <div class="form-group">
-    <label for="date-display-format">{~lb}{~lb}'Date display format' | translate{~rb}{~rb}</label>
+    <label for="date-display-format">{{'Date display format' | translate}}</label>
     <select id="date-display-format" class="form-control small" ng-model="advancedSettingsModel.date_format" ng-options="format for format in date_formats" ng-change="updateDateFormatExample()">
     </select>
     <p class="help-block">
-      {~lb}{~lb}'For example' | translate{~rb}{~rb}
-      {~lb}{~lb}dateFormatExample{~rb}{~rb}
+      {{'For example' | translate}}
+      {{dateFormatExample}}
     </p>
   </div>
 
   <div class="form-group">
-    <label for="datetime-display-format">{~lb}{~lb}'Datetime display format' | translate{~rb}{~rb}</label>
+    <label for="datetime-display-format">{{'Datetime display format' | translate}}</label>
     <select id="datetime-display-format" class="form-control medium" ng-model="advancedSettingsModel.reported_date_format" ng-options="format for format in datetime_formats" ng-change="updateDatetimeFormatExample()">
     </select>
     <p class="help-block">
-      {~lb}{~lb}'For example' | translate{~rb}{~rb}
-      {~lb}{~lb}datetimeFormatExample{~rb}{~rb}
+      {{'For example' | translate}}
+      {{datetimeFormatExample}}
     </p>
   </div>
 
   <div class="form-group">
-    <label>{~lb}{~lb}'Phone number conversion' | translate{~rb}{~rb}</label>
+    <label>{{'Phone number conversion' | translate}}</label>
     <p>
-      {~lb}{~lb}'Replace country code for' | translate{~rb}{~rb}
+      {{'Replace country code for' | translate}}
       <input type="hidden" id="outgoing-phone-replace-match"/>
-      {~lb}{~lb}'With' | translate{~rb}{~rb}
+      {{'With' | translate}}
       <input type="text" class="form-control tiny inline" ng-model="advancedSettingsModel.outgoing_phone_replace.replace">
     </p>
   </div>
 
   <div class="form-group" ng-class="{ 'has-error': errors.fields.messagingWindow }">
-    <label>{~lb}{~lb}'Messaging window' | translate{~rb}{~rb}</label>
+    <label>{{'Messaging window' | translate}}</label>
     <p>
-      {~lb}{~lb}'Send scheduled messages between' | translate{~rb}{~rb}
+      {{'Send scheduled messages between' | translate}}
       <select class="form-control tiny inline" ng-model="advancedSettingsModel.schedule_morning_hours" ng-options="hour.value as hour.name for hour in hours"></select>
       :
       <select class="form-control tiny inline" ng-model="advancedSettingsModel.schedule_morning_minutes" ng-options="minute.value as minute.name for minute in minutes"></select>
-      {~lb}{~lb}'and' | translate{~rb}{~rb}
+      {{'and' | translate}}
       <select class="form-control tiny inline" ng-model="advancedSettingsModel.schedule_evening_hours" ng-options="hour.value as hour.name for hour in hours"></select>
       :
       <select class="form-control tiny inline" ng-model="advancedSettingsModel.schedule_evening_minutes" ng-options="minute.value as minute.name for minute in minutes"></select>
     </p>
-    <p class="error">{~lb}{~lb}errors.fields.messagingWindow{~rb}{~rb}</p>
+    <p class="error">{{errors.fields.messagingWindow}}</p>
   </div>
 
   <div class="form-actions">
-    <button type="submit" class="btn btn-primary" ng-click="submitAdvancedSettings()" ng-disabled="status.loading">{~lb}{~lb}'Submit' | translate{~rb}{~rb}</button>
+    <button type="submit" class="btn btn-primary" ng-click="submitAdvancedSettings()" ng-disabled="status.loading">{{'Submit' | translate}}</button>
     <span ng-show="status.loading" class="loading"><i class="fa fa-spin fa-spinner"></i></span>
-    <span ng-show="status.error" class="error">{~lb}{~lb}status.msg{~rb}{~rb}</span>
-    <span ng-show="status.success" class="success">{~lb}{~lb}status.msg{~rb}{~rb}</span>
+    <span ng-show="status.error" class="error">{{status.msg}}</span>
+    <span ng-show="status.success" class="success">{{status.msg}}</span>
   </div>
 
 </form>
 
 <p class="section">
-  {~lb}{~lb}'Advanced settings intro' | translate{~rb}{~rb}
-  <a href="/dashboard/_design/dashboard/_rewrite/settings#/apps">{~lb}{~lb}'Dashboard settings page' | translate{~rb}{~rb}</a>.
-  {~lb}{~lb}'Advanced settings outro' | translate{~rb}{~rb}
+  {{'Advanced settings intro' | translate}}
+  <a href="/dashboard/_design/dashboard/_rewrite/settings#/apps">{{'Dashboard settings page' | translate}}</a>.
+  {{'Advanced settings outro' | translate}}
 </p>

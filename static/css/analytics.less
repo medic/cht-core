@@ -111,6 +111,80 @@
   color: #1D86F0;
 }
 
+.stock-monitoring {
+
+  .row {
+    margin: 0;
+  }
+
+  .records, .fields {
+    margin-left: 2em;
+  }
+
+  .fields {
+    line-height: 1.5em;
+    label {
+      margin: 0;
+    }
+  }
+
+  .records .row {
+    color: @label-color;
+  }
+
+  .fields .row, .records .valid {
+    color: @grayDark;
+  }
+
+  .records .row.valid {
+    cursor: pointer;
+  }
+
+  .facility-select {
+    line-height: 3em;
+    .facility {
+      padding-top: 0.5em;
+      padding-bottom: 0.5em;
+      font-size: 1.1em;
+      cursor: pointer;
+      &:hover {
+        background-color: @highlight-color;
+      }
+    }
+  }
+
+  .mini-pie {
+    line-height: 1em;
+  }
+
+  .mini-pie, .large-pie {
+    svg {
+      display: inline;
+      width: inherit;
+    }
+  }
+
+  .district-totals {
+    > div > div {
+      text-align: center;
+    }
+    h4 {
+      text-align: center;
+      font-size: 4em;
+    }
+    .fa {
+      margin-top: 2em;
+      font-size: 2em;
+      color: @label-color;
+    }
+    .large-pie {
+      margin: 0 auto;
+      text-align: center;
+    }
+  }
+
+}
+
 @media (max-width: 767px) {
   .analytics-widget {
     padding: 1em 0;
