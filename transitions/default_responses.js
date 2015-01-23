@@ -1,5 +1,6 @@
 var _ = require('underscore'),
     moment = require('moment'),
+    libphonenumber = require('libphonenumber'),
     config = require('../config'),
     utils = require('../lib/utils'),
     logger = require('../lib/logger'),
@@ -15,6 +16,7 @@ module.exports = {
             && !doc.kujua_message
             && self._isReportedAfterStartDate(doc)
             && !self._hasRun(doc)
+            && !self._isMessageFromGateway(doc)
         );
     },
     _hasRun: function(doc) {
@@ -23,6 +25,18 @@ module.exports = {
             doc.transitions &&
             doc.transitions['default_responses']
         );
+    },
+    /*
+     * Avoid infinite loops of auto-reply messages between gateway and itself.
+     */
+    _isMessageFromGateway: function(doc) {
+        var self = module.exports,
+            gw = self._getConfig('gateway_number'),
+            from = doc.sms_message && doc.sms_message.from;
+        if (typeof gw === 'string' && typeof from === 'string') {
+            return libphonenumber.phoneUtil.isNumberMatch(gw, from) >= 3;
+        }
+        return false;
     },
     _isReportedAfterStartDate: function(doc) {
         var self = module.exports,

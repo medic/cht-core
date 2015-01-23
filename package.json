@@ -9,6 +9,7 @@
     "felix-couchdb": "1.0.x",
     "follow": "^0.11.4",
     "later": "~1.1.3",
+    "libphonenumber": "0.0.x",
     "moment": "2.5.x",
     "mustache": "0.7.x",
     "optimist": "0.4.x",
