@@ -9,7 +9,7 @@ var session = require('session');
       window.location = '/dashboard/_design/dashboard/_rewrite/login' +
         '?redirect=' + window.location;
     };
-    $('#logout').on('click', function(e) {
+    $(document.body).on('click', '#logout', function(e) {
       e.preventDefault();
       session.logout(redirectToLogin);
     });
