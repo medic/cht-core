@@ -31,14 +31,6 @@ module.exports = function(grunt) {
           from: /clickDate: function \(e\) \{/g,
           to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'mm.dateSelected.daterangepicker\', this);\n'
         }]
-      },
-      monkeypatchtour: {
-        src: ['bower_components/bootstrap-tour/build/js/bootstrap-tour.js'],
-        overwrite: true,
-        replacements: [{
-          from: /        selector: step.element/g,
-          to: '        // selector: step.element - MONKEY PATCH BY GRUNT: Patch to get bootstrap tour to work with latest bootstrap: https://github.com/sorich87/bootstrap-tour/issues/356'
-        }]
       }
     },
     browserify: {
@@ -251,7 +243,6 @@ module.exports = function(grunt) {
     'bower:install',
     'bower_concat',
     'replace:monkeypatchdate',
-    'replace:monkeypatchtour',
     'copy:inbox',
     'copy:admin'
   ]);

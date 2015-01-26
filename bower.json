@@ -18,7 +18,7 @@
     "angular-ui-router": "~0.2.11",
     "angularjs-nvd3-directives": "~0.0.7",
     "async": "~0.9.0",
-    "bootstrap": "~3.3.1",
+    "bootstrap": "~3.3.2",
     "bootstrap-daterangepicker": "~1.3.15",
     "bootstrap-tour": "~0.10.1",
     "d3": "~3.4.11",
