@@ -158,6 +158,9 @@
           <span class="mm-button-icon" ng-show="'configuration.forms' | isState">
             <i class="fa fa-list-alt"></i>
           </span>
+          <span class="mm-button-icon" ng-show="'configuration.users' | isState">
+            <i class="fa fa-user"></i>
+          </span>
           <span class="mm-button-dropdown">
             <i class="fa fa-chevron-down"></i>
           </span>
@@ -173,6 +176,9 @@
             </span>
             <span ng-show="'configuration.forms' | isState">
               {{'Forms' | translate}}
+            </span>
+            <span ng-show="'configuration.users' | isState">
+              {{'Users' | translate}}
             </span>
           </span>
         </span>
@@ -208,7 +214,7 @@
             </a>
           </li>
           <li class="ng-scope" role="presentation" ng-show="permissions.admin">
-            <a href="users" role="menuitem" tabindex="-1">
+            <a ui-sref="configuration.users" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-user"></i>
               <span>{{'Users' | translate}}</span>
             </a>

@@ -138,6 +138,15 @@ require('./filters/index');
               templateUrl: 'templates/partials/configuration_forms.html'
             }
           }
+        })
+        .state('configuration.users', {
+          url: '/users',
+          views: {
+            content: {
+              controller: 'ConfigurationUsersCtrl',
+              templateUrl: 'templates/partials/configuration_users.html'
+            }
+          }
         });
 
       $urlRouterProvider.when('', '/messages');

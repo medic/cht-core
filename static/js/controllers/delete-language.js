@@ -28,7 +28,7 @@ var _ = require('underscore'),
             if (err) {
               return pane.done(translateFilter('Error saving settings'), err);
             }
-            $scope.deleteLanguage = null;
+            $scope.language = null;
             $rootScope.$broadcast('LanguageUpdated', { locales: locales });
             pane.done();
           });

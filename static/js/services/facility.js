@@ -74,6 +74,21 @@ var _ = require('underscore');
     }
   ]);
 
+  inboxServices.factory('Facilities', ['FacilityRaw',
+    function(FacilityRaw) {
+      return function(callback) {
+        FacilityRaw().query(
+          function(res) {
+            callback(null, res.rows);
+          },
+          function(err) {
+            callback(err);
+          }
+        );
+      };
+    }
+  ]);
+
   inboxServices.factory('District', ['DbView',
     function(DbView) {
 

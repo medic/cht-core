@@ -1,4 +1,4 @@
-<div class="row language-selection">
+<div class="row selection-heading">
   <div class="col-xs-6">
     <select class="form-control small" ng-model="localeModel.lhs" ng-options="locale.code as locale.name for locale in locales"></select>
   </div>
@@ -8,12 +8,12 @@
 </div>
 
 <div ng-repeat="group in groupModels">
-  <div class="row translation-group">
+  <div class="row selection-group">
     <div class="col-xs-12">
       {{group.label}}
     </div>
   </div>
-  <div class="row translation" ng-repeat="translation in group.translations" data-toggle="modal" data-target="#edit-translation" ng-click="prepareEditTranslation(translation.raw)">
+  <div class="row selection translation" ng-repeat="translation in group.translations" data-toggle="modal" data-target="#edit-translation" ng-click="prepareEditTranslation(translation.raw)">
     <div class="col-xs-6">
       {{translation.lhs}}
     </div>

@@ -2390,6 +2390,16 @@ module.exports = {
           ]
       },
       {
+          "key": "confirm.delete.user",
+          "default": "Are you sure you want to delete this user? This operation cannot be undone.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Are you sure you want to delete this user? This operation cannot be undone."
+              }
+          ]
+      },
+      {
           "key": "Full Name",
           "default": "Full name",
           "translations": [
@@ -2421,11 +2431,11 @@ module.exports = {
       },
       {
           "key": "Phone Number",
-          "default": "Phone number",
+          "default": "Phone",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Phone number"
+                  "content": "Phone"
               },
               {
                   "locale": "fr",
@@ -4812,6 +4822,26 @@ module.exports = {
               {
                   "locale": "en",
                   "content": "Gateway - Limited access user for SMSSync"
+              }
+          ]
+      },
+      {
+          "key": "usertype.admin",
+          "default": "Administrator",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Administrator"
+              }
+          ]
+      },
+      {
+          "key": "usertype.unknown",
+          "default": "Unknown",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Unknown"
               }
           ]
       },

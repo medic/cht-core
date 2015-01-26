@@ -25,7 +25,6 @@ require('moment/locales');
       $scope.errorSyntax = false;
       $scope.appending = false;
       $scope.languages = [];
-      $scope.editUserModel = {};
       $scope.forms = [];
       $scope.facilities = [];
       $scope.contacts = undefined;
@@ -399,7 +398,8 @@ require('moment/locales');
           var selected = $(this).closest('.modal-content')
                                 .find('.selected')
                                 .attr('data-value');
-          UpdateUser({ language: selected }, function(err) {
+          var id = 'org.couchdb.user:' + UserCtxService().name;
+          UpdateUser(id, { language: selected }, function(err) {
             btn.removeClass('disabled');
             if (err) {
               return console.log('Error updating user', err);
@@ -459,7 +459,8 @@ require('moment/locales');
           },
           render: function() {
             tour.start('intro', translateFilter);
-            UpdateUser({ known: true }, function(err) {
+            var id = 'org.couchdb.user:' + UserCtxService().name;
+            UpdateUser(id, { known: true }, function(err) {
               if (err) {
                 console.log('Error updating user', err);
               }
@@ -486,6 +487,12 @@ require('moment/locales');
         }
       };
 
+      var editUserModel = {};
+
+      $scope.editCurrentUserPrepare = function() {
+        $rootScope.$broadcast('EditUserInit', editUserModel);
+      };
+
       Settings(function(err, settings) {
         if (err) {
           return console.log('Error fetching settings', err);
@@ -497,18 +504,19 @@ require('moment/locales');
           if (err) {
             return console.log('Error getting user', err);
           }
-          $scope.editUserModel = {
+          editUserModel = {
+            id: user._id,
+            rev: user._rev,
+            name: user.name,
             fullname: user.fullname,
             email: user.email,
             phone: user.phone,
             language: { code: user.language }
           };
-
           filteredModals = _.filter(startupModals, function(modal) {
             return modal.required(settings, user);
           });
           showModals();
-
         });
       });
 
@@ -624,30 +632,6 @@ require('moment/locales');
               pane.done(translateFilter('Error sending message'), err);
             }
           );
-        });
-      };
-
-      User(function(err, user) {
-        if (err) {
-          return console.log('Error getting user', err);
-        }
-        $scope.editUserModel = {
-          fullname: user.fullname,
-          email: user.email,
-          phone: user.phone,
-          language: { code: user.language }
-        };
-      });
-
-      $scope.editUser = function() {
-        var pane = modal.start($('#edit-user-profile'));
-        UpdateUser({
-          fullname: $scope.editUserModel.fullname,
-          email: $scope.editUserModel.email,
-          phone: $scope.editUserModel.phone,
-          language: $scope.editUserModel.language.code
-        }, function(err) {
-          pane.done(translateFilter('Error updating user'), err);
         });
       };
 
@@ -813,5 +797,8 @@ require('moment/locales');
   require('./configuration-translation-application');
   require('./configuration-translation-messages');
   require('./configuration-forms');
+  require('./configuration-users');
+  require('./delete-user');
+  require('./edit-user');
 
 }());
