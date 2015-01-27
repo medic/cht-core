@@ -14,9 +14,7 @@ var modal = require('../modules/modal');
         if (err) {
           return console.log('Error fetching factilities', err);
         }
-        console.log('facilities', facilities);
         $scope.facilities = facilities;
-        // TODO make facilities model so opt groups
       });
 
       var typeMap = {

@@ -11,7 +11,7 @@
           <p>{@translate value="patient id not found response"/}</p>
           <input type="hidden" name="event_type" value="registration_not_found"/>
           <textarea name="message" class="input-xxlarge translated" data-message="{message}" data-messages="{messages}">{message}</textarea>
-          <a href="{baseURL}/help/messages" target="_blank" class="help"><i class="fa fa-question-circle"></i></a>
+          <a href="{baseURL}/#/help/messages" target="_blank" class="help" rel="external"><i class="fa fa-question-circle"></i></a>
         </div>
       {/eq}
     {/responses}
@@ -26,10 +26,10 @@
         </select>
         {@translate value="field does not pass this validation"/}
         <input type="text" name="rule" value="{rule}"/>
-        <a href="{baseURL}/help/validation" target="_blank" class="help"><i class="fa fa-question-circle"></i></a>
+        <a href="{baseURL}/#/help/validation" target="_blank" class="help" rel="external"><i class="fa fa-question-circle"></i></a>
       </p>
       <textarea name="content" class="input-xxlarge translated" data-message="{message}" data-messages="{messages}">{message}</textarea>
-      <a href="{baseURL}/help/messages" target="_blank" class="help"><i class="fa fa-question-circle"></i></a>
+      <a href="{baseURL}/#/help/messages" target="_blank" class="help" rel="external"><i class="fa fa-question-circle"></i></a>
       <p>
         <a href="#" class="btn btn-small remove"><i class="fa fa-trash-o"></i> {@translate value="Delete"/}</a>
       </p>

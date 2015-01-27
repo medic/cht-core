@@ -540,13 +540,13 @@
                                             "rule": {
                                                 "type": "string",
                                                 "title": "Validation Rule",
-                                                "description": "The <a href='/medic/_design/medic/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
+                                                "description": "The <a href='/medic/_design/medic/_rewrite/#/help/validation' rel='external'>validation rule</a>. Backslashes must be double escaped.",
                                                 "default": "lenMin(5) && lenMax(50)"
                                             },
                                             "message": {
                                                 "type": "array",
                                                 "title": "Response Message",
-                                                "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported.",
+                                                "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported.",
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
@@ -583,7 +583,7 @@
                                     "message": {
                                         "type": "array",
                                         "title": "Message",
-                                        "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported",
+                                        "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
                                         "items": {
                                             "type": "object",
                                             "properties": {
@@ -695,13 +695,13 @@
                                             "rule": {
                                                 "type": "string",
                                                 "title": "Validation Rule",
-                                                "description": "The <a href='/medic/_design/medic/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
+                                                "description": "The <a href='/medic/_design/medic/_rewrite/#/help/validation' rel='external'>validation rule</a>. Backslashes must be double escaped.",
                                                 "default": "regex('[0-9]{5}')"
                                             },
                                             "message": {
                                                 "title": "Response Message",
                                                 "type": "array",
-                                                "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported.",
+                                                "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported.",
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
@@ -737,7 +737,7 @@
                                     "message": {
 										"type": "array",
                                         "title": "Message Text",
-                                        "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported",
+                                        "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
                                         "items": {
                                             "type": "object",
                                             "properties": {
@@ -825,7 +825,7 @@
                         "messages": {
                             "type": "array",
                             "title": "Messages",
-                            "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported",
+                            "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -947,13 +947,13 @@
                                         "rule": {
                                             "type": "string",
                                             "title": "Validation Rule",
-                                            "description": "The <a href='/medic/_design/medic/_rewrite/help/validation'>validation rule</a>. Backslashes must be double escaped.",
+                                            "description": "The <a href='/medic/_design/medic/_rewrite/#/help/validation' rel='external'>validation rule</a>. Backslashes must be double escaped.",
                                             "default": "regex('[0-9]{5}')"
                                         },
                                         "message": {
                                             "title": "Response Message",
                                             "type": "array",
-                                            "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported.",
+                                            "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported.",
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
@@ -989,7 +989,7 @@
                                 "message": {
                                     "type": "array",
                                     "title": "Message",
-                                    "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported",
+                                    "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
                                     "items": {
                                         "type": "object",
                                         "properties": {
@@ -5989,11 +5989,11 @@
                     },
                     {
                         "key": "help.messages.description",
-                        "default": "<h4>Configuration</h4> <p>Outgoing messages can be configured to include data from the document by wrapping the field name in braces, eg:</p> <pre>Thank you {{contact.name}}, {{patient_name}} has been registered.</pre> <p><a href=\"http://mustache.github.io/mustache.5.html\" target=\"_blank\">More information</a>.</p> <h4>Available Fields</h4> <dl class=\"horizontal\"> <dt><span class=\"pre\">contact</span></dt> <dd>The contact at the clinic. Use contact.name or contact.phone.</dd> <dt><span class=\"pre\">clinic</span></dt> <dd>The clinic</dd> <dt><span class=\"pre\">parent</span></dt> <dd>The parent facility of the clinic</dd> <dt><span class=\"pre\">grandparent</span></dt> <dd>The grandparent facility of the clinic</dd> <dt><span class=\"pre\">health_center</span></dt> <dd>The health center</dd> <dt><span class=\"pre\">district</span></dt> <dd>The district</dd> <dt></dt> <dd>All other fields on the document are included</dd> </dl> <h4>Formatters</h4> <p>To format dates using the configured date format:</p> <pre>Expected due date is {{#date}}{{expected_date}}{{/date}}</pre> <p>Or the configured datetime format:</p> <pre>Message received at {{#datetime}}{{reported_date}}{{/datetime}}</pre>",
+                        "default": "<h4>Configuration</h4> <p>Outgoing messages can be configured to include data from the document by wrapping the field name in braces, eg:</p> <pre>Thank you \\{\\{contact.name\\}\\}, \\{\\{patient_name\\}\\} has been registered.</pre> <p><a href=\"http://mustache.github.io/mustache.5.html\" target=\"_blank\">More information</a>.</p> <h4>Available Fields</h4> <dl class=\"horizontal\"> <dt><span class=\"pre\">contact</span></dt> <dd>The contact at the clinic. Use contact.name or contact.phone.</dd> <dt><span class=\"pre\">clinic</span></dt> <dd>The clinic</dd> <dt><span class=\"pre\">parent</span></dt> <dd>The parent facility of the clinic</dd> <dt><span class=\"pre\">grandparent</span></dt> <dd>The grandparent facility of the clinic</dd> <dt><span class=\"pre\">health_center</span></dt> <dd>The health center</dd> <dt><span class=\"pre\">district</span></dt> <dd>The district</dd> <dt></dt> <dd>All other fields on the document are included</dd> </dl> <h4>Formatters</h4> <p>To format dates using the configured date format:</p> <pre>Expected due date is \\{\\{#date\\}\\}\\{\\{expected_date\\}\\}\\{\\{/date\\}\\}</pre> <p>Or the configured datetime format:</p> <pre>Message received at \\{\\{#datetime\\}\\}\\{\\{reported_date\\}\\}\\{\\{/datetime\\}\\}</pre>",
                         "translations": [
                             {
                                 "locale": "en",
-                                "content": "<h4>Configuration</h4> <p>Outgoing messages can be configured to include data from the document by wrapping the field name in braces, eg:</p> <pre>Thank you {{contact.name}}, {{patient_name}} has been registered.</pre> <p><a href=\"http://mustache.github.io/mustache.5.html\" target=\"_blank\">More information</a>.</p> <h4>Available Fields</h4> <dl class=\"horizontal\"> <dt><span class=\"pre\">contact</span></dt> <dd>The contact at the clinic. Use contact.name or contact.phone.</dd> <dt><span class=\"pre\">clinic</span></dt> <dd>The clinic</dd> <dt><span class=\"pre\">parent</span></dt> <dd>The parent facility of the clinic</dd> <dt><span class=\"pre\">grandparent</span></dt> <dd>The grandparent facility of the clinic</dd> <dt><span class=\"pre\">health_center</span></dt> <dd>The health center</dd> <dt><span class=\"pre\">district</span></dt> <dd>The district</dd> <dt></dt> <dd>All other fields on the document are included</dd> </dl> <h4>Formatters</h4> <p>To format dates using the configured date format:</p> <pre>Expected due date is {{#date}}{{expected_date}}{{/date}}</pre> <p>Or the configured datetime format:</p> <pre>Message received at {{#datetime}}{{reported_date}}{{/datetime}}</pre>"
+                                "content": "<h4>Configuration</h4> <p>Outgoing messages can be configured to include data from the document by wrapping the field name in braces, eg:</p> <pre>Thank you \\{\\{contact.name\\}\\}, \\{\\{patient_name\\}\\} has been registered.</pre> <p><a href=\"http://mustache.github.io/mustache.5.html\" target=\"_blank\">More information</a>.</p> <h4>Available Fields</h4> <dl class=\"horizontal\"> <dt><span class=\"pre\">contact</span></dt> <dd>The contact at the clinic. Use contact.name or contact.phone.</dd> <dt><span class=\"pre\">clinic</span></dt> <dd>The clinic</dd> <dt><span class=\"pre\">parent</span></dt> <dd>The parent facility of the clinic</dd> <dt><span class=\"pre\">grandparent</span></dt> <dd>The grandparent facility of the clinic</dd> <dt><span class=\"pre\">health_center</span></dt> <dd>The health center</dd> <dt><span class=\"pre\">district</span></dt> <dd>The district</dd> <dt></dt> <dd>All other fields on the document are included</dd> </dl> <h4>Formatters</h4> <p>To format dates using the configured date format:</p> <pre>Expected due date is \\{\\{#date\\}\\}\\{\\{expected_date\\}\\}\\{\\{/date\\}\\}</pre> <p>Or the configured datetime format:</p> <pre>Message received at \\{\\{#datetime\\}\\}\\{\\{reported_date\\}\\}\\{\\{/datetime\\}\\}</pre>"
                             }
                         ]
                     },
@@ -6434,6 +6434,16 @@
                             {
                                 "locale": "en",
                                 "content": "{{missing}} translations missing"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "No records found",
+                        "default": "No records found",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "No records found"
                             }
                         ]
                     }

@@ -800,5 +800,7 @@ require('moment/locales');
   require('./configuration-users');
   require('./delete-user');
   require('./edit-user');
+  require('./help');
+  require('./help-search');
 
 }());

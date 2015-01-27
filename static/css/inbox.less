@@ -14,6 +14,7 @@
 @import "angular";
 @import "analytics";
 @import "configuration";
+@import "help";
 
 .container-fluid {
   overflow-x: hidden;
@@ -39,6 +40,11 @@ body {
   &.configuration {
     .header .tabs .selected, .filters {
       background-color: @admin-color;
+    }
+  }
+  &.help {
+    .header .tabs .selected, .filters {
+      background-color: @help-color;
     }
   }
 }
@@ -738,10 +744,12 @@ a.fa:hover {
   display: block;
 }
 
-.reporting {
+.reporting, .help, .configuration {
   background-color: #fff;
   border: 1px solid #E0E0E0;
   border-width: 0 1px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .no-records {
