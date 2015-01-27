@@ -6019,11 +6019,11 @@
                     },
                     {
                         "key": "Phone number example",
-                        "default": "Phone number, eg: +225558881111",
+                        "default": "Configured default country code will be prepended if necessary, eg: 0275551234, or +64275551234",
                         "translations": [
                             {
                                 "locale": "en",
-                                "content": "Phone number, eg: +225558881111"
+                                "content": "Configured default country code will be prepended if necessary, eg: 0275551234, or +64275551234"
                             }
                         ]
                     },
