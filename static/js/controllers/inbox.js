@@ -767,13 +767,13 @@ require('moment/locales');
         });
       };
 
-      $('#feedback').on('click', '.submit', function() {
+      $scope.submitFeedback = function() {
         var pane = modal.start($('#feedback'));
         var message = $('#feedback [name=feedback]').val();
         feedback.submit(message, function(err) {
           pane.done(translateFilter('Error saving feedback'), err);
         });
-      });
+      };
 
       $scope.setupHeader = function() {
         Settings(function(err, settings) {
