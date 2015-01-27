@@ -719,20 +719,6 @@ require('moment/locales');
         }
       };
 
-      $('#formTypeDropdown').on('update', function() {
-        var forms = $(this).multiDropdown().val();
-        angularApply(function(scope) {
-          scope.filterModel.forms = forms;
-        });
-      });
-
-      $('#facilityDropdown').on('update', function() {
-        var ids = $(this).multiDropdown().val();
-        angularApply(function(scope) {
-          scope.filterModel.facilities = ids;
-        });
-      });
-
       var getTernaryValue = function(positive, negative) {
         if (positive && !negative) {
           return true;
@@ -742,24 +728,40 @@ require('moment/locales');
         }
       };
 
-      $('#statusDropdown').on('update', function() {
-        var values = $(this).multiDropdown().val();
-        angularApply(function(scope) {
-          scope.filterModel.valid = getTernaryValue(
-            _.contains(values, 'valid'),
-            _.contains(values, 'invalid')
-          );
-          scope.filterModel.verified = getTernaryValue(
-            _.contains(values, 'verified'),
-            _.contains(values, 'unverified')
-          );
+      $scope.setupFilters = function() {
+        $('#formTypeDropdown').on('update', function() {
+          var forms = $(this).multiDropdown().val();
+          angularApply(function(scope) {
+            scope.filterModel.forms = forms;
+          });
         });
-      });
 
-      // stop bootstrap closing the search pane on click
-      $('.filters .mobile-freetext-filter .search-pane').on('click', function(e) {
-        e.stopPropagation();
-      });
+        $('#facilityDropdown').on('update', function() {
+          var ids = $(this).multiDropdown().val();
+          angularApply(function(scope) {
+            scope.filterModel.facilities = ids;
+          });
+        });
+
+        $('#statusDropdown').on('update', function() {
+          var values = $(this).multiDropdown().val();
+          angularApply(function(scope) {
+            scope.filterModel.valid = getTernaryValue(
+              _.contains(values, 'valid'),
+              _.contains(values, 'invalid')
+            );
+            scope.filterModel.verified = getTernaryValue(
+              _.contains(values, 'verified'),
+              _.contains(values, 'unverified')
+            );
+          });
+        });
+
+        // stop bootstrap closing the search pane on click
+        $('.filters .mobile-freetext-filter .search-pane').on('click', function(e) {
+          e.stopPropagation();
+        });
+      };
 
       $scope.setupTour = function() {
         $('#tour-select').on('click', 'a.tour-option', function() {
