@@ -9,29 +9,26 @@ var moment = require('moment');
   inboxServices.factory('FormatDate', ['Settings',
     function(Settings) {
 
-      var config;
-      var running = false;
+      var config = {
+        date: 'DD-MMM-YYYY',
+        datetime: 'DD-MMM-YYYY HH:mm:ss'
+      };
+
+      Settings(function(err, res) {
+        if (err) {
+          return console.log('Error fetching settings', err);
+        }
+        config = {
+          date: res.date_format,
+          datetime: res.reported_date_format
+        };
+      });
 
       var format = function(date, key) {
-        if (config) {
-          return moment(date).format(config[key]);
-        }
-        if (!running) {
-          running = true;
-          Settings(function(err, res) {
-            if (err) {
-              return console.log('Error fetching settings', err);
-            }
-            config = {
-              datetime: res.reported_date_format,
-              date: res.date_format
-            };
-          });
-        }
+        return moment(date).format(config[key]);
       };
 
       return {
-
         date: function(date) {
           return format(date, 'date');
         },
@@ -41,7 +38,6 @@ var moment = require('moment');
         relative: function(date) {
           return moment(date).fromNow();
         }
-
       };
     }
   ]);
