@@ -34,8 +34,6 @@ require('moment/locales');
       $scope.analyticsModules = undefined;
       $scope.version = version;
 
-      require('../modules/manage-session').init();
-
       $scope.setFilterQuery = function(query) {
         if (!$scope.filterQuery.value && query) {
           $scope.filterQuery.value = query;
@@ -777,7 +775,15 @@ require('moment/locales');
         });
       });
 
-      require('../modules/add-record').init();
+      $scope.setupHeader = function() {
+        Settings(function(err, settings) {
+          if (err) {
+            return console.log('Error retrieving settings', err);
+          }
+          require('../modules/add-record').init(settings.muvuku_webapp_url);
+        });
+        require('../modules/manage-session').init();
+      };
     }
   ]);
 
