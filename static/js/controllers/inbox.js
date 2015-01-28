@@ -6,7 +6,8 @@ var utils = require('kujua-utils'),
     sendMessage = require('../modules/send-message'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
-    format = require('../modules/format');
+    format = require('../modules/format'),
+    libphonenumber = require('libphonenumber/utils');
 
 require('moment/locales');
 
@@ -285,9 +286,10 @@ require('moment/locales');
             return console.log('Error fetching settings', err);
           }
           window.setTimeout(function() {
-            $('#gateway-number').val(res.gateway_number);
-            $('#default-country-code').val(res.default_country_code);
-            $('#gateway-number').trigger('input');
+            $('#guided-setup [name=gateway-number]')
+              .val(res.gateway_number).trigger('input');
+            $('#guided-setup [name=default-country-code]')
+              .val(res.default_country_code).trigger('input');
             $('#primary-contact-content a[data-value=' + res.care_coordinator + ']')
               .trigger('click');
             $('#language-preference-content .locale a[data-value=' + res.locale + ']')
@@ -330,17 +332,47 @@ require('moment/locales');
           }
         });
 
+        var validate = function() {
+          var phoneRegex = /^\d+$/;
+          var countryCode = $('#guided-setup [name=default-country-code]').val();
+          if (countryCode && !phoneRegex.test(countryCode)) {
+            return {
+              valid: false,
+              error: translateFilter('field digits only', {
+                field: translateFilter('Default country code')
+              })
+            };
+          }
+          var gatewayNumber = $('#guided-setup [name=gateway-number]').val();
+          if (gatewayNumber &&
+              !libphonenumber.validate({ default_country_code: countryCode }, gatewayNumber)) {
+            return {
+              valid: false,
+              error: translateFilter('Phone number not valid')
+            };
+          }
+          return { valid: true };
+        };
+
         $('#setup-wizard-save').on('click', function(e) {
           e.preventDefault();
+
+          var valid = validate();
+          if (!valid.valid) {
+            $('#guided-setup .error').text(valid.error).show();
+            return;
+          }
+
           $('#setup-wizard-save').addClass('disabled');
-          $('#complete-setup-content .error').hide();
+          $('#guided-setup .error').hide();
           var settings = {};
           var val;
-          val = $('#gateway-number').val();
+
+          val = $('#guided-setup [name=gateway-number]').val();
           if (val) {
             settings.gateway_number = val;
           }
-          val = $('#default-country-code').val();
+          val = $('#guided-setup [name=default-country-code]').val();
           if (val) {
             settings.default_country_code = val;
           }
@@ -368,7 +400,9 @@ require('moment/locales');
             $('#setup-wizard-save').removeClass('disabled');
             if (err) {
               console.log('Error updating settings', err);
-              $('#complete-setup-content .error').show();
+              $('#guided-setup .error')
+                .text(translateFilter('Error saving settings'))
+                .show();
               return;
             }
             $('#guided-setup').modal('hide');

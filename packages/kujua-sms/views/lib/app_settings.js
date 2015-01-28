@@ -5424,6 +5424,26 @@ module.exports = {
                   "content": "No records found"
               }
           ]
+      },
+      {
+          "key": "field digits only",
+          "default": "{{field}} must only contain numerical digits.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "{{field}} must only contain numerical digits."
+              }
+          ]
+      },
+      {
+          "key": "Phone number not valid",
+          "default": "Not a valid phone number.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Not a valid phone number."
+              }
+          ]
       }
    ],
    "forms": {
