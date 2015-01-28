@@ -18,8 +18,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', '$rootScope', '$state', 'translateFilter', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
-    function ($scope, $route, $location, $translate, $animate, $rootScope, $state, translateFilter, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
+    ['$scope', '$route', '$location', '$translate', '$animate', '$rootScope', '$state', '$stateParams', 'translateFilter', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
+    function ($scope, $route, $location, $translate, $animate, $rootScope, $state, $stateParams, translateFilter, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
 
       $scope.loading = true;
       $scope.error = false;
@@ -159,7 +159,17 @@ require('moment/locales');
       };
 
       $scope.setMessage = function(id) {
-        $state.go($scope.filterModel.type + '.detail', { id: id });
+        if ($stateParams.id === id) {
+          // message already set - make sure we're showing content
+          var message = _.findWhere($scope.messages, { _id: id });
+          if (message) {
+            $scope.setSelected(message);
+          } else {
+            $state.reload();
+          }
+        } else {
+          $state.go($scope.filterModel.type + '.detail', { id: id });
+        }
       };
 
       $scope.updateAvailableFacilities = function() {
