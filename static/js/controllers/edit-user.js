@@ -32,8 +32,11 @@ var modal = require('../modules/modal');
         'gateway': ['kujua_gateway']
       };
 
+      var getType = function(type) {
+        return (type === 'admin' || type === 'unknown') ? undefined : type;
+      };
+
       $scope.$on('EditUserInit', function(e, user) {
-        console.log('editing', user);
         if (user) {
           $scope.editUserModel = {
             id: user.id,
@@ -42,10 +45,9 @@ var modal = require('../modules/modal');
             email: user.email,
             phone: user.phone,
             facility: { doc: user.facility },
-            type: user.type,
+            type: getType(user.type),
             language: user.language
           };
-          console.log('model', $scope.editUserModel);
         } else {
           $scope.editUserModel = {};
         }
@@ -78,8 +80,6 @@ var modal = require('../modules/modal');
       };
 
       $scope.editUser = function() {
-        console.log('saving', $scope.editUserModel);
-
         if (validate()) {
           var pane = modal.start($('#edit-user-profile'));
           UpdateUser($scope.editUserModel.id, {
@@ -90,7 +90,9 @@ var modal = require('../modules/modal');
             language: $scope.editUserModel.language && $scope.editUserModel.language.code,
             password: $scope.editUserModel.password,
             roles: getRoles($scope.editUserModel.type),
-            facility_id: $scope.editUserModel.facility && $scope.editUserModel.facility.doc._id
+            facility_id: $scope.editUserModel.facility &&
+                         $scope.editUserModel.facility.doc &&
+                         $scope.editUserModel.facility.doc._id
           }, function(err) {
             if (!err) {
               $scope.editUserModel = null;
