@@ -9,6 +9,7 @@ var express = require('express'),
     AuditProxy = require('./audit-proxy'),
     target = 'http://' + db.client.host + ':' + db.client.port,
     proxy = require('http-proxy').createProxyServer({ target: target }),
+    proxyForAuditing = require('http-proxy').createProxyServer({ target: target }),
     activePregnancies = require('./controllers/active-pregnancies'),
     upcomingAppointments = require('./controllers/upcoming-appointments'),
     missedAppointments = require('./controllers/missed-appointments'),
@@ -59,7 +60,7 @@ var audit = function(req, res) {
   ap.on('not-authorized', function() {
     notLoggedIn(res);
   });
-  ap.audit(proxy, req, res);
+  ap.audit(proxyForAuditing, req, res);
 };
 
 var auditPath = db.name + '*';
@@ -173,6 +174,10 @@ app.all('*', function(req, res) {
 });
 
 proxy.on('error', function(err, req, res) {
+  serverError(JSON.stringify(err), res);
+});
+
+proxyForAuditing.on('error', function(err, req, res) {
   serverError(JSON.stringify(err), res);
 });
 
