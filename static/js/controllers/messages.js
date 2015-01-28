@@ -33,7 +33,7 @@ var tour = require('../modules/tour');
 
       updateContacts();
 
-      Changes(function(data) {
+      Changes('messages-list', function(data) {
         updateContacts({ changes: data });
       });
 

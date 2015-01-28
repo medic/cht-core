@@ -256,12 +256,14 @@ require('moment/locales');
         }
         $scope.permissions.district = district;
         $scope.updateReadStatus();
+      });
 
+      $scope.setupSendMessage = function() {
         Settings(function(err, res) {
           sendMessage.init(res);
           updateContacts();
         });
-      });
+      };
 
       Form().then(
         function(forms) {

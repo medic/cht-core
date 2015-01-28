@@ -13,16 +13,22 @@
 
     function(db) {
 
-      var callback;
+      var callbacks = {};
       var inited = false;
       
-      return function(cb) {
-        callback = cb;
+      return function(key, callback) {
+        if (!callback) {
+          callback = key;
+          key = 'unlabelled';
+        }
+        callbacks[key] = callback;
         if (!inited) {
           inited = true;
           db.changes({ filter: 'medic/data_records' }, function(err, data) {
             if (!err && data && data.results) {
-              callback(data.results);
+              Object.keys(callbacks).forEach(function(key) {
+                callbacks[key](data.results);
+              });
             }
           });
         }

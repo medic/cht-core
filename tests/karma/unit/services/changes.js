@@ -37,7 +37,7 @@ describe('Changes service', function() {
     changesCallback(null, { results: expected });
   });
 
-  it('calls the most recent callback only', function(done) {
+  it('calls the most recent callback with no key only', function(done) {
 
     var expected = [{ id: 'x' }];
 
@@ -52,6 +52,31 @@ describe('Changes service', function() {
     });
 
     changesCallback(null, { results: expected });
+  });
+
+  it('calls all registered callbacks', function(done) {
+
+    var expected = [{ id: 'x' }];
+    var results = { key1: [], key2: [] };
+
+    service('key1', function(actual) {
+      results.key1.push(actual);
+    });
+
+
+    service('key2', function(actual) {
+      results.key2.push(actual);
+    });
+
+    changesCallback(null, { results: expected });
+
+    chai.expect(results.key1.length).to.equal(1);
+    chai.expect(results.key2.length).to.equal(1);
+    chai.expect(results.key1[0]).to.equal(expected);
+    chai.expect(results.key2[0]).to.equal(expected);
+    chai.expect(changesCount).to.equal(1);
+
+    done();
   });
 
   it('errors are ignored', function(done) {

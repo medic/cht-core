@@ -222,7 +222,7 @@ var _ = require('underscore'),
         }
       };
 
-      Changes(function(data) {
+      Changes('reports-list', function(data) {
         $scope.query({ silent: true, changes: data });
       });
 
