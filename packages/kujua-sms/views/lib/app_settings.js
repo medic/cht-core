@@ -5474,6 +5474,16 @@ module.exports = {
                   "content": "{{count}}/{{max}} characters"
               }
           ]
+      },
+      {
+          "key": "to recipient",
+          "default": "to {{recipient}}",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "to {{recipient}}"
+              }
+          ]
       }
    ],
    "forms": {

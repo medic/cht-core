@@ -4,15 +4,17 @@
 
   var module = angular.module('inboxFilters');
 
-  var getRelativeDate = function(date, FormatDate, content) {
-    content = content || '';
+  var getRelativeDate = function(date, FormatDate, prefix, suffix) {
+    prefix = prefix || '';
+    suffix = suffix || '';
     if (!date) {
-      return '<span>' + content + '</span>';
+      return '<span>' + prefix + suffix + '</span>';
     }
-    return content +
-      '<span class="relative-date" title="' + FormatDate.datetime(date) + '">' +
-      '<span class="relative-date-content">' + FormatDate.relative(date) + '</span>' +
-      '</span>';
+    return prefix +
+           '<span class="relative-date" title="' + FormatDate.datetime(date) + '">' +
+             '<span class="relative-date-content">' + FormatDate.relative(date) + '</span>' +
+           '</span>' +
+           suffix;
   };
 
   var getTaskDate = function(task) {
@@ -44,15 +46,24 @@
     }
   ]);
 
+  var getRecipient = function(task, translateFilter) {
+    if (task && task.messages && task.messages.length && task.messages[0].to) {
+      return '<span class="recipient">&nbsp;' +
+               translateFilter('to recipient', { recipient: task.messages[0].to }) +
+             '</span>';
+    }
+    return '';
+  };
+
   module.filter('state', ['FormatDate', 'translateFilter',
     function (FormatDate, translateFilter) {
       return function (task) {
         if (!task) {
           return '';
         }
-        var state = (task.state || 'received');
-        var content = getState(state, translateFilter) + '&nbsp;';
-        return getRelativeDate(getTaskDate(task), FormatDate, content);
+        var prefix = getState(task.state || 'received', translateFilter) + '&nbsp;';
+        var suffix = getRecipient(task, translateFilter);
+        return getRelativeDate(getTaskDate(task), FormatDate, prefix, suffix);
       };
     }
   ]);
