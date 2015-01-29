@@ -222,6 +222,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-notify');
+  grunt.loadNpmTasks('grunt-npm-install');
   grunt.loadNpmTasks('grunt-text-replace');
 
   grunt.task.run('notify_hooks');
@@ -264,6 +265,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('dev', [
+    'npm-install',
     'default',
     'exec:deploy',
     'notify:deployed'
