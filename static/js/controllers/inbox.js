@@ -53,18 +53,21 @@ require('moment/locales');
         return !!$scope.selected;
       };
 
+      var clearSelectedTimer;
+
       $scope.setSelected = function(selected) {
+        clearTimeout(clearSelectedTimer);
         if (selected) {
           $scope.selected = selected;
-          window.setTimeout(function() {
+          setTimeout(function() {
             $('body').addClass('show-content');
           }, 1);
         } else if($scope.selected) {
-          window.setTimeout(function() {
+          setTimeout(function() {
             $('body').removeClass('show-content');
           }, 1);
           if ($('#back').is(':visible')) {
-            window.setTimeout(function() {
+            clearSelectedTimer = setTimeout(function() {
               $scope.selected = undefined;
               if (!$rootScope.$$phase) {
                 $rootScope.$apply();
