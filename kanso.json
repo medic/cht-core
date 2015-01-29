@@ -6466,6 +6466,36 @@
                                 "content": "Not a valid phone number."
                             }
                         ]
+                    },
+                    {
+                        "key": "Invalid contact numbers",
+                        "default": "These recipients do not have a valid contact number: {{recipients}}",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "These recipients do not have a valid contact number: {{recipients}}"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Everyone at",
+                        "default": "Everyone at {{facility}}",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Everyone at {{facility}}"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "count of max characters",
+                        "default": "{{count}}/{{max}} characters",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "{{count}}/{{max}} characters"
+                            }
+                        ]
                     }
                 ]
             }

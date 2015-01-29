@@ -273,7 +273,7 @@ require('moment/locales');
 
       $scope.setupSendMessage = function() {
         Settings(function(err, res) {
-          sendMessage.init(res);
+          sendMessage.init(res, translateFilter);
           updateContacts();
         });
       };
