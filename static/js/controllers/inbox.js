@@ -379,6 +379,7 @@ require('moment/locales');
           }
 
           $('#setup-wizard-save').addClass('disabled');
+          $('#guided-setup .fa-spinner').show();
           $('#guided-setup .error').hide();
           var settings = {};
           var val;
@@ -413,6 +414,7 @@ require('moment/locales');
           }
           UpdateSettings(settings, function(err) {
             $('#setup-wizard-save').removeClass('disabled');
+            $('#guided-setup .fa-spinner').hide();
             if (err) {
               console.log('Error updating settings', err);
               $('#guided-setup .error')
