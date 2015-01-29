@@ -187,6 +187,13 @@ require('./filters/index');
               templateUrl: 'templates/partials/help_export.html'
             }
           }
+        })
+
+        // theme design testing page
+        .state('theme', {
+          url: '/theme',
+          controller: 'ThemeCtrl',
+          templateUrl: 'templates/partials/theme.html'
         });
 
       $urlRouterProvider.when('', '/messages');

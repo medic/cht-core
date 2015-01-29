@@ -865,5 +865,6 @@ require('moment/locales');
   require('./edit-user');
   require('./help');
   require('./help-search');
+  require('./theme');
 
 }());
