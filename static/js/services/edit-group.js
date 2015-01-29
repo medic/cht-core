@@ -6,13 +6,25 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
 
+  var getTo = function(dataRecord, group) {
+    var to;
+    if (group.rows &&
+        group.rows.length &&
+        group.rows[0].messages &&
+        group.rows[0].messages.length) {
+      to = group.rows[0].messages[0].to;
+    }
+    return to || dataRecord.from;
+  };
+
   var add = function(dataRecord, group) {
     var changed = false;
+    var to = getTo(dataRecord, group);
     _.each(group.rows, function(updatedTask) {
       if (updatedTask.added) {
         changed = true;
         dataRecord.scheduled_tasks.push({
-          messages: [{}],
+          messages: [{ to: to }],
           state: 'scheduled',
           group: group.number,
           type: group.type
