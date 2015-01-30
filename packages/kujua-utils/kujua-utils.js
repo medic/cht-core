@@ -227,12 +227,14 @@ exports.getUserDistrict = function(userCtx, callback) {
  * @api public
  */
 exports.titleize = function (s) {
-    var humanized = s.trim()
+    return s.trim()
+        .toLowerCase()
         .replace(/([a-z\d])([A-Z]+)/g, '$1_$2')
         .replace(/[-\s]+/g, '_')
         .replace(/_/g, ' ')
-        .toLowerCase();
-    return humanized.charAt(0).toUpperCase() + humanized.slice(1);
+        .replace(/(?:^|\s|-)\S/g, function(c) {
+            return c.toUpperCase();
+        });
 };
 
 exports.updateTopNav = function(key, title) {
