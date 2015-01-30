@@ -3,7 +3,6 @@
  */
 
 var _ = require('underscore'),
-    _s = require('underscore-string'),
     utils = require('./utils'),
     moment = require('moment'),
     kutils = require('kujua-utils'),
@@ -81,7 +80,8 @@ function sendHeaderRow(options, extraColumns) {
     excludeColumns(cols, options);
 
     if (options.format === 'xml') {
-        var formName = _s.capitalize(options.formName || 'Reports');
+        var formName = options.formName || 'Reports';
+        formName = formName.charAt(0).toUpperCase() + formName.slice(1);
         send('<?xml version="1.0" encoding="UTF-8"?>\n' +
              '<?mso-application progid="Excel.Sheet"?>\n' +
              '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
@@ -293,7 +293,7 @@ exports.export_messages = function (head, req) {
                     date = true;
                 } else if (column === 'task.type') {
                     value = task.type || 'Task Message';
-                } else if (_s.startsWith(column, 'task.')) {
+                } else if (column.indexOf('task.') === 0) {
                     value = objectpath.get(task, column.substring(5));
                 } else {
                     // otherwise just check the doc
@@ -354,11 +354,8 @@ exports.export_feedback = function (head, req) {
         'Log'
     ];
 
-    var filename = _s.sprintf(
-        'feedback-%s.%s',
-        moment().format('YYYYMMDDHHmm'),
-        options.format
-    );
+    var filename = 'feedback-' + moment().format('YYYYMMDDHHmm') +
+                   '.' + options.format;
 
     startExportHeaders(options, filename);
     sendHeaderRow(options);
@@ -474,11 +471,8 @@ exports.export_audit = function (head, req) {
         'Document'
     ];
     
-    var filename = _s.sprintf(
-        'audit-%s.%s',
-        moment().format('YYYYMMDDHHmm'), 
-        options.format
-    );
+    var filename = 'audit-' + moment().format('YYYYMMDDHHmm') +
+                   '.' + options.format;
 
     startExportHeaders(options, filename);
     sendHeaderRow(options);

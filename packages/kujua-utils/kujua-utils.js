@@ -1,6 +1,5 @@
 var jsDump = require('jsDump'),
     _ = require('underscore'),
-    _s = require('underscore-string'),
     settings = require('settings/root'),
     users = require('users'),
     cookies = require('cookies');
@@ -228,7 +227,12 @@ exports.getUserDistrict = function(userCtx, callback) {
  * @api public
  */
 exports.titleize = function (s) {
-    return _s.titleize(_s.humanize(s));
+    var humanized = s.trim()
+        .replace(/([a-z\d])([A-Z]+)/g, '$1_$2')
+        .replace(/[-\s]+/g, '_')
+        .replace(/_/g, ' ')
+        .toLowerCase();
+    return humanized.charAt(0).toUpperCase() + humanized.slice(1);
 };
 
 exports.updateTopNav = function(key, title) {

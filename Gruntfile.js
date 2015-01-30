@@ -330,10 +330,6 @@ module.exports = function(grunt) {
         src: './kujua-utils.js'
       },
       {
-        cwd: 'packages/underscore-string',
-        src: './underscore-string.js'
-      },
-      {
         cwd: 'packages/session',
         src: './session.js'
       },

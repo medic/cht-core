@@ -56,7 +56,6 @@
         "git-info": null,
         "showdown": null,
         "couch-fakerequest": null,
-        "underscore-string": null,
         "users": null,
         "cookies": null,
         "moment": ">=2.5.0",
