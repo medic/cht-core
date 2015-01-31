@@ -6,7 +6,8 @@ var utils = require('kujua-utils'),
     sendMessage = require('../modules/send-message'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
-    format = require('../modules/format');
+    format = require('../modules/format'),
+    libphonenumber = require('libphonenumber/utils');
 
 require('moment/locales');
 
@@ -17,15 +18,14 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', '$rootScope', '$state', 'translateFilter', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
-    function ($scope, $route, $location, $translate, $animate, $rootScope, $state, translateFilter, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
+    ['$scope', '$route', '$location', '$translate', '$animate', '$rootScope', '$state', '$stateParams', 'translateFilter', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
+    function ($scope, $route, $location, $translate, $animate, $rootScope, $state, $stateParams, translateFilter, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
 
       $scope.loading = true;
       $scope.error = false;
       $scope.errorSyntax = false;
       $scope.appending = false;
       $scope.languages = [];
-      $scope.editUserModel = {};
       $scope.forms = [];
       $scope.facilities = [];
       $scope.contacts = undefined;
@@ -34,8 +34,6 @@ require('moment/locales');
       $scope.filterQuery = { value: undefined };
       $scope.analyticsModules = undefined;
       $scope.version = version;
-
-      require('../modules/manage-session').init();
 
       $scope.setFilterQuery = function(query) {
         if (!$scope.filterQuery.value && query) {
@@ -55,18 +53,21 @@ require('moment/locales');
         return !!$scope.selected;
       };
 
+      var clearSelectedTimer;
+
       $scope.setSelected = function(selected) {
+        clearTimeout(clearSelectedTimer);
         if (selected) {
           $scope.selected = selected;
-          window.setTimeout(function() {
+          setTimeout(function() {
             $('body').addClass('show-content');
           }, 1);
         } else if($scope.selected) {
-          window.setTimeout(function() {
+          setTimeout(function() {
             $('body').removeClass('show-content');
           }, 1);
           if ($('#back').is(':visible')) {
-            window.setTimeout(function() {
+            clearSelectedTimer = setTimeout(function() {
               $scope.selected = undefined;
               if (!$rootScope.$$phase) {
                 $rootScope.$apply();
@@ -161,61 +162,76 @@ require('moment/locales');
       };
 
       $scope.setMessage = function(id) {
-        $state.go($scope.filterModel.type + '.detail', { id: id });
+        if ($stateParams.id === id) {
+          // message already set - make sure we're showing content
+          var message = _.findWhere($scope.messages, { _id: id });
+          if (message) {
+            $scope.setSelected(message);
+          } else {
+            $state.reload();
+          }
+        } else {
+          $state.go($scope.filterModel.type + '.detail', { id: id });
+        }
       };
 
-      var updateAvailableFacilities = function() {
-        Facility($scope.permissions.district).then(
-          function(res) {
-            $scope.facilities = res;
-            function formatResult(row) {
-              return format.contact(row.doc);
-            }
-            $('#update-facility [name=facility]').select2({
-              width: '100%',
-              escapeMarkup: function(m) {
-                return m;
-              },
-              formatResult: formatResult,
-              formatSelection: formatResult,
-              initSelection: function (element, callback) {
-                var e = element.val();
-                if (!e) {
-                  return callback();
-                }
-                var row = _.findWhere(res, { id: e });
-                if (!row) {
-                  return callback();
-                }
-                callback(row);
-              },
-              query: function(options) {
-                var terms = options.term.toLowerCase().split(/\s+/);
-                var matches = _.filter(res, function(val) {
-                  var contact = val.doc.contact;
-                  var name = contact && contact.name;
-                  var phone = contact && contact.phone;
-                  var tags = [ val.doc.name, name, phone ].join(' ').toLowerCase();
-                  return _.every(terms, function(term) {
-                    return tags.indexOf(term) > -1;
-                  });
-                });
-                options.callback({ results: matches });
-              },
-              sortResults: function(results) {
-                results.sort(function(a, b) {
-                  var aName = formatResult(a).toLowerCase();
-                  var bName = formatResult(b).toLowerCase();
-                  return aName.localeCompare(bName);
-                });
-                return results;
-              }
-            });
-          },
-          function() {
-            console.log('Failed to retrieve facilities');
+      $scope.updateAvailableFacilities = function() {
+        UserDistrict(function(err, district) {
+          if (err) {
+            return console.log('Error fetching district', err);
           }
-        );
+          Facility(district).then(
+            function(res) {
+              $scope.facilities = res;
+              function formatResult(row) {
+                return format.contact(row.doc);
+              }
+              $('#update-facility [name=facility]').select2({
+                width: '100%',
+                escapeMarkup: function(m) {
+                  return m;
+                },
+                formatResult: formatResult,
+                formatSelection: formatResult,
+                initSelection: function (element, callback) {
+                  var e = element.val();
+                  if (!e) {
+                    return callback();
+                  }
+                  var row = _.findWhere(res, { id: e });
+                  if (!row) {
+                    return callback();
+                  }
+                  callback(row);
+                },
+                query: function(options) {
+                  var terms = options.term.toLowerCase().split(/\s+/);
+                  var matches = _.filter(res, function(val) {
+                    var contact = val.doc.contact;
+                    var name = contact && contact.name;
+                    var phone = contact && contact.phone;
+                    var tags = [ val.doc.name, name, phone ].join(' ').toLowerCase();
+                    return _.every(terms, function(term) {
+                      return tags.indexOf(term) > -1;
+                    });
+                  });
+                  options.callback({ results: matches });
+                },
+                sortResults: function(results) {
+                  results.sort(function(a, b) {
+                    var aName = formatResult(a).toLowerCase();
+                    var bName = formatResult(b).toLowerCase();
+                    return aName.localeCompare(bName);
+                  });
+                  return results;
+                }
+              });
+            },
+            function() {
+              console.log('Failed to retrieve facilities');
+            }
+          );
+        });
       };
 
       var updateContacts = function() {
@@ -252,14 +268,15 @@ require('moment/locales');
           return;
         }
         $scope.permissions.district = district;
-        updateAvailableFacilities();
         $scope.updateReadStatus();
+      });
 
+      $scope.setupSendMessage = function() {
         Settings(function(err, res) {
-          sendMessage.init(res);
+          sendMessage.init(res, translateFilter);
           updateContacts();
         });
-      });
+      };
 
       Form().then(
         function(forms) {
@@ -284,9 +301,10 @@ require('moment/locales');
             return console.log('Error fetching settings', err);
           }
           window.setTimeout(function() {
-            $('#gateway-number').val(res.gateway_number);
-            $('#default-country-code').val(res.default_country_code);
-            $('#gateway-number').trigger('input');
+            $('#guided-setup [name=gateway-number]')
+              .val(res.gateway_number).trigger('input');
+            $('#guided-setup [name=default-country-code]')
+              .val(res.default_country_code).trigger('input');
             $('#primary-contact-content a[data-value=' + res.care_coordinator + ']')
               .trigger('click');
             $('#language-preference-content .locale a[data-value=' + res.locale + ']')
@@ -329,17 +347,48 @@ require('moment/locales');
           }
         });
 
+        var validate = function() {
+          var phoneRegex = /^\d+$/;
+          var countryCode = $('#guided-setup [name=default-country-code]').val();
+          if (countryCode && !phoneRegex.test(countryCode)) {
+            return {
+              valid: false,
+              error: translateFilter('field digits only', {
+                field: translateFilter('Default country code')
+              })
+            };
+          }
+          var gatewayNumber = $('#guided-setup [name=gateway-number]').val();
+          if (gatewayNumber &&
+              !libphonenumber.validate({ default_country_code: countryCode }, gatewayNumber)) {
+            return {
+              valid: false,
+              error: translateFilter('Phone number not valid')
+            };
+          }
+          return { valid: true };
+        };
+
         $('#setup-wizard-save').on('click', function(e) {
           e.preventDefault();
+
+          var valid = validate();
+          if (!valid.valid) {
+            $('#guided-setup .error').text(valid.error).show();
+            return;
+          }
+
           $('#setup-wizard-save').addClass('disabled');
-          $('#complete-setup-content .error').hide();
+          $('#guided-setup .fa-spinner').show();
+          $('#guided-setup .error').hide();
           var settings = {};
           var val;
-          val = $('#gateway-number').val();
+
+          val = $('#guided-setup [name=gateway-number]').val();
           if (val) {
             settings.gateway_number = val;
           }
-          val = $('#default-country-code').val();
+          val = $('#guided-setup [name=default-country-code]').val();
           if (val) {
             settings.default_country_code = val;
           }
@@ -365,9 +414,12 @@ require('moment/locales');
           }
           UpdateSettings(settings, function(err) {
             $('#setup-wizard-save').removeClass('disabled');
+            $('#guided-setup .fa-spinner').hide();
             if (err) {
               console.log('Error updating settings', err);
-              $('#complete-setup-content .error').show();
+              $('#guided-setup .error')
+                .text(translateFilter('Error saving settings'))
+                .show();
               return;
             }
             $('#guided-setup').modal('hide');
@@ -399,7 +451,8 @@ require('moment/locales');
           var selected = $(this).closest('.modal-content')
                                 .find('.selected')
                                 .attr('data-value');
-          UpdateUser({ language: selected }, function(err) {
+          var id = 'org.couchdb.user:' + UserCtxService().name;
+          UpdateUser(id, { language: selected }, function(err) {
             btn.removeClass('disabled');
             if (err) {
               return console.log('Error updating user', err);
@@ -459,7 +512,8 @@ require('moment/locales');
           },
           render: function() {
             tour.start('intro', translateFilter);
-            UpdateUser({ known: true }, function(err) {
+            var id = 'org.couchdb.user:' + UserCtxService().name;
+            UpdateUser(id, { known: true }, function(err) {
               if (err) {
                 console.log('Error updating user', err);
               }
@@ -486,6 +540,12 @@ require('moment/locales');
         }
       };
 
+      var editUserModel = {};
+
+      $scope.editCurrentUserPrepare = function() {
+        $rootScope.$broadcast('EditUserInit', editUserModel);
+      };
+
       Settings(function(err, settings) {
         if (err) {
           return console.log('Error fetching settings', err);
@@ -497,18 +557,19 @@ require('moment/locales');
           if (err) {
             return console.log('Error getting user', err);
           }
-          $scope.editUserModel = {
+          editUserModel = {
+            id: user._id,
+            rev: user._rev,
+            name: user.name,
             fullname: user.fullname,
             email: user.email,
             phone: user.phone,
             language: { code: user.language }
           };
-
           filteredModals = _.filter(startupModals, function(modal) {
             return modal.required(settings, user);
           });
           showModals();
-
         });
       });
 
@@ -627,30 +688,6 @@ require('moment/locales');
         });
       };
 
-      User(function(err, user) {
-        if (err) {
-          return console.log('Error getting user', err);
-        }
-        $scope.editUserModel = {
-          fullname: user.fullname,
-          email: user.email,
-          phone: user.phone,
-          language: { code: user.language }
-        };
-      });
-
-      $scope.editUser = function() {
-        var pane = modal.start($('#edit-user-profile'));
-        UpdateUser({
-          fullname: $scope.editUserModel.fullname,
-          email: $scope.editUserModel.email,
-          phone: $scope.editUserModel.phone,
-          language: $scope.editUserModel.language.code
-        }, function(err) {
-          pane.done(translateFilter('Error updating user'), err);
-        });
-      };
-
       $scope.verify = function(verify) {
         if ($scope.selected.form) {
           Verified($scope.selected._id, verify, function(err) {
@@ -737,20 +774,6 @@ require('moment/locales');
         }
       };
 
-      $('#formTypeDropdown').on('update', function() {
-        var forms = $(this).multiDropdown().val();
-        angularApply(function(scope) {
-          scope.filterModel.forms = forms;
-        });
-      });
-
-      $('#facilityDropdown').on('update', function() {
-        var ids = $(this).multiDropdown().val();
-        angularApply(function(scope) {
-          scope.filterModel.facilities = ids;
-        });
-      });
-
       var getTernaryValue = function(positive, negative) {
         if (positive && !negative) {
           return true;
@@ -760,24 +783,40 @@ require('moment/locales');
         }
       };
 
-      $('#statusDropdown').on('update', function() {
-        var values = $(this).multiDropdown().val();
-        angularApply(function(scope) {
-          scope.filterModel.valid = getTernaryValue(
-            _.contains(values, 'valid'),
-            _.contains(values, 'invalid')
-          );
-          scope.filterModel.verified = getTernaryValue(
-            _.contains(values, 'verified'),
-            _.contains(values, 'unverified')
-          );
+      $scope.setupFilters = function() {
+        $('#formTypeDropdown').on('update', function() {
+          var forms = $(this).multiDropdown().val();
+          angularApply(function(scope) {
+            scope.filterModel.forms = forms;
+          });
         });
-      });
 
-      // stop bootstrap closing the search pane on click
-      $('.filters .mobile-freetext-filter .search-pane').on('click', function(e) {
-        e.stopPropagation();
-      });
+        $('#facilityDropdown').on('update', function() {
+          var ids = $(this).multiDropdown().val();
+          angularApply(function(scope) {
+            scope.filterModel.facilities = ids;
+          });
+        });
+
+        $('#statusDropdown').on('update', function() {
+          var values = $(this).multiDropdown().val();
+          angularApply(function(scope) {
+            scope.filterModel.valid = getTernaryValue(
+              _.contains(values, 'valid'),
+              _.contains(values, 'invalid')
+            );
+            scope.filterModel.verified = getTernaryValue(
+              _.contains(values, 'verified'),
+              _.contains(values, 'unverified')
+            );
+          });
+        });
+
+        // stop bootstrap closing the search pane on click
+        $('.filters .mobile-freetext-filter .search-pane').on('click', function(e) {
+          e.stopPropagation();
+        });
+      };
 
       $scope.setupTour = function() {
         $('#tour-select').on('click', 'a.tour-option', function() {
@@ -785,15 +824,23 @@ require('moment/locales');
         });
       };
 
-      $('#feedback').on('click', '.submit', function() {
+      $scope.submitFeedback = function() {
         var pane = modal.start($('#feedback'));
         var message = $('#feedback [name=feedback]').val();
         feedback.submit(message, function(err) {
           pane.done(translateFilter('Error saving feedback'), err);
         });
-      });
+      };
 
-      require('../modules/add-record').init();
+      $scope.setupHeader = function() {
+        Settings(function(err, settings) {
+          if (err) {
+            return console.log('Error retrieving settings', err);
+          }
+          require('../modules/add-record').init(settings.muvuku_webapp_url);
+        });
+        require('../modules/manage-session').init();
+      };
     }
   ]);
 
@@ -813,5 +860,11 @@ require('moment/locales');
   require('./configuration-translation-application');
   require('./configuration-translation-messages');
   require('./configuration-forms');
+  require('./configuration-users');
+  require('./delete-user');
+  require('./edit-user');
+  require('./help');
+  require('./help-search');
+  require('./theme');
 
 }());

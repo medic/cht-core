@@ -27,9 +27,9 @@
                 <img src="static/img/platform-icon-gsm.svg" width="100" height="100" />
                 <img src="static/img/platform-icon-laptop.svg" width="100" height="100" />
                 <label for="gateway-number">{{'Gateway number' | translate}}</label>
-                <input id="gateway-number" type="text"/>
+                <input id="gateway-number" name="gateway-number" type="text"/>
                 <label for="default-country-code">{{'Default country code' | translate}}</label>
-                <input id="default-country-code" type="text" value="1" class="small-field"/>
+                <input id="default-country-code" name="default-country-code" type="text" value="1" class="small-field"/>
               </div>
             </div>
           </div>
@@ -171,8 +171,11 @@
         </div>
       </div>
       <div class="modal-footer">
-        <a id="setup-wizard-save" class="btn btn-primary">{{'Start' | translate}}</a>
-        <span class="error" style="display:none">{{'Error saving settings' | translate}}</span>
+        <span class="right">
+          <span class="error" style="display:none"></span>
+          <i class="fa fa-spin fa-spinner"></i>
+          <a id="setup-wizard-save" class="btn btn-primary">{{'Start' | translate}}</a>
+        </span>
         <a href="#" class="btn cancel" data-dismiss="modal">{{'setup.skip' | translate}}</a>
       </div>
     </div>

@@ -2,10 +2,7 @@
 
   'use strict';
 
-  exports.init = function() {
-
-    var iframe = $('#add-record-panel iframe');
-    var src = iframe.data('src');
+  exports.init = function(src) {
     if (src) {
       $.ajax({
         type: 'head',
@@ -16,6 +13,7 @@
           btn.on('click', function(e) {
             e.preventDefault();
             $('#add-record-panel .dropdown-menu').toggle();
+            var iframe = $('#add-record-panel iframe');
             if (!iframe.attr('src')) {
               iframe.attr('src', src);
             }

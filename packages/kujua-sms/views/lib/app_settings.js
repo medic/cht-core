@@ -2390,6 +2390,16 @@ module.exports = {
           ]
       },
       {
+          "key": "confirm.delete.user",
+          "default": "Are you sure you want to delete this user? This operation cannot be undone.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Are you sure you want to delete this user? This operation cannot be undone."
+              }
+          ]
+      },
+      {
           "key": "Full Name",
           "default": "Full name",
           "translations": [
@@ -2421,11 +2431,11 @@ module.exports = {
       },
       {
           "key": "Phone Number",
-          "default": "Phone number",
+          "default": "Phone",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Phone number"
+                  "content": "Phone"
               },
               {
                   "locale": "fr",
@@ -4816,6 +4826,26 @@ module.exports = {
           ]
       },
       {
+          "key": "usertype.admin",
+          "default": "Administrator",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Administrator"
+              }
+          ]
+      },
+      {
+          "key": "usertype.unknown",
+          "default": "Unknown",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Unknown"
+              }
+          ]
+      },
+      {
           "key": "Select a type",
           "default": "Select a type",
           "translations": [
@@ -4937,11 +4967,11 @@ module.exports = {
       },
       {
           "key": "help.messages.description",
-          "default": "<h4>Configuration</h4> <p>Outgoing messages can be configured to include data from the document by wrapping the field name in braces, eg:</p> <pre>Thank you {{contact.name}}, {{patient_name}} has been registered.</pre> <p><a href=\"http://mustache.github.io/mustache.5.html\" target=\"_blank\">More information</a>.</p> <h4>Available Fields</h4> <dl class=\"horizontal\"> <dt><span class=\"pre\">contact</span></dt> <dd>The contact at the clinic. Use contact.name or contact.phone.</dd> <dt><span class=\"pre\">clinic</span></dt> <dd>The clinic</dd> <dt><span class=\"pre\">parent</span></dt> <dd>The parent facility of the clinic</dd> <dt><span class=\"pre\">grandparent</span></dt> <dd>The grandparent facility of the clinic</dd> <dt><span class=\"pre\">health_center</span></dt> <dd>The health center</dd> <dt><span class=\"pre\">district</span></dt> <dd>The district</dd> <dt></dt> <dd>All other fields on the document are included</dd> </dl> <h4>Formatters</h4> <p>To format dates using the configured date format:</p> <pre>Expected due date is {{#date}}{{expected_date}}{{/date}}</pre> <p>Or the configured datetime format:</p> <pre>Message received at {{#datetime}}{{reported_date}}{{/datetime}}</pre>",
+          "default": "<h4>Configuration</h4> <p>Outgoing messages can be configured to include data from the document by wrapping the field name in braces, eg:</p> <pre>Thank you \{\{contact.name\}\}, \{\{patient_name\}\} has been registered.</pre> <p><a href=\"http://mustache.github.io/mustache.5.html\" target=\"_blank\">More information</a>.</p> <h4>Available Fields</h4> <dl class=\"horizontal\"> <dt><span class=\"pre\">contact</span></dt> <dd>The contact at the clinic. Use contact.name or contact.phone.</dd> <dt><span class=\"pre\">clinic</span></dt> <dd>The clinic</dd> <dt><span class=\"pre\">parent</span></dt> <dd>The parent facility of the clinic</dd> <dt><span class=\"pre\">grandparent</span></dt> <dd>The grandparent facility of the clinic</dd> <dt><span class=\"pre\">health_center</span></dt> <dd>The health center</dd> <dt><span class=\"pre\">district</span></dt> <dd>The district</dd> <dt></dt> <dd>All other fields on the document are included</dd> </dl> <h4>Formatters</h4> <p>To format dates using the configured date format:</p> <pre>Expected due date is \{\{#date\}\}\{\{expected_date\}\}\{\{/date\}\}</pre> <p>Or the configured datetime format:</p> <pre>Message received at \{\{#datetime\}\}\{\{reported_date\}\}\{\{/datetime\}\}</pre>",
           "translations": [
               {
                   "locale": "en",
-                  "content": "<h4>Configuration</h4> <p>Outgoing messages can be configured to include data from the document by wrapping the field name in braces, eg:</p> <pre>Thank you {{contact.name}}, {{patient_name}} has been registered.</pre> <p><a href=\"http://mustache.github.io/mustache.5.html\" target=\"_blank\">More information</a>.</p> <h4>Available Fields</h4> <dl class=\"horizontal\"> <dt><span class=\"pre\">contact</span></dt> <dd>The contact at the clinic. Use contact.name or contact.phone.</dd> <dt><span class=\"pre\">clinic</span></dt> <dd>The clinic</dd> <dt><span class=\"pre\">parent</span></dt> <dd>The parent facility of the clinic</dd> <dt><span class=\"pre\">grandparent</span></dt> <dd>The grandparent facility of the clinic</dd> <dt><span class=\"pre\">health_center</span></dt> <dd>The health center</dd> <dt><span class=\"pre\">district</span></dt> <dd>The district</dd> <dt></dt> <dd>All other fields on the document are included</dd> </dl> <h4>Formatters</h4> <p>To format dates using the configured date format:</p> <pre>Expected due date is {{#date}}{{expected_date}}{{/date}}</pre> <p>Or the configured datetime format:</p> <pre>Message received at {{#datetime}}{{reported_date}}{{/datetime}}</pre>"
+                  "content": "<h4>Configuration</h4> <p>Outgoing messages can be configured to include data from the document by wrapping the field name in braces, eg:</p> <pre>Thank you \{\{contact.name\}\}, \{\{patient_name\}\} has been registered.</pre> <p><a href=\"http://mustache.github.io/mustache.5.html\" target=\"_blank\">More information</a>.</p> <h4>Available Fields</h4> <dl class=\"horizontal\"> <dt><span class=\"pre\">contact</span></dt> <dd>The contact at the clinic. Use contact.name or contact.phone.</dd> <dt><span class=\"pre\">clinic</span></dt> <dd>The clinic</dd> <dt><span class=\"pre\">parent</span></dt> <dd>The parent facility of the clinic</dd> <dt><span class=\"pre\">grandparent</span></dt> <dd>The grandparent facility of the clinic</dd> <dt><span class=\"pre\">health_center</span></dt> <dd>The health center</dd> <dt><span class=\"pre\">district</span></dt> <dd>The district</dd> <dt></dt> <dd>All other fields on the document are included</dd> </dl> <h4>Formatters</h4> <p>To format dates using the configured date format:</p> <pre>Expected due date is \{\{#date\}\}\{\{expected_date\}\}\{\{/date\}\}</pre> <p>Or the configured datetime format:</p> <pre>Message received at \{\{#datetime\}\}\{\{reported_date\}\}\{\{/datetime\}\}</pre>"
               }
           ]
       },
@@ -4967,11 +4997,11 @@ module.exports = {
       },
       {
           "key": "Phone number example",
-          "default": "Phone number, eg: +225558881111",
+          "default": "Configured default country code will be prepended if necessary, eg: 0275551234, or +64275551234",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Phone number, eg: +225558881111"
+                  "content": "Configured default country code will be prepended if necessary, eg: 0275551234, or +64275551234"
               }
           ]
       },
@@ -5382,6 +5412,76 @@ module.exports = {
               {
                   "locale": "en",
                   "content": "{{missing}} translations missing"
+              }
+          ]
+      },
+      {
+          "key": "No records found",
+          "default": "No records found",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "No records found"
+              }
+          ]
+      },
+      {
+          "key": "field digits only",
+          "default": "{{field}} must only contain numerical digits.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "{{field}} must only contain numerical digits."
+              }
+          ]
+      },
+      {
+          "key": "Phone number not valid",
+          "default": "Not a valid phone number.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Not a valid phone number."
+              }
+          ]
+      },
+      {
+          "key": "Invalid contact numbers",
+          "default": "These recipients do not have a valid contact number: {{recipients}}",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "These recipients do not have a valid contact number: {{recipients}}"
+              }
+          ]
+      },
+      {
+          "key": "Everyone at",
+          "default": "Everyone at {{facility}}",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Everyone at {{facility}}"
+              }
+          ]
+      },
+      {
+          "key": "count of max characters",
+          "default": "{{count}}/{{max}} characters",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "{{count}}/{{max}} characters"
+              }
+          ]
+      },
+      {
+          "key": "to recipient",
+          "default": "to {{recipient}}",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "to {{recipient}}"
               }
           ]
       }

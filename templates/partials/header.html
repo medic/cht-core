@@ -14,7 +14,7 @@
         <ul class="dropdown-menu">
           <li>
             <button type="button" class="cancel close">×</button>
-            <iframe data-src="{info.muvuku_webapp_url}"></iframe>
+            <iframe></iframe>
           </li>
         </ul>
       </span>
@@ -61,13 +61,13 @@
             </a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" rel="external" href="help">
+            <a ui-sref="help" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-question"></i>
               {{'Help' | translate}}
             </a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#edit-user-profile">
+            <a role="menuitem" tabindex="-1" rel="external" ng-click="editCurrentUserPrepare()" data-toggle="modal" data-target="#edit-user-profile">
               <i class="fa fa-fw fa-user"></i>
               {{'Edit User Profile' | translate}}
             </a>

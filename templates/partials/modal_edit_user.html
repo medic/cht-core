@@ -1,4 +1,4 @@
-<div class="modal fade" id="edit-user-profile" role="dialog">
+<div class="modal fade" id="edit-user-profile" role="dialog" ng-controller="EditUserCtrl">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -7,6 +7,12 @@
       </div>
       <div class="modal-body">
         <form action="" method="POST"> 
+
+          <div class="form-group" ng-class="{'has-error': errors.name}">
+            <label for="name">{{'User Name' | translate}} *</label>
+            <input id="name" type="text" class="form-control" ng-model="editUserModel.name" ng-disabled="editUserModel.id" />
+            <span class="help-block">{{errors.name}}</span>
+          </div>
 
           <div class="form-group">
             <label for="fullname">{{'Full Name' | translate}}</label>
@@ -26,6 +32,40 @@
           <div class="form-group">
             <label for="language">{{'Language' | translate}}</label>
             <select id="language" class="form-control" ng-model="editUserModel.language" ng-options="locale.name for locale in enabledLocales track by locale.code"></select>
+          </div>
+
+          <div class="form-group" ng-show="permissions.admin">
+            <label for="type">{{'User Type' | translate}}</label>
+            <select id="type" class="form-control" ng-model="editUserModel.type">
+              <option value=""></option>
+              <optgroup ng-attr-label="{{'usertype.people' | translate}}">
+                <option value="national-manager">{{'usertype.national-manager' | translate}}</option>
+                <option value="district-manager">{{'usertype.district-manager' | translate}}</option>
+                <option value="data-entry">{{'usertype.data-entry' | translate}}</option>
+              </optgroup>
+              <optgroup ng-attr-label="{{'usertype.computers' | translate}}">
+                <option value="analytics">{{'usertype.analytics' | translate}}</option>
+                <option value="gateway">{{'usertype.gateway' | translate}}</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="form-group" ng-show="permissions.admin">
+            <label for="facility">{{'Facility' | translate}}</label>
+            <select id="facility" class="form-control" ng-model="editUserModel.facility" ng-options="facility.doc.name group by typeName(facility) for facility in facilities | orderBy:['doc.type','doc.name'] track by facility.doc._id">
+              <option value=""></option>
+            </select>
+          </div>
+
+          <div class="form-group" ng-class="{'has-error': errors.password}">
+            <label for="password">{{'Password' | translate}} <span ng-hide="editUserModel.id">*</span></label>
+            <input id="password" type="password" class="form-control" ng-model="editUserModel.password" autocomplete="off"/>
+            <span class="help-block">{{errors.password}}</span>
+          </div>
+
+          <div class="form-group">
+            <label for="password-confirm">{{'Confirm Password' | translate}} <span ng-hide="editUserModel.id">*</span></label>
+            <input id="password-confirm" type="password" class="form-control" ng-model="editUserModel.passwordConfirm" autocomplete="off"/>
           </div>
 
         </form>

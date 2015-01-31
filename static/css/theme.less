@@ -104,3 +104,287 @@
 .btn-link.btn-danger {
   color: @error-color;
 }
+
+
+/*!
+ * Bootstrap Docs (http://getbootstrap.com)
+ * Copyright 2011-2014 Twitter, Inc.
+ * Licensed under the Creative Commons Attribution 3.0 Unported License. For
+ * details, see http://creativecommons.org/licenses/by/3.0/.
+ *
+ body{
+	position:relative
+}
+*/
+.bs-example{
+	position:relative;
+	padding:45px 15px 15px;
+	margin:0 -15px 15px;
+	border-color:#e5e5e5 #eee #eee;
+	border-style:solid;
+	border-width:1px 0;
+	-webkit-box-shadow:inset 0 3px 6px rgba(0,0,0,.05);
+	box-shadow:inset 0 3px 6px rgba(0,0,0,.05)
+}
+
+.bs-example:after{
+	position:absolute;
+	top:15px;
+	left:15px;
+	font-size:12px;
+	font-weight:700;
+	color:#959595;
+	text-transform:uppercase;
+	letter-spacing:1px;
+	content:"Example"
+}
+/*
+.bs-example+.highlight,.bs-example+.zero-clipboard+.highlight{
+	margin:-15px -15px 15px;
+	border-width:0 0 1px;
+	border-radius:0
+}
+*/
+@media (min-width:768px){
+	.bs-example{
+		margin-right:0;
+		margin-left:0;
+		background-color:#fff;
+		border-color:#ddd;
+		border-width:1px;
+		border-radius:4px 4px 0 0;
+		-webkit-box-shadow:none;
+		box-shadow:none
+	}
+/*
+	.bs-example+.highlight,.bs-example+.zero-clipboard+.highlight{
+		margin-top:-16px;
+		margin-right:0;
+		margin-left:0;
+		border-width:1px;
+		border-bottom-right-radius:4px;
+		border-bottom-left-radius:4px
+	}
+*/
+	.bs-example-standalone{
+		border-radius:4px
+	}
+
+}
+/*
+.bs-example .container{
+	width:auto
+}
+*/
+.bs-example>.alert:last-child,.bs-example>.form-control:last-child,.bs-example>.jumbotron:last-child,.bs-example>.list-group:last-child,.bs-example>.navbar:last-child,.bs-example>.panel:last-child,.bs-example>.progress:last-child,.bs-example>.table-responsive:last-child>.table,.bs-example>.table:last-child,.bs-example>.well:last-child,.bs-example>blockquote:last-child,.bs-example>ol:last-child,.bs-example>p:last-child,.bs-example>ul:last-child{
+	margin-bottom:0
+}
+
+.bs-example>p>.close{
+	float:none
+}
+/*
+.bs-example-type .table .type-info{
+	color:#767676;
+	vertical-align:middle
+}
+
+.bs-example-type .table td{
+	padding:15px 0;
+	border-color:#eee
+}
+
+.bs-example-type .table tr:first-child td{
+	border-top:0
+}
+*/
+.bs-example-type h1,.bs-example-type h2,.bs-example-type h3,.bs-example-type h4,.bs-example-type h5,.bs-example-type h6{
+	margin:0
+}
+/*
+.bs-example-bg-classes p{
+	padding:15px
+}
+
+.bs-example>.img-circle,.bs-example>.img-rounded,.bs-example>.img-thumbnail{
+	margin:5px
+}
+
+.bs-example>.table-responsive>.table{
+	background-color:#fff
+}
+*/
+.bs-example>.btn,.bs-example>.btn-group{
+	margin-top:5px;
+	margin-bottom:5px
+}
+
+.bs-example>.btn-toolbar+.btn-toolbar{
+	margin-top:10px
+}
+
+.bs-example-control-sizing input[type=text]+input[type=text],.bs-example-control-sizing select{
+	margin-top:10px
+}
+
+.bs-example-form .input-group{
+	margin-bottom:10px
+}
+
+.bs-example>textarea.form-control{
+	resize:vertical
+}
+
+.bs-example>.list-group{
+	max-width:400px
+}
+/*
+.bs-example .navbar:last-child{
+	margin-bottom:0
+}
+
+.bs-navbar-bottom-example,.bs-navbar-top-example{
+	z-index:1;
+	padding:0;
+	overflow:hidden
+}
+
+.bs-navbar-bottom-example .navbar-header,.bs-navbar-top-example .navbar-header{
+	margin-left:0
+}
+
+.bs-navbar-bottom-example .navbar-fixed-bottom,.bs-navbar-top-example .navbar-fixed-top{
+	position:relative;
+	margin-right:0;
+	margin-left:0
+}
+
+.bs-navbar-top-example{
+	padding-bottom:45px
+}
+
+.bs-navbar-top-example:after{
+	top:auto;
+	bottom:15px
+}
+
+.bs-navbar-top-example .navbar-fixed-top{
+	top:-1px
+}
+
+.bs-navbar-bottom-example{
+	padding-top:45px
+}
+
+.bs-navbar-bottom-example .navbar-fixed-bottom{
+	bottom:-1px
+}
+
+.bs-navbar-bottom-example .navbar{
+	margin-bottom:0
+}
+
+@media (min-width:768px){
+	.bs-navbar-bottom-example .navbar-fixed-bottom,.bs-navbar-top-example .navbar-fixed-top{
+		position:absolute
+	}
+
+}
+
+.bs-example .pagination{
+	margin-top:10px;
+	margin-bottom:10px
+}
+
+.bs-example>.pager{
+	margin-top:0
+}
+*/
+
+.bs-example-modal{
+	background-color:#f5f5f5
+}
+
+.bs-example-modal .modal{
+	position:relative;
+	top:auto;
+	right:auto;
+	bottom:auto;
+	left:auto;
+	z-index:1;
+	display:block
+}
+
+.bs-example-modal .modal-dialog{
+	left:auto;
+	margin-right:auto;
+	margin-left:auto
+}
+
+.bs-example>.dropdown>.dropdown-toggle{
+	float:left
+}
+
+.bs-example>.dropdown>.dropdown-menu{
+	position:static;
+	display:block;
+	margin-bottom:5px;
+	clear:left
+}
+
+.bs-example-tabs .nav-tabs{
+	margin-bottom:15px
+}
+
+.bs-example-tooltips{
+	text-align:center
+}
+
+.bs-example-tooltips>.btn{
+	margin-top:5px;
+	margin-bottom:5px
+}
+
+.bs-example-tooltip .tooltip{
+	position:relative;
+	display:inline-block;
+	margin:10px 20px;
+	opacity:1
+}
+
+.bs-example-popover{
+	padding-bottom:24px;
+	background-color:#f9f9f9
+}
+
+.bs-example-popover .popover{
+	position:relative;
+	display:block;
+	float:left;
+	width:260px;
+	margin:20px
+}
+/*
+.scrollspy-example{
+	position:relative;
+	height:200px;
+	margin-top:10px;
+	overflow:auto
+}
+
+#collapseExample .well{
+	margin-bottom:0
+}
+
+.bs-events-table>tbody>tr>td:first-child,.bs-events-table>thead>tr>th:first-child{
+	white-space:nowrap
+}
+*/
+#bs-example-focusedInput{
+	border-color:#ccc;
+	border-color:rgba(82,168,236,.8);
+	outline:0;
+	outline:thin dotted \9;
+	-webkit-box-shadow:0 0 8px rgba(82,168,236,.6);
+	box-shadow:0 0 8px rgba(82,168,236,.6)
+}

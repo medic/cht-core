@@ -16,7 +16,7 @@
   <p ng-show="error" class="alert alert-danger" role="alert">
     <span ng-show="errorSyntax">
       {{'invalid.query' | translate}}
-      <a href="help/search" target="_blank" rel="external">{{'Help' | translate}}</a>.
+      <a ui-sref="help.search" target="_blank">{{'Help' | translate}}</a>.
     </span>
     <span ng-hide="errorSyntax">
       {{'Error fetching reports' | translate}}

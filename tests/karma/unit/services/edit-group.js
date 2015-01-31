@@ -143,13 +143,13 @@ describe('EditGroup service', function() {
   it('adds new messages', function() {
     doc = {
       scheduled_tasks: [
-        { group: 2, due: '2', messages: [ { message: 'b' } ] }
+        { group: 2, due: '2', messages: [ { to: '5551234', message: 'b' } ] }
       ]
     };
     var group = {
       number: 2,
       rows: [
-        { group: 2, state: 'scheduled', due: '6', messages: [ { message: 'f' } ] },
+        { group: 2, state: 'scheduled', due: '6', messages: [ { to: '5551234', message: 'f' } ] },
         { group: 2, state: 'scheduled', due: '5', messages: [ { message: 'e' } ], added: true, deleted: true },
         { group: 2, state: 'scheduled', due: '7', messages: [ { message: 'g' } ], added: true }
       ]
@@ -158,15 +158,44 @@ describe('EditGroup service', function() {
       chai.expect(err).to.equal(undefined);
       chai.expect(actual.scheduled_tasks.length).to.equal(2);
 
-      chai.expect(actual.scheduled_tasks[0].group).to.equal(2);
-      chai.expect(actual.scheduled_tasks[0].due).to.equal('6');
-      chai.expect(actual.scheduled_tasks[0].messages.length).to.equal(1);
-      chai.expect(actual.scheduled_tasks[0].messages[0].message).to.equal('f');
+      var task = actual.scheduled_tasks[0];
+      chai.expect(task.group).to.equal(2);
+      chai.expect(task.due).to.equal('6');
+      chai.expect(task.messages.length).to.equal(1);
+      chai.expect(task.messages[0].message).to.equal('f');
+      chai.expect(task.messages[0].to).to.equal('5551234');
 
-      chai.expect(actual.scheduled_tasks[1].group).to.equal(2);
-      chai.expect(actual.scheduled_tasks[1].due).to.equal('7');
-      chai.expect(actual.scheduled_tasks[1].messages.length).to.equal(1);
-      chai.expect(actual.scheduled_tasks[1].messages[0].message).to.equal('g');
+      task = actual.scheduled_tasks[1];
+      chai.expect(task.group).to.equal(2);
+      chai.expect(task.due).to.equal('7');
+      chai.expect(task.messages.length).to.equal(1);
+      chai.expect(task.messages[0].message).to.equal('g');
+      chai.expect(task.messages[0].to).to.equal('5551234');
     });
   });
+
+  it('gets the to number from the data_record', function() {
+    doc = {
+      from: '5554321',
+      scheduled_tasks: []
+    };
+    var group = {
+      number: 2,
+      rows: [
+        { group: 2, state: 'scheduled', due: '7', messages: [ { message: 'g' } ], added: true }
+      ]
+    };
+    service('123', group, function(err, actual) {
+      chai.expect(err).to.equal(undefined);
+      chai.expect(actual.scheduled_tasks.length).to.equal(1);
+
+      var task = actual.scheduled_tasks[0];
+      chai.expect(task.group).to.equal(2);
+      chai.expect(task.due).to.equal('7');
+      chai.expect(task.messages.length).to.equal(1);
+      chai.expect(task.messages[0].message).to.equal('g');
+      chai.expect(task.messages[0].to).to.equal('5554321');
+    });
+  });
+
 });

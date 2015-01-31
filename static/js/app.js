@@ -138,6 +138,62 @@ require('./filters/index');
               templateUrl: 'templates/partials/configuration_forms.html'
             }
           }
+        })
+        .state('configuration.users', {
+          url: '/users',
+          views: {
+            content: {
+              controller: 'ConfigurationUsersCtrl',
+              templateUrl: 'templates/partials/configuration_users.html'
+            }
+          }
+        })
+
+        // help
+        .state('help', {
+          url: '/help',
+          controller: 'HelpCtrl',
+          templateUrl: 'templates/partials/help.html'
+        })
+        .state('help.search', {
+          url: '/search',
+          views: {
+            content: {
+              controller: 'HelpSearchCtrl',
+              templateUrl: 'templates/partials/help_search.html'
+            }
+          }
+        })
+        .state('help.validation', {
+          url: '/validation',
+          views: {
+            content: {
+              templateUrl: 'templates/partials/help_validation.html'
+            }
+          }
+        })
+        .state('help.messages', {
+          url: '/messages',
+          views: {
+            content: {
+              templateUrl: 'templates/partials/help_messages.html'
+            }
+          }
+        })
+        .state('help.export', {
+          url: '/export',
+          views: {
+            content: {
+              templateUrl: 'templates/partials/help_export.html'
+            }
+          }
+        })
+
+        // theme design testing page
+        .state('theme', {
+          url: '/theme',
+          controller: 'ThemeCtrl',
+          templateUrl: 'templates/partials/theme.html'
         });
 
       $urlRouterProvider.when('', '/messages');

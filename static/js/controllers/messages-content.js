@@ -150,7 +150,7 @@ var _ = require('underscore'),
         }
       };
 
-      Changes(function(data) {
+      Changes('messages-content', function(data) {
         updateContact({ changes: data });
       });
 

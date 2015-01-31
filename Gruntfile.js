@@ -31,14 +31,6 @@ module.exports = function(grunt) {
           from: /clickDate: function \(e\) \{/g,
           to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'mm.dateSelected.daterangepicker\', this);\n'
         }]
-      },
-      monkeypatchtour: {
-        src: ['bower_components/bootstrap-tour/build/js/bootstrap-tour.js'],
-        overwrite: true,
-        replacements: [{
-          from: /        selector: step.element/g,
-          to: '        // selector: step.element - MONKEY PATCH BY GRUNT: Patch to get bootstrap tour to work with latest bootstrap: https://github.com/sorich87/bootstrap-tour/issues/356'
-        }]
       }
     },
     browserify: {
@@ -230,6 +222,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-notify');
+  grunt.loadNpmTasks('grunt-npm-install');
   grunt.loadNpmTasks('grunt-text-replace');
 
   grunt.task.run('notify_hooks');
@@ -251,7 +244,6 @@ module.exports = function(grunt) {
     'bower:install',
     'bower_concat',
     'replace:monkeypatchdate',
-    'replace:monkeypatchtour',
     'copy:inbox',
     'copy:admin'
   ]);
@@ -273,6 +265,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('dev', [
+    'npm-install',
     'default',
     'exec:deploy',
     'notify:deployed'
@@ -335,10 +328,6 @@ module.exports = function(grunt) {
       {
         cwd: 'packages/kujua-utils',
         src: './kujua-utils.js'
-      },
-      {
-        cwd: 'packages/underscore-string',
-        src: './underscore-string.js'
       },
       {
         cwd: 'packages/session',

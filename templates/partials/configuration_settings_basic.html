@@ -14,23 +14,33 @@
     <p class="help-block">{{'setup.language.outgoing.subtitle' | translate}}</p>
   </div>
 
-  <div class="form-group">
-    <label for="gateway-number">{{'Gateway number' | translate}}</label>
+  <div class="form-group" ng-class="{ 'has-error': basicSettingsModel.error.gateway_number }">
+    <label for="gateway-number">{{'Gateway number' | translate}} *</label>
     <input type="text" class="form-control small" id="gateway-number" ng-model="basicSettingsModel.gateway_number">
-    <p class="help-block">{{'Gateway number help' | translate}}</p>
+    <p class="help-block">
+      {{'Gateway number help' | translate}}
+    </p>
+    <p class="help-block" ng-if="basicSettingsModel.error.gateway_number">
+      {{basicSettingsModel.error.gateway_number}}
+    </p>
   </div>
 
-  <div class="form-group">
-    <label for="default-country-code">{{'Default country code' | translate}}</label>
+  <div class="form-group" ng-class="{ 'has-error': basicSettingsModel.error.default_country_code }">
+    <label for="default-country-code">{{'Default country code' | translate}} *</label>
     <input type="text" class="form-control tiny" id="default-country-code" ng-model="basicSettingsModel.default_country_code">
-    <p class="help-block">{{'Default country code help' | translate}}</p>
+    <p class="help-block">
+      {{'Default country code help' | translate}}
+    </p>
+    <p class="help-block" ng-if="basicSettingsModel.error.default_country_code">
+      {{basicSettingsModel.error.default_country_code}}
+    </p>
   </div>
 
   <div class="form-actions">
     <button type="submit" class="btn btn-primary" ng-click="submitBasicSettings()" ng-disabled="status.loading">{{'Submit' | translate}}</button>
-    <span ng-show="status.success" class="success">{{status.msg}}</span>
-    <span ng-show="status.error" class="error">{{status.msg}}</span>
-    <span ng-show="status.loading" class="loading"><i class="fa fa-spin fa-spinner"></i></span>
+    <span ng-if="status.success" class="success">{{status.msg}}</span>
+    <span ng-if="status.error" class="error">{{status.msg}}</span>
+    <span ng-if="status.loading" class="loading"><i class="fa fa-spin fa-spinner"></i></span>
   </div>
 
 </form>

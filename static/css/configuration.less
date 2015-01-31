@@ -1,12 +1,6 @@
 @import "variables";
 
 .row.content .configuration {
-  background-color: #FFF;
-  overflow-y: auto;
-  overflow-x: hidden;
-  border-style: solid;
-  border-color: @seperator-color;
-  border-width: 0 1px;
   padding: 1em 0;
 }
 
@@ -37,6 +31,37 @@
   }
 }
 
+.row.selection-heading {
+  padding-bottom: 1em;
+  border-bottom: 3px solid @seperator-color;
+  font-weight: bold;
+}
+.row.selection-group {
+  background-color: @seperator-color;
+  font-weight: bold;
+}
+.row.selection {
+  padding: 1em 0;
+  border-bottom: 1px solid @seperator-color;
+  cursor: pointer;
+  &:hover {
+    background-color: @highlight-color;
+  }
+}
+
+.user-management {
+  .delete {
+    text-align: right;
+    margin: -0.25em 0;
+  }
+  .selection .delete .btn {
+    visibility: hidden;
+  }
+  .selection:hover .delete .btn {
+    visibility: visible;
+  }
+}
+
 .row.translation {
   padding: 1em 0;
   border-bottom: 1px solid @seperator-color;
@@ -49,17 +74,9 @@
     background-color: @highlight-color;
   }
 }
-.row.language-selection {
-  padding-bottom: 1em;
-  border-bottom: 3px solid @seperator-color;
-}
 .edit-translation .default {
   max-height: 100px;
   overflow-y: auto;
-}
-.translation-group {
-  background-color: @seperator-color;
-  font-weight: bold;
 }
 
 @media (max-width: 767px) {

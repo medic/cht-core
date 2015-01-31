@@ -6,10 +6,16 @@ var _ = require('underscore'),
 
   'use strict';
 
+  var translateFn = function(key) {
+    return key;
+  };
+
   var validateMessage = function(message) {
     return {
       valid: !!message,
-      message: 'Please include a message.',
+      message: translateFn('field is required', {
+        field: translateFn('tasks.0.messages.0.message')
+      }),
       value: message,
     };
   };
@@ -28,7 +34,9 @@ var _ = require('underscore'),
     if (!recipients || recipients.length === 0) {
       return {
         valid: false,
-        message: 'Please include a valid phone number'
+        message: translateFn('field is required', {
+          field: translateFn('Phone Number')
+        })
       };
     }
 
@@ -42,8 +50,9 @@ var _ = require('underscore'),
       }).join(', ');
       return {
         valid: false,
-        message: 'These recipients do not have a valid ' + 
-                 'contact number: ' + errorRecipients
+        message: translateFn('Invalid contact numbers', {
+          recipients: errorRecipients
+        })
       };
     }
 
@@ -65,14 +74,14 @@ var _ = require('underscore'),
 
   var formatResult = function(row) {
     if (row.everyoneAt) {
-      return 'Everyone at ' + row.doc.name;
+      return translateFn('Everyone at', { facility: row.doc.name });
     }
     return format.contact(row.doc);
   };
 
   var formatSelection = function(row) {
     if (row.everyoneAt) {
-      return 'Everyone at ' + row.doc.name;
+      return translateFn('Everyone at', { facility: row.doc.name });
     }
     var contact = row.doc.contact;
     return (contact && contact.name) ||
@@ -139,7 +148,7 @@ var _ = require('underscore'),
       var count = target.val().length;
       var msg = '';
       if (count > 50) {
-          msg = count + '/160 characters';
+        msg = translateFn('count of max characters', { count: count, max: 160 });
       }
       target.closest('.message-form').find('.note').text(msg);
     });
@@ -148,7 +157,7 @@ var _ = require('underscore'),
   var recipients = [];
   var settings = {};
 
-  exports.init = function(_settings) {
+  exports.init = function(_settings, _translateFn) {
     $('body').on('click', '.send-message', function(e) {
       e.preventDefault();
       var to = $(e.target).closest('.send-message').attr('data-send-to');
@@ -174,6 +183,7 @@ var _ = require('underscore'),
     initPhoneField($('#send-message [name=phone]'));
     initMessageField();
     settings = _settings;
+    translateFn = _translateFn;
   };
 
   exports.setRecipients = function(_recipients) {
