@@ -209,7 +209,7 @@ exports.parseArray = function (def, doc) {
  * textforms message formats.
  *
  * @param {String} msg - sms message
- * @returns {String} form code or undefined if we don't recognize the format
+ * @returns {String} uppercased form code or undefined if we can't parse it
  * @api public
  */
 exports.getFormCode = function(msg) {

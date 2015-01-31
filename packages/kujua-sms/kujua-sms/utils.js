@@ -389,7 +389,7 @@ function getLabel(field, locale) {
 
 
 function getLocale(record) {
-    return (record.sms_message && record.sms_message.locale) || 'en';
+    return record.locale || (record.sms_message && record.sms_message.locale) || 'en';
 }
 
 /*
