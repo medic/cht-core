@@ -6,7 +6,6 @@ module.exports = function(config) {
     basePath: '../../',
     frameworks: ['mocha'],
     reporters: ['progress'],
-    transports: ['xhr-polling', 'websocket', 'flashsocket', 'jsonp-polling'],
     autoWatch: true,
     singleRun: false,
     colors: true,
