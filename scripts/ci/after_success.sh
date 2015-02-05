@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 MAX=50
 COUNT=0
@@ -16,7 +16,7 @@ function push {
     ((COUNT++))
     local market="$1"
     if [ $COUNT -le $MAX ]; then
-        kanso push --minify "http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-$market/upload" && exit 0
+        node --stack_size=10000 `which kanso` push --minify "http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-$market/upload" && exit 0
         push $market
     else
         echo 'Failed to push to market.'
