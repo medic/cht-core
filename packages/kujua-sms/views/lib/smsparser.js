@@ -1,17 +1,61 @@
 var utils = require('kujua-utils'),
     mp_parser = require('./mp_parser'),
+    javarosa_parser = require('./javarosa_parser'),
     textforms_parser = require('./textforms_parser'),
     sms_utils = require('kujua-sms/utils');
 
+var MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
+
 /**
- * Decide if it's a form parsed by the muvuku parser.
+ * Determine if a message is using the Muvuku format.
  *
  * @param {String} msg sms message
+ * @returns {Boolean} The parsed message code string or undefined
  * @api private
  */
-exports.isMuvukuFormat = function(msg) {
+var isMuvukuFormat = exports.isMuvukuFormat = function(msg) {
     if (typeof msg !== 'string') { return; }
-    return msg.match(/^\s*\d+!.+!.+/) !== null;
+    return Boolean(msg.match(MUVUKU_REGEX));
+};
+
+/**
+ * Get parser based on code, the first part of a Muvuku header, which helps us
+ * know how to parse the data.
+ *
+ * @param {Object} def - form definition
+ * @param {Object} doc - sms_message document
+ * @returns {Function|undefined} The parser function or undefined
+ * @api private
+ */
+var getParser = exports.getParser = function(def, doc) {
+    var code = def && def.meta && def.meta.code,
+        msg = doc.message,
+        locale = doc.locale;
+    if (typeof msg !== 'string') {
+        return;
+    }
+    var match = msg.match(MUVUKU_REGEX);
+    if (match && match[1]) {
+        switch(match[1].toUpperCase()) {
+            case '1':
+                return mp_parser.parse;
+            case 'J1':
+                return javarosa_parser.parse;
+            default:
+                return;
+        }
+    }
+    /*
+     * Remove the form code from the beginning of the message since it does
+     * not belong to the TextForms format but is just a convention to
+     * identify the message.
+     */
+    msg = msg.replace(new RegExp('^\\s*' + code + '[\\s!\\-,:#]*','i'),'')
+    if (textforms_parser.isCompact(def, msg, locale)) {
+        return textforms_parser.parseCompact;
+    } else {
+        return textforms_parser.parse;
+    }
 };
 
 /**
@@ -113,8 +157,7 @@ exports.parseField = function (field, raw) {
 };
 
 /**
- * @param {String} form - form definition id
- * @param {Object} def - jsonforms form definition
+ * @param {Object} def - form definition
  * @param {Object} doc - sms_message document
  * @returns {Object|{}} - A parsed object of the sms message or an empty
  * object if parsing fails. Currently supports textforms and muvuku formatted
@@ -125,6 +168,7 @@ exports.parseField = function (field, raw) {
 exports.parse = function (def, doc) {
 
     var msg_data,
+        parser,
         form_data = {},
         addOmittedFields = false;
 
@@ -134,9 +178,15 @@ exports.parse = function (def, doc) {
 
     utils.logger.debug('parsing message: '+ JSON.stringify(doc.message));
 
-    if (exports.isMuvukuFormat(doc.message)) {
-        // parse muvuku format
-        msg_data = mp_parser.parse(def, doc);
+    parser = getParser(def, doc);
+
+    if (!parser) {
+        utils.logger.error('Failed to find message parser.');
+        return {};
+    }
+
+    if (isMuvukuFormat(doc.message)) {
+        msg_data = parser(def, doc);
         addOmittedFields = true;
     } else {
 
@@ -151,9 +201,9 @@ exports.parse = function (def, doc) {
         msg = msg.replace(new RegExp('^\\s*' + code + '[\\s!\\-,:#]*','i'),'')
 
         if (textforms_parser.isCompact(def, msg, doc.locale)) {
-            msg_data = textforms_parser.parseCompact(def, msg);
+            msg_data = parser(def, msg);
         } else {
-            msg_data = textforms_parser.parse(msg);
+            msg_data = parser(msg);
 
             // replace tiny labels with field keys for textforms
             for (var j in def.fields) {
@@ -186,22 +236,30 @@ exports.parse = function (def, doc) {
 };
 
 /**
- * @param {Object} def - jsonforms definition
+ * @param {Object} def - forms form definition
  * @param {Object} doc - sms_message document
  * @returns {Array|[]} - An array of values from the raw sms message
  * @api public
  */
-exports.parseArray = function (def, doc) {
+exports.parseArray = function(def, doc) {
 
-    if(!def || !def.fields) { return []; }
+    var parser = getParser(def, doc),
+        obj = parser(def, doc);
 
-    if (exports.isMuvukuFormat(doc.message)) {
-        return mp_parser.parseArray(def, doc);
-    } else {
-        return textforms_parser.parseArray(doc);
-    }
+    if (!def || !def.fields) { return []; }
 
-    return [];
+    // collect field keys into array
+    var arr = [];
+    for (var k in def.fields) {
+        arr.push(obj[k]);
+    };
+
+    // The fields sent_timestamp and from are set by the gateway, so they are
+    // not included in the raw sms message and added manually.
+    arr.unshift(doc.from);
+    arr.unshift(doc.sent_timestamp);
+
+    return arr;
 };
 
 /**

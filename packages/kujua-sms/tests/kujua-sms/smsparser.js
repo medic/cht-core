@@ -17,15 +17,56 @@ exports.tearDown = function(callback) {
 
 exports['is muvuku format'] = function(test) {
     var msgs = [
+        // header is delimited by !
+        '1!A!s',
+        '1!A!1',
         '1!ANCR!sarah',
         '1!ANCR!sarah#11',
-        '1!ग!sarah#11'
+        // form body/values can be non alpha numeric
+        '1!A!sarah#11($*&',
+        // form code can be unicode
+        '1!ग!sarah#11',
+        // form code can be non-alphanumeric
+        '1!?!sarah',
+        // form code can be numbers
+        '1!123!sarah',
+        // form code can be numbers and letters
+        '1!abc123!sarah',
+        // form code can be one number or letter
+        '1!a!sarah',
+        '1!1!sarah',
+        // anything can be in message body
+        '1!a!x1',
+        '1!a!?',
+        '1!a!foobar🇺🇸',
+        // parser code should be single number or letter followed by number
+        'A1!a!x',
+        'Z9!a!y'
     ];
     msgs.forEach(function(msg) {
         test.ok(smsparser.isMuvukuFormat(msg));
     });
     test.done();
 };
+
+exports['is NOT muvuku format'] = function(test) {
+    var msgs = [
+        // only supports ! delimiter
+        '1?ANCR!sarah',
+        'a?b?c',
+        // parser code should be single number or letter followed by number
+        '41!a!s',
+        '4T!a!s',
+        '00!a!s',
+        // form body is required
+        '1!a!'
+    ];
+    msgs.forEach(function(msg) {
+        test.ok(!smsparser.isMuvukuFormat(msg));
+    });
+    test.done();
+};
+
 
 exports['get form none found'] = function(test) {
     var msg = '';
@@ -805,7 +846,7 @@ exports['smsformats textforms only one field'] = function(test) {
     test.done();
 };
 
-exports['valid message'] = function (test) {
+exports['valid muvuku message'] = function (test) {
     test.expect(3);
     var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var def = utils.info.getForm('YYYY');
@@ -813,6 +854,52 @@ exports['valid message'] = function (test) {
         sent_timestamp: '12-11-11 15:00',
         from: '+15551212',
         message: '1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4'
+    };
+
+    var form = smsparser.getFormCode(doc.message);
+    var obj = smsparser.parse(def, doc);
+
+    test.ok(getForm.alwaysCalledWith('YYYY'));
+    test.same(obj, {
+        facility_id: 'facility',
+        year: '2011',
+        month: '11',
+        misoprostol_administered: false,
+        quantity_dispensed: {
+            la_6x1: 1,
+            la_6x2: 2,
+            cotrimoxazole: 3,
+            zinc: 4,
+            ors: 5,
+            eye_ointment: 6
+        },
+        days_stocked_out: {
+            la_6x1: 9,
+            la_6x2: 8,
+            cotrimoxazole: 7,
+            zinc: 6,
+            ors: 5,
+            eye_ointment: 4
+        }
+    });
+
+    var arr = smsparser.parseArray(def, doc);
+    test.same(
+        arr,
+        ['12-11-11 15:00', '+15551212', 'facility', '2011', '11', false, 1, 2, 3, 4, 5, 6, 9, 8, 7, 6, 5, 4]
+    );
+
+    test.done();
+};
+
+exports['valid javarosa message'] = function (test) {
+    test.expect(3);
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
+    var def = utils.info.getForm('YYYY');
+    var doc = {
+        sent_timestamp: '12-11-11 15:00',
+        from: '+15551212',
+        message: 'J1!YYYY!HFI#facility#RPY#2011#RPM#11#MSP#0#L1T#1#L2T#2#CDT#3#ZDT#4#ODT#5#EOT#6#L1O#9#L2O#8#CDO#7#ZDO#6#ODO#5#EDO#4'
     };
 
     var form = smsparser.getFormCode(doc.message);
