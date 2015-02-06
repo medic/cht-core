@@ -1,5 +1,4 @@
-var utils = require('kujua-utils'),
-    _ = require('underscore')._;
+var _ = require('underscore')._;
 
 var zip = function (a, b) {
     var zipped = [];
@@ -18,7 +17,7 @@ var zip = function (a, b) {
  *
  * @api public
  */
-exports.parse = function(def, doc) {
+var parse = exports.parse = function(def, doc) {
     var parts = doc.message.split('#'),
         header = parts[0].split('!'),
         name = header[1],
@@ -54,30 +53,4 @@ exports.parse = function(def, doc) {
 
         return obj;
     }, {});
-};
-
-/**
- * @param {Object} def - forms form definition
- * @param {Object} doc - sms_message document
- * @returns {Array|[]} - An array of values from the raw sms message
- * @api public
- */
-exports.parseArray = function(def, doc) {
-
-    var obj = exports.parse(def, doc);
-
-    if (!def || !def.fields) { return []; }
-
-    // collect field keys into array
-    var arr = [];
-    for (var k in def.fields) {
-        arr.push(obj[k]);
-    };
-
-    // The fields sent_timestamp and from are set by the gateway, so they are
-    // not included in the raw sms message and added manually.
-    arr.unshift(doc.from);
-    arr.unshift(doc.sent_timestamp);
-
-    return arr;
 };
