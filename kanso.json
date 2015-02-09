@@ -59,7 +59,6 @@
         "cookies": null,
         "moment": ">=2.5.0",
         "kanso-app-settings": null,
-        "garden-app-support": null,
         "app-settings": ">=0.0.2",
         "js-migrations": ">=1.0.0",
         "feedback": ">=1.0.0"
