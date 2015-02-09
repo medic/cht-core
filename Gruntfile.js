@@ -40,12 +40,15 @@ module.exports = function(grunt) {
           // optional package
           .ignore('./flashmessages')
           // map the kanso packages manually
-          .plugin(remapify, getBrowserifyMappings());
+          .plugin(remapify, browserifyMappings);
         }
       },
       dist: {
-        files: {
-          'static/dist/inbox.js': ['static/js/app.js']
+        src: ['static/js/app.js'],
+        dest: 'static/dist/inbox.js',
+        options: {
+          detectGlobals: false,
+          external: ['moment', 'underscore']
         }
       }
     },
@@ -284,90 +287,84 @@ module.exports = function(grunt) {
   ]);
 
 
-  var getBrowserifyMappings = function() {
-    return [
-      // default settings file
-      {
-        cwd: 'static/dist',
-        src: './root.js',
-        expose: 'settings'
-      },
-      // modules in bower and kanso
-      {
-        cwd: 'bower_components/underscore',
-        src: './underscore.js'
-      },
-      {
-        cwd: 'bower_components/moment',
-        src: './moment.js'
-      },
-      {
-        cwd: 'bower_components/moment/min/',
-        src: './locales.js',
-        expose: 'moment'
-      },
-      {
-        cwd: 'bower_components/async/lib',
-        src: './async.js'
-      },
-      // kanso packages required for inbox
-      {
-        cwd: 'packages/db',
-        src: './db.js'
-      },
-      {
-        cwd: 'packages/kujua-sms/views/lib',
-        src: './*.js',
-        expose: 'views/lib'
-      },
-      {
-        cwd: 'packages/kujua-sms/kujua-sms',
-        src: './utils.js',
-        expose: 'kujua-sms'
-      },
-      {
-        cwd: 'packages/kujua-utils',
-        src: './kujua-utils.js'
-      },
-      {
-        cwd: 'packages/session',
-        src: './session.js'
-      },
-      {
-        cwd: 'packages/duality/duality',
-        src: './utils.js',
-        expose: 'duality'
-      },
-      {
-        cwd: 'packages/users',
-        src: './users.js'
-      },
-      {
-        cwd: 'packages/cookies',
-        src: './cookies.js'
-      },
-      {
-        cwd: 'packages/sha1',
-        src: './sha1.js'
-      },
-      {
-        cwd: 'packages/dust',
-        src: './dust.js'
-      },
-      {
-        cwd: 'packages/locale',
-        src: './locale.js'
-      },
-      {
-        cwd: 'packages/libphonenumber/libphonenumber',
-        src: './*.js',
-        expose: 'libphonenumber'
-      },
-      {
-        cwd: 'packages/feedback',
-        src: './feedback.js'
-      }
-    ];
-  };
+  var browserifyMappings = [
+    // default settings file
+    {
+      cwd: 'static/dist',
+      src: './root.js',
+      expose: 'settings'
+    },
+    // modules in bower and kanso
+    {
+      cwd: 'bower_components/underscore',
+      src: './underscore.js'
+    },
+    {
+      cwd: 'bower_components/moment',
+      src: './moment.js'
+    },
+    {
+      cwd: 'bower_components/moment/min/',
+      src: './locales.js',
+      expose: 'moment'
+    },
+    {
+      cwd: 'bower_components/async/lib',
+      src: './async.js'
+    },
+    // kanso packages required for inbox
+    {
+      cwd: 'packages/db',
+      src: './db.js'
+    },
+    {
+      cwd: 'packages/kujua-sms/views/lib',
+      src: './*.js',
+      expose: 'views/lib'
+    },
+    {
+      cwd: 'packages/kujua-sms/kujua-sms',
+      src: './utils.js',
+      expose: 'kujua-sms'
+    },
+    {
+      cwd: 'packages/kujua-utils',
+      src: './kujua-utils.js'
+    },
+    {
+      cwd: 'packages/session',
+      src: './session.js'
+    },
+    {
+      cwd: 'packages/duality/duality',
+      src: './utils.js',
+      expose: 'duality'
+    },
+    {
+      cwd: 'packages/users',
+      src: './users.js'
+    },
+    {
+      cwd: 'packages/cookies',
+      src: './cookies.js'
+    },
+    {
+      cwd: 'packages/sha1',
+      src: './sha1.js'
+    },
+    {
+      cwd: 'packages/dust',
+      src: './dust.js'
+    },
+    {
+      cwd: 'packages/libphonenumber/libphonenumber',
+      src: './*.js',
+      expose: 'libphonenumber'
+    },
+    {
+      cwd: 'packages/feedback',
+      src: './feedback.js'
+    }
+  ];
 
 };
