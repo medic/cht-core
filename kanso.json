@@ -58,12 +58,9 @@
         "users": null,
         "cookies": null,
         "moment": ">=2.5.0",
-        "moment-timezone": ">=0.0.3",
         "kanso-app-settings": null,
         "garden-app-support": null,
         "app-settings": ">=0.0.2",
-        "locale": null,
-        "couchdb-audit": null,
         "js-migrations": ">=1.0.0",
         "feedback": ">=1.0.0"
     },
