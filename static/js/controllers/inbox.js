@@ -162,7 +162,7 @@ require('moment/locales');
       };
 
       $scope.setMessage = function(id) {
-        if ($stateParams.id === id) {
+        if ($scope.filterModel.type === 'reports' && $stateParams.id === id) {
           // message already set - make sure we're showing content
           var message = _.findWhere($scope.messages, { _id: id });
           if (message) {
