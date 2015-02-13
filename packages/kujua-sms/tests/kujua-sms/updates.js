@@ -40,7 +40,7 @@ exports['assert month is parsed as integer'] = function(test) {
             message: '1!YYYY!facility#2011#11'
         }
     };
-    var doc = updates.add_sms(null, req)[0];
+    var doc = updates.add(null, req)[0];
     test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(11, doc.month);
     test.done();
@@ -53,7 +53,7 @@ exports['assert unix timestamp parsed'] = function(test) {
             "sent_timestamp":"1352499725000"
         }
     };
-    var doc = updates.add_sms(null, req)[0];
+    var doc = updates.add(null, req)[0];
     test.same(
         'Fri, 09 Nov 2012 22:22:05 GMT',
         new Date(doc.reported_date).toUTCString()
@@ -86,7 +86,7 @@ exports['deep keys parsed'] = function(test) {
         ors: 5,
         zinc: 4
     };
-    var doc = updates.add_sms(null, req)[0];
+    var doc = updates.add(null, req)[0];
     test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(doc.days_stocked_out, days_stocked_out);
     test.same(doc.quantity_dispensed, quantity_dispensed);
@@ -101,7 +101,7 @@ exports['POST data is saved on sms_message attr'] = function(test) {
             "sent_timestamp":"1352399720000"
         }
     };
-    var doc = updates.add_sms(null, req)[0];
+    var doc = updates.add(null, req)[0];
     test.same(doc.sms_message, req.form);
     test.done();
 };
@@ -115,7 +115,7 @@ exports['add sms sucessful payload and uuid is passed through'] = function (test
             "sent_timestamp":"1352399720000"
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
     test.same(resp, {
         payload: {
@@ -135,7 +135,7 @@ exports['parsed form success maintains facility not found'] = function (test) {
             "message":"1!YYYZ!foo#bar"
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
     test.same(resp.payload, {success: true});
     test.same(ret[0].errors[0].code, "sys.facility_not_found");
@@ -151,7 +151,7 @@ exports['autoreply on YYYY form is ignored'] = function (test) {
             "message":"1!YYYY!facility#2012#4#1#222#333#444#555#666#777#888#999#111#222#333#444"
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]),
         doc = ret[0];
     test.same(doc.form, 'YYYY');
@@ -168,7 +168,7 @@ exports['form not found error not set by default'] = function(test) {
             "message":"foo bar baz"
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
     test.same(ret[0].errors[0].code, "sys.facility_not_found");
     test.same(ret[0].errors.length, 1);
@@ -184,7 +184,7 @@ exports['form not found error set in forms only mode'] = function(test) {
             "message":"foo bar baz"
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
     test.same(ret[0].errors[0].code, "sys.facility_not_found");
     test.same(ret[0].errors[1].code, "sys.form_not_found");
@@ -200,7 +200,7 @@ exports['only facility not found error on muvuku add'] = function (test) {
             "message": '1!0000!2012#2#20#foo#bar'
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
     test.same(resp.payload, {success:true});
     test.same(ret[0].errors[0].code, "sys.facility_not_found");
@@ -219,7 +219,7 @@ exports['form not found response locale from query'] = function (test) {
             locale: "fr"
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
     test.same(resp.payload, {success:true});
     test.same(ret[0].errors[0].code, "sys.facility_not_found");
@@ -242,7 +242,7 @@ exports['form not found message locale on form overrides locale on query'] = fun
             locale: 'fr'
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
     test.same(resp.payload, {success:true});
     test.same(ret[0].errors[0].code, "sys.facility_not_found");
@@ -263,7 +263,7 @@ exports['form not found message locale fallback to app_settings'] = function (te
             message: '1!0000!2012#2#20#foo#bar'
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
     test.same(resp.payload, {success:true});
     test.same(ret[0].errors[0].code, "sys.facility_not_found");
@@ -283,7 +283,7 @@ exports['form not found message when locale undefined'] = function (test) {
             message: '1!0000!2012#2#20#foo#bar'
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
     test.same(resp.payload, {success:true});
     test.same(ret[0].errors[0].code, "sys.facility_not_found");
@@ -298,10 +298,10 @@ exports['assign sys.empty error to empty report'] = function (test) {
     var req = {
         form: {
             "from":"+888",
-            "message": ''
+            "message": ' '
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
     test.same(resp.payload, {success:true});
     test.same(ret[0].errors[0].code, "sys.facility_not_found");
@@ -315,13 +315,13 @@ exports['empty error messages with fr query param'] = function (test) {
     var req = {
         form: {
             "from":"+888",
-            "message": ''
+            "message": ' '
         },
         query: {
             locale: "fr"
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
     test.same(resp.payload, {success:true});
     test.same(ret[0].errors[0].code, "sys.facility_not_found");
@@ -338,7 +338,7 @@ exports['one word report gets undefined form property'] = function (test) {
             "message": 'foo'
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]),
         doc = ret[0];
     test.same(doc.form, undefined);
@@ -355,7 +355,7 @@ exports['errors on extra fields'] = function(test) {
             sent_timestamp:"1352399720000"
         }
     };
-    var resp = updates.add_sms(null, req),
+    var resp = updates.add(null, req),
         resp_body = JSON.parse(resp[1]),
         doc = resp[0];
     test.ok(getForm.alwaysCalledWith('YYYY'));
@@ -376,7 +376,7 @@ exports['errors on missing fields'] = function(test) {
             message: "1!YYYY!foo"
         }
     };
-    var resp = updates.add_sms(null, req),
+    var resp = updates.add(null, req),
         resp_body = JSON.parse(resp[1]),
         doc = resp[0];
     test.ok(getForm.alwaysCalledWith('YYYY'));
@@ -396,7 +396,7 @@ exports['support unstructured message'] = function(test) {
             message: "hello world! anyone there?"
         }
     };
-    var resp = updates.add_sms(null, req),
+    var resp = updates.add(null, req),
         resp_body = JSON.parse(resp[1]),
         doc = resp[0];
     // unstructured message has form of null
