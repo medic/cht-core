@@ -185,6 +185,8 @@ var getErrorResponse = function(msg, code) {
  *                  response with Ushahidi/SMSSync compatible JSON payload.
  */
 exports.add = function(doc, request) {
+    utils.info = info.getAppInfo.call(this);
+
     req = request;
     if (req.form && req.form.message) {
         return add_sms(doc, request);
@@ -200,7 +202,6 @@ exports.add = function(doc, request) {
 var add_json = exports.add_json = function(doc, request) {
 
     req = request;
-    utils.info = info.getAppInfo.call(this);
 
     var def,
         data,
@@ -250,7 +251,6 @@ var add_json = exports.add_json = function(doc, request) {
 var add_sms = exports.add_sms = function(doc, request) {
 
     req = request;
-    utils.info = info.getAppInfo.call(this);
     var options = {
         type: 'sms_message',
         form: smsparser.getFormCode(req.form.message)
