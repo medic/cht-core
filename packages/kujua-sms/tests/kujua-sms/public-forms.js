@@ -37,7 +37,7 @@ exports['public form has no facility not found error'] = function(test) {
             "sent_timestamp":"1352399720000"
         }
     };
-    var doc = updates.add_sms(null, req)[0];
+    var doc = updates.add(null, req)[0];
 
     test.ok(getForm.alwaysCalledWith('YYYW'));
     test.equals(doc.foo, 'foo'); // make sure form parsed correctly
@@ -60,7 +60,7 @@ exports['private form has facility not found error'] = function(test) {
             "sent_timestamp":"1352399720000"
         }
     };
-    var doc = updates.add_sms(null, req)[0];
+    var doc = updates.add(null, req)[0];
 
     test.ok(getForm.alwaysCalledWith('YYYZ'));
     test.equals(doc.two, 'two'); // make sure form parsed correctly
