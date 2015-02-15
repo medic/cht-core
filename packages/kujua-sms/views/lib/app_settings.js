@@ -5484,6 +5484,46 @@ module.exports = {
                   "content": "to {{recipient}}"
               }
           ]
+      },
+      {
+          "key": "Message UUID",
+          "default": "Message UUID",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Message UUID"
+              }
+          ]
+      },
+      {
+          "key": "Sent By",
+          "default": "Sent By",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Sent By"
+              }
+          ]
+      },
+      {
+          "key": "To Phone",
+          "default": "To Phone",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "To Phone"
+              }
+          ]
+      },
+      {
+          "key": "Message Body",
+          "default": "Message Body",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Message Body"
+              }
+          ]
       }
    ],
    "forms": {
