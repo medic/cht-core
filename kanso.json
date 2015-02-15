@@ -61,8 +61,7 @@
         "kanso-app-settings": null,
         "app-settings": ">=0.0.2",
         "js-migrations": ">=1.0.0",
-        "feedback": ">=1.0.0",
-        "couchdb-audit": null // Needed for the audit view
+        "feedback": ">=1.0.0"
     },
     "migration_path": "/medic/_design/medic/_rewrite/migration",
     "status_path": "/status",
