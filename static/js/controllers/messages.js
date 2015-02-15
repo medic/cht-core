@@ -22,12 +22,6 @@ var tour = require('../modules/tour');
           }
           options.contacts = data;
           $scope.setContacts(options);
-          if (data.length && !$('#back').is(':visible')) {
-            window.setTimeout(function() {
-              var id = $('.inbox-items li').first().attr('data-record-id');
-              $state.go('messages.detail', { id: id });
-            }, 1);
-          }
         });
       };
 
