@@ -231,19 +231,19 @@ module.exports = function(grunt) {
   grunt.task.run('notify_hooks');
 
   // Default tasks
-  grunt.registerTask('mmjs', [
+  grunt.registerTask('mmjs', 'Build the JS resources', [
     'jshint',
     'copy:settings',
     'browserify',
     'concat:js'
   ]);
 
-  grunt.registerTask('mmcss', [
+  grunt.registerTask('mmcss', 'Build the CSS resources', [
     'less',
     'autoprefixer'
   ]);
 
-  grunt.registerTask('mmbower', [
+  grunt.registerTask('mmbower', 'Install, concat, and patch bower components', [
     'bower:install',
     'bower_concat',
     'replace:monkeypatchdate',
@@ -251,13 +251,13 @@ module.exports = function(grunt) {
     'copy:admin'
   ]);
 
-  grunt.registerTask('default', [
+  grunt.registerTask('default', 'Build the static resources', [
     'mmbower',
     'mmcss',
     'mmjs'
   ]);
 
-  grunt.registerTask('ci', [
+  grunt.registerTask('ci', 'Build, minify, and test for CI', [
     'default',
     'uglify',
     'cssmin',
@@ -267,22 +267,21 @@ module.exports = function(grunt) {
     'exec:phantom'
   ]);
 
-  grunt.registerTask('dev', [
+  grunt.registerTask('dev', 'Build and deploy for dev', [
     'npm-install',
     'default',
     'exec:deploy',
     'notify:deployed'
   ]);
 
-  grunt.registerTask('precommit', [
+  grunt.registerTask('precommit', 'Lint and unit test', [
     'jshint',
     'nodeunit',
     'karma:unit'
   ]);
 
-  grunt.registerTask('test', [
-    'nodeunit',
-    'karma:unit',
+  grunt.registerTask('test', 'Lint, unit, and integration test', [
+    'precommit',
     'exec:phantom'
   ]);
 
