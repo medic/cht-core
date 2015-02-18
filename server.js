@@ -1,6 +1,7 @@
 var express = require('express'),
     morgan = require('morgan'),
     http = require('http'),
+    moment = require('moment'),
     app = express(),
     db = require('./db'),
     config = require('./config'),
@@ -22,6 +23,7 @@ var express = require('express'),
     visitsDuring = require('./controllers/visits-during'),
     monthlyRegistrations = require('./controllers/monthly-registrations'),
     monthlyDeliveries = require('./controllers/monthly-deliveries'),
+    exportData = require('./controllers/export-data'),
     createDomain = require('domain').create;
 
 http.globalAgent.maxSockets = 100;
@@ -68,20 +70,6 @@ app.put(auditPath, audit);
 app.post(auditPath, audit);
 app.delete(auditPath, audit);
 
-var handleApiCall = function(req, res, controller) {
-  auth.getUserCtx(req, function(err) {
-    if (err) {
-      return notLoggedIn(res);
-    }
-    controller.get({ district: req.query.district }, function(err, obj) {
-      if (err) {
-        return serverError(err, res);
-      }
-      res.json(obj);
-    });
-  });
-};
-
 app.get('/setup/poll', function(req, res) {
   var p = require('./package.json');
   res.json({
@@ -121,52 +109,119 @@ app.get('/api/auth/:path', function(req, res) {
   });
 });
 
+var handleAnalyticsCall = function(req, res, controller) {
+  auth.check(req, 'can_view_analytics', req.query.district, function(err, ctx) {
+    if (err) {
+      return error(err, res);
+    }
+    controller.get({ district: ctx.district }, function(err, obj) {
+      if (err) {
+        return serverError(err, res);
+      }
+      res.json(obj);
+    });
+  });
+};
+
 app.get('/api/active-pregnancies', function(req, res) {
-  handleApiCall(req, res, activePregnancies);
+  handleAnalyticsCall(req, res, activePregnancies);
 });
 
 app.get('/api/upcoming-appointments', function(req, res) {
-  handleApiCall(req, res, upcomingAppointments);
+  handleAnalyticsCall(req, res, upcomingAppointments);
 });
 
 app.get('/api/missed-appointments', function(req, res) {
-  handleApiCall(req, res, missedAppointments);
+  handleAnalyticsCall(req, res, missedAppointments);
 });
 
 app.get('/api/upcoming-due-dates', function(req, res) {
-  handleApiCall(req, res, upcomingDueDates);
+  handleAnalyticsCall(req, res, upcomingDueDates);
 });
 
 app.get('/api/high-risk', function(req, res) {
-  handleApiCall(req, res, highRisk);
+  handleAnalyticsCall(req, res, highRisk);
 });
 
 app.get('/api/total-births', function(req, res) {
-  handleApiCall(req, res, totalBirths);
+  handleAnalyticsCall(req, res, totalBirths);
 });
 
 app.get('/api/missing-delivery-reports', function(req, res) {
-  handleApiCall(req, res, missingDeliveryReports);
+  handleAnalyticsCall(req, res, missingDeliveryReports);
 });
 
 app.get('/api/delivery-location', function(req, res) {
-  handleApiCall(req, res, deliveryLocation);
+  handleAnalyticsCall(req, res, deliveryLocation);
 });
 
 app.get('/api/visits-completed', function(req, res) {
-  handleApiCall(req, res, visitsCompleted);
+  handleAnalyticsCall(req, res, visitsCompleted);
 });
 
 app.get('/api/visits-during', function(req, res) {
-  handleApiCall(req, res, visitsDuring);
+  handleAnalyticsCall(req, res, visitsDuring);
 });
 
 app.get('/api/monthly-registrations', function(req, res) {
-  handleApiCall(req, res, monthlyRegistrations);
+  handleAnalyticsCall(req, res, monthlyRegistrations);
 });
 
 app.get('/api/monthly-deliveries', function(req, res) {
-  handleApiCall(req, res, monthlyDeliveries);
+  handleAnalyticsCall(req, res, monthlyDeliveries);
+});
+
+var formats = {
+  xml: {
+    extension: 'xslx',
+    contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  },
+  csv: {
+    extension: 'csv',
+    contentType: 'text/csv'
+  }
+};
+
+var getExportPermission = function(type) {
+  if (type === 'audit') {
+    return 'can_export_audit';
+  }
+  if (type === 'feedback') {
+    return 'can_export_feedback';
+  }
+  return 'can_export_messages';
+};
+
+app.get(db.getPath() + '/export/:type/:form?', function(req, res) {
+  var url = '/api/v1/export/' + req.params.type;
+  if (req.params.form) {
+    url += '/' + req.params.form;
+  }
+  res.redirect(301, url);
+});
+
+app.get('/api/v1/export/:type/:form?', function(req, res) {
+  auth.check(req, getExportPermission(req.params.type), req.query.district, function(err, ctx) {
+    if (err) {
+      return error(err, res);
+    }
+    req.query.type = req.params.type;
+    req.query.form = req.params.form || req.query.form;
+    req.query.district = ctx.district;
+    exportData.get(req.query, function(err, obj) {
+      if (err) {
+        return serverError(err, res);
+      }
+      var format = formats[req.query.format] || formats.csv;
+      var filename = req.params.type + '-' +
+                     moment().format('YYYYMMDDHHmm') +
+                     '.' + format.extension;
+      res
+        .set('Content-Type', format.contentType)
+        .set('Content-Disposition', 'attachment; filename=' + filename)
+        .send(obj);
+    });
+  });
 });
 
 app.all('*', function(req, res) {
@@ -180,6 +235,19 @@ proxy.on('error', function(err, req, res) {
 proxyForAuditing.on('error', function(err, req, res) {
   serverError(JSON.stringify(err), res);
 });
+
+var error = function(err, res) {
+  if (err.code === 500) {
+    return serverError(err.message, res);
+  }
+  if (err.code === 401) {
+    return notLoggedIn(res);
+  }
+  res.writeHead(err.code, {
+    'Content-Type': 'text/plain'
+  });
+  res.end(err.message);
+};
 
 var serverError = function(err, res) {
   console.error('Server error: ' + (err.stack || JSON.stringify(err)));

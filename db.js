@@ -67,3 +67,6 @@ module.exports.getSettings = function(cb) {
     var path = settings.db + '/_design/' + settings.ddoc + '/_rewrite/app_settings/' + settings.ddoc;
     client.request({ path: path }, cb);
 };
+module.exports.getPath = function() {
+    return settings.db + '/_design/' + settings.ddoc + '/_rewrite';
+};

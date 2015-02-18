@@ -28,6 +28,7 @@ var getFormCode = function(key) {
 var fti = function(options, callback) {
   var queryOptions = {
     q: options.q,
+    sort: options.sort,
     include_docs: options.include_docs,
     limit: options.limit
   };

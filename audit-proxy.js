@@ -33,8 +33,8 @@ AuditProxy.prototype.audit = function(proxy, req, res) {
 
   var self = this;
 
-  auth.getUserCtx(req, function(err, ctx) {
-    if (err || !ctx || !ctx.name) {
+  auth.check(req, 'can_edit', null, function(err, ctx) {
+    if (err || !ctx || !ctx.user) {
       self.emit('not-authorized');
       return;
     }
@@ -58,7 +58,7 @@ AuditProxy.prototype.audit = function(proxy, req, res) {
         return cb();
       }
 
-      couchdbAudit.withNode(db, ctx.name).log([doc], function(err) {
+      couchdbAudit.withNode(db, ctx.user).log([doc], function(err) {
         if (err) {
           return cb(err);
         }

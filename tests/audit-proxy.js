@@ -56,8 +56,8 @@ exports['audit audits the request'] = function(test) {
     }
   };
   var auth = {
-    getUserCtx: function(req, cb) {
-      cb(null, { name: username });
+    check: function(req, permission, district, cb) {
+      cb(null, { user: username });
     }
   };
   var p = new AuditProxy();
@@ -89,8 +89,8 @@ exports['audit does not audit non json request'] = function(test) {
     }
   };
   var auth = {
-    getUserCtx: function(req, cb) {
-      cb(null, { name: username });
+    check: function(req, permission, district, cb) {
+      cb(null, { user: username });
     }
   };
 
@@ -106,8 +106,8 @@ exports['audit emits error when not authorized'] = function(test) {
   var proxy = {};
   var req = {};
   var auth = {
-    getUserCtx: function(req, cb) {
-      cb('Not logged in');
+    check: function(req, permission, district, cb) {
+      cb({ code: 401 });
     }
   };
   var p = new AuditProxy();
@@ -185,8 +185,8 @@ exports['audit emits errors when stream emits errors'] = function(test) {
     }
   };
   var auth = {
-    getUserCtx: function(req, cb) {
-      cb(null, { name: username });
+    check: function(req, permission, district, cb) {
+      cb(null, { user: username });
     }
   };
   var p = new AuditProxy();
