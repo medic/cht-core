@@ -12,6 +12,15 @@
 
     <span class="basic-filters">
 
+      <span class="filter-buttons">
+        <a tabindex="-1" ng-click="download()" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports'" ng-attr-title="{{'Download' | translate}}">
+          <i class="fa fa-arrow-down"></i>
+        </a>
+        <a tabindex="-1" ng-click="resetFilterModel()" ng-show="filterModel.type === 'reports'" ng-attr-title="{{'Clear all filters' | translate}}">
+          <i class="fa fa-times"></i>
+        </a>
+      </span>
+
       <span id="formTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All form types" data-filter-label="Number of form types" ng-show="filterModel.type === 'reports'">
         <span id="form_type" class="mm-button mm-button-nudge-down" data-toggle="dropdown">
           <span class="mm-button-icon">
@@ -140,10 +149,6 @@
         </ul>
       </span>
 
-      <a class="clear-all-button" tabindex="-1" ng-click="resetFilterModel()" ng-show="filterModel.type === 'reports'" ng-attr-title="{{'Clear all filters' | translate}}">
-        <i class="fa fa-times"></i>
-      </a>
-
       <span class="filter dropdown mm-dropdown" ng-show="filterModel.type === 'configuration'">
         <span class="mm-button mm-button-nudge-down" data-toggle="dropdown">
           <span class="mm-button-icon" ng-show="'configuration' | isState">
@@ -157,6 +162,9 @@
           </span>
           <span class="mm-button-icon" ng-show="'configuration.forms' | isState">
             <i class="fa fa-list-alt"></i>
+          </span>
+          <span class="mm-button-icon" ng-show="'configuration.export' | isState">
+            <i class="fa fa-arrow-circle-o-down"></i>
           </span>
           <span class="mm-button-icon" ng-show="'configuration.users' | isState">
             <i class="fa fa-user"></i>
@@ -176,6 +184,9 @@
             </span>
             <span ng-show="'configuration.forms' | isState">
               {{'Forms' | translate}}
+            </span>
+            <span ng-show="'configuration.export' | isState">
+              {{'Export' | translate}}
             </span>
             <span ng-show="'configuration.users' | isState">
               {{'Users' | translate}}
@@ -207,8 +218,8 @@
               <span>{{'Schedules' | translate}}</span>
             </a>
           </li>
-          <li class="ng-scope" role="presentation" ng-show="permissions.admin || permissions.nationalAdmin">
-            <a href="export" role="menuitem" tabindex="-1">
+          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+            <a ui-sref="configuration.export" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-arrow-circle-o-down"></i>
               <span>{{'Export' | translate}}</span>
             </a>
@@ -227,6 +238,7 @@
           </li>
         </ul>
       </span>
+
 
     </span>
 

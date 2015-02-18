@@ -148,6 +148,15 @@ require('./filters/index');
             }
           }
         })
+        .state('configuration.export', {
+          url: '/export',
+          views: {
+            content: {
+              controller: 'ConfigurationExportCtrl',
+              templateUrl: 'templates/partials/configuration_export.html'
+            }
+          }
+        })
 
         // help
         .state('help', {

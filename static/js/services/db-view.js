@@ -17,10 +17,14 @@ var _ = require('underscore');
         $resource(url).get(
           options,
           function(results) {
+            var meta = {
+              total_rows: results.total_rows,
+              offset: results.offset
+            };
             if (options.include_docs) {
               results = _.pluck(results && results.rows, 'doc');
             }
-            callback(null, results);
+            callback(null, results, meta);
           },
           function(err) {
             callback(err);

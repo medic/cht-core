@@ -38,12 +38,14 @@
       </a>
     </li>
     {/isDbAdmin}
+    {?isDbAdmin}
     <li class="ng-scope" role="presentation">
-      <a href="{baseURL}/export" role="menuitem" tabindex="-1">
+      <a href="{baseURL}/#/configuration/export" role="menuitem" tabindex="-1" rel="external">
         <i class="fa fa-fw fa-arrow-circle-o-down"></i>
         <span>{@translate value="Export"/}</span>
       </a>
     </li>
+    {/isDbAdmin}
     {?isDbAdmin}
     <li class="ng-scope" role="presentation">
       <a href="{baseURL}/#/configuration/users" role="menuitem" tabindex="-1" rel="external">

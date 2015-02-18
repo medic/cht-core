@@ -19,51 +19,6 @@ exports.rules = [
         },
         method: 'GET'
     },
-    //export messages by default returns nothing, startkey and endkey need to
-    //be configured to get results
-    {
-        from: '/export/messages',
-        to: '_list/export_messages/data_records',
-        query: {
-            include_docs: 'true',
-            descending: 'true'
-        }
-    },
-    {
-        from: '/export/feedback',
-        to: '_list/export_feedback/feedback',
-        query: {
-            include_docs: 'true',
-            descending: 'true'
-        }
-    },
-    {
-        from: '/export/audit',
-        to: '_list/export_audit/audit_records_by_doc',
-        query: {
-            include_docs: 'true',
-            descending: 'true'
-        }
-    },
-    {
-        from: '/export/forms',
-        to: '_list/export_data_records/data_records',
-        query: {
-            include_docs: 'true',
-            descending: 'true'
-        }
-    },
-    {
-        from: '/export/forms/:form',
-        to: '_list/export_data_records/data_records',
-        query: {
-            include_docs: 'true',
-            descending: 'true',
-            startkey: [true, ':form', {}],
-            endkey: [true, ':form'],
-            form: ':form'
-        }
-    },
     {
         from: '/:form/data_record/add/clinic/:phone',
         to: '_list/data_record/clinic_by_phone',

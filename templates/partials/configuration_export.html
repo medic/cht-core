@@ -1,0 +1,23 @@
+<div class="col-sm-12">
+  <div>
+    <h3>{{'Audit Logs' | translate}}</h3>
+    <p>
+      <a class="btn btn-link" ng-href="{{auditUrl}}">
+        <i class="fa fa-arrow-down"></i> {{'Export' | translate}}
+      </a>
+    </p>
+  </div>
+  <div>
+    <h3>{{'User Feedback' | translate}}</h3>
+    <p>
+      <a class="btn btn-link" ng-href="{{feedbackUrl}}">
+        <i class="fa fa-arrow-down"></i> {{'Export' | translate}}
+      </a>
+    </p>
+    <p>{{'Showing number of total' | translate:feedback.page}}</p>
+    <div ng-attr-data-record-id="item.id" ng-repeat="item in feedback.items">
+      <div class="col-sm-2" ng-bind-html="item.time | simpleDateTime"></div>
+      <div class="col-sm-10">{{item.info}}</div>
+    </div>
+  </div>
+</div>

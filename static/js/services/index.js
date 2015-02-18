@@ -12,7 +12,6 @@
   require('./delete-message');
   require('./download-url');
   require('./edit-group');
-  require('./exports');
   require('./facility');
   require('./form');
   require('./format-data-record');

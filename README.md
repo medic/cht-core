@@ -167,7 +167,7 @@ grunt test
 ```
 
 
-### Loading Data
+## Loading Data
 
 Loading your form definitions in the settings interface is supported but you can
 also do that from command line.

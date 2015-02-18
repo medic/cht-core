@@ -18,8 +18,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', '$rootScope', '$state', '$stateParams', 'translateFilter', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
-    function ($scope, $route, $location, $translate, $animate, $rootScope, $state, $stateParams, translateFilter, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
+    ['$window', '$scope', '$route', '$location', '$translate', '$animate', '$rootScope', '$state', '$stateParams', 'translateFilter', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'GenerateSearchQuery', 'DownloadUrl',
+    function ($window, $scope, $route, $location, $translate, $animate, $rootScope, $state, $stateParams, translateFilter, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, GenerateSearchQuery, DownloadUrl) {
 
       $scope.loading = true;
       $scope.error = false;
@@ -161,6 +161,15 @@ require('moment/locales');
         $scope.$broadcast('filters-reset');
       };
 
+      $scope.download = function() {
+        DownloadUrl($scope, $scope.filterModel.type, function(err, url) {
+          if (err) {
+            return console.log(err);
+          }
+          $window.location.href = url;
+        });
+      };
+
       $scope.setMessage = function(id) {
         if ($scope.filterModel.type === 'reports' && $stateParams.id === id) {
           // message already set - make sure we're showing content
@@ -286,14 +295,6 @@ require('moment/locales');
           console.log('Failed to retrieve forms', err);
         }
       );
-
-      Exports(function(err, exports) {
-        if (err) {
-          return console.log('Failed to retrieve exports', err);
-        }
-        $scope.exports = exports;
-      });
-
 
       $scope.setupGuidedSetup = function() {
         Settings(function(err, res) {
@@ -861,6 +862,7 @@ require('moment/locales');
   require('./configuration-translation-messages');
   require('./configuration-forms');
   require('./configuration-users');
+  require('./configuration-export');
   require('./delete-user');
   require('./edit-user');
   require('./help');

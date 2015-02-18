@@ -114,6 +114,10 @@ body {
       }
     }
 
+    .dropdown-menu a {
+      border-radius: 0;
+    }
+
     .open > a {
       background-color: #FFFFFF;
 
@@ -206,8 +210,8 @@ body {
   }
 
   .filter {
-    width: 19%;
-    margin: 0 0.2em;
+    width: 18%;
+    margin: 0 0.2%;
     text-align: left;
     display: inline-block;
     vertical-align: top;
@@ -235,7 +239,7 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    right: 5em;
+    right: 0;
   }
 
   .help {
@@ -243,6 +247,7 @@ body {
   }
 
   .freetext-filter {
+    padding-right: 2em;
     input, .btn {
       height: 2.85em;
       background-color: rgba(255, 255, 255, 0.45);
@@ -250,24 +255,35 @@ body {
     }
     input {
       padding: 0.6em;
-      width: 71%;
       color: #000000;
+      margin-right: -2em;
+    }
+    .input-group-btn {
+      float: right;
     }
   }
+
+  .filter-buttons {
+    float: right;
+    display: inline-block;
+    text-align: right;
+    width: 6%;
+
+    a {
+      cursor: pointer;
+      color: @grayDark;
+      width: 2em;
+      line-height: 3em;
+      display: inline-block;
+      text-align: center;
+    }
+  }
+
   .mobile-freetext-filter {
     display: none;
   }
   .advanced-filter {
     width: 3.3em;
-  }
-
-  .clear-all-button {
-    cursor: pointer;
-    color: @grayDark;
-    width: 2em;
-    line-height: 3em;
-    display: inline-block;
-    text-align: center;
   }
 }
 
@@ -1091,7 +1107,6 @@ a.fa:hover {
       padding-top: 0.2em;
     }
     .basic-filters {
-      right: 0;
       left: 6em;
     }
     .advanced-filters {
@@ -1117,6 +1132,9 @@ a.fa:hover {
         top: 100%;
         left: 0;
       }
+    }
+    .filter-buttons {
+      width: inherit;
     }
   }
   .inbox-items,
@@ -1257,7 +1275,7 @@ a.fa:hover {
       margin: 0;
     }
     .basic-filters, .advanced-filters {
-      left: 4em;
+      left: 3.2em;
     }
   }
   .header .tabs {

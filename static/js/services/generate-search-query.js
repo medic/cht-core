@@ -100,6 +100,11 @@ var _ = require('underscore'),
 
       return function($scope, options, callback) {
 
+        if (!callback) {
+          callback = options;
+          options = {};
+        }
+
         Settings(function(err, settings) {
 
           if (err) {
