@@ -3,9 +3,14 @@
 MAX=50
 COUNT=0
 
-# Never push to market on pull requests
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    echo 'Not pushing to market on pull requests.'
     exit 0;
+fi
+
+if [ -z "$UPLOAD_URL" ]; then
+    echo 'Please define UPLOAD_URL.'
+    exit 1;
 fi
 
 cd sentinel && npm install && cd .. && \
@@ -16,7 +21,8 @@ function push {
     ((COUNT++))
     local market="$1"
     if [ $COUNT -le $MAX ]; then
-        node --stack_size=10000 `which kanso` push --minify "http://travis-ci:a5nghmongP!@staging.dev.medicmobile.org/markets-$market/upload" && exit 0
+        node --stack_size=10000 `which kanso` push --minify \
+            "${UPLOAD_URL}/markets-$market/upload" && exit 0
         push $market
     else
         echo 'Failed to push to market.'
