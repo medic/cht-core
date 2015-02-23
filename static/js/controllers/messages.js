@@ -7,14 +7,14 @@ var tour = require('../modules/tour');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$state', '$location', '$stateParams', 'translateFilter', 'MessageContact', 'Changes',
-    function ($scope, $state, $location, $stateParams, translateFilter, MessageContact, Changes) {
+    ['$scope', '$state', '$location', '$stateParams', '$timeout', 'translateFilter', 'MessageContact', 'Changes',
+    function ($scope, $state, $location, $stateParams, $timeout, translateFilter, MessageContact, Changes) {
 
       $scope.loadingContent = false;
       $scope.allLoaded = false;
       $scope.filterModel.type = 'messages';
 
-      var updateContacts = function(options) {
+      var updateContacts = function(options, callback) {
         options = options || {};
         MessageContact({ districtAdmin: $scope.permissions.districtAdmin }, function(err, data) {
           if (err) {
@@ -22,10 +22,20 @@ var tour = require('../modules/tour');
           }
           options.contacts = data;
           $scope.setContacts(options);
+          if (callback) {
+            callback();
+          }
         });
       };
 
-      updateContacts();
+      updateContacts({}, function() {
+        if ($scope.contacts.length && !$('#back').is(':visible')) {
+          $timeout(function() {
+            var id = $('.inbox-items li').first().attr('data-record-id');
+            $state.go('messages.detail', { id: id });
+          });
+        }
+      });
 
       Changes('messages-list', function(data) {
         updateContacts({ changes: data });
