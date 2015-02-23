@@ -42,6 +42,7 @@ var fti = function(index, options, callback) {
 
 var ftiWithPatientIds = function(options, callback) {
   if (options.patientIds) {
+    options.patientIds = _.compact(options.patientIds);
     if (options.patientIds.length === 0) {
       return callback(null, { total_rows: 0, rows: [] });
     }
@@ -93,14 +94,16 @@ module.exports = {
   getAllRegistrations: function(options, callback) {
     var startDate = options.startDate;
     var endDate = options.endDate;
+
     if (!startDate || !endDate) {
-      startDate = moment()
-        .add(40, 'weeks')
-        .subtract(options.maxWeeksPregnant || 42, 'weeks');
-      endDate = moment()
-        .add(40, 'weeks')
-        .subtract(options.minWeeksPregnant || 0, 'weeks');
+      startDate = moment().subtract(options.maxWeeksPregnant || 42, 'weeks');
+      endDate = moment().subtract(options.minWeeksPregnant || 0, 'weeks');
     }
+
+    // add 40 weeks to get edd
+    startDate = startDate.add(40, 'weeks');
+    endDate = endDate.add(40, 'weeks');
+
     var query = 'errors<int>:0 ' +
       'AND form:("' + getFormCode('registration') + '" OR "' + getFormCode('registrationLmp') + '") ' +
       'AND ' + formatDateRange('expected_date', startDate, endDate);
