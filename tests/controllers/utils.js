@@ -52,8 +52,8 @@ exports['getAllRegistrations generates correct query when min and max weeks preg
     registrationLmp: 'P'
   });
   var fti = sinon.stub(db, 'fti').callsArgWith(2, null, 'results');
-  var start = moment().subtract(20, 'weeks').zone(0).format('YYYY-MM-DD');
-  var end = moment().subtract(10, 'weeks').add(1, 'days').zone(0).format('YYYY-MM-DD');
+  var start = moment().add(40, 'weeks').subtract(20, 'weeks').zone(0).format('YYYY-MM-DD');
+  var end = moment().add(40, 'weeks').subtract(10, 'weeks').add(1, 'days').zone(0).format('YYYY-MM-DD');
   var expected = 'errors<int>:0 ' +
       'AND form:("R" OR "P") ' +
       'AND expected_date<date>:[' + start + ' TO ' + end + ']';
@@ -75,8 +75,8 @@ exports['getAllRegistrations generates correct query when patientIds provided'] 
     registrationLmp: 'P'
   });
   var fti = sinon.stub(db, 'fti').callsArgWith(2, null, { rows: [ 'result' ], total_rows: 1 });
-  var start = moment().subtract(20, 'weeks').zone(0).format('YYYY-MM-DD');
-  var end = moment().subtract(10, 'weeks').add(1, 'days').zone(0).format('YYYY-MM-DD');
+  var start = moment().add(40, 'weeks').subtract(20, 'weeks').zone(0).format('YYYY-MM-DD');
+  var end = moment().add(40, 'weeks').subtract(10, 'weeks').add(1, 'days').zone(0).format('YYYY-MM-DD');
   var expected = 'errors<int>:0 ' +
       'AND form:("R" OR "P") ' +
       'AND expected_date<date>:[' + start + ' TO ' + end + '] ' +
@@ -104,8 +104,8 @@ exports['getAllRegistrations generates multiple queries when over limit'] = func
   var fti = sinon.stub(db, 'fti');
   fti.onFirstCall().callsArgWith(2, null, { rows: [ '1', '2', '3' ], total_rows: 3 });
   fti.onSecondCall().callsArgWith(2, null, { rows: [ '4', '5' ], total_rows: 2 });
-  var start = moment().subtract(20, 'weeks').zone(0).format('YYYY-MM-DD');
-  var end = moment().subtract(10, 'weeks').add(1, 'days').zone(0).format('YYYY-MM-DD');
+  var start = moment().add(40, 'weeks').subtract(20, 'weeks').zone(0).format('YYYY-MM-DD');
+  var end = moment().add(40, 'weeks').subtract(10, 'weeks').add(1, 'days').zone(0).format('YYYY-MM-DD');
   var expected = 'errors<int>:0 ' +
       'AND form:("R" OR "P") ' +
       'AND expected_date<date>:[' + start + ' TO ' + end + ']';

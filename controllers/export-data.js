@@ -5,7 +5,7 @@ var _ = require('underscore'),
     xmlbuilder = require('xmlbuilder'),
     config = require('../config'),
     db = require('../db'),
-    utils = require('./utils');
+    fti = require('./fti');
 
 var createColumnModels = function(values, options) {
   return _.map(values, function(value) {
@@ -318,17 +318,14 @@ var outputToXml = function(options, type, data, callback) {
   callback(null, table.end());
 };
 
-
 var getRecordsFti = function(params, callback) {
   var options = {
     q: params.query,
+    schema: params.schema,
     sort: '\\reported_date<date>',
     include_docs: true
   };
-  if (params.district) {
-    options.q += ' AND district:"' + params.district + '"';
-  }
-  return utils.fti(options, callback);
+  fti.get('data_records', options, params.district, callback);
 };
 
 var getRecordsView = function(type, params, callback) {

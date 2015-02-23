@@ -1,6 +1,7 @@
 var controller = require('../../controllers/export-data'),
     db = require('../../db'),
     config = require('../../config'),
+    fti = require('../../controllers/fti'),
     sinon = require('sinon'),
     moment = require('moment');
 
@@ -12,8 +13,8 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function (callback) {
-  if (db.fti.restore) {
-    db.fti.restore();
+  if (fti.get.restore) {
+    fti.get.restore();
   }
   if (db.getView.restore) {
     db.getView.restore();
@@ -452,9 +453,9 @@ exports['get reports filters by form'] = function(test) {
 };
 
 exports['get reports with query calls fti'] = function(test) {
-  test.expect(7);
+  test.expect(8);
   var getView = sinon.stub(db, 'getView');
-  var fti = sinon.stub(db, 'fti').callsArgWith(2, null, {
+  var ftiGet = sinon.stub(fti, 'get').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -474,45 +475,14 @@ exports['get reports with query calls fti'] = function(test) {
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,,P\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,,P';
   controller.get({ type: 'forms', query: 'form:P', tz: '0' }, function(err, results) {
+    test.equals(err, null);
     test.equals(results, expected);
     test.equals(getView.callCount, 0);
-    test.equals(fti.callCount, 1);
-    test.equals(fti.firstCall.args[0], 'data_records');
-    test.equals(fti.firstCall.args[1].q, 'form:P');
-    test.equals(fti.firstCall.args[1].sort, '\\reported_date<date>');
-    test.equals(fti.firstCall.args[1].include_docs, true);
-    test.done();
-  });
-};
-
-exports['get reports with query calls fti with district clause'] = function(test) {
-  test.expect(5);
-  var getView = sinon.stub(db, 'getView');
-  var fti = sinon.stub(db, 'fti').callsArgWith(2, null, {
-    rows: [
-      { doc: {
-        _id: 'abc',
-        patient_id: '123456',
-        reported_date: 123456789,
-        form: 'P'
-      } },
-      { doc: {
-        _id: 'def',
-        patient_id: '654321',
-        reported_date: 987654321,
-        form: 'P'
-      } }
-    ]
-  });
-  var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{related_entities.clinic.contact.name:en},{related_entities.clinic.name:en},{related_entities.clinic.parent.contact.name:en},{related_entities.clinic.parent.name:en},{related_entities.clinic.parent.parent.name:en},{form:en}\n' +
-                 'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,,P\n' +
-                 'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,,P';
-  controller.get({ type: 'forms', query: 'form:P', tz: '0', district: '123' }, function(err, results) {
-    test.equals(results, expected);
-    test.equals(getView.callCount, 0);
-    test.equals(fti.callCount, 1);
-    test.equals(fti.firstCall.args[0], 'data_records');
-    test.equals(fti.firstCall.args[1].q, 'form:P AND district:"123"');
+    test.equals(ftiGet.callCount, 1);
+    test.equals(ftiGet.firstCall.args[0], 'data_records');
+    test.equals(ftiGet.firstCall.args[1].q, 'form:P');
+    test.equals(ftiGet.firstCall.args[1].sort, '\\reported_date<date>');
+    test.equals(ftiGet.firstCall.args[1].include_docs, true);
     test.done();
   });
 };

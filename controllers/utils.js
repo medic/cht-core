@@ -25,14 +25,9 @@ var getFormCode = function(key) {
   return config.get('anc_forms')[key];
 };
 
-var fti = function(options, callback) {
-  var queryOptions = {
-    q: options.q,
-    sort: options.sort,
-    include_docs: options.include_docs,
-    limit: options.limit
-  };
-  db.fti('data_records', queryOptions, function(err, result) {
+var fti = function(index, options, callback) {
+  var queryOptions = _.pick(options, 'q', 'sort', 'skip', 'limit', 'include_docs');
+  db.fti(index, queryOptions, function(err, result) {
     if (err) {
       return callback(err);
     }
@@ -54,10 +49,10 @@ var ftiWithPatientIds = function(options, callback) {
     var chunks = chunk(options.patientIds, luceneConditionalLimit);
     async.reduce(chunks, { rows: [], total_rows: 0 }, function(memo, ids, callback) {
       var queryOptions = {
-        q: options.q + ' AND patient_id:(' + ids.join(' OR ') + ')',
+        q: options.q + ' AND patient_id:(' + _.compact(ids).join(' OR ') + ')',
         include_docs: options.include_docs
       };
-      fti(queryOptions, function(err, result) {
+      fti('data_records', queryOptions, function(err, result) {
         if (err) {
           return callback(err);
         }
@@ -68,7 +63,7 @@ var ftiWithPatientIds = function(options, callback) {
       });
     }, callback);
   } else {
-    fti(options, callback);
+    fti('data_records', options, callback);
   }
 };
 
@@ -99,8 +94,12 @@ module.exports = {
     var startDate = options.startDate;
     var endDate = options.endDate;
     if (!startDate || !endDate) {
-      startDate = moment().subtract(options.maxWeeksPregnant || 42, 'weeks');
-      endDate = moment().subtract(options.minWeeksPregnant || 0, 'weeks');
+      startDate = moment()
+        .add(40, 'weeks')
+        .subtract(options.maxWeeksPregnant || 42, 'weeks');
+      endDate = moment()
+        .add(40, 'weeks')
+        .subtract(options.minWeeksPregnant || 0, 'weeks');
     }
     var query = 'errors<int>:0 ' +
       'AND form:("' + getFormCode('registration') + '" OR "' + getFormCode('registrationLmp') + '") ' +

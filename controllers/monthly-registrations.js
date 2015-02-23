@@ -40,7 +40,7 @@ module.exports = {
     if (options.district) {
       query += ' AND district:"' + options.district + '"';
     }
-    utils.fti({ q: query, include_docs: true }, function(err, registrations) {
+    utils.fti('data_records', { q: query, include_docs: true }, function(err, registrations) {
       if (err) {
         return callback(err);
       }

@@ -7,6 +7,8 @@ var permissions = {
   can_export_audit: ['national_admin'],
   can_export_feedback: ['national_admin'],
   can_view_analytics: ['national_admin', 'district_admin', 'analytics'],
+  can_view_data_records: ['national_admin', 'district_admin', 'analytics'],
+  can_view_unallocated_data_records: ['national_admin', 'district_admin'],
   can_edit: ['national_admin', 'district_admin']
 };
 

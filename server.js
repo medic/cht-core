@@ -1,4 +1,5 @@
-var express = require('express'),
+var _ = require('underscore'),
+    express = require('express'),
     morgan = require('morgan'),
     http = require('http'),
     moment = require('moment'),
@@ -24,6 +25,7 @@ var express = require('express'),
     monthlyRegistrations = require('./controllers/monthly-registrations'),
     monthlyDeliveries = require('./controllers/monthly-deliveries'),
     exportData = require('./controllers/export-data'),
+    fti = require('./controllers/fti'),
     createDomain = require('domain').create;
 
 http.globalAgent.maxSockets = 100;
@@ -220,6 +222,24 @@ app.get('/api/v1/export/:type/:form?', function(req, res) {
         .set('Content-Type', format.contentType)
         .set('Content-Disposition', 'attachment; filename=' + filename)
         .send(obj);
+    });
+  });
+});
+
+app.get('/api/v1/fti/:view', function(req, res) {
+  auth.check(req, 'can_view_data_records', null, function(err, ctx) {
+    if (err) {
+      return error(err, res);
+    }
+    auth.check(req, 'can_view_unallocated_data_records', null, function(err, ctx) {
+      var queryOptions = _.pick(req.query, 'q', 'schema', 'sort', 'skip', 'limit', 'include_docs');
+      queryOptions.allocatedOnly = !!err;
+      fti.get(req.params.view, queryOptions, ctx.district, function(err, result) {
+        if (err) {
+          return serverError(err, res);
+        }
+        res.json(result);
+      });
     });
   });
 });

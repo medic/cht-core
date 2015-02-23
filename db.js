@@ -40,11 +40,11 @@ module.exports = client.db(settings.db);
 module.exports.user = settings.username;
 module.exports.fti = function(index, data, cb) {
     var path = '/_fti/local' + settings.db + '/_design/' + settings.ddoc + '/' + index;
-    if (!data.limit) {
+    if (data.q && !data.limit) {
         data.limit = 1000;
     }
     client.request({
-        method: 'post',
+        method: data.q ? 'post' : 'get',
         path: path,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         data: couchdb.toQuery(data)
@@ -53,7 +53,7 @@ module.exports.fti = function(index, data, cb) {
             // the request itself failed
             return cb(err);
         }
-        if (!result.rows) {
+        if (data.q && !result.rows) {
             // the query failed for some reason
             return cb(result);
         }
