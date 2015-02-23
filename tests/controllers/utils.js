@@ -33,7 +33,11 @@ exports['getAllRegistrations generates correct query'] = function(test) {
   var end = moment().zone(0);
   var expected = 'errors<int>:0 ' +
       'AND form:("R" OR "P") ' +
-      'AND expected_date<date>:[' + start.format('YYYY-MM-DD') + ' TO ' + end.clone().add(1, 'days').format('YYYY-MM-DD') + ']';
+      'AND expected_date<date>:[' +
+        start.clone().add(40, 'weeks').format('YYYY-MM-DD') +
+        ' TO ' +
+        end.clone().add(40, 'weeks').add(1, 'days').format('YYYY-MM-DD') +
+      ']';
   utils.getAllRegistrations({
     startDate: start,
     endDate: end

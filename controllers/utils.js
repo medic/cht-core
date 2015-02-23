@@ -101,8 +101,8 @@ module.exports = {
     }
 
     // add 40 weeks to get edd
-    startDate = startDate.add(40, 'weeks');
-    endDate = endDate.add(40, 'weeks');
+    startDate = startDate.clone().add(40, 'weeks');
+    endDate = endDate.clone().add(40, 'weeks');
 
     var query = 'errors<int>:0 ' +
       'AND form:("' + getFormCode('registration') + '" OR "' + getFormCode('registrationLmp') + '") ' +
