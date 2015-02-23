@@ -582,97 +582,7 @@ require('moment/locales');
         }
 
         moment.locale([language, 'en']);
-
-        $translate.use(language).then(function() {
-
-          $('#formTypeDropdown, #facilityDropdown').each(function() {
-            $(this).multiDropdown({
-              label: function(state, callback) {
-                if (state.selected.length === 0 || state.selected.length === state.total.length) {
-                  return callback(translateFilter(state.menu.data('label-no-filter')));
-                }
-                if (state.selected.length === 1) {
-                  return callback(state.selected.first().text());
-                }
-                callback(translateFilter(
-                  state.menu.data('filter-label'), { number: state.selected.length }
-                ));
-              },
-              selectAllLabel: translateFilter('select all'),
-              clearLabel: translateFilter('clear')
-            });
-          });
-
-          $('#statusDropdown').multiDropdown({
-            label: function(state, callback) {
-              var values = {};
-              state.selected.each(function() {
-                var elem = $(this);
-                values[elem.data('value')] = elem.text();
-              });
-              var parts = [];
-              if (values.valid && !values.invalid) {
-                parts.push(values.valid);
-              } else if (!values.valid && values.invalid) {
-                parts.push(values.invalid);
-              }
-              if (values.verified && !values.unverified) {
-                parts.push(values.verified);
-              } else if (!values.verified && values.unverified) {
-                parts.push(values.unverified);
-              }
-              if (parts.length === 0 || parts.length === state.total.length) {
-                return callback(translateFilter(state.menu.data('label-no-filter')));
-              }
-              return callback(parts.join(', '));
-            },
-            selectAllLabel: translateFilter('select all'),
-            clearLabel: translateFilter('clear')
-          });
-
-
-          var start = $scope.filterModel.date.from ?
-            moment($scope.filterModel.date.from) : moment().subtract(1, 'months');
-          $('#date-filter').daterangepicker({
-            startDate: start,
-            endDate: moment($scope.filterModel.date.to),
-            maxDate: moment(),
-            opens: 'center',
-            applyClass: 'btn-primary',
-            cancelClass: 'btn-link',
-            locale: {
-              applyLabel: translateFilter('Apply'),
-              cancelLabel: translateFilter('Cancel'),
-              fromLabel: translateFilter('date.from'),
-              toLabel: translateFilter('date.to'),
-              daysOfWeek: moment.weekdaysMin(),
-              monthNames: moment.monthsShort(),
-              firstDay: moment.localeData()._week.dow
-            }
-          },
-          function(start, end) {
-            var scope = angular.element($('body')).scope();
-            if (scope) {
-              scope.$apply(function() {
-                scope.filterModel.date.from = start.valueOf();
-                scope.filterModel.date.to = end.valueOf();
-              });
-            }
-          })
-          .on('mm.dateSelected.daterangepicker', function(e, picker) {
-            if ($('#back').is(':visible')) {
-              // mobile version - only show one calendar at a time
-              if (picker.container.is('.show-from')) {
-                picker.container.removeClass('show-from').addClass('show-to');
-              } else {
-                picker.container.removeClass('show-to').addClass('show-from');
-                picker.hide();
-              }
-            }
-          });
-          $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
-
-        });
+        $translate.use(language);
       });
 
       $scope.sendMessage = function(event) {
@@ -785,37 +695,129 @@ require('moment/locales');
       };
 
       $scope.setupFilters = function() {
-        $('#formTypeDropdown').on('update', function() {
-          var forms = $(this).multiDropdown().val();
-          angularApply(function(scope) {
-            scope.filterModel.forms = forms;
-          });
-        });
 
-        $('#facilityDropdown').on('update', function() {
-          var ids = $(this).multiDropdown().val();
-          angularApply(function(scope) {
-            scope.filterModel.facilities = ids;
-          });
-        });
-
-        $('#statusDropdown').on('update', function() {
-          var values = $(this).multiDropdown().val();
-          angularApply(function(scope) {
-            scope.filterModel.valid = getTernaryValue(
-              _.contains(values, 'valid'),
-              _.contains(values, 'invalid')
-            );
-            scope.filterModel.verified = getTernaryValue(
-              _.contains(values, 'verified'),
-              _.contains(values, 'unverified')
-            );
-          });
-        });
-
+        $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
         // stop bootstrap closing the search pane on click
         $('.filters .mobile-freetext-filter .search-pane').on('click', function(e) {
           e.stopPropagation();
+        });
+
+        // we have to wait for language to respond before initing the multidropdowns
+        Language(function() {
+
+          $('#formTypeDropdown, #facilityDropdown').each(function() {
+            $(this).multiDropdown({
+              label: function(state, callback) {
+                if (state.selected.length === 0 || state.selected.length === state.total.length) {
+                  return callback(translateFilter(state.menu.data('label-no-filter')));
+                }
+                if (state.selected.length === 1) {
+                  return callback(state.selected.first().text());
+                }
+                callback(translateFilter(
+                  state.menu.data('filter-label'), { number: state.selected.length }
+                ));
+              },
+              selectAllLabel: translateFilter('select all'),
+              clearLabel: translateFilter('clear')
+            });
+          });
+
+          $('#statusDropdown').multiDropdown({
+            label: function(state, callback) {
+              var values = {};
+              state.selected.each(function() {
+                var elem = $(this);
+                values[elem.data('value')] = elem.text();
+              });
+              var parts = [];
+              if (values.valid && !values.invalid) {
+                parts.push(values.valid);
+              } else if (!values.valid && values.invalid) {
+                parts.push(values.invalid);
+              }
+              if (values.verified && !values.unverified) {
+                parts.push(values.verified);
+              } else if (!values.verified && values.unverified) {
+                parts.push(values.unverified);
+              }
+              if (parts.length === 0 || parts.length === state.total.length) {
+                return callback(translateFilter(state.menu.data('label-no-filter')));
+              }
+              return callback(parts.join(', '));
+            },
+            selectAllLabel: translateFilter('select all'),
+            clearLabel: translateFilter('clear')
+          });
+
+          var start = $scope.filterModel.date.from ?
+            moment($scope.filterModel.date.from) : moment().subtract(1, 'months');
+          $('#date-filter').daterangepicker({
+            startDate: start,
+            endDate: moment($scope.filterModel.date.to),
+            maxDate: moment(),
+            opens: 'center',
+            applyClass: 'btn-primary',
+            cancelClass: 'btn-link',
+            locale: {
+              applyLabel: translateFilter('Apply'),
+              cancelLabel: translateFilter('Cancel'),
+              fromLabel: translateFilter('date.from'),
+              toLabel: translateFilter('date.to'),
+              daysOfWeek: moment.weekdaysMin(),
+              monthNames: moment.monthsShort(),
+              firstDay: moment.localeData()._week.dow
+            }
+          },
+          function(start, end) {
+            var scope = angular.element($('body')).scope();
+            if (scope) {
+              scope.$apply(function() {
+                scope.filterModel.date.from = start.valueOf();
+                scope.filterModel.date.to = end.valueOf();
+              });
+            }
+          })
+          .on('mm.dateSelected.daterangepicker', function(e, picker) {
+            if ($('#back').is(':visible')) {
+              // mobile version - only show one calendar at a time
+              if (picker.container.is('.show-from')) {
+                picker.container.removeClass('show-from').addClass('show-to');
+              } else {
+                picker.container.removeClass('show-to').addClass('show-from');
+                picker.hide();
+              }
+            }
+          });
+
+          $('#formTypeDropdown').on('update', function() {
+            var forms = $(this).multiDropdown().val();
+            angularApply(function(scope) {
+              scope.filterModel.forms = forms;
+            });
+          });
+
+          $('#facilityDropdown').on('update', function() {
+            var ids = $(this).multiDropdown().val();
+            angularApply(function(scope) {
+              scope.filterModel.facilities = ids;
+            });
+          });
+
+          $('#statusDropdown').on('update', function() {
+            var values = $(this).multiDropdown().val();
+            angularApply(function(scope) {
+              scope.filterModel.valid = getTernaryValue(
+                _.contains(values, 'valid'),
+                _.contains(values, 'invalid')
+              );
+              scope.filterModel.verified = getTernaryValue(
+                _.contains(values, 'verified'),
+                _.contains(values, 'unverified')
+              );
+            });
+          });
+
         });
       };
 
