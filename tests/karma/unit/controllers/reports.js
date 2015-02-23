@@ -90,7 +90,7 @@ describe('ReportsCtrl controller', function() {
 
     GenerateSearchQuery = function(scope, options, callback) {
       chai.expect(options.changes).to.deep.equal(changedObjects);
-      callback(null, query);
+      callback(null, { query: query });
     };
 
     Search = function(options, callback) {

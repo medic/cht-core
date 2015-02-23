@@ -13,7 +13,7 @@ describe('DownloadUrl service', function() {
         callback(null, locale);
       });
       $provide.value('GenerateSearchQuery', function($scope, callback) {
-        callback(null, query);
+        callback(null, { query: query });
       });
     });
     inject(function(_DownloadUrl_) {
@@ -49,7 +49,7 @@ describe('DownloadUrl service', function() {
     query = 'form:P';
     service(null, 'reports', function(err, actual) {
       chai.expect(decodeURIComponent(actual))
-          .to.equal('/api/v1/export/forms?format=xml&locale=en&query=form:P');
+          .to.equal('/api/v1/export/forms?query="form:P"&schema=');
     });
   });
 

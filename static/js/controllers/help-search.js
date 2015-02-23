@@ -7,12 +7,10 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('HelpSearchCtrl',
-    ['$scope', '$rootScope', 'db',
-    function ($scope, $rootScope, db) {
+    ['$scope', '$resource',
+    function ($scope, $resource) {
       $scope.loading = true;
-      db.getFTI(
-        'medic',
-        'data_records',
+      $resource('/api/v1/fti/data_records').get(
         {},
         function(data) {
           $scope.loading = false;
@@ -21,9 +19,10 @@ var _ = require('underscore');
           } else {
             $scope.fields = null;
           }
-          if (!$rootScope.$$phase) {
-            $rootScope.$apply();
-          }
+        },
+        function(err) {
+          $scope.loading = false;
+          console.log('Error fetching fields', err);
         }
       );
     }

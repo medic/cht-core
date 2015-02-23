@@ -19,12 +19,14 @@
           if (type === 'messages' || type === 'audit' || type === 'feedback') {
             return callback(null, buildUrl(type, params));
           } else if (type === 'reports') {
-            GenerateSearchQuery($scope, function(err, query) {
+            GenerateSearchQuery($scope, function(err, response) {
               if (err) {
                 return callback(err);
               }
-              params.query = query;
-              return callback(null, buildUrl('forms', params));
+              return callback(null, buildUrl('forms', {
+                query: JSON.stringify(response.query),
+                schema: JSON.stringify(response.schema)
+              }));
             });
           } else {
             return callback('Unknown download type');

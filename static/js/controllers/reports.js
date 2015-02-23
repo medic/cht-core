@@ -83,11 +83,11 @@ var _ = require('underscore'),
               changes: [ { id: id } ],
               ignoreFilter: true
             };
-            GenerateSearchQuery($scope, options, function(err, query) {
+            GenerateSearchQuery($scope, options, function(err, response) {
               if (err) {
                 return console.log(err);
               }
-              Search({ query: query }, function(err, data) {
+              Search(response, function(err, data) {
                 if (err) {
                   return console.log(err);
                 }
@@ -138,16 +138,18 @@ var _ = require('underscore'),
           $scope.selectMessage();
         }
 
-        GenerateSearchQuery($scope, options, function(err, query) {
+        GenerateSearchQuery($scope, options, function(err, response) {
           if (err) {
             return console.log(err);
           }
-          options.query = query;
-          if (options.query === _currentQuery && !options.changes) {
+          options.query = response.query;
+          options.schema = response.schema;
+          var queryString = JSON.stringify(options.query);
+          if (queryString === _currentQuery && !options.changes) {
             // debounce as same query already running
             return;
           }
-          _currentQuery = options.query;
+          _currentQuery = queryString;
           if (!options.silent) {
             $scope.error = false;
             $scope.errorSyntax = false;
