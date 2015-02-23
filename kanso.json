@@ -199,7 +199,8 @@
             },
             "gateway_number": {
                 "type": "string",
-                "title": "Gateway Number"
+                "title": "Gateway Number",
+                "description": "This is the number where mobile reporters should send their reports. It is also the number they will receive messages from.  Auto-replies will not be sent to this number to avoid message loops."
             },
             "outgoing_phone_replace": {
                 "title": "Outgoing Phone Replacement",
