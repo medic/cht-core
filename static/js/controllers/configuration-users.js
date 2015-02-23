@@ -5,8 +5,14 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationUsersCtrl',
-    ['$scope', '$rootScope', 'Users',
-    function ($scope, $rootScope, Users) {
+    ['$scope', '$rootScope', '$state', 'Users',
+    function ($scope, $rootScope, $state, Users) {
+
+      if (!$scope.permissions || !$scope.permissions.admin) {
+        console.log('Insufficient permissions. Must be "admin".');
+        $state.go('error', { code: 403 });
+        return;
+      }
 
       $scope.updateList = function() {
         Users(function(err, users) {

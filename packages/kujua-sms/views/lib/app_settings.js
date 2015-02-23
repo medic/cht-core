@@ -5544,6 +5544,46 @@ module.exports = {
                   "content": "Task Message"
               }
           ]
+      },
+      {
+          "key": "error.403.title",
+          "default": "Access denied",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Access denied"
+              }
+          ]
+      },
+      {
+          "key": "error.403.description",
+          "default": "You have insufficient privileges to view this page. Talk to an administrator to increase your privileges.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "You have insufficient privileges to view this page. Talk to an administrator to increase your privileges."
+              }
+          ]
+      },
+      {
+          "key": "error.404.title",
+          "default": "Not found",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Not found"
+              }
+          ]
+      },
+      {
+          "key": "error.404.description",
+          "default": "The page you were looking for was not found.",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "The page you were looking for was not found."
+              }
+          ]
       }
    ],
    "forms": {

@@ -870,5 +870,6 @@ require('moment/locales');
   require('./help');
   require('./help-search');
   require('./theme');
+  require('./error');
 
 }());

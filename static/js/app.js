@@ -23,7 +23,17 @@ require('./filters/index');
   app.config(['$stateProvider', '$urlRouterProvider', '$translateProvider', '$compileProvider',
     function($stateProvider, $urlRouterProvider, $translateProvider, $compileProvider) {
 
+      $urlRouterProvider.otherwise('/error/404');
+
       $stateProvider
+
+        // errors
+        .state('error', {
+          url: '/error/:code',
+          controller: 'ErrorCtrl',
+          templateUrl: 'templates/partials/error.html'
+        })
+
         // messages
         .state('messages', {
           url: '/messages?tour',
