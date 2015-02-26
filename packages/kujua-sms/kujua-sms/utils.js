@@ -2,8 +2,7 @@
  * Utility functions for Medic Mobile
  */
 var utils = require('kujua-utils'),
-    settings = require('settings/root'),
-    logger = require('kujua-utils').logger,
+    logger = utils.logger,
     _ = require('underscore'),
     moment = require('moment'),
     objectpath = require('views/lib/objectpath');
@@ -16,13 +15,15 @@ var utils = require('kujua-utils'),
 */
 var prettyVal = function(data_record, key, def) {
 
-    if (!data_record || _.isUndefined(key) || _.isUndefined(data_record[key]))
+    if (!data_record || _.isUndefined(key) || _.isUndefined(data_record[key])) {
         return;
+    }
 
-    var val  = data_record[key];
+    var val = data_record[key];
 
-    if (!def)
+    if (!def) {
         return val;
+    }
 
     if (def.fields && def.fields[key]) {
         def = def.fields[key];
@@ -30,16 +31,9 @@ var prettyVal = function(data_record, key, def) {
 
     switch (def.type) {
         case 'boolean':
-            if (val === true)
-                return 'True';
-            if (val === false)
-                return 'False';
+            return val === true ? 'True' : 'False';
         case 'date':
-            if (val) {
-                var m = moment(data_record[key]);
-                return m.format('DD, MMM YYYY');
-            }
-            return;
+            return exports.info.formatDate(data_record[key]);
         case 'integer':
             // use list value for month
             if (def.validate && def.validate.is_numeric_month) {
@@ -91,11 +85,6 @@ exports.makeDataRecordOriginal = function(doc) {
     return doc;
 };
 
-function formatDate(timestamp, format) {
-    format = format || 'ddd DD, MMM YYYY, HH:mm:ss ZZ';
-    return moment(timestamp).format(format);
-};
-
 /*
  * With some forms like ORPT (patient registration), we add additional data to
  * it based on other form submissions.  Form data from other reports is used to
@@ -109,25 +98,38 @@ var includeNonFormFields = function(doc, form_keys) {
         { key:'mother_outcome', label: 'Mother Outcome'},
         { key:'child_birth_outcome', label: 'Child Birth Outcome'},
         { key:'child_birth_weight', label: 'Child Birth Weight'},
-        { key:'child_birth_date', label: 'Child Birth Date', format: formatDate},
-        { key:'expected_date', label: 'Expected Date', format: formatDate},
-        { key:'birth_date', label: 'Birth Date', format: formatDate},
-        { key:'patient_id', label:'Patient ID'}
+        { key:'child_birth_date', label: 'Child Birth Date'},
+        { key:'expected_date', label: 'Expected Date'},
+        { key:'birth_date', label: 'Birth Date'},
+        { key:'patient_id', label: 'Patient ID'}
+    ];
+
+    var dateFields = [
+        'child_birth_date',
+        'expected_date',
+        'birth_date'
     ];
 
     _.each(fields, function(obj) {
         var key = obj.key,
             label = obj.label,
-            format = obj.format;
+            value = doc[key];
 
         // Only include the property if we find it on the doc and not as a form
         // key since then it would be duplicated.
-        if (!doc[key] || form_keys.indexOf(key) !== -1) return;
+        if (!value || form_keys.indexOf(key) !== -1) {
+            return;
+        }
+
+        if (_.contains(dateFields, key)) {
+            value = exports.info.formatDate(value);
+        }
 
         doc.fields.data.unshift({
-            isArray: false,
             label: label,
-            value: format ? format(doc[key]) : doc[key]
+            value: value,
+            isArray: false,
+            generated: true
         });
 
         doc.fields.headers.unshift({
@@ -146,13 +148,13 @@ var includeNonFormFields = function(doc, form_keys) {
  */
 exports.makeDataRecordReadable = function(doc, appinfo) {
 
-    exports.info = appinfo;
+    exports.info = appinfo || exports.info;
 
     var data_record = doc;
 
     // adding a fields property for ease of rendering code
     if(data_record.form) {
-        var keys = getFormKeys(appinfo.getForm(data_record.form));
+        var keys = getFormKeys(exports.info.getForm(data_record.form));
         var labels = exports.getLabels(keys, data_record.form, getLocale(doc));
         data_record.fields = exports.fieldsToHtml(keys, labels, data_record);
         includeNonFormFields(data_record, keys);
@@ -170,21 +172,24 @@ exports.makeDataRecordReadable = function(doc, appinfo) {
 
             // format timestamp
             if (t.due) {
-                copy._due_ts = t.due;
-                copy.due = formatDate(t.due);
+                copy.due = t.due;
             }
 
             if (t.timestamp) {
-                copy.timestamp = formatDate(t.timestamp);
+                copy.timestamp = t.timestamp;
             }
 
             // setup scheduled groups
             var group_name = t.type;
-            if (t.group)
-                group_name += ":"+t.group;
+            if (t.group) {
+                group_name += ":" + t.group;
+            }
+
             if (!groups[group_name]) {
                 groups[group_name] = {
                     group: group_name,
+                    type: t.type,
+                    number: t.group,
                     rows: []
                 };
             }
@@ -299,9 +304,9 @@ exports.fieldsToHtml = function(keys, labels, data_record, def) {
         } else {
             var label = labels.shift();
             fields.headers.push({head: exports.info.getMessage(label)});
-            if (def && def[key])
-                def = def[key]
-            var v = prettyVal(data_record, key, def);
+            if (def && def[key]) {
+                def = def[key];
+            }
             fields.data.push({
                 isArray: false,
                 value: prettyVal(data_record, key, def),

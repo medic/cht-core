@@ -1,28 +1,26 @@
 <ul class="nav nav-pills">
   <li class="title">
-  <h3><i class="icon-time"></i>{@translate value="Show Reports From"/}:</h3>
+  <h3>
+    <i class="fa fa-calendar"></i>
+    {@translate value="Show Reports From"/}:
+  </h3>
   </li>
   {#date_nav}
     <li{?active} class="active"{/active}>
-    <a href="{baseURL}/reporting/{form}/{_id}?{query_params}">{@translate value="{text}"/}</a>
+    {#query_params}
+    <a href="#" data-form-code="{form}" data-time-unit="{time_unit}" data-startweek="{startweek}" data-startmonth="{startmonth}" data-startquarter="{startquarter}" data-startyear="{startyear}" data-quantity="{quantity}">{@translate value="{text}"/}</a>
+    {/query_params}
     </li>
   {/date_nav}
-  <li class="dropdown">
-      <a class="dropdown-toggle"
-         data-toggle="dropdown"
-         href="#">
-         {@translate value="Change time unit"/}
-          <b class="caret"></b>
-        </a>
-      <ul class="dropdown-menu">
-        <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=week"
-          >{@translate value="Week"/}</a></li>
-        <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=month"
-          >{@translate value="Month"/}</a></li>
-        <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=quarter"
-          >{@translate value="Quarter"/}</a></li>
-        <li><a href="{baseURL}/reporting/{form}/{_id}?time_unit=year"
-          >{@translate value="Year"/}</a></li>
-      </ul>
-  </li>
+  <div class="btn-group">
+    <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown">
+      {@translate value="Change time unit"/} <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+      <li><a href="#" data-form-code="{form}" data-time-unit="week">{@translate value="Week"/}</a></li>
+      <li><a href="#" data-form-code="{form}" data-time-unit="month">{@translate value="Month"/}</a></li>
+      <li><a href="#" data-form-code="{form}" data-time-unit="quarter">{@translate value="Quarter"/}</a></li>
+      <li><a href="#" data-form-code="{form}" data-time-unit="year">{@translate value="Year"/}</a></li>
+    </ul>
+  </div>
 </ul>

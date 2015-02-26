@@ -10,27 +10,44 @@
 
     <label for="gateway-number">Gateway number</label>
     <input id="gateway-number" type="text" value="{gateway_number}" />
+    <span class="help-block">This is number where mobile reporters should send their reports. It is also the number they will receive messages from.</span>
+
+    <label for="default-country-code">Default Country Code</label>
+    <input id="default-country-code" type="text" value="{default_country_code}" />
+    <span class="help-block">Messages received without a country code will be assigned this country code.</span>
 
   </fieldset>
 
   <fieldset>
     <legend>Advanced Settings</legend>
 
-    <label for="accept-messages">Accept messages</label>
+    <label for="accept-messages">Accept plain-text messages</label>
     <input id="accept-messages" type="checkbox" {@eq key="forms_only_mode" value="false"}checked="true"{/eq}>
-    <span class="help-block">if unchecked an error message will be sent to anyone who submits anything other than a report</span>
+    <span class="help-block">Check this box if you want to accept regular SMS messages in addition to reports. If unchecked, an error message will be sent to anyone who submits anything other than a report.</span>
 
     <label for="date-display-format">Date display format</label>
     <select id="date-display-format">
       {#date_formats}
       <option 
         value="{.}" 
-        {@if cond="'{reported_date_format}' === '{.}'"}selected="true"{/if}>
-          {.}
+        {@if cond="'{date_format}' === '{.}'"}selected="true"{/if}>
+        {.}
       </option>
       {/date_formats}
     </select>
     eg: <span id="date-format-example">{date_format_example}</span>
+
+    <label for="datetime-display-format">Datetime display format</label>
+    <select id="datetime-display-format">
+      {#datetime_formats}
+      <option 
+        value="{.}" 
+        {@if cond="'{reported_date_format}' === '{.}'"}selected="true"{/if}>
+          {.}
+      </option>
+      {/datetime_formats}
+    </select>
+    eg: <span id="datetime-format-example">{datetime_format_example}</span>
 
     <label>Phone number conversion</label>
     Replace the country code for {>"configuration/countrycodes.html"/}
@@ -47,6 +64,7 @@
 
   <fieldset>
     <legend>Languages</legend>
+    <p>You can edit the translations for each language on the <a href="#translations" class="tab-link">Translations</a> tab.</p>
     <div id="languages" class="repeat-container">
       {#locales}
       <div class="repeat-element">
@@ -55,7 +73,7 @@
           as <input type="text" name="language-name" value="{name}"/>
         </p>
         <p>
-          <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
+          <a href="#" class="btn btn-small remove"><i class="fa fa-trash-o"></i> Remove</a>
         </p>
       </div>
       {/locales}
@@ -65,11 +83,11 @@
           as <input type="text" name="language-name"/>
         </p>
         <p>
-          <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
+          <a href="#" class="btn btn-small remove"><i class="fa fa-trash-o"></i> Remove</a>
         </p>
       </div>
       <p>
-        <a href="#" class="add btn"><i class="icon-plus"></i> Add language</a>
+        <a href="#" class="add btn"><i class="fa fa-plus"></i> Add language</a>
       </p>
     </div>
   </fieldset>

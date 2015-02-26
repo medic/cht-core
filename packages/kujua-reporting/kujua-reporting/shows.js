@@ -1,22 +1,18 @@
 var db = require('db'),
     utils = require('./utils'),
+    dust = require('dust-core'),
     kutils = require('kujua-utils'),
     sms_utils = require('kujua-sms/utils'),
     appname = require('settings/root').name,
-    duality = require('duality/core'),
-    events = require('duality/events'),
-    users = require('users'),
     charts = require('./ui/charts'),
-    templates = require('duality/templates'),
-    appinfo = require('views/lib/appinfo'),
-    url_util = require('url');
+    session = require('session'),
+    appinfo = require('views/lib/appinfo');
 
-var facility_doc
-    , _req
-    , dates
-    , isAdmin
-    , isDistrictAdmin
-    , userDistrict;
+var facility_doc, 
+    dates, 
+    isAdmin, 
+    isDistrictAdmin, 
+    userDistrict;
 
 var getViewReports = function(doc, dates, callback) {
     var args = utils.getReportingViewArgs(dates),
@@ -26,8 +22,7 @@ var getViewReports = function(doc, dates, callback) {
         view = 'data_records_by_form_year_week_facility';
     }
 
-    var appdb = db.use(duality.getDBURL());
-    appdb.getView(appname, view, args, function(err, data) {
+    db.getView(appname, view, args, function(err, data) {
         if (err) {
             callback(
                 'Error: '+ err + '\n' + 'Args: ' + JSON.stringify(args)
@@ -74,8 +69,7 @@ var getViewChildFacilities = function(doc, callback) {
     args.startkey = startkey;
     args.endkey = endkey;
 
-    var appdb = db.use(duality.getDBURL());
-    appdb.getView(appname, view, args, function(err, data) {
+    db.getView(appname, view, args, function(err, data) {
         if (err) {
             callback(err);
         } else {
@@ -100,30 +94,31 @@ var getViewSiblingFacilities = function(doc, callback) {
     args.startkey.push(doc.type, doc.parent._id);
     args.endkey.push(doc.type, doc.parent._id, {}); // {} couchdb endkey trick
 
-    var appdb = db.use(duality.getDBURL());
-    appdb.getView(appname, 'facilities_by_parent', args, function(err, data) {
+    db.getView(appname, 'facilities_by_parent', args, function(err, data) {
         if (err) { return alert(err); }
         callback(data);
     });
 
 };
 
-var renderRelatedFacilities = function(req, doc, selector) {
+var renderRelatedFacilities = function(doc, selector) {
     selector = selector || '#facilities_related';
     var related = [];
     var appendRelated = function(d) {
         var p = d.related_entities ? d.related_entities.clinic : d.parent;
         if(p && p.name) {
             related.push({
-                title: $.kansotranslate(utils.viewHeading(p.type)),
+                title: utils.viewHeading(p.type),
                 name: p.name
             });
-            if (p.parent) { appendRelated(p); }
+            if (p.parent) { 
+                appendRelated(p); 
+            }
         }
     };
     appendRelated(doc);
     $(selector).html(
-        templates.render('kujua-reporting/facilities_related.html', req, {
+        render('kujua-reporting/facilities_related.html', {
             related: related
         })
     );
@@ -160,9 +155,11 @@ var renderReportingTotals = function(totals, doc) {
         });
     }
 
+    $('#totals .chart .chartwrapper').html('');
+
     var chart = charts.pie(
         [totals.incomplete, totals.not_submitted, totals.complete],
-        {selector: '#totals .chart',
+        {selector: '#totals .chart .chartwrapper',
          cx: 110,
          cy: 150,
          radius: 100,
@@ -251,191 +248,64 @@ var renderReportingTotals = function(totals, doc) {
 
 };
 
-
-
-//
-// render record details when a row is clicked
-//
-var onRecordClick = function(ev) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    var $tr = $(ev.currentTarget),
-        id = $tr.attr('rel'),
-        req = {};
-    // get target el from event context
-    var row = $tr.next('.data-record-details'),
-        cell = row.children('td'),
-        body = cell.html();
-
-    if (body === '') {
-        row.show();
-        cell.show();
-        cell.html('<div class="loading">Loading...</div>');
-        var appdb = db.use(duality.getDBURL());
-        appdb.getDoc(id, function(err, resp) {
-            if (err) {
-                var msg = 'Error fetching record with id '+ id +'.  '
-                            + 'Try a refresh or check the database connection. '
-                            + err;
-                kutils.logger.warn(msg);
-                return alert(msg);
-            }
-            cell.html(
-                templates.render(
-                    "kujua-reporting/data_records_table.html",
-                    req,
-                    {data_records: sms_utils.makeDataRecordReadable(resp)}
-                )
-            );
-        });
-    } else {
-        row.toggle();
-    }
+function renderFacility(formCode, facilityId) {
+    dates.form = formCode;
+    db.getDoc(facilityId, function(err, facility) {
+        if (err) {
+            return console.log(err);
+        }
+        facility_doc = facility;
+        getViewChildFacilities(facility, renderReports);
+    });
 };
 
-function renderReporting(doc, req) {
-
-    sms_utils.info = appinfo.getAppInfo.apply(this);
-
-    var template = 'kujua-reporting/facility.html';
-    _req = req;
-    isAdmin = kutils.isUserAdmin(req.userCtx);
-    isDistrictAdmin = kutils.isUserDistrictAdmin(req.userCtx);
-    facility_doc = doc;
-    dates = utils.getDates(req.query);
-
-    if (utils.isHealthCenter(doc)) {
-        template = 'kujua-reporting/facility_hc.html';
-    }
-
-    events.once('afterResponse', function() {
-
-        kutils.updateTopNav('reporting_rates');
-
-        if (!isAdmin && !isDistrictAdmin) {
-            // not logged in or roles is not setup right
-            return $('[data-page=reporting_rates] #content').html(
-                templates.render("403.html", req, {})
-            );
-        }
-        users.get(req.userCtx.name, function(err, user) {
-
-            if (err) {
-                return kutils.logger.warn('Failed to retreive user info: '+err.reason);
-            }
-
-            userDistrict = user.facility_id;
-            if (isAdmin || (isDistrictAdmin && userDistrict)) {
-                renderPage();
-            } else {
-                return $('[data-page=reporting_rates] #content').html(
-                    templates.render("500.html", req, {
-                        msg: 'No facility assigned to district admin.'
-                    })
-                );
-            }
-        });
+function registerListeners() {
+    charts.initPieChart();
+    $('body').on('click', '#reporting-district-choice .facility', function(e) {
+        e.preventDefault();
+        var row = $(e.target).closest('.facility');
+        renderFacility(row.attr('data-form-code'), row.attr('rel'));
     });
-
-    if (doc) {
-        // TODO fix show when $.kansotranslate is not available
-        return {
-            title: doc.name,
-            info: sms_utils.info,
-            content: templates.render(template, req, {
-                doc: doc
-            })
-        };
-    } else {
-        return {
-            title: "Reporting Rates",
-            info: sms_utils.info,
-            content: templates.render("loader.html", req, {})
-        }
-    }
-
+    $('body').on('click', '#date-nav a', function(e) {
+        e.preventDefault();
+        var link = $(e.target).closest('a');
+        dates = utils.getDates({
+            form: link.attr('data-form-code'),
+            time_unit: link.attr('data-time-unit'),
+            quantity: link.attr('data-quantity'),
+            startweek: link.attr('data-startweek'),
+            startmonth: link.attr('data-startmonth'),
+            startquarter: link.attr('data-startquarter'),
+            startyear: link.attr('data-startyear')
+        });
+        getViewChildFacilities(facility_doc, renderReports);
+    });
+    $('body').on('click', '#reporting-data tr[rel]', function(e) {
+        e.preventDefault();
+        var facilityId = $(e.target).closest('tr').attr('rel');
+        renderFacility(dates.form, facilityId);
+    });
 };
 
-function renderPage() {
-
-    var appdb = db.use(duality.getDBURL()),
-        config = sms_utils.info['kujua-reporting'],
-        doc = facility_doc,
-        form_config,
-        parentURL = '',
-        req = _req,
-        title;
-
-    if (!doc) {
-        return renderDistrictChoice(appdb, config);
-    }
-
-    // check that form code is setup in config
-    form_config = _.findWhere(config, {
-        code: req.query.form
-    });
-
-    // Make sure form config is valid.
-    if (!form_config || !form_config.code || !form_config.reporting_freq) {
-        return $('[data-page=reporting_rates] #content').html(
-            templates.render("500.html", req, {
-                doc: doc,
-                msg: 'Please add a form to your Schedule Reports settings.'
-            })
-        );
-    }
-
-    title = sms_utils.getFormTitle(form_config.code);
-
-    dates = utils.getDates(req.query, form_config.reporting_freq);
-
-    if (utils.isHealthCenter(doc)) {
-        parentURL = utils.getReportingUrl(doc.parent._id, dates);
-    } else if (utils.isDistrictHospital(doc)) {
-        parentURL = 'reporting';
-    }
-
-    // render header
-    $('[data-page=reporting_rates] .page-header .container').html(
-        templates.render('kujua-reporting/page_header_body.html', req, {
-            doc: _.extend({}, doc, form_config, {
-                title: title
-            }),
-            parentURL: parentURL
-        })
-    );
-    $('.page-header .container').addClass('reporting');
-    $('body > .container .content').filter(':first').attr('class','content-reporting');
-
-    // render date nav
-    $('[data-page=reporting_rates] #date-nav .row').html(
-        templates.render('kujua-reporting/date_nav.html', req, {
-            date_nav: utils.getDateNav(dates, form_config.reporting_freq),
-            _id: doc._id,
-            form: dates.form
-        })
-    );
-
-    getViewChildFacilities(doc, renderReports);
-}
-
-function renderDistrictChoice(appdb, config) {
-
+function getForms() {
+    var def, formName;
     var f = [];
-
-    _.each(config, function(form, idx) {
-        var def = sms_utils.info.getForm(form.code),
-            formName = sms_utils.getFormTitle(form.code);
+    _.each(sms_utils.info['kujua-reporting'], function(form) {
+        def = sms_utils.info.getForm(form.code);
         if (def) {
             f.push(_.extend(form, {
-                formName: formName
+                formName: sms_utils.getFormTitle(form.code)
             }));
         }
     });
+    return f;
+};
 
-    config = f;
+function renderDistrictChoice() {
 
-    appdb.getView(appname, 'facilities_by_type', {
+    var config = getForms();
+
+    db.getView(appname, 'facilities_by_type', {
         startkey: ['health_center'],
         endkey: ['health_center', {}],
         reduce: false,
@@ -474,7 +344,7 @@ function renderDistrictChoice(appdb, config) {
         });
 
         $('[data-page=reporting_rates] #content').html(
-            templates.render("kujua-reporting/reporting_district_choice.html", {}, {
+            render("kujua-reporting/reporting_district_choice.html", {
                 forms: config,
                 one_form: config.length === 1,
                 districts: districts_list
@@ -490,18 +360,67 @@ function renderDistrictChoice(appdb, config) {
 
 var renderReports = function(err, facilities) {
 
+    //
+    // render record details when a row is clicked
+    //
+    var onRecordClick = function(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        var $tr = $(ev.target).closest('tr'),
+            id = $tr.attr('rel');;
+        // get target el from event context
+        var row = $tr.next('.data-record-details'),
+            cell = row.children('td'),
+            body = cell.html();
+
+        if (body === '') {
+            row.show();
+            cell.show();
+            cell.html('<div class="loading">Loading...</div>');
+            db.getDoc(id, function(err, resp) {
+                if (err) {
+                    var msg = 'Error fetching record with id '+ id +'.  '
+                                + 'Try a refresh or check the database connection. '
+                                + err;
+                    kutils.logger.warn(msg);
+                    return alert(msg);
+                }
+                cell.html(
+                    render(
+                        "kujua-reporting/data_records_table.html",
+                        {data_records: sms_utils.makeDataRecordReadable(resp)}
+                    )
+                );
+            });
+        } else {
+            row.toggle();
+        }
+    };
+
     var doc = facility_doc
-        , req = _req
         , rows = []
         , template = 'kujua-reporting/facility.html'
         , data_template = 'kujua-reporting/facility_data.html'
-        , getReportingData = utils.getRows;
+        , getReportingData = utils.getRows
+        , config = sms_utils.info['kujua-reporting'];
 
     if (utils.isHealthCenter(doc)) {
         template = 'kujua-reporting/facility_hc.html';
         data_template = 'kujua-reporting/facility_data_hc.html';
         getReportingData = utils.getRowsHC;
     }
+
+    var form_config = _.findWhere(config, {
+        code: dates.form
+    });
+    $('[data-page=reporting_rates] #content').html(
+        render(template, {
+            doc: doc,
+            date_nav: utils.getDateNav(dates, form_config.reporting_freq),
+            form: dates.form
+        })
+    );
+
 
     getViewReports(doc, dates, function(err, reports) {
         if (err) {
@@ -512,7 +431,7 @@ var renderReports = function(err, facilities) {
         rows = getReportingData(facilities, reports, dates, doc);
 
         $('#reporting-data').html(
-            templates.render(data_template, req, {
+            render(data_template, {
                 rows: rows,
                 doc: doc
             })
@@ -525,9 +444,9 @@ var renderReports = function(err, facilities) {
             var color = Raphael.hsb(val/300, .75, .85);
 
             if (val === 0) {
-                paper.addClass('icon-remove-sign');
+                paper.addClass('fa-times');
             } else if (val == 100) {
-                paper.addClass('icon-ok-sign');
+                paper.addClass('fa-check');
             } else {
                 var chart = charts.pie(
                     [val, 100 - val],
@@ -562,7 +481,7 @@ var renderReports = function(err, facilities) {
             }
         });
 
-        renderRelatedFacilities(req, doc);
+        renderRelatedFacilities(doc);
 
         // only render sibling menu if we are admin and looking at a district
         if (isAdmin || doc.type !== 'district_hospital') {
@@ -571,10 +490,9 @@ var renderReports = function(err, facilities) {
 
             getViewSiblingFacilities(doc, function(data) {
                 $('.nav.facilities .dropdown-menu').html(
-                    templates.render(
-                        'kujua-reporting/siblings-umenu-item.html', req, {
-                            rows: data.rows,
-                            form: req.query.form
+                    render('kujua-reporting/siblings-umenu-item.html', {
+                        rows: data.rows,
+                        form: dates.form
                     })
                 );
             });
@@ -582,8 +500,29 @@ var renderReports = function(err, facilities) {
     });
 }
 
-/**
- * Reporting rates of a facility
- */
-exports.facility_reporting = renderReporting;
+var render = function (name, context) {
+    var r = '';
+    dust.render(name, context, function (err, result) {
+        if (err) {
+            throw err;
+        }
+        r = result;
+    });
+    return r;
+};
 
+exports.render_page = function() {
+    require('../../../lib/dust-helpers');
+    db = db.current();
+    registerListeners();
+    sms_utils.info = appinfo.getAppInfo();
+    dates = utils.getDates({});
+    session.info(function(err, info) {
+        isAdmin = kutils.isUserAdmin(info.userCtx);
+        isDistrictAdmin = kutils.isUserDistrictAdmin(info.userCtx);
+        kutils.getUserDistrict(info.userCtx, function(err, district) {
+            userDistrict = district;
+            renderDistrictChoice();
+        });
+    });
+};

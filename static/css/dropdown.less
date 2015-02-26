@@ -1,0 +1,135 @@
+@import "variables";
+
+/**
+* @name mm-dropdown-menu:
+* Restyles and extends Bootstrap's `dropdown-menu`.
+*/
+
+.mm-dropdown-menu {
+  top: 0;
+  right: 0;
+  padding: 1em 0;
+  margin: 3.6em 0;
+  font-size: 0.85em;
+  position: absolute;
+  overflow-x: hidden;
+  border-radius: 0 0 0.4em 0.4em;
+  border: 0;
+  background-color: #fff;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.25);
+  height: auto;
+  max-height: 350px;
+
+  li a, li.dropdown-header a {
+    font-size: 1.1em;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    cursor: pointer;
+    &:hover {
+      background-color: @highlight-color;
+    }
+  }
+
+}
+
+.mm-dropdown {
+
+  display: inline-block;
+
+  &.multidropdown .dropdown-menu {
+    padding-bottom: 0;
+    li {
+      a, &.dropdown-header {
+        padding-left: 1em;
+        padding-right: 1em;
+      }
+      &.dropdown-header {
+        margin-top: 1em;
+        &:first-child {
+          margin-top: 0;
+        }
+      }
+      a:before {
+        content: '\f096';
+        font-family: FontAwesome;
+        margin-right: 4px;
+      }
+      .selected:before {
+        content: '\f046';
+        margin-right: 2px;
+      }
+    }
+    .dropdown-child a {
+      text-indent: 1em;
+    }
+    .actions {
+      text-align: center;
+    }
+  }
+
+  &.dropdown.pair-left {
+    padding-right: 0;
+    .mm-button {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      border-right-width: 0;
+    }
+    .mm-button-dropdown {
+      float: left;
+    }
+    .mm-button-text {
+      text-align: right;
+      width: 95%;
+    }
+  }
+
+  &.dropdown.pair-right {
+    padding-left: 0;
+    .mm-button {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      padding-left: 0.5em;
+      border-left-color: #aaa;
+    }
+  }
+}
+
+.mm-dropdown-menu-inverse li a:hover {
+  color: #000;
+  background-color: rgba(255, 255, 255, 0.8);
+  background-image: none;
+}
+
+.mm-dropdown-menu-inverse {
+  background-color: rgba(0, 0, 0, 0.85);
+  border-color: rgba(255, 255, 255, 0.25);
+  &, li a {
+    color: #fff;
+  }
+}
+
+.mm-dropdown-menu-modal {
+  margin: 0;
+  position: fixed;
+  display: block;
+  padding: 1em 0;
+  font-size: 1.25em;
+  border-width: 1px;
+
+  li a {
+    padding: 0.5em 1em;
+    text-shadow: none;
+    font-weight: bold;
+  }
+
+}
+
+@media (max-width: 767px) {
+  .open .mm-dropdown-menu {
+    top: 6em;
+    left: 2em;
+    right: 2em;
+    .mm-dropdown-menu-modal
+  }
+}
+

@@ -1,3 +1,5 @@
+@import "variables";
+
 .content-reporting {
   margin-top: 100px;
 }
@@ -18,17 +20,15 @@
     color: @grey;
 }
 
-#totals h3 {
-    font-size: 1em;
-    text-align: center;
-    color: @grey;
-    .droid;
-    font-weight: 300;
-    margin: 1.5em 0 0 0;
-    line-height: 1.5em;
-}
-
 #totals {
+    h3 {
+        font-size: 1em;
+        text-align: center;
+        color: @grey;
+        font-weight: 300;
+        margin: 1.5em 0 0 0;
+        line-height: 1.5em;
+    }
     h4 {
         font-size: 4em;
         text-align: center;
@@ -61,80 +61,65 @@
             background: url('../kujua-reporting/img/icon-warn.png') no-repeat center top;
         }
     }
-}
-
-#totals .chart {
-    height: 300px;
-    margin-left: 4em;
-}
-
-#totals {
-    border-bottom: 1px solid @lightgrey;
-    min-width: 940px;
+    .chart {
+        height: 300px;
+        .chartwrapper {
+            margin: 0px auto;
+            width: 220px;
+        }
+    }
 }
 
 #date-nav {
-    margin: 1em auto 0 auto;
-    width: 58em;
-    height: 4em;
-}
-
-#date-nav .title h3 {
-    color: @grey;
-    .droidItalic;
-    font-size: 1.12em;
-    font-weight: normal;
-    padding: 0 20px 0 0;
-    margin-top: -2px;
-}
-
-#date-nav .title .icon-time {
-    font-style: normal;
-    font-size: 1.65em;
-    margin-right: .35em;
-    vertical-align: middle;
+    margin: 0 auto;
+    padding: 1em 0;
+    clear: both;
+    border-top: 1px solid @lightgrey;
+    border-bottom: 1px solid @lightgrey;
+    .title h3 {
+        color: @grey;
+        font-size: 1.12em;
+        font-weight: normal;
+        margin: 0.7em 1em 0 0;
+    }
+    .row {
+        margin: 0 10px;
+        text-align: center;
+    }
+    .nav {
+        display: inline-block;
+    }
+    .btn-group {
+        margin: 3px;
+    }
 }
 
 #stats {
-    background-color:#fff;
-    @shadow: inset 0 1px 3px rgba(0,0,0,.1), 0 3px 8px #cecece;
-    /*@shadow: 0 3px 8px #cecece;*/
-    .box-shadow(@shadow);
-    border-top: 3px solid black;
-    min-width: 940px;
     .contact-phone {
         .add-message {
             vertical-align: text-bottom;
         }
     }
-}
+    table {
+        margin-bottom: 0;
+        .border-radius(0);
+        tr, td {
+            .border-radius(0);
+        }
+        th {
+            background-color: #fff;
+            padding-top: 30px;
+            padding-bottom: 30px;
+            font-size: 1.25em;
+            color: @grey;
+        }
+    }
 
-#stats table {
-    margin-bottom: 0;
-    .border-radius(0);
-}
-
-#stats table tr,
-#stats table td {
-    .border-radius(0);
-}
-
-#stats th {
-    background-color: #fff;
-}
-
-#stats {
     td, th {
         padding: 15px 0 15px 30px;
         border-left: none;
         border-right: none;
         font-size: 1.1em;
-    }
-    th {
-        padding-top: 30px;
-        padding-bottom: 30px;
-        font-size: 1.25em;
-        color: @grey;
     }
     .first-column {
         width: 40%;
@@ -142,18 +127,15 @@
     .first-column-hc {
         width: 67%;
     }
-    .status-column {
-        width: 20%;
-    }
     .mini-pie {
-      font-size: 2em;
-      margin-top: 5px;
-    }
-    .mini-pie.icon-remove-sign {
-      color: @red;
-    }
-    .mini-pie.icon-ok-sign {
-      color: @green;
+        font-size: 2em;
+        margin-top: 5px;
+        &.fa-times {
+          color: @red;
+        }
+        &.fa-check {
+          color: @green;
+        }
     }
 }
 
@@ -166,57 +148,48 @@
     line-height: 1.23em;
 }
 
-#content .pagination {
-    margin-left: auto;
-    margin-right: auto;
-    width: 26em;
-}
+#content {
+    .pagination {
+        margin-left: auto;
+        margin-right: auto;
+        width: 26em;
+    }
 
-#content .field .content {
-    margin-left: 0;
-    min-width: 0;
-}
-
-#content .field {
-    padding: 1em 0 0 0;
-}
-
-#content .field .label label {
-    margin-right: 1em;
-}
-
-#content .field .content .inner span {
-    padding-top: .675em;
-    display: block;
+    .field {
+        padding: 1em 0 0 0;
+        .label label {
+            margin-right: 1em;
+        }
+        .content {
+            margin-left: 0;
+            min-width: 0;
+            .inner span {
+                padding-top: .675em;
+                display: block;
+            }
+        }
+    }
 }
 
 #reporting-data {
     .data-record {
+        background-color:#ebebeb;
       .period {
           color: @gold;
           font-weight: bold;
       }
       .period,
-      .reporter {
-          .droidBoldItalic;
-          /* too italics? font-style: italic;*/
-      }
-      .status p {
-          font-size: 8em;
-          color: @grey;
-          position: relative;
-          span {
-              position: absolute;
-              top: -5px;
-              left: 8px;
-          }
-          .important {
-              color: @red;
-          }
-          .success {
-              color: @green;
-          }
-      }
+        .status {
+            text-align: center;
+            color: @grey;
+
+            .important {
+                color: @red;
+            }
+            .success {
+                color: @green;
+            }
+        }
       .phone {
           font-family: Georgia, serif;
           font-weight: normal;
@@ -230,10 +203,14 @@
         color: @green;
         font-weight: bold;
     }
+    tr[rel] {
+        cursor: pointer;
+    }
     .data-records {
         padding: 0;
         td, th {
             padding: 20px 0 20px 30px;
+            vertical-align: middle;
         }
         th {
             border: none;
@@ -242,27 +219,22 @@
         table {
             margin: 0;
         }
-        tr:nth-child(odd) td {
-            background-color:#ebebeb;
-        }
-        .data-record[rel]:hover {
+        .data-record[rel] {
             cursor: pointer;
         }
         .data-record-details {
           font-size: .8em;
           td, th, .loading {
-            padding: 10px 0 10px 60px;
+            padding: 10px 0 10px 30px;
           }
-          /*.sms-message-data {
-              overflow: auto;
-          }*/
+          td:first-child {
+            width: 30%;
+          }
           > td {
               padding: 0;
           }
           .data-records-table {
-              /*height: 400px;*/
               overflow: auto;
-              width: 700px;
           }
           .responses ul, .errors ul {
             padding: 0;
@@ -275,8 +247,6 @@
         }
     }
     .facility-name {
-        .droidItalic;
-        .droidBold;
         color: @aqua;
         .facility-clinics {
             border-left: 1px solid #CCC;
@@ -286,10 +256,8 @@
         }
     }
     .valid-reports {
-        .droid;
         color: @grey;
         em {
-            .droidBold;
             color: black;
             font-weight: 600;
             font-size: 1.1em;
@@ -369,3 +337,60 @@
   float: left;
 }
 
+
+#reporting-district-choice {
+  padding-bottom: 40px;
+  padding-top: 20px;
+  .form-name {
+    padding: 20px;
+    text-align: center;
+  }
+  .district-name {
+    padding: 10px 0 10px 20px;
+  }
+  .child-name {
+    padding: 15px 0 15px 40px;
+  }
+  .facility {
+    cursor: pointer;
+    &:hover {
+      background-color: @highlight-color;
+    }
+  }
+}
+
+.row.content .reporting {
+  background-color: #FFF;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+}
+
+.analytics .content .send-message {
+  margin-left: 0.5em;
+}
+
+@media (max-width: 767px) {
+    #stats table {
+        .data-record, thead {
+            font-size: 0.8em;
+        }
+    }
+    #stats td,
+    #stats th,
+    #reporting-data .data-records th,
+    #reporting-data .data-records td,
+    #reporting-data .data-records .data-record-details td,
+    #reporting-data .data-records .data-record-details th, 
+    #reporting-data .data-records .data-record-details .loading {
+        padding-left: 10px;
+    }
+    #totals {
+        h4 {
+            font-size: 2em;
+            text-align: center;
+            margin-top: 1em;
+            padding-top: 1.5em;
+        }
+    }
+}

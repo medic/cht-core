@@ -1,0 +1,11 @@
+{
+    "name": "libphonenumber",
+    "version": "1.0.736",
+    "url": "https://code.google.com/p/libphonenumber/",
+    "modules": ["libphonenumber", "tests"],
+    "modules_attachment": false,
+    "dependencies": {
+        "modules": ">=0.0.8"
+    },
+    "description": "A port of Google's libphonenumber"
+}

@@ -1,0 +1,91 @@
+@import "variables";
+
+/**
+* @name mm-icon:
+*/
+
+.mm-icon {
+  width: 1em;
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+  &, &:focus {
+    .button-text;
+  }
+  &:hover {
+    .button-text-hover;
+  }
+}
+
+.mm-icon-inverse {
+  &, &:focus {
+    .button-text-inverse;
+  }
+}
+
+.mm-icon-disabled {
+  &, &:hover, &:focus {
+    text-decoration: none;
+    cursor: default;
+    .button-text-disabled;
+  }
+}
+
+.mm-icon-nudge-down {
+  position: relative;
+  top: 0.1em;
+}
+
+.mm-icon-nudge-up {
+  position: relative;
+  top: -0.15em;
+}
+
+.mm-icon-nudge-left {
+  position: relative;
+  right: 0.15em;
+}
+
+.mm-icon-nudge-right {
+  position: relative;
+  right: -0.15em;
+}
+
+.mm-icon-caption {
+  font-weight: bold;
+  font-size: 0.8em;
+  p {
+    margin-top: 0.5em;
+  }
+}
+
+.mm-icon-overlay, .mm-badge-overlay {
+  overflow: visible;
+  position: absolute;
+  z-index: 100;
+}
+
+.mm-icon-overlay {
+  font-size: 0.65em;
+  text-shadow:
+    -1px 0 rgba(255, 255, 255, 0.5), 0 1px rgba(255, 255, 255, 0.5),
+    1px 0 rgba(255, 255, 255, 0.5), 0 -1px rgba(255, 255, 255, 0.5);
+}
+
+.mm-icon-inverse .mm-icon-overlay {
+  text-shadow:
+    -1px 0 rgba(0, 0, 0, 0.5), 0 1px rgba(0, 0, 0, 0.5),
+    1px 0 rgba(0, 0, 0, 0.5), 0 -1px rgba(0, 0, 0, 0.5);
+}
+
+.mm-icon-overlay, .mm-icon-overlay-after {
+  bottom: -0.2em;
+  right: -0.2em;
+}
+
+.mm-loader {
+  font-size: 3em;
+  display: block;
+  text-align: center;
+  margin: 1em;
+}

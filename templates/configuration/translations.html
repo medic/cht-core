@@ -1,7 +1,11 @@
+<p>Edit the translation of the text as you would like it to appear. You may set your language preference in your User Profile, and set the language preference for all outgoing messages in Settings.</p>
+
 <form id="translations-form">
   <fieldset id="language-to-edit">
 
     {>"partials/locale.html"/}
+
+    <p>You can add additional languages on the <a href="#settings" class="tab-link">Settings</a> tab.</p>
 
   </fieldset>
   <fieldset>
@@ -10,7 +14,7 @@
 
     <ul>
       <li class="header">
-        <div class="default" title="Language fields left blank will use the 'default' text">Default <i class="icon-question-sign"></i></div>
+        <div class="default" title="Language fields left blank will use the 'default' text">Default <i class="fa fa-question-circle"></i></div>
         <div class="translation">Translation</div>
       </li>
       {#translations}

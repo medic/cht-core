@@ -15,6 +15,16 @@ exports.addFTI = function(obj) {
             url: '/_fti/local' + this.url + '/_design/' + this.encode(name) + '/' + this.encode(index)
         };
 
-        this.request(req, callback);
+        this.request(req, function(err, result) {
+            if (err) {
+                // the request itself failed
+                return callback(err);
+            }
+            if (!result.rows) {
+                // the query failed for some reason
+                return callback(result);
+            }
+            callback(null, result);
+        });
     }
 };

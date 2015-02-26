@@ -1,0 +1,16 @@
+<div class="col-sm-12 analytics-widget active-pregnancies">
+  <div class="widget-body error" ng-show="activePregnancies.error">
+    Could not retrieve data at this time.
+  </div>
+  <div class="widget-body" ng-hide="!activePregnancies.loading">
+    <div class="loading">
+      <span class="fa fa-spinner fa-spin"></span>
+    </div>
+  </div>
+  <div class="widget-body" ng-if="!activePregnancies.loading && !activePregnancies.error">
+    <div class="title">
+      <p class="count">{~lb}{~lb}activePregnancies.data.count || 0{~rb}{~rb}</p>
+      <p class="name">Active Pregnancies</p>
+    </div>
+  </div>
+</div>

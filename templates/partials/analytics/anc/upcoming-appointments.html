@@ -1,0 +1,45 @@
+<div class="col-xs-12 col-md-6 analytics-widget upcoming-appointments table-responsive">
+  <div class="widget-body error" ng-show="upcomingAppointments.error">
+    Could not retrieve data at this time.
+  </div>
+  <div class="widget-body" ng-hide="!upcomingAppointments.loading">
+    <div class="loading">
+      <span class="fa fa-spinner fa-spin"></span>
+    </div>
+  </div>
+  <div class="widget-body" ng-if="!upcomingAppointments.loading && !upcomingAppointments.error">
+    <div class="title">
+      <p class="count">
+        {~lb}{~lb}upcomingAppointments.data.length || 0{~rb}{~rb}
+      </p>
+      <p class="name">Upcoming Appointments</p>
+    </div>
+    <div class="content" ng-if="upcomingAppointments.data">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='patient_name'}" ng-click="upcomingAppointments.order='patient_name'">Name</th>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='-weeks.number'}" ng-click="upcomingAppointments.order='-weeks.number'">Weeks Pregnant</th>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='clinic.contact.name'}" ng-click="upcomingAppointments.order='clinic.contact.name'">CHW</th>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='date'}" ng-click="upcomingAppointments.order='date'">Appointment Date</th>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='visits'}" ng-click="upcomingAppointments.order='visits'">Visits</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="appointment in upcomingAppointments.data | orderBy:upcomingAppointments.order">
+            <td ng-class="{'high-risk': appointment.high_risk}">{~lb}{~lb}appointment.patient_name{~rb}{~rb}</td>
+            <td ng-bind-html="appointment.weeks | weeksPregnant"></td>
+            <td>{~lb}{~lb}appointment.clinic.contact.name{~rb}{~rb}</td>
+            <td ng-bind-html="appointment.date | relativeDate"></td>
+            <td>{~lb}{~lb}appointment.visits{~rb}{~rb}</td>
+            <td class="actions">
+              <a href="#" class="btn btn-link send-message" data-send-to="{~lb}{~lb}appointment.clinic.contact.phone{~rb}{~rb}" title="Send message to CHW" ng-class="{'disabled': !appointment.clinic.contact.phone}"><i class="fa fa-envelope"></i></a>
+              <a href="#/reports?query=patient_id:{~lb}{~lb}appointment.patient_id{~rb}{~rb}" class="btn btn-link" title="View patient history"><i class="fa fa-list-alt"></i></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

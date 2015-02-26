@@ -1,5 +1,4 @@
 var _ = require('underscore')._,
-    duality = require('duality/core'),
     moment = require('moment'),
     utils = require('kujua-utils');
 
@@ -179,28 +178,28 @@ exports.getDateNav = function (dates) {
 
     var presets = {
         week: [
-            {query_params: {time_unit: 'week', startmonth: dates.startweek, weeks: 1}, text: 'Last week'},
-            {query_params: {time_unit: 'week', startmonth: dates.startweek, weeks: 3}, text: 'Last 3 weeks'},
-            {query_params: {time_unit: 'week', startmonth: dates.startweek, weeks: 6}, text: 'Last 6 weeks'},
-            {query_params: {time_unit: 'week', startmonth: dates.startweek, weeks: 12}, text: 'Last 12 weeks'}
+            {query_params: {time_unit: 'week', startweek: dates.startweek, quantity: 1}, text: 'Last week'},
+            {query_params: {time_unit: 'week', startweek: dates.startweek, quantity: 3}, text: 'Last 3 weeks'},
+            {query_params: {time_unit: 'week', startweek: dates.startweek, quantity: 6}, text: 'Last 6 weeks'},
+            {query_params: {time_unit: 'week', startweek: dates.startweek, quantity: 12}, text: 'Last 12 weeks'}
         ],
         month: [
-            {query_params: {time_unit: 'month', startmonth: dates.startmonth, months: 1}, text: 'Last month'},
-            {query_params: {time_unit: 'month', startmonth: dates.startmonth, months: 3}, text: 'Last 3 months'},
-            {query_params: {time_unit: 'month', startmonth: dates.startmonth, months: 6}, text: 'Last 6 months'},
-            {query_params: {time_unit: 'month', startmonth: dates.startmonth, months: 12}, text: 'Last 12 months'}
+            {query_params: {time_unit: 'month', startmonth: dates.startmonth, quantity: 1}, text: 'Last month'},
+            {query_params: {time_unit: 'month', startmonth: dates.startmonth, quantity: 3}, text: 'Last 3 months'},
+            {query_params: {time_unit: 'month', startmonth: dates.startmonth, quantity: 6}, text: 'Last 6 months'},
+            {query_params: {time_unit: 'month', startmonth: dates.startmonth, quantity: 12}, text: 'Last 12 months'}
         ],
         quarter: [
-            {query_params: {time_unit: 'quarter', startquarter: dates.startquarter, quarters: 1}, text: 'Last quarter'},
-            {query_params: {time_unit: 'quarter', startquarter: dates.startquarter, quarters: 2}, text: 'Last 2 quarters'},
-            {query_params: {time_unit: 'quarter', startquarter: dates.startquarter, quarters: 3}, text: 'Last 3 quarters'},
-            {query_params: {time_unit: 'quarter', startquarter: dates.startquarter, quarters: 4}, text: 'Last 4 quarters'}
+            {query_params: {time_unit: 'quarter', startquarter: dates.startquarter, quantity: 1}, text: 'Last quarter'},
+            {query_params: {time_unit: 'quarter', startquarter: dates.startquarter, quantity: 2}, text: 'Last 2 quarters'},
+            {query_params: {time_unit: 'quarter', startquarter: dates.startquarter, quantity: 3}, text: 'Last 3 quarters'},
+            {query_params: {time_unit: 'quarter', startquarter: dates.startquarter, quantity: 4}, text: 'Last 4 quarters'}
         ],
         year: [
-            {query_params: {time_unit: 'year', startyear: dates.startyear, years: 1}, text: 'Last year'},
-            {query_params: {time_unit: 'year', startyear: dates.startyear, years: 2}, text: 'Last 2 years'},
-            {query_params: {time_unit: 'year', startyear: dates.startyear, years: 3}, text: 'Last 3 years'},
-            {query_params: {time_unit: 'year', startyear: dates.startyear, years: 4}, text: 'Last 4 years'}
+            {query_params: {time_unit: 'year', startyear: dates.startyear, quantity: 1}, text: 'Last year'},
+            {query_params: {time_unit: 'year', startyear: dates.startyear, quantity: 2}, text: 'Last 2 years'},
+            {query_params: {time_unit: 'year', startyear: dates.startyear, quantity: 3}, text: 'Last 3 years'},
+            {query_params: {time_unit: 'year', startyear: dates.startyear, quantity: 4}, text: 'Last 4 years'}
         ]
     };
 
@@ -209,17 +208,9 @@ exports.getDateNav = function (dates) {
 
     // mark active
     _.each(preset, function (item) {
-        if(item.query_params[time_unit + 's'] === dates[time_unit + 's']) {
+        if (item.query_params.quantity === dates.quantity) {
             item.active = true;
         }
-    });
-
-    // format query params hash as url compatible string
-    _.each(preset, function(item) {
-        item.query_params = _.reduce(item.query_params, function(str, value, key) {
-            return str + key + '=' + value + '&';
-        }, '');
-        item.query_params = item.query_params.slice(0, -1);
     });
 
     return preset;
@@ -258,7 +249,7 @@ exports.getDates = function (q, reporting_freq) {
 
     switch(selected_time_unit) {
         case 'week':
-            var weeks = (q.weeks ? parseInt(q.weeks, 10) : 3),
+            var weeks = (q.quantity ? parseInt(q.quantity, 10) : 3),
                 startweek = q.startweek || exports.dateToWeekStr(now),
                 date = now,
                 range = _.range(weeks);
@@ -270,13 +261,13 @@ exports.getDates = function (q, reporting_freq) {
 
             _.extend(dates, {
                 startweek: startweek,
-                weeks: weeks
+                quantity: weeks
             });
 
             break;
 
         case 'month':
-            var months = (q.months ? parseInt(q.months, 10) : 3),
+            var months = (q.quantity ? parseInt(q.quantity, 10) : 3),
                 startmonth = q.startmonth || exports.dateToMonthStr(now),
                 yearnum = startmonth.split('-')[0],
                 // previous month with zero-indexed js month is -2
@@ -300,13 +291,13 @@ exports.getDates = function (q, reporting_freq) {
 
             _.extend(dates, {
                 startmonth: startmonth,
-                months: months
+                quantity: months
             });
 
             break;
 
         case 'quarter':
-            var quarters = (q.quarters ? parseInt(q.quarters, 10) : 2),
+            var quarters = (q.quantity ? parseInt(q.quantity, 10) : 2),
                 startquarter = q.startquarter || exports.dateToQuarterStr(now),
                 startmonth = q.startmonth || exports.dateToMonthStr(now),
                 yearnum = startquarter.split('-')[0],
@@ -329,13 +320,13 @@ exports.getDates = function (q, reporting_freq) {
 
             _.extend(dates, {
                 startquarter: startquarter,
-                quarters: quarters
+                quantity: quarters
             });
 
             break;
 
         case 'year':
-            var years = (q.years ? parseInt(q.years, 10) : 2),
+            var years = (q.quantity ? parseInt(q.quantity, 10) : 2),
                 startmonth = q.startmonth || exports.dateToMonthStr(now),
                 // previous month with zero-indexed js month is -2
                 monthnum = startmonth.split('-')[1]-2,
@@ -357,7 +348,7 @@ exports.getDates = function (q, reporting_freq) {
 
             _.extend(dates, {
                 startyear: startyear,
-                years: years
+                quantity: years
             });
 
             break;
@@ -377,21 +368,17 @@ exports.getDates = function (q, reporting_freq) {
 var totalReportsDue = function(dates) {
 
     var startdate = nextMonth(dates.list[0]),
-        enddate = dates.list[dates.list.length-1],
-        result = 0;
+        enddate = dates.list[dates.list.length-1];
 
-    if(dates.time_unit === 'week') {
-        var multiply = { weeks: 1, months: 4.348, quarters: 13, years: 52.17 };
-        result = Math.round(dates[dates.time_unit + 's'] * multiply[dates.time_unit + 's']);
-    } else {
-        var multiply = { months: 1, quarters: 3, years: 12 };
-        result = dates[dates.time_unit + 's'] * multiply[dates.time_unit + 's'];
-        //var result = getWeek(startdate) + Math.abs((startdate.getFullYear() -
-        //    enddate.getFullYear()) * 52) - enddate.getWeek();
-        if(dates.reporting_freq === 'week')
-            return Math.round(result * 4.348);
+    if( dates.time_unit === 'week') {
+        var multiply = { week: 1, month: 4.348, quarter: 13, year: 52.17 };
+        return Math.round(dates.quantity * multiply[dates.time_unit]);
+    } 
+    var multiply = { month: 1, quarter: 3, year: 12 };
+    result = dates.quantity * multiply[dates.time_unit];
+    if (dates.reporting_freq === 'week') {
+        return Math.round(result * 4.348);
     }
-
 
     return result;
 };
@@ -493,8 +480,7 @@ exports.getRows = function(facilities, reports, dates) {
                 records: [],
                 clinics: [],
                 valid: 0,
-                valid_percent: 0,
-                url: url
+                valid_percent: 0
             };
         }
 
@@ -536,7 +522,9 @@ exports.getRows = function(facilities, reports, dates) {
 
     processNotSubmitted(rows, dates);
 
-    return _.sortBy(rows, function (r) { return r.valid_percent; });
+    return _.sortBy(rows, function (r) { 
+        return r.valid_percent; 
+    });
 };
 
 /*
@@ -638,7 +626,6 @@ var processNotSubmitted = exports.processNotSubmitted = function(rows, dates) {
         while (date >= enddate) {
 
             var extra = {},
-                url = duality.getBaseURL() + '/add/data_record?clinic=' + row.id,
                 val = weekly_reports ? getWeek(date) : getMonth(date)+1;
 
             var empty_report = {
@@ -647,13 +634,10 @@ var processNotSubmitted = exports.processNotSubmitted = function(rows, dates) {
             }
 
             if (weekly_reports) {
-                extra.url = url + '&week_number=' + val;
                 extra.week_number = val;
             } else {
-                extra.url = url + '&month=' + val;
                 extra.month = val;
             }
-
 
             if (!_.contains(recorded_time_frames, getYear(date) + '' + pat(val))) {
                 _.extend(empty_report, extra);

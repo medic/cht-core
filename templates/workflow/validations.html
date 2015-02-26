@@ -1,8 +1,8 @@
 <div class="toggle">
   <h4 class="toggle-head">
     Validations
-    <i class="icon-chevron-down"></i>
-    <i class="icon-chevron-up"></i>
+    <i class="fa fa-chevron-down"></i>
+    <i class="fa fa-chevron-up"></i>
   </h4>
   <div class="repeat-container toggle-body">
     {#responses}
@@ -11,6 +11,7 @@
           <p>Send the following response message if the validations pass but the patient ID is not located.</p>
           <input type="hidden" name="event_type" value="registration_not_found"/>
           <textarea name="message" class="input-xxlarge translated" data-message="{message}" data-messages="{messages}">{message}</textarea>
+          <a href="{baseURL}/help/messages" target="_blank" class="help"><i class="fa fa-question-circle"></i></a>
         </div>
       {/eq}
     {/responses}
@@ -25,17 +26,18 @@
         </select>
         field does not pass this validation
         <input type="text" name="rule" value="{rule}"/>
-        <a href="{baseURL}/help/validation" target="_blank" class="help"><i class="icon-question-sign"></i></a>
+        <a href="{baseURL}/help/validation" target="_blank" class="help"><i class="fa fa-question-circle"></i></a>
       </p>
       <textarea name="content" class="input-xxlarge translated" data-message="{message}" data-messages="{messages}">{message}</textarea>
+      <a href="{baseURL}/help/messages" target="_blank" class="help"><i class="fa fa-question-circle"></i></a>
       <p>
-        <a href="#" class="btn btn-small remove"><i class="icon-trash"></i> Remove</a>
+        <a href="#" class="btn btn-small remove"><i class="fa fa-trash-o"></i> Remove</a>
       </p>
     </div>
     {/validations}
 
     <p>
-      <a href="#" class="btn add"><i class="icon-plus"></i> Add validation</a>
+      <a href="#" class="btn add"><i class="fa fa-plus"></i> Add validation</a>
     </p>
   </div>
 </div>

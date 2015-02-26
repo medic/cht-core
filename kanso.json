@@ -1,7 +1,7 @@
 {
     "name": "medic",
     "display_name": "Medic Mobile",
-    "version": "0.4.2",
+    "version": "0.4.3",
     "description": "SMS data collection designed for rural environments.",
     "long_description" : "Medic Mobile is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
     "url": "https://github.com/medic/medic-webapp",
@@ -16,7 +16,9 @@
         "small": "static/img/promo/promo_small.png"
     },
     "screenshots": [
-        "static/img/promo/screenshot1.png"
+        "static/img/promo/promo-messages.png",
+        "static/img/promo/promo-reports.png",
+        "static/img/promo/promo-analytics.png"
     ],
     "loglevel": "info",
     "load": "lib/app",
@@ -29,12 +31,7 @@
         "base_template": "base.html"
     },
     "changelog": "Changes.md",
-    "less": {
-        "compress": true,
-        "compile": ["static/css/app.less", "static/css/spreadsheet.less"],
-        "remove_from_attachments": true
-    },
-    "node_module_folders" : "sentinel,api",
+    "node_module_folders" : "api,sentinel",
     "bundledDependencies": [
         "packages/underscore"
     ],
@@ -50,12 +47,11 @@
         "nodeunit": null,
         "nodeunit-testrunner": null,
         "sinon": null,
-        "less-precompiler": null,
-        "select2": null,
         "kujua-branding": ">=0.0.2",
         "kujua-sms": null,
         "kujua-utils": null,
         "kujua-reporting": null,
+        "libphonenumber": null,
         "jsDump": null,
         "git-info": null,
         "showdown": null,
@@ -67,12 +63,14 @@
         "moment-timezone": ">=0.0.3",
         "kanso-app-settings": null,
         "garden-app-support": null,
-        "app-settings": null,
+        "app-settings": ">=0.0.2",
         "locale": null,
         "couchdb-audit": null,
-        "js-migrations": ">=1.0.0"
+        "js-migrations": ">=1.0.0",
+        "feedback": ">=1.0.0"
     },
     "migration_path": "/medic/_design/medic/_rewrite/migration",
+    "status_path": "/status",
     "user_data": {
         "db_prefix": false,
         "available_roles" : ["kujua_user","national_admin","district_admin","kujua_gateway","data_entry"],
@@ -156,20 +154,52 @@
                 "title": "Medic Reporter URL",
                 "default": "/medic-reporter/_design/medic-reporter/_rewrite/?_embed_mode=2#/examples.json"
             },
+            "date_format": {
+                "type": "string",
+                "title": "Date Format",
+                "default": "DD-MMM-YYYY",
+                "description": "Format used to display dates."
+            },
             "reported_date_format": {
                 "type": "string",
-                "title": "Reported Date Format",
-                "default": "DD-MMM-YYYY hh:mm:ss",
-                "description": "Format used to display the reported date field."
+                "title": "DateTime Format",
+                "default": "DD-MMM-YYYY HH:mm:ss",
+                "description": "Format used to display dates and times."
             },
             "forms_only_mode": {
                 "type": "boolean",
                 "title": "Only Expect Forms",
                 "default": false
             },
+            "default_responses": {
+                "title": "Auto-replies",
+                "type": "object",
+                "properties": {
+                    "start_date": {
+                        "type": "string",
+                        "title": "Start Date",
+                        "default": "",
+                        "description": "Auto-replies are added to messages received after this date.  If left empty auto-replies are not added.  Use the format YYYY-MM-DD to define the date, for example 2014-03-27.  This setting only applies to unstructured messages, not forms.  Error replies are added when a message is empty or a form is not found and we are in forms only mode.  Otherwise you will get a default reply. All reply messages are generated based on translation and locale settings.",
+                        "pattern": "(^[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}\\s*$|^\\s*$)"
+                    }
+                }
+            },
+            "district_admins_access_unallocated_messages": {
+                "type": "boolean",
+                "title": "Allow District Admins To View Unallocated Messages",
+                "default": false,
+                "description": "If ticked, district administrators will be able to view messages with no allocated facility as well as messages from their district."
+            },
+            "default_country_code": {
+                "type": "integer",
+                "title": "Default Country Code",
+                "description": "Messages received without a country code will be assigned this country code.",
+                "default": 1
+            },
             "gateway_number": {
                 "type": "string",
-                "title": "Gateway Number"
+                "title": "Gateway Number",
+                "description": "This is the number where mobile reporters should send their reports. It is also the number they will receive messages from.  Auto-replies will not be sent to this number to avoid message loops."
             },
             "outgoing_phone_replace": {
                 "title": "Outgoing Phone Replacement",
@@ -283,6 +313,37 @@
                     }
                 ]
             },
+            "anc_forms": {
+                "title": "ANC Reports",
+                "type": "object",
+                "properties": {
+                    "registration": {
+                        "type": "string",
+                        "title": "Pregnancy Registration Form Code",
+                        "default": "R"
+                    },
+                    "registrationLmp": {
+                        "type": "string",
+                        "title": "Pregnancy Registration LMP Form Code",
+                        "default": "P"
+                    },
+                    "visit": {
+                        "type": "string",
+                        "title": "Completed ANC Visit Form Code",
+                        "default": "V"
+                    },
+                    "delivery": {
+                        "type": "string",
+                        "title": "Delivery Report Form Code",
+                        "default": "D"
+                    },
+                    "flag": {
+                        "type": "string",
+                        "title": "Flag Pregnancy Form Code",
+                        "default": "F"
+                    }
+                }
+            },
             "alerts": {
                 "title": "Alerts",
                 "type": "array",
@@ -390,6 +451,16 @@
                             },
                             "default": []
                         },
+                        "help": {
+                            "title": "Help",
+                            "type": "string",
+                            "description": "Instructions explaining how to use this form, including description and form submission examples in <a href=\"http://daringfireball.net/projects/markdown/syntax\">Markdown format</a>.",
+                            "default": "Register for this message workflow by sending an SMS with the following format: `ANCR <patientname>`.\n\nFor example, to register \"Maria Soleil\" you would send: `ANCR Maria Soleil`",
+                            "je:hint": "textarea",
+                            "je:textarea": {
+                                "rows": 4
+                            }
+                        },
                         "events": {
                             "type": "array",
                             "items": {
@@ -464,7 +535,7 @@
                                             "message": {
                                                 "type": "array",
                                                 "title": "Response Message",
-                                                "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
+                                                "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported.",
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
@@ -501,13 +572,13 @@
                                     "message": {
                                         "type": "array",
                                         "title": "Message",
+                                        "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported",
                                         "items": {
                                             "type": "object",
                                             "properties": {
                                                 "content": {
                                                     "type": "string",
                                                     "title": "Message Content",
-                                                    "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
                                                     "default": "",
                                                     "je:hint": "textarea",
                                                     "je:textarea": {
@@ -619,7 +690,7 @@
                                             "message": {
                                                 "title": "Response Message",
                                                 "type": "array",
-                                                "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
+                                                "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported.",
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
@@ -655,6 +726,7 @@
                                     "message": {
 										"type": "array",
                                         "title": "Message Text",
+                                        "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported",
                                         "items": {
                                             "type": "object",
                                             "properties": {
@@ -742,6 +814,7 @@
                         "messages": {
                             "type": "array",
                             "title": "Messages",
+                            "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -753,7 +826,6 @@
                                                 "content": {
                                                     "type": "string",
                                                     "title": "Message Content",
-                                                    "description": "e.g. Greetings, {{chw_name}}. {{patient_name}} {{patient_id}} is due for a 12 week ANC visit this week. Please visit her and remind her to visit the health facility.",
                                                     "default": "",
                                                     "je:hint": "textarea",
                                                     "je:textarea": {
@@ -870,7 +942,7 @@
                                         "message": {
                                             "title": "Response Message",
                                             "type": "array",
-                                            "description": "The response when validation fails. <a href='http://mustache.github.io/'>Mustache</a> templating is supported.  Using (two curly brackets), like {{field_name}} variables can be interpreted in the message.  In addition to all properties on the record and form field names the following variables are also available in the message: contact, clinic, parent, health_center, grandparent, district. For example, Thank you {{contact.name}} we received your message from {{contact.phone}}.  We'll also notify your parent facility {{parent.contact.name}} about your message.",
+                                            "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported.",
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
@@ -906,13 +978,13 @@
                                 "message": {
                                     "type": "array",
                                     "title": "Message",
+                                    "description": "<a href='/medic/_design/medic/_rewrite/help/messages'>Mustache</a> templating is supported",
                                     "items": {
                                         "type": "object",
                                         "properties": {
                                             "content": {
                                                 "type": "string",
                                                 "title": "Message Content",
-                                                "description": "e.g. Greetings, {{chw_name}}. {{patient_id}} notification will be disabled.",
                                                 "default": "",
                                                 "je:hint": "textarea",
                                                 "je:textarea": {
@@ -2697,6 +2769,56 @@
                             {
                                 "locale": "en",
                                 "content": "Message State"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Reply",
+                        "default": "Reply",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Reply"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Verify",
+                        "default": "Verify",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Verify"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Unverify",
+                        "default": "Unverify",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Unverify"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Delete",
+                        "default": "Delete",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Delete"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Edit",
+                        "default": "Edit",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Edit"
                             }
                         ]
                     }

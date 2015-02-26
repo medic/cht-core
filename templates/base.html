@@ -5,31 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="{baseURL}/static/img/ico/icon_48.ico">
     <title>{title}</title>
-    <link rel="stylesheet" type="text/css" href="{baseURL}/static/css/app.css" />
-    <link rel="stylesheet" type="text/css" href="{baseURL}/static/css/spreadsheet.css" />
+    <link rel="stylesheet" type="text/css" href="{baseURL}/static/dist/admin.css" />
   </head>
   <body>
     <div id="topnav" class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <a class="brand" href="{baseURL}/">Medic Mobile</a>
+          <a href="{baseURL}/" rel="external" class="pull-left">
+            <img alt="Medic Mobile" class="logo-full" src="{baseURL}/static/img/medic-logo-light-full.svg" />
+          </a>
           <span class="version pull-left" title="{info.sha}">{settings.version}</span>
-          <ul class="nav pull-right">
-            <li class="activity hide">
-              <a href="{baseURL}/"><i class="icon-list"></i></a>
-            </li>
-            <li class="sms-forms-data hide">
-              <a href="{baseURL}/forms"><i class="icon-download"></i></a>
-            </li>
-            <li class="facilities hide">
-              <a href="{baseURL}/facilities"><i class="icon-home"></i></a>
-            </li>
-            <li class="add-message hide">
-              <button class="btn btn-primary">
-                  <i class="icon-envelope"></i>
-              </button>
-            </li>
-          </ul>
+          <div id="topnavlinks"></div>
         </div>
       </div>
     </div>
@@ -53,26 +39,21 @@
         </div>
       </div>
     </div>
-    <div id="add-record-panel">
-      <ul class="dropdown-menu">
-        <li>
-          <button type="button" class="cancel close">×</button>
-          <iframe data-src="{info.muvuku_webapp_url}"></iframe>
-        </li>
-      </ul>
-    </div>
+
+    {>"partials/modal_feedback.html"/}
+
     <script src="{baseURL}/static/js/browser.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/jquery.min.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/jquery-ext.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/underscore.min.js" type="text/javascript"></script>
-    <script src="/dashboard/_design/dashboard/_rewrite/static/js/topbar.js?position=fixed" type="text/javascript"></script>
     <script src="{baseURL}/static/js/json2.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/bootstrap.min.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/bootstrap-datetimepicker.js" type="text/javascript"></script>
-    <script src="{baseURL}/select2/js/select2.js" type="text/javascript"></script>
+    <script src="{baseURL}/static/dist/select2.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/jquery.spreadsheet.js" type="text/javascript"></script>
     <script src="{baseURL}/static/js/jquery.autosize.min.js" type="text/javascript"></script>
-    <script src="{baseURL}/static/kujua-reporting/js/raphael.js" type="text/javascript"></script>
+    <script src="{baseURL}/static/dist/raphael.js" type="text/javascript"></script>
+    <script src="{baseURL}/static/dist/bootstrap-tour.js" type="text/javascript"></script>
     <script src="{baseURL}/config.js" type="text/javascript"></script>
     <script src="{baseURL}/modules.js" type="text/javascript"></script>
     <script src="{baseURL}/duality.js" type="text/javascript"></script>

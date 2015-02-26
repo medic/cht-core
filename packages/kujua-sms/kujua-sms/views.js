@@ -1,116 +1,3 @@
-exports.contacts_by_id = {
-    map: function(doc) {
-        var district,
-            facility;
-
-        if (~['district_hospital', 'health_center', 'clinic'].indexOf(doc.type)) {
-            emit([null, doc._id], null);
-        }
-
-        if (doc.type === 'district_hospital') {
-            emit([doc._id, doc._id], null);
-        } else if (doc.type === 'health_center') {
-            district = doc.parent;
-
-            if (district) {
-                emit([district._id, doc._id], null);
-            }
-        } else if (doc.type === 'clinic') {
-            facility = doc.parent;
-            if (facility) {
-                emit([facility._id, doc._id], null);
-
-                district = facility.parent;
-                if (district) {
-                    emit([district._id, doc._id], null);
-                }
-            }
-        }
-    }
-};
-
-exports.contacts = {
-    map: function(doc) {
-        var district,
-            facility,
-            contact = doc.contact,
-            name = doc.name,
-            contactName = contact && contact.name,
-            code = contact && contact.rc_code,
-            phone = contact && contact.phone,
-            strippedPhone = phone && phone.replace(/^\+/, ''),
-            result;
-
-        function emitWords(district) {
-            if (name) {
-                name = name.replace(/[^\w\d+\s]/g, '');
-                name.trim().split(/\s+/).forEach(function(token) {
-                    emit([district, token], doc._id);
-                });
-            }
-            if (contactName) {
-                contactName = contactName.replace(/[^\w\d+\s]/g, '');
-                contactName.trim().split(/\s+/).forEach(function(token) {
-                    emit([district, token], doc._id);
-                });
-            }
-            if (phone) {
-                emit([district, phone], doc._id);
-            }
-            if (strippedPhone && strippedPhone !== phone) {
-                emit([district, strippedPhone], doc._id);
-            }
-            if (code) {
-                emit([district, code], doc._id);
-            }
-        }
-
-        if (~['district_hospital', 'health_center', 'clinic'].indexOf(doc.type)) {
-            emitWords(null);
-        }
-
-        if (doc.type === 'district_hospital') {
-            emitWords(doc._id);
-        } else if (doc.type === 'health_center') {
-            district = doc.parent;
-
-            if (district) {
-                emitWords(district._id);
-            }
-        } else if (doc.type === 'clinic') {
-            facility = doc.parent;
-            if (facility) {
-                emitWords(facility._id);
-
-                district = facility.parent;
-                if (district) {
-                    emitWords(district._id);
-                }
-            }
-        }
-    }
-};
-
-exports.data_records_by_district_and_form = {
-    map: function(doc) {
-        var objectpath = require('views/lib/objectpath'),
-            dh;
-
-        if(doc.type === 'data_record') {
-            dh = objectpath.get(doc, 'doc.related_entities.clinic.parent.parent');
-
-            if (dh) {
-                emit([dh._id, doc.form, dh.name], 1);
-            } else {
-                emit([null, doc.form, null], 1);
-            }
-        }
-    },
-    reduce: function(key, counts) {
-        return sum(counts);
-    }
-};
-
 exports.data_records = {
     map: function(doc) {
         var objectpath = require('views/lib/objectpath'),
@@ -243,6 +130,143 @@ exports.data_records_valid_by_district_and_form = {
     }
 };
 
+exports.data_records_read_by_type = {
+    map: function(doc) {
+        var objectpath = require('views/lib/objectpath'),
+            type,
+            dh;
+
+        var emitRead = function(doc, type, dh) {
+            emit(['_total', type, dh], 1);
+            if (doc.read) {
+                doc.read.forEach(function(user) {
+                    if (user) {
+                        emit([user, type, dh], 1);
+                    }
+                });
+            }
+        };
+
+        if (doc.type === 'data_record') {
+            type = doc.form ? 'forms' : 'messages';
+            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
+            if (dh) {
+                emitRead(doc, type, dh);
+            } else if (doc.tasks) {
+                doc.tasks.forEach(function(task) {
+                    dh = objectpath.get(task.messages[0], 'facility.parent.parent._id');
+                    emitRead(doc, type, dh);
+                });
+            } else {
+                emitRead(doc, type);
+            }
+        }
+    },
+    reduce: function(key, counts) {
+        return sum(counts);
+    }
+};
+
+
+exports.data_records_by_contact = {
+    map: function(doc) {
+        var getName = function(facility) {
+            if (facility) {
+                var nameParts = [];
+                while (facility) {
+                    if (facility.name) {
+                        nameParts.push(facility.name);
+                    }
+                    facility = facility.parent;
+                }
+                if (nameParts.length) {
+                    return nameParts;
+                }
+            }
+        };
+        var emitContact = function(districtId, key, date, value) {
+            if (key) {
+                emit([districtId || 'none', key, date], value);
+                emit(['admin', key, date], value);
+            }
+        };
+
+        var objectpath = require('views/lib/objectpath'),
+            districtId,
+            message,
+            facility,
+            contact,
+            key,
+            name;
+        if (doc.type === 'data_record') {
+            if (!doc.form) {
+                if (doc.kujua_message) {
+                    doc.tasks.forEach(function(task) {
+                        message = task.messages[0];
+                        facility = message.facility;
+                        districtId = objectpath.get(facility, 'parent.parent._id');
+                        key = (facility && facility._id) || message.to;
+                        name = getName(facility) || message.to;
+                        contact = objectpath.get(facility, 'contact.name');
+                        emitContact(districtId, key, doc.reported_date, {
+                            date: doc.reported_date,
+                            read: doc.read,
+                            contact: contact,
+                            facility: facility,
+                            name: name,
+                            message: message.message
+                        });
+                    });
+                } else if (doc.sms_message) {
+                    districtId = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
+                    message = doc.sms_message;
+                    facility = objectpath.get(doc, 'related_entities.clinic');
+                    name = getName(facility) || doc.from;
+                    contact = objectpath.get(facility, 'contact.name');
+                    key = (facility && facility._id) || doc.from;
+                    emitContact(districtId, key, doc.reported_date, {
+                        date: doc.reported_date,
+                        read: doc.read,
+                        contact: contact,
+                        facility: facility,
+                        name: name,
+                        message: message.message
+                    });
+                }
+            }
+        }
+    },
+    reduce: function(key, values) {
+        var max = { date: 0 };
+        var read;
+        values.forEach(function(value) {
+            if (!read || !value.read) {
+                read = value.read || [];
+            } else {
+                read = read.filter(function(user) {
+                    return value.read.indexOf(user) !== -1;
+                });
+            }
+            if (value.date > max.date) {
+                max = value;
+            }
+        });
+        max.read = read;
+
+        // needed to reduce object size
+        max.facility = undefined;
+
+        var code = max.message.charCodeAt(99);
+        if (0xD800 <= code && code <= 0xDBFF) {
+          max.message = max.message.substr(0, 99);
+        } else {
+          max.message = max.message.substr(0, 100);
+        }
+
+        return max;
+    }
+};
+
 exports.data_records_by_district = {
     map: function(doc) {
         var objectpath = require('views/lib/objectpath'),
@@ -259,37 +283,6 @@ exports.data_records_by_district = {
 
     reduce: function(key, doc) {
         return true;
-    }
-};
-
-exports.data_records_by_district_and_clinic = {
-    map: function(doc) {
-        var objectpath = require('views/lib/objectpath'),
-            dh,
-            cl,
-            contact;
-
-        if (doc.type === 'data_record') {
-            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent');
-            cl = objectpath.get(doc, 'related_entities.clinic');
-            contact = objectpath.get(doc, 'related_entities.clinic.contact') || {};
-
-            if (dh && dh.type === 'district_hospital') {
-                emit([dh._id, cl._id, cl.name, contact.name || contact.rc_code || contact.phone], null);
-            }
-        }
-    },
-    reduce: function(key, doc) {
-        return true;
-    }
-};
-
-
-exports.data_record_by_phone_and_week = {
-    map: function(doc) {
-        if (doc.type === 'data_record') {
-            emit([doc.from, doc.week, doc._id], doc);
-        }
     }
 };
 
@@ -397,50 +390,3 @@ exports.tasks_pending = {
         }
     }
 };
-
-exports.tasks_sent = {
-    map: function (doc) {
-        var has_sent,
-            tasks = doc.tasks || [],
-            scheduled_tasks = doc.scheduled_tasks || [];
-
-        has_sent = tasks.some(function(task) {
-            return task.state === 'sent';
-        });
-
-        // check scheduled tasks too if not already sent
-        if (!has_sent) {
-            has_sent = scheduled_tasks.some(function(task) {
-                return task.state === 'sent';
-            });
-        }
-
-        if (has_sent) {
-            emit([doc.reported_date, doc.refid]);
-        }
-    }
-};
-
-exports.data_record_by_year_month_and_clinic_id = {
-    map: function (doc) {
-        if (doc.type === 'data_record'
-                && doc.related_entities
-                && doc.related_entities.clinic) {
-            emit([doc.year, doc.month, doc.related_entities.clinic._id], doc);
-        }
-    }
-};
-
-/*
- * Emit the sms_message.sent_timestamp string as created by gateway.
- */
-exports.sms_message_by_sent_timestamp = {
-    map: function (doc) {
-        if (doc.type === 'data_record') {
-            var sms = doc.sms_message;
-            if(sms) {
-                emit([sms.sent_timestamp, sms.form, sms.from], null);
-            }
-        }
-    }
-}

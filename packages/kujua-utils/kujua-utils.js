@@ -133,7 +133,11 @@ exports.dumper = {
 
 /* poorly named */
 exports.isUserAdmin = function(userCtx) {
-    return exports.hasRole(userCtx, 'national_admin') || exports.isDbAdmin(userCtx);
+    return exports.isUserNationalAdmin(userCtx) || exports.isDbAdmin(userCtx);
+};
+
+exports.isUserNationalAdmin = function(userCtx) {
+    return exports.hasRole(userCtx, 'national_admin');
 };
 
 exports.isUserDistrictAdmin = function(userCtx) {
@@ -157,7 +161,8 @@ exports.hasPerm = function(userCtx, perm) {
         can_view_sms_message: [],
         can_export_messages: ['national_admin', 'district_admin', 'analytics'],
         can_export_forms: ['national_admin', 'district_admin', 'analytics'],
-        can_export_audit: ['national_admin']
+        can_export_audit: ['national_admin'],
+        can_export_feedback: ['national_admin']
     };
 
     if (!userCtx || !userCtx.roles || userCtx.roles.length === 0) {
@@ -178,20 +183,41 @@ exports.hasPerm = function(userCtx, perm) {
     return _.intersection(userCtx.roles, permissions[perm]).length > 0;
 };
 
-exports.getUserDistrict = function(userCtx, callback) {
-    var district = '';
-    if (userCtx.facility_id)
-        district = userCtx.facility_id;
-    else
-        district = cookies.readBrowserCookies()['facility_id'];
-    if (!district) {
-        users.get(userCtx.name, function(err, user) {
-            if (err) return callback(err);
-            callback(null, user.facility_id);
+exports.checkDistrictConstraint = function(userCtx, db, callback) {
+    exports.getUserDistrict(userCtx, function(err, facility) {
+        if (err) {
+            return callback(err);
+        }
+        if (!facility) {
+            return callback('No district assigned to district admin.');
+        }
+        db.getDoc(facility, function(err, doc) {
+            if (err) {
+                if (err.error === 'not_found') {
+                    return callback("No facility found with id '" + facility + "'. Your admin needs to update the Facility Id in your user details.");
+                }
+                return callback(err);
+            }
+            if (doc.type !== 'district_hospital') {
+                return callback(doc.name + " (id: '" + facility + "') is not a district hospital. Your admin needs to update the Facility Id in your user details.");
+            }
+            callback(null, facility);
         });
-    } else {
-        callback(null, district);
+    });
+};
+
+exports.getUserDistrict = function(userCtx, callback) {
+    var district = userCtx.facility_id;
+    if (!district && typeof(window) !== 'undefined') {
+        district = cookies.readBrowserCookies()['facility_id'];
     }
+    if (district) {
+        return callback(null, district);
+    }
+    users.get(userCtx.name, function(err, user) {
+        if (err) return callback(err);
+        callback(null, user.facility_id);
+    });
 };
 
 /**

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+
+<html ng-app="inboxApp" data-base-url="{baseURL}" data-user='{user}'>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="{baseURL}/static/dist/inbox.css" />
+    <link rel="shortcut icon" href="{baseURL}/static/img/ico/icon_48.ico">
+    <title>Medic Mobile: Inbox</title>
+  </head>
+  <body class="inbox {~lb}{~lb}filterModel.type{~rb}{~rb}" ng-class="{'show-content': selected}" ng-controller="InboxCtrl" ng-cloak>
+
+    {>"partials/actionbar.html"/}
+
+    <div class="container-fluid">
+      {>"partials/header.html"/}
+      {>"partials/filters.html"/}
+      <div class="row content" ng-view></div>
+    </div>
+
+    {>"partials/modal_send_message.html"/}
+    {>"partials/modal_update_facility.html"/}
+    {>"partials/modal_alert.html"/}
+    {>"partials/modal_edit_user.html"/}
+    {>"partials/modal_export.html"/}
+    {>"partials/modal_tour_select.html"/}
+    {>"partials/modal_feedback.html"/}
+
+    <script type="text/ng-template" id="/partials/messages.html">
+      {>"partials/messages.html"/}
+    </script>
+    
+    <script type="text/ng-template" id="/partials/reports.html">
+      {>"partials/reports.html"/}
+    </script>
+
+    <script type="text/ng-template" id="/partials/analytics.html">
+      {>"partials/analytics.html"/}
+    </script>
+
+    <script type="text/ng-template" id="/partials/sender.html">
+      {>"partials/sender.html"/}
+    </script>
+
+    <script src="{baseURL}/static/dist/inbox.js" type="text/javascript"></script>
+
+  </body>
+</html>

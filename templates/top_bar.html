@@ -1,0 +1,43 @@
+<ul class="nav pull-right">
+  {?isDbAdmin}
+  <li class="settings">
+    <a href="{baseURL}/settings">
+      <i class="fa fa-cog"></i> {labels.settings}
+    </a>
+  </li>
+  {/isDbAdmin}
+  {?isDbAdmin}
+  <li class="schedules">
+    <a href="{baseURL}/schedules">
+      <i class="fa fa-clock-o"></i> {labels.schedules}
+    </a>
+  </li>
+  {/isDbAdmin}
+  <li class="sms-forms-data">
+    <a href="{baseURL}/forms">
+      <i class="fa fa-arrow-circle-o-down"></i> {labels.export}
+    </a>
+  </li>
+  {?isDbAdmin}
+  <li class="users">
+    <a href="{baseURL}/users">
+      <i class="fa fa-user"></i> {labels.users}
+    </a>
+  </li>
+  {/isDbAdmin}
+  <li class="facilities">
+    <a href="{baseURL}/facilities">
+      <i class="fa fa-home"></i> {labels.facilities}
+    </a>
+  </li>
+  <li>
+    <a href="#" title="Report Bug" data-toggle="modal" data-target="#feedback">
+      <i class="fa fa-bug"></i>
+    </a>
+  </li>
+  <li class="logout">
+    <a href="#" id="logout">
+      <i class="fa fa-power-off"></i> {labels.logout}
+    </a>
+  </li>
+</ul>

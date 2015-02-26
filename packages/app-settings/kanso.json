@@ -1,6 +1,6 @@
 {
     "name": "app-settings",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Manage an app_settings property on a couchdb design document.",
     "url": "https://github.com/garden20/app_settings",
     "load": "app-settings/app",
