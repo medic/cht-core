@@ -16,7 +16,7 @@ var _ = require('underscore'),
     function() {
 
       var formatDate = function(date) {
-        return date.zone(0).format('YYYY-MM-DD');
+        return date.utcOffset(0).format('YYYY-MM-DD');
       };
 
       var formatReportedDate = function($scope) {

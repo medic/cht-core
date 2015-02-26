@@ -23,10 +23,9 @@
               if (err) {
                 return callback(err);
               }
-              return callback(null, buildUrl('forms', {
-                query: JSON.stringify(response.query),
-                schema: JSON.stringify(response.schema)
-              }));
+              params.query = JSON.stringify(response.query);
+              params.schema = JSON.stringify(response.schema);
+              return callback(null, buildUrl('forms', params));
             });
           } else {
             return callback('Unknown download type');
