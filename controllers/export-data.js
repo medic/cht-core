@@ -390,7 +390,8 @@ var outputToCsv = function(options, type, tabs, callback) {
 
 var outputToXml = function(options, type, tabs, callback) {
 
-  var workbook = xmlbuilder.create('ss:Workbook')
+  var workbook = xmlbuilder.create('Workbook', { encoding: 'UTF-8' })
+    .ins('mso-application', 'progid="Excel.Sheet"')
     .att('xmlns', 'urn:schemas-microsoft-com:office:spreadsheet')
     .att('xmlns:o', 'urn:schemas-microsoft-com:office:office')
     .att('xmlns:x', 'urn:schemas-microsoft-com:office:excel')
