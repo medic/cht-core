@@ -26,62 +26,135 @@ var safeStringify = function(obj) {
 
 var exportTypes = {
   forms: {
-    name: 'Reports',
     view: 'data_records',
-    columns: function(options) {
-      var base = createColumnModels(['_id','patient_id','reported_date','from','related_entities.clinic.contact.name','related_entities.clinic.name','related_entities.clinic.parent.contact.name','related_entities.clinic.parent.name','related_entities.clinic.parent.parent.name'], options);
-      if (options.form) {
-        var def = config.get('forms')[options.form];
-        for (var k in def.fields) {
-          var labels = def.fields[k].labels.short;
-          base.push({
-            column: k,
-            label: labels[options.locale] || labels.en || k
-          });
-        }
-        return base;
+    generate: function(rows, options) {
+
+      var userDefinedColumns = !!options.columns;
+      var tabs = [];
+
+      if (!userDefinedColumns) {
+        options.columns = createColumnModels([
+          '_id',
+          'patient_id',
+          'reported_date',
+          'from',
+          'related_entities.clinic.contact.name',
+          'related_entities.clinic.name',
+          'related_entities.clinic.parent.contact.name',
+          'related_entities.clinic.parent.name',
+          'related_entities.clinic.parent.parent.name'
+        ], options);
       }
-      return base.concat(createColumnModels(['form'], options));
-    },
-    modelGenerator: function(rows, options) {
-      return _.map(rows, function(row) {
-        return _.map(_.pluck(options.columns, 'column'), function(column) {
-          return formatValue(row.doc, column, options);
+
+      // add overview tab
+      if (!options.form) {
+        if (!userDefinedColumns) {
+          options.columns = options.columns.concat(createColumnModels(['form'], options));
+        }
+        tabs.push({
+          name: config.translate('Reports', options.locale),
+          columns: options.columns
         });
+        var rawColumnNames = _.pluck(options.columns, 'column');
+        tabs[0].data = _.map(rows, function(row) {
+          return _.map(rawColumnNames, function(column) {
+            return formatValue(row.doc, column, options);
+          });
+        });
+      }
+
+      // add individual form tabs
+      var byForm = {};
+      var columns;
+      rows.forEach(function(row) {
+        var formCode = row.doc.form;
+        if (!byForm[formCode]) {
+          var def = config.get('forms')[formCode];
+          columns = options.columns.concat([]);
+          for (var k in def.fields) {
+            var labels = def.fields[k].labels.short;
+            columns.push({
+              column: k,
+              label: labels[options.locale] || labels.en || k
+            });
+          }
+          byForm[formCode] = {
+            name: def.meta.label[options.locale] || def.meta.label.en || form,
+            columns: columns,
+            rawColumnNames: _.pluck(columns, 'column'),
+            data: []
+          };
+        }
+        var tab = byForm[formCode];
+        tab.data.push(_.map(tab.rawColumnNames, function(column) {
+          return formatValue(row.doc, column, options);
+        }));
       });
+
+      return tabs.concat(_.sortBy(_.values(byForm), function(tab) {
+        return tab.name.toLowerCase();
+      }));
     }
   },
   messages: {
-    name: 'Messages',
     view: 'data_records',
-    columns: function(options) {
-      return createColumnModels(['_id','patient_id','reported_date','from','related_entities.clinic.contact.name','related_entities.clinic.name','related_entities.clinic.parent.contact.name','related_entities.clinic.parent.name','related_entities.clinic.parent.parent.name','task.type','task.state','received','scheduled','pending','sent','cleared','muted'], options);
-    },
-    appendedHeaders: function(options) {
-      return _.map(
-        ['Message UUID','Sent By','To Phone','Message Body'],
-        _.partial(config.translate, _, options.locale)
-      );
-    },
-    modelGenerator: function(rows, options) {
-      var models = [];
+    generate: function(rows, options) {
+      if (!options.columns) {
+        options.columns = createColumnModels([
+          '_id',
+          'patient_id',
+          'reported_date',
+          'from',
+          'related_entities.clinic.contact.name',
+          'related_entities.clinic.name',
+          'related_entities.clinic.parent.contact.name',
+          'related_entities.clinic.parent.name',
+          'related_entities.clinic.parent.parent.name',
+          'task.type',
+          'task.state',
+          'received',
+          'scheduled',
+          'pending',
+          'sent',
+          'cleared',
+          'muted'
+        ], options);
+      }
+      var model = {
+        name: config.translate('Messages', options.locale),
+        data: []
+      };
       rows.forEach(function(row) {
-        models = models.concat(generateTaskModels(row.doc, options));
+        model.data = model.data.concat(generateTaskModels(row.doc, options));
       });
-      return models;
+      // append headers labels after model generation
+      model.columns = options.columns.concat(
+        createColumnModels(['Message UUID','Sent By','To Phone','Message Body'], options)
+      );
+      return [ model ];
     }
   },
   audit: {
-    name: 'Audit',
     view: 'audit_records_by_doc',
-    columns: function(options) {
-      return createColumnModels(['_id','Type','Timestamp','Author','Action','Document'], options);
-    },
-    modelGenerator: function(rows, options) {
-      var models = [];
+    generate: function(rows, options) {
+      if (!options.columns) {
+        options.columns = createColumnModels([
+          '_id',
+          'Type',
+          'Timestamp',
+          'Author',
+          'Action',
+          'Document'
+        ], options);
+      }
+      var model = {
+        name: config.translate('Audit', options.locale),
+        data: [],
+        columns: options.columns
+      };
       rows.forEach(function(row) {
         _.each(row.doc.history, function(rev) {
-          models.push([
+          model.data.push([
             row.doc.record_id,
             rev.doc.type,
             formatDate(rev.timestamp, options.timezone),
@@ -91,17 +164,28 @@ var exportTypes = {
           ]);
         });
       });
-      return models;
+      return [ model ];
     }
   },
   feedback: {
-    name: 'Feedback',
     view: 'feedback',
-    columns: function(options) {
-      return createColumnModels(['_id','reported_date','User','App Version','URL','Info','Log'], options);
-    },
-    modelGenerator: function(rows, options) {
-      return _.map(rows, function(row) {
+    generate: function(rows, options) {
+      if (!options.columns) {
+        options.columns = createColumnModels([
+          '_id',
+          'reported_date',
+          'User',
+          'App Version',
+          'URL',
+          'Info',
+          'Log'
+        ], options);
+      }
+      var model = {
+        name: config.translate('Feedback', options.locale),
+        columns: options.columns
+      };
+      model.data = _.map(rows, function(row) {
         return [
           row.doc._id,
           formatDate(row.doc.meta.time, options.timezone),
@@ -112,6 +196,7 @@ var exportTypes = {
           safeStringify(row.doc.log)
         ];
       });
+      return [ model ];
     }
   }
 };
@@ -282,40 +367,59 @@ var generateTaskModels = function(doc, options) {
   return rows;
 };
 
-var outputToCsv = function(options, type, data, callback) {
+var outputToCsv = function(options, type, tabs, callback) {
   var opts = { headers: true };
   if (options.locale === 'fr') {
     opts.delimiter = ';';
   }
-  csv.writeToString(data, opts, function(err, data) {
+
+  // csv doesn't have the concept of tabs
+  var tab = tabs[0];
+
+  if (!options.skipHeader) {
+    tab.data.unshift(_.pluck(tab.columns, 'label'));
+  }
+
+  csv.writeToString(tab.data, opts, function(err, result) {
     if (err) {
       return callback(err);
     }
-    callback(null, data);
+    callback(null, result);
   });
 };
 
-var outputToXml = function(options, type, data, callback) {
+var outputToXml = function(options, type, tabs, callback) {
 
-  var worksheetName = config.translate(type.name, options.locale);
-
-  var table = xmlbuilder.create('ss:Workbook')
+  var workbook = xmlbuilder.create('ss:Workbook')
     .att('xmlns', 'urn:schemas-microsoft-com:office:spreadsheet')
     .att('xmlns:o', 'urn:schemas-microsoft-com:office:office')
     .att('xmlns:x', 'urn:schemas-microsoft-com:office:excel')
     .att('xmlns:html', 'http://www.w3.org/TR/REC-html140')
-    .att('xmlns:ss','urn:schemas-microsoft-com:office:spreadsheet')
-    .ele('Worksheet', { 'ss:Name': worksheetName })
-    .ele('Table');
+    .att('xmlns:ss','urn:schemas-microsoft-com:office:spreadsheet');
 
-  data.forEach(function(cells) {
-    var row = table.ele('Row');
-    cells.forEach(function(header) {
-      row.ele('Cell').ele('Data', {'ss:Type': 'String'}, header);
+  var row;
+
+  tabs.forEach(function(tab) {
+    var table = workbook
+      .ele('Worksheet', { 'ss:Name': tab.name })
+      .ele('Table');
+
+    if (!options.skipHeader) {
+      row = table.ele('Row');
+      tab.columns.forEach(function(column) {
+        row.ele('Cell').ele('Data', {'ss:Type': 'String'}, column.label);
+      });
+    }
+
+    tab.data.forEach(function(cells) {
+      row = table.ele('Row');
+      cells.forEach(function(cell) {
+        row.ele('Cell').ele('Data', {'ss:Type': 'String'}, cell);
+      });
     });
   });
 
-  callback(null, table.end());
+  callback(null, workbook.end());
 };
 
 var getRecordsFti = function(params, callback) {
@@ -371,13 +475,6 @@ module.exports = {
     if (!type) {
       return callback('Unknown export type');
     }
-    if (params.columns) {
-      try {
-        params.columns = JSON.parse(params.columns);
-      } catch(e) {
-        return callback(e);
-      }
-    }
     getRecords(type, params, function(err, response) {
       if (err) {
         return callback(err);
@@ -385,14 +482,11 @@ module.exports = {
 
       var options = {
         timezone: params.tz,
-        locale: params.locale || 'en'
+        locale: params.locale || 'en',
+        form: params.form,
+        format: params.format,
+        skipHeader: params.skip_header_row
       };
-
-      if (params.columns) {
-        options.columns = createColumnModels(params.columns, options);
-      } else {
-        options.columns = type.columns({ form: params.form, locale: options.locale });
-      }
 
       if (params.filter_state) {
         options.filterState = { state: params.filter_state };
@@ -408,19 +502,20 @@ module.exports = {
         }
       }
 
-      var data = type.modelGenerator(response.rows, options);
-
-      if (!params.skip_header_row) {
-        // translate headers
-        var headers = _.pluck(options.columns, 'label');
-        if (type.appendedHeaders) {
-          headers = headers.concat(type.appendedHeaders(options));
+      if (params.columns) {
+        var parsedColumns;
+        try {
+          parsedColumns = JSON.parse(params.columns);
+        } catch(e) {
+          return callback(e);
         }
-        data.unshift(headers);
+        options.columns = createColumnModels(parsedColumns, options);
       }
 
+      var tabs = type.generate(response.rows, options);
+
       var outputFn = params.format === 'xml' ? outputToXml : outputToCsv;
-      outputFn(options, type, data, callback);
+      outputFn(options, type, tabs, callback);
 
     });
   }

@@ -144,7 +144,7 @@ exports['get formats incoming messages'] = function(test) {
   });
 };
 
-exports['get exports in xml'] = function(test) {
+exports['get exports messages in xml'] = function(test) {
   test.expect(2);
   var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
     rows: [
@@ -190,6 +190,79 @@ exports['get exports in xml'] = function(test) {
   controller.get({ type: 'messages', tz: '0', format: 'xml' }, function(err, results) {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
+    test.done();
+  });
+};
+
+exports['get exports reports in xml with each type on a separate tab'] = function(test) {
+  test.expect(3);
+  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+    rows: [
+      { doc: {
+        _id: 'abc',
+        patient_id: '123456',
+        reported_date: 123456789,
+        form: 'STCK',
+        qty: 115,
+        year: 2014
+      } },
+      { doc: {
+        _id: 'def',
+        patient_id: '654321',
+        reported_date: 987654321,
+        form: 'V',
+        status: 'ok'
+      } },
+      { doc: {
+        _id: 'hij',
+        patient_id: '654321',
+        reported_date: 987654321,
+        form: 'STCK',
+        qty: 3,
+        year: 2015
+      } }
+    ]
+  });
+  var configGet = sinon.stub(config, 'get').returns({
+    V: {
+      meta: {
+        label: { en: 'Visits' }
+      },
+      fields: {
+        status: { labels: { short: { en: 'Patient Status' } } }
+      }
+    },
+    STCK: {
+      meta: {
+        label: { en: 'Stock Monitoring' }
+      },
+      fields: {
+        qty: { labels: { short: { en: 'Quantity' } } },
+        year: { labels: { short: { en: 'Year' } } }
+      }
+    }
+  });
+  var expected =  '<?xml version="1.0"?><ss:Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html140" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">' +
+                    '<Worksheet ss:Name="{Reports:en}"><Table>' +
+                      '<Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell></Row>' +
+                      '<Row><Cell><Data ss:Type="String">abc</Data></Cell></Row>' +
+                      '<Row><Cell><Data ss:Type="String">def</Data></Cell></Row>' +
+                      '<Row><Cell><Data ss:Type="String">hij</Data></Cell></Row>' +
+                    '</Table></Worksheet>' +
+                    '<Worksheet ss:Name="Stock Monitoring"><Table>' +
+                      '<Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell><Cell><Data ss:Type="String">Quantity</Data></Cell><Cell><Data ss:Type="String">Year</Data></Cell></Row>' +
+                      '<Row><Cell><Data ss:Type="String">abc</Data></Cell><Cell><Data ss:Type="String">115</Data></Cell><Cell><Data ss:Type="String">2014</Data></Cell></Row>' +
+                      '<Row><Cell><Data ss:Type="String">hij</Data></Cell><Cell><Data ss:Type="String">3</Data></Cell><Cell><Data ss:Type="String">2015</Data></Cell></Row>' +
+                    '</Table></Worksheet>' +
+                    '<Worksheet ss:Name="Visits"><Table>' +
+                      '<Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell><Cell><Data ss:Type="String">Patient Status</Data></Cell></Row>' +
+                      '<Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">ok</Data></Cell></Row>' +
+                    '</Table></Worksheet>' +
+                  '</ss:Workbook>';
+  controller.get({ type: 'forms', tz: '0', format: 'xml', columns: '[ "_id" ]' }, function(err, results) {
+    test.equals(results, expected);
+    test.equals(getView.callCount, 1);
+    test.equals(configGet.callCount, 2);
     test.done();
   });
 };
@@ -379,7 +452,7 @@ exports['get uses filter state params'] = function(test) {
 };
 
 exports['get reports formats responses'] = function(test) {
-  test.expect(5);
+  test.expect(6);
   var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
     rows: [
       { doc: {
@@ -396,6 +469,25 @@ exports['get reports formats responses'] = function(test) {
       } }
     ]
   });
+  var configGet = sinon.stub(config, 'get').returns({
+    V: {
+      meta: {
+        label: { en: 'Visits' }
+      },
+      fields: {
+        status: { labels: { short: { en: 'Patient Status' } } }
+      }
+    },
+    STCK: {
+      meta: {
+        label: { en: 'Stock Monitoring' }
+      },
+      fields: {
+        qty: { labels: { short: { en: 'Quantity' } } },
+        year: { labels: { short: { en: 'Year' } } }
+      }
+    }
+  });
   var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{related_entities.clinic.contact.name:en},{related_entities.clinic.name:en},{related_entities.clinic.parent.contact.name:en},{related_entities.clinic.parent.name:en},{related_entities.clinic.parent.parent.name:en},{form:en}\n' +
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,,STCK\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,,V';
@@ -405,6 +497,7 @@ exports['get reports formats responses'] = function(test) {
     test.equals(getView.firstCall.args[0], 'data_records');
     test.same(getView.firstCall.args[1].startkey, [true, '*', {}]);
     test.same(getView.firstCall.args[1].endkey, [true, '*', 0]);
+    test.equals(configGet.callCount, 2);
     test.done();
   });
 };
@@ -433,6 +526,9 @@ exports['get reports filters by form'] = function(test) {
   });
   var configGet = sinon.stub(config, 'get').returns({
     P: {
+      meta: {
+        label: { en: 'Register' }
+      },
       fields: {
         first: { labels: { short: { en: '1st' } } },
         second: { labels: { short: { en: '2nd' } } },
@@ -453,7 +549,7 @@ exports['get reports filters by form'] = function(test) {
 };
 
 exports['get reports with query calls fti'] = function(test) {
-  test.expect(8);
+  test.expect(9);
   var getView = sinon.stub(db, 'getView');
   var ftiGet = sinon.stub(fti, 'get').callsArgWith(3, null, {
     rows: [
@@ -471,6 +567,16 @@ exports['get reports with query calls fti'] = function(test) {
       } }
     ]
   });
+  var configGet = sinon.stub(config, 'get').returns({
+    P: {
+      meta: {
+        label: { en: 'Register' }
+      },
+      fields: {
+        name: { labels: { short: { en: 'Name' } } }
+      }
+    }
+  });
   var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{related_entities.clinic.contact.name:en},{related_entities.clinic.name:en},{related_entities.clinic.parent.contact.name:en},{related_entities.clinic.parent.name:en},{related_entities.clinic.parent.parent.name:en},{form:en}\n' +
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,,P\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,,P';
@@ -483,6 +589,7 @@ exports['get reports with query calls fti'] = function(test) {
     test.equals(ftiGet.firstCall.args[1].q, 'form:P');
     test.equals(ftiGet.firstCall.args[1].sort, '\\reported_date<date>');
     test.equals(ftiGet.firstCall.args[1].include_docs, true);
+    test.equals(configGet.callCount, 1);
     test.done();
   });
 };
