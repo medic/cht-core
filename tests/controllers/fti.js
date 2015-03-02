@@ -75,7 +75,7 @@ exports['returns successfully with query'] = function(test) {
     test.equals(err, null);
     test.equals(fti.callCount, 1);
     test.equals(fti.firstCall.args[0], indexName);
-    test.equals(fti.firstCall.args[1].q, 'name:"gareth"');
+    test.equals(fti.firstCall.args[1].q, 'name:gareth');
     test.same(actual, expected);
     test.done();
   });
@@ -156,7 +156,7 @@ exports['adds district'] = function(test) {
     test.equals(err, null);
     test.equals(fti.callCount, 1);
     test.equals(fti.firstCall.args[0], indexName);
-    test.equals(fti.firstCall.args[1].q, 'district:"abc" AND (name:"gareth")');
+    test.equals(fti.firstCall.args[1].q, 'district:abc AND (name:gareth)');
     test.same(actual, expected);
     test.done();
   });
@@ -173,7 +173,7 @@ exports['add unallocated when setting set and user is district admin'] = functio
     test.equals(err, null);
     test.equals(fti.callCount, 1);
     test.equals(fti.firstCall.args[0], indexName);
-    test.equals(fti.firstCall.args[1].q, 'district:("abc" OR "none") AND (name:"gareth")');
+    test.equals(fti.firstCall.args[1].q, 'district:(abc OR none) AND (name:gareth)');
     test.equals(configGet.callCount, 1);
     test.equals(configGet.firstCall.args[0], 'district_admins_access_unallocated_messages');
     test.same(actual, expected);
