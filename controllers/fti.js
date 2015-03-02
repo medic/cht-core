@@ -30,16 +30,18 @@ var getType = function(key, value) {
 };
 
 var extractKeys = function(operand, schema) {
-  Object.keys(operand).forEach(function(key) {
-    var value = operand[key];
-    if (nodeUtils.isArray(value)) {
-      value = operand[key][0];
-    }
-    var type = getType(key, value);
-    if (type) {
-      schema[key] = type;
-    }
-  });
+  if (typeof operand === 'object') {
+    Object.keys(operand).forEach(function(key) {
+      var value = operand[key];
+      if (nodeUtils.isArray(value)) {
+        value = operand[key][0];
+      }
+      var type = getType(key, value);
+      if (type) {
+        schema[key] = type;
+      }
+    });
+  }
 };
 
 // because our index is dynamically generated from the form fields
@@ -53,7 +55,7 @@ var buildSchema = function(operands, schema) {
         extractKeys(operand, schema);
       }
     });
-  } else if (typeof operands === 'object') {
+  } else {
     extractKeys(operands, schema);
   }
 };
