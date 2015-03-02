@@ -6,6 +6,7 @@ var nodeUtils = require('util'),
 
 var addDistrict = function(district, query, allocatedOnly) {
   if (district) {
+    district = '"' + district + '"';
     if (!allocatedOnly && config.get('district_admins_access_unallocated_messages')) {
       district = [ district, 'none' ];
     }
