@@ -234,9 +234,9 @@ app.get('/api/v1/fti/:view', function(req, res) {
     auth.check(req, 'can_view_unallocated_data_records', null, function(err, ctx) {
       var queryOptions = _.pick(req.query, 'q', 'schema', 'sort', 'skip', 'limit', 'include_docs');
       queryOptions.allocatedOnly = !!err;
-      fti.get(req.params.view, queryOptions, ctx.district, function(err, result) {
+      fti.get(req.params.view, queryOptions, ctx && ctx.district, function(err, result) {
         if (err) {
-          return serverError(err, res);
+          return serverError(err.message, res);
         }
         res.json(result);
       });

@@ -52,7 +52,7 @@ var buildSchema = function(operands, schema) {
         extractKeys(operand, schema);
       }
     });
-  } else {
+  } else if (typeof operands === 'object') {
     extractKeys(operands, schema);
   }
 };
