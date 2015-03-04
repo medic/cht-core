@@ -12,10 +12,14 @@ var _ = require('underscore')._,
  * @api public
  */
 exports.parse = function(def, doc) {
-    var parts = doc.message.split('!')[2].split(/\s*#\s*/),
+    var data = doc.message.split('!')[2],
         labels = [],
         vals = [],
         obj = {};
+
+    // Split on hash '#' unless it is escaped.  Use uncommon string as
+    // placeholder.
+    var parts = data.replace(/([^\\])#/g, '$1\u000B').split('\u000B');
 
     if(!def || !def.fields) {
         return {};
@@ -33,7 +37,8 @@ exports.parse = function(def, doc) {
 
     /*
      * Loop through form definition fields and build object when tiny label
-     * matches.
+     * matches. Also in field values remove escape characters on escaped
+     * delimiters.
      */
     _.each(def.fields, function(field, key) {
         // ignore fields without tiny labels
@@ -43,7 +48,7 @@ exports.parse = function(def, doc) {
         var label = sms_utils.info.getMessage(field.labels.tiny);
         for (var i = 0; i < labels.length; i++) {
             if (labels[i].match(new RegExp(label, 'i'))) {
-                obj[key] = vals[i];
+                obj[key] = vals[i].replace(/\\#/g, '#');
             }
         };
     });

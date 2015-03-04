@@ -808,7 +808,6 @@ exports['smsformats unstructured'] = function(test) {
 };
 
 exports['smsformats structured but no form'] = function(test) {
-    test.expect(2);
 
     var docs = [
         {message: "1!0000!1"},
@@ -847,7 +846,6 @@ exports['smsformats textforms only one field'] = function(test) {
 };
 
 exports['valid muvuku message'] = function (test) {
-    test.expect(3);
     var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var def = utils.info.getForm('YYYY');
     var doc = {
@@ -856,7 +854,6 @@ exports['valid muvuku message'] = function (test) {
         message: '1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4'
     };
 
-    var form = smsparser.getFormCode(doc.message);
     var obj = smsparser.parse(def, doc);
 
     test.ok(getForm.alwaysCalledWith('YYYY'));
@@ -893,7 +890,6 @@ exports['valid muvuku message'] = function (test) {
 };
 
 exports['valid javarosa message'] = function (test) {
-    test.expect(3);
     var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var def = utils.info.getForm('YYYY');
     var doc = {
@@ -902,7 +898,6 @@ exports['valid javarosa message'] = function (test) {
         message: 'J1!YYYY!HFI#facility#RPY#2011#RPM#11#MSP#0#L1T#1#L2T#2#CDT#3#ZDT#4#ODT#5#EOT#6#L1O#9#L2O#8#CDO#7#ZDO#6#ODO#5#EDO#4'
     };
 
-    var form = smsparser.getFormCode(doc.message);
     var obj = smsparser.parse(def, doc);
 
     test.ok(getForm.alwaysCalledWith('YYYY'));
@@ -938,6 +933,138 @@ exports['valid javarosa message'] = function (test) {
     test.done();
 };
 
+exports['valid javarosa message, random field ordering'] = function (test) {
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
+    var def = utils.info.getForm('YYYY');
+    var doc = {
+        sent_timestamp: '12-11-11 15:00',
+        from: '+15551212',
+        message: 'J1!YYYY!EDO#4#ODT#5#RPM#11#L2T#2#HFI#facility#CDT#3#CDO#7#MSP#0#ZDO#6#L1O#9#RPY#2011#EOT#6#ODO#5#L1T#1#ZDT#4#L2O#8'
+    };
+
+    var obj = smsparser.parse(def, doc);
+
+    test.ok(getForm.alwaysCalledWith('YYYY'));
+    test.same(obj, {
+        facility_id: 'facility',
+        year: '2011',
+        month: '11',
+        misoprostol_administered: false,
+        quantity_dispensed: {
+            la_6x1: 1,
+            la_6x2: 2,
+            cotrimoxazole: 3,
+            zinc: 4,
+            ors: 5,
+            eye_ointment: 6
+        },
+        days_stocked_out: {
+            la_6x1: 9,
+            la_6x2: 8,
+            cotrimoxazole: 7,
+            zinc: 6,
+            ors: 5,
+            eye_ointment: 4
+        }
+    });
+
+    var arr = smsparser.parseArray(def, doc);
+    test.same(
+        arr,
+        ['12-11-11 15:00', '+15551212', 'facility', '2011', '11', false, 1, 2, 3, 4, 5, 6, 9, 8, 7, 6, 5, 4]
+    );
+
+    test.done();
+};
+
+exports['valid javarosa message, fields missing'] = function (test) {
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
+    var def = utils.info.getForm('YYYY');
+    var doc = {
+        sent_timestamp: '12-11-11 15:00',
+        from: '+15551212',
+        message: 'J1!YYYY!EDO#4#ODT#5#RPM#11#L2T#2#HFI#facility#CDT#3#CDO#7#MSP#0#ZDO#6#L1O#9#RPY#2011#EOT#6'
+    };
+
+    var obj = smsparser.parse(def, doc);
+
+    test.ok(getForm.alwaysCalledWith('YYYY'));
+    test.same(obj, {
+        facility_id: 'facility',
+        year: '2011',
+        month: '11',
+        misoprostol_administered: false,
+        quantity_dispensed: {
+            la_6x1: undefined,
+            la_6x2: 2,
+            cotrimoxazole: 3,
+            zinc: undefined,
+            ors: 5,
+            eye_ointment: 6
+        },
+        days_stocked_out: {
+            la_6x1: 9,
+            la_6x2: undefined,
+            cotrimoxazole: 7,
+            zinc: 6,
+            ors: undefined,
+            eye_ointment: 4
+        }
+    });
+
+    var arr = smsparser.parseArray(def, doc);
+    test.same(
+        arr,
+        ["12-11-11 15:00", "+15551212", "facility", "2011", "11", "0", undefined, "2", "3", undefined, "5", "6", "9", undefined, "7", "6", undefined, "4"]
+    );
+
+    test.done();
+};
+
+exports['valid javarosa message, values contain escaped delimiters'] = function (test) {
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
+    var def = utils.info.getForm('YYYY');
+    var doc = {
+        sent_timestamp: '12-11-11 15:00',
+        from: '+15551212',
+        message: 'J1!YYYY!L2T#2#HFI#fa\\cility\\#2\\#3#CDT#3#CDO#7'
+    };
+
+    var obj = smsparser.parse(def, doc);
+
+    test.ok(getForm.alwaysCalledWith('YYYY'));
+    test.same(obj, {
+        facility_id: 'fa\\cility#2#3',
+        year: undefined,
+        month: undefined,
+        misoprostol_administered: undefined,
+        quantity_dispensed: {
+            la_6x1: undefined,
+            la_6x2: 2,
+            cotrimoxazole: 3,
+            zinc: undefined,
+            ors: undefined,
+            eye_ointment: undefined
+        },
+        days_stocked_out: {
+            la_6x1: undefined,
+            la_6x2: undefined,
+            cotrimoxazole: 7,
+            zinc: undefined,
+            ors: undefined,
+            eye_ointment: undefined
+        }
+    });
+
+    var arr = smsparser.parseArray(def, doc);
+    test.same(
+        arr,
+        ["12-11-11 15:00", "+15551212", "fa\\cility#2#3", undefined, undefined, undefined, undefined, "2", "3", undefined, undefined, undefined, undefined, undefined, "7", undefined, undefined, undefined]
+    );
+
+    test.done();
+};
+
 exports['junk example data'] = function (test) {
 
     var doc = {
@@ -948,7 +1075,6 @@ exports['junk example data'] = function (test) {
 
     test.expect(2);
 
-    var form = smsparser.getFormCode(doc.message);
     var obj = smsparser.parse(null, doc);
     var expectedObj = {};
     test.same(obj, expectedObj);
