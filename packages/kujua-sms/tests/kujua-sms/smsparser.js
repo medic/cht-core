@@ -1253,3 +1253,28 @@ exports['support textforms locale on tiny labels'] = function(test) {
     test.done();
 
 };
+
+exports['support regex chars in form code, parser escapes them'] = function(test) {
+    var def = {
+        meta: {
+            code: '.*.*'
+        },
+        fields: {
+            name: {
+                type: 'string',
+                labels: {
+                    short: 'Name',
+                    tiny: {
+                        en: 'n'
+                    }
+                }
+            }
+        }
+    };
+    var doc = {
+        message: ".*.*  n jane"
+    };
+    var data = smsparser.parse(def, doc);
+    test.same(data, {name: "jane"});
+    test.done();
+};

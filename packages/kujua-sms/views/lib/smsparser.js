@@ -18,6 +18,27 @@ var isMuvukuFormat = exports.isMuvukuFormat = function(msg) {
     return Boolean(msg.match(MUVUKU_REGEX));
 };
 
+/*
+ * Escape regex characters, helps to prevent injection issues when accepting
+ * user input.
+ */
+var regexEscape = function(s) {
+    if (typeof s !== 'string') { return s; }
+    return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+};
+
+/*
+ * Remove the form code from the beginning of the message since it does
+ * not belong to the TextForms format but is just a convention to
+ * identify the message.
+ */
+var stripFormCode = function(code, msg) {
+    if (typeof code !== 'string') { return msg; }
+    return msg.replace(
+        new RegExp('^\\s*' + regexEscape(code) + '[\\s!\\-,:#]*','i'), ''
+    );
+};
+
 /**
  * Get parser based on code, the first part of a Muvuku header, which helps us
  * know how to parse the data.
@@ -45,12 +66,7 @@ var getParser = exports.getParser = function(def, doc) {
                 return;
         }
     }
-    /*
-     * Remove the form code from the beginning of the message since it does
-     * not belong to the TextForms format but is just a convention to
-     * identify the message.
-     */
-    msg = msg.replace(new RegExp('^\\s*' + code + '[\\s!\\-,:#]*','i'),'')
+    msg = stripFormCode(code, msg);
     if (textforms_parser.isCompact(def, msg, locale)) {
         return textforms_parser.parseCompact;
     } else {
@@ -193,13 +209,7 @@ exports.parse = function (def, doc) {
         var code = def && def.meta && def.meta.code,
             msg = doc.message || doc;
 
-        /*
-         * Remove the form code from the beginning of the message since it does
-         * not belong to the TextForms format but is just a convention to
-         * identify the message.
-         */
-        msg = msg.replace(new RegExp('^\\s*' + code + '[\\s!\\-,:#]*','i'),'')
-
+        msg = stripFormCode(code, msg);
         if (textforms_parser.isCompact(def, msg, doc.locale)) {
             msg_data = parser(def, msg);
         } else {
