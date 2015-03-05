@@ -6,11 +6,26 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('Search', ['$resource', 'FormatDataRecord',
-    function($resource, FormatDataRecord) {
+  inboxServices.factory('Search', ['$resource', 'GenerateSearchQuery', 'FormatDataRecord',
+    function($resource, GenerateSearchQuery, FormatDataRecord) {
+
+      var _currentQuery;
+
+      var debounce = function(options) {
+        var queryString = JSON.stringify(options);
+        if (queryString === _currentQuery) {
+          // debounce as same query already running
+          return true;
+        }
+        _currentQuery = queryString;
+        return false;
+      };
 
       var formatResults = function(data, callback) {
-        FormatDataRecord(data.rows).then(function(res) {
+        FormatDataRecord(data.rows, function(err, res) {
+          if (err) {
+            return callback(err);
+          }
           callback(null, {
             results: res,
             total_rows: data.total_rows
@@ -18,31 +33,43 @@ var _ = require('underscore');
         });
       };
 
-      return function(options, callback) {
+      return function($scope, options, callback) {
 
-        if (options.query) {
-          options.q = JSON.stringify(options.query);
-          options.query = undefined;
-        }
-        if (options.schema) {
-          options.schema = JSON.stringify(options.schema);
-        }
-
-        _.defaults(options, {
-          limit: 50,
-          sort: '\\reported_date<date>',
-          include_docs: true
-        });
-
-        $resource('/api/v1/fti/data_records').get(
-          options,
-          function(data) {
-            formatResults(data, callback);
-          },
-          function(err) {
-            callback(err);
+        GenerateSearchQuery($scope, function(err, response) {
+          if (err) {
+            return callback(err);
           }
-        );
+
+          if (response.query) {
+            options.q = JSON.stringify(response.query);
+          }
+          if (response.schema) {
+            options.schema = JSON.stringify(response.schema);
+          }
+
+          _.defaults(options, {
+            index: 'data_records',
+            limit: 50,
+            sort: '\\reported_date<date>',
+            include_docs: true
+          });
+
+          if (debounce(options)) {
+            return;
+          }
+
+          $resource('/api/v1/fti/' + options.index).get(
+            options,
+            function(data) {
+              _currentQuery = null;
+              formatResults(data, callback);
+            },
+            function(err) {
+              _currentQuery = null;
+              callback(err);
+            }
+          );
+        });
 
       };
     }

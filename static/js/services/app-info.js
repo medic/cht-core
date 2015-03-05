@@ -12,23 +12,21 @@ var _ = require('underscore');
   
   var settings;
 
-  inboxServices.factory('AppInfo', ['$q', 'Settings',
-    function($q, Settings) {
-      return function() {
-        var deferred = $q.defer();
+  inboxServices.factory('AppInfo', ['Settings',
+    function(Settings) {
+      return function(callback) {
         Settings(function(err, res) {
           if (err) {
-            return deferred.reject(err);
+            return callback(err);
           }
           settings = res;
-          deferred.resolve({
+          callback(null, {
             getForm: getForm,
             getMessage: getMessage,
             translate: translate,
             formatDate: formatDate
           });
         });
-        return deferred.promise;
       };
     }
   ]);

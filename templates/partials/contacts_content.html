@@ -1,0 +1,72 @@
+<div class="col-sm-8 item-content" ng-show="selected">
+  <div>
+    <div class="status">
+      <span class="mm-badge mm-badge-round">
+        <span class="fa" ng-class="{
+          'fa-home': selected.type === 'clinic',
+          'fa-hospital-o': selected.type === 'health_center',
+          'fa-building': selected.type === 'district_hospital'
+        }"></span>
+      </span>
+    </div>
+
+    <div class="body">
+      <h2>{{selected.name}}</h2>
+      <h5 ng-show="selected.type === 'clinic'">{{'Clinic' | translate}}</h5>
+      <h5 ng-show="selected.type === 'health_center'">{{'Health Center' | translate}}</h5>
+      <h5 ng-show="selected.type === 'district_hospital'">{{'District Hospital' | translate}}</h5>
+      <ul>
+        <li>
+          <label>{{'Contact' | translate}}</label>
+          <p>{{selected.contact.name}}</p>
+        </li>
+        <li>
+          <label>{{'Phone Number' | translate}}</label>
+          <p>{{selected.contact.phone}}</p>
+        </li>
+        <li>
+          <label>{{'External ID' | translate}}</label>
+          <p>{{selected.external_id}}</p>
+        </li>
+        <li>
+          <label>{{'Notes' | translate}}</label>
+          <p>{{selected.notes}}</p>
+        </li>
+        <li ng-if="selected.parent._id">
+          <label>{{(selected.parent.type === 'health_center' ? 'Health Center' : 'District Hospital') | translate}}</label>
+          <p>
+            <a ng-click="select(selected.parent._id)">
+              {{selected.parent.name}}
+            </a>
+          </p>
+        </li>
+        <li ng-if="selected.parent.parent._id">
+          <label>{{'District Hospital' | translate}}</label>
+          <p>
+            <a ng-click="select(selected.parent.parent._id)">
+              {{selected.parent.parent.name}}
+            </a>
+          </p>
+        </li>
+      </ul>
+    </div>
+
+    <div class="body" ng-if="selected.children.length">
+      <h2 ng-show="selected.type === 'district_hospital'">{{'Health Centers' | translate}}</h2>
+      <h2 ng-show="selected.type === 'health_center'">{{'Clinics' | translate}}</h2>
+      <ul>
+        <li class="row" ng-repeat="child in selected.children">
+          <div class="col-sm-4">
+            <a ng-click="select(child._id)">{{child.name}}</a>
+          </div>
+          <div class="col-sm-4">
+            {{child.contact.name}}
+          </div>
+          <div class="col-sm-4">
+            {{child.contact.phone}}
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

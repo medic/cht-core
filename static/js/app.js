@@ -73,6 +73,22 @@ require('./filters/index');
           templateUrl: 'templates/partials/analytics.html'
         })
 
+        // contacts
+        .state('contacts', {
+          url: '/contacts',
+          controller: 'ContactsCtrl',
+          templateUrl: 'templates/partials/contacts.html'
+        })
+        .state('contacts.detail', {
+          url: '/:id',
+          views: {
+            content: {
+              controller: 'ContactsContentCtrl',
+              templateUrl: 'templates/partials/contacts_content.html'
+            }
+          }
+        })
+
         // configuration
         .state('configuration', {
           url: '/configuration',

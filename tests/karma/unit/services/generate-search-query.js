@@ -341,4 +341,44 @@ describe('GenerateSearchQuery service', function() {
       );
     });
   });
+
+  it('creates query for contacts', function() {
+    scope.contactTypes = [
+      { value: 'clinic', label: 'Clinics' },
+      { value: 'health_center', label: 'Health Centers' },
+      { value: 'district_hospital', label: 'Districts' }
+    ];
+    scope.filterModel = {
+      type: 'contacts',
+      contactTypes: []
+    };
+    service(scope, options, function(err, result) {
+      chai.expect(result.query).to.deep.equal(
+        {$operands:[
+          {type:['clinic','health_center','district_hospital']}
+        ]}
+      );
+    });
+  });
+
+  it('creates query for contacts with filters', function() {
+    scope.contactTypes = [
+      { value: 'clinic', label: 'Clinics' },
+      { value: 'health_center', label: 'Health Centers' },
+      { value: 'district_hospital', label: 'Districts' }
+    ];
+    scope.filterModel = {
+      type: 'contacts',
+      contactTypes: [ 'clinic', 'health_center' ]
+    };
+    scope.filterQuery = { value: 'newp' };
+    service(scope, options, function(err, result) {
+      chai.expect(result.query).to.deep.equal(
+        {$operands:[
+          'newp*',
+          {type:['clinic','health_center']}
+        ]}
+      );
+    });
+  });
 });

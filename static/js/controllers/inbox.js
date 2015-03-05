@@ -18,8 +18,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$route', '$location', '$translate', '$animate', '$rootScope', '$state', '$stateParams', 'translateFilter', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'DownloadUrl',
-    function ($window, $scope, $route, $location, $translate, $animate, $rootScope, $state, $stateParams, translateFilter, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, DownloadUrl) {
+    ['$window', '$scope', '$route', '$location', '$translate', '$animate', '$rootScope', '$state', '$stateParams', 'translateFilter', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl',
+    function ($window, $scope, $route, $location, $translate, $animate, $rootScope, $state, $stateParams, translateFilter, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl) {
 
       $scope.loading = true;
       $scope.error = false;
@@ -28,8 +28,8 @@ require('moment/locales');
       $scope.languages = [];
       $scope.forms = [];
       $scope.facilities = [];
-      $scope.contacts = undefined;
       $scope.messages = undefined;
+      $scope.reports = undefined;
       $scope.selected = undefined;
       $scope.filterQuery = { value: undefined };
       $scope.analyticsModules = undefined;
@@ -59,6 +59,9 @@ require('moment/locales');
         clearTimeout(clearSelectedTimer);
         if (selected) {
           $scope.selected = selected;
+          if (!$rootScope.$$phase) {
+            $rootScope.$apply();
+          }
           setTimeout(function() {
             $('body').addClass('show-content');
           }, 1);
@@ -84,17 +87,17 @@ require('moment/locales');
         var checkExisting = function(updated) {
           return existingKey === updated.key[1];
         };
-        for (var i = $scope.contacts.length - 1; i >= 0; i--) {
-          existingKey = $scope.contacts[i].key[1];
+        for (var i = $scope.messages.length - 1; i >= 0; i--) {
+          existingKey = $scope.messages[i].key[1];
           if (!_.some(contacts, checkExisting)) {
-            $scope.contacts.splice(i, 1);
+            $scope.messages.splice(i, 1);
           }
         }
       };
 
       var mergeUpdatedContacts = function(contacts) {
         _.each(contacts, function(updated) {
-          var match = _.find($scope.contacts, function(existing) {
+          var match = _.find($scope.messages, function(existing) {
             return existing.key[1] === updated.key[1];
           });
           if (match) {
@@ -102,7 +105,7 @@ require('moment/locales');
               match.value = updated.value;
             }
           } else {
-            $scope.contacts.push(updated);
+            $scope.messages.push(updated);
           }
         });
       };
@@ -114,13 +117,13 @@ require('moment/locales');
           removeDeletedContacts(options.contacts);
           mergeUpdatedContacts(options.contacts);
         } else {
-          $scope.contacts = options.contacts;
+          $scope.messages = options.contacts;
         }
       };
 
-      $scope.setMessages = function(messages) {
+      $scope.setReports = function(reports) {
         $scope.loading = false;
-        $scope.messages = messages;
+        $scope.reports = reports;
       };
 
       $scope.isRead = function(message) {
@@ -147,10 +150,17 @@ require('moment/locales');
         type: 'messages',
         forms: [],
         facilities: [],
+        contactTypes: [],
         valid: undefined,
         verified: undefined,
         date: { }
       };
+
+      $scope.contactTypes = [
+        { value: 'clinic', label: 'Clinics' },
+        { value: 'health_center', label: 'Health Centers' },
+        { value: 'district_hospital', label: 'Districts' }
+      ];
 
       $scope.resetFilterModel = function() {
         $scope.filterQuery.value = '';
@@ -170,17 +180,19 @@ require('moment/locales');
         });
       };
 
-      $scope.setMessage = function(id) {
+      $scope.select = function(id) {
         if ($scope.filterModel.type === 'reports' && $stateParams.id === id) {
           // message already set - make sure we're showing content
-          var message = _.findWhere($scope.messages, { _id: id });
+          var message = _.findWhere($scope.reports, { _id: id });
           if (message) {
             $scope.setSelected(message);
           } else {
             $state.reload();
           }
-        } else {
+        } else if (id) {
           $state.go($scope.filterModel.type + '.detail', { id: id });
+        } else {
+          $state.go($scope.filterModel.type);
         }
       };
 
@@ -612,6 +624,7 @@ require('moment/locales');
       var deleteMessageId;
 
       $scope.deleteDoc = function(id) {
+        console.log($scope.selected);
         $('#delete-confirm').modal('show');
         deleteMessageId = id;
       };
@@ -619,7 +632,12 @@ require('moment/locales');
       $scope.deleteDocConfirm = function() {
         var pane = modal.start($('#delete-confirm'));
         if (deleteMessageId) {
-          DeleteMessage(deleteMessageId, function(err) {
+          DeleteDoc(deleteMessageId, function(err, doc) {
+            if (!err) {
+              if (doc.type !== 'data_record') {
+                $rootScope.$broadcast('ContactUpdated', doc);
+              }
+            }
             pane.done(translateFilter('Error deleting document'), err);
           });
         } else {
@@ -640,15 +658,17 @@ require('moment/locales');
           pane.done(translateFilter('Error updating facility'), err);
         });
       };
-      $scope.updateFacilityShow = function () {
-        var val = '';
-        if ($scope.selected && 
-            $scope.selected.related_entities && 
-            $scope.selected.related_entities.clinic) {
-          val = $scope.selected.related_entities.clinic._id;
+      $scope.edit = function(record) {
+        if ($scope.filterModel.type === 'reports') {
+          var val;
+          if (record.related_entities && record.related_entities.clinic) {
+            val = record.related_entities.clinic._id;
+          }
+          $('#update-facility [name=facility]').select2('val', val || '');
+          $('#update-facility').modal('show');
+        } else {
+          $rootScope.$broadcast('EditContactInit', record);
         }
-        $('#update-facility [name=facility]').select2('val', val);
-        $('#update-facility').modal('show');
       };
 
       $('body').on('mouseenter', '.relative-date, .autoreply', function() {
@@ -696,6 +716,32 @@ require('moment/locales');
 
       $scope.setupFilters = function() {
 
+        $('#search').on('click', function(e) {
+          e.preventDefault();
+          $scope.$broadcast('query');
+        });
+        $('#freetext').on('keypress', function(e) {
+          if (e.which === 13) {
+            e.preventDefault();
+            $scope.$broadcast('query');
+          }
+        });
+
+        var performMobileSearch = function(e) {
+          e.preventDefault();
+          $scope.$broadcast('query');
+          $(e.target).closest('.filter').removeClass('open');
+        };
+        $('#mobile-search-go').on('click', performMobileSearch);
+        $('#mobile-freetext').on('keypress', function(e) {
+          if (e.which === 13) {
+            performMobileSearch(e);
+          }
+        });
+        $('.mobile-freetext-filter').on('shown.bs.dropdown', function() {
+          $('#mobile-freetext').focus();
+        });
+
         $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
         // stop bootstrap closing the search pane on click
         $('.filters .mobile-freetext-filter .search-pane').on('click', function(e) {
@@ -705,7 +751,7 @@ require('moment/locales');
         // we have to wait for language to respond before initing the multidropdowns
         Language(function() {
 
-          $('#formTypeDropdown, #facilityDropdown').each(function() {
+          $('#formTypeDropdown, #facilityDropdown, #contactTypeDropdown').each(function() {
             $(this).multiDropdown({
               label: function(state, callback) {
                 if (state.selected.length === 0 || state.selected.length === state.total.length) {
@@ -804,6 +850,13 @@ require('moment/locales');
             });
           });
 
+          $('#contactTypeDropdown').on('update', function() {
+            var ids = $(this).multiDropdown().val();
+            angularApply(function(scope) {
+              scope.filterModel.contactTypes = ids;
+            });
+          });
+
           $('#statusDropdown').on('update', function() {
             var values = $(this).multiDropdown().val();
             angularApply(function(scope) {
@@ -844,6 +897,16 @@ require('moment/locales');
         });
         require('../modules/manage-session').init();
       };
+
+      UserDistrict(function() {
+        $scope.$watch('filterModel', function(curr, prev) {
+          if (prev !== curr) {
+            $scope.$broadcast('query');
+          }
+        }, true);
+        $scope.$broadcast('query');
+      });
+
     }
   ]);
 
@@ -852,11 +915,14 @@ require('moment/locales');
   require('./reports');
   require('./reports-content');
   require('./analytics');
+  require('./contacts');
+  require('./contacts-content');
   require('./configuration');
   require('./edit-language');
   require('./delete-language');
   require('./edit-translation');
   require('./import-translation');
+  require('./import-contacts');
   require('./configuration-settings-basic');
   require('./configuration-settings-advanced');
   require('./configuration-translation-languages');
@@ -867,6 +933,7 @@ require('moment/locales');
   require('./configuration-export');
   require('./delete-user');
   require('./edit-user');
+  require('./edit-contact');
   require('./help');
   require('./help-search');
   require('./theme');

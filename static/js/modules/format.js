@@ -13,6 +13,8 @@ var _ = require('underscore');
       while (entity) {
         if (entity.name) {
           parts.push(entity.name);
+        } else if (entity.contact && entity.contact.phone) {
+          parts.push(entity.contact.phone);
         }
         entity = entity.parent;
       }

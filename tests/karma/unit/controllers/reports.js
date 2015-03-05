@@ -4,9 +4,8 @@ describe('ReportsCtrl controller', function() {
 
   var createController,
       scope,
-      message,
+      report,
       UserDistrict,
-      GenerateSearchQuery,
       MarkRead,
       Search,
       Changes,
@@ -18,7 +17,7 @@ describe('ReportsCtrl controller', function() {
     scope = $rootScope.$new();
     scope.filterModel = { date: {} };
     scope.selected = { _id: 'a' };
-    message = { _id: 'x' };
+    report = { _id: 'x' };
     scope.readStatus = { forms: 0, messages: 0 };
     scope.updateReadStatus = function() {};
     scope.isRead = function() {
@@ -28,7 +27,7 @@ describe('ReportsCtrl controller', function() {
       scope.selected = obj;
     };
     scope.setFilterQuery = function() { };
-    scope.messages = [ message, { _id: 'a' } ];
+    scope.reports = [ report, { _id: 'a' } ];
 
     UserDistrict = function() {
       return { 
@@ -38,11 +37,7 @@ describe('ReportsCtrl controller', function() {
 
     MarkRead = function() {};
 
-    GenerateSearchQuery = function() {
-      return 'somequery';
-    };
-
-    Search = function(options, callback) {
+    Search = function($scope, options, callback) {
       callback(null, { });
     };
 
@@ -58,10 +53,9 @@ describe('ReportsCtrl controller', function() {
         'UserDistrict': UserDistrict,
         'Changes': Changes,
         'MarkRead': MarkRead,
-        'GenerateSearchQuery': GenerateSearchQuery,
         'Search': Search,
         'Verified': {},
-        'DeleteMessage': {},
+        'DeleteDoc': {},
         'UpdateFacility': {},
         'MessageState': {},
         'EditGroup': {}
@@ -74,12 +68,11 @@ describe('ReportsCtrl controller', function() {
     chai.expect(scope.filterModel.type).to.equal('reports');
   });
 
-  it('updated messages when changed', function() {
+  it('updated reports when changed', function() {
 
     var changedObjects = [ { id: 'a' }, { id: 'b' } ];
-    var query = 'myquery';
 
-    scope.messages = [
+    scope.reports = [
       {
         _id: 'a',
         _rev: 1,
@@ -88,13 +81,9 @@ describe('ReportsCtrl controller', function() {
       }
     ];
 
-    GenerateSearchQuery = function(scope, options, callback) {
+    Search = function($scope, options, callback) {
+      chai.expect(options.silent).to.equal(true);
       chai.expect(options.changes).to.deep.equal(changedObjects);
-      callback(null, { query: query });
-    };
-
-    Search = function(options, callback) {
-      chai.expect(options.query).to.equal(query);
       callback(null, { results: [ 
         { 
           _id: 'a',
@@ -110,7 +99,7 @@ describe('ReportsCtrl controller', function() {
     
     createController();
     changesCallback(changedObjects);
-    chai.expect(scope.messages).to.deep.equal([
+    chai.expect(scope.reports).to.deep.equal([
       { 
         _id: 'a',
         _rev: 2,
@@ -124,31 +113,26 @@ describe('ReportsCtrl controller', function() {
     ]);
   });
 
-  it('updated messages when all deleted', function() {
+  it('updated reports when all deleted', function() {
 
     var changedObjects = [
       { id: 'a', deleted: true },
       { id: 'b', deleted: true }
     ];
 
-    scope.messages = [
+    scope.reports = [
       { _id: 'a' },
       { _id: 'c' }
     ];
 
-    GenerateSearchQuery = function(scope, options, callback) {
-      chai.expect(options.changes).to.deep.equal(changedObjects);
-      callback(null, 'myquery');
-    };
-
     createController();
     changesCallback(changedObjects);
-    chai.expect(scope.messages).to.deep.equal([
+    chai.expect(scope.reports).to.deep.equal([
       { _id: 'c' }
     ]);
   });
 
-  it('updated messages when some deleted', function() {
+  it('updated reports when some deleted', function() {
 
     scope.selected = { _id: 'c' };
 
@@ -157,17 +141,14 @@ describe('ReportsCtrl controller', function() {
       { id: 'b' }
     ];
 
-    scope.messages = [
+    scope.reports = [
       { _id: 'a' },
       { _id: 'c' }
     ];
 
-    GenerateSearchQuery = function(scope, options, callback) {
+    Search = function($scope, options, callback) {
+      chai.expect(options.silent).to.equal(true);
       chai.expect(options.changes).to.deep.equal([{ id: 'b' }]);
-      callback(null, 'myquery');
-    };
-
-    Search = function(options, callback) {
       callback(null, { results: [
         { _id: 'b' }
       ] });
@@ -175,7 +156,7 @@ describe('ReportsCtrl controller', function() {
 
     createController();
     changesCallback(changedObjects);
-    chai.expect(scope.messages).to.deep.equal([
+    chai.expect(scope.reports).to.deep.equal([
       { _id: 'c' },
       { _id: 'b' }
     ]);

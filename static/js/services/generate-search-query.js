@@ -1,10 +1,5 @@
 var _ = require('underscore'),
-    moment = require('moment'),
-    schema = {
-      errors: 'int',
-      verified: 'boolean',
-      reported_date: 'date'
-    };
+    moment = require('moment');
 
 (function () {
 
@@ -30,9 +25,22 @@ var _ = require('underscore'),
         }
       };
 
-      var formatType = function($scope) {
+      var formatReportType = function($scope) {
         return {
           type: $scope.filterModel.type === 'reports' ? 'report' : 'message*'
+        };
+      };
+
+      var formatContactsType = function($scope) {
+        var selectedTypes = $scope.filterModel.contactTypes;
+        if (selectedTypes.length > 0 &&
+            selectedTypes.length < $scope.contactTypes.length) {
+          return {
+            type: selectedTypes
+          };
+        }
+        return {
+          type: _.pluck($scope.contactTypes, 'value')
         };
       };
 
@@ -87,6 +95,34 @@ var _ = require('underscore'),
         return freetext;
       };
 
+      var types = {
+        reports: {
+          buildQuery: function($scope, options, operands) {
+            if (!options.ignoreFilter) {
+              operands.push(formatFreetext($scope));
+              operands.push(formatReportedDate($scope));
+              operands.push(formatReportType($scope));
+              operands.push(formatClinics($scope));
+              operands.push(formatForm($scope));
+              operands.push(formatErrors($scope));
+              operands.push(formatVerified($scope));
+            }
+            operands.push(formatIds(options));
+          },
+          schema: {
+            errors: 'int',
+            verified: 'boolean',
+            reported_date: 'date'
+          }
+        },
+        contacts: {
+          buildQuery: function($scope, options, operands) {
+            operands.push(formatFreetext($scope));
+            operands.push(formatContactsType($scope));
+          }
+        }
+      };
+
       return function($scope, options, callback) {
 
         if (!callback) {
@@ -94,21 +130,16 @@ var _ = require('underscore'),
           options = {};
         }
 
-        var operands = [];
-
-        if (!options.ignoreFilter) {
-          operands.push(formatFreetext($scope));
-          operands.push(formatReportedDate($scope));
-          operands.push(formatType($scope));
-          operands.push(formatClinics($scope));
-          operands.push(formatForm($scope));
-          operands.push(formatErrors($scope));
-          operands.push(formatVerified($scope));
+        var type = types[$scope.filterModel.type];
+        if (!type) {
+          return callback('Unknown type');
         }
-        operands.push(formatIds(options));
+
+        var operands = [];
+        type.buildQuery($scope, options, operands);
 
         callback(null, {
-          schema: schema,
+          schema: type.schema,
           query: { $operands: _.compact(operands) }
         });
 

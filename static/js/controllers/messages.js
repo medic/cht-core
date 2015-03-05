@@ -29,7 +29,7 @@ var tour = require('../modules/tour');
       };
 
       updateContacts({}, function() {
-        if ($scope.contacts.length && !$('#back').is(':visible')) {
+        if ($scope.messages.length && !$('#back').is(':visible')) {
           $timeout(function() {
             var id = $('.inbox-items li').first().attr('data-record-id');
             $state.go('messages.detail', { id: id });

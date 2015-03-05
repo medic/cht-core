@@ -15,6 +15,9 @@ describe('DownloadUrl service', function() {
       $provide.value('GenerateSearchQuery', function($scope, callback) {
         callback(null, { query: query });
       });
+      $provide.value('BaseUrlService', function() {
+        return 'BASEURL';
+      });
     });
     inject(function(_DownloadUrl_) {
       service = _DownloadUrl_;
@@ -50,6 +53,12 @@ describe('DownloadUrl service', function() {
     service(null, 'reports', function(err, actual) {
       chai.expect(decodeURIComponent(actual))
           .to.equal('/api/v1/export/forms?format=xml&locale=en&query="form:P"&schema=');
+    });
+  });
+
+  it('builds url for contacts backup', function() {
+    service(null, 'contacts', function(err, actual) {
+      chai.expect(actual).to.equal('BASEURL/facilities/backup');
     });
   });
 
