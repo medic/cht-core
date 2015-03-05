@@ -23,11 +23,12 @@ describe('ReportsCtrl controller', function() {
     scope.isRead = function() {
       return true;
     };
+    scope.setReports = function() {};
     scope.setSelected = function(obj) {
       scope.selected = obj;
     };
     scope.setFilterQuery = function() { };
-    scope.reports = [ report, { _id: 'a' } ];
+    scope.items = [ report, { _id: 'a' } ];
 
     UserDistrict = function() {
       return { 
@@ -72,7 +73,7 @@ describe('ReportsCtrl controller', function() {
 
     var changedObjects = [ { id: 'a' }, { id: 'b' } ];
 
-    scope.reports = [
+    scope.items = [
       {
         _id: 'a',
         _rev: 1,
@@ -99,7 +100,7 @@ describe('ReportsCtrl controller', function() {
     
     createController();
     changesCallback(changedObjects);
-    chai.expect(scope.reports).to.deep.equal([
+    chai.expect(scope.items).to.deep.equal([
       { 
         _id: 'a',
         _rev: 2,
@@ -120,14 +121,14 @@ describe('ReportsCtrl controller', function() {
       { id: 'b', deleted: true }
     ];
 
-    scope.reports = [
+    scope.items = [
       { _id: 'a' },
       { _id: 'c' }
     ];
 
     createController();
     changesCallback(changedObjects);
-    chai.expect(scope.reports).to.deep.equal([
+    chai.expect(scope.items).to.deep.equal([
       { _id: 'c' }
     ]);
   });
@@ -141,7 +142,7 @@ describe('ReportsCtrl controller', function() {
       { id: 'b' }
     ];
 
-    scope.reports = [
+    scope.items = [
       { _id: 'a' },
       { _id: 'c' }
     ];
@@ -156,7 +157,7 @@ describe('ReportsCtrl controller', function() {
 
     createController();
     changesCallback(changedObjects);
-    chai.expect(scope.reports).to.deep.equal([
+    chai.expect(scope.items).to.deep.equal([
       { _id: 'c' },
       { _id: 'b' }
     ]);

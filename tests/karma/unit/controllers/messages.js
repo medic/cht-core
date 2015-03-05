@@ -16,6 +16,7 @@ describe('MessagesCtrl controller', function() {
     scope.filterModel = {};
     scope.selected = { id: 'a' };
     scope.permissions = { admin: true };
+    scope.setMessages = function() {};
     scope.setSelected = function(obj) {
       scope.selected = obj;
     };

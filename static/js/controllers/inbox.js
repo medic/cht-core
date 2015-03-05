@@ -28,7 +28,7 @@ require('moment/locales');
       $scope.languages = [];
       $scope.forms = [];
       $scope.facilities = [];
-      $scope.items = undefined;
+      $scope.items = [];
       $scope.totalItems = undefined;
       $scope.selected = undefined;
       $scope.filterQuery = { value: undefined };
@@ -118,18 +118,18 @@ require('moment/locales');
           removeDeletedContacts(options.contacts);
           mergeUpdatedContacts(options.contacts);
         } else {
-          $scope.items = options.contacts;
+          $scope.items = options.contacts || [];
         }
       };
 
       $scope.setReports = function(reports) {
         $scope.loading = false;
-        $scope.items = reports;
+        $scope.items = reports || [];
       };
 
       $scope.setContacts = function(contacts) {
         $scope.loading = false;
-        $scope.items = contacts;
+        $scope.items = contacts || [];
       };
 
       $scope.isRead = function(message) {
