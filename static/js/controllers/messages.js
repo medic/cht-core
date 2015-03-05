@@ -13,6 +13,7 @@ var tour = require('../modules/tour');
       $scope.loadingContent = false;
       $scope.allLoaded = false;
       $scope.filterModel.type = 'messages';
+      $scope.setMessages();
 
       var updateContacts = function(options, callback) {
         options = options || {};
@@ -21,7 +22,7 @@ var tour = require('../modules/tour');
             return console.log('Error fetching contact', err);
           }
           options.contacts = data;
-          $scope.setContacts(options);
+          $scope.setMessages(options);
           if (callback) {
             callback();
           }
@@ -29,7 +30,7 @@ var tour = require('../modules/tour');
       };
 
       updateContacts({}, function() {
-        if ($scope.messages.length && !$('#back').is(':visible')) {
+        if ($scope.items.length && !$('#back').is(':visible')) {
           $timeout(function() {
             var id = $('.inbox-items li').first().attr('data-record-id');
             $state.go('messages.detail', { id: id });

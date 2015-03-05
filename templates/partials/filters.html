@@ -1,7 +1,7 @@
 <div class="row filters">
   <div class="inner">
 
-    <span class="slide-back" ng-click="setMessage()" ng-show="filterModel.type === 'reports' || filterModel.type === 'messages'">
+    <span class="slide-back" ng-click="setSelected()" ng-show="filterModel.type === 'reports' || filterModel.type === 'messages' || filterModel.type === 'contacts'">
       <span id="back" class="mm-button mm-button-nudge-down" ng-class="{'mm-button-disabled': !selected}" >
         <span class="mm-button-icon">
           <span class="fa fa-chevron-left"></span>
@@ -153,7 +153,7 @@
         </div>
       </span>
 
-      <span class="filter dropdown mm-dropdown" ng-show="filterModel.type === 'analytics' && analyticsModules.length">
+      <span class="filter dropdown mm-dropdown analytics-module" ng-show="filterModel.type === 'analytics' && analyticsModules.length">
         <span id="module" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-bar-chart-o"></span>

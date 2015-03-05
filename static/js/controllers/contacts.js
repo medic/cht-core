@@ -12,7 +12,7 @@ var _ = require('underscore'),
     function ($scope, db, Search, DbView) {
 
       $scope.filterModel.type = 'contacts';
-      $scope.loading = true;
+      $scope.setContacts();
 
       var _selected;
 
@@ -29,7 +29,7 @@ var _ = require('underscore'),
         });
 
         if (options.skip) {
-          options.skip = $scope.contacts.length;
+          options.skip = $scope.items.length;
         }
 
         Search($scope, options, function(err, data) {
@@ -39,11 +39,11 @@ var _ = require('underscore'),
             $scope.error = true;
             return console.log('Error searching for contacts', err);
           }
-          $scope.totalContacts = data.total_rows;
+          $scope.totalItems = data.total_rows;
           if (options.skip) {
-            $scope.contacts.push.apply($scope.contacts, data.results);
+            $scope.items.push.apply($scope.items, data.results);
           } else {
-            $scope.contacts = data.results;
+            $scope.setContacts(data.results);
             if (!$scope.selected || _selected !== $scope.selected._id) {
               $scope.selectContact(_selected);
             }
@@ -55,7 +55,7 @@ var _ = require('underscore'),
       };
 
       var getContact = function(id, callback) {
-        var doc = _.findWhere($scope.contacts, { _id: id });
+        var doc = _.findWhere($scope.items, { _id: id });
         if (doc) {
           return callback(null, doc);
         }
@@ -101,7 +101,7 @@ var _ = require('underscore'),
           $scope.query();
           return;
         }
-        var outdated = _.findWhere($scope.contacts, { _id: contact._id });
+        var outdated = _.findWhere($scope.items, { _id: contact._id });
         if (outdated) {
           if (contact._deleted) {
             $scope.query();

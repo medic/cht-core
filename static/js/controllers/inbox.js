@@ -28,8 +28,8 @@ require('moment/locales');
       $scope.languages = [];
       $scope.forms = [];
       $scope.facilities = [];
-      $scope.messages = undefined;
-      $scope.reports = undefined;
+      $scope.items = undefined;
+      $scope.totalItems = undefined;
       $scope.selected = undefined;
       $scope.filterQuery = { value: undefined };
       $scope.analyticsModules = undefined;
@@ -87,17 +87,17 @@ require('moment/locales');
         var checkExisting = function(updated) {
           return existingKey === updated.key[1];
         };
-        for (var i = $scope.messages.length - 1; i >= 0; i--) {
-          existingKey = $scope.messages[i].key[1];
+        for (var i = $scope.items.length - 1; i >= 0; i--) {
+          existingKey = $scope.items[i].key[1];
           if (!_.some(contacts, checkExisting)) {
-            $scope.messages.splice(i, 1);
+            $scope.items.splice(i, 1);
           }
         }
       };
 
       var mergeUpdatedContacts = function(contacts) {
         _.each(contacts, function(updated) {
-          var match = _.find($scope.messages, function(existing) {
+          var match = _.find($scope.items, function(existing) {
             return existing.key[1] === updated.key[1];
           });
           if (match) {
@@ -105,25 +105,31 @@ require('moment/locales');
               match.value = updated.value;
             }
           } else {
-            $scope.messages.push(updated);
+            $scope.items.push(updated);
           }
         });
       };
 
-      $scope.setContacts = function(options) {
+      $scope.setMessages = function(options) {
         $scope.loading = false;
         $animate.enabled(false);
+        options = options || {};
         if (options.changes) {
           removeDeletedContacts(options.contacts);
           mergeUpdatedContacts(options.contacts);
         } else {
-          $scope.messages = options.contacts;
+          $scope.items = options.contacts;
         }
       };
 
       $scope.setReports = function(reports) {
         $scope.loading = false;
-        $scope.reports = reports;
+        $scope.items = reports;
+      };
+
+      $scope.setContacts = function(contacts) {
+        $scope.loading = false;
+        $scope.items = contacts;
       };
 
       $scope.isRead = function(message) {
@@ -181,13 +187,14 @@ require('moment/locales');
       };
 
       $scope.select = function(id) {
-        if ($scope.filterModel.type === 'reports' && $stateParams.id === id) {
+        if ($stateParams.id === id) {
           // message already set - make sure we're showing content
-          var message = _.findWhere($scope.reports, { _id: id });
+          var message = _.findWhere($scope.items, { _id: id });
           if (message) {
             $scope.setSelected(message);
           } else {
             $state.reload();
+            $scope.$broadcast('query');
           }
         } else if (id) {
           $state.go($scope.filterModel.type + '.detail', { id: id });
@@ -624,7 +631,6 @@ require('moment/locales');
       var deleteMessageId;
 
       $scope.deleteDoc = function(id) {
-        console.log($scope.selected);
         $('#delete-confirm').modal('show');
         deleteMessageId = id;
       };

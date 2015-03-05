@@ -1,10 +1,15 @@
 @import "variables";
 
 .panel-group {
+
   .panel {
     box-shadow: none;
     &.disabled .panel-heading {
       color: @muted-state-color;
+    }
+    + .panel {
+      border-top: 1px solid @seperator-color;
+      clear: right;
     }
   }
   .panel-default > .panel-heading {
@@ -18,7 +23,6 @@
   }
   .panel-heading {
     padding: 0;
-    border-bottom: 1px solid @seperator-color;
     .panel-title a {
       cursor: pointer;
       width: 100%;
@@ -61,7 +65,8 @@
     .value {
       float: right;
       font-size: 0.9em;
-      margin-top: 0.5em;
+      line-height: 1.6em;
+      text-align: right;
     }
   }
   .panel-complete .panel-heading {

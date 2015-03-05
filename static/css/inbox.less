@@ -964,7 +964,8 @@ a.fa:hover {
   a {
     display: inline-block;
     outline: none;
-    margin: 0 1em;
+    margin-right: 1em;
+    margin-bottom: 1em;
     .fa {
       margin-right: 0.5em;
     }
@@ -1156,6 +1157,10 @@ a.fa:hover {
     }
     .dropdown {
       width: 4.5em;
+
+      &.analytics-module {
+        width: 5em;
+      }
     }
     .mm-button-text {
       width: 0;
@@ -1208,12 +1213,14 @@ a.fa:hover {
   .reports .item-content,
   .messages .message-content-wrapper,
   .message-content-wrapper .item-content,
-  .message-content-wrapper .reply {
+  .message-content-wrapper .reply,
+  .contacts .item-content {
     width: 100%;
   }
   .inbox-items,
   .reports .item-content,
-  .messages .message-content-wrapper {
+  .messages .message-content-wrapper,
+  .contacts .item-content {
     position: absolute;
     padding-top: 0;
   }
@@ -1261,7 +1268,8 @@ a.fa:hover {
   .action-container .column,
   .content .inbox-items,
   .content .message-content-wrapper,
-  .reports .content .item-content {
+  .reports .content .item-content,
+  .contacts .content .item-content {
     transition: left 500ms ease 0s;
   }
 
@@ -1270,7 +1278,8 @@ a.fa:hover {
   }
   .action-container .column,
   .reports .content .item-content,
-  .content .message-content-wrapper { 
+  .content .message-content-wrapper,
+  .contacts .content .item-content {
     left: 100%;
   }
   .reports, .contacts {
@@ -1286,7 +1295,8 @@ a.fa:hover {
     }
     .action-container .column,
     &.reports .content .item-content,
-    .content .message-content-wrapper {
+    .content .message-content-wrapper,
+    &.contacts .content .item-content {
       left: 0;
     }
 

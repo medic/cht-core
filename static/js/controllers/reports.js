@@ -15,6 +15,7 @@ var _ = require('underscore'),
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = undefined;
+      $scope.setReports();
 
       $scope.setSelectedGroup = function(group) {
         $scope.selectedGroup = angular.copy(group);
@@ -42,14 +43,14 @@ var _ = require('underscore'),
           if ($scope.selected && $scope.selected._id === newMsg._id) {
             _merge($scope.selected, newMsg);
           }
-          var oldMsg = _.findWhere($scope.reports, { _id: newMsg._id });
+          var oldMsg = _.findWhere($scope.items, { _id: newMsg._id });
           if (oldMsg) {
             _merge(oldMsg, newMsg);
             if (!$scope.selected && $stateParams.id === oldMsg._id) {
               _setSelected(oldMsg);
             }
           } else {
-            $scope.reports.push(newMsg);
+            $scope.items.push(newMsg);
           }
         });
       };
@@ -75,8 +76,8 @@ var _ = require('underscore'),
         }
         _selectedDoc = id;
         $scope.setSelected();
-        if (id && $scope.reports) {
-          var message = _.findWhere($scope.reports, { _id: id });
+        if (id && $scope.items) {
+          var message = _.findWhere($scope.items, { _id: id });
           if (message) {
             _setSelected(message);
           } else {
@@ -101,9 +102,9 @@ var _ = require('underscore'),
         if ($scope.selected && $scope.selected._id === message.id) {
           $scope.setSelected();
         }
-        for (var i = 0; i < $scope.reports.length; i++) {
-          if (message.id === $scope.reports[i]._id) {
-            $scope.reports.splice(i, 1);
+        for (var i = 0; i < $scope.items.length; i++) {
+          if (message.id === $scope.items[i]._id) {
+            $scope.items.splice(i, 1);
             return;
           }
         }
@@ -135,7 +136,7 @@ var _ = require('underscore'),
         }
         if (options.skip) {
           $scope.appending = true;
-          options.skip = $scope.reports.length;
+          options.skip = $scope.items.length;
         } else if (!options.silent) {
           $scope.setReports([]);
         }
@@ -158,7 +159,7 @@ var _ = require('underscore'),
 
           $scope.update(data.results);
           if (!options.changes) {
-            $scope.totalReports = data.total_rows;
+            $scope.totalItems = data.total_rows;
           }
           if (!options.changes && !options.skip) {
             if (!data.results.length) {
