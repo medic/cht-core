@@ -11,13 +11,11 @@ var modal = require('../modules/modal');
     function ($scope, translateFilter, ImportProperties) {
 
       $scope.$on('ImportTranslationInit', function(e, locale) {
-        console.log(locale);
         $scope.locale = locale;
         $scope.translationFile = null;
       });
 
       $scope.import = function() {
-        console.log($scope.locale, $scope.translationFile);
         var pane = modal.start($('#import-translation'));
         var file = $scope.translationFile && $scope.translationFile[0];
         if (!file) {

@@ -4,18 +4,24 @@
       <div class="col-sm-4"></div>
       <div class="col-sm-8 column">
         <div class="actions">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" data-send-to="{{selected.related_entities.clinic.contact.phone || selected.from}}">
-            <span class="fa fa-mail-reply"></span>
-            <p>{{'Reply' | translate}}</p>
-          </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="updateFacilityShow()">
-            <span class="fa fa-pencil"></span>
-            <p>{{'Edit' | translate}}</p>
-          </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-class="{'mm-icon-disabled': selected && !selected.form}" ng-show="!selected.verified" ng-click="verify(true)">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" data-send-to="{{selected.related_entities.clinic.contact.phone || selected.from || selected.contact.phone}}">
+            <span class="fa fa-envelope"></span>
+            <p>{{'Send Message' | translate}}</p>
+          </a><a class="mm-icon mm-icon-inverse mm-icon-caption send-message" ng-show="filterModel.type === 'contacts'" ng-class="{'mm-icon-disabled': selected.type !== 'health_center'}" data-send-to="{{selected._id}}" data-everyone-at="true">
+            <span class="fa-stack">
+              <i class="fa fa-envelope fa-stack-1x stack-bottom-left"></i>
+              <i class="fa fa-envelope fa-stack-1x stack-top-right"></i>
+            </span>
+            <p>{{'Message All' | translate}}</p>
+          </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-class="{'mm-icon-disabled': selected && !selected.form}" ng-show="filterModel.type === 'reports' && !selected.verified" ng-click="verify(true)">
             <span class="fa fa-check"></span>
             <p>{{'Verify' | translate}}</p>
-          </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-class="{'mm-icon-disabled': selected && !selected.form}" ng-show="selected.verified" ng-click="verify(false)">
+          </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-class="{'mm-icon-disabled': selected && !selected.form}" ng-show="filterModel.type === 'reports' && selected.verified" ng-click="verify(false)">
             <span class="fa fa-times"></span>
             <p>{{'Unverify' | translate}}</p>
+          </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="edit(selected)">
+            <span class="fa fa-pencil"></span>
+            <p>{{'Edit' | translate}}</p>
           </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="deleteDoc(selected._id)">
             <span class="fa fa-trash-o"></span>
             <p>{{'Delete' | translate}}</p>

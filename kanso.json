@@ -2978,6 +2978,26 @@
                         ]
                     },
                     {
+                        "key": "All contact types",
+                        "default": "All contact types",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "All contact types"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Number of contact types",
+                        "default": "{{number}} contact types",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "{{number}} contact types"
+                            }
+                        ]
+                    },
+                    {
                         "key": "Any date",
                         "default": "Any date",
                         "translations": [
@@ -3399,11 +3419,11 @@
                     },
                     {
                         "key": "confirm.delete",
-                        "default": "Are you sure you want to delete this message?",
+                        "default": "Are you sure you want to delete this record?",
                         "translations": [
                             {
                                 "locale": "en",
-                                "content": "Are you sure you want to delete this message?"
+                                "content": "Are you sure you want to delete this record?"
                             }
                         ]
                     },
@@ -5625,11 +5645,11 @@
                     },
                     {
                         "key": "Overwrite Existing Records",
-                        "default": "Overwrite Existing Records",
+                        "default": "Overwrite existing records",
                         "translations": [
                             {
                                 "locale": "en",
-                                "content": "Overwrite Existing Records"
+                                "content": "Overwrite existing records"
                             }
                         ]
                     },
@@ -5640,66 +5660,6 @@
                             {
                                 "locale": "en",
                                 "content": "Choose File"
-                            }
-                        ]
-                    },
-                    {
-                        "key": "jquery.spreadsheet.addrow",
-                        "default": "Add row",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Add row"
-                            }
-                        ]
-                    },
-                    {
-                        "key": "jquery.spreadsheet.help.doubleclick",
-                        "default": "Double click: or enter key to edit a cell.",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Double click: or enter key to edit a cell."
-                            }
-                        ]
-                    },
-                    {
-                        "key": "jquery.spreadsheet.help.enter",
-                        "default": "Enter: key to save.",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Enter: key to save."
-                            }
-                        ]
-                    },
-                    {
-                        "key": "jquery.spreadsheet.help.escape",
-                        "default": "Escape: key for undo.",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Escape: key for undo."
-                            }
-                        ]
-                    },
-                    {
-                        "key": "jquery.spreadsheet.help.tab",
-                        "default": "Tab: cycles through cells.",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Tab: cycles through cells."
-                            }
-                        ]
-                    },
-                    {
-                        "key": "jquery.spreadsheet.rows",
-                        "default": "rows",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "rows"
                             }
                         ]
                     },
@@ -6600,6 +6560,152 @@
                             {
                                 "locale": "en",
                                 "content": "The page you were looking for was not found."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Contacts",
+                        "default": "Contacts",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Contacts"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Error fetching contacts",
+                        "default": "Error fetching contacts",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Error fetching contacts"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "No contacts found",
+                        "default": "No contacts found",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "No contacts found"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "No more contacts",
+                        "default": "No more contacts",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "No more contacts"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Notes",
+                        "default": "Notes",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Notes"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Message All",
+                        "default": "Message All",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Message All"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Edit contact",
+                        "default": "Edit contact",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Edit contact"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Add contact",
+                        "default": "Add contact",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Add contact"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Contact Name",
+                        "default": "Contact name",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Contact name"
+                            },
+                            {
+                                "locale": "fr",
+                                "content": "Nom du contact"
+                            },
+                            {
+                                "locale": "es",
+                                "content": "Nombre del contacto"
+                            },
+                            {
+                                "locale": "ne",
+                                "content": "सम्पर्क व्यक्ति"
+                            },
+                            {
+                                "locale": "sw",
+                                "content": "Jina la mawasiliano"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Error updating contact",
+                        "default": "Error updating contact",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Error updating contact"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Contact type",
+                        "default": "Contact type",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Contact type"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Contacts file help",
+                        "default": "Select the .json file with the contacts.",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Select the .json file with the contacts."
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Error parsing file",
+                        "default": "Error parsing file",
+                        "translations": [
+                            {
+                                "locale": "en",
+                                "content": "Error parsing file"
                             }
                         ]
                     }

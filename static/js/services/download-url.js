@@ -8,9 +8,12 @@
     return '/api/v1/export/' + type + '?' + $.param(params);
   };
 
-  inboxServices.factory('DownloadUrl', ['GenerateSearchQuery', 'Language',
-    function(GenerateSearchQuery, Language) {
+  inboxServices.factory('DownloadUrl', ['GenerateSearchQuery', 'Language', 'BaseUrlService',
+    function(GenerateSearchQuery, Language, BaseUrlService) {
       return function($scope, type, callback) {
+        if (type === 'contacts') {
+          return callback(null, BaseUrlService() + '/facilities/backup');
+        }
         Language(function(err, language) {
           if (err) {
             return console.log('Error loading language', err);

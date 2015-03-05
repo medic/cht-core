@@ -125,7 +125,15 @@ module.exports = function(grunt) {
               'bower_components/select2/*.png'
             ], 
             dest: 'static/dist/'
-          }
+          },
+          {
+            expand: true,
+            flatten: true,
+            src: [
+              'bower_components/fontawesome/fonts/*'
+            ],
+            dest: 'static/fonts'
+          },
         ]
       },
       settings: {

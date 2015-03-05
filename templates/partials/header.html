@@ -119,6 +119,13 @@
         <div class="button-label">{{'Analytics' | translate}}</div>
       </a>
 
+      <a ui-sref="contacts" id="contacts-tab" class="contacts-tab" ng-class="{'selected': filterModel.type === 'contacts'}">
+        <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'contacts'}">
+          <span class="fa fa-user"></span>
+        </div>
+        <div class="button-label">{{'Contacts' | translate}}</div>
+      </a>
+
       <a ui-sref="configuration" class="configuration-tab" ng-show="permissions.admin || permissions.nationalAdmin" ng-class="{'selected': filterModel.type === 'configuration'}">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'configuration'}">
           <span class="fa fa-cog"></span>

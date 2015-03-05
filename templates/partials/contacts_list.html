@@ -1,0 +1,30 @@
+<div id="contacts-list" class="col-sm-4 inbox-items">
+  <ul>
+    <li ng-show="!loading || appending" ng-repeat="contact in contacts | orderBy:'-value.date'" ng-click="select(contact._id)" data-record-id="{{contact._id}}" ng-class="{'selected': contact._id === selected._id}">
+      <div class="message-wrapper">
+        <span class="mm-badge">
+          <span class="fa" ng-class="{
+            'fa-home': contact.type === 'clinic',
+            'fa-hospital-o': contact.type === 'health_center',
+            'fa-building': contact.type === 'district_hospital'
+          }"></span>
+        </span>
+        <div class="detail">
+          <div class="sender">
+            <div>
+              <!-- TODO link to contact entity -->
+              <span class="name">{{contact.name || contact.contact.phone}}</span>
+            </div>
+            <div class="position">{{contact.parent | clinic}}</div>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ul>
+  <p ng-show="error" class="alert alert-danger" role="alert">{{'Error fetching contacts' | translate}}</p>
+  <p class="loading-status" ng-show="!error && !loading && !contacts.length">{{'No contacts found' | translate}}</p>
+  <p class="loading-status" ng-show="!error && !loading && contacts.length && contacts.length === totalContacts">{{'No more contacts' | translate}}</p>
+  <span class="mm-loader" ng-show="loading">
+    <span class="fa fa-spinner fa-spin"></span>
+  </span>
+</div>

@@ -24,7 +24,7 @@
         var message = '';
         if (err) {
           console.log(description, err);
-          message = description + ': ' + err;
+          message = description;
         } else {
           modal.modal('hide');
           modal.find('input[type=text], textarea').val('');

@@ -10,7 +10,6 @@
 @import "mixins";
 @import "theme";
 @import "packages/kujua-reporting/css/base";
-@import "spreadsheet";
 @import "angular";
 @import "analytics";
 @import "configuration";
@@ -37,6 +36,11 @@ body {
       background-color: @analytics-color;
     }
   }
+  &.contacts {
+    .header .tabs .selected, .filters {
+      background-color: @contacts-color;
+    }
+  }
   &.configuration {
     .header .tabs .selected, .filters {
       background-color: @admin-color;
@@ -53,7 +57,6 @@ body {
     }
   }
 }
-
 
 .row .inner {
   max-width: @content-width;
@@ -160,10 +163,11 @@ body {
     .button-label {
       top: -0.5em;
       position: relative;
+      font-size: 0.9em;
     }
     
     a {
-      width: 7em;
+      width: 6em;
       border-radius: @radius-size @radius-size 0 0;
       cursor: pointer;
 
@@ -187,6 +191,11 @@ body {
         &.analytics-tab {
           &, .mm-icon-inverse, .mm-icon-inverse:hover {
             color: @analytics-color;
+          }
+        }
+        &.contacts-tab {
+          &, .mm-icon-inverse, .mm-icon-inverse:hover {
+            color: @contacts-color;
           }
         }
         &.configuration-tab {
@@ -383,6 +392,26 @@ body {
   }
 }
 
+.contacts {
+  .item-content .status,
+  .message-wrapper {
+    .fa {
+      color: @ok-color;
+    }
+  }
+  .item-content > div {
+    margin-top: 1em;
+  }
+  .inbox-items li {
+    .message-wrapper:hover {
+      border-left-color: @contacts-color;
+    }
+    &.selected {
+      background-color: lighten(@contacts-color, 30%);
+    }
+  }
+}
+
 .inbox-items {
   padding: 0;
   background-color: @form-background-color;
@@ -536,50 +565,6 @@ body {
 
 }
 
-.reports .item-content {
-
-  .meta {
-    padding: 2em;
-  }
-
-  .body {
-
-    h2 {
-      margin: 1.25em 0 0.75em 0;
-      text-align: center;
-      font-style: italic;
-      font-weight: bold;
-      font-size: 1.75em;
-    }
-
-    > ul > li {
-      border-bottom: 1px solid @seperator-color;
-      padding: 1em 3em 1em 2em;
-
-      &:last-child {
-        border-bottom: none;
-      }
-    }
-    
-    label {
-      display: block;
-      margin: 0;
-      font-weight: normal;
-      font-style: italic;
-      color: @label-color;
-    }
-
-    .missing p {
-      color: @lightgrey;
-    }
-  }
-
-  .task-list > li {
-    margin-top: 1em;
-  }
-
-}
-
 .incomplete .body h2 {
   color: @error-color;
 }
@@ -670,11 +655,18 @@ a.fa:hover {
   }
 }
 
-.reports .item-content {
+.reports .item-content, .contacts .item-content {
+
   > div {
     margin-bottom: 5em;
   }
+
+  .meta {
+    padding: 2em;
+  }
+
   .body {
+
     padding-bottom: 2em;
     background-color: @form-background-color;
     border: 1px solid @seperator-color;
@@ -685,7 +677,47 @@ a.fa:hover {
       font-weight: bold;
       font-size: 1.4em;
     }
+
+    h2 {
+      text-align: center;
+      margin: 1.25em 0 0.75em 0;
+      font-style: italic;
+      font-weight: bold;
+      font-size: 1.75em;
+    }
+
+    h5 {
+      text-align: center;
+      margin-top: -1em;
+    }
+
+    > ul > li {
+      border-bottom: 1px solid @seperator-color;
+      padding: 1em 3em 1em 2em;
+      margin: 0;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    label {
+      display: block;
+      margin: 0;
+      font-weight: normal;
+      font-style: italic;
+      color: @label-color;
+    }
+
+    .missing p {
+      color: @lightgrey;
+    }
   }
+
+  .task-list > li {
+    margin-top: 1em;
+  }
+
 }
 
 .time {
@@ -758,14 +790,41 @@ a.fa:hover {
       }
       &:hover {
         text-decoration: none;
-        border-bottom-color: @reports-color;
+      }
+    }
+
+    .fa-stack {
+      width: 3em;
+      height: 3em;
+      .stack-bottom-left {
+        font-size: 2em;
+        margin-top: 0.4em;
+        margin-left: -0.4em;
+      }
+      .stack-top-right {
+        font-size: 2em;
+        margin-left: 0.4em;
       }
     }
   }
 }
 
-.reports.show-content .action-container {
-  display: block;
+.reports .action-container .column .actions .mm-icon:hover {
+  border-bottom-color: @reports-color;
+}
+
+.contacts .action-container .column .actions .mm-icon:hover {
+  border-bottom-color: @contacts-color;
+}
+
+.action-container .column .actions .mm-icon.mm-icon-disabled:hover {
+  border-bottom-color: transparent;
+}
+
+.reports, .contacts {
+  &.show-content .action-container {
+    display: block;
+  }
 }
 
 .reporting, .help, .configuration {
@@ -906,6 +965,9 @@ a.fa:hover {
     display: inline-block;
     outline: none;
     margin: 0 1em;
+    .fa {
+      margin-right: 0.5em;
+    }
   }
   .circle, .rectangle {
     display: inline-block;
@@ -1211,8 +1273,10 @@ a.fa:hover {
   .content .message-content-wrapper { 
     left: 100%;
   }
-  .reports .action-container {
-    display: block;
+  .reports, .contacts {
+    .action-container {
+      display: block;
+    }
   }
 
   body.show-content {
@@ -1319,5 +1383,8 @@ a.fa:hover {
         font-size: 2.5em;
       }
     }
+  }
+  .header .tabs .configuration-tab {
+    display: none;
   }
 }

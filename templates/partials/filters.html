@@ -13,10 +13,16 @@
     <span class="basic-filters">
 
       <span class="filter-buttons">
-        <a tabindex="-1" ng-click="download()" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports'" ng-attr-title="{{'Download' | translate}}">
+        <a tabindex="-1" ng-click="edit()" ng-show="filterModel.type === 'contacts'" ng-attr-title="{{'Add contact' | translate}}">
+          <i class="fa fa-user-plus"></i>
+        </a>
+        <a tabindex="-1" ng-click="download()" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'" ng-attr-title="{{'Download' | translate}}">
           <i class="fa fa-arrow-down"></i>
         </a>
-        <a tabindex="-1" ng-click="resetFilterModel()" ng-show="filterModel.type === 'reports'" ng-attr-title="{{'Clear all filters' | translate}}">
+        <a tabindex="-1" ng-show="filterModel.type === 'contacts'" ng-attr-title="{{'Import' | translate}}" data-toggle="modal" data-target="#import-contacts">
+          <i class="fa fa-arrow-up"></i>
+        </a>
+        <a tabindex="-1" ng-click="resetFilterModel()" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'" ng-attr-title="{{'Clear all filters' | translate}}">
           <i class="fa fa-times"></i>
         </a>
       </span>
@@ -102,8 +108,25 @@
           </li>
         </ul>
       </span>
+
+      <span id="contactTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All contact types" data-filter-label="Number of contact types" ng-show="filterModel.type === 'contacts'">
+        <span class="mm-button mm-button-nudge-down" data-toggle="dropdown">
+          <span class="mm-button-icon">
+            <span class="fa fa-user"></span>
+          </span>
+          <span class="mm-button-dropdown">
+            <span class="fa fa-chevron-down"></span>
+          </span>
+          <span class="mm-button-text"></span>
+        </span>
+        <ul role="menu" class="dropdown-menu mm-dropdown-menu">
+          <li role="presentation" ng-repeat="type in contactTypes">
+            <a role="menuitem" tabindex="-1" data-value="{{type.value}}">{{type.label | translate}}</a>
+          </li>
+        </ul>
+      </span>
       
-      <span class="filter input-group freetext-filter" ng-show="filterModel.type === 'reports'">
+      <span class="filter input-group freetext-filter" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'">
         <input id="freetext" class="form-control" type="text" ng-model="filterQuery.value" ng-attr-placeholder="{{'Extra search words' | translate}}">
         <span class="input-group-btn">
           <button id="search" class="btn btn-default" type="button">
@@ -112,7 +135,7 @@
         </span>
       </span>
 
-      <span class="filter mobile-freetext-filter" ng-show="filterModel.type === 'reports'">
+      <span class="filter mobile-freetext-filter" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'">
         <span id="mobile-search" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-pencil"></span>
@@ -228,12 +251,6 @@
             <a ui-sref="configuration.users" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-user"></i>
               <span>{{'Users' | translate}}</span>
-            </a>
-          </li>
-          <li class="ng-scope" role="presentation" ng-show="permissions.admin || permissions.nationalAdmin">
-            <a href="facilities" role="menuitem" tabindex="-1">
-              <i class="fa fa-fw fa-home"></i>
-              <span>{{'Facilities' | translate}}</span>
             </a>
           </li>
         </ul>

@@ -1,4 +1,4 @@
-describe('DeleteMessage service', function() {
+describe('DeleteDoc service', function() {
 
   'use strict';
 
@@ -13,8 +13,8 @@ describe('DeleteMessage service', function() {
     module(function ($provide) {
       $provide.value('db', db);
     });
-    inject(function(_DeleteMessage_) {
-      service = _DeleteMessage_;
+    inject(function(_DeleteDoc_) {
+      service = _DeleteDoc_;
     });
   });
 

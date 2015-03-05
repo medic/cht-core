@@ -159,8 +159,13 @@ var _ = require('underscore'),
 
   exports.init = function(_settings, _translateFn) {
     $('body').on('click', '.send-message', function(e) {
+      var target = $(e.target).closest('.send-message');
+      if (target.hasClass('mm-icon-disabled')) {
+        return;
+      }
       e.preventDefault();
-      var to = $(e.target).closest('.send-message').attr('data-send-to');
+      var to = target.attr('data-send-to');
+      var everyoneAt = target.attr('data-everyone-at') === 'true';
       var $modal = $('#send-message');
       $modal.find('.has-error').removeClass('has-error');
       $modal.find('.help-block').text('');
@@ -168,11 +173,12 @@ var _ = require('underscore'),
       if (to) {
         var options = $modal.find('[name=phone]').data('options');
         var doc = _.find(options, function(option) {
-          return option.doc.contact && option.doc.contact.phone === to;
+          return (everyoneAt && option.everyoneAt && option.id === to) ||
+                 (!everyoneAt && option.everyoneAt && option.doc.contact && option.doc.contact.phone === to);
         });
         if (doc) {
           val.push(doc);
-        } else {
+        } else if (!everyoneAt) {
           val.push(createChoiceFromNumber(to));
         }
       }
