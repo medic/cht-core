@@ -15,25 +15,31 @@ var modal = require('../modules/modal');
         $scope.translationFile = null;
       });
 
+      var read = function(file, callback) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
+          callback(null, event.target.result);
+        };
+        reader.onerror = callback;
+        reader.readAsText(file);
+      };
+
       $scope.import = function() {
         var pane = modal.start($('#import-translation'));
         var file = $scope.translationFile && $scope.translationFile[0];
         if (!file) {
-          // TODO translate, and style
-          return pane.done('To be implemented', 'You must select a file');
+          return pane.done(translateFilter('field is required', {
+            field: translateFilter('Translation file')
+          }), true);
         }
-        var reader = new FileReader();
-        reader.onload = function(event) {
-          ImportProperties(event.target.result, $scope.locale.code, function(err) {
-            // TODO translate
-            pane.done('Error importing translations', err);
+        read(file, function(err, result) {
+          if (err) {
+            return pane.done(translateFilter('Error parsing file'), err);
+          }
+          ImportProperties(result, $scope.locale.code, function(err) {
+            pane.done(translateFilter('Error parsing file'), err);
           });
-        };
-        reader.onerror = function(error) {
-          // TODO translate
-          return pane.done('Error reading properties file', error);
-        };
-        reader.readAsText(file);
+        });
       };
 
     }
