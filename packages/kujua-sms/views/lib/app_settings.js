@@ -5704,6 +5704,16 @@ module.exports = {
                   "content": "People"
               }
           ]
+      },
+      {
+          "key": "New person",
+          "default": "New person",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "New person"
+              }
+          ]
       }
    ],
    "forms": {
