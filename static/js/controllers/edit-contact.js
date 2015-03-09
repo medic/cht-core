@@ -15,14 +15,12 @@ var libphonenumber = require('libphonenumber/utils'),
         if (contact) {
           $scope.contact = {
             name: contact.name,
+            phone: contact.phone,
             type: contact.type,
             parent: contact.parent,
+            contact: contact.contact,
             external_id: contact.external_id,
-            notes: contact.notes,
-            contact: {
-              name: contact.contact && contact.contact.name,
-              phone: contact.contact && contact.contact.phone
-            }
+            notes: contact.notes
           };
           $scope.contactId = contact._id;
         } else {
@@ -32,22 +30,16 @@ var libphonenumber = require('libphonenumber/utils'),
           $scope.contactId = null;
         }
         var options = {
-          startkey: [ 'district' ],
-          endkey: [ 'health_center', {} ],
+          startkey: [],
+          endkey: [{}],
           reduce: false,
           include_docs: true
         };
-        DbView('facilities_by_type', options, function(err, results) {
+        DbView('facilities', options, function(err, results) {
           if (err) {
             return console.log('Error fetching parents', err);
           }
-          $scope.parents = {
-            district_hospital: [],
-            health_center: []
-          };
-          results.forEach(function(row) {
-            $scope.parents[row.type].push(row);
-          });
+          $scope.parents = results;
           $('#edit-contact').modal('show');
         });
       });

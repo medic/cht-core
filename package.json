@@ -37,6 +37,7 @@
     "karma-phantomjs-launcher": "~0.1",
     "mocha": "1.21.0",
     "remapify": "^0.1.6",
+    "sinon": "^1.13.0",
     "underscore": "~1.7.0"
   }
 }

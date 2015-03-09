@@ -28,6 +28,7 @@ module.exports = function(config) {
 
       // test-specific code
       'node_modules/chai/chai.js',
+      'node_modules/sinon/pkg/sinon.js',
       'bower_components/angular-mocks/angular-mocks.js',
       'bower_components/moment/moment.js',
 

@@ -43,19 +43,57 @@ var async = require('async');
         });
       };
 
+      var updateParents = function(contact, callback) {
+        var options = {
+          startkey: [ contact._id ],
+          endkey: [ contact._id, {} ],
+          include_docs: true
+        };
+        DbView('facilities_by_contact', options, function(err, parents) {
+          if (err) {
+            return callback(err);
+          }
+          async.each(
+            parents,
+            function(parent, callback) {
+              if (parent.contact._id === contact._id && parent.contact._rev === contact._rev) {
+                // nothing to update
+                return callback();
+              }
+              // delete the parent to avoid infinite loops
+              delete contact.parent;
+              SaveDoc(parent._id, { contact: contact }, callback);
+            },
+            callback
+          );
+        });
+      };
+
       return function(id, updates, callback) {
         if (!callback) {
           callback = updates;
           updates = id;
           id = null;
         }
+
+        if (updates.contact) {
+          // null out the contact's parent to avoid infinite loops
+          delete updates.contact.parent;
+        }
+
         SaveDoc(id, updates, function(err, doc) {
           if (err) {
             return callback(err);
           }
-          updateChildren(doc, function(err) {
-            callback(err, doc);
-          });
+          if (doc.type === 'person') {
+            updateParents(doc, function(err) {
+              callback(err, doc);
+            });
+          } else {
+            updateChildren(doc, function(err) {
+              callback(err, doc);
+            });
+          }
         });
       };
     }

@@ -86,6 +86,7 @@
         "describe"  : true,
         "inject"    : true,
         "chai"      : true,
+        "sinon"     : true,
         "Tour"      : true
     }
 }

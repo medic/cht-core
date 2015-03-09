@@ -4,7 +4,7 @@
       <div class="col-sm-4"></div>
       <div class="col-sm-8 column">
         <div class="actions">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" data-send-to="{{selected.related_entities.clinic.contact.phone || selected.from || selected.contact.phone}}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" data-send-to="{{selected.related_entities.clinic.contact.phone || selected.from || selected.phone || selected.contact.phone}}">
             <span class="fa fa-envelope"></span>
             <p>{{'Send Message' | translate}}</p>
           </a><a class="mm-icon mm-icon-inverse mm-icon-caption send-message" ng-show="filterModel.type === 'contacts'" ng-class="{'mm-icon-disabled': selected.type !== 'health_center'}" data-send-to="{{selected._id}}" data-everyone-at="true">

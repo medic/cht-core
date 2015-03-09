@@ -1,9 +1,10 @@
 <div id="contacts-list" class="col-sm-4 inbox-items">
   <ul>
-    <li ng-show="!loading || appending" ng-repeat="contact in items | orderBy:'-value.date'" ng-click="select(contact._id)" data-record-id="{{contact._id}}" ng-class="{'selected': contact._id === selected._id}">
+    <li ng-show="!loading || appending" ng-repeat="contact in items | orderBy:'name'" ng-click="select(contact._id)" data-record-id="{{contact._id}}" ng-class="{'selected': contact._id === selected._id}">
       <div class="message-wrapper">
         <span class="mm-badge">
           <span class="fa" ng-class="{
+            'fa-user': contact.type === 'person',
             'fa-home': contact.type === 'clinic',
             'fa-hospital-o': contact.type === 'health_center',
             'fa-building': contact.type === 'district_hospital'
@@ -12,7 +13,6 @@
         <div class="detail">
           <div class="sender">
             <div>
-              <!-- TODO link to contact entity -->
               <span class="name">{{contact.name || contact.contact.phone}}</span>
             </div>
             <div class="position">{{contact.parent | clinic}}</div>

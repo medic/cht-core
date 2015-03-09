@@ -5626,32 +5626,6 @@ module.exports = {
           ]
       },
       {
-          "key": "Contact Name",
-          "default": "Contact name",
-          "translations": [
-              {
-                  "locale": "en",
-                  "content": "Contact name"
-              },
-              {
-                  "locale": "fr",
-                  "content": "Nom du contact"
-              },
-              {
-                  "locale": "es",
-                  "content": "Nombre del contacto"
-              },
-              {
-                  "locale": "ne",
-                  "content": "सम्पर्क व्यक्ति"
-              },
-              {
-                  "locale": "sw",
-                  "content": "Jina la mawasiliano"
-              }
-          ]
-      },
-      {
           "key": "Error updating contact",
           "default": "Error updating contact",
           "translations": [
@@ -5688,6 +5662,46 @@ module.exports = {
               {
                   "locale": "en",
                   "content": "Error parsing file"
+              }
+          ]
+      },
+      {
+          "key": "Person",
+          "default": "Person",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Person"
+              }
+          ]
+      },
+      {
+          "key": "Primary contact",
+          "default": "Primary contact",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Primary contact"
+              }
+          ]
+      },
+      {
+          "key": "Primary location",
+          "default": "Primary location",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Primary location"
+              }
+          ]
+      },
+      {
+          "key": "People",
+          "default": "People",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "People"
               }
           ]
       }
