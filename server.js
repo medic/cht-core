@@ -181,6 +181,10 @@ var formats = {
   csv: {
     extension: 'csv',
     contentType: 'text/csv'
+  },
+  json: {
+    extension: 'json',
+    contentType: 'application/json'
   }
 };
 
@@ -190,6 +194,9 @@ var getExportPermission = function(type) {
   }
   if (type === 'feedback') {
     return 'can_export_feedback';
+  }
+  if (type === 'contacts') {
+    return 'can_export_contacts';
   }
   return 'can_export_messages';
 };

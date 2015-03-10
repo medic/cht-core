@@ -682,3 +682,33 @@ exports['get feedback'] = function(test) {
     test.done();
   });
 };
+
+exports['get contacts'] = function(test) {
+  test.expect(6);
+
+  var contact2 = {
+    _id: '2',
+    type: 'district',
+    name: 'dunedin'
+  };
+  var contact1 = {
+    _id: '1',
+    name: 'gdawg',
+    type: 'person',
+    parent: contact2
+  };
+
+  var ftiGet = sinon.stub(fti, 'get').callsArgWith(3, null, {
+    rows: [ { doc: contact1 }, { doc: contact2 } ]
+  });
+
+  controller.get({ type: 'contacts', query: 'district:2', format: 'json', tz: '0' }, function(err, results) {
+    test.deepEqual(JSON.parse(results), [ contact1, contact2 ]);
+    test.equals(ftiGet.callCount, 1);
+    test.equals(ftiGet.firstCall.args[0], 'contacts');
+    test.equals(ftiGet.firstCall.args[1].q, 'district:2');
+    test.equals(ftiGet.firstCall.args[1].sort, 'name');
+    test.equals(ftiGet.firstCall.args[1].include_docs, true);
+    test.done();
+  });
+};

@@ -27,6 +27,8 @@ var safeStringify = function(obj) {
 var exportTypes = {
   forms: {
     view: 'data_records',
+    index: 'data_records',
+    orderBy: '\\reported_date<date>',
     generate: function(rows, options) {
 
       var userDefinedColumns = !!options.columns;
@@ -98,6 +100,8 @@ var exportTypes = {
   },
   messages: {
     view: 'data_records',
+    index: 'data_records',
+    orderBy: '\\reported_date<date>',
     generate: function(rows, options) {
       if (!options.columns) {
         options.columns = createColumnModels([
@@ -170,17 +174,15 @@ var exportTypes = {
   feedback: {
     view: 'feedback',
     generate: function(rows, options) {
-      if (!options.columns) {
-        options.columns = createColumnModels([
-          '_id',
-          'reported_date',
-          'User',
-          'App Version',
-          'URL',
-          'Info',
-          'Log'
-        ], options);
-      }
+      options.columns = createColumnModels([
+        '_id',
+        'reported_date',
+        'User',
+        'App Version',
+        'URL',
+        'Info',
+        'Log'
+      ], options);
       var model = {
         name: config.translate('Feedback', options.locale),
         columns: options.columns
@@ -197,6 +199,17 @@ var exportTypes = {
         ];
       });
       return [ model ];
+    }
+  },
+  contacts: {
+    index: 'contacts',
+    orderBy: 'name',
+    generate: function(rows, options) {
+      return [ {
+        name: config.translate('Contacts', options.locale),
+        columns: [  ],
+        data: _.pluck(rows, 'doc')
+      } ];
     }
   }
 };
@@ -367,13 +380,18 @@ var generateTaskModels = function(doc, options) {
   return rows;
 };
 
-var outputToCsv = function(options, type, tabs, callback) {
+var outputToJson = function(options, tabs, callback) {
+  // json doesn't support tabs
+  callback(null, JSON.stringify(tabs[0].data));
+};
+
+var outputToCsv = function(options, tabs, callback) {
   var opts = { headers: true };
   if (options.locale === 'fr') {
     opts.delimiter = ';';
   }
 
-  // csv doesn't have the concept of tabs
+  // csv doesn't support tabs
   var tab = tabs[0];
 
   if (!options.skipHeader) {
@@ -388,7 +406,7 @@ var outputToCsv = function(options, type, tabs, callback) {
   });
 };
 
-var outputToXml = function(options, type, tabs, callback) {
+var outputToXml = function(options, tabs, callback) {
 
   var workbook = xmlbuilder.create('Workbook', { encoding: 'UTF-8' })
     .ins('mso-application', 'progid="Excel.Sheet"')
@@ -423,14 +441,14 @@ var outputToXml = function(options, type, tabs, callback) {
   callback(null, workbook.end());
 };
 
-var getRecordsFti = function(params, callback) {
+var getRecordsFti = function(type, params, callback) {
   var options = {
     q: params.query,
     schema: params.schema,
-    sort: '\\reported_date<date>',
+    sort: type.orderBy,
     include_docs: true
   };
-  fti.get('data_records', options, params.district, callback);
+  fti.get(type.index, options, params.district, callback);
 };
 
 var getRecordsView = function(type, params, callback) {
@@ -465,7 +483,13 @@ var getRecordsView = function(type, params, callback) {
 
 var getRecords = function(type, params, callback) {
   if (params.query) {
-    return getRecordsFti(params, callback);
+    if (!type.index) {
+      return callback('This export cannot handle "query" param');
+    }
+    return getRecordsFti(type, params, callback);
+  }
+  if (!type.view) {
+    return callback('This export must have a "query" param');
   }
   getRecordsView(type, params, callback);
 };
@@ -515,8 +539,13 @@ module.exports = {
 
       var tabs = type.generate(response.rows, options);
 
-      var outputFn = params.format === 'xml' ? outputToXml : outputToCsv;
-      outputFn(options, type, tabs, callback);
+      if (params.format === 'xml') {
+        outputToXml(options, tabs, callback);
+      } else if (params.format === 'json') {
+        outputToJson(options, tabs, callback);
+      } else {
+        outputToCsv(options, tabs, callback);
+      }
 
     });
   }
