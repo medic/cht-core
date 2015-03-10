@@ -9,6 +9,7 @@ var _ = require('underscore'),
     auth = require('./auth'),
     scheduler = require('./scheduler'),
     AuditProxy = require('./audit-proxy'),
+    migrations = require('./migrations'),
     target = 'http://' + db.client.host + ':' + db.client.port,
     proxy = require('http-proxy').createProxyServer({ target: target }),
     proxyForAuditing = require('http-proxy').createProxyServer({ target: target }),
@@ -291,6 +292,14 @@ var notLoggedIn = function(res) {
   });
   res.end('Not logged in');
 };
+
+migrations.run(function(err) {
+  if (err) {
+    console.error(err);
+  } else {
+    console.log('Database migrations completed successfully');
+  }
+});
 
 config.load(function(err) {
   if (err) {
