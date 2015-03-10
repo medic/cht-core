@@ -57,8 +57,11 @@ describe('DownloadUrl service', function() {
   });
 
   it('builds url for contacts backup', function() {
+    locale = 'en';
+    query = 'district:2';
     service(null, 'contacts', function(err, actual) {
-      chai.expect(actual).to.equal('BASEURL/facilities/backup');
+      chai.expect(decodeURIComponent(actual))
+          .to.equal('/api/v1/export/contacts?format=json&locale=en&query="district:2"&schema=');
     });
   });
 
