@@ -9,7 +9,7 @@ var path = require('path'),
     urlFormat = require('url').format,
     urlParse = require('url').parse,
     child_process = require('child_process'),
-    evals = process.binding('evals'),
+    evals = require('vm'),
     Script = evals.Script || evals.NodeScript;
 
 
