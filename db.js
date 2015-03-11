@@ -1,6 +1,7 @@
-var _ = require('underscore'),
-    couchdb = require('felix-couchdb'),
+var path = require('path'),
     url = require('url'),
+    _ = require('underscore'),
+    couchdb = require('felix-couchdb'),
     settings = {};
 
 if (process.env.COUCH_URL) {
@@ -39,13 +40,13 @@ var client = couchdb.createClient(
 module.exports = client.db(settings.db);
 module.exports.user = settings.username;
 module.exports.fti = function(index, data, cb) {
-    var path = '/_fti/local' + settings.db + '/_design/' + settings.ddoc + '/' + index;
+    var url = path.join('/_fti/local', settings.db, '_design', settings.ddoc, index);
     if (data.q && !data.limit) {
         data.limit = 1000;
     }
     client.request({
         method: data.q ? 'post' : 'get',
-        path: path,
+        path: url,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         data: couchdb.toQuery(data)
     }, function(err, result) {

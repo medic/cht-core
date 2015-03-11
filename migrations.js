@@ -1,4 +1,5 @@
 var fs = require('fs'),
+    path = require('path'),
     async = require('async'),
     db = require('./db');
 
@@ -80,7 +81,7 @@ module.exports = {
         return callback(err);
       }
       callback(null, files.map(function(file) {
-        return require(__dirname + '/migrations/' + file);
+        return require(path.join(__dirname, 'migrations', file));
       }));
     });
   }
