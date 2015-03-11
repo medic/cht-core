@@ -25,7 +25,7 @@ var _ = require('underscore'),
 
         _.defaults(options, {
           index: 'contacts',
-          sort: 'name'
+          sort: 'name_sorting'
         });
 
         if (options.skip) {
