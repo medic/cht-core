@@ -14,8 +14,6 @@ var _ = require('underscore'),
       $scope.filterModel.type = 'contacts';
       $scope.setContacts();
 
-      var _selected;
-
       $scope.query = function(options) {
         options = options || {};
 
@@ -44,9 +42,6 @@ var _ = require('underscore'),
             $scope.items.push.apply($scope.items, data.results);
           } else {
             $scope.setContacts(data.results);
-            if (!$scope.selected || _selected !== $scope.selected._id) {
-              $scope.selectContact(_selected);
-            }
             scrollLoader.init(function() {
               $scope.query({ skip: true });
             });
@@ -63,7 +58,6 @@ var _ = require('underscore'),
       };
 
       $scope.selectContact = function(id) {
-        _selected = id;
         if (id) {
           getContact(id, function(err, doc) {
             if (err) {
@@ -77,6 +71,7 @@ var _ = require('underscore'),
             DbView('facility_by_parent', options, function(err, results) {
               doc.children = results;
               $scope.setSelected(doc);
+              $('.item-content').scrollTop(0);
               if (err) {
                 return console.log('Error fetching doc', err);
               }

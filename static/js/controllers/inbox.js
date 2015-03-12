@@ -18,8 +18,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$route', '$location', '$translate', '$animate', '$rootScope', '$state', '$stateParams', 'translateFilter', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl',
-    function ($window, $scope, $route, $location, $translate, $animate, $rootScope, $state, $stateParams, translateFilter, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl) {
+    ['$window', '$scope', '$translate', '$animate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl',
+    function ($window, $scope, $translate, $animate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl) {
 
       $scope.loading = true;
       $scope.error = false;
@@ -49,32 +49,20 @@ require('moment/locales');
         $scope.filterModel.module = module;
       };
 
-      $scope.isSelected = function() {
-        return !!$scope.selected;
-      };
-
       var clearSelectedTimer;
 
       $scope.setSelected = function(selected) {
-        clearTimeout(clearSelectedTimer);
+        $timeout.cancel(clearSelectedTimer);
         if (selected) {
           $scope.selected = selected;
-          if (!$rootScope.$$phase) {
-            $rootScope.$apply();
-          }
-          setTimeout(function() {
-            $('body').addClass('show-content');
+          $timeout(function() {
+            $scope.showContent = true;
           }, 1);
         } else if($scope.selected) {
-          setTimeout(function() {
-            $('body').removeClass('show-content');
-          }, 1);
+          $scope.showContent = false;
           if ($('#back').is(':visible')) {
-            clearSelectedTimer = setTimeout(function() {
+            clearSelectedTimer = $timeout(function() {
               $scope.selected = undefined;
-              if (!$rootScope.$$phase) {
-                $rootScope.$apply();
-              }
             }, 500);
           } else {
             $scope.selected = undefined;

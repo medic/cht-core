@@ -341,17 +341,17 @@ var _ = require('underscore');
       // the tour is already running
       return;
     }
-    if (!translationFn) {
-      translationFn = function(key) {
-        return key;
-      };
-    }
     endCurrent();
     if (name) {
       if (name === 'intro') {
         $('#tour-select').modal('show');
       } else {
         window.setTimeout(function() {
+          if (!translationFn) {
+            translationFn = function(key) {
+              return key;
+            };
+          }
           createTour(name, translationFn);
         }, 1);
       }
