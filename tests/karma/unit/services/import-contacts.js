@@ -3,16 +3,15 @@ describe('ImportContacts service', function() {
   'use strict';
 
   var service,
-      $httpBackend,
-      saveError,
-      saveCount;
+      SaveDoc,
+      $httpBackend;
 
-  beforeEach(function (){
+  beforeEach(function() {
+    SaveDoc = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('SaveDoc', function(id, contact, callback) {
-        saveCount++;
-        callback(saveError);
+      $provide.factory('SaveDoc', function() {
+        return SaveDoc;
       });
       $provide.value('BaseUrlService', function() {
         return 'BASEURL';
@@ -22,13 +21,14 @@ describe('ImportContacts service', function() {
       $httpBackend = $injector.get('$httpBackend');
       service = $injector.get('ImportContacts');
     });
-    saveError = undefined;
-    saveCount = 0;
   });
 
   afterEach(function() {
     $httpBackend.verifyNoOutstandingExpectation();
     $httpBackend.verifyNoOutstandingRequest();
+    if (SaveDoc.restore) {
+      SaveDoc.restore();
+    }
   });
 
   it('does nothing when there are no contacts', function(done) {
@@ -53,7 +53,7 @@ describe('ImportContacts service', function() {
     $httpBackend
       .expect('HEAD', 'BASEURL/_db/1')
       .respond(404);
-    saveError = 'boom';
+    SaveDoc.callsArgWith(2, 'boom');
     service([{ _id: 1 }], true, function(err) {
       chai.expect(err).to.equal('boom');
       done();
@@ -68,9 +68,16 @@ describe('ImportContacts service', function() {
     $httpBackend
       .expect('HEAD', 'BASEURL/_db/2')
       .respond(404);
-    service([{ _id: 1 }, { _id: 2 }], true, function(err) {
+    SaveDoc.callsArgWith(2, null, {});
+    var contact1 = { _id: 1 };
+    var contact2 = { _id: 2 };
+    service([contact1, contact2], true, function(err) {
       chai.expect(err).to.equal(undefined);
-      chai.expect(saveCount).to.equal(2);
+      chai.expect(SaveDoc.calledTwice).to.equal(true);
+      chai.expect(SaveDoc.args[0][0]).to.equal(null);
+      chai.expect(SaveDoc.args[0][1]).to.deep.equal(contact1);
+      chai.expect(SaveDoc.args[1][0]).to.equal(null);
+      chai.expect(SaveDoc.args[1][1]).to.deep.equal(contact2);
       done();
     });
     $httpBackend.flush();
@@ -83,9 +90,14 @@ describe('ImportContacts service', function() {
     $httpBackend
       .expect('HEAD', 'BASEURL/_db/2')
       .respond(200, '', { ETag: 'def' });
+    SaveDoc.callsArgWith(2, null, {});
     service([{ _id: 1 }, { _id: 2 }], true, function(err) {
       chai.expect(err).to.equal(undefined);
-      chai.expect(saveCount).to.equal(2);
+      chai.expect(SaveDoc.calledTwice).to.equal(true);
+      chai.expect(SaveDoc.args[0][0]).to.equal(1);
+      chai.expect(SaveDoc.args[0][1]).to.deep.equal({ _id: 1, _rev: 'abc' });
+      chai.expect(SaveDoc.args[1][0]).to.equal(2);
+      chai.expect(SaveDoc.args[1][1]).to.deep.equal({ _id: 2, _rev: 'def' });
       done();
     });
     $httpBackend.flush();
@@ -98,9 +110,12 @@ describe('ImportContacts service', function() {
     $httpBackend
       .expect('HEAD', 'BASEURL/_db/2')
       .respond(200, '', { ETag: 'def' });
+    SaveDoc.callsArgWith(2, null, {});
     service([{ _id: 1 }, { _id: 2 }], false, function(err) {
       chai.expect(err).to.equal(undefined);
-      chai.expect(saveCount).to.equal(1);
+      chai.expect(SaveDoc.calledOnce).to.equal(true);
+      chai.expect(SaveDoc.args[0][0]).to.equal(null);
+      chai.expect(SaveDoc.args[0][1]).to.deep.equal({ _id: 1 });
       done();
     });
     $httpBackend.flush();

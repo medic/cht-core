@@ -12,11 +12,12 @@ var async = require('async'),
     function($http, SaveDoc, BaseUrlService) {
 
       var saveRecord = function(contact, create, callback) {
+        var id = create ? null : contact._id;
         if (create && contact._rev) {
           // delete _rev since this is a new doc in this database
           delete contact._rev;
         }
-        SaveDoc(contact._id, contact, function(err) {
+        SaveDoc(id, contact, function(err) {
           if (err) {
             console.error('Error saving record', contact._id, err);
           }
