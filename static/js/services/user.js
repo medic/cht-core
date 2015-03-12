@@ -129,14 +129,6 @@ var _ = require('underscore'),
     }
   };
 
-  var clearCache = function($cacheFactory, userId) {
-    var cache = $cacheFactory.get('$http');
-    if (userId) {
-      cache.remove('/_users/' + userId);
-    }
-    cache.remove('/_users/_all_docs?include_docs=true');
-  };
-
   var updatePassword = function($http, Admins, updated, callback) {
     if (!updated.password) {
       // password not changed, do nothing
@@ -175,7 +167,7 @@ var _ = require('underscore'),
             }
             $http.put('/_users/' + id, JSON.stringify(updated))
               .success(function() {
-                clearCache($cacheFactory, id);
+                $cacheFactory.get('$http').removeAll();
                 callback(null, updated);
               })
               .error(function(data, status) {
@@ -192,48 +184,12 @@ var _ = require('underscore'),
       return function(user, callback) {
         $http.delete('/_users/' + user.id + '?rev=' + user.rev)
           .success(function() {
-            clearCache($cacheFactory, user.id);
+            $cacheFactory.get('$http').removeAll();
             callback();
           })
           .error(function(data, status) {
             callback('Error deleting user: ' + status);
           });
-      };
-    }
-  ]);
-
-  var fetchLocale = function(User, Settings, callback) {
-    User(function(err, res) {
-      if (err) {
-        return callback(err);
-      }
-      if (res && res.language) {
-        return callback(null, res.language);
-      }
-      Settings(function(err, res) {
-        if (err) {
-          return callback(err);
-        }
-        callback(null, res.locale || 'en');
-      });
-    });
-  };
-
-  inboxServices.factory('Language', ['ipCookie', 'User', 'Settings',
-    function(ipCookie, User, Settings) {
-      var cookieKey = 'locale';
-      return function(callback) {
-        var cookieVal = ipCookie(cookieKey);
-        if (cookieVal) {
-          return callback(null, cookieVal);
-        }
-        fetchLocale(User, Settings, function(err, locale) {
-          if (err) {
-            return callback(err);
-          }
-          ipCookie(cookieKey, locale, { expires: 365, path: '/' });
-          callback(null, locale);
-        });
       };
     }
   ]);

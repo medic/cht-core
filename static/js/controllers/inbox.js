@@ -18,8 +18,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$translate', '$animate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl',
-    function ($window, $scope, $translate, $animate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl) {
+    ['$window', '$scope', '$translate', '$animate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie',
+    function ($window, $scope, $translate, $animate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie) {
 
       $scope.loading = true;
       $scope.error = false;
@@ -347,6 +347,7 @@ require('moment/locales');
       $scope.changeLanguage = function(code) {
         moment.locale([code, 'en']);
         $translate.use(code);
+        SetLanguageCookie(code);
       };
 
       var startupModals = [
@@ -426,17 +427,19 @@ require('moment/locales');
         $rootScope.$broadcast('EditUserInit', editUserModel);
       };
 
-      Settings(function(err, settings) {
-        if (err) {
-          return console.log('Error fetching settings', err);
+      $scope.$on('UsersUpdated', function(e, userId) {
+        console.log('UsersUpdated', userId, editUserModel.id);
+        if (editUserModel.id === userId) {
+          updateEditUserModel();
         }
-        $scope.enabledLocales = _.reject(settings.locales, function(locale) {
-          return !!locale.disabled;
-        });
+      });
+
+      var updateEditUserModel = function(callback) {
         User(function(err, user) {
           if (err) {
             return console.log('Error getting user', err);
           }
+          console.log('got user', user);
           editUserModel = {
             id: user._id,
             rev: user._rev,
@@ -446,6 +449,20 @@ require('moment/locales');
             phone: user.phone,
             language: { code: user.language }
           };
+          if (callback) {
+            callback(user);
+          }
+        });
+      };
+
+      Settings(function(err, settings) {
+        if (err) {
+          return console.log('Error fetching settings', err);
+        }
+        $scope.enabledLocales = _.reject(settings.locales, function(locale) {
+          return !!locale.disabled;
+        });
+        updateEditUserModel(function(user) {
           filteredModals = _.filter(startupModals, function(modal) {
             return modal.required(settings, user);
           });
@@ -459,7 +476,6 @@ require('moment/locales');
         if (err) {
           return console.log('Error loading language', err);
         }
-
         moment.locale([language, 'en']);
         $translate.use(language);
       });

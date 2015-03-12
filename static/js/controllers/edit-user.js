@@ -82,12 +82,16 @@ var modal = require('../modules/modal');
       $scope.editUser = function() {
         if (validate()) {
           var pane = modal.start($('#edit-user-profile'));
+          var language = $scope.editUserModel.language && $scope.editUserModel.language.code;
+          if (language) {
+            $scope.changeLanguage(language);
+          }
           UpdateUser($scope.editUserModel.id, {
             name: $scope.editUserModel.name,
             fullname: $scope.editUserModel.fullname,
             email: $scope.editUserModel.email,
             phone: $scope.editUserModel.phone,
-            language: $scope.editUserModel.language && $scope.editUserModel.language.code,
+            language: language,
             password: $scope.editUserModel.password,
             roles: getRoles($scope.editUserModel.type),
             facility_id: $scope.editUserModel.facility &&
@@ -95,8 +99,8 @@ var modal = require('../modules/modal');
                          $scope.editUserModel.facility.doc._id
           }, function(err) {
             if (!err) {
+              $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
               $scope.editUserModel = null;
-              $rootScope.$broadcast('UsersUpdated');
             }
             pane.done(translateFilter('Error updating user'), err);
           });

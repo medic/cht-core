@@ -18,6 +18,7 @@
   require('./format-date');
   require('./generate-search-query');
   require('./import-contacts');
+  require('./language');
   require('./mark-read');
   require('./message-contacts');
   require('./message-state');
