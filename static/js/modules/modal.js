@@ -2,10 +2,14 @@
 
   'use strict';
 
+  var setError = function(modal, message) {
+    modal.find('.modal-footer .note').text(message || '');
+  };
+
   var resetModal = function(modal, label, message) {
     modal.find('.submit').text(label);
-    modal.find('.modal-footer .note').text(message || '');
     modal.find('.btn, [name]').attr('disabled', false);
+    setError(modal, message);
   };
 
   exports.start = function(modal) {
@@ -16,6 +20,7 @@
       submit.text(workingLabel);
     }
     modal.find('.btn, [name]').attr('disabled', true);
+    setError(modal);
     modal.on('hidden.bs.modal', function () {
       resetModal(modal, label);
     });
