@@ -439,7 +439,6 @@ require('moment/locales');
           if (err) {
             return console.log('Error getting user', err);
           }
-          console.log('got user', user);
           editUserModel = {
             id: user._id,
             rev: user._rev,

@@ -154,6 +154,10 @@ var _ = require('underscore'),
     });
   };
 
+  var removeCacheEntry = function($cacheFactory, id) {
+    $cacheFactory.get('$http').remove('/_users/' + encodeURIComponent(id));
+  };
+
   inboxServices.factory('UpdateUser', ['$http', '$cacheFactory', 'Admins',
     function($http, $cacheFactory, Admins) {
       return function(id, updates, callback) {
@@ -167,7 +171,7 @@ var _ = require('underscore'),
             }
             $http.put('/_users/' + id, JSON.stringify(updated))
               .success(function() {
-                $cacheFactory.get('$http').removeAll();
+                removeCacheEntry($cacheFactory, id);
                 callback(null, updated);
               })
               .error(function(data, status) {
@@ -184,7 +188,7 @@ var _ = require('underscore'),
       return function(user, callback) {
         $http.delete('/_users/' + user.id + '?rev=' + user.rev)
           .success(function() {
-            $cacheFactory.get('$http').removeAll();
+            removeCacheEntry($cacheFactory, user.id);
             callback();
           })
           .error(function(data, status) {
