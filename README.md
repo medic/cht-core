@@ -95,15 +95,7 @@ exports.env = {
 
 ### Push the couchapp
 
-```
-grunt dev
-```
-
-Or you can watch and automatically update the app on changes
-
-```
-grunt watch
-```
+`grunt dev` will build and deploy the webapp and also watch for changes and refresh the deploy if any are detected.
 
 ### Start medic-sentinel
 

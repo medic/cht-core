@@ -1,5 +1,7 @@
 var remapify = require('remapify');
 
+var spawnLock = false;
+
 module.exports = function(grunt) {
 
   'use strict';
@@ -35,12 +37,24 @@ module.exports = function(grunt) {
     },
     browserify: {
       options: {
-        preBundleCB: function (b) {
+        preBundleCB: function(b) {
           b
-          // optional package
-          .ignore('./flashmessages')
-          // map the kanso packages manually
-          .plugin(remapify, browserifyMappings);
+            .on('update', function() {
+              // fired by watchify on change
+              if (!spawnLock) { // ugly hack
+                spawnLock = true;
+                grunt.util.spawn({ grunt: true, args: 'deploy'}, function(error) {
+                  spawnLock = false;
+                  if (error) {
+                    console.error(JSON.stringify(error));
+                  } else {
+                    console.log('Deployed successfully');
+                  }
+                });
+              }
+            })
+            .ignore('./flashmessages')
+            .plugin(remapify, browserifyMappings);
         }
       },
       dist: {
@@ -49,6 +63,15 @@ module.exports = function(grunt) {
         options: {
           detectGlobals: false,
           external: ['moment', 'underscore']
+        }
+      },
+      watch: {
+        src: ['static/js/app.js'],
+        dest: 'static/dist/inbox.js',
+        options: {
+          detectGlobals: false,
+          external: ['moment', 'underscore'],
+          watch: true
         }
       }
     },
@@ -176,10 +199,6 @@ module.exports = function(grunt) {
         files: ['static/css/**/*'],
         tasks: ['mmcss', 'exec:deploy', 'notify:deployed']
       },
-      js: {
-        files: ['static/js/**/*', 'packages/kujua-*/**/*', 'packages/feedback/**/*'],
-        tasks: ['mmjs', 'exec:deploy', 'notify:deployed']
-      },
       other: {
         files: ['templates/**/*', 'lib/**/*'],
         tasks: ['exec:deploy', 'notify:deployed']
@@ -240,9 +259,8 @@ module.exports = function(grunt) {
 
   // Default tasks
   grunt.registerTask('mmjs', 'Build the JS resources', [
-    'jshint',
     'copy:settings',
-    'browserify',
+    'browserify:dist',
     'concat:js'
   ]);
 
@@ -257,6 +275,12 @@ module.exports = function(grunt) {
     'replace:monkeypatchdate',
     'copy:inbox',
     'copy:admin'
+  ]);
+
+  grunt.registerTask('deploy', 'Build the JS resources', [
+    'concat:js',
+    'exec:deploy',
+    'notify:deployed'
   ]);
 
   grunt.registerTask('default', 'Build the static resources', [
@@ -277,9 +301,12 @@ module.exports = function(grunt) {
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
     'npm-install',
-    'default',
-    'exec:deploy',
-    'notify:deployed'
+    'mmbower',
+    'mmcss',
+    'copy:settings',
+    'browserify:watch',
+    'deploy',
+    'watch'
   ]);
 
   grunt.registerTask('precommit', 'Lint and unit test', [
@@ -292,7 +319,6 @@ module.exports = function(grunt) {
     'precommit',
     'exec:phantom'
   ]);
-
 
   var browserifyMappings = [
     // default settings file
