@@ -32,7 +32,10 @@ if (couchUrl) {
     };
 } else if (process.env.TEST_ENV) {
     // Running tests only
-    module.exports = {};
+    module.exports = {
+        fti: function() {},
+        medic: { view: function() {} }
+    };
 } else {
     console.log(
         "Please define a COUCH_URL in your environment e.g. \n" +
