@@ -18,8 +18,8 @@ var restore = function(fn) {
 
 exports.tearDown = function (callback) {
   clock.restore();
-  restore(db.getView);
-  restore(db.saveDoc);
+  restore(db.medic.view);
+  restore(db.medic.insert);
   restore(utils.getBirthPatientIds);
   restore(utils.rejectDeliveries);
   restore(utils.getDeliveries);
@@ -27,48 +27,48 @@ exports.tearDown = function (callback) {
   callback();
 };
 
-exports['go returns errors from getView'] = function(test) {
+exports['go returns errors from view'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, 'bang');
+  var view = sinon.stub(db.medic, 'view').callsArgWith(3, 'bang');
   schedule.go(function(err) {
     test.equals(err, 'bang');
-    test.equals(getView.callCount, 1);
+    test.equals(view.callCount, 1);
     test.done();
   });
 };
 
 exports['go does nothing if already run'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [ { year: 2015 } ] });
+  var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { year: 2015 } ] });
   schedule.go(function(err) {
     test.equals(err, undefined);
-    test.equals(getView.callCount, 1);
+    test.equals(view.callCount, 1);
     test.done();
   });
 };
 
 exports['go saves a doc with results'] = function(test) {
   test.expect(18);
-  var getView = sinon.stub(db, 'getView');
+  var view = sinon.stub(db.medic, 'view');
 
   // check if already run this month
-  getView.onCall(0).callsArgWith(2, null, { rows: [] });
+  view.onCall(0).callsArgWith(3, null, { rows: [] });
 
   // valid form submissions
-  getView.onCall(1).callsArgWith(2, null, { rows: [
+  view.onCall(1).callsArgWith(3, null, { rows: [
     { key: [ 1969, 11, 'R' ], value: 23 },
     { key: [ 1969, 11, 'V' ], value: 5 }
   ] });
 
   // delivery locations
-  getView.onCall(2).callsArgWith(2, null, { rows: [
+  view.onCall(2).callsArgWith(3, null, { rows: [
     { key: [ 1969, 11, 'F' ], value: 12 },
     { key: [ 1969, 11, 'S' ], value: 2 },
     { key: [ 1969, 11, 'NS' ], value: 1 }
   ] });
 
   // active facilities
-  getView.onCall(3).callsArgWith(2, null, { rows: [
+  view.onCall(3).callsArgWith(3, null, { rows: [
     { key: [ 1969, 11, '123' ], value: 52 },
     { key: [ 1969, 11, '456' ], value: 13 },
     { key: [ 1969, 11, '789' ], value: 1 }
@@ -95,7 +95,7 @@ exports['go saves a doc with results'] = function(test) {
   ] });
 
   // persisting
-  var saveDoc = sinon.stub(db, 'saveDoc').callsArgWith(1);
+  var insert = sinon.stub(db.medic, 'insert').callsArgWith(1);
 
   var expected = {
     type: 'usage_stats',
@@ -110,26 +110,26 @@ exports['go saves a doc with results'] = function(test) {
   };
   schedule.go(function(err) {
     test.equals(err, undefined);
-    test.equals(getView.callCount, 4);
-    test.equals(getView.getCall(0).args[0], 'usage_stats_by_year_month');
-    test.deepEqual(getView.getCall(0).args[1], {
+    test.equals(view.callCount, 4);
+    test.equals(view.getCall(0).args[1], 'usage_stats_by_year_month');
+    test.deepEqual(view.getCall(0).args[2], {
       startkey: [1969, 11],
       endkey: [1969, 11, {}]
     });
-    test.equals(getView.getCall(1).args[0], 'data_records_valid_by_year_month_and_form');
-    test.deepEqual(getView.getCall(1).args[1], {
+    test.equals(view.getCall(1).args[1], 'data_records_valid_by_year_month_and_form');
+    test.deepEqual(view.getCall(1).args[2], {
       group: true,
       startkey: [1969, 11],
       endkey: [1969, 11, {}]
     });
-    test.equals(getView.getCall(2).args[0], 'delivery_reports_by_year_month_and_code');
-    test.deepEqual(getView.getCall(2).args[1], {
+    test.equals(view.getCall(2).args[1], 'delivery_reports_by_year_month_and_code');
+    test.deepEqual(view.getCall(2).args[2], {
       group: true,
       startkey: [1969, 11],
       endkey: [1969, 11, {}]
     });
-    test.equals(getView.getCall(3).args[0], 'data_records_by_year_month_and_facility');
-    test.deepEqual(getView.getCall(3).args[1], {
+    test.equals(view.getCall(3).args[1], 'data_records_by_year_month_and_facility');
+    test.deepEqual(view.getCall(3).args[2], {
       group: true,
       startkey: [1969, 11],
       endkey: [1969, 11, {}]
@@ -142,8 +142,8 @@ exports['go saves a doc with results'] = function(test) {
     test.equals(getDeliveries.callCount, 1);
     test.equals(getVisits.callCount, 1);
     test.deepEqual(getVisits.getCall(0).args[0], { patientIds: [ 4, 2, 3 ] });
-    test.equals(saveDoc.callCount, 1);
-    test.deepEqual(saveDoc.firstCall.args[0], expected);
+    test.equals(insert.callCount, 1);
+    test.deepEqual(insert.firstCall.args[0], expected);
     test.done();
   });
 };

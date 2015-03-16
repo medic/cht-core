@@ -3,21 +3,21 @@ var sinon = require('sinon'),
     migration = require('../../migrations/extract-person-contacts');
 
 exports.tearDown = function (callback) {
-  if (db.getView.restore) {
-    db.getView.restore();
+  if (db.medic.view.restore) {
+    db.medic.view.restore();
   }
-  if (db.getDoc.restore) {
-    db.getDoc.restore();
+  if (db.medic.get.restore) {
+    db.medic.get.restore();
   }
-  if (db.saveDoc.restore) {
-    db.saveDoc.restore();
+  if (db.medic.insert.restore) {
+    db.medic.insert.restore();
   }
   callback();
 };
 
 exports['run does nothing if no facilities'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [] });
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [] });
   migration.run(function(err) {
     test.equals(err, undefined);
     test.equals(getView.callCount, 1);
@@ -27,8 +27,8 @@ exports['run does nothing if no facilities'] = function(test) {
 
 exports['run does nothing if facilities have no contact'] = function(test) {
   test.expect(4);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [ { id: 'a' } ] });
-  var getDoc = sinon.stub(db, 'getDoc').callsArgWith(1, null, {  });
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
+  var getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, {  });
   migration.run(function(err) {
     test.equals(err, undefined);
     test.equals(getView.callCount, 1);
@@ -40,8 +40,8 @@ exports['run does nothing if facilities have no contact'] = function(test) {
 
 exports['run does nothing if facilities have been migrated'] = function(test) {
   test.expect(4);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [ { id: 'a' } ] });
-  var getDoc = sinon.stub(db, 'getDoc').callsArgWith(1, null, { contact: { _id: 'b' } });
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
+  var getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, { contact: { _id: 'b' } });
   migration.run(function(err) {
     test.equals(err, undefined);
     test.equals(getView.callCount, 1);
@@ -54,14 +54,14 @@ exports['run does nothing if facilities have been migrated'] = function(test) {
 exports['run saves a person doc and updates the facility'] = function(test) {
   test.expect(10);
 
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [ { id: 'a' }, { id: 'b' }, { id: 'c' } ] });
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' }, { id: 'b' }, { id: 'c' } ] });
   
-  var getDoc = sinon.stub(db, 'getDoc');
+  var getDoc = sinon.stub(db.medic, 'get');
   getDoc.onFirstCall().callsArgWith(1, null, { id: 'a', contact: { name: 'alfred adamson', phone: 'a' } });
   getDoc.onSecondCall().callsArgWith(1, null, { id: 'b', contact: { _id: 'd', name: 'boris botham', phone: 'b' } });
   getDoc.onThirdCall().callsArgWith(1, null, { id: 'c', contact: { name: 'chris cairns', phone: 'c' } });
   
-  var saveDoc = sinon.stub(db, 'saveDoc');
+  var saveDoc = sinon.stub(db.medic, 'insert');
   // saving the first new contact
   saveDoc.onCall(0).callsArgWith(1, null, { id: 'e', rev: '1' });
   // updating the facility with the new contact

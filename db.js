@@ -1,28 +1,73 @@
 var path = require('path'),
     url = require('url'),
-    _ = require('underscore'),
-    couchdb = require('felix-couchdb'),
-    settings = {};
+    nano = require('nano');
 
-if (process.env.COUCH_URL) {
-    var couch_url = url.parse(process.env.COUCH_URL);
+var couchUrl = process.env.COUCH_URL;
+if (couchUrl) {
+    var parsedUrl = url.parse(couchUrl);
 
-    _.extend(settings, {
-        port: couch_url.port,
-        host: couch_url.hostname,
-        db: couch_url.path,
+    module.exports = nano(couchUrl.substring(0, couchUrl.indexOf('/', 10)));
+    module.exports.medic = nano(couchUrl);
+
+    module.exports.settings = {
+        protocol: parsedUrl.protocol,
+        port: parsedUrl.port,
+        host: parsedUrl.hostname,
+        db: parsedUrl.path.replace('/',''),
         ddoc: 'medic'
-    });
+    };
 
-    if (couch_url.auth) {
-        var index = couch_url.auth.indexOf(':');
-
-        _.extend(settings, {
-            username: couch_url.auth.substring(0, index),
-            password: couch_url.auth.substring(index + 1)
-        });
+    if (parsedUrl.auth) {
+        var index = parsedUrl.auth.indexOf(':');
+        module.exports.settings.username = parsedUrl.auth.substring(0, index);
+        module.exports.settings.password = parsedUrl.auth.substring(index + 1);
     }
-} else if (!process.env.TEST_ENV) {
+
+    module.exports.fti = function(index, data, cb) {
+        var url = path.join('_fti/local', module.exports.settings.db,
+                            '_design', module.exports.settings.ddoc, index);
+        if (data.q && !data.limit) {
+            data.limit = 1000;
+        }
+        console.log('URL', url);
+        module.exports.request({
+            method: data.q ? 'post' : 'get',
+            path: url,
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            qs: data
+        }, function(err, result) {
+            if (err) {
+                // the request itself failed
+                return cb(err);
+            }
+            if (data.q && !result.rows) {
+                // the query failed for some reason
+                return cb(result);
+            }
+            cb(null, result);
+        });
+    };
+    module.exports.getPath = function() {
+        return path.join(module.exports.settings.db, '_design',
+                         module.exports.settings.ddoc, '_rewrite');
+    };
+    module.exports.getSettings = function(cb) {
+        var uri = path.join(module.exports.getPath(), 'app_settings',
+                            module.exports.settings.ddoc);
+        module.exports.request({ path: uri }, cb);
+    };
+} else if (process.env.TEST_ENV) {
+    // Running tests only
+    module.exports = {
+        fti: function() {},
+        settings: {},
+        medic: {
+            view: function() {},
+            get: function() {},
+            insert: function() {}
+        }
+    };
+} else {
     console.log(
         "Please define a COUCH_URL in your environment e.g. \n" +
         "export COUCH_URL='http://admin:123qwe@localhost:5984/medic'\n\n" +
@@ -30,44 +75,3 @@ if (process.env.COUCH_URL) {
     );
     process.exit(1);
 }
-
-var client = couchdb.createClient(
-    settings.port,
-    settings.host,
-    settings.username,
-    settings.password
-);
-module.exports = client.db(settings.db);
-module.exports.user = settings.username;
-module.exports.fti = function(index, data, cb) {
-    var url = path.join('/_fti/local', settings.db, '_design', settings.ddoc, index);
-    if (data.q && !data.limit) {
-        data.limit = 1000;
-    }
-    client.request({
-        method: data.q ? 'post' : 'get',
-        path: url,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        data: couchdb.toQuery(data)
-    }, function(err, result) {
-        if (err) {
-            // the request itself failed
-            return cb(err);
-        }
-        if (data.q && !result.rows) {
-            // the query failed for some reason
-            return cb(result);
-        }
-        cb(null, result);
-    });
-};
-module.exports.getView = function(view, query, callback) {
-    module.exports.view(settings.ddoc, view, query, callback);
-};
-module.exports.getSettings = function(cb) {
-    var path = settings.db + '/_design/' + settings.ddoc + '/_rewrite/app_settings/' + settings.ddoc;
-    client.request({ path: path }, cb);
-};
-module.exports.getPath = function() {
-    return settings.db + '/_design/' + settings.ddoc + '/_rewrite';
-};

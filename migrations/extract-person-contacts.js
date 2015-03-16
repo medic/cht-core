@@ -2,7 +2,7 @@ var async = require('async'),
     db = require('../db');
 
 var extract = function(row, callback) {
-  db.getDoc(row.id, function(err, doc) {
+  db.medic.get(row.id, function(err, doc) {
     if (err) {
       return callback(err);
     }
@@ -14,7 +14,7 @@ var extract = function(row, callback) {
       // already migrated
       return callback();
     }
-    db.saveDoc({
+    db.medic.insert({
       type: 'person',
       name: doc.contact.name,
       phone: doc.contact.phone
@@ -25,7 +25,7 @@ var extract = function(row, callback) {
       doc.contact.type = 'person';
       doc.contact._id = result.id;
       doc.contact._rev = result.rev;
-      db.saveDoc(doc, callback);
+      db.medic.insert(doc, callback);
     });
   });
 };
@@ -33,7 +33,7 @@ var extract = function(row, callback) {
 module.exports = {
   name: 'extract-person-contacts',
   run: function(callback) {
-    db.getView('facilities', { }, function(err, result) {
+    db.medic.view('medic', 'facilities', { }, function(err, result) {
       if (err) {
         return callback(err);
       }

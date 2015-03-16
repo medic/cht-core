@@ -15,7 +15,7 @@ var error = function(migration, err) {
 };
 
 var getMeta = function(callback) {
-  db.getView('meta', { include_docs: true }, function(err, meta) {
+  db.medic.view('medic', 'meta', { include_docs: true }, function(err, meta) {
     if (err) {
       return callback(err);
     }
@@ -40,7 +40,7 @@ var runMigration = function(migration, callback) {
         return callback(error(migration, err));
       }
       meta.migrations.push(migration.name);
-      db.saveDoc(meta, function(err) {
+      db.medic.insert(meta, function(err) {
         if (err) {
           return callback(error(migration, err));
         }

@@ -478,7 +478,7 @@ var getRecordsView = function(type, params, callback) {
     options.startkey = [9999999999999, {}];
     options.endkey = [0];
   }
-  db.getView(type.view, options, callback);
+  db.medic.view('medic', type.view, options, callback);
 };
 
 var getRecords = function(type, params, callback) {

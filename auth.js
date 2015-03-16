@@ -15,8 +15,8 @@ var permissions = {
 
 var get = function(url, headers, callback) {
   http.get({
-    host: db.client.host,
-    port: db.client.port,
+    host: db.settings.host,
+    port: db.settings.port,
     path: url,
     headers: headers
   }, function(res) {
@@ -127,8 +127,8 @@ module.exports = {
     }
     http.request({
       method: 'HEAD',
-      host: db.client.host,
-      port: db.client.port,
+      host: db.settings.host,
+      port: db.settings.port,
       path: req.params.path,
       headers: req.headers
     }, function(res) {

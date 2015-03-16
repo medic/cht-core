@@ -3,15 +3,15 @@ var controller = require('../../controllers/delivery-location'),
     sinon = require('sinon');
 
 exports.tearDown = function (callback) {
-  if (db.getView.restore) {
-    db.getView.restore();
+  if (db.medic.view.restore) {
+    db.medic.view.restore();
   }
   callback();
 };
 
 exports['get returns errors'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, 'bang');
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, 'bang');
   controller.get({}, function(err, results) {
     test.equals(err, 'bang');
     test.equals(getView.callCount, 1);
@@ -21,7 +21,7 @@ exports['get returns errors'] = function(test) {
 
 exports['get returns zero if no delivery reports'] = function(test) {
   test.expect(7);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: []
   });
   controller.get({}, function(err, results) {
@@ -38,7 +38,7 @@ exports['get returns zero if no delivery reports'] = function(test) {
 
 exports['get returns zero if no delivery reports'] = function(test) {
   test.expect(7);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { key: [ null, 'F' ], value: 5 },
       { key: [ null, 'NS' ], value: 1 }

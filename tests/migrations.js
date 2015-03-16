@@ -3,11 +3,11 @@ var sinon = require('sinon'),
     db = require('../db');
 
 exports.tearDown = function (callback) {
-  if (db.getView.restore) {
-    db.getView.restore();
+  if (db.medic.view.restore) {
+    db.medic.view.restore();
   }
-  if (db.saveDoc.restore) {
-    db.saveDoc.restore();
+  if (db.medic.insert.restore) {
+    db.medic.insert.restore();
   }
   if (migrations.get.restore) {
     migrations.get.restore();
@@ -17,7 +17,7 @@ exports.tearDown = function (callback) {
 
 exports['run does nothing if no migrations'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [] });
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [] });
   var getMigrations = sinon.stub(migrations, 'get').callsArgWith(0, null, []);
   migrations.run(function(err) {
     test.equals(err, undefined);
@@ -29,7 +29,7 @@ exports['run does nothing if no migrations'] = function(test) {
 exports['run does nothing if all migrations have run'] = function(test) {
   test.expect(2);
   var meta = { migrations: [ 'xyz' ] };
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [ { doc: meta } ] });
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: meta } ] });
   var getMigrations = sinon.stub(migrations, 'get').callsArgWith(0, null, [ { name: 'xyz' } ]);
   migrations.run(function(err) {
     test.equals(err, undefined);
@@ -57,9 +57,9 @@ exports['executes migrations that have not run and updates meta'] = function(tes
     }
   ];
   var meta = { _id: 1, migrations: [ 'abc' ], type: 'meta' };
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [ { doc: meta } ] });
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: meta } ] });
   var getMigrations = sinon.stub(migrations, 'get').callsArgWith(0, null, migration);
-  var saveDoc = sinon.stub(db, 'saveDoc').callsArg(1);
+  var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
   migrations.run(function(err) {
     test.equals(err, undefined);
     test.equals(getView.callCount, 2);
@@ -91,12 +91,12 @@ exports['executes multiple migrations that have not run and updates meta each ti
       }
     }
   ];
-  var getView = sinon.stub(db, 'getView');
-  getView.onFirstCall().callsArgWith(2, null, { rows: [ { doc: { _id: 1, migrations: [ ], type: 'meta' } } ] });
-  getView.onSecondCall().callsArgWith(2, null, { rows: [ { doc: { _id: 1, migrations: [ ], type: 'meta' } } ] });
-  getView.onThirdCall().callsArgWith(2, null, { rows: [ { doc: { _id: 1, migrations: [ 'xyz' ], type: 'meta' } } ] });
+  var getView = sinon.stub(db.medic, 'view');
+  getView.onFirstCall().callsArgWith(3, null, { rows: [ { doc: { _id: 1, migrations: [ ], type: 'meta' } } ] });
+  getView.onSecondCall().callsArgWith(3, null, { rows: [ { doc: { _id: 1, migrations: [ ], type: 'meta' } } ] });
+  getView.onThirdCall().callsArgWith(3, null, { rows: [ { doc: { _id: 1, migrations: [ 'xyz' ], type: 'meta' } } ] });
   var getMigrations = sinon.stub(migrations, 'get').callsArgWith(0, null, migration);
-  var saveDoc = sinon.stub(db, 'saveDoc').callsArg(1);
+  var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
   migrations.run(function(err) {
     test.equals(err, undefined);
     test.equals(getView.callCount, 3);
@@ -140,11 +140,11 @@ exports['executes multiple migrations and stops when one errors'] = function(tes
       }
     }
   ];
-  var getView = sinon.stub(db, 'getView');
-  getView.onFirstCall().callsArgWith(2, null, { rows: [ { doc: { _id: 1, migrations: [ ], type: 'meta' } } ] });
-  getView.onSecondCall().callsArgWith(2, null, { rows: [ { doc: { _id: 1, migrations: [ ], type: 'meta' } } ] });
+  var getView = sinon.stub(db.medic, 'view');
+  getView.onFirstCall().callsArgWith(3, null, { rows: [ { doc: { _id: 1, migrations: [ ], type: 'meta' } } ] });
+  getView.onSecondCall().callsArgWith(3, null, { rows: [ { doc: { _id: 1, migrations: [ ], type: 'meta' } } ] });
   var getMigrations = sinon.stub(migrations, 'get').callsArgWith(0, null, migration);
-  var saveDoc = sinon.stub(db, 'saveDoc').callsArg(1);
+  var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
   migrations.run(function(err) {
     test.equals(err, 'Migration "b" failed with: "boom!"');
     test.equals(getView.callCount, 2);
@@ -169,9 +169,9 @@ exports['creates meta if needed'] = function(test) {
       }
     }
   ];
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [ ] });
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ ] });
   var getMigrations = sinon.stub(migrations, 'get').callsArgWith(0, null, migration);
-  var saveDoc = sinon.stub(db, 'saveDoc').callsArg(1);
+  var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
   migrations.run(function(err) {
     test.equals(err, undefined);
     test.equals(getView.callCount, 2);

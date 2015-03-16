@@ -13,7 +13,7 @@ module.exports = {
       startkey: [district],
       endkey: [district, {}]
     };
-    db.getView('visits_by_district_and_patient', query, function(err, visits) {
+    db.medic.view('medic', 'visits_by_district_and_patient', query, function(err, visits) {
       if (err) {
         return callback(err);
       }

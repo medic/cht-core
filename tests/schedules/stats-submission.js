@@ -20,8 +20,8 @@ var restore = function(fn) {
 
 exports.tearDown = function (callback) {
   clock.restore();
-  restore(db.getView);
-  restore(db.saveDoc);
+  restore(db.medic.view);
+  restore(db.medic.insert);
   restore(config.get);
   restore(request.post);
   callback();
@@ -47,7 +47,7 @@ exports['go shortcircuits when submission method set tp none'] = function(test) 
 
 exports['go returns errors from getView'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, 'bang');
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, 'bang');
   sinon.stub(config, 'get').withArgs('statistics_submission').returns('web');
   schedule.go(function(err) {
     test.equals(err, 'bang');
@@ -58,7 +58,7 @@ exports['go returns errors from getView'] = function(test) {
 
 exports['go does nothing if no doc'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [] });
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [] });
   sinon.stub(config, 'get').withArgs('statistics_submission').returns('web');
   schedule.go(function(err) {
     test.equals(err, undefined);
@@ -69,7 +69,7 @@ exports['go does nothing if no doc'] = function(test) {
 
 exports['go does nothing if doc already submitted'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [{
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: { submitted: true }
   }] });
   sinon.stub(config, 'get').withArgs('statistics_submission').returns('web');
@@ -83,7 +83,7 @@ exports['go does nothing if doc already submitted'] = function(test) {
 exports['go returns error from post'] = function(test) {
   test.expect(2);
 
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [{
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
       estimated_deliveries: 0,
@@ -117,7 +117,7 @@ exports['go returns error from post'] = function(test) {
 exports['go returns error if post response is not valid json'] = function(test) {
   test.expect(2);
 
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [{
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
       estimated_deliveries: 0,
@@ -151,7 +151,7 @@ exports['go returns error if post response is not valid json'] = function(test) 
 exports['go returns error if post response body indicates failure'] = function(test) {
   test.expect(2);
 
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [{
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
       estimated_deliveries: 0,
@@ -186,7 +186,7 @@ exports['go submits empty submission string'] = function(test) {
   test.expect(8);
 
   var phone = '+555123456';
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [{
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
       estimated_deliveries: 0,
@@ -200,7 +200,7 @@ exports['go submits empty submission string'] = function(test) {
     }
   }] });
   var requestPost = sinon.stub(request, 'post').callsArgWith(1, null, null, successfulResponse);
-  var dbSaveDoc = sinon.stub(db, 'saveDoc').callsArg(1);
+  var dbSaveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
   var get = sinon.stub(config, 'get')
     .withArgs('statistics_submission').returns('web')
     .withArgs('gateway_number').returns(phone)
@@ -228,7 +228,7 @@ exports['go submits populated submission string'] = function(test) {
   test.expect(8);
 
   var phone = '+555123456';
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, { rows: [{
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
       visits_per_delivery: { '1+': 20, '2+': 19, '3+': 18, '4+': 17 },
       estimated_deliveries: 50,
@@ -242,7 +242,7 @@ exports['go submits populated submission string'] = function(test) {
     }
   }] });
   var requestPost = sinon.stub(request, 'post').callsArgWith(1, null, null, successfulResponse);
-  var dbSaveDoc = sinon.stub(db, 'saveDoc').callsArg(1);
+  var dbSaveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
   var get = sinon.stub(config, 'get')
     .withArgs('statistics_submission').returns('web')
     .withArgs('gateway_number').returns(phone)

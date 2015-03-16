@@ -13,7 +13,7 @@ var getView = function(name, query, callback) {
   var startDate = moment().subtract(1, 'month').startOf('month');
   query.startkey = [ startDate.year(), startDate.month() ];
   query.endkey = [ startDate.year(), startDate.month(), {} ];
-  db.getView(name, query, callback);
+  db.medic.view('medic', name, query, callback);
 };
 
 var runIfNeeded = function(callback) {
@@ -154,7 +154,7 @@ module.exports = {
             var startDate = moment().subtract(1, 'month').startOf('month');
             doc.year = startDate.year();
             doc.month = startDate.month();
-            db.saveDoc(doc, callback);
+            db.medic.insert(doc, callback);
           }
         );
       });

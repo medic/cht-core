@@ -16,8 +16,8 @@ exports.tearDown = function (callback) {
   if (fti.get.restore) {
     fti.get.restore();
   }
-  if (db.getView.restore) {
-    db.getView.restore();
+  if (db.medic.view.restore) {
+    db.medic.view.restore();
   }
   if (config.translate.restore) {
     config.translate.restore();
@@ -30,7 +30,7 @@ exports.tearDown = function (callback) {
 
 exports['get returns errors from getView'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, 'bang');
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, 'bang');
   controller.get({ type: 'messages' }, function(err, results) {
     test.equals(err, 'bang');
     test.equals(getView.callCount, 1);
@@ -40,7 +40,7 @@ exports['get returns errors from getView'] = function(test) {
 
 exports['get handles empty db'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: []
   });
   controller.get({ type: 'messages' }, function(err, results) {
@@ -52,7 +52,7 @@ exports['get handles empty db'] = function(test) {
 
 exports['get formats responses'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -80,7 +80,7 @@ exports['get formats responses'] = function(test) {
 
 exports['get includes tasks and scheduled tasks'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -116,7 +116,7 @@ exports['get includes tasks and scheduled tasks'] = function(test) {
 
 exports['get formats incoming messages'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -146,7 +146,7 @@ exports['get formats incoming messages'] = function(test) {
 
 exports['get exports messages in xml'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -196,7 +196,7 @@ exports['get exports messages in xml'] = function(test) {
 
 exports['get exports reports in xml with each type on a separate tab'] = function(test) {
   test.expect(3);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -269,7 +269,7 @@ exports['get exports reports in xml with each type on a separate tab'] = functio
 
 exports['get uses locale param'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -291,7 +291,7 @@ exports['get uses locale param'] = function(test) {
 
 exports['get uses tz param'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -312,7 +312,7 @@ exports['get uses tz param'] = function(test) {
 
 exports['get uses skip_header_row param'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -332,7 +332,7 @@ exports['get uses skip_header_row param'] = function(test) {
 
 exports['get uses columns param'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -359,7 +359,7 @@ exports['get uses filter state params'] = function(test) {
   var pendingTimestampC = moment().subtract(10, 'days').valueOf();
   var pendingTimestampD = moment().subtract(9, 'days').valueOf();
 
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       {
         doc: {
@@ -453,7 +453,7 @@ exports['get uses filter state params'] = function(test) {
 
 exports['get reports formats responses'] = function(test) {
   test.expect(6);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -494,9 +494,9 @@ exports['get reports formats responses'] = function(test) {
   controller.get({ type: 'forms', tz: '0' }, function(err, results) {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
-    test.equals(getView.firstCall.args[0], 'data_records');
-    test.same(getView.firstCall.args[1].startkey, [true, '*', {}]);
-    test.same(getView.firstCall.args[1].endkey, [true, '*', 0]);
+    test.equals(getView.firstCall.args[1], 'data_records');
+    test.same(getView.firstCall.args[2].startkey, [true, '*', {}]);
+    test.same(getView.firstCall.args[2].endkey, [true, '*', 0]);
     test.equals(configGet.callCount, 2);
     test.done();
   });
@@ -504,7 +504,7 @@ exports['get reports formats responses'] = function(test) {
 
 exports['get reports filters by form'] = function(test) {
   test.expect(5);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -541,16 +541,16 @@ exports['get reports filters by form'] = function(test) {
   controller.get({ type: 'forms', tz: '0', form: 'P' }, function(err, results) {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
-    test.equals(getView.firstCall.args[0], 'data_records');
-    test.same(getView.firstCall.args[1].startkey, [true, 'P', {}]);
-    test.same(getView.firstCall.args[1].endkey, [true, 'P', 0]);
+    test.equals(getView.firstCall.args[1], 'data_records');
+    test.same(getView.firstCall.args[2].startkey, [true, 'P', {}]);
+    test.same(getView.firstCall.args[2].endkey, [true, 'P', 0]);
     test.done();
   });
 };
 
 exports['get reports with query calls fti'] = function(test) {
   test.expect(9);
-  var getView = sinon.stub(db, 'getView');
+  var getView = sinon.stub(db.medic, 'view');
   var ftiGet = sinon.stub(fti, 'get').callsArgWith(3, null, {
     rows: [
       { doc: {
@@ -596,7 +596,7 @@ exports['get reports with query calls fti'] = function(test) {
 
 exports['get audit log'] = function(test) {
   test.expect(3);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -637,14 +637,14 @@ exports['get audit log'] = function(test) {
   controller.get({ type: 'audit', tz: '0' }, function(err, results) {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
-    test.equals(getView.firstCall.args[0], 'audit_records_by_doc');
+    test.equals(getView.firstCall.args[1], 'audit_records_by_doc');
     test.done();
   });
 };
 
 exports['get feedback'] = function(test) {
   test.expect(5);
-  var getView = sinon.stub(db, 'getView').callsArgWith(2, null, {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -676,9 +676,9 @@ exports['get feedback'] = function(test) {
   controller.get({ type: 'feedback', tz: '0' }, function(err, results) {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
-    test.equals(getView.firstCall.args[0], 'feedback');
-    test.same(getView.firstCall.args[1].startkey, [9999999999999, {}]);
-    test.same(getView.firstCall.args[1].endkey, [0]);
+    test.equals(getView.firstCall.args[1], 'feedback');
+    test.same(getView.firstCall.args[2].startkey, [9999999999999, {}]);
+    test.same(getView.firstCall.args[2].endkey, [0]);
     test.done();
   });
 };

@@ -9,7 +9,7 @@ module.exports = {
       startkey: [district],
       endkey: [district, {}]
     };
-    db.getView('delivery_reports_by_district_and_code', query, function(err, response) {
+    db.medic.view('medic', 'delivery_reports_by_district_and_code', query, function(err, response) {
       if (err) {
         return callback(err);
       }
