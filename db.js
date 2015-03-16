@@ -1,30 +1,39 @@
 var nano = require('nano'),
-    _ = require('underscore'),
 	url = require('url'),
-    path = require('path'),
-    logger = require('./lib/logger'),
-    settings = {};
+    path = require('path');
 
-if (process.env.COUCH_URL) {
-    var couchUrl = url.parse(process.env.COUCH_URL);
+var couchUrl = process.env.COUCH_URL;
+if (couchUrl) {
+    var parsedUrl = url.parse(couchUrl);
 
-    _.extend(settings, {
-        protocol: couchUrl.protocol,
-        port: couchUrl.port,
-        host: couchUrl.hostname,
-        db: couchUrl.path.replace('/',''),
+    module.exports = nano(couchUrl.substring(0, couchUrl.indexOf('/', 10)));
+    module.exports.medic = nano(couchUrl);
+
+    module.exports.settings = {
+        protocol: parsedUrl.protocol,
+        port: parsedUrl.port,
+        host: parsedUrl.hostname,
+        db: parsedUrl.path.replace('/',''),
         ddoc: 'medic'
-    });
+    };
 
-    if (couchUrl.auth) {
-        var index = couchUrl.auth.indexOf(':');
-
-        _.extend(settings, {
-            username: couchUrl.auth.substring(0, index),
-            password: couchUrl.auth.substring(index + 1)
-        });
+    if (parsedUrl.auth) {
+        var index = parsedUrl.auth.indexOf(':');
+        module.exports.settings.username = parsedUrl.auth.substring(0, index);
+        module.exports.settings.password = parsedUrl.auth.substring(index + 1);
     }
-} else if (!process.env.TEST_ENV) {
+
+    module.exports.fti = function(index, data, cb) {
+        var uri = path.join('/_fti/local', settings.db, '_design', settings.ddoc, index);
+        module.exports.request({ path: uri, qs: data }, cb);
+    };
+    module.exports.config = function(cb) {
+        module.exports.request({ path: '/_config' }, cb);
+    };
+} else if (process.env.TEST_ENV) {
+    // Running tests only
+    module.exports = {};
+} else {
     console.log(
         "Please define a COUCH_URL in your environment e.g. \n" +
         "export COUCH_URL='http://admin:123qwe@localhost:5984/medic'\n" +
@@ -32,14 +41,3 @@ if (process.env.COUCH_URL) {
     );
     process.exit(1);
 }
-
-module.exports = nano(process.env.COUCH_URL.substring(0, process.env.COUCH_URL.indexOf('/', 10)));
-module.exports.medic = nano(process.env.COUCH_URL);
-module.exports.settings = settings;
-module.exports.fti = function(index, data, cb) {
-    var uri = path.join('/_fti/local', settings.db, '_design', settings.ddoc, index);
-    module.exports.request({ path: uri, qs: data }, cb);
-};
-module.exports.config = function(cb) {
-    module.exports.request({ path: '/_config' }, cb);
-};
