@@ -32,7 +32,7 @@ function completeSetup(err) {
     }
 }
 
-db.getDoc('_design/kujua-sentinel', function(err, doc) {
+db.request({db: 'medic', doc:'_design/kujua-sentinel'}, function(err, doc) {
     var base = require('./designs/base.json'),
         matches;
 

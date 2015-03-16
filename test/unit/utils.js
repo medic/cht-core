@@ -6,8 +6,8 @@ var _ = require('underscore'),
     utils = require('../../lib/utils');
 
 exports.tearDown = function(callback) {
-    if (db.view.restore) {
-        db.view.restore();
+    if (db.medic.view.restore) {
+        db.medic.view.restore();
     }
     callback();
 }
@@ -141,7 +141,7 @@ exports['getRecentForm calls through to db view correctly'] = function(test) {
     var clinicId = 'someClinicId';
     var result = [{_id: 'someRowId'}];
 
-    sinon.stub(db, 'view')
+    sinon.stub(db.medic, 'view')
         .withArgs(
             'kujua-sentinel', 
             'data_records_by_form_and_clinic', 

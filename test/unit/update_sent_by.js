@@ -28,7 +28,7 @@ exports['updates sent_by to clinic name if contact name not available'] = functi
         from: '+34567890123'
     };
 
-    gently.expect(fakedb, 'view', 1, function(design, view, params, callback) {
+    gently.expect(fakedb.medic, 'view', 1, function(design, view, params, callback) {
         callback(null, {
             rows: [
                 {

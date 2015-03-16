@@ -19,7 +19,7 @@ exports['due_tasks handles view returning no rows'] = function(test) {
   });
   var saveDoc = sinon.stub(audit, 'saveDoc').callsArgWith(1, null);
 
-  schedule(db, {}, function(err) {
+  schedule({ medic: db }, {}, function(err) {
     test.equals(err, undefined);
   });
 
@@ -66,7 +66,7 @@ exports['set all due scheduled tasks to pending'] = function(test) {
   };
   var saveDoc = sinon.spy(audit, 'saveDoc');
 
-  schedule(db, audit, function(err) {
+  schedule({ medic: db }, audit, function(err) {
     test.equals(err, undefined);
   });
 
@@ -129,7 +129,7 @@ exports['set all due scheduled tasks to pending and handles repeated rows'] = fu
   };
   var saveDoc = sinon.spy(audit, 'saveDoc');
 
-  schedule(db, audit, function(err) {
+  schedule({ medic: db }, audit, function(err) {
     test.equals(err, undefined);
   });
 
@@ -204,7 +204,7 @@ exports['set all due scheduled tasks to pending and handles nonrepeated rows'] =
   };
   var saveDoc = sinon.spy(audit, 'saveDoc');
 
-  schedule(db, audit, function(err) {
+  schedule({ medic: db }, audit, function(err) {
     test.equals(err, undefined);
   });
 

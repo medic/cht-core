@@ -78,5 +78,3 @@ exports['should update clinic by refid and fix number'] = function(test) {
         test.done();
     });
 };
-
-

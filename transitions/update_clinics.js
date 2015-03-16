@@ -46,7 +46,7 @@ module.exports = {
             return callback();
         }
 
-        db.view('kujua-sentinel', view, q, function(err, data) {
+        db.medic.view('kujua-sentinel', view, q, function(err, data) {
             var clinic,
                 existing,
                 row;
@@ -70,7 +70,7 @@ module.exports = {
 
             if (clinic.contact.phone !== doc.from) {
                 clinic.contact.phone = doc.from;
-                db.saveDoc(clinic, function(err, ok) {
+                db.medic.saveDoc(clinic, function(err, ok) {
                     if (err) {
                         console.log("Error updating clinic: " + JSON.stringify(err, null, 2));
                         return callback(err);

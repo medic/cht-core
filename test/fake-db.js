@@ -22,11 +22,13 @@ module.exports = {
             })
         });
     },
-    view: function(design, view, params, callback) {
-        module.exports[view](params, callback);
-    },
-    saveDoc: function(doc, callback) {
-        callback(null, {});
+    medic: {
+      view: function(design, view, params, callback) {
+          module.exports[view](params, callback);
+      },
+      saveDoc: function(doc, callback) {
+          callback(null, {});
+      },
     },
     checkOHWDuplicates: function(options, callback) {
         callback(null, []);

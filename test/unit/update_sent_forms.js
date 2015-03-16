@@ -13,15 +13,17 @@ exports['onMatch is a function'] = function(test) {
     test.done();
 };
 
-exports['calls db.getDoc with id of clinic'] = function(test) {
+exports['calls db.get with id of clinic'] = function(test) {
     test.expect(2);
     var db = {
-        getDoc: function() {}
+        medic: {
+            get: function() {}
+        }
     };
     var audit = {
         saveDoc: function() {}
     };
-    sinon.stub(db, 'getDoc').callsArgWith(1, null, {});
+    sinon.stub(db.medic, 'get').callsArgWith(1, null, {});
     sinon.stub(audit, 'saveDoc').callsArgWith(1, null);
     transition.onMatch({
         doc: {
@@ -34,9 +36,9 @@ exports['calls db.getDoc with id of clinic'] = function(test) {
     }, db, audit, function(err, changed) {
         var call;
 
-        test.equals(db.getDoc.callCount, 1);
+        test.equals(db.medic.get.callCount, 1);
 
-        call = db.getDoc.getCall(0);
+        call = db.medic.get.getCall(0);
         test.equals(call.args[0], '1');
 
         test.done();
@@ -46,12 +48,14 @@ exports['calls db.getDoc with id of clinic'] = function(test) {
 exports['calls audit.saveDoc with clinic and updated sent_forms'] = function(test) {
     var now = moment();
     var db = {
-        getDoc: function() {},
+        medic: {
+            get: function() {}
+        }
     };
     var audit = {
         saveDoc: function() {}
     };
-    var get = sinon.stub(db, 'getDoc').callsArgWith(1, null, {});
+    var get = sinon.stub(db.medic, 'get').callsArgWith(1, null, {});
     var save = sinon.stub(audit, 'saveDoc').callsArgWith(1, null);
     transition.onMatch({
         doc: {
@@ -78,12 +82,14 @@ exports['does not overwrite if existing date is after'] = function(test) {
     var now = moment(),
         tomorrow = now.clone().add(1, 'day');
     var db = {
-        getDoc: function() {},
+        medic: {
+            get: function() {}
+        }
     };
     var audit = {
         saveDoc: function() {}
     };
-    var get = sinon.stub(db, 'getDoc').callsArgWith(1, null, {
+    var get = sinon.stub(db.medic, 'get').callsArgWith(1, null, {
         sent_forms: {
             XXX: tomorrow.toISOString()
         }
@@ -109,12 +115,14 @@ exports['overwrites if existing date is before'] = function(test) {
     var now = moment(),
         yesterday = now.clone().subtract(1, 'day');
     var db = {
-        getDoc: function() {}
+        medic: {
+            get: function() {}
+        }
     };
     var audit = {
         saveDoc: function() {}
     };
-    var get = sinon.stub(db, 'getDoc').callsArgWith(1, null, {
+    var get = sinon.stub(db.medic, 'get').callsArgWith(1, null, {
         sent_forms: {
             XXX: yesterday.toISOString()
         }

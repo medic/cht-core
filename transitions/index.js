@@ -211,7 +211,8 @@ var applyTransitions = function(options) {
 var attach = function() {
 
     var db = require('../db'),
-        audit = require('couchdb-audit').withNode(db, db.user);
+        audit = require('couchdb-audit')
+            .withNano(db, db.settings.db, db.settings.ddoc, db.settings.username);
 
     var match_types = [
         'data_record',
@@ -247,7 +248,7 @@ var attach = function() {
      * Process changes feed docs in the past where transitions have not run or
      * transitions had errors.
      */
-    db.changes({
+    db.medic.changes({
         feed: 'polling',
         since: config.last_valid_seq || 'now',
         descending: true
@@ -261,7 +262,7 @@ var attach = function() {
                 return;
             }
             setTimeout(function() {
-                db.getDoc(change.id, function(err, doc) {
+                db.medic.get(change.id, function(err, doc) {
                     if (err) {
                         return logger.error('backlog fetch failed on %s: %s', change.id, err);
                     }

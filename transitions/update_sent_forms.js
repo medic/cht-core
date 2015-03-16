@@ -47,7 +47,7 @@ module.exports = {
             clinic = doc.related_entities && doc.related_entities.clinic,
             clinicId = clinic && clinic._id;
 
-        db.getDoc(clinicId, function(err, clinic) {
+        db.medic.get(clinicId, function(err, clinic) {
             var latest,
                 reported = moment(reported_date);
 

@@ -1,6 +1,5 @@
 var _ = require('underscore'),
     transitions,
-    gently = global.GENTLY = new (require('gently')),
     utils = require('../../lib/utils');
 
 exports.setUp = function(callback) {
@@ -20,7 +19,7 @@ exports['save not called if transition results are null'] = function(test) {
         _rev: '1'
     };
     var db = {
-        getDoc: function(id, callback) {
+        get: function(id, callback) {
             callback(null, latest);
         }
     };

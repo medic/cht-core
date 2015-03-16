@@ -36,7 +36,8 @@ exports.sendable = function(_config, _now) {
 
 exports.checkSchedule = function() {
     var db = require('../db'),
-        audit = require('couchdb-audit').withNode(db, db.user),
+        audit = require('couchdb-audit')
+            .withNano(db, db.settings.db, db.settings.ddoc, db.settings.username),
         now = moment(date.getDate());
 
     async.forEachSeries(tasks, function(task, callback) {

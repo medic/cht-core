@@ -22,7 +22,8 @@ module.exports = {
         try {
             callback(null, vm.runInNewContext(condition, context));
         } catch(e) {
-            callback(e.message);
+            var lines = e.message.split('\n');
+            callback(lines[lines.length - 1]);
         }
     },
     _evaluateCondition: function(doc, alert, callback) {

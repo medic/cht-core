@@ -7,29 +7,14 @@ var _ = require('underscore'),
 function initInfo(callback) {
     var db = require('./db'),
         self = module.exports;
-    async.series([
-        function(cb) {
-            db.config(function(err, res) {
-                self.couchdb = res.couchdb;
-                cb(err);
-            });
-        },
-        function(cb) {
-            db.info(function(err, info) {
-                self.db_info = info;
-                cb(err);
-            });
-        },
-        function(cb) {
-            db.view('kujua-sentinel', 'last_valid_seq', {
-                reduce: true
-            }, function(err, data) {
-                var first = data.rows.pop();
-                self.last_valid_seq = (first && first.value.seq);
-                cb(err);
-            });
-        }
-    ], callback);
+
+    db.medic.view('kujua-sentinel', 'last_valid_seq', {
+        reduce: true
+    }, function(err, data) {
+        var first = data.rows.pop();
+        self.last_valid_seq = (first && first.value.seq);
+        callback(err);
+    });
 };
 
 function initFeed(callback) {
@@ -62,10 +47,7 @@ function initFeed(callback) {
 function initConfig(callback) {
     var db = require('./db');
 
-    db.request({
-        method:'GET',
-        path: config.settings_path
-    }, function(err, data) {
+    db.medic.get(config.settings_path, function(err, data) {
         if (err) {
             return callback(err);
         }
@@ -94,6 +76,5 @@ module.exports = {
     },
     init: initConfig,
     db_info: null,
-    couchdb: null,
     last_valid_seq: null
 };
