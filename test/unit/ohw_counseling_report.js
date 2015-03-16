@@ -1,6 +1,6 @@
 var _ = require('underscore'),
-    gently = global.GENTLY = new (require('gently')),
     moment = require('moment'),
+    sinon = require('sinon'),
     transition = require('../../transitions/ohw_counseling'),
     fakedb = require('../fake-db'),
     fakeaudit = require('../fake-audit'),
@@ -13,101 +13,107 @@ exports.setUp = function(callback) {
 
     process.env.TEST_ENV = true;
 
-    gently.hijacked['../lib/utils'].checkOHWDuplicates = fakedb.checkOHWDuplicates;
-    gently.hijacked['../lib/utils'].getOHWRegistration = function(id, callback) {
-        fakedb.getOHWRegistration(id, function(err, reg) {
-            registration = {
-                patient_id: "123",
-                serial_number: "FOO",
-                scheduled_tasks: [
-                    {
-                        messages: [ { message: 'x' } ],
-                        type: 'anc_visit',
-                        state: 'scheduled',
-                        group: 1,
-                        due: now.clone().add('days', 3).valueOf()
-                    },
-                    {
-                        messages: [ { message: 'x' } ],
-                        type: 'anc_visit',
-                        state: 'scheduled',
-                        group: 1,
-                        due: now.clone().add('days', 7).valueOf()
-                    },
-                    {
-                        messages: [ { message: 'x' } ],
-                        type: 'anc_visit',
-                        state: 'scheduled',
-                        group: 2,
-                        due: now.clone().add('days', 15).valueOf()
-                    },
-                    {
-                        messages: [ { message: 'x' } ],
-                        type: 'anc_visit',
-                        state: 'scheduled',
-                        group: 3,
-                        due: now.clone().add('days', 17).valueOf()
-                    },
-                    {
-                        messages: [ { message: 'x' } ],
-                        type: 'anc_visit',
-                        state: 'scheduled',
-                        group: 3,
-                        due: now.clone().add('days', 25).valueOf()
-                    },
-                    {
-                        messages: [ { message: 'x' } ],
-                        type: 'anc_visit',
-                        state: 'scheduled',
-                        group: 3,
-                        due: now.clone().add('days', 31).valueOf()
-                    },
-                    {
-                        messages: [ { message: 'x' } ],
-                        state: 'scheduled',
-                        type: 'upcoming_delivery'
-                    },
-                    {
-                        messages: [ { message: 'x' } ],
-                        state: 'scheduled',
-                        type: 'counseling_reminder',
-                        group: 1,
-                        due: now.clone().add('days', 10).valueOf()
-                    },
-                    {
-                        messages: [ { message: 'x' } ],
-                        state: 'scheduled',
-                        type: 'counseling_reminder',
-                        group: 1,
-                        due: now.clone().add('days', 12).valueOf()
-                    },
-                    {
-                        messages: [ { message: 'x' } ],
-                        state: 'scheduled',
-                        type: 'counseling_reminder',
-                        group: 2,
-                        due: now.clone().add('days', 14).valueOf()
-                    },
-                    {
-                        messages: [ { message: 'x' } ],
-                        state: 'scheduled',
-                        type: 'counseling_reminder',
-                        group: 2,
-                        due: now.clone().add('days', 25).valueOf()
-                    },
-                    {
-                        messages: [ { message: 'x' } ],
-                        state: 'scheduled',
-                        type: 'counseling_reminder',
-                        group: 3,
-                        due: now.clone().add('days', 34).valueOf()
-                    }
-                ]
-            };
-            callback(null, registration);
-        });
+    registration = {
+        patient_id: "123",
+        serial_number: "FOO",
+        scheduled_tasks: [
+            {
+                messages: [ { message: 'x' } ],
+                type: 'anc_visit',
+                state: 'scheduled',
+                group: 1,
+                due: now.clone().add('days', 3).valueOf()
+            },
+            {
+                messages: [ { message: 'x' } ],
+                type: 'anc_visit',
+                state: 'scheduled',
+                group: 1,
+                due: now.clone().add('days', 7).valueOf()
+            },
+            {
+                messages: [ { message: 'x' } ],
+                type: 'anc_visit',
+                state: 'scheduled',
+                group: 2,
+                due: now.clone().add('days', 15).valueOf()
+            },
+            {
+                messages: [ { message: 'x' } ],
+                type: 'anc_visit',
+                state: 'scheduled',
+                group: 3,
+                due: now.clone().add('days', 17).valueOf()
+            },
+            {
+                messages: [ { message: 'x' } ],
+                type: 'anc_visit',
+                state: 'scheduled',
+                group: 3,
+                due: now.clone().add('days', 25).valueOf()
+            },
+            {
+                messages: [ { message: 'x' } ],
+                type: 'anc_visit',
+                state: 'scheduled',
+                group: 3,
+                due: now.clone().add('days', 31).valueOf()
+            },
+            {
+                messages: [ { message: 'x' } ],
+                state: 'scheduled',
+                type: 'upcoming_delivery'
+            },
+            {
+                messages: [ { message: 'x' } ],
+                state: 'scheduled',
+                type: 'counseling_reminder',
+                group: 1,
+                due: now.clone().add('days', 10).valueOf()
+            },
+            {
+                messages: [ { message: 'x' } ],
+                state: 'scheduled',
+                type: 'counseling_reminder',
+                group: 1,
+                due: now.clone().add('days', 12).valueOf()
+            },
+            {
+                messages: [ { message: 'x' } ],
+                state: 'scheduled',
+                type: 'counseling_reminder',
+                group: 2,
+                due: now.clone().add('days', 14).valueOf()
+            },
+            {
+                messages: [ { message: 'x' } ],
+                state: 'scheduled',
+                type: 'counseling_reminder',
+                group: 2,
+                due: now.clone().add('days', 25).valueOf()
+            },
+            {
+                messages: [ { message: 'x' } ],
+                state: 'scheduled',
+                type: 'counseling_reminder',
+                group: 3,
+                due: now.clone().add('days', 34).valueOf()
+            }
+        ]
     };
+    sinon.stub(utils, 'checkOHWDuplicates').callsArgWith(1, null, []);
+    sinon.stub(utils, 'getOHWRegistration').callsArgWith(1, null, registration);
 
+    callback();
+};
+
+exports.tearDown = function(callback) {
+    if (utils.checkOHWDuplicates.restore) {
+        utils.checkOHWDuplicates.restore();
+    }
+    if (utils.getOHWRegistration.restore) {
+        utils.getOHWRegistration.restore();
+    }
     callback();
 };
 

@@ -1,4 +1,5 @@
-var fakedb = require('../fake-db'),
+var sinon = require('sinon'),
+    fakedb = require('../fake-db'),
     fakeaudit = require('../fake-audit'),
     transition = require('../../transitions/update_clinics'),
     phone = '+34567890123';
@@ -7,6 +8,13 @@ exports.setUp = function(callback) {
     process.env.TEST_ENV = true;
     callback();
 }
+
+exports.tearDown = function(callback) {
+    if (fakedb.medic.view.restore) {
+        fakedb.medic.view.restore();
+    }
+    callback();
+};
 
 exports['filter includes docs with no clinic'] = function(test) {
     var doc = {
@@ -35,6 +43,39 @@ exports['should update clinic by phone'] = function(test) {
             clinic: null
         }
     };
+    sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {rows: [{ doc: {
+       "_id": "9ed7d9c6095cc0e37e4d3e94d3387ed9",
+       "_rev": "6-e447d8801d7bed36614af92449586851",
+       "type": "clinic",
+       "name": "Clinic",
+       "contact": {
+           "name": "CCN",
+           "phone": "+34567890123",
+           "rc_code": "1000"
+       },
+       "parent": {
+           "_id": "9ed7d9c6095cc0e37e4d3e94d33866f1",
+           "_rev": "6-723dad2083c951501a1851fb88b6e3b5",
+           "type": "health_center",
+           "name": "Health Center",
+           "contact": {
+               "name": "HCCN",
+               "phone": "+23456789012"
+           },
+           "parent": {
+               "_id": "9ed7d9c6095cc0e37e4d3e94d3384c8f",
+               "_rev": "4-6e5f394413e840c1f41bf9f471a91e04",
+               "type": "district_hospital",
+               "name": "District",
+               "parent": {
+               },
+               "contact": {
+                   "name": "DCN",
+                   "phone": "+12345678901"
+               }
+           }
+       }
+    }}]});
     transition.onMatch({
         doc: doc
     }, fakedb, fakeaudit, function(err, complete) {
@@ -52,6 +93,7 @@ exports['should not update clinic with wrong phone'] = function(test) {
             clinic: null
         }
     };
+    sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {});
     transition.onMatch({
         doc: doc
     }, fakedb, fakeaudit, function(err, complete) {
@@ -69,6 +111,39 @@ exports['should update clinic by refid and fix number'] = function(test) {
             clinic: null
         }
     };
+    sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {rows: [{ doc: {
+       "_id": "9ed7d9c6095cc0e37e4d3e94d3387ed9",
+       "_rev": "6-e447d8801d7bed36614af92449586851",
+       "type": "clinic",
+       "name": "Clinic",
+       "contact": {
+           "name": "CCN",
+           "phone": "+34567890123",
+           "rc_code": "1000"
+       },
+       "parent": {
+           "_id": "9ed7d9c6095cc0e37e4d3e94d33866f1",
+           "_rev": "6-723dad2083c951501a1851fb88b6e3b5",
+           "type": "health_center",
+           "name": "Health Center",
+           "contact": {
+               "name": "HCCN",
+               "phone": "+23456789012"
+           },
+           "parent": {
+               "_id": "9ed7d9c6095cc0e37e4d3e94d3384c8f",
+               "_rev": "4-6e5f394413e840c1f41bf9f471a91e04",
+               "type": "district_hospital",
+               "name": "District",
+               "parent": {
+               },
+               "contact": {
+                   "name": "DCN",
+                   "phone": "+12345678901"
+               }
+           }
+       }
+    }}]});
     transition.onMatch({
         doc: doc
     }, fakedb, fakeaudit, function(err, complete) {

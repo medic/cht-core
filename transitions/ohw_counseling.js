@@ -1,7 +1,3 @@
-if (global.GENTLY) {
-    require = GENTLY.hijack(require);
-}
-
 var async = require('async'),
     moment = require('moment'),
     config = require('../config'),

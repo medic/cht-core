@@ -1,7 +1,3 @@
-if (global.GENTLY) {
-    require = GENTLY.hijack(require);
-}
-
 var _ = require('underscore'),
     async = require('async'),
     i18n = require('../i18n'),
