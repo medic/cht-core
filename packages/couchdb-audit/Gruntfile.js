@@ -5,7 +5,7 @@ module.exports = function(grunt) {
   // Project configuration
   grunt.initConfig({
     nodeunit: {
-      all: ['tests/couchdb-audit/audit.js']
+      all: ['tests/node/**/*.js']
     },
     jshint: {
       options: {

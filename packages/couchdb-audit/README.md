@@ -10,9 +10,21 @@ An npm and Kanso module for auditing changes to couchdb documents.
 
 ### Include
 
-```var audit = require('couchdb-audit').withNode(db, user)```
+#### Nano
 
-Where `db` is a [Felix CouchDB](https://github.com/felixge/node-couchdb) module, and `user` is a String or callback which fetches the username.
+```var audit = require('couchdb-audit').withNano(db, dbName, designName, user)```
+
+* `db`: a [Nano](https://github.com/dscape/nano) module
+* `dbName`: the name of the database to use
+* `designName`: the name of the design document to use
+* `user`: a String or callback which fetches the username
+
+#### Felix
+
+```var audit = require('couchdb-audit').withFelix(db, user)```
+
+* `db`: a [Felix CouchDB](https://github.com/felixge/node-couchdb) module
+* `user`: a String or callback which fetches the username
 
 ## Kanso
 
