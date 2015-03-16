@@ -176,8 +176,8 @@ app.get('/api/monthly-deliveries', function(req, res) {
 
 var formats = {
   xml: {
-    extension: 'xlsx',
-    contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    extension: 'xml',
+    contentType: 'application/vnd.ms-excel'
   },
   csv: {
     extension: 'csv',
