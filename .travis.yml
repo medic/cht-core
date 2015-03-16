@@ -1,7 +1,7 @@
 language: node_js
 node_js:
-   - "0.10"
    - "0.12"
+   - "0.10"
 
 services:
   - couchdb
@@ -16,7 +16,17 @@ before_script:
 script: node --stack_size=10000 `which grunt` ci
 
 after_success:
-  - bash ./scripts/ci/after_success.sh
+  - python ./scripts/ci/travis_after_all.py
+  - export $(cat .to_export_back)
+  - |
+      if [ "$BUILD_LEADER" = "YES" ]; then
+        if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
+          echo "All jobs succeded! Publishing..."
+          bash ./scripts/ci/after_success.sh
+        else
+          echo "Some jobs failed. Not publishing."
+        fi
+      fi
 
 notifications:
   webhooks: 
