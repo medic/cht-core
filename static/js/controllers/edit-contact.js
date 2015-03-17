@@ -176,6 +176,7 @@ var libphonenumber = require('libphonenumber/utils'),
               }
               UpdateContact($scope.contactId, $scope.contact, function(err, contact) {
                 if (!err) {
+                  contact.parent = $scope.contact.parent;
                   $rootScope.$broadcast('ContactUpdated', contact);
                 }
                 pane.done(translateFilter('Error updating contact'), err);

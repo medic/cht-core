@@ -101,13 +101,10 @@ var _ = require('underscore'),
           if (contact._deleted) {
             $scope.query();
           } else {
-            var scope = angular.element($('body')).scope();
-            if (scope) {
-              scope.$apply(function() {
-                _.extend(outdated, contact);
-              });
-            }
+            _.extend(outdated, contact);
           }
+        } else {
+          $scope.items.push(contact);
         }
       });
 

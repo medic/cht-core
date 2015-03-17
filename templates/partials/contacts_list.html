@@ -15,7 +15,7 @@
             <div>
               <span class="name">{{contact.name || contact.contact.phone}}</span>
             </div>
-            <div class="position">{{contact.parent | clinic}}</div>
+            <div class="position" ng-bind-html="contact.parent | clinic"></div>
           </div>
         </div>
       </div>
