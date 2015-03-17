@@ -22,14 +22,14 @@ module.exports = {
     modifyRegistration: function(options, callback) {
         var mute = options.mute,
             registration = options.registration,
-            db = options.db;
+            audit = options.audit;
 
         if (mute) {
             utils.muteScheduledMessages(registration);
         } else {
             utils.unmuteScheduledMessages(registration);
         }
-        db.saveDoc(registration, callback);
+        audit.saveDoc(registration, callback);
     },
     validate: function(config, doc, callback) {
         var validations = config.validations && config.validations.list;
@@ -117,7 +117,7 @@ module.exports = {
                     }
                     async.each(registrations, function(registration, callback) {
                         module.exports.modifyRegistration({
-                            db: audit,
+                            audit: audit,
                             mute: mute,
                             registration: registration.doc
                         }, callback);

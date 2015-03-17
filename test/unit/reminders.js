@@ -282,10 +282,12 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
         saveDoc;
 
     db = {
-        saveDoc: function() {}
+        medic: {
+            insert: function() {}
+        }
     };
 
-    saveDoc = sinon.stub(db, 'saveDoc').callsArgWithAsync(1, null);
+    saveDoc = sinon.stub(db.medic, 'insert').callsArgWithAsync(1, null);
 
     reminders.sendReminder({
         clinic: {

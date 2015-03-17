@@ -147,7 +147,7 @@ module.exports = {
             type: 'reminder'
         });
 
-        db.saveDoc(clinic, callback);
+        db.medic.insert(clinic, callback);
     },
     sendReminders: function(options, callback) {
         module.exports.getClinics(options, function(err, clinics) {
