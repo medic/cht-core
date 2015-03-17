@@ -114,6 +114,7 @@ var libphonenumber = require('libphonenumber/utils'),
 
       var newPrimaryContact = function() {
         return $scope.contact.type !== 'person' &&
+               $scope.contact.contact &&
                $scope.contact.contact._id === 'NEW';
       };
       
