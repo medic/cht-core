@@ -32,13 +32,13 @@ function completeSetup(err) {
     }
 }
 
-db.request({db: 'medic', doc:'_design/kujua-sentinel'}, function(err, doc) {
+db.request({ db: 'medic', doc: '_design/kujua-sentinel' }, function(err, doc) {
     var base = require('./designs/base.json'),
         matches;
 
     if (err) {
         if (err.error === 'not_found') {
-            db.saveDesign('kujua-sentinel', base, function(err, ok) {
+            db.medic.insert(base, '_design/kujua-sentinel', function(err, ok) {
                 completeSetup(err, base);
             });
         } else {
@@ -56,7 +56,7 @@ db.request({db: 'medic', doc:'_design/kujua-sentinel'}, function(err, doc) {
             completeSetup(null, doc);
         } else {
             _.extend(doc, base);
-            db.saveDoc(doc, function(err, ok) {
+            db.medic.insert(doc, function(err, ok) {
                 completeSetup(err, doc);
             });
         }
