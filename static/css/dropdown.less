@@ -124,6 +124,43 @@
 
 }
 
+.mm-dropdown .dropdown-menu .mm-dropdown-submenu {
+
+  > li > a {
+    display: block;
+    padding: 3px 20px;
+    clear: both;
+    font-weight: normal;
+    line-height: 1.42857;
+    color: #333;
+    white-space: nowrap;
+
+    &.indent-1 {
+      padding-left: 2em;
+    }
+
+    &.indent-2 {
+      padding-left: 3em;
+    }
+
+    &.indent-3 {
+      padding-left: 4em;
+    }
+
+    &.indent-4 {
+      padding-left: 5em;
+    }
+
+    &.indent-5 {
+      padding-left: 6em;
+    }
+
+    &:hover, &:focus {
+      text-decoration: none;
+    }
+  }
+}
+
 @media (max-width: 767px) {
   .open .mm-dropdown-menu {
     top: 6em;

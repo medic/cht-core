@@ -76,7 +76,7 @@ var _ = require('underscore'),
 
       var formatClinics = function($scope) {
         var selectedFacilities = $scope.filterModel.facilities.length;
-        if (selectedFacilities > 0 && selectedFacilities < $scope.facilities.length) {
+        if (selectedFacilities > 0 && selectedFacilities < $scope.facilitiesCount) {
           return { clinic: $scope.filterModel.facilities };
         }
       };

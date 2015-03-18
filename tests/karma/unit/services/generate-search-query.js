@@ -214,6 +214,7 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
+    scope.facilitiesCount = 10;
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
         {$operands:[

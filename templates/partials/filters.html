@@ -58,9 +58,7 @@
           <span class="mm-button-text"></span>
         </span>
         <ul role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
-          <li role="presentation" ng-repeat="facility in facilities">
-            <a role="menuitem" tabindex="-1" data-value="{{facility.id}}" ng-bind="facility.doc | clinic"></a>
-          </li>
+          <li role="presentation" ng-repeat="facility in facilities | orderBy:'doc.name'" ng-include="'templates/partials/filters_facility_items.html'" ng-init="facilityDepth = 0"></li>
         </ul>
       </span>
 

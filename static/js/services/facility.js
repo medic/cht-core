@@ -89,6 +89,41 @@ var _ = require('underscore');
     }
   ]);
 
+  inboxServices.factory('FacilityHierarchy', ['FacilityRaw',
+    function(FacilityRaw) {
+      return function(district, callback) {
+        FacilityRaw(district).query(
+          function(res) {
+            var results = [];
+            var total = 0;
+            res.rows.forEach(function(row) {
+              var parentId = row.doc.parent && row.doc.parent._id;
+              if (parentId) {
+                var parent = _.find(res.rows, function(curr) {
+                  return curr.doc._id === parentId;
+                });
+                if (parent) {
+                  if (!parent.children) {
+                    parent.children = [];
+                  }
+                  parent.children.push(row);
+                  total++;
+                }
+              } else {
+                total++;
+                results.push(row);
+              }
+            });
+            callback(null, results, total);
+          },
+          function(err) {
+            callback(err);
+          }
+        );
+      };
+    }
+  ]);
+
   inboxServices.factory('District', ['DbView',
     function(DbView) {
 

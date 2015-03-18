@@ -18,8 +18,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$translate', '$animate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie',
-    function ($window, $scope, $translate, $animate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie) {
+    ['$window', '$scope', '$translate', '$animate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie',
+    function ($window, $scope, $translate, $animate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie) {
 
       $scope.loading = true;
       $scope.error = false;
@@ -197,9 +197,15 @@ require('moment/locales');
           if (err) {
             return console.log('Error fetching district', err);
           }
+          FacilityHierarchy(district, function(err, hierarchy, total) {
+            if (err) {
+              return console.log('Error loading facilities', err);
+            }
+            $scope.facilities = hierarchy;
+            $scope.facilitiesCount = total;
+          });
           Facility(district).then(
             function(res) {
-              $scope.facilities = res;
               function formatResult(row) {
                 return format.contact(row.doc);
               }

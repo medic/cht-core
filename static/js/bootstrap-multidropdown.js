@@ -68,7 +68,9 @@
     var selectItem = function() {
       var item = $(this);
       item.blur();
-      item.toggleClass('selected');
+      item.closest('li')
+          .find('[role=menuitem]')
+          .toggleClass('selected', !item.is('.selected'));
       updateSelected();
     };
 
