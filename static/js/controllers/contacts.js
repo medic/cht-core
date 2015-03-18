@@ -92,20 +92,16 @@ var _ = require('underscore'),
       });
 
       $scope.$on('ContactUpdated', function(e, contact) {
-        if (!contact) {
+        if (!contact || contact._deleted) {
           $scope.query();
           return;
         }
         var outdated = _.findWhere($scope.items, { _id: contact._id });
-        if (outdated) {
-          if (contact._deleted) {
-            $scope.query();
-          } else {
-            _.extend(outdated, contact);
-          }
-        } else {
-          $scope.items.push(contact);
+        if (!outdated) {
+          $scope.query();
+          return;
         }
+        _.extend(outdated, contact);
       });
 
     }
