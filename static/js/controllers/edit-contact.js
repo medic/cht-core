@@ -158,6 +158,13 @@ var libphonenumber = require('libphonenumber/utils'),
         UpdateContact(null, add, callback);
       };
 
+      var updateNewPrimaryContact = function(added, parent, callback) {
+        if (!added) {
+          return callback();
+        }
+        UpdateContact(added._id, { parent: parent }, callback);
+      };
+
       $scope.setPage = function(page) {
         $scope.page = page;
       };
@@ -179,11 +186,16 @@ var libphonenumber = require('libphonenumber/utils'),
                 $scope.contact.contact = added;
               }
               UpdateContact($scope.contactId, $scope.contact, function(err, contact) {
-                if (!err) {
-                  contact.parent = $scope.contact.parent;
-                  $rootScope.$broadcast('ContactUpdated', contact);
+                if (err) {
+                  return pane.done(translateFilter('Error updating contact'), err);
                 }
-                pane.done(translateFilter('Error updating contact'), err);
+                updateNewPrimaryContact(added, contact, function(err) {
+                  if (!err) {
+                    contact.parent = $scope.contact.parent;
+                    $rootScope.$broadcast('ContactUpdated', contact);
+                  }
+                  pane.done(translateFilter('Error updating contact'), err);
+                });
               });
             });
           } else if($scope.page === 1 && valid.page1) {
