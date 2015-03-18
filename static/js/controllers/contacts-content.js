@@ -11,7 +11,6 @@
       $scope.selectContact($stateParams.id);
 
       $scope.$on('ContactUpdated', function(e, contact) {
-        console.log('contact', contact);
         if (!contact || (
             contact._deleted &&
             $scope.selected &&
