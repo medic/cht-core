@@ -17,7 +17,6 @@ var libphonenumber = require('libphonenumber/utils'),
 
         $scope.page = 0;
         $scope.primaryContact = {};
-        $scope.category;
 
         if (contact._id) {
           $scope.contact = {
