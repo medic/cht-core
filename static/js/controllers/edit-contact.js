@@ -13,10 +13,13 @@ var libphonenumber = require('libphonenumber/utils'),
 
       $scope.$on('EditContactInit', function(e, contact) {
 
+        contact = contact || {};
+
         $scope.page = 0;
         $scope.primaryContact = {};
+        $scope.category;
 
-        if (contact) {
+        if (contact._id) {
           $scope.contact = {
             name: contact.name,
             phone: contact.phone,
@@ -27,10 +30,12 @@ var libphonenumber = require('libphonenumber/utils'),
             notes: contact.notes
           };
           $scope.contactId = contact._id;
+          $scope.category = contact.type === 'person' ? 'person' : 'place';
         } else {
           $scope.contact = {
-            type: 'district_hospital'
+            type: contact.type || 'district_hospital'
           };
+          $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
           $scope.contactId = null;
         }
         var options = {

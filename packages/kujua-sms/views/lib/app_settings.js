@@ -5606,22 +5606,42 @@ module.exports = {
           ]
       },
       {
-          "key": "Edit contact",
-          "default": "Edit contact",
+          "key": "Edit person",
+          "default": "Edit person",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Edit contact"
+                  "content": "Edit person"
               }
           ]
       },
       {
-          "key": "Add contact",
-          "default": "Add contact",
+          "key": "Add person",
+          "default": "Add person",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Add contact"
+                  "content": "Add person"
+              }
+          ]
+      },
+      {
+          "key": "Edit place",
+          "default": "Edit place",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Edit place"
+              }
+          ]
+      },
+      {
+          "key": "Add place",
+          "default": "Add place",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Add place"
               }
           ]
       },

@@ -13,8 +13,17 @@
     <span class="basic-filters">
 
       <span class="filter-buttons">
-        <a tabindex="-1" ng-click="edit()" ng-show="filterModel.type === 'contacts'" ng-attr-title="{{'Add contact' | translate}}">
-          <i class="fa fa-user-plus"></i>
+        <a tabindex="-1" ng-click="edit({ type: 'person' })" ng-show="filterModel.type === 'contacts'" ng-attr-title="{{'Add person' | translate}}">
+          <span class="fa-stack">
+            <i class="fa fa-user fa-stack-1x"></i>
+            <i class="fa fa-plus fa-stack-1x"></i>
+          </span>
+        </a>
+        <a tabindex="-1" ng-click="edit()" ng-show="filterModel.type === 'contacts'" ng-attr-title="{{'Add place' | translate}}">
+          <span class="fa-stack">
+            <i class="fa fa-building fa-stack-1x"></i>
+            <i class="fa fa-plus fa-stack-1x"></i>
+          </span>
         </a>
         <a tabindex="-1" ng-click="download()" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'" ng-attr-title="{{'Download' | translate}}">
           <i class="fa fa-arrow-down"></i>

@@ -3,13 +3,16 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{contactId ? 'Edit contact' : 'Add contact' | translate}}</h3>
+        <h3 ng-show="category === 'person' && contactId">{{'Edit person' | translate}}</h3>
+        <h3 ng-show="category === 'person' && !contactId">{{'Add person' | translate}}</h3>
+        <h3 ng-show="category === 'place' && contactId">{{'Edit place' | translate}}</h3>
+        <h3 ng-show="category === 'place' && !contactId">{{'Add place' | translate}}</h3>
       </div>
       <div class="modal-body">
 
         <form ng-show="page === 0">
 
-          <div class="form-group">
+          <div class="form-group" ng-show="category === 'place'">
             <label>{{'Contact type' | translate}} *</label>
             <p class="horizontal-options">
               <a class="icon" ng-class="{'selected': contact.type === 'district_hospital'}" ng-click="contact.type = 'district_hospital'">
@@ -25,11 +28,6 @@
               <a class="icon" ng-class="{'selected': contact.type === 'clinic'}" ng-click="contact.type = 'clinic'">
                 <span class="rectangle">
                   <span class="fa fa-home"></span>{{'Clinic' | translate}}
-                </span>
-              </a>
-              <a class="icon" ng-class="{'selected': contact.type === 'person'}" ng-click="contact.type = 'person'">
-                <span class="rectangle">
-                  <span class="fa fa-user"></span>{{'Person' | translate}}
                 </span>
               </a>
             </p>
@@ -64,12 +62,12 @@
             <span class="error" ng-show="errors.page0.health_center">{{errors.page0.health_center}}</span>
           </div>
 
-          <div class="form-group" ng-show="contact.type !== 'person'">
+          <div class="form-group" ng-show="category === 'place'">
             <label>{{'Primary contact' | translate}}</label>
             <select class="form-control small" ng-model="contact.contact" ng-options="parent.name for parent in parents | filter:{type:'person'} | orderBy:['order','name'] track by parent._id"></select>
           </div>
 
-          <div class="form-group" ng-show="contact.type !== 'person'">
+          <div class="form-group" ng-show="category === 'place'">
             <label>{{'External ID' | translate}}</label>
             <input type="text" class="form-control small" ng-model="contact.external_id" />
           </div>
