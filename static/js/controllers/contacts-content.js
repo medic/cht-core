@@ -11,15 +11,14 @@
       $scope.selectContact($stateParams.id);
 
       $scope.$on('ContactUpdated', function(e, contact) {
+        console.log('contact', contact);
         if (!contact || (
             contact._deleted &&
             $scope.selected &&
             $scope.selected._id === contact._id)) {
           $scope.select();
-        } else if (!$scope.selected || $scope.selected._id === contact._id) {
+        } else if ($scope.selected && $scope.selected._id === contact._id) {
           $scope.setSelected(contact);
-        } else {
-          $scope.select(contact._id);
         }
       });
 

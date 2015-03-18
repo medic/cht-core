@@ -92,14 +92,15 @@ var _ = require('underscore'),
       });
 
       $scope.$on('ContactUpdated', function(e, contact) {
+        if (!$scope.selected) {
+          return $scope.select(contact._id);
+        }
         if (!contact || contact._deleted) {
-          $scope.query();
-          return;
+          return $scope.query();
         }
         var outdated = _.findWhere($scope.items, { _id: contact._id });
         if (!outdated) {
-          $scope.query();
-          return;
+          return $scope.query();
         }
         _.extend(outdated, contact);
       });
