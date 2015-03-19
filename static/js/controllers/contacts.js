@@ -86,11 +86,6 @@ var _ = require('underscore'),
         $scope.query();
       });
 
-      $scope.$on('filters-reset', function() {
-        $('#contactTypeDropdown').multiDropdown().reset();
-        $scope.query();
-      });
-
       $scope.$on('ContactUpdated', function(e, contact) {
         if (!$scope.selected) {
           return $scope.select(contact._id);

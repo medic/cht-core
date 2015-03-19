@@ -157,7 +157,12 @@ require('moment/locales');
         $scope.filterModel.contactTypes = [];
         $scope.filterModel.valid = undefined;
         $scope.filterModel.date = {};
-        $scope.$broadcast('filters-reset');
+
+        $('.filter.multidropdown').each(function() {
+          $(this).multiDropdown().reset();
+        });
+
+        $scope.$broadcast('query');
       };
 
       $scope.download = function() {

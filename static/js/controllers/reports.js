@@ -182,13 +182,6 @@ var _ = require('underscore'),
         });
       };
 
-      $scope.$on('filters-reset', function() {
-        $('#formTypeDropdown').multiDropdown().reset();
-        $('#facilityDropdown').multiDropdown().reset();
-        $('#statusDropdown').multiDropdown().reset();
-        $scope.query();
-      });
-
       $scope.$on('query', function() {
         $scope.query();
       });
