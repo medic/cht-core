@@ -1632,28 +1632,6 @@
                         ]
                     },
                     {
-                        "key": "Facilities",
-                        "default": "Facilities",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Facilities"
-                            },
-                            {
-                                "locale": "fr",
-                                "content": "Établissement"
-                            },
-                            {
-                                "locale": "es",
-                                "content": "Institución"
-                            },
-                            {
-                                "locale": "sw",
-                                "content": "Vituo"
-                            }
-                        ]
-                    },
-                    {
                         "key": "Reporting Rates",
                         "default": "Reporting Rates",
                         "translations": [
@@ -2939,21 +2917,21 @@
                     },
                     {
                         "key": "All facilities",
-                        "default": "All facilities",
+                        "default": "All places",
                         "translations": [
                             {
                                 "locale": "en",
-                                "content": "All facilities"
+                                "content": "All places"
                             }
                         ]
                     },
                     {
                         "key": "Number of facilities",
-                        "default": "{{number}} facilities",
+                        "default": "{{number}} places",
                         "translations": [
                             {
                                 "locale": "en",
-                                "content": "{{number}} facilities"
+                                "content": "{{number}} places"
                             }
                         ]
                     },
@@ -3505,11 +3483,11 @@
                     },
                     {
                         "key": "Update Facility",
-                        "default": "Update Facility",
+                        "default": "Update contact",
                         "translations": [
                             {
                                 "locale": "en",
-                                "content": "Update Facility"
+                                "content": "Update contact"
                             }
                         ]
                     },
@@ -4375,21 +4353,21 @@
                     },
                     {
                         "key": "tour.reports.facilities-filter.title",
-                        "default": "Facilities Filter",
+                        "default": "Places Filter",
                         "translations": [
                             {
                                 "locale": "en",
-                                "content": "Facilities Filter"
+                                "content": "Places Filter"
                             }
                         ]
                     },
                     {
                         "key": "tour.reports.facilities-filter.description",
-                        "default": "Select one or more facilities to filter the list of reports to only those from the chosen facilities.",
+                        "default": "Select one or more places to filter the list of reports to only those from the chosen places.",
                         "translations": [
                             {
                                 "locale": "en",
-                                "content": "Select one or more facilities to filter the list of reports to only those from the chosen facilities."
+                                "content": "Select one or more places to filter the list of reports to only those from the chosen places."
                             }
                         ]
                     },
@@ -4594,186 +4572,6 @@
                         ]
                     },
                     {
-                        "key": "tour.admin.configuration.title",
-                        "default": "Settings Configuration",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Settings Configuration"
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.configuration.description",
-                        "default": "Here you can customize settings including translations, forms, and other general settings.",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Here you can customize settings including translations, forms, and other general settings."
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.settings.title",
-                        "default": "Settings",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Settings"
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.settings.description",
-                        "default": "General configuration settings.",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "General configuration settings."
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.translations.title",
-                        "default": "Translations",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Translations"
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.translations.description",
-                        "default": "Configure the translation values.",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Configure the translation values."
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.forms.title",
-                        "default": "Forms",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Forms"
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.forms.description",
-                        "default": "Import and export the available forms.",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Import and export the available forms."
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.advanced.title",
-                        "default": "Advanced",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Advanced"
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.advanced.description",
-                        "default": "Advanced settings and update application.",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Advanced settings and update application."
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.schedules.title",
-                        "default": "Schedules Configuration",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Schedules Configuration"
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.schedules.description",
-                        "default": "Configure the messages that will be generated when a patient is registered.",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Configure the messages that will be generated when a patient is registered."
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.export.title",
-                        "default": "Export",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Export"
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.export.description",
-                        "default": "Export messages, reports, or the audit log. The exports are divided into specific districts and can be filtered by date.",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Export messages, reports, or the audit log. The exports are divided into specific districts and can be filtered by date."
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.user.title",
-                        "default": "User Management",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "User Management"
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.user.description",
-                        "default": "Here you can create, edit, or delete users.",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Here you can create, edit, or delete users."
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.facilities.title",
-                        "default": "Facilities and Health Workers",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Facilities and Health Workers"
-                            }
-                        ]
-                    },
-                    {
-                        "key": "tour.admin.facilities.description",
-                        "default": "Here is where you manage your facilities and field workers.",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Here is where you manage your facilities and field workers."
-                            }
-                        ]
-                    },
-                    {
                         "key": "Institutional Delivery",
                         "default": "Institutional Delivery",
                         "translations": [
@@ -4845,21 +4643,21 @@
                     },
                     {
                         "key": "Error updating facility",
-                        "default": "Error updating facility",
+                        "default": "Error updating contact",
                         "translations": [
                             {
                                 "locale": "en",
-                                "content": "Error updating facility"
+                                "content": "Error updating contact"
                             }
                         ]
                     },
                     {
                         "key": "Please select a facility",
-                        "default": "Please select a facility",
+                        "default": "Please select a contact",
                         "translations": [
                             {
                                 "locale": "en",
-                                "content": "Please select a facility"
+                                "content": "Please select a contact"
                             }
                         ]
                     },
@@ -5705,11 +5503,11 @@
                     },
                     {
                         "key": "Facility",
-                        "default": "Facility",
+                        "default": "Place",
                         "translations": [
                             {
                                 "locale": "en",
-                                "content": "Facility"
+                                "content": "Place"
                             }
                         ]
                     },
@@ -5765,11 +5563,11 @@
                     },
                     {
                         "key": "usertype.district-manager",
-                        "default": "Restricted to group of facilities",
+                        "default": "Restricted to their place",
                         "translations": [
                             {
                                 "locale": "en",
-                                "content": "Restricted to group of facilities"
+                                "content": "Restricted to their place"
                             }
                         ]
                     },
@@ -5830,16 +5628,6 @@
                             {
                                 "locale": "en",
                                 "content": "Select a type"
-                            }
-                        ]
-                    },
-                    {
-                        "key": "Select a facility",
-                        "default": "Select a facility",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "Select a facility"
                             }
                         ]
                     },
@@ -6000,16 +5788,6 @@
                             {
                                 "locale": "en",
                                 "content": "Processed {{number}}/{{total}} records..."
-                            }
-                        ]
-                    },
-                    {
-                        "key": "Restored number of total records",
-                        "default": "{{number}}/{{total}} facilities restored.",
-                        "translations": [
-                            {
-                                "locale": "en",
-                                "content": "{{number}}/{{total}} facilities restored."
                             }
                         ]
                     },

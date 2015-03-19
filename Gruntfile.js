@@ -174,10 +174,7 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: [
-              'bower_components/select2/select2.js',
-              'bower_components/bootstrap-tour/build/js/bootstrap-tour.js'
-            ], 
+            src: [ 'bower_components/select2/select2.js' ],
             dest: 'static/dist/'
           }
         ]
