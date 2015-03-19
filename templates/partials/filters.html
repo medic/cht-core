@@ -2,38 +2,51 @@
   <div class="inner">
 
     <span class="slide-back" ng-click="setSelected()" ng-show="filterModel.type === 'reports' || filterModel.type === 'messages' || filterModel.type === 'contacts'">
-      <span id="back" class="mm-button mm-button-nudge-down" ng-class="{'mm-button-disabled': !selected}" >
-        <span class="mm-button-icon">
-          <span class="fa fa-chevron-left"></span>
-        </span>
-        <span class="mm-button-text">{{'Back' | translate}}</span>
-      </span>
+      <a id="back" ng-class="{'disabled': !selected}">
+        <span class="fa fa-chevron-left" title="{{'Back' | translate}}"></span>
+      </a>
     </span>
 
     <span class="basic-filters">
 
       <span class="filter-buttons">
+
         <a tabindex="-1" ng-click="edit({ type: 'person' })" ng-show="filterModel.type === 'contacts'" ng-attr-title="{{'Add person' | translate}}">
           <span class="fa-stack">
             <i class="fa fa-user fa-stack-1x"></i>
             <i class="fa fa-plus fa-stack-1x"></i>
           </span>
         </a>
+
         <a tabindex="-1" ng-click="edit()" ng-show="filterModel.type === 'contacts'" ng-attr-title="{{'Add place' | translate}}">
           <span class="fa-stack">
             <i class="fa fa-building fa-stack-1x"></i>
             <i class="fa fa-plus fa-stack-1x"></i>
           </span>
         </a>
-        <a tabindex="-1" ng-click="download()" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'" ng-attr-title="{{'Download' | translate}}">
-          <i class="fa fa-arrow-down"></i>
-        </a>
-        <a tabindex="-1" ng-show="filterModel.type === 'contacts'" ng-attr-title="{{'Import' | translate}}" data-toggle="modal" data-target="#import-contacts">
-          <i class="fa fa-arrow-up"></i>
-        </a>
-        <a tabindex="-1" ng-click="resetFilterModel()" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'" ng-attr-title="{{'Clear all filters' | translate}}">
-          <i class="fa fa-times"></i>
-        </a>
+
+        <span class="dropdown" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'">
+          <a data-toggle="dropdown">
+            <div class="mm-icon">
+              <span class="fa fa-fw fa-bars"></span>
+            </div>
+          </a>
+          <ul role="menu" class="dropdown-menu mm-dropdown-menu">
+            <li role="presentation" ng-show="permissions.admin">
+              <a tabindex="-1" ng-click="download()" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'">
+                <i class="fa fa-arrow-down"></i>
+                {{'Export' | translate}}
+              </a>
+            </li>
+            <li role="presentation">
+              <a tabindex="-1" ng-show="filterModel.type === 'contacts'" data-toggle="modal" data-target="#import-contacts">
+                <i class="fa fa-arrow-up"></i>
+                {{'Import' | translate}}
+              </a>
+            </li>
+          </ul>
+        </span>
+
       </span>
 
       <span id="formTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All form types" data-filter-label="Number of form types" ng-show="filterModel.type === 'reports'">
@@ -142,10 +155,13 @@
         </span>
       </span>
 
-      <span class="filter mobile-freetext-filter" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'">
+      <span class="filter dropdown mobile-freetext-filter" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'">
         <span id="mobile-search" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">
-            <span class="fa fa-pencil"></span>
+            <span class="fa fa-search"></span>
+          </span>
+          <span class="mm-button-dropdown">
+            <span class="fa fa-chevron-down"></span>
           </span>
         </span>
         <div class="search-pane dropdown-menu mm-dropdown-menu" role="menu" aria-labelledby="mobile-search">
@@ -177,6 +193,12 @@
             <a href="#/analytics/{{module.id}}" role="menuitem" tabindex="-1">{{module.label | translate}}</a>
           </li>
         </ul>
+      </span>
+
+      <span class="reset-filter" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'">
+        <a tabindex="-1" ng-click="resetFilterModel()" ng-attr-title="{{'Clear all filters' | translate}}">
+          <i class="fa fa-undo"></i>
+        </a>
       </span>
 
       <span class="filter dropdown mm-dropdown" ng-show="filterModel.type === 'configuration'">
@@ -262,7 +284,6 @@
           </li>
         </ul>
       </span>
-
 
     </span>
 

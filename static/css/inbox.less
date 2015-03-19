@@ -142,9 +142,6 @@ body {
   }
 
   .options .dropdown-menu {
-    width: 200px;
-    left: auto;
-    margin-top: 1.9em;
     a {
       text-shadow: none;
       padding: 3px 20px;
@@ -213,6 +210,14 @@ body {
   }
 }
 
+.header .options, .filters .filter-buttons {
+  .dropdown-menu {
+    width: 200px;
+    left: auto;
+    margin-top: 1.9em;
+  }
+}
+
 .filters {
   height: 4.2em;
   font-size: 0.95em;
@@ -229,6 +234,25 @@ body {
     text-align: left;
     display: inline-block;
     vertical-align: top;
+  }
+
+  .filter-buttons .dropdown {
+    > a {
+      display: inline-block;
+      width: 2em;
+      height: 3em;
+      border-radius: 0.5em 0.5em 0 0;
+    }
+    &.open > a {
+      background-color: #FFFFFF;
+    }
+    .mm-icon {
+      width: 2em;
+      line-height: 3em;
+      &:hover {
+        color: @medic-slate-color;
+      }
+    }
   }
 
   .dropdown-menu .fa {
@@ -281,14 +305,20 @@ body {
     float: right;
     display: inline-block;
     text-align: right;
+  }
 
-    a {
-      cursor: pointer;
+  .filter-buttons, .slide-back, .reset-filter {
+    > a {
       color: @grayDark;
       width: 2em;
       line-height: 3em;
       display: inline-block;
       text-align: center;
+
+      &.disabled {
+        cursor: default;
+        color: @grey;
+      }
     }
 
     .fa-plus {
@@ -752,13 +782,7 @@ a.fa:hover {
 }
 
 .slide-back {
-  float: left;
-  width: auto;
   display: none;
-
-  .mm-button-text {
-    margin: 0;
-  }
 }
 
 .action-container {
@@ -1120,10 +1144,16 @@ a.fa:hover {
     padding-top: 5px;
     padding-bottom: 5px;
   }
-  .inbox .inbox-items li.selected {
-    background-color: inherit;
-    &.read {
-      background-color: @background-color;
+  .item-content {
+    border-width: 0;
+  }
+  .inbox .inbox-items {
+    border-left: 0;
+    li.selected {
+      background-color: inherit;
+      &.read {
+        background-color: @background-color;
+      }
     }
   }
   .header {
@@ -1154,7 +1184,6 @@ a.fa:hover {
     }
   }
   .filters {
-    text-align: right;
     padding: 0;
     padding-bottom: 1em;
     font-size: 0.77em;
@@ -1174,24 +1203,13 @@ a.fa:hover {
       padding-right: 0.75em;
     }
     .slide-back {
-      width: 5em;
       display: inline-block;
-      .mm-button-text {
-        visibility: visible;
-        width: auto;
-      }
     }
     .basic-filters, .slide-back {
       padding-top: 0.2em;
     }
     .basic-filters {
-      left: 6em;
-    }
-    .advanced-filters {
-      padding-top: 0.2em;
-      .input-group {
-        margin: 0
-      }
+      left: 2.5em;
     }
     .freetext-filter {
       display: none;
@@ -1200,19 +1218,19 @@ a.fa:hover {
       width: 3em;
     }
     .mobile-freetext-filter {
-      width: 3em;
       display: inline-block;
 
       .search-pane {
         padding: 1em;
-        margin: 2px 0 0;
-        position: absolute;
-        top: 100%;
-        left: 0;
       }
     }
     .filter-buttons {
       width: inherit;
+      padding-right: 0.4em;
+      .dropdown-menu {
+        top: 3.8em;
+        right: 0.2em;
+      }
     }
   }
   .inbox-items,
@@ -1348,20 +1366,8 @@ a.fa:hover {
 }
 
 @media (max-width: 400px) {
-  .filters .slide-back {
-    width: 3em;
-    .mm-button-text {
-      width: 0;
-      visibility: hidden;
-    }
-  }
-  .filters {
-    .filter {
-      margin: 0;
-    }
-    .basic-filters, .advanced-filters {
-      left: 3.2em;
-    }
+  .filters .filter {
+    margin: 0;
   }
   .header .tabs {
     a {

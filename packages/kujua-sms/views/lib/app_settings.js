@@ -2061,11 +2061,11 @@ module.exports = {
       },
       {
           "key": "Clear all filters",
-          "default": "Clear all filters",
+          "default": "Reset filters",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Clear all filters"
+                  "content": "Reset filters"
               }
           ]
       },
