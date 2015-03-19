@@ -7,10 +7,10 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditUserCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'UpdateUser', 'Facilities',
-    function ($scope, $rootScope, translateFilter, UpdateUser, Facilities) {
+    ['$scope', '$rootScope', 'translateFilter', 'UpdateUser', 'Facility',
+    function ($scope, $rootScope, translateFilter, UpdateUser, Facility) {
 
-      Facilities(function(err, facilities) {
+      Facility({ types: [ 'clinic', 'health_center', 'district_hospital' ] }, function(err, facilities) {
         if (err) {
           return console.log('Error fetching factilities', err);
         }

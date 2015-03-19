@@ -4,39 +4,48 @@ describe('Facility service', function() {
 
   var service,
       results,
-      $rootScope;
+      error;
 
   beforeEach(function (){
     module('inboxApp');
     module(function ($provide) {
       $provide.value('FacilityRaw', function() {
         return {
-          query: function(callback) {
+          query: function(callback, errorCb) {
+            if (error) {
+              return errorCb(error);
+            }
             callback({'rows': results});
           }
         };
       });
     });
-    inject(function(_Facility_, _$rootScope_) {
-      $rootScope = _$rootScope_;
+    inject(function(_Facility_) {
       service = _Facility_;
+    });
+    error = null;
+  });
+
+  it('returns errors from FacilityRaw', function(done) {
+
+    error = 'boom';
+
+    service(function(err) {
+      chai.expect(err).to.equal('boom');
+      done();
     });
   });
 
-  it('returns zero when no messages', function(done) {
+  it('returns zero when no facilities', function(done) {
 
     results = [];
     var expected = [];
 
-    service().then(
-      function(actual) {
-        chai.expect(actual).to.deep.equal(expected);
-        done();
-      }
-    );
-
-    // needed to resolve the promise
-    $rootScope.$digest();
+    service(function(err, actual) {
+      chai.expect(err).to.equal(null);
+      chai.expect(actual).to.deep.equal(expected);
+      done();
+    });
   });
 
   it('returns all clinics when no user district', function(done) {
@@ -160,15 +169,11 @@ describe('Facility service', function() {
 
     var expected = [ clinicA, clinicB ];
 
-    service().then(
-      function(actual) {
-        chai.expect(actual).to.deep.equal(expected);
-        done();
-      }
-    );
-
-    // needed to resolve the promise
-    $rootScope.$digest();
+    service({ types: ['clinic'] }, function(err, actual) {
+      chai.expect(err).to.equal(null);
+      chai.expect(actual).to.deep.equal(expected);
+      done();
+    });
   });
 
 });

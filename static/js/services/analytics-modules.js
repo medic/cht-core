@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('AnalyticsModules',
-    ['$rootScope', '$resource', 'translateFilter', 'db', 'UserDistrict', 'Facility', 'District', 'DbView', 'ChildFacility', 'FormatDataRecord',
-    function($rootScope, $resource, translateFilter, db, UserDistrict, Facility, District, DbView, ChildFacility, FormatDataRecord) {
+    ['$rootScope', '$resource', 'translateFilter', 'db', 'UserDistrict', 'District', 'DbView', 'ChildFacility', 'FormatDataRecord',
+    function($rootScope, $resource, translateFilter, db, UserDistrict, District, DbView, ChildFacility, FormatDataRecord) {
 
       var request = function(url, district, options, callback) {
         if (!callback) {

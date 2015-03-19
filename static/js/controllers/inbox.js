@@ -203,56 +203,54 @@ require('moment/locales');
             $scope.facilities = hierarchy;
             $scope.facilitiesCount = total;
           });
-          Facility(district).then(
-            function(res) {
-              function formatResult(row) {
-                return format.contact(row.doc);
-              }
-              $('#update-facility [name=facility]').select2({
-                width: '100%',
-                escapeMarkup: function(m) {
-                  return m;
-                },
-                formatResult: formatResult,
-                formatSelection: formatResult,
-                initSelection: function (element, callback) {
-                  var e = element.val();
-                  if (!e) {
-                    return callback();
-                  }
-                  var row = _.findWhere(res, { id: e });
-                  if (!row) {
-                    return callback();
-                  }
-                  callback(row);
-                },
-                query: function(options) {
-                  var terms = options.term.toLowerCase().split(/\s+/);
-                  var matches = _.filter(res, function(val) {
-                    var contact = val.doc.contact;
-                    var name = contact && contact.name;
-                    var phone = contact && contact.phone;
-                    var tags = [ val.doc.name, name, phone ].join(' ').toLowerCase();
-                    return _.every(terms, function(term) {
-                      return tags.indexOf(term) > -1;
-                    });
-                  });
-                  options.callback({ results: matches });
-                },
-                sortResults: function(results) {
-                  results.sort(function(a, b) {
-                    var aName = formatResult(a).toLowerCase();
-                    var bName = formatResult(b).toLowerCase();
-                    return aName.localeCompare(bName);
-                  });
-                  return results;
-                }
-              });
-            },
-            function() {
-              console.log('Failed to retrieve facilities');
+          Facility({ district: district, types: [ 'clinic' ] }, function(err, facilities) {
+            if (err) {
+              return console.log('Failed to retrieve facilities', err);
             }
-          );
+            function formatResult(row) {
+              return format.contact(row.doc);
+            }
+            $('#update-facility [name=facility]').select2({
+              width: '100%',
+              escapeMarkup: function(m) {
+                return m;
+              },
+              formatResult: formatResult,
+              formatSelection: formatResult,
+              initSelection: function (element, callback) {
+                var e = element.val();
+                if (!e) {
+                  return callback();
+                }
+                var row = _.findWhere(facilities, { id: e });
+                if (!row) {
+                  return callback();
+                }
+                callback(row);
+              },
+              query: function(options) {
+                var terms = options.term.toLowerCase().split(/\s+/);
+                var matches = _.filter(facilities, function(val) {
+                  var contact = val.doc.contact;
+                  var name = contact && contact.name;
+                  var phone = contact && contact.phone;
+                  var tags = [ val.doc.name, name, phone ].join(' ').toLowerCase();
+                  return _.every(terms, function(term) {
+                    return tags.indexOf(term) > -1;
+                  });
+                });
+                options.callback({ results: matches });
+              },
+              sortResults: function(results) {
+                results.sort(function(a, b) {
+                  var aName = formatResult(a).toLowerCase();
+                  var bName = formatResult(b).toLowerCase();
+                  return aName.localeCompare(bName);
+                });
+                return results;
+              }
+            });
+          });
         });
       };
 

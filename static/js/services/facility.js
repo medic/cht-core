@@ -55,21 +55,27 @@ var _ = require('underscore');
     }
   ]);
 
-  inboxServices.factory('Facility', ['$q', 'FacilityRaw',
-    function($q, FacilityRaw) {
-
-      return function(district) {
-
-        var deferred = $q.defer();
-
-        FacilityRaw(district).query(function(res) {
-
-          deferred.resolve(_.filter(res.rows, function(row) {
-            return row.doc.type === 'clinic';
-          }));
-        });
-
-        return deferred.promise;
+  inboxServices.factory('Facility', ['FacilityRaw',
+    function(FacilityRaw) {
+      return function(options, callback) {
+        if (!callback) {
+          callback = options;
+          options = {};
+        }
+        FacilityRaw(options.district).query(
+          function(res) {
+            var result = res.rows;
+            if (options.types) {
+              result = _.filter(result, function(row) {
+                return options.types.indexOf(row.doc.type) !== -1;
+              });
+            }
+            callback(null, result);
+          },
+          function(err) {
+            callback(err);
+          }
+        );
       };
     }
   ]);
