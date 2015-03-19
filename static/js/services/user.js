@@ -88,12 +88,12 @@ var _ = require('underscore'),
     });
   };
 
-  inboxServices.factory('Users', ['$http', 'Facilities', 'Admins',
-    function($http, Facilities, Admins) {
+  inboxServices.factory('Users', ['$http', 'Facility', 'Admins',
+    function($http, Facility, Admins) {
       return function(callback) {
         $http.get('/_users/_all_docs?include_docs=true', { cache: true })
           .success(function(data) {
-            Facilities(function(err, facilities) {
+            Facility(function(err, facilities) {
               if (err) {
                 return callback(err);
               }

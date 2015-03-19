@@ -13,7 +13,7 @@ describe('Users service', function() {
   beforeEach(function() {
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('Facilities', function(callback) {
+      $provide.value('Facility', function(callback) {
         if (facilitiesError) {
           return callback(facilitiesError);
         }

@@ -80,52 +80,39 @@ var _ = require('underscore');
     }
   ]);
 
-  inboxServices.factory('Facilities', ['FacilityRaw',
-    function(FacilityRaw) {
-      return function(callback) {
-        FacilityRaw().query(
-          function(res) {
-            callback(null, res.rows);
-          },
-          function(err) {
-            callback(err);
-          }
-        );
-      };
-    }
-  ]);
-
-  inboxServices.factory('FacilityHierarchy', ['FacilityRaw',
-    function(FacilityRaw) {
+  inboxServices.factory('FacilityHierarchy', ['Facility',
+    function(Facility) {
       return function(district, callback) {
-        FacilityRaw(district).query(
-          function(res) {
-            var results = [];
-            var total = 0;
-            res.rows.forEach(function(row) {
-              var parentId = row.doc.parent && row.doc.parent._id;
-              if (parentId) {
-                var parent = _.find(res.rows, function(curr) {
-                  return curr.doc._id === parentId;
-                });
-                if (parent) {
-                  if (!parent.children) {
-                    parent.children = [];
-                  }
-                  parent.children.push(row);
-                  total++;
-                }
-              } else {
-                total++;
-                results.push(row);
-              }
-            });
-            callback(null, results, total);
-          },
-          function(err) {
-            callback(err);
+        var options = {
+          types: ['clinic','health_center','district_hospital'],
+          district: district
+        };
+        Facility(options, function(err, facilities) {
+          if (err) {
+            return callback(err);
           }
-        );
+          var results = [];
+          var total = 0;
+          facilities.forEach(function(row) {
+            var parentId = row.doc.parent && row.doc.parent._id;
+            if (parentId) {
+              var parent = _.find(facilities, function(curr) {
+                return curr.doc._id === parentId;
+              });
+              if (parent) {
+                if (!parent.children) {
+                  parent.children = [];
+                }
+                parent.children.push(row);
+                total++;
+              }
+            } else {
+              total++;
+              results.push(row);
+            }
+          });
+          callback(null, results, total);
+        });
       };
     }
   ]);
