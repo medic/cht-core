@@ -96,7 +96,7 @@
         '<a href="#" class="btn btn-link select-all">' + selectAllLabel + '</a>' +
         '<a href="#" class="btn btn-link reset">' + clearLabel + '</a>' +
       '</p>';
-    $element.find('[role=menu]').append(actionsBar);
+    $element.find('[role=menu]').prepend(actionsBar);
     $element.find('[role=menu] .actions .select-all').on('click', function(e) {
       e.preventDefault();
       state.selectAll();
