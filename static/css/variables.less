@@ -1,23 +1,25 @@
-@option-color: rgb(173, 174, 167);
-@option-selected-color: rgba(251, 225, 169, 1);
-@medic-slate-color: rgb(50, 50, 50);
+@option-color: #ADAEA7;
+@option-selected-color: #FBE1A9;
+@medic-slate-color: #323232;
 @medic-overlay-color: #191919;
-@highlight-color: rgb(233, 234, 227);
-@seperator-color: #e0e0e0;
-@background-color: #f2f2f3;
-@form-background-color: #ffffff;
+@highlight-color: #E9EAE3;
+@seperator-color: #E0E0E0;
+@background-color: #F2F2F3;
+@form-background-color: #FFFFFF;
 @label-color: #777777;
-@error-color: #da4548;
-@ok-color: #a0ba62;
-@messages-color: #63a2c6;
-@reports-color: #e9aa22;
-@analytics-color: #76b0b0;
-@contacts-color: #db7eb8;
+@error-color: #DA4548;
+@ok-color: #A0BA62;
+@birth-color: #49A349;
+@high-risk-color: #E33030;
+@warning-color: #D19D2E;
+
+/* tab colours */
+@messages-color: #63A2C6;
+@reports-color: #E9AA22;
+@analytics-color: #76B0B0;
+@contacts-color: #F47B63;
 @admin-color: #999999;
 @help-color: #8D73AE;
-@birth-color: #49a349;
-@high-risk-color: #e33030;
-@warning-color: #d19d2e;
 
 /* state colours */
 @received-state-color: #E9AA22;
@@ -28,7 +30,7 @@
 @scheduled-state-color: #76B0B0;
 
 /* kujua-reporting colours */
-@red: #ca410b;
+@red: #CA410B;
 @green: #8EB51C;
 @grey: #797979;
 @lightgrey: #CBCBCB;
@@ -40,27 +42,27 @@
 @popcorn: #FFFFAA;
 
 /* Removed from bootstrap: stubs added for backwards compatibility */
-@white: #fff;
-@grayDark: #333;
+@white: #FFFFFF;
+@grayDark: #333333;
 
 @radius-size: 0.85em;
 @content-width: 1170px;
 
 
 .button-text() {
-  color: #333;
+  color: @grayDark;
   text-shadow: rgba(255, 255, 255, 0.5) 1px 1px 2px;
 }
 
 .button-text-hover() {
-  color: rgba(255, 255, 255, 1);
+  color: @white;
 }
 
 .button-text-disabled() {
-  color: #777;
+  color: @label-color;
 }
 
 .button-text-inverse() {
-  color: #ddd;
+  color: #DDDDDD;
   text-shadow: rgba(0, 0, 0, 0.5) 1px 1px 2px;
 }
