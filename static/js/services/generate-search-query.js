@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    moment = require('moment');
+    moment = require('moment'),
+    contactTypes = ['person','clinic','health_center','district_hospital'];
 
 (function () {
 
@@ -34,14 +35,10 @@ var _ = require('underscore'),
       var formatContactsType = function($scope) {
         var selectedTypes = $scope.filterModel.contactTypes;
         if (selectedTypes.length > 0 &&
-            selectedTypes.length < $scope.contactTypes.length) {
-          return {
-            type: selectedTypes
-          };
+            selectedTypes.length < contactTypes.length) {
+          return { type: selectedTypes };
         }
-        return {
-          type: _.pluck($scope.contactTypes, 'value')
-        };
+        return { type: contactTypes };
       };
 
       var formatForm = function($scope) {

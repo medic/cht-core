@@ -5744,6 +5744,16 @@ module.exports = {
                   "content": "Community health worker"
               }
           ]
+      },
+      {
+          "key": "Places",
+          "default": "Places",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Places"
+              }
+          ]
       }
    ],
    "forms": {

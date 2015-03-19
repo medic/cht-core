@@ -140,8 +140,19 @@
           <span class="mm-button-text"></span>
         </span>
         <ul role="menu" class="dropdown-menu mm-dropdown-menu">
-          <li role="presentation" ng-repeat="type in contactTypes">
-            <a role="menuitem" tabindex="-1" data-value="{{type.value}}">{{type.label | translate}}</a>
+          <li role="presentation" class="dropdown-header">{{'Places' | translate}}</li>
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" data-value="district_hospital">{{'Districts' | translate}}</a>
+          </li>
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" data-value="health_center">{{'Health Centers' | translate}}</a>
+          </li>
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" data-value="clinic">{{'Clinics' | translate}}</a>
+          </li>
+          <li role="presentation" class="dropdown-header">{{'People' | translate}}</li>
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" data-value="person">{{'People' | translate}}</a>
           </li>
         </ul>
       </span>

@@ -150,13 +150,6 @@ require('moment/locales');
         date: { }
       };
 
-      $scope.contactTypes = [
-        { value: 'clinic', label: 'Clinics' },
-        { value: 'health_center', label: 'Health Centers' },
-        { value: 'district_hospital', label: 'Districts' },
-        { value: 'person', label: 'People' }
-      ];
-
       $scope.resetFilterModel = function() {
         $scope.filterQuery.value = '';
         $scope.filterModel.forms = [];
