@@ -7,10 +7,10 @@
   <div ng-show="loading">
     <ul class="field-data"><li><i class="fa fa-spin fa-spinner"></i></li></ul>
   </div>
-  <div ng-show="!loading && !fields">
-    {{'No records found' | translate}}
+  <div ng-show="!loading" ng-repeat="index in indexes">
+    <strong>{{index.name}}</strong>
+    <ul>
+      <li ng-repeat="field in index.fields">{{field}}</li>
+    </ul>
   </div>
-  <ul ng-show="!loading && fields">
-    <li ng-repeat="field in fields">{{field}}</li>
-  </ul>
 </div>

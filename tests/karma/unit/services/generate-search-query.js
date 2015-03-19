@@ -351,7 +351,8 @@ describe('GenerateSearchQuery service', function() {
     ];
     scope.filterModel = {
       type: 'contacts',
-      contactTypes: []
+      contactTypes: [],
+      facilities: []
     };
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
@@ -368,16 +369,19 @@ describe('GenerateSearchQuery service', function() {
       { value: 'health_center', label: 'Health Centers' },
       { value: 'district_hospital', label: 'Districts' }
     ];
+    scope.facilitiesCount = 5;
     scope.filterModel = {
       type: 'contacts',
-      contactTypes: [ 'clinic', 'health_center' ]
+      contactTypes: [ 'clinic', 'health_center' ],
+      facilities: ['c', 'a', 'b']
     };
     scope.filterQuery = { value: 'newp' };
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
           'newp*',
-          {type:['clinic','health_center']}
+          {type:['clinic','health_center']},
+          {clinic:["c","a","b"]}
         ]}
       );
     });

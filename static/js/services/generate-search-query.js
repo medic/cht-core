@@ -119,6 +119,7 @@ var _ = require('underscore'),
           buildQuery: function($scope, options, operands) {
             operands.push(formatFreetext($scope));
             operands.push(formatContactsType($scope));
+            operands.push(formatClinics($scope));
           }
         }
       };
