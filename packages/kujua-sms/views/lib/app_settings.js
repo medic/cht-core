@@ -119,11 +119,11 @@ module.exports = {
       },
       {
           "key": "Clinic",
-          "default": "Community Health Worker",
+          "default": "Catchment Area",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Community Health Worker"
+                  "content": "Catchment Area"
               },
               {
                   "locale": "fr",
@@ -145,11 +145,11 @@ module.exports = {
       },
       {
           "key": "Clinics",
-          "default": "Community Health Workers",
+          "default": "Catchment Areas",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Community Health Workers"
+                  "content": "Catchment Areas"
               },
               {
                   "locale": "fr",
@@ -5732,6 +5732,16 @@ module.exports = {
               {
                   "locale": "en",
                   "content": "New person"
+              }
+          ]
+      },
+      {
+          "key": "Community health worker",
+          "default": "Community health worker",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Community health worker"
               }
           ]
       }
