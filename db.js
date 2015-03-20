@@ -29,13 +29,14 @@ if (couchUrl) {
     if (data.q && !data.limit) {
       data.limit = 1000;
     }
-    console.log('URL', url);
-    module.exports.request({
-      method: data.q ? 'post' : 'get',
-      path: url,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      qs: data
-    }, function(err, result) {
+    var opts = {path: url};
+    if (data.q) {
+      opts.method = 'post';
+      opts.form = data;
+    } else {
+      opts.qs = data;
+    }
+    module.exports.request(opts, function(err, result) {
       if (err) {
         // the request itself failed
         return cb(err);
