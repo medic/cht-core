@@ -10,8 +10,8 @@ var async = require('async');
     function(SaveDoc, DbView) {
 
       var updateChildren = function(parent, callback) {
-        if (parent.type !== 'health_center' && parent.type !== 'district_hospital') {
-          // clinics don't have children - we're done
+        if (parent.type === 'person') {
+          // persons don't have children - we're done
           return callback();
         }
 

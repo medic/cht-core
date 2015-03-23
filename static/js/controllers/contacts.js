@@ -87,7 +87,7 @@ var _ = require('underscore'),
       });
 
       $scope.$on('ContactUpdated', function(e, contact) {
-        if (!$scope.selected) {
+        if (contact && !$scope.selected) {
           return $scope.select(contact._id);
         }
         if (!contact || contact._deleted) {

@@ -16,6 +16,20 @@ var _ = require('underscore');
         db.getDoc(id, callback);
       };
 
+      var saveDoc = function(doc, callback) {
+        db.saveDoc(doc, function(err, res) {
+          if (err) {
+            return callback(err);
+          }
+          if (!doc._id) {
+            // new doc added, return the id
+            doc._id = res.id;
+          }
+          doc._rev = res.rev;
+          callback(null, doc);
+        });
+      };
+
       return function(id, updates, callback) {
         if (!callback) {
           callback = updates;
@@ -27,13 +41,7 @@ var _ = require('underscore');
             return callback(err);
           }
           doc = _.extend(doc, updates);
-          db.saveDoc(doc, function(err, res) {
-            if (!doc._id) {
-              // new doc added, return the id
-              doc._id = res.id;
-            }
-            callback(err, doc);
-          });
+          saveDoc(doc, callback);
         });
       };
     }
