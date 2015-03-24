@@ -54,7 +54,7 @@ var _ = require('underscore'),
               });
               if (curr) {
                 $scope.setSelected(curr);
-              } else if (!$('#back').is(':visible')) {
+              } else if (!options.stay && !$('#back').is(':visible')) {
                 window.setTimeout(function() {
                   var id = $('.inbox-items li').first().attr('data-record-id');
                   $state.go('contacts.detail', { id: id });
@@ -114,15 +114,15 @@ var _ = require('underscore'),
       });
 
       $scope.$on('ContactUpdated', function(e, contact) {
-        if (contact && !$scope.selected) {
-          return $scope.select(contact._id);
+        if (contact && !contact._deleted) {
+          $state.go('contacts.detail', { id: contact._id });
         }
         if (!contact || contact._deleted) {
           return $scope.query();
         }
         var outdated = _.findWhere($scope.items, { _id: contact._id });
         if (!outdated) {
-          return $scope.query();
+          return $scope.query({ stay: true });
         }
         _.extend(outdated, contact);
       });
