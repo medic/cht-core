@@ -74,7 +74,6 @@ var _ = require('underscore'),
         if ($scope.selected && $scope.selected._id && $scope.selected._id === id) {
           return;
         }
-        _selectedDoc = id;
         $scope.setSelected();
         if (id && $scope.items) {
           var message = _.findWhere($scope.items, { _id: id });
@@ -109,8 +108,6 @@ var _ = require('underscore'),
           }
         }
       };
-      
-      var _selectedDoc;
 
       $scope.query = function(options) {
         options = options || {};
@@ -166,7 +163,7 @@ var _ = require('underscore'),
               $scope.selectMessage();
             } else {
               var curr = _.find(data.results, function(result) {
-                return result._id === _selectedDoc;
+                return result._id === $state.params.id;
               });
               if (curr) {
                 $scope.setSelected(curr);
