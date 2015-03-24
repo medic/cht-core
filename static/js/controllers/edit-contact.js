@@ -11,6 +11,31 @@ var libphonenumber = require('libphonenumber/utils'),
     ['$scope', '$rootScope', 'translateFilter', 'Settings', 'UpdateContact', 'DbView',
     function ($scope, $rootScope, translateFilter, Settings, UpdateContact, DbView) {
 
+      var populateParents = function() {
+        var options = {
+          startkey: [],
+          endkey: [{}],
+          reduce: false,
+          include_docs: true
+        };
+        DbView('facilities', options, function(err, results) {
+          if (err) {
+            return console.log('Error fetching parents', err);
+          }
+          results.push({
+            name: translateFilter('New person'),
+            type: 'person',
+            _id: 'NEW',
+            order: 1
+          });
+          $scope.parents = results;
+        });
+      };
+
+      populateParents();
+
+      $scope.$on('ContactUpdated', populateParents);
+
       $scope.$on('EditContactInit', function(e, contact) {
 
         contact = contact || {};
@@ -37,25 +62,8 @@ var libphonenumber = require('libphonenumber/utils'),
           $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
           $scope.contactId = null;
         }
-        var options = {
-          startkey: [],
-          endkey: [{}],
-          reduce: false,
-          include_docs: true
-        };
-        DbView('facilities', options, function(err, results) {
-          if (err) {
-            return console.log('Error fetching parents', err);
-          }
-          results.push({
-            name: translateFilter('New person'),
-            type: 'person',
-            _id: 'NEW',
-            order: 1
-          });
-          $scope.parents = results;
-          $('#edit-contact').modal('show');
-        });
+
+        $('#edit-contact').modal('show');
       });
 
       var validatePage0 = function(settings) {
