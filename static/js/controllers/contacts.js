@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    async = require('async'),
     scrollLoader = require('../modules/scroll-loader');
 
 (function () {
@@ -59,23 +60,34 @@ var _ = require('underscore'),
 
       $scope.selectContact = function(id) {
         if (id) {
-          getContact(id, function(err, doc) {
+          async.auto({
+            doc: function(callback) {
+              getContact(id, callback);
+            },
+            children: function(callback) {
+              var options = {
+                startkey: [ id ],
+                endkey: [ id, {} ],
+                include_docs: true
+              };
+              DbView('facility_by_parent', options, callback);
+            },
+            contactFor: function(callback) {
+              var options = {
+                key: [ id ],
+                include_docs: true
+              };
+              DbView('facilities_by_contact', options, callback);
+            }
+          }, function(err, results) {
             if (err) {
+              $scope.setSelected();
               return console.log('Error fetching doc', err);
             }
-            var options = {
-              startkey: [ doc._id ],
-              endkey: [ doc._id, {} ],
-              include_docs: true
-            };
-            DbView('facility_by_parent', options, function(err, results) {
-              doc.children = results;
-              $scope.setSelected(doc);
-              $('.item-content').scrollTop(0);
-              if (err) {
-                return console.log('Error fetching doc', err);
-              }
-            });
+            results.doc.children = results.children[0];
+            results.doc.contactFor = results.contactFor[0];
+            $scope.setSelected(results.doc);
+            $('.item-content').scrollTop(0);
           });
         } else {
           $scope.setSelected();

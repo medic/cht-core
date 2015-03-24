@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    escape = ['startkey','endkey','key'];
 
 (function () {
 
@@ -11,8 +12,11 @@ var _ = require('underscore');
 
       return function(viewName, options, callback) {
         var url = BaseUrlService() + '/../_view/' + viewName;
-        options.startkey = JSON.stringify(options.startkey);
-        options.endkey = JSON.stringify(options.endkey);
+        escape.forEach(function(key) {
+          if (options[key]) {
+            options[key] = JSON.stringify(options[key]);
+          }
+        });
         options.cache = true;
         $resource(url).get(
           options,

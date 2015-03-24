@@ -5532,6 +5532,16 @@ module.exports = {
                   "content": "Places"
               }
           ]
+      },
+      {
+          "key": "Primary Contact For",
+          "default": "Primary Contact For",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Primary Contact For"
+              }
+          ]
       }
    ],
    "forms": {

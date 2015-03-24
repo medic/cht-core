@@ -84,5 +84,20 @@
         </li>
       </ul>
     </div>
+
+    <div class="body" ng-if="selected.contactFor.length">
+      <h2>{{'Primary Contact For' | translate}}</h2>
+      <ul>
+        <li class="row" ng-repeat="place in selected.contactFor">
+          <div class="col-sm-4">
+            <a ng-click="select(place._id)">{{place.name}}</a>
+          </div>
+          <div class="col-sm-8">
+            {{place.parent | clinic}}
+          </div>
+        </li>
+      </ul>
+    </div>
+
   </div>
 </div>
