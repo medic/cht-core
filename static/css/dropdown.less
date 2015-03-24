@@ -11,11 +11,9 @@
   padding: 1em 0;
   margin: 3.6em 0;
   font-size: 0.85em;
-  position: absolute;
   overflow-x: hidden;
   border-radius: 0 0 0.4em 0.4em;
   border: 0;
-  background-color: #fff;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
   height: auto;
   max-height: 350px;
@@ -37,6 +35,11 @@
   display: inline-block;
 
   &.multidropdown .dropdown-menu {
+    padding-bottom: 2.2em;
+    > ul {
+      max-height: 300px;
+      overflow-x: hidden;
+    }
     li {
       a, &.dropdown-header {
         padding-left: 1em;
@@ -64,6 +67,12 @@
     .actions {
       margin: 0;
       text-align: center;
+      position: absolute;
+      bottom: 0px;
+      left: 0;
+      right: 0;
+      border-top: 1px solid silver;
+      background-color: white;
     }
   }
 
@@ -124,9 +133,8 @@
 
 }
 
-.mm-dropdown .dropdown-menu .mm-dropdown-submenu {
-
-  > li > a {
+.mm-dropdown .mm-dropdown-menu {
+  li > a {
     display: block;
     padding: 3px 20px;
     clear: both;
@@ -134,7 +142,6 @@
     line-height: 1.42857;
     color: #333;
     white-space: nowrap;
-
     &.indent-1 {
       padding-left: 2em;
     }

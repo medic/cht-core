@@ -59,16 +59,19 @@
           </span>
           <span class="mm-button-text"></span>
         </span>
-        <ul role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
-          <li role="presentation" ng-repeat="form in forms">
-            <a role="menuitem" tabindex="-1" data-value="{{form}}">
-              <span ng-show="form.name">{{form.code}}: {{form.name}}</span>
-              <span ng-show="!form.name">{{form.code}}</span>
-            </a>
-          </li>
-        </ul>
+        <span role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
+          <ul>
+            <li role="presentation" ng-repeat="form in forms">
+              <a role="menuitem" tabindex="-1" data-value="{{form}}">
+                <span ng-show="form.name">{{form.code}}: {{form.name}}</span>
+                <span ng-show="!form.name">{{form.code}}</span>
+              </a>
+            </li>
+          </ul>
+        </span>
       </span>
 
+  
       <span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="Number of facilities" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'">
         <span id="facility" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">
@@ -79,9 +82,11 @@
           </span>
           <span class="mm-button-text"></span>
         </span>
-        <ul role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
-          <li role="presentation" ng-repeat="facility in facilities | orderBy:'doc.name'" ng-include="'templates/partials/filters_facility_items.html'" ng-init="facilityDepth = 0"></li>
-        </ul>
+        <span role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
+          <ul>
+            <li role="presentation" ng-repeat="facility in facilities | orderBy:'doc.name'" ng-include="'templates/partials/filters_facility_items.html'" ng-init="facilityDepth = 0"></li>
+          </ul>
+        </span>
       </span>
 
       <span id="dateRangeDropdown" class="filter dropdown mm-dropdown" ng-show="filterModel.type === 'reports'">
@@ -111,23 +116,26 @@
           </span>
           <span class="mm-button-text"></span>
         </span>
-        <ul role="menu" aria-labelledby="status" class="dropdown-menu mm-dropdown-menu">
-          <li role="presentation" class="dropdown-header">{{'Validity' | translate}}</li>
-          <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="valid">{{'Valid' | translate}}</a>
-          </li>
-          <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="invalid">{{'Invalid' | translate}}</a>
-          </li>
-          <li role="presentation" class="dropdown-header">{{'Verification' | translate}}</li>
-          <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="verified">{{'Verified' | translate}}</a>
-          </li>
-          <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="unverified">{{'Unverified' | translate}}</a>
-          </li>
-        </ul>
+        <span role="menu" aria-labelledby="status" class="dropdown-menu mm-dropdown-menu">
+          <ul>
+            <li role="presentation" class="dropdown-header">{{'Validity' | translate}}</li>
+            <li role="presentation">
+              <a role="menuitem" tabindex="-1" data-value="valid">{{'Valid' | translate}}</a>
+            </li>
+            <li role="presentation">
+              <a role="menuitem" tabindex="-1" data-value="invalid">{{'Invalid' | translate}}</a>
+            </li>
+            <li role="presentation" class="dropdown-header">{{'Verification' | translate}}</li>
+            <li role="presentation">
+              <a role="menuitem" tabindex="-1" data-value="verified">{{'Verified' | translate}}</a>
+            </li>
+            <li role="presentation">
+              <a role="menuitem" tabindex="-1" data-value="unverified">{{'Unverified' | translate}}</a>
+            </li>
+          </ul>
+        </span>
       </span>
+
 
       <span id="contactTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All contact types" data-filter-label="Number of contact types" ng-show="filterModel.type === 'contacts'">
         <span class="mm-button mm-button-nudge-down" data-toggle="dropdown">
@@ -139,22 +147,24 @@
           </span>
           <span class="mm-button-text"></span>
         </span>
-        <ul role="menu" class="dropdown-menu mm-dropdown-menu">
-          <li role="presentation" class="dropdown-header">{{'Places' | translate}}</li>
-          <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="district_hospital">{{'Districts' | translate}}</a>
-          </li>
-          <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="health_center">{{'Health Centers' | translate}}</a>
-          </li>
-          <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="clinic">{{'Clinics' | translate}}</a>
-          </li>
-          <li role="presentation" class="dropdown-header">{{'People' | translate}}</li>
-          <li role="presentation">
-            <a role="menuitem" tabindex="-1" data-value="person">{{'People' | translate}}</a>
-          </li>
-        </ul>
+        <span role="menu" class="dropdown-menu mm-dropdown-menu">
+          <ul>
+            <li role="presentation" class="dropdown-header">{{'Places' | translate}}</li>
+            <li role="presentation">
+              <a role="menuitem" tabindex="-1" data-value="district_hospital">{{'Districts' | translate}}</a>
+            </li>
+            <li role="presentation">
+              <a role="menuitem" tabindex="-1" data-value="health_center">{{'Health Centers' | translate}}</a>
+            </li>
+            <li role="presentation">
+              <a role="menuitem" tabindex="-1" data-value="clinic">{{'Clinics' | translate}}</a>
+            </li>
+            <li role="presentation" class="dropdown-header">{{'People' | translate}}</li>
+            <li role="presentation">
+              <a role="menuitem" tabindex="-1" data-value="person">{{'People' | translate}}</a>
+            </li>
+          </ul>
+        </span>
       </span>
       
       <span class="filter input-group freetext-filter" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'">
