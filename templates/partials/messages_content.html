@@ -1,5 +1,9 @@
-<div class="message-content-wrapper">
-  <div id="message-header" class="col-sm-8 name-header" ng-if="selected.messages[0]">
+<div class="col-sm-8 item-content empty-selection" ng-show="!selected.messages[0]">
+  <div>{{'No message selected' | translate}}</div>
+</div>
+
+<div class="message-content-wrapper" ng-show="selected.messages[0]">
+  <div id="message-header" class="col-sm-8 name-header">
     <mm-sender message="selected.messages[0].value"></mm-sender>
   </div>
   <div id="message-content" class="col-sm-8 item-content">
