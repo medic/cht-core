@@ -38,8 +38,8 @@ module.exports = function(grunt) {
         src: ['bower_components/concat.js'],
         overwrite: true,
         replacements: [{
-          from: /this\.search\.on\("blur", this\.bind\(function\(e\) \{/g,
-          to: 'this.search.on("blur", this.bind(function(e) {\n\n// MONKEY PATCH BY GRUNT: Needed for select freetext on blur #699.\nif (this.opts.selectOnBlur) this.selectHighlighted({noFocus: true});\n'
+          from: /if \(self\.opts\.selectOnBlur\) \{/g,
+          to: 'if (self.opts.selectOnBlur\n// MONKEY PATCH BY GRUNT: Needed for select freetext on blur #699.\n || (self.opts.selectFreetextOnBlur && self.results.find(".select2-highlighted .freetext").length)) {\n'
         }]
       }
     },
