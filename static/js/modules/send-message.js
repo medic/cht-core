@@ -108,6 +108,7 @@ var _ = require('underscore'),
     $phone.select2({
       multiple: true,
       allowClear: true,
+      selectOnBlur: true,
       formatResult: formatResult,
       formatSelection: formatSelection,
       query: function(options) {
