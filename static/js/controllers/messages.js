@@ -39,7 +39,9 @@ var tour = require('../modules/tour');
       });
 
       Changes('messages-list', function(data) {
-        updateContacts({ changes: data });
+        if ($scope.filterModel.type === 'messages') {
+          updateContacts({ changes: data });
+        }
       });
 
       tour.start($stateParams.tour, translateFilter);

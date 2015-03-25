@@ -190,7 +190,9 @@ var _ = require('underscore'),
       };
 
       Changes('reports-list', function(data) {
-        $scope.query({ silent: true, changes: data });
+        if ($scope.filterModel.type === 'reports') {
+          $scope.query({ silent: true, changes: data });
+        }
       });
 
       if (!$stateParams.id) {
