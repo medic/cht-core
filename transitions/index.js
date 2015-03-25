@@ -178,7 +178,12 @@ var applyTransitions = function(options) {
             db: options.db
         };
         if (!canRun(opts)) {
-            logger.debug('skipping transition %s %s', key, options.change.seq);
+            logger.debug(
+                'not running transition %s for seq %s doc %s',
+                key,
+                options.change.seq,
+                options.change.id
+            );
             return;
         }
         /*
@@ -268,12 +273,22 @@ var attach = function() {
                     }
                     change.doc = doc;
                     if (hasTransitionErrors(doc) || !hasTransitions(doc)) {
-                        logger.debug('backlog matched on %s seq %s', change.id, change.seq);
+                        logger.debug(
+                            'backlog proccessing matched on %s seq %s',
+                            change.id,
+                            change.seq
+                        );
                         applyTransitions({
                             change: change,
                             audit: audit,
                             db: db
                         });
+                    } else {
+                        logger.debug(
+                            'backlog processing skipped on %s seq %s',
+                            change.id,
+                            change.seq
+                        );
                     }
                 });
             }, 500);
