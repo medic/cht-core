@@ -64,11 +64,28 @@ exports['filter fails with error and scheduled message task'] = function(test) {
         errors: ['foo'],
         scheduled_tasks: [{
             messages: [{
-                to: "+2896503099",
-                message: "Thank you Dickson for reporting on Prudence (20047).",
+                to: "foo",
+                message: "foo",
             }],
             state: "pending"
         }]
     }), false);
     test.done();
+};
+
+exports['onMatch does not cause update if message is already sent'] = function(test) {
+    var doc = {
+        errors: ['foo'],
+        scheduled_tasks: [{
+            messages: [{
+                to: "foo",
+                message: "foo",
+            }],
+            state: "sent"
+        }]
+    };
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+        test.equals(changed, false);
+        test.done();
+    });
 };

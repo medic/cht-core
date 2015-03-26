@@ -34,12 +34,14 @@ var getAllPendingTasks = function(doc) {
 };
 
 var setStateOnTasks = function(tasks, state) {
-    var updated;
+    var updated = false;
     state = state || 'sent';
     _.each(tasks, function(task) {
-        utils.setTaskState(task, 'sent');
-        task.timestamp = new Date().toISOString();
-        updated = true;
+        if (task.state !== state) {
+            utils.setTaskState(task, state);
+            task.timestamp = new Date().toISOString();
+            updated = true;
+        }
     });
     return updated;
 };
@@ -47,11 +49,7 @@ var setStateOnTasks = function(tasks, state) {
 var onMatch = function(change, db, audit, callback) {
     var doc = change.doc,
         updated = setStateOnTasks(all_pending);
-    if (updated) {
-        return callback(null, true);
-    } else {
-        callback();
-    }
+    callback(null, updated);
 };
 
 var all_pending;
