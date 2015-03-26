@@ -203,6 +203,17 @@ var _ = require('underscore'),
       tour.start($stateParams.tour, translateFilter);
       $location.url($location.path());
 
+      var getNextHalfHour = function() {
+        var time = moment().second(0).millisecond(0);
+        if (time.minute() < 30) {
+          time.minute(30);
+        } else {
+          time.minute(0);
+          time.add(1, 'hours');
+        }
+        return time;
+      };
+
       var initEditMessageModal = function() {
         window.setTimeout(function() {
           Settings(function(err, res) {
@@ -214,7 +225,7 @@ var _ = require('underscore'),
                 cancelClass: 'btn-link',
                 parentEl: '#edit-message-group .modal-dialog .modal-content',
                 format: res.reported_date_format,
-                minDate: moment()
+                minDate: getNextHalfHour()
               },
               function(date) {
                 var i = this.element.closest('fieldset').attr('data-index');
