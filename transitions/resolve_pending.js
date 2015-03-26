@@ -9,30 +9,26 @@ var _ = require('underscore'),
     utils = require('../lib/utils'),
     logger = require('../lib/logger');
 
-var getPendingTasks = function(doc) {
-    var tasks = [];
-    _.each(doc.tasks, function(task) {
+var getPendingTasks = function(tasks) {
+    var ret = [];
+    _.each(tasks || [], function(task) {
         if (task.state === 'pending') {
             _.each(task.messages, function(msg) {
                 // if to and message is defined then append messages
                 if (msg.to && msg.message) {
-                    tasks.push(task);
+                    ret.push(task);
                 }
             });
         }
     });
+    return ret;
+};
+
+var getAllPendingTasks = function(doc) {
+    var tasks = getPendingTasks(doc.tasks);
     // scheduled tasks are ignored if doc has errors
     if (!doc.errors || doc.errors.length === 0) {
-        _.each(doc.scheduled_tasks || [], function(task) {
-            if (task.state === 'pending') {
-                _.each(task.messages, function(msg) {
-                    // if to and message is defined then append messages
-                    if (msg.to && msg.message) {
-                        tasks.push(task);
-                    }
-                });
-            }
-        });
+        tasks = tasks.concat(getPendingTasks(doc.scheduled_tasks));
     }
     return tasks;
 };
@@ -60,11 +56,12 @@ var onMatch = function(change, db, audit, callback) {
 
 var all_pending;
 module.exports = {
+    onMatch: onMatch,
     filter: function(doc) {
-        all_pending = getPendingTasks(doc);
+        all_pending = getAllPendingTasks(doc);
         return Boolean(all_pending.length);
     },
     _setStateOnTasks: setStateOnTasks,
     _getPendingTasks: getPendingTasks,
-    onMatch: onMatch
+    _getAllPendingTasks: getAllPendingTasks
 };
