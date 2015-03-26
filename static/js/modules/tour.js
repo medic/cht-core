@@ -337,10 +337,6 @@ var _ = require('underscore');
   };
 
   exports.start = function(name, translationFn) {
-    if (current && current.name && current.name === name) {
-      // the tour is already running
-      return;
-    }
     endCurrent();
     if (name) {
       if (name === 'intro') {
