@@ -102,9 +102,6 @@ var _ = require('underscore'),
             results.doc.children = results.children[0];
             results.doc.contactFor = results.contactFor[0];
             $scope.setSelected(results.doc);
-            $timeout(function() {
-              $('.item-content').scrollTop(0);
-            });
           });
         } else {
           $scope.setSelected();
