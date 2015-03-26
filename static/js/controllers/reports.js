@@ -10,8 +10,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$state', '$stateParams', '$location', '$animate', '$rootScope', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup',
-    function ($scope, $state, $stateParams, $location, $animate, $rootScope, translateFilter, Settings, MarkRead, Search, Changes, EditGroup) {
+    ['$scope', '$state', '$stateParams', '$location', '$animate', '$rootScope', '$timeout', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup',
+    function ($scope, $state, $stateParams, $location, $animate, $rootScope, $timeout, translateFilter, Settings, MarkRead, Search, Changes, EditGroup) {
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = undefined;
@@ -76,6 +76,7 @@ var _ = require('underscore'),
         }
         $scope.setSelected();
         if (id && $scope.items) {
+          $scope.setLoadingContent(id);
           var message = _.findWhere($scope.items, { _id: id });
           if (message) {
             _setSelected(message);
@@ -168,10 +169,10 @@ var _ = require('underscore'),
               if (curr) {
                 $scope.setSelected(curr);
               } else if (!$('#back').is(':visible')) {
-                window.setTimeout(function() {
+                $timeout(function() {
                   var id = $('.inbox-items li').first().attr('data-record-id');
                   $state.go('reports.detail', { id: id });
-                }, 1);
+                });
               }
             }
           }
@@ -215,7 +216,7 @@ var _ = require('underscore'),
       };
 
       var initEditMessageModal = function() {
-        window.setTimeout(function() {
+        $timeout(function() {
           Settings(function(err, res) {
             if (!err) {
               $('#edit-message-group .datepicker').daterangepicker({

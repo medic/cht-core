@@ -8,8 +8,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesContentCtrl', 
-    ['$scope', '$stateParams', '$animate', 'ContactConversation', 'MarkAllRead', 'Changes', 'UserCtxService',
-    function ($scope, $stateParams, $animate, ContactConversation, MarkAllRead, Changes, UserCtxService) {
+    ['$scope', '$stateParams', '$animate', '$timeout', 'ContactConversation', 'MarkAllRead', 'Changes', 'UserCtxService',
+    function ($scope, $stateParams, $animate, $timeout, ContactConversation, MarkAllRead, Changes, UserCtxService) {
 
 
       var scrollToUnread = function() {
@@ -61,6 +61,7 @@ var _ = require('underscore'),
         $('#message-content').off('scroll', _checkScroll);
         $scope.loadingContent = true;
         $scope.setSelected({ id: id });
+        $scope.setLoadingContent(id);
         ContactConversation({ id: id, districtAdmin: $scope.permissions.districtAdmin }, function(err, data) {
           if (err) {
             $scope.loadingContent = false;
@@ -85,7 +86,7 @@ var _ = require('underscore'),
           });
           $scope.selected.messages = data;
           markAllRead();
-          window.setTimeout(scrollToUnread, 1);
+          $timeout(scrollToUnread);
         });
       };
 
@@ -135,9 +136,9 @@ var _ = require('underscore'),
               $scope.firstUnread = undefined;
             }
             if (first.length && scrollToBottom) {
-              window.setTimeout(function() {
+              $timeout(function() {
                 $('#message-content').scrollTop($('#message-content')[0].scrollHeight);
-              }, 1);
+              });
             }
             markAllRead();
           });

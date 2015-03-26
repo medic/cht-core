@@ -2,7 +2,7 @@
   <div class="inner">
 
     <span class="slide-back" ng-click="setSelected()" ng-show="filterModel.type === 'reports' || filterModel.type === 'messages' || filterModel.type === 'contacts'">
-      <a id="back" ng-class="{'disabled': !selected}">
+      <a id="back" ng-class="{'disabled': !selected && !loadingContent}">
         <span class="fa fa-chevron-left" title="{{'Back' | translate}}"></span>
       </a>
     </span>

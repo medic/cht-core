@@ -22,6 +22,7 @@ require('moment/locales');
     function ($window, $scope, $translate, $animate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie) {
 
       $scope.loading = true;
+      $scope.loadingContent = false;
       $scope.error = false;
       $scope.errorSyntax = false;
       $scope.appending = false;
@@ -53,6 +54,7 @@ require('moment/locales');
 
       $scope.setSelected = function(selected) {
         $timeout.cancel(clearSelectedTimer);
+        $scope.loadingContent = false;
         if (selected) {
           $scope.selected = selected;
           $timeout(function() {
@@ -68,6 +70,13 @@ require('moment/locales');
             $scope.selected = undefined;
           }
         }
+      };
+
+      $scope.setLoadingContent = function(id) {
+        $scope.loadingContent = id;
+        $timeout(function() {
+          $scope.showContent = true;
+        }, 1);
       };
 
       var removeDeletedContacts = function(contacts) {

@@ -380,6 +380,10 @@ body {
   text-shadow: 1px 1px 4px rgba(255, 255, 255, 1);
   font-size: 2em;
 
+  .fa {
+    font-size: 2em;
+  }
+
   > div {
     display: flex;
     align-items: center;
@@ -815,7 +819,6 @@ a.fa:hover {
   z-index: 10;
   background: transparent;
   pointer-events: none;
-  display: none;
 
   .column .actions {
     min-height: 5em;
@@ -872,12 +875,6 @@ a.fa:hover {
 
 .action-container .column .actions .mm-icon.mm-icon-disabled:hover {
   border-bottom-color: transparent;
-}
-
-.reports, .contacts {
-  &.show-content .action-container {
-    display: block;
-  }
 }
 
 .reporting, .help, .configuration {
@@ -1314,6 +1311,7 @@ a.fa:hover {
   .action-container .column,
   .content .inbox-items,
   .content .message-content-wrapper,
+  .content .empty-selection,
   .reports .content .item-content,
   .contacts .content .item-content {
     transition: left 500ms ease 0s;
@@ -1325,13 +1323,9 @@ a.fa:hover {
   .action-container .column,
   .reports .content .item-content,
   .content .message-content-wrapper,
+  .content .empty-selection,
   .contacts .content .item-content {
     left: 100%;
-  }
-  .reports, .contacts {
-    .action-container {
-      display: block;
-    }
   }
 
   body.show-content {
@@ -1342,6 +1336,7 @@ a.fa:hover {
     .action-container .column,
     &.reports .content .item-content,
     .content .message-content-wrapper,
+    .content .empty-selection,
     &.contacts .content .item-content {
       left: 0;
     }

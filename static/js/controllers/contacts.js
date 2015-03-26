@@ -75,6 +75,7 @@ var _ = require('underscore'),
 
       $scope.selectContact = function(id) {
         if (id) {
+          $scope.setLoadingContent(id);
           async.auto({
             doc: function(callback) {
               getContact(id, callback);

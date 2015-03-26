@@ -1,8 +1,12 @@
-<div class="col-sm-8 item-content empty-selection" ng-show="!selected || selected.form === undefined">
+<div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
+  <div><span class="fa fa-spinner fa-spin"></span></div>
+</div>
+
+<div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && (!selected || selected.form === undefined)">
   <div>{{'No report selected' | translate}}</div>
 </div>
 
-<div id="reports-content" class="col-sm-8 item-content" ng-show="selected && selected.form !== undefined">
+<div id="reports-content" class="col-sm-8 item-content" ng-show="!loadingContent && (selected && selected.form !== undefined)">
   <div>
 
     <div class="meta">

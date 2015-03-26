@@ -1,8 +1,12 @@
-<div class="col-sm-8 item-content empty-selection" ng-show="!selected">
+<div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
+  <div><span class="fa fa-spinner fa-spin"></span></div>
+</div>
+
+<div class="col-sm-8 item-content empty-selection" ng-show="!selected && !loadingContent">
   <div>{{'No contact selected' | translate}}</div>
 </div>
 
-<div class="col-sm-8 item-content" ng-show="selected">
+<div class="col-sm-8 item-content" ng-show="selected && !loadingContent">
   <div>
     <div class="status">
       <span class="mm-badge mm-badge-round">

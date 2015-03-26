@@ -1,6 +1,6 @@
 <div id="message-list" class="col-sm-4 inbox-items">
   <ul>
-    <li class="animate-repeat" ng-show="!loading || appending" ng-repeat="message in items | orderBy:'-value.date'" ng-click="select(message.key[1])" data-record-id="{{message.key[1]}}" ng-class="{'selected': message.key[1] === selected.id, 'read': isRead(message.value)}">
+    <li class="animate-repeat" ng-show="!loading || appending" ng-repeat="message in items | orderBy:'-value.date'" ng-click="select(message.key[1])" data-record-id="{{message.key[1]}}" ng-class="{'selected': message.key[1] === loadingContent || !loadingContent && message.key[1] === selected.id, 'read': isRead(message.value)}">
       <div class="message-wrapper">
         <div class="detail">
           <span class="time" ng-bind-html="message.value.date | relativeDate"></span>
