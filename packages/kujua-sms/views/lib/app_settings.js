@@ -5542,6 +5542,36 @@ module.exports = {
                   "content": "Primary Contact For"
               }
           ]
+      },
+      {
+          "key": "No contact selected",
+          "default": "No contact selected",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "No contact selected"
+              }
+          ]
+      },
+      {
+          "key": "No message selected",
+          "default": "No message selected",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "No message selected"
+              }
+          ]
+      },
+      {
+          "key": "No report selected",
+          "default": "No report selected",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "No report selected"
+              }
+          ]
       }
    ],
    "forms": {

@@ -374,6 +374,21 @@ body {
   background-color: @background-color;
 }
 
+.content .item-content.empty-selection {
+  text-align: center;
+  color: #C2C2C2;
+  text-shadow: 1px 1px 4px rgba(255, 255, 255, 1);
+  font-size: 2em;
+
+  > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    margin: 0px;
+  }
+}
+
 .message-content-wrapper {
   height: 100%;
   .item-content {
@@ -1003,7 +1018,6 @@ a.fa:hover {
     display: inline-block;
     outline: none;
     margin-right: 1em;
-    margin-bottom: 1em;
     .fa {
       margin-right: 0.5em;
     }
@@ -1040,7 +1054,7 @@ a.fa:hover {
     .icon {
       background-size: contain;
       background-repeat: no-repeat;
-      padding-top: 150px;
+      padding-top: 100px;
     }
     .contact-pregnant {
       background-image: url('../img/icon-pregnant.svg');
@@ -1066,15 +1080,15 @@ a.fa:hover {
     float: right;
   }
   .primary-contact-content .horizontal-options a {
-    width: 150px;
+    width: 100px;
     vertical-align: top;
     .circle {
-      height: 150px;
-      width: 150px;
+      height: 100px;
+      width: 100px;
     }
   }
   .language-preference-content .horizontal-options {
-    margin-bottom: 2em;
+    margin-bottom: 1em;
     a {
       width: 100px;
       .rectangle {
@@ -1110,12 +1124,12 @@ a.fa:hover {
   }
   .modem-setup-content {
     label {
-      margin-top: 1.5em;
+      margin-top: 0.5em;
       margin-bottom: 0;
       display: block;
     }
     img {
-      margin: 1em;
+      margin: 0.5em 1em;
     }
     .small-field {
       width: 3em;

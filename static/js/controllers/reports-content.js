@@ -7,7 +7,7 @@
   inboxControllers.controller('ReportsContentCtrl', 
     ['$scope', '$stateParams', 'MessageState',
     function ($scope, $stateParams, MessageState) {
-      
+
       $scope.selectMessage($stateParams.id);
       $('.tooltip').remove();
 

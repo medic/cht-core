@@ -76,6 +76,9 @@ var _ = require('underscore'),
     if (row.everyoneAt) {
       return translateFn('Everyone at', { facility: row.doc.name });
     }
+    if (row.freetext) {
+      return '<span class="freetext">' + row.id + '</span>';
+    }
     return format.contact(row.doc);
   };
 
@@ -96,7 +99,8 @@ var _ = require('underscore'),
         contact: {
           phone: phone
         }
-      }
+      },
+      freetext: true
     };
   };
 
@@ -108,6 +112,7 @@ var _ = require('underscore'),
     $phone.select2({
       multiple: true,
       allowClear: true,
+      selectFreetextOnBlur: true, // custom attribute to only select freetext on blur
       formatResult: formatResult,
       formatSelection: formatSelection,
       query: function(options) {

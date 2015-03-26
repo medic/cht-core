@@ -74,7 +74,6 @@ var _ = require('underscore'),
         if ($scope.selected && $scope.selected._id && $scope.selected._id === id) {
           return;
         }
-        _selectedDoc = id;
         $scope.setSelected();
         if (id && $scope.items) {
           var message = _.findWhere($scope.items, { _id: id });
@@ -109,8 +108,6 @@ var _ = require('underscore'),
           }
         }
       };
-      
-      var _selectedDoc;
 
       $scope.query = function(options) {
         options = options || {};
@@ -166,7 +163,7 @@ var _ = require('underscore'),
               $scope.selectMessage();
             } else {
               var curr = _.find(data.results, function(result) {
-                return result._id === _selectedDoc;
+                return result._id === $state.params.id;
               });
               if (curr) {
                 $scope.setSelected(curr);
@@ -193,7 +190,9 @@ var _ = require('underscore'),
       };
 
       Changes('reports-list', function(data) {
-        $scope.query({ silent: true, changes: data });
+        if ($scope.filterModel.type === 'reports') {
+          $scope.query({ silent: true, changes: data });
+        }
       });
 
       if (!$stateParams.id) {
@@ -203,6 +202,17 @@ var _ = require('underscore'),
       $scope.setFilterQuery($stateParams.query);
       tour.start($stateParams.tour, translateFilter);
       $location.url($location.path());
+
+      var getNextHalfHour = function() {
+        var time = moment().second(0).millisecond(0);
+        if (time.minute() < 30) {
+          time.minute(30);
+        } else {
+          time.minute(0);
+          time.add(1, 'hours');
+        }
+        return time;
+      };
 
       var initEditMessageModal = function() {
         window.setTimeout(function() {
@@ -215,7 +225,7 @@ var _ = require('underscore'),
                 cancelClass: 'btn-link',
                 parentEl: '#edit-message-group .modal-dialog .modal-content',
                 format: res.reported_date_format,
-                minDate: moment()
+                minDate: getNextHalfHour()
               },
               function(date) {
                 var i = this.element.closest('fieldset').attr('data-index');

@@ -3,10 +3,10 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3 ng-show="category === 'person' && contactId">{{'Edit person' | translate}}</h3>
-        <h3 ng-show="category === 'person' && !contactId">{{'Add person' | translate}}</h3>
-        <h3 ng-show="category === 'place' && contactId">{{'Edit place' | translate}}</h3>
-        <h3 ng-show="category === 'place' && !contactId">{{'Add place' | translate}}</h3>
+        <h3 ng-show="page === 0 && category === 'person' && contactId">{{'Edit person' | translate}}</h3>
+        <h3 ng-show="(page === 0 && category === 'person' && !contactId) || (page === 1)">{{'Add person' | translate}}</h3>
+        <h3 ng-show="page === 0 && category === 'place' && contactId">{{'Edit place' | translate}}</h3>
+        <h3 ng-show="page === 0 && category === 'place' && !contactId">{{'Add place' | translate}}</h3>
       </div>
       <div class="modal-body">
 

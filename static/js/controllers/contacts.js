@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', 
-    ['$scope', 'db', 'Search', 'DbView',
-    function ($scope, db, Search, DbView) {
+    ['$scope', '$state', '$timeout', 'db', 'Search', 'DbView',
+    function ($scope, $state, $timeout, db, Search, DbView) {
 
       $scope.filterModel.type = 'contacts';
       $scope.setContacts();
@@ -46,6 +46,21 @@ var _ = require('underscore'),
             scrollLoader.init(function() {
               $scope.query({ skip: true });
             });
+            if (!data.results.length) {
+              $scope.selectContact();
+            } else {
+              var curr = _.find(data.results, function(result) {
+                return result._id === $state.params.id;
+              });
+              if (curr) {
+                $scope.setSelected(curr);
+              } else if (!options.stay && !$('#back').is(':visible')) {
+                $timeout(function() {
+                  var id = $('.inbox-items li').first().attr('data-record-id');
+                  $state.go('contacts.detail', { id: id });
+                });
+              }
+            }
           }
         });
       };
@@ -87,7 +102,6 @@ var _ = require('underscore'),
             results.doc.children = results.children[0];
             results.doc.contactFor = results.contactFor[0];
             $scope.setSelected(results.doc);
-            $('.item-content').scrollTop(0);
           });
         } else {
           $scope.setSelected();
@@ -99,15 +113,15 @@ var _ = require('underscore'),
       });
 
       $scope.$on('ContactUpdated', function(e, contact) {
-        if (contact && !$scope.selected) {
-          return $scope.select(contact._id);
+        if (contact && !contact._deleted) {
+          $state.go('contacts.detail', { id: contact._id });
         }
         if (!contact || contact._deleted) {
           return $scope.query();
         }
         var outdated = _.findWhere($scope.items, { _id: contact._id });
         if (!outdated) {
-          return $scope.query();
+          return $scope.query({ stay: true });
         }
         _.extend(outdated, contact);
       });

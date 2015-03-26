@@ -33,6 +33,14 @@ module.exports = function(grunt) {
           from: /clickDate: function \(e\) \{/g,
           to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'mm.dateSelected.daterangepicker\', this);\n'
         }]
+      },
+      monkeypatchselect: {
+        src: ['bower_components/concat.js'],
+        overwrite: true,
+        replacements: [{
+          from: /if \(self\.opts\.selectOnBlur\) \{/g,
+          to: 'if (self.opts.selectOnBlur\n// MONKEY PATCH BY GRUNT: Needed for select freetext on blur #699.\n || (self.opts.selectFreetextOnBlur && self.results.find(".select2-highlighted .freetext").length)) {\n'
+        }]
       }
     },
     browserify: {
@@ -270,6 +278,7 @@ module.exports = function(grunt) {
     'bower:install',
     'bower_concat',
     'replace:monkeypatchdate',
+    'replace:monkeypatchselect',
     'copy:inbox',
     'copy:admin'
   ]);
