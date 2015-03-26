@@ -140,6 +140,10 @@ var defaults = {
             disable: true,
             load: './transitions/ohw_notifications.js'
         },
+        resolve_pending: {
+            disable: true,
+            load: './transitions/resolve_pending.js'
+        },
         registration: {
             load: './transitions/registration.js'
         },

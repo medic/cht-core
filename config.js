@@ -44,37 +44,42 @@ function initFeed(callback) {
     callback();
 };
 
-function initConfig(callback) {
-    var db = require('./db');
-
-    db.medic.get(config.settings_path, function(err, data) {
-        if (err) {
-            return callback(err);
-        }
-        var settings = data.settings;
-        // append custom translations to defaults
-        if (settings.translations) {
-            settings.translations = config.translations.concat(settings.translations);
-        }
-        _.extend(config, settings);
-        logger.debug(
-            'Reminder messages allowed between %s:%s and %s:%s',
-            config['schedule_morning_hours'],
-            config['schedule_morning_minutes'],
-            config['schedule_evening_hours'],
-            config['schedule_evening_minutes']
-        );
-        initFeed(function(err) {
-            initInfo(callback);
-        });
+function initConfig(data, callback) {
+    var settings = data.settings;
+    // append custom translations to defaults
+    if (settings.translations) {
+        settings.translations = config.translations.concat(settings.translations);
+    }
+    // merge defaults with app settings
+    _.extend(config, settings);
+    logger.debug(
+        'Reminder messages allowed between %s:%s and %s:%s',
+        config['schedule_morning_hours'],
+        config['schedule_morning_minutes'],
+        config['schedule_evening_hours'],
+        config['schedule_evening_minutes']
+    );
+    initFeed(function(err) {
+        initInfo(callback);
     });
 };
 
 module.exports = {
+    _initConfig: initConfig,
+    _initFeed: initFeed,
+    _initInfo: initInfo,
     get: function(key) {
         return config[key];
     },
-    init: initConfig,
+    init: function(callback) {
+        var db = require('./db');
+        db.medic.get(config.settings_path, function(err, data) {
+            if (err) {
+                return callback(err);
+            }
+            initConfig(data, callback);
+        });
+    },
     db_info: null,
     last_valid_seq: null
 };

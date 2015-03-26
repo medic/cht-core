@@ -17,9 +17,9 @@ if (!process.env.TEST_ENV) {
         try {
             transitions[key] = require('../' + conf.load);
         } catch(e) {
-            // log exception and exit
+            // log exception
+            logger.error('failed loading transition %s %s', key, conf.load);
             logger.error(e);
-            process.exit();
         }
     });
 }
@@ -178,7 +178,12 @@ var applyTransitions = function(options) {
             db: options.db
         };
         if (!canRun(opts)) {
-            logger.debug('skipping transition %s %s', key, options.change.seq);
+            logger.debug(
+                'not running transition %s for seq %s doc %s',
+                key,
+                options.change.seq,
+                options.change.id
+            );
             return;
         }
         /*
@@ -226,7 +231,7 @@ var attach = function() {
         include_docs: true,
         // start from last valid transition ran, or the beginning of the
         // changes feed. since: 0 will re-run through all changes.
-        since: config.last_valid_seq || 0
+        since: config.last_valid_seq || 'now'
     });
 
     feed.filter = function(doc, req) {
@@ -268,12 +273,22 @@ var attach = function() {
                     }
                     change.doc = doc;
                     if (hasTransitionErrors(doc) || !hasTransitions(doc)) {
-                        logger.debug('backlog matched on %s seq %s', change.id, change.seq);
+                        logger.debug(
+                            'backlog proccessing matched on %s seq %s',
+                            change.id,
+                            change.seq
+                        );
                         applyTransitions({
                             change: change,
                             audit: audit,
                             db: db
                         });
+                    } else {
+                        logger.debug(
+                            'backlog processing skipped on %s seq %s',
+                            change.id,
+                            change.seq
+                        );
                     }
                 });
             }, 500);
