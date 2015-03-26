@@ -231,7 +231,7 @@ var attach = function() {
         include_docs: true,
         // start from last valid transition ran, or the beginning of the
         // changes feed. since: 0 will re-run through all changes.
-        since: config.last_valid_seq || 0
+        since: config.last_valid_seq || 'now'
     });
 
     feed.filter = function(doc, req) {
