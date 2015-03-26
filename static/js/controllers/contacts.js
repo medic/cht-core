@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', 
-    ['$scope', '$state', 'db', 'Search', 'DbView',
-    function ($scope, $state, db, Search, DbView) {
+    ['$scope', '$state', '$timeout', 'db', 'Search', 'DbView',
+    function ($scope, $state, $timeout, db, Search, DbView) {
 
       $scope.filterModel.type = 'contacts';
       $scope.setContacts();
@@ -55,10 +55,10 @@ var _ = require('underscore'),
               if (curr) {
                 $scope.setSelected(curr);
               } else if (!options.stay && !$('#back').is(':visible')) {
-                window.setTimeout(function() {
+                $timeout(function() {
                   var id = $('.inbox-items li').first().attr('data-record-id');
                   $state.go('contacts.detail', { id: id });
-                }, 1);
+                });
               }
             }
           }
@@ -102,7 +102,9 @@ var _ = require('underscore'),
             results.doc.children = results.children[0];
             results.doc.contactFor = results.contactFor[0];
             $scope.setSelected(results.doc);
-            $('.item-content').scrollTop(0);
+            $timeout(function() {
+              $('.item-content').scrollTop(0);
+            });
           });
         } else {
           $scope.setSelected();
