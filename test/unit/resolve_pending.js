@@ -46,7 +46,6 @@ exports['filter succeeds with message task'] = function(test) {
 };
 
 exports['filter succeeds with scheduled message tasks'] = function(test) {
-    debugger;
     test.equals(transition.filter({
         scheduled_tasks: [{
             messages: [{
