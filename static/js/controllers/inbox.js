@@ -263,17 +263,6 @@ require('moment/locales');
         });
       };
 
-      var updateContacts = function() {
-        Contact($scope.permissions.district).then(
-          function(rows) {
-            $('#send-message [name=phone]').data('options', rows);
-          },
-          function() {
-            console.log('Failed to retrieve contacts');
-          }
-        );
-      };
-
       $scope.updateReadStatus = function () {
         ReadMessages({
           user: UserCtxService().name,
@@ -301,10 +290,7 @@ require('moment/locales');
       });
 
       $scope.setupSendMessage = function() {
-        Settings(function(err, res) {
-          sendMessage.init(res, translateFilter);
-          updateContacts();
-        });
+        sendMessage.init(Settings, Contact, translateFilter);
       };
 
       Form().then(

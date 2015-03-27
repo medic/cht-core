@@ -4,23 +4,29 @@ describe('Contact service', function() {
 
   var service,
       results,
-      $rootScope;
+      err;
 
   beforeEach(function (){
     module('inboxApp');
     module(function ($provide) {
       $provide.value('FacilityRaw', function() {
         return {
-          query: function(callback) {
+          query: function(callback, errCb) {
+            if (err) {
+              return errCb(err);
+            }
             callback({'rows': results});
           }
         };
       });
+      $provide.value('UserDistrict', function(callback) {
+        callback();
+      });
     });
-    inject(function(_Contact_, _$rootScope_) {
-      $rootScope = _$rootScope_;
+    inject(function(_Contact_) {
       service = _Contact_;
     });
+    err = null;
   });
 
   it('returns zero when no messages', function(done) {
@@ -28,15 +34,11 @@ describe('Contact service', function() {
     results = [];
     var expected = [];
 
-    service().then(
-      function(actual) {
-        chai.expect(actual).to.deep.equal(expected);
-        done();
-      }
-    );
-
-    // needed to resolve the promise
-    $rootScope.$digest();
+    service(function(err, actual) {
+      chai.expect(err).to.equal(null);
+      chai.expect(actual).to.deep.equal(expected);
+      done();
+    });
   });
 
   it('returns all facilities with phones', function(done) {
@@ -51,15 +53,11 @@ describe('Contact service', function() {
 
     var expected = [ valid ];
 
-    service().then(
-      function(actual) {
-        chai.expect(actual).to.deep.equal(expected);
-        done();
-      }
-    );
-
-    // needed to resolve the promise
-    $rootScope.$digest();
+    service(function(err, actual) {
+      chai.expect(err).to.equal(null);
+      chai.expect(actual).to.deep.equal(expected);
+      done();
+    });
   });
 
   it('returns "everyone at" when health_center', function(done) {
@@ -70,19 +68,25 @@ describe('Contact service', function() {
     
     results = [ child, health_center, valid ];
 
-    service().then(
-      function(actual) {
-        chai.expect(actual[0].id).to.equal(health_center.id);
-        chai.expect(actual[0].everyoneAt).to.equal(true);
-        chai.expect(actual[0].clinics).to.deep.equal([ child ]);
-        chai.expect(actual[1]).to.deep.equal(valid);
-        done();
-      }
-    );
-
-    // needed to resolve the promise
-    $rootScope.$digest();
+    service(function(err, actual) {
+      chai.expect(err).to.equal(null);
+      chai.expect(actual[0].id).to.equal(health_center.id);
+      chai.expect(actual[0].everyoneAt).to.equal(true);
+      chai.expect(actual[0].clinics).to.deep.equal([ child ]);
+      chai.expect(actual[1]).to.deep.equal(valid);
+      done();
+    });
   });
 
+  it('returns err from facilities', function(done) {
+
+    err = 'boom';
+
+    service(function(err) {
+      chai.expect(err).to.equal('boom');
+      done();
+    });
+
+  });
 
 });

@@ -17,6 +17,9 @@ describe('UpdateContact service', function() {
       $provide.factory('DbView', function() {
         return DbView;
       });
+      $provide.factory('ClearFacilityCache', function() {
+        return function() {};
+      });
     });
     inject(function(_UpdateContact_) {
       service = _UpdateContact_;

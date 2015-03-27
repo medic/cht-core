@@ -6,8 +6,8 @@ var async = require('async');
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('UpdateContact', ['SaveDoc', 'DbView',
-    function(SaveDoc, DbView) {
+  inboxServices.factory('UpdateContact', ['SaveDoc', 'DbView', 'ClearFacilityCache',
+    function(SaveDoc, DbView, ClearFacilityCache) {
 
       var updateChildren = function(parent, callback) {
         if (parent.type === 'person') {
@@ -85,15 +85,11 @@ var async = require('async');
           if (err) {
             return callback(err);
           }
-          if (doc.type === 'person') {
-            updateParents(doc, function(err) {
-              callback(err, doc);
-            });
-          } else {
-            updateChildren(doc, function(err) {
-              callback(err, doc);
-            });
-          }
+          var updateFn = doc.type === 'person' ? updateParents : updateChildren;
+          updateFn(doc, function(err) {
+            ClearFacilityCache();
+            callback(err, doc);
+          });
         });
       };
     }

@@ -6,15 +6,18 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
 
+  var getFacilitiesUrl = function(BaseUrlService, district) {
+    var url = BaseUrlService() + '/facilities.json';
+    if (district) {
+      url += '/' + district;
+    }
+    return url;
+  };
+
   inboxServices.factory('FacilityRaw', ['$resource', 'BaseUrlService',
     function($resource, BaseUrlService) {
       return function(district) {
-        var url = BaseUrlService() + '/facilities.json';
-        if (district) {
-          url += '/' + district;
-        }
-
-        return $resource(url, {}, {
+        return $resource(getFacilitiesUrl(BaseUrlService, district), {}, {
           query: {
             method: 'GET',
             isArray: false,
@@ -25,32 +28,47 @@ var _ = require('underscore');
     }
   ]);
 
-  inboxServices.factory('Contact', ['$q', 'FacilityRaw',
-    function($q, FacilityRaw) {
-      return function(district) {
-        var deferred = $q.defer();
-
-        FacilityRaw(district).query(function(res) {
-          var contacts = [];
-          _.each(res.rows, function(contact) {
-            if (contact.doc.contact && contact.doc.contact.phone) {
-              contacts.push(contact);
-            }
-            if (contact.doc.type === 'health_center') {
-              var clinics = _.filter(res.rows, function(child) {
-                return child.doc.parent && 
-                  child.doc.parent._id === contact.id;
-              });
-              contacts.push(_.extend({ 
-                everyoneAt: true,
-                clinics: clinics
-              }, contact));
-            }
-          });
-          deferred.resolve(contacts);
+  inboxServices.factory('ClearFacilityCache', ['$cacheFactory', 'BaseUrlService', 'UserDistrict',
+    function($cacheFactory, BaseUrlService, UserDistrict) {
+      return function() {
+        UserDistrict(function(err, district) {
+          if (err) {
+            console.log('Error fetching district', err);
+          }
+          $cacheFactory.get('$http')
+            .remove(getFacilitiesUrl(BaseUrlService, district));
         });
+      };
+    }
+  ]);
 
-        return deferred.promise;
+  inboxServices.factory('Contact', ['FacilityRaw', 'UserDistrict',
+    function(FacilityRaw, UserDistrict) {
+      return function(callback) {
+        UserDistrict(function(err, district) {
+          if (err) {
+            return callback(err);
+          }
+          FacilityRaw(district).query(function(res) {
+            var contacts = [];
+            _.each(res.rows, function(contact) {
+              if (contact.doc.contact && contact.doc.contact.phone) {
+                contacts.push(contact);
+              }
+              if (contact.doc.type === 'health_center') {
+                var clinics = _.filter(res.rows, function(child) {
+                  return child.doc.parent &&
+                    child.doc.parent._id === contact.id;
+                });
+                contacts.push(_.extend({
+                  everyoneAt: true,
+                  clinics: clinics
+                }, contact));
+              }
+            });
+            callback(null, contacts);
+          }, callback);
+        });
       };
     }
   ]);

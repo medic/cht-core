@@ -116,28 +116,32 @@ var _ = require('underscore'),
       formatResult: formatResult,
       formatSelection: formatSelection,
       query: function(options) {
-        var vals = options.element.data('options');
-        var terms = _.map(options.term.toLowerCase().split(/\s+/), function(term) {
-          if (libphonenumber.validate(settings, term)) {
-            return libphonenumber.format(settings, term);
+        contact(function(err, vals) {
+          if (err) {
+            return console.log('Failed to retrieve contacts', err);
           }
-          return term;
-        });
-        var matches = _.filter(vals, function(val) {
-          var contact = val.doc.contact;
-          var name = contact && contact.name;
-          var phone = contact && contact.phone;
-          var tags = [ val.doc.name, name, phone ].join(' ').toLowerCase();
-          return _.every(terms, function(term) {
-            return tags.indexOf(term) > -1;
+          var terms = _.map(options.term.toLowerCase().split(/\s+/), function(term) {
+            if (libphonenumber.validate(settings, term)) {
+              return libphonenumber.format(settings, term);
+            }
+            return term;
           });
+          var matches = _.filter(vals, function(val) {
+            var contact = val.doc.contact;
+            var name = contact && contact.name;
+            var phone = contact && contact.phone;
+            var tags = [ val.doc.name, name, phone ].join(' ').toLowerCase();
+            return _.every(terms, function(term) {
+              return tags.indexOf(term) > -1;
+            });
+          });
+          matches.sort(function(a, b) {
+            var aName = a.everyoneAt ? a.doc.name + 'z' : formatResult(a);
+            var bName = b.everyoneAt ? b.doc.name + 'z' : formatResult(b);
+            return aName.toLowerCase().localeCompare(bName.toLowerCase());
+          });
+          options.callback({ results: matches });
         });
-        matches.sort(function(a, b) {
-          var aName = a.everyoneAt ? a.doc.name + 'z' : formatResult(a);
-          var bName = b.everyoneAt ? b.doc.name + 'z' : formatResult(b);
-          return aName.toLowerCase().localeCompare(bName.toLowerCase());
-        });
-        options.callback({ results: matches });
       },
       createSearchChoice: function(term, data) {
         if (/^\+?\d*$/.test(term) && data.length === 0) {
@@ -159,42 +163,51 @@ var _ = require('underscore'),
     });
   };
 
+  var contact;
   var recipients = [];
   var settings = {};
 
-  exports.init = function(_settings, _translateFn) {
-    $('body').on('click', '.send-message', function(e) {
-      var target = $(e.target).closest('.send-message');
-      if (target.hasClass('mm-icon-disabled')) {
-        return;
+  exports.init = function(Settings, Contact, _translateFn) {
+    Settings(function(err, _settings) {
+      if (err) {
+        return console.log('Failed to retrieve settings', err);
       }
-      e.preventDefault();
-      var to = target.attr('data-send-to');
-      var everyoneAt = target.attr('data-everyone-at') === 'true';
-      var $modal = $('#send-message');
-      $modal.find('.has-error').removeClass('has-error');
-      $modal.find('.help-block').text('');
-      var val = [];
-      if (to) {
-        var options = $modal.find('[name=phone]').data('options');
-        var doc = _.find(options, function(option) {
-          return (everyoneAt && option.everyoneAt && option.id === to) ||
-                 (!everyoneAt && option.everyoneAt && option.doc.contact && option.doc.contact.phone === to);
-        });
-        if (doc) {
-          val.push(doc);
-        } else if (!everyoneAt) {
-          val.push(createChoiceFromNumber(to));
+
+      $('body').on('click', '.send-message', function(e) {
+        var target = $(e.target).closest('.send-message');
+        if (target.hasClass('mm-icon-disabled')) {
+          return;
         }
-      }
-      $modal.find('[name=phone]').select2('data', val);
-      $modal.find('[name=message]').val('');
-      $modal.modal('show');
+        e.preventDefault();
+        var to = target.attr('data-send-to');
+        var everyoneAt = target.attr('data-everyone-at') === 'true';
+        var $modal = $('#send-message');
+        $modal.find('.has-error').removeClass('has-error');
+        $modal.find('.help-block').text('');
+        var val = [];
+        if (to) {
+          var options = $modal.find('[name=phone]').data('options');
+          var doc = _.find(options, function(option) {
+            return (everyoneAt && option.everyoneAt && option.id === to) ||
+                   (!everyoneAt && option.everyoneAt && option.doc.contact && option.doc.contact.phone === to);
+          });
+          if (doc) {
+            val.push(doc);
+          } else if (!everyoneAt) {
+            val.push(createChoiceFromNumber(to));
+          }
+        }
+        $modal.find('[name=phone]').select2('data', val);
+        $modal.find('[name=message]').val('');
+        $modal.modal('show');
+      });
+      initPhoneField($('#send-message [name=phone]'));
+      initMessageField();
+
+      contact = Contact;
+      settings = _settings;
+      translateFn = _translateFn;
     });
-    initPhoneField($('#send-message [name=phone]'));
-    initMessageField();
-    settings = _settings;
-    translateFn = _translateFn;
   };
 
   exports.setRecipients = function(_recipients) {
