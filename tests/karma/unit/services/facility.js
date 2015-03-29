@@ -3,49 +3,61 @@ describe('Facility service', function() {
   'use strict';
 
   var service,
-      results,
-      error;
+      $httpBackend;
 
   beforeEach(function (){
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('FacilityRaw', function() {
-        return {
-          query: function(callback, errorCb) {
-            if (error) {
-              return errorCb(error);
-            }
-            callback({'rows': results});
-          }
-        };
+      $provide.value('BaseUrlService', function() {
+        return 'BASEURL';
       });
     });
-    inject(function(_Facility_) {
-      service = _Facility_;
+    inject(function($injector) {
+      $httpBackend = $injector.get('$httpBackend');
+      service = $injector.get('Facility');
     });
-    error = null;
   });
 
-  it('returns errors from FacilityRaw', function(done) {
+  afterEach(function() {
+    $httpBackend.verifyNoOutstandingExpectation();
+    $httpBackend.verifyNoOutstandingRequest();
+  });
 
-    error = 'boom';
+  var makeUrl = function(districtId) {
+    var url = 'BASEURL/facilities.json';
+    if (districtId) {
+      url += '/' + districtId;
+    }
+    return encodeURI(url);
+  };
+
+  it('returns errors from request', function(done) {
+
+    $httpBackend
+      .expect('GET', makeUrl())
+      .respond(503, 'boom');
 
     service(function(err) {
-      chai.expect(err).to.equal('boom');
+      chai.expect(err.data).to.equal('boom');
       done();
     });
+
+    $httpBackend.flush();
   });
 
   it('returns zero when no facilities', function(done) {
 
-    results = [];
-    var expected = [];
+    $httpBackend
+      .expect('GET', makeUrl())
+      .respond({ rows: [] });
 
     service(function(err, actual) {
       chai.expect(err).to.equal(null);
-      chai.expect(actual).to.deep.equal(expected);
+      chai.expect(actual).to.deep.equal([]);
       done();
     });
+
+    $httpBackend.flush();
   });
 
   it('returns all clinics when no user district', function(done) {
@@ -165,15 +177,31 @@ describe('Facility service', function() {
       }
     };
 
-    results = [ clinicA, healthCenter, clinicB ];
-
-    var expected = [ clinicA, clinicB ];
+    $httpBackend
+      .expect('GET', makeUrl())
+      .respond({ rows: [ clinicA, healthCenter, clinicB ] });
 
     service({ types: ['clinic'] }, function(err, actual) {
       chai.expect(err).to.equal(null);
-      chai.expect(actual).to.deep.equal(expected);
+      chai.expect(actual).to.deep.equal([ clinicA, clinicB ]);
       done();
     });
+
+    $httpBackend.flush();
   });
 
+  it('queries for user district', function(done) {
+
+    $httpBackend
+      .expect('GET', makeUrl('554'))
+      .respond({ rows: [ ] });
+
+    service({ types: ['clinic'], district: '554' }, function(err, actual) {
+      chai.expect(err).to.equal(null);
+      chai.expect(actual).to.deep.equal([ ]);
+      done();
+    });
+
+    $httpBackend.flush();
+  });
 });

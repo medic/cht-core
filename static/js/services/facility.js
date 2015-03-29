@@ -14,20 +14,6 @@ var _ = require('underscore');
     return url;
   };
 
-  inboxServices.factory('FacilityRaw', ['$resource', 'BaseUrlService',
-    function($resource, BaseUrlService) {
-      return function(district) {
-        return $resource(getFacilitiesUrl(BaseUrlService, district), {}, {
-          query: {
-            method: 'GET',
-            isArray: false,
-            cache: true
-          }
-        });
-      };
-    }
-  ]);
-
   inboxServices.factory('ClearFacilityCache', ['$cacheFactory', 'BaseUrlService', 'UserDistrict',
     function($cacheFactory, BaseUrlService, UserDistrict) {
       return function() {
@@ -42,58 +28,77 @@ var _ = require('underscore');
     }
   ]);
 
-  inboxServices.factory('Contact', ['FacilityRaw', 'UserDistrict',
-    function(FacilityRaw, UserDistrict) {
-      return function(callback) {
-        UserDistrict(function(err, district) {
-          if (err) {
-            return callback(err);
-          }
-          FacilityRaw(district).query(function(res) {
-            var contacts = [];
-            _.each(res.rows, function(contact) {
-              if (contact.doc.contact && contact.doc.contact.phone) {
-                contacts.push(contact);
-              }
-              if (contact.doc.type === 'health_center') {
-                var clinics = _.filter(res.rows, function(child) {
-                  return child.doc.parent &&
-                    child.doc.parent._id === contact.id;
-                });
-                contacts.push(_.extend({
-                  everyoneAt: true,
-                  clinics: clinics
-                }, contact));
-              }
-            });
-            callback(null, contacts);
-          }, callback);
-        });
-      };
-    }
-  ]);
-
-  inboxServices.factory('Facility', ['FacilityRaw',
-    function(FacilityRaw) {
+  inboxServices.factory('Facility', ['$resource', 'BaseUrlService',
+    function($resource, BaseUrlService) {
       return function(options, callback) {
         if (!callback) {
           callback = options;
           options = {};
         }
-        FacilityRaw(options.district).query(
+        $resource(getFacilitiesUrl(BaseUrlService, options.district), {}, {
+          query: {
+            method: 'GET',
+            isArray: false,
+            cache: true
+          }
+        }).query(
           function(res) {
-            var result = res.rows;
             if (options.types) {
-              result = _.filter(result, function(row) {
+              return callback(null, _.filter(res.rows, function(row) {
                 return options.types.indexOf(row.doc.type) !== -1;
-              });
+              }));
             }
-            callback(null, result);
+            callback(null, res.rows);
           },
           function(err) {
             callback(err);
           }
         );
+      };
+    }
+  ]);
+
+  var descendant = function(id, parent) {
+    if (!parent) {
+      return false;
+    }
+    if (parent._id === id) {
+      return true;
+    }
+    return descendant(id, parent.parent);
+  };
+
+  inboxServices.factory('Contact', ['Facility', 'UserDistrict',
+    function(Facility, UserDistrict) {
+      return function(callback) {
+        UserDistrict(function(err, district) {
+          if (err) {
+            return callback(err);
+          }
+          var options = {
+            district: district,
+            types: [ 'person', 'health_center' ]
+          };
+          Facility(options, function(err, res) {
+            if (err) {
+              return callback(err);
+            }
+            var contacts = [];
+            _.each(res, function(contact) {
+              if (contact.doc.type === 'person' && contact.doc.phone) {
+                contacts.push(contact);
+              } else if (contact.doc.type === 'health_center') {
+                contacts.push(_.extend({
+                  everyoneAt: true,
+                  clinics: _.filter(res, function(child) {
+                    return descendant(contact.id, child.doc.parent);
+                  })
+                }, contact));
+              }
+            });
+            callback(null, contacts);
+          });
+        });
       };
     }
   ]);

@@ -5195,11 +5195,11 @@ module.exports = {
       },
       {
           "key": "Everyone at",
-          "default": "Everyone at {{facility}}",
+          "default": "{{facility}} - all {{count}} contacts",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Everyone at {{facility}}"
+                  "content": "{{facility}} - all {{count}} contacts"
               }
           ]
       },

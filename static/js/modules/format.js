@@ -22,20 +22,28 @@ var _ = require('underscore');
     return _.map(parts, _.escape).join(' › ');
   };
 
-  exports.contact = function(doc) {
+  exports.sender = function(options) {
     var parts = [];
-    var contact = doc.contact;
-    if (contact && contact.name) {
-      parts.push('<span class="name">' + _.escape(contact.name) + '</span>');
+    if (options.name) {
+      parts.push('<span class="name">' + _.escape(options.name) + '</span>');
     }
-    if (contact && contact.phone) {
-      parts.push('<span>' + _.escape(contact.phone) + '</span>');
+    if (options.phone) {
+      parts.push('<span>' + _.escape(options.phone) + '</span>');
     }
-    var name = exports.clinic(doc);
-    if (name) {
-      parts.push('<span class="position">' + name + '</span>');
+    var position = exports.clinic(options.parent);
+    if (position) {
+      parts.push('<span class="position">' + position + '</span>');
     }
     return '<span class="sender">' + parts.join('') + '</span>';
+  };
+
+  exports.contact = function(doc) {
+    var contact = doc.type === 'person' ? doc : doc.contact;
+    return exports.sender({
+      name: contact.name,
+      phone: contact.phone,
+      parent: doc.type === 'person' ? doc.parent : doc
+    });
   };
 
 }());

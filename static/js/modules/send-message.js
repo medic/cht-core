@@ -72,36 +72,71 @@ var _ = require('underscore'),
     return result;
   };
 
+  var formatEveryoneAt = function(row) {
+    return translateFn('Everyone at', {
+      facility: row.doc.name,
+      count: row.clinics.length
+    });
+  };
+
   var formatResult = function(row) {
+    var icon,
+        contact;
     if (row.everyoneAt) {
-      return translateFn('Everyone at', { facility: row.doc.name });
+      icon = 'fa-hospital-o';
+      contact = format.sender({
+        name: formatEveryoneAt(row),
+        parent: row.doc.parent
+      });
+    } else if (row.freetext) {
+      icon = 'fa-user';
+      contact = '<span class="freetext">' + row.id + '</span>';
+    } else {
+      icon = 'fa-user';
+      contact = format.contact(row.doc);
     }
-    if (row.freetext) {
-      return '<span class="freetext">' + row.id + '</span>';
-    }
-    return format.contact(row.doc);
+    return '<span class="fa fa-fw ' + icon + '"></span>' + contact;
   };
 
   var formatSelection = function(row) {
     if (row.everyoneAt) {
-      return translateFn('Everyone at', { facility: row.doc.name });
+      return formatEveryoneAt(row);
     }
-    var contact = row.doc.contact;
-    return (contact && contact.name) ||
-           row.doc.name ||
-           (contact && contact.phone);
+    return row.doc.name || row.doc.phone;
   };
 
   var createChoiceFromNumber = function(phone) {
     return {
       id: phone,
-      doc: {
-        contact: {
-          phone: phone
-        }
-      },
-      freetext: true
+      freetext: true,
+      doc: { phone: phone }
     };
+  };
+
+  var filter = function(options, contacts) {
+    var terms = _.map(options.term.toLowerCase().split(/\s+/), function(term) {
+      if (libphonenumber.validate(settings, term)) {
+        return libphonenumber.format(settings, term);
+      }
+      return term;
+    });
+    var matches = _.filter(contacts, function(val) {
+      var tags = [ val.doc.name, val.doc.phone ];
+      var parent = val.doc.parent;
+      while (parent) {
+        tags.push(parent.name);
+        parent = parent.parent;
+      }
+      tags = tags.join(' ').toLowerCase();
+      return _.every(terms, function(term) {
+        return tags.indexOf(term) > -1;
+      });
+    });
+    matches.sort(function(a, b) {
+      return a.doc.name.toLowerCase().localeCompare(
+             b.doc.name.toLowerCase());
+    });
+    return matches;
   };
 
   var initPhoneField = function($phone) {
@@ -120,27 +155,9 @@ var _ = require('underscore'),
           if (err) {
             return console.log('Failed to retrieve contacts', err);
           }
-          var terms = _.map(options.term.toLowerCase().split(/\s+/), function(term) {
-            if (libphonenumber.validate(settings, term)) {
-              return libphonenumber.format(settings, term);
-            }
-            return term;
+          options.callback({
+            results: filter(options, vals)
           });
-          var matches = _.filter(vals, function(val) {
-            var contact = val.doc.contact;
-            var name = contact && contact.name;
-            var phone = contact && contact.phone;
-            var tags = [ val.doc.name, name, phone ].join(' ').toLowerCase();
-            return _.every(terms, function(term) {
-              return tags.indexOf(term) > -1;
-            });
-          });
-          matches.sort(function(a, b) {
-            var aName = a.everyoneAt ? a.doc.name + 'z' : formatResult(a);
-            var bName = b.everyoneAt ? b.doc.name + 'z' : formatResult(b);
-            return aName.toLowerCase().localeCompare(bName.toLowerCase());
-          });
-          options.callback({ results: matches });
         });
       },
       createSearchChoice: function(term, data) {
@@ -163,6 +180,35 @@ var _ = require('underscore'),
     });
   };
 
+  var showModal = function(e) {
+    var target = $(e.target).closest('.send-message');
+    if (target.hasClass('mm-icon-disabled')) {
+      return;
+    }
+    e.preventDefault();
+    var to = target.attr('data-send-to');
+    var everyoneAt = target.attr('data-everyone-at') === 'true';
+    var $modal = $('#send-message');
+    $modal.find('.has-error').removeClass('has-error');
+    $modal.find('.help-block').text('');
+    var val = [];
+    if (to) {
+      var options = $modal.find('[name=phone]').data('options');
+      var doc = _.find(options, function(option) {
+        return (everyoneAt && option.everyoneAt && option.id === to) ||
+               (!everyoneAt && option.everyoneAt && option.doc.contact && option.doc.contact.phone === to);
+      });
+      if (doc) {
+        val.push(doc);
+      } else if (!everyoneAt) {
+        val.push(createChoiceFromNumber(to));
+      }
+    }
+    $modal.find('[name=phone]').select2('data', val);
+    $modal.find('[name=message]').val('');
+    $modal.modal('show');
+  };
+
   var contact;
   var recipients = [];
   var settings = {};
@@ -173,34 +219,7 @@ var _ = require('underscore'),
         return console.log('Failed to retrieve settings', err);
       }
 
-      $('body').on('click', '.send-message', function(e) {
-        var target = $(e.target).closest('.send-message');
-        if (target.hasClass('mm-icon-disabled')) {
-          return;
-        }
-        e.preventDefault();
-        var to = target.attr('data-send-to');
-        var everyoneAt = target.attr('data-everyone-at') === 'true';
-        var $modal = $('#send-message');
-        $modal.find('.has-error').removeClass('has-error');
-        $modal.find('.help-block').text('');
-        var val = [];
-        if (to) {
-          var options = $modal.find('[name=phone]').data('options');
-          var doc = _.find(options, function(option) {
-            return (everyoneAt && option.everyoneAt && option.id === to) ||
-                   (!everyoneAt && option.everyoneAt && option.doc.contact && option.doc.contact.phone === to);
-          });
-          if (doc) {
-            val.push(doc);
-          } else if (!everyoneAt) {
-            val.push(createChoiceFromNumber(to));
-          }
-        }
-        $modal.find('[name=phone]').select2('data', val);
-        $modal.find('[name=message]').val('');
-        $modal.modal('show');
-      });
+      $('body').on('click', '.send-message', showModal);
       initPhoneField($('#send-message [name=phone]'));
       initMessageField();
 

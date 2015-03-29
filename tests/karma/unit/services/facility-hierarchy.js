@@ -9,13 +9,11 @@ describe('FacilityHierarchy service', function() {
   beforeEach(function() {
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('FacilityRaw', function() {
-        return { query: function(cbRes, cbErr) {
-          if (error) {
-            return cbErr(error);
-          }
-          cbRes({ rows: facilities });
-        } };
+      $provide.value('Facility', function(options, callback) {
+        if (error) {
+          return callback(error);
+        }
+        callback(null, facilities);
       });
     });
     inject(function($injector) {
@@ -57,9 +55,8 @@ describe('FacilityHierarchy service', function() {
     var d = { _id: 'd', type: 'clinic', parent: { _id: 'b' } };
     var e = { _id: 'e', type: 'district_hospital', parent: { _id: 'x' } }; // unknown parent is ignored
     var f = { _id: 'f', type: 'district_hospital' };
-    var g = { _id: 'g', type: 'person' }; // persons are excluded from the hierarchy
 
-    facilities = [ { doc: a }, { doc: b }, { doc: c }, { doc: d }, { doc: e }, { doc: f }, { doc: g } ];
+    facilities = [ { doc: a }, { doc: b }, { doc: c }, { doc: d }, { doc: e }, { doc: f } ];
 
     service(null, function(err, actual, actualTotal) {
       chai.expect(err).to.equal(null);
