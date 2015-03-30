@@ -10,8 +10,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$state', '$stateParams', '$location', '$animate', '$rootScope', '$timeout', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup',
-    function ($scope, $state, $stateParams, $location, $animate, $rootScope, $timeout, translateFilter, Settings, MarkRead, Search, Changes, EditGroup) {
+    ['$scope', '$state', '$stateParams', '$location', '$rootScope', '$timeout', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup',
+    function ($scope, $state, $stateParams, $location, $rootScope, $timeout, translateFilter, Settings, MarkRead, Search, Changes, EditGroup) {
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = undefined;
@@ -59,9 +59,6 @@ var _ = require('underscore'),
         $scope.setSelected(message);
         if (!$scope.isRead(message)) {
           $scope.readStatus.forms--;
-        }
-        if (!$rootScope.$$phase) {
-          $rootScope.$apply();
         }
         MarkRead(message._id, true, function(err) {
           if (err) {
@@ -112,7 +109,6 @@ var _ = require('underscore'),
 
       $scope.query = function(options) {
         options = options || {};
-        $animate.enabled(!!options.changes);
         if (options.changes) {
           $scope.updateReadStatus();
           var deletedRows = _.where(options.changes, { deleted: true });

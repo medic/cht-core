@@ -10,7 +10,6 @@ require('./filters/index');
   var app = angular.module('inboxApp', [
     'ipCookie',
     'ngRoute',
-    'ngAnimate',
     'ui.router',
     'inboxFilters',
     'inboxControllers',

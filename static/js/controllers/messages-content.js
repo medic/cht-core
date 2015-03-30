@@ -8,8 +8,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesContentCtrl', 
-    ['$scope', '$stateParams', '$animate', '$timeout', 'ContactConversation', 'MarkAllRead', 'Changes', 'UserCtxService',
-    function ($scope, $stateParams, $animate, $timeout, ContactConversation, MarkAllRead, Changes, UserCtxService) {
+    ['$scope', '$stateParams', '$timeout', 'ContactConversation', 'MarkAllRead', 'Changes', 'UserCtxService',
+    function ($scope, $stateParams, $timeout, ContactConversation, MarkAllRead, Changes, UserCtxService) {
 
 
       var scrollToUnread = function() {
@@ -77,7 +77,6 @@ var _ = require('underscore'),
           sendMessage.setRecipients(facility);
           $scope.loadingContent = false;
           $scope.error = false;
-          $animate.enabled(false);
           var unread = _.filter(data, function(message) {
             return !$scope.isRead(message.doc);
           });
@@ -95,7 +94,6 @@ var _ = require('underscore'),
         if (selectedId) {
           options = options || {};
           if (options.changes && options.changes.length) {
-            $animate.enabled(true);
             for (var i = $scope.selected.messages.length - 1; i >= 0; i--) {
               var msgId = $scope.selected.messages[i].id;
               if (_.findWhere(options.changes, { id: msgId, deleted: true })) {
@@ -115,7 +113,6 @@ var _ = require('underscore'),
             if (err) {
               return console.log('Error fetching contact conversation', err);
             }
-            $animate.enabled(!options.skip);
             $scope.loadingContent = false;
             var contentElem = $('#message-content');
             var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;

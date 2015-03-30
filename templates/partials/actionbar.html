@@ -1,9 +1,9 @@
-<div class="container-fluid action-container" ng-show="selected && !loadingContent">
+<div class="container-fluid action-container">
   <div class="row">
     <div class="inner">
       <div class="col-sm-4"></div>
       <div class="col-sm-8 column">
-        <div class="actions">
+        <div class="actions" ng-show="selected && !loadingContent">
           <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" data-send-to="{{selected.related_entities.clinic.contact.phone || selected.from || selected.phone || selected.contact.phone}}">
             <span class="fa fa-envelope"></span>
             <p>{{'Send Message' | translate}}</p>

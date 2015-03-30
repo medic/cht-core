@@ -18,8 +18,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$translate', '$animate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie',
-    function ($window, $scope, $translate, $animate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie) {
 
       $scope.loading = true;
       $scope.loadingContent = false;
@@ -59,7 +59,7 @@ require('moment/locales');
           $scope.selected = selected;
           $timeout(function() {
             $scope.showContent = true;
-          }, 1);
+          });
         } else if($scope.selected) {
           $scope.showContent = false;
           if ($('#back').is(':visible')) {
@@ -72,11 +72,28 @@ require('moment/locales');
         }
       };
 
+      $scope.select = function(id) {
+        if ($stateParams.id === id) {
+          // message already set - make sure we're showing content
+          var message = _.findWhere($scope.items, { _id: id });
+          if (message) {
+            $scope.setSelected(message);
+          } else {
+            $state.reload();
+            $scope.$broadcast('query');
+          }
+        } else if (id) {
+          $state.go($scope.filterModel.type + '.detail', { id: id });
+        } else {
+          $state.go($scope.filterModel.type);
+        }
+      };
+
       $scope.setLoadingContent = function(id) {
         $scope.loadingContent = id;
         $timeout(function() {
           $scope.showContent = true;
-        }, 1);
+        });
       };
 
       var removeDeletedContacts = function(contacts) {
@@ -109,7 +126,6 @@ require('moment/locales');
 
       $scope.setMessages = function(options) {
         $scope.loading = false;
-        $animate.enabled(false);
         options = options || {};
         if (options.changes) {
           removeDeletedContacts(options.contacts);
@@ -181,23 +197,6 @@ require('moment/locales');
           }
           $window.location.href = url;
         });
-      };
-
-      $scope.select = function(id) {
-        if ($stateParams.id === id) {
-          // message already set - make sure we're showing content
-          var message = _.findWhere($scope.items, { _id: id });
-          if (message) {
-            $scope.setSelected(message);
-          } else {
-            $state.reload();
-            $scope.$broadcast('query');
-          }
-        } else if (id) {
-          $state.go($scope.filterModel.type + '.detail', { id: id });
-        } else {
-          $state.go($scope.filterModel.type);
-        }
       };
 
       $scope.updateAvailableFacilities = function() {

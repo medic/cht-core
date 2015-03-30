@@ -1,93 +1,97 @@
-<div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
-  <div><span class="fa fa-spinner fa-spin"></span></div>
-</div>
+<div class="content-pane">
 
-<div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && (!selected || selected.form === undefined)">
-  <div>{{'No report selected' | translate}}</div>
-</div>
+  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
+    <div><span class="fa fa-spinner fa-spin"></span></div>
+  </div>
 
-<div id="reports-content" class="col-sm-8 item-content" ng-show="!loadingContent && (selected && selected.form !== undefined)">
-  <div>
+  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && (!selected || selected.form === undefined)">
+    <div>{{'No report selected' | translate}}</div>
+  </div>
 
-    <div class="meta">
-      <div class="time" ng-bind-html="selected.reported_date | fullDate"></div>
-      <mm-sender message="selected"></mm-sender>
-    </div>
+  <div id="reports-content" class="col-sm-8 item-content">
+    <div ng-show="!loadingContent && selected && selected.form !== undefined">
 
-    <div class="status">
-      <span class="mm-badge mm-badge-round mm-badge-border" ng-class="selected.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
-        <span class="fa" ng-class="{'fa-check': selected.verified}"></span>
-      </span>
-    </div>
+      <div class="meta">
+        <div class="time" ng-bind-html="selected.reported_date | fullDate"></div>
+        <mm-sender message="selected"></mm-sender>
+      </div>
 
-    <div class="body report-body">
-      <h2 ng-bind-html="selected | title:forms"></h2>
-      <ul>
-        <li ng-if="selected.sms_message.message">
-          <label>{{'Content' | translate}}</label>
-          <p>{{selected.sms_message.message}}</p>
-        </li>
-        <li ng-if="selected.form" ng-repeat="field in selected.fields.data">
-          <label>
-            {{field.label}}
-            <span class="fa fa-cogs" ng-show="field.generated" ng-attr-title="{{'Generated report field' | translate}}"></span>
-          </label>
-          <p>{{field.value}}</p>
-        </li>
-        <li ng-if="selected.errors.length">
-          <label>{{'Errors' | translate}}</label>
-          <ul>
-            <li ng-repeat="error in selected.errors">
-              {{error.message}}
-            </li>
-          </ul>
-        </li>
-        <li ng-if="selected.tasks.length">
-          <label ng-if="selected.kujua_message">{{'tasks.0.messages.0.to' | translate}}</label>
-          <label ng-if="!selected.kujua_message">{{'Automated Reply' | translate}}</label>
-          <ul class="task-list">
-            <li ng-repeat="task in selected.tasks">
-              <ul>
-                <li ng-repeat="message in task.messages">
-                  {{selected.kujua_message ? message.to : message.message}}
-                </li>
-              </ul>
-              <span class="task-state" ng-bind-html="task | state"></span>
-            </li>
-            <li class="clear"></li>
-          </ul>
-        </li>
-      </ul>
-    </div>
+      <div class="status">
+        <span class="mm-badge mm-badge-round mm-badge-border" ng-class="selected.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
+          <span class="fa" ng-class="{'fa-check': selected.verified}"></span>
+        </span>
+      </div>
 
-    <div class="body" ng-if="selected.scheduled_tasks_by_group.length">
-      <h2>{{'Outgoing Messages' | translate}}</h2>
-      <ul>
-        <li ng-repeat="group in selected.scheduled_tasks_by_group">
-          <p>
-            {{group.group}}
-            <span ng-hide="group.loading">
-              <a class="btn btn-link" ng-click="edit(group)">{{'Edit' | translate}}</a>
-              <a class="btn btn-link" ng-click="mute(group)" ng-show="canMute(group)">{{'Mute' | translate}}</a>
-              <a class="btn btn-link" ng-click="schedule(group)" ng-show="canSchedule(group)">{{'Schedule' | translate}}</a>
-            </span>
-            <span class="loading-button" ng-show="group.loading">
-              <span class="fa fa-spinner fa-spin"></span>
-            </span>
-          </p>
-          <ul class="task-list">
-            <li ng-repeat="task in group.rows | orderBy:'timestamp'">
-              <ul>
-                <li ng-repeat="message in task.messages">
-                  {{message.message}}
-                </li>
-              </ul>
-              <span class="task-state" ng-bind-html="task | state"></span>
-            </li>
-            <li class="clear"></li>
-          </ul>
-        </li>
-      </ul>
+      <div class="body report-body">
+        <h2 ng-bind-html="selected | title:forms"></h2>
+        <ul>
+          <li ng-if="selected.sms_message.message">
+            <label>{{'Content' | translate}}</label>
+            <p>{{selected.sms_message.message}}</p>
+          </li>
+          <li ng-if="selected.form" ng-repeat="field in selected.fields.data">
+            <label>
+              {{field.label}}
+              <span class="fa fa-cogs" ng-show="field.generated" ng-attr-title="{{'Generated report field' | translate}}"></span>
+            </label>
+            <p>{{field.value}}</p>
+          </li>
+          <li ng-if="selected.errors.length">
+            <label>{{'Errors' | translate}}</label>
+            <ul>
+              <li ng-repeat="error in selected.errors">
+                {{error.message}}
+              </li>
+            </ul>
+          </li>
+          <li ng-if="selected.tasks.length">
+            <label ng-if="selected.kujua_message">{{'tasks.0.messages.0.to' | translate}}</label>
+            <label ng-if="!selected.kujua_message">{{'Automated Reply' | translate}}</label>
+            <ul class="task-list">
+              <li ng-repeat="task in selected.tasks">
+                <ul>
+                  <li ng-repeat="message in task.messages">
+                    {{selected.kujua_message ? message.to : message.message}}
+                  </li>
+                </ul>
+                <span class="task-state" ng-bind-html="task | state"></span>
+              </li>
+              <li class="clear"></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="body" ng-if="selected.scheduled_tasks_by_group.length">
+        <h2>{{'Outgoing Messages' | translate}}</h2>
+        <ul>
+          <li ng-repeat="group in selected.scheduled_tasks_by_group">
+            <p>
+              {{group.group}}
+              <span ng-hide="group.loading">
+                <a class="btn btn-link" ng-click="edit(group)">{{'Edit' | translate}}</a>
+                <a class="btn btn-link" ng-click="mute(group)" ng-show="canMute(group)">{{'Mute' | translate}}</a>
+                <a class="btn btn-link" ng-click="schedule(group)" ng-show="canSchedule(group)">{{'Schedule' | translate}}</a>
+              </span>
+              <span class="loading-button" ng-show="group.loading">
+                <span class="fa fa-spinner fa-spin"></span>
+              </span>
+            </p>
+            <ul class="task-list">
+              <li ng-repeat="task in group.rows | orderBy:'timestamp'">
+                <ul>
+                  <li ng-repeat="message in task.messages">
+                    {{message.message}}
+                  </li>
+                </ul>
+                <span class="task-state" ng-bind-html="task | state"></span>
+              </li>
+              <li class="clear"></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
+
 </div>

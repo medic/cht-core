@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', 
-    ['$scope', '$state', '$timeout', 'db', 'Search', 'DbView',
-    function ($scope, $state, $timeout, db, Search, DbView) {
+    ['$scope', '$state', 'db', 'Search', 'DbView',
+    function ($scope, $state, db, Search, DbView) {
 
       $scope.filterModel.type = 'contacts';
       $scope.setContacts();
@@ -55,10 +55,7 @@ var _ = require('underscore'),
               if (curr) {
                 $scope.setSelected(curr);
               } else if (!options.stay && !$('#back').is(':visible')) {
-                $timeout(function() {
-                  var id = $('.inbox-items li').first().attr('data-record-id');
-                  $state.go('contacts.detail', { id: id });
-                });
+                $scope.setSelected($('.inbox-items li').first().attr('data-record-id'));
               }
             }
           }

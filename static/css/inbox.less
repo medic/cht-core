@@ -395,6 +395,9 @@ body {
   }
 }
 
+.content-pane {
+  height: 100%
+}
 .message-content-wrapper {
   height: 100%;
   .item-content {
@@ -814,7 +817,14 @@ a.fa:hover {
   display: none;
 }
 
+.reports, .contacts {
+  .action-container {
+    display: block;
+  }
+}
+
 .action-container {
+  display: none;
   position: fixed;
   bottom: 0;
   top: inherit;
@@ -1261,22 +1271,21 @@ a.fa:hover {
     }
   }
   .inbox-items,
-  .reports .item-content,
-  .messages .message-content-wrapper,
-  .message-content-wrapper .item-content,
-  .message-content-wrapper .reply,
-  .contacts .item-content {
+  .content-pane {
     width: 100%;
   }
   .inbox-items,
-  .reports .item-content,
-  .messages .message-content-wrapper,
-  .contacts .item-content {
+  .content-pane {
     position: absolute;
     padding-top: 0;
   }
-  .message-content-wrapper .item-content {
-    bottom: 100px;
+  .message-content-wrapper {
+    .item-content {
+      bottom: 100px;
+    }
+    .item-content, .reply {
+      left: 0;
+    }
   }
   .content {
     .page {
@@ -1318,10 +1327,7 @@ a.fa:hover {
 
   .action-container .column,
   .content .inbox-items,
-  .content .message-content-wrapper,
-  .content .empty-selection,
-  .reports .content .item-content,
-  .contacts .content .item-content {
+  .content-pane {
     transition: left 500ms ease 0s;
   }
 
@@ -1329,10 +1335,7 @@ a.fa:hover {
     left: 0;
   }
   .action-container .column,
-  .reports .content .item-content,
-  .content .message-content-wrapper,
-  .content .empty-selection,
-  .contacts .content .item-content {
+  .content-pane {
     left: 100%;
   }
 
@@ -1342,10 +1345,7 @@ a.fa:hover {
       left: -100%;
     }
     .action-container .column,
-    &.reports .content .item-content,
-    .content .message-content-wrapper,
-    .content .empty-selection,
-    &.contacts .content .item-content {
+    .content-pane {
       left: 0;
     }
 
