@@ -32,7 +32,6 @@
           message = description;
         } else {
           modal.modal('hide');
-          modal.find('input[type=text], textarea').val('');
         }
         resetModal(modal, label, message);
       }
