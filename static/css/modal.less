@@ -1,0 +1,39 @@
+.modal-dialog {
+  .modal-header {
+    h3 {
+      font-size: 1.5em;
+    }
+    .close {
+      border: none;
+      background: none;
+    }
+  }
+
+  .modal-body {
+    max-height: 480px;
+    overflow-y: auto;
+    min-height: 50px;
+    textarea {
+      margin: 0;
+      width: 100%;
+      padding: 0.5em;
+    }
+  }
+  
+  .modal-footer .note {
+    font-weight: bold;
+    color: @error-color;
+  }
+}
+
+@media (max-width: 767px) {
+  .modal-dialog {
+    .modal-header h3 {
+      margin: 0;
+    }
+    .modal-footer {
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+  }
+}
