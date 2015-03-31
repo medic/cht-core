@@ -220,42 +220,25 @@ exports.data_records_by_contact = {
             contact,
             key,
             name;
-        if (doc.type === 'data_record') {
-            if (!doc.form) {
-                if (doc.kujua_message) {
-                    doc.tasks.forEach(function(task) {
-                        message = task.messages[0];
-                        facility = message.facility;
-                        key = (facility && facility._id) || message.to;
-                        if (!facility) {
-                            name = message.to;
-                            contact = facility.name;
-                            districtId = undefined
-                        } else if (facility.type === 'person') {
-                            districtId = objectpath.get(facility, 'parent.parent.parent._id');
-                            contact = facility.name;
-                            name = getName(facility.parent);
-                        } else {
-                            districtId = objectpath.get(facility, 'parent.parent._id');
-                            contact = objectpath.get(facility, 'contact.name');
-                            name = getName(facility);
-                        }
-                        emitContact(districtId, key, doc.reported_date, {
-                            date: doc.reported_date,
-                            read: doc.read,
-                            contact: contact,
-                            facility: facility,
-                            name: name,
-                            message: message.message
-                        });
-                    });
-                } else if (doc.sms_message) {
-                    districtId = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
-                    message = doc.sms_message;
-                    facility = objectpath.get(doc, 'related_entities.clinic');
-                    name = getName(facility) || doc.from;
-                    contact = objectpath.get(facility, 'contact.name');
-                    key = (facility && facility._id) || doc.from;
+        if (doc.type === 'data_record' && !doc.form) {
+            if (doc.kujua_message) {
+                doc.tasks.forEach(function(task) {
+                    message = task.messages[0];
+                    facility = message.facility;
+                    key = (facility && facility._id) || message.to;
+                    if (!facility) {
+                        name = message.to;
+                        contact = facility.name;
+                        districtId = undefined
+                    } else if (facility.type === 'person') {
+                        districtId = objectpath.get(facility, 'parent.parent.parent._id');
+                        contact = facility.name;
+                        name = getName(facility.parent);
+                    } else {
+                        districtId = objectpath.get(facility, 'parent.parent._id');
+                        contact = objectpath.get(facility, 'contact.name');
+                        name = getName(facility);
+                    }
                     emitContact(districtId, key, doc.reported_date, {
                         date: doc.reported_date,
                         read: doc.read,
@@ -264,7 +247,22 @@ exports.data_records_by_contact = {
                         name: name,
                         message: message.message
                     });
-                }
+                });
+            } else if (doc.sms_message) {
+                districtId = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
+                message = doc.sms_message;
+                facility = objectpath.get(doc, 'related_entities.clinic');
+                name = getName(facility) || doc.from;
+                contact = objectpath.get(facility, 'contact.name');
+                key = (facility && facility._id) || doc.from;
+                emitContact(districtId, key, doc.reported_date, {
+                    date: doc.reported_date,
+                    read: doc.read,
+                    contact: contact,
+                    facility: facility,
+                    name: name,
+                    message: message.message
+                });
             }
         }
     },
