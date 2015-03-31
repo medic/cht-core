@@ -48,15 +48,8 @@ var _ = require('underscore'),
             });
             if (!data.results.length) {
               $scope.selectContact();
-            } else {
-              var curr = _.find(data.results, function(result) {
-                return result._id === $state.params.id;
-              });
-              if (curr) {
-                $scope.setSelected(curr);
-              } else if (!options.stay && !$('#back').is(':visible')) {
-                $scope.setSelected($('.inbox-items li').first().attr('data-record-id'));
-              }
+            } else if (!$state.params.id && !options.stay && !$('#back').is(':visible')) {
+              $scope.setSelected($('.inbox-items li').first().attr('data-record-id'));
             }
           }
         });
