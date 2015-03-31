@@ -16,11 +16,13 @@ var tour = require('../modules/tour');
       $scope.setMessages();
 
       var updateContacts = function(options, callback) {
+        $scope.loading = true;
         options = options || {};
         MessageContact({ districtAdmin: $scope.permissions.districtAdmin }, function(err, data) {
           if (err) {
             return console.log('Error fetching contact', err);
           }
+          $scope.loading = false;
           options.contacts = data;
           $scope.setMessages(options);
           if (callback) {

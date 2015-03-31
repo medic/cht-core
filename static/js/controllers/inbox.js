@@ -21,7 +21,6 @@ require('moment/locales');
     ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie',
     function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie) {
 
-      $scope.loading = true;
       $scope.loadingContent = false;
       $scope.error = false;
       $scope.errorSyntax = false;
@@ -125,7 +124,6 @@ require('moment/locales');
       };
 
       $scope.setMessages = function(options) {
-        $scope.loading = false;
         options = options || {};
         if (options.changes) {
           removeDeletedContacts(options.contacts);
@@ -136,12 +134,10 @@ require('moment/locales');
       };
 
       $scope.setReports = function(reports) {
-        $scope.loading = false;
         $scope.items = reports || [];
       };
 
       $scope.setContacts = function(contacts) {
-        $scope.loading = false;
         $scope.items = contacts || [];
       };
 
