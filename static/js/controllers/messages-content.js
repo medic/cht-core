@@ -11,9 +11,8 @@ var _ = require('underscore'),
     ['$scope', '$stateParams', '$timeout', 'ContactConversation', 'MarkAllRead', 'Changes', 'UserCtxService',
     function ($scope, $stateParams, $timeout, ContactConversation, MarkAllRead, Changes, UserCtxService) {
 
-
       var scrollToUnread = function() {
-        var content = $('.item-content');
+        var content = $('#message-content');
         var markers = content.find('.marker');
         var scrollTo;
         if (markers.length) {
