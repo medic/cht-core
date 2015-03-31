@@ -16,8 +16,9 @@ var tour = require('../modules/tour');
       $scope.setMessages();
 
       var updateContacts = function(options, callback) {
-        $scope.loading = true;
-        options = options || {};
+        if (!options.changes) {
+          $scope.loading = true;
+        }
         MessageContact({ districtAdmin: $scope.permissions.districtAdmin }, function(err, data) {
           if (err) {
             return console.log('Error fetching contact', err);
