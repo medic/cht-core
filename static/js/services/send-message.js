@@ -39,11 +39,12 @@ var _ = require('underscore'),
 
       var mapRecipients = function(recipients) {
         var results = _.filter(recipients, function(recipient) {
-          return recipient.doc.contact && recipient.doc.contact.phone;
+          return recipient.doc.phone ||
+                 recipient.doc.contact && recipient.doc.contact.phone;
         });
         return _.map(results, function(recipient) {
           return {
-            phone: recipient.doc.contact.phone,
+            phone: recipient.doc.phone || recipient.doc.contact.phone,
             facility: recipient.doc
           };
         });

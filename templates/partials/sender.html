@@ -4,7 +4,7 @@
     ng-bind="message.related_entities.clinic.contact.name || message.related_entities.clinic.doc.contact.name || message.contact || (!message.form && message.name) || message.from || message.sent_by"></span>
     <span class="phone"
     ng-hide="message.name && message.name === message.facility.contact.phone"
-    ng-bind="message.related_entities.clinic.contact.phone || message.related_entities.clinic.doc.contact.phone || message.facility.contact.phone"></span>
+    ng-bind="message.related_entities.clinic.contact.phone || message.related_entities.clinic.doc.contact.phone || message.facility.contact.phone || message.facility.phone"></span>
   </div>
   <div class="position"
     ng-if="message.related_entities.clinic || (!message.form && message.name)"

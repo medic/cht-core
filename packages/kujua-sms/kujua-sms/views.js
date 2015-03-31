@@ -226,10 +226,16 @@ exports.data_records_by_contact = {
                     doc.tasks.forEach(function(task) {
                         message = task.messages[0];
                         facility = message.facility;
-                        districtId = objectpath.get(facility, 'parent.parent._id');
                         key = (facility && facility._id) || message.to;
-                        name = getName(facility) || message.to;
-                        contact = objectpath.get(facility, 'contact.name');
+                        if (facility.type === 'person') {
+                            districtId = objectpath.get(facility, 'parent.parent.parent._id');
+                            contact = facility.name;
+                            name = getName(facility.parent) || message.to;
+                        } else {
+                            districtId = objectpath.get(facility, 'parent.parent._id');
+                            contact = objectpath.get(facility, 'contact.name');
+                            name = getName(facility) || message.to;
+                        }
                         emitContact(districtId, key, doc.reported_date, {
                             date: doc.reported_date,
                             read: doc.read,
