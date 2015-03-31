@@ -191,14 +191,14 @@ describe('SendMessage service', function() {
         sent_by: 'jack',
         to: '+5553',
         uuid: 1,
-        facility: recipients[1].clinics[0].doc
+        facility: recipients[1].descendants[0].doc
       });
       assertMessage(message.tasks[2], {
         from: '+5551',
         sent_by: 'jack',
         to: '+5554',
         uuid: 2,
-        facility: recipients[1].clinics[2].doc
+        facility: recipients[1].descendants[2].doc
       });
       callback(null);
     };
@@ -214,7 +214,7 @@ describe('SendMessage service', function() {
       }, 
       {
         everyoneAt: true,
-        clinics: [
+        descendants: [
           {
             doc: {
               _id: 'efg',

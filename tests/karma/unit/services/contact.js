@@ -68,7 +68,7 @@ describe('Contact service', function() {
       chai.expect(err).to.equal(null);
       chai.expect(actual[0].id).to.equal(health_center.id);
       chai.expect(actual[0].everyoneAt).to.equal(true);
-      chai.expect(actual[0].clinics).to.deep.equal([ child ]);
+      chai.expect(actual[0].descendants).to.deep.equal([ child ]);
       chai.expect(actual[1]).to.deep.equal(valid);
       done();
     });

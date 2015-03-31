@@ -75,7 +75,7 @@ var _ = require('underscore'),
   var formatEveryoneAt = function(row) {
     return translateFn('Everyone at', {
       facility: row.doc.name,
-      count: row.clinics.length
+      count: row.descendants && row.descendants.length
     });
   };
 
@@ -196,7 +196,9 @@ var _ = require('underscore'),
       try {
         to = JSON.parse(to);
         var doc;
-        if (to.type === 'person') {
+        if (everyoneAt) {
+          doc = to;
+        } else if (to.type === 'person') {
           doc = to;
         } else if (to.type === 'clinic' || to.type === 'health_center' || to.type === 'district_hospital') {
           doc = to.contact;
@@ -204,7 +206,7 @@ var _ = require('underscore'),
           doc = to.related_entities.clinic;
         }
         if (doc) {
-          val.push({ doc: doc });
+          val.push({ doc: doc, everyoneAt: everyoneAt });
         }
       } catch(e) {
         val.push(createChoiceFromNumber(to));
@@ -239,20 +241,17 @@ var _ = require('underscore'),
     recipients = _recipients;
   };
 
-  var resolveRecipients = function(callback) {
+  var resolveRecipients = function(recipients, callback) {
     contact(function(err, contacts) {
       if (err) {
         return callback(err);
       }
       callback(null, _.map(recipients, function(recipient) {
-        if (recipient.doc._id) {
-          // already a facility object
-          return recipient;
-        }
         // see if we can resolve the facility
         var phone = recipient.doc.phone || recipient.doc.contact.phone;
         var match = _.find(contacts, function(contact) {
-          return contact.doc.phone === phone;
+          return contact.doc.phone === phone &&
+                 contact.everyoneAt === recipient.everyoneAt;
         });
         return match || recipient;
       }));
@@ -260,21 +259,26 @@ var _ = require('underscore'),
   };
 
   var validateRecipients = function($modal, callback) {
+    var validated = recipients;
     if ($modal.is('.modal')) {
       var $phoneField = $modal.find('[name=phone]');
-      return callback(null, updateValidation(
+      var result = updateValidation(
         validatePhoneNumbers, $phoneField, $phoneField.select2('data')
-      ));
+      );
+      if (!result.valid) {
+        return callback(result);
+      }
+      validated = result.value;
     }
-    resolveRecipients(function(err, recipients) {
+    resolveRecipients(validated, function(err, recipients) {
       if (err) {
         return callback(err);
       }
       callback(null, {
         valid: true,
-        value: resolveRecipients(recipients)
+        value: recipients
       });
-    })
+    });
   };
 
   exports.validate = function(target, callback) {

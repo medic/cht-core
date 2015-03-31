@@ -52,7 +52,7 @@ var _ = require('underscore'),
 
       var formatRecipients = function(recipients) {
         var result = _.flatten(_.map(recipients, function(r) {
-          return mapRecipients(r.everyoneAt ? r.clinics : [r]);
+          return mapRecipients(r.everyoneAt ? r.descendants : [ r ]);
         }));
         return _.uniq(result, false, function(r) {
           return r.phone;
@@ -94,6 +94,7 @@ var _ = require('underscore'),
 
             var doc = createMessageDoc(user, recipients);
             var explodedRecipients = formatRecipients(recipients);
+
             async.forEachSeries(
               explodedRecipients,
               function(data, callback) {

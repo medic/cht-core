@@ -90,7 +90,7 @@ var _ = require('underscore');
               } else if (contact.doc.type === 'health_center') {
                 contacts.push(_.extend({
                   everyoneAt: true,
-                  clinics: _.filter(res, function(child) {
+                  descendants: _.filter(res, function(child) {
                     return descendant(contact.id, child.doc.parent);
                   })
                 }, contact));
