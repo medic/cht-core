@@ -68,7 +68,7 @@ module.exports = function(grunt) {
       dist: {
         src: ['static/js/app.js'],
         dest: 'static/dist/inbox.js',
-        options: {
+        browserifyOptions: {
           detectGlobals: false,
           external: ['moment', 'underscore']
         }
@@ -76,9 +76,11 @@ module.exports = function(grunt) {
       watch: {
         src: ['static/js/app.js'],
         dest: 'static/dist/inbox.js',
-        options: {
+        browserifyOptions: {
           detectGlobals: false,
-          external: ['moment', 'underscore'],
+          external: ['moment', 'underscore']
+        },
+        options: {
           watch: true
         }
       }
