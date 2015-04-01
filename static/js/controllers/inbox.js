@@ -58,6 +58,9 @@ require('moment/locales');
           $scope.selected = selected;
           $timeout(function() {
             $scope.showContent = true;
+            $timeout(function() {
+              $('.item-body').scrollTop(0);
+            });
           });
         } else if($scope.selected) {
           $scope.showContent = false;
