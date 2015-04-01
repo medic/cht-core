@@ -1,7 +1,5 @@
 var remapify = require('remapify');
 
-var spawnLock = false;
-
 module.exports = function(grunt) {
 
   'use strict';
