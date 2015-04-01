@@ -46,23 +46,8 @@ module.exports = function(grunt) {
     browserify: {
       options: {
         preBundleCB: function(b) {
-          b
-            .on('update', function() {
-              // fired by watchify on change
-              if (!spawnLock) { // ugly hack
-                spawnLock = true;
-                grunt.util.spawn({ grunt: true, args: 'deploy'}, function(error) {
-                  spawnLock = false;
-                  if (error) {
-                    console.error(JSON.stringify(error));
-                  } else {
-                    console.log('Deployed successfully');
-                  }
-                });
-              }
-            })
-            .ignore('./flashmessages')
-            .plugin(remapify, browserifyMappings);
+          b.ignore('./flashmessages')
+           .plugin(remapify, browserifyMappings);
         }
       },
       dist: {
@@ -71,17 +56,6 @@ module.exports = function(grunt) {
         browserifyOptions: {
           detectGlobals: false,
           external: ['moment', 'underscore']
-        }
-      },
-      watch: {
-        src: ['static/js/app.js'],
-        dest: 'static/dist/inbox.js',
-        browserifyOptions: {
-          detectGlobals: false,
-          external: ['moment', 'underscore']
-        },
-        options: {
-          watch: true
         }
       }
     },
@@ -206,6 +180,10 @@ module.exports = function(grunt) {
         files: ['static/css/**/*'],
         tasks: ['mmcss', 'exec:deploy', 'notify:deployed']
       },
+      js: {
+        files: ['static/js/**/*', 'packages/kujua-*/**/*', 'packages/feedback/**/*'],
+        tasks: ['mmjs', 'exec:deploy', 'notify:deployed']
+      },
       other: {
         files: ['templates/**/*', 'lib/**/*'],
         tasks: ['exec:deploy', 'notify:deployed']
@@ -312,7 +290,7 @@ module.exports = function(grunt) {
     'mmbower',
     'mmcss',
     'copy:settings',
-    'browserify:watch',
+    'browserify:dist',
     'deploy',
     'watch'
   ]);
