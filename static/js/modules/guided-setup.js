@@ -1,4 +1,5 @@
-var libphonenumber = require('libphonenumber/utils');
+var libphonenumber = require('libphonenumber/utils'),
+    countries = require('../modules/countries');
 
 (function () {
 
@@ -23,27 +24,23 @@ var libphonenumber = require('libphonenumber/utils');
   };
 
   var updateNumbers = function() {
-    var gatewayNumber = $('#gateway-number').val();
-    var defaultCountryCode = $('#default-country-code').val();
+    var gatewayNumber = $('#guided-setup input[name=gateway-number]').val();
+    var defaultCountryCode = $('#guided-setup input[name=default-country-code]').select2('val');
+    var parts = [];
+    if (defaultCountryCode) {
+      parts.push(defaultCountryCode);
+    }
+    if (gatewayNumber) {
+      parts.push(gatewayNumber);
+    }
+    $(this).closest('.panel').find('.panel-heading .value').text(parts.join(', '));
     if (gatewayNumber && defaultCountryCode) {
-      $(this).closest('.panel')
-        .addClass('panel-complete')
-        .find('.panel-heading .value')
-        .text(gatewayNumber + ', ' + defaultCountryCode);
+      $(this).closest('.panel').addClass('panel-complete');
     }
   };
 
   var validate = function(translateFilter) {
-    var phoneRegex = /^\d+$/;
-    var countryCode = $('#guided-setup [name=default-country-code]').val();
-    if (countryCode && !phoneRegex.test(countryCode)) {
-      return {
-        valid: false,
-        error: translateFilter('field digits only', {
-          field: translateFilter('Default country code')
-        })
-      };
-    }
+    var countryCode = $('#guided-setup [name=default-country-code]').select2('val');
     var gatewayNumber = $('#guided-setup [name=gateway-number]').val();
     if (gatewayNumber &&
         !libphonenumber.validate({ default_country_code: countryCode }, gatewayNumber)) {
@@ -74,7 +71,7 @@ var libphonenumber = require('libphonenumber/utils');
     if (val) {
       settings.gateway_number = val;
     }
-    val = $('#guided-setup [name=default-country-code]').val();
+    val = $('#guided-setup [name=default-country-code]').select2('val');
     if (val) {
       settings.default_country_code = val;
     }
@@ -118,10 +115,10 @@ var libphonenumber = require('libphonenumber/utils');
         return console.log('Error fetching settings', err);
       }
       window.setTimeout(function() {
-        $('#guided-setup [name=gateway-number]')
-          .val(res.gateway_number).trigger('input');
         $('#guided-setup [name=default-country-code]')
-          .val(res.default_country_code).trigger('input');
+          .select2('val', res.default_country_code);
+        $('#guided-setup [name=gateway-number]').val(res.gateway_number)
+          .trigger('input');
         $('#primary-contact-content a[data-value=' + res.care_coordinator + ']')
           .trigger('click');
         $('#language-preference-content .locale a[data-value=' + res.locale + ']')
@@ -137,12 +134,14 @@ var libphonenumber = require('libphonenumber/utils');
   };
 
   exports.init = function(Settings, UpdateSettings, translateFilter) {
-    bindSettings(Settings);
     $('#guided-setup').on('click', '.horizontal-options a', selectOption);
-    $('#modem-setup-content').on('input', 'input', updateNumbers);
+    $('#guided-setup [name=gateway-number]').on('input', updateNumbers);
+    $('#guided-setup [name=default-country-code]').select2({ width: '20em', data: countries.list });
+    $('#guided-setup [name=default-country-code]').on('change', updateNumbers);
     $('#setup-wizard-save').on('click', function(e) {
       save(UpdateSettings, translateFilter, e);
     });
+    bindSettings(Settings);
   };
 
 }());
