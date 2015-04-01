@@ -182,7 +182,11 @@ var _ = require('underscore'),
 
       var _initScroll = function() {
         scrollLoader.init(function() {
-          $scope.query({ skip: true });
+          if (!$scope.loading && $scope.totalItems > $scope.items.length) {
+            $timeout(function() {
+              $scope.query({ skip: true });
+            });
+          }
         });
       };
 

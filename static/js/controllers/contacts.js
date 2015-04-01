@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', 
-    ['$scope', '$state', 'db', 'Search', 'DbView',
-    function ($scope, $state, db, Search, DbView) {
+    ['$scope', '$state', '$timeout', 'db', 'Search', 'DbView',
+    function ($scope, $state, $timeout, db, Search, DbView) {
 
       $scope.filterModel.type = 'contacts';
       $scope.setContacts();
@@ -30,7 +30,6 @@ var _ = require('underscore'),
         if (options.skip) {
           options.skip = $scope.items.length;
         }
-
         Search($scope, options, function(err, data) {
           $scope.loading = false;
           $scope.appending = false;
@@ -44,7 +43,11 @@ var _ = require('underscore'),
           } else {
             $scope.setContacts(data.results);
             scrollLoader.init(function() {
-              $scope.query({ skip: true });
+              if (!$scope.loading && $scope.totalItems > $scope.items.length) {
+                $timeout(function() {
+                  $scope.query({ skip: true });
+                });
+              }
             });
             if (!data.results.length) {
               $scope.selectContact();
