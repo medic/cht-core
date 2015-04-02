@@ -5572,6 +5572,16 @@ module.exports = {
                   "content": "No report selected"
               }
           ]
+      },
+      {
+          "key": "Start new conversation",
+          "default": "Start new conversation",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Start new conversation"
+              }
+          ]
       }
    ],
    "forms": {
