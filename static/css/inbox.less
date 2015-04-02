@@ -411,15 +411,30 @@ body {
     position: absolute;
     right: 0;
     bottom: 0;
-    padding: 1em;
+    padding: 0.5em;
     div {
       padding: 0;
     }
     textarea {
-      width: 99%;
-      height: 5em;
-      padding: 0.5em;
+      width: 100%;
+      height: 3em;
+      padding: 0.6em;
       resize: none;
+    }
+    .message-actions {
+      display: none;
+      text-align: right;
+      .note {
+        margin-right: 1em;
+      }
+    }
+    &.sending {
+      textarea {
+        height: 6em;
+      }
+      .message-actions {
+        display: block;
+      }
     }
   }
   .name-header, .reply {

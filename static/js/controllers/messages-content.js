@@ -153,6 +153,14 @@ var _ = require('underscore'),
 
       $('.tooltip').remove();
       selectContact($stateParams.id);
+
+      $('body')
+        .on('focus', '#message-footer textarea', function() {
+          $('#message-footer').addClass('sending');
+        })
+        .on('blur', '#message-footer textarea', function() {
+          $('#message-footer').removeClass('sending');
+        });
     }
   ]);
 

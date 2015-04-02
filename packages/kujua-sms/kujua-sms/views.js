@@ -253,7 +253,7 @@ exports.data_records_by_contact = {
                 message = doc.sms_message;
                 facility = objectpath.get(doc, 'related_entities.clinic');
                 name = getName(facility) || doc.from;
-                contact = objectpath.get(facility, 'contact.name');
+                contact = objectpath.get(facility, 'contact.name') || doc.from;
                 key = (facility && facility._id) || doc.from;
                 emitContact(districtId, key, doc.reported_date, {
                     date: doc.reported_date,

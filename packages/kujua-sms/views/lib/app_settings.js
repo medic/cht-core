@@ -5582,6 +5582,16 @@ module.exports = {
                   "content": "Start new conversation"
               }
           ]
+      },
+      {
+          "key": "Reply to name",
+          "default": "Reply to {{name}}",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Reply to {{name}}"
+              }
+          ]
       }
    ],
    "forms": {
