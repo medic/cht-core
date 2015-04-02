@@ -77,13 +77,15 @@ require('moment/locales');
       $scope.select = function(id) {
         if ($stateParams.id === id) {
           // message already set - make sure we're showing content
+          if ($scope.filterModel.type === 'messages') {
+            return;
+          }
           var message = _.findWhere($scope.items, { _id: id });
           if (message) {
-            $scope.setSelected(message);
-          } else {
-            $state.reload();
-            $scope.$broadcast('query');
+            return $scope.setSelected(message);
           }
+          $state.reload();
+          $scope.$broadcast('query');
         } else if (id) {
           $state.go($scope.filterModel.type + '.detail', { id: id });
         } else {
