@@ -482,6 +482,7 @@ require('moment/locales');
           var pane = modal.start($(event.target).closest('.message-form'));
           SendMessage(recipients, message).then(
             function() {
+              $('#message-footer').removeClass('sending');
               pane.done();
             },
             function(err) {
