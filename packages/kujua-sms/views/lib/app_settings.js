@@ -5585,11 +5585,11 @@ module.exports = {
       },
       {
           "key": "Reply to name",
-          "default": "Reply to {{name}}",
+          "default": "Reply to {{contact}}",
           "translations": [
               {
                   "locale": "en",
-                  "content": "Reply to {{name}}"
+                  "content": "Reply to {{contact}}"
               }
           ]
       }
