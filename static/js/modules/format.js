@@ -38,7 +38,7 @@ var _ = require('underscore');
   };
 
   exports.contact = function(doc) {
-    var contact = doc.type === 'person' ? doc : doc.contact;
+    var contact = doc.type !== 'person' && doc.contact ? doc.contact : doc;
     return exports.sender({
       name: contact.name,
       phone: contact.phone,
