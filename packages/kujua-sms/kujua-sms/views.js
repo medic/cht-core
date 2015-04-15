@@ -358,6 +358,17 @@ exports.clinic_by_phone = {
 };
 
 /*
+ * Get person based on phone number
+ */
+exports.person_by_phone = {
+    map: function (doc) {
+        if (doc.type === 'person') {
+            emit([doc.phone], doc);
+        }
+    }
+};
+
+/*
  * Get clinic based on health center phone number
  */
 exports.clinic_by_parent_phone = {

@@ -32,6 +32,25 @@ var libphonenumber = require('libphonenumber/utils'),
         });
       };
 
+      var validatePhoneNumber = function(number, contactId, settings, callback) {
+        if (!libphonenumber.validate(settings, number)) {
+          return callback(translateFilter('Phone number not valid'));
+        }
+        number = libphonenumber.format(settings, number);
+        DbView('person_by_phone', { key: [ number ] }, function(err, results) {
+          if (err) {
+            return callback(translateFilter('Phone number not valid'));
+          }
+          if (results.rows.length && results.rows[0].id !== contactId) {
+            return callback(translateFilter(
+              'phone number not unique',
+              { name: results.rows[0].value.name }
+            ));
+          }
+          callback(null, number);
+        });
+      };
+
       populateParents();
 
       $scope.$on('ContactUpdated', populateParents);
@@ -70,7 +89,7 @@ var libphonenumber = require('libphonenumber/utils'),
         $('#edit-contact').modal('show');
       });
 
-      var validatePage0 = function(settings) {
+      var validatePage0 = function(settings, callback) {
 
         var errors = {};
 
@@ -78,14 +97,6 @@ var libphonenumber = require('libphonenumber/utils'),
           errors.name = translateFilter('field is required', {
             field: translateFilter('Name')
           });
-        }
-
-        if ($scope.contact.type === 'person' && $scope.contact.phone) {
-          if (!libphonenumber.validate(settings, $scope.contact.phone)) {
-            errors.phone = translateFilter('Phone number not valid');
-          } else {
-            $scope.contact.phone = libphonenumber.format(settings, $scope.contact.phone);
-          }
         }
 
         if ($scope.contact.type === 'health_center' &&
@@ -105,10 +116,25 @@ var libphonenumber = require('libphonenumber/utils'),
           $scope.contact.parent = null;
         }
 
-        return errors;
+        if (!$scope.contact.type === 'person' || !$scope.contact.phone) {
+          return callback(errors);
+        }
+
+        validatePhoneNumber($scope.contact.phone, $scope.contactId, settings, function(err, validated) {
+          if (err) {
+            errors.phone = err;
+          } else {
+            $scope.contact.phone = validated;
+          }
+          callback(errors);
+        });
       };
 
-      var validatePage1 = function(settings) {
+      var validatePage1 = function(settings, callback) {
+        if (!newPrimaryContact()) {
+          return callback({});
+        }
+
         var errors = {};
 
         if (!$scope.primaryContact.name) {
@@ -117,15 +143,18 @@ var libphonenumber = require('libphonenumber/utils'),
           });
         }
 
-        if ($scope.primaryContact.phone) {
-          if (!libphonenumber.validate(settings, $scope.primaryContact.phone)) {
-            errors.phone = translateFilter('Phone number not valid');
-          } else {
-            $scope.primaryContact.phone = libphonenumber.format(settings, $scope.primaryContact.phone);
-          }
+        if (!$scope.primaryContact.phone) {
+          return callback(errors);
         }
 
-        return errors;
+        validatePhoneNumber($scope.primaryContact.phone, null, settings, function(err, validated) {
+          if (err) {
+            errors.phone = err;
+          } else {
+            $scope.primaryContact.phone = validated;
+          }
+          callback(errors);
+        });
       };
 
       var newPrimaryContact = function() {
@@ -144,15 +173,15 @@ var libphonenumber = require('libphonenumber/utils'),
           if (err) {
             return callback(err);
           }
-
-          $scope.errors.page0 = validatePage0(settings);
-          if (newPrimaryContact()) {
-            $scope.errors.page1 = validatePage1(settings);
-          }
-
-          callback(null, {
-            page0: Object.keys($scope.errors.page0).length === 0,
-            page1: Object.keys($scope.errors.page1).length === 0
+          validatePage0(settings, function(errors) {
+            $scope.errors.page0 = errors;
+            validatePage1(settings, function(errors) {
+              $scope.errors.page1 = errors;
+              callback(null, {
+                page0: Object.keys($scope.errors.page0).length === 0,
+                page1: Object.keys($scope.errors.page1).length === 0
+              });
+            });
           });
         });
       };

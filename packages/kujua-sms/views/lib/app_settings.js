@@ -5602,6 +5602,16 @@ module.exports = {
                   "content": "Add recipient"
               }
           ]
+      },
+      {
+          "key": "phone number not unique",
+          "default": "This number is already registered for contact {{name}}",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "This number is already registered for contact {{name}}"
+              }
+          ]
       }
    ],
    "forms": {
