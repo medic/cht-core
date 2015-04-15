@@ -200,6 +200,10 @@ require('moment/locales');
         });
       };
 
+      $scope.$on('ContactUpdated', function() {
+        $scope.updateAvailableFacilities();
+      });
+
       $scope.updateAvailableFacilities = function() {
         UserDistrict(function(err, district) {
           if (err) {
