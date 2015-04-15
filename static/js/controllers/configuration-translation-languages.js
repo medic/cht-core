@@ -104,7 +104,9 @@ var _ = require('underscore');
         });
       };
       $scope.$on('LanguageUpdated', function(e, data) {
-        $scope.languagesModel.locales = data.locales;
+        $scope.languagesModel.locales = _.map(data.locales, function(locale) {
+          return createLocaleModel(data.settings, locale);
+        });
       });
       $scope.disableLanguage = function(locale) {
         setLanguageStatus(locale, true);
