@@ -112,13 +112,13 @@ body {
 
   .extras {
     float: right;
-    padding-right: 0.5em;
+    padding-right: 5px;
 
     a {
-      width: 3em;
+      width: 2.8em;
       height: 3em;
-      margin-top: 0.75em;
-      border-radius: .5em .5em 0 0;
+      margin-top: 0.5em;
+      border-radius: 0.5em 0.5em 0 0;
 
       .mm-icon {
         width: inherit;
@@ -224,7 +224,6 @@ body {
 .filters {
   height: 4.2em;
   font-size: 0.95em;
-  padding: 0 1em;
   white-space: nowrap;
 
   .inner {
@@ -247,7 +246,6 @@ body {
   .filter-buttons .dropdown {
     > a {
       display: inline-block;
-      width: 2em;
       height: 3em;
       border-radius: 0.5em 0.5em 0 0;
     }
@@ -255,8 +253,8 @@ body {
       background-color: #FFFFFF;
     }
     .mm-icon {
-      width: 2em;
-      line-height: 3em;
+      width: 1.5em;
+      line-height: 1em;
       &:hover {
         color: @medic-slate-color;
       }
@@ -309,17 +307,41 @@ body {
     }
   }
 
+  .slide-back, .reset-filter {
+    line-height: 3em;
+    > a {
+      width: 2em;
+    }
+  }
+
   .filter-buttons {
     float: right;
     display: inline-block;
     text-align: right;
+    padding-right: 5px;
+    .mm-icon, .fa-stack {
+      font-size: 2em;
+      width: 1.5em;
+    }
+    .dropdown .mm-icon {
+      padding-top: 0.25em;
+    }
+    .dropdown, .fa-stack {
+      vertical-align: bottom;
+      height: 1.4em;
+      line-height: inherit;
+    }
+    .fa-plus {
+      left: 0.4em;
+      top: -0.2em;
+      text-shadow: 0px 0px 2px rgba(255, 255, 255, 1);
+      font-size: 0.75em;
+    }
   }
 
   .filter-buttons, .slide-back, .reset-filter {
     > a {
       color: @grayDark;
-      width: 2em;
-      line-height: 3em;
       display: inline-block;
       text-align: center;
 
@@ -327,12 +349,6 @@ body {
         cursor: default;
         color: @grey;
       }
-    }
-
-    .fa-plus {
-      left: 0.4em;
-      top: -0.2em;
-      text-shadow: 0px 0px 2px rgba(255, 255, 255, 1);
     }
   }
 
@@ -1195,6 +1211,7 @@ a.fa:hover {
     .extras a {
       padding-top: 0.3em;
       margin-top: 0.5em;
+      font-size: 1.2em;
     }
   }
   .filters {
@@ -1313,7 +1330,6 @@ a.fa:hover {
   }
 
   body.show-content {
-
     .content .inbox-items {
       left: -100%;
     }
@@ -1321,7 +1337,6 @@ a.fa:hover {
     .content-pane {
       left: 0;
     }
-
   }
 
   .filter-daterangepicker {
