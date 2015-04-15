@@ -6,14 +6,6 @@
 @import "icon";
 @import "modal";
 
-.select2-container-multi .select2-choices .select2-search-choice {
-  margin-top: 5px;
-}
-
-.select2-search-choice-close {
-  top: 3px;
-}
-
 .tooltip .tooltip-inner {
   text-align: left;
 }
@@ -76,19 +68,6 @@ a {
   }
 }
 
-.select2-container .select2-choice {
-  height: 32px;
-  padding: 6px 12px;
-  line-height: 1.42857;
-  background-color: #FFF;
-  background-image: none;
-  box-sizing: border-box;
-}
-
-.select2-arrow b {
-  background-color: #FFF;
-}
-
 .fa-stack.default {
   font-size: 0.5em;
   .fa-star {
@@ -108,4 +87,10 @@ a {
 
 .btn-link.btn-danger {
   color: @error-color;
+}
+
+.select2-chosen,
+.select2-choice > span:first-child,
+.select2-container .select2-choices .select2-search-field input {
+  padding: 0.5em;
 }

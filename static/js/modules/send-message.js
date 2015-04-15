@@ -65,7 +65,7 @@ var _ = require('underscore'),
 
   var updateValidation = function(fn, elem, value) {
     var result = fn.call(this, value);
-    elem.closest('.control-group')
+    elem.closest('.form-group')
         .toggleClass('has-error', !result.valid)
         .find('.help-block')
         .text(result.valid ? '' : result.message);
