@@ -116,7 +116,7 @@ var libphonenumber = require('libphonenumber/utils'),
           $scope.contact.parent = null;
         }
 
-        if (!$scope.contact.type === 'person' || !$scope.contact.phone) {
+        if ($scope.contact.type !== 'person' || !$scope.contact.phone) {
           return callback(errors);
         }
 
