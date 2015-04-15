@@ -222,6 +222,7 @@ exports.data_records_by_contact = {
             name;
         if (doc.type === 'data_record' && !doc.form) {
             if (doc.kujua_message) {
+                // outgoing
                 doc.tasks.forEach(function(task) {
                     message = task.messages[0];
                     facility = message.facility;
@@ -249,12 +250,15 @@ exports.data_records_by_contact = {
                     });
                 });
             } else if (doc.sms_message) {
+                // incoming
                 districtId = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
                 message = doc.sms_message;
                 facility = objectpath.get(doc, 'related_entities.clinic');
                 name = getName(facility) || doc.from;
                 contact = objectpath.get(facility, 'contact.name') || doc.from;
-                key = (facility && facility._id) || doc.from;
+                key = (facility && facility.contact && facility.contact._id) ||
+                      (facility && facility._id) ||
+                      doc.from;
                 emitContact(districtId, key, doc.reported_date, {
                     date: doc.reported_date,
                     read: doc.read,
