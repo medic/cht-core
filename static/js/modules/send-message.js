@@ -199,7 +199,7 @@ var _ = require('underscore'),
           doc = to.related_entities.clinic;
         }
         if (doc) {
-          val.push({ doc: doc, everyoneAt: options.everyoneAt });
+          val.push({ id: doc._id, doc: doc, everyoneAt: options.everyoneAt });
         }
       }
     }
@@ -213,6 +213,8 @@ var _ = require('underscore'),
   var settings = {};
 
   exports.init = function(Settings, Contact, _translateFn) {
+    contact = Contact;
+    translateFn = _translateFn;
     Settings(function(err, _settings) {
       if (err) {
         return console.log('Failed to retrieve settings', err);
@@ -238,9 +240,7 @@ var _ = require('underscore'),
       initPhoneField($('#send-message [name=phone]'));
       initMessageField();
 
-      contact = Contact;
       settings = _settings;
-      translateFn = _translateFn;
     });
   };
 
