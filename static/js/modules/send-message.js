@@ -180,25 +180,18 @@ var _ = require('underscore'),
     });
   };
 
-  var showModal = function(e) {
-    var target = $(e.target).closest('.send-message');
-    if (target.hasClass('mm-icon-disabled')) {
-      return;
-    }
-    e.preventDefault();
-    var to = target.attr('data-send-to');
-    var everyoneAt = target.attr('data-everyone-at') === 'true';
+  exports.showModal = function(options) {
     var $modal = $('#send-message');
     $modal.find('.has-error').removeClass('has-error');
     $modal.find('.help-block').text('');
-    var val = [];
+    var val = [],
+        to = options.to;
     if (to) {
-      try {
-        to = JSON.parse(to);
+      if (typeof to === 'string') {
+        val.push(createChoiceFromNumber(to));
+      } else {
         var doc;
-        if (everyoneAt) {
-          doc = to;
-        } else if (to.type === 'person') {
+        if (options.everyoneAt || to.type === 'person') {
           doc = to;
         } else if (to.type === 'clinic' || to.type === 'health_center' || to.type === 'district_hospital') {
           doc = to.contact;
@@ -206,14 +199,12 @@ var _ = require('underscore'),
           doc = to.related_entities.clinic;
         }
         if (doc) {
-          val.push({ doc: doc, everyoneAt: everyoneAt });
+          val.push({ doc: doc, everyoneAt: options.everyoneAt });
         }
-      } catch(e) {
-        val.push(createChoiceFromNumber(to));
       }
     }
     $modal.find('[name=phone]').select2('data', val);
-    $modal.find('[name=message]').val('');
+    $modal.find('[name=message]').val(options.message || '');
     $modal.modal('show');
   };
 
@@ -227,7 +218,23 @@ var _ = require('underscore'),
         return console.log('Failed to retrieve settings', err);
       }
 
-      $('body').on('click', '.send-message', showModal);
+      $('body').on('click', '.send-message', function(e) {
+        var target = $(e.target).closest('.send-message');
+        if (target.hasClass('mm-icon-disabled')) {
+          return;
+        }
+        e.preventDefault();
+        var to = target.attr('data-send-to');
+        if (to) {
+          try {
+            to = JSON.parse(to);
+          } catch(e) {}
+        }
+        exports.showModal({
+          to: to,
+          everyoneAt: target.attr('data-everyone-at') === 'true'
+        });
+      });
       initPhoneField($('#send-message [name=phone]'));
       initMessageField();
 
@@ -297,7 +304,7 @@ var _ = require('underscore'),
 
     validateRecipients($modal, function(err, phone) {
       if (err) {
-        return console.log(err);
+        return console.log('Error validating recipients', err);
       }
       if (phone.valid && message.valid) {
         callback(phone.value, message.value);

@@ -5592,6 +5592,16 @@ module.exports = {
                   "content": "Reply to {{contact}}"
               }
           ]
+      },
+      {
+          "key": "Add recipient",
+          "default": "Add recipient",
+          "translations": [
+              {
+                  "locale": "en",
+                  "content": "Add recipient"
+              }
+          ]
       }
    ],
    "forms": {

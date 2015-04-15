@@ -147,6 +147,13 @@ var _ = require('underscore'),
         }
       };
 
+      $scope.addRecipients = function(to) {
+        sendMessage.showModal({
+          to: to.facility || to.contact,
+          message: $('#message-footer [name=message]').val()
+        });
+      };
+
       Changes('messages-content', function(data) {
         updateContact({ changes: data });
       });
