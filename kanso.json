@@ -122,19 +122,19 @@
                     },
                     {
                         "code": "es",
-                        "name": "Spanish"
+                        "name": "Español (Spanish)"
                     },
                     {
                         "code": "fr",
-                        "name": "French"
+                        "name": "Français (French)"
                     },
                     {
                         "code": "ne",
-                        "name": "Nepali"
+                        "name": "नेपाली (Nepali)"
                     },
                     {
                         "code": "sw",
-                        "name": "Swahili"
+                        "name": "Kiswahili (Swahili)"
                     }
                 ]
             },
