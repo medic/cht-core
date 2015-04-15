@@ -51,8 +51,11 @@ var _ = require('underscore'),
             });
             if (!data.results.length) {
               $scope.selectContact();
-            } else if (!$state.params.id && !options.stay && !$('#back').is(':visible')) {
-              $scope.setSelected($('.inbox-items li').first().attr('data-record-id'));
+            } else if (!$scope.selected && !options.stay && !$('#back').is(':visible')) {
+              $timeout(function() {
+                var id = $('.inbox-items li').first().attr('data-record-id');
+                $state.go('contacts.detail', { id: id });
+              });
             }
           }
         });
