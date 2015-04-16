@@ -36,11 +36,6 @@ exports.rules = [
         }
     },
     {
-        from: '/data_record/update/:id',
-        to: '_update/updateRelated/:id',
-        method: 'PUT'
-    },
-    {
         from: '/:form/data_record/add/facility/:phone',
         to: '_list/data_record/facility_by_phone',
         query: {
