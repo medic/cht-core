@@ -4,7 +4,7 @@
 
 var _ = require('underscore'),
     moment = require('moment'),
-    logger = require('kujua-utils').logger,
+    kutils = require('kujua-utils'),
     info = require('views/lib/appinfo'),
     smsparser = require('views/lib/smsparser'),
     libphonenumber = require('libphonenumber/utils'),
@@ -212,7 +212,7 @@ var add_json = exports.add_json = function(doc, request) {
     try {
         data = JSON.parse(req.body);
     } catch(e) {
-        logger.error(req.body);
+        kutils.logger.error(req.body);
         return [null, getErrorResponse('Error: request body not valid JSON.')];
     }
 
@@ -277,4 +277,62 @@ var add_sms = exports.add_sms = function(doc, request) {
         JSON.stringify(getDefaultResponse(record))
     ];
 
+};
+
+/*
+ * Given a document UUID and a message UUID update a task's state property on a
+ * document.
+ *
+ * Method: PUT
+ *
+ * Form data:
+ *   uuid {message uuid string} required
+ *   state {state value} required
+ *   state_message {message value}
+ *
+ * On success returns HTTP 200 code and JSON body:
+ * {
+ *   "payload":{
+ *     "success":true,
+ *     "id":"364c796a843fbe0a73476f9153012733"
+ *   }
+ * }
+ *
+ * On failure returns HTTP non-200 and JSON body:
+ * {
+ *   "payload":{
+ *     "success":false,
+ *     "error":"Your hair is not combed properly."
+ *   }
+ * }
+ *
+ */
+exports.update_message_task = function(doc, request) {
+    var uuid = request.form && request.form.uuid,
+        state = request.form && request.form.state,
+        state_message = request.form && request.form.state_message,
+        msg = kutils.getTask(uuid, doc);
+    if (!doc) {
+        return [
+            null,
+            getErrorResponse('Document not found.', 400)
+        ];
+    }
+    if (!uuid || !msg) {
+        return [
+            null,
+            getErrorResponse('Message not found with uuid ' + uuid, 400)
+        ];
+    }
+    if (!state) {
+        return [
+            null,
+            getErrorResponse('State value required.')
+        ];
+    }
+    kutils.setTaskState(msg, state, state_message);
+    return [
+        doc,
+        JSON.stringify(getDefaultResponse(doc))
+    ];
 };

@@ -37,6 +37,11 @@ exports.rules = [
         method: 'GET'
     },
     {
+        from: '/update_message_task/:data_record',
+        to: '_update/update_message_task/:data_record',
+        method: 'PUT'
+    },
+    {
         from: '/:form/data_record/add/clinic/:phone',
         to: '_list/data_record/clinic_by_phone',
         query: {
