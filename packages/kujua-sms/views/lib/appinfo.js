@@ -56,26 +56,6 @@ exports.getAppInfo = function() {
             }
         }
 
-        // add default translations also if needed
-        for (var i in defaults.translations) {
-            var d = defaults.translations[i];
-            var found = false;
-            for (var i in settings.translations) {
-                var t = settings.translations[i];
-                if (t.key === d.key) {
-                    found = true;
-                }
-            }
-            if (!found) {
-                if (settings.translations) {
-                    settings.translations.push(d);
-                } else {
-                    settings.translations = [d];
-                }
-            }
-            found = false;
-        }
-
         return settings;
     }
 
