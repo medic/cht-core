@@ -46,30 +46,7 @@ exports.data_record_facility_not_found = function (test) {
     };
 
     var resp = fakerequest.list(lists.data_record, viewdata, req);
-    var expRespBody = {
-        callback:{
-            "options":{
-                "host": host(),
-                "port": port(),
-                "path": baseURL + "/data_record/update/" + uuid,
-                "method":"PUT",
-                "headers":{
-                    "Content-Type":"application/json; charset=utf-8"
-                }
-            },
-            "data":{
-                "related_entities":{},
-                "errors":[
-                    {
-                        "code":"sys.facility_not_found",
-                        "message":"Facility not found."
-                    }
-                ]
-            }
-        }
-    };
-
-    test.same(JSON.stringify(expRespBody), resp.body);
+    test.same('sys.facility_not_found', JSON.parse(resp.body).callback.data.errors[0].code);
     test.done();
 };
 
