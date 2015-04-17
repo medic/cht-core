@@ -6,7 +6,7 @@ node_js:
 before_script:
   - npm install grunt-cli -g
 
-script: "TEST_ENV=1 grunt test"
+script: "grunt test"
 
 notifications:
   webhooks: 

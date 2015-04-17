@@ -10,6 +10,7 @@ var _ = require('underscore'),
     scheduler = require('./scheduler'),
     AuditProxy = require('./audit-proxy'),
     migrations = require('./migrations'),
+    translations = require('./translations'),
     target = 'http://' + db.settings.host + ':' + db.settings.port,
     proxy = require('http-proxy').createProxyServer({ target: target }),
     proxyForAuditing = require('http-proxy').createProxyServer({ target: target }),
@@ -303,9 +304,15 @@ migrations.run(function(err) {
 
 config.load(function(err) {
   if (err) {
-    console.error('error loading config', err);
+    console.error('Error loading config', err);
     process.exit(1);
   }
+  translations.run(function(err) {
+    if (err) {
+      return console.error('Error merging translations', err);
+    }
+    console.log('Translations merged successfully');
+  });
   config.listen();
   scheduler.init();
   app.listen(5988, function() {
