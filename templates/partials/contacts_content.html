@@ -43,6 +43,10 @@
             <label>{{'External ID' | translate}}</label>
             <p>{{selected.external_id}}</p>
           </li>
+          <li ng-show="selected.type === 'person'">
+            <label>{{'RC Code' | translate}}</label>
+            <p>{{selected.rc_code}}</p>
+          </li>
           <li>
             <label>{{'Notes' | translate}}</label>
             <p>{{selected.notes}}</p>

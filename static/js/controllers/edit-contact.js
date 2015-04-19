@@ -74,6 +74,7 @@ var libphonenumber = require('libphonenumber/utils'),
             parent: contact.parent,
             contact: contact.contact,
             external_id: contact.external_id,
+            rc_code: contact.rc_code,
             notes: contact.notes
           };
           $scope.contactId = contact._id;

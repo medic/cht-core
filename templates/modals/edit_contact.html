@@ -72,6 +72,11 @@
             <input type="text" class="form-control small" ng-model="contact.external_id" />
           </div>
 
+          <div class="form-group" ng-show="category === 'person'">
+            <label>{{'RC Code' | translate}}</label>
+            <input type="text" class="form-control small" ng-model="contact.rc_code" />
+          </div>
+
           <div class="form-group">
             <label>{{'Notes' | translate}}</label>
             <textarea class="form-control small" ng-model="contact.notes"></textarea>
