@@ -214,9 +214,6 @@ module.exports = function(grunt) {
         singleRun: true,
         browsers: ['PhantomJS']
       }
-    },
-    nodeunit: {
-      all: ['tests/nodeunit/*.js']
     }
   });
 
@@ -230,7 +227,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-less');
-  grunt.loadNpmTasks('grunt-contrib-nodeunit');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-exec');
@@ -278,7 +274,6 @@ module.exports = function(grunt) {
     'default',
     'uglify',
     'cssmin',
-    'nodeunit',
     'karma:unit_ci',
     'exec:deployci',
     'exec:phantom'
@@ -296,7 +291,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('precommit', 'Lint and unit test', [
     'jshint',
-    'nodeunit',
     'karma:unit'
   ]);
 
