@@ -17,6 +17,8 @@
             $scope.selected._id === contact._id)) {
           $scope.select();
         } else if ($scope.selected && $scope.selected._id === contact._id) {
+          contact.children = $scope.selected.children;
+          contact.contactFor = $scope.selected.contactFor;
           $scope.setSelected(contact);
         }
       });
