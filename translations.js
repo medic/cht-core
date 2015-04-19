@@ -75,7 +75,7 @@ module.exports = {
         return callback(err);
       }
       var memo = {
-        translations: config.get('translations'),
+        translations: config.get('translations') || [],
         changed: false
       };
       async.each(
