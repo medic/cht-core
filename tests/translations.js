@@ -134,6 +134,44 @@ exports['run does not save if nothing changed'] = function(test) {
   });
 };
 
+exports['run handles empty configuration'] = function(test) {
+  test.expect(7);
+  var configGet = sinon.stub(config, 'get').returns(undefined);
+  var readdir = sinon.stub(fs, 'readdir').callsArgWith(1, null, [ 'messages-en.properties' ]);
+  var readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'some buffer');
+  var parse = sinon.stub(properties, 'parse').callsArgWith(1, null, {
+    first: '1st',
+    second: '2nd'
+  });
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, {
+    app_settings: { }
+  });
+  var dbInsert = sinon.stub(db.medic, 'insert').callsArgWith(1);
+  translations.run(function(err) {
+    test.equals(configGet.callCount, 1);
+    test.equals(readdir.callCount, 1);
+    test.equals(readFile.callCount, 1);
+    test.equals(parse.callCount, 1);
+    test.equals(dbGet.callCount, 1);
+    test.same(dbInsert.firstCall.args[0], {
+      app_settings: {
+        translations: [
+          {
+            key: 'first',
+            translations: [ { locale: 'en', default: '1st', content: '1st' } ]
+          },
+          {
+            key: 'second',
+            translations: [ { locale: 'en', default: '2nd', content: '2nd' } ]
+          }
+        ]
+      }
+    });
+    test.equals(err, null);
+    test.done();
+  });
+};
+
 exports['run saves all changes'] = function(test) {
   test.expect(7);
   var configGet = sinon.stub(config, 'get').returns([
