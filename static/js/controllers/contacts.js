@@ -51,10 +51,13 @@ var _ = require('underscore'),
             });
             if (!data.results.length) {
               $scope.selectContact();
-            } else if (!$scope.selected && !options.stay && !$('#back').is(':visible')) {
+            } else if (!options.stay && !$('#back').is(':visible')) {
+              // wait for selected to be set before checking
               $timeout(function() {
-                var id = $('.inbox-items li').first().attr('data-record-id');
-                $state.go('contacts.detail', { id: id });
+                if (!$scope.selected) {
+                  var id = $('.inbox-items li').first().attr('data-record-id');
+                  $state.go('contacts.detail', { id: id });
+                }
               });
             }
           }
