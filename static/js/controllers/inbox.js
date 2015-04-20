@@ -7,7 +7,8 @@ var utils = require('kujua-utils'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
     format = require('../modules/format'),
-    guidedSetup = require('../modules/guided-setup');
+    guidedSetup = require('../modules/guided-setup'),
+    countMessages = require('../modules/count-messages');
 
 require('moment/locales');
 
@@ -795,6 +796,8 @@ require('moment/locales');
         }, true);
         $scope.$broadcast('query');
       });
+
+      countMessages.init($translate);
 
     }
   ]);

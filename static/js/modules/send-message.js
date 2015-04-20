@@ -168,18 +168,6 @@ var _ = require('underscore'),
     });
   };
 
-  var initMessageField = function() {
-    $('body').on('keyup', '[name=message]', function(e) {
-      var target = $(e.target);
-      var count = target.val().length;
-      var msg = '';
-      if (count > 50) {
-        msg = translateFn('count of max characters', { count: count, max: 160 });
-      }
-      target.closest('.message-form').find('.note').text(msg);
-    });
-  };
-
   exports.showModal = function(options) {
     var $modal = $('#send-message');
     $modal.find('.has-error').removeClass('has-error');
@@ -238,7 +226,6 @@ var _ = require('underscore'),
         });
       });
       initPhoneField($('#send-message [name=phone]'));
-      initMessageField();
 
       settings = _settings;
     });
