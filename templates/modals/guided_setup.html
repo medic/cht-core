@@ -23,7 +23,6 @@
             </div>
             <div id="modem-setup-content" class="modem-setup-content panel-collapse collapse in" role="tabpanel" aria-labelledby="modem-setup-heading">
               <div class="panel-body">
-                <h5>{{'setup.modem.subtitle' | translate}}</h5>
                 <p>{{'setup.modem.description' | translate}}</p>
                 <label for="default-country-code-setup">{{'Default country code' | translate}}</label>
                 <p>{{'Default country code help' | translate}}</p>
@@ -50,7 +49,6 @@
             </div>
             <div id="primary-contact-content" class="primary-contact-content panel-collapse collapse" role="tabpanel" aria-labelledby="primary-contact-heading">
               <div class="panel-body">
-                <h5>{{'setup.contact.subtitle' | translate}}</h5>
                 <p>{{'setup.contact.description' | translate}}</p>
                 <p class="horizontal-options">
                   <a href="#" class="icon contact-pregnant" data-value="patient">
@@ -84,14 +82,14 @@
             <div id="language-preference-content" class="language-preference-content panel-collapse collapse" role="tabpanel" aria-labelledby="language-preference-heading">
               <div class="panel-body">
 
-                <h5>{{'setup.language.outgoing.subtitle' | translate}}</h5>
+                <span>{{'setup.language.outgoing.subtitle' | translate}}</span>
                 <p class="horizontal-options locale-outgoing">
                   <a href="#" ng-repeat="language in enabledLocales" ng-attr-data-value="{{language.code}}">
                     <span class="rectangle" ng-bind="language.name"></span>
                   </a>
                 </p>
 
-                <h5>{{'setup.language.subtitle' | translate}}</h5>
+                <span>{{'setup.language.subtitle' | translate}}</span>
                 <p class="horizontal-options locale">
                   <a href="#" ng-repeat="language in enabledLocales" ng-attr-data-value="{{language.code}}">
                     <span class="rectangle" ng-bind="language.name"></span>
@@ -118,22 +116,15 @@
             </div>
             <div id="registration-form-content" class="registration-form-content panel-collapse collapse" role="tabpanel" aria-labelledby="registration-form-heading">
               <div class="panel-body">
-                <h5>{{'setup.registration.subtitle' | translate}}</h5>
                 <p>{{'setup.registration.description' | translate}}</p>
                 <p class="horizontal-options">
                   <a href="#" data-value="true">
                     <span class="circle"><i class="fa fa-check"></i></span>
-                    <span class="description">
-                      <span class="heading">{{'With' | translate}}</span>
-                      {{'Last Menstrual Period' | translate}}
-                    </span>
+                    <span class="description">{{'with.lmp' | translate}}</span>
                   </a>
                   <a href="#" data-value="false">
                     <span class="circle"><i class="fa fa-check"></i></span>
-                    <span class="description">
-                      <span class="heading">{{'Without' | translate}}</span>
-                      {{'Last Menstrual Period' | translate}}
-                    </span>
+                    <span class="description">{{'without.lmp' | translate}}</span>
                   </a>
                 </p>
                 <p>{{'setup.registration.help' | translate}}</p>
@@ -156,7 +147,6 @@
             </div>
             <div id="anonymous-statistics-content" class="anonymous-statistics-content panel-collapse collapse" role="tabpanel" aria-labelledby="anonymous-statistics-heading">
               <div class="panel-body">
-                <h5>{{'setup.statistics.subtitle' | translate}}</h5>
                 <p>{{'setup.statistics.description' | translate}}</p>
                 <p class="horizontal-options">
                   <a href="#" data-value="none">
