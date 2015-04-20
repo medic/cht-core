@@ -8,6 +8,7 @@
   require('./app-info');
   require('./base');
   require('./changes');
+  require('./count-messages');
   require('./db-view');
   require('./delete-doc');
   require('./download-url');

@@ -7,8 +7,7 @@ var utils = require('kujua-utils'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
     format = require('../modules/format'),
-    guidedSetup = require('../modules/guided-setup'),
-    countMessages = require('../modules/count-messages');
+    guidedSetup = require('../modules/guided-setup');
 
 require('moment/locales');
 
@@ -19,8 +18,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages) {
 
       $scope.loadingContent = false;
       $scope.error = false;
@@ -797,7 +796,7 @@ require('moment/locales');
         $scope.$broadcast('query');
       });
 
-      countMessages.init($translate);
+      CountMessages.init();
 
     }
   ]);
