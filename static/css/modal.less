@@ -2,6 +2,7 @@
   .modal-header {
     h3 {
       font-size: 1.5em;
+      margin: 0;
     }
     .close {
       border: none;
@@ -20,20 +21,12 @@
     }
   }
   
-  .modal-footer .note {
-    font-weight: bold;
-    color: @error-color;
-  }
-}
-
-@media (max-width: 767px) {
-  .modal-dialog {
-    .modal-header h3 {
-      margin: 0;
-    }
-    .modal-footer {
-      padding-top: 5px;
-      padding-bottom: 5px;
+  .modal-footer {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    .note {
+      font-weight: bold;
+      color: @error-color;
     }
   }
 }

@@ -24,11 +24,12 @@
             <div id="modem-setup-content" class="modem-setup-content panel-collapse collapse in" role="tabpanel" aria-labelledby="modem-setup-heading">
               <div class="panel-body">
                 <h5>{{'setup.modem.subtitle' | translate}}</h5>
-                <img src="static/img/platform-icon-gsm.svg" width="50" height="50" />
-                <img src="static/img/platform-icon-laptop.svg" width="50" height="50" />
+                <p>{{'setup.modem.description' | translate}}</p>
                 <label for="default-country-code-setup">{{'Default country code' | translate}}</label>
+                <p>{{'Default country code help' | translate}}</p>
                 <input type="hidden" id="default-country-code-setup" name="default-country-code"/>
                 <label for="gateway-number-setup">{{'Gateway number' | translate}}</label>
+                <p>{{'Gateway number help' | translate}}</p>
                 <input id="gateway-number-setup" name="gateway-number" type="text"/>
               </div>
             </div>
@@ -82,15 +83,16 @@
             </div>
             <div id="language-preference-content" class="language-preference-content panel-collapse collapse" role="tabpanel" aria-labelledby="language-preference-heading">
               <div class="panel-body">
-                <h5>{{'setup.language.subtitle' | translate}}</h5>
-                <p class="horizontal-options locale">
+
+                <h5>{{'setup.language.outgoing.subtitle' | translate}}</h5>
+                <p class="horizontal-options locale-outgoing">
                   <a href="#" ng-repeat="language in enabledLocales" ng-attr-data-value="{{language.code}}">
                     <span class="rectangle" ng-bind="language.name"></span>
                   </a>
                 </p>
 
-                <h5>{{'setup.language.outgoing.subtitle' | translate}}</h5>
-                <p class="horizontal-options locale-outgoing">
+                <h5>{{'setup.language.subtitle' | translate}}</h5>
+                <p class="horizontal-options locale">
                   <a href="#" ng-repeat="language in enabledLocales" ng-attr-data-value="{{language.code}}">
                     <span class="rectangle" ng-bind="language.name"></span>
                   </a>
@@ -174,7 +176,7 @@
         <span class="right">
           <span class="error" style="display:none"></span>
           <i class="fa fa-spin fa-spinner"></i>
-          <a id="setup-wizard-save" class="btn btn-primary">{{'Start' | translate}}</a>
+          <a id="setup-wizard-save" class="btn btn-primary">{{'setup.start' | translate}}</a>
         </span>
         <a href="#" class="btn cancel" data-dismiss="modal">{{'setup.skip' | translate}}</a>
       </div>

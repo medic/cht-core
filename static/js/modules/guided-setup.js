@@ -28,7 +28,7 @@ var libphonenumber = require('libphonenumber/utils'),
     var defaultCountryCode = $('#guided-setup input[name=default-country-code]').select2('val');
     var parts = [];
     if (defaultCountryCode) {
-      parts.push(defaultCountryCode);
+      parts.push('+' + defaultCountryCode);
     }
     if (gatewayNumber) {
       parts.push(gatewayNumber);
