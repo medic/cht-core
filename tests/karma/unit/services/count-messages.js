@@ -39,4 +39,10 @@ describe('CountMessages service', function() {
     done();
   });
 
+  it('generates correct message when non gsm characters', function(done) {
+    chai.expect(service.label($translate, 'hello😀'))
+      .to.equal('message.characters.left|{"messages":1,"characters":63}');
+    done();
+  });
+
 });
