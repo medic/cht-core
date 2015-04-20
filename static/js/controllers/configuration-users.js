@@ -23,8 +23,10 @@
         });
       };
 
-      $scope.deleteUserPrepare = function(user) {
+      $scope.deleteUserPrepare = function(user, $event) {
+        $event.stopPropagation();
         $rootScope.$broadcast('DeleteUserInit', user);
+        $('#delete-user-confirm').modal('show');
       };
 
       $scope.editUserPrepare = function(user) {

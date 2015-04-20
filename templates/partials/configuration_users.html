@@ -25,7 +25,7 @@
     <div class="col-xs-2">{{user.email}}</div>
     <div class="col-xs-1">{{user.phone}}</div>
     <div class="col-xs-1 delete">
-      <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-user-confirm" ng-click="deleteUserPrepare(user)"><i class="fa fa-trash-o"></i></a>
+      <a class="btn btn-sm btn-danger" ng-click="deleteUserPrepare(user, $event)"><i class="fa fa-trash-o"></i></a>
     </div>
   </div>
 
