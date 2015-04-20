@@ -94,3 +94,40 @@ a {
 .select2-container .select2-choices .select2-search-field input {
   padding: 0.5em;
 }
+
+.popover .popover-title {
+  background-color: @background-color;
+}
+.popover.tour {
+  border-color: #000000;
+  border-width: 2px;
+  padding: 0;
+  .popover-title {
+    font-weight: bold;
+  }
+  &.right > .arrow {
+    border-right-color: #000000;
+    &::after {
+      left: 2px;
+    }
+  }
+  &.left > .arrow {
+    border-left-color: #000000;
+    &::after {
+      right: 2px;
+    }
+  }
+  &.bottom > .arrow {
+    border-bottom-color: #000000;
+    &::after {
+      border-bottom-color: @background-color;
+      top: 2px;
+    }
+  }
+  &.top > .arrow {
+    border-top-color: #000000;
+    &::after {
+      bottom: 2px;
+    }
+  }
+}

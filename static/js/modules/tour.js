@@ -265,7 +265,7 @@ var _ = require('underscore');
   var current;
 
   var createTemplate = function(translationFn) {
-    return  '<div class="popover">' +
+    return  '<div class="popover tour">' +
               '<div class="arrow"></div>' +
               '<h3 class="popover-title"></h3>' +
               '<div class="popover-content"></div>' +
@@ -288,26 +288,38 @@ var _ = require('underscore');
   var getSettings = function(name, translationFn) {
     var settings = _.findWhere(tours, { name: name }) || tours[0];
 
-    settings.template = createTemplate(translationFn);
+    if (!settings.transmogrified) {
 
-    var mobile = isMobile();
-    _.each(settings.steps, function(step) {
-      step.title = translationFn(step.title);
-      step.content = translationFn(step.content);
-      if (mobile) {
-      // there's no room to show steps to the left or right on a mobile device
-        if (step.mobileElement) {
-          step.element = step.mobileElement;
-        }
-        if (step.mobilePlacement) {
-          if (step.mobilePlacement === 'orphan') {
-            step.element = undefined;
-          } else {
-            step.placement = step.mobilePlacement;
+      settings.template = createTemplate(translationFn);
+
+      var mobile = isMobile();
+      _.each(settings.steps, function(step) {
+        step.title = translationFn(step.title);
+        step.content = translationFn(step.content);
+        if (mobile) {
+        // there's no room to show steps to the left or right on a mobile device
+          if (step.mobileElement) {
+            step.element = step.mobileElement;
+          }
+          if (step.mobilePlacement) {
+            if (step.mobilePlacement === 'orphan') {
+              step.element = undefined;
+            } else {
+              step.placement = step.mobilePlacement;
+            }
           }
         }
-      }
-    });
+      });
+
+      settings.steps.push({
+        title: translationFn('tour.end.title'),
+        content: '<a data-role="end" data-toggle="modal" data-target="#tour-select">' + translationFn('tour.end.description') + '</a'
+      });
+
+      settings.transmogrified = true;
+
+    }
+
     return settings;
   };
 
