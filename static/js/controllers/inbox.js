@@ -430,7 +430,6 @@ require('moment/locales');
       };
 
       $scope.$on('UsersUpdated', function(e, userId) {
-        console.log('UsersUpdated', userId, editUserModel.id);
         if (editUserModel.id === userId) {
           updateEditUserModel();
         }

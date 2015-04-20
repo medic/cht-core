@@ -155,7 +155,10 @@ var _ = require('underscore'),
   };
 
   var removeCacheEntry = function($cacheFactory, id) {
-    $cacheFactory.get('$http').remove('/_users/' + encodeURIComponent(id));
+    var cache = $cacheFactory.get('$http');
+    cache.remove('/_users/' + encodeURIComponent(id));
+    cache.remove('/_users/_all_docs?include_docs=true');
+    cache.remove('/_config/admins');
   };
 
   inboxServices.factory('UpdateUser', ['$http', '$cacheFactory', 'Admins',
