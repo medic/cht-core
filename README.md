@@ -3,6 +3,16 @@
 These instructions should help you get setup to run or develop on Medic Mobile.
 For latest changes and release announcements see the [change log](Changes.md).
 
+## Overview
+
+Medic Mobile combines messaging, data collection, and analytics for health workers and health systems in hard-to-reach areas with or without internet connectivity.
+
+The `medic-webapp` repository is the core application in the Medic Mobile stack. When health workers submit data using text messages (SMS), our mobile or our SIM applications, the web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user defined configurations. All the information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application. 
+
+The web app is fully responsive with a mobile first design and supports any written language. It can be installed locally, as part of a vm (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
+
+More information about Medic Mobile tools: www.medicmobile.org/tools
+
 ## Dependencies
 
 You will need to install the following:
