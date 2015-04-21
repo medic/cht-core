@@ -90,6 +90,20 @@ exports['no configured on or off form returns false'] = function(test) {
     });
 };
 
+exports['no configured on or off message returns false'] = function(test) {
+    sinon.stub(transition, 'getConfig').returns({ off_form: 'off' });
+    transition.onMatch({
+        doc: {
+            form: 'off',
+            patient_id: 'x'
+        }
+    }, {}, {}, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, false);
+        test.done();
+    });
+};
+
 exports['registration not found adds error and response'] = function(test) {
     var doc = {
         form: 'on',
@@ -99,6 +113,12 @@ exports['registration not found adds error and response'] = function(test) {
 
     sinon.stub(transition, 'getConfig').returns({
         messages: [{
+            event_type: 'on_unmute',
+            message: [{
+                content: 'Thank you {{contact.name}}',
+                locale: 'en'
+            }]
+        }, {
             event_type: 'patient_not_found',
             message: [{
                 content: 'not found {{patient_id}}',
@@ -146,6 +166,13 @@ exports['validation failure adds error and response'] = function(test) {
                 }
             ]
         },
+        messages: [{
+            event_type: 'on_unmute',
+            message: [{
+                content: 'Thank you {{contact.name}}',
+                locale: 'en'
+            }]
+        }],
         on_form: 'on'
     });
 

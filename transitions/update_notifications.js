@@ -7,6 +7,34 @@ var async = require('async'),
     messages = require('../lib/messages'),
     validation = require('../lib/validation');
 
+var getMessage = function(config, eventType) {
+    var msg = _.findWhere(config.messages, { event_type: eventType });
+    return msg && msg.message;
+};
+
+var getEventType = function(config, doc) {
+    if (!config.on_form && !config.off_form) {
+        // no configured on or off forms
+        return false;
+    }
+    var mute;
+    if (utils.isFormCodeSame(config.on_form, doc.form)) {
+        mute = false;
+    } else if (utils.isFormCodeSame(config.off_form, doc.form)) {
+        mute = true;
+    } else {
+        // transition does not apply; return false
+        return false;
+    }
+    var eventType = mute ? 'on_mute' : 'on_unmute';
+    var msg = getMessage(config, eventType);
+    if (!msg) {
+        // no configured message for the given eventType
+        return false;
+    }
+    return { mute: mute, type: eventType };
+};
+
 module.exports = {
     filter: function(doc) {
         return Boolean(
@@ -40,17 +68,9 @@ module.exports = {
             patient_id = doc.patient_id,
             config = module.exports.getConfig(),
             locale = utils.getLocale(doc),
-            mute;
+            eventType = getEventType(config, doc);
 
-        if (!config.on_form && !config.off_form) {
-            // not configured; bail
-            return callback(null, false);
-        } else if (utils.isFormCodeSame(config.on_form, doc.form)) {
-            mute = false;
-        } else if (utils.isFormCodeSame(config.off_form, doc.form)) {
-            mute = true;
-        } else {
-            // transition does not apply; return false
+        if (!eventType) {
             return callback(null, false);
         }
 
@@ -80,9 +100,7 @@ module.exports = {
             }, function(err, registrations) {
 
                 function addErr(event_type) {
-                    var msg = _.findWhere(config.messages, {
-                        event_type: event_type
-                    }).message;
+                    var msg = getMessage(config, event_type);
                     if (msg) {
                         messages.addError(doc, messages.getMessage(msg, locale));
                     } else {
@@ -91,9 +109,7 @@ module.exports = {
                 }
 
                 function addMsg(event_type) {
-                    var msg = _.findWhere(config.messages, {
-                        event_type: event_type
-                    }).message;
+                    var msg = getMessage(config, event_type);
                     messages.addMessage({
                         doc: doc,
                         message: messages.getMessage(msg, locale),
@@ -105,20 +121,15 @@ module.exports = {
                 if (err) {
                     callback(err);
                 } else if (registrations.length) {
-                    if (mute) {
-                        if (config.confirm_deactivation) {
-                            addErr('confirm_deactivation');
-                            return callback(null, true);
-                        } else {
-                            addMsg('on_mute');
-                        }
-                    } else {
-                            addMsg('on_unmute');
+                    if (eventType.mute && config.confirm_deactivation) {
+                        addErr('confirm_deactivation');
+                        return callback(null, true);
                     }
+                    addMsg(eventType.type);
                     async.each(registrations, function(registration, callback) {
                         module.exports.modifyRegistration({
                             audit: audit,
-                            mute: mute,
+                            mute: eventType.mute,
                             registration: registration.doc
                         }, callback);
                     }, function(err) {
