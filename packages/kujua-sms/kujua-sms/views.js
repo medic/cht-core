@@ -395,6 +395,26 @@ exports.clinic_by_refid = {
     }
 };
 
+exports.tasks_messages = {
+    map: function (doc) {
+        var _emit = function(tasks) {
+            tasks.forEach(function(task) {
+                task.messages.forEach(function(msg) {
+                    /*
+                     * uuid, to and message properties are required for message
+                     * to be processed/valid.
+                     */
+                    if (msg.uuid && msg.to && msg.message) {
+                        emit(msg.uuid, {record: doc._id});
+                    }
+                });
+            });
+        };
+        _emit(doc.tasks || []);
+        _emit(doc.scheduled_tasks || []);
+    }
+};
+
 exports.tasks_pending = {
     map: function (doc) {
         var has_pending,
