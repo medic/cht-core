@@ -12,6 +12,7 @@ var _ = require('underscore'),
 if (!process.env.TEST_ENV) {
     _.each(config.get('transitions'), function(conf, key) {
         if (conf.disable) {
+            logger.warn('transition %s %s is disabled', key, conf.load);
             return;
         }
         try {
