@@ -30,19 +30,19 @@ exports['filter signature'] = function(test) {
     test.done();
 };
 
-exports['filter tests: empty doc does not match'] = function(test) {
+exports['filter empty doc does not match'] = function(test) {
     test.ok(!transition.filter({}));
     test.done();
 };
 
-exports['filter tests: missing form does not match'] = function(test) {
+exports['filter missing form does not match'] = function(test) {
     test.ok(!transition.filter({
         patient_id: 'x',
     }));
     test.done();
 };
 
-exports['filter tests: missing clinic phone does not match'] = function(test) {
+exports['filter missing clinic phone does not match'] = function(test) {
     sinon.stub(utils, 'getClinicPhone').returns(null);
     test.ok(!transition.filter({
         form: 'x',
@@ -51,7 +51,19 @@ exports['filter tests: missing clinic phone does not match'] = function(test) {
     test.done();
 };
 
-exports['filter tests: match'] = function(test) {
+exports['filter already run does not match'] = function(test) {
+    sinon.stub(utils, 'getClinicPhone').returns('+555');
+    test.ok(!transition.filter({
+        form: 'x',
+        patient_id: 'x',
+        transitions: {
+            update_notifications: { last_rev: 9, seq: 1854, ok: true }
+        }
+    }));
+    test.done();
+};
+
+exports['filter match'] = function(test) {
     sinon.stub(utils, 'getClinicPhone').returns('+555');
     test.ok(transition.filter({
         form: 'x',

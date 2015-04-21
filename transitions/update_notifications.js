@@ -35,12 +35,21 @@ var getEventType = function(config, doc) {
     return { mute: mute, type: eventType };
 };
 
+var hasRun = function(doc) {
+    return Boolean(
+        doc &&
+        doc.transitions &&
+        doc.transitions['update_notifications']
+    );
+};
+
 module.exports = {
     filter: function(doc) {
         return Boolean(
             doc &&
             doc.form &&
             doc.patient_id &&
+            !hasRun(doc) &&
             utils.getClinicPhone(doc)
         );
     },
