@@ -74,9 +74,9 @@ var createWebPayload = function(data) {
   };
 };
 
-var submitWeb = function(data, callback) {
+var submitWeb = function(options, callback) {
 
-  var payload = createWebPayload(data);
+  var payload = createWebPayload(options.data);
 
   request.post({
     url: 'http://stats.app.medicmobile.org/medic/_design/medic/_rewrite/add?locale=en',
@@ -98,9 +98,40 @@ var submitWeb = function(data, callback) {
     if (body && body.payload && body.payload.success) {
       return callback();
     }
-    callback('Error submitting statistics');
+    callback(new Error('Error submitting statistics'));
   });
 
+};
+
+var submitSms = function(options, callback) {
+  var to = config.get('statistics_submission_number');
+  if (!to) {
+    return callback(new Error('Request to submit statistics by SMS but no phone number configured'));
+  }
+  options.doc.scheduled_tasks = [{
+    due: moment().toISOString(),
+    state: 'pending',
+    messages: [{
+      to: to,
+      message: options.data
+    }]
+  }];
+  callback();
+};
+
+var submit = function(options, callback) {
+  if (options.method === 'sms') {
+    submitSms(options, callback);
+  } else if (options.method === 'web') {
+    submitWeb(options, callback);
+  } else if (options.method === 'both') {
+    submitWeb(options, function(err) {
+      if (!err) {
+        return callback();
+      }
+      submitSms(options, callback);
+    });
+  }
 };
 
 module.exports = {
@@ -119,19 +150,18 @@ module.exports = {
         // either no doc generated, or doc already submitted
         return callback();
       }
-
-      var data = generateSubmissionString(doc);
-
-      if (submissionMethod === 'web') {
-        submitWeb(data, function(err) {
-          if (err) {
-            return callback(err);
-          }
-          doc.submitted = true;
-          db.medic.insert(doc, callback);
-        });
-      }
-
+      var options = {
+        data: generateSubmissionString(doc),
+        doc: doc,
+        method: submissionMethod
+      };
+      submit(options, function(err) {
+        if (err) {
+          return callback(err);
+        }
+        doc.submitted = true;
+        db.medic.insert(doc, callback);
+      });
     });
   }
 };
