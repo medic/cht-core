@@ -102,7 +102,7 @@ exports['applyTransition handles errors'] = function(test) {
     };
     var transition = {
         onMatch: function(change, db, audit, callback) {
-            callback('oops');
+            callback(new Error('oops'));
         }
     };
     transitions.applyTransition({
@@ -113,7 +113,7 @@ exports['applyTransition handles errors'] = function(test) {
         transition: transition,
         audit: audit
     }, function(err, changed) {
-        test.equals(err, 'oops');
+        test.equals(err.message, 'oops');
         test.equals(changed, undefined);
         // ok is set to false
         test.ok(doc.transitions.x.ok === false);
