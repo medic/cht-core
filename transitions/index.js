@@ -155,9 +155,13 @@ var applyTransition = function(options, callback) {
             _setProperty('ok', !err);
         }
         if (err) {
+            var message = 'Transition error on ' + key;
+            if (err.message) {
+                message += ': ' + err.message;
+            }
             utils.addError(change.doc, {
                 code: key + '_error',
-                message: 'Transition error on ' + key + ': ' + JSON.stringify(err)
+                message: message
             });
             logger.error(
                 'transition %s returned error doc %s seq %s: %s',
