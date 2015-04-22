@@ -287,8 +287,13 @@
             "statistics_submission": {
                 "type": "string",
                 "title": "Anonymous Statistics Submission",
-                "description": "Whether and how to submit anonymous statistics. Valid values: 'none', 'web'",
+                "description": "Whether and how to submit anonymous statistics. Valid values: 'none', 'web', 'sms', 'both'",
                 "default": "none"
+            },
+            "statistics_submission_number": {
+                "type": "string",
+                "title": "Anonymous Statistics Submission SMS Number",
+                "description": "The phone number to send Anonymous Statistics to."
             },
             "kujua-reporting": {
                 "title": "Scheduled Reports",
