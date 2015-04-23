@@ -36,8 +36,8 @@ var _ = require('underscore'),
           .success(function(data) {
             callback(null, data);
           })
-          .error(function(data, status) {
-            callback('Error getting user: ' + status);
+          .error(function(data) {
+            callback(new Error(data));
           });
       };
     }
@@ -50,8 +50,8 @@ var _ = require('underscore'),
           .success(function(data) {
             callback(null, data);
           })
-          .error(function(data, status) {
-            callback('Error getting admins: ' + status);
+          .error(function(data) {
+            callback(new Error(data));
           });
       };
     }
@@ -105,8 +105,8 @@ var _ = require('underscore'),
               });
             });
           })
-          .error(function(data, status) {
-            callback('Error getting users: ' + status);
+          .error(function(data) {
+            callback(new Error(data));
           });
       };
     }
@@ -118,8 +118,8 @@ var _ = require('underscore'),
         .success(function(data) {
           callback(null, id, _.extend(data, updates));
         })
-        .error(function(data, status) {
-          callback('Error getting user: ' + status);
+        .error(function(data) {
+          callback(new Error(data));
         });
     } else {
       id = 'org.couchdb.user:' + updates.name;
@@ -148,8 +148,8 @@ var _ = require('underscore'),
         .success(function() {
           callback();
         })
-        .error(function(data, status) {
-          callback('Error updating admin password: ' + status);
+        .error(function(data) {
+          callback(new Error(data));
         });
     });
   };
@@ -177,8 +177,8 @@ var _ = require('underscore'),
                 removeCacheEntry($cacheFactory, id);
                 callback(null, updated);
               })
-              .error(function(data, status) {
-                return callback('Error updating user: ' + status);
+              .error(function(data) {
+                callback(new Error(data));
               });
           });
         });
@@ -189,13 +189,21 @@ var _ = require('underscore'),
   inboxServices.factory('DeleteUser', ['$http', '$cacheFactory',
     function($http, $cacheFactory) {
       return function(user, callback) {
-        $http.delete('/_users/' + user.id + '?rev=' + user.rev)
-          .success(function() {
-            removeCacheEntry($cacheFactory, user.id);
-            callback();
+        var url = '/_users/' + user.id;
+        $http.get(url)
+          .success(function(user) {
+            user._deleted = true;
+            $http.put(url, user)
+              .success(function() {
+                removeCacheEntry($cacheFactory, user._id);
+                callback();
+              })
+              .error(function(data) {
+                callback(new Error(data));
+              });
           })
-          .error(function(data, status) {
-            callback('Error deleting user: ' + status);
+          .error(function(data) {
+            callback(new Error(data));
           });
       };
     }

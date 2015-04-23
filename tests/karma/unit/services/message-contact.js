@@ -118,7 +118,7 @@ describe('MessageContact service', function() {
       .respond(503, 'server error');
 
     service({}, function(err) {
-      chai.expect(err.data).to.equal('server error');
+      chai.expect(err.message).to.equal('server error');
       done();
     });
 

@@ -28,32 +28,25 @@ var _ = require('underscore');
     }
   ]);
 
-  inboxServices.factory('Facility', ['$resource', 'BaseUrlService',
-    function($resource, BaseUrlService) {
+  inboxServices.factory('Facility', ['$http', 'BaseUrlService',
+    function($http, BaseUrlService) {
       return function(options, callback) {
         if (!callback) {
           callback = options;
           options = {};
         }
-        $resource(getFacilitiesUrl(BaseUrlService, options.district), {}, {
-          query: {
-            method: 'GET',
-            isArray: false,
-            cache: true
-          }
-        }).query(
-          function(res) {
+        $http.get(getFacilitiesUrl(BaseUrlService, options.district))
+          .success(function(res) {
             if (options.types) {
               return callback(null, _.filter(res.rows, function(row) {
                 return options.types.indexOf(row.doc.type) !== -1;
               }));
             }
             callback(null, res.rows);
-          },
-          function(err) {
-            callback(err);
-          }
-        );
+          })
+          .error(function(data) {
+            callback(new Error(data));
+          });
       };
     }
   ]);

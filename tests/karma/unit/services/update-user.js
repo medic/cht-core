@@ -3,10 +3,12 @@ describe('UpdateUser service', function() {
   'use strict';
 
   var service,
+      cacheRemove,
       $httpBackend;
 
   beforeEach(function() {
     module('inboxApp');
+    cacheRemove = sinon.stub();
     module(function ($provide) {
       $provide.value('Admins', function(callback) {
         callback(null, { gareth: true });
@@ -14,8 +16,23 @@ describe('UpdateUser service', function() {
     });
     inject(function($injector) {
       $httpBackend = $injector.get('$httpBackend');
+      var $cacheFactory = $injector.get('$cacheFactory');
+      $cacheFactory.get = function(name) {
+        if (name !== '$http') {
+          throw new Error('requesting the wrong cache');
+        }
+        return { remove: cacheRemove };
+      };
       service = $injector.get('UpdateUser');
     });
+  });
+
+  afterEach(function() {
+    $httpBackend.verifyNoOutstandingExpectation();
+    $httpBackend.verifyNoOutstandingRequest();
+    if (cacheRemove.restore) {
+      cacheRemove.restore();
+    }
   });
 
   it('creates a user', function(done) {
@@ -41,6 +58,10 @@ describe('UpdateUser service', function() {
     service(null, updates, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal(expected);
+      chai.expect(cacheRemove.callCount).to.equal(3);
+      chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Asally');
+      chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
+      chai.expect(cacheRemove.thirdCall.args[0]).to.equal('/_config/admins');
       done();
     });
 
@@ -71,6 +92,10 @@ describe('UpdateUser service', function() {
     service('org.couchdb.user:jerome', updates, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal(expected);
+      chai.expect(cacheRemove.callCount).to.equal(3);
+      chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Ajerome');
+      chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
+      chai.expect(cacheRemove.thirdCall.args[0]).to.equal('/_config/admins');
       done();
     });
 
@@ -103,6 +128,10 @@ describe('UpdateUser service', function() {
     service('org.couchdb.user:jerome', updates, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
+      chai.expect(cacheRemove.callCount).to.equal(3);
+      chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Ajerome');
+      chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
+      chai.expect(cacheRemove.thirdCall.args[0]).to.equal('/_config/admins');
       done();
     });
 
@@ -140,6 +169,10 @@ describe('UpdateUser service', function() {
     service('org.couchdb.user:gareth', updates, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
+      chai.expect(cacheRemove.callCount).to.equal(3);
+      chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Agareth');
+      chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
+      chai.expect(cacheRemove.thirdCall.args[0]).to.equal('/_config/admins');
       done();
     });
 
@@ -150,7 +183,7 @@ describe('UpdateUser service', function() {
 
     $httpBackend
       .expect('GET', '/_users/org.couchdb.user:jerome')
-      .respond(503, '');
+      .respond(503, 'Server error');
 
     var updates = {
       favcolour: 'aqua',
@@ -158,7 +191,8 @@ describe('UpdateUser service', function() {
     };
 
     service('org.couchdb.user:jerome', updates, function(err) {
-      chai.expect(err).to.equal('Error getting user: 503');
+      chai.expect(err.message).to.equal('Server error');
+      chai.expect(cacheRemove.callCount).to.equal(0);
       done();
     });
 

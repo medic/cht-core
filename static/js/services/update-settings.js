@@ -5,24 +5,19 @@
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('UpdateSettings', [
-    '$resource', '$cacheFactory', 'BaseUrlService',
-    function($resource, $cacheFactory, BaseUrlService) {
+    '$http', '$cacheFactory', 'BaseUrlService',
+    function($http, $cacheFactory, BaseUrlService) {
       return function(updates, callback) {
-        $resource(BaseUrlService() + '/update_settings/medic', {}, {
-          update: {
-            method: 'PUT',
-            isArray: false
-          }
-        }).update(
-          updates,
-          function() {
+        $http.put(BaseUrlService() + '/update_settings/medic', updates)
+          .success(function() {
             // clear cached settings
             $cacheFactory.get('$http')
               .remove(BaseUrlService() + '/app_settings/medic');
             callback();
-          },
-          callback
-        );
+          })
+          .error(function(data) {
+            callback(new Error(data));
+          });
       };
     }
   ]);

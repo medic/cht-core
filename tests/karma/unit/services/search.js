@@ -52,8 +52,7 @@ describe('Search service', function() {
       .expect('GET', '/api/v1/fti/data_records?include_docs=true&index=data_records&limit=50&sort=%5Creported_date%3Cdate%3E')
       .respond(503, 'boom');
     service(scope, {}, function(err) {
-      chai.expect(err.data).to.equal('boom');
-      chai.expect(err.status).to.equal(503);
+      chai.expect(err.message).to.equal('boom');
       done();
     });
     $httpBackend.flush();

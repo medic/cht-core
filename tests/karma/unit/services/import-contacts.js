@@ -43,7 +43,7 @@ describe('ImportContacts service', function() {
       .expect('HEAD', 'BASEURL/_db/1')
       .respond(503, 'boom');
     service([{ _id: 1 }], true, function(err) {
-      chai.expect(err).to.equal('Error getting doc');
+      chai.expect(err.message).to.equal('boom');
       done();
     });
     $httpBackend.flush();

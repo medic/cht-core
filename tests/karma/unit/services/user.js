@@ -46,10 +46,10 @@ describe('User service', function() {
 
     $httpBackend
       .expect('GET', '/_users/org.couchdb.user%3A' + username)
-      .respond(404, '');
+      .respond(404, 'Not found');
 
     service(function(err) {
-      chai.expect(err).to.equal('Error getting user: 404');
+      chai.expect(err.message).to.equal('Not found');
       done();
     });
 

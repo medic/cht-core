@@ -8,17 +8,16 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('HelpSearchCtrl',
-    ['$scope', '$resource',
-    function ($scope, $resource) {
+    ['$scope', '$http',
+    function ($scope, $http) {
       $scope.loading = true;
       $scope.indexes = [];
 
       async.each(
-        ['data_records','contacts'],
+        [ 'data_records', 'contacts' ],
         function(index, callback) {
-          $resource('/api/v1/fti/' + index).get(
-            {},
-            function(data) {
+          $http.get('/api/v1/fti/' + index)
+            .success(function(data) {
               if (data.fields && data.fields.length) {
                 $scope.indexes.push({
                   name: index,
@@ -26,13 +25,14 @@ var _ = require('underscore'),
                 });
               }
               callback();
-            },
-            callback
-          );
+            })
+            .error(function(data) {
+              callback(new Error(data));
+            });
         },
         function(err) {
           if (err) {
-            console.log('Error fetching fields', err);
+            console.log(err);
           }
           $scope.loading = false;
         }

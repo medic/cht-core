@@ -7,22 +7,17 @@ var async = require('async'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('MessageContactsRaw', ['$resource', 'BaseUrlService',
-    function($resource, BaseUrlService) {
+  inboxServices.factory('MessageContactsRaw', ['$http', 'BaseUrlService',
+    function($http, BaseUrlService) {
       return function(params, callback) {
-        $resource(BaseUrlService() + '/message_contacts', {}, {
-          query: {
-            isArray: false,
-            params: params
-          }
-        }).query(
-          function(res) {
+        var url = BaseUrlService() + '/message_contacts';
+        $http.get(url, { params: params, cache: true })
+          .success(function(res) {
             callback(null, res.rows);
-          },
-          function(err) {
-            callback(err);
-          }
-        );
+          })
+          .error(function(data) {
+            callback(new Error(data));
+          });
       };
     }
   ]);

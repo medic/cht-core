@@ -224,10 +224,10 @@ describe('Users service', function() {
 
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
-      .respond(404, '');
+      .respond(404, 'Not found');
 
     service(function(err) {
-      chai.expect(err).to.equal('Error getting users: 404');
+      chai.expect(err.message).to.equal('Not found');
       done();
     });
 

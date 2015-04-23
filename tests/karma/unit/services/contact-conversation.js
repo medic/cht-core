@@ -140,7 +140,7 @@ describe('ContactConversation service', function() {
       .respond(503, 'server error');
 
     service({ id: 'abc' }, function(err) {
-      chai.expect(err.data).to.equal('server error');
+      chai.expect(err.message).to.equal('server error');
       done();
     });
 

@@ -9,28 +9,18 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('AnalyticsModules',
-    ['$rootScope', '$resource', 'translateFilter', 'db', 'UserDistrict', 'District', 'DbView', 'ChildFacility', 'FormatDataRecord',
-    function($rootScope, $resource, translateFilter, db, UserDistrict, District, DbView, ChildFacility, FormatDataRecord) {
+    ['$rootScope', '$http', 'translateFilter', 'db', 'UserDistrict', 'District', 'DbView', 'ChildFacility', 'FormatDataRecord',
+    function($rootScope, $http, translateFilter, db, UserDistrict, District, DbView, ChildFacility, FormatDataRecord) {
 
-      var request = function(url, district, options, callback) {
-        if (!callback) {
-          callback = options;
-          options = {};
-        }
-        _.defaults(options, {
-          method: 'GET',
-          isArray: true,
-          cache: true
-        });
-        $resource(url, { district: district }, { query: options }).query(
-          function(data) {
+      var request = function(url, district, callback) {
+        $http.get(url, { params: { district: district, cache: true } })
+          .success(function(data) {
             callback(null, data);
-          },
-          function(err) {
-            console.log('Error requesting module', err);
-            callback(err);
-          }
-        );
+          })
+          .error(function(data) {
+            console.log('Error requesting module', data);
+            callback(new Error(data));
+          });
       };
 
       return function(settings) {
@@ -67,7 +57,7 @@ var _ = require('underscore'),
                   return console.log('Error fetching district', err);
                 }
 
-                request('/api/active-pregnancies', district, { isArray: false }, function(err, data) {
+                request('/api/active-pregnancies', district, function(err, data) {
                   scope.activePregnancies = { error: err, data: data };
                 });
 
@@ -87,7 +77,7 @@ var _ = require('underscore'),
                   scope.highRisk = { error: err, data: data, order: 'date' };
                 });
 
-                request('/api/total-births', district, { isArray: false }, function(err, data) {
+                request('/api/total-births', district, function(err, data) {
                   scope.totalBirths = { error: err, data: data };
                 });
 

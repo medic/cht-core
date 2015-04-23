@@ -271,14 +271,12 @@ require('moment/locales');
         ReadMessages({
           user: UserCtxService().name,
           district: $scope.permissions.district
-        }).then(
-          function(res) {
-            $scope.readStatus = res;
-          },
-          function() {
-            console.log('Failed to retrieve read status');
+        }, function(err, data) {
+          if (err) {
+            return console.log(err);
           }
-        );
+          $scope.readStatus = data;
+        });
       };
 
       UserDistrict(function(err, district) {

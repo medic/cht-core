@@ -74,7 +74,7 @@ var async = require('async'),
               })
               .error(function(data, status) {
                 if (status !== 404) {
-                  return callback('Error getting doc');
+                  return callback(new Error(data));
                 }
                 // for some reason, angular thinks 404 is an error...
                 saveRecord(contact, true, callback);

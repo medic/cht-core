@@ -38,7 +38,7 @@ describe('Facility service', function() {
       .respond(503, 'boom');
 
     service(function(err) {
-      chai.expect(err.data).to.equal('boom');
+      chai.expect(err.message).to.equal('boom');
       done();
     });
 

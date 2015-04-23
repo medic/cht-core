@@ -50,11 +50,11 @@ describe('UpdateSettings service', function() {
     };
     $httpBackend
       .expect('PUT', 'BASEURL/update_settings/medic', JSON.stringify(updates))
-      .respond(404, '');
+      .respond(404, 'Not found');
 
     service(updates, function(err) {
       chai.expect(err).to.not.equal(null);
-      chai.expect(err.status).to.equal(404);
+      chai.expect(err.message).to.equal('Not found');
       done();
     });
 

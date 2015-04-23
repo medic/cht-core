@@ -3,57 +3,44 @@
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
-  
-  inboxServices.factory('ReadMessagesRaw', ['$resource', 'BaseUrlService',
-    function($resource, BaseUrlService) {
-      return $resource(BaseUrlService() + '/read_records', {}, {
-        query: {
-          isArray: false,
-          params: {
-            group: true
-          }
-        }
-      });
+
+  var getMultiplier = function(key, user) {
+    if (key === '_total') {
+      return 1;
     }
-  ]);
+    if (key === user) {
+      return -1;
+    }
+  };
 
-  inboxServices.factory('ReadMessages', ['$q', 'ReadMessagesRaw',
-    function($q, ReadMessagesRaw) {
+  var calculateStatus = function(res, options) {
+    var status = { forms: 0, messages: 0 };
+    res.rows.forEach(function(row) {
+      var name = row.key[0];
+      var type = row.key[1];
+      var dist = row.key[2];
 
-      var getMultiplier = function(key, user) {
-        if (key === '_total') {
-          return 1;
+      if (!options.district || options.district === dist) {
+        var multiplier = getMultiplier(name, options.user);
+        if (multiplier) {
+          status[type] += (row.value * multiplier);
         }
-        if (key === user) {
-          return -1;
-        }
-      };
+      }
+    });
+    return status;
+  };
 
-      return function(options) {
-
-        var deferred = $q.defer();
-
-        ReadMessagesRaw.query(function(res) {
-          
-          var status = { forms: 0, messages: 0 };
-          
-          res.rows.forEach(function(row) {
-            var name = row.key[0];
-            var type = row.key[1];
-            var dist = row.key[2];
-
-            if (!options.district || options.district === dist) {
-              var multiplier = getMultiplier(name, options.user);
-              if (multiplier) {
-                status[type] += (row.value * multiplier);
-              }
-            }
+  inboxServices.factory('ReadMessages', ['$http', 'BaseUrlService',
+    function($http, BaseUrlService) {
+      return function(options, callback) {
+        $http
+          .get(BaseUrlService() + '/read_records', { params: { group: true } })
+          .success(function(res) {
+            callback(null, calculateStatus(res, options));
+          })
+          .error(function(data) {
+            callback(new Error(data));
           });
-
-          deferred.resolve(status);
-        });
-
-        return deferred.promise;
       };
     }
   ]);
