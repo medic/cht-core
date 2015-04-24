@@ -8,8 +8,8 @@ var async = require('async'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('ImportContacts',
-    ['$http', 'SaveDoc', 'BaseUrlService',
-    function($http, SaveDoc, BaseUrlService) {
+    ['HttpWrapper', 'SaveDoc', 'BaseUrlService',
+    function(HttpWrapper, SaveDoc, BaseUrlService) {
 
       var savePerson = function(doc, callback) {
         if (!doc.contact || doc.contact._id) {
@@ -61,7 +61,7 @@ var async = require('async'),
         async.each(
           contacts,
           function(contact, callback) {
-            $http
+            HttpWrapper
               .head(baseUrl + contact._id)
               .success(function(data, status, headers) {
                 var rev = headers('ETag').replace(etagRegex, '');

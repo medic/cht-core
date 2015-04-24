@@ -232,7 +232,6 @@ describe('Users service', function() {
     });
 
     $httpBackend.flush();
-
   });
 
   it('returns errors from facilities service', function(done) {

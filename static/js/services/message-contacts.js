@@ -7,11 +7,12 @@ var async = require('async'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('MessageContactsRaw', ['$http', 'BaseUrlService',
-    function($http, BaseUrlService) {
+  inboxServices.factory('MessageContactsRaw', [
+    'HttpWrapper', 'BaseUrlService',
+    function(HttpWrapper, BaseUrlService) {
       return function(params, callback) {
         var url = BaseUrlService() + '/message_contacts';
-        $http.get(url, { params: params, cache: true })
+        HttpWrapper.get(url, { params: params, cache: true })
           .success(function(res) {
             callback(null, res.rows);
           })

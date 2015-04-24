@@ -9,11 +9,11 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('AnalyticsModules',
-    ['$rootScope', '$http', 'translateFilter', 'db', 'UserDistrict', 'District', 'DbView', 'ChildFacility', 'FormatDataRecord',
-    function($rootScope, $http, translateFilter, db, UserDistrict, District, DbView, ChildFacility, FormatDataRecord) {
+    ['$rootScope', 'HttpWrapper', 'translateFilter', 'db', 'UserDistrict', 'District', 'DbView', 'ChildFacility', 'FormatDataRecord',
+    function($rootScope, HttpWrapper, translateFilter, db, UserDistrict, District, DbView, ChildFacility, FormatDataRecord) {
 
       var request = function(url, district, callback) {
-        $http.get(url, { params: { district: district, cache: true } })
+        HttpWrapper.get(url, { params: { district: district, cache: true } })
           .success(function(data) {
             callback(null, data);
           })

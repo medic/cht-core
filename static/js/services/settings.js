@@ -7,10 +7,16 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Settings', ['$http', 'BaseUrlService',
-    function($http, BaseUrlService) {
-      return function(callback) {
-        $http.get(BaseUrlService() + '/app_settings/medic', { cache: true })
+  inboxServices.factory('Settings', ['HttpWrapper', 'BaseUrlService',
+    function(HttpWrapper, BaseUrlService) {
+      return function(options, callback) {
+        if (!callback) {
+          callback = options;
+          options = {};
+        }
+        options = options || {};
+        options.cache = options.cache || true;
+        HttpWrapper.get(BaseUrlService() + '/app_settings/medic', options)
           .success(function(res) {
             callback(null, _.defaults(res.settings, defaults));
           })

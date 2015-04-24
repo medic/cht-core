@@ -8,15 +8,15 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('HelpSearchCtrl',
-    ['$scope', '$http',
-    function ($scope, $http) {
+    ['$scope', 'HttpWrapper',
+    function ($scope, HttpWrapper) {
       $scope.loading = true;
       $scope.indexes = [];
 
       async.each(
         [ 'data_records', 'contacts' ],
         function(index, callback) {
-          $http.get('/api/v1/fti/' + index)
+          HttpWrapper.get('/api/v1/fti/' + index)
             .success(function(data) {
               if (data.fields && data.fields.length) {
                 $scope.indexes.push({

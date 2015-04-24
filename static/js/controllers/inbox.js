@@ -18,8 +18,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests) {
 
       $scope.loadingContent = false;
       $scope.error = false;
@@ -270,7 +270,8 @@ require('moment/locales');
       $scope.updateReadStatus = function () {
         ReadMessages({
           user: UserCtxService().name,
-          district: $scope.permissions.district
+          district: $scope.permissions.district,
+          timeout: false
         }, function(err, data) {
           if (err) {
             return console.log(err);
@@ -295,14 +296,12 @@ require('moment/locales');
         sendMessage.init(Settings, Contact, translateFilter);
       };
 
-      Form().then(
-        function(forms) {
-          $scope.forms = forms;
-        },
-        function(err) {
-          console.log('Failed to retrieve forms', err);
+      Form({ timeout: false }, function(err, forms) {
+        if (err) {
+          return console.log('Failed to retrieve forms', err);
         }
-      );
+        $scope.forms = forms;
+      });
 
       $scope.setupGuidedSetup = function() {
         guidedSetup.init(Settings, UpdateSettings, translateFilter);
@@ -434,7 +433,7 @@ require('moment/locales');
       });
 
       var updateEditUserModel = function(callback) {
-        User(function(err, user) {
+        User({ timeout: false }, function(err, user) {
           if (err) {
             return console.log('Error getting user', err);
           }
@@ -453,7 +452,7 @@ require('moment/locales');
         });
       };
 
-      Settings(function(err, settings) {
+      Settings({ timeout: false }, function(err, settings) {
         if (err) {
           return console.log('Error fetching settings', err);
         }
@@ -470,7 +469,7 @@ require('moment/locales');
 
       moment.locale(['en']);
 
-      Language(function(err, language) {
+      Language({ timeout: false }, function(err, language) {
         if (err) {
           return console.log('Error loading language', err);
         }
@@ -629,7 +628,7 @@ require('moment/locales');
         });
 
         // we have to wait for language to respond before initing the multidropdowns
-        Language(function(err, language) {
+        Language({ timeout: false }, function(err, language) {
 
           $translate.use(language);
 
@@ -775,7 +774,7 @@ require('moment/locales');
       };
 
       $scope.setupHeader = function() {
-        Settings(function(err, settings) {
+        Settings({ timeout: false }, function(err, settings) {
           if (err) {
             return console.log('Error retrieving settings', err);
           }
@@ -794,6 +793,10 @@ require('moment/locales');
       });
 
       CountMessages.init();
+
+      $scope.$on('$stateChangeStart', function() {
+        ActiveRequests.cancelAll();
+      });
 
     }
   ]);

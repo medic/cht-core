@@ -30,11 +30,16 @@
     return status;
   };
 
-  inboxServices.factory('ReadMessages', ['$http', 'BaseUrlService',
-    function($http, BaseUrlService) {
+  inboxServices.factory('ReadMessages', [
+    'HttpWrapper', 'BaseUrlService',
+    function(HttpWrapper, BaseUrlService) {
       return function(options, callback) {
-        $http
-          .get(BaseUrlService() + '/read_records', { params: { group: true } })
+        var getOptions = {
+          params: { group: true },
+          timeout: options.timeout
+        };
+        HttpWrapper
+          .get(BaseUrlService() + '/read_records', getOptions)
           .success(function(res) {
             callback(null, calculateStatus(res, options));
           })

@@ -18,6 +18,7 @@
   require('./format-data-record');
   require('./format-date');
   require('./generate-search-query');
+  require('./http-wrapper');
   require('./import-contacts');
   require('./language');
   require('./mark-read');

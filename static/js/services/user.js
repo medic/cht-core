@@ -29,10 +29,17 @@ var _ = require('underscore'),
     return '/_users/org.couchdb.user%3A' + userCtx.name;
   };
 
-  inboxServices.factory('User', ['$http', 'UserCtxService',
-    function($http, UserCtxService) {
-      return function(callback) {
-        $http.get(getUserResourceUrl(UserCtxService()), { cache: true })
+  inboxServices.factory('User', ['HttpWrapper', 'UserCtxService',
+    function(HttpWrapper, UserCtxService) {
+      return function(options, callback) {
+        if (!callback) {
+          callback = options;
+          options = {};
+        }
+        options = options || {};
+        options.cache = options.cache || true;
+        HttpWrapper
+          .get(getUserResourceUrl(UserCtxService()), options)
           .success(function(data) {
             callback(null, data);
           })
@@ -43,10 +50,10 @@ var _ = require('underscore'),
     }
   ]);
 
-  inboxServices.factory('Admins', ['$http',
-    function($http) {
+  inboxServices.factory('Admins', ['HttpWrapper',
+    function(HttpWrapper) {
       return function(callback) {
-        $http.get('/_config/admins', { cache: true })
+        HttpWrapper.get('/_config/admins', { cache: true })
           .success(function(data) {
             callback(null, data);
           })
@@ -88,10 +95,10 @@ var _ = require('underscore'),
     });
   };
 
-  inboxServices.factory('Users', ['$http', 'Facility', 'Admins',
-    function($http, Facility, Admins) {
+  inboxServices.factory('Users', ['HttpWrapper', 'Facility', 'Admins',
+    function(HttpWrapper, Facility, Admins) {
       return function(callback) {
-        $http.get('/_users/_all_docs?include_docs=true', { cache: true })
+        HttpWrapper.get('/_users/_all_docs?include_docs=true', { cache: true })
           .success(function(data) {
             Facility(function(err, facilities) {
               if (err) {
@@ -112,9 +119,9 @@ var _ = require('underscore'),
     }
   ]);
 
-  var getUser = function($http, id, updates, callback) {
+  var getUser = function(HttpWrapper, id, updates, callback) {
     if (id) {
-      $http.get('/_users/' + id)
+      HttpWrapper.get('/_users/' + id)
         .success(function(data) {
           callback(null, id, _.extend(data, updates));
         })
@@ -129,7 +136,7 @@ var _ = require('underscore'),
     }
   };
 
-  var updatePassword = function($http, Admins, updated, callback) {
+  var updatePassword = function(HttpWrapper, Admins, updated, callback) {
     if (!updated.password) {
       // password not changed, do nothing
       return callback();
@@ -144,7 +151,7 @@ var _ = require('underscore'),
         // not an admin so admin password change not required
         return callback();
       }
-      $http.put('/_config/admins/' + updated.name, '"' + updated.password + '"')
+      HttpWrapper.put('/_config/admins/' + updated.name, '"' + updated.password + '"')
         .success(function() {
           callback();
         })
@@ -161,18 +168,18 @@ var _ = require('underscore'),
     cache.remove('/_config/admins');
   };
 
-  inboxServices.factory('UpdateUser', ['$http', '$cacheFactory', 'Admins',
-    function($http, $cacheFactory, Admins) {
+  inboxServices.factory('UpdateUser', ['HttpWrapper', '$cacheFactory', 'Admins',
+    function(HttpWrapper, $cacheFactory, Admins) {
       return function(id, updates, callback) {
-        getUser($http, id, updates, function(err, id, updated) {
+        getUser(HttpWrapper, id, updates, function(err, id, updated) {
           if (err) {
             return callback(err);
           }
-          updatePassword($http, Admins, updated, function(err) {
+          updatePassword(HttpWrapper, Admins, updated, function(err) {
             if (err) {
               return callback(err);
             }
-            $http.put('/_users/' + id, JSON.stringify(updated))
+            HttpWrapper.put('/_users/' + id, updated)
               .success(function() {
                 removeCacheEntry($cacheFactory, id);
                 callback(null, updated);
@@ -186,14 +193,14 @@ var _ = require('underscore'),
     }
   ]);
 
-  inboxServices.factory('DeleteUser', ['$http', '$cacheFactory',
-    function($http, $cacheFactory) {
+  inboxServices.factory('DeleteUser', ['HttpWrapper', '$cacheFactory',
+    function(HttpWrapper, $cacheFactory) {
       return function(user, callback) {
         var url = '/_users/' + user.id;
-        $http.get(url)
+        HttpWrapper.get(url)
           .success(function(user) {
             user._deleted = true;
-            $http.put(url, user)
+            HttpWrapper.put(url, user)
               .success(function() {
                 removeCacheEntry($cacheFactory, user._id);
                 callback();

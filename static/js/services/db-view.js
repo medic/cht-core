@@ -7,8 +7,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('DbView', ['$http', 'BaseUrlService',
-    function($http, BaseUrlService) {
+  inboxServices.factory('DbView', ['HttpWrapper', 'BaseUrlService',
+    function(HttpWrapper, BaseUrlService) {
       return function(viewName, options, callback) {
         var url = BaseUrlService() + '/../_view/' + viewName;
         escape.forEach(function(key) {
@@ -17,7 +17,7 @@ var _ = require('underscore'),
           }
         });
         options.cache = true;
-        $http.get(url, { params: options })
+        HttpWrapper.get(url, { params: options })
           .success(function(results) {
             var meta = {
               total_rows: results.total_rows,

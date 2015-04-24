@@ -15,10 +15,10 @@ describe('Language service', function() {
     cookieCalledWith = null;
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('User', function(callback) {
+      $provide.value('User', function(options, callback) {
         callback(null, user);
       });
-      $provide.value('Settings', function(callback) {
+      $provide.value('Settings', function(options, callback) {
         callback(null, settings);
       });
       $provide.value('ipCookie', function() {

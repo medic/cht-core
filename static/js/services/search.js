@@ -6,8 +6,8 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('Search', ['$http', 'GenerateSearchQuery', 'FormatDataRecord',
-    function($http, GenerateSearchQuery, FormatDataRecord) {
+  inboxServices.factory('Search', ['HttpWrapper', 'GenerateSearchQuery', 'FormatDataRecord',
+    function(HttpWrapper, GenerateSearchQuery, FormatDataRecord) {
 
       var _currentQuery;
 
@@ -58,7 +58,7 @@ var _ = require('underscore');
             return;
           }
 
-          $http.get('/api/v1/fti/' + options.index, { params: options })
+          HttpWrapper.get('/api/v1/fti/' + options.index, { params: options })
             .success(function(data) {
               _currentQuery = null;
               formatResults(data, callback);

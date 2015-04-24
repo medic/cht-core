@@ -11,10 +11,10 @@ describe('Form service', function() {
   beforeEach(function (){
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('Settings', function(callback) {
+      $provide.value('Settings', function(options, callback) {
         callback(null, { forms: results });
       });
-      $provide.value('Language', function(callback) {
+      $provide.value('Language', function(options, callback) {
         callback(null, language);
       });
     });
@@ -30,12 +30,10 @@ describe('Form service', function() {
     results = {};
     var expected = [];
 
-    service().then(
-      function(actual) {
-        chai.expect(actual).to.deep.equal(expected);
-        done();
-      }
-    );
+    service(function(err, actual) {
+      chai.expect(actual).to.deep.equal(expected);
+      done();
+    });
 
     // needed to resolve the promise
     $rootScope.$digest();
@@ -56,12 +54,10 @@ describe('Form service', function() {
       { code: 'D', name: 'Fourth' }
     ];
 
-    service().then(
-      function(actual) {
-        chai.expect(actual).to.deep.equal(expected);
-        done();
-      }
-    );
+    service(function(err, actual) {
+      chai.expect(actual).to.deep.equal(expected);
+      done();
+    });
 
     $rootScope.$digest();
   });
@@ -82,12 +78,10 @@ describe('Form service', function() {
     ];
 
 
-    service().then(
-      function(actual) {
-        chai.expect(actual).to.deep.equal(expected);
-        done();
-      }
-    );
+    service(function(err, actual) {
+      chai.expect(actual).to.deep.equal(expected);
+      done();
+    });
 
     $rootScope.$digest();
   });
@@ -109,12 +103,10 @@ describe('Form service', function() {
 
     language = 'sw';
 
-    service().then(
-      function(actual) {
-        chai.expect(actual).to.deep.equal(expected);
-        done();
-      }
-    );
+    service(function(err, actual) {
+      chai.expect(actual).to.deep.equal(expected);
+      done();
+    });
 
     $rootScope.$digest();
   });

@@ -5,10 +5,10 @@
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('UpdateSettings', [
-    '$http', '$cacheFactory', 'BaseUrlService',
-    function($http, $cacheFactory, BaseUrlService) {
+    'HttpWrapper', '$cacheFactory', 'BaseUrlService',
+    function(HttpWrapper, $cacheFactory, BaseUrlService) {
       return function(updates, callback) {
-        $http.put(BaseUrlService() + '/update_settings/medic', updates)
+        HttpWrapper.put(BaseUrlService() + '/update_settings/medic', updates)
           .success(function() {
             // clear cached settings
             $cacheFactory.get('$http')

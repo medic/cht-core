@@ -28,14 +28,14 @@ var _ = require('underscore');
     }
   ]);
 
-  inboxServices.factory('Facility', ['$http', 'BaseUrlService',
-    function($http, BaseUrlService) {
+  inboxServices.factory('Facility', ['HttpWrapper', 'BaseUrlService',
+    function(HttpWrapper, BaseUrlService) {
       return function(options, callback) {
         if (!callback) {
           callback = options;
           options = {};
         }
-        $http.get(getFacilitiesUrl(BaseUrlService, options.district))
+        HttpWrapper.get(getFacilitiesUrl(BaseUrlService, options.district))
           .success(function(res) {
             if (options.types) {
               return callback(null, _.filter(res.rows, function(row) {
