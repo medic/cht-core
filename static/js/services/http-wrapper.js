@@ -10,9 +10,6 @@ var _ = require('underscore');
     function() {
       var pending = [];
       return {
-        get: function() {
-          return pending;
-        },
         add: function(request) {
           pending.push(request);
         },
@@ -35,40 +32,30 @@ var _ = require('underscore');
     '$http', '$q', 'ActiveRequests',
     function($http, $q, ActiveRequests) {
 
-      var wrap = function(url, options, requestFactory) {
-        if (options.timeout === false) {
-          return requestFactory();
+      var wrap = function(args, fn) {
+        args[args.length - 1] = args[args.length - 1] || {};
+        if (args[args.length - 1].timeout === false) {
+          return fn.apply(this, args);
         }
         var canceller = $q.defer();
-        ActiveRequests.add({ url: url, canceller: canceller });
-        var promise = requestFactory(canceller.promise);
+        ActiveRequests.add({ url: args[0], canceller: canceller });
+        args[args.length - 1].timeout = canceller.promise;
+        var promise = fn.apply(this, args);
         promise.finally(function() {
-          ActiveRequests.remove(url);
+          ActiveRequests.remove(args[0]);
         });
         return promise;
       };
 
       return {
         get: function(url, options) {
-          options = options || {};
-          return wrap(url, options, function(canceller) {
-            options.timeout = canceller;
-            return $http.get(url, options);
-          });
+          return wrap([ url, options ], $http.get);
         },
         put: function(url, data, options) {
-          options = options || {};
-          return wrap(url, options, function(canceller) {
-            options.timeout = canceller;
-            return $http.put(url, data, options);
-          });
+          return wrap([ url, data, options ], $http.put);
         },
         head: function(url, options) {
-          options = options || {};
-          return wrap(url, options, function(canceller) {
-            options.timeout = canceller;
-            return $http.head(url, options);
-          });
+          return wrap([ url, options ], $http.head);
         }
       };
 
