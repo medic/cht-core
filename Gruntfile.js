@@ -215,10 +215,28 @@ module.exports = function(grunt) {
         singleRun: true,
         browsers: ['PhantomJS']
       }
+    },
+    appcache: {
+      options: {
+        baseUrl: '../../'
+      },
+      inbox: {
+        dest: 'static/dist/manifest.appcache',
+        cache: {
+          patterns: [
+            'static/dist/**/*',
+            'static/fonts/**/*',
+            'static/img/**/*',
+            'templates/**/*'
+          ]
+        },
+        network: '*'
+      }
     }
   });
 
   // Load the plugins
+  grunt.loadNpmTasks('grunt-appcache');
   grunt.loadNpmTasks('grunt-autoprefixer');
   grunt.loadNpmTasks('grunt-bower-concat');
   grunt.loadNpmTasks('grunt-bower-task');
@@ -259,8 +277,7 @@ module.exports = function(grunt) {
     'copy:admin'
   ]);
 
-  grunt.registerTask('deploy', 'Build the JS resources', [
-    'concat:js',
+  grunt.registerTask('deploy', 'Deploy the webapp', [
     'exec:deploy',
     'notify:deployed'
   ]);
@@ -268,13 +285,18 @@ module.exports = function(grunt) {
   grunt.registerTask('default', 'Build the static resources', [
     'mmbower',
     'mmcss',
-    'mmjs'
+    'mmjs',
+    'appcache',
+  ]);
+
+  grunt.registerTask('minify', 'Minify JS and CSS', [
+    'uglify',
+    'cssmin'
   ]);
 
   grunt.registerTask('ci', 'Build, minify, and test for CI', [
     'default',
-    'uglify',
-    'cssmin',
+    'minify',
     'karma:unit_ci',
     'exec:deployci',
     'exec:phantom'
@@ -282,10 +304,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
     'npm-install',
-    'mmbower',
-    'mmcss',
-    'copy:settings',
-    'browserify:dist',
+    'default',
     'deploy',
     'watch'
   ]);
