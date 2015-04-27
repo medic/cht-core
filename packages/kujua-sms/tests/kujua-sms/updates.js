@@ -1,50 +1,69 @@
-var utils = require('kujua-sms/utils'),
-    updates = require('kujua-sms/updates'),
+var sinon = require('sinon'),
     querystring = require('querystring'),
-    fakerequest = require('couch-fakerequest'),
-    baseURL = require('duality/core').getBaseURL(),
-    host = window.location.host.split(':')[0],
-    port = window.location.host.split(':')[1] || '';
-
+    utils = require('kujua-sms/utils'),
+    updates = require('kujua-sms/updates'),
+    info = require('views/lib/appinfo'),
+    definitions = require('../../test-helpers/form_definitions'),
+    appInfo;
 
 exports.setUp = function (callback) {
-    utils.info = require('views/lib/appinfo').getAppInfo.call(this);
+    appInfo = {
+        getForm: function() {},
+        translate: function(key, locale) {
+            return key + '|' + locale;
+        },
+        getMessage: function(value, locale) {
+            return (value.en || value) + '|' + locale;
+        }
+    };
+    sinon.stub(info, 'getAppInfo').returns(appInfo);
     callback();
 };
 
-exports.assert_month_is_integer = function(test) {
-    test.expect(1);
+
+exports.tearDown = function(callback) {
+    if (info.getAppInfo.restore) {
+        info.getAppInfo.restore();
+    }
+    if (appInfo.getForm.restore) {
+        appInfo.getForm.restore();
+    }
+    utils.info = info.getAppInfo.call(this);
+    callback();
+};
+
+exports['assert month is parsed as integer'] = function(test) {
+    var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
     var req = {
-        headers: { "Host": window.location.host },
         form: {
-            "from":"+888",
-            "message": '1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4'
+            from: '+888',
+            message: '1!YYYY!facility#2011#11'
         }
     };
-    var doc = updates.add_sms(null, req)[0];
+    var doc = updates.add(null, req)[0];
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(11, doc.month);
     test.done();
 };
 
-exports.assert_timestamp_parsed = function(test)  {
-    test.expect(1);
+exports['assert unix timestamp parsed'] = function(test) {
     var req = {
-        headers: { "Host": window.location.host },
         form: {
-            "from":"+888",
-            "message": '1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4',
+            "message": 'foo',
             "sent_timestamp":"1352499725000"
         }
     };
-    var doc = updates.add_sms(null, req)[0];
-    test.same('Fri, 09 Nov 2012 22:22:05 GMT', new Date(doc.reported_date).toUTCString());
+    var doc = updates.add(null, req)[0];
+    test.same(
+        'Fri, 09 Nov 2012 22:22:05 GMT',
+        new Date(doc.reported_date).toUTCString()
+    );
     test.done();
 };
 
-exports.deep_keys_parsed = function(test)  {
-    test.expect(2);
+exports['deep keys parsed'] = function(test) {
+    var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
     var req = {
-        headers: {"Host": window.location.host},
         form: {
             "from": "+13125551212",
             "message": "1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4",
@@ -67,35 +86,28 @@ exports.deep_keys_parsed = function(test)  {
         ors: 5,
         zinc: 4
     };
-    var doc = updates.add_sms(null, req)[0];
-
+    var doc = updates.add(null, req)[0];
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(doc.days_stocked_out, days_stocked_out);
     test.same(doc.quantity_dispensed, quantity_dispensed);
-
     test.done();
 };
 
-exports.sms_message_attr_on_doc = function(test) {
-    test.expect(1);
+exports['POST data is saved on sms_message attr'] = function(test) {
     var req = {
-        headers: {"Host": window.location.host},
         form: {
             "from": "+13125551212",
             "message": "1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4",
             "sent_timestamp":"1352399720000"
         }
     };
-    var doc = updates.add_sms(null, req)[0];
-
+    var doc = updates.add(null, req)[0];
     test.same(doc.sms_message, req.form);
     test.done();
 };
 
-exports.add_sms_check_resp_body = function (test) {
-
-    // smssync post
+exports['add sms sucessful payload and uuid is passed through'] = function (test) {
     var req = {
-        headers: {"Host": window.location.host},
         uuid: "13f58b9c648b9a997248cba27aa00fdf",
         form: {
             "from":"+888",
@@ -103,140 +115,19 @@ exports.add_sms_check_resp_body = function (test) {
             "sent_timestamp":"1352399720000"
         }
     };
-
-    // updates.add_sms generates a callback and payload
-    var expResp = {
+    var ret = updates.add(null, req),
+        resp = JSON.parse(ret[1]);
+    test.same(resp, {
         payload: {
           "id": "13f58b9c648b9a997248cba27aa00fdf",
           "success": true
         }
-    };
-
-    var ret = updates.add_sms(null, req);
-    resp = JSON.parse(ret[1]);
-
-    test.same(resp.payload, expResp.payload);
-    test.same(resp, expResp);
+    });
     test.done();
 };
 
-
-//
-// use YYYY form to create tasks on a document.
-//
-exports.update_related_and_tasks = function (test) {
-    test.expect(6);
-    var req = {
-        headers: {"Host": window.location.host},
-        body: JSON.stringify({
-            related_entities: {
-                clinic: {
-                    "contact": {
-                        "name": "Sam Jones",
-                        "phone": "+13125551212"
-                    },
-                    "parent": {
-                        "contact": {
-                            "name": "Neal Young",
-                            "phone": "+17085551212"
-                        },
-                        "parent": {
-                            "contact": {
-                                "name": "Bernie Mac",
-                                "phone": "+14155551212"
-                            }
-                        }
-                    }
-                }
-            }
-        })
-    };
-
-    // mockup of doc fetched by couchdb during update
-    var doc = {form:'YYYY', year: 2012, month: 3};
-    var ret = updates.updateRelated(doc, req);
-    var updateDoc = ret[0];
-    var resp = JSON.parse(ret[1]);
-    var tasks = [
-        {
-          "state": "pending",
-          "messages": [
-            {
-              "to": "+14155551212",
-              "message": "Health Facility Identifier: null, Report Year: 2012, Report Month: 3, Misoprostol?: null, LA 6x1: Dispensed total: null, LA 6x2: Dispensed total: null"
-            }
-          ]
-        }
-    ];
-
-    test.same(updateDoc.tasks[0].messages[0].to, "+14155551212");
-    test.same(updateDoc.tasks[0].state, 'pending');
-    test.same(updateDoc.tasks, tasks);
-
-    test.same(resp.payload.messages[0].message, "Zikomo!");
-    test.same(resp.payload.success, true);
-    test.same(resp.payload.task, 'send');
-    test.done();
-}
-
-/*
- * this doc is missing the district level of facility so we should still have a
- * message recipient not found error.
- */
-exports.update_related_and_recipient_missing = function (test) {
-    test.expect(1);
-    var req = {
-        headers: {"Host": host},
-        body: JSON.stringify({
-            related_entities: {
-                clinic: {
-                    "contact": {
-                        "name": "Sam Jones",
-                        "phone": "+13125551212"
-                    },
-                    "parent": {
-                        "contact": {
-                            "name": "Neal Young",
-                            "phone": "+17085551212"
-                        }
-                    }
-                }
-            }
-        })
-    };
-
-    // mockup of doc fetched by couchdb during update
-    var doc = {
-        form:'YYYY',
-        year: 2012,
-        month: 3,
-        errors: [{
-            "code":"sys.facility_not_found",
-            "message":"Facility not found."
-        }]
-    };
-
-    var ret = updates.updateRelated(doc, req);
-    var newError = {
-        "code":"sys.recipient_not_found",
-        "message":"Could not find message recipient."
-    };
-    test.same(ret[0].errors[0], newError);
-    test.done();
-}
-
-/*
- * Check response and payloads
- *
- * Check sms response data (payloads in smssync api terms) for gateway to
- * process, the responses take two requests to be generated. Calling this two
- * step validation and doing it because we can't validate
- * facility/related_entities on the first request.  So a response message is
- * finalized in the second/final request.
- */
-
-exports.success_response = function (test) {
-    test.expect(4);
+exports['parsed form success maintains facility not found'] = function (test) {
+    var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYZ);
     var req = {
         headers: { "Host": window.location.host },
         form: {
@@ -244,146 +135,82 @@ exports.success_response = function (test) {
             "message":"1!YYYZ!foo#bar"
         }
     };
-
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
-
-    test.same(resp.payload, {success:true});
-    part2(ret[0]);
-
-    function part2(doc) {
-        var req = {
-            headers: {"Host": window.location.host},
-            body: JSON.stringify({}) // related_entities not found
-        };
-
-        var ret = updates.updateRelated(doc, req),
-            newDoc = ret[0],
-            resp = JSON.parse(ret[1]);
-
-        test.same(resp.payload.success, true);
-        test.same(resp.payload.task, 'send');
-        test.same(
-            resp.payload.messages[0].message,
-            'Your form submission was received, thank you.'
-        );
-        test.done();
-    }
+    test.same(resp.payload, {success: true});
+    test.same(ret[0].errors[0].code, "sys.facility_not_found");
+    test.same(ret[0].errors.length, 1);
+    test.done();
 };
 
-exports.success_response_w_autoreply = function (test) {
-    test.expect(6);
+exports['autoreply on YYYY form is ignored'] = function (test) {
+    var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
     var req = {
-        headers: { "Host": window.location.host },
         form: {
             "from":"+888",
             "message":"1!YYYY!facility#2012#4#1#222#333#444#555#666#777#888#999#111#222#333#444"
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]),
         doc = ret[0];
-
     test.same(doc.form, 'YYYY');
     test.same(resp.payload, {success:true});
-    part2(doc);
-
-    function part2(doc) {
-        var req = {
-            headers: {"Host": window.location.host},
-            body: JSON.stringify({}) // related_entities not found
-        };
-
-        var ret = updates.updateRelated(doc, req),
-            newDoc = ret[0],
-            resp = JSON.parse(ret[1]);
-
-        test.same(resp.payload.success, true);
-        test.same(resp.payload.task, 'send');
-        test.same(resp.payload.messages[0].to, "+888");
-        test.same(resp.payload.messages[0].message, 'Zikomo!');
-        test.done();
-    }
+    test.same(ret[0].errors[0].code, "sys.facility_not_found");
+    test.same(ret[0].errors.length, 1);
+    test.done();
 };
 
-exports.form_not_found_response = function(test) {
-    test.expect(4);
+exports['form not found error not set by default'] = function(test) {
     var req = {
-        headers: { "Host": window.location.host },
         form: {
             "from":"+888",
             "message":"foo bar baz"
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
-
+    test.same(ret[0].errors[0].code, "sys.facility_not_found");
+    test.same(ret[0].errors.length, 1);
     test.same(resp.payload, {success:true});
-    part2(ret[0]);
-
-    function part2(doc) {
-        var req = {
-            headers: {"Host": window.location.host},
-            body: JSON.stringify({}) // related_entities not found
-        };
-
-        var ret = updates.updateRelated(doc, req),
-            newDoc = ret[0],
-            resp = JSON.parse(ret[1]);
-
-        test.same(resp.payload.success, true);
-        test.same(resp.payload.task, 'send');
-        test.same(
-            resp.payload.messages[0].message,
-            "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again."
-        );
-        test.done();
-    }
-
+    test.done();
 };
 
-exports.payload_form_not_found_muvuku = function (test) {
-    test.expect(5);
+exports['form not found error set in forms only mode'] = function(test) {
+    appInfo.forms_only_mode = true;
     var req = {
-        headers: { "Host": window.location.host },
+        form: {
+            "from":"+888",
+            "message":"foo bar baz"
+        }
+    };
+    var ret = updates.add(null, req),
+        resp = JSON.parse(ret[1]);
+    test.same(ret[0].errors[0].code, "sys.facility_not_found");
+    test.same(ret[0].errors[1].code, "sys.form_not_found");
+    test.same(ret[0].errors.length, 2);
+    test.same(resp.payload, {success:true});
+    test.done();
+};
+
+exports['only facility not found error on muvuku add'] = function (test) {
+    var req = {
         form: {
             "from":"+888",
             "message": '1!0000!2012#2#20#foo#bar'
         }
     };
-
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
-
     test.same(resp.payload, {success:true});
-    part2(ret[0]);
-
-    function part2(doc) {
-        var req = {
-            headers: {"Host": window.location.host},
-            body: JSON.stringify({}) // related_entities not found
-        };
-
-        var ret = updates.updateRelated(doc, req),
-            newDoc = ret[0],
-            resp = JSON.parse(ret[1]);
-
-        test.same(resp.payload.success, true);
-        test.same(resp.payload.task, 'send');
-        test.same(resp.payload.messages[0].to, "+888");
-        test.same(
-            resp.payload.messages[0].message,
-            "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again."
-        );
-        test.done();
-    }
-
+    test.same(ret[0].errors[0].code, "sys.facility_not_found");
+    test.same(ret[0].errors.length, 1);
+    test.done();
 };
 
-exports.form_not_found_fr_responses = function (test) {
-    test.expect(5);
+exports['form not found response locale from query'] = function (test) {
+    appInfo.forms_only_mode = true;
     var req = {
-        headers: { "Host": window.location.host },
         form: {
             "from":"+888",
             "message": '1!0000!2012#2#20#foo#bar'
@@ -392,393 +219,328 @@ exports.form_not_found_fr_responses = function (test) {
             locale: "fr"
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
-
     test.same(resp.payload, {success:true});
-    part2(ret[0]);
-
-    function part2(doc) {
-        var req = {
-            headers: {"Host": window.location.host},
-            body: JSON.stringify({}) // related_entities not found
-        };
-
-        var ret = updates.updateRelated(doc, req),
-            newDoc = ret[0],
-            resp = JSON.parse(ret[1]);
-
-        test.same(resp.payload.success, true);
-        test.same(resp.payload.task, 'send');
-        test.same(resp.payload.messages[0].to, "+888");
-        test.same(
-            resp.payload.messages[0].message,
-            'Merci, votre message a été bien reçu.'
-        );
-        test.done();
-    }
+    test.same(ret[0].errors[0].code, "sys.facility_not_found");
+    test.same(ret[0].errors[0].message, "sys.facility_not_found|fr");
+    test.same(ret[0].errors[1].code, "sys.form_not_found");
+    test.same(ret[0].errors[1].message, "sys.form_not_found|fr");
+    test.same(ret[0].errors.length, 2);
+    test.done();
 };
 
-exports.empty_message_response = function (test) {
-    test.expect(5);
+exports['form not found message locale on form overrides locale on query'] = function (test) {
+    appInfo.forms_only_mode = true;
     var req = {
-        headers: { "Host": window.location.host },
         form: {
-            "from":"+888",
-            "message": ''
+            locale: 'es',
+            from: '+888',
+            message: '1!0000!2012#2#20#foo#bar'
+        },
+        query: {
+            locale: 'fr'
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
-
     test.same(resp.payload, {success:true});
-    part2(ret[0]);
-
-    function part2(doc) {
-        var req = {
-            headers: {"Host": window.location.host},
-            body: JSON.stringify({}) // related_entities not found
-        };
-
-        var ret = updates.updateRelated(doc, req),
-            newDoc = ret[0],
-            resp = JSON.parse(ret[1]);
-
-        test.same(resp.payload.success, true);
-        test.same(resp.payload.task, 'send');
-        test.same(resp.payload.messages[0].to, "+888");
-        test.same(
-            resp.payload.messages[0].message,
-            "It looks like you sent an empty message, please try to resend. If you continue to have this problem please contact your supervisor."
-        );
-        test.done();
-    }
-
+    test.same(ret[0].errors[0].code, "sys.facility_not_found");
+    test.same(ret[0].errors[0].message, "sys.facility_not_found|es");
+    test.same(ret[0].errors[1].code, "sys.form_not_found");
+    test.same(ret[0].errors[1].message, "sys.form_not_found|es");
+    test.same(ret[0].errors.length, 2);
+    test.done();
 };
 
-exports.empty_message_resonses_fr = function (test) {
-    test.expect(5);
+exports['form not found message locale fallback to app_settings'] = function (test) {
+    appInfo.locale = 'ne';
+    appInfo.forms_only_mode = true;
     var req = {
-        headers: { "Host": window.location.host },
+        headers: { Host: window.location.host },
+        form: {
+            from: '+888',
+            message: '1!0000!2012#2#20#foo#bar'
+        }
+    };
+    var ret = updates.add(null, req),
+        resp = JSON.parse(ret[1]);
+    test.same(resp.payload, {success:true});
+    test.same(ret[0].errors[0].code, "sys.facility_not_found");
+    test.same(ret[0].errors[0].message, "sys.facility_not_found|ne");
+    test.same(ret[0].errors[1].code, "sys.form_not_found");
+    test.same(ret[0].errors[1].message, "sys.form_not_found|ne");
+    test.same(ret[0].errors.length, 2);
+    test.done();
+};
+
+exports['form not found message when locale undefined'] = function (test) {
+    appInfo.locale = undefined;
+    appInfo.forms_only_mode = true;
+    var req = {
+        form: {
+            from: '+888',
+            message: '1!0000!2012#2#20#foo#bar'
+        }
+    };
+    var ret = updates.add(null, req),
+        resp = JSON.parse(ret[1]);
+    test.same(resp.payload, {success:true});
+    test.same(ret[0].errors[0].code, "sys.facility_not_found");
+    test.same(ret[0].errors[0].message, "sys.facility_not_found|en");
+    test.same(ret[0].errors[1].code, "sys.form_not_found");
+    test.same(ret[0].errors[1].message, "sys.form_not_found|en");
+    test.same(ret[0].errors.length, 2);
+    test.done();
+};
+
+exports['assign sys.empty error to empty report'] = function (test) {
+    var req = {
         form: {
             "from":"+888",
-            "message": ''
+            "message": ' '
+        }
+    };
+    var ret = updates.add(null, req),
+        resp = JSON.parse(ret[1]);
+    test.same(resp.payload, {success:true});
+    test.same(ret[0].errors[0].code, "sys.facility_not_found");
+    test.same(ret[0].errors[0].message, "sys.facility_not_found|en");
+    test.same(ret[0].errors[1].code, "sys.empty");
+    test.same(ret[0].errors[1].message, "sys.empty|en");
+    test.done();
+};
+
+exports['empty error messages with fr query param'] = function (test) {
+    var req = {
+        form: {
+            "from":"+888",
+            "message": ' '
         },
         query: {
             locale: "fr"
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]);
-
     test.same(resp.payload, {success:true});
-    part2(ret[0]);
-
-    function part2(doc) {
-        var req = {
-            headers: {"Host": window.location.host},
-            body: JSON.stringify({}) // related_entities not found
-        };
-
-        var ret = updates.updateRelated(doc, req),
-            newDoc = ret[0],
-            resp = JSON.parse(ret[1]);
-
-        test.same(resp.payload.success, true);
-        test.same(resp.payload.task, 'send');
-        test.same(resp.payload.messages[0].to, "+888");
-        test.same(
-            resp.payload.messages[0].message,
-            "Nous avons des troubles avec votre message, SVP renvoyer. Si vous continuez à avoir des problèmes contactez votre superviseur."
-        );
-        test.done();
-    }
+    test.same(ret[0].errors[0].code, "sys.facility_not_found");
+    test.same(ret[0].errors[0].message, "sys.facility_not_found|fr");
+    test.same(ret[0].errors[1].code, "sys.empty");
+    test.same(ret[0].errors[1].message, "sys.empty|fr");
+    test.done();
 };
 
-// one word messages get an undefined `form` property
-exports.payload_one_word = function (test) {
-    test.expect(6);
+exports['one word report gets undefined form property'] = function (test) {
     var req = {
-        headers: { "Host": window.location.host },
         form: {
             "from":"+888",
             "message": 'foo'
         }
     };
-    var ret = updates.add_sms(null, req),
+    var ret = updates.add(null, req),
         resp = JSON.parse(ret[1]),
         doc = ret[0];
-
     test.same(doc.form, undefined);
     test.same(resp.payload, {success:true});
-    part2(doc);
-
-    function part2(doc) {
-        var req = {
-            headers: {"Host": window.location.host},
-            body: JSON.stringify({}) // related_entities not found
-        };
-
-        var ret = updates.updateRelated(doc, req),
-            newDoc = ret[0],
-            resp = JSON.parse(ret[1]);
-
-        test.same(resp.payload.success, true);
-        test.same(resp.payload.task, 'send');
-        test.same(resp.payload.messages[0].to, "+888");
-        test.same(
-            resp.payload.messages[0].message,
-            "SMS message received; it will be reviewed shortly. If you were trying to submit a text form, please enter a correct form code and try again."
-        );
-        test.done();
-    }
+    test.done();
 };
 
-exports.payload_missing_fields = function (test) {
-    test.expect(6);
+exports['errors on extra fields'] = function(test) {
+    var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
     var req = {
-        headers: { "Host": window.location.host },
-        form: {
-            "from":"+888",
-            "message": 'yyyy HFI',
-        }
-    };
-    var ret = updates.add_sms(null, req),
-        resp = JSON.parse(ret[1]),
-        doc = ret[0];
-
-    test.same(doc.form, 'YYYY');
-    test.same(resp.payload, {success:true});
-    part2(doc);
-
-    function part2(doc) {
-        var req = {
-            headers: {"Host": window.location.host},
-            body: JSON.stringify({}) // related_entities not found
-        };
-
-        var ret = updates.updateRelated(doc, req),
-            newDoc = ret[0],
-            resp = JSON.parse(ret[1]);
-
-        test.same(resp.payload.success, true);
-        test.same(resp.payload.task, 'send');
-        test.same(resp.payload.messages[0].to, "+888");
-        test.same(
-            resp.payload.messages[0].message,
-            "Missing or invalid fields: facility_id, year, month."
-        );
-        test.done();
-    }
-};
-
-
-
-exports.extra_fields = function(test) {
-
-    test.expect(3);
-    var req = {
-        headers: {"Host": window.location.host},
-        uuid: "13f58b9c648b9a997248cba27aa00fdf",
         form: {
             from:"+888",
             message: "1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4#123",
             sent_timestamp:"1352399720000"
         }
     };
-
-    var resp = fakerequest.update(updates.add_sms, null, req);
-        resp_body = JSON.parse(resp[1].body),
+    var resp = updates.add(null, req),
+        resp_body = JSON.parse(resp[1]),
         doc = resp[0];
-
-    test.same(resp_body.payload.success, true);
+    test.ok(getForm.alwaysCalledWith('YYYY'));
+    test.same(resp_body.payload, {success: true});
     test.same(doc.errors.length, 2);
-    test.same(
-        doc.errors[0],
-        {code: "extra_fields", message:"Extra fields."}
-    );
-
-    test.done();
-
-};
-
-exports.extra_fields_response_msg = function(test) {
-    test.expect(1);
-    var req = {
-        headers: {"Host": window.location.host},
-        body: JSON.stringify({}) // related_entities not found
-    };
-
-    // mockup of doc fetched by couchdb during update
-    var doc = {
-        form:'YYYY',
-        year: 2012,
-        month: 3,
-        from: "+123123123",
-        errors: [
-            {code: "extra_fields", message:"Extra fields."}
-        ]
-    };
-    var ret = updates.updateRelated(doc, req);
-    var newDoc = ret[0];
-    var resp = JSON.parse(ret[1]);
-    test.same(resp.payload.messages[0].message, "Extra fields.");
+    test.same(doc.errors[0], {
+        code: "extra_fields",
+        message:"extra_fields|en"
+    });
     test.done();
 };
 
-exports.missing_fields = function(test) {
-
-    test.expect(3);
-
+exports['errors on missing fields'] = function(test) {
+    var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
     var req = {
-        headers: {"Host": window.location.host},
         form: {
             from:"+888",
             message: "1!YYYY!foo"
         }
     };
-
-    var resp = fakerequest.update(updates.add_sms, null, req);
-        resp_body = JSON.parse(resp[1].body),
+    var resp = updates.add(null, req),
+        resp_body = JSON.parse(resp[1]),
         doc = resp[0];
-
-    test.same(resp_body.payload.success, true);
-    test.same(resp_body.payload.messages, undefined);
-    test.same(doc.errors[0],
-        {
-            code: "sys.missing_fields",
-            fields: ["year","month"],
-            message: "Missing or invalid fields: year, month."
-        }
-    );
-    test.done();
-
-};
-
-exports.missing_fields_response_msg = function(test) {
-    test.expect(3);
-    var req = {
-        headers: {"Host": window.location.host},
-        body: JSON.stringify({}) // related_entities not found
-    };
-
-    // mockup of doc fetched by couchdb during update
-    var doc = {
-        form:'YYYY',
-        errors: [{
-            code: "sys.missing_fields",
-            fields: ["year","month"],
-            message: "Missing or invalid fields: year, month."
-        }]
-    };
-    var ret = updates.updateRelated(doc, req);
-    var newDoc = ret[0];
-    var resp = JSON.parse(ret[1]);
-    test.same(resp.payload.success, true);
-    test.same(resp.payload.task, 'send');
-    test.same(
-        resp.payload.messages[0].message,
-        "Missing or invalid fields: year, month."
-    );
+    test.ok(getForm.alwaysCalledWith('YYYY'));
+    test.same(resp_body.payload, {success: true});
+    test.same(doc.errors[0], {
+        code: "sys.missing_fields",
+        fields: ["year","month"],
+        message: "sys.missing_fields|en"
+    });
     test.done();
 };
 
-/*
- * When a form generates messages but the recipient phone numbers for that
- * message cannot be resolved/found.
- */
-exports.missing_recipient_response_msg = function(test) {
-    test.expect(3);
+exports['support unstructured message'] = function(test) {
     var req = {
-        headers: {"Host": window.location.host},
-        body: JSON.stringify({}) // related_entities not found
-    };
-
-    // mockup of doc fetched by couchdb during update
-    var doc = {
-        form:'YYYY',
-        year: 2012,
-        month: 3,
-        errors: [],
-    };
-    var ret = updates.updateRelated(doc, req);
-    var newDoc = ret[0];
-    var resp = JSON.parse(ret[1]);
-    // no messages since we don't have a recipient
-    test.same(resp.payload.success, true);
-    test.same(resp.payload.task, 'send');
-    test.same(resp.payload.messages[0].message, 'Zikomo!');
-    test.done();
-};
-
-/*
- * We do not notify the reporter of missing facility errors by default.
- */
-exports.missing_facility_response_msg = function(test) {
-    test.expect(6);
-    var req = {
-        headers: {"Host": window.location.host},
-        body: JSON.stringify({}) // related_entities not found
-    };
-
-    // mockup of doc fetched by couchdb during update
-    var doc = {
-      "from": "+999",
-      "form": "YYYY",
-      "errors": [
-        {
-          "code": "sys.facility_not_found",
-          "message": "Facility not found."
-        }
-      ]
-    };
-
-    var ret = updates.updateRelated(doc, req);
-    var newDoc = ret[0];
-    var resp = JSON.parse(ret[1]);
-
-    test.same(resp.payload.success, true);
-    test.same(resp.payload.task, 'send');
-    test.same(resp.payload.messages[0].to, "+999");
-    test.same(resp.payload.messages[0].message, 'Zikomo!');
-
-    // sent messages should also be attached to response property on doc
-    test.same(newDoc.responses[0].to, "+999");
-    test.same(newDoc.responses[0].message, 'Zikomo!');
-    test.done();
-};
-
-
-/*
- * If parsing fails then assume unstructured message
- */
-exports.unstructured_message = function(test) {
-
-    test.expect(5);
-
-    var req = {
-        headers: {"Host": window.location.host},
         form: {
             from:"+888",
             message: "hello world! anyone there?"
         }
     };
-
-    var resp = fakerequest.update(updates.add_sms, null, req);
-        resp_body = JSON.parse(resp[1].body),
+    var resp = updates.add(null, req),
+        resp_body = JSON.parse(resp[1]),
         doc = resp[0];
-
     // unstructured message has form of null
     test.same(doc.form, undefined);
     test.same(doc.sms_message.message, "hello world! anyone there?");
-    test.same(resp_body.payload.success, true);
-    test.same(resp_body.payload.messages, undefined);
-    test.same(doc.errors[0],
-        {
-            code: "sys.facility_not_found",
-            message: "Facility not found."
-        }
-    );
+    test.same(resp_body.payload, {success: true});
+    test.same(doc.errors[0], {
+        code: "sys.facility_not_found",
+        message: "sys.facility_not_found|en"
+    });
     test.done();
+};
 
+exports['JSON POST: return 500 error if form not found'] = function(test) {
+    var req = {
+        body: '{ "meta": { "formId": "foo" } }'
+    };
+    var ret = updates.add(null, req),
+        resp_body = JSON.parse(ret[1].body);
+    test.same(ret[0], null);
+    test.same(resp_body.payload.success, false);
+    test.same(ret[1].code, 500);
+    test.done();
+};
+
+exports['JSON POST: return 500 error if JSON parse fails'] = function(test) {
+    var req = {
+        body: 'bad json'
+    };
+    var ret = updates.add(null, req),
+        resp_body = JSON.parse(ret[1].body),
+        doc = ret[0];
+    test.same(ret[0], null);
+    test.same(resp_body.payload.success, false);
+    test.same(ret[1].code, 500);
+    test.done();
+};
+
+exports['JSON POST: support meta.formId property to match/parse form'] = function(test) {
+    var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    var req = {
+        body: JSON.stringify({
+            facility_id: "zanzibar",
+            year: 2011,
+            month: 8,
+            meta: {
+                formId: 'yyyy'
+            }
+        })
+    };
+    var ret = updates.add(null, req),
+        resp_body = JSON.parse(ret[1]),
+        doc = ret[0];
+    test.ok(getForm.alwaysCalledWith('YYYY'));
+    test.same(resp_body, {payload: {success: true}});
+    test.same(doc.form, "YYYY");
+    test.same(doc.facility_id, "zanzibar");
+    test.same(doc.month, 8);
+    test.same(doc.year, 2011);
+    test.done();
+};
+
+exports['JSON POST: meta.formId is case insensitive'] = function(test) {
+    var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    var req = {
+        body: JSON.stringify({
+            meta: {
+                formId: 'yyYy'
+            }
+        })
+    };
+    var ret = updates.add(null, req);
+    test.ok(getForm.alwaysCalledWith('YYYY'));
+    test.done();
+};
+
+exports['JSON POST: ignore object and null properties'] = function(test) {
+    sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    var req = {
+        body: JSON.stringify({
+            facility_id: "zanzibar",
+            year: 2011,
+            month: 8,
+            age: null,
+            picture: {
+                url: "http://foo.com/1.jpg"
+            },
+            meta: {
+                formId: 'yyyy'
+            }
+        })
+    };
+    var ret = updates.add(null, req),
+        resp = JSON.parse(ret[1]),
+        doc = ret[0];
+    test.same(resp.payload, {success: true});
+    test.same(doc.facility_id, "zanzibar");
+    test.same(doc.year, 2011);
+    test.same(doc.age, undefined);
+    test.same(doc.picture, undefined);
+    test.done();
+};
+
+exports['JSON POST: convert property names to lowercase'] = function(test) {
+    sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    var req = {
+        body: JSON.stringify({
+            FaciLity_Id: "zanzibar",
+            Year: 2011,
+            mOnth: 8,
+            meta: {
+                formId: 'yyyy'
+            }
+        })
+    };
+    var ret = updates.add(null, req),
+        resp_body = JSON.parse(ret[1]),
+        doc = ret[0];
+    test.same(resp_body.payload, {success: true});
+    test.same(doc.facility_id, "zanzibar");
+    test.same(doc.year, 2011);
+    test.done();
+};
+
+exports['JSON POST: support submissionTime meta property'] = function(test) {
+    sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
+    var req = {
+        body: JSON.stringify({
+            facility_id: "zanzibar",
+            year: 2011,
+            month: 8,
+            meta: {
+                submissionTime: "2015-01-13T19:36:59.013Z",
+                formId: 'yyyy'
+            }
+        })
+    };
+    var ret = updates.add(null, req),
+        resp_body = JSON.parse(ret[1]),
+        doc = ret[0];
+    test.same(resp_body.payload, {success: true});
+    test.same(doc.reported_date, 1421177819013);
+    test.same(doc.facility_id, "zanzibar");
+    test.same(doc.year, 2011);
+    test.same(doc.month, 8);
+    test.done();
 };
