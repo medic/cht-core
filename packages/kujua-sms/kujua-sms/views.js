@@ -405,7 +405,14 @@ exports.tasks_messages = {
                      * to be processed/valid.
                      */
                     if (msg.uuid && msg.to && msg.message) {
-                        emit(msg.uuid, {record: doc._id});
+                        emit(msg.uuid, {
+                            message: msg.message,
+                            to: msg.to,
+                            id: msg.uuid,
+                            state: task.state,
+                            state_details: task.state_details,
+                            _record_id: doc._id
+                        });
                     }
                 });
             });
