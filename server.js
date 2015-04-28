@@ -2,6 +2,7 @@ var _ = require('underscore'),
     express = require('express'),
     morgan = require('morgan'),
     http = require('http'),
+    path = require('path'),
     moment = require('moment'),
     app = express(),
     db = require('./db'),
@@ -53,7 +54,16 @@ app.use(function(err, req, res, next) {
   serverError(err.stack, res);
 });
 
-app.all(db.name + '*/update_settings/*', function(req, res) {
+app.get(
+  path.join(db.settings.db, '_design', db.settings.ddoc, '_rewrite/manifest.appcache'),
+  function(req, res, next) {
+    res.header('Cache-Control', 'must-revalidate');
+    res.header('Content-Type', 'text/cache-manifest');
+    next();
+  }
+);
+
+app.all('*/update_settings/*', function(req, res) {
   // don't audit the app settings
   proxy.web(req, res);
 });
@@ -69,7 +79,7 @@ var audit = function(req, res) {
   ap.audit(proxyForAuditing, req, res);
 };
 
-var auditPath = db.name + '*';
+var auditPath = db.settings.db + '*';
 app.put(auditPath, audit);
 app.post(auditPath, audit);
 app.delete(auditPath, audit);
