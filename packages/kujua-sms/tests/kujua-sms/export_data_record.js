@@ -67,7 +67,7 @@ exports['requesting data records export fails if user does not have perms'] = fu
 
 exports['lists export data records csv'] = function(test) {
 
-    var expected = '"Record UUID","Patient ID","Reported Date","From","Clinic Contact Name"'
+    var expected = '"Record UUID","Patient ID","Reported Date","Reported From","Clinic Contact Name"'
         +',"Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name"'
         +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
         +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
@@ -243,7 +243,8 @@ exports['lists export data records csv with excluded columns'] = function(test) 
 
 exports['lists export data records fr'] = function(test) {
 
-    var expected = '"Record UUID";"Identification du patient";"Date envoyé";"De";"Nom du contact à la clinique";"Nom de la clinique";"Nom du contact au centre de santé";"Nom du centre de santé";"Nom de l\'hôpital de district"'
+    var expected = '"Record UUID";"Patient ID";"Date envoyé";"Envoyé par";"Personne-ressource Clinique"'
+        +';"Villages";"Nom de la santé Contact Center";"Nom du centre de santé";"Nom de l\'hôpital de district"'
         +';"Année";"Mois";"Jour";"Code du RC";"Type de patient";"Nom";"Age"'
         +';"Nom de la mère ou de l\'accompagnant";"Patient traité pour"'
         +';"Recommandations/Conseils";"Précisions pour recommandations"'
@@ -398,7 +399,7 @@ exports['lists export data records skip header row'] = function(test) {
 
 exports['lists export data records with tz'] = function(test) {
 
-    var expected = '"Record UUID","Patient ID","Reported Date","From","Clinic Contact Name"'
+    var expected = '"Record UUID","Patient ID","Reported Date","Reported From","Clinic Contact Name"'
         +',"Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name"'
         +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
         +',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
@@ -486,7 +487,7 @@ exports['lists export data records with tz'] = function(test) {
 
 exports['lists export data records with external facility id'] = function(test) {
 
-    var expected = '"Reported Date","From"'
+    var expected = '"Reported Date","Reported From"'
         + ',"Clinic Name","Clinic External ID","Record UUID"' 
         + ',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
         + ',"Nom de la mère ou de l\'accompagnant","Patient traité pour'
