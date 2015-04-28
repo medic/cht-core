@@ -798,6 +798,20 @@ require('moment/locales');
         ActiveRequests.cancelAll();
       });
 
+      $scope.reloadWindow = function() {
+        $window.location.reload();
+      };
+
+      if (window.applicationCache) {
+        var showUpdateReady = function() {
+          $('#version-update').modal('show');
+        };
+        window.applicationCache.addEventListener('updateready', showUpdateReady);
+        if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
+          showUpdateReady();
+        }
+      }
+
     }
   ]);
 

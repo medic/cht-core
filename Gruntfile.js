@@ -178,15 +178,15 @@ module.exports = function(grunt) {
     watch: {
       css: {
         files: ['static/css/**/*'],
-        tasks: ['mmcss', 'exec:deploy', 'notify:deployed']
+        tasks: ['mmcss', 'appcache', 'deploy']
       },
       js: {
         files: ['static/js/**/*', 'packages/kujua-*/**/*', 'packages/feedback/**/*'],
-        tasks: ['mmjs', 'exec:deploy', 'notify:deployed']
+        tasks: ['mmjs', 'appcache', 'deploy']
       },
       other: {
         files: ['templates/**/*', 'lib/**/*'],
-        tasks: ['exec:deploy', 'notify:deployed']
+        tasks: ['appcache', 'deploy']
       }
     },
     notify_hooks: {
