@@ -1,6 +1,22 @@
-var updates = require('kujua-sms/updates');
+var sinon = require('sinon'),
+    utils = require('kujua-sms/utils'),
+    updates = require('kujua-sms/updates'),
+    definitions = require('../../test-helpers/form_definitions');
+
+exports.setUp = function (callback) {
+    utils.info = require('views/lib/appinfo').getAppInfo.call(this);
+    callback();
+};
+
+exports.tearDown = function(callback) {
+    if (utils.info.getForm.restore) {
+        utils.info.getForm.restore();
+    }
+    callback();
+};
 
 exports.publicFormHasNoFacilityNotFoundError = function(test) {
+    sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYW);
     var req = {
         headers: {"Host": window.location.host},
         form: {
@@ -22,6 +38,7 @@ exports.publicFormHasNoFacilityNotFoundError = function(test) {
 };
 
 exports.privateFormHasFacilityNotFoundError = function(test) {
+    sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYZ);
     var req = {
         headers: {"Host": window.location.host},
         form: {

@@ -1,8 +1,17 @@
 var utils = require('kujua-sms/utils'),
-    smsparser = require('views/lib/smsparser');
+    smsparser = require('views/lib/smsparser'),
+    sinon = require('sinon'),
+    definitions = require('../../test-helpers/form_definitions');
 
 exports.setUp = function (callback) {
     utils.info = require('views/lib/appinfo').getAppInfo.call(this);
+    callback();
+};
+
+exports.tearDown = function(callback) {
+    if (utils.info.getForm.restore) {
+        utils.info.getForm.restore();
+    }
     callback();
 };
 
@@ -146,13 +155,15 @@ exports['parse month type'] = function(test) {
 };
 
 exports['validations is numeric month stays numeric'] = function(test) {
-    test.expect(1);
+    test.expect(2);
 
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var doc = { message: "1!YYYY!foo#2011#11#" },
         form = smsparser.getFormCode(doc.message),
         def = utils.info.getForm(form),
         data = smsparser.parse(def, doc);
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(11, data.month);
 
     test.done();
@@ -171,8 +182,9 @@ exports['form not found'] = function(test) {
 };
 
 exports['wrong field type'] = function(test) {
-    test.expect(1);
+    test.expect(2);
 
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var doc = {
             "message":"1!YYYY!facility#2011#11#yyyyy#zzzz#2#3#4#5#6#9#8#7#6#5#4",
             "type":"sms_message",
@@ -180,6 +192,7 @@ exports['wrong field type'] = function(test) {
         def = utils.info.getForm(doc.form),
         data = smsparser.parse(def, doc);
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(data, {
         "facility_id": "facility",
         "year": "2011",
@@ -202,13 +215,13 @@ exports['wrong field type'] = function(test) {
             "eye_ointment": 4
         }
     });
-
     test.done();
 };
 
 exports['missing fields'] = function(test) {
-    test.expect(1);
+    test.expect(2);
 
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var doc = {
             "message":"1!YYYY!facility#2011#11#1#1#2#3",
             "type":"sms_message",
@@ -216,6 +229,7 @@ exports['missing fields'] = function(test) {
         def = utils.info.getForm(doc.form),
         data = smsparser.parse(def, doc);
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(data, {
         "facility_id": "facility",
         "year": "2011",
@@ -238,13 +252,13 @@ exports['missing fields'] = function(test) {
             "eye_ointment": undefined
         }
     });
-
     test.done();
 };
 
 exports['extra fields'] = function(test) {
-    test.expect(1);
+    test.expect(2);
 
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var doc = {
             "message":"1!YYYY!facility#2011#11#0#1#2#3#1#1#1#1#1#1#1#1#1#1#####77#",
             "type":"sms_message",
@@ -252,6 +266,7 @@ exports['extra fields'] = function(test) {
         def = utils.info.getForm(doc.form),
         data = smsparser.parse(def, doc);
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(data, {
         "facility_id": "facility",
         "year": 2011,
@@ -280,12 +295,14 @@ exports['extra fields'] = function(test) {
 };
 
 exports['textforms bang delimited keyval'] = function(test) {
-    test.expect(1);
+    test.expect(2);
 
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var doc = { message: 'YYYY#HFI!foobar#ZDT!999#RPY!!2012' },
         def = utils.info.getForm('YYYY'),
         data = smsparser.parse(def, doc);
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(data, {
         "facility_id": "foobar",
         "year": 2012,
@@ -298,12 +315,14 @@ exports['textforms bang delimited keyval'] = function(test) {
 };
 
 exports['textforms dash delimited keyval'] = function(test) {
-    test.expect(1);
+    test.expect(2);
 
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var doc = { message: 'YYYY#HFI-foobar#ZDT-999#RPY--2012' },
         def = utils.info.getForm('YYYY'),
         data = smsparser.parse(def, doc);
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(data, {
         "facility_id": "foobar",
         "year": 2012,
@@ -316,12 +335,14 @@ exports['textforms dash delimited keyval'] = function(test) {
 };
 
 exports['textforms random ordering'] = function(test) {
-    test.expect(1);
+    test.expect(2);
 
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var doc = { message: 'YYYY CDT 33 #HFI foobar# ZDT 999 #RPY 2012' },
         def = utils.info.getForm('YYYY'),
         data = smsparser.parse(def, doc);
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(data, {
         "facility_id": "foobar",
         "year": 2012,
@@ -334,16 +355,20 @@ exports['textforms random ordering'] = function(test) {
     test.done();
 };
 
+/*
+ * hashes are required to parse textform messages so this parses the first
+ * field and the rest of the message as the value. CDT is a number so parsing
+ * that fails and returns null as the value.
+ */
 exports['textforms without hash delim'] = function(test) {
-    // hashes are required to parse textform messages so this parses the first
-    // field and the rest of the message as the value. CDT is a number so parsing
-    // that fails and returns null as the value.
-    test.expect(1);
+    test.expect(2);
 
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var doc = { message: 'YYYY CDT 33 HFI foobar ZDT 999 RPY 2012' },
         def = utils.info.getForm('YYYY'),
         data = smsparser.parse(def, doc);
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(data, {
         "quantity_dispensed": {
             "cotrimoxazole": null
@@ -354,12 +379,14 @@ exports['textforms without hash delim'] = function(test) {
 };
 
 exports['textforms numeric'] = function(test) {
-    test.expect(1);
+    test.expect(2);
 
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var doc = { message: 'YYYY CDT 33# ZDT 999 #RPY2012' },
         def = utils.info.getForm('YYYY'),
         data = smsparser.parse(def, doc);
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(data, {
         quantity_dispensed: {
             cotrimoxazole: 33,
@@ -371,12 +398,14 @@ exports['textforms numeric'] = function(test) {
 };
 
 exports['textforms numeric no spaces'] = function(test) {
-    test.expect(1);
+    test.expect(2);
 
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var doc = { message: 'YYYY CDT33#ZDT999#RPY2012' },
         def = utils.info.getForm('YYYY'),
         data = smsparser.parse(def, doc);
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(data, {
         quantity_dispensed: {
             cotrimoxazole: 33,
@@ -387,13 +416,15 @@ exports['textforms numeric no spaces'] = function(test) {
     test.done();
 };
 
-exports['textforms w numeric string'] = function(test) {
-    test.expect(3);
+exports['textforms with numeric string'] = function(test) {
+    test.expect(2);
 
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var doc = { message: 'YYYY CDT33#HFI001#ZDT999#RPY2012' },
         def = utils.info.getForm('YYYY'),
         data = smsparser.parse(def, doc);
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(data, {
         facility_id: '001',
         quantity_dispensed: {
@@ -403,9 +434,18 @@ exports['textforms w numeric string'] = function(test) {
         year: 2012
     });
 
-    doc = { message: 'YYYY CDT33#HFI01ach#ZDT999#RPY2012' },
-    data = smsparser.parse(def, doc);
+    test.done();
+};
 
+exports['textforms with numeric string and facility id with alpha'] = function(test) {
+    test.expect(2);
+
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
+    var doc = { message: 'YYYY CDT33#HFI01ach#ZDT999#RPY2012' },
+        def = utils.info.getForm('YYYY'),
+        data = smsparser.parse(def, doc);
+
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(data, {
         facility_id: '01ach',
         quantity_dispensed: {
@@ -415,9 +455,18 @@ exports['textforms w numeric string'] = function(test) {
         year: 2012
     });
 
-    doc = { message: 'YYYY CDT33#ZDT999#RPY2012' },
-    data = smsparser.parse(def, doc);
+    test.done();
+};
 
+exports['textforms with numeric string and no facility id'] = function(test) {
+    test.expect(2);
+
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
+    var doc = { message: 'YYYY CDT33#ZDT999#RPY2012' },
+        def = utils.info.getForm('YYYY'),
+        data = smsparser.parse(def, doc);
+
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(data, {
         quantity_dispensed: {
             cotrimoxazole: 33,
@@ -425,6 +474,7 @@ exports['textforms w numeric string'] = function(test) {
         },
         year: 2012
     });
+
     test.done();
 };
 
@@ -621,8 +671,9 @@ exports['parse date field'] = function(test) {
 };
 
 exports['parse date field yyyz'] = function(test) {
-    test.expect(2);
+    test.expect(3);
 
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYZ);
     var doc = {
         message: "1!YYYZ!##2012-03-12"
     };
@@ -630,6 +681,7 @@ exports['parse date field yyyz'] = function(test) {
     var def = utils.info.getForm('YYYZ');
 
     var data = smsparser.parse(def, doc);
+    test.ok(getForm.alwaysCalledWith('YYYZ'));
     test.same(data, {one:null, two:null, birthdate: 1331510400000});
 
     doc = {
@@ -774,8 +826,9 @@ exports['smsformats structured but no form'] = function(test) {
 };
 
 exports['smsformats textforms only one field'] = function(test) { 
-    test.expect(1);
+    test.expect(2);
 
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var doc = { message: 'YYYY CDT33' },
         form = smsparser.getFormCode(doc.message),
         def = utils.info.getForm(form),
@@ -786,13 +839,14 @@ exports['smsformats textforms only one field'] = function(test) {
           }
         };
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(expect, data);
 
     test.done();
 };
 
 exports['valid muvuku message'] = function (test) {
-
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var def = utils.info.getForm('YYYY');
     var doc = {
         sent_timestamp: '12-11-11 15:00',
@@ -802,6 +856,7 @@ exports['valid muvuku message'] = function (test) {
 
     var obj = smsparser.parse(def, doc);
 
+    test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(obj, {
         facility_id: 'facility',
         year: '2011',

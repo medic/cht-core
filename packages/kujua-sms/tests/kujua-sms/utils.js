@@ -1,6 +1,9 @@
-var utils = require('kujua-sms/utils'),
+var _ = require('underscore'),
+    utils = require('kujua-sms/utils'),
     lists = require('kujua-sms/lists'),
-    _ = require('underscore');
+    info = require('views/lib/appinfo'),
+    definitions = require('../../test-helpers/form_definitions'),
+    appInfo;
 
 var example_doc = {
     "_id": "61716f96177206326cc07653ab9659c7",
@@ -71,8 +74,24 @@ var example_doc = {
     "reported_date": 1331643982002
 };
 
-exports.getLabels = function(test) {
-    test.expect(2);
+exports.setUp = function (callback) {
+    utils.info = info.getAppInfo.call(this);
+    utils.info.translate = function(key, locale) {
+        return key + '|' + locale;
+    };
+    utils.info.getForm = function(key) {
+        return definitions.forms[key];
+    };
+    callback();
+};
+
+exports.tearDown = function(callback) {
+    utils.info = info.getAppInfo.call(this);
+    callback();
+};
+
+exports['getLabels'] = function(test) {
+    test.expect(1);
     var keys = [
         '_id',
         'reported_date',
@@ -122,35 +141,17 @@ exports.getLabels = function(test) {
         ]
     ];
 
-    // english locale
-    test.same(
-        utils.getLabels(keys, 'YYYY', 'en'),
-        [
-            'Record UUID',
-            'Reported Date',
-            'Reported From',
-            'Health Facility Identifier',
-            'Clinic Contact Name',
-            'Clinic Name',
-            'Health Center Name',
-            'District Hospital Name',
-            'LA 6x1: Days stocked out',
-            'LA 6x2: Days stocked out'
-        ]
-    );
-
-    // french locale
     test.same(
         utils.getLabels(keys, 'YYYY', 'fr'),
         [
-            "Record UUID",
-            "Date envoyé",
-            "Envoyé par",
+            "_id|fr",
+            "reported_date|fr",
+            "from|fr",
             "Health Facility Identifier",
-            "Personne-ressource Clinique",
-            "Villages",
-            "Nom du centre de santé",
-            "Nom de l'hôpital de district",
+            "related_entities.clinic.contact.name|fr",
+            "related_entities.clinic.name|fr",
+            "related_entities.clinic.parent.name|fr",
+            "related_entities.clinic.parent.parent.name|fr",
             "LA 6x1: Days stocked out",
             "LA 6x2: Days stocked out"
         ]
@@ -159,7 +160,7 @@ exports.getLabels = function(test) {
     test.done();
 };
 
-exports.getValues_no_clinic = function(test) {
+exports['getValues no clinic'] = function(test) {
     test.expect(2);
     var keys = [
         "reported_date",
@@ -237,7 +238,7 @@ exports.getValues_no_clinic = function(test) {
     test.done();
 };
 
-exports.getValuesUnits = function(test) {
+exports['getValuesUnits'] = function(test) {
     test.expect(8);
 
     var keys1 = ['foo', 'bar', 'baz'],
@@ -312,7 +313,7 @@ exports.getValuesUnits = function(test) {
     test.done();
 };
 
-exports.getValues = function(test) {
+exports['getValues'] = function(test) {
     test.expect(1);
     var keys = [
         "reported_date",
@@ -409,7 +410,7 @@ exports.getValues = function(test) {
     test.done();
 };
 
-exports.getValuesOfArray = function(test) {
+exports['getValues of array'] = function(test) {
     var keys = [
         "from",
         "scheduled_tasks"
@@ -428,7 +429,7 @@ exports.getValuesOfArray = function(test) {
     test.done()
 };
 
-exports.getValuesOfObject = function(test) {
+exports['getValues of object'] = function(test) {
     var keys = [
         "from",
         "animal"
@@ -447,7 +448,7 @@ exports.getValuesOfObject = function(test) {
     test.done()
 };
 
-exports.getFormKeys = function(test) {
+exports['getFormKeys'] = function(test) {
     test.expect(1);
     test.same(
         utils.getFormKeys(utils.info.getForm('YYYY')),
@@ -482,7 +483,7 @@ exports.getFormKeys = function(test) {
 };
 
 
-exports.fieldsToHtml = function(test) {
+exports['fieldsToHtml'] = function(test) {
     test.expect(1);
     var keys = utils.getFormKeys(utils.info.getForm('YYYY')),
         labels = utils.getLabels(keys, 'YYYY');
@@ -647,29 +648,13 @@ exports.fieldsToHtml = function(test) {
     test.done();
 };
 
-exports.messages_invalid_custom = function (test) {
-    test.expect(1);
-
-    var err = {code:"sys.form_invalid_custom", form:"FOO", message:"Arg."};
-
-    var resp = "The form sent 'FOO' was not properly completed. "
-        + "Please complete it and resend. If this problem persists "
-        + "contact your supervisor.";
-
-    test.same(
-        utils.info.translate(err.code.replace('sys.',''), {form: "FOO"}),
-        resp
-    );
-    test.done();
-};
-
-exports.app_settings_has_defaults = function(test) {
+exports['app_settings has defaults'] = function(test) {
     test.expect(1);
     test.same(Object.keys(utils.info).length > 10, true);
     test.done();
 };
 
-exports.getLabelsForMessages = function(test) {
+exports['getLabels for messages'] = function(test) {
     var keys = [
         '_id', 
         'reported_date', 
@@ -688,14 +673,14 @@ exports.getLabelsForMessages = function(test) {
      * */
     test.equals(_.isArray(labels), true);
     test.same(labels, [
-        "Record UUID",
-        "Reported Date",
-        "Reported From",
-        "Clinic Contact Name",
-        "Clinic Name",
-        "Health Center Contact Name",
-        "Health Center Name",
-        "District Hospital Name"
+        "_id|en",
+        "reported_date|en",
+        "from|en",
+        "related_entities.clinic.contact.name|en",
+        "related_entities.clinic.name|en",
+        "related_entities.clinic.parent.contact.name|en",
+        "related_entities.clinic.parent.name|en",
+        "related_entities.clinic.parent.parent.name|en"
     ]);
     test.done();
 };
@@ -704,7 +689,7 @@ exports.getLabelsForMessages = function(test) {
  * YYYV labels use 'fr' locale, here we request 'en' labels that doesn't exist
  * on the form and get strings back instead of undefined.
  */
-exports.labelsMissingLocale = function(test) {
+exports['labels missing locale'] = function(test) {
     test.expect(1);
     var keys = utils.getFormKeys(utils.info.getForm('YYYV')),
         labels = utils.getLabels(keys, 'YYYV', 'en');
@@ -734,39 +719,3 @@ exports['no cookies or header; app_settings.locale default of en'] = function(te
     test.same(info.locale, 'en');
     test.done();
 };
-
-/* temporarily disabling computed locale, flakey
-exports['kujua_locale cookie will force locale value'] = function(test) {
-    test.expect(1);
-    var req = {cookie: {'kujua_locale': 'fr'}},
-        that = {app_settings: {locale:'en'}};
-
-    var info = require('views/lib/appinfo').getAppInfo.call(that, req);
-    test.same(info.locale, 'fr');
-    test.done();
-};
-
-exports['no cookie with accept-language header sets locale'] = function(test) {
-    test.expect(1);
-    var req = {headers: {"Accept-Language": "sw;q=0.8"}},
-        that = {app_settings: {locale:'en'}};
-
-    var info = require('views/lib/appinfo').getAppInfo.call(that, req);
-    test.same(info.locale, 'sw');
-    test.done();
-};
-
-exports['cookie with accept-language header sets locale'] = function(test) {
-    test.expect(1);
-    var req = {
-            headers: {"Accept-Language": "sw;q=0.8"},
-            cookie: {'kujua_locale': 'fr'}
-        },
-        that = {app_settings: {locale:'en'}};
-
-    var info = require('views/lib/appinfo').getAppInfo.call(that, req);
-    test.same(info.locale, 'fr');
-    test.done();
-};
-*/
-

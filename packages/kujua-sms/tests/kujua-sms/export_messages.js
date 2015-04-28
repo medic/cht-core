@@ -3,16 +3,12 @@ var lists = require('kujua-sms/lists'),
     fakerequest = require('couch-fakerequest'),
     helpers = require('../../test-helpers/helpers');
 
-var headers = '"Record UUID","Patient ID","Reported Date","Reported From","Clinic Contact Name","Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name","Message Type","Message State","Received Timestamp","Scheduled Timestamp","Pending Timestamp","Sent Timestamp","Cleared Timestamp","Muted Timestamp","Message UUID","Sent By","To Phone","Message Body"\n';
+var headers = '"Record UUID","Patient ID","Reported Date","From","Clinic Contact Name","Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name","Message Type","Message State","Received Timestamp","Scheduled Timestamp","Pending Timestamp","Sent Timestamp","Cleared Timestamp","Muted Timestamp","Message UUID","Sent By","To Phone","Message Body"\n';
 
 exports['requesting messages export fails if no user'] = function(test) {
     test.expect(2);
     var req = {
-        query: {
-            startkey: 'foo',
-            endkey: 'bar',
-            form: 'MSBC'
-        },
+        query: {},
         method: "GET"
     };
 
@@ -25,11 +21,7 @@ exports['requesting messages export fails if no user'] = function(test) {
 exports['requesting messages export fails if user does not have perms'] = function(test) {
     test.expect(2);
     var req = {
-        query: {
-            startkey: 'foo',
-            endkey: 'bar',
-            form: 'MSBC'
-        },
+        query: {},
         method: "GET",
         userCtx: {
             roles: ['just_some_dude']
@@ -211,7 +203,7 @@ exports['requesting messages export in xml'] = function(test) {
     var mutedTimestamp = 1331503895461;
 
     var expected = '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40"><Worksheet ss:Name="Messages"><Table>' + 
-        '<Row><Cell><Data ss:Type="String">Record UUID</Data></Cell><Cell><Data ss:Type="String">Patient ID</Data></Cell><Cell><Data ss:Type="String">Reported Date</Data></Cell><Cell><Data ss:Type="String">Reported From</Data></Cell><Cell><Data ss:Type="String">Clinic Contact Name</Data></Cell><Cell><Data ss:Type="String">Clinic Name</Data></Cell><Cell><Data ss:Type="String">Health Center Contact Name</Data></Cell><Cell><Data ss:Type="String">Health Center Name</Data></Cell><Cell><Data ss:Type="String">District Hospital Name</Data></Cell><Cell><Data ss:Type="String">Message Type</Data></Cell><Cell><Data ss:Type="String">Message State</Data></Cell><Cell><Data ss:Type="String">Received Timestamp</Data></Cell><Cell><Data ss:Type="String">Scheduled Timestamp</Data></Cell><Cell><Data ss:Type="String">Pending Timestamp</Data></Cell><Cell><Data ss:Type="String">Sent Timestamp</Data></Cell><Cell><Data ss:Type="String">Cleared Timestamp</Data></Cell><Cell><Data ss:Type="String">Muted Timestamp</Data></Cell><Cell><Data ss:Type="String">Message UUID</Data></Cell><Cell><Data ss:Type="String">Sent By</Data></Cell><Cell><Data ss:Type="String">To Phone</Data></Cell><Cell><Data ss:Type="String">Message Body</Data></Cell></Row>' + 
+        '<Row><Cell><Data ss:Type="String">Record UUID</Data></Cell><Cell><Data ss:Type="String">Patient ID</Data></Cell><Cell><Data ss:Type="String">Reported Date</Data></Cell><Cell><Data ss:Type="String">From</Data></Cell><Cell><Data ss:Type="String">Clinic Contact Name</Data></Cell><Cell><Data ss:Type="String">Clinic Name</Data></Cell><Cell><Data ss:Type="String">Health Center Contact Name</Data></Cell><Cell><Data ss:Type="String">Health Center Name</Data></Cell><Cell><Data ss:Type="String">District Hospital Name</Data></Cell><Cell><Data ss:Type="String">Message Type</Data></Cell><Cell><Data ss:Type="String">Message State</Data></Cell><Cell><Data ss:Type="String">Received Timestamp</Data></Cell><Cell><Data ss:Type="String">Scheduled Timestamp</Data></Cell><Cell><Data ss:Type="String">Pending Timestamp</Data></Cell><Cell><Data ss:Type="String">Sent Timestamp</Data></Cell><Cell><Data ss:Type="String">Cleared Timestamp</Data></Cell><Cell><Data ss:Type="String">Muted Timestamp</Data></Cell><Cell><Data ss:Type="String">Message UUID</Data></Cell><Cell><Data ss:Type="String">Sent By</Data></Cell><Cell><Data ss:Type="String">To Phone</Data></Cell><Cell><Data ss:Type="String">Message Body</Data></Cell></Row>' + 
         '<Row><Cell><Data ss:Type="String">abc123z</Data></Cell><Cell><Data ss:Type="String"></Data></Cell><Cell><Data ss:Type="String">' + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell><Cell><Data ss:Type="String">+12229990000</Data></Cell><Cell><Data ss:Type="String">Paul</Data></Cell><Cell><Data ss:Type="String">Clinic 1</Data></Cell><Cell><Data ss:Type="String">Eric</Data></Cell><Cell><Data ss:Type="String">Health Center 1</Data></Cell><Cell><Data ss:Type="String">District 1</Data></Cell><Cell><Data ss:Type="String">Test</Data></Cell><Cell><Data ss:Type="String">Pending</Data></Cell><Cell><Data ss:Type="String"></Data></Cell><Cell><Data ss:Type="String">' + moment(scheduledTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell><Cell><Data ss:Type="String">' + moment(pendingTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell><Cell><Data ss:Type="String">' + moment(sentTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell><Cell><Data ss:Type="String">' + moment(clearedTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell><Cell><Data ss:Type="String">' + moment(mutedTimestamp).format('DD, MMM YYYY, HH:mm:ss Z') + '</Data></Cell></Row></Table></Worksheet></Workbook>'
 
     var req = {
@@ -386,7 +378,7 @@ exports['requesting messages export with columns parameter'] = function(test) {
     var reportedDate = 1331503842461;
     var taskTimestamp = 1331503843461;
 
-    var expected = '"Reported Date","Reported From","Clinic Name","Clinic External ID","Pending Timestamp","Record UUID","Message UUID","Sent By","To Phone","Message Body"\n'
+    var expected = '"Reported Date","From","Clinic Name","Clinic External ID","Pending Timestamp","Record UUID","Message UUID","Sent By","To Phone","Message Body"\n'
         + '"'
         + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z')
         + '","+12229990000","Clinic 1","AAA","'
@@ -450,7 +442,7 @@ exports['requesting messages export with columns parameter appends messages'] = 
     var reportedDate = 1331503842461;
     var taskTimestamp = 1331503843461;
 
-    var expected = '"Reported Date","Reported From","Clinic Name","Message UUID","Sent By","To Phone","Message Body"\n'
+    var expected = '"Reported Date","From","Clinic Name","Message UUID","Sent By","To Phone","Message Body"\n'
         + '"' + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z') + '"'
         + ',"+12229990000","Clinic 1","z12","g man","bro","yo dawg"\n'
         + '"' + moment(reportedDate).format('DD, MMM YYYY, HH:mm:ss Z') + '"'
@@ -522,7 +514,7 @@ exports['requesting messages export filtered by state'] = function(test) {
     var pendingTimestampC = moment().subtract('days', 10).valueOf();
     var pendingTimestampD = moment().subtract('days', 9).valueOf();
 
-    var expected = '"Record UUID","Reported From","Message UUID","Sent By","To Phone","Message Body"\n'
+    var expected = '"Record UUID","From","Message UUID","Sent By","To Phone","Message Body"\n'
         + '"b","+12229990000"\n'
         + '"c","+12229990000"\n';
 
@@ -652,7 +644,7 @@ exports['requesting messages export filtered by state in future with no upper bo
     var pendingTimestampC = moment().add('days', 30).valueOf();
     var pendingTimestampD = moment().add('days', 31).valueOf();
 
-    var expected = '"Record UUID","Reported From","Message UUID","Sent By","To Phone","Message Body"\n'
+    var expected = '"Record UUID","From","Message UUID","Sent By","To Phone","Message Body"\n'
         + '"b","+12229990000"\n'
         + '"c","+12229990000"\n';
 
