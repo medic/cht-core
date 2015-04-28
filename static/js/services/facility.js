@@ -35,7 +35,8 @@ var _ = require('underscore');
           callback = options;
           options = {};
         }
-        HttpWrapper.get(getFacilitiesUrl(BaseUrlService, options.district))
+        var url = getFacilitiesUrl(BaseUrlService, options.district);
+        HttpWrapper.get(url, { cache: true })
           .success(function(res) {
             if (options.types) {
               return callback(null, _.filter(res.rows, function(row) {
