@@ -2,7 +2,6 @@ var _ = require('underscore'),
     express = require('express'),
     morgan = require('morgan'),
     http = require('http'),
-    path = require('path'),
     moment = require('moment'),
     app = express(),
     db = require('./db'),
@@ -29,7 +28,9 @@ var _ = require('underscore'),
     monthlyDeliveries = require('./controllers/monthly-deliveries'),
     exportData = require('./controllers/export-data'),
     fti = require('./controllers/fti'),
-    createDomain = require('domain').create;
+    createDomain = require('domain').create,
+    staticResources = /\/(templates|static)\//,
+    appcacheManifest = /manifest\.appcache/;
 
 http.globalAgent.maxSockets = 100;
 
@@ -53,15 +54,6 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
   serverError(err.stack, res);
 });
-
-app.get(
-  path.join(db.settings.db, '_design', db.settings.ddoc, '_rewrite/manifest.appcache'),
-  function(req, res, next) {
-    res.header('Cache-Control', 'must-revalidate');
-    res.header('Content-Type', 'text/cache-manifest');
-    next();
-  }
-);
 
 app.all('*/update_settings/*', function(req, res) {
   // don't audit the app settings
@@ -261,6 +253,29 @@ app.get('/api/v1/fti/:view', function(req, res) {
       });
     });
   });
+});
+
+/**
+ * Set cache control on static resources. Must be hacked in to
+ * ensure we set the value first.
+ */
+proxy.on('proxyReq', function(proxyReq, req, res) {
+  if (appcacheManifest.test(req.url)) {
+    res.oldWriteHead = res.writeHead;
+    res.writeHead = function(statusCode, headers) {
+      res.setHeader('Cache-Control', 'must-revalidate');
+      res.setHeader('Content-Type', 'text/cache-manifest; charset=utf-8');
+      res.setHeader('Last-Modified', 'Tue, 28 Apr 2015 02:23:40 GMT');
+      res.setHeader('Expires', 'Tue, 28 Apr 2015 02:21:40 GMT');
+      res.oldWriteHead(statusCode, headers);
+    };
+  } else if (staticResources.test(req.url)) {
+    res.oldWriteHead = res.writeHead;
+    res.writeHead = function(statusCode, headers) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+      res.oldWriteHead(statusCode, headers);
+    };
+  }
 });
 
 app.all('*', function(req, res) {
