@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    async = require('async');
 
 (function () {
 
@@ -46,19 +47,24 @@ var _ = require('underscore');
         $scope.feedback = mapFeedback(data, meta);
       });
 
-      DownloadUrl(null, 'audit', function(err, url) {
-        if (err) {
-          return console.log('Error fetching audit url', err);
+      $scope.url = {};
+      async.each(
+        [ 'logs', 'audit', 'feedback' ],
+        function(type, callback) {
+          DownloadUrl(null, type, function(err, url) {
+            if (err) {
+              return callback(err);
+            }
+            $scope.url[type] = url;
+            callback();
+          });
+        },
+        function(err) {
+          if (err) {
+            console.log('Error fetching url', err);
+          }
         }
-        $scope.auditUrl = url;
-      });
-
-      DownloadUrl(null, 'feedback', function(err, url) {
-        if (err) {
-          return console.log('Error fetching feedback url', err);
-        }
-        $scope.feedbackUrl = url;
-      });
+      );
 
     }
   ]);

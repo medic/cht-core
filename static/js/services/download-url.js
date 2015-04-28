@@ -4,6 +4,9 @@
 
   var inboxServices = angular.module('inboxServices');
 
+  var luceneTypes = ['reports', 'contacts'];
+  var simpleTypes = ['messages', 'audit', 'feedback', 'logs'];
+
   var buildUrl = function(type, params) {
     return '/api/v1/export/' + type + '?' + $.param(params);
   };
@@ -13,12 +16,12 @@
       return function($scope, type, callback) {
         Language(function(err, language) {
           if (err) {
-            return console.log('Error loading language', err);
+            return callback(err);
           }
           var params = { format: 'xml', locale: language };
-          if (type === 'messages' || type === 'audit' || type === 'feedback') {
+          if (simpleTypes.indexOf(type) !== -1) {
             return callback(null, buildUrl(type, params));
-          } else if (type === 'reports' || type === 'contacts') {
+          } else if (luceneTypes.indexOf(type) !== -1) {
             if (type === 'reports') {
               type = 'forms';
             }
@@ -34,7 +37,7 @@
               return callback(null, buildUrl(type, params));
             });
           } else {
-            return callback('Unknown download type');
+            return callback(new Error('Unknown download type'));
           }
         });
       };

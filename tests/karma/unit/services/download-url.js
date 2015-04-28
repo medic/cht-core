@@ -67,7 +67,7 @@ describe('DownloadUrl service', function() {
 
   it('errors for unknown type', function() {
     service(null, 'unknown', function(err) {
-      chai.expect(err).to.equal('Unknown download type');
+      chai.expect(err.message).to.equal('Unknown download type');
     });
   });
 
