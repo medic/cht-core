@@ -4,10 +4,9 @@ var lists = require('kujua-sms/lists'),
     fakerequest = require('couch-fakerequest'),
     utils = require('kujua-sms/utils'),
     definitions = require('../../test-helpers/form_definitions'),
-    appinfo;
+    appinfo = require('views/lib/appinfo');
 
 exports.setUp = function (callback) {
-    appinfo = require('views/lib/appinfo');
     utils.info = appinfo.getAppInfo.call(this);
     sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYU);
     sinon.stub(appinfo,'getAppInfo').returns(utils.info);
