@@ -21,7 +21,7 @@
     "grunt-contrib-uglify": "^0.5.0",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-dustjs": "^1.2.1",
-    "grunt-dustjs-linkedin": "^0.5.0",
+    "grunt-dustjs-linkedin": "https://github.com/coryroloff/grunt-dustjs-linkedin/archive/v0.5.0.tar.gz",
     "grunt-exec": "^0.4.5",
     "grunt-karma": "~0.8.0",
     "grunt-lesslint": "^1.1.7",
