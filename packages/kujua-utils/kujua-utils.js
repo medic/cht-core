@@ -52,7 +52,7 @@ var months = function () {
     ];
 };
 
-exports.logger = {
+var logger = exports.logger = {
     levels: {silent:0, error:1, warn:2, info:3, debug:4},
     log: function(obj) {
         if (typeof(console) !== 'undefined') {
@@ -247,11 +247,35 @@ exports.updateTopNav = function(key, title) {
     $('body > .container div').filter(':first').attr('class', 'content');
 };
 
-exports.setTaskState = function(task, state) {
+/*
+ * Return task object that matches message uuid or a falsey value if match
+ * fails.
+ */
+exports.getTask = function(uuid, doc, type) {
+    type = type || 'message';
+    var ret;
+    if (!uuid || !doc || !doc.tasks) {
+        return;
+    }
+    if (type === 'message') {
+        for (var i in doc.tasks) {
+            for (var j in doc.tasks[i].messages) {
+                if (uuid === doc.tasks[i].messages[j].uuid) {
+                    return doc.tasks[i];
+                }
+            }
+        };
+    }
+    return ret;
+};
+
+exports.setTaskState = function(task, state, message) {
     task.state = state;
+    task.state_message = message;
     task.state_history = task.state_history || [];
     task.state_history.push({
         state: state,
+        state_message: message,
         timestamp: new Date().toISOString()
     });
 };

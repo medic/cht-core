@@ -1,7 +1,15 @@
 exports.rules = [
-    {from: '/add', to: '_update/add', method: 'POST'},
-    // by default smssync uses the same URL for tasks polling
-    {from: '/add',
+    /*
+     * A rewrite entry is needed for the POST and the GET because in SMSSync
+     * the Sync URL is used for both.
+     */
+    {
+        from: '/add',
+        to: '_update/add',
+        method: 'POST'
+    },
+    {
+        from: '/add',
         to: '_list/tasks_pending/tasks_pending',
         query: {
             include_docs: 'true',
@@ -9,13 +17,43 @@ exports.rules = [
         },
         method: 'GET'
     },
-    /* use this path if you need to specify the limit */
-    {from: '/add/limit/*', to: '_update/add_sms', method: 'POST'},
-    {from: '/add/limit/:limit',
+    /*
+     * Use this path to specify a limit on the number of documents the view
+     * will return. This allows you reduce the JSON payload the gateway
+     * processes, or to increase it from the default of 25 hard coded above.
+     */
+    {
+        from: '/add/limit/*',
+        to: '_update/add',
+        method: 'POST'
+    },
+    {
+        from: '/add/limit/:limit',
         to: '_list/tasks_pending/tasks_pending',
         query: {
             include_docs: 'true',
             limit: ':limit'
+        },
+        method: 'GET'
+    },
+    {
+        from: '/update_message_task/:data_record',
+        to: '_update/update_message_task/:data_record',
+        method: 'PUT'
+    },
+    {
+        from: '/messages',
+        to: '_view/tasks_messages',
+        method: 'GET',
+        query: {
+            limit: '25'
+        }
+    },
+    {
+        from: '/messages/:uuid',
+        to: '_view/tasks_messages',
+        query: {
+            key: ':uuid'
         },
         method: 'GET'
     },
@@ -34,11 +72,6 @@ exports.rules = [
             startkey: [':phone'],
             endkey: [':phone',{}]
         }
-    },
-    {
-        from: '/data_record/update/:id',
-        to: '_update/updateRelated/:id',
-        method: 'PUT'
     },
     {
         from: '/:form/data_record/add/facility/:phone',
