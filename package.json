@@ -32,6 +32,6 @@
   "version": "0.1.0",
   "scripts": {
     "start": "node server.js",
-    "test": "nodeunit tests"
+    "test": "grunt test"
   }
 }
