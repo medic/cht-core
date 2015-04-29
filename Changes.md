@@ -1,5 +1,14 @@
 # Medic Mobile Release Notes
 
+## 0.4.4
+
+### TBD
+
+- Added support for a new messages parser we're calling Javarosa prefixed with
+  the `J1` format code. 
+
+- Added support for creating records by submitting JSON.
+
 ## 0.4.3
 
 ### Feb 26, 2015
