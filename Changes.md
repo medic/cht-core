@@ -47,17 +47,17 @@
 
 ### Sep 4, 2014
 
-- fixed bug when searching for Patient IDs the field was not indexed correctly.
+- Fixed bug: When searching for a patient identifier using the free-text search feature, results were not returned properly. Index the field appropriately.
 
 ## 0.4.1
 
 ### Jul 31, 2014
 
-- minor UI clean up
+- Minor UI clean up.
 
-- allow hash symbol to separate form code and data in structured textform message
+- Allow hash symbol to separate form code and data in structured textform message.
 
-- modified build to bundle npm dependencies with attached node modules.
+- Modified build to bundle npm dependencies with attached node modules.
 
 ## 0.4.0
 
