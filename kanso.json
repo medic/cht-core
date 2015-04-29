@@ -23,7 +23,21 @@
     "loglevel": "info",
     "load": "lib/app",
     "modules": ["lib", "tests/kanso"],
-    "attachments": ["static", "templates"],
+    "attachments": [
+        "static/dist",
+        "static/fonts",
+        "static/img",
+        "templates",
+        "static/js/bootstrap-datetimepicker.js",
+        "static/js/bootstrap.min.js",
+        "static/js/bootstrap-multidropdown.js",
+        "static/js/browser.js",
+        "static/js/jquery.autosize.min.js",
+        "static/js/jquery-ext.js",
+        "static/js/jquery.min.js",
+        "static/js/json2.js",
+        "static/js/underscore.min.js"
+    ],
     "dust": {
         "templates": "templates"
     },
