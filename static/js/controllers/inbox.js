@@ -483,6 +483,7 @@ require('moment/locales');
           SendMessage(recipients, message).then(
             function() {
               $('#message-footer').removeClass('sending');
+              $('#message-footer textarea').val('');
               pane.done();
             },
             function(err) {
