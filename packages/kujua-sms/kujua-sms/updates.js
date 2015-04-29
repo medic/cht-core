@@ -9,7 +9,8 @@ var _ = require('underscore'),
     smsparser = require('views/lib/smsparser'),
     libphonenumber = require('libphonenumber/utils'),
     validate = require('./validate'),
-    utils = require('./utils');
+    utils = require('./utils'),
+    req = {};
 
 
 /**
@@ -35,44 +36,34 @@ var getRefID = function(form, form_data) {
 };
 
 /**
- * @param {String} phone - phone number of the sending phone (from)
- * @param {Object} doc - sms_message doc created from initial POST
+ * @param {Object} options from initial POST
  * @param {Object} form_data - parsed form data
  * @returns {Object} - data record
  * @api private
  */
-function getDataRecord(doc, form_data) {
+var getDataRecord = function(options, form_data) {
 
-    var form = doc.form,
+    var form = options.form,
         def = utils.info.getForm(form);
 
     var record = {
         _id: req.uuid,
         type: 'data_record',
-        from: libphonenumber.format(utils.info, doc.from) || doc.from,
+        from: libphonenumber.format(utils.info, options.from) || options.from,
         form: form,
         related_entities: {clinic: null},
         errors: [],
-        responses: [],
         tasks: [],
         reported_date: new Date().valueOf(),
-        // keep message data part of record
-        sms_message: doc
+        // keep POST data part of record
+        sms_message: options
     };
 
-    if (!def) {
-        if (utils.info.forms_only_mode) {
-            utils.addError(record, 'sys.form_not_found');
-        } else {
-            // if form is undefined we treat as a regular message
-            record.form = undefined;
-        }
-    }
-
     // try to parse timestamp from gateway
-    var ts = parseSentTimestamp(doc.sent_timestamp);
-    if (ts)
+    var ts = parseSentTimestamp(options.sent_timestamp);
+    if (ts) {
         record.reported_date = ts;
+    }
 
     if (def) {
         if (def.facility_reference)
@@ -88,43 +79,28 @@ function getDataRecord(doc, form_data) {
         });
     }
 
-    if (form_data && form_data._extra_fields)
+    if (form_data && form_data._extra_fields) {
         utils.addError(record, 'extra_fields');
+    }
 
-    if (!doc.message || !doc.message.trim())
+    if (!def || !def.public_form) {
+        utils.addError(record, 'sys.facility_not_found');
+    }
+
+    if (typeof options.message === 'string' && !options.message.trim()) {
         utils.addError(record, 'sys.empty');
+    }
+
+    if (!def) {
+        if (utils.info.forms_only_mode) {
+            utils.addError(record, 'sys.form_not_found');
+        } else {
+            // if form is undefined we treat as a regular message
+            record.form = undefined;
+        }
+    }
 
     return record;
-};
-
-/**
- * @param {String} phone - phone number of the sending phone (from)
- * @param {String} form - forms key string
- * @param {Object} form_data - parsed form data
- * @returns {String} - Path for callback
- * @api private
- */
-var getCallbackPath = function(phone, form, form_data, def) {
-
-    def = def ? def : utils.info.getForm(form);
-
-    if (!form) {
-        // find a match with a facility's phone number
-        return '/data_record/add/facility/%2'
-                    .replace('%2', encodeURIComponent(phone));
-    }
-
-    if (def && def.facility_reference) {
-        return '/%1/data_record/add/refid/%2'
-                  .replace('%1', encodeURIComponent(form))
-                  .replace('%2', encodeURIComponent(
-                      getRefID(form, form_data)));
-    }
-
-    // find a match with a facility's phone number
-    return '/%1/data_record/add/facility/%2'
-                .replace('%1', encodeURIComponent(form))
-                .replace('%2', encodeURIComponent(phone));
 };
 
 /*
@@ -171,269 +147,134 @@ var parseSentTimestamp = function(str) {
     return moment(str).valueOf();
 };
 
-/*
- * @param {Object} doc - data_record object as returned from getDataRecord
- * @returns {Object} - smssync gateway response payload json object
- * @api private
- *
- * Form validation errors are included in doc.errors.
- * Always limit outgoing message to 160 chars and only send one message.
- *
- */
-var getSMSResponse = function(doc) {
-    var locale = doc.sms_message && doc.sms_message.locale,
-        msg = utils.info.translate('sms_received', locale),
-        def = doc.form && utils.info.getForm(doc.form),
-        res = {
-            success: true,
-            task: "send",
-            messages: [{
-                to: doc.from,
-                message: msg
-            }]
-        };
-
-    // looks like we parsed a form ok
-    if (def) {
-        if (doc.errors.length === 0) {
-            msg = utils.info.translate('form_received', locale);
-        }
-
-        // we have a custom success autoreply
-        if (def.autoreply) {
-            msg = def.autoreply;
-        }
-    }
-
-    // process errors array, create a response message for certain errors states
-    // that go back to reporter.  error codes like 'sys.facility_not_found' only
-    // go to admins, but we do look for 'facility_not_found' which is ok
-    // for an SMS client.
-    doc.errors.forEach(function(err) {
-        if (/sys\./.test(err.code)) {
-            var user_error_code = err.code.replace('sys.','');
-            var m = utils.info.translate(user_error_code, locale)
-                    .replace('{{form}}', doc.form)
-                    .replace('{{fields}}', err.fields && err.fields.join(', '));
-            // only send error message if defined and had a translation,
-            // translate will return the key if there are no translations
-            // defined.
-            if (m && user_error_code !== m) {
-                msg = m;
-            }
-        } else {
-            // default, use code if it's available
-            msg = utils.info.translate(err.code || err, locale);
-        }
-    });
-
-    /*
-     * If we have no facility and it is required then include error response
-     * otherwise if facility is not required and that is only error, then form
-     * is valid.
-     */
-    if (def) {
-        if (def.facility_required) {
-            if (utils.hasError(doc, 'sys.facility_not_found')) {
-                msg = utils.info.translate('reporting_unit_not_found', locale);
-            }
-        } else if (doc.errors.length === 1) {
-            if (utils.hasError(doc, 'sys.facility_not_found')) {
-                msg = utils.info.translate('form_received', locale);
-            }
-        }
-    } else {
-        // filter out facility not found
-        doc.errors = _.reject(doc.errors, function(err) {
-            return 'sys.facility_not_found' === err.code;
-        });
-    }
-
-    if (msg.length > 160) {
-        msg = msg.substr(0,160-3) + '...';
-    }
-
-    if (msg) {
-        res.messages[0].message = msg;
-    } else {
-        res = getDefaultResponse(doc);
-    }
-
-    return res;
-}
-
-/*
- * Setup context and run eval on `messages_task` property on form.
- *
- * @param {String} form - form key
- * @param {Object} record - Data record object
- *
- * @returns {Object|undefined} - the task object or undefined if we have no
- *                               messages/nothing to send.
- *
- */
-var getMessagesTask = function(record) {
-    var def = utils.info.getForm(record.form),
-        phone = record.from,
-        clinic = record.related_entities.clinic,
-        keys = utils.getFormKeys(def),
-        labels = utils.getLabels(keys, record.form),
-        values = utils.getValues(record, keys),
-        task = {
-            state: 'pending',
-            messages: []
-        };
-    if (typeof def.messages_task === 'string')
-        task.messages = task.messages.concat(eval('('+def.messages_task+')()'));
-    if (task.messages.length > 0)
-        return task;
-};
-
-function getDefaultResponse(doc) {
+var getDefaultResponse = function(doc) {
     var response = {
         payload: {
             success: true
         }
     };
-
     if (doc && doc._id) {
         response.payload.id = doc._id;
     }
-
     return response;
-}
-
-/*
- * Create intial/stub data record. Return Ushahidi SMSSync compatible callback
- * response to update facility data in next response.
- */
-var req = {};
-exports.add_sms = function(doc, request) {
-
-    req = request;
-    utils.info = info.getAppInfo.call(this);
-
-    var sms_message = {
-        type: "sms_message",
-        form: smsparser.getFormCode(req.form.message)
-    };
-    sms_message = _.extend(req.form, sms_message);
-
-    // if locale was not passed in form data then check query string
-    if (!sms_message.locale) {
-        sms_message.locale = (req.query && req.query.locale) || 'en'
-    }
-
-    var form_data = null,
-        baseURL = require('duality/core').getBaseURL(),
-        headers = req.headers.Host.split(":"),
-        def = utils.info.getForm(sms_message.form),
-        resp;
-
-    if (sms_message.form && def) {
-        form_data = smsparser.parse(def, sms_message);
-    }
-
-    // creates base record
-    doc = getDataRecord(sms_message, form_data);
-    resp = getDefaultResponse(doc);
-
-    // by default related entities are null so also include errors on the record.
-    if (!def || !def.public_form) {
-        doc.errors.push({
-            code: "sys.facility_not_found",
-            message: utils.info.translate("sys.facility_not_found", sms_message.locale)
-        });
-    }
-
-    delete doc.responses;
-    return [doc, JSON.stringify(resp)];
-
-    /*
-     * callbacks are legacy by leaving for potential future need
-     */
-
-    // provide callback for next part of record creation.
-    resp.callback = {
-        options: {
-            host: headers[0],
-            port: headers[1] || "",
-            method: "POST",
-            headers: {'Content-Type': 'application/json; charset=utf-8'},
-            path: baseURL
-                    + getCallbackPath(sms_message.from, def && sms_message.form, form_data, def)
-        },
-        data: {uuid: req.uuid}
-    };
-
-    // pass through Authorization header
-    if(req.headers.Authorization) {
-        resp.callback.options.headers.Authorization = req.headers.Authorization;
-    }
-
-    // create doc and send response
-    return [doc, JSON.stringify(resp)];
 };
 
+var getErrorResponse = function(msg, code) {
+    return {
+        code: code || 500,
+        headers: {
+            "Content-Type" : "application/json"
+        },
+        body: JSON.stringify({
+            payload: {
+                success: false,
+                error: msg
+            }
+        })
+    };
+};
 
 /*
- * Update data record properties and create message tasks.
+ * Create new record.
+ *
+ * Support Medic Mobile message and JSON formatted documents in the POST body.
+ * Support ODK Collect via Simple ODK server.  Adds standard fields to the
+ * record like form, locale and reported_date.
+ *
+ * @returns {Array} Following CouchDB API, return final record object and
+ *                  response with Ushahidi/SMSSync compatible JSON payload.
  */
-exports.updateRelated = function(doc, request) {
-
+exports.add = function(doc, request) {
     utils.info = info.getAppInfo.call(this);
+
+    req = request;
+    if (req.form && req.form.message) {
+        return add_sms(doc, request);
+    }
+    return add_json(doc, request);
+};
+
+/*
+ * Save parsed form submitted in JSON format when matching form definition can
+ * be found.  Support ODK Collect via Simple ODK Server.  Add standard fields
+ * to the record, like form, locale and reported_date.
+ */
+var add_json = exports.add_json = function(doc, request) {
+
     req = request;
 
-    var data = JSON.parse(req.body),
-        def = utils.info.getForm(doc.form),
-        resp = {};
+    var def,
+        data,
+        record,
+        options = {},
+        form_data = {};
 
-    doc.related_entities = doc.related_entities || {clinic: null};
+    try {
+        data = JSON.parse(req.body);
+    } catch(e) {
+        logger.error(req.body);
+        return [null, getErrorResponse('Error: request body not valid JSON.')];
+    }
 
+    // use locale if passed in via query param
+    options.locale = req.query && req.query.locale;
+
+    // ODK Collect conventions
+    if (data.meta) {
+        options.sent_timestamp = data.meta.submissionTime;
+        options.form = smsparser.getFormCode(data.meta.formId);
+    }
+
+    def = utils.info.getForm(options.form);
+
+    // require form definition
+    if (!def) {
+        return [null, getErrorResponse('Form not found: ' + options.form)];
+    }
+
+    // For now only save string and number fields, ignore the others.
+    // Lowercase all property names.
     for (var k in data) {
-        if (doc[k] && doc[k].length) {
-            doc[k].concat(data[k]);
-        } else {
-            doc[k] = data[k];
+        if (['string', 'number'].indexOf(typeof data[k]) >= 0) {
+            form_data[k.toLowerCase()] = data[k];
         }
     }
 
-    if (def && def.messages_task) {
-        var task = getMessagesTask(doc);
-        if (task) {
-            doc.tasks = doc.tasks ? doc.tasks : [];
-            doc.tasks.push(task);
-            for (var i in task.messages) {
-                var msg = task.messages[i];
-                // check task fields are defined
-                if(!msg.to) {
-                    utils.addError(doc, 'sys.recipient_not_found');
-                    // resolve one error at a time.
-                    break;
-                }
-            }
-        }
+    record = getDataRecord(options, form_data);
+
+    return [
+        record,
+        JSON.stringify(getDefaultResponse(record))
+    ];
+}
+
+var add_sms = exports.add_sms = function(doc, request) {
+
+    req = request;
+    var options = {
+        type: 'sms_message',
+        form: smsparser.getFormCode(req.form.message)
+    };
+    options = _.extend(req.form, options);
+
+    // if locale was not passed in form data then check query string
+    if (!options.locale) {
+        options.locale = (req.query && req.query.locale) || utils.info.locale;
     }
 
-    var new_errors = [];
+    var def = utils.info.getForm(options.form),
+        form_data = null,
+        resp;
 
-    // remove errors if we have a clinic
-    if (doc.related_entities.clinic && doc.related_entities.clinic !== null) {
-        for (var i in doc.errors) {
-            var err = doc.errors[i];
-            if (err.code !== "sys.facility_not_found")
-                new_errors.push(err);
-        };
-        doc.errors = new_errors;
+    if (options.form && def) {
+        form_data = smsparser.parse(def, options);
     }
 
-    // smssync-compat sms response
-    resp.payload = getSMSResponse(doc, utils.info);
+    var record = getDataRecord(options, form_data);
 
-    // save response to record
-    doc.responses = _.filter(resp.payload.messages, function(message) {
-        return message.to !== utils.info.gateway_number;
-    });
+    return [
+        record,
+        JSON.stringify(getDefaultResponse(record))
+    ];
 
-    return [doc, JSON.stringify(resp)];
 };

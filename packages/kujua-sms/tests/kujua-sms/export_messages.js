@@ -8,11 +8,7 @@ var headers = '"Record UUID","Patient ID","Reported Date","Reported From","Clini
 exports['requesting messages export fails if no user'] = function(test) {
     test.expect(2);
     var req = {
-        query: {
-            startkey: 'foo',
-            endkey: 'bar',
-            form: 'MSBC'
-        },
+        query: {},
         method: "GET"
     };
 
@@ -25,11 +21,7 @@ exports['requesting messages export fails if no user'] = function(test) {
 exports['requesting messages export fails if user does not have perms'] = function(test) {
     test.expect(2);
     var req = {
-        query: {
-            startkey: 'foo',
-            endkey: 'bar',
-            form: 'MSBC'
-        },
+        query: {},
         method: "GET",
         userCtx: {
             roles: ['just_some_dude']

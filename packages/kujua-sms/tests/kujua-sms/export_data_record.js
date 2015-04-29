@@ -1,8 +1,30 @@
 var lists = require('kujua-sms/lists'),
     moment = require('moment'),
+    sinon = require('sinon'),
     fakerequest = require('couch-fakerequest'),
-    helpers = require('../../test-helpers/helpers');
+    utils = require('kujua-sms/utils'),
+    definitions = require('../../test-helpers/form_definitions'),
+    appinfo = require('views/lib/appinfo');
 
+exports.setUp = function (callback) {
+    utils.info = appinfo.getAppInfo.call(this);
+    sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYU);
+    sinon.stub(appinfo,'getAppInfo').returns(utils.info);
+    callback();
+};
+
+exports.tearDown = function(callback) {
+    if (utils.info.getForm.restore) {
+        utils.info.getForm.restore();
+    }
+    if (utils.info.restore) {
+        utils.info.restore();
+    }
+    if (appinfo.getAppInfo.restore) {
+        appinfo.getAppInfo.restore();
+    }
+    callback();
+};
 
 exports['lists format date'] = function(test) {
     test.expect(3);
@@ -44,8 +66,6 @@ exports['requesting data records export fails if user does not have perms'] = fu
 }
 
 exports['lists export data records csv'] = function(test) {
-
-    test.expect(1);
 
     var expected = '"Record UUID","Patient ID","Reported Date","Reported From","Clinic Contact Name"'
         +',"Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name"'
@@ -136,8 +156,6 @@ exports['lists export data records csv'] = function(test) {
 
 exports['lists export data records csv with excluded columns'] = function(test) {
 
-    test.expect(1);
-
     var expected = '"Reported Date","Clinic Contact Name"'
         +',"Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name"'
         +',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
@@ -225,8 +243,6 @@ exports['lists export data records csv with excluded columns'] = function(test) 
 
 exports['lists export data records fr'] = function(test) {
 
-    test.expect(1);
-
     var expected = '"Record UUID";"Patient ID";"Date envoyé";"Envoyé par";"Personne-ressource Clinique"'
         +';"Villages";"Nom de la santé Contact Center";"Nom du centre de santé";"Nom de l\'hôpital de district"'
         +';"Année";"Mois";"Jour";"Code du RC";"Type de patient";"Nom";"Age"'
@@ -308,8 +324,6 @@ exports['lists export data records fr'] = function(test) {
 
 exports['lists export data records skip header row'] = function(test) {
 
-    test.expect(1);
-
     var expected = '"abc123z","5545","'+moment(1331503842461).format('DD, MMM YYYY, HH:mm:ss Z')+'"'
         +',"+12229990000","Paul","Clinic 1","Eric","Health Center 1","District 1"'
         +',"2012","1","16","","","","","","","","",""\n'
@@ -384,8 +398,6 @@ exports['lists export data records skip header row'] = function(test) {
 };
 
 exports['lists export data records with tz'] = function(test) {
-
-    test.expect(1);
 
     var expected = '"Record UUID","Patient ID","Reported Date","Reported From","Clinic Contact Name"'
         +',"Clinic Name","Health Center Contact Name","Health Center Name","District Hospital Name"'
@@ -475,7 +487,6 @@ exports['lists export data records with tz'] = function(test) {
 
 exports['lists export data records with external facility id'] = function(test) {
 
-    test.expect(1);
     var expected = '"Reported Date","Reported From"'
         + ',"Clinic Name","Clinic External ID","Record UUID"' 
         + ',"Année","Mois","Jour","Code du RC","Type de patient","Nom","Age"'
