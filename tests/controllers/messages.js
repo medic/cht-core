@@ -23,10 +23,10 @@ exports['getMessages returns errors'] = function(test) {
 exports['getMessages passes limit param value of 100 to view'] = function(test) {
   test.expect(2);
   var getView = sinon.stub(db.medic, 'view').callsArg(3);
-  controller.getMessages({limit: 100}, null, function(err, results) {
+  controller.getMessages({limit: 500}, null, function(err, results) {
     test.equals(getView.callCount, 1);
     // assert query parameters on view call use right limit value
-    test.deepEqual({limit: 100}, getView.getCall(0).args[2]);
+    test.deepEqual({limit: 500}, getView.getCall(0).args[2]);
     test.done();
   });
 };
@@ -34,9 +34,9 @@ exports['getMessages passes limit param value of 100 to view'] = function(test) 
 exports['getMessages returns 500 error if limit over 100'] = function(test) {
   test.expect(3);
   var getView = sinon.stub(db.medic, 'view');
-  controller.getMessages({limit: 101}, null, function(err, results) {
+  controller.getMessages({limit: 9999}, null, function(err, results) {
     test.equals(err.code, 500);
-    test.equals(err.message, 'Limit max is 100');
+    test.equals(err.message, 'Limit max is 1000');
     test.equals(getView.callCount, 0);
     test.done();
   });
