@@ -404,15 +404,24 @@ exports.tasks_messages = {
                      * uuid, to and message properties are required for message
                      * to be processed/valid.
                      */
+                    var when = task.due || task.timestamp || doc.reported_date;
                     if (msg.uuid && msg.to && msg.message) {
-                        emit(msg.uuid, {
+                        var val = {
                             message: msg.message,
                             to: msg.to,
                             id: msg.uuid,
                             state: task.state,
                             state_details: task.state_details,
-                            _record_id: doc._id
-                        });
+                            state_history: task.state_history,
+                            due: task.due,
+                            timestamp: task.timestamp,
+                            _record_id: doc._id,
+                            _record_reported_date: doc.reported_date
+                        };
+                        // used for fetching a specific message based on uuid
+                        emit(msg.uuid, val);
+                        // used for querying latest tasks in a specific state
+                        emit([task.state, when], val);
                     }
                 });
             });
