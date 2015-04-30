@@ -19,7 +19,7 @@ var getMessages = function(options, district, callback) {
     data.rows.forEach(function(row) {
       msgs.push(row.value);
     });
-    callback(err, msgs);
+    callback(null, msgs);
   });
 };
 
