@@ -224,12 +224,18 @@ var attach = function() {
         audit = require('couchdb-audit')
             .withNano(db, db.settings.db, db.settings.ddoc, db.settings.username);
 
+    var backlog_delay = 500 /* ms */;
+    var progress_interval = 500 /* items */;
+
     var match_types = [
         'data_record',
         'clinic',
         'health_center',
         'district'
     ];
+
+    /* Tell everyone we're here */
+    logger.info('backlog: processing enabled');
 
     var feed = new follow.Feed({
         db: process.env.COUCH_URL,
@@ -253,6 +259,7 @@ var attach = function() {
     });
 
     feed.follow();
+    logger.info('backlog: fetching changes feed...');
 
     /*
      * Process changes feed docs in the past where transitions have not run or
@@ -263,25 +270,50 @@ var attach = function() {
         since: config.last_valid_seq || 'now',
         descending: true
     }, function (err, data) {
+
+        /* Keep statistics */
+        var processed = 0, failures = 0;
+
         if (err) {
             return logger.error('backlog error: ', err);
         }
-        data.results.forEach(function(change) {
-            // skip design docs
-            if (change.id.match(/_design/) || change.deleted) {
-                return;
-            }
-            setTimeout(function() {
-                db.medic.get(change.id, function(err, doc) {
-                    if (err) {
-                        return logger.error('backlog fetch failed on %s: %s', change.id, err);
+
+        logger.info(
+          'backlog: processing %d items, %dms per item',
+            _.size(data.results), backlog_delay
+        );
+
+        /* For each change in feed... */
+        async.eachSeries(data.results,
+
+            /* Item iterator */
+            function (change, next_fn) {
+
+                /* Convenience */
+                var id = change.id;
+
+                /* Skip uninteresting documents */
+                if (change.deleted || id.match(/_design/)) {
+                    return next_fn();
+                }
+
+                /* Be somewhat informative */
+                if (processed > 0 && (processed % progress_interval) == 0) {
+                    logger.info('backlog: %d items processed', processed);
+                }
+
+                /* Fetch entire changed document */
+                db.medic.get(id, function(e, doc) {
+                    if (e) {
+                        failures++;
+                        logger.error('backlog: fetch failed for %s (%s)', id, e);
+                        return _.delay(next_fn, backlog_delay);
                     }
                     change.doc = doc;
                     if (hasTransitionErrors(doc) || !hasTransitions(doc)) {
                         logger.debug(
-                            'backlog proccessing matched on %s seq %s',
-                            change.id,
-                            change.seq
+                            'backlog: processing matched on %s seq %s',
+                            id, change.seq
                         );
                         applyTransitions({
                             change: change,
@@ -290,14 +322,24 @@ var attach = function() {
                         });
                     } else {
                         logger.debug(
-                            'backlog processing skipped on %s seq %s',
-                            change.id,
-                            change.seq
+                            'backlog: processing skipped on %s seq %s',
+                            id, change.seq
                         );
                     }
                 });
-            }, 500);
-        });
+
+                /* Next */
+                processed++;
+                return _.delay(next_fn, backlog_delay);
+            },
+
+            /* Completion handler */
+            function (e) {
+                logger.info(
+                    'backlog: processing complete, %d failures', failures
+                );
+            }
+        );
     });
 };
 
