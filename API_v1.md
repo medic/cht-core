@@ -17,7 +17,7 @@ Create a new record based on form data.  This assumes a form definition exists o
 
   Message string in a supported format like Muvuku or Textforms.
 
-  If missing message parameter then HTTP body should contain parsed form in JSON format.  
+  If missing `message` parameter then HTTP body should contain parsed form in JSON format including a `reported_date` value.
     
 - `reported_date`
 
@@ -84,7 +84,7 @@ Returns list of messages, limited to 25, oldest first based on timestamp or due 
   
 - `limit`
 
-  Modified limit to specified value with some hard max value.
+  Modifies number of returned messages to specified value with hard max value of 100.
 
 ### Examples
 
@@ -166,11 +166,11 @@ If message is not found return 404.
 
 ### Examples
 
-Successful PUT response includes id property.
+Success response includes id property.
 
 ```
 PUT /api/v1/messages/state/364c796a843fbe0a73476f9153012733
-Content-Type: application/json; charset=utf-8
+Content-Type: application/json
 
 {
   "state": "sent",

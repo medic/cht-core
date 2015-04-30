@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    bodyParser = require('body-parser'),
     express = require('express'),
     morgan = require('morgan'),
     http = require('http'),
@@ -27,6 +28,7 @@ var _ = require('underscore'),
     monthlyRegistrations = require('./controllers/monthly-registrations'),
     monthlyDeliveries = require('./controllers/monthly-deliveries'),
     exportData = require('./controllers/export-data'),
+    messages = require('./controllers/messages'),
     fti = require('./controllers/fti'),
     createDomain = require('domain').create;
 
@@ -52,6 +54,9 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
   serverError(err.stack, res);
 });
+
+// create application/json parser
+var jsonParser = bodyParser.json();
 
 app.all(db.name + '*/update_settings/*', function(req, res) {
   // don't audit the app settings
@@ -249,6 +254,60 @@ app.get('/api/v1/fti/:view', function(req, res) {
         }
         res.json(result);
       });
+    });
+  });
+});
+
+app.get('/api/v1/messages', function(req, res) {
+  auth.check(req, 'can_view_data_records', null, function(err, ctx) {
+    if (err) {
+      return error(err, res);
+    }
+    auth.check(req, 'can_view_unallocated_data_records', null, function(err, ctx) {
+      if (err) {
+        return error(err, res);
+      }
+      var opts = _.pick(req.query, 'limit', 'start', 'descending', 'state');
+      messages.getMessages(opts, ctx && ctx.district, function(err, result) {
+        if (err) {
+          console.error(err);
+          return error(err, res);
+        }
+        res.json(result);
+      });
+    });
+  });
+});
+
+app.get('/api/v1/messages/:id', function(req, res) {
+  auth.check(req, 'can_view_data_records', null, function(err, ctx) {
+    if (err) {
+      return error(err, res);
+    }
+    auth.check(req, 'can_view_unallocated_data_records', null, function(err, ctx) {
+      if (err) {
+        return error(err, res);
+      }
+      messages.getMessage(req.params.id, ctx && ctx.district, function(err, result) {
+        if (err) {
+          return error(err, res);
+        }
+        res.json(result);
+      });
+    });
+  });
+});
+
+app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
+  auth.check(req, 'can_edit', null, function(err, ctx) {
+    if (err) {
+      return error(err, res);
+    }
+    messages.updateMessage(req.params.id, req.body, ctx && ctx.district, function(err, result) {
+      if (err) {
+        return error(err, res);
+      }
+      res.json(result);
     });
   });
 });
