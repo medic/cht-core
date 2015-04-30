@@ -293,7 +293,7 @@ var attach = function() {
                 var id = change.id;
 
                 /* Skip uninteresting documents */
-                if (change.deleted || id.match(/_design/)) {
+                if (change.deleted || id.match(/^_design\//)) {
                     return next_fn();
                 }
 
