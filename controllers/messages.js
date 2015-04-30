@@ -5,8 +5,8 @@ var getMessages = function(options, district, callback) {
   var v_opts = {
     limit: options.limit || 25
   };
-  if (v_opts.limit > 100) {
-      return callback({code: 500, message: 'Limit max is 100'});
+  if (v_opts.limit > 1000) {
+      return callback({code: 500, message: 'Limit max is 1000'});
   }
   db.medic.view('medic', 'tasks_messages', v_opts, function(err, data) {
     if (err) {
