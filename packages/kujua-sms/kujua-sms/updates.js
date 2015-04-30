@@ -285,12 +285,14 @@ var add_sms = exports.add_sms = function(doc, request) {
  *
  * Method: PUT
  *
- * Form data:
- *   uuid {message uuid string} required
+ * JSON body properties:
+ *
+ *   message_id {message uuid string} required
  *   state {state value} required
  *   state_message {message value}
  *
- * On success returns HTTP 200 code and JSON body:
+ * On success returns HTTP 200 code and JSON body. `id` is the doc id.
+ *
  * {
  *   "payload":{
  *     "success":true,
@@ -308,29 +310,29 @@ var add_sms = exports.add_sms = function(doc, request) {
  *
  */
 exports.update_message_task = function(doc, request) {
-    var uuid = request.form && request.form.uuid,
-        state = request.form && request.form.state,
-        state_message = request.form && request.form.state_message,
-        msg = kutils.getTask(uuid, doc);
+    var data, msg;
+    var fail = function(msg, code) {
+        return [null, getErrorResponse(msg, code)];
+    };
     if (!doc) {
-        return [
-            null,
-            getErrorResponse('Document not found.', 400)
-        ];
+        return fail('Document not found: ' + doc, 404);
     }
-    if (!uuid || !msg) {
-        return [
-            null,
-            getErrorResponse('Message not found with uuid ' + uuid, 400)
-        ];
+    try {
+        data = JSON.parse(request.body);
+    } catch(e) {
+        return fail('Parsing JSON body failed');
     }
-    if (!state) {
-        return [
-            null,
-            getErrorResponse('State value required.')
-        ];
+    if (!data.state) {
+        return fail('Value required for state.');
     }
-    kutils.setTaskState(msg, state, state_message);
+    if (!data.message_id) {
+        return fail('Message id required');
+    }
+    msg = kutils.getTask(data.message_id, doc);
+    if (!data.message_id || !msg) {
+        return fail('Message not found: ' + data.message_id);
+    }
+    kutils.setTaskState(msg, data.state, data.state_details);
     return [
         doc,
         JSON.stringify(getDefaultResponse(doc))
