@@ -65,7 +65,7 @@ Content-Type: application/json; charset=utf-8
 
 ## GET /api/v1/messages
 
-Returns list of messages, limited to 25, oldest first based on timestamp or due date.
+Returns list of messages, oldest first based on timestamp or due date.
 
 ### Query Parameters
 
@@ -73,10 +73,9 @@ Returns list of messages, limited to 25, oldest first based on timestamp or due 
 
   Returns only messages that match a given state value. e.g. state=pending
 
-- `start`
+- `start` (todo)
 
   Returns list of messages, limited to 25 starting at id (uuid). 
-  
   
 - `descending`
 
@@ -84,14 +83,14 @@ Returns list of messages, limited to 25, oldest first based on timestamp or due 
   
 - `limit`
 
-  Modifies number of returned messages to specified value with hard max value of 100.
+  Modifies number of returned messages to specified value with hard max value of 1000.
 
 ### Examples
 
-Using start parameter returns list of messages.
+Get oldest pending messages.
 
 ```
-GET /api/v1/messages?start=364c796a843fbe0a73476f9153012733
+GET /api/v1/messages?state=pending
 ```
 
 ```
@@ -100,13 +99,75 @@ Content-Type: application/json; charset=utf-8
 
 [
   {
-    "message": "dinner time",
-    "to": "+5511938849332",
-    "id": "364c796a843fbe0a73476f9153012733",
-    "state": "sent",
-    "state_details": "more info about message state"
+    "message": "Thank you for registering Prudence. Their pregnancy ID is 88500, and EDD is Sun, Nov 8th, 2015",
+    "to": "+2840915732",
+    "id": "4fbc1cb6-1408-4954-b08b-2da33630ae5c",
+    "state": "pending",
+    "state_history": [
+      {
+        "state": "pending",
+        "timestamp": "2015-04-23T02:24:57.207Z"
+      }
+    ]
   },
-  ...
+  {
+    "message": "Thank you Janet, visit for Prudence (88500) has been recorded.",
+    "to": "+2840915732",
+    "id": "ef8dbed5-335e-4cdd-bdbe-885a4fd93d11",
+    "state": "pending",
+    "state_history": [
+      {
+        "state": "pending",
+        "timestamp": "2015-04-23T02:25:04.205Z"
+      }
+    ]
+  }
+]
+```
+
+Get latest sent messages.
+
+```
+GET /api/v1/messages?state=sent&descending
+```
+
+```
+HTTP/1.1 200 
+Content-Type: application/json; charset=utf-8
+
+[
+  {
+    "message": "[Sample message] Yep, we're all set for Monday afternoon.",
+    "to": "+2840915732",
+    "id": "c8ca60c6c19d4e253f5d107ac800bdd4",
+    "state": "sent",
+    "state_history": [
+      {
+        "state": "pending",
+        "timestamp": "2015-04-08T20:09:00.000Z"
+      },
+      {
+        "state": "sent",
+        "timestamp": "2015-04-08T20:10:00.000Z"
+      }
+    ]
+  },
+  {
+    "message": "[Sample message] Of course, I will send some with Charles tomorrow. Let me know when you get it.",
+    "to": "+2896503099",
+    "id": "c8ca60c6c19d4e253f5d107ac801594e",
+    "state": "sent",
+    "state_history": [
+      {
+        "state": "pending",
+        "timestamp": "2015-03-08T13:09:00.000Z"
+      },
+      {
+        "state": "sent",
+        "timestamp": "2015-03-08T13:10:00.000Z"
+      }
+    ]
+  }
 ]
 ```
 

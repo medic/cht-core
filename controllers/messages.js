@@ -3,10 +3,21 @@ var db = require('../db');
 var getMessages = function(options, district, callback) {
   options = options || {};
   var v_opts = {
-    limit: options.limit || 25
+    limit: options.limit || 25,
   };
   if (v_opts.limit > 1000) {
       return callback({code: 500, message: 'Limit max is 1000'});
+  }
+  if (typeof options.descending !== 'undefined') {
+    v_opts.descending = true;
+  }
+  if (options.state) {
+    v_opts.startkey = [options.state];
+    v_opts.endkey = [options.state,{}];
+    if (v_opts.descending) {
+      v_opts.startkey = [options.state, {}];
+      v_opts.endkey = [options.state];
+    }
   }
   db.medic.view('medic', 'tasks_messages', v_opts, function(err, data) {
     if (err) {
