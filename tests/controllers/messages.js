@@ -7,6 +7,9 @@ exports.tearDown = function (callback) {
   if (db.medic.view.restore) {
     db.medic.view.restore();
   }
+  if (db.medic.updateWithHandler.restore) {
+    db.medic.updateWithHandler.restore();
+  }
   if (controller._updateCouchDB.restore) {
     controller._updateCouchDB.restore();
   }
