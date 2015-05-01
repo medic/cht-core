@@ -65,7 +65,8 @@ if (couchUrl) {
     medic: {
       view: function() {},
       get: function() {},
-      insert: function() {}
+      insert: function() {},
+      updateWithHandler: function() {}
     }
   };
 } else {
