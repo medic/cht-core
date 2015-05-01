@@ -260,7 +260,6 @@ app.get('/api/v1/fti/:view', function(req, res) {
   });
 });
 
-<<<<<<< HEAD
 app.get('/api/v1/messages', function(req, res) {
   auth.check(req, 'can_view_data_records', null, function(err, ctx) {
     if (err) {
@@ -317,7 +316,8 @@ app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
 
 app.post('/api/v1/records', jsonParser, function(req, res) {
   res.json({code: 500, message: "coming soon"});
-=======
+});
+
 /**
  * Set cache control on static resources. Must be hacked in to
  * ensure we set the value first.
@@ -339,7 +339,6 @@ proxy.on('proxyReq', function(proxyReq, req, res) {
       res.oldWriteHead(statusCode, headers);
     };
   }
->>>>>>> master
 });
 
 app.all('*', function(req, res) {
