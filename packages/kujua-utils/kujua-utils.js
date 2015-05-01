@@ -269,13 +269,22 @@ exports.getTask = function(uuid, doc, type) {
     return ret;
 };
 
-exports.setTaskState = function(task, state, message) {
+/**
+ * Update task/message object in-place.  Used by message update functions when
+ * a message's state changes. Also adds new values to state history.
+ *
+ * @param {Object} task
+ * @param {String} state
+ * @param {Any} details (optional)
+ * @api public
+ */
+exports.setTaskState = function(task, state, details) {
     task.state = state;
-    task.state_message = message;
+    task.state_details = details;
     task.state_history = task.state_history || [];
     task.state_history.push({
         state: state,
-        state_message: message,
+        state_details: details,
         timestamp: new Date().toISOString()
     });
 };
