@@ -1,65 +1,61 @@
 var db = require('../db');
 
-var getMessages = function(options, district, callback) {
-  options = options || {};
-  var v_opts = {
-    limit: options.limit || 25,
-  };
-  if (v_opts.limit > 1000) {
-      return callback({code: 500, message: 'Limit max is 1000'});
-  }
-  if (typeof options.descending !== 'undefined') {
-    v_opts.descending = true;
-  }
-  if (options.state) {
-    v_opts.startkey = [options.state];
-    v_opts.endkey = [options.state,{}];
-    if (v_opts.descending) {
-      v_opts.startkey = [options.state, {}];
-      v_opts.endkey = [options.state];
+module.exports = {
+
+  getMessages: function(options, district, callback) {
+    options = options || {};
+    var v_opts = {
+      limit: options.limit || 25,
+    };
+    if (v_opts.limit > 1000) {
+        return callback({code: 500, message: 'Limit max is 1000'});
     }
-  }
-  db.medic.view('medic', 'tasks_messages', v_opts, function(err, data) {
-    if (err) {
-      return callback(err);
+    if (typeof options.descending !== 'undefined') {
+      v_opts.descending = true;
     }
-    if (!data) {
-      return callback({code: 500, message: 'Data missing.'});
+    if (options.state) {
+      v_opts.startkey = [options.state];
+      v_opts.endkey = [options.state,{}];
+      if (v_opts.descending) {
+        v_opts.startkey = [options.state, {}];
+        v_opts.endkey = [options.state];
+      }
     }
-    var msgs = [];
-    data.rows.forEach(function(row) {
-      msgs.push(row.value);
+    db.medic.view('medic', 'tasks_messages', v_opts, function(err, data) {
+      if (err) {
+        return callback(err);
+      }
+      if (!data) {
+        return callback({code: 500, message: 'Data missing.'});
+      }
+      var msgs = [];
+      data.rows.forEach(function(row) {
+        msgs.push(row.value);
+      });
+      callback(null, msgs);
     });
-    callback(null, msgs);
-  });
-};
+  },
 
-var getMessage = function(id, district, callback) {
-  if (!id) {
-    return callback({code: 500, message: 'Missing "id" parameter.'});
-  }
-  db.medic.view('medic', 'tasks_messages', {key: id}, function(err, data) {
-    if (err) {
-      return callback(err);
+  getMessage: function(id, district, callback) {
+    if (!id) {
+      return callback({code: 500, message: 'Missing "id" parameter.'});
     }
-    if (data.rows.length === 0) {
-      return callback({code: 404, message: 'Not Found'});
-    }
-    callback(null, data.rows[0].value);
-  });
-};
+    db.medic.view('medic', 'tasks_messages', {key: id}, function(err, data) {
+      if (err) {
+        return callback(err);
+      }
+      if (data.rows.length === 0) {
+        return callback({code: 404, message: 'Not Found'});
+      }
+      callback(null, data.rows[0].value);
+    });
+  },
 
-var updateMessage = function(id, body, district, callback) {
-  getMessage(id, district, function(err, msg) {
-    if (err) {
-      callback(err);
-    }
-    // update requires message_id parameter in JSON body
-    body.message_id = id;
+  _updateCouchDB: function(record_id, body, callback) {
     db.medic.updateWithHandler(
       'medic',
       'update_message_task',
-      msg._record_id,
+      record_id,
       body,
       function(err, data) {
         if (err) {
@@ -72,11 +68,17 @@ var updateMessage = function(id, body, district, callback) {
           id: id
         });
     });
-  });
-};
+  },
 
-module.exports = {
-  getMessage: getMessage,
-  getMessages: getMessages,
-  updateMessage: updateMessage
+  updateMessage: function(id, body, district, callback) {
+    module.exports.getMessage(id, district, function(err, msg) {
+      if (err) {
+        return callback(err);
+      }
+      // update requires message_id parameter in JSON body
+      body.message_id = id;
+      _updateCouchDB(msg._record_id, body, callback);
+    });
+  }
+
 };

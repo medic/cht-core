@@ -7,6 +7,12 @@ exports.tearDown = function (callback) {
   if (db.medic.view.restore) {
     db.medic.view.restore();
   }
+  if (controller._updateCouchDB.restore) {
+    controller._updateCouchDB.restore();
+  }
+  if (controller.getMessage.restore) {
+    controller.getMessage.restore();
+  }
   callback();
 };
 
@@ -62,6 +68,41 @@ exports['getMessage returns view data'] = function(test) {
     test.ok(!err);
     test.equals(getView.callCount, 1);
     test.deepEqual({"message": "test"}, results);
+    test.done();
+  });
+};
+
+exports['updateMessage returns errors'] = function(test) {
+  test.expect(2);
+  var get = sinon.stub(controller, 'getMessage').callsArgWith(2, 'boom');
+  controller.updateMessage('c38uz32a', null, null, function(err, results) {
+    test.deepEqual(err, 'boom');
+    test.equals(get.callCount, 1);
+    test.done();
+  });
+};
+
+/*
+ * `_updateCouchDB` should reformat error objects from couchdb/nano to be
+ * compatible with this API
+ */
+exports['_updateCouchDB returns proper errors'] = function(test) {
+  test.expect(2);
+  var update = sinon.stub(db.medic, 'updateWithHandler').callsArgWith(4, {
+    payload: {
+      success: false,
+      error: "there was a conflict somehow"
+    },
+    statusCode: 409,
+    headers: {},
+    request: {}
+  });
+  controller._updateCouchDB('c38uz32a', null, function(err, results) {
+    test.deepEqual(err, {
+      code: 409,
+      message: "there was a conflict somehow"
+    });
+    test.equals(update.callCount, 1);
     test.done();
   });
 };
