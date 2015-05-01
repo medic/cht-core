@@ -1,5 +1,4 @@
-var jsDump = require('jsDump'),
-    _ = require('underscore'),
+var _ = require('underscore'),
     settings = require('settings/root'),
     users = require('users'),
     cookies = require('cookies');
@@ -76,38 +75,6 @@ var logger = exports.logger = {
     debug: function (obj) {
         if (this.levels[settings.loglevel] >= this.levels['debug']) {
             this.log(obj);
-        }
-    }
-};
-
-exports.dumper = {
-    levels: {silent:0, error:1, warn:2, info:3, debug:4},
-    dump: function(obj) {
-        if (typeof(console) !== 'undefined') {
-            console.log(jsDump.parse(obj));
-        } else if (typeof(log) !== 'undefined') {
-            log(jsDump.parse(obj));
-        }
-    },
-    silent: function (obj) {},
-    error: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['error']) {
-            this.dump(obj);
-        }
-    },
-    warn: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['warn']) {
-            this.dump(obj);
-        }
-    },
-    info: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['info']) {
-            this.dump(obj);
-        }
-    },
-    debug: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['debug']) {
-            this.dump(obj);
         }
     }
 };
