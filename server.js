@@ -30,7 +30,9 @@ var _ = require('underscore'),
     exportData = require('./controllers/export-data'),
     messages = require('./controllers/messages'),
     fti = require('./controllers/fti'),
-    createDomain = require('domain').create;
+    createDomain = require('domain').create,
+    staticResources = /\/(templates|static)\//,
+    appcacheManifest = /manifest\.appcache/;
 
 http.globalAgent.maxSockets = 100;
 
@@ -58,7 +60,7 @@ app.use(function(err, req, res, next) {
 // create application/json parser
 var jsonParser = bodyParser.json();
 
-app.all(db.name + '*/update_settings/*', function(req, res) {
+app.all('*/update_settings/*', function(req, res) {
   // don't audit the app settings
   proxy.web(req, res);
 });
@@ -74,7 +76,7 @@ var audit = function(req, res) {
   ap.audit(proxyForAuditing, req, res);
 };
 
-var auditPath = db.name + '*';
+var auditPath = db.settings.db + '*';
 app.put(auditPath, audit);
 app.post(auditPath, audit);
 app.delete(auditPath, audit);
@@ -258,6 +260,7 @@ app.get('/api/v1/fti/:view', function(req, res) {
   });
 });
 
+<<<<<<< HEAD
 app.get('/api/v1/messages', function(req, res) {
   auth.check(req, 'can_view_data_records', null, function(err, ctx) {
     if (err) {
@@ -314,6 +317,29 @@ app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
 
 app.post('/api/v1/records', jsonParser, function(req, res) {
   res.json({code: 500, message: "coming soon"});
+=======
+/**
+ * Set cache control on static resources. Must be hacked in to
+ * ensure we set the value first.
+ */
+proxy.on('proxyReq', function(proxyReq, req, res) {
+  if (appcacheManifest.test(req.url)) {
+    res.oldWriteHead = res.writeHead;
+    res.writeHead = function(statusCode, headers) {
+      res.setHeader('Cache-Control', 'must-revalidate');
+      res.setHeader('Content-Type', 'text/cache-manifest; charset=utf-8');
+      res.setHeader('Last-Modified', 'Tue, 28 Apr 2015 02:23:40 GMT');
+      res.setHeader('Expires', 'Tue, 28 Apr 2015 02:21:40 GMT');
+      res.oldWriteHead(statusCode, headers);
+    };
+  } else if (staticResources.test(req.url)) {
+    res.oldWriteHead = res.writeHead;
+    res.writeHead = function(statusCode, headers) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+      res.oldWriteHead(statusCode, headers);
+    };
+  }
+>>>>>>> master
 });
 
 app.all('*', function(req, res) {

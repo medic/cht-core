@@ -150,7 +150,7 @@ module.exports = {
               return callback(err);
             }
             doc.type = 'usage_stats';
-            doc.generated_date = moment().toISOString();
+            doc.reported_date = moment().valueOf();
             var startDate = moment().subtract(1, 'month').startOf('month');
             doc.year = startDate.year();
             doc.month = startDate.month();
