@@ -23,6 +23,21 @@ var permissions = {
       'national_admin',
       'district_admin',
       'gateway'
+  ],
+  can_update_messages: [
+      'national_admin',
+      'district_admin',
+      'gateway'
+  ],
+  can_update_records: [
+      'national_admin',
+      'district_admin',
+      'gateway'
+  ],
+  can_create_records: [
+      'national_admin',
+      'district_admin',
+      'gateway'
   ]
 };
 

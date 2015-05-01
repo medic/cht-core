@@ -299,7 +299,7 @@ app.get('/api/v1/messages/:id', function(req, res) {
 });
 
 app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
-  auth.check(req, 'can_edit', null, function(err, ctx) {
+  auth.check(req, 'can_update_messages', null, function(err, ctx) {
     if (err) {
       return error(err, res);
     }
@@ -310,6 +310,10 @@ app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
       res.json(result);
     });
   });
+});
+
+app.post('/api/v1/records', jsonParser, function(req, res) {
+  res.json({code: 500, message: "coming soon"});
 });
 
 app.all('*', function(req, res) {
