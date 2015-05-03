@@ -37,6 +37,7 @@ var permissions = {
   can_create_records: [
       'national_admin',
       'district_admin',
+      'data_entry',
       'gateway'
   ]
 };
