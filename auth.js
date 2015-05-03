@@ -57,11 +57,13 @@ var get = function(url, headers, callback) {
     });
 
     res.on('end', function () {
+      var json;
       try {
-        callback(null, JSON.parse(content.join('')));
+        json = JSON.parse(content.join(''));
       } catch(e) {
-        callback('Could not parse response');
+        return callback('Could not parse response');
       }
+      callback(null, json);
     });
 
     res.on('error', function(e) {
