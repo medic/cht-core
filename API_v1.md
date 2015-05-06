@@ -1,4 +1,4 @@
-# API v1 Draft April 2015
+# API v1 Draft
 
 HTTP response bodies are all in JSON format.  
 
@@ -9,19 +9,28 @@ Respond with HTTP 200 status on successful requests.
 
 ## POST /api/v1/records
 
-Create a new record based on form data.  This assumes a form definition exists on the server side matching the form code.
+Create a new record based on a form.  This requires a form definition exists on the server side matching the form code.
 
-### Form Parameters
+Records can be created one of two ways, parsing the form data yourself and submitting a JSON object or by submitting the raw message string.
+
+### Content-Type: application/x-www-form-urlencoded
+
+
+#### Required Fields
 
 - `message`
 
-  Message string in a supported format like Muvuku or Textforms.
+  Message string in a supported format like Muvuku or Textforms.  Depending if your Medic Mobile instance is configured in forms-only mode or not you might recieve an error if the form is not found.
+  
+- `from`
 
-  If missing `message` parameter then HTTP body should contain parsed form in JSON format including a `reported_date` value.
+  Reporting phone number.
     
+#### Optional Fields
+
 - `reported_date`
 
-  Unix or Moment.js compatible timestamp string of when the message was received on the gateway.
+  Unix or Moment.js compatible timestamp of when the message was received on the gateway.
   
   Default: now()
   
@@ -29,26 +38,83 @@ Create a new record based on form data.  This assumes a form definition exists o
 
   locale string
   
-  Default: 'en'
 
+### Content-Type: application/json
 
+Encode form data prior to submission as a JSON object.  Special values reside in the property `_meta`, so you can't have a form field named `_meta`.  Only strings and numbers are currently support in field values.
+
+All property names will be lowercased and any properties beginning with `_` (underscore) will be ignored.
+
+#### Required Fields
+
+- `_meta.form`
+  
+  The form code.
+  
+- `_meta.from`
+
+  Reporting phone number.
+
+#### Optional Fields
+
+- `_meta.reported_date`
+
+  Unix or Moment.js compatible timestamp of when the message was received on the gateway.
+  
+  Default: now()
+  
+  Example: 
+  
+- `_meta.locale`
+
+  Optional locale string. 
+  
+  Example: 'fr'
+    
 ### Errors
+
+If required fields are not found return 500.
 
 If invalid JSON return error response 500.
 
-If message parameter and JSON body are not found return 500.
-
-`_id` or `_rev` properties will be stripped.
+If submitting JSON and correspending form is not found on the server you will receive an error.
 
 ### Examples
 
-Creating new record returns JSON payload.
+Creating new record using message field.
 
 ```
 POST /api/v1/records
 Content-Type: application/x-www-form-urlencoded
 
-message=1!YYYZ!foo#bar&reported_date=1352399720000
+message=1!YYYZ!Sam#23#2015#ANC&from=+5511943348031&reported_date=1352399720000
+```
+
+```
+HTTP/1.1 200 
+Content-Type: application/json; charset=utf-8
+
+{
+  "success": true,
+  "id": "364c796a843fbe0a73476f9153012733"
+}
+```
+Creating new record with JSON.
+
+```
+POST /api/v1/records
+Content-Type: application/json
+
+{
+  "nurse": "Sam",
+  "week": 23,
+  "year": 2015,
+  "visit": "ANC",
+  "_meta": {
+    "form": "YYYZ",
+    "reported_date": 1352399720000
+  }
+}
 ```
 
 ```

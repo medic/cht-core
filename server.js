@@ -29,6 +29,7 @@ var _ = require('underscore'),
     monthlyDeliveries = require('./controllers/monthly-deliveries'),
     exportData = require('./controllers/export-data'),
     messages = require('./controllers/messages'),
+    records = require('./controllers/records'),
     fti = require('./controllers/fti'),
     createDomain = require('domain').create,
     staticResources = /\/(templates|static)\//,
@@ -53,12 +54,18 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use(function(err, req, res, next) {
-  serverError(err.stack, res);
-});
+// Invoked when content-type header is application/json.
+app.use(bodyParser.json());
 
-// create application/json parser
-var jsonParser = bodyParser.json();
+// Invoked when content-type header is application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// Generic error handler, use last to catch all errors.
+// http://expressjs.com/guide/error-handling.html
+// todo: this should call next() to allow for additional error handlers.
+app.use(function(err, req, res, next) {
+  serverError(err, res);
+});
 
 app.all('*/update_settings/*', function(req, res) {
   // don't audit the app settings
@@ -300,7 +307,7 @@ app.get('/api/v1/messages/:id', function(req, res) {
   });
 });
 
-app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
+app.put('/api/v1/messages/state/:id', function(req, res) {
   auth.check(req, 'can_update_messages', null, function(err, ctx) {
     if (err) {
       return error(err, res);
@@ -314,8 +321,26 @@ app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
   });
 });
 
-app.post('/api/v1/records', jsonParser, function(req, res) {
-  res.json({code: 500, message: "coming soon"});
+app.post('/api/v1/records', function(req, res) {
+  auth.check(req, 'can_create_records', null, function(err, ctx) {
+    var create;
+    if (err) {
+      return error(err, res);
+    }
+    if (req.headers['content-type'].toLowerCase() === 'application/x-www-form-urlencoded') {
+      create = records.createRecord;
+    } else if (req.headers['content-type'].toLowerCase() === 'application/json') {
+      create = records.createRecordJSON;
+    } else {
+      return error('Content type not supported.', res);
+    }
+    create(req.body, ctx && ctx.district, function(err, result) {
+      if (err) {
+        return error(err, res);
+      }
+      res.json(result);
+    });
+  });
 });
 
 /**
@@ -354,13 +379,14 @@ proxyForAuditing.on('error', function(err, req, res) {
 });
 
 var error = function(err, res) {
-  if (err.code === 500) {
+  if (typeof err === 'string') {
+    return serverError(err, res);
+  } else if (err.code === 500) {
     return serverError(err.message, res);
-  }
-  if (err.code === 401) {
+  } else if (err.code === 401) {
     return notLoggedIn(res);
   }
-  res.writeHead(err.code, {
+  res.writeHead(err.code || 500, {
     'Content-Type': 'text/plain'
   });
   res.end(err.message);
@@ -371,7 +397,13 @@ var serverError = function(err, res) {
   res.writeHead(500, {
     'Content-Type': 'text/plain'
   });
-  res.end('Server error');
+  if (err.message) {
+    res.end('Server error: ' + err.message);
+  } else if (typeof err === 'string') {
+    res.end('Server error: ' + err);
+  } else {
+    res.end('Server error');
+  }
 };
 
 var notLoggedIn = function(res) {

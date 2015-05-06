@@ -61,6 +61,8 @@ if (couchUrl) {
   // Running tests only
   module.exports = {
     fti: function() {},
+    request: function() {},
+    getPath: function() {},
     settings: {},
     medic: {
       view: function() {},
