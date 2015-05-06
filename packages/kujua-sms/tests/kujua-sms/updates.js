@@ -412,7 +412,7 @@ exports['support unstructured message'] = function(test) {
 
 exports['JSON POST: return 500 error if form not found'] = function(test) {
     var req = {
-        body: '{ "meta": { "formId": "foo" } }'
+        body: '{ "_meta": { "form": "foo" } }'
     };
     var ret = updates.add(null, req),
         resp_body = JSON.parse(ret[1].body);
@@ -435,15 +435,15 @@ exports['JSON POST: return 500 error if JSON parse fails'] = function(test) {
     test.done();
 };
 
-exports['JSON POST: support meta.formId property to match/parse form'] = function(test) {
+exports['JSON POST: support _meta.form property to match/parse form'] = function(test) {
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
     var req = {
         body: JSON.stringify({
             facility_id: "zanzibar",
             year: 2011,
             month: 8,
-            meta: {
-                formId: 'yyyy'
+            _meta: {
+                form: 'yyyy'
             }
         })
     };
@@ -459,12 +459,12 @@ exports['JSON POST: support meta.formId property to match/parse form'] = functio
     test.done();
 };
 
-exports['JSON POST: meta.formId is case insensitive'] = function(test) {
+exports['JSON POST: _meta.form is case insensitive'] = function(test) {
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
     var req = {
         body: JSON.stringify({
-            meta: {
-                formId: 'yyYy'
+            _meta: {
+                form: 'yyYy'
             }
         })
     };
@@ -484,8 +484,8 @@ exports['JSON POST: ignore object and null properties'] = function(test) {
             picture: {
                 url: "http://foo.com/1.jpg"
             },
-            meta: {
-                formId: 'yyyy'
+            _meta: {
+                form: 'yyyy'
             }
         })
     };
@@ -507,8 +507,8 @@ exports['JSON POST: convert property names to lowercase'] = function(test) {
             FaciLity_Id: "zanzibar",
             Year: 2011,
             mOnth: 8,
-            meta: {
-                formId: 'yyyy'
+            _meta: {
+                form: 'yyyy'
             }
         })
     };
@@ -521,16 +521,16 @@ exports['JSON POST: convert property names to lowercase'] = function(test) {
     test.done();
 };
 
-exports['JSON POST: support submissionTime meta property'] = function(test) {
+exports['JSON POST: support reported_date  _meta property'] = function(test) {
     sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYY);
     var req = {
         body: JSON.stringify({
             facility_id: "zanzibar",
             year: 2011,
             month: 8,
-            meta: {
-                submissionTime: "2015-01-13T19:36:59.013Z",
-                formId: 'yyyy'
+            _meta: {
+                reported_date : "2015-01-13T19:36:59.013Z",
+                form: 'yyyy'
             }
         })
     };
