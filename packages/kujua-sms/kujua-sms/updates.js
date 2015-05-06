@@ -112,7 +112,11 @@ var getDataRecord = function(options, form_data) {
  */
 var parseSentTimestamp = function(str) {
 
-    if(!str) { return; }
+    if (typeof str === 'number') {
+        str = String(str);
+    } else if (typeof str !== 'string') {
+        return;
+    }
 
     // smssync 1.1.9 format
     var match1 = str.match(/(\d{1,2})-(\d{1,2})-(\d{2})\s(\d{1,2}):(\d{2})(:(\d{2}))?/),
@@ -219,10 +223,12 @@ var add_json = exports.add_json = function(doc, request) {
     // use locale if passed in via query param
     options.locale = req.query && req.query.locale;
 
-    // ODK Collect conventions
-    if (data.meta) {
-        options.sent_timestamp = data.meta.submissionTime;
-        options.form = smsparser.getFormCode(data.meta.formId);
+    // Using `_meta` property for non-form data.
+    if (data._meta) {
+        options.sent_timestamp = data._meta.reported_date;
+        options.form = smsparser.getFormCode(data._meta.form);
+        options.from = data._meta.from;
+        options.locale = data._meta.locale || options.locale;
     }
 
     def = utils.info.getForm(options.form);
