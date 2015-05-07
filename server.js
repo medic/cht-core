@@ -55,10 +55,10 @@ app.use(function(req, res, next) {
 });
 
 // Invoked when content-type header is application/json.
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '32mb'}));
 
 // Invoked when content-type header is application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({limit: '32mb', extended: false}));
 
 // Generic error handler, use last to catch all errors.
 // http://expressjs.com/guide/error-handling.html
