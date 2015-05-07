@@ -25,10 +25,6 @@
       <div class="body report-body">
         <h2 ng-bind-html="selected | title:forms"></h2>
         <ul>
-          <li ng-if="selected.sms_message.message">
-            <label>{{'Content' | translate}}</label>
-            <p>{{selected.sms_message.message}}</p>
-          </li>
           <li ng-if="selected.form" ng-repeat="field in selected.fields.data">
             <label>
               {{field.label}}
@@ -43,6 +39,10 @@
                 {{error.message}}
               </li>
             </ul>
+          </li>
+          <li ng-if="selected.sms_message.message">
+            <label>{{'Raw Report Content' | translate}}</label>
+            <p>{{selected.sms_message.message}}</p>
           </li>
           <li ng-if="selected.tasks.length">
             <label ng-if="selected.kujua_message">{{'tasks.0.messages.0.to' | translate}}</label>
