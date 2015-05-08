@@ -1141,7 +1141,6 @@ exports['valid javarosa message with space in label parses right'] = function (t
         message: 'J1!T!p #Bar#  metap#foo'
     };
 
-    debugger;
     var obj = smsparser.parse(def, doc);
 
     test.ok(getForm.alwaysCalledWith('T'));
