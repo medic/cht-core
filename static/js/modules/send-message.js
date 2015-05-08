@@ -193,6 +193,7 @@ var _ = require('underscore'),
     }
     $modal.find('[name=phone]').select2('data', val);
     $modal.find('[name=message]').val(options.message || '');
+    $modal.find('.count').text('');
     $modal.modal('show');
   };
 
