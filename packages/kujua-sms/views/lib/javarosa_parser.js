@@ -28,7 +28,8 @@ exports.parse = function(def, doc) {
     // collect tiny labels
     for (var i = 0, len = parts.length; i < len; ++i) {
         if (i % 2 === 0) {
-            labels.push(parts[i]);
+            // trim whitespace
+            labels.push(parts[i].trim());
         } else {
             vals.push(parts[i]);
         }
@@ -47,7 +48,8 @@ exports.parse = function(def, doc) {
         }
         var label = sms_utils.info.getMessage(field.labels.tiny);
         for (var i = 0; i < labels.length; i++) {
-            if (labels[i].match(new RegExp(label, 'i'))) {
+            // allowing whitespace in label submission
+            if (labels[i].match(new RegExp('^' + label + '$', 'i'))) {
                 obj[key] = vals[i].replace(/\\#/g, '#');
             }
         };
