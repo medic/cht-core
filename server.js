@@ -54,11 +54,7 @@ app.use(function(req, res, next) {
   next();
 });
 
-// Invoked when content-type header is application/json.
-app.use(bodyParser.json({limit: '32mb'}));
-
-// Invoked when content-type header is application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({limit: '32mb', extended: false}));
+var jsonParser = bodyParser.json();
 
 // Generic error handler, use last to catch all errors.
 // http://expressjs.com/guide/error-handling.html
@@ -307,7 +303,7 @@ app.get('/api/v1/messages/:id', function(req, res) {
   });
 });
 
-app.put('/api/v1/messages/state/:id', function(req, res) {
+app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
   auth.check(req, 'can_update_messages', null, function(err, ctx) {
     if (err) {
       return error(err, res);
@@ -321,7 +317,7 @@ app.put('/api/v1/messages/state/:id', function(req, res) {
   });
 });
 
-app.post('/api/v1/records', function(req, res) {
+app.post('/api/v1/records', jsonParser, function(req, res) {
   auth.check(req, 'can_create_records', null, function(err, ctx) {
     var create;
     if (err) {
