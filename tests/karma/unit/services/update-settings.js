@@ -42,6 +42,25 @@ describe('UpdateSettings service', function() {
 
   });
 
+  it('replaces settings', function(done) {
+
+    var updates = {
+      isTrue: true,
+      isString: 'hello'
+    };
+    $httpBackend
+      .expect('PUT', 'BASEURL/update_settings/medic?replace=true', JSON.stringify(updates))
+      .respond({ success: true });
+
+    service(updates, { replace: true }, function(err) {
+      chai.expect(err).to.equal(undefined);
+      done();
+    });
+
+    $httpBackend.flush();
+
+  });
+
   it('returns errors', function(done) {
 
     var updates = {

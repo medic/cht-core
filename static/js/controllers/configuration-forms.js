@@ -56,7 +56,7 @@ var moment = require('moment');
             uploadFinished(e);
           }
 
-          UpdateSettings(settings, function(err) {
+          UpdateSettings(settings, { replace: true }, function(err) {
             if (!err) {
               $scope.forms = settings.forms;
             }
