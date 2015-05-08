@@ -515,12 +515,7 @@ require('moment/locales');
       $scope.deleteDocConfirm = function() {
         var pane = modal.start($('#delete-confirm'));
         if (deleteMessageId) {
-          DeleteDoc(deleteMessageId, function(err, doc) {
-            if (!err) {
-              if (doc.type !== 'data_record') {
-                $rootScope.$broadcast('ContactUpdated', doc);
-              }
-            }
+          DeleteDoc(deleteMessageId, function(err) {
             pane.done(translateFilter('Error deleting document'), err);
           });
         } else {
