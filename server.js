@@ -60,13 +60,6 @@ var jsonParser = bodyParser.json({limit: '32mb'});
 // requires content-type header application/x-www-form-urlencoded
 var formParser = bodyParser.urlencoded({limit: '32mb', extended: false});
 
-// Generic error handler, use last to catch all errors.
-// http://expressjs.com/guide/error-handling.html
-// todo: this should call next() to allow for additional error handlers.
-app.use(function(err, req, res, next) {
-  serverError(err, res);
-});
-
 app.all('*/update_settings/*', function(req, res) {
   // don't audit the app settings
   proxy.web(req, res);
@@ -438,4 +431,10 @@ config.load(function(err) {
   app.listen(5988, function() {
     console.log('Medic API listening on port 5988');
   });
+});
+
+// Define error-handling middleware last.
+// http://expressjs.com/guide/error-handling.html
+app.use(function(err, req, res, next) {
+  serverError(err, res);
 });
