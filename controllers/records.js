@@ -43,7 +43,7 @@ module.exports = {
         optional = ['reported_date', 'locale'];
     for (var k in required) {
       if (!_exists(data[required[k]])) {
-        return callback(_e('Missing required fields.'));
+        return callback(_e('Missing required fields: ' + required[k]));
       }
     }
     // filter out any unwanted fields
@@ -72,7 +72,7 @@ module.exports = {
     }
     for (var k in required) {
       if (!_exists(data._meta[required[k]])) {
-        return callback(_e('Missing required fields.'));
+        return callback(_e('Missing required fields: ' + required[k]));
       }
     }
     // filter out any unwanted fields

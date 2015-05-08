@@ -54,7 +54,11 @@ app.use(function(req, res, next) {
   next();
 });
 
-var jsonParser = bodyParser.json();
+// requires content-type header application/json
+var jsonParser = bodyParser.json({limit: '32mb'});
+
+// requires content-type header application/x-www-form-urlencoded
+var formParser = bodyParser.urlencoded({limit: '32mb', extended: false});
 
 // Generic error handler, use last to catch all errors.
 // http://expressjs.com/guide/error-handling.html
@@ -317,7 +321,7 @@ app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
   });
 });
 
-app.post('/api/v1/records', jsonParser, function(req, res) {
+app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
   auth.check(req, 'can_create_records', null, function(err, ctx) {
     var create;
     if (err) {
