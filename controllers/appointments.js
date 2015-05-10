@@ -16,7 +16,7 @@ var getAppointmentDate = function(options, registration) {
 };
 
 var getAppointments = function(options, callback) {
-  utils.getAllRegistrations(options, function(err, registrations) {
+  utils.getAllRegistrations({}, function(err, registrations) {
     if (err) {
       return callback(err);
     }
