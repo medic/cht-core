@@ -1,5 +1,3 @@
-var tour = require('../modules/tour');
-
 (function () {
 
   'use strict';
@@ -7,8 +5,8 @@ var tour = require('../modules/tour');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$state', '$location', '$stateParams', '$timeout', 'translateFilter', 'MessageContact', 'Changes',
-    function ($scope, $state, $location, $stateParams, $timeout, translateFilter, MessageContact, Changes) {
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'MessageContact', 'Changes',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, MessageContact, Changes) {
 
       $scope.loadingContent = false;
       $scope.allLoaded = false;
@@ -47,8 +45,10 @@ var tour = require('../modules/tour');
         }
       });
 
-      tour.start($stateParams.tour, translateFilter);
-      $location.url($location.path());
+      if ($stateParams.tour) {
+        $rootScope.$broadcast('TourStart', $stateParams.tour);
+      }
+
     }
   ]);
 

@@ -1,4 +1,4 @@
-<div id="tour-select" class="tour-select modal fade" tabindex="-1" role="dialog">
+<div id="tour-select" class="tour-select modal fade" tabindex="-1" role="dialog" ng-controller="TourSelectCtrl">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -7,15 +7,15 @@
       </div>
       <div class="modal-body">
         <p>{{'tour.select.description' | translate}}</p>
-        <a ui-sref="messages.detail({ tour: 'messages' })" ui-sref-opts="{ reload: true }" class="tour-option tour-option-messages btn">
+        <a ng-click="start('messages')" class="tour-option tour-option-messages btn">
           <div class="fa fa-envelope"></div>
           <div class="button-label">{{'Messages' | translate}}</div>
         </a>
-        <a ui-sref="reports.detail({ tour: 'reports' })" ui-sref-opts="{ reload: true }" class="tour-option tour-option-reports btn">
+        <a ng-click="start('reports')" class="tour-option tour-option-reports btn">
           <div class="fa fa-list-alt"></div>
           <div class="button-label">{{'Reports' | translate}}</div>
         </a>
-        <a ui-sref="analytics({ tour: 'analytics' })" ui-sref-opts="{ reload: true }" class="tour-option tour-option-analytics btn">
+        <a ng-click="start('analytics')" class="tour-option tour-option-analytics btn">
           <div class="fa fa-bar-chart-o"></div>
           <div class="button-label">{{'Analytics' | translate}}</div>
         </a>

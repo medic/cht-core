@@ -57,6 +57,7 @@ var _ = require('underscore');
   var tours = [
     {
       name: 'messages',
+      route: 'messages.detail',
       orphan: true,
       debug: true,
       steps: [
@@ -121,6 +122,7 @@ var _ = require('underscore');
     },
     {
       name: 'reports',
+      route: 'reports.detail',
       orphan: true,
       debug: true,
       steps: [
@@ -249,6 +251,7 @@ var _ = require('underscore');
     },
     {
       name: 'analytics',
+      route: 'analytics',
       orphan: true,
       debug: true,
       steps: [
@@ -285,8 +288,13 @@ var _ = require('underscore');
             '</div>';
   };
 
+  var getTour = function(name) {
+    return _.findWhere(tours, { name: name }) || tours[0];
+  };
+
   var getSettings = function(name, translationFn) {
-    var settings = _.findWhere(tours, { name: name }) || tours[0];
+
+    var settings = getTour(name);
 
     if (!settings.transmogrified) {
 
@@ -348,20 +356,23 @@ var _ = require('underscore');
     }
   };
 
+  exports.getRoute = function(name) {
+    var tour = getTour(name);
+    return tour && tour.route;
+  };
+
   exports.start = function(name, translationFn) {
     endCurrent();
     if (name) {
       if (name === 'intro') {
         $('#tour-select').modal('show');
       } else {
-        window.setTimeout(function() {
-          if (!translationFn) {
-            translationFn = function(key) {
-              return key;
-            };
-          }
-          createTour(name, translationFn);
-        }, 1);
+        if (!translationFn) {
+          translationFn = function(key) {
+            return key;
+          };
+        }
+        createTour(name, translationFn);
       }
     }
   };

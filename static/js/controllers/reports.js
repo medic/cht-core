@@ -1,6 +1,5 @@
 var _ = require('underscore'),
     modal = require('../modules/modal'),
-    tour = require('../modules/tour'),
     scrollLoader = require('../modules/scroll-loader');
 
 (function () {
@@ -10,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$state', '$stateParams', '$location', '$rootScope', '$timeout', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup',
-    function ($scope, $state, $stateParams, $location, $rootScope, $timeout, translateFilter, Settings, MarkRead, Search, Changes, EditGroup) {
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, translateFilter, Settings, MarkRead, Search, Changes, EditGroup) {
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = undefined;
@@ -201,7 +200,10 @@ var _ = require('underscore'),
       }
 
       $scope.setFilterQuery($stateParams.query);
-      tour.start($stateParams.tour, translateFilter);
+
+      if ($stateParams.tour) {
+        $rootScope.$broadcast('TourStart', $stateParams.tour);
+      }
 
       var getNextHalfHour = function() {
         var time = moment().second(0).millisecond(0);

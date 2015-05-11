@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    tour = require('../modules/tour');
+var _ = require('underscore');
 
 (function () {
 
@@ -18,8 +17,8 @@ var _ = require('underscore'),
   };
 
   inboxControllers.controller('AnalyticsCtrl',
-    ['$scope', '$state', '$stateParams', '$location', 'translateFilter', 'Settings', 'AnalyticsModules',
-    function ($scope, $state, $stateParams, $location, translateFilter, Settings, AnalyticsModules) {
+    ['$scope', '$rootScope', '$state', '$stateParams', 'Settings', 'AnalyticsModules',
+    function ($scope, $rootScope, $state, $stateParams, Settings, AnalyticsModules) {
       $scope.setSelectedModule();
       $scope.filterModel.type = 'analytics';
       $scope.loading = true;
@@ -37,8 +36,9 @@ var _ = require('underscore'),
         }
       });
 
-      tour.start($stateParams.tour, translateFilter);
-      $location.url($location.path());
+      if ($stateParams.tour) {
+        $rootScope.$broadcast('TourStart', $stateParams.tour);
+      }
 
       $scope.loadPatient = function(id) {
         $state.go('reports.detail', { query: 'patient_id:' + id });

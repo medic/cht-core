@@ -826,6 +826,7 @@ require('moment/locales');
   require('./edit-translation');
   require('./import-translation');
   require('./import-contacts');
+  require('./tour-select');
   require('./configuration-settings-basic');
   require('./configuration-settings-advanced');
   require('./configuration-translation-languages');
