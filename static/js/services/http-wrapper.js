@@ -47,6 +47,10 @@ var _ = require('underscore');
         return promise;
       };
 
+      /**
+       * To disable the cancel on navigation feature, set 'timeout' to false
+       * in the options param.
+       */
       return {
         get: function(url, options) {
           return wrap([ url, options ], $http.get);
