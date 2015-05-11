@@ -1,19 +1,26 @@
 @import "variables";
 
+.analytics .inner .row {
+  margin: 0;
+}
+
 .analytics-widget {
-  padding: 1em;
+  padding: 0.5em;
+  &.count-only .widget-body {
+    padding-bottom: 1em;
+  }
   .title {
     font-weight: bold;
     text-align: center;
-    padding: 1em;
-    padding-top: 2em;
+    padding-top: 1em;
     .count {
       margin: 0;
       line-height: 0.9em;
-      font-size: 4em;
+      font-size: 3em;
     }
     .name {
       font-size: 1.5em;
+      margin: 0;
     }
     .fa {
       font-size: 0.7em;
@@ -64,9 +71,28 @@
   }
   .upcoming-edd {
     color: @birth-color;
+    &:after {
+      content: @upcoming-edd-icon;
+      font-family: FontAwesome;
+      padding-left: 0.25em;
+    }
   }
-  .high-risk {
+  .high-risk a {
     color: @high-risk-color;
+    &:after {
+      content: @high-risk-icon;
+      font-family: FontAwesome;
+    }
+  }
+  .no-visits {
+    span {
+      display: none;
+    }
+    &:after {
+      content: '-';
+      font-weight: bold;
+      color: @high-risk-color;
+    }
   }
   .loading {
     font-size: 4em;
@@ -82,7 +108,6 @@
   }
 }
 
-
 .active-pregnancies .title {
   color: #5A339E;
 }
@@ -97,10 +122,19 @@
 
 .upcoming-due-dates .title {
   color: @birth-color;
+  .name:after {
+    content: @upcoming-edd-icon;
+    font-family: FontAwesome;
+    padding-left: 0.25em;
+  }
 }
 
 .high-risk .title {
   color: @high-risk-color;
+  .name:after {
+    content: @high-risk-icon;
+    font-family: FontAwesome;
+  }
 }
 
 .total-births .title {
@@ -187,7 +221,8 @@
 
 @media (max-width: 767px) {
   .analytics-widget {
-    padding: 1em 0;
+    padding-left: 0;
+    padding-right: 0;
   }
   .table-responsive {
     border: 0;

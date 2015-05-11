@@ -202,7 +202,6 @@ var _ = require('underscore'),
 
       $scope.setFilterQuery($stateParams.query);
       tour.start($stateParams.tour, translateFilter);
-      $location.url($location.path());
 
       var getNextHalfHour = function() {
         var time = moment().second(0).millisecond(0);

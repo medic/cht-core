@@ -47,7 +47,6 @@ var _ = require('underscore'),
               scope.missingDeliveryReports = { loading: true };
               scope.deliveryLocation = { loading: true };
               scope.visitsCompleted = { loading: true };
-              scope.visitsDuring = { loading: true };
               scope.monthlyRegistrations = { loading: true };
               scope.monthlyDeliveries = { loading: true };
               
@@ -140,18 +139,6 @@ var _ = require('underscore'),
 
                 request('/api/visits-completed', district, function(err, data) {
                   scope.visitsCompleted = {
-                    error: err,
-                    data: [{
-                      key: 'item',
-                      values: _.map(data, function(d, i) {
-                        return [i, d];
-                      })
-                    }]
-                  };
-                });
-
-                request('/api/visits-during', district, function(err, data) {
-                  scope.visitsDuring = {
                     error: err,
                     data: [{
                       key: 'item',

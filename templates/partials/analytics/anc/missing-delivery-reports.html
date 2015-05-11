@@ -26,14 +26,17 @@
         </thead>
         <tbody>
           <tr ng-repeat="appointment in missingDeliveryReports.data | orderBy:missingDeliveryReports.order">
-            <td ng-class="{'high-risk': appointment.high_risk}">{{appointment.patient_name}}</td>
+            <td ng-class="{'high-risk': appointment.high_risk}">
+              <a ng-click="loadPatient(appointment.patient_id)" ng-attr-title="{{'Patient History' | translate}}">
+                {{appointment.patient_name}}
+              </a>
+            </td>
             <td>{{appointment.clinic.contact.name}}</td>
             <td>
               <span ng-class="{'approximate': pregnancy.edd.approximate}"><span ng-bind-html="pregnancy.edd | simpleDate"></span></span>
             </td>
             <td class="actions">
               <a href="#" class="btn btn-link send-message" data-send-to="{{appointment.clinic.contact.phone}}" ng-attr-title="{{'Send Message' | translate}}" ng-class="{'disabled': !appointment.clinic.contact.phone}"><i class="fa fa-envelope"></i></a>
-              <a href="#/reports?query=patient_id:{{appointment.patient_id}}" class="btn btn-link" ng-attr-title="{{'Patient History' | translate}}"><i class="fa fa-list-alt"></i></a>
             </td>
           </tr>
         </tbody>

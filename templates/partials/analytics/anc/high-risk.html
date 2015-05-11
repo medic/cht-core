@@ -13,7 +13,6 @@
         {{highRisk.data.length || 0}}
       </p>
       <p class="name">
-        <span class="fa fa-exclamation-triangle"></span>
         {{'analytics.anc.high-risk' | translate}}
       </p>
     </div>
@@ -30,13 +29,18 @@
         </thead>
         <tbody>
           <tr ng-repeat="pregnancy in highRisk.data | orderBy:highRisk.order">
-            <td ng-class="{'high-risk': pregnancy.high_risk}">{{pregnancy.patient_name}}</td>
+            <td ng-class="{'high-risk': pregnancy.high_risk}">
+              <a ng-click="loadPatient(pregnancy.patient_id)" ng-attr-title="{{'Patient History' | translate}}">
+                {{pregnancy.patient_name}}
+              </a>
+            </td>
             <td ng-bind-html="pregnancy.weeks | weeksPregnant"></td>
             <td>{{pregnancy.clinic.contact.name}}</td>
-            <td>{{pregnancy.visits}}</td>
+            <td ng-class="{'no-visits': pregnancy.visits === 0}">
+              <span>{{pregnancy.visits}}</span>
+            </td>
             <td class="actions">
               <a href="#" class="btn btn-link send-message" data-send-to="{{pregnancy.clinic.contact.phone}}" ng-attr-title="{{'Send Message' | translate}}" ng-class="{'disabled': !pregnancy.clinic.contact.phone}"><i class="fa fa-envelope"></i></a>
-              <a href="#/reports?query=patient_id:{{pregnancy.patient_id}}" class="btn btn-link" ng-attr-title="{{'Patient History' | translate}}"><i class="fa fa-list-alt"></i></a>
             </td>
           </tr>
         </tbody>
