@@ -115,6 +115,52 @@ exports['executes multiple migrations that have not run and updates meta each ti
   });
 };
 
+exports['executes multiple migrations in order'] = function(test) {
+  test.expect(9);
+  var migration = [
+    {
+      name: 'a',
+      created: new Date(2015, 1, 1, 2, 0, 0, 0),
+      run: function(callback) {
+        test.ok(true);
+        callback();
+      }
+    },
+    {
+      name: 'b',
+      created: new Date(2015, 1, 1, 1, 0, 0, 0),
+      run: function(callback) {
+        test.ok(true);
+        callback();
+      }
+    },
+    {
+      name: 'c',
+      created: new Date(2015, 1, 1, 3, 0, 0, 0),
+      run: function(callback) {
+        test.ok(true);
+        callback();
+      }
+    }
+  ];
+  var getView = sinon.stub(db.medic, 'view');
+  getView.onCall(0).callsArgWith(3, null, { rows: [ { doc: { _id: 1, migrations: [ ], type: 'meta' } } ] });
+  getView.onCall(1).callsArgWith(3, null, { rows: [ { doc: { _id: 1, migrations: [ ], type: 'meta' } } ] });
+  getView.onCall(2).callsArgWith(3, null, { rows: [ { doc: { _id: 1, migrations: [ 'b' ], type: 'meta' } } ] });
+  getView.onCall(3).callsArgWith(3, null, { rows: [ { doc: { _id: 1, migrations: [ 'b', 'a' ], type: 'meta' } } ] });
+  var getMigrations = sinon.stub(migrations, 'get').callsArgWith(0, null, migration);
+  var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
+  migrations.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(getView.callCount, 4);
+    test.equals(saveDoc.callCount, 3);
+    test.deepEqual(saveDoc.firstCall.args[0].migrations, [ 'b' ]);
+    test.deepEqual(saveDoc.secondCall.args[0].migrations, [ 'b', 'a' ]);
+    test.deepEqual(saveDoc.thirdCall.args[0].migrations, [ 'b', 'a', 'c' ]);
+    test.done();
+  });
+};
+
 exports['executes multiple migrations and stops when one errors'] = function(test) {
   test.expect(6);
   var migration = [

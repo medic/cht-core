@@ -32,6 +32,7 @@ var extract = function(row, callback) {
 
 module.exports = {
   name: 'extract-person-contacts',
+  created: new Date(2015, 3, 16, 17, 6, 0, 0),
   run: function(callback) {
     db.medic.view('medic', 'facilities', { }, function(err, result) {
       if (err) {
