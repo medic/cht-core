@@ -12,13 +12,13 @@ var libphonenumber = require('libphonenumber/utils'),
     function ($scope, $rootScope, translateFilter, Settings, UpdateContact, DbView) {
 
       var populateParents = function() {
-        var options = {
+        var params = {
           startkey: [],
           endkey: [{}],
           reduce: false,
           include_docs: true
         };
-        DbView('facilities', options, function(err, results) {
+        DbView('facilities', params, function(err, results) {
           if (err) {
             return console.log('Error fetching parents', err);
           }
