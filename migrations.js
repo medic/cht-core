@@ -35,6 +35,9 @@ var sortMigrations = function(lhs, rhs) {
 };
 
 var runMigration = function(migration, callback) {
+  if (!migration.created) {
+    return callback(new Error('Migration "' + migration.name + '" has no "created" date property'));
+  }
   migration.run(function(err) {
     if (err) {
       return callback(error(migration, err));
