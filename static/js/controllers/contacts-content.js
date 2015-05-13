@@ -11,11 +11,12 @@
       $scope.selectContact($stateParams.id);
 
       $scope.$on('ContactUpdated', function(e, contact) {
-        if (!contact || (
-            contact._deleted &&
-            $scope.selected &&
-            $scope.selected._id === contact._id)) {
+        if (!contact) {
           $scope.select();
+        } else if(contact._deleted &&
+            $scope.selected &&
+            $scope.selected._id === contact._id) {
+          $scope.selected = null;
         } else if ($scope.selected && $scope.selected._id === contact._id) {
           contact.children = $scope.selected.children;
           contact.contactFor = $scope.selected.contactFor;

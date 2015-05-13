@@ -53,7 +53,13 @@ var libphonenumber = require('libphonenumber/utils'),
 
       populateParents();
 
-      $scope.$on('ContactUpdated', populateParents);
+      $scope.$on('ContactUpdated', function(e, contact) {
+        if (contact && contact._deleted) {
+          // allow the ContactCtrl to handle contact deletion
+          return;
+        }
+        populateParents();
+      });
 
       $scope.$on('EditContactInit', function(e, contact) {
 

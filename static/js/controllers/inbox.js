@@ -148,6 +148,16 @@ require('moment/locales');
         $scope.items = contacts || [];
       };
 
+      $scope.removeContact = function(contact) {
+        var i, id = contact._id;
+        for (i=$scope.items.length-1; i>=0; --i) {
+          if($scope.items[i]._id === id) {
+            $scope.items.splice(i, 1);
+            return;
+          }
+        }
+      };
+
       $scope.isRead = function(message) {
         if ($scope.filterModel.type === 'reports' &&
             $scope.selected &&
@@ -202,7 +212,11 @@ require('moment/locales');
         });
       };
 
-      $scope.$on('ContactUpdated', function() {
+      $scope.$on('ContactUpdated', function(contact) {
+        if (!contact || contact._deleted) {
+          // allow the ContactCtrl to handle contact deletion
+          return;
+        }
         $scope.updateAvailableFacilities();
       });
 
