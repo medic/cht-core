@@ -148,12 +148,6 @@ require('moment/locales');
         $scope.items = contacts || [];
       };
 
-      $scope.removeContact = function(contact) {
-        var id = contact._id;
-        $scope.items = _.filter($scope.items, function(i) {
-            return i._id !== contact._id; });
-      };
-
       $scope.isRead = function(message) {
         if ($scope.filterModel.type === 'reports' &&
             $scope.selected &&
