@@ -216,7 +216,7 @@ exports['get returns all registrations with upcoming appointments'] = function(t
           patient_name: 'sarah',
           form: 'R',
           reported_date: today.clone().subtract(10, 'weeks').toISOString(),
-          related_entities: { clinic: { id: 'x' } },
+          contact: { id: 'x', type: 'clinic' },
           scheduled_tasks: [ {
             group: 1,
             due: today.toISOString()
@@ -232,7 +232,7 @@ exports['get returns all registrations with upcoming appointments'] = function(t
           patient_name: 'sally',
           form: 'P',
           lmp_date: today.clone().subtract(14, 'weeks').toISOString(),
-          related_entities: { clinic: { id: 'y' } },
+          contact: { id: 'y', type: 'clinic' },
           scheduled_tasks: [ {
             group: 1,
             due: today.toISOString()

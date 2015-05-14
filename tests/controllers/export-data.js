@@ -44,7 +44,7 @@ exports['get handles empty db'] = function(test) {
     rows: []
   });
   controller.get({ type: 'messages' }, function(err, results) {
-    test.equals(results, '{_id:en},{patient_id:en},{reported_date:en},{from:en},{related_entities.clinic.contact.name:en},{related_entities.clinic.name:en},{related_entities.clinic.parent.contact.name:en},{related_entities.clinic.parent.name:en},{related_entities.clinic.parent.parent.name:en},{task.type:en},{task.state:en},{received:en},{scheduled:en},{pending:en},{sent:en},{cleared:en},{muted:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}');
+    test.equals(results, '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.contact.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},{task.type:en},{task.state:en},{received:en},{scheduled:en},{pending:en},{sent:en},{cleared:en},{muted:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}');
     test.equals(getView.callCount, 1);
     test.done();
   });
@@ -68,7 +68,7 @@ exports['get formats responses'] = function(test) {
       } }
     ]
   });
-  var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{related_entities.clinic.contact.name:en},{related_entities.clinic.name:en},{related_entities.clinic.parent.contact.name:en},{related_entities.clinic.parent.name:en},{related_entities.clinic.parent.parent.name:en},{task.type:en},{task.state:en},{received:en},{scheduled:en},{pending:en},{sent:en},{cleared:en},{muted:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\n' +
+  var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.contact.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},{task.type:en},{task.state:en},{received:en},{scheduled:en},{pending:en},{sent:en},{cleared:en},{muted:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\n' +
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,,{Automated Reply:en},sent,,,,"02, Jan 1970, 10:17:36 +00:00",,,,+123456789,,hello\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,,{Automated Reply:en},sent,,,,"12, Jan 1970, 10:20:54 +00:00",,,,+987654321,,hi';
   controller.get({ type: 'messages', tz: '0' }, function(err, results) {
@@ -102,7 +102,7 @@ exports['get includes tasks and scheduled tasks'] = function(test) {
       } }
     ]
   });
-  var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{related_entities.clinic.contact.name:en},{related_entities.clinic.name:en},{related_entities.clinic.parent.contact.name:en},{related_entities.clinic.parent.name:en},{related_entities.clinic.parent.parent.name:en},{task.type:en},{task.state:en},{received:en},{scheduled:en},{pending:en},{sent:en},{cleared:en},{muted:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\n' +
+  var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.contact.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},{task.type:en},{task.state:en},{received:en},{scheduled:en},{pending:en},{sent:en},{cleared:en},{muted:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\n' +
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,,{Task Message:en},,,,,,,,,,+123456789,hello\n' +
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,,{Task Message:en},,,,,,,,,,+123456788,goodbye\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,,{Task Message:en},,,,,,,,,,+223456789,hi\n' +
@@ -134,7 +134,7 @@ exports['get formats incoming messages'] = function(test) {
       } }
     ]
   });
-  var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{related_entities.clinic.contact.name:en},{related_entities.clinic.name:en},{related_entities.clinic.parent.contact.name:en},{related_entities.clinic.parent.name:en},{related_entities.clinic.parent.parent.name:en},{task.type:en},{task.state:en},{received:en},{scheduled:en},{pending:en},{sent:en},{cleared:en},{muted:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\n' +
+  var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.contact.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},{task.type:en},{task.state:en},{received:en},{scheduled:en},{pending:en},{sent:en},{cleared:en},{muted:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\n' +
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",+123456789,,,,,,{sms_message.message:en},received,"02, Jan 1970, 10:17:36 +00:00",,,,,,,+123456789,,hello\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",+987654321,,,,,,{sms_message.message:en},received,"12, Jan 1970, 10:20:54 +00:00",,,,,,,+987654321,,hi';
   controller.get({ type: 'messages', tz: '0' }, function(err, results) {
@@ -182,7 +182,7 @@ exports['get exports messages in xml'] = function(test) {
     ]
   });
   var expected =  '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html140" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="{Messages:en}"><Table>' +
-                    '<Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell><Cell><Data ss:Type="String">{patient_id:en}</Data></Cell><Cell><Data ss:Type="String">{reported_date:en}</Data></Cell><Cell><Data ss:Type="String">{from:en}</Data></Cell><Cell><Data ss:Type="String">{related_entities.clinic.contact.name:en}</Data></Cell><Cell><Data ss:Type="String">{related_entities.clinic.name:en}</Data></Cell><Cell><Data ss:Type="String">{related_entities.clinic.parent.contact.name:en}</Data></Cell><Cell><Data ss:Type="String">{related_entities.clinic.parent.name:en}</Data></Cell><Cell><Data ss:Type="String">{related_entities.clinic.parent.parent.name:en}</Data></Cell><Cell><Data ss:Type="String">{task.type:en}</Data></Cell><Cell><Data ss:Type="String">{task.state:en}</Data></Cell><Cell><Data ss:Type="String">{received:en}</Data></Cell><Cell><Data ss:Type="String">{scheduled:en}</Data></Cell><Cell><Data ss:Type="String">{pending:en}</Data></Cell><Cell><Data ss:Type="String">{sent:en}</Data></Cell><Cell><Data ss:Type="String">{cleared:en}</Data></Cell><Cell><Data ss:Type="String">{muted:en}</Data></Cell><Cell><Data ss:Type="String">{Message UUID:en}</Data></Cell><Cell><Data ss:Type="String">{Sent By:en}</Data></Cell><Cell><Data ss:Type="String">{To Phone:en}</Data></Cell><Cell><Data ss:Type="String">{Message Body:en}</Data></Cell></Row>' +
+                    '<Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell><Cell><Data ss:Type="String">{patient_id:en}</Data></Cell><Cell><Data ss:Type="String">{reported_date:en}</Data></Cell><Cell><Data ss:Type="String">{from:en}</Data></Cell><Cell><Data ss:Type="String">{contact.name:en}</Data></Cell><Cell><Data ss:Type="String">{contact.parent.name:en}</Data></Cell><Cell><Data ss:Type="String">{contact.parent.parent.contact.name:en}</Data></Cell><Cell><Data ss:Type="String">{contact.parent.parent.name:en}</Data></Cell><Cell><Data ss:Type="String">{contact.parent.parent.parent.name:en}</Data></Cell><Cell><Data ss:Type="String">{task.type:en}</Data></Cell><Cell><Data ss:Type="String">{task.state:en}</Data></Cell><Cell><Data ss:Type="String">{received:en}</Data></Cell><Cell><Data ss:Type="String">{scheduled:en}</Data></Cell><Cell><Data ss:Type="String">{pending:en}</Data></Cell><Cell><Data ss:Type="String">{sent:en}</Data></Cell><Cell><Data ss:Type="String">{cleared:en}</Data></Cell><Cell><Data ss:Type="String">{muted:en}</Data></Cell><Cell><Data ss:Type="String">{Message UUID:en}</Data></Cell><Cell><Data ss:Type="String">{Sent By:en}</Data></Cell><Cell><Data ss:Type="String">{To Phone:en}</Data></Cell><Cell><Data ss:Type="String">{Message Body:en}</Data></Cell></Row>' +
                     '<Row><Cell><Data ss:Type="String">abc</Data></Cell><Cell><Data ss:Type="String">123456</Data></Cell><Cell><Data ss:Type="String">02, Jan 1970, 10:17:36 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{Automated Reply:en}</Data></Cell><Cell><Data ss:Type="String">sent</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">02, Jan 1970, 10:17:36 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+123456789</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">hello</Data></Cell></Row>' +
                     '<Row><Cell><Data ss:Type="String">hij</Data></Cell><Cell><Data ss:Type="String">123456</Data></Cell><Cell><Data ss:Type="String">02, Jan 1970, 10:17:36 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{Task Message:en}</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+123456789</Data></Cell><Cell><Data ss:Type="String">hello</Data></Cell></Row>' +
                     '<Row><Cell><Data ss:Type="String">hij</Data></Cell><Cell><Data ss:Type="String">123456</Data></Cell><Cell><Data ss:Type="String">02, Jan 1970, 10:17:36 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{Task Message:en}</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+123456788</Data></Cell><Cell><Data ss:Type="String">goodbye</Data></Cell></Row><Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">654321</Data></Cell><Cell><Data ss:Type="String">12, Jan 1970, 10:20:54 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{Task Message:en}</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+223456789</Data></Cell><Cell><Data ss:Type="String">hi</Data></Cell></Row><Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">654321</Data></Cell><Cell><Data ss:Type="String">12, Jan 1970, 10:20:54 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{Task Message:en}</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+223456788</Data></Cell><Cell><Data ss:Type="String">bye</Data></Cell></Row><Row><Cell><Data ss:Type="String">klm</Data></Cell><Cell><Data ss:Type="String">654321</Data></Cell><Cell><Data ss:Type="String">12, Jan 1970, 10:20:54 +00:00</Data></Cell><Cell><Data ss:Type="String">+987654321</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{sms_message.message:en}</Data></Cell><Cell><Data ss:Type="String">received</Data></Cell><Cell><Data ss:Type="String">12, Jan 1970, 10:20:54 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+987654321</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">hi</Data></Cell></Row>' +
@@ -280,7 +280,7 @@ exports['get uses locale param'] = function(test) {
     ]
   });
 
-  var expected =  '{_id:fr};{patient_id:fr};{reported_date:fr};{from:fr};{related_entities.clinic.contact.name:fr};{related_entities.clinic.name:fr};{related_entities.clinic.parent.contact.name:fr};{related_entities.clinic.parent.name:fr};{related_entities.clinic.parent.parent.name:fr};{task.type:fr};{task.state:fr};{received:fr};{scheduled:fr};{pending:fr};{sent:fr};{cleared:fr};{muted:fr};{Message UUID:fr};{Sent By:fr};{To Phone:fr};{Message Body:fr}\n' +
+  var expected =  '{_id:fr};{patient_id:fr};{reported_date:fr};{from:fr};{contact.name:fr};{contact.parent.name:fr};{contact.parent.parent.contact.name:fr};{contact.parent.parent.name:fr};{contact.parent.parent.parent.name:fr};{task.type:fr};{task.state:fr};{received:fr};{scheduled:fr};{pending:fr};{sent:fr};{cleared:fr};{muted:fr};{Message UUID:fr};{Sent By:fr};{To Phone:fr};{Message Body:fr}\n' +
                   'abc;123456;02, Jan 1970, 10:17:36 +00:00;;;;;;;{Automated Reply:fr};sent;;;;02, Jan 1970, 10:17:36 +00:00;;;;+123456789;;hello';
   controller.get({ type: 'messages', tz: '0', locale: 'fr' }, function(err, results) {
     test.equals(results, expected);
@@ -301,7 +301,7 @@ exports['get uses tz param'] = function(test) {
       } }
     ]
   });
-  var expected =  '{_id:en},{patient_id:en},{reported_date:en},{from:en},{related_entities.clinic.contact.name:en},{related_entities.clinic.name:en},{related_entities.clinic.parent.contact.name:en},{related_entities.clinic.parent.name:en},{related_entities.clinic.parent.parent.name:en},{task.type:en},{task.state:en},{received:en},{scheduled:en},{pending:en},{sent:en},{cleared:en},{muted:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\n' +
+  var expected =  '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.contact.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},{task.type:en},{task.state:en},{received:en},{scheduled:en},{pending:en},{sent:en},{cleared:en},{muted:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\n' +
                   'abc,123456,"02, Jan 1970, 12:17:36 +02:00",,,,,,,{Automated Reply:en},sent,,,,"02, Jan 1970, 12:17:36 +02:00",,,,+123456789,,hello';
   controller.get({ type: 'messages', tz: '-120' }, function(err, results) {
     test.equals(results, expected);
@@ -343,8 +343,8 @@ exports['get uses columns param'] = function(test) {
     ]
   });
 
-  controller.get({ type: 'messages', tz: '0', columns: '["reported_date","from","related_entities.clinic.name"]' }, function(err, results) {
-    test.equals(results, '{reported_date:en},{from:en},{related_entities.clinic.name:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\n"02, Jan 1970, 10:17:36 +00:00",,,,+123456789,,hello');
+  controller.get({ type: 'messages', tz: '0', columns: '["reported_date","from","contact.parent.name"]' }, function(err, results) {
+    test.equals(results, '{reported_date:en},{from:en},{contact.parent.name:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\n"02, Jan 1970, 10:17:36 +00:00",,,,+123456789,,hello');
     test.equals(getView.callCount, 1);
     test.done();
   });
@@ -488,7 +488,7 @@ exports['get reports formats responses'] = function(test) {
       }
     }
   });
-  var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{related_entities.clinic.contact.name:en},{related_entities.clinic.name:en},{related_entities.clinic.parent.contact.name:en},{related_entities.clinic.parent.name:en},{related_entities.clinic.parent.parent.name:en},{form:en}\n' +
+  var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.contact.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},{form:en}\n' +
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,,STCK\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,,V';
   controller.get({ type: 'forms', tz: '0' }, function(err, results) {
@@ -535,7 +535,7 @@ exports['get reports filters by form'] = function(test) {
       }
     }
   });
-  var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{related_entities.clinic.contact.name:en},{related_entities.clinic.name:en},{related_entities.clinic.parent.contact.name:en},{related_entities.clinic.parent.name:en},{related_entities.clinic.parent.parent.name:en},1st,2nd\n' +
+  var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.contact.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},1st,2nd\n' +
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,,a,b\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,,1,2';
   controller.get({ type: 'forms', tz: '0', form: 'P' }, function(err, results) {
@@ -577,7 +577,7 @@ exports['get reports with query calls fti'] = function(test) {
       }
     }
   });
-  var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{related_entities.clinic.contact.name:en},{related_entities.clinic.name:en},{related_entities.clinic.parent.contact.name:en},{related_entities.clinic.parent.name:en},{related_entities.clinic.parent.parent.name:en},{form:en}\n' +
+  var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.contact.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},{form:en}\n' +
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,,P\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,,P';
   controller.get({ type: 'forms', query: 'form:P', tz: '0' }, function(err, results) {
