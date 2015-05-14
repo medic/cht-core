@@ -16,7 +16,8 @@ var libphonenumber = require('libphonenumber/utils'),
           startkey: [],
           endkey: [{}],
           reduce: false,
-          include_docs: true
+          include_docs: true,
+          timeout: false
         };
         DbView('facilities', options, function(err, results) {
           if (err) {
@@ -53,13 +54,7 @@ var libphonenumber = require('libphonenumber/utils'),
 
       populateParents();
 
-      $scope.$on('ContactUpdated', function(e, contact) {
-        if (contact && contact._deleted) {
-          // allow the ContactCtrl to handle contact deletion
-          return;
-        }
-        populateParents();
-      });
+      $scope.$on('ContactUpdated', populateParents);
 
       $scope.$on('EditContactInit', function(e, contact) {
 
