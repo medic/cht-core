@@ -149,13 +149,9 @@ require('moment/locales');
       };
 
       $scope.removeContact = function(contact) {
-        var i, id = contact._id;
-        for (i=$scope.items.length-1; i>=0; --i) {
-          if($scope.items[i]._id === id) {
-            $scope.items.splice(i, 1);
-            return;
-          }
-        }
+        var id = contact._id;
+        $scope.items = _.filter($scope.items, function(i) {
+            return i._id !== contact._id; });
       };
 
       $scope.isRead = function(message) {
