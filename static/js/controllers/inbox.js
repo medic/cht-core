@@ -102,21 +102,21 @@ require('moment/locales');
         });
       };
 
-      var removeDeletedContacts = function(contacts) {
+      var removeDeletedMessages = function(messages) {
         var existingKey;
         var checkExisting = function(updated) {
           return existingKey === updated.key[1];
         };
         for (var i = $scope.items.length - 1; i >= 0; i--) {
           existingKey = $scope.items[i].key[1];
-          if (!_.some(contacts, checkExisting)) {
+          if (!_.some(messages, checkExisting)) {
             $scope.items.splice(i, 1);
           }
         }
       };
 
-      var mergeUpdatedContacts = function(contacts) {
-        _.each(contacts, function(updated) {
+      var mergeUpdatedMessages = function(messages) {
+        _.each(messages, function(updated) {
           var match = _.find($scope.items, function(existing) {
             return existing.key[1] === updated.key[1];
           });
@@ -133,8 +133,8 @@ require('moment/locales');
       $scope.setMessages = function(options) {
         options = options || {};
         if (options.changes) {
-          removeDeletedContacts(options.contacts);
-          mergeUpdatedContacts(options.contacts);
+          removeDeletedMessages(options.contacts);
+          mergeUpdatedMessages(options.contacts);
         } else {
           $scope.items = options.contacts || [];
         }
