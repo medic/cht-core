@@ -133,8 +133,8 @@ require('moment/locales');
       $scope.setMessages = function(options) {
         options = options || {};
         if (options.changes) {
-          removeDeletedMessages(options.contacts);
-          mergeUpdatedMessages(options.contacts);
+          removeDeletedMessages(options.messages);
+          mergeUpdatedMessages(options.messages);
         } else {
           $scope.items = options.contacts || [];
         }
