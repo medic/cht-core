@@ -209,10 +209,6 @@ require('moment/locales');
       };
 
       $scope.$on('ContactUpdated', function(contact) {
-        if (!contact || contact._deleted) {
-          // allow the ContactCtrl to handle contact deletion
-          return;
-        }
         $scope.updateAvailableFacilities();
       });
 
