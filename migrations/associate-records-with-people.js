@@ -2,9 +2,48 @@ var async = require('async'),
     _ = require('underscore'),
     db = require('../db');
 
-var migrateOutgoingMessages = function(message, callback) {
-  var contactId = message.facility.contact._id;
+var getClinic = function(id, callback) {
+  db.medic.get(id, function(err, clinic) {
+    if (err) {
+      if (err.reason === 'deleted') {
+        return callback();
+      }
+      return callback(err);
+    }
+    var contact = clinic.contact;
+    if (!contact) {
+      return callback();
+    }
+    if (!contact.parent) {
+      clinic.contact = _.clone(clinic.contact);
+      contact.parent = clinic;
+    }
+    callback(null, contact);
+  });
+};
+
+var getContact = function(contactId, clinicId, callback) {
   db.medic.get(contactId, function(err, contact) {
+    if (err) {
+      if (err.reason === 'deleted') {
+        return getClinic(clinicId, callback);
+      }
+      return callback(err);
+    }
+    callback(null, contact);
+  });
+};
+
+var getContactForOutgoingMessages = function(message, callback) {
+  var facility = message.facility;
+  if (facility.type === 'person') {
+    return callback(null, facility);
+  }
+  getContact(facility.contact._id, facility._id, callback);
+};
+
+var migrateOutgoingMessages = function(message, callback) {
+  getContactForOutgoingMessages(message, function(err, contact) {
     if (err) {
       return callback(err);
     }
@@ -45,7 +84,8 @@ var migrateIncoming = function(doc, callback) {
     // no resolved entity
     return callback();
   }
-  db.medic.get(contactId, function(err, contact) {
+  var clinicId = doc.related_entities.clinic._id;
+  getContact(contactId, clinicId, function(err, contact) {
     if (err) {
       return callback(err);
     }
@@ -55,8 +95,8 @@ var migrateIncoming = function(doc, callback) {
   });
 };
 
-var associate = function(row, callback) {
-  db.medic.get(row.id, function(err, doc) {
+var associate = function(id, callback) {
+  db.medic.get(id, function(err, doc) {
     if (err) {
       return callback(err);
     }
@@ -86,7 +126,8 @@ module.exports = {
       if (err) {
         return callback(err);
       }
-      async.each(result.rows, associate, callback);
+      var ids = _.uniq(_.pluck(result.rows, 'id'));
+      async.each(ids, associate, callback);
     });
   }
 };

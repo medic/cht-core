@@ -15,40 +15,42 @@ exports.tearDown = function (callback) {
   callback();
 };
 
+var clinic = {
+  "_id": "eeb17d6d-5dde-c2c0-8049b4903e2fb0a5",
+  "name": "Sagebush",
+  "parent": {
+    "_id": "eeb17d6d-5dde-c2c0-2ecb7b280392fae8",
+    "name": "Winternesse",
+    "parent": {
+      "_id": "eeb17d6d-5dde-c2c0-8a899c4fe9db6ba9",
+      "name": "District 1",
+      "parent": {},
+      "type": "district_hospital",
+      "contact": {
+        "phone": "+2812635438",
+        "name": "Thalia Timmins"
+      }
+    },
+    "type": "health_center",
+    "contact": {
+      "phone": "+2834366793",
+      "name": "Serina Scholz"
+    }
+  },
+  "type": "clinic",
+  "contact": {
+    "phone": "+2875810113",
+    "name": "Abram Alred"
+  }
+};
+
 var contact = {
   "_id": "0abf501d3fbeffaf98bae6c9d602dcad",
   "_rev": "18-e29f1c960a0555eac80a5ecebb0f48fe",
   "type": "person",
   "name": "Abram Alred",
   "phone": "+64274622636",
-  "parent": {
-    "_id": "eeb17d6d-5dde-c2c0-8049b4903e2fb0a5",
-    "name": "Sagebush",
-    "parent": {
-      "_id": "eeb17d6d-5dde-c2c0-2ecb7b280392fae8",
-      "name": "Winternesse",
-      "parent": {
-        "_id": "eeb17d6d-5dde-c2c0-8a899c4fe9db6ba9",
-        "name": "District 1",
-        "parent": {},
-        "type": "district_hospital",
-        "contact": {
-          "phone": "+2812635438",
-          "name": "Thalia Timmins"
-        }
-      },
-      "type": "health_center",
-      "contact": {
-        "phone": "+2834366793",
-        "name": "Serina Scholz"
-      }
-    },
-    "type": "clinic",
-    "contact": {
-      "phone": "+2875810113",
-      "name": "Abram Alred"
-    }
-  }
+  "parent": clinic
 };
 
 var outgoingMessage = {
@@ -107,6 +109,67 @@ var outgoingMessage = {
         {
           "state": "pending",
           "timestamp": "2015-03-26T20:54:19.143Z"
+        }
+      ]
+    }
+  ],
+  "kujua_message": true,
+  "type": "data_record",
+  "sent_by": "gareth"
+};
+
+var outgoingMessageToPerson = {
+  "_id": "b1d1f8691247be598cfd599a3b0dbcb7",
+  "_rev": "1-037f836d5fae91364ab88e671009c2c0",
+  "errors": [],
+  "form": null,
+  "from": "0211111111",
+  "reported_date": 1427830070763,
+  "related_entities": {},
+  "tasks": [
+    {
+      "messages": [
+        {
+          "from": "0211111111",
+          "sent_by": "gareth",
+          "to": "+2849701090",
+          "facility": {
+            "_id": "0abf501d3fbeffaf98bae6c9d601afe6",
+            "_rev": "1-701dc5a2ea5e107aa9d0cbae01084a02",
+            "type": "person",
+            "name": "Flora Fulford",
+            "phone": "+2849701090",
+            "parent": {
+              "_id": "eeb17d6d-5dde-c2c0-e2d64d11148d5d84",
+              "type": "health_center",
+              "name": "Easthedge",
+              "contact": {
+                "name": "Flora Fulford",
+                "phone": "+2849701090"
+              },
+              "parent": {
+                "_id": "eeb17d6d-5dde-c2c0-a0f2a91e2d232c51",
+                "type": "district_hospital",
+                "name": "District 2",
+                "contact": {
+                  "name": "Denise Degraffenreid",
+                  "phone": "+2884615402"
+                },
+                "parent": {
+                  
+                }
+              }
+            }
+          },
+          "message": "test",
+          "uuid": "b1d1f869-1247-be59-8cfd599a3b0a6dd4"
+        }
+      ],
+      "state": "pending",
+      "state_history": [
+        {
+          "state": "pending",
+          "timestamp": "2015-03-31T19:27:50.790Z"
         }
       ]
     }
@@ -337,11 +400,31 @@ exports['run migrates outgoing message'] = function(test) {
     test.equals(getView.callCount, 1);
     test.equals(getDoc.callCount, 2);
     test.equals(getDoc.args[0][0], 'a');
-    test.equals(getDoc.args[1][0], '0abf501d3fbeffaf98bae6c9d602dcad');
+    test.equals(getDoc.args[1][0], contact._id);
     test.equals(saveDoc.callCount, 1);
     var message = saveDoc.args[0][0].tasks[0].messages[0];
     test.equals(message.facility, null);
     test.deepEqual(message.contact, contact);
+    test.done();
+  });
+};
+
+exports['run migrates outgoing message to person'] = function(test) {
+  test.expect(7);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
+  var getDoc = sinon.stub(db.medic, 'get');
+  getDoc.onCall(0).callsArgWith(1, null, clone(outgoingMessageToPerson));
+  getDoc.onCall(1).callsArgWith(1, null, contact);
+  var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
+  migration.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(getView.callCount, 1);
+    test.equals(getDoc.callCount, 1);
+    test.equals(getDoc.args[0][0], 'a');
+    test.equals(saveDoc.callCount, 1);
+    var message = saveDoc.args[0][0].tasks[0].messages[0];
+    test.equals(message.facility, null);
+    test.deepEqual(message.contact, outgoingMessageToPerson.tasks[0].messages[0].facility);
     test.done();
   });
 };
@@ -370,6 +453,20 @@ exports['run does nothing if incoming message has no facility'] = function(test)
   });
 };
 
+exports['run works on multiple unique data_records'] = function(test) {
+  test.expect(3);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+    { id: 'a' }, { id: 'b' }, { id: 'a' }
+  ] });
+  var getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, { sms_message: { message: 'incoming', } });
+  migration.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(getView.callCount, 1);
+    test.equals(getDoc.callCount, 2);
+    test.done();
+  });
+};
+
 exports['run migrates incoming message'] = function(test) {
   test.expect(8);
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
@@ -382,7 +479,7 @@ exports['run migrates incoming message'] = function(test) {
     test.equals(getView.callCount, 1);
     test.equals(getDoc.callCount, 2);
     test.equals(getDoc.args[0][0], 'a');
-    test.equals(getDoc.args[1][0], '0abf501d3fbeffaf98bae6c9d602dcad');
+    test.equals(getDoc.args[1][0], contact._id);
     test.equals(saveDoc.callCount, 1);
     test.equals(saveDoc.args[0][0].related_entities, null);
     test.deepEqual(saveDoc.args[0][0].contact, contact);
@@ -402,7 +499,7 @@ exports['run migrates incoming report'] = function(test) {
     test.equals(getView.callCount, 1);
     test.equals(getDoc.callCount, 2);
     test.equals(getDoc.args[0][0], 'a');
-    test.equals(getDoc.args[1][0], '0abf501d3fbeffaf98bae6c9d602dcad');
+    test.equals(getDoc.args[1][0], contact._id);
     test.equals(saveDoc.callCount, 1);
     test.equals(saveDoc.args[0][0].related_entities, null);
     test.deepEqual(saveDoc.args[0][0].contact, contact);
@@ -426,12 +523,83 @@ exports['run migrates multiple data records'] = function(test) {
     test.equals(getView.callCount, 1);
     test.equals(getDoc.callCount, 6);
     test.equals(getDoc.args[0][0], 'a');
-    test.equals(getDoc.args[1][0], '0abf501d3fbeffaf98bae6c9d602dcad');
+    test.equals(getDoc.args[1][0], contact._id);
     test.equals(getDoc.args[2][0], 'b');
-    test.equals(getDoc.args[3][0], '0abf501d3fbeffaf98bae6c9d602dcad');
+    test.equals(getDoc.args[3][0], contact._id);
     test.equals(getDoc.args[4][0], 'c');
-    test.equals(getDoc.args[5][0], '0abf501d3fbeffaf98bae6c9d602dcad');
+    test.equals(getDoc.args[5][0], contact._id);
     test.equals(saveDoc.callCount, 3);
+    test.done();
+  });
+};
+
+exports['run migrates outgoing message with deleted contact'] = function(test) {
+  test.expect(11);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
+  var getDoc = sinon.stub(db.medic, 'get');
+  getDoc.onCall(0).callsArgWith(1, null, clone(outgoingMessage));
+  getDoc.onCall(1).callsArgWith(1, { reason: 'deleted' });
+  getDoc.onCall(2).callsArgWith(1, null, clinic);
+  var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
+  migration.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(getView.callCount, 1);
+    test.equals(getDoc.callCount, 3);
+    test.equals(getDoc.args[0][0], 'a');
+    test.equals(getDoc.args[1][0], contact._id);
+    test.equals(getDoc.args[2][0], clinic._id);
+    test.equals(saveDoc.callCount, 1);
+    var message = saveDoc.args[0][0].tasks[0].messages[0];
+    test.equals(message.facility, null);
+    test.equals(message.contact.phone, clinic.contact.phone);
+    test.equals(message.contact.name, clinic.contact.name);
+    test.deepEqual(message.contact.parent, clinic);
+    test.done();
+  });
+};
+
+exports['run migrates incoming message with deleted contact and deleted clinic'] = function(test) {
+  test.expect(9);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
+  var getDoc = sinon.stub(db.medic, 'get');
+  getDoc.onCall(0).callsArgWith(1, null, clone(incomingMessage));
+  getDoc.onCall(1).callsArgWith(1, { reason: 'deleted' });
+  getDoc.onCall(2).callsArgWith(1, { reason: 'deleted' });
+  var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
+  migration.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(getView.callCount, 1);
+    test.equals(getDoc.callCount, 3);
+    test.equals(getDoc.args[0][0], 'a');
+    test.equals(getDoc.args[1][0], contact._id);
+    test.equals(getDoc.args[2][0], clinic._id);
+    test.equals(saveDoc.callCount, 1);
+    var message = saveDoc.args[0][0];
+    test.equals(message.related_entities, null);
+    test.equals(message.contact, null);
+    test.done();
+  });
+};
+
+exports['run migrates incoming message with deleted contact and clinic has no contact'] = function(test) {
+  test.expect(9);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
+  var getDoc = sinon.stub(db.medic, 'get');
+  getDoc.onCall(0).callsArgWith(1, null, clone(incomingMessage));
+  getDoc.onCall(1).callsArgWith(1, { reason: 'deleted' });
+  getDoc.onCall(2).callsArgWith(1, null, { _id: 'a' });
+  var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
+  migration.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(getView.callCount, 1);
+    test.equals(getDoc.callCount, 3);
+    test.equals(getDoc.args[0][0], 'a');
+    test.equals(getDoc.args[1][0], contact._id);
+    test.equals(getDoc.args[2][0], clinic._id);
+    test.equals(saveDoc.callCount, 1);
+    var message = saveDoc.args[0][0];
+    test.equals(message.related_entities, null);
+    test.equals(message.contact, null);
     test.done();
   });
 };
