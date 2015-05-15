@@ -8,6 +8,9 @@
     if (doc.type === 'person' && doc.parent && doc.parent._id) {
       db.getDoc(doc.parent._id, function(err, parent)  {
         if (err) {
+          if (err.reason === "deleted") {
+            return callback();
+          }
           return callback(err);
         }
         if (parent.contact.phone !== doc.phone) {
