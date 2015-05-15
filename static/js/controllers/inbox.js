@@ -136,7 +136,7 @@ require('moment/locales');
           removeDeletedMessages(options.messages);
           mergeUpdatedMessages(options.messages);
         } else {
-          $scope.items = options.contacts || [];
+          $scope.items = options.messages || [];
         }
       };
 
