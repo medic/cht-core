@@ -297,14 +297,10 @@ exports['add response if form not found'] = function(test) {
 };
 
 exports['add response if form not found and forms_only_mode'] = function(test) {
-    sinon.stub(transition, '_isConfigFormsOnlyMode').returns(true);
-    // stub the translations config
-    sinon.stub(config, 'get').returns([
-        {
-            'key': 'form_not_found',
-            'default': 'Form was not recognized.'
-        }
-    ]);
+    sinon.stub(config, 'get').withArgs('forms_only_mode').returns(true);
+    sinon.stub(transition, '_translate').withArgs('form_not_found').returns(
+        'Form was not recognized.'
+    );
     var messageFn = sinon.spy(messages, 'addMessage');
     test.expect(4);
     var doc = {

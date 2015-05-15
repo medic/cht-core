@@ -76,7 +76,7 @@ module.exports = {
         return Boolean(typeof doc.form !== 'string');
     },
     _isConfigFormsOnlyMode: function() {
-        module.exports._getConfig('forms_only_mode');
+        return module.exports._getConfig('forms_only_mode');
     },
     _getConfig: function(key) {
         return config.get(key);
