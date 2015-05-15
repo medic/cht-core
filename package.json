@@ -27,6 +27,6 @@
   "scripts": {
     "start": "node server.js",
     "debug": "node server.js debug",
-    "test": "node_modules/nodeunit/bin/nodeunit test/unit test/functional"
+    "test": "TEST_ENV=1 node_modules/nodeunit/bin/nodeunit test/unit test/functional"
   }
 }

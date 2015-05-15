@@ -83,7 +83,7 @@ var getDuplicates = function(db, callback) {
         return callback();
     }
 
-    db.view('kujua-sentinel', view, q, function(err, data) {
+    db.medic.view('kujua-sentinel', view, q, function(err, data) {
         callback(err, data && data.rows);
     });
 };

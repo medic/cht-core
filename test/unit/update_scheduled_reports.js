@@ -90,10 +90,12 @@ exports['calls audit.bulkSave with correct arguments'] = function(test) {
   test.expect(7);
 
   var db = {
-    view: function() {}
+    medic: {
+      view: function() {}
+    }
   };
 
-  var view = sinon.stub(db, 'view').callsArgWith(3, null, {rows: []});
+  var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: []});
 
   var audit = {
     bulkSave: function(docs, options, callback) {
@@ -126,12 +128,14 @@ exports['calls audit.bulkSave with correct arguments'] = function(test) {
 exports['merge duplicates'] = function(test) {
   // TODO
   var db = {
-    view: function() {},
-    bulkDocs: function(options, callback) {
-      callback();
+    medic: {
+      view: function() {},
+      bulkDocs: function(options, callback) {
+        callback();
+      }
     }
   };
-  var view = sinon.stub(db, 'view').callsArgWith(3, null, {
+  var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       {
         _id: 'abc',
