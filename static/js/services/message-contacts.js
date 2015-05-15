@@ -12,7 +12,7 @@ var async = require('async'),
     function(HttpWrapper, BaseUrlService) {
       return function(params, callback) {
         var url = BaseUrlService() + '/message_contacts';
-        HttpWrapper.get(url, { params: params })
+        HttpWrapper.get(url, { params: params, timeout: false })
           .success(function(res) {
             callback(null, res.rows);
           })
