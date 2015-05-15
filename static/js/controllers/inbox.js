@@ -202,7 +202,7 @@ require('moment/locales');
         });
       };
 
-      $scope.$on('ContactUpdated', function(contact) {
+      $scope.$on('ContactUpdated', function() {
         $scope.updateAvailableFacilities();
       });
 

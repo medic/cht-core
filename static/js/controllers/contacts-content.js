@@ -16,7 +16,7 @@
         } else if(contact._deleted &&
             $scope.selected &&
             $scope.selected._id === contact._id) {
-          $scope.selected = null;
+          $scope.setSelected();
         } else if ($scope.selected && $scope.selected._id === contact._id) {
           contact.children = $scope.selected.children;
           contact.contactFor = $scope.selected.contactFor;

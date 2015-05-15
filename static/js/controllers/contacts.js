@@ -128,7 +128,6 @@ var _ = require('underscore'),
       });
 
       var removeContact = function(contact) {
-        var id = contact._id;
         $scope.items = _.filter($scope.items, function(i) {
             return i._id !== contact._id; });
       };
