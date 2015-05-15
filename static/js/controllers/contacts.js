@@ -116,7 +116,7 @@ var _ = require('underscore'),
         if (!contact) {
           return $scope.query();
         } else if (contact._deleted) {
-          removeContact(contact);
+          $scope.removeContact(contact);
           return;
         }
         $state.go('contacts.detail', { id: contact._id });
@@ -126,11 +126,6 @@ var _ = require('underscore'),
         }
         _.extend(outdated, contact);
       });
-
-      var removeContact = function(contact) {
-        $scope.items = _.filter($scope.items, function(i) {
-            return i._id !== contact._id; });
-      };
     }
   ]);
 
