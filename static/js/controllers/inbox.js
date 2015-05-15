@@ -202,6 +202,11 @@ require('moment/locales');
         });
       };
 
+      $scope.removeContact = function(contact) {
+        $scope.items = _.filter($scope.items, function(i) {
+            return i._id !== contact._id; });
+      };
+
       $scope.$on('ContactUpdated', function() {
         $scope.updateAvailableFacilities();
       });
