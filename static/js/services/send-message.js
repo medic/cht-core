@@ -19,7 +19,6 @@ var _ = require('underscore'),
           form: null,
           from: user && user.phone,
           reported_date: Date.now(),
-          related_entities: {},
           tasks: [],
           read: [ name ],
           kujua_message: true,
@@ -31,7 +30,7 @@ var _ = require('underscore'),
           return data.doc && data.doc.type;
         });
         if (facility && facility.type) {
-          doc.related_entities[facility.type] = facility;
+          doc.contact = facility;
         }
 
         return doc;

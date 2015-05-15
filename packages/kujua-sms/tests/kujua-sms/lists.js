@@ -35,59 +35,6 @@ var clinic = {
     }
 };
 
-exports.data_record_facility_not_found = function (test) {
-
-    test.expect(1);
-    var viewdata = {rows: []};
-
-    var req = {
-        headers: {"Host": window.location.host},
-        body: JSON.stringify({uuid: uuid})
-    };
-
-    var resp = fakerequest.list(lists.data_record, viewdata, req);
-    test.same('sys.facility_not_found', JSON.parse(resp.body).callback.data.errors[0].code);
-    test.done();
-};
-
-exports.data_record_facility_found = function (test) {
-
-    test.expect(1);
-    var viewdata = {rows: [
-        {
-            "key": ["+13125551212"],
-            "value": clinic
-        }
-    ]};
-    var req = {
-        headers: {"Host": window.location.host},
-        body: JSON.stringify({uuid: uuid})
-    };
-    var resp = fakerequest.list(lists.data_record, viewdata, req);
-    var expectedBody = {
-        callback:{
-            "options":{
-                "host": host(),
-                "port": port(),
-                "path": baseURL  + "/data_record/update/" + uuid,
-                "method":"PUT",
-                "headers":{
-                    "Content-Type":"application/json; charset=utf-8"
-                }
-            },
-            // clinic is defined, errors are empty
-            "data":{
-                "related_entities":{
-                    clinic: clinic
-                }
-            }
-        }
-    };
-
-    test.same(JSON.stringify(expectedBody), resp.body);
-    test.done();
-};
-
 exports.tasks_pending_callback = function(test) {
     test.expect(3);
     var req = {

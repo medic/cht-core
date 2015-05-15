@@ -1,16 +1,23 @@
 exports.data_records = {
     map: function(doc) {
-        var objectpath = require('views/lib/objectpath'),
-            clinicId,
+
+        var getParentId = function(facility, type) {
+            while (facility && facility.type !== type) {
+                facility = facility.parent;
+            }
+            return facility && facility._id;
+        };
+
+        var clinicId,
             centerId,
             districtId,
             form = doc.form,
             valid;
 
         if (doc.type === 'data_record') {
-            clinicId = objectpath.get(doc, 'related_entities.clinic._id');
-            centerId = objectpath.get(doc, 'related_entities.clinic.parent._id');
-            districtId = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
+            clinicId = getParentId(doc.contact, 'clinic');
+            centerId = getParentId(doc.contact, 'health_center');
+            districtId = getParentId(doc.contact, 'district_hospital');
             valid = !doc.errors || doc.errors.length === 0;
 
             emit([doc.reported_date], 1);
@@ -110,18 +117,24 @@ exports.data_records = {
 // only emit valid records with a form
 exports.data_records_valid_by_district_and_form = {
      map: function(doc) {
-        var objectpath = require('views/lib/objectpath'),
-            dh;
 
-        if (doc.type === 'data_record' && doc.form) {
-            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent') || objectpath.get(doc, 'related_entities.health_center.parent');
+        var getParent = function(facility, type) {
+            while (facility && facility.type !== type) {
+                facility = facility.parent;
+            }
+            return facility;
+        };
 
-            if (!doc.errors || doc.errors.length === 0) {
-                if (dh) {
-                    emit([dh._id, doc.form, dh.name], 1);
-                } else {
-                    emit([null, doc.form, null], 1);
-                }
+        var dh;
+
+        if (doc.type === 'data_record' &&
+            doc.form &&
+            (!doc.errors || doc.errors.length === 0)) {
+            dh = getParent(doc.contact, 'district_hospital');
+            if (dh) {
+                emit([dh._id, doc.form, dh.name], 1);
+            } else {
+                emit([null, doc.form, null], 1);
             }
         }
     },
@@ -154,8 +167,7 @@ exports.data_records_valid_by_year_month_and_form = {
 
 exports.data_records_read_by_type = {
     map: function(doc) {
-        var objectpath = require('views/lib/objectpath'),
-            type,
+        var type,
             dh;
 
         var emitRead = function(doc, type, dh) {
@@ -169,14 +181,21 @@ exports.data_records_read_by_type = {
             }
         };
 
+        var getDistrictId = function(facility, type) {
+            while (facility && facility.type !== 'district_hospital') {
+                facility = facility.parent;
+            }
+            return facility && facility._id;
+        };
+
         if (doc.type === 'data_record') {
             type = doc.form ? 'forms' : 'messages';
-            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
+            dh = getDistrictId(doc.contact);
             if (dh) {
                 emitRead(doc, type, dh);
             } else if (doc.tasks) {
                 doc.tasks.forEach(function(task) {
-                    dh = objectpath.get(task.messages[0], 'facility.parent.parent._id');
+                    dh = getDistrictId(task.messages[0].contact);
                     emitRead(doc, type, dh);
                 });
             } else {
@@ -192,7 +211,7 @@ exports.data_records_read_by_type = {
 
 exports.data_records_by_contact = {
     map: function(doc) {
-        var getName = function(facility) {
+        var getPosition = function(facility) {
             if (facility) {
                 var nameParts = [];
                 while (facility) {
@@ -206,6 +225,12 @@ exports.data_records_by_contact = {
                 }
             }
         };
+        var getDistrictId = function(facility) {
+            while (facility && facility.type !== 'district_hospital') {
+                facility = facility.parent;
+            }
+            return facility && facility._id;
+        };
         var emitContact = function(districtId, key, date, value) {
             if (key) {
                 emit([districtId || 'none', key, date], value);
@@ -213,59 +238,56 @@ exports.data_records_by_contact = {
             }
         };
 
-        var objectpath = require('views/lib/objectpath'),
-            districtId,
+        var districtId,
             message,
             facility,
-            contact,
+            contactName,
             key,
-            name;
+            position;
         if (doc.type === 'data_record' && !doc.form) {
             if (doc.kujua_message) {
                 // outgoing
                 doc.tasks.forEach(function(task) {
                     message = task.messages[0];
-                    facility = message.facility;
+                    facility = message.contact;
                     key = (facility && facility._id) || message.to;
                     if (!facility) {
-                        name = message.to;
-                        contact = facility.name;
+                        contactName = message.to;
+                        position = undefined;
                         districtId = undefined
-                    } else if (facility.type === 'person') {
-                        districtId = objectpath.get(facility, 'parent.parent.parent._id');
-                        contact = facility.name;
-                        name = getName(facility.parent);
                     } else {
-                        districtId = objectpath.get(facility, 'parent.parent._id');
-                        contact = objectpath.get(facility, 'contact.name');
-                        name = getName(facility);
+                        position = getPosition(facility.parent);
+                        contactName = facility.name;
+                        districtId = getDistrictId(facility);
                     }
                     emitContact(districtId, key, doc.reported_date, {
                         date: doc.reported_date,
                         read: doc.read,
-                        contact: contact,
                         facility: facility,
-                        name: name,
-                        message: message.message
+                        message: message.message,
+                        contact: {
+                            name: contactName,
+                            parent: position
+                        }
                     });
                 });
             } else if (doc.sms_message) {
                 // incoming
-                districtId = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
+                facility = doc.contact;
+                districtId = getDistrictId(facility);
                 message = doc.sms_message;
-                facility = objectpath.get(doc, 'related_entities.clinic');
-                name = getName(facility) || doc.from;
-                contact = objectpath.get(facility, 'contact.name') || doc.from;
-                key = (facility && facility.contact && facility.contact._id) ||
-                      (facility && facility._id) ||
-                      doc.from;
+                position = getName(facility.parent) || doc.from;
+                contactName = (facility && facility.name) || doc.from;
+                key = (facility && facility._id) || doc.from;
                 emitContact(districtId, key, doc.reported_date, {
                     date: doc.reported_date,
                     read: doc.read,
-                    contact: contact,
                     facility: facility,
-                    name: name,
-                    message: message.message
+                    message: message.message,
+                    contact: {
+                        name: contactName,
+                        parent: position
+                    }
                 });
             }
         }
@@ -303,36 +325,17 @@ exports.data_records_by_contact = {
 
 exports.data_records_by_district = {
     map: function(doc) {
-        var objectpath = require('views/lib/objectpath'),
-            dh;
-
-        if (doc.type === 'data_record') {
-            dh = objectpath.get(doc, 'related_entities.clinic.parent.parent');
-
-            if (dh && dh.type === 'district_hospital') {
-                emit([dh._id, dh.name], null);
+        var getDistrict = function(facility) {
+            while (facility && facility.type !== 'district_hospital') {
+                facility = facility.parent;
             }
-        }
-    },
-
-    reduce: function(key, doc) {
-        return true;
-    }
-};
-
-/*
- * Get facility based on phone number
- */
-
-exports.facility_by_phone = {
-    map: function (doc) {
-        if (doc.contact && doc.type) {
-            if (doc.type === 'clinic') {
-                emit([doc.contact.phone, 'clinic'], doc);
-            } else if (doc.type === 'health_center') {
-                emit([doc.contact.phone, 'health_center'], doc);
-            } else if (doc.type === 'district_hospital') {
-                emit([doc.contact.phone, 'district_hospital'], doc);
+            return facility;
+        };
+        var dh;
+        if (doc.type === 'data_record') {
+            dh = getDistrict(doc.contact);
+            if (dh) {
+                emit([dh._id, dh.name], null);
             }
         }
     }
@@ -364,20 +367,6 @@ exports.person_by_phone = {
     map: function (doc) {
         if (doc.type === 'person') {
             emit([doc.phone], doc);
-        }
-    }
-};
-
-/*
- * Get clinic based on health center phone number
- */
-exports.clinic_by_parent_phone = {
-    map: function (doc) {
-        var objectpath = require('views/lib/objectpath'),
-            phone = objectpath.get(doc, 'parent.contact.phone');
-
-        if (doc.type === 'clinic' && phone) {
-            emit([phone], doc);
         }
     }
 };

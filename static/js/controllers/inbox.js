@@ -538,11 +538,8 @@ require('moment/locales');
       };
       $scope.edit = function(record) {
         if ($scope.filterModel.type === 'reports') {
-          var val;
-          if (record.related_entities && record.related_entities.clinic) {
-            val = record.related_entities.clinic._id;
-          }
-          $('#update-facility [name=facility]').select2('val', val || '');
+          var val = (record.contact && record.contact._id) || '';
+          $('#update-facility [name=facility]').select2('val', val);
           $('#update-facility').modal('show');
         } else {
           $rootScope.$broadcast('EditContactInit', record);
