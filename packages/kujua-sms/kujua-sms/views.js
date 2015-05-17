@@ -353,9 +353,9 @@ exports.facility_by_parent = {
  * Get clinic based on phone number
  */
 exports.clinic_by_phone = {
-    map: function (doc) {
-        if (doc.type === 'clinic' && doc.contact) {
-            emit([doc.contact.phone], doc);
+    map: function(doc) {
+        if (doc.type === 'clinic' && doc.contact && doc.contact.phone) {
+            emit([doc.contact.phone], null);
         }
     }
 };
