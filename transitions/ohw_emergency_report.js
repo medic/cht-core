@@ -7,8 +7,8 @@ var _ = require('underscore'),
     clinicContactName,
     registration,
     clinicPhone,
-    parentPhone,
-    grandparentPhone,
+    healthCenterPhone,
+    districtPhone,
     new_doc;
 
 var msgs = {
@@ -29,7 +29,7 @@ var msgs = {
 
 var addAlerts = function() {
     var doc = new_doc,
-        phones = [parentPhone, grandparentPhone];
+        phones = [healthCenterPhone, districtPhone];
 
     function finalize(msg) {
         phones.forEach(function(phone) {
@@ -163,8 +163,8 @@ var handleOnMatch = function(change, db, audit, callback) {
 
     new_doc = change.doc;
     clinicPhone = utils.getClinicPhone(change.doc);
-    parentPhone = utils.getParentPhone(change.doc);
-    grandparentPhone = utils.getGrandparentPhone(change.doc);
+    healthCenterPhone = utils.getHealthCenterPhone(change.doc);
+    districtPhone = utils.getDistrictPhone(change.doc);
     clinicContactName = utils.getClinicContactName(change.doc);
 
     validate(function(err) {

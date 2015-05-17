@@ -3,16 +3,7 @@ var _ = require('underscore'),
     sinon = require('sinon'),
     moment = require('moment'),
     utils = require('../../lib/utils'),
-    related_entities,
     config;
-
-related_entities = {
-    clinic: {
-        contact: {
-            phone: '+1234'
-        }
-    }
-};
 
 function getMessage(doc) {
     if (!doc || !doc.tasks) return;

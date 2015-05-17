@@ -6,8 +6,9 @@ exports['extractDetails supports template variables on doc'] = function(test) {
         form: 'x',
         reported_date: "2050-03-13T13:06:22.002Z",
         governor: "arnold",
-        related_entities: {
-            clinic: {
+        contact: {
+            phone: '123',
+            parent: {
                 contact: {
                     phone: '123'
                 }
@@ -25,8 +26,9 @@ exports['extractDetails internal fields always override form fields'] = function
         form: 'x',
         reported_date: "2050-03-13T13:06:22.002Z",
         chw_name: "Arnold",
-        related_entities: {
-            clinic: {
+        contact: {
+            name: 'Sally',
+            parent: {
                 contact: {
                     name: 'Sally'
                 }
@@ -83,8 +85,9 @@ exports['addMessage supports template variables on doc'] = function(test) {
 exports['addMessage template supports contact obj'] = function(test) {
     var doc = {
         form: 'x',
-        related_entities: {
-            clinic: {
+        contact: {
+            name: 'Paul',
+            parent: {
                 contact: {
                     name: 'Paul'
                 }
@@ -107,8 +110,9 @@ exports['addMessage template supports contact obj'] = function(test) {
 exports['addMessage supports clinic dot template variables'] = function(test) {
     var doc = {
         form: 'x',
-        related_entities: {
-            clinic: {
+        contact: {
+            name: 'Sally',
+            parent: {
                 contact: {
                     name: 'Sally'
                 }
@@ -118,7 +122,7 @@ exports['addMessage supports clinic dot template variables'] = function(test) {
     messages.addMessage({
         doc: doc,
         phone: "+13125551212",
-        message: "Thank you {{clinic.contact.name}}."
+        message: "Thank you {{contact.name}}."
     });
     test.equals(doc.tasks.length, 1);
     test.equals(
@@ -131,9 +135,10 @@ exports['addMessage supports clinic dot template variables'] = function(test) {
 exports['addMessage template supports health_center object'] = function(test) {
     var doc = {
         form: 'x',
-        related_entities: {
-            clinic: {
+        contact: {
+            parent: {
                 parent: {
+                    type: 'health_center',
                     contact: {
                         name: "Jeremy"
                     }
@@ -157,10 +162,11 @@ exports['addMessage template supports health_center object'] = function(test) {
 exports['addMessage template supports district object'] = function(test) {
     var doc = {
         form: 'x',
-        related_entities: {
-            clinic: {
+        contact: {
+            parent: {
                 parent: {
                     parent: {
+                        type: 'district_hospital',
                         contact: {
                             name: "Kristen"
                         }
@@ -186,8 +192,9 @@ exports['getRecipientPhone resolves `clinic` correctly'] = function(test) {
     var phone = '+13125551213';
     var doc = {
         form: 'x',
-        related_entities: {
-            clinic: {
+        contact: {
+            phone: phone,
+            parent: {
                 contact: {
                     phone: phone
                 }

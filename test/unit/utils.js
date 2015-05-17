@@ -30,8 +30,9 @@ exports['updateable returns false when objects the same'] = function(test) {
 
 exports['getClinicContactName gets name'] = function(test) {
     test.equal(utils.getClinicContactName({
-        related_entities: {
-            clinic: {
+        contact: {
+            parent: {
+                type: 'clinic',
                 contact: {
                     name: 'Y'
                 }
@@ -43,8 +44,8 @@ exports['getClinicContactName gets name'] = function(test) {
 
 exports['getClinicContactName gets returns health volunteer if miss'] = function(test) {
     test.equals(utils.getClinicContactName({
-        related_entities: {
-            clinic: { }
+        contact: {
+            parent: { }
         }
     }), 'health volunteer');
     test.done();
@@ -61,8 +62,8 @@ exports['getClinicContactName gets name if contact'] = function(test) {
 
 exports['getClinicName gets returns health volunteer if miss'] = function(test) {
     test.equal(utils.getClinicName({
-        related_entities: {
-            clinic: { }
+        contact: {
+            parent: { type: 'clinic' }
         }
     }), 'health volunteer');
     test.done();
@@ -77,8 +78,9 @@ exports['getClinicName gets name if contact'] = function(test) {
 
 exports['getClinicName gets name'] = function(test) {
     test.equal(utils.getClinicName({
-        related_entities: {
-            clinic: {
+        contact: {
+            parent: {
+                type: 'clinic',
                 name: 'Y'
             }
         }
@@ -88,8 +90,9 @@ exports['getClinicName gets name'] = function(test) {
 
 exports['getClinicPhone gets phone'] = function(test) {
     test.equal(utils.getClinicPhone({
-        related_entities: {
-            clinic: {
+        contact: {
+            parent: {
+                type: 'clinic',
                 contact: {
                     phone: '123'
                 }
@@ -157,9 +160,10 @@ exports['getRecentForm calls through to db view correctly'] = function(test) {
     utils.getRecentForm({
         formName: formName, 
         doc: {
-            related_entities: {
-                clinic: {
-                    _id: clinicId
+            contact: {
+                parent: {
+                    _id: clinicId,
+                    type: 'clinic'
                 }
             }
         }

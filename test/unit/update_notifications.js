@@ -120,7 +120,7 @@ exports['registration not found adds error and response'] = function(test) {
     var doc = {
         form: 'on',
         patient_id: 'x',
-        related_entities: {clinic: {contact: {phone: 'x'}}}
+        contact: { phone: 'x' }
     };
 
     sinon.stub(transition, 'getConfig').returns({
@@ -161,7 +161,7 @@ exports['validation failure adds error and response'] = function(test) {
     var doc = {
         form: 'on',
         patient_id: 'x',
-        related_entities: {clinic: {contact: {phone: 'x'}}}
+        contact: { phone: 'x' }
     };
 
     sinon.stub(transition, 'getConfig').returns({
@@ -212,13 +212,9 @@ exports['mute responds correctly'] = function(test) {
     var doc = {
         form: 'off',
         patient_id: '123',
-        related_entities: {
-            clinic: {
-                contact: {
-                    phone: '+1234',
-                    name: 'woot'
-                }
-            }
+        contact: {
+            phone: '+1234',
+            name: 'woot'
         }
     };
 

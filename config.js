@@ -11,9 +11,13 @@ function initInfo(callback) {
     db.medic.view('kujua-sentinel', 'last_valid_seq', {
         reduce: true
     }, function(err, data) {
+        if (err) {
+            console.log('Error getting last_valid_seq', err);
+            return callback(err);
+        }
         var first = data.rows.pop();
         self.last_valid_seq = (first && first.value.seq);
-        callback(err);
+        callback();
     });
 };
 
