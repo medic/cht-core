@@ -14,9 +14,9 @@ module.exports = {
             doc &&
             doc.form &&
             doc.reported_date &&
-            doc.related_entities &&
-            doc.related_entities.clinic &&
-            doc.related_entities.clinic._id &&
+            doc.contact &&
+            doc.contact.parent &&
+            doc.contact.parent._id &&
             doc.type === 'data_record' &&
             self._hasConfig(doc) &&
             !self._hasRun(doc)
@@ -44,7 +44,7 @@ module.exports = {
         var doc = change.doc,
             form = doc.form,
             reported_date = doc.reported_date,
-            clinic = doc.related_entities && doc.related_entities.clinic,
+            clinic = doc.contact && doc.contact.parent,
             clinicId = clinic && clinic._id;
 
         db.medic.get(clinicId, function(err, clinic) {

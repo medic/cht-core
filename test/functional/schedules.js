@@ -4,10 +4,12 @@ var _ = require('underscore'),
     sinon = require('sinon'),
     moment = require('moment'),
     utils = require('../../lib/utils'),
-    related_entities;
+    contact;
 
-related_entities = {
-    clinic: {
+contact = {
+    phone: '+1234',
+    name: 'Julie',
+    parent: {
         contact: {
             phone: '+1234',
             name: 'Julie'
@@ -98,7 +100,7 @@ exports['registration sets up schedule'] = function(test) {
     var doc = {
         reported_date: moment().toISOString(),
         form: 'PATR',
-        related_entities: related_entities
+        contact: contact
     };
 
     transition.onMatch({
@@ -188,7 +190,7 @@ exports['registration sets up schedule using bool_expr'] = function(test) {
     var doc = {
         reported_date: moment().toISOString(),
         form: 'PATR',
-        related_entities: related_entities,
+        contact: contact,
         foo: 'baz'
     };
 
@@ -279,7 +281,7 @@ exports['no schedule using false bool_expr'] = function(test) {
     var doc = {
         reported_date: moment().toISOString(),
         form: 'PATR',
-        related_entities: related_entities,
+        contact: contact,
         foo: 'baz'
     };
 

@@ -323,14 +323,7 @@ exports['when start from is null skip schedule creation'] = function(test) {
 
     var doc = {
         form: 'x',
-        reported_date: null,
-        related_entities: {
-            clinic: {
-                contact: {
-                    phone: '123'
-                }
-            }
-        }
+        reported_date: null
     };
 
     added = schedules.assignSchedule(doc, {

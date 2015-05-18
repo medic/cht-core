@@ -365,10 +365,11 @@ exports['resolve the recipient if required'] = function(test) {
     test.expect(4);
     var doc = {
         form: 'STCK',
-        related_entities: {
-            clinic: {
+        contact: {
+            parent: {
                 parent: {
                     parent: {
+                        type: 'district_hospital',
                         contact: {
                             phone: phone
                         }

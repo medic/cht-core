@@ -88,7 +88,6 @@ var handleMatch = function(change, db, audit, callback) {
     new_doc = change.doc,
     clinicPhone = utils.getClinicPhone(new_doc);
     clinicContactName = utils.getClinicContactName(new_doc);
-    parentPhone = utils.getParentPhone(new_doc);
 
     validate(function(err) {
         // validation failed, finalize transition

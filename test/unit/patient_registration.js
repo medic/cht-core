@@ -2,17 +2,9 @@ var _ = require('underscore'),
     transition = require('../../transitions/registration'),
     sinon = require('sinon'),
     moment = require('moment'),
-    utils = require('../../lib/utils'),
-    related_entities;
+    utils = require('../../lib/utils');
 
-related_entities = {
-    clinic: {
-        contact: {
-            phone: '+1234',
-            name: 'Julie'
-        }
-    }
-};
+
 
 function getMessage(doc, idx) {
     if (!doc || !doc.tasks) return;
@@ -166,13 +158,9 @@ exports['registration sets up responses'] = function(test) {
         patient_name: 'foo',
         caregiver_name: 'Sam',
         caregiver_phone: '+987',
-        related_entities: {
-            clinic: {
-                contact: {
-                    phone: '+1234',
-                    name: 'Julie'
-                }
-            }
+        contact: {
+            phone: '+1234',
+            name: 'Julie'
         },
         locale: 'en'
     };
@@ -227,7 +215,16 @@ exports['registration responses support locale'] = function(test) {
         patient_name: 'foo',
         caregiver_name: 'Sam',
         caregiver_phone: '+987',
-        related_entities: related_entities,
+        contact: {
+            phone: '+1234',
+            name: 'Julie',
+            parent: {
+                contact: {
+                    phone: '+1234',
+                    name: 'Julie'
+                }
+            }
+        },
         locale: 'es' //spanish
     };
 

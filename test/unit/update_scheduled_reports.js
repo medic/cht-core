@@ -23,12 +23,8 @@ exports['filter signature'] = function(test) {
 };
 
 exports['filter tests'] = function(test) {
-    var related_entities = {
-        clinic: {
-            contact: {
-                phone: "x"
-            }
-        }
+    var contact = {
+        phone: "x"
     };
     test.equals(transition.filter({}), false);
     test.equals(transition.filter({
@@ -38,28 +34,28 @@ exports['filter tests'] = function(test) {
     test.equals(transition.filter({
         form: 'x',
         month: 'x',
-        related_entities: related_entities,
+        contact: contact,
         errors: ['x']
     }), false);
     // missing year property
     test.equals(transition.filter({
         form: 'x',
         month: 'x',
-        related_entities: related_entities
+        contact: contact
     }), false);
     // month, year property
     test.equals(transition.filter({
         form: 'x',
         month: 'x',
         year: 'x',
-        related_entities: related_entities
+        contact: contact
     }), true);
     // month, year property and empty errors
     test.equals(transition.filter({
         form: 'x',
         month: 'x',
         year: 'x',
-        related_entities: related_entities,
+        contact: contact,
         errors: []
     }), true);
     // month_num, year property
@@ -67,21 +63,21 @@ exports['filter tests'] = function(test) {
         form: 'x',
         month_num: 'x',
         year: 'x',
-        related_entities: related_entities
+        contact: contact
     }), true);
     // week, year property
     test.equals(transition.filter({
         form: 'x',
         week: 'x',
         year: 'x',
-        related_entities: related_entities
+        contact: contact
     }), true);
     // week_number, year property
     test.equals(transition.filter({
         form: 'x',
         week_number: 'x',
         year: 'x',
-        related_entities: related_entities
+        contact: contact
     }), true);
     test.done();
 };

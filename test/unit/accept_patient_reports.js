@@ -32,10 +32,7 @@ exports['signature'] = function(test) {
 exports['filter validation'] = function(test) {
     test.equals(transition.filter({}), false);
     test.equals(transition.filter({
-        form: 'x',
-        related_entities: {
-            clinic: {}
-        }
+        form: 'x'
     }), false);
     test.done();
 }
@@ -82,15 +79,7 @@ exports['matchRegistrations with no registrations adds error msg and response'] 
 
     var doc = {
         patient_id: 'x',
-        from: '+123',
-        related_entities: {
-            clinic: {
-                contact: {
-                    phone: '+1234',
-                    name: 'woot'
-                }
-            }
-        }
+        from: '+123'
     };
 
     transition.matchRegistrations({
@@ -123,8 +112,10 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
 
     doc = {
         patient_id: '559',
-        related_entities: {
-            clinic: {
+        contact: {
+            phone: '+1234',
+            name: 'woot',
+            parent: {
                 contact: {
                     phone: '+1234',
                     name: 'woot'

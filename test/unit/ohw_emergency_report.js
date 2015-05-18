@@ -24,14 +24,7 @@ exports.tearDown = function(callback) {
 exports['invalid patient response'] = function(test) {
     test.expect(4);
     var doc = {
-        patient_id: 'fake',
-        related_entities: {
-            clinic: {
-                contact: {
-                    phone: 'clinic'
-                }
-            }
-        }
+        patient_id: 'fake'
     };
     sinon.stub(utils, 'getOHWRegistration').callsArgWith(1, null, false);
     transition.onMatch({
@@ -56,8 +49,10 @@ exports['ANC danger sign with advice response'] = function(test) {
         anc_labor_pnc: 'ANC',
         labor_danger: 'Yes',
         advice_received: 'Yes',
-        related_entities: {
-            clinic: {
+        contact: {
+            phone: 'clinic',
+            name: 'Paul',
+            parent: {
                 name: 'Clinic 2',
                 contact: {
                     phone: 'clinic',
@@ -110,13 +105,16 @@ exports['ANC danger sign and no advice response'] = function(test) {
         anc_labor_pnc: 'ANC',
         labor_danger: 'Yes',
         advice_received: 'No',
-        related_entities: {
-            clinic: {
+        contact: {
+            phone: 'clinic',
+            name: 'Paul',
+            parent: {
                 contact: {
                     phone: 'clinic',
                     name: 'Paul'
                 },
                 parent: {
+                    type: 'health_center',
                     contact: {
                         phone: 'parent'
                     }
@@ -168,14 +166,17 @@ exports['PNC danger sign and no advice response'] = function(test) {
         anc_labor_pnc: 'PNC',
         labor_danger: 'Yes',
         advice_received: 'No',
-        related_entities: {
-            clinic: {
+        contact: {
+            phone: 'clinic',
+            name: 'Paul',
+            parent: {
                 name: 'Clinic 2',
                 contact: {
                     phone: 'clinic',
                     name: 'Paul'
                 },
                 parent: {
+                    type: 'health_center',
                     contact: {
                         phone: 'parent'
                     }
@@ -230,14 +231,17 @@ exports['ANC no danger and no advice sign'] = function(test) {
         anc_labor_pnc: 'ANC',
         labor_danger: 'No',
         advice_received: 'No',
-        related_entities: {
-            clinic: {
+        contact: {
+            phone: 'clinic',
+            name: 'Paul',
+            parent: {
                 name: 'Clinic 2',
                 contact: {
                     phone: 'clinic',
                     name: 'Paul'
                 },
                 parent: {
+                    type: 'health_center',
                     contact: {
                         phone: 'parent'
                     }
@@ -286,14 +290,17 @@ exports['Labor with no danger sign or advice response'] = function(test) {
         anc_labor_pnc: 'In labor',
         labor_danger: 'No',
         advice_received: 'No',
-        related_entities: {
-            clinic: {
+        contact: {
+            phone: 'clinic',
+            name: 'Paul',
+            parent: {
                 name: 'Clinic 2',
                 contact: {
                     phone: 'clinic',
                     name: 'Paul'
                 },
                 parent: {
+                    type: 'health_center',
                     contact: {
                         phone: 'parent'
                     }
@@ -348,14 +355,17 @@ exports['Labor with danger sign and no advice response'] = function(test) {
         anc_labor_pnc: 'In labor',
         labor_danger: 'Yes',
         advice_received: 'No',
-        related_entities: {
-            clinic: {
+        contact: {
+            phone: 'clinic',
+            name: 'Paul',
+            parent: {
                 name: 'Clinic 2',
                 contact: {
                     phone: 'clinic',
                     name: 'Paul'
                 },
                 parent: {
+                    type: 'health_center',
                     contact: {
                         phone: 'parent'
                     }
@@ -409,8 +419,10 @@ exports['Labor with danger sign and advice response'] = function(test) {
         anc_labor_pnc: 'In labor',
         labor_danger: 'Yes',
         advice_received: 'Yes',
-        related_entities: {
-            clinic: {
+        contact: {
+            phone: 'clinic',
+            name: 'Paul',
+            parent: {
                 name: 'Clinic 2',
                 contact: {
                     phone: 'clinic',

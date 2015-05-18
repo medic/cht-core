@@ -2,10 +2,10 @@ exports.patient_ids_by_form_clinic_and_reported_date = {
     map: function(doc) {
         if (!doc.patient_id
             || !doc.reported_date
-            || !doc.related_entities
-            || !doc.related_entities.clinic
+            || !doc.contact
+            || !doc.contact.parent
             || !doc.form) return;
-        var cl_id = doc.related_entities.clinic._id;
+        var cl_id = doc.contact.parent._id;
         emit([doc.form, doc.patient_id, cl_id, doc.reported_date], null);
     }
 };
@@ -14,10 +14,10 @@ exports.serial_numbers_by_form_clinic_and_reported_date = {
     map: function(doc) {
         if (!doc.serial_number
             || !doc.reported_date
-            || !doc.related_entities
-            || !doc.related_entities.clinic
+            || !doc.contact
+            || !doc.contact.parent
             || !doc.form) return;
-        var cl_id = doc.related_entities.clinic._id;
+        var cl_id = doc.contact.parent._id;
         emit([doc.form, doc.serial_number, cl_id, doc.reported_date], null);
     }
 };
@@ -53,6 +53,14 @@ exports.clinic_by_refid = {
         if (doc.type === 'clinic' && doc.contact && doc.contact.rc_code) {
             // need String because rewriter wraps everything in quotes
             emit([String(doc.contact.rc_code)], null);
+        }
+    }
+};
+
+exports.person_by_phone = {
+    map: function (doc) {
+        if (doc.type === 'person') {
+            emit([doc.phone], doc);
         }
     }
 };
@@ -106,8 +114,8 @@ exports.last_valid_seq = {
 exports.data_records_by_form_year_week_clinic_id_and_reported_date = {
     map: function (doc) {
         if (doc.type === 'data_record'
-                && doc.related_entities
-                && doc.related_entities.clinic
+                && doc.contact
+                && doc.contact.parent
                 && doc.year
                 && (doc.week || doc.week_number)
                 && doc.form
@@ -116,7 +124,7 @@ exports.data_records_by_form_year_week_clinic_id_and_reported_date = {
                 doc.form,
                 doc.year,
                 doc.week || doc.week_number,
-                doc.related_entities.clinic._id,
+                doc.contact.parent._id,
                 doc.reported_date
             ], null);
         }
@@ -126,8 +134,8 @@ exports.data_records_by_form_year_week_clinic_id_and_reported_date = {
 exports.data_records_by_form_year_month_clinic_id_and_reported_date = {
     map: function (doc) {
         if (doc.type === 'data_record'
-                && doc.related_entities
-                && doc.related_entities.clinic
+                && doc.contact
+                && doc.contact.parent
                 && doc.year
                 && doc.month
                 && doc.form
@@ -136,7 +144,7 @@ exports.data_records_by_form_year_month_clinic_id_and_reported_date = {
                 doc.form,
                 doc.year,
                 doc.month,
-                doc.related_entities.clinic._id,
+                doc.contact.parent._id,
                 doc.reported_date
             ], null);
         }
@@ -147,11 +155,11 @@ exports.data_records_by_form_and_clinic = {
     map: function(doc) {
         if (doc.type === 'data_record' 
             && doc.form 
-            && doc.related_entities
-            && doc.related_entities.clinic) {
+            && doc.contact
+            && doc.contact.parent) {
             emit([
                 doc.form,
-                doc.related_entities.clinic._id
+                doc.contact.parent._id
             ], null);
         }
     }

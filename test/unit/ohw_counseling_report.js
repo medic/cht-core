@@ -122,8 +122,10 @@ exports['ANC acknowledgement'] = function(test) {
     var doc = {
         patient_id: '123',
         anc_pnc: 'ANC',
-        related_entities: {
-            clinic: {
+        contact: {
+            phone: '123',
+            name: 'qqq',
+            parent: {
                 contact: {
                     phone: '123',
                     name: 'qqq'
@@ -216,8 +218,9 @@ exports['PNC normal acknowledgement'] = function(test) {
         patient_id: '123',
         anc_pnc: 'PNC',
         weight: 'Green',
-        related_entities: {
-            clinic: {
+        contact: {
+            name: 'qqq',
+            parent: {
                 contact: {
                     name: 'qqq'
                 }
@@ -242,14 +245,7 @@ exports['PNC report now clears group 1'] = function(test) {
     var doc = {
         reported_date: new Date().valueOf(),
         patient_id: '123',
-        anc_pnc: 'PNC',
-        related_entities: {
-            clinic: {
-                contact: {
-                    phone: 'clinic'
-                }
-            }
-        }
+        anc_pnc: 'PNC'
     };
     transition.onMatch({
         doc: doc
@@ -286,14 +282,7 @@ exports['PNC report in 36 days clears all counseling reminders'] = function(test
     var doc = {
         reported_date: moment(new Date()).add('days', 36).valueOf(),
         patient_id: '123',
-        anc_pnc: 'PNC',
-        related_entities: {
-            clinic: {
-                contact: {
-                    phone: 'clinic'
-                }
-            }
-        }
+        anc_pnc: 'PNC'
     };
     transition.onMatch({
         doc: doc

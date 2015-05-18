@@ -27,8 +27,8 @@ exports['calls db.get with id of clinic'] = function(test) {
     sinon.stub(audit, 'saveDoc').callsArgWith(1, null);
     transition.onMatch({
         doc: {
-            related_entities: {
-                clinic: {
+            contact: {
+                parent: {
                     _id: '1'
                 }
             }
@@ -59,11 +59,6 @@ exports['calls audit.saveDoc with clinic and updated sent_forms'] = function(tes
     var save = sinon.stub(audit, 'saveDoc').callsArgWith(1, null);
     transition.onMatch({
         doc: {
-            related_entities: {
-                clinic: {
-                    _id: '1'
-                }
-            },
             form: 'XXX',
             reported_date: now.valueOf()
         }
@@ -96,11 +91,6 @@ exports['does not overwrite if existing date is after'] = function(test) {
     });
     transition.onMatch({
         doc: {
-            related_entities: {
-                clinic: {
-                    _id: '1'
-                }
-            },
             form: 'XXX',
             reported_date: now.valueOf()
         }
@@ -131,11 +121,6 @@ exports['overwrites if existing date is before'] = function(test) {
 
     transition.onMatch({
         doc: {
-            related_entities: {
-                clinic: {
-                    _id: '1'
-                }
-            },
             form: 'XXX',
             reported_date: now.valueOf()
         }

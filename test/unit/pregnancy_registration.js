@@ -3,16 +3,7 @@ var _ = require('underscore'),
     sinon = require('sinon'),
     moment = require('moment'),
     utils = require('../../lib/utils'),
-    related_entities,
     config;
-
-related_entities = {
-    clinic: {
-        contact: {
-            phone: '+1234'
-        }
-    }
-};
 
 function getMessage(doc) {
     if (!doc || !doc.tasks) return;
@@ -308,13 +299,6 @@ exports['invalid name valid LMP logic'] = function(test) {
     doc = {
         form: 'y',
         from: '+1234',
-        related_entities: {
-            clinic: {
-                contact: {
-                    phone: '+1234'
-                }
-            }
-        },
         patient_name: '',
         lmp: 5
     };
@@ -390,8 +374,7 @@ exports['missing all fields returns validation errors'] = function(test) {
     test.expect(2);
     var doc = {
         form: 'y',
-        from: '+123',
-        related_entities: related_entities
+        from: '+123'
     };
     transition.onMatch({
         doc: doc
