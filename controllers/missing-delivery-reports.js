@@ -15,7 +15,7 @@ var getRegistrationPatientIds = function(options, callback) {
       return {
         patient_id: doc.patient_id,
         patient_name: doc.patient_name,
-        clinic: doc.related_entities && doc.related_entities.clinic,
+        contact: doc.contact,
         edd: utils.getEDD(doc)
       };
     }));
