@@ -51,7 +51,6 @@ var getDataRecord = function(options, form_data) {
         type: 'data_record',
         from: libphonenumber.format(utils.info, options.from) || options.from,
         form: form,
-        related_entities: {clinic: null},
         errors: [],
         tasks: [],
         reported_date: new Date().valueOf(),

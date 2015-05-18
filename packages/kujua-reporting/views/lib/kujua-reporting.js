@@ -1,32 +1,20 @@
+var getParent = function(facility, type) {
+    while (facility && facility.type !== type) {
+        facility = facility.parent;
+    }
+    return facility;
+};
+
 /*
  * return array of facilities related to record. always order array by highest
  * level positioned first.  e.g. [dh, hc, clinic]
  */
 exports.getFacilitiesList = function(doc) {
-
-    var dh = {},
-        hc = {},
-        cl = {};
-
-    if (!doc.related_entities) {
-        return [dh, hc, cl];
-    };
-
-    // support records reported by clinic
-    if (doc.related_entities.clinic) {
-        dh = doc.related_entities.clinic.parent.parent;
-        hc = doc.related_entities.clinic.parent;
-        cl = doc.related_entities.clinic;
-        return [dh, hc, cl];
-    }
-
-    // support records reported by health center
-    if (doc.related_entities.health_center) {
-        dh = doc.related_entities.health_center.parent;
-        hc = doc.related_entities.health_center;
-        return [dh, hc, cl];
-    }
-
+    return [
+        getParent(doc.contact, 'district_hospital'),
+        getParent(doc.contact, 'health_center'),
+        getParent(doc.contact, 'clinic')
+    ];
 };
 
 /**

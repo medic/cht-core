@@ -223,12 +223,12 @@ require('moment/locales');
             $scope.facilities = hierarchy;
             $scope.facilitiesCount = total;
           });
-          Facility({ district: district, types: [ 'clinic' ] }, function(err, facilities) {
+          Facility({ district: district, types: [ 'person' ] }, function(err, facilities) {
             if (err) {
               return console.log('Failed to retrieve facilities', err);
             }
             function formatResult(row) {
-              return format.contact(row.doc);
+              return row && format.contact(row.doc);
             }
             $('#update-facility [name=facility]').select2({
               width: '100%',
@@ -543,11 +543,8 @@ require('moment/locales');
       };
       $scope.edit = function(record) {
         if ($scope.filterModel.type === 'reports') {
-          var val;
-          if (record.related_entities && record.related_entities.clinic) {
-            val = record.related_entities.clinic._id;
-          }
-          $('#update-facility [name=facility]').select2('val', val || '');
+          var val = (record.contact && record.contact._id) || '';
+          $('#update-facility [name=facility]').select2('val', val);
           $('#update-facility').modal('show');
         } else {
           $rootScope.$broadcast('EditContactInit', record);

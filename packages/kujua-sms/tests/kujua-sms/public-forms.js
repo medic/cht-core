@@ -26,7 +26,7 @@ exports.tearDown = function(callback) {
 };
 
 exports['public form has no facility not found error'] = function(test) {
-    test.expect(5);
+    test.expect(4);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYW);
 
     var req = {
@@ -42,14 +42,13 @@ exports['public form has no facility not found error'] = function(test) {
     test.ok(getForm.alwaysCalledWith('YYYW'));
     test.equals(doc.foo, 'foo'); // make sure form parsed correctly
     test.equals(doc.from, req.form.from);
-    test.same(doc.related_entities, { clinic: null });
     test.equals(doc.errors.length, 0);
 
     test.done();
 };
 
 exports['private form has facility not found error'] = function(test) {
-    test.expect(5);
+    test.expect(4);
     var getForm = sinon.stub(appInfo, 'getForm').returns(definitions.forms.YYYZ);
 
     var req = {
@@ -65,7 +64,6 @@ exports['private form has facility not found error'] = function(test) {
     test.ok(getForm.alwaysCalledWith('YYYZ'));
     test.equals(doc.two, 'two'); // make sure form parsed correctly
     test.equals(doc.from, req.form.from);
-    test.same(doc.related_entities, { clinic: null });
     test.equals(doc.errors.length, 1);
 
     test.done();

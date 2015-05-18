@@ -64,9 +64,7 @@ exports.total_clinics_by_facility = {
     }
 };
 
-//
 // data record must adhere to property name of `week` or `week_number`
-//
 exports.data_records_by_form_year_week_facility = {
     map: function (doc) {
 
@@ -106,9 +104,7 @@ exports.data_records_by_form_year_week_facility = {
     }
 };
 
-//
 // data record must adhere to property name of `month`
-//
 exports.data_records_by_form_year_month_facility = {
     map: function (doc) {
 

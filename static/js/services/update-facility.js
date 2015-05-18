@@ -17,20 +17,10 @@ var _ = require('underscore');
             if (err) {
               return callback(err);
             }
-            if (!message.related_entities) {
-              message.related_entities = {};
-            }
-            if (!message.related_entities.clinic) {
-              message.related_entities.clinic = {};
-            }
-            if (facility.type === 'health_center') {
-              message.related_entities.clinic = { parent: facility };
-            } else {
-              message.related_entities.clinic = facility;
-            }
-            if (message.related_entities.clinic) {
-              message.errors = _.filter(message.errors, function(error) {
-                return error.code !== 'sys.facility_not_found';
+            message.contact = facility;
+            if (facility) {
+              message.errors = _.reject(message.errors, function(error) {
+                return error.code === 'sys.facility_not_found';
               });
             }
             db.saveDoc(message, function(err) {

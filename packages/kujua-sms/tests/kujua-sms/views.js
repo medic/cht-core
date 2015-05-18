@@ -57,11 +57,11 @@ exports['data_records_read_by_type map emits one record per task'] = function (t
     tasks: [
       { 
         messages: [
-         { facility: { parent: { parent: { _id: 'a' } } } }
+         { contact: { parent: { parent: { _id: 'a', type: 'district_hospital' } } } }
         ]
       }, { 
         messages: [
-         { facility: { parent: { parent: { _id: 'b' } } } }
+         { contact: { parent: { parent: { _id: 'b', type: 'district_hospital' } } } }
         ]
       }
     ]
@@ -83,9 +83,7 @@ exports['data_records_read_by_type map emits dh id'] = function (test) {
   var doc = {
     type: 'data_record',
     form: 'ZYX',
-    related_entities: {
-      clinic: { parent: { parent: { _id: 'abc' } } }
-    }
+    contact: { parent: { parent: { _id: 'abc', type: 'district_hospital' } } }
   };
   views.data_records_read_by_type.map(doc);
   test.same(results.length, 1);
@@ -115,15 +113,7 @@ exports['data_records_read_by_type map emits read when populated array'] = funct
     type: 'data_record',
     read: ['gareth','milan','dave'],
     form: 'ZYX',
-    related_entities: {
-      clinic: {
-        parent: {
-          parent: {
-            _id: 'abc'
-          }
-        }
-      }
-    }
+    contact: { parent: { parent: { _id: 'abc', type: 'district_hospital' } } }
   };
   views.data_records_read_by_type.map(doc);
   test.same(results.length, 4);
