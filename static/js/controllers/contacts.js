@@ -113,8 +113,11 @@ var _ = require('underscore'),
       });
 
       $scope.$on('ContactUpdated', function(e, contact) {
-        if (!contact || contact._deleted) {
+        if (!contact) {
           return $scope.query();
+        } else if (contact._deleted) {
+          $scope.removeContact(contact);
+          return;
         }
         $state.go('contacts.detail', { id: contact._id });
         var outdated = _.findWhere($scope.items, { _id: contact._id });
@@ -123,7 +126,6 @@ var _ = require('underscore'),
         }
         _.extend(outdated, contact);
       });
-
     }
   ]);
 

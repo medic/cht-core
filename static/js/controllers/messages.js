@@ -22,7 +22,7 @@
             return console.log('Error fetching contact', err);
           }
           $scope.loading = false;
-          options.contacts = data;
+          options.messages = data;
           $scope.setMessages(options);
           if (callback) {
             callback();

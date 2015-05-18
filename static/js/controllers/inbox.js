@@ -38,7 +38,7 @@ require('moment/locales');
       $scope.baseUrl = BaseUrlService();
 
       $scope.setFilterQuery = function(query) {
-        if (!$scope.filterQuery.value && query) {
+        if (query) {
           $scope.filterQuery.value = query;
         }
       };
@@ -102,21 +102,21 @@ require('moment/locales');
         });
       };
 
-      var removeDeletedContacts = function(contacts) {
+      var removeDeletedMessages = function(messages) {
         var existingKey;
         var checkExisting = function(updated) {
           return existingKey === updated.key[1];
         };
         for (var i = $scope.items.length - 1; i >= 0; i--) {
           existingKey = $scope.items[i].key[1];
-          if (!_.some(contacts, checkExisting)) {
+          if (!_.some(messages, checkExisting)) {
             $scope.items.splice(i, 1);
           }
         }
       };
 
-      var mergeUpdatedContacts = function(contacts) {
-        _.each(contacts, function(updated) {
+      var mergeUpdatedMessages = function(messages) {
+        _.each(messages, function(updated) {
           var match = _.find($scope.items, function(existing) {
             return existing.key[1] === updated.key[1];
           });
@@ -133,10 +133,10 @@ require('moment/locales');
       $scope.setMessages = function(options) {
         options = options || {};
         if (options.changes) {
-          removeDeletedContacts(options.contacts);
-          mergeUpdatedContacts(options.contacts);
+          removeDeletedMessages(options.messages);
+          mergeUpdatedMessages(options.messages);
         } else {
-          $scope.items = options.contacts || [];
+          $scope.items = options.messages || [];
         }
       };
 
@@ -200,6 +200,11 @@ require('moment/locales');
           }
           $window.location.href = url;
         });
+      };
+
+      $scope.removeContact = function(contact) {
+        $scope.items = _.filter($scope.items, function(i) {
+            return i._id !== contact._id; });
       };
 
       $scope.$on('ContactUpdated', function() {
