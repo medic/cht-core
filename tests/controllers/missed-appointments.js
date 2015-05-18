@@ -175,7 +175,7 @@ exports['get returns all registrations with missed appointments'] = function(tes
           patient_name: 'sarah',
           form: 'R',
           reported_date: today.clone().subtract(10, 'weeks').toISOString(),
-          related_entities: { clinic: { id: 'x' } },
+          contact: { id: 'x' },
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
@@ -188,7 +188,7 @@ exports['get returns all registrations with missed appointments'] = function(tes
           patient_name: 'sally',
           form: 'P',
           lmp_date: today.clone().subtract(14, 'weeks').toISOString(),
-          related_entities: { clinic: { id: 'y' } },
+          contact: { id: 'y' },
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
@@ -225,7 +225,7 @@ exports['get returns all registrations with missed appointments'] = function(tes
 
     test.equals(results[0].patient_id, 1);
     test.equals(results[0].patient_name, 'sarah');
-    test.equals(results[0].clinic.id, 'x');
+    test.equals(results[0].contact.id, 'x');
     test.equals(results[0].weeks.number, 10);
     test.equals(results[0].weeks.approximate, true);
     test.equals(results[0].date.toISOString(), today.clone().subtract(20, 'days').toISOString());
@@ -234,7 +234,7 @@ exports['get returns all registrations with missed appointments'] = function(tes
 
     test.equals(results[1].patient_id, 2);
     test.equals(results[1].patient_name, 'sally');
-    test.equals(results[1].clinic.id, 'y');
+    test.equals(results[1].contact.id, 'y');
     test.equals(results[1].weeks.number, 12);
     test.equals(results[1].weeks.approximate, undefined);
     test.equals(results[1].date.toISOString(), today.clone().subtract(20, 'days').toISOString());

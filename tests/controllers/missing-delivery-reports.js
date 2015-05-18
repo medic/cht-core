@@ -96,7 +96,7 @@ exports['get returns all registrations with missed delivery reports'] = function
           patient_name: 'sarah',
           form: 'R',
           reported_date: today.clone().subtract(38, 'weeks').toISOString(),
-          related_entities: { clinic: { id: 'x' } },
+          contact: { id: 'x' },
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
@@ -109,7 +109,7 @@ exports['get returns all registrations with missed delivery reports'] = function
           patient_name: 'sally',
           form: 'P',
           lmp_date: today.clone().subtract(14, 'weeks').toISOString(),
-          related_entities: { clinic: { id: 'y' } },
+          contact: { id: 'y' },
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
@@ -122,7 +122,7 @@ exports['get returns all registrations with missed delivery reports'] = function
           patient_name: 'sharon',
           form: 'P',
           lmp_date: today.clone().subtract(42, 'weeks').toISOString(),
-          related_entities: { clinic: { id: 'y' } },
+          contact: { id: 'y' },
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
@@ -147,14 +147,14 @@ exports['get returns all registrations with missed delivery reports'] = function
 
     test.equals(results[0].patient_id, 1);
     test.equals(results[0].patient_name, 'sarah');
-    test.equals(results[0].clinic.id, 'x');
+    test.equals(results[0].contact.id, 'x');
     test.equals(results[0].edd.date.toISOString(), today.clone().add(2, 'weeks').toISOString());
     test.equals(results[0].edd.approximate, true);
     test.equals(results[0].high_risk, true);
 
     test.equals(results[1].patient_id, 3);
     test.equals(results[1].patient_name, 'sharon');
-    test.equals(results[1].clinic.id, 'y');
+    test.equals(results[1].contact.id, 'y');
     test.equals(results[1].edd.date.toISOString(), today.toISOString());
     test.equals(results[1].edd.approximate, undefined);
     test.equals(results[1].high_risk, undefined);
