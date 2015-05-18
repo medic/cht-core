@@ -105,7 +105,7 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
           patient_name: 'sarah',
           form: 'R',
           reported_date: today.clone().subtract(38, 'weeks').toISOString(),
-          contact: { id: 'x', type: 'clinic' }
+          contact: { id: 'x' }
         }
       },
       {
@@ -114,7 +114,7 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
           patient_name: 'sharon',
           form: 'P',
           lmp_date: today.clone().subtract(42, 'weeks').toISOString(),
-          contact: { id: 'y', type: 'clinic' }
+          contact: { id: 'y' }
         }
       }
     ]
@@ -138,7 +138,7 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
     test.equals(results[0].patient_name, 'sarah');
     test.equals(results[0].weeks.number, 38);
     test.equals(results[0].weeks.approximate, true);
-    test.equals(results[0].clinic.id, 'x');
+    test.equals(results[0].contact.id, 'x');
     test.equals(results[0].visits, 2);
     test.equals(results[0].high_risk, true);
 
@@ -146,7 +146,7 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
     test.equals(results[1].patient_name, 'sharon');
     test.equals(results[1].weeks.number, 40);
     test.equals(results[1].weeks.approximate, undefined);
-    test.equals(results[1].clinic.id, 'y');
+    test.equals(results[1].contact.id, 'y');
     test.equals(results[1].visits, 0);
     test.equals(results[1].high_risk, true);
 
@@ -174,7 +174,7 @@ exports['get returns all high risk pregnancies'] = function(test) {
           patient_name: 'sarah',
           form: 'R',
           reported_date: today.clone().subtract(38, 'weeks').toISOString(),
-          contact: { id: 'x', type: 'clinic' }
+          contact: { id: 'x' }
         }
       },
       {
@@ -183,7 +183,7 @@ exports['get returns all high risk pregnancies'] = function(test) {
           patient_name: 'sharon',
           form: 'P',
           lmp_date: today.clone().subtract(42, 'weeks').toISOString(),
-          contact: { id: 'y', type: 'clinic' }
+          contact: { id: 'y' }
         }
       },
       {
@@ -192,7 +192,7 @@ exports['get returns all high risk pregnancies'] = function(test) {
           patient_name: 'sharon',
           form: 'P',
           lmp_date: today.clone().subtract(42, 'weeks').toISOString(),
-          contact: { id: 'y', type: 'clinic' }
+          contact: { id: 'y' }
         }
       }
     ]
@@ -215,7 +215,7 @@ exports['get returns all high risk pregnancies'] = function(test) {
     test.equals(results[0].patient_name, 'sarah');
     test.equals(results[0].weeks.number, 38);
     test.equals(results[0].weeks.approximate, true);
-    test.equals(results[0].clinic.id, 'x');
+    test.equals(results[0].contact.id, 'x');
     test.equals(results[0].visits, 2);
     test.equals(results[0].high_risk, true);
 
@@ -223,7 +223,7 @@ exports['get returns all high risk pregnancies'] = function(test) {
     test.equals(results[1].patient_name, 'sharon');
     test.equals(results[1].weeks.number, 40);
     test.equals(results[1].weeks.approximate, undefined);
-    test.equals(results[1].clinic.id, 'y');
+    test.equals(results[1].contact.id, 'y');
     test.equals(results[1].visits, 0);
     test.equals(results[1].high_risk, true);
 
