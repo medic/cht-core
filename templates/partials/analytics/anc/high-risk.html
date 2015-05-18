@@ -35,7 +35,11 @@
               </a>
             </td>
             <td ng-bind-html="pregnancy.weeks | weeksPregnant"></td>
-            <td>{{pregnancy.clinic.contact.name}}</td>
+            <td>
+              <a ng-click="loadContact(pregnancy.contact._id)" ng-attr-title="{{'contact.history' | translate}}">
+                {{pregnancy.contact.name}}
+              </a>
+            </td>
             <td ng-class="{'no-visits': pregnancy.visits === 0}">
               <span>{{pregnancy.visits}}</span>
             </td>

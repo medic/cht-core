@@ -31,7 +31,11 @@
                 {{appointment.patient_name}}
               </a>
             </td>
-            <td>{{appointment.clinic.contact.name}}</td>
+            <td>
+              <a ng-click="loadContact(appointment.contact._id)" ng-attr-title="{{'contact.history' | translate}}">
+                {{appointment.contact.name}}
+              </a>
+            </td>
             <td>
               <span ng-class="{'approximate': pregnancy.edd.approximate}"><span ng-bind-html="pregnancy.edd | simpleDate"></span></span>
             </td>

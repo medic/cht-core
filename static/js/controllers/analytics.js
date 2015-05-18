@@ -43,6 +43,10 @@ var _ = require('underscore');
       $scope.loadPatient = function(id) {
         $state.go('reports.detail', { query: 'patient_id:' + id });
       };
+
+      $scope.loadContact = function(id) {
+        $state.go('reports.detail', { query: 'contact:' + id });
+      };
     }
   ]);
 

@@ -38,7 +38,7 @@ require('moment/locales');
       $scope.baseUrl = BaseUrlService();
 
       $scope.setFilterQuery = function(query) {
-        if (!$scope.filterQuery.value && query) {
+        if (query) {
           $scope.filterQuery.value = query;
         }
       };
