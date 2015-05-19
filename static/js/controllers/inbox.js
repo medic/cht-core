@@ -794,8 +794,12 @@ require('moment/locales');
 
       CountMessages.init();
 
-      $scope.$on('$stateChangeStart', function() {
-        ActiveRequests.cancelAll();
+      $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState) {
+        if(fromState.name !== toState.name) {
+          ActiveRequests.cancelExceptFor(["filters"]);
+        } else {
+          ActiveRequests.cancelExceptFor(["filters", "left"]);
+        }
       });
 
       $scope.reloadWindow = function() {

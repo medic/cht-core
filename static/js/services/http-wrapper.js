@@ -18,11 +18,16 @@ var _ = require('underscore');
             return p.url !== url;
           });
         },
-        cancelAll: function() {
+        cancelExceptFor: function(allow) {
+          var stillPending = [];
           _.each(pending, function(p) {
-            p.canceller.resolve();
+            if(_.contains(allow, p.updateTarget)) {
+              stillPending.push(p);
+            } else {
+              p.canceller.resolve();
+            }
           });
-          pending.length = 0;
+          pending = stillPending;
         }
       };
     }
@@ -32,13 +37,13 @@ var _ = require('underscore');
     '$http', '$q', 'ActiveRequests',
     function($http, $q, ActiveRequests) {
 
-      var wrap = function(args, fn) {
+      var wrap = function(args, fn, updateTarget) {
         args[args.length - 1] = args[args.length - 1] || {};
         if (args[args.length - 1].timeout === false) {
           return fn.apply(this, args);
         }
         var canceller = $q.defer();
-        ActiveRequests.add({ url: args[0], canceller: canceller });
+        ActiveRequests.add({ url: args[0], canceller: canceller, updateTarget: updateTarget });
         args[args.length - 1].timeout = canceller.promise;
         var promise = fn.apply(this, args);
         promise.finally(function() {
@@ -53,13 +58,16 @@ var _ = require('underscore');
        */
       return {
         get: function(url, options) {
-          return wrap([ url, options ], $http.get);
+          var updateTarget = options ? options.updateTarget : null;
+          return wrap([ url, options ], $http.get, updateTarget);
         },
         put: function(url, data, options) {
-          return wrap([ url, data, options ], $http.put);
+          var updateTarget = options ? options.updateTarget : null;
+          return wrap([ url, data, options ], $http.put, updateTarget);
         },
         head: function(url, options) {
-          return wrap([ url, options ], $http.head);
+          var updateTarget = options ? options.updateTarget : null;
+          return wrap([ url, options ], $http.head, updateTarget);
         }
       };
 

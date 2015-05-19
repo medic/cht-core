@@ -58,7 +58,7 @@ describe('HttpWrapper service', function() {
       done();
     });
 
-    ActiveRequests.cancelAll();
+    ActiveRequests.cancelExceptFor([]);
     $httpBackend.flush();
   });
 
@@ -73,7 +73,7 @@ describe('HttpWrapper service', function() {
       done();
     });
 
-    ActiveRequests.cancelAll();
+    ActiveRequests.cancelExceptFor([]);
     $httpBackend.flush();
   });
 
@@ -102,7 +102,7 @@ describe('HttpWrapper service', function() {
       done();
     });
 
-    ActiveRequests.cancelAll();
+    ActiveRequests.cancelExceptFor([]);
     $httpBackend.flush();
   });
 
@@ -117,7 +117,7 @@ describe('HttpWrapper service', function() {
       done();
     });
 
-    ActiveRequests.cancelAll();
+    ActiveRequests.cancelExceptFor([]);
     $httpBackend.flush();
   });
 
@@ -144,7 +144,7 @@ describe('HttpWrapper service', function() {
       done();
     });
 
-    ActiveRequests.cancelAll();
+    ActiveRequests.cancelExceptFor([]);
     $httpBackend.flush();
   });
 
@@ -158,7 +158,7 @@ describe('HttpWrapper service', function() {
       done();
     });
 
-    ActiveRequests.cancelAll();
+    ActiveRequests.cancelExceptFor([]);
     $httpBackend.flush();
   });
 
