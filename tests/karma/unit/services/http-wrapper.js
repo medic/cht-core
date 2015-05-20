@@ -58,22 +58,22 @@ describe('HttpWrapper service', function() {
       done();
     });
 
-    ActiveRequests.cancelExceptFor([]);
+    ActiveRequests.cancel({}, { name: 'test' });
     $httpBackend.flush();
   });
 
-  it('get ignores timeout if flag set', function(done) {
+  it('get ignores timeout if targetScope is root', function(done) {
     var expected = { _id: 'abc' };
     $httpBackend
       .expect('GET', '/_users/abc')
       .respond(200, expected);
 
-    service.get('/_users/abc', { timeout: false }).success(function(actual) {
+    service.get('/_users/abc', { targetScope: "root" }).success(function(actual) {
       chai.expect(actual).to.deep.equal(expected);
       done();
     });
 
-    ActiveRequests.cancelExceptFor([]);
+    ActiveRequests.cancel({}, { name: 'test' });
     $httpBackend.flush();
   });
 
@@ -102,22 +102,22 @@ describe('HttpWrapper service', function() {
       done();
     });
 
-    ActiveRequests.cancelExceptFor([]);
+    ActiveRequests.cancel({}, { name: 'test' });
     $httpBackend.flush();
   });
 
-  it('put ignores timeout if flag set', function(done) {
+  it('put ignores timeout if targetScope is root', function(done) {
     var expected = { _id: 'abc', name: 'gareth' };
     $httpBackend
       .expect('PUT', '/_users/abc', expected)
       .respond(200, 'Done');
 
-    service.put('/_users/abc', expected, { timeout: false }).success(function(actual) {
+    service.put('/_users/abc', expected, { targetScope: 'root' }).success(function(actual) {
       chai.expect(actual).to.deep.equal('Done');
       done();
     });
 
-    ActiveRequests.cancelExceptFor([]);
+    ActiveRequests.cancel({}, { name: 'test' });
     $httpBackend.flush();
   });
 
@@ -144,21 +144,21 @@ describe('HttpWrapper service', function() {
       done();
     });
 
-    ActiveRequests.cancelExceptFor([]);
+    ActiveRequests.cancel({}, { name: 'test' });
     $httpBackend.flush();
   });
 
-  it('head ignores timeout if flag set', function(done) {
+  it('head ignores timeout if targetScope is root', function(done) {
     $httpBackend
       .expect('HEAD', '/_users/abc')
       .respond(200, 'Found');
 
-    service.head('/_users/abc', { timeout: false }).success(function(actual) {
+    service.head('/_users/abc', { targetScope: 'root' }).success(function(actual) {
       chai.expect(actual).to.deep.equal('Found');
       done();
     });
 
-    ActiveRequests.cancelExceptFor([]);
+    ActiveRequests.cancel({}, { name: 'test' });
     $httpBackend.flush();
   });
 

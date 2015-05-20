@@ -18,10 +18,10 @@ var _ = require('underscore');
             return p.url !== url;
           });
         },
-        cancelExceptFor: function(allow) {
+        cancel: function(event, toState) {
           var stillPending = [];
           _.each(pending, function(p) {
-            if(_.contains(allow, p.targetScope)) {
+            if (toState.name.startsWith(p.targetScope)) {
               stillPending.push(p);
             } else {
               p.canceller.resolve();
@@ -39,7 +39,7 @@ var _ = require('underscore');
 
       var wrap = function(args, fn) {
         var options = args[args.length - 1] = args[args.length - 1] || {};
-        if (options.timeout === false) {
+        if (options.targetScope === "root") {
           return fn.apply(this, args);
         }
         var canceller = $q.defer();
@@ -53,7 +53,7 @@ var _ = require('underscore');
       };
 
       /**
-       * To disable the cancel on navigation feature, set 'timeout' to false
+       * To disable the cancel on navigation feature, set 'targetScope' to "root"
        * in the options param.
        */
       return {

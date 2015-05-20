@@ -84,7 +84,7 @@ var async = require('async'),
   inboxServices.factory('MessageContact', ['$rootScope', 'MessageContactsRaw', 'UserDistrict', 'Settings',
     function($rootScope, MessageContactsRaw, UserDistrict, Settings) {
       return function(options, callback) {
-        options.targetScope = "left";
+        options.targetScope = "messages";
         options.queryOptions = { group_level: 2 };
         query($rootScope, MessageContactsRaw, UserDistrict, Settings, options, callback);
       };
@@ -94,7 +94,7 @@ var async = require('async'),
   inboxServices.factory('ContactConversation', ['$rootScope', 'MessageContactsRaw', 'UserDistrict', 'Settings',
     function($rootScope, MessageContactsRaw, UserDistrict, Settings) {
       return function(options, callback) {
-        options.targetScope = "right";
+        options.targetScope = "messages.details";
         options.queryOptions = {
           reduce: false,
           descending: true,
