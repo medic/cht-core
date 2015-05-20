@@ -37,14 +37,14 @@ var _ = require('underscore');
     '$http', '$q', 'ActiveRequests',
     function($http, $q, ActiveRequests) {
 
-      var wrap = function(args, fn, updateTarget) {
-        args[args.length - 1] = args[args.length - 1] || {};
-        if (args[args.length - 1].timeout === false) {
+      var wrap = function(args, fn) {
+        var options = args[args.length - 1] = args[args.length - 1] || {};
+        if (options.timeout === false) {
           return fn.apply(this, args);
         }
         var canceller = $q.defer();
-        ActiveRequests.add({ url: args[0], canceller: canceller, updateTarget: updateTarget });
-        args[args.length - 1].timeout = canceller.promise;
+        ActiveRequests.add({ url: args[0], canceller: canceller, updateTarget: options.updateTarget });
+        options.timeout = canceller.promise;
         var promise = fn.apply(this, args);
         promise.finally(function() {
           ActiveRequests.remove(args[0]);
@@ -58,16 +58,13 @@ var _ = require('underscore');
        */
       return {
         get: function(url, options) {
-          var updateTarget = options ? options.updateTarget : null;
-          return wrap([ url, options ], $http.get, updateTarget);
+          return wrap([ url, options ], $http.get);
         },
         put: function(url, data, options) {
-          var updateTarget = options ? options.updateTarget : null;
-          return wrap([ url, data, options ], $http.put, updateTarget);
+          return wrap([ url, data, options ], $http.put);
         },
         head: function(url, options) {
-          var updateTarget = options ? options.updateTarget : null;
-          return wrap([ url, options ], $http.head, updateTarget);
+          return wrap([ url, options ], $http.head);
         }
       };
 
