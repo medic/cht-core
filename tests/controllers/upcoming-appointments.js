@@ -130,29 +130,29 @@ exports['get ignores registrations with no upcoming appointments'] = function(te
   var fti = sinon.stub(db, 'fti');
   fti.onFirstCall().callsArgWith(2, null, {
     rows: [
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 1,
           scheduled_tasks: []
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 2,
           scheduled_tasks: [ {
             group: 1,
-            due: moment().subtract(13, 'days').toISOString()
+            due: moment().subtract(15, 'days').toISOString()
           } ]
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 3,
           scheduled_tasks: [ {
             group: 1,
             due: moment().add(6, 'days').toISOString()
           } ]
-        } 
+        }
       }
     ]
   });
@@ -179,7 +179,7 @@ exports['get ignores registrations with upcoming appointment reminders'] = funct
           patient_id: 2,
           scheduled_tasks: [ {
             group: 1,
-            due: moment().subtract(13, 'days').toISOString()
+            due: moment().subtract(15, 'days').toISOString()
           }, {
             group: 1,
             due: moment().toISOString()
