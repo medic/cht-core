@@ -1065,6 +1065,99 @@ exports['valid javarosa message, values contain escaped delimiters'] = function 
     test.done();
 };
 
+exports['valid javarosa message with similarly named fields parses right'] = function (test) {
+    var getForm = sinon.stub(utils.info, 'getForm').returns({
+        "meta": {
+          "code": "T",
+          "label": "Test"
+        },
+        "fields": {
+          "problem": {
+            "labels": {
+              "short": "Health Facility Identifier",
+              "tiny": "P"
+            },
+            "type": "string"
+          },
+          "meta_problem": {
+            "labels": {
+              "short": "Health Facility Identifier",
+              "tiny": "MetaP"
+            },
+            "type": "string"
+          }
+        }
+    });
+    var def = utils.info.getForm('T');
+    var doc = {
+        sent_timestamp: '12-11-11 15:00',
+        from: '+15551212',
+        message: 'J1!T!p#Bar#metap#foo'
+    };
+
+    var obj = smsparser.parse(def, doc);
+
+    test.ok(getForm.alwaysCalledWith('T'));
+    test.same(obj, {
+        problem: "Bar",
+        meta_problem: "foo"
+    });
+
+    var arr = smsparser.parseArray(def, doc);
+    test.same(
+        arr,
+        ["12-11-11 15:00", "+15551212", "Bar", "foo"]
+    );
+
+    test.done();
+};
+
+exports['valid javarosa message with space in label parses right'] = function (test) {
+    var getForm = sinon.stub(utils.info, 'getForm').returns({
+        "meta": {
+          "code": "T",
+          "label": "Test"
+        },
+        "fields": {
+          "problem": {
+            "labels": {
+              "short": "Health Facility Identifier",
+              "tiny": "P"
+            }
+          },
+          "meta_problem": {
+            "labels": {
+              "short": "Health Facility Identifier",
+              "tiny": "MetaP"
+            }
+          }
+        }
+    });
+    var def = utils.info.getForm('T');
+    var doc = {
+        sent_timestamp: '12-11-11 15:00',
+        from: '+15551212',
+        // whitespace in label submissions
+        message: 'J1!T!p #Bar#  metap#foo'
+    };
+
+    var obj = smsparser.parse(def, doc);
+
+    test.ok(getForm.alwaysCalledWith('T'));
+    test.same(obj, {
+        problem: "Bar",
+        meta_problem: "foo"
+    });
+
+    var arr = smsparser.parseArray(def, doc);
+    test.same(
+        arr,
+        ["12-11-11 15:00", "+15551212", "Bar", "foo"]
+    );
+
+    test.done();
+};
+
 exports['junk example data'] = function (test) {
 
     var doc = {

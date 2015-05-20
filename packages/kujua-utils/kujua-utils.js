@@ -249,11 +249,44 @@ exports.updateTopNav = function(key, title, suffix) {
     $('body > .container div').filter(':first').attr('class','content');
 };
 
-exports.setTaskState = function(task, state) {
+/*
+ * Return task object that matches message uuid or a falsey value if match
+ * fails.
+ */
+exports.getTask = function(uuid, doc, type) {
+    type = type || 'message';
+    var ret;
+    if (!uuid || !doc || !doc.tasks) {
+        return;
+    }
+    if (type === 'message') {
+        for (var i in doc.tasks) {
+            for (var j in doc.tasks[i].messages) {
+                if (uuid === doc.tasks[i].messages[j].uuid) {
+                    return doc.tasks[i];
+                }
+            }
+        };
+    }
+    return ret;
+};
+
+/**
+ * Update task/message object in-place.  Used by message update functions when
+ * a message's state changes. Also adds new values to state history.
+ *
+ * @param {Object} task
+ * @param {String} state
+ * @param {Any} details (optional)
+ * @api public
+ */
+exports.setTaskState = function(task, state, details) {
     task.state = state;
+    task.state_details = details;
     task.state_history = task.state_history || [];
     task.state_history.push({
         state: state,
+        state_details: details,
         timestamp: new Date().toISOString()
     });
 };

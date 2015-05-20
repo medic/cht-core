@@ -4,7 +4,7 @@
 
 var _ = require('underscore'),
     moment = require('moment'),
-    logger = require('kujua-utils').logger,
+    kutils = require('kujua-utils'),
     info = require('views/lib/appinfo'),
     smsparser = require('views/lib/smsparser'),
     libphonenumber = require('libphonenumber/utils'),
@@ -216,7 +216,7 @@ var add_json = exports.add_json = function(doc, request) {
     try {
         data = JSON.parse(req.body);
     } catch(e) {
-        logger.error(req.body);
+        kutils.logger.error(req.body);
         return [null, getErrorResponse('Error: request body not valid JSON.')];
     }
 
@@ -252,7 +252,7 @@ var add_json = exports.add_json = function(doc, request) {
         record,
         JSON.stringify(getDefaultResponse(record))
     ];
-}
+};
 
 var add_sms = exports.add_sms = function(doc, request) {
 
@@ -283,4 +283,64 @@ var add_sms = exports.add_sms = function(doc, request) {
         JSON.stringify(getDefaultResponse(record))
     ];
 
+};
+
+/*
+ * Given a document UUID and a message UUID update a task's state property on a
+ * document.
+ *
+ * Method: PUT
+ *
+ * JSON body properties:
+ *
+ *   message_id {message uuid string} required
+ *   state {state value} required
+ *   state_message {message value}
+ *
+ * On success returns HTTP 200 code and JSON body. `id` is the doc id.
+ *
+ * {
+ *   "payload":{
+ *     "success":true,
+ *     "id":"364c796a843fbe0a73476f9153012733"
+ *   }
+ * }
+ *
+ * On failure returns HTTP non-200 and JSON body:
+ * {
+ *   "payload":{
+ *     "success":false,
+ *     "error":"Your hair is not combed properly."
+ *   }
+ * }
+ *
+ */
+exports.update_message_task = function(doc, request) {
+    var data, msg;
+    var fail = function(msg, code) {
+        return [null, getErrorResponse(msg, code)];
+    };
+    if (!doc) {
+        return fail('Document not found: ' + doc, 404);
+    }
+    try {
+        data = JSON.parse(request.body);
+    } catch(e) {
+        return fail('Parsing JSON body failed');
+    }
+    if (!data.state) {
+        return fail('Value required for state.');
+    }
+    if (!data.message_id) {
+        return fail('Message id required');
+    }
+    msg = kutils.getTask(data.message_id, doc);
+    if (!data.message_id || !msg) {
+        return fail('Message not found: ' + data.message_id);
+    }
+    kutils.setTaskState(msg, data.state, data.details);
+    return [
+        doc,
+        JSON.stringify(getDefaultResponse(doc))
+    ];
 };
