@@ -464,8 +464,12 @@ exports.tasks_pending = {
 
 exports.duplicate_form_submissions = {
     map: function(doc) {
-        if(doc.type == "data_record" && doc.sms_message.form){
-            emit([doc.sms_message.form, doc.sms_message.from, doc.sms_message.message], doc._rev);
+        if (doc.type == "data_record" &&
+                doc.sms_message &&
+                doc.sms_message.form) {
+            emit([doc.sms_message.form,
+                    doc.sms_message.from,
+                    doc.sms_message.message], doc._rev);
         }
     },
 
