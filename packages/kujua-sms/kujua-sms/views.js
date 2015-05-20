@@ -349,6 +349,23 @@ exports.facility_by_parent = {
     }
 };
 
+/**
+ * Used in the medic-data generate script
+ */
+exports.facility_by_phone = {
+    map: function (doc) {
+        if (doc.contact && doc.type) {
+            if (doc.type === 'clinic') {
+                emit([doc.contact.phone, 'clinic'], doc);
+            } else if (doc.type === 'health_center') {
+                emit([doc.contact.phone, 'health_center'], doc);
+            } else if (doc.type === 'district_hospital') {
+                emit([doc.contact.phone, 'district_hospital'], doc);
+            }
+        }
+    }
+};
+
 /*
  * Get clinic based on phone number
  */
