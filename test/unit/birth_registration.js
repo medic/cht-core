@@ -57,7 +57,7 @@ exports.tearDown = function(callback) {
         transition.getConfig.restore();
 
     callback();
-}
+};
 
 exports['setBirthDate sets birth_date correctly for weeks_since_birth: 0'] = function(test) {
     var doc,

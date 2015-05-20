@@ -26,7 +26,7 @@ exports['due_tasks handles view returning no rows'] = function(test) {
   test.equals(view.callCount, 1);
   test.equals(saveDoc.callCount, 0);
   test.done();
-}
+};
 
 exports['set all due scheduled tasks to pending'] = function(test) {
   test.expect(11);
@@ -82,8 +82,7 @@ exports['set all due scheduled tasks to pending'] = function(test) {
   test.equals(saved.scheduled_tasks[1].due, notDue);
   test.equals(saved.scheduled_tasks[1].state, 'scheduled');
   test.done();
-}
-
+};
 
 exports['set all due scheduled tasks to pending and handles repeated rows'] = function(test) {
   test.expect(8);
@@ -142,8 +141,7 @@ exports['set all due scheduled tasks to pending and handles repeated rows'] = fu
   test.equals(saved.scheduled_tasks[1].due, notDue);
   test.equals(saved.scheduled_tasks[1].state, 'scheduled');
   test.done();
-}
-
+};
 
 exports['set all due scheduled tasks to pending and handles nonrepeated rows'] = function(test) {
   test.expect(9);
@@ -219,5 +217,4 @@ exports['set all due scheduled tasks to pending and handles nonrepeated rows'] =
   test.equals(saved2.scheduled_tasks[0].due, due);
   test.equals(saved2.scheduled_tasks[0].state, 'pending');
   test.done();
-}
-
+};

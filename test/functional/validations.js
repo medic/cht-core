@@ -12,13 +12,13 @@ exports.tearDown = function(callback) {
     if (transition.getAcceptedReports.restore)
         transition.getAcceptedReports.restore();
     callback();
-}
+};
 
 exports.setUp = function(callback) {
     // not required since these tests never pass pupil validations
     // sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     callback();
-}
+};
 
 exports['patient id failing validation adds error'] = function(test) {
     test.expect(3);
@@ -50,7 +50,7 @@ exports['patient id failing validation adds error'] = function(test) {
         test.equals(doc.errors[0].message, 'bad id xxxx');
         test.done();
     });
-}
+};
 
 exports['join responses concats validation response msgs'] = function(test) {
     test.expect(5);
@@ -104,12 +104,13 @@ exports['join responses concats validation response msgs'] = function(test) {
         // response should include all validation response messages
         test.equals(
             doc.tasks[0].messages[0].message,
-            'patient id should be 5 characters'
-            + '  ' + 'patient name should be between 5 and 50 chars.'
+            'patient id should be 5 characters  ' +
+            'patient name should be between 5 and 50 chars.'
         );
         test.done();
     });
-}
+};
+
 exports['false join_responses does not concat validation msgs'] = function(test) {
     test.expect(5);
 
@@ -166,7 +167,7 @@ exports['false join_responses does not concat validation msgs'] = function(test)
         );
         test.done();
     });
-}
+};
 
 exports['undefined join_responses does not concat validation msgs'] = function(test) {
     test.expect(5);
@@ -223,4 +224,4 @@ exports['undefined join_responses does not concat validation msgs'] = function(t
         );
         test.done();
     });
-}
+};

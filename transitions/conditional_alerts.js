@@ -44,7 +44,7 @@ module.exports = {
                 context[alert.form] = function(i) {
                     var row = rows[rows.length - 1 - i];
                     return row ? row.doc : row;
-                }
+                };
                 module.exports._runCondition(alert.condition, context, callback);
             });
         }
@@ -53,7 +53,7 @@ module.exports = {
         return Boolean(
             doc &&
             doc.transitions &&
-            doc.transitions['conditional_alerts']
+            doc.transitions.conditional_alerts
         );
     },
     filter: function(doc) {

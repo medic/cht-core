@@ -29,7 +29,7 @@ Debug mode:
 
 ## Run Tests
 
-`npm test`
+`grunt test`
 
 ## Transitions API
 

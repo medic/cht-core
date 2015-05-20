@@ -4,18 +4,16 @@ var _ = require('underscore'),
     sinon = require('sinon'),
     moment = require('moment'),
     utils = require('../../lib/utils'),
-    contact;
-
-contact = {
-    phone: '+1234',
-    name: 'Julie',
-    parent: {
-        contact: {
-            phone: '+1234',
-            name: 'Julie'
+    contact = {
+        phone: '+1234',
+        name: 'Julie',
+        parent: {
+            contact: {
+                phone: '+1234',
+                name: 'Julie'
+            }
         }
-    }
-};
+    };
 
 function getMessage(doc, idx) {
     if (!doc || !doc.tasks) return;
@@ -52,7 +50,7 @@ exports.tearDown = function(callback) {
         schedules.getScheduleConfig.restore();
     }
     callback();
-}
+};
 
 exports['registration sets up schedule'] = function(test) {
 

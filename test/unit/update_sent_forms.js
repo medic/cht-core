@@ -6,7 +6,7 @@ var _ = require('underscore'),
 exports.setUp = function(callback) {
     process.env.TEST_ENV = true;
     callback();
-}
+};
 
 exports['onMatch is a function'] = function(test) {
     test.ok(_.isFunction(transition.onMatch));
@@ -66,11 +66,11 @@ exports['calls audit.saveDoc with clinic and updated sent_forms'] = function(tes
         var call = save.getCall(0),
             clinic = call.args[0];
         test.ok(clinic.sent_forms);
-        test.ok(clinic.sent_forms['XXX']);
-        test.equals(clinic.sent_forms['XXX'], now.toISOString());
+        test.ok(clinic.sent_forms.XXX);
+        test.equals(clinic.sent_forms.XXX, now.toISOString());
         test.done();
     });
-}
+};
 
 exports['does not overwrite if existing date is after'] = function(test) {
     test.expect(1);
@@ -98,7 +98,7 @@ exports['does not overwrite if existing date is after'] = function(test) {
         test.ok(!changed);
         test.done();
     });
-}
+};
 
 exports['overwrites if existing date is before'] = function(test) {
     test.expect(3);
@@ -128,8 +128,8 @@ exports['overwrites if existing date is before'] = function(test) {
         var call = save.getCall(0),
             clinic = call.args[0];
         test.ok(clinic.sent_forms);
-        test.ok(clinic.sent_forms['XXX']);
-        test.equals(clinic.sent_forms['XXX'], now.toISOString());
+        test.ok(clinic.sent_forms.XXX);
+        test.equals(clinic.sent_forms.XXX, now.toISOString());
         test.done();
     });
-}
+};

@@ -165,7 +165,7 @@ exports['is id only'] = function(test) {
         getid: 'x'
     }), true);
     test.done();
-}
+};
 
 exports['setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0'] = function(test) {
     var doc = {lmp: 0};
@@ -173,7 +173,7 @@ exports['setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0
     test.equals(doc.lmp_date, null);
     test.equals(doc.expected_date, null);
     test.done();
-}
+};
 
 exports['setExpectedBirthDate sets lmp_date and expected_date correctly for lmp: 10'] = function(test) {
     var doc,
@@ -190,7 +190,7 @@ exports['setExpectedBirthDate sets lmp_date and expected_date correctly for lmp:
     test.equals(doc.expected_date, start.clone().add(30, 'weeks').toISOString());
 
     test.done();
-}
+};
 
 exports['valid adds lmp_date and patient_id'] = function(test) {
     test.expect(5);
@@ -215,7 +215,7 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
         test.equals(doc.tasks, undefined);
         test.done();
     });
-}
+};
 
 exports['zero lmp value only registers patient'] = function(test) {
 
@@ -239,7 +239,7 @@ exports['zero lmp value only registers patient'] = function(test) {
         test.equals(doc.tasks, undefined);
         test.done();
     });
-}
+};
 
 exports['id only logic with valid name'] = function(test) {
     var doc;
@@ -263,7 +263,7 @@ exports['id only logic with valid name'] = function(test) {
 
         test.done();
     });
-}
+};
 
 exports['id only logic with invalid name'] = function(test) {
     test.expect(5);
@@ -289,7 +289,7 @@ exports['id only logic with invalid name'] = function(test) {
         test.equals(getMessage(doc), 'Invalid patient name.');
         test.done();
     });
-}
+};
 
 exports['invalid name valid LMP logic'] = function(test) {
     test.expect(4);
@@ -313,7 +313,7 @@ exports['invalid name valid LMP logic'] = function(test) {
 
         test.done();
     });
-}
+};
 
 exports['valid name invalid LMP logic'] = function(test) {
     var doc;
@@ -335,7 +335,7 @@ exports['valid name invalid LMP logic'] = function(test) {
 
         test.done();
     });
-}
+};
 
 exports['invalid name invalid LMP logic'] = function(test) {
     var doc;
@@ -357,7 +357,7 @@ exports['invalid name invalid LMP logic'] = function(test) {
 
         test.done();
     });
-}
+};
 
 exports['mismatched form returns false'] = function(test) {
     transition.onMatch({
@@ -367,8 +367,8 @@ exports['mismatched form returns false'] = function(test) {
     }, {}, {}, function(err, changed) {
         test.equals(changed, undefined);
         test.done();
-    })
-}
+    });
+};
 
 exports['missing all fields returns validation errors'] = function(test) {
     test.expect(2);
@@ -386,4 +386,4 @@ exports['missing all fields returns validation errors'] = function(test) {
         );
         test.done();
     });
-}
+};

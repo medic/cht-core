@@ -7,7 +7,7 @@ var sinon = require('sinon'),
 exports.setUp = function(callback) {
     process.env.TEST_ENV = true;
     callback();
-}
+};
 
 exports.tearDown = function(callback) {
     if (fakedb.medic.view.restore) {

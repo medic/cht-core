@@ -35,7 +35,7 @@ exports['invalid patient response'] = function(test) {
         test.ok(complete);
         test.ok(task);
         message = (_.first(task.messages) || {}).message;
-        test.same(message, "No patient with id 'fake' found.")
+        test.same(message, "No patient with id 'fake' found.");
         // no message to health facility if advice was received
         test.equal(doc.tasks.length, 1);
         test.done();
@@ -201,8 +201,8 @@ exports['PNC danger sign and no advice response'] = function(test) {
     sinon.stub(utils, 'getOHWRegistration').callsArgWith(1, null, found);
     var msg1 = "Thank you, Paul. Danger sign for ABC has been recorded.";
 
-    var msg2 = "Paul has reported a danger sign for 123. Please follow up "
-        + "with her and provide necessary assistance immediately.";
+    var msg2 = "Paul has reported a danger sign for 123. Please follow up " +
+               "with her and provide necessary assistance immediately.";
 
     transition.onMatch({
         doc: doc

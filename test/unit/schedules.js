@@ -3,7 +3,7 @@ var _ = require('underscore'),
     moment = require('moment'),
     schedules = require('../../lib/schedules');
 
-exports['signature'] = function(test) {
+exports['function signature'] = function(test) {
     test.ok(_.isFunction(schedules.assignSchedule));
     test.equals(schedules.assignSchedule.length, 2);
     test.done();
@@ -60,7 +60,7 @@ exports['assignSchedule returns false if already has scheduled_task for that nam
     test.equals(added, false);
     test.equals(doc.scheduled_tasks.length, 1);
     test.done();
-}
+};
 
 exports['schedule generates two messages'] = function(test) {
 
@@ -99,7 +99,7 @@ exports['schedule generates two messages'] = function(test) {
     test.equals(moment(doc.scheduled_tasks[1].due).diff(doc.reported_date, 'days'), 81);
 
     test.done();
-}
+};
 
 exports['scheduled due timestamp respects timezone'] = function(test) {
     var doc = {
@@ -128,7 +128,7 @@ exports['scheduled due timestamp respects timezone'] = function(test) {
         "2050-03-14T08:00:00.000Z"
     );
     test.done();
-}
+};
 
 exports['scheduled due timestamp respects send_day Monday'] = function(test) {
     var doc = {
@@ -161,7 +161,7 @@ exports['scheduled due timestamp respects send_day Monday'] = function(test) {
         "Monday"
     );
     test.done();
-}
+};
 
 exports['scheduled due timestamp respects send_day Wednesday'] = function(test) {
     var doc = {
@@ -194,7 +194,7 @@ exports['scheduled due timestamp respects send_day Wednesday'] = function(test) 
         "Wednesday"
     );
     test.done();
-}
+};
 
 exports['scheduled due timestamp respects send_day and send_time'] = function(test) {
     var doc = {
@@ -228,7 +228,7 @@ exports['scheduled due timestamp respects send_day and send_time'] = function(te
         "Wednesday"
     );
     test.done();
-}
+};
 
 exports['scheduled item without message is skipped'] = function(test) {
     var doc = {
@@ -250,7 +250,7 @@ exports['scheduled item without message is skipped'] = function(test) {
     test.equals(added, false);
     test.ok(!doc.scheduled_tasks);
     test.done();
-}
+};
 
 exports['scheduled item with only spaces message is skipped'] = function(test) {
     var doc = {
@@ -275,7 +275,7 @@ exports['scheduled item with only spaces message is skipped'] = function(test) {
     test.equals(added, false);
     test.ok(!doc.scheduled_tasks);
     test.done();
-}
+};
 
 exports['schedule does not generate messages in past'] = function(test) {
     var added,
@@ -316,7 +316,7 @@ exports['schedule does not generate messages in past'] = function(test) {
     test.equals(moment(doc.scheduled_tasks[0].due).diff(doc.some_date, 'weeks'), 20);
 
     test.done();
-}
+};
 
 exports['when start from is null skip schedule creation'] = function(test) {
     var added;
@@ -352,7 +352,7 @@ exports['when start from is null skip schedule creation'] = function(test) {
     test.equals(added, true);
     test.ok(!doc.scheduled_tasks);
     test.done();
-}
+};
 
 exports['alreadyRun validation'] = function(test) {
     test.equals(schedules.alreadyRun({}, 'x'), false);
@@ -369,7 +369,7 @@ exports['alreadyRun validation'] = function(test) {
                 name: 'x'
             }
         ]
-    }, 'x'), true)
+    }, 'x'), true);
     test.equals(schedules.alreadyRun({
         tasks: [
             {

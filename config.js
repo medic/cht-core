@@ -19,7 +19,7 @@ function initInfo(callback) {
         self.last_valid_seq = (first && first.value.seq);
         callback();
     });
-};
+}
 
 function initFeed(callback) {
     /*
@@ -46,7 +46,7 @@ function initFeed(callback) {
 
     feed.follow();
     callback();
-};
+}
 
 function initConfig(data, callback) {
     var settings = data.settings;
@@ -58,15 +58,15 @@ function initConfig(data, callback) {
     _.extend(config, settings);
     logger.debug(
         'Reminder messages allowed between %s:%s and %s:%s',
-        config['schedule_morning_hours'],
-        config['schedule_morning_minutes'],
-        config['schedule_evening_hours'],
-        config['schedule_evening_minutes']
+        config.schedule_morning_hours,
+        config.schedule_morning_minutes,
+        config.schedule_evening_hours,
+        config.schedule_evening_minutes
     );
     initFeed(function(err) {
         initInfo(callback);
     });
-};
+}
 
 module.exports = {
     _initConfig: initConfig,

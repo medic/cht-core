@@ -4,7 +4,7 @@ var _ = require('underscore'),
 
 exports.tearDown = function(callback) {
     callback();
-}
+};
 
 exports['filter signature'] = function(test) {
     test.ok(_.isFunction(transition.filter));

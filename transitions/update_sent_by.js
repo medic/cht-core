@@ -16,8 +16,8 @@ module.exports = {
         return Boolean(
             doc &&
             doc.transitions &&
-            doc.transitions['update_sent_by'] &&
-            doc.transitions['update_sent_by'].ok
+            doc.transitions.update_sent_by &&
+            doc.transitions.update_sent_by.ok
         );
     },
     onMatch: function(change, db, audit, callback) {
@@ -34,7 +34,7 @@ module.exports = {
             }
             clinic = _.result(_.first(result.rows), 'doc'); // _.result handles falsey first row
             sent_by = utils.getClinicContactName(clinic, true) || utils.getClinicName(clinic, true);
-            if (sent_by != null) {
+            if (sent_by !== null) {
                 doc.sent_by = sent_by;
                 return callback(null, true);
             }

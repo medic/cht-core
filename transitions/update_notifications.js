@@ -39,7 +39,7 @@ var hasRun = function(doc) {
     return Boolean(
         doc &&
         doc.transitions &&
-        doc.transitions['update_notifications']
+        doc.transitions.update_notifications
     );
 };
 
@@ -94,7 +94,7 @@ module.exports = {
                             msgs.push(err.message);
                         } else if (err) {
                             msgs.push(err);
-                        };
+                        }
                     });
                     messages.addReply(doc, msgs.join('  '));
                 } else {
@@ -125,7 +125,7 @@ module.exports = {
                         phone: messages.getRecipientPhone(doc, msg.recipient),
                         registrations: registrations
                     });
-                };
+                }
 
                 if (err) {
                     callback(err);

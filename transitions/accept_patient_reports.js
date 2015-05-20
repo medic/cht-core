@@ -30,7 +30,7 @@ module.exports = {
         return Boolean(
             doc &&
             doc.transitions &&
-            doc.transitions['accept_patient_reports']
+            doc.transitions.accept_patient_reports
         );
     },
     getAcceptedReports: function() {
@@ -122,7 +122,7 @@ module.exports = {
         if (options.silence_for) {
             silence_until = reported_date.clone();
             silence_until.add(date.getDuration(options.silence_for));
-        };
+        }
 
         return _.filter(utils.filterScheduledMessages(registration, types), function(msg) {
             var due = moment(msg.due),
@@ -133,9 +133,9 @@ module.exports = {
             // in the future.
             if (silence_until) {
                 matches = (
-                    due >= reported_date
-                    && due <= silence_until
-                    && msg.state === 'scheduled'
+                    due >= reported_date &&
+                    due <= silence_until &&
+                    msg.state === 'scheduled'
                 );
                 // capture first match for group matching
                 if (matches && !first) {
@@ -145,8 +145,8 @@ module.exports = {
                 return (first && first.group === msg.group);
             } else {
                 return (
-                    due >= reported_date
-                    && msg.state === 'scheduled'
+                    due >= reported_date &&
+                    msg.state === 'scheduled'
                 );
             }
         });
@@ -216,7 +216,7 @@ module.exports = {
                             msgs.push(err.message);
                         } else if (err) {
                             msgs.push(err);
-                        };
+                        }
                     });
                     messages.addReply(doc, msgs.join('  '));
                 } else {

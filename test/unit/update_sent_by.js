@@ -7,7 +7,7 @@ var sinon = require('sinon'),
 exports.setUp = function(callback) {
     process.env.TEST_ENV = true;
     callback();
-}
+};
 
 exports.tearDown = function(callback) {
     if (fakedb.medic.view.restore) {
@@ -60,7 +60,7 @@ exports['updates sent_by to contact name if both available'] = function(test) {
         test.equal(doc.sent_by, 'CCN');
         test.done();
     });
-}
+};
 
 exports['updates sent_by to clinic name if contact name not available'] = function(test) {
     var doc = {
@@ -85,7 +85,7 @@ exports['updates sent_by to clinic name if contact name not available'] = functi
         test.ok(dbView.calledOnce);
         test.done();
     });
-}
+};
 
 exports['sent_by untouched if nothing available'] = function(test) {
     var doc = {
@@ -99,4 +99,4 @@ exports['sent_by untouched if nothing available'] = function(test) {
         test.strictEqual(doc.sent_by, undefined);
         test.done();
     });
-}
+};

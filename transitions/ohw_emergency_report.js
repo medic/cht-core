@@ -45,19 +45,19 @@ var addAlerts = function() {
         });
     }
 
-    if ((doc.anc_labor_pnc === 'PNC' || doc.anc_labor_pnc === 'ANC')
-        && doc.labor_danger === 'Yes'
-        && doc.advice_received === 'No')
+    if ((doc.anc_labor_pnc === 'PNC' || doc.anc_labor_pnc === 'ANC') &&
+        doc.labor_danger === 'Yes' &&
+        doc.advice_received === 'No')
             return finalize(msgs.alerts.default);
 
-    if (doc.anc_labor_pnc === 'In labor'
-        && doc.labor_danger === 'No'
-        && doc.advice_received === 'No')
+    if (doc.anc_labor_pnc === 'In labor' &&
+        doc.labor_danger === 'No' &&
+        doc.advice_received === 'No')
             return finalize(msgs.alerts.labor);
 
-    if (doc.anc_labor_pnc === 'In labor'
-        && doc.labor_danger === 'Yes'
-        && doc.advice_received === 'No')
+    if (doc.anc_labor_pnc === 'In labor' &&
+        doc.labor_danger === 'Yes' &&
+        doc.advice_received === 'No')
             return finalize(msgs.alerts.danger_labor);
 
 };
@@ -74,14 +74,14 @@ var addResponse = function() {
                 patient_id: doc.patient_id
             })
         });
-    };
+    }
 
-    if ((doc.anc_labor_pnc === 'PNC' || doc.anc_labor_pnc === 'ANC')
-        && doc.labor_danger === 'Yes')
+    if ((doc.anc_labor_pnc === 'PNC' || doc.anc_labor_pnc === 'ANC') &&
+        doc.labor_danger === 'Yes')
         return finalize(msgs.danger);
 
-    if ((doc.anc_labor_pnc === 'PNC' || doc.anc_labor_pnc === 'ANC')
-        && doc.labor_danger === 'No')
+    if ((doc.anc_labor_pnc === 'PNC' || doc.anc_labor_pnc === 'ANC') &&
+        doc.labor_danger === 'No')
         return finalize(msgs.no_danger);
 
     if (doc.anc_labor_pnc === 'In labor' && doc.labor_danger === 'No')

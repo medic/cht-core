@@ -10,20 +10,20 @@ module.exports = {
     filter: function(doc) {
         var self = module.exports;
         return Boolean(
-            doc
-            && doc.from
-            && doc.type === 'data_record'
-            && !doc.kujua_message
-            && self._isReportedAfterStartDate(doc)
-            && !self._hasRun(doc)
-            && !self._isMessageFromGateway(doc)
+            doc &&
+            doc.from &&
+            doc.type === 'data_record' &&
+            !doc.kujua_message &&
+            self._isReportedAfterStartDate(doc) &&
+            !self._hasRun(doc) &&
+            !self._isMessageFromGateway(doc)
         );
     },
     _hasRun: function(doc) {
         return Boolean(
             doc &&
             doc.transitions &&
-            doc.transitions['default_responses']
+            doc.transitions.default_responses
         );
     },
     /*

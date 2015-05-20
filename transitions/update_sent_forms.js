@@ -26,7 +26,7 @@ module.exports = {
         return Boolean(
             doc &&
             doc.transitions &&
-            doc.transitions['update_sent_forms']
+            doc.transitions.update_sent_forms
         );
     },
     _getConfig: function() {

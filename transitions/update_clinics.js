@@ -51,7 +51,7 @@ module.exports = {
         return Boolean(
             doc &&
             doc.transitions &&
-            doc.transitions['update_clinics']
+            doc.transitions.update_clinics
         );
     },
     onMatch: function(change, db, audit, callback) {
@@ -100,4 +100,4 @@ module.exports = {
         });
         callback(null, true);
     }
-}
+};

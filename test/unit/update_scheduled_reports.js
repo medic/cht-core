@@ -119,7 +119,7 @@ exports['calls audit.bulkSave with correct arguments'] = function(test) {
   test.equals(view.callCount, 1);
   test.equals(bulkSave.callCount, 1);
   test.done();
-}
+};
 
 exports['merge duplicates'] = function(test) {
   // TODO
@@ -154,4 +154,4 @@ exports['merge duplicates'] = function(test) {
     ]
   });
   test.done();
-}
+};

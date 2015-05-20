@@ -298,7 +298,7 @@ var attach = function() {
                 }
 
                 /* Be somewhat informative */
-                if (processed > 0 && (processed % progress_interval) == 0) {
+                if (processed > 0 && (processed % progress_interval) === 0) {
                     logger.info('backlog: %d items processed', processed);
                 }
 
@@ -363,4 +363,4 @@ module.exports = {
     finalize: finalize,
     applyTransition: applyTransition,
     applyTransitions: applyTransitions
-}
+};

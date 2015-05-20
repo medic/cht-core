@@ -28,7 +28,7 @@ exports['reminders#execute is function'] = function(test) {
     test.expect(1);
     test.ok(_.isFunction(reminders.execute));
     test.done();
-}
+};
 
 exports['config with no reminders calls callback'] = function(test) {
     test.expect(1);
@@ -99,7 +99,7 @@ exports['matches reminder with moment if in last hour'] = function(test) {
         window.restore();
         test.done();
     });
-}
+};
 
 exports['runReminder decorates options with moment if found'] = function(test) {
     var sendReminders,
@@ -134,7 +134,7 @@ exports['does not match reminder if in next minute'] = function(test) {
         test.equals(matches, false);
         test.done();
     });
-}
+};
 
 exports['does not match if previous to reminder'] = function(test) {
     var window = sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour')),
@@ -186,7 +186,7 @@ exports['getClinics calls db.view'] = function(test) {
         test.ok(db.view.called);
         test.done();
     });
-}
+};
 
 exports['getClinics ignores clinics with matching sent_reminders'] = function(test) {
     var db,
@@ -251,7 +251,7 @@ exports['getClinics ignores clinics with matching sent_reminders'] = function(te
         test.equals(clinics.length, 3);
         test.done();
     });
-}
+};
 
 exports['sendReminders calls sendReminder for each clinic'] = function(test) {
     var clinics,
@@ -274,7 +274,7 @@ exports['sendReminders calls sendReminder for each clinic'] = function(test) {
         test.equals(sendReminder.callCount, 2);
         test.done();
     });
-}
+};
 
 exports['sendReminder saves doc with added task to clinic'] = function(test) {
     var db,
@@ -349,7 +349,7 @@ exports['canSend returns true if no tasks matching reminder'] = function(test) {
 
     test.equals(canSend, true);
     test.done();
-}
+};
 
 exports['canSend returns false if a task matches reminder'] = function(test) {
     var canSend,
@@ -375,7 +375,7 @@ exports['canSend returns false if a task matches reminder'] = function(test) {
 
     test.equals(canSend, false);
     test.done();
-}
+};
 
 exports['canSend returns false if a sent_forms within lockout period of reminder'] = function(test) {
     var canSend,
@@ -396,7 +396,7 @@ exports['canSend returns false if a sent_forms within lockout period of reminder
 
     test.equals(canSend, false);
     test.done();
-}
+};
 
 exports['canSend returns true if a sent_forms outside of lockout period of reminder'] = function(test) {
     var canSend,
@@ -417,7 +417,7 @@ exports['canSend returns true if a sent_forms outside of lockout period of remin
 
     test.equals(canSend, true);
     test.done();
-}
+};
 
 exports['getReminderWindow returns a day ago when no results from db'] = function(test) {
     var db,

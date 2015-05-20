@@ -9,12 +9,12 @@ var restore = function(objs) {
     _.each(objs, function(obj) {
         if (obj.restore) obj.restore();
     });
-}
+};
 
 exports.setUp = function(callback) {
     sinon.stub(transition, '_isReportedAfterStartDate').returns(true);
     callback();
-}
+};
 
 exports.tearDown = function(callback) {
     restore([
@@ -31,7 +31,7 @@ exports.tearDown = function(callback) {
         messages.addMessage
     ]);
     callback();
-}
+};
 
 exports['onMatch signature'] = function(test) {
     test.ok(_.isFunction(transition.onMatch));
@@ -100,7 +100,7 @@ exports['do not pass filter when numbers are same but different formats'] = func
 };
 
 exports['pass filter when message is not from gateway'] = function(test) {
-    sinon.stub(transition, '_getConfig').returns('+774455558889')
+    sinon.stub(transition, '_getConfig').returns('+774455558889');
     test.equals(transition.filter({
         from: '+222',
         type: 'data_record',

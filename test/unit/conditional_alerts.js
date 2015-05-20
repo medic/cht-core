@@ -8,7 +8,7 @@ var restore = function(objs) {
     _.each(objs, function(obj) {
         if (obj.restore) obj.restore();
     });
-}
+};
 
 exports.tearDown = function(callback) {
     restore([
@@ -17,7 +17,7 @@ exports.tearDown = function(callback) {
         utils.getRecentForm
     ]);
     callback();
-}
+};
 
 exports['onMatch signature'] = function(test) {
     test.ok(_.isFunction(transition.onMatch));

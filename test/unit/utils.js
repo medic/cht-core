@@ -10,23 +10,23 @@ exports.tearDown = function(callback) {
         db.medic.view.restore();
     }
     callback();
-}
+};
 
 exports['updateable returns true when _rev the same'] = function(test) {
     test.ok(utils.updateable({ _rev: '1' }, { _rev: '1', x: 1 }));
     test.done();
-}
+};
 
 exports['updateable returns false when _rev different'] = function(test) {
     test.equals(utils.updateable({ _rev: '1' }, { _rev: '2', x: 1 }), false);
     test.equals(utils.updateable({ _rev: '2' }, { _rev: '1', x: 1 }), false);
     test.done();
-}
+};
 
 exports['updateable returns false when objects the same'] = function(test) {
     test.equals(utils.updateable({ _rev: '1', x: 1 }, { _rev: '1', x: 1 }), false);
     test.done();
-}
+};
 
 exports['getClinicContactName gets name'] = function(test) {
     test.equal(utils.getClinicContactName({
@@ -40,7 +40,7 @@ exports['getClinicContactName gets name'] = function(test) {
         }
     }), 'Y');
     test.done();
-}
+};
 
 exports['getClinicContactName gets returns health volunteer if miss'] = function(test) {
     test.equals(utils.getClinicContactName({
@@ -49,7 +49,7 @@ exports['getClinicContactName gets returns health volunteer if miss'] = function
         }
     }), 'health volunteer');
     test.done();
-}
+};
 
 exports['getClinicContactName gets name if contact'] = function(test) {
     test.equals(utils.getClinicContactName({
@@ -58,7 +58,7 @@ exports['getClinicContactName gets name if contact'] = function(test) {
         }
     }), 'Y');
     test.done();
-}
+};
 
 exports['getClinicName gets returns health volunteer if miss'] = function(test) {
     test.equal(utils.getClinicName({
@@ -67,14 +67,14 @@ exports['getClinicName gets returns health volunteer if miss'] = function(test) 
         }
     }), 'health volunteer');
     test.done();
-}
+};
 
 exports['getClinicName gets name if contact'] = function(test) {
     test.equal(utils.getClinicName({
         name: 'Y'
     }), 'Y');
     test.done();
-}
+};
 
 exports['getClinicName gets name'] = function(test) {
     test.equal(utils.getClinicName({
@@ -86,7 +86,7 @@ exports['getClinicName gets name'] = function(test) {
         }
     }), 'Y');
     test.done();
-}
+};
 
 exports['getClinicPhone gets phone'] = function(test) {
     test.equal(utils.getClinicPhone({
@@ -100,7 +100,7 @@ exports['getClinicPhone gets phone'] = function(test) {
         }
     }), '123');
     test.done();
-}
+};
 
 exports['getClinicPhone gets phone if contact'] = function(test) {
     test.equal(utils.getClinicPhone({
@@ -109,7 +109,7 @@ exports['getClinicPhone gets phone if contact'] = function(test) {
         }
     }), '123');
     test.done();
-}
+};
 
 exports['addMessage adds uuid'] = function(test) {
     var doc = {},
@@ -136,7 +136,7 @@ exports['addMessage adds uuid'] = function(test) {
     test.equals(message.message, 'xxx');
     test.ok(message.uuid);
     test.done();
-}
+};
 
 exports['getRecentForm calls through to db view correctly'] = function(test) {
     
@@ -172,7 +172,7 @@ exports['getRecentForm calls through to db view correctly'] = function(test) {
         test.equals(data, result);
         test.done();
     });
-}
+};
 
 exports['addScheduledMessage creates a new scheduled task'] = function(test) {
 
@@ -201,7 +201,7 @@ exports['addScheduledMessage creates a new scheduled task'] = function(test) {
     test.ok(!!task.state_history[0].timestamp);
 
     test.done();
-}
+};
 
 exports['obsoleteScheduledMessages clears overdue tasks'] = function(test) {
 
@@ -240,7 +240,7 @@ exports['obsoleteScheduledMessages clears overdue tasks'] = function(test) {
     test.equals(doc.scheduled_tasks[2].state, 'scheduled');
 
     test.done();
-}
+};
 
 exports['obsoleteScheduledMessages appends to state_history'] = function(test) {
 
@@ -273,7 +273,7 @@ exports['obsoleteScheduledMessages appends to state_history'] = function(test) {
     test.ok(!!doc.scheduled_tasks[0].state_history[1].timestamp);
 
     test.done();
-}
+};
 
 exports['obsoleteScheduledMessages clears groups of obsolete messages'] = function(test) {
 
@@ -315,7 +315,7 @@ exports['obsoleteScheduledMessages clears groups of obsolete messages'] = functi
     test.equals(doc.scheduled_tasks[2].state, 'scheduled');
 
     test.done();
-}
+};
 
 exports['clearScheduledMessages clears all matching tasks'] = function(test) {
 
@@ -343,7 +343,7 @@ exports['clearScheduledMessages clears all matching tasks'] = function(test) {
     test.ok(!!doc.scheduled_tasks[0].state_history[0].timestamp);
     test.equals(doc.scheduled_tasks[1].state, 'scheduled');
     test.done();
-}
+};
 
 exports['unmuteScheduledMessages schedules all muted tasks'] = function(test) {
 
@@ -369,7 +369,7 @@ exports['unmuteScheduledMessages schedules all muted tasks'] = function(test) {
     test.equals(doc.scheduled_tasks[0].state_history[0].state, 'scheduled');
     test.ok(!!doc.scheduled_tasks[0].state_history[0].timestamp);
     test.done();
-}
+};
 
 exports['muteScheduledMessages mutes all scheduled tasks'] = function(test) {
 
@@ -391,7 +391,7 @@ exports['muteScheduledMessages mutes all scheduled tasks'] = function(test) {
     test.equals(doc.scheduled_tasks[0].state_history[0].state, 'muted');
     test.ok(!!doc.scheduled_tasks[0].state_history[0].timestamp);
     test.done();
-}
+};
 
 exports['applyPhoneFilters performs replace'] = function(test) {
 
@@ -415,4 +415,4 @@ exports['applyPhoneFilters performs replace'] = function(test) {
     test.equals(utils.applyPhoneFilters(config, '159841125'), '29841125');
 
     test.done();
-}
+};

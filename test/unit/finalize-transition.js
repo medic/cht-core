@@ -88,7 +88,7 @@ exports['applyTransition creates transitions property'] = function(test) {
         test.equals(doc.foo, 'bar');
         test.done();
     });
-}
+};
 
 exports['applyTransition handles errors'] = function(test) {
     test.expect(5);
@@ -123,5 +123,4 @@ exports['applyTransition handles errors'] = function(test) {
         test.ok(doc.errors[0].message.match(/oops/));
         test.done();
     });
-}
-
+};

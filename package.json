@@ -19,9 +19,13 @@
     "winston": "~0.7.3"
   },
   "devDependencies": {
-    "kanso": "~0.4.0",
-    "nodeunit": "0.9.x",
-    "sinon": "~1.8.1"
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-contrib-nodeunit": "^0.4.1",
+    "grunt-env": "^0.4.4",
+    "nodeunit": "latest",
+    "sinon": "latest",
+    "kanso": "~0.4.0"
   },
   "version": "0.1.0",
   "scripts": {

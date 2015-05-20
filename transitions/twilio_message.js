@@ -55,7 +55,7 @@ module.exports = {
                                 message.twilioResponse = err;
                                 messageCallback(err);
                             } else if (Math.floor(res.statusCode / 100) !== 2) {
-                                err = JSON.parse(body)
+                                err = JSON.parse(body);
                                 message.twilioResponse = err;
                                 messageCallback(err);
                             } else {

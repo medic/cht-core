@@ -31,9 +31,9 @@ var checkRegistration = function(callback) {
 
 var checkDups = function(callback) {
 
-    var msg = "The ANC report you sent appears to be a duplicate. A health"
-        + " facility staff will call you soon to confirm the validity of the"
-        + " forms.";
+    var msg = "The ANC report you sent appears to be a duplicate. A health" +
+        " facility staff will call you soon to confirm the validity of the" +
+        " forms.";
 
     if (new_doc.anc_pnc === 'PNC')
         msg = msg.replace(/ANC/g, 'PNC');
@@ -53,7 +53,7 @@ var checkDups = function(callback) {
        for (var i in keys) {
            var k = keys[i];
            if (row.doc[k] !== new_doc[k]) return false;
-       };
+       }
        return true;
     };
     var opts = {
@@ -112,8 +112,8 @@ var handleMatch = function(change, db, audit, callback) {
 };
 
 var processANC = function() {
-    var msg = "Thank you, {{contact_name}}. ANC Visit for {{serial_number}}"
-        + " has been recorded.";
+    var msg = "Thank you, {{contact_name}}. ANC Visit for {{serial_number}}" +
+        " has been recorded.";
     utils.obsoleteScheduledMessages(
         registration, 'anc_visit', new_doc.reported_date
     );
@@ -128,14 +128,13 @@ var processANC = function() {
 
 var processPNC = function() {
 
-    var msg = 'Thank you, {{contact_name}}! PNC Visit has been'
-        + ' recorded for {{serial_number}}.';
+    var msg = 'Thank you, {{contact_name}}! PNC Visit has been' +
+        ' recorded for {{serial_number}}.';
 
     if (new_doc.weight === 'Yellow' || new_doc.weight === 'Red') {
-        msg = "Thank you, {{contact_name}}! PNC Visit has been"
-            + " recorded for {{serial_number}}. The baby is of low"
-            + " birth weight. Please refer to health facility"
-            + " immediately.";
+        msg = "Thank you, {{contact_name}}! PNC Visit has been" +
+            " recorded for {{serial_number}}. The baby is of low" +
+            " birth weight. Please refer to health facility immediately.";
     }
 
     var changed = utils.obsoleteScheduledMessages(
@@ -153,9 +152,9 @@ var processPNC = function() {
 
 var processOther = function() {
 
-    var msg = 'Thank you, {{contact_name}}. Counseling visit for'
-        + ' {{serial_number}} has been recorded. Please complete necessary'
-        + ' protocol.';
+    var msg = 'Thank you, {{contact_name}}. Counseling visit for' +
+        ' {{serial_number}} has been recorded. Please complete necessary' +
+        ' protocol.';
 
     utils.addMessage(new_doc, {
         phone: clinicPhone,

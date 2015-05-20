@@ -25,7 +25,7 @@ module.exports = {
         return Boolean(
             doc &&
             doc.transitions &&
-            doc.transitions['registration']
+            doc.transitions.registration
         );
     },
     getWeeksSinceDOB: function(doc) {
@@ -54,11 +54,13 @@ module.exports = {
     },
     isBoolExprFalse: function(doc, expr) {
         // TODO fix bad eval
+        /* jshint ignore:start */
         if (expr && !eval(expr)) {
             return true;
         } else {
             return false;
         }
+        /* jshint ignore:end */
     },
     setExpectedBirthDate: function(doc) {
         var lmp = Number(module.exports.getWeeksSinceLMP(doc)),
@@ -118,7 +120,7 @@ module.exports = {
                             msgs.push(err.message);
                         } else if (err) {
                             msgs.push(err);
-                        };
+                        }
                     });
                     messages.addReply(doc, msgs.join('  '));
                 } else {

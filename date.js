@@ -2,7 +2,7 @@ var DATE_RE = /(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?/,
     sd = require('./config').get('synthetic_date'),
     start_date = new Date(),
     moment = require('moment'),
-    synth_start_date = undefined;
+    synth_start_date;
 
 function load() {
     if (sd) {
@@ -31,7 +31,7 @@ function getTimestamp() {
     if (isSynthetic())
         return (now - start_date.valueOf()) + synth_start_date.valueOf();
     return now;
-};
+}
 function isSynthetic() {
     if (synth_start_date)
         return true;

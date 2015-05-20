@@ -18,16 +18,16 @@ exports.tearDown = function(callback) {
         utils.getRegistrations.restore();
 
     callback();
-}
+};
 
-exports['signature'] = function(test) {
+exports['function signature'] = function(test) {
     test.ok(_.isFunction(transition.onMatch));
     test.equals(transition.onMatch.length, 4);
 
     test.ok(_.isFunction(transition.filter));
     test.equals(transition.filter.length, 1);
     test.done();
-}
+};
 
 exports['filter validation'] = function(test) {
     test.equals(transition.filter({}), false);
@@ -35,7 +35,7 @@ exports['filter validation'] = function(test) {
         form: 'x'
     }), false);
     test.done();
-}
+};
 
 exports['onMatch callback empty if form not included'] = function(test) {
     sinon.stub(transition, 'getAcceptedReports').returns([ { form: 'x' }, { form: 'z' } ]);
@@ -49,7 +49,7 @@ exports['onMatch callback empty if form not included'] = function(test) {
         test.equals(changed, undefined);
         test.done();
     });
-}
+};
 
 exports['onMatch with matching form calls getRegistrations and then matchRegistrations'] = function(test) {
 
@@ -105,7 +105,7 @@ exports['matchRegistrations with no registrations adds error msg and response'] 
         );
         test.done();
     });
-}
+};
 
 exports['matchRegistrations with registrations adds reply'] = function(test) {
     var doc;
@@ -147,7 +147,7 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
         );
         test.done();
     });
-}
+};
 
 
 exports['adding silence_type to matchRegistrations calls silenceReminders'] = function(test) {

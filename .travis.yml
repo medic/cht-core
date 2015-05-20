@@ -3,7 +3,7 @@ node_js:
   - "0.12"
   - "0.10"
 
-script: "npm install && TEST_ENV=1 npm test"
+script: "npm install && grunt test"
 
 notifications:
   webhooks: 

@@ -76,7 +76,7 @@ exports.tearDown = function(callback) {
     }
 
     callback();
-}
+};
 
 exports['getWeeksSinceLMP returns 0 not NaN or null'] = function(test) {
     test.equals(transition.getWeeksSinceLMP({lmp: 0}), 0);
