@@ -10,7 +10,7 @@ var getPregnancies = function(options, callback) {
     callback(null, _.map(registrations.rows, function(registration) {
       var doc = registration.doc;
       return {
-        patient_name: doc.patient_name,
+        patient_name: doc.fields && doc.fields.patient_name,
         patient_id: doc.patient_id,
         weeks: utils.getWeeksPregnant(doc),
         contact: doc.contact,

@@ -102,7 +102,7 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
       {
         doc: {
           patient_id: 1,
-          patient_name: 'sarah',
+          fields: { patient_name: 'sarah' },
           form: 'R',
           reported_date: today.clone().subtract(38, 'weeks').toISOString(),
           contact: { id: 'x' }
@@ -111,7 +111,7 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
       {
         doc: {
           patient_id: 3,
-          patient_name: 'sharon',
+          fields: { patient_name: 'sharon' },
           form: 'P',
           lmp_date: today.clone().subtract(42, 'weeks').toISOString(),
           contact: { id: 'y' }
@@ -171,7 +171,7 @@ exports['get returns all high risk pregnancies'] = function(test) {
       {
         doc: {
           patient_id: 1,
-          patient_name: 'sarah',
+          fields: { patient_name: 'sarah' },
           form: 'R',
           reported_date: today.clone().subtract(38, 'weeks').toISOString(),
           contact: { id: 'x' }
@@ -180,7 +180,7 @@ exports['get returns all high risk pregnancies'] = function(test) {
       {
         doc: {
           patient_id: 3,
-          patient_name: 'sharon',
+          fields: { patient_name: 'sharon' },
           form: 'P',
           lmp_date: today.clone().subtract(42, 'weeks').toISOString(),
           contact: { id: 'y' }
@@ -189,7 +189,7 @@ exports['get returns all high risk pregnancies'] = function(test) {
       {
         doc: {
           patient_id: 4,
-          patient_name: 'sharon',
+          fields: { patient_name: 'sharon' },
           form: 'P',
           lmp_date: today.clone().subtract(42, 'weeks').toISOString(),
           contact: { id: 'y' }
