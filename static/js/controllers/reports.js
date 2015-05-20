@@ -189,7 +189,7 @@ var _ = require('underscore'),
         });
       };
 
-      Changes('reports-list', function(data) {
+      Changes({ key: 'reports-list' }, function(data) {
         if ($scope.filterModel.type === 'reports') {
           $scope.query({ silent: true, changes: data });
         }

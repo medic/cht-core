@@ -39,7 +39,7 @@
         }
       });
 
-      Changes('messages-list', function(data) {
+      Changes({ key: 'messages-list' }, function(data) {
         if ($scope.filterModel.type === 'messages') {
           updateContacts({ changes: data });
         }
