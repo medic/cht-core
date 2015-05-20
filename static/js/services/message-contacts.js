@@ -16,7 +16,12 @@ var async = require('async'),
           .success(function(res) {
             callback(null, res.rows);
           })
-          .error(function(data) {
+          .error(function(data, status) {
+            if(status === 0) {
+              // request failed unnaturally.  It was probably cancelled by a
+              // state change, so we can safely ignore it.
+              return;
+            }
             callback(new Error(data));
           });
       };
