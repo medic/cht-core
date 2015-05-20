@@ -51,11 +51,11 @@ exports.setUp = function(callback) {
             {
                 message: [
                     {
-                        content: "thanks {{caregiver_name}}",
+                        content: "thanks {{fields.caregiver_name}}",
                         locale: "en"
                     },
                     {
-                        content: "gracias {{caregiver_name}}",
+                        content: "gracias {{fields.caregiver_name}}",
                         locale: "es"
                     }
                 ],
@@ -79,39 +79,39 @@ exports.tearDown = function(callback) {
 }
 
 exports['getWeeksSinceLMP returns 0 not NaN or null'] = function(test) {
-    test.equals(transition.getWeeksSinceLMP({lmp: 0}), 0);
-    test.equals(typeof transition.getWeeksSinceLMP({lmp: 0}), 'number');
-    test.equals(transition.getWeeksSinceLMP({weeks_since_lmp: 0}), 0);
-    test.equals(typeof transition.getWeeksSinceLMP({weeks_since_lmp: 0}), 'number');
-    test.equals(transition.getWeeksSinceLMP({last_menstrual_period: 0}), 0);
-    test.equals(typeof transition.getWeeksSinceLMP({last_menstrual_period: 0}), 'number');
+    test.equals(transition.getWeeksSinceLMP({ fields: { lmp: 0 } }), 0);
+    test.equals(typeof transition.getWeeksSinceLMP({ fields: { lmp: 0 } }), 'number');
+    test.equals(transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: 0 } }), 0);
+    test.equals(typeof transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: 0 } }), 'number');
+    test.equals(transition.getWeeksSinceLMP({ fields: { last_menstrual_period: 0 } }), 0);
+    test.equals(typeof transition.getWeeksSinceLMP({ fields: { last_menstrual_period: 0 } }), 'number');
     test.done();
 };
 
 exports['getWeeksSinceLMP always returns number'] = function(test) {
-    test.equals(transition.getWeeksSinceLMP({lmp: '12'}), 12);
+    test.equals(transition.getWeeksSinceLMP({ fields: { lmp: '12' } }), 12);
     test.done();
 };
 
 exports['getWeeksSinceDOB always returns string'] = function(test) {
-    test.equals(typeof transition.getWeeksSinceDOB({dob: '4'}), 'string');
-    test.equals(typeof transition.getWeeksSinceDOB({dob: '0'}), 'string');
-    test.equals(typeof transition.getWeeksSinceDOB({dob: 0}), 'string');
+    test.equals(typeof transition.getWeeksSinceDOB({ fields: {  dob: '4' } }), 'string');
+    test.equals(typeof transition.getWeeksSinceDOB({ fields: {  dob: '0' } }), 'string');
+    test.equals(typeof transition.getWeeksSinceDOB({ fields: {  dob: 0 } }), 'string');
     test.done();
 };
 
 exports['getWeeksSinceLMP supports three property names'] = function(test) {
-    test.equals(transition.getWeeksSinceLMP({lmp: '12'}), 12);
-    test.equals(transition.getWeeksSinceLMP({weeks_since_lmp: '12'}), 12);
-    test.equals(transition.getWeeksSinceLMP({last_menstrual_period: '12'}), 12);
+    test.equals(transition.getWeeksSinceLMP({ fields: { lmp: '12' } }), 12);
+    test.equals(transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: '12' } }), 12);
+    test.equals(transition.getWeeksSinceLMP({ fields: { last_menstrual_period: '12' } }), 12);
     test.done();
 };
 
 exports['getWeeksSinceDOB supports four property names'] = function(test) {
-    test.equals(transition.getWeeksSinceDOB({dob: '12'}), 12);
-    test.equals(transition.getWeeksSinceDOB({weeks_since_dob: '12'}), 12);
-    test.equals(transition.getWeeksSinceDOB({weeks_since_birth: '12'}), 12);
-    test.equals(transition.getWeeksSinceDOB({age_in_weeks: '12'}), 12);
+    test.equals(transition.getWeeksSinceDOB({ fields: { dob: '12' } }), 12);
+    test.equals(transition.getWeeksSinceDOB({ fields: { weeks_since_dob: '12' } }), 12);
+    test.equals(transition.getWeeksSinceDOB({ fields: { weeks_since_birth: '12' } }), 12);
+    test.equals(transition.getWeeksSinceDOB({ fields: { age_in_weeks: '12' } }), 12);
     test.done();
 };
 
@@ -134,7 +134,7 @@ exports['valid form adds patient_id'] = function(test) {
 
     var doc = {
         form: 'PATR',
-        patient_name: 'abc'
+        fields: { patient_name: 'abc' }
     };
 
     transition.onMatch({
@@ -155,9 +155,11 @@ exports['registration sets up responses'] = function(test) {
     var doc = {
         form: 'PATR',
         from: '+1234',
-        patient_name: 'foo',
-        caregiver_name: 'Sam',
-        caregiver_phone: '+987',
+        fields: {
+            patient_name: 'foo',
+            caregiver_name: 'Sam',
+            caregiver_phone: '+987',
+        },
         contact: {
             phone: '+1234',
             name: 'Julie'
@@ -212,9 +214,11 @@ exports['registration responses support locale'] = function(test) {
 
     var doc = {
         form: 'PATR',
-        patient_name: 'foo',
-        caregiver_name: 'Sam',
-        caregiver_phone: '+987',
+        fields: {
+            patient_name: 'foo',
+            caregiver_name: 'Sam',
+            caregiver_phone: '+987',
+        },
         contact: {
             phone: '+1234',
             name: 'Julie',

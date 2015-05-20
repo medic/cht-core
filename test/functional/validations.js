@@ -58,7 +58,7 @@ exports['join responses concats validation response msgs'] = function(test) {
     var doc = {
         from: '+123',
         patient_id: '123',
-        patient_name: 'sam',
+        fields: { patient_name: 'sam' },
         form: 'x'
     };
 
@@ -116,7 +116,7 @@ exports['false join_responses does not concat validation msgs'] = function(test)
     var doc = {
         from: '+123',
         patient_id: '123',
-        patient_name: 'sam',
+        fields: { patient_name: 'sam' },
         form: 'x'
     };
 
@@ -174,7 +174,7 @@ exports['undefined join_responses does not concat validation msgs'] = function(t
     var doc = {
         from: '+123',
         patient_id: '123',
-        patient_name: 'sam',
+        fields: { patient_name: 'sam' },
         form: 'x'
     };
 
