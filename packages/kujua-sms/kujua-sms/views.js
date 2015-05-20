@@ -426,3 +426,19 @@ exports.tasks_pending = {
         }
     }
 };
+
+/*
+ * Allow for quering of forms based on the doc id minus the prefix.
+ */
+exports.forms = {
+    map: function(doc) {
+        if (doc.type !== 'form') {
+            return;
+        }
+        // removes form: prefix on form docs
+        function removePrefix(str) {
+           return str.split(':').slice(1).join(':');
+        };
+        emit(removePrefix(doc._id));
+    }
+};
