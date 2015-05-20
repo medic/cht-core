@@ -276,7 +276,7 @@ exports.data_records_by_contact = {
                 facility = doc.contact;
                 districtId = getDistrictId(facility);
                 message = doc.sms_message;
-                position = getName(facility.parent) || doc.from;
+                position = facility && getPosition(facility.parent) || doc.from;
                 contactName = (facility && facility.name) || doc.from;
                 key = (facility && facility._id) || doc.from;
                 emitContact(districtId, key, doc.reported_date, {
