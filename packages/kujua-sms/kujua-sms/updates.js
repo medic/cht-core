@@ -53,6 +53,7 @@ var getDataRecord = function(options, form_data) {
         form: form,
         errors: [],
         tasks: [],
+        fields: {},
         reported_date: new Date().valueOf(),
         // keep POST data part of record
         sms_message: options
@@ -70,7 +71,7 @@ var getDataRecord = function(options, form_data) {
 
         for (var k in def.fields) {
             var field = def.fields[k];
-            smsparser.merge(form, k.split('.'), record, form_data);
+            smsparser.merge(form, k.split('.'), record.fields, form_data);
         }
         var errors = validate.validate(def, form_data);
         errors.forEach(function(err) {

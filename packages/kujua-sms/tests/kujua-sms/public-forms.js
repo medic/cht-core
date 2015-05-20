@@ -40,7 +40,7 @@ exports['public form has no facility not found error'] = function(test) {
     var doc = updates.add(null, req)[0];
 
     test.ok(getForm.alwaysCalledWith('YYYW'));
-    test.equals(doc.foo, 'foo'); // make sure form parsed correctly
+    test.equals(doc.fields.foo, 'foo'); // make sure form parsed correctly
     test.equals(doc.from, req.form.from);
     test.equals(doc.errors.length, 0);
 
@@ -62,7 +62,7 @@ exports['private form has facility not found error'] = function(test) {
     var doc = updates.add(null, req)[0];
 
     test.ok(getForm.alwaysCalledWith('YYYZ'));
-    test.equals(doc.two, 'two'); // make sure form parsed correctly
+    test.equals(doc.fields.two, 'two'); // make sure form parsed correctly
     test.equals(doc.from, req.form.from);
     test.equals(doc.errors.length, 1);
 

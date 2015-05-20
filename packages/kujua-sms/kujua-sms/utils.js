@@ -51,39 +51,6 @@ var prettyVal = function(data_record, key, def) {
 
 };
 
-function filterObject(obj) {
-    // any arguments after the first are to be removed
-    var keys = _.rest(arguments, 1);
-
-    _.each(obj, function(key, val) {
-        // also any key of the object that isn't _id or _key but otherwise starts with _ or $
-        if (!_.contains(['_id', '_key'], key) && /^[_$]/.test(key)) {
-            keys.push(key);
-        }
-    });
-
-    return _.omit(obj, keys);
-}
-
-// reverse makeDataRecordReadable munge. ;\
-exports.makeDataRecordOriginal = function(doc) {
-    doc = filterObject(
-        doc,
-        'fields',
-        'scheduled_tasks_by_group',
-        'outgoing_messages',
-        'outgoing_messages_recipients'
-    );
-
-    if (doc.tasks) {
-        doc.tasks = _.map(doc.tasks, function(task) {
-            return filterObject(task);
-        });
-    }
-
-    return doc;
-};
-
 /*
  * With some forms like ORPT (patient registration), we add additional data to
  * it based on other form submissions.  Form data from other reports is used to
@@ -139,10 +106,6 @@ var includeNonFormFields = function(doc, form_keys, locale) {
 
 /*
  * Take data record document and return nice formated JSON object.
- *
- * NOTE: Any properties you add to the doc/record here need to be removed in
- * makeDataRecordOriginal.
- *
  */
 exports.makeDataRecordReadable = function(doc, appinfo, language) {
 
@@ -155,7 +118,7 @@ exports.makeDataRecordReadable = function(doc, appinfo, language) {
     if(data_record.form) {
         var keys = getFormKeys(exports.info.getForm(data_record.form));
         var labels = exports.getLabels(keys, data_record.form, language);
-        data_record.fields = exports.fieldsToHtml(keys, labels, data_record);
+        data_record.fields = exports.fieldsToHtml(keys, labels, data_record.fields);
         includeNonFormFields(data_record, keys, language);
     }
 
@@ -274,7 +237,7 @@ exports.makeDataRecordReadable = function(doc, appinfo, language) {
 
 /*
  * @api private
- * */
+ */
 exports.fieldsToHtml = function(keys, labels, data_record, def) {
 
     if (!def && data_record && data_record.form)
@@ -288,11 +251,13 @@ exports.fieldsToHtml = function(keys, labels, data_record, def) {
         data: []
     };
 
+    var data = _.extend({}, data_record, data_record.fields);
+
     _.each(keys, function(key) {
         if(_.isArray(key)) {
             fields.headers.push({head: utils.titleize(key[0])});
             fields.data.push(_.extend(
-                exports.fieldsToHtml(key[1], labels, data_record[key[0]], def),
+                exports.fieldsToHtml(key[1], labels, data[key[0]], def),
                 {isArray: true}
             ));
         } else {
@@ -303,7 +268,7 @@ exports.fieldsToHtml = function(keys, labels, data_record, def) {
             }
             fields.data.push({
                 isArray: false,
-                value: prettyVal(data_record, key, def),
+                value: prettyVal(data, key, def),
                 label: label
             });
         }
@@ -391,68 +356,6 @@ function getLabel(field, locale) {
 function getLocale(record) {
     return record.locale || (record.sms_message && record.sms_message.locale) || 'en';
 }
-
-/*
- * Get an array of values from the doc by the keys from the given keys array.
- * Supports deep keys, like:
- *
- *  ['foo', 'bar', 'baz']
- *  ['foo', ['bar', ['baz']]]
- *  ['foo', ['bar', 'baz']]
- *
- * @param Object doc - data record document
- * @param Array keys - keys we want values for
- *
- * @return Array  - values from doc in the same order as keys, return null if
- * the key cannot be resolved.
- */
-var getValues = exports.getValues = function(doc, keys) {
-    var ret = [];
-    if (!_.isObject(doc)) return ret;
-    if (keys === undefined) return ret;
-    if (!_.isArray(keys)) {
-        var value = objectpath.get(doc, keys);
-        if (typeof value === 'undefined') {
-            ret.push(null);
-        } else if (_.isObject(value) || _.isArray(value)) {
-            ret.push(JSON.stringify(value));
-        } else {
-            ret.push(value);
-        }
-    }
-    if (_.isArray(keys)) {
-        for (var i in keys) {
-            var key = keys[i];
-            if (_.isArray(key)) {
-                // key is array so we are look for object on doc matching first
-                // array element and recurse.
-                if (doc[key[0]] === null) {
-                    ret = ret.concat([null]);
-                    continue;
-                } else if (typeof doc[key[0]] === 'object') {
-                    // recurse using sub-object and array wrapped key to signify
-                    // sub-object parsing.
-                    ret = ret.concat(getValues(doc[key[0]], [key[1]]));
-                } else if (doc[key[0]] !== undefined) {
-                    // looks like array points to list of values
-                    ret = ret.concat(getValues(doc, key));
-                    //ret = doc[key[0]] ? ret.concat(doc[key[0]]) : ret.concat(null);
-                } else {
-                    // no sub-object or value match in sub object, continue.
-                    ret = ret.concat([null]);
-                    continue;
-                }
-            } else {
-                // if not array assume normal scalar key and look for match
-                // if key points to object
-                ret = ret.concat(getValues(doc, key));
-            }
-        }
-    }
-
-    return ret;
-};
-
 
 /*
  * Get an array of keys from the form.  If dot notation is used it will be an

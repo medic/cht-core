@@ -42,25 +42,27 @@ var example_doc = {
     "errors": [],
     "tasks": [],
     "scheduled_tasks": [],
-    "facility_id": "facility",
-    "year": "2011",
-    "month": "11",
-    "misoprostol_administered": false,
-    "quantity_dispensed": {
-        "la_6x1": 1,
-        "la_6x2": 2,
-        "cotrimoxazole": 3,
-        "zinc": 4,
-        "ors": 5,
-        "eye_ointment": 6
-    },
-    "days_stocked_out": {
-        "la_6x1": 9,
-        "la_6x2": 8,
-        "cotrimoxazole": 7,
-        "zinc": 6,
-        "ors": 5,
-        "eye_ointment": 4
+    "fields": {
+        "facility_id": "facility",
+        "year": "2011",
+        "month": "11",
+        "misoprostol_administered": false,
+        "quantity_dispensed": {
+            "la_6x1": 1,
+            "la_6x2": 2,
+            "cotrimoxazole": 3,
+            "zinc": 4,
+            "ors": 5,
+            "eye_ointment": 6
+        },
+        "days_stocked_out": {
+            "la_6x1": 9,
+            "la_6x2": 8,
+            "cotrimoxazole": 7,
+            "zinc": 6,
+            "ors": 5,
+            "eye_ointment": 4
+        },
     },
     "sms_message": {
         "from": "+13125551212",
@@ -158,294 +160,6 @@ exports['getLabels'] = function(test) {
     );
 
     test.done();
-};
-
-exports['getValues no clinic'] = function(test) {
-    test.expect(2);
-    var keys = [
-        "reported_date",
-        "from",
-        "facility_id",
-        [
-            "related_entities", [
-                "clinic", [
-                    "contact", [
-                        "name"
-                    ]
-                ]
-            ]
-        ],
-        [
-            "related_entities", [
-                "clinic", [
-                    "name"
-                ]
-            ]
-        ],
-        [
-            "related_entities", [
-                "clinic", [
-                    "parent", [
-                        "name"
-                    ]
-                ]
-            ]
-        ],
-        [
-            'related_entities', [
-                'clinic', [
-                    'parent', [
-                        'parent', [
-                            'name'
-                        ]
-                    ]
-                ]
-            ]
-        ],
-    ];
-
-    var example_doc = {
-        reported_date: 1331643982002,
-        from: "+13125551212",
-        facility_id: "facility",
-        related_entities: {
-            clinic: null,
-            health_center: {
-                name: "Health Center One",
-                type: "health_center",
-                parent: {
-                    name: "District One",
-                    type: "district_hospital"
-                }
-            }
-        }
-    };
-
-    // catch case where getValues returns extra undefined value for deep keys
-    var actual = utils.getValues(example_doc, keys),
-        expected = [
-            1331643982002,
-            "+13125551212",
-            "facility",
-            null,
-            null,
-            null,
-            null
-        ];
-
-    test.same(actual.length, expected.length);
-    test.same(actual, expected);
-    test.done();
-};
-
-exports['getValuesUnits'] = function(test) {
-    test.expect(8);
-
-    var keys1 = ['foo', 'bar', 'baz'],
-        doc1 = {foo: 1, bar: 2, baz: 3};
-    test.same(
-        utils.getValues(doc1, keys1),
-        [1, 2, 3]
-    );
-
-    // check falsey values correctly pass through
-    var keys1p1 = ['foo', 'bar', 'baz'],
-        doc1p1 = {foo: 1, bar: 0, baz: false};
-    test.same(
-        utils.getValues(doc1p1, keys1p1),
-        [1, 0, false]
-    );
-
-    // check true values correctly pass through
-    var keys1p2 = ['foo', 'bar', 'baz'],
-        doc1p2 = {foo: 1, bar: 0, baz: true};
-    test.same(
-        utils.getValues(doc1p2, keys1p2),
-        [1, 0, true]
-    );
-
-    var keys2 = [['foo', ['bar', ['baz']]]],
-        doc2 = {foo: { bar: { baz: 3}}};
-    test.same(
-        utils.getValues(doc2, keys2),
-        [3]
-    );
-
-    // return single null value for array based key with broken path
-    var keys2p1 = [['foo', ['bar', ['baz']]]],
-        doc2p1 = {foo: { giraffe: { baz: 3}}};
-    test.same(
-        utils.getValues(doc2p1, keys2p1),
-        [null]
-    );
-
-    // return null values for keys when sub-object is null
-    var keys2p2 = [
-        'foo',
-        ['animals', ['narwhal', ['weight']]],
-        ['animals', ['narwhal', ['horns']]]
-    ];
-    var doc2p2 = {
-        animals: { narwhal: null },
-        foo: 'bar'
-    };
-    test.same(
-        utils.getValues(doc2p2, keys2p2),
-        ['bar', null, null]
-    );
-
-    // return values for array of sub-object keys
-    var keys3 = [['foo', ['bar', 'baz']]],
-        doc3 = {foo: { bar: 1, baz: 2}};
-    test.same(
-        utils.getValues(doc3, keys3),
-        [1 ,2]
-    );
-
-    // return null for array of sub-object key that is undefined
-    var keys4 = [['foo', ['bar', 'giraffe']]],
-        doc4 = {foo: { bar: 1, baz: 2}};
-    test.same(
-        utils.getValues(doc4, keys4),
-        [1, null]
-    );
-
-    test.done();
-};
-
-exports['getValues'] = function(test) {
-    test.expect(1);
-    var keys = [
-        "reported_date",
-        "from",
-        "facility_id",
-        "misoprostol_administered",
-        [
-            "related_entities", [
-                "clinic", [
-                    "contact", [
-                        "name"
-                    ]
-                ]
-            ]
-        ],
-        [
-            "related_entities", [
-                "clinic", [
-                    "name"
-                ]
-            ]
-        ],
-        [
-            "related_entities", [
-                "clinic", [
-                    "parent", [
-                        "name"
-                    ]
-                ]
-            ]
-        ],
-        [
-            'related_entities', [
-                'clinic', [
-                    'parent', [
-                        'parent', [
-                            'name'
-                        ]
-                    ]
-                ]
-            ]
-        ],
-        "year",
-        "month",
-        [
-            "quantity_dispensed", [
-                "la_6x1",
-                "la_6x2",
-                "cotrimoxazole",
-                "zinc",
-                "ors",
-                "eye_ointment"
-            ]
-        ],
-        [
-            "days_stocked_out", [
-                "la_6x1",
-                "la_6x2",
-                "cotrimoxazole",
-                "zinc",
-                "ors",
-                "eye_ointment"
-            ]
-        ]
-    ];
-
-    test.same(
-        utils.getValues(example_doc, keys),
-        [
-            1331643982002,
-            "+13125551212",
-            "facility",
-            false,
-            "Sam Jones",
-            "Example clinic 1",
-            "HC1",
-            "Zomba",
-            "2011",
-            "11",
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            9,
-            8,
-            7,
-            6,
-            5,
-            4
-        ]
-    );
-    test.done();
-};
-
-exports['getValues of array'] = function(test) {
-    var keys = [
-        "from",
-        "scheduled_tasks"
-    ];
-    var doc = {
-        from: 'abc123',
-        scheduled_tasks: [
-            {foo: 1},
-            {bar: 2}
-        ]
-    };
-    test.same(utils.getValues(doc, keys), [
-        'abc123',
-        '[{"foo":1},{"bar":2}]'
-    ]);
-    test.done()
-};
-
-exports['getValues of object'] = function(test) {
-    var keys = [
-        "from",
-        "animal"
-    ];
-    var doc = {
-        from: '+2547123',
-        animal: {
-            weight: 1,
-            height: 2
-        }
-    };
-    test.same(utils.getValues(doc, keys), [
-        '+2547123',
-        '{"weight":1,"height":2}'
-    ]);
-    test.done()
 };
 
 exports['getFormKeys'] = function(test) {
