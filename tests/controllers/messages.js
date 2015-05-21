@@ -101,9 +101,9 @@ exports['_updateCouchDB returns proper errors'] = function(test) {
     request: {}
   });
   controller._updateCouchDB('c38uz32a', null, function(err, results) {
-    test.deepEqual(err, {
-      code: 409,
-      message: "there was a conflict somehow"
+    test.deepEqual(err.payload, {
+      success: false,
+      error: "there was a conflict somehow"
     });
     test.equals(update.callCount, 1);
     test.done();

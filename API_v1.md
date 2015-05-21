@@ -4,6 +4,98 @@ HTTP response bodies are all in JSON format.
 
 Respond with HTTP 200 status on successful requests.
 
+# Forms
+
+## GET /api/v1/forms
+
+Returns a list of currently installed forms (in all available formats) in JSON format.
+
+### Headers 
+
+| Key         | Value        | Description
+| ----------- | ------------ | --------------
+| X-OpenRosa-Version | 1.0    | If this header is specified returns XML formatted forms list.  See [OpenRosa FormListAPI](https://bitbucket.org/javarosa/javarosa/wiki/FormListAPI).
+
+### Examples
+
+Get list of forms currently installed.
+
+```
+GET /api/v1/forms
+```
+
+```
+HTTP/1.1 200 
+Content-Type: application/json; charset=utf-8
+
+["anc_visit.xml","anc_registration.xml","off.xml", "off.json"]
+```
+
+Get OpenRosa XForms compatible forms installed in XML format.
+
+```
+GET /api/v1/forms
+Host: medic.local
+X-OpenRosa-Version: 1.0
+
+```
+
+```
+HTTP/1.1 200
+Content-Type: text/xml; charset=utf-8
+X-OpenRosa-Version: 1.0
+
+<?xml version="1.0" encoding="UTF-8"?>
+<xforms xmlns="http://openrosa.org/xforms/xformsList">
+  <xform>
+    <name>Visit</name>
+    <formID>ANCVisit</formID>
+    <hash>md5:1f0f096602ed794a264ab67224608cf4</hash>
+    <downloadUrl>http://medic.local/api/v1/forms/anc_visit.xml</downloadUrl>
+  </xform>
+  <xform>
+    <name>Registration with LMP</name>
+    <formID>PregnancyRegistration</formID>
+    <hash>md5:1f0f096602ed794a264ab67224608cf4</hash>
+    <downloadUrl>http://medic.local/api/v1/forms/anc_registration.xml</downloadUrl>
+  </xform>
+  <xform>
+    <name>Stop</name>
+    <formID>Stop</formID>
+    <hash>md5:1f0f096602ed794a264ab67224608cf4</hash>
+    <downloadUrl>http://medic.local/api/v1/forms/off.xml</downloadUrl>
+  </xform>
+</xforms>
+```
+
+
+
+## GET /api/v1/forms/{{id}}.{{format}}
+
+Return form definition for a given form ID and format.
+
+### Parameters
+
+| Variable | Description       | 
+| -------- | ----------------- |
+| id       | Form identifier   |
+| format   | Format string or file extension. e.g. xml, json   |
+
+
+### Examples
+
+Get latest version of the PregnancyRegistration form in xml (XForms) format.
+
+```
+GET /api/v1/forms/pregnancyregistration.xml
+```
+
+Get the latest version of the NPYY form in JSON format.
+
+```
+GET /api/v1/forms/NPYY.json
+```
+
 
 # Records
 
@@ -13,71 +105,38 @@ Create a new record based on a form.  This requires a form definition exists on 
 
 Records can be created one of two ways, parsing the form data yourself and submitting a JSON object or by submitting the raw message string.
 
-### Content-Type: application/x-www-form-urlencoded
+### Headers
+
+| Key         | Value        | Description
+| ----------- | ------------ | --------------
+|  Content-Type | application/x-www-form-urlencoded | Processes form parameters.
+|  Content-Type | application/json | Processes form data in request body as JSON.
 
 
-#### Required Fields
+#### Form Parameters
 
-- `message`
-
-  Message string in a supported format like Muvuku or Textforms.  Depending if your Medic Mobile instance is configured in forms-only mode or not you might recieve an error if the form is not found.
-  
-- `from`
-
-  Reporting phone number.
-    
-#### Optional Fields
-
-- `reported_date`
-
-  Unix or Moment.js compatible timestamp of when the message was received on the gateway.
-  
-  Default: now()
-  
-- `locale`
-
-  locale string
+| Variable | Description       |  
+| -------- | ----------------- |
+| message  | Message string in a supported format like Muvuku or Textforms.  Depending if your Medic Mobile instance is configured in forms-only mode or not you might recieve an error if the form is not found.  |
+| from |   Reporting phone number. |
+| reported_date |  Unix or Moment.js compatible timestamp of when the message was received on the gateway. Default: Date.now() |
+| locale |  Optional locale string. |
   
 
-### Content-Type: application/json
+#### JSON Properties
 
-Encode form data prior to submission as a JSON object.  Special values reside in the property `_meta`, so you can't have a form field named `_meta`.  Only strings and numbers are currently support in field values.
+Special values reside in the property `_meta`, so you can't have a form field named `_meta`.  Only strings and numbers are currently support as field values.
 
 All property names will be lowercased and any properties beginning with `_` (underscore) will be ignored.
 
-#### Required Fields
 
-- `_meta.form`
-  
-  The form code.
-  
-- `_meta.from`
-
-  Reporting phone number.
-
-#### Optional Fields
-
-- `_meta.reported_date`
-
-  Unix or Moment.js compatible timestamp of when the message was received on the gateway.
-  
-  Default: now()
-  
-  Example: 
-  
-- `_meta.locale`
-
-  Optional locale string. 
-  
-  Example: 'fr'
+| Key         | Description       |  
+| ----------- | ----------------- |
+| _meta.form  | The form code.    |
+| _meta.from  |  Reporting phone number. | 
+| _meta.reported_date |  Unix or Moment.js compatible timestamp of when the message was received on the gateway.  Default: now() |
+| _meta.locale | Optional locale string.  Example: 'fr' |
     
-### Errors
-
-If required fields are not found return 500.
-
-If invalid JSON return error response 500.
-
-If submitting JSON and correspending form is not found on the server you will receive an error.
 
 ### Examples
 
@@ -127,6 +186,14 @@ Content-Type: application/json; charset=utf-8
 }
 ```
 
+### Errors
+
+If required fields are not found return 500.
+
+If invalid JSON return error response 500.
+
+If submitting JSON and correspending form is not found on the server you will receive an error.
+
 # Messages
 
 ## GET /api/v1/messages
@@ -135,21 +202,12 @@ Returns list of messages, oldest first based on timestamp or due date.
 
 ### Query Parameters
 
-- `state`
-
-  Returns only messages that match a given state value. e.g. state=pending
-
-- `start` (todo)
-
-  Returns list of messages, limited to 25 starting at id (uuid). 
-  
-- `descending`
-
-  Returns latest messages first.
-  
-- `limit`
-
-  Modifies number of returned messages to specified value with hard max value of 1000.
+| Variable           | Description
+| ------------------ | ------------- 
+| state              | Returns only messages that match a given state value. e.g. state=pending
+| start (todo)       | Returns list of messages, limited to 25 starting at id (uuid). 
+| descending         | Returns latest messages first.
+| limit              | Modifies number of returned messages to specified value, max is 1000.
 
 ### Examples
 
@@ -335,6 +393,10 @@ Content-Type: application/json; charset=utf-8
   "error": "input is not JSON: Expected ':' instead of '}' at line 1, column 7"
 }
 ```
+
+## Todo
+
+Should updating the state value of a message require the doc revision?
 
 ## Backwards Compatibility
 

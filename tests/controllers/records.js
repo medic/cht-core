@@ -16,7 +16,7 @@ exports['createRecord returns formated error from string'] = function(test) {
     message: 'test',
     from: '+123'
   }, null, function(err, results) {
-    test.equals(err.message, 'icky');
+    test.equals(err, 'icky');
     test.equals(req.callCount, 1);
     test.done();
   });
@@ -32,7 +32,7 @@ exports['createRecordJSON returns formated error from string'] = function(test) 
     }
   };
   controller.createRecordJSON(body, null, function(err, results) {
-    test.equals(err.message, 'icky');
+    test.equals(err, 'icky');
     test.equals(req.callCount, 1);
     test.done();
   });

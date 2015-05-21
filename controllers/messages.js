@@ -61,11 +61,11 @@ module.exports = {
         if (err) {
           // nano creates a new error object merging the error object received
           // from the server.
-          return callback({code: err.statusCode, message: err.payload.error});
+          return callback(err);
         }
         callback(null, {
           success: data.payload.success,
-          id: id
+          id: body.message_id
         });
     });
   },
@@ -77,7 +77,7 @@ module.exports = {
       }
       // update requires message_id parameter in JSON body
       body.message_id = id;
-      _updateCouchDB(msg._record_id, body, callback);
+      module.exports._updateCouchDB(msg._record_id, body, callback);
     });
   }
 
