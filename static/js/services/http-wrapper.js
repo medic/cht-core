@@ -21,7 +21,7 @@ var _ = require('underscore');
         cancel: function(event, toState) {
           var stillPending = [];
           _.each(pending, function(p) {
-            if (toState.name.startsWith(p.targetScope)) {
+            if (toState.name.indexOf(p.targetScope) === 0) {
               stillPending.push(p);
             } else {
               p.canceller.resolve();
