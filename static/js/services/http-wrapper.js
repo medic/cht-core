@@ -18,11 +18,16 @@ var _ = require('underscore');
             return p.url !== url;
           });
         },
-        cancelAll: function() {
+        cancel: function(event, toState) {
+          var stillPending = [];
           _.each(pending, function(p) {
-            p.canceller.resolve();
+            if (toState.name.indexOf(p.targetScope) === 0) {
+              stillPending.push(p);
+            } else {
+              p.canceller.resolve();
+            }
           });
-          pending.length = 0;
+          pending = stillPending;
         }
       };
     }
@@ -33,13 +38,13 @@ var _ = require('underscore');
     function($http, $q, ActiveRequests) {
 
       var wrap = function(args, fn) {
-        args[args.length - 1] = args[args.length - 1] || {};
-        if (args[args.length - 1].timeout === false) {
+        var options = args[args.length - 1] = args[args.length - 1] || {};
+        if (options.targetScope === "root") {
           return fn.apply(this, args);
         }
         var canceller = $q.defer();
-        ActiveRequests.add({ url: args[0], canceller: canceller });
-        args[args.length - 1].timeout = canceller.promise;
+        ActiveRequests.add({ url: args[0], canceller: canceller, targetScope: options.targetScope });
+        options.timeout = canceller.promise;
         var promise = fn.apply(this, args);
         promise.finally(function() {
           ActiveRequests.remove(args[0]);
@@ -48,7 +53,7 @@ var _ = require('underscore');
       };
 
       /**
-       * To disable the cancel on navigation feature, set 'timeout' to false
+       * To disable the cancel on navigation feature, set 'targetScope' to "root"
        * in the options param.
        */
       return {

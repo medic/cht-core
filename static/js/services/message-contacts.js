@@ -10,13 +10,18 @@ var async = require('async'),
   inboxServices.factory('MessageContactsRaw', [
     'HttpWrapper', 'BaseUrlService',
     function(HttpWrapper, BaseUrlService) {
-      return function(params, callback) {
+      return function(params, callback, targetScope) {
         var url = BaseUrlService() + '/message_contacts';
-        HttpWrapper.get(url, { params: params })
+        HttpWrapper.get(url, { params: params, targetScope: targetScope })
           .success(function(res) {
             callback(null, res.rows);
           })
-          .error(function(data) {
+          .error(function(data, status) {
+            if(status === 0) {
+              // request failed unnaturally.  It was probably cancelled by a
+              // state change, so we can safely ignore it.
+              return;
+            }
             callback(new Error(data));
           });
       };
@@ -45,7 +50,7 @@ var async = require('async'),
       },
       request: ['district', function(callback, results) {
         var query = generateQuery(options, results.district || 'admin');
-        MessageContactsRaw(query, callback);
+        MessageContactsRaw(query, callback, options.targetScope);
       }],
       unallocated: function(callback) {
         if (!options.districtAdmin) {
@@ -60,7 +65,7 @@ var async = require('async'),
         if (!results.unallocated) {
           return callback();
         }
-        MessageContactsRaw(generateQuery(options, 'none'), callback);
+        MessageContactsRaw(generateQuery(options, 'none'), callback, options.targetScope);
       }]
     }, function(err, results) {
       var merged;
@@ -79,6 +84,7 @@ var async = require('async'),
   inboxServices.factory('MessageContact', ['$rootScope', 'MessageContactsRaw', 'UserDistrict', 'Settings',
     function($rootScope, MessageContactsRaw, UserDistrict, Settings) {
       return function(options, callback) {
+        options.targetScope = "messages";
         options.queryOptions = { group_level: 2 };
         query($rootScope, MessageContactsRaw, UserDistrict, Settings, options, callback);
       };
@@ -88,6 +94,7 @@ var async = require('async'),
   inboxServices.factory('ContactConversation', ['$rootScope', 'MessageContactsRaw', 'UserDistrict', 'Settings',
     function($rootScope, MessageContactsRaw, UserDistrict, Settings) {
       return function(options, callback) {
+        options.targetScope = "messages.details";
         options.queryOptions = {
           reduce: false,
           descending: true,

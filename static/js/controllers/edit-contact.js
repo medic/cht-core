@@ -17,7 +17,7 @@ var libphonenumber = require('libphonenumber/utils'),
           endkey: [{}],
           reduce: false,
           include_docs: true,
-          timeout: false
+          targetScope: 'root'
         };
         DbView('facilities', params, function(err, results) {
           if (err) {
