@@ -16,7 +16,6 @@ var _ = require('underscore'),
             params[key] = JSON.stringify(params[key]);
           }
         });
-        params.cache = true;
         HttpWrapper.get(url, { params: params })
           .success(function(results) {
             var meta = {
