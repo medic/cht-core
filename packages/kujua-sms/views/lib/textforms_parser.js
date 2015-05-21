@@ -212,7 +212,7 @@ exports.parse = function(msg) {
  * @api public
  */
 exports.parseCompact = function(def, msg) {
-    if (!msg) {
+    if (!msg || !def || !def.fields) {
         return {};
     }
     msg = msg.message || msg;
@@ -245,7 +245,7 @@ exports.parseCompact = function(def, msg) {
  * @api public
  */
 exports.isCompact = function(def, msg, locale) {
-    if (!msg) {
+    if (!msg || !def || !def.fields) {
         return false;
     }
     msg = msg.message || msg;

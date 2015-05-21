@@ -1,5 +1,5 @@
 exports.rules = [
-    {from: '/add', to: '_update/add_sms', method: 'POST'},
+    {from: '/add', to: '_update/add', method: 'POST'},
     // by default smssync uses the same URL for tasks polling
     {from: '/add',
         to: '_list/tasks_pending/tasks_pending',
@@ -10,7 +10,7 @@ exports.rules = [
         method: 'GET'
     },
     /* use this path if you need to specify the limit */
-    {from: '/add/limit/*', to: '_update/add_sms', method: 'POST'},
+    {from: '/add/limit/*', to: '_update/add', method: 'POST'},
     {from: '/add/limit/:limit',
         to: '_list/tasks_pending/tasks_pending',
         query: {
