@@ -40,11 +40,11 @@ var exportTypes = {
           'patient_id',
           'reported_date',
           'from',
-          'related_entities.clinic.contact.name',
-          'related_entities.clinic.name',
-          'related_entities.clinic.parent.contact.name',
-          'related_entities.clinic.parent.name',
-          'related_entities.clinic.parent.parent.name'
+          'contact.name',
+          'contact.parent.name',
+          'contact.parent.parent.contact.name',
+          'contact.parent.parent.name',
+          'contact.parent.parent.parent.name'
         ], options);
       }
 
@@ -109,11 +109,11 @@ var exportTypes = {
           'patient_id',
           'reported_date',
           'from',
-          'related_entities.clinic.contact.name',
-          'related_entities.clinic.name',
-          'related_entities.clinic.parent.contact.name',
-          'related_entities.clinic.parent.name',
-          'related_entities.clinic.parent.parent.name',
+          'contact.name',
+          'contact.parent.name',
+          'contact.parent.parent.contact.name',
+          'contact.parent.parent.name',
+          'contact.parent.parent.parent.name',
           'task.type',
           'task.state',
           'received',

@@ -28,7 +28,7 @@ var getAppointments = function(options, callback) {
           return {
             patient_name: doc.patient_name,
             patient_id: doc.patient_id,
-            clinic: doc.related_entities && doc.related_entities.clinic,
+            contact: doc.contact,
             date: date,
             weeks: utils.getWeeksPregnant(doc)
           };

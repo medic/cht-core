@@ -26,6 +26,16 @@ exports['run does nothing if no migrations'] = function(test) {
   });
 };
 
+exports['run fails if migration does not have created date'] = function(test) {
+  test.expect(1);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { migrations: [] } } ] });
+  var getMigrations = sinon.stub(migrations, 'get').callsArgWith(0, null, [ { name: 'xyz' } ]);
+  migrations.run(function(err) {
+    test.equals(err.message, 'Migration "xyz" has no "created" date property');
+    test.done();
+  });
+};
+
 exports['run does nothing if all migrations have run'] = function(test) {
   test.expect(2);
   var meta = { migrations: [ 'xyz' ] };
@@ -43,6 +53,7 @@ exports['executes migrations that have not run and updates meta'] = function(tes
   var migration = [
     {
       name: 'xyz',
+      created: new Date(2015, 1, 1, 1, 0, 0, 0),
       run: function(callback) {
         test.ok(true);
         callback();
@@ -50,6 +61,7 @@ exports['executes migrations that have not run and updates meta'] = function(tes
     },
     {
       name: 'abc',
+      created: new Date(2015, 1, 1, 2, 0, 0, 0),
       run: function(callback) {
         test.ok(false);
         callback();
@@ -78,6 +90,7 @@ exports['executes multiple migrations that have not run and updates meta each ti
   var migration = [
     {
       name: 'xyz',
+      created: new Date(2015, 1, 1, 1, 0, 0, 0),
       run: function(callback) {
         test.ok(true);
         callback();
@@ -85,6 +98,7 @@ exports['executes multiple migrations that have not run and updates meta each ti
     },
     {
       name: 'abc',
+      created: new Date(2015, 1, 1, 2, 0, 0, 0),
       run: function(callback) {
         test.ok(true);
         callback();
@@ -115,11 +129,12 @@ exports['executes multiple migrations that have not run and updates meta each ti
   });
 };
 
-exports['executes multiple migrations and stops when one errors'] = function(test) {
-  test.expect(6);
+exports['executes multiple migrations in order'] = function(test) {
+  test.expect(9);
   var migration = [
     {
       name: 'a',
+      created: new Date(2015, 1, 1, 2, 0, 0, 0),
       run: function(callback) {
         test.ok(true);
         callback();
@@ -127,6 +142,53 @@ exports['executes multiple migrations and stops when one errors'] = function(tes
     },
     {
       name: 'b',
+      created: new Date(2015, 1, 1, 1, 0, 0, 0),
+      run: function(callback) {
+        test.ok(true);
+        callback();
+      }
+    },
+    {
+      name: 'c',
+      created: new Date(2015, 1, 1, 3, 0, 0, 0),
+      run: function(callback) {
+        test.ok(true);
+        callback();
+      }
+    }
+  ];
+  var getView = sinon.stub(db.medic, 'view');
+  getView.onCall(0).callsArgWith(3, null, { rows: [ { doc: { _id: 1, migrations: [ ], type: 'meta' } } ] });
+  getView.onCall(1).callsArgWith(3, null, { rows: [ { doc: { _id: 1, migrations: [ ], type: 'meta' } } ] });
+  getView.onCall(2).callsArgWith(3, null, { rows: [ { doc: { _id: 1, migrations: [ 'b' ], type: 'meta' } } ] });
+  getView.onCall(3).callsArgWith(3, null, { rows: [ { doc: { _id: 1, migrations: [ 'b', 'a' ], type: 'meta' } } ] });
+  var getMigrations = sinon.stub(migrations, 'get').callsArgWith(0, null, migration);
+  var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
+  migrations.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(getView.callCount, 4);
+    test.equals(saveDoc.callCount, 3);
+    test.deepEqual(saveDoc.firstCall.args[0].migrations, [ 'b' ]);
+    test.deepEqual(saveDoc.secondCall.args[0].migrations, [ 'b', 'a' ]);
+    test.deepEqual(saveDoc.thirdCall.args[0].migrations, [ 'b', 'a', 'c' ]);
+    test.done();
+  });
+};
+
+exports['executes multiple migrations and stops when one errors'] = function(test) {
+  test.expect(6);
+  var migration = [
+    {
+      name: 'a',
+      created: new Date(2015, 1, 1, 1, 0, 0, 0),
+      run: function(callback) {
+        test.ok(true);
+        callback();
+      }
+    },
+    {
+      name: 'b',
+      created: new Date(2015, 1, 1, 2, 0, 0, 0),
       run: function(callback) {
         test.ok(true);
         callback('boom!');
@@ -134,6 +196,7 @@ exports['executes multiple migrations and stops when one errors'] = function(tes
     },
     {
       name: 'c',
+      created: new Date(2015, 1, 1, 3, 0, 0, 0),
       run: function(callback) {
         test.ok(false);
         callback();
@@ -163,6 +226,7 @@ exports['creates meta if needed'] = function(test) {
   var migration = [
     {
       name: 'xyz',
+      created: new Date(2015, 1, 1, 1, 0, 0, 0),
       run: function(callback) {
         test.ok(true);
         callback();

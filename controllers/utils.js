@@ -242,6 +242,13 @@ module.exports = {
     });
   },
 
+  getParent: function(facility, type) {
+    while (facility && facility.type !== type) {
+      facility = facility.parent;
+    }
+    return facility;
+  },
+
   // exposed for testing
   setup: function(limit) {
     luceneConditionalLimit = limit;

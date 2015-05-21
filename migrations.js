@@ -30,7 +30,14 @@ var getMeta = function(callback) {
   });
 };
 
+var sortMigrations = function(lhs, rhs) {
+  return lhs.created - rhs.created;
+};
+
 var runMigration = function(migration, callback) {
+  if (!migration.created) {
+    return callback(new Error('Migration "' + migration.name + '" has no "created" date property'));
+  }
   migration.run(function(err) {
     if (err) {
       return callback(error(migration, err));
@@ -51,6 +58,21 @@ var runMigration = function(migration, callback) {
   });
 };
 
+var runMigrations = function(meta, migrations, callback) {
+  migrations.sort(sortMigrations);
+  async.eachSeries(
+    migrations,
+    function(migration, callback) {
+      if (hasRun(meta, migration)) {
+        // already run
+        return callback();
+      }
+      runMigration(migration, callback);
+    },
+    callback
+  );
+};
+
 module.exports = {
   run: function(callback) {
     getMeta(function(err, meta) {
@@ -61,27 +83,18 @@ module.exports = {
         if (err) {
           return callback(err);
         }
-        async.eachSeries(
-          migrations,
-          function(migration, callback) {
-            if (hasRun(meta, migration)) {
-              // already run
-              return callback();
-            }
-            runMigration(migration, callback);
-          },
-          callback
-        );
+        runMigrations(meta, migrations, callback);
       });
     });
   },
   get: function(callback) {
-    fs.readdir(__dirname + '/migrations', function(err, files) {
+    var migrationsDir = path.join(__dirname, 'migrations');
+    fs.readdir(migrationsDir, function(err, files) {
       if (err) {
         return callback(err);
       }
       callback(null, files.map(function(file) {
-        return require(path.join(__dirname, 'migrations', file));
+        return require(path.join(migrationsDir, file));
       }));
     });
   }
