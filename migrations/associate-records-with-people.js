@@ -5,7 +5,7 @@ var async = require('async'),
 var getClinic = function(id, callback) {
   db.medic.get(id, function(err, clinic) {
     if (err) {
-      if (err.reason === 'deleted') {
+      if (err.statusCode === 404) {
         return callback();
       }
       return callback(err);
@@ -25,7 +25,7 @@ var getClinic = function(id, callback) {
 var getContact = function(contactId, clinicId, callback) {
   db.medic.get(contactId, function(err, contact) {
     if (err) {
-      if (err.reason === 'deleted') {
+      if (err.statusCode === 404) {
         return getClinic(clinicId, callback);
       }
       return callback(err);
@@ -98,6 +98,9 @@ var migrateIncoming = function(doc, callback) {
 var associate = function(id, callback) {
   db.medic.get(id, function(err, doc) {
     if (err) {
+      if (err.statusCode === 404) {
+        return callback();
+      }
       return callback(err);
     }
     var migrationFn;
@@ -127,7 +130,7 @@ module.exports = {
         return callback(err);
       }
       var ids = _.uniq(_.pluck(result.rows, 'id'));
-      async.each(ids, associate, callback);
+      async.eachSeries(ids, associate, callback);
     });
   }
 };

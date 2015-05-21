@@ -538,7 +538,7 @@ exports['run migrates outgoing message with deleted contact'] = function(test) {
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
   var getDoc = sinon.stub(db.medic, 'get');
   getDoc.onCall(0).callsArgWith(1, null, clone(outgoingMessage));
-  getDoc.onCall(1).callsArgWith(1, { reason: 'deleted' });
+  getDoc.onCall(1).callsArgWith(1, { statusCode: 404 });
   getDoc.onCall(2).callsArgWith(1, null, clinic);
   var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
   migration.run(function(err) {
@@ -563,8 +563,8 @@ exports['run migrates incoming message with deleted contact and deleted clinic']
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
   var getDoc = sinon.stub(db.medic, 'get');
   getDoc.onCall(0).callsArgWith(1, null, clone(incomingMessage));
-  getDoc.onCall(1).callsArgWith(1, { reason: 'deleted' });
-  getDoc.onCall(2).callsArgWith(1, { reason: 'deleted' });
+  getDoc.onCall(1).callsArgWith(1, { statusCode: 404 });
+  getDoc.onCall(2).callsArgWith(1, { statusCode: 404 });
   var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
   migration.run(function(err) {
     test.equals(err, undefined);
@@ -586,7 +586,7 @@ exports['run migrates incoming message with deleted contact and clinic has no co
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
   var getDoc = sinon.stub(db.medic, 'get');
   getDoc.onCall(0).callsArgWith(1, null, clone(incomingMessage));
-  getDoc.onCall(1).callsArgWith(1, { reason: 'deleted' });
+  getDoc.onCall(1).callsArgWith(1, { statusCode: 404 });
   getDoc.onCall(2).callsArgWith(1, null, { _id: 'a' });
   var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
   migration.run(function(err) {

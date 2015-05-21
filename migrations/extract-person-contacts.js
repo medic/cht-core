@@ -4,6 +4,9 @@ var async = require('async'),
 var extract = function(row, callback) {
   db.medic.get(row.id, function(err, doc) {
     if (err) {
+      if (err.statusCode === 404) {
+        return callback();
+      }
       return callback(err);
     }
     if (!doc.contact) {
@@ -38,7 +41,7 @@ module.exports = {
       if (err) {
         return callback(err);
       }
-      async.each(result.rows, extract, callback);
+      async.eachSeries(result.rows, extract, callback);
     });
   }
 };
