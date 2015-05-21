@@ -2,12 +2,10 @@
 
 ## 0.4.4
 
-### TBD
+### May 21, 2015
 
 - Added support for a new messages parser we're calling Javarosa prefixed with
   the `J1` format code. 
-
-- Added support for creating records by submitting JSON.
 
 ## 0.4.3
 
