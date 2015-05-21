@@ -11,6 +11,13 @@ var libphonenumber = require('libphonenumber/utils'),
     ['$scope', '$rootScope', 'translateFilter', 'Settings', 'UpdateContact', 'DbView',
     function ($scope, $rootScope, translateFilter, Settings, UpdateContact, DbView) {
 
+      var NO_CONTACT =  {
+          name: '',
+          type: 'person',
+          _id: null,
+          order: 1
+        };
+
       var populateParents = function() {
         var options = {
           startkey: [],
@@ -29,12 +36,7 @@ var libphonenumber = require('libphonenumber/utils'),
             _id: 'NEW',
             order: 1
           });
-          results.unshift({
-            name: '',
-            type: 'person',
-            _id: null,
-            order: 1
-          });
+          results.unshift(NO_CONTACT);
           $scope.parents = results;
         });
       };
@@ -94,7 +96,7 @@ var libphonenumber = require('libphonenumber/utils'),
           $scope.contactId = null;
           if ($scope.category === 'place') {
             // set the Primary Contact field for places to be 'blank'
-            $scope.contact.contact = $scope.parents[0];
+            $scope.contact.contact = NO_CONTACT;
           }
         }
 
