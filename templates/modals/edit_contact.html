@@ -64,7 +64,9 @@
 
           <div class="form-group" ng-show="category === 'place'">
             <label>{{'Primary contact' | translate}}</label>
-            <select class="form-control small" ng-model="contact.contact" ng-options="parent.name for parent in parents | filter:{type:'person'} | orderBy:['order','name'] track by parent._id"></select>
+            <select class="form-control small" ng-model="contact.contact" ng-options="parent.name for parent in parents | filter:{type:'person'} | orderBy:['order','name'] track by parent._id">
+              <option value=""></option>
+            </select>
           </div>
 
           <div class="form-group" ng-show="category === 'place'">
