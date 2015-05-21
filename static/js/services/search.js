@@ -33,7 +33,7 @@ var _ = require('underscore');
         });
       };
 
-      return function($scope, options, callback) {
+      return function($scope, params, callback) {
 
         GenerateSearchQuery($scope, function(err, response) {
           if (err) {
@@ -41,24 +41,28 @@ var _ = require('underscore');
           }
 
           if (response.query) {
-            options.q = JSON.stringify(response.query);
+            params.q = JSON.stringify(response.query);
           }
           if (response.schema) {
-            options.schema = JSON.stringify(response.schema);
+            params.schema = JSON.stringify(response.schema);
           }
 
-          _.defaults(options, {
+          _.defaults(params, {
             index: 'data_records',
             limit: 50,
             sort: '\\reported_date<date>',
             include_docs: true
           });
 
-          if (debounce(options)) {
+          if (debounce(params)) {
             return;
           }
 
-          HttpWrapper.get('/api/v1/fti/' + options.index, { params: options })
+          HttpWrapper
+            .get('/api/v1/fti/' + params.index, {
+              params: params,
+              targetScope: $scope.filterModel && $scope.filterModel.type
+            })
             .success(function(data) {
               _currentQuery = null;
               formatResults(data, callback);

@@ -36,7 +36,7 @@ var _ = require('underscore');
           options = {};
         }
         var url = getFacilitiesUrl(BaseUrlService, options.district);
-        HttpWrapper.get(url, { cache: true })
+        HttpWrapper.get(url, { cache: true, targetScope: options.targetScope })
           .success(function(res) {
             if (options.types) {
               return callback(null, _.filter(res.rows, function(row) {
@@ -71,7 +71,8 @@ var _ = require('underscore');
           }
           var options = {
             district: district,
-            types: [ 'person', 'health_center' ]
+            types: [ 'person', 'health_center' ],
+            targetScope: 'root'
           };
           Facility(options, function(err, res) {
             if (err) {
@@ -102,7 +103,8 @@ var _ = require('underscore');
       return function(district, callback) {
         var options = {
           types: ['clinic','health_center','district_hospital'],
-          district: district
+          district: district,
+          targetScope: 'root'
         };
         Facility(options, function(err, facilities) {
           if (err) {

@@ -43,7 +43,11 @@ var _ = require('underscore');
           return fn.apply(this, args);
         }
         var canceller = $q.defer();
-        ActiveRequests.add({ url: args[0], canceller: canceller, targetScope: options.targetScope });
+        ActiveRequests.add({
+          url: args[0],
+          canceller: canceller,
+          targetScope: options.targetScope
+        });
         options.timeout = canceller.promise;
         var promise = fn.apply(this, args);
         promise.finally(function() {
