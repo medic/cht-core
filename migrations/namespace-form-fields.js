@@ -7,6 +7,9 @@ var async = require('async'),
 var namespace = function(id, callback) {
   db.medic.get(id, function(err, doc) {
     if (err) {
+      if (err.statusCode === 404) {
+        return callback();
+      }
       return callback(err);
     }
     if (doc.fields || !doc.form) {
@@ -36,7 +39,7 @@ module.exports = {
           return callback(err);
         }
         var ids = _.uniq(_.pluck(result.rows, 'id'));
-        async.each(ids, namespace, callback);
+        async.eachSeries(ids, namespace, callback);
       });
     });
   }
