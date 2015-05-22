@@ -64,7 +64,7 @@ var _ = require('underscore'),
             from: user && user.phone,
             sent_by: user && user.name || 'unknown',
             to: libphonenumber.format(settings, data.phone) || data.phone,
-            facility: data.facility._id ? data.facility : undefined,
+            contact: data.facility._id ? data.facility : undefined,
             message: message,
             uuid: uuid
           }]

@@ -42,10 +42,10 @@ var _ = require('underscore'),
           return [{ doc: message.value.facility }];
         }
         message = _.find(messages, function(message) {
-          return message.value.name;
+          return message.value && message.value.contact && message.value.contact.name;
         });
         if (message) {
-          return [{ doc: { contact: { phone: message.value.name } } }];
+          return [{ doc: { contact: { phone: message.value.contact.name } } }];
         }
         return [];
       };
@@ -72,8 +72,7 @@ var _ = require('underscore'),
             // ignore response for previous request
             return;
           }
-          var facility = findMostRecentFacility(data);
-          sendMessage.setRecipients(facility);
+          sendMessage.setRecipients(findMostRecentFacility(data));
           $scope.loadingContent = false;
           $scope.error = false;
           var unread = _.filter(data, function(message) {
