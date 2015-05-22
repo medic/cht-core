@@ -6,6 +6,7 @@ var permissions = {
   can_export_messages: ['national_admin', 'district_admin', 'analytics'],
   can_export_audit: ['national_admin'],
   can_export_feedback: ['national_admin'],
+  can_export_server_logs: ['national_admin'],
   can_export_contacts: ['national_admin', 'district_admin'],
   can_view_analytics: ['national_admin', 'district_admin', 'analytics'],
   can_view_data_records: [
