@@ -16,7 +16,7 @@ var _ = require('underscore');
     function(db) {
 
       var callbacks = {};
-      var inited = false;
+      var inited = [];
       
       return function(options, callback) {
         if (!callback) {
@@ -28,8 +28,8 @@ var _ = require('underscore');
           filter: 'medic/data_records'
         });
         callbacks[options.key] = callback;
-        if (!inited) {
-          inited = true;
+        if (!_.contains(inited, options.filter)) {
+          inited.push(options.filter);
           db.changes({ filter: options.filter }, function(err, data) {
             if (!err && data && data.results) {
               Object.keys(callbacks).forEach(function(key) {

@@ -149,11 +149,6 @@ require('moment/locales');
       };
 
       $scope.isRead = function(message) {
-        if ($scope.filterModel.type === 'reports' &&
-            $scope.selected &&
-            $scope.selected._id === message._id) {
-          return true;
-        }
         return _.contains(message.read, UserCtxService().name);
       };
 
