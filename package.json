@@ -15,7 +15,7 @@
     "moment": "2.8.x",
     "morgan": "^1.3.2",
     "nano": "^6.1.2",
-    "openrosa-formlist": "^1.0.1",
+    "openrosa-formlist": "medic/openrosa-formlist#sax",
     "pass-stream": "0.1.x",
     "underscore": "1.4.x"
   },
