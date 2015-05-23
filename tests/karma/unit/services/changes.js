@@ -4,7 +4,8 @@ describe('Changes service', function() {
 
   var service,
       changesCallback,
-      changesCount;
+      changesCount,
+      filter;
 
   beforeEach(function () {
     module('inboxApp');
@@ -12,7 +13,7 @@ describe('Changes service', function() {
       $provide.value('db', {
         changes: function(options, callback) {
           changesCount++;
-          chai.expect(options.filter).to.equal('medic/data_records');
+          chai.expect(options.filter).to.equal(filter);
           changesCallback = callback;
         }
       });
@@ -22,6 +23,7 @@ describe('Changes service', function() {
     });
     changesCallback = undefined;
     changesCount = 0;
+    filter = 'medic/data_records';
   });
 
   it('calls the callback', function(done) {
@@ -59,12 +61,12 @@ describe('Changes service', function() {
     var expected = [{ id: 'x' }];
     var results = { key1: [], key2: [] };
 
-    service('key1', function(actual) {
+    service({ key: 'key1' }, function(actual) {
       results.key1.push(actual);
     });
 
 
-    service('key2', function(actual) {
+    service({ key: 'key2' }, function(actual) {
       results.key2.push(actual);
     });
 
@@ -100,5 +102,19 @@ describe('Changes service', function() {
     changesCallback(null, {});
 
     done();
+  });
+
+  it('passes through the filter', function(done) {
+
+    var expected = [{ id: 'x' }];
+    filter = 'medic/ddoc';
+
+    service({ filter: filter }, function(actual) {
+      chai.expect(actual).to.equal(expected);
+      chai.expect(changesCount).to.equal(1);
+      done();
+    });
+
+    changesCallback(null, { results: expected });
   });
 });

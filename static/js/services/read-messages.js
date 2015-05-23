@@ -36,7 +36,7 @@
       return function(options, callback) {
         var getOptions = {
           params: { group: true },
-          timeout: options.timeout
+          targetScope: 'root'
         };
         HttpWrapper
           .get(BaseUrlService() + '/read_records', getOptions)
@@ -44,6 +44,7 @@
             callback(null, calculateStatus(res, options));
           })
           .error(function(data) {
+            console.log('err', arguments);
             callback(new Error(data));
           });
       };

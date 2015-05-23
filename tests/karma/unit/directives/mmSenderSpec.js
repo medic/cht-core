@@ -41,17 +41,15 @@ describe('mmSender', function() {
     chai.expect(element.find('div .name').text()).to.equal('+789');
   });
 
-  it('should render sender when message has related entities', function() {
+  it('should render sender when message has contact', function() {
     scope.message = {
       sent_by: '+789',
       from: '+123',
-      related_entities: {
-        clinic: {
+      contact: {
+        name: 'Clark',
+        phone: '+123',
+        parent: {
           name: 'Clarks House',
-          contact: {
-            name: 'Clark',
-            phone: '+123'
-          },
           parent: {
             name: 'Smallville',
             parent: {

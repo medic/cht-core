@@ -38,7 +38,7 @@ describe('SendMessage service', function() {
     chai.expect(msg.sent_by).to.equal(expected.sent_by);
     chai.expect(msg.to).to.equal(expected.to);
     chai.expect(msg.uuid).to.equal(expected.uuid);
-    chai.expect(msg.facility).to.deep.equal(expected.facility);
+    chai.expect(msg.contact).to.deep.equal(expected.facility);
   }
 
   it('create doc for one recipient', function(done) {

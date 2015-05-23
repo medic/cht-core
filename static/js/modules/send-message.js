@@ -177,18 +177,8 @@ var _ = require('underscore'),
     if (to) {
       if (typeof to === 'string') {
         val.push(createChoiceFromNumber(to));
-      } else {
-        var doc;
-        if (options.everyoneAt || to.type === 'person') {
-          doc = to;
-        } else if (to.type === 'clinic' || to.type === 'health_center' || to.type === 'district_hospital') {
-          doc = to.contact;
-        } else if (to.type === 'data_record' && to.related_entities) {
-          doc = to.related_entities.clinic;
-        }
-        if (doc) {
-          val.push({ id: doc._id, doc: doc, everyoneAt: options.everyoneAt });
-        }
+      } else if (to) {
+        val.push({ id: to._id, doc: to, everyoneAt: options.everyoneAt });
       }
     }
     $modal.find('[name=phone]').select2('data', val);

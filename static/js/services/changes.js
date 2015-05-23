@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 /**
  * Module to ensure changes listeners are singletons. Registering a
  * listener with this module will replace the previously registered
@@ -14,17 +16,21 @@
     function(db) {
 
       var callbacks = {};
-      var inited = false;
+      var inited = [];
       
-      return function(key, callback) {
+      return function(options, callback) {
         if (!callback) {
-          callback = key;
-          key = 'unlabelled';
+          callback = options;
+          options = {};
         }
-        callbacks[key] = callback;
-        if (!inited) {
-          inited = true;
-          db.changes({ filter: 'medic/data_records' }, function(err, data) {
+        _.defaults(options, {
+          key: 'unlabelled',
+          filter: 'medic/data_records'
+        });
+        callbacks[options.key] = callback;
+        if (!_.contains(inited, options.filter)) {
+          inited.push(options.filter);
+          db.changes({ filter: options.filter }, function(err, data) {
             if (!err && data && data.results) {
               Object.keys(callbacks).forEach(function(key) {
                 callbacks[key](data.results);
