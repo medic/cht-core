@@ -3,7 +3,9 @@ var _ = require('underscore'),
     async = require('async'),
     db = require('../db'),
     config = require('../config'),
-    luceneConditionalLimit = 1000;
+    luceneConditionalLimit = 1000,
+    lmpDateModifier = 2,
+    noLmpDateModifier = 2;
 
 var formatDate = function(date) {
   return date.zone(0).format('YYYY-MM-DD');
@@ -188,24 +190,24 @@ module.exports = {
   getWeeksPregnant: function(doc) {
     if (doc.form === 'R') {
       return {
-        number: moment().diff(moment(doc.reported_date), 'weeks'),
+        number: moment().diff(moment(doc.reported_date), 'weeks') + noLmpDateModifier,
         approximate: true
       };
     }
     return {
-      number: moment().diff(moment(doc.lmp_date), 'weeks') - 2
+      number: moment().diff(moment(doc.lmp_date), 'weeks') - lmpDateModifier
     };
   },
 
   getEDD: function(doc) {
     if (doc.form === 'R') {
       return {
-        date: moment(doc.reported_date).add(40, 'weeks'),
+        date: moment(doc.reported_date).add(40 - noLmpDateModifier, 'weeks'),
         approximate: true
       };
     }
     return {
-      date: moment(doc.lmp_date).add(42, 'weeks')
+      date: moment(doc.lmp_date).add(40 + lmpDateModifier, 'weeks')
     };
   },
 

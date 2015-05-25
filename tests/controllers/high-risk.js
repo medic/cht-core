@@ -142,7 +142,7 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
 
     test.equals(results[0].patient_id, 1);
     test.equals(results[0].patient_name, 'sarah');
-    test.equals(results[0].weeks.number, 38);
+    test.equals(results[0].weeks.number, 40);
     test.equals(results[0].weeks.approximate, true);
     test.equals(results[0].contact.id, 'x');
     test.equals(results[0].visits, 2);
@@ -179,7 +179,7 @@ exports['get returns all high risk pregnancies'] = function(test) {
           patient_id: 1,
           patient_name: 'sarah',
           form: 'R',
-          reported_date: today.clone().subtract(38, 'weeks').toISOString(),
+          reported_date: today.toISOString(),
           contact: { id: 'x' }
         }
       },
@@ -233,7 +233,7 @@ exports['get returns all high risk pregnancies'] = function(test) {
 
     test.equals(results[0].patient_id, 1);
     test.equals(results[0].patient_name, 'sarah');
-    test.equals(results[0].weeks.number, 38);
+    test.equals(results[0].weeks.number, 2);
     test.equals(results[0].weeks.approximate, true);
     test.equals(results[0].contact.id, 'x');
     test.equals(results[0].visits, 2);

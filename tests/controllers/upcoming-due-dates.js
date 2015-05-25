@@ -137,10 +137,10 @@ exports['get returns all women with upcoming due dates'] = function(test) {
 
     test.equals(results[0].patient_id, 1);
     test.equals(results[0].patient_name, 'sarah');
-    test.equals(results[0].weeks.number, 38);
+    test.equals(results[0].weeks.number, 40);
     test.equals(results[0].weeks.approximate, true);
     test.equals(results[0].lastAppointmentDate.toISOString(), today.clone().subtract(2, 'weeks').toISOString());
-    test.equals(results[0].edd.date.toISOString(), today.clone().add(2, 'weeks').toISOString());
+    test.equals(results[0].edd.date.toISOString(), today.toISOString());
     test.equals(results[0].edd.approximate, true);
     test.equals(results[0].visits, 2);
     test.equals(results[0].high_risk, true);
