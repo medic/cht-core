@@ -5,17 +5,6 @@ var _ = require('underscore'),
     config = require('../config'),
     utils = require('../controllers/utils');
 
-_.templateSettings = {
-  interpolate: /\{\{(.+?)\}\}/g
-};
-
-var template = _.template(
-  'STAT {{year}} {{month}} {{active_chws}} {{registered_pregnancies}} ' +
-  '{{flagged}} {{confirmed_deliveries}} {{estimated_deliveries}} ' +
-  '{{deliveries_with_1_visit}} {{deliveries_with_4_visits}} ' +
-  '{{deliveries_in_facility}} {{deliveries_with_sba}}'
-);
-
 var getView = function(name, query, callback) {
   if (!callback) {
     callback = query;
@@ -27,41 +16,56 @@ var getView = function(name, query, callback) {
   db.medic.view('medic', name, query, callback);
 };
 
-var getPercentage = function(part, total) {
-  if (!total) {
-    return 0;
-  }
-  return Math.round((part || 0) / total * 100);
-};
-
 var getForms = function(doc, type) {
   return doc.valid_form_submissions[utils.getFormCode(type)] || 0;
 };
 
+var getActivity = function(doc, type) {
+  return doc.active_facilities[utils.getFormCode(type)] || 0;
+};
+
+var getVersion = function(doc) {
+  return doc.version || 1;
+};
+
 var generateSubmissionString = function(doc) {
 
-  var flagFormCode = utils.getFormCode('flag');
-  var registrationFormCode = utils.getFormCode('registration');
-  var registrationLmpFormCode = utils.getFormCode('registrationLmp');
-  var deliveryFormCode = utils.getFormCode('delivery');
+  var version = getVersion(doc);
 
   var registrations = getForms(doc, 'registration') + getForms(doc, 'registrationLmp');
-  var confirmed = getForms(doc, 'delivery');
-  var deliveries = confirmed + doc.estimated_deliveries;
+  var totalActivity = version === 1 ? doc.active_facilities : doc.active_facilities._total;
 
-  return template({
-    year: doc.year,
-    month: doc.month + 1, // moment months are 0 based
-    active_chws: doc.active_facilities,
-    registered_pregnancies: registrations,
-    flagged: getForms(doc, 'flag'),
-    confirmed_deliveries: confirmed,
-    estimated_deliveries: doc.estimated_deliveries,
-    deliveries_with_1_visit: getPercentage(doc.visits_per_delivery['1+'], deliveries),
-    deliveries_with_4_visits: getPercentage(doc.visits_per_delivery['4+'], deliveries),
-    deliveries_in_facility: getPercentage(doc.delivery_locations.F, confirmed),
-    deliveries_with_sba: getPercentage(doc.delivery_locations.S, confirmed)
-  });
+  var results = [
+    'STAT',
+    doc.year, // the year the report is for
+    doc.month + 1, // the month the report is for - moment months are 0 based
+    totalActivity || 0, // the total active chws
+    registrations, // the number of registrations
+    getForms(doc, 'flag'), // the number of flags received
+    getForms(doc, 'delivery'), // the number of deliveries received
+    doc.estimated_deliveries, // the number of estimated deliveries
+    doc.visits_per_delivery['1+'] || 0, // the number of delivereies with 1+ visits
+    doc.visits_per_delivery['4+'] || 0, // the number of deliveries with 4+ visits
+    doc.delivery_locations.F || 0, // the number of deliveries in a facility
+    doc.delivery_locations.S || 0, // the number of deliveries with an sba
+    getForms(doc, 'visit') // the number of visits received
+  ];
+
+  if (version > 1) {
+    var registrationActivity = getActivity(doc, 'registration') + getActivity(doc, 'registrationLmp');
+    results.push.apply(results, [
+      registrationActivity, // the number of chws with 1+ registrations
+      getActivity(doc, 'visit'), // the number of chws with 1+ visits
+      getActivity(doc, 'flag'), // the number of chws with 1+ flags
+      getActivity(doc, 'delivery'), // the number of chws with 1+ deliveries
+      doc.active_facilities._totalReports || 0, // the number of chws who sent in any report this month
+      doc.active_facilities._totalMessages || 0, // the number of chws who sent in any unstructured message this month
+      doc.valid_form_submissions._totalMessages || 0, // the number of unstructured messages received this month
+      doc.valid_form_submissions._totalReports || 0, // the number of reports received this month
+    ]);
+  }
+
+  return results.join(' ');
 
 };
 

@@ -56,6 +56,7 @@ exports['go saves a doc with results'] = function(test) {
 
   // valid form submissions
   view.onCall(1).callsArgWith(3, null, { rows: [
+    { key: [ 1969, 11, null ], value: 5 },
     { key: [ 1969, 11, 'R' ], value: 23 },
     { key: [ 1969, 11, 'V' ], value: 5 }
   ] });
@@ -69,9 +70,15 @@ exports['go saves a doc with results'] = function(test) {
 
   // active facilities
   view.onCall(3).callsArgWith(3, null, { rows: [
-    { key: [ 1969, 11, '123' ], value: 52 },
-    { key: [ 1969, 11, '456' ], value: 13 },
-    { key: [ 1969, 11, '789' ], value: 1 }
+    { key: [ 1969, 11, 'R', 'a' ], value: 10 },
+    { key: [ 1969, 11, 'V', 'a' ], value: 12 },
+    { key: [ 1969, 11, null, 'a' ], value: 1 },
+    { key: [ 1969, 11, 'V', 'b' ], value: 2 },
+    { key: [ 1969, 11, 'R', 'b' ], value: 8 },
+    { key: [ 1969, 11, 'V', 'c' ], value: 2 },
+    { key: [ 1969, 11, null, 'c' ], value: 2 },
+    { key: [ 1969, 11, null, 'd' ], value: 1 },
+    { key: [ 1969, 11, null, 'e' ], value: 1 }
   ] });
 
   // estimated deliveries
@@ -99,12 +106,13 @@ exports['go saves a doc with results'] = function(test) {
 
   var expected = {
     type: 'usage_stats',
+    version: 2,
     reported_date: 0,
     month: 11,
     year: 1969,
-    valid_form_submissions: { R: 23, V: 5 },
+    valid_form_submissions: { _totalReports: 28, _totalMessages: 5, R: 23, V: 5 },
     delivery_locations: { F: 12, S: 2, NS: 1 },
-    active_facilities: 3,
+    active_facilities: { _total: 5, _totalReports: 3, _totalMessages: 4, R: 2, V: 3 },
     visits_per_delivery: { '1+': 2, '2+': 1, '3+': 1, '4+': 0 },
     estimated_deliveries: 3
   };
@@ -116,9 +124,10 @@ exports['go saves a doc with results'] = function(test) {
       startkey: [1969, 11],
       endkey: [1969, 11, {}]
     });
-    test.equals(view.getCall(1).args[1], 'data_records_valid_by_year_month_and_form');
+    test.equals(view.getCall(1).args[1], 'data_records_by_year_month_form_facility');
     test.deepEqual(view.getCall(1).args[2], {
       group: true,
+      group_level: 3,
       startkey: [1969, 11],
       endkey: [1969, 11, {}]
     });
@@ -128,7 +137,7 @@ exports['go saves a doc with results'] = function(test) {
       startkey: [1969, 11],
       endkey: [1969, 11, {}]
     });
-    test.equals(view.getCall(3).args[1], 'data_records_by_year_month_and_facility');
+    test.equals(view.getCall(3).args[1], 'data_records_by_year_month_form_facility');
     test.deepEqual(view.getCall(3).args[2], {
       group: true,
       startkey: [1969, 11],
