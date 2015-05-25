@@ -11,7 +11,7 @@ var formatDate = function(date) {
 
 var formatDateRange = function(field, startDate, endDate) {
   var start = formatDate(startDate);
-  var end = formatDate(endDate.clone().add(1, 'days'));
+  var end = endDate ? formatDate(endDate.clone().add(1, 'days')) : '9999-01-01';
   return field + '<date>:[' + start + ' TO ' + end + ']';
 };
 
@@ -179,12 +179,11 @@ module.exports = {
     var query = 'form:' + getFormCode('visit');
     if (options.startDate) {
       query += ' AND ' + formatDateRange(
-        'reported_date', options.startDate, options.endDate || moment().add(2, 'days')
+        'reported_date', options.startDate, options.endDate
       );
     }
     ftiWithPatientIds({ q: query, include_docs: true, patientIds: options.patientIds }, callback);
   },
-
 
   getWeeksPregnant: function(doc) {
     if (doc.form === 'R') {

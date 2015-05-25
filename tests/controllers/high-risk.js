@@ -8,7 +8,13 @@ var clock;
 
 exports.setUp = function(callback) {
   clock = sinon.useFakeTimers();
-  sinon.stub(config, 'get').returns({});
+  sinon.stub(config, 'get').returns({
+    flag: 'F',
+    visit: 'V',
+    registration: 'R',
+    registrationLmp: 'P',
+    delivery: 'D'
+  });
   callback();
 };
 
@@ -156,7 +162,7 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
 };
 
 exports['get returns all high risk pregnancies'] = function(test) {
-  test.expect(16);
+  test.expect(21);
   var fti = sinon.stub(db, 'fti');
   var today = moment();
   fti.onCall(0).callsArgWith(2, null, {
@@ -210,6 +216,20 @@ exports['get returns all high risk pregnancies'] = function(test) {
   });
   controller.get({}, function(err, results) {
     test.equals(results.length, 2);
+
+    test.equals(fti.callCount, 4);
+
+    // find flagged
+    test.equals(fti.args[0][1].q, 'errors<int>:0 AND form:F AND reported_date<date>:[1969-02-26 TO 9999-01-01]');
+
+    // get pregnancies
+    test.equals(fti.args[1][1].q, 'errors<int>:0 AND form:("R" OR "P") AND expected_date<date>:[1969-12-17 TO 1970-10-09] AND patient_id:(1 OR 3 OR 4)');
+
+    // reject deliveries
+    test.equals(fti.args[2][1].q, 'form:D AND patient_id:(1 OR 3 OR 4)');
+
+    // inject visits
+    test.equals(fti.args[3][1].q, 'form:V AND patient_id:(1 OR 3)');
 
     test.equals(results[0].patient_id, 1);
     test.equals(results[0].patient_name, 'sarah');
