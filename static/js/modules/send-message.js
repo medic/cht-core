@@ -212,7 +212,7 @@ var _ = require('underscore'),
           } catch(e) {}
         }
         if (to.type === 'data_record') {
-          to = to.contact;
+          to = to.contact || to.from;
         }
         exports.showModal({
           to: to,
