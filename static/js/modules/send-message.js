@@ -211,6 +211,9 @@ var _ = require('underscore'),
             to = JSON.parse(to);
           } catch(e) {}
         }
+        if (to.type === 'data_record') {
+          to = to.contact;
+        }
         exports.showModal({
           to: to,
           everyoneAt: target.attr('data-everyone-at') === 'true'
