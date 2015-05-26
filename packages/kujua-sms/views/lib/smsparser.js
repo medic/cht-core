@@ -285,7 +285,7 @@ exports.getFormCode = function(msg) {
     if (typeof msg !== 'string') { return; }
 
     // muvuku
-    if (msg.split('!').length === 3) {
+    if (msg.split('!').length >= 3) {
         return msg.split('!')[1].toUpperCase();
     }
     // textforms

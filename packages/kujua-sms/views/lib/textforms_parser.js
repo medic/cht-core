@@ -219,6 +219,10 @@ exports.parseCompact = function(def, msg) {
     var values = msg.match(/"[^"]+"|[^"\s]+/g);
     var keys = _.keys(def.fields);
 
+    if (values.length > keys.length) {
+        values = msg.match(/".+"|[^"\s]+/g);
+    }
+
     var results = {};
     for (var i = 0; i < keys.length; i++) {
         if (values.length === 0) {
@@ -231,7 +235,10 @@ exports.parseCompact = function(def, msg) {
         } else {
             value = values.shift();
         }
-        set_result(results, key, value.replace(/"/g,""));
+        if (value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') {
+            value = value.substring(1, value.length - 1);
+        }
+        set_result(results, key, value);
     }
     return results;
 };

@@ -753,6 +753,40 @@ exports['parse string field mixed'] = function(test) {
     test.done();
 };
 
+exports['parse string field with exlamation mark!'] = function(test) {
+    test.expect(2);
+
+    // textforms
+    var doc = {
+        message: "0000 foo 16A!"
+    };
+    var def = {
+        meta: {
+            code: '0000'
+        },
+        fields: {
+            foo: {
+                type: 'string',
+                labels: {
+                    short: 'foo',
+                    tiny: 'foo'
+                }
+            }
+        }
+    };
+    var data = smsparser.parse(def, doc);
+    test.same(data, {foo: "16A!"});
+
+    // muvuku
+    doc = {
+        message: "1!0000!16A!"
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {foo: "16A!"});
+
+    test.done();
+};
+
 exports['parse string field leading zero'] = function(test) {
     test.expect(2);
 
