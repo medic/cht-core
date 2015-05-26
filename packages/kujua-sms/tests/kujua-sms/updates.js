@@ -42,7 +42,7 @@ exports['assert month is parsed as integer'] = function(test) {
     };
     var doc = updates.add(null, req)[0];
     test.ok(getForm.alwaysCalledWith('YYYY'));
-    test.same(11, doc.month);
+    test.same(11, doc.fields.month);
     test.done();
 };
 
@@ -88,8 +88,8 @@ exports['deep keys parsed'] = function(test) {
     };
     var doc = updates.add(null, req)[0];
     test.ok(getForm.alwaysCalledWith('YYYY'));
-    test.same(doc.days_stocked_out, days_stocked_out);
-    test.same(doc.quantity_dispensed, quantity_dispensed);
+    test.same(doc.fields.days_stocked_out, days_stocked_out);
+    test.same(doc.fields.quantity_dispensed, quantity_dispensed);
     test.done();
 };
 
@@ -453,9 +453,9 @@ exports['JSON POST: support _meta.form property to match/parse form'] = function
     test.ok(getForm.alwaysCalledWith('YYYY'));
     test.same(resp_body, {payload: {success: true}});
     test.same(doc.form, "YYYY");
-    test.same(doc.facility_id, "zanzibar");
-    test.same(doc.month, 8);
-    test.same(doc.year, 2011);
+    test.same(doc.fields.facility_id, "zanzibar");
+    test.same(doc.fields.month, 8);
+    test.same(doc.fields.year, 2011);
     test.done();
 };
 
@@ -493,10 +493,10 @@ exports['JSON POST: ignore object and null properties'] = function(test) {
         resp = JSON.parse(ret[1]),
         doc = ret[0];
     test.same(resp.payload, {success: true});
-    test.same(doc.facility_id, "zanzibar");
-    test.same(doc.year, 2011);
-    test.same(doc.age, undefined);
-    test.same(doc.picture, undefined);
+    test.same(doc.fields.facility_id, "zanzibar");
+    test.same(doc.fields.year, 2011);
+    test.same(doc.fields.age, undefined);
+    test.same(doc.fields.picture, undefined);
     test.done();
 };
 
@@ -516,8 +516,8 @@ exports['JSON POST: convert property names to lowercase'] = function(test) {
         resp_body = JSON.parse(ret[1]),
         doc = ret[0];
     test.same(resp_body.payload, {success: true});
-    test.same(doc.facility_id, "zanzibar");
-    test.same(doc.year, 2011);
+    test.same(doc.fields.facility_id, "zanzibar");
+    test.same(doc.fields.year, 2011);
     test.done();
 };
 
@@ -539,8 +539,8 @@ exports['JSON POST: support reported_date  _meta property'] = function(test) {
         doc = ret[0];
     test.same(resp_body.payload, {success: true});
     test.same(doc.reported_date, 1421177819013);
-    test.same(doc.facility_id, "zanzibar");
-    test.same(doc.year, 2011);
-    test.same(doc.month, 8);
+    test.same(doc.fields.facility_id, "zanzibar");
+    test.same(doc.fields.year, 2011);
+    test.same(doc.fields.month, 8);
     test.done();
 };
