@@ -126,14 +126,14 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
 
     transition.matchRegistrations({
         registrations: [{
-            doc: { patient_name: 'Archibald' }
+            doc: { fields: { patient_name: 'Archibald' } }
         }],
         doc: doc,
         report: {
             messages: [{
                 event_type: 'report_accepted',
                 message: [{
-                    content: 'Thank you, {{contact.name}}. ANC visit for {{patient_name}} ({{patient_id}}) has been recorded.',
+                    content: 'Thank you, {{contact.name}}. ANC visit for {{fields.patient_name}} ({{patient_id}}) has been recorded.',
                     locale: 'en'
                 }],
                 recipient: 'reporting_unit'

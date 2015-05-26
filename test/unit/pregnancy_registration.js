@@ -168,7 +168,7 @@ exports['is id only'] = function(test) {
 };
 
 exports['setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0'] = function(test) {
-    var doc = {lmp: 0};
+    var doc = { fields: { lmp: 0 } };
     transition.setExpectedBirthDate(doc);
     test.equals(doc.lmp_date, null);
     test.equals(doc.expected_date, null);
@@ -176,12 +176,8 @@ exports['setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0
 };
 
 exports['setExpectedBirthDate sets lmp_date and expected_date correctly for lmp: 10'] = function(test) {
-    var doc,
+    var doc = { fields: { lmp: '10' } },
         start = moment().startOf('week');
-
-    doc = {
-        lmp: '10'
-    };
 
     transition.setExpectedBirthDate(doc);
 
@@ -201,8 +197,10 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
 
     doc = {
         form: 'y',
-        patient_name: 'abc',
-        lmp: 5
+        fields: {
+            patient_name: 'abc',
+            lmp: 5
+        }
     };
 
     transition.onMatch({
@@ -225,8 +223,10 @@ exports['zero lmp value only registers patient'] = function(test) {
 
     var doc = {
         form: 'y',
-        patient_name: 'abc',
-        lmp: 0
+        fields: {
+            patient_name: 'abc',
+            lmp: 0
+        }
     };
 
     transition.onMatch({
@@ -248,8 +248,10 @@ exports['id only logic with valid name'] = function(test) {
 
     doc = {
         form: 'y',
-        patient_name: 'abc',
-        lmp: 5,
+        fields: {
+            patient_name: 'abc',
+            lmp: 5
+        },
         getid: 'x'
     };
 
@@ -274,8 +276,10 @@ exports['id only logic with invalid name'] = function(test) {
     doc = {
         form: 'y',
         from: '+12345',
-        patient_name: '',
-        lmp: 5,
+        fields: {
+            patient_name: '',
+            lmp: 5
+        },
         getid: 'x'
     };
 
@@ -299,8 +303,10 @@ exports['invalid name valid LMP logic'] = function(test) {
     doc = {
         form: 'y',
         from: '+1234',
-        patient_name: '',
-        lmp: 5
+        fields: {
+            patient_name: '',
+            lmp: 5
+        }
     };
 
     transition.onMatch({
@@ -321,8 +327,10 @@ exports['valid name invalid LMP logic'] = function(test) {
     doc = {
         form: 'y',
         from: '+1234',
-        patient_name: 'hi',
-        lmp: 45
+        fields: {
+            patient_name: 'hi',
+            lmp: 45
+        }
     };
 
     transition.onMatch({
@@ -343,8 +351,10 @@ exports['invalid name invalid LMP logic'] = function(test) {
     doc = {
         form: 'y',
         from: '+123',
-        patient_name: '',
-        lmp: 45
+        fields: {
+            patient_name: '',
+            lmp: 45
+        }
     };
 
     transition.onMatch({

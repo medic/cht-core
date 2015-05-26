@@ -219,7 +219,9 @@ exports['mute responds correctly'] = function(test) {
     };
 
     var regDoc = {
-        patient_name: 'Agatha',
+        fields: {
+            patient_name: 'Agatha'
+        },
         scheduled_tasks: [{
             state: 'scheduled'
         }]
@@ -229,7 +231,7 @@ exports['mute responds correctly'] = function(test) {
         messages: [{
             event_type: 'on_mute',
             message: [{
-                content: 'Thank you {{contact.name}}, no further notifications regarding {{patient_name}} will be sent until you submit START {{patient_id}}.',
+                content: 'Thank you {{contact.name}}, no further notifications regarding {{fields.patient_name}} will be sent until you submit START {{patient_id}}.',
                 locale: 'en'
             }]
         }],

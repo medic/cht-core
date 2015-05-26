@@ -63,7 +63,7 @@ exports['setBirthDate sets birth_date correctly for weeks_since_birth: 0'] = fun
     var doc,
         start = moment().startOf('week');
     doc = {
-        weeks_since_birth: 0
+        fields: { weeks_since_birth: 0 }
     };
     transition.setBirthDate(doc);
     test.ok(doc.birth_date);
@@ -75,7 +75,7 @@ exports['setBirthDate sets birth_date correctly for age_in_weeks 10'] = function
     var doc,
         start = moment().startOf('week');
     doc = {
-        age_in_weeks: 10
+        fields: { age_in_weeks: 10 }
     };
     transition.setBirthDate(doc);
     test.ok(doc.birth_date);
@@ -89,8 +89,10 @@ exports['valid form adds patient_id and expected_date'] = function(test) {
 
     var doc = {
         form: 'BIR',
-        patient_name: 'abc',
-        weeks_since_birth: 1
+        fields: {
+            patient_name: 'abc',
+            weeks_since_birth: 1
+        }
     };
 
     transition.onMatch({

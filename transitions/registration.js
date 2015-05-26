@@ -29,8 +29,14 @@ module.exports = {
         );
     },
     getWeeksSinceDOB: function(doc) {
+        if (!doc || !doc.fields) {
+            return '';
+        }
         return String(
-            doc.weeks_since_dob || doc.dob || doc.weeks_since_birth || doc.age_in_weeks
+            doc.fields.weeks_since_dob ||
+            doc.fields.dob ||
+            doc.fields.weeks_since_birth ||
+            doc.fields.age_in_weeks
         );
     },
     /*
@@ -39,11 +45,15 @@ module.exports = {
      * */
     getWeeksSinceLMP: function(doc) {
         var props = ['weeks_since_lmp', 'last_menstrual_period', 'lmp'],
-            ret;
+            ret,
+            val;
         _.each(props, function(prop) {
-            if (_.isNumber(ret) && !_.isNaN(ret)) return;
-            if (_.isNumber(Number(doc[prop]))) {
-                ret = Number(doc[prop]);
+            if (_.isNumber(ret) && !_.isNaN(ret)) {
+                return;
+            }
+            val = Number(doc.fields && doc.fields[prop]);
+            if (_.isNumber(val)) {
+                ret = val;
             }
         });
         return ret;
