@@ -22,8 +22,7 @@ var getPregnancies = function(options, callback) {
 
 var findFlagged = function(options, callback) {
   var startDate = moment().subtract(44, 'weeks');
-  var endDate = moment();
-  var dateCriteria = utils.formatDateRange('reported_date', startDate, endDate);
+  var dateCriteria = utils.formatDateRange('reported_date', startDate);
   var query = 'errors<int>:0 AND form:' + utils.getFormCode('flag') + ' AND ' + dateCriteria;
   if (options.district) {
     query += ' AND district:"' + options.district + '"';

@@ -85,11 +85,12 @@ exports['go returns error from post'] = function(test) {
 
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
+      version: 2,
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
       estimated_deliveries: 0,
       valid_form_submissions: {},
       delivery_locations: {},
-      active_facilities: 0,
+      active_facilities: {},
       type: 'usage_stats',
       reported_date: 1427838796899,
       year: 2014,
@@ -119,11 +120,12 @@ exports['go returns error if post response is not valid json'] = function(test) 
 
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
+      version: 2,
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
       estimated_deliveries: 0,
       valid_form_submissions: {},
       delivery_locations: {},
-      active_facilities: 0,
+      active_facilities: {},
       type: 'usage_stats',
       reported_date: 1427838796899,
       year: 2014,
@@ -153,11 +155,12 @@ exports['go returns error if post response body indicates failure'] = function(t
 
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
+      version: 2,
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
       estimated_deliveries: 0,
       valid_form_submissions: {},
       delivery_locations: {},
-      active_facilities: 0,
+      active_facilities: {},
       type: 'usage_stats',
       reported_date: 1427838796899,
       year: 2014,
@@ -188,11 +191,12 @@ exports['go submits empty submission string'] = function(test) {
   var phone = '+555123456';
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
+      version: 2,
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
       estimated_deliveries: 0,
       valid_form_submissions: {},
       delivery_locations: {},
-      active_facilities: 0,
+      active_facilities: {},
       type: 'usage_stats',
       reported_date: 1427838796899,
       year: 2014,
@@ -216,7 +220,7 @@ exports['go submits empty submission string'] = function(test) {
     test.equals(getView.callCount, 1);
     test.equals(requestPost.callCount, 1);
     test.equals(requestPost.firstCall.args[0].form.sent_timestamp, 0);
-    test.equals(requestPost.firstCall.args[0].form.message, 'STAT 2014 12 0 0 0 0 0 0 0 0 0');
+    test.equals(requestPost.firstCall.args[0].form.message, 'STAT 2014 12 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0');
     test.equals(requestPost.firstCall.args[0].form.from, phone);
     test.equals(dbSaveDoc.callCount, 1);
     test.equals(dbSaveDoc.firstCall.args[0].submitted, true);
@@ -230,11 +234,12 @@ exports['go submits populated submission string'] = function(test) {
   var phone = '+555123456';
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
+      version: 2,
       visits_per_delivery: { '1+': 20, '2+': 19, '3+': 18, '4+': 17 },
       estimated_deliveries: 50,
-      valid_form_submissions: { D: 60, F: 12, V: 101, R: 63, P: 15 }, 
+      valid_form_submissions: { _totalReports: 251, _totalMessages: 5, D: 60, F: 12, V: 101, R: 63, P: 15 }, 
       delivery_locations: { F: 23, S: 20 },
-      active_facilities: 12, 
+      active_facilities: { _total: 12, _totalReports: 11, _totalMessages: 4, D: 10, F: 5, V: 12, R: 1, P: 5 },
       type: 'usage_stats',
       reported_date: 1427838796899,
       year: 2014,
@@ -258,7 +263,7 @@ exports['go submits populated submission string'] = function(test) {
     test.equals(getView.callCount, 1);
     test.equals(requestPost.callCount, 1);
     test.equals(requestPost.firstCall.args[0].form.sent_timestamp, 0);
-    test.equals(requestPost.firstCall.args[0].form.message, 'STAT 2014 12 12 78 12 60 50 18 15 38 33');
+    test.equals(requestPost.firstCall.args[0].form.message, 'STAT 2014 12 12 78 12 60 50 20 17 23 20 101 6 12 5 10 11 4 5 251');
     test.equals(requestPost.firstCall.args[0].form.from, phone);
     test.equals(dbSaveDoc.callCount, 1);
     test.equals(dbSaveDoc.firstCall.args[0].submitted, true);
@@ -271,11 +276,12 @@ exports['go returns error from sms if no number configured'] = function(test) {
 
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
+      version: 2,
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
       estimated_deliveries: 0,
       valid_form_submissions: {},
       delivery_locations: {},
-      active_facilities: 0,
+      active_facilities: {},
       type: 'usage_stats',
       reported_date: 1427838796899,
       year: 2014,
@@ -302,11 +308,12 @@ exports['go generates sms message'] = function(test) {
 
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
+      version: 2,
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
       estimated_deliveries: 0,
       valid_form_submissions: {},
       delivery_locations: {},
-      active_facilities: 0,
+      active_facilities: {},
       type: 'usage_stats',
       reported_date: 1427838796899,
       year: 2014,
@@ -335,7 +342,7 @@ exports['go generates sms message'] = function(test) {
       state: 'pending',
       messages: [{
         to: to,
-        message: 'STAT 2014 12 0 0 0 0 0 0 0 0 0'
+        message: 'STAT 2014 12 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0'
       }]
     });
     test.done();
@@ -347,11 +354,12 @@ exports['go falls back to sms when set to both'] = function(test) {
 
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
+      version: 2,
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
       estimated_deliveries: 0,
       valid_form_submissions: {},
       delivery_locations: {},
-      active_facilities: 0,
+      active_facilities: {},
       type: 'usage_stats',
       reported_date: 1427838796899,
       year: 2014,
@@ -382,9 +390,51 @@ exports['go falls back to sms when set to both'] = function(test) {
       state: 'pending',
       messages: [{
         to: to,
-        message: 'STAT 2014 12 0 0 0 0 0 0 0 0 0'
+        message: 'STAT 2014 12 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0'
       }]
     });
+    test.done();
+  });
+};
+
+exports['go submits populated submission string for old style active_facilities'] = function(test) {
+  test.expect(8);
+
+  var phone = '+555123456';
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
+    doc: {
+      visits_per_delivery: { '1+': 20, '2+': 19, '3+': 18, '4+': 17 },
+      estimated_deliveries: 50,
+      valid_form_submissions: { D: 60, F: 12, V: 101, R: 63, P: 15 }, 
+      delivery_locations: { F: 23, S: 20 },
+      active_facilities: 20,
+      type: 'usage_stats',
+      reported_date: 1427838796899,
+      year: 2014,
+      month: 11
+    }
+  }] });
+  var requestPost = sinon.stub(request, 'post').callsArgWith(1, null, null, successfulResponse);
+  var dbSaveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
+  var get = sinon.stub(config, 'get')
+    .withArgs('statistics_submission').returns('web')
+    .withArgs('gateway_number').returns(phone)
+    .withArgs('anc_forms').returns({
+      registration: 'R',
+      registrationLmp: 'P',
+      visit: 'V',
+      delivery: 'D',
+      flag: 'F'
+    });
+  schedule.go(function(err) {
+    test.equals(err, undefined);
+    test.equals(getView.callCount, 1);
+    test.equals(requestPost.callCount, 1);
+    test.equals(requestPost.firstCall.args[0].form.sent_timestamp, 0);
+    test.equals(requestPost.firstCall.args[0].form.message, 'STAT 2014 12 20 78 12 60 50 20 17 23 20 101');
+    test.equals(requestPost.firstCall.args[0].form.from, phone);
+    test.equals(dbSaveDoc.callCount, 1);
+    test.equals(dbSaveDoc.firstCall.args[0].submitted, true);
     test.done();
   });
 };

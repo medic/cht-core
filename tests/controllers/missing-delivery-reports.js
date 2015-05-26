@@ -23,7 +23,6 @@ exports.tearDown = function (callback) {
   callback();
 };
 
-
 exports['get returns errors'] = function(test) {
   test.expect(2);
   var fti = sinon.stub(db, 'fti').callsArgWith(2, 'bang');
@@ -148,7 +147,7 @@ exports['get returns all registrations with missed delivery reports'] = function
     test.equals(results[0].patient_id, 1);
     test.equals(results[0].patient_name, 'sarah');
     test.equals(results[0].contact.id, 'x');
-    test.equals(results[0].edd.date.toISOString(), today.clone().add(2, 'weeks').toISOString());
+    test.equals(results[0].edd.date.toISOString(), today.toISOString());
     test.equals(results[0].edd.approximate, true);
     test.equals(results[0].high_risk, true);
 

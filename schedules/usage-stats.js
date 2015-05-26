@@ -26,13 +26,20 @@ var runIfNeeded = function(callback) {
 };
 
 var fetchValidFormSubmissions = function(callback) {
-  getView('data_records_valid_by_year_month_and_form', { group: true }, function(err, response) {
+  var params = { group: true, group_level: 3 };
+  getView('data_records_by_year_month_form_facility', params, function(err, response) {
     if (err) {
       return callback(err);
     }
-    var result = {};
+    var result = { _totalReports: 0 };
     _.each(response.rows, function(row) {
-      result[row.key[2]] = row.value;
+      var code = row.key[2];
+      if (code) {
+        result._totalReports += row.value;
+        result[row.key[2]] = row.value;
+      } else {
+        result._totalMessages = row.value;
+      }
     });
     callback(null, result);
   });
@@ -55,8 +62,30 @@ var fetchDeliveryLocations = function(callback) {
 };
 
 var fetchActiveFacilities = function(callback) {
-  getView('data_records_by_year_month_and_facility', { group: true }, function(err, response) {
-    callback(err, response.rows.length);
+  getView('data_records_by_year_month_form_facility', { group: true }, function(err, response) {
+    if (err) {
+      return callback(err);
+    }
+    var results = {};
+    var seen = [];
+    var seenReports = [];
+    _.each(response.rows, function(row) {
+      var formCode = row.key[2] || '_totalMessages';
+      var facilityId = row.key[3];
+      if (!_.contains(seen, facilityId)) {
+        seen.push(facilityId);
+      }
+      if (row.key[2] && !_.contains(seenReports, facilityId)) {
+        seenReports.push(facilityId);
+      }
+      if (!results[formCode]) {
+        results[formCode] = 0;
+      }
+      results[formCode]++;
+    });
+    results._totalReports = seenReports.length;
+    results._total = seen.length;
+    callback(null, results);
   });
 };
 
@@ -150,6 +179,7 @@ module.exports = {
               return callback(err);
             }
             doc.type = 'usage_stats';
+            doc.version = 2;
             doc.reported_date = moment().valueOf();
             var startDate = moment().subtract(1, 'month').startOf('month');
             doc.year = startDate.year();

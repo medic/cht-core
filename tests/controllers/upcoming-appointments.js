@@ -265,7 +265,7 @@ exports['get returns all registrations with upcoming appointments'] = function(t
     test.equals(results[0].patient_id, 1);
     test.equals(results[0].patient_name, 'sarah');
     test.equals(results[0].contact.id, 'x');
-    test.equals(results[0].weeks.number, 10);
+    test.equals(results[0].weeks.number, 12);
     test.equals(results[0].weeks.approximate, true);
     test.equals(results[0].date.toISOString(), today.toISOString());
     test.equals(results[0].visits, 0);

@@ -8,7 +8,13 @@ var clock;
 
 exports.setUp = function(callback) {
   clock = sinon.useFakeTimers();
-  sinon.stub(config, 'get').returns({});
+  sinon.stub(config, 'get').returns({
+    flag: 'F',
+    visit: 'V',
+    registration: 'R',
+    registrationLmp: 'P',
+    delivery: 'D'
+  });
   callback();
 };
 
@@ -136,7 +142,7 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
 
     test.equals(results[0].patient_id, 1);
     test.equals(results[0].patient_name, 'sarah');
-    test.equals(results[0].weeks.number, 38);
+    test.equals(results[0].weeks.number, 40);
     test.equals(results[0].weeks.approximate, true);
     test.equals(results[0].contact.id, 'x');
     test.equals(results[0].visits, 2);
@@ -156,7 +162,7 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
 };
 
 exports['get returns all high risk pregnancies'] = function(test) {
-  test.expect(16);
+  test.expect(21);
   var fti = sinon.stub(db, 'fti');
   var today = moment();
   fti.onCall(0).callsArgWith(2, null, {
@@ -173,7 +179,7 @@ exports['get returns all high risk pregnancies'] = function(test) {
           patient_id: 1,
           patient_name: 'sarah',
           form: 'R',
-          reported_date: today.clone().subtract(38, 'weeks').toISOString(),
+          reported_date: today.toISOString(),
           contact: { id: 'x' }
         }
       },
@@ -211,9 +217,26 @@ exports['get returns all high risk pregnancies'] = function(test) {
   controller.get({}, function(err, results) {
     test.equals(results.length, 2);
 
+    test.equals(fti.callCount, 4);
+
+
+    // find flagged
+    var flaggedStart = moment().subtract(44, 'weeks').zone(0).format('YYYY-MM-DD');
+    test.equals(fti.args[0][1].q, 'errors<int>:0 AND form:F AND reported_date<date>:[' + flaggedStart + ' TO 9999-01-01]');
+
+    // get pregnancies
+    var registrationStart = moment().subtract(2, 'weeks').zone(0).format('YYYY-MM-DD');
+    test.equals(fti.args[1][1].q, 'errors<int>:0 AND form:("R" OR "P") AND expected_date<date>:[' + registrationStart + ' TO 1970-10-09] AND patient_id:(1 OR 3 OR 4)');
+
+    // reject deliveries
+    test.equals(fti.args[2][1].q, 'form:D AND patient_id:(1 OR 3 OR 4)');
+
+    // inject visits
+    test.equals(fti.args[3][1].q, 'form:V AND patient_id:(1 OR 3)');
+
     test.equals(results[0].patient_id, 1);
     test.equals(results[0].patient_name, 'sarah');
-    test.equals(results[0].weeks.number, 38);
+    test.equals(results[0].weeks.number, 2);
     test.equals(results[0].weeks.approximate, true);
     test.equals(results[0].contact.id, 'x');
     test.equals(results[0].visits, 2);

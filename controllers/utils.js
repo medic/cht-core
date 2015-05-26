@@ -3,7 +3,9 @@ var _ = require('underscore'),
     async = require('async'),
     db = require('../db'),
     config = require('../config'),
-    luceneConditionalLimit = 1000;
+    luceneConditionalLimit = 1000,
+    lmpDateModifier = 2,
+    noLmpDateModifier = 2;
 
 var formatDate = function(date) {
   return date.zone(0).format('YYYY-MM-DD');
@@ -11,7 +13,7 @@ var formatDate = function(date) {
 
 var formatDateRange = function(field, startDate, endDate) {
   var start = formatDate(startDate);
-  var end = formatDate(endDate.clone().add(1, 'days'));
+  var end = endDate ? formatDate(endDate.clone().add(1, 'days')) : '9999-01-01';
   return field + '<date>:[' + start + ' TO ' + end + ']';
 };
 
@@ -179,34 +181,33 @@ module.exports = {
     var query = 'form:' + getFormCode('visit');
     if (options.startDate) {
       query += ' AND ' + formatDateRange(
-        'reported_date', options.startDate, options.endDate || moment().add(2, 'days')
+        'reported_date', options.startDate, options.endDate
       );
     }
     ftiWithPatientIds({ q: query, include_docs: true, patientIds: options.patientIds }, callback);
   },
 
-
   getWeeksPregnant: function(doc) {
     if (doc.form === 'R') {
       return {
-        number: moment().diff(moment(doc.reported_date), 'weeks'),
+        number: moment().diff(moment(doc.reported_date), 'weeks') + noLmpDateModifier,
         approximate: true
       };
     }
     return {
-      number: moment().diff(moment(doc.lmp_date), 'weeks') - 2
+      number: moment().diff(moment(doc.lmp_date), 'weeks') - lmpDateModifier
     };
   },
 
   getEDD: function(doc) {
     if (doc.form === 'R') {
       return {
-        date: moment(doc.reported_date).add(40, 'weeks'),
+        date: moment(doc.reported_date).add(40 - noLmpDateModifier, 'weeks'),
         approximate: true
       };
     }
     return {
-      date: moment(doc.lmp_date).add(42, 'weeks')
+      date: moment(doc.lmp_date).add(40 + lmpDateModifier, 'weeks')
     };
   },
 

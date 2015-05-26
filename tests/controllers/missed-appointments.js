@@ -226,7 +226,7 @@ exports['get returns all registrations with missed appointments'] = function(tes
     test.equals(results[0].patient_id, 1);
     test.equals(results[0].patient_name, 'sarah');
     test.equals(results[0].contact.id, 'x');
-    test.equals(results[0].weeks.number, 10);
+    test.equals(results[0].weeks.number, 12);
     test.equals(results[0].weeks.approximate, true);
     test.equals(results[0].date.toISOString(), today.clone().subtract(20, 'days').toISOString());
     test.equals(results[0].visits, 1);
