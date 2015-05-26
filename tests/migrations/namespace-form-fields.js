@@ -140,8 +140,8 @@ exports['run migrates report'] = function(test) {
     test.equals(getConfig.callCount, 1);
     test.equals(insert.callCount, 1);
     test.same(insert.args[0][0].fields, expected);
-    test.equals(insert.args[0][0].last_menstrual_period, null);
-    test.equals(insert.args[0][0].patient_name, null);
+    test.same(insert.args[0][0].last_menstrual_period, undefined);
+    test.same(insert.args[0][0].patient_name, undefined);
     test.done();
   });
 };
