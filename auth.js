@@ -167,6 +167,8 @@ module.exports = {
     }).on('error', function(e) {
       callback(e.message);
     }).end();
-  }
+  },
+
+  getUserCtx: getUserCtx
 
 };
