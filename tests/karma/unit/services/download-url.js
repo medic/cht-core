@@ -47,6 +47,13 @@ describe('DownloadUrl service', function() {
     });
   });
 
+  it('builds url for logs', function() {
+    locale = 'en';
+    service(null, 'logs', function(err, actual) {
+      chai.expect(actual).to.equal('/api/v1/export/logs?format=zip&locale=en');
+    });
+  });
+
   it('builds url for forms', function() {
     locale = 'en';
     query = 'form:P';

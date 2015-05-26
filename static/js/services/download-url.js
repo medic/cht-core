@@ -10,7 +10,7 @@
     messages: { name: 'messages', format: 'xml' },
     audit:    { name: 'audit', format: 'xml' },
     feedback: { name: 'feedback', format: 'xml' },
-    logs:     { name: 'logs', format: 'xml' }
+    logs:     { name: 'logs', format: 'zip' }
   };
 
   inboxServices.factory('DownloadUrl', ['GenerateSearchQuery', 'Language',
