@@ -203,23 +203,29 @@ exports['get exports reports in xml with each type on a separate tab'] = functio
         patient_id: '123456',
         reported_date: 123456789,
         form: 'STCK',
-        qty: 115,
-        year: 2014
+        fields: {
+          qty: 115,
+          year: 2014
+        }
       } },
       { doc: {
         _id: 'def',
         patient_id: '654321',
         reported_date: 987654321,
         form: 'V',
-        status: 'ok'
+        fields: {
+          status: 'ok'
+        }
       } },
       { doc: {
         _id: 'hij',
         patient_id: '654321',
         reported_date: 987654321,
         form: 'STCK',
-        qty: 3,
-        year: 2015
+        fields: {
+          qty: 3,
+          year: 2015
+        }
       } }
     ]
   });
@@ -511,16 +517,20 @@ exports['get reports filters by form'] = function(test) {
         patient_id: '123456',
         reported_date: 123456789,
         form: 'P',
-        first: 'a',
-        second: 'b'
+        fields: {
+          first: 'a',
+          second: 'b'
+        }
       } },
       { doc: {
         _id: 'def',
         patient_id: '654321',
         reported_date: 987654321,
         form: 'P',
-        first: '1',
-        second: '2'
+        fields: {
+          first: '1',
+          second: '2'
+        }
       } }
     ]
   });

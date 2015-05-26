@@ -14,7 +14,7 @@ var getRegistrationPatientIds = function(options, callback) {
       var doc = row.doc;
       return {
         patient_id: doc.patient_id,
-        patient_name: doc.patient_name,
+        patient_name: doc.fields && doc.fields.patient_name,
         contact: doc.contact,
         edd: utils.getEDD(doc)
       };

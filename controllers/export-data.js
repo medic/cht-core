@@ -76,7 +76,7 @@ var exportTypes = {
           for (var k in def.fields) {
             var labels = def.fields[k].labels.short;
             columns.push({
-              column: k,
+              column: 'fields.' + k,
               label: labels[options.locale] || labels.en || k
             });
           }

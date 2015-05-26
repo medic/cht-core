@@ -213,7 +213,7 @@ exports['get returns all registrations with upcoming appointments'] = function(t
       { 
         doc: { 
           patient_id: 1,
-          patient_name: 'sarah',
+          fields: { patient_name: 'sarah' },
           form: 'R',
           reported_date: today.clone().subtract(10, 'weeks').toISOString(),
           contact: { id: 'x' },
@@ -229,7 +229,7 @@ exports['get returns all registrations with upcoming appointments'] = function(t
       { 
         doc: { 
           patient_id: 2,
-          patient_name: 'sally',
+          fields: { patient_name: 'sally' },
           form: 'P',
           lmp_date: today.clone().subtract(14, 'weeks').toISOString(),
           contact: { id: 'y' },

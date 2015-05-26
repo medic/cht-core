@@ -26,7 +26,7 @@ var getAppointments = function(options, callback) {
         var date = getAppointmentDate(options, doc);
         if (date) {
           return {
-            patient_name: doc.patient_name,
+            patient_name: doc.fields && doc.fields.patient_name,
             patient_id: doc.patient_id,
             contact: doc.contact,
             date: date,
