@@ -211,7 +211,7 @@ var _ = require('underscore'),
             to = JSON.parse(to);
           } catch(e) {}
         }
-        if (to.type === 'data_record') {
+        if (to && to.type === 'data_record') {
           to = to.contact || to.from;
         }
         exports.showModal({
