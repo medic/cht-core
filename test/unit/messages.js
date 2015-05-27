@@ -188,6 +188,26 @@ exports['addMessage template supports district object'] = function(test) {
     test.done();
 };
 
+exports['addMessage template supports fields'] = function(test) {
+    var doc = {
+        form: 'x',
+        fields: {
+            patient_name: 'Sally'
+        }
+    };
+    messages.addMessage({
+        doc: doc,
+        phone: "+13125551212",
+        message: "Thank you {{patient_name}}."
+    });
+    test.equals(doc.tasks.length, 1);
+    test.equals(
+        doc.tasks[0].messages[0].message,
+        "Thank you Sally."
+    );
+    test.done();
+};
+
 exports['getRecipientPhone resolves `clinic` correctly'] = function(test) {
     var phone = '+13125551213';
     var doc = {
