@@ -118,7 +118,7 @@ exports.makeDataRecordReadable = function(doc, appinfo, language) {
     if(data_record.form) {
         var keys = getFormKeys(exports.info.getForm(data_record.form));
         var labels = exports.getLabels(keys, data_record.form, language);
-        data_record.fields = exports.fieldsToHtml(keys, labels, data_record.fields);
+        data_record.fields = exports.fieldsToHtml(keys, labels, data_record);
         includeNonFormFields(data_record, keys, language);
     }
 
