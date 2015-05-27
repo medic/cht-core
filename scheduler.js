@@ -1,27 +1,42 @@
-var _ = require('underscore'),
-    CronJob = require('cron').CronJob,
+var CronJob = require('cron').CronJob,
     usageStats = require('./schedules/usage-stats'),
     statsSubmission = require('./schedules/stats-submission');
 
-var wrapAsync = function(fn, name) {
-  return function() {
-    fn(function(err) {
-      if (err) {
-        return console.error('Cron job \'' + name + '\' failed:', err);
-      }
-      console.log('Cron job \'' + name + '\' completed successfully');
-    });
-  };
+var schedules = {
+  // collect usage stats at 3am every day
+  usageStats: {
+    cron: '0 0 3 * * *',
+    exec: require('./schedules/usage-stats').go
+  },
+  // submit usage stats at 30 minutes past the hour every hour
+  statsSubmission: {
+    cron: '0 30 * * * *',
+    exec: require('./schedules/stats-submission').go
+  }
+};
+
+var outputResult = function(name, err) {
+  if (err) {
+    return console.error('Schedule "' + name + '" failed:', err);
+  }
+  console.log('Schedule "' + name + '" completed successfully');
 };
 
 module.exports = {
+  exec: function(name, callback) {
+    var schedule = schedules[name];
+    if (!schedule) {
+      return callback(new Error('Unknown schedule: ' + name));
+    }
+    schedule.exec(callback);
+  },
   init: function() {
-
-    // collect usage stats at 3am every day
-    new CronJob('0 0 3 * * *', wrapAsync(usageStats.go, 'usageStats')).start();
-
-    // submit usage stats at 30 minutes past the hour every hour
-    new CronJob('0 30 * * * *', wrapAsync(statsSubmission.go, 'statsSubmission')).start();
-
+    Object.keys(schedules).forEach(function(name) {
+      new CronJob(schedules[name].cron, function() {
+        module.exports.exec(name, function(err) {
+          outputResult(name, err);
+        });
+      }).start();
+    });
   }
 };

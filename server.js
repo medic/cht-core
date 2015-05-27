@@ -342,6 +342,20 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
   });
 });
 
+app.get('/api/v1/schedule/:name', function(req, res) {
+  auth.check(req, 'can_execute_schedules', null, function(err, ctx) {
+    if (err) {
+      return error(err, res);
+    }
+    scheduler.exec(req.params.name, function(err) {
+      if (err) {
+        return error(err, res);
+      }
+      res.json({ schedule: req.params.name, result: 'success' });
+    });
+  });
+});
+
 /**
  * Set cache control on static resources. Must be hacked in to
  * ensure we set the value first.
