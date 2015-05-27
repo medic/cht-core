@@ -150,7 +150,8 @@ module.exports = {
                         // params setting get sent as array
                         args.push(event.params.split(','));
                     }
-                    if (self.isBoolExprFalse(doc, event.bool_expr)) {
+                    var obj = _.defaults({}, doc, doc.fields);
+                    if (self.isBoolExprFalse(obj, event.bool_expr)) {
                         return;
                     }
                     series.push(function(cb) {
