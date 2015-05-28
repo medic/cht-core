@@ -342,7 +342,7 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
   });
 });
 
-app.get('/api/v1/schedule/:name', function(req, res) {
+app.get('/api/v1/scheduler/:name', function(req, res) {
   auth.check(req, 'can_execute_schedules', null, function(err, ctx) {
     if (err) {
       return error(err, res);
