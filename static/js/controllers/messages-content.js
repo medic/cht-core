@@ -109,13 +109,15 @@ var _ = require('underscore'),
           };
           if (options.skip) {
             opts.skip = $scope.selected.messages.length;
-            $scope.loadingContent = true;
+            $timeout(function() {
+              $scope.loadingMoreContent = true;
+            });
           }
           ContactConversation(opts, function(err, data) {
             if (err) {
               return console.log('Error fetching contact conversation', err);
             }
-            $scope.loadingContent = false;
+            $scope.loadingMoreContent = false;
             var contentElem = $('#message-content');
             var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
             var first = $('.item-content .body > ul > li').filter(':first');
@@ -138,7 +140,8 @@ var _ = require('underscore'),
             $timeout(function() {
               var scroll = false;
               if (options.skip) {
-                scroll = $('#message-content li')[data.length].offsetTop;
+                var spinnerHeight = 102;
+                scroll = $('#message-content li')[data.length].offsetTop - spinnerHeight;
               } else if (first.length && scrollToBottom) {
                 scroll = $('#message-content')[0].scrollHeight;
               }
