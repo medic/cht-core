@@ -61,7 +61,11 @@ var _ = require('underscore'),
         $scope.loadingContent = true;
         $scope.setSelected({ id: id });
         $scope.setLoadingContent(id);
-        ContactConversation({ id: id, districtAdmin: $scope.permissions.districtAdmin }, function(err, data) {
+        var opts = {
+          id: id,
+          districtAdmin: $scope.permissions.districtAdmin
+        };
+        ContactConversation(opts, function(err, data) {
           if (err) {
             $scope.loadingContent = false;
             $scope.error = true;
@@ -126,16 +130,22 @@ var _ = require('underscore'),
                 }
               }
             });
-            $scope.allLoaded = data.length === 0;
+            $scope.allLoaded = data.length < 50;
             if (options.skip) {
               $scope.firstUnread = undefined;
             }
-            if (first.length && scrollToBottom) {
-              $timeout(function() {
-                $('#message-content').scrollTop($('#message-content')[0].scrollHeight);
-              });
-            }
             markAllRead();
+            $timeout(function() {
+              var scroll = false;
+              if (options.skip) {
+                scroll = $('#message-content li')[data.length].offsetTop;
+              } else if (first.length && scrollToBottom) {
+                scroll = $('#message-content')[0].scrollHeight;
+              }
+              if (scroll) {
+                $('#message-content').scrollTop(scroll);
+              }
+            });
           });
         }
       };
