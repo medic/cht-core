@@ -478,7 +478,6 @@ exports.tasks_pending = {
     }
 };
 
-
 exports.duplicate_form_submissions = {
     map: function(doc) {
         if (doc.type == "data_record" &&
@@ -497,5 +496,21 @@ exports.duplicate_form_submissions = {
         else{
             return values.length;
         }
+    }
+};
+
+/*
+ * Allow for quering of forms based on the doc id minus the prefix.
+ */
+exports.forms = {
+    map: function(doc) {
+        if (doc.type !== 'form') {
+            return;
+        }
+        // removes form: prefix on form docs
+        function removePrefix(str) {
+           return str.split(':').slice(1).join(':');
+        };
+        emit(removePrefix(doc._id));
     }
 };

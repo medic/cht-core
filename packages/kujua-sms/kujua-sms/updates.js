@@ -338,7 +338,7 @@ exports.update_message_task = function(doc, request) {
     if (!data.message_id || !msg) {
         return fail('Message not found: ' + data.message_id);
     }
-    kutils.setTaskState(msg, data.state, data.state_details);
+    kutils.setTaskState(msg, data.state, data.details);
     return [
         doc,
         JSON.stringify(getDefaultResponse(doc))

@@ -1,13 +1,21 @@
 # Medic Mobile Release Notes
 
+## 0.4.5
+
+### May 28, 2015
+
+- Fixed bug in schedules editor for LMP (last menstrual period) based
+  schedules. #973
+    
+- Initial support for messages, records and forms API.  See
+  https://github.com/medic/medic-api/blob/master/API_v1.md
+
 ## 0.4.4
 
-### TBD
+### May 21, 2015
 
 - Added support for a new messages parser we're calling Javarosa prefixed with
   the `J1` format code. 
-
-- Added support for creating records by submitting JSON.
 
 ## 0.4.3
 
