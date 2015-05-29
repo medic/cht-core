@@ -37,7 +37,7 @@ module.exports = {
         return callback(err);
       }
       options.patientIds = _.map(flagged.rows, function(row) {
-        return row.doc.patient_id;
+        return row.doc.fields && row.doc.fields.patient_id;
       });
       getPregnancies(options, function(err, pregnancies) {
         if (err) {

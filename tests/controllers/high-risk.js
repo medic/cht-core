@@ -58,7 +58,9 @@ exports['get returns empty if no registrations'] = function(test) {
     rows: [
       { 
         doc: { 
-          patient_id: 1,
+          fields: {
+            patient_id: 1
+          },
           scheduled_tasks: [ {
             group: 1,
             due: moment().toISOString()
@@ -66,8 +68,10 @@ exports['get returns empty if no registrations'] = function(test) {
         } 
       },
       { 
-        doc: { 
-          patient_id: 2,
+        doc: {
+          fields: {
+            patient_id: 2
+          },
           scheduled_tasks: [ {
             group: 1,
             due: moment().toISOString()
@@ -97,8 +101,8 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
   // flagged
   fti.onCall(0).callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 1 } },
-      { doc: { patient_id: 3 } }
+      { doc: { fields: { patient_id: 1 } } },
+      { doc: { fields: { patient_id: 3 } } }
     ]
   });
   
@@ -167,9 +171,9 @@ exports['get returns all high risk pregnancies'] = function(test) {
   var today = moment();
   fti.onCall(0).callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 1 } },
-      { doc: { patient_id: 3 } },
-      { doc: { patient_id: 4 } }
+      { doc: { fields: { patient_id: 1 } } },
+      { doc: { fields: { patient_id: 3 } } },
+      { doc: { fields: { patient_id: 4 } } }
     ]
   });
   fti.onCall(1).callsArgWith(2, null, {
