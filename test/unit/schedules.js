@@ -153,10 +153,6 @@ exports['scheduled due timestamp respects send_day Monday'] = function(test) {
     test.equals(added, true);
     test.equals(doc.scheduled_tasks.length, 1);
     test.equals(
-        moment(doc.scheduled_tasks[0].due).toISOString(),
-        "2050-03-28T13:06:22.002Z"
-    );
-    test.equals(
         moment(doc.scheduled_tasks[0].due).format('dddd'),
         "Monday"
     );
@@ -185,10 +181,6 @@ exports['scheduled due timestamp respects send_day Wednesday'] = function(test) 
     });
     test.equals(added, true);
     test.equals(doc.scheduled_tasks.length, 1);
-    test.equals(
-        moment(doc.scheduled_tasks[0].due).toISOString(),
-        "2050-03-30T13:06:22.002Z"
-    );
     test.equals(
         moment(doc.scheduled_tasks[0].due).format('dddd'),
         "Wednesday"
