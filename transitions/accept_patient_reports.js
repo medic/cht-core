@@ -181,7 +181,7 @@ module.exports = {
 
         utils.getRegistrations({
             db: db,
-            id: doc.fields.patient_id
+            id: doc.fields && doc.fields.patient_id
         }, function(err, registrations) {
             module.exports.matchRegistrations({
                 db: db,

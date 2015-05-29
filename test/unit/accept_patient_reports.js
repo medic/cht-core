@@ -78,7 +78,7 @@ exports['onMatch with matching form calls getRegistrations and then matchRegistr
 exports['matchRegistrations with no registrations adds error msg and response'] = function(test) {
 
     var doc = {
-        patient_id: 'x',
+        fields: { patient_id: 'x' },
         from: '+123'
     };
 
@@ -108,10 +108,8 @@ exports['matchRegistrations with no registrations adds error msg and response'] 
 };
 
 exports['matchRegistrations with registrations adds reply'] = function(test) {
-    var doc;
-
-    doc = {
-        patient_id: '559',
+    var doc = {
+        fields: { patient_id: '559' },
         contact: {
             phone: '+1234',
             name: 'woot',
@@ -133,7 +131,7 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
             messages: [{
                 event_type: 'report_accepted',
                 message: [{
-                    content: 'Thank you, {{contact.name}}. ANC visit for {{fields.patient_name}} ({{patient_id}}) has been recorded.',
+                    content: 'Thank you, {{contact.name}}. ANC visit for {{patient_name}} ({{patient_id}}) has been recorded.',
                     locale: 'en'
                 }],
                 recipient: 'reporting_unit'
