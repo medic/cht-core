@@ -19,7 +19,7 @@
         <thead>
           <tr>
             <th class="sortable" ng-class="{'sorted':missingDeliveryReports.order==='patient_name'}" ng-click="missingDeliveryReports.order='patient_name'">{{'Patient Name' | translate}}</th>
-            <th class="sortable" ng-class="{'sorted':missingDeliveryReports.order==='clinic.contact.name'}" ng-click="missingDeliveryReports.order='clinic.contact.name'">{{'contact.short' | translate}}</th>
+            <th class="sortable" ng-class="{'sorted':missingDeliveryReports.order==='contact.name'}" ng-click="missingDeliveryReports.order='contact.name'">{{'contact.short' | translate}}</th>
             <th class="sortable" ng-class="{'sorted':upcomingDueDates.order==='edd'}" ng-click="upcomingDueDates.order='edd'">{{'EDD' | translate}}</th>
             <th></th>
           </tr>
@@ -40,7 +40,7 @@
               <span ng-class="{'approximate': pregnancy.edd.approximate}"><span ng-bind-html="pregnancy.edd | simpleDate"></span></span>
             </td>
             <td class="actions">
-              <a href="#" class="btn btn-link send-message" data-send-to="{{appointment.clinic.contact.phone}}" ng-attr-title="{{'Send Message' | translate}}" ng-class="{'disabled': !appointment.clinic.contact.phone}"><i class="fa fa-envelope"></i></a>
+              <a href="#" class="btn btn-link send-message" data-send-to="{{appointment.contact}}" ng-attr-title="{{'Send Message' | translate}}" ng-class="{'disabled': !appointment.contact.phone}"><i class="fa fa-envelope"></i></a>
             </td>
           </tr>
         </tbody>
