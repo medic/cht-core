@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     jszip = require('jszip'),
-    child_process = require('child_process'),
+    childProcess = require('child_process'),
     csv = require('fast-csv'),
     objectPath = require('object-path'),
     moment = require('moment'),
@@ -216,32 +216,29 @@ var exportTypes = {
   },
   logs: {
     lowlevel: true,
-    generate: function (_options, _callback) {
-
+    generate: function(callback) {
       var rv = [];
       var zip = new jszip();
-
-      var filename = (
-        'server-logs-' + moment().format('YYYYMMDD') + '.md'
+      var filename = 'server-logs-' + moment().format('YYYYMMDD') + '.md';
+      var child = childProcess.spawn(
+        'sudo',
+        [ '/boot/print-logs' ],
+        { stdio: 'pipe' }
       );
-      var child = child_process.spawn(
-        'sudo', [ '/boot/print-logs' ],
-          { stdio: 'pipe' }
-      );
-
-      child.on('exit', function (_code, _signal) {
-        if (_code === 0) {
-          zip.file(filename, Buffer.concat(rv));
-          return _callback(null, zip.generate({
-            type: 'nodebuffer', compression: 'deflate'
-          }));
+      child.on('exit', function(code) {
+        if(code !== 0) {
+          return callback(new Error(
+            'Log export exited with non-zero status ' + code
+          ));
         }
-        return _callback(
-          'Log export exited with non-zero status ' + _code
-        );
+        zip.file(filename, Buffer.concat(rv));
+        callback(null, zip.generate({
+          type: 'nodebuffer',
+          compression: 'deflate'
+        }));
       });
-      child.stdout.on('data', function (_buffer) {
-        rv.push(_buffer);
+      child.stdout.on('data', function(buffer) {
+        rv.push(buffer);
       });
       child.stdin.end();
     }
@@ -518,12 +515,12 @@ var getRecordsView = function(type, params, callback) {
 var getRecords = function(type, params, callback) {
   if (params.query) {
     if (!type.index) {
-      return callback('This export cannot handle "query" param');
+      return callback(new Error('This export cannot handle "query" param'));
     }
     return getRecordsFti(type, params, callback);
   }
   if (!type.view) {
-    return callback('This export must have a "query" param');
+    return callback(new Error('This export must have a "query" param'));
   }
   getRecordsView(type, params, callback);
 };
@@ -532,10 +529,13 @@ module.exports = {
   get: function(params, callback) {
     var type = exportTypes[params.type];
     if (!type) {
-      return callback('Unknown export type');
+      return callback(new Error('Unknown export type'));
     }
     if (!_.isFunction(type.generate)) {
-      return callback("Export type must provide a 'generate' method");
+      return callback(new Error("Export type must provide a 'generate' method"));
+    }
+    if (type.lowlevel) {
+      return type.generate(callback);
     }
     var options = {
       timezone: params.tz,
@@ -544,9 +544,6 @@ module.exports = {
       format: params.format,
       skipHeader: params.skip_header_row
     };
-    if (type.lowlevel) {
-      return type.generate(options, callback);
-    }
     getRecords(type, params, function(err, response) {
       if (err) {
         return callback(err);
