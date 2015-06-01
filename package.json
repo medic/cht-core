@@ -11,6 +11,7 @@
     "fast-csv": "^0.5.5",
     "follow": "~0.11.4",
     "http-proxy": "~1.8.1",
+    "jszip": "^2.5.0",
     "lucene-query-generator": "~0.1.4",
     "moment": "~2.8.4",
     "morgan": "~1.5.1",

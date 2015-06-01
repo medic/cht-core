@@ -1,4 +1,6 @@
 var _ = require('underscore'),
+    jszip = require('jszip'),
+    child_process = require('child_process'),
     csv = require('fast-csv'),
     objectPath = require('object-path'),
     moment = require('moment'),
@@ -210,6 +212,38 @@ var exportTypes = {
         columns: [  ],
         data: _.pluck(rows, 'doc')
       } ];
+    }
+  },
+  logs: {
+    lowlevel: true,
+    generate: function (_options, _callback) {
+
+      var rv = [];
+      var zip = new jszip();
+
+      var filename = (
+        'server-logs-' + moment().format('YYYYMMDD') + '.md'
+      );
+      var child = child_process.spawn(
+        'sudo', [ '/boot/print-logs' ],
+          { stdio: 'pipe' }
+      );
+
+      child.on('exit', function (_code, _signal) {
+        if (_code === 0) {
+          zip.file(filename, Buffer.concat(rv));
+          return _callback(null, zip.generate({
+            type: 'nodebuffer', compression: 'deflate'
+          }));
+        }
+        return _callback(
+          'Log export exited with non-zero status ' + _code
+        );
+      });
+      child.stdout.on('data', function (_buffer) {
+        rv.push(_buffer);
+      });
+      child.stdin.end();
     }
   }
 };
@@ -500,18 +534,23 @@ module.exports = {
     if (!type) {
       return callback('Unknown export type');
     }
+    if (!_.isFunction(type.generate)) {
+      return callback("Export type must provide a 'generate' method");
+    }
+    var options = {
+      timezone: params.tz,
+      locale: params.locale || 'en',
+      form: params.form,
+      format: params.format,
+      skipHeader: params.skip_header_row
+    };
+    if (type.lowlevel) {
+      return type.generate(options, callback);
+    }
     getRecords(type, params, function(err, response) {
       if (err) {
         return callback(err);
       }
-
-      var options = {
-        timezone: params.tz,
-        locale: params.locale || 'en',
-        form: params.form,
-        format: params.format,
-        skipHeader: params.skip_header_row
-      };
 
       if (params.filter_state) {
         options.filterState = { state: params.filter_state };
