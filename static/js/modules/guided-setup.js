@@ -114,22 +114,25 @@ var libphonenumber = require('libphonenumber/utils'),
       if (err) {
         return console.log('Error fetching settings', err);
       }
-      window.setTimeout(function() {
-        $('#guided-setup [name=default-country-code]')
-          .select2('val', res.default_country_code);
-        $('#guided-setup [name=gateway-number]').val(res.gateway_number)
-          .trigger('input');
-        $('#primary-contact-content a[data-value=' + res.care_coordinator + ']')
-          .trigger('click');
-        $('#language-preference-content .locale a[data-value=' + res.locale + ']')
-          .trigger('click');
-        $('#language-preference-content .locale-outgoing a[data-value=' + res.locale_outgoing + ']')
-          .trigger('click');
-        $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']')
-          .trigger('click');
-        $('#anonymous-statistics-content a[data-value=' + res.statistics_submission + ']')
-          .trigger('click');
-      }, 1);
+      // don't show any default values - encourage the user to select them
+      if (res.setup_complete) {
+        window.setTimeout(function() {
+          $('#guided-setup [name=default-country-code]')
+            .select2('val', res.default_country_code);
+          $('#guided-setup [name=gateway-number]').val(res.gateway_number)
+            .trigger('input');
+          $('#primary-contact-content a[data-value=' + res.care_coordinator + ']')
+            .trigger('click');
+          $('#language-preference-content .locale a[data-value=' + res.locale + ']')
+            .trigger('click');
+          $('#language-preference-content .locale-outgoing a[data-value=' + res.locale_outgoing + ']')
+            .trigger('click');
+          $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']')
+            .trigger('click');
+          $('#anonymous-statistics-content a[data-value=' + res.statistics_submission + ']')
+            .trigger('click');
+        }, 1);
+      }
     });
   };
 
