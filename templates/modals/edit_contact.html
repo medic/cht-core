@@ -47,7 +47,9 @@
 
           <div class="form-group" ng-show="contact.type === 'person'">
             <label>{{'Primary location' | translate}}</label>
-            <select class="form-control small" ng-model="contact.parent" ng-options="parent.name for parent in parents | filter:{type:'!person'} | orderBy:'name' track by parent._id"></select>
+            <select class="form-control small" ng-model="contact.parent" ng-options="parent.name for parent in parents | filter:{type:'!person'} | orderBy:'name' track by parent._id">
+              <option value=""></option>
+            </select>
           </div>
 
           <div class="form-group" ng-show="contact.type === 'health_center'" ng-class="{'has-error': errors.page0.district_hospital}">
