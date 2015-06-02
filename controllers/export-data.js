@@ -218,24 +218,18 @@ var exportTypes = {
     lowlevel: true,
     generate: function(callback) {
       var rv = [];
-      var zip = new jszip();
-      var filename = 'server-logs-' + moment().format('YYYYMMDD') + '.md';
       var child = childProcess.spawn(
         'sudo',
         [ '/boot/print-logs' ],
         { stdio: 'pipe' }
       );
       child.on('exit', function(code) {
-        if(code !== 0) {
+        if (code !== 0) {
           return callback(new Error(
             'Log export exited with non-zero status ' + code
           ));
         }
-        zip.file(filename, Buffer.concat(rv));
-        callback(null, zip.generate({
-          type: 'nodebuffer',
-          compression: 'deflate'
-        }));
+        callback(null, createLogZip(rv));
       });
       child.stdout.on('data', function(buffer) {
         rv.push(buffer);
@@ -243,6 +237,13 @@ var exportTypes = {
       child.stdin.end();
     }
   }
+};
+
+var createLogZip = function(rv) {
+  var filename = 'server-logs-' + moment().format('YYYYMMDD') + '.md';
+  return new jszip()
+    .file(filename, Buffer.concat(rv))
+    .generate({ type: 'nodebuffer', compression: 'deflate' });
 };
 
 var normalizeResponse = function(doc, options) {

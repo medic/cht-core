@@ -2,6 +2,8 @@ var controller = require('../../controllers/export-data'),
     db = require('../../db'),
     config = require('../../config'),
     fti = require('../../controllers/fti'),
+    childProcess = require('child_process'),
+    jszip = require('jszip'),
     sinon = require('sinon'),
     moment = require('moment');
 
@@ -12,7 +14,7 @@ exports.setUp = function(callback) {
   callback();
 };
 
-exports.tearDown = function (callback) {
+exports.tearDown = function(callback) {
   if (fti.get.restore) {
     fti.get.restore();
   }
@@ -24,6 +26,9 @@ exports.tearDown = function (callback) {
   }
   if (config.get.restore) {
     config.get.restore();
+  }
+  if (childProcess.spawn.restore) {
+    childProcess.spawn.restore();
   }
   callback();
 };
@@ -721,4 +726,54 @@ exports['get contacts'] = function(test) {
     test.equals(ftiGet.firstCall.args[1].include_docs, true);
     test.done();
   });
+};
+
+exports['get logs returns error from child process'] = function(test) {
+
+  var child = {
+    on: sinon.stub(),
+    stdout: { on: sinon.stub() },
+    stdin: { end: sinon.stub() }
+  };
+
+  var spawn = sinon.stub(childProcess, 'spawn').returns(child);
+
+  controller.get({ type: 'logs', format: 'zip' }, function(err) {
+    test.equals(spawn.callCount, 1);
+    test.equals(child.stdin.end.callCount, 1);
+    test.equals(err.message, 'Log export exited with non-zero status 1');
+    test.done();
+  });
+
+  child.on.firstCall.args[1](1);
+};
+
+exports['get logs returns zip file'] = function(test) {
+
+  var child = {
+    on: sinon.stub(),
+    stdout: { on: sinon.stub() },
+    stdin: { end: sinon.stub() }
+  };
+
+  var spawn = sinon.stub(childProcess, 'spawn').returns(child);
+
+  controller.get({ type: 'logs', format: 'zip' }, function(err, results) {
+    test.equals(spawn.callCount, 1);
+    test.equals(child.stdin.end.callCount, 1);
+    test.equals(spawn.firstCall.args[0], 'sudo');
+    test.equals(spawn.firstCall.args[1][0], '/boot/print-logs');
+    test.equals(spawn.firstCall.args[2].stdio, 'pipe');
+    test.equals(err, null);
+    var result = new jszip()
+      .load(results)
+      .file('server-logs-' + moment().format('YYYYMMDD') + '.md')
+      .asText();
+    test.equals(result, 'helloworld');
+    test.done();
+  });
+
+  child.stdout.on.firstCall.args[1](new Buffer('hello', 'utf-8'));
+  child.stdout.on.firstCall.args[1](new Buffer('world', 'utf-8'));
+  child.on.firstCall.args[1](0);
 };
