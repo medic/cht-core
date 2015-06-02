@@ -9,20 +9,23 @@ var _ = require('underscore'),
   
   inboxServices.factory('DbView', ['HttpWrapper', 'BaseUrlService',
     function(HttpWrapper, BaseUrlService) {
-      return function(viewName, params, callback) {
-        var url = BaseUrlService() + '/../_view/' + viewName;
+      return function(viewName, options, callback) {
+        if (!options.params) {
+          options.params = {};
+        }
         escape.forEach(function(key) {
-          if (params[key]) {
-            params[key] = JSON.stringify(params[key]);
+          if (options.params[key]) {
+            options.params[key] = JSON.stringify(options.params[key]);
           }
         });
-        HttpWrapper.get(url, { params: params })
+        var url = BaseUrlService() + '/../_view/' + viewName;
+        HttpWrapper.get(url, options)
           .success(function(results) {
             var meta = {
               total_rows: results.total_rows,
               offset: results.offset
             };
-            if (params.include_docs) {
+            if (options.params.include_docs) {
               results = _.pluck(results && results.rows, 'doc');
             }
             callback(null, results, meta);

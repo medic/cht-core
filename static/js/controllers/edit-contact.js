@@ -12,14 +12,16 @@ var libphonenumber = require('libphonenumber/utils'),
     function ($scope, $rootScope, translateFilter, Settings, UpdateContact, DbView) {
 
       var populateParents = function() {
-        var params = {
-          startkey: [],
-          endkey: [{}],
-          reduce: false,
-          include_docs: true,
+        var options = {
+          params: {
+            startkey: [],
+            endkey: [{}],
+            reduce: false,
+            include_docs: true
+          },
           targetScope: 'root'
         };
-        DbView('facilities', params, function(err, results) {
+        DbView('facilities', options, function(err, results) {
           if (err) {
             return console.log('Error fetching parents', err);
           }
@@ -38,7 +40,8 @@ var libphonenumber = require('libphonenumber/utils'),
           return callback(translateFilter('Phone number not valid'));
         }
         number = libphonenumber.format(settings, number);
-        DbView('person_by_phone', { key: [ number ] }, function(err, results) {
+        var options = { params: { key: [ number ] } };
+        DbView('person_by_phone', options, function(err, results) {
           if (err) {
             return callback(translateFilter('Phone number not valid'));
           }

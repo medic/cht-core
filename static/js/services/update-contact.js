@@ -15,11 +15,11 @@ var async = require('async');
           return callback();
         }
 
-        var options = {
+        var options = { params: {
           startkey: [ parent._id ],
           endkey: [ parent._id, {} ],
           include_docs: true
-        };
+        } };
         DbView('facility_by_parent', options, function(err, children) {
           if (err) {
             return callback(err);
@@ -44,11 +44,11 @@ var async = require('async');
       };
 
       var updateParents = function(contact, callback) {
-        var options = {
+        var options = { params: {
           startkey: [ contact._id ],
           endkey: [ contact._id, {} ],
           include_docs: true
-        };
+        } };
         DbView('facilities_by_contact', options, function(err, parents) {
           if (err) {
             return callback(err);

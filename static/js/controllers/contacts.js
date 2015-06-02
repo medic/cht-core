@@ -80,18 +80,18 @@ var _ = require('underscore'),
               getContact(id, callback);
             },
             children: function(callback) {
-              var options = {
+              var options = { params: {
                 startkey: [ id ],
                 endkey: [ id, {} ],
                 include_docs: true
-              };
+              } };
               DbView('facility_by_parent', options, callback);
             },
             contactFor: function(callback) {
-              var options = {
+              var options = { params: {
                 key: [ id ],
                 include_docs: true
-              };
+              } };
               DbView('facilities_by_contact', options, callback);
             }
           }, function(err, results) {

@@ -39,7 +39,7 @@ var _ = require('underscore'),
     ['$scope', 'DownloadUrl', 'DbView',
     function ($scope, DownloadUrl, DbView) {
 
-      var options =  { include_docs: true, descending: true, limit: 20 };
+      var options =  { params: { include_docs: true, descending: true, limit: 20 } };
       DbView('feedback', options, function(err, data, meta) {
         if (err) {
           return console.log('Error fetching feedback', err);

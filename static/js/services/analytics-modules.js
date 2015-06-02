@@ -345,14 +345,14 @@ var _ = require('underscore'),
   ]);
 
   var getViewReports = function(DbView, doc, dates, callback) {
-    var args = stockUtils.getReportingViewArgs(dates),
+    var params = stockUtils.getReportingViewArgs(dates),
         view = 'data_records_by_form_year_month_facility';
 
     if (dates.reporting_freq === 'week') {
       view = 'data_records_by_form_year_week_facility';
     }
 
-    DbView(view, args, function(err, data) {
+    DbView(view, { params: params }, function(err, data) {
       if (err) {
         return callback('Error fetching reports: '+ err);
       }

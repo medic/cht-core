@@ -139,12 +139,12 @@ var _ = require('underscore');
   inboxServices.factory('District', ['DbView',
     function(DbView) {
 
-      var options = {
+      var options = { params: {
         startkey: ['district_hospital'],
         endkey: ['district_hospital', {}],
         reduce: false,
         include_docs: true
-      };
+      } };
 
       return function(callback) {
         DbView('facilities', options, callback);
@@ -157,21 +157,21 @@ var _ = require('underscore');
     function(DbView) {
 
       return function(parent, callback) {
-        var options = {
+        var params = {
           group: true
         };
         if (parent.type === 'district_hospital') {
           // filter on district
-          options.startkey = [ parent._id ];
-          options.endkey = [ parent._id, {} ];
+          params.startkey = [ parent._id ];
+          params.endkey = [ parent._id, {} ];
         } else if (parent.type === 'health_center') {
           // filter on health center
-          options.startkey = [ parent.parent._id, parent._id ];
-          options.endkey = [ parent.parent._id, parent._id, {} ];
+          params.startkey = [ parent.parent._id, parent._id ];
+          params.endkey = [ parent.parent._id, parent._id, {} ];
         } else {
           return callback('Doc not currently supported.');
         }
-        DbView('total_clinics_by_facility', options, callback);
+        DbView('total_clinics_by_facility', { params: params }, callback);
       };
 
     }
