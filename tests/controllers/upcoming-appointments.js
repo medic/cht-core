@@ -215,7 +215,7 @@ exports['get returns all registrations with upcoming appointments'] = function(t
           patient_id: 1,
           fields: { patient_name: 'sarah' },
           form: 'R',
-          reported_date: today.clone().subtract(10, 'weeks').toISOString(),
+          reported_date: today.clone().subtract(8, 'weeks').toISOString(),
           contact: { id: 'x' },
           scheduled_tasks: [ {
             group: 1,
@@ -274,7 +274,7 @@ exports['get returns all registrations with upcoming appointments'] = function(t
     test.equals(results[1].patient_id, 2);
     test.equals(results[1].patient_name, 'sally');
     test.equals(results[1].contact.id, 'y');
-    test.equals(results[1].weeks.number, 12);
+    test.equals(results[1].weeks.number, 14);
     test.equals(results[1].weeks.approximate, undefined);
     test.equals(results[1].date.toISOString(), today.toISOString());
     test.equals(results[1].visits, 0);

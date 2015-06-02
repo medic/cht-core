@@ -4,8 +4,7 @@ var _ = require('underscore'),
     db = require('../db'),
     config = require('../config'),
     luceneConditionalLimit = 1000,
-    lmpDateModifier = 2,
-    noLmpDateModifier = 2;
+    noLmpDateModifier = 4;
 
 var formatDate = function(date) {
   return date.zone(0).format('YYYY-MM-DD');
@@ -195,7 +194,7 @@ module.exports = {
       };
     }
     return {
-      number: moment().diff(moment(doc.lmp_date), 'weeks') - lmpDateModifier
+      number: moment().diff(moment(doc.lmp_date), 'weeks')
     };
   },
 
@@ -207,7 +206,7 @@ module.exports = {
       };
     }
     return {
-      date: moment(doc.lmp_date).add(40 + lmpDateModifier, 'weeks')
+      date: moment(doc.lmp_date).add(40, 'weeks')
     };
   },
 

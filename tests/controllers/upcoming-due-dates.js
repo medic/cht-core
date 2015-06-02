@@ -94,7 +94,7 @@ exports['get returns all women with upcoming due dates'] = function(test) {
           patient_id: 1,
           fields: { patient_name: 'sarah' },
           form: 'R',
-          reported_date: today.clone().subtract(38, 'weeks').toISOString(),
+          reported_date: today.clone().subtract(36, 'weeks').toISOString(),
           related_entities: { clinic: { id: 'x' } }
         } 
       },
@@ -103,7 +103,7 @@ exports['get returns all women with upcoming due dates'] = function(test) {
           patient_id: 2,
           fields: { patient_name: 'sally' },
           form: 'P',
-          lmp_date: today.clone().subtract(42, 'weeks').toISOString(),
+          lmp_date: today.clone().subtract(40, 'weeks').toISOString(),
           related_entities: { clinic: { id: 'y' } }
         } 
       }

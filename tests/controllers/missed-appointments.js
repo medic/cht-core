@@ -174,7 +174,7 @@ exports['get returns all registrations with missed appointments'] = function(tes
           patient_id: 1,
           fields: { patient_name: 'sarah' },
           form: 'R',
-          reported_date: today.clone().subtract(10, 'weeks').toISOString(),
+          reported_date: today.clone().subtract(8, 'weeks').toISOString(),
           contact: { id: 'x' },
           scheduled_tasks: [ {
             group: 1,
@@ -187,7 +187,7 @@ exports['get returns all registrations with missed appointments'] = function(tes
           patient_id: 2,
           fields: { patient_name: 'sally' },
           form: 'P',
-          lmp_date: today.clone().subtract(14, 'weeks').toISOString(),
+          lmp_date: today.clone().subtract(12, 'weeks').toISOString(),
           contact: { id: 'y' },
           scheduled_tasks: [ {
             group: 1,

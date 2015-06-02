@@ -58,6 +58,8 @@ exports['get returns errors from second fti'] = function(test) {
 exports['get returns monthly deliveries count'] = function(test) {
   test.expect(2);
   var fti = sinon.stub(db, 'fti');
+
+  // registrations
   fti.onFirstCall().callsArgWith(2, null, {
     rows: [
       {
@@ -71,18 +73,20 @@ exports['get returns monthly deliveries count'] = function(test) {
         doc: {
           patient_id: 2,
           form: 'R',
-          reported_date: moment().subtract(80, 'weeks')
+          reported_date: moment().subtract(78, 'weeks')
         }
       },
       {
         doc: {
           patient_id: 3,
           form: 'P',
-          lmp_date: moment().subtract(70, 'weeks')
+          lmp_date: moment().subtract(68, 'weeks')
         }
       }
     ]
   });
+
+  // delivery reports
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
       {
