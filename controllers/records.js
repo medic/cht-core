@@ -6,7 +6,7 @@ var exists = function(val) {
 };
 
 module.exports = {
-  createRecord: function(data, district, callback) {
+  createRecord: function(data, callback) {
     var opts = {
       path: db.getPath() + '/add',
       method: 'POST',
@@ -31,7 +31,7 @@ module.exports = {
         });
     });
   },
-  createRecordJSON: function(data, district, callback) {
+  createRecordJSON: function(data, callback) {
     // nano.request defaults to json content type.
     var opts = {
       path: db.getPath() + '/add',

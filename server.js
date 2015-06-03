@@ -339,7 +339,7 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
     } else {
       return error('Content type not supported.', res);
     }
-    create(req.body, ctx && ctx.district, function(err, result) {
+    create(req.body, function(err, result) {
       if (err) {
         return error(err, res);
       }
