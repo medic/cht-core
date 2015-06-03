@@ -1,15 +1,8 @@
 var _ = require('underscore'),
-    db = require('../db'),
-    logger = console;
+    db = require('../db');
 
-var _exists = function(val) {
-    if (val === '') {
-        return false;
-    }
-    if (typeof val === 'undefined') {
-        return false;
-    }
-    return true;
+var exists = function(val) {
+  return val !== '' && typeof val !== 'undefined';
 };
 
 module.exports = {
@@ -22,7 +15,7 @@ module.exports = {
     var required = ['message', 'from'],
         optional = ['reported_date', 'locale'];
     for (var k in required) {
-      if (!_exists(data[required[k]])) {
+      if (!exists(data[required[k]])) {
         return callback(new Error('Missing required fields: ' + required[k]));
       }
     }
@@ -47,11 +40,11 @@ module.exports = {
     var required = ['from', 'form'],
         optional = ['reported_date', 'locale'];
     // check required fields are in _meta property
-    if (!_exists(data._meta)) {
+    if (!exists(data._meta)) {
       return callback(new Error('Missing _meta property.'));
     }
     for (var k in required) {
-      if (!_exists(data._meta[required[k]])) {
+      if (!exists(data._meta[required[k]])) {
         return callback(new Error('Missing required fields: ' + required[k]));
       }
     }
@@ -60,8 +53,6 @@ module.exports = {
     opts.body = data;
     db.request(opts, function(err, results) {
         if (err) {
-          // nano creates a new error object merging the error object received
-          // from the server, reformat it.
           return callback(err);
         }
         callback(null, {
