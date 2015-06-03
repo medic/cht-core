@@ -25,6 +25,18 @@ exports['createRecord returns formated error from string'] = function(test) {
   });
 };
 
+exports['createRecord returns error if missing required field'] = function(test) {
+  test.expect(2);
+  var req = sinon.stub(db, 'request');
+  controller.createRecord({
+    message: 'test'
+  }, null, function(err, results) {
+    test.equals(err.message, 'Missing required field: from');
+    test.equals(req.callCount, 0);
+    test.done();
+  });
+};
+
 exports['createRecordJSON returns formated error from string'] = function(test) {
   test.expect(2);
   var req = sinon.stub(db, 'request').callsArgWith(1, 'icky');
