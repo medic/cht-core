@@ -362,29 +362,6 @@ app.get('/api/v1/scheduler/:name', function(req, res) {
   });
 });
 
-/**
- * Set cache control on static resources. Must be hacked in to
- * ensure we set the value first.
- */
-proxy.on('proxyReq', function(proxyReq, req, res) {
-  if (appcacheManifest.test(req.url)) {
-    res.oldWriteHead = res.writeHead;
-    res.writeHead = function(statusCode, headers) {
-      res.setHeader('Cache-Control', 'must-revalidate');
-      res.setHeader('Content-Type', 'text/cache-manifest; charset=utf-8');
-      res.setHeader('Last-Modified', 'Tue, 28 Apr 2015 02:23:40 GMT');
-      res.setHeader('Expires', 'Tue, 28 Apr 2015 02:21:40 GMT');
-      res.oldWriteHead(statusCode, headers);
-    };
-  } else if (staticResources.test(req.url)) {
-    res.oldWriteHead = res.writeHead;
-    res.writeHead = function(statusCode, headers) {
-      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-      res.oldWriteHead(statusCode, headers);
-    };
-  }
-});
-
 app.get('/api/v1/forms', function(req, res) {
   forms.listForms(req.headers, function(err, body, headers) {
       if (err) {
@@ -413,6 +390,29 @@ app.get('/api/v1/forms/:form', function(req, res) {
     }
     res.end(body);
   });
+});
+
+/**
+ * Set cache control on static resources. Must be hacked in to
+ * ensure we set the value first.
+ */
+proxy.on('proxyReq', function(proxyReq, req, res) {
+  if (appcacheManifest.test(req.url)) {
+    res.oldWriteHead = res.writeHead;
+    res.writeHead = function(statusCode, headers) {
+      res.setHeader('Cache-Control', 'must-revalidate');
+      res.setHeader('Content-Type', 'text/cache-manifest; charset=utf-8');
+      res.setHeader('Last-Modified', 'Tue, 28 Apr 2015 02:23:40 GMT');
+      res.setHeader('Expires', 'Tue, 28 Apr 2015 02:21:40 GMT');
+      res.oldWriteHead(statusCode, headers);
+    };
+  } else if (staticResources.test(req.url)) {
+    res.oldWriteHead = res.writeHead;
+    res.writeHead = function(statusCode, headers) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+      res.oldWriteHead(statusCode, headers);
+    };
+  }
 });
 
 app.all('*', function(req, res) {
