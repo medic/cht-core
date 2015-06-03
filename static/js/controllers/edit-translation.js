@@ -37,22 +37,29 @@ var _ = require('underscore'),
     return updated;
   };
 
-  inboxControllers.controller('EditTranslationCtrl',
-    ['$scope', '$rootScope', '$timeout', 'translateFilter', 'Settings', 'UpdateSettings',
-    function ($scope, $rootScope, $timeout, translateFilter, Settings, UpdateSettings) {
+  var getUpdateFn = function(model) {
+    if (model.key) {
+      return createTranslationUpdate;
+    }
+    if (model.path) {
+      return createSettingsUpdate;
+    }
+  };
 
-      var updateTranslation = function(settings, model, callback) {
+  inboxControllers.controller('EditTranslationCtrl',
+    ['$scope', '$rootScope', 'translateFilter', 'Settings', 'UpdateSettings',
+    function ($scope, $rootScope, translateFilter, Settings, UpdateSettings) {
+
+      var updateTranslation = function(settings, callback) {
+        var model = $scope.translationModel;
         var populatedValues = _.filter(model.values, function(value) {
           return !!value.value;
         });
-        var update;
-        if (model.key) {
-          update = createTranslationUpdate(settings, model, populatedValues);
-        } else if (model.path) {
-          update = createSettingsUpdate(settings, model, populatedValues);
-        } else {
+        var updateFn = getUpdateFn(model);
+        if (!updateFn) {
           return callback('Invalid model');
         }
+        var update = updateFn(settings, model, populatedValues);
         UpdateSettings(update, function(err) {
           if (!err) {
             $rootScope.$broadcast('TranslationUpdated', update);
@@ -81,7 +88,7 @@ var _ = require('underscore'),
           if (err) {
             return pane.done(translateFilter('Error retrieving settings'), err);
           }
-          updateTranslation(res, $scope.translationModel, function(err) {
+          updateTranslation(res, function(err) {
             if (err) {
               return pane.done(translateFilter('Error saving settings'), err);
             }
