@@ -328,18 +328,10 @@ app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
 
 app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
   auth.check(req, 'can_create_records', null, function(err, ctx) {
-    var create;
     if (err) {
       return error(err, res);
     }
-    if (req.headers['content-type'].toLowerCase() === 'application/x-www-form-urlencoded') {
-      create = records.createRecord;
-    } else if (req.headers['content-type'].toLowerCase() === 'application/json') {
-      create = records.createRecordJSON;
-    } else {
-      return error('Content type not supported.', res);
-    }
-    create(req.body, function(err, result) {
+    records.create(req.body, req.headers['content-type'], function(err, result) {
       if (err) {
         return error(err, res);
       }

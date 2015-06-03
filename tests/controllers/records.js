@@ -12,32 +12,45 @@ exports.tearDown = function (callback) {
   callback();
 };
 
-exports['createRecord returns formated error from string'] = function(test) {
+exports['create returns error when unsupported content type'] = function(test) {
   test.expect(2);
-  var req = sinon.stub(db, 'request').callsArgWith(1, 'icky');
-  controller.createRecord({
+  var req = sinon.stub(db, 'request');
+  controller.create({
     message: 'test',
     from: '+123'
-  }, function(err, results) {
+  }, 'jpg', function(err, results) {
+    test.equals(err.message, 'Content type not supported.');
+    test.equals(req.callCount, 0);
+    test.done();
+  });
+};
+
+exports['create form returns formated error from string'] = function(test) {
+  test.expect(2);
+  var req = sinon.stub(db, 'request').callsArgWith(1, 'icky');
+  controller.create({
+    message: 'test',
+    from: '+123'
+  }, 'application/x-www-form-urlencoded', function(err, results) {
     test.equals(err, 'icky');
     test.equals(req.callCount, 1);
     test.done();
   });
 };
 
-exports['createRecord returns error if missing required field'] = function(test) {
+exports['create form returns error if missing required field'] = function(test) {
   test.expect(2);
   var req = sinon.stub(db, 'request');
-  controller.createRecord({
+  controller.create({
     message: 'test'
-  }, function(err, results) {
+  }, 'application/x-www-form-urlencoded', function(err, results) {
     test.equals(err.message, 'Missing required field: from');
     test.equals(req.callCount, 0);
     test.done();
   });
 };
 
-exports['createRecordJSON returns formated error from string'] = function(test) {
+exports['create json returns formated error from string'] = function(test) {
   test.expect(2);
   var req = sinon.stub(db, 'request').callsArgWith(1, 'icky');
   var body = {
@@ -46,18 +59,18 @@ exports['createRecordJSON returns formated error from string'] = function(test) 
       form: 'A'
     }
   };
-  controller.createRecordJSON(body, function(err, results) {
+  controller.create(body, 'application/json', function(err, results) {
     test.equals(err, 'icky');
     test.equals(req.callCount, 1);
     test.done();
   });
 };
 
-exports['createRecordJSON returns error if missing _meta property'] = function(test) {
+exports['create json returns error if missing _meta property'] = function(test) {
   test.expect(2);
   var req = sinon.stub(db, 'request');
   var body = { name: 'bob' };
-  controller.createRecordJSON(body, function(err, results) {
+  controller.create(body, 'application/json', function(err, results) {
     test.equal(err.message, 'Missing _meta property.');
     // request should never be called if validation does not 
     test.equals(req.callCount, 0);
@@ -65,35 +78,35 @@ exports['createRecordJSON returns error if missing _meta property'] = function(t
   });
 };
 
-exports['createRecordJSON does not call request if validation fails'] = function(test) {
+exports['create json does not call request if validation fails'] = function(test) {
   test.expect(1);
   var req = sinon.stub(db, 'request');
   var body = {};
-  controller.createRecordJSON(body, function(err, results) {
+  controller.create(body, 'application/json', function(err, results) {
     test.equals(req.callCount, 0);
     test.done();
   });
 };
 
-exports['createRecord does not call request if validation fails'] = function(test) {
+exports['create form does not call request if validation fails'] = function(test) {
   test.expect(1);
   var req = sinon.stub(db, 'request');
   var body = {};
-  controller.createRecord(body, function(err, results) {
+  controller.create(body, 'application/x-www-form-urlencoded', function(err, results) {
     test.equals(req.callCount, 0);
     test.done();
   });
 };
 
-exports['createRecord returns success'] = function(test) {
+exports['create form returns success'] = function(test) {
   test.expect(11);
   var req = sinon.stub(db, 'request').callsArgWith(1, null, { payload: { success: true, id: 5 }});
   var getPath = sinon.stub(db, 'getPath').returns('medic');
-  controller.createRecord({
+  controller.create({
     message: 'test',
     from: '+123',
     unwanted: ';-- DROP TABLE users'
-  }, function(err, results) {
+  }, 'application/x-www-form-urlencoded', function(err, results) {
     test.equals(err, null);
     test.equals(results.success, true);
     test.equals(results.id, 5);
@@ -110,17 +123,17 @@ exports['createRecord returns success'] = function(test) {
   });
 };
 
-exports['createRecordJSON returns success'] = function(test) {
+exports['create json returns success'] = function(test) {
   test.expect(10);
   var req = sinon.stub(db, 'request').callsArgWith(1, null, { payload: { success: true, id: 5 }});
   var getPath = sinon.stub(db, 'getPath').returns('medic');
-  controller.createRecordJSON({
+  controller.create({
     _meta: {
       form: 'test',
       from: '+123',
       unwanted: ';-- DROP TABLE users'
     }
-  }, function(err, results) {
+  }, 'application/json', function(err, results) {
     test.equals(err, null);
     test.equals(results.success, true);
     test.equals(results.id, 5);
