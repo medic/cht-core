@@ -1,5 +1,11 @@
 # Medic Mobile Release Notes
 
+## 0.4.6
+
+### Jun 4, 2015
+
+- Improved boolean expression evaluation in registration configuration.
+
 ## 0.4.5
 
 ### May 28, 2015
