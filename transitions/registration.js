@@ -1,4 +1,5 @@
-var _ = require('underscore'),
+var vm = require('vm'),
+    _ = require('underscore'),
     async = require('async'),
     utils = require('../lib/utils'),
     logger = require('../lib/logger'),
@@ -48,11 +49,20 @@ module.exports = {
         return Boolean(doc.getid || doc.skip_schedule_creation);
     },
     isBoolExprFalse: function(doc, expr) {
-        // TODO fix bad eval
-        if (expr && !eval(expr)) {
-            return true;
-        } else {
-            return false;
+        if (typeof expr !== 'string') {
+          return false;
+        }
+        if (expr.trim() === '') {
+          return false;
+        }
+        try {
+          //TODO eval in separate process
+          var sandbox = { doc: doc };
+          return !vm.runInNewContext(expr, sandbox);
+        } catch(e) {
+          console.error('Failed to eval boolean expression:');
+          console.error(e);
+          return true;
         }
     },
     setExpectedBirthDate: function(doc) {
