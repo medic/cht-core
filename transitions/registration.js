@@ -60,8 +60,8 @@ module.exports = {
           var sandbox = { doc: doc };
           return !vm.runInNewContext(expr, sandbox);
         } catch(e) {
-          console.error('Failed to eval boolean expression:');
-          console.error(e);
+          console.warn('Failed to eval boolean expression:');
+          console.warn(e);
           return true;
         }
     },
