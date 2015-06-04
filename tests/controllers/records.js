@@ -31,7 +31,7 @@ exports['create form returns formated error from string'] = function(test) {
   controller.create({
     message: 'test',
     from: '+123'
-  }, 'application/x-www-form-urlencoded', function(err, results) {
+  }, 'urlencoded', function(err, results) {
     test.equals(err, 'icky');
     test.equals(req.callCount, 1);
     test.done();
@@ -43,7 +43,7 @@ exports['create form returns error if missing required field'] = function(test) 
   var req = sinon.stub(db, 'request');
   controller.create({
     message: 'test'
-  }, 'application/x-www-form-urlencoded', function(err, results) {
+  }, 'urlencoded', function(err, results) {
     test.equals(err.message, 'Missing required field: from');
     test.equals(req.callCount, 0);
     test.done();
@@ -59,7 +59,7 @@ exports['create json returns formated error from string'] = function(test) {
       form: 'A'
     }
   };
-  controller.create(body, 'application/json', function(err, results) {
+  controller.create(body, 'json', function(err, results) {
     test.equals(err, 'icky');
     test.equals(req.callCount, 1);
     test.done();
@@ -70,7 +70,7 @@ exports['create json returns error if missing _meta property'] = function(test) 
   test.expect(2);
   var req = sinon.stub(db, 'request');
   var body = { name: 'bob' };
-  controller.create(body, 'application/json', function(err, results) {
+  controller.create(body, 'json', function(err, results) {
     test.equal(err.message, 'Missing _meta property.');
     // request should never be called if validation does not 
     test.equals(req.callCount, 0);
@@ -82,7 +82,7 @@ exports['create json does not call request if validation fails'] = function(test
   test.expect(1);
   var req = sinon.stub(db, 'request');
   var body = {};
-  controller.create(body, 'application/json', function(err, results) {
+  controller.create(body, 'json', function(err, results) {
     test.equals(req.callCount, 0);
     test.done();
   });
@@ -92,7 +92,7 @@ exports['create form does not call request if validation fails'] = function(test
   test.expect(1);
   var req = sinon.stub(db, 'request');
   var body = {};
-  controller.create(body, 'application/x-www-form-urlencoded', function(err, results) {
+  controller.create(body, 'urlencoded', function(err, results) {
     test.equals(req.callCount, 0);
     test.done();
   });
@@ -106,7 +106,7 @@ exports['create form returns success'] = function(test) {
     message: 'test',
     from: '+123',
     unwanted: ';-- DROP TABLE users'
-  }, 'application/x-www-form-urlencoded', function(err, results) {
+  }, 'urlencoded', function(err, results) {
     test.equals(err, null);
     test.equals(results.success, true);
     test.equals(results.id, 5);
@@ -133,7 +133,7 @@ exports['create json returns success'] = function(test) {
       from: '+123',
       unwanted: ';-- DROP TABLE users'
     }
-  }, 'application/json', function(err, results) {
+  }, 'json', function(err, results) {
     test.equals(err, null);
     test.equals(results.success, true);
     test.equals(results.id, 5);

@@ -56,10 +56,9 @@ var createRecordByJSON = function(data, callback) {
 module.exports = {
   create: function(data, contentType, callback) {
     var create;
-    contentType = contentType.toLowerCase();
-    if (contentType === 'application/x-www-form-urlencoded') {
+    if (contentType === 'urlencoded') {
       create = createByForm;
-    } else if (contentType === 'application/json') {
+    } else if (contentType === 'json') {
       create = createRecordByJSON;
     } else {
       return callback(new Error('Content type not supported.'));
