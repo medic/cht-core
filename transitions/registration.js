@@ -60,8 +60,8 @@ module.exports = {
           var sandbox = { doc: doc };
           return !vm.runInNewContext(expr, sandbox);
         } catch(e) {
-          console.warn('Failed to eval boolean expression:');
-          console.warn(e);
+          logger.warn('Failed to eval boolean expression:');
+          logger.warn(e);
           return true;
         }
     },
@@ -213,7 +213,7 @@ module.exports = {
                     doc, schedules.getScheduleConfig(name)
                 );
                 if (!bool) {
-                    console.error(
+                    logger.error(
                         'Failed to add schedule please verify settings.'
                     );
                 }
