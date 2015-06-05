@@ -1,5 +1,4 @@
 var utils = require('./utils'),
-    db = require('../db'),
     _ = require('underscore');
 
 module.exports = {

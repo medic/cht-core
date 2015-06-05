@@ -20,7 +20,7 @@ exports.tearDown = function (callback) {
 exports['get returns errors from util call'] = function(test) {
   test.expect(3);
   var fti = sinon.stub(utils, 'fti').callsArgWith(2, 'bang');
-  controller.get('data_records', {}, 'abc', function(err, results) {
+  controller.get('data_records', {}, 'abc', function(err) {
     test.equals(err.message, 'bang');
     test.equals(err.code, 503);
     test.equals(fti.callCount, 1);
@@ -31,7 +31,7 @@ exports['get returns errors from util call'] = function(test) {
 exports['get returns errors from query parse'] = function(test) {
   test.expect(2);
   var fti = sinon.stub(utils, 'fti');
-  controller.get('data_records', { q: 'hello' }, 'abc', function(err, results) {
+  controller.get('data_records', { q: 'hello' }, 'abc', function(err) {
     test.equals(err.code, 503);
     test.equals(fti.callCount, 0);
     test.done();
@@ -42,7 +42,7 @@ exports['get returns errors from schema parse'] = function(test) {
   test.expect(2);
   var fti = sinon.stub(utils, 'fti');
   var query = { type: 'reports' };
-  controller.get('data_records', { q: JSON.stringify(query), schema: 'hello' }, 'abc', function(err, results) {
+  controller.get('data_records', { q: JSON.stringify(query), schema: 'hello' }, 'abc', function(err) {
     test.equals(err.code, 503);
     test.equals(fti.callCount, 0);
     test.done();

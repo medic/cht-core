@@ -83,7 +83,7 @@ exports['go does nothing if doc already submitted'] = function(test) {
 exports['go returns error from post'] = function(test) {
   test.expect(2);
 
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
       version: 2,
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
@@ -98,7 +98,7 @@ exports['go returns error from post'] = function(test) {
     }
   }] });
   var requestPost = sinon.stub(request, 'post').callsArgWith(1, 'some error');
-  var get = sinon.stub(config, 'get')
+  sinon.stub(config, 'get')
     .withArgs('statistics_submission').returns('web')
     .withArgs('gateway_number').returns('+555123456')
     .withArgs('anc_forms').returns({
@@ -118,7 +118,7 @@ exports['go returns error from post'] = function(test) {
 exports['go returns error if post response is not valid json'] = function(test) {
   test.expect(2);
 
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
       version: 2,
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
@@ -133,7 +133,7 @@ exports['go returns error if post response is not valid json'] = function(test) 
     }
   }] });
   var requestPost = sinon.stub(request, 'post').callsArgWith(1, null, null, 'x');
-  var get = sinon.stub(config, 'get')
+  sinon.stub(config, 'get')
     .withArgs('statistics_submission').returns('web')
     .withArgs('gateway_number').returns('+555123456')
     .withArgs('anc_forms').returns({
@@ -153,7 +153,7 @@ exports['go returns error if post response is not valid json'] = function(test) 
 exports['go returns error if post response body indicates failure'] = function(test) {
   test.expect(2);
 
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
       version: 2,
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
@@ -168,7 +168,7 @@ exports['go returns error if post response body indicates failure'] = function(t
     }
   }] });
   var requestPost = sinon.stub(request, 'post').callsArgWith(1, null, null, JSON.stringify({ payload: { success: false }}));
-  var get = sinon.stub(config, 'get')
+  sinon.stub(config, 'get')
     .withArgs('statistics_submission').returns('web')
     .withArgs('gateway_number').returns('+555123456')
     .withArgs('anc_forms').returns({
@@ -205,7 +205,7 @@ exports['go submits empty submission string'] = function(test) {
   }] });
   var requestPost = sinon.stub(request, 'post').callsArgWith(1, null, null, successfulResponse);
   var dbSaveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
-  var get = sinon.stub(config, 'get')
+  sinon.stub(config, 'get')
     .withArgs('statistics_submission').returns('web')
     .withArgs('gateway_number').returns(phone)
     .withArgs('anc_forms').returns({
@@ -248,7 +248,7 @@ exports['go submits populated submission string'] = function(test) {
   }] });
   var requestPost = sinon.stub(request, 'post').callsArgWith(1, null, null, successfulResponse);
   var dbSaveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
-  var get = sinon.stub(config, 'get')
+  sinon.stub(config, 'get')
     .withArgs('statistics_submission').returns('web')
     .withArgs('gateway_number').returns(phone)
     .withArgs('anc_forms').returns({
@@ -274,7 +274,7 @@ exports['go submits populated submission string'] = function(test) {
 exports['go returns error from sms if no number configured'] = function(test) {
   test.expect(1);
 
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
       version: 2,
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
@@ -288,7 +288,7 @@ exports['go returns error from sms if no number configured'] = function(test) {
       month: 11
     }
   }] });
-  var get = sinon.stub(config, 'get')
+  sinon.stub(config, 'get')
     .withArgs('statistics_submission').returns('sms')
     .withArgs('anc_forms').returns({
       registration: 'R',
@@ -306,7 +306,7 @@ exports['go returns error from sms if no number configured'] = function(test) {
 exports['go generates sms message'] = function(test) {
   test.expect(5);
 
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
       version: 2,
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
@@ -321,7 +321,7 @@ exports['go generates sms message'] = function(test) {
     }
   }] });
   var to = '+64274666666';
-  var get = sinon.stub(config, 'get')
+  sinon.stub(config, 'get')
     .withArgs('statistics_submission').returns('sms')
     .withArgs('statistics_submission_number').returns(to)
     .withArgs('anc_forms').returns({
@@ -352,7 +352,7 @@ exports['go generates sms message'] = function(test) {
 exports['go falls back to sms when set to both'] = function(test) {
   test.expect(6);
 
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{
     doc: {
       version: 2,
       visits_per_delivery: { '1+': 0, '2+': 0, '3+': 0, '4+': 0 },
@@ -367,7 +367,7 @@ exports['go falls back to sms when set to both'] = function(test) {
     }
   }] });
   var to = '+64274666666';
-  var get = sinon.stub(config, 'get')
+  sinon.stub(config, 'get')
     .withArgs('statistics_submission').returns('both')
     .withArgs('statistics_submission_number').returns(to)
     .withArgs('anc_forms').returns({
@@ -416,7 +416,7 @@ exports['go submits populated submission string for old style active_facilities'
   }] });
   var requestPost = sinon.stub(request, 'post').callsArgWith(1, null, null, successfulResponse);
   var dbSaveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
-  var get = sinon.stub(config, 'get')
+  sinon.stub(config, 'get')
     .withArgs('statistics_submission').returns('web')
     .withArgs('gateway_number').returns(phone)
     .withArgs('anc_forms').returns({

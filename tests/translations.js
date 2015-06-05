@@ -38,8 +38,8 @@ exports['run does nothing if no translations'] = function(test) {
 
 exports['run returns errors from readdir'] = function(test) {
   test.expect(1);
-  var configGet = sinon.stub(config, 'get').returns([]);
-  var readdir = sinon.stub(fs, 'readdir').callsArgWith(1, 'boom');
+  sinon.stub(config, 'get').returns([]);
+  sinon.stub(fs, 'readdir').callsArgWith(1, 'boom');
   translations.run(function(err) {
     test.equals(err, 'boom');
     test.done();
@@ -50,7 +50,7 @@ exports['run returns errors from readFile'] = function(test) {
   test.expect(2);
   var configGet = sinon.stub(config, 'get').returns([]);
   var readdir = sinon.stub(fs, 'readdir').callsArgWith(1, null, [ 'messages-en.properties' ]);
-  var readFile = sinon.stub(fs, 'readFile').callsArgWith(2, 'boom');
+  sinon.stub(fs, 'readFile').callsArgWith(2, 'boom');
   translations.run(function(err) {
     test.equals(configGet.callCount, 1);
     test.equals(readdir.callCount, 1);

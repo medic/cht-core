@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    request = require('request'),
+var request = require('request'),
     moment = require('moment'),
     db = require('../db'),
     config = require('../config'),

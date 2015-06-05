@@ -1,19 +1,9 @@
-var fs = require('fs'),
-    url = require('url'),
-    openrosaFormList = require('openrosa-formlist'),
-    _ = require('underscore'),
+var openrosaFormList = require('openrosa-formlist'),
     db = require('../db-nano');
 
 // removes form: prefix on form docs
 function removePrefix(str) {
   return str.split(':').slice(1).join(':');
-}
-
-function getSimpleXMLFormEl(doc) {
-  return '<form url="{{base}}{{id}}.xml">{{name}}</form>'
-    .replace('{{base}}', 'http://192.168.0.3:5988/api/v1/forms/')
-    .replace('{{id}}', removePrefix(doc._id))
-    .replace('{{name}}', doc.name || 'PregnancyRegistration');
 }
 
 /**

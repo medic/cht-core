@@ -73,9 +73,9 @@ if (couchUrl) {
   };
 } else {
   console.log(
-    "Please define a COUCH_URL in your environment e.g. \n" +
-    "export COUCH_URL='http://admin:123qwe@localhost:5984/medic'\n\n" +
-    "If you are running tests use TEST_ENV=1 in your environment.\n"
+    'Please define a COUCH_URL in your environment e.g. \n' +
+    'export COUCH_URL=\'http://admin:123qwe@localhost:5984/medic\'\n\n' +
+    'If you are running tests use TEST_ENV=1 in your environment.\n'
   );
   process.exit(1);
 }

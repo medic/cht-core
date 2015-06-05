@@ -139,7 +139,7 @@ exports['auth returns error when no has insufficient privilege'] = function(test
       }
     });
 
-  auth.check({ }, 'can_edit', district, function(err, ctx) {
+  auth.check({ }, 'can_edit', district, function(err) {
     test.equals(get.callCount, 1);
     test.equals(err.message, 'Insufficient privileges');
     test.equals(err.code, 403);
@@ -260,7 +260,7 @@ exports['auth returns error when requesting unallowed facility'] = function(test
       }
     });
 
-  auth.check({ }, 'can_edit', '789', function(err, ctx) {
+  auth.check({ }, 'can_edit', '789', function(err) {
     test.equals(get.callCount, 2);
     test.equals(err.message, 'Insufficient privileges');
     test.equals(err.code, 403);
@@ -278,7 +278,6 @@ exports['auth returns error when requesting unallowed facility'] = function(test
 exports['checkUrl requests the given url and returns status'] = function(test) {
   test.expect(5);
 
-  var callbacks = {};
   var request = sinon.stub(http, 'request')
     .returns({
       on: function(e) {

@@ -9,6 +9,7 @@ module.exports = function(grunt) {
     },
     jshint: {
       options: {
+        jshintrc: true,
         ignores: [
           'node_modules/**'
         ]

@@ -256,7 +256,7 @@ app.get('/api/v1/export/:type/:form?', function(req, res) {
 });
 
 app.get('/api/v1/fti/:view', function(req, res) {
-  auth.check(req, 'can_view_data_records', null, function(err, ctx) {
+  auth.check(req, 'can_view_data_records', null, function(err) {
     if (err) {
       return error(err, res);
     }
@@ -274,7 +274,7 @@ app.get('/api/v1/fti/:view', function(req, res) {
 });
 
 app.get('/api/v1/messages', function(req, res) {
-  auth.check(req, 'can_view_data_records', null, function(err, ctx) {
+  auth.check(req, 'can_view_data_records', null, function(err) {
     if (err) {
       return error(err, res);
     }
@@ -294,7 +294,7 @@ app.get('/api/v1/messages', function(req, res) {
 });
 
 app.get('/api/v1/messages/:id', function(req, res) {
-  auth.check(req, 'can_view_data_records', null, function(err, ctx) {
+  auth.check(req, 'can_view_data_records', null, function(err) {
     if (err) {
       return error(err, res);
     }
@@ -327,7 +327,7 @@ app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
 });
 
 app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
-  auth.check(req, 'can_create_records', null, function(err, ctx) {
+  auth.check(req, 'can_create_records', null, function(err) {
     if (err) {
       return error(err, res);
     }
@@ -341,7 +341,7 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
 });
 
 app.get('/api/v1/scheduler/:name', function(req, res) {
-  auth.check(req, 'can_execute_schedules', null, function(err, ctx) {
+  auth.check(req, 'can_execute_schedules', null, function(err) {
     if (err) {
       return error(err, res);
     }
@@ -483,6 +483,8 @@ config.load(function(err) {
 
 // Define error-handling middleware last.
 // http://expressjs.com/guide/error-handling.html
+// jshint ignore:start
 app.use(function(err, req, res, next) {
   serverError(err, res);
 });
+// jshint ignore:end

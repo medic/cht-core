@@ -1,6 +1,4 @@
-var CronJob = require('cron').CronJob,
-    usageStats = require('./schedules/usage-stats'),
-    statsSubmission = require('./schedules/stats-submission');
+var CronJob = require('cron').CronJob;
 
 var schedules = {
   // collect usage stats at 3am every day

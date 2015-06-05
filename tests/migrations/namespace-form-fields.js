@@ -23,45 +23,45 @@ exports.tearDown = function (callback) {
 };
 
 var forms =  {
-  "P": {
-    "meta": {
-      "code": "P",
-      "label": {
-        "en": "Pregnancy Registration LMP"
+  P: {
+    meta: {
+      code: 'P',
+      label: {
+        en: 'Pregnancy Registration LMP'
       }
     },
-    "fields": {
-      "last_menstrual_period": {
-        "labels": {
-          "tiny": {
-            "en": "LMP"
+    fields: {
+      last_menstrual_period: {
+        labels: {
+          tiny: {
+            en: 'LMP'
           },
-          "description": {
-            "en": "Weeks since last menstrual period"
+          description: {
+            en: 'Weeks since last menstrual period'
           },
-          "short": {
-            "en": "Weeks since LMP"
+          short: {
+            en: 'Weeks since LMP'
           }
         },
-        "type": "integer"
+        type: 'integer'
       },
-      "patient_name": {
-        "labels": {
-          "tiny": {
-            "en": "N"
+      patient_name: {
+        labels: {
+          tiny: {
+            en: 'N'
           },
-          "description": {
-            "en": "Patient Name"
+          description: {
+            en: 'Patient Name'
           },
-          "short": {
-            "en": "Name"
+          short: {
+            en: 'Name'
           }
         },
-        "type": "string"
+        type: 'string'
       }
     },
-    "public_form": true,
-    "use_sentinel": true
+    public_form: true,
+    use_sentinel: true
   }
 };
 
@@ -69,7 +69,7 @@ exports['run does nothing if no data records'] = function(test) {
   test.expect(2);
   sinon.stub(config, 'load').callsArg(0);
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [] });
-  var getConfig = sinon.stub(config, 'get').returns({});
+  sinon.stub(config, 'get').returns({});
   migration.run(function(err) {
     test.equals(err, undefined);
     test.equals(getView.callCount, 1);
@@ -88,7 +88,7 @@ exports['run does nothing if report already migrated'] = function(test) {
   sinon.stub(config, 'load').callsArg(0);
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
   var getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, doc);
-  var getConfig = sinon.stub(config, 'get').returns({});
+  sinon.stub(config, 'get').returns({});
   migration.run(function(err) {
     test.equals(err, undefined);
     test.equals(getView.callCount, 1);
@@ -106,7 +106,7 @@ exports['run does nothing if no form'] = function(test) {
   sinon.stub(config, 'load').callsArg(0);
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
   var getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, doc);
-  var getConfig = sinon.stub(config, 'get').returns({});
+  sinon.stub(config, 'get').returns({});
   migration.run(function(err) {
     test.equals(err, undefined);
     test.equals(getView.callCount, 1);
@@ -128,10 +128,10 @@ exports['run migrates report'] = function(test) {
     last_menstrual_period: 22,
     patient_name: 'sarah'
   };
-  sinon.stub(config, 'load').callsArg(0);
+  var getConfig = sinon.stub(config, 'load').callsArg(0);
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
   var getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, doc);
-  var getConfig = sinon.stub(config, 'get').returns(forms);
+  sinon.stub(config, 'get').returns(forms);
   var insert = sinon.stub(db.medic, 'insert').callsArgWith(1, null, null);
   migration.run(function(err) {
     test.equals(err, undefined);

@@ -16,338 +16,338 @@ exports.tearDown = function (callback) {
 };
 
 var clinic = {
-  "_id": "eeb17d6d-5dde-c2c0-8049b4903e2fb0a5",
-  "name": "Sagebush",
-  "parent": {
-    "_id": "eeb17d6d-5dde-c2c0-2ecb7b280392fae8",
-    "name": "Winternesse",
-    "parent": {
-      "_id": "eeb17d6d-5dde-c2c0-8a899c4fe9db6ba9",
-      "name": "District 1",
-      "parent": {},
-      "type": "district_hospital",
-      "contact": {
-        "phone": "+2812635438",
-        "name": "Thalia Timmins"
+  _id: 'eeb17d6d-5dde-c2c0-8049b4903e2fb0a5',
+  name: 'Sagebush',
+  parent: {
+    _id: 'eeb17d6d-5dde-c2c0-2ecb7b280392fae8',
+    name: 'Winternesse',
+    parent: {
+      _id: 'eeb17d6d-5dde-c2c0-8a899c4fe9db6ba9',
+      name: 'District 1',
+      parent: {},
+      type: 'district_hospital',
+      contact: {
+        phone: '+2812635438',
+        name: 'Thalia Timmins'
       }
     },
-    "type": "health_center",
-    "contact": {
-      "phone": "+2834366793",
-      "name": "Serina Scholz"
+    type: 'health_center',
+    contact: {
+      phone: '+2834366793',
+      name: 'Serina Scholz'
     }
   },
-  "type": "clinic",
-  "contact": {
-    "phone": "+2875810113",
-    "name": "Abram Alred"
+  type: 'clinic',
+  contact: {
+    phone: '+2875810113',
+    name: 'Abram Alred'
   }
 };
 
 var contact = {
-  "_id": "0abf501d3fbeffaf98bae6c9d602dcad",
-  "_rev": "18-e29f1c960a0555eac80a5ecebb0f48fe",
-  "type": "person",
-  "name": "Abram Alred",
-  "phone": "+64274622636",
-  "parent": clinic
+  _id: '0abf501d3fbeffaf98bae6c9d602dcad',
+  _rev: '18-e29f1c960a0555eac80a5ecebb0f48fe',
+  type: 'person',
+  name: 'Abram Alred',
+  phone: '+64274622636',
+  parent: clinic
 };
 
 var outgoingMessage = {
-  "_id": "1a69cd4dabe1ad9387aeb4bc220607be",
-  "_rev": "1-e8e08a0b9ca35de453ea2f23b09df2b0",
-  "errors": [],
-  "form": null,
-  "from": "0211111111",
-  "reported_date": 1427403259117,
-  "related_entities": {},
-  "tasks": [
+  _id: '1a69cd4dabe1ad9387aeb4bc220607be',
+  _rev: '1-e8e08a0b9ca35de453ea2f23b09df2b0',
+  errors: [],
+  form: null,
+  from: '0211111111',
+  reported_date: 1427403259117,
+  related_entities: {},
+  tasks: [
     {
-      "messages": [
+      messages: [
         {
-          "from": "0211111111",
-          "sent_by": "gareth",
-          "to": "+64274622636",
-          "facility": {
-            "_id": "eeb17d6d-5dde-c2c0-8049b4903e2fb0a5",
-            "_rev": "3-844b233140608c7dfc14ee77a5f40739",
-            "type": "clinic",
-            "name": "Sagebush",
-            "contact": {
-              "_id": "0abf501d3fbeffaf98bae6c9d602dcad",
-              "_rev": "2-a4d5537f8c570ec59a2c23cf541f9fea",
-              "type": "person",
-              "name": "Abram Alred",
-              "phone": "+64274622636"
+          from: '0211111111',
+          sent_by: 'gareth',
+          to: '+64274622636',
+          facility: {
+            _id: 'eeb17d6d-5dde-c2c0-8049b4903e2fb0a5',
+            _rev: '3-844b233140608c7dfc14ee77a5f40739',
+            type: 'clinic',
+            name: 'Sagebush',
+            contact: {
+              _id: '0abf501d3fbeffaf98bae6c9d602dcad',
+              _rev: '2-a4d5537f8c570ec59a2c23cf541f9fea',
+              type: 'person',
+              name: 'Abram Alred',
+              phone: '+64274622636'
             },
-            "parent": {
-              "_id": "eeb17d6d-5dde-c2c0-2ecb7b280392fae8",
-              "type": "health_center",
-              "name": "Winternesse",
-              "contact": {
-                "name": "Serina Scholz",
-                "phone": "+2834366793"
+            parent: {
+              _id: 'eeb17d6d-5dde-c2c0-2ecb7b280392fae8',
+              type: 'health_center',
+              name: 'Winternesse',
+              contact: {
+                name: 'Serina Scholz',
+                phone: '+2834366793'
               },
-              "parent": {
-                "_id": "eeb17d6d-5dde-c2c0-8a899c4fe9db6ba9",
-                "type": "district_hospital",
-                "name": "District 1",
-                "contact": {
-                  "name": "Thalia Timmins",
-                  "phone": "+2812635438"
+              parent: {
+                _id: 'eeb17d6d-5dde-c2c0-8a899c4fe9db6ba9',
+                type: 'district_hospital',
+                name: 'District 1',
+                contact: {
+                  name: 'Thalia Timmins',
+                  phone: '+2812635438'
                 },
-                "parent": {}
+                parent: {}
               }
             }
           },
-          "message": "hey",
-          "uuid": "1a69cd4d-abe1-ad93-87aeb4bc2202dae3"
+          message: 'hey',
+          uuid: '1a69cd4d-abe1-ad93-87aeb4bc2202dae3'
         }
       ],
-      "state": "pending",
-      "state_history": [
+      state: 'pending',
+      state_history: [
         {
-          "state": "pending",
-          "timestamp": "2015-03-26T20:54:19.143Z"
+          state: 'pending',
+          timestamp: '2015-03-26T20:54:19.143Z'
         }
       ]
     }
   ],
-  "kujua_message": true,
-  "type": "data_record",
-  "sent_by": "gareth"
+  kujua_message: true,
+  type: 'data_record',
+  sent_by: 'gareth'
 };
 
 var outgoingMessageToPerson = {
-  "_id": "b1d1f8691247be598cfd599a3b0dbcb7",
-  "_rev": "1-037f836d5fae91364ab88e671009c2c0",
-  "errors": [],
-  "form": null,
-  "from": "0211111111",
-  "reported_date": 1427830070763,
-  "related_entities": {},
-  "tasks": [
+  _id: 'b1d1f8691247be598cfd599a3b0dbcb7',
+  _rev: '1-037f836d5fae91364ab88e671009c2c0',
+  errors: [],
+  form: null,
+  from: '0211111111',
+  reported_date: 1427830070763,
+  related_entities: {},
+  tasks: [
     {
-      "messages": [
+      messages: [
         {
-          "from": "0211111111",
-          "sent_by": "gareth",
-          "to": "+2849701090",
-          "facility": {
-            "_id": "0abf501d3fbeffaf98bae6c9d601afe6",
-            "_rev": "1-701dc5a2ea5e107aa9d0cbae01084a02",
-            "type": "person",
-            "name": "Flora Fulford",
-            "phone": "+2849701090",
-            "parent": {
-              "_id": "eeb17d6d-5dde-c2c0-e2d64d11148d5d84",
-              "type": "health_center",
-              "name": "Easthedge",
-              "contact": {
-                "name": "Flora Fulford",
-                "phone": "+2849701090"
+          from: '0211111111',
+          sent_by: 'gareth',
+          to: '+2849701090',
+          facility: {
+            _id: '0abf501d3fbeffaf98bae6c9d601afe6',
+            _rev: '1-701dc5a2ea5e107aa9d0cbae01084a02',
+            type: 'person',
+            name: 'Flora Fulford',
+            phone: '+2849701090',
+            parent: {
+              _id: 'eeb17d6d-5dde-c2c0-e2d64d11148d5d84',
+              type: 'health_center',
+              name: 'Easthedge',
+              contact: {
+                name: 'Flora Fulford',
+                phone: '+2849701090'
               },
-              "parent": {
-                "_id": "eeb17d6d-5dde-c2c0-a0f2a91e2d232c51",
-                "type": "district_hospital",
-                "name": "District 2",
-                "contact": {
-                  "name": "Denise Degraffenreid",
-                  "phone": "+2884615402"
+              parent: {
+                _id: 'eeb17d6d-5dde-c2c0-a0f2a91e2d232c51',
+                type: 'district_hospital',
+                name: 'District 2',
+                contact: {
+                  name: 'Denise Degraffenreid',
+                  phone: '+2884615402'
                 },
-                "parent": {
+                parent: {
                   
                 }
               }
             }
           },
-          "message": "test",
-          "uuid": "b1d1f869-1247-be59-8cfd599a3b0a6dd4"
+          message: 'test',
+          uuid: 'b1d1f869-1247-be59-8cfd599a3b0a6dd4'
         }
       ],
-      "state": "pending",
-      "state_history": [
+      state: 'pending',
+      state_history: [
         {
-          "state": "pending",
-          "timestamp": "2015-03-31T19:27:50.790Z"
+          state: 'pending',
+          timestamp: '2015-03-31T19:27:50.790Z'
         }
       ]
     }
   ],
-  "kujua_message": true,
-  "type": "data_record",
-  "sent_by": "gareth"
+  kujua_message: true,
+  type: 'data_record',
+  sent_by: 'gareth'
 };
 
 var incomingMessage = {
-  "_id": "7fd3a9e4a8089b42af94fed47a32ef71",
-  "_rev": "3-d2b108f1f628e82b62909f85b48cbb75",
-  "type": "data_record",
-  "from": "+64274622636",
-  "related_entities": {
-    "clinic": {
-      "_id": "eeb17d6d-5dde-c2c0-8049b4903e2fb0a5",
-      "_rev": "18-92bf8c4f048177171f8c6e3f7829e8c6",
-      "type": "clinic",
-      "name": "Sagebush",
-      "contact": {
-        "_id": "0abf501d3fbeffaf98bae6c9d602dcad",
-        "_rev": "17-0e13e75199e34c49c31dd3b0422172e8",
-        "type": "person",
-        "name": "Abram Alred",
-        "phone": "+64274622636"
+  _id: '7fd3a9e4a8089b42af94fed47a32ef71',
+  _rev: '3-d2b108f1f628e82b62909f85b48cbb75',
+  type: 'data_record',
+  from: '+64274622636',
+  related_entities: {
+    clinic: {
+      _id: 'eeb17d6d-5dde-c2c0-8049b4903e2fb0a5',
+      _rev: '18-92bf8c4f048177171f8c6e3f7829e8c6',
+      type: 'clinic',
+      name: 'Sagebush',
+      contact: {
+        _id: '0abf501d3fbeffaf98bae6c9d602dcad',
+        _rev: '17-0e13e75199e34c49c31dd3b0422172e8',
+        type: 'person',
+        name: 'Abram Alred',
+        phone: '+64274622636'
       },
-      "parent": {
-        "_id": "eeb17d6d-5dde-c2c0-2ecb7b280392fae8",
-        "type": "health_center",
-        "name": "Winternesse",
-        "contact": {
-          "name": "Serina Scholz",
-          "phone": "+2834366793"
+      parent: {
+        _id: 'eeb17d6d-5dde-c2c0-2ecb7b280392fae8',
+        type: 'health_center',
+        name: 'Winternesse',
+        contact: {
+          name: 'Serina Scholz',
+          phone: '+2834366793'
         },
-        "parent": {
-          "_id": "eeb17d6d-5dde-c2c0-8a899c4fe9db6ba9",
-          "type": "district_hospital",
-          "name": "District 1",
-          "contact": {
-            "name": "Thalia Timmins",
-            "phone": "+2812635438"
+        parent: {
+          _id: 'eeb17d6d-5dde-c2c0-8a899c4fe9db6ba9',
+          type: 'district_hospital',
+          name: 'District 1',
+          contact: {
+            name: 'Thalia Timmins',
+            phone: '+2812635438'
           },
-          "parent": {}
+          parent: {}
         }
       }
     }
   },
-  "errors": [],
-  "tasks": [],
-  "reported_date": 1429062964602,
-  "sms_message": {
-    "message_id": "2221",
-    "sent_timestamp": "1429062964602",
-    "message": "incoming 2",
-    "from": "+64274622636",
-    "type": "sms_message",
-    "form": "INCOMING",
-    "locale": "en"
+  errors: [],
+  tasks: [],
+  reported_date: 1429062964602,
+  sms_message: {
+    message_id: '2221',
+    sent_timestamp: '1429062964602',
+    message: 'incoming 2',
+    from: '+64274622636',
+    type: 'sms_message',
+    form: 'INCOMING',
+    locale: 'en'
   },
-  "sent_by": "Abram Alred",
-  "transitions": {
-    "update_sent_by": {
-      "last_rev": 2,
-      "seq": 1394,
-      "ok": true
+  sent_by: 'Abram Alred',
+  transitions: {
+    update_sent_by: {
+      last_rev: 2,
+      seq: 1394,
+      ok: true
     },
-    "update_clinics": {
-      "last_rev": 2,
-      "seq": 1394,
-      "ok": true
+    update_clinics: {
+      last_rev: 2,
+      seq: 1394,
+      ok: true
     }
   }
 };
 
 var incomingReport = {
-  "_id": "cafb2761e5a44ecc9d4559f73f6a9994",
-  "_rev": "10-20935d2ab5e1509b0fe658d59b5bef59",
-  "type": "data_record",
-  "from": "+64274622666",
-  "form": "ON",
-  "related_entities": {
-    "clinic": {
-      "_id": "eeb17d6d-5dde-c2c0-2bb2c513294c945e",
-      "_rev": "15-23cbff19fc822b8c171064ee639c99f9",
-      "type": "clinic",
-      "name": "Aelhedge",
-      "contact": {
-        "_id": "0abf501d3fbeffaf98bae6c9d602dcad",
-        "_rev": "11-2a4c176bca6f6729dbdeabdc7e391ba4",
-        "type": "person",
-        "name": "_Gareth",
-        "phone": "+64274622666",
-        "rc_code": "123"
+  _id: 'cafb2761e5a44ecc9d4559f73f6a9994',
+  _rev: '10-20935d2ab5e1509b0fe658d59b5bef59',
+  type: 'data_record',
+  from: '+64274622666',
+  form: 'ON',
+  related_entities: {
+    clinic: {
+      _id: 'eeb17d6d-5dde-c2c0-2bb2c513294c945e',
+      _rev: '15-23cbff19fc822b8c171064ee639c99f9',
+      type: 'clinic',
+      name: 'Aelhedge',
+      contact: {
+        _id: '0abf501d3fbeffaf98bae6c9d602dcad',
+        _rev: '11-2a4c176bca6f6729dbdeabdc7e391ba4',
+        type: 'person',
+        name: '_Gareth',
+        phone: '+64274622666',
+        rc_code: '123'
       },
-      "parent": {
-        "_id": "eeb17d6d-5dde-c2c0-48d80e8c2049f0f3",
-        "_rev": "3-6f2ec37b5d16959d1d66db19290ad099",
-        "type": "health_center",
-        "name": "Irondeer",
-        "contact": {
-          "name": "Stefani Shisler",
-          "phone": "+2825898434",
-          "type": "person",
-          "_id": "0abf501d3fbeffaf98bae6c9d6019bf6",
-          "_rev": "1-5887c16e7d75cbc5a61bf6a87fbcdfe4"
+      parent: {
+        _id: 'eeb17d6d-5dde-c2c0-48d80e8c2049f0f3',
+        _rev: '3-6f2ec37b5d16959d1d66db19290ad099',
+        type: 'health_center',
+        name: 'Irondeer',
+        contact: {
+          name: 'Stefani Shisler',
+          phone: '+2825898434',
+          type: 'person',
+          _id: '0abf501d3fbeffaf98bae6c9d6019bf6',
+          _rev: '1-5887c16e7d75cbc5a61bf6a87fbcdfe4'
         },
-        "parent": {
-          "_id": "eeb17d6d-5dde-c2c0-183a1e2943958f44",
-          "_rev": "3-86259bebde3347499894527a05053d6e",
-          "type": "district_hospital",
-          "name": "District 3",
-          "contact": {
-            "type": "person",
-            "name": "Joan Rivers",
-            "phone": "+64274622664",
-            "_id": "6ff3ddbfce1cea75213bd6ff2d04fe3e",
-            "_rev": "1-1ad9c9c81c54507e2788724169c11a93"
+        parent: {
+          _id: 'eeb17d6d-5dde-c2c0-183a1e2943958f44',
+          _rev: '3-86259bebde3347499894527a05053d6e',
+          type: 'district_hospital',
+          name: 'District 3',
+          contact: {
+            type: 'person',
+            name: 'Joan Rivers',
+            phone: '+64274622664',
+            _id: '6ff3ddbfce1cea75213bd6ff2d04fe3e',
+            _rev: '1-1ad9c9c81c54507e2788724169c11a93'
           },
-          "parent": null
+          parent: null
         }
       }
     }
   },
-  "errors": [],
-  "tasks": [
+  errors: [],
+  tasks: [
     {
-      "messages": [
+      messages: [
         {
-          "to": "+64274622666",
-          "message": "Thank you _Gareth, record for archie (19446) has been reactivated. Notifications regarding this patient will resume.",
-          "uuid": "944f8526-d0fc-471f-a7f8-bb12f72f09c3"
+          to: '+64274622666',
+          message: 'Thank you _Gareth, record for archie (19446) has been reactivated. Notifications regarding this patient will resume.',
+          uuid: '944f8526-d0fc-471f-a7f8-bb12f72f09c3'
         }
       ],
-      "state": "pending",
-      "state_history": [
+      state: 'pending',
+      state_history: [
         {
-          "state": "pending",
-          "timestamp": "2015-04-21T23:38:49.103Z"
+          state: 'pending',
+          timestamp: '2015-04-21T23:38:49.103Z'
         }
       ]
     }
   ],
-  "reported_date": 1429659528565,
-  "sms_message": {
-    "message_id": "55849",
-    "sent_timestamp": "1429659528565",
-    "message": "1!ON!19446#on",
-    "from": "+64274622666",
-    "type": "sms_message",
-    "form": "ON",
-    "locale": "en"
+  reported_date: 1429659528565,
+  sms_message: {
+    message_id: '55849',
+    sent_timestamp: '1429659528565',
+    message: '1!ON!19446#on',
+    from: '+64274622666',
+    type: 'sms_message',
+    form: 'ON',
+    locale: 'en'
   },
-  "patient_id": "19446",
-  "notes": "on",
-  "transitions": {
-    "default_responses": {
-      "last_rev": 2,
-      "seq": 1832,
-      "ok": true
+  patient_id: '19446',
+  notes: 'on',
+  transitions: {
+    default_responses: {
+      last_rev: 2,
+      seq: 1832,
+      ok: true
     },
-    "update_sent_by": {
-      "last_rev": 2,
-      "seq": 1832,
-      "ok": true
+    update_sent_by: {
+      last_rev: 2,
+      seq: 1832,
+      ok: true
     },
-    "update_clinics": {
-      "last_rev": 2,
-      "seq": 1832,
-      "ok": true
+    update_clinics: {
+      last_rev: 2,
+      seq: 1832,
+      ok: true
     },
-    "update_notifications": {
-      "last_rev": 9,
-      "seq": 1854,
-      "ok": true
+    update_notifications: {
+      last_rev: 9,
+      seq: 1854,
+      ok: true
     }
   },
-  "sent_by": "_Gareth"
+  sent_by: '_Gareth'
 };
 
 var clone = function(original) {

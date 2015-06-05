@@ -12,7 +12,7 @@ exports.tearDown = function (callback) {
 exports['get returns errors'] = function(test) {
   test.expect(2);
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, 'bang');
-  controller.get({}, function(err, results) {
+  controller.get({}, function(err) {
     test.equals(err, 'bang');
     test.equals(getView.callCount, 1);
     test.done();

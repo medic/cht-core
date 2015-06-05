@@ -533,7 +533,7 @@ module.exports = {
       return callback(new Error('Unknown export type'));
     }
     if (!_.isFunction(type.generate)) {
-      return callback(new Error("Export type must provide a 'generate' method"));
+      return callback(new Error('Export type must provide a "generate" method'));
     }
     if (type.lowlevel) {
       return type.generate(callback);

@@ -36,7 +36,7 @@ exports.tearDown = function(callback) {
 exports['get returns errors from getView'] = function(test) {
   test.expect(2);
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, 'bang');
-  controller.get({ type: 'messages' }, function(err, results) {
+  controller.get({ type: 'messages' }, function(err) {
     test.equals(err, 'bang');
     test.equals(getView.callCount, 1);
     test.done();
@@ -514,7 +514,7 @@ exports['get reports formats responses'] = function(test) {
 };
 
 exports['get reports filters by form'] = function(test) {
-  test.expect(5);
+  test.expect(6);
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
@@ -559,6 +559,7 @@ exports['get reports filters by form'] = function(test) {
     test.equals(getView.firstCall.args[1], 'data_records');
     test.same(getView.firstCall.args[2].startkey, [true, 'P', {}]);
     test.same(getView.firstCall.args[2].endkey, [true, 'P', 0]);
+    test.equals(configGet.callCount, 1);
     test.done();
   });
 };

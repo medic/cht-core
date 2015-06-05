@@ -24,7 +24,7 @@ exports.tearDown = function (callback) {
 exports['get returns errors from getView'] = function(test) {
   test.expect(2);
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, 'bang');
-  controller.get({}, function(err, results) {
+  controller.get({}, function(err) {
     test.equals(err, 'bang');
     test.equals(getView.callCount, 1);
     test.done();
@@ -39,7 +39,7 @@ exports['get returns errors from fti'] = function(test) {
     ]
   });
   var fti = sinon.stub(db, 'fti').callsArgWith(2, 'boom');
-  controller.get({}, function(err, results) {
+  controller.get({}, function(err) {
     test.equals(err, 'boom');
     test.equals(getView.callCount, 1);
     test.equals(fti.callCount, 1);
@@ -62,7 +62,7 @@ exports['get returns errors from second fti'] = function(test) {
     ]
   });
   fti.onSecondCall().callsArgWith(2, 'bump');
-  controller.get({}, function(err, results) {
+  controller.get({}, function(err) {
     test.equals(err, 'bump');
     test.equals(getView.callCount, 1);
     test.equals(fti.callCount, 2);

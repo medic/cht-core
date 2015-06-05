@@ -24,7 +24,7 @@ exports.tearDown = function (callback) {
 
 exports['getAllRegistrations generates correct query'] = function(test) {
   test.expect(3);
-  var get = sinon.stub(config, 'get').returns({
+  sinon.stub(config, 'get').returns({
     registration: 'R',
     registrationLmp: 'P'
   });
@@ -51,7 +51,7 @@ exports['getAllRegistrations generates correct query'] = function(test) {
 
 exports['getAllRegistrations generates correct query when min and max weeks pregnant provided'] = function(test) {
   test.expect(3);
-  var get = sinon.stub(config, 'get').returns({
+  sinon.stub(config, 'get').returns({
     registration: 'R',
     registrationLmp: 'P'
   });
@@ -74,7 +74,7 @@ exports['getAllRegistrations generates correct query when min and max weeks preg
 
 exports['getAllRegistrations generates correct query when patientIds provided'] = function(test) {
   test.expect(5);
-  var get = sinon.stub(config, 'get').returns({
+  sinon.stub(config, 'get').returns({
     registration: 'R',
     registrationLmp: 'P'
   });
@@ -101,7 +101,7 @@ exports['getAllRegistrations generates correct query when patientIds provided'] 
 
 exports['getAllRegistrations generates multiple queries when over limit'] = function(test) {
   test.expect(6);
-  var get = sinon.stub(config, 'get').returns({
+  sinon.stub(config, 'get').returns({
     registration: 'R',
     registrationLmp: 'P'
   });

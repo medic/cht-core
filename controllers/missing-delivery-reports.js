@@ -1,7 +1,5 @@
 var _ = require('underscore'),
-    moment = require('moment'),
     utils = require('./utils');
-
 
 var getRegistrationPatientIds = function(options, callback) {
   options.minWeeksPregnant = 42;

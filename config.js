@@ -113,7 +113,7 @@ module.exports = {
       return doc._id === '_design/medic';
     };
 
-    feed.on('change', function(change) {
+    feed.on('change', function() {
       console.log('Detected settings change - reloading');
       module.exports.load(function(err) {
         if (err) {
