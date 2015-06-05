@@ -8,16 +8,16 @@ exports.setUp = function(callback) {
         form: 'BIR',
         events: [
            {
-               "name": "on_create",
-               "trigger": "add_patient_id",
-               "params": "",
-               "bool_expr": ""
+               name: 'on_create',
+               trigger: 'add_patient_id',
+               params: '',
+               bool_expr: ''
            },
            {
-               "name": "on_create",
-               "trigger": "add_birth_date",
-               "params": "",
-               "bool_expr": ""
+               name: 'on_create',
+               trigger: 'add_birth_date',
+               params: '',
+               bool_expr: ''
            }
         ],
         validations: [

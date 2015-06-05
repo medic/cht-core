@@ -43,7 +43,7 @@ db.request({ db: 'medic', doc: '_design/kujua-sentinel' }, function(err, doc) {
             });
         } else {
             logger.error(
-                "failed to create design document: %s",
+                'failed to create design document: %s',
                 JSON.stringify(err)
             );
         }

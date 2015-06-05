@@ -48,7 +48,7 @@ module.exports = {
                             headers: {
                                 Authorization: auth
                             },
-                            url: "https://api.twilio.com/2010-04-01/Accounts/" + twilioSid + "/SMS/Messages.json"
+                            url: 'https://api.twilio.com/2010-04-01/Accounts/' + twilioSid + '/SMS/Messages.json'
                         }, function(err, res, body) {
                             if (err) {
                                 message.twilioResponse = err;

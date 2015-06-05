@@ -13,8 +13,8 @@ exports.setUp = function(callback) {
     process.env.TEST_ENV = true;
 
     registration = {
-        patient_id: "123",
-        serial_number: "FOO",
+        patient_id: '123',
+        serial_number: 'FOO',
         scheduled_tasks: [
             {
                 messages: [ { message: 'x' } ],

@@ -4,8 +4,8 @@ var messages = require('../../lib/messages'),
 exports['extractDetails supports template variables on doc'] = function(test) {
     var doc = {
         form: 'x',
-        reported_date: "2050-03-13T13:06:22.002Z",
-        governor: "arnold",
+        reported_date: '2050-03-13T13:06:22.002Z',
+        governor: 'arnold',
         contact: {
             phone: '123',
             parent: {
@@ -24,8 +24,8 @@ exports['extractDetails supports template variables on doc'] = function(test) {
 exports['extractDetails internal fields always override form fields'] = function(test) {
     var doc = {
         form: 'x',
-        reported_date: "2050-03-13T13:06:22.002Z",
-        chw_name: "Arnold",
+        reported_date: '2050-03-13T13:06:22.002Z',
+        chw_name: 'Arnold',
         contact: {
             name: 'Sally',
             parent: {
@@ -44,18 +44,18 @@ exports['extractDetails internal fields always override form fields'] = function
 exports['scheduleMessage supports template variables on doc'] = function(test) {
     var doc = {
         form: 'x',
-        reported_date: "2050-03-13T13:06:22.002Z",
-        governor: "arnold"
+        reported_date: '2050-03-13T13:06:22.002Z',
+        governor: 'arnold'
     };
     var msg = {
-        message: "Governor {{governor}} wants to speak to you.",
+        message: 'Governor {{governor}} wants to speak to you.',
         due: moment().toISOString()
     };
-    messages.scheduleMessage(doc, msg, "+13125551212");
+    messages.scheduleMessage(doc, msg, '+13125551212');
     test.equals(doc.scheduled_tasks.length, 1);
     test.equals(
         doc.scheduled_tasks[0].messages[0].message,
-        "Governor arnold wants to speak to you."
+        'Governor arnold wants to speak to you.'
     );
     test.done();
 };
@@ -63,18 +63,18 @@ exports['scheduleMessage supports template variables on doc'] = function(test) {
 exports['addMessage supports template variables on doc'] = function(test) {
     var doc = {
         form: 'x',
-        reported_date: "2050-03-13T13:06:22.002Z",
-        governor: "Schwarzenegger"
+        reported_date: '2050-03-13T13:06:22.002Z',
+        governor: 'Schwarzenegger'
     };
     messages.addMessage({
         doc: doc,
-        phone: "+13125551212",
-        message: "Governor {{governor}} wants to speak to you."
+        phone: '+13125551212',
+        message: 'Governor {{governor}} wants to speak to you.'
     });
     test.equals(doc.tasks.length, 1);
     test.equals(
         doc.tasks[0].messages[0].message,
-        "Governor Schwarzenegger wants to speak to you."
+        'Governor Schwarzenegger wants to speak to you.'
     );
     test.done();
 };
@@ -93,13 +93,13 @@ exports['addMessage template supports contact obj'] = function(test) {
     };
     messages.addMessage({
         doc: doc,
-        phone: "+13125551212",
-        message: "Thank you {{contact.name}}."
+        phone: '+13125551212',
+        message: 'Thank you {{contact.name}}.'
     });
     test.equals(doc.tasks.length, 1);
     test.equals(
         doc.tasks[0].messages[0].message,
-        "Thank you Paul."
+        'Thank you Paul.'
     );
     test.done();
 };
@@ -118,13 +118,13 @@ exports['addMessage supports clinic dot template variables'] = function(test) {
     };
     messages.addMessage({
         doc: doc,
-        phone: "+13125551212",
-        message: "Thank you {{contact.name}}."
+        phone: '+13125551212',
+        message: 'Thank you {{contact.name}}.'
     });
     test.equals(doc.tasks.length, 1);
     test.equals(
         doc.tasks[0].messages[0].message,
-        "Thank you Sally."
+        'Thank you Sally.'
     );
     test.done();
 };
@@ -137,7 +137,7 @@ exports['addMessage template supports health_center object'] = function(test) {
                 parent: {
                     type: 'health_center',
                     contact: {
-                        name: "Jeremy"
+                        name: 'Jeremy'
                     }
                 }
             }
@@ -145,13 +145,13 @@ exports['addMessage template supports health_center object'] = function(test) {
     };
     messages.addMessage({
         doc: doc,
-        phone: "+13125551212",
-        message: "Thank you {{health_center.contact.name}}."
+        phone: '+13125551212',
+        message: 'Thank you {{health_center.contact.name}}.'
     });
     test.equals(doc.tasks.length, 1);
     test.equals(
         doc.tasks[0].messages[0].message,
-        "Thank you Jeremy."
+        'Thank you Jeremy.'
     );
     test.done();
 };
@@ -165,7 +165,7 @@ exports['addMessage template supports district object'] = function(test) {
                     parent: {
                         type: 'district_hospital',
                         contact: {
-                            name: "Kristen"
+                            name: 'Kristen'
                         }
                     }
                 }
@@ -174,13 +174,13 @@ exports['addMessage template supports district object'] = function(test) {
     };
     messages.addMessage({
         doc: doc,
-        phone: "+13125551212",
-        message: "Thank you {{district.contact.name}}."
+        phone: '+13125551212',
+        message: 'Thank you {{district.contact.name}}.'
     });
     test.equals(doc.tasks.length, 1);
     test.equals(
         doc.tasks[0].messages[0].message,
-        "Thank you Kristen."
+        'Thank you Kristen.'
     );
     test.done();
 };
@@ -194,13 +194,13 @@ exports['addMessage template supports fields'] = function(test) {
     };
     messages.addMessage({
         doc: doc,
-        phone: "+13125551212",
-        message: "Thank you {{patient_name}}."
+        phone: '+13125551212',
+        message: 'Thank you {{patient_name}}.'
     });
     test.equals(doc.tasks.length, 1);
     test.equals(
         doc.tasks[0].messages[0].message,
-        "Thank you Sally."
+        'Thank you Sally.'
     );
     test.done();
 };

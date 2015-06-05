@@ -46,34 +46,34 @@ exports['should update clinic by phone'] = function(test) {
         }
     };
     sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {rows: [{ doc: {
-       "_id": "9ed7d9c6095cc0e37e4d3e94d3387ed9",
-       "_rev": "6-e447d8801d7bed36614af92449586851",
-       "type": "clinic",
-       "name": "Clinic",
-       "contact": {
-           "name": "CCN",
-           "phone": "+34567890123",
-           "rc_code": "1000"
+       _id: '9ed7d9c6095cc0e37e4d3e94d3387ed9',
+       _rev: '6-e447d8801d7bed36614af92449586851',
+       type: 'clinic',
+       name: 'Clinic',
+       contact: {
+           name: 'CCN',
+           phone: '+34567890123',
+           rc_code: '1000'
        },
-       "parent": {
-           "_id": "9ed7d9c6095cc0e37e4d3e94d33866f1",
-           "_rev": "6-723dad2083c951501a1851fb88b6e3b5",
-           "type": "health_center",
-           "name": "Health Center",
-           "contact": {
-               "name": "HCCN",
-               "phone": "+23456789012"
+       parent: {
+           _id: '9ed7d9c6095cc0e37e4d3e94d33866f1',
+           _rev: '6-723dad2083c951501a1851fb88b6e3b5',
+           type: 'health_center',
+           name: 'Health Center',
+           contact: {
+               name: 'HCCN',
+               phone: '+23456789012'
            },
-           "parent": {
-               "_id": "9ed7d9c6095cc0e37e4d3e94d3384c8f",
-               "_rev": "4-6e5f394413e840c1f41bf9f471a91e04",
-               "type": "district_hospital",
-               "name": "District",
-               "parent": {
+           parent: {
+               _id: '9ed7d9c6095cc0e37e4d3e94d3384c8f',
+               _rev: '4-6e5f394413e840c1f41bf9f471a91e04',
+               type: 'district_hospital',
+               name: 'District',
+               parent: {
                },
-               "contact": {
-                   "name": "DCN",
-                   "phone": "+12345678901"
+               contact: {
+                   name: 'DCN',
+                   phone: '+12345678901'
                }
            }
        }
@@ -108,34 +108,34 @@ exports['should update clinic by refid and fix number'] = function(test) {
         refid: '1000'
     };
     sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {rows: [{ doc: {
-       "_id": "9ed7d9c6095cc0e37e4d3e94d3387ed9",
-       "_rev": "6-e447d8801d7bed36614af92449586851",
-       "type": "clinic",
-       "name": "Clinic",
-       "contact": {
-           "name": "CCN",
-           "phone": "+34567890123",
-           "rc_code": "1000"
+       _id: '9ed7d9c6095cc0e37e4d3e94d3387ed9',
+       _rev: '6-e447d8801d7bed36614af92449586851',
+       type: 'clinic',
+       name: 'Clinic',
+       contact: {
+           name: 'CCN',
+           phone: '+34567890123',
+           rc_code: '1000'
        },
-       "parent": {
-           "_id": "9ed7d9c6095cc0e37e4d3e94d33866f1",
-           "_rev": "6-723dad2083c951501a1851fb88b6e3b5",
-           "type": "health_center",
-           "name": "Health Center",
-           "contact": {
-               "name": "HCCN",
-               "phone": "+23456789012"
+       parent: {
+           _id: '9ed7d9c6095cc0e37e4d3e94d33866f1',
+           _rev: '6-723dad2083c951501a1851fb88b6e3b5',
+           type: 'health_center',
+           name: 'Health Center',
+           contact: {
+               name: 'HCCN',
+               phone: '+23456789012'
            },
-           "parent": {
-               "_id": "9ed7d9c6095cc0e37e4d3e94d3384c8f",
-               "_rev": "4-6e5f394413e840c1f41bf9f471a91e04",
-               "type": "district_hospital",
-               "name": "District",
-               "parent": {
+           parent: {
+               _id: '9ed7d9c6095cc0e37e4d3e94d3384c8f',
+               _rev: '4-6e5f394413e840c1f41bf9f471a91e04',
+               type: 'district_hospital',
+               name: 'District',
+               parent: {
                },
-               "contact": {
-                   "name": "DCN",
-                   "phone": "+12345678901"
+               contact: {
+                   name: 'DCN',
+                   phone: '+12345678901'
                }
            }
        }
@@ -156,41 +156,41 @@ exports['should update clinic by refid and get latest contact'] = function(test)
         refid: '1000'
     };
     var clinic = {
-        "_id": "9ed7d9c6095cc0e37e4d3e94d3387ed9",
-        "_rev": "6-e447d8801d7bed36614af92449586851",
-        "type": "clinic",
-        "name": "Clinic",
-        "contact": {
-            "_id": "z"
+        _id: '9ed7d9c6095cc0e37e4d3e94d3387ed9',
+        _rev: '6-e447d8801d7bed36614af92449586851',
+        type: 'clinic',
+        name: 'Clinic',
+        contact: {
+            _id: 'z'
         },
-        "parent": {
-            "_id": "9ed7d9c6095cc0e37e4d3e94d33866f1",
-            "_rev": "6-723dad2083c951501a1851fb88b6e3b5",
-            "type": "health_center",
-            "name": "Health Center",
-            "contact": {
-                "name": "HCCN",
-                "phone": "+23456789012"
+        parent: {
+            _id: '9ed7d9c6095cc0e37e4d3e94d33866f1',
+            _rev: '6-723dad2083c951501a1851fb88b6e3b5',
+            type: 'health_center',
+            name: 'Health Center',
+            contact: {
+                name: 'HCCN',
+                phone: '+23456789012'
             },
-            "parent": {
-                "_id": "9ed7d9c6095cc0e37e4d3e94d3384c8f",
-                "_rev": "4-6e5f394413e840c1f41bf9f471a91e04",
-                "type": "district_hospital",
-                "name": "District",
-                "parent": {
+            parent: {
+                _id: '9ed7d9c6095cc0e37e4d3e94d3384c8f',
+                _rev: '4-6e5f394413e840c1f41bf9f471a91e04',
+                type: 'district_hospital',
+                name: 'District',
+                parent: {
                 },
-                "contact": {
-                    "name": "DCN",
-                    "phone": "+12345678901"
+                contact: {
+                    name: 'DCN',
+                    phone: '+12345678901'
                 }
             }
         }
     };
     var contact = {
-        "_id": "z",
-        "_rev": "2",
-        "name": "zenith",
-        "phone": "+12345"
+        _id: 'z',
+        _rev: '2',
+        name: 'zenith',
+        phone: '+12345'
     };
     sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, { rows: [{ doc: clinic }] });
     sinon.stub(fakedb.medic, 'get').callsArgWith(1, null, contact);

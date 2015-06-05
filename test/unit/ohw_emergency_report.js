@@ -35,7 +35,7 @@ exports['invalid patient response'] = function(test) {
         test.ok(complete);
         test.ok(task);
         message = (_.first(task.messages) || {}).message;
-        test.same(message, "No patient with id 'fake' found.");
+        test.same(message, 'No patient with id \'fake\' found.');
         // no message to health facility if advice was received
         test.equal(doc.tasks.length, 1);
         test.done();
@@ -67,8 +67,8 @@ exports['ANC danger sign with advice response'] = function(test) {
         }
     };
     var found = {
-        patient_id: "123",
-        serial_number: "ABC",
+        patient_id: '123',
+        serial_number: 'ABC',
         scheduled_tasks: [
             {
                 messages: [ { message: 'x' } ],
@@ -87,7 +87,7 @@ exports['ANC danger sign with advice response'] = function(test) {
         var task = _.first(doc.tasks),
             message = (_.first(task.messages) || {}).message;
         test.ok(complete);
-        test.same(message, "Thank you, Paul. Danger sign for ABC has been recorded.");
+        test.same(message, 'Thank you, Paul. Danger sign for ABC has been recorded.');
         // no message to health facility if advice was received
         test.equal(doc.tasks.length, 1);
         test.done();
@@ -123,8 +123,8 @@ exports['ANC danger sign and no advice response'] = function(test) {
         }
     };
     var found = {
-        patient_id: "123",
-        serial_number: "ABC",
+        patient_id: '123',
+        serial_number: 'ABC',
         scheduled_tasks: [
             {
                 messages: [ { message: 'x' } ],
@@ -137,10 +137,10 @@ exports['ANC danger sign and no advice response'] = function(test) {
         ]
     };
     sinon.stub(utils, 'getOHWRegistration').callsArgWith(1, null, found);
-    msg1 = "Thank you, Paul. Danger sign for ABC has been recorded.";
+    msg1 = 'Thank you, Paul. Danger sign for ABC has been recorded.';
 
-    msg2 = "Paul has reported a danger sign for 123. Please follow up " +
-        "with her and provide necessary assistance immediately.";
+    msg2 = 'Paul has reported a danger sign for 123. Please follow up ' +
+        'with her and provide necessary assistance immediately.';
 
     transition.onMatch({
         doc: doc
@@ -185,8 +185,8 @@ exports['PNC danger sign and no advice response'] = function(test) {
         }
     };
     var found = {
-        patient_id: "123",
-        serial_number: "ABC",
+        patient_id: '123',
+        serial_number: 'ABC',
         scheduled_tasks: [
             {
                 messages: [ { message: 'x' } ],
@@ -199,10 +199,10 @@ exports['PNC danger sign and no advice response'] = function(test) {
         ]
     };
     sinon.stub(utils, 'getOHWRegistration').callsArgWith(1, null, found);
-    var msg1 = "Thank you, Paul. Danger sign for ABC has been recorded.";
+    var msg1 = 'Thank you, Paul. Danger sign for ABC has been recorded.';
 
-    var msg2 = "Paul has reported a danger sign for 123. Please follow up " +
-               "with her and provide necessary assistance immediately.";
+    var msg2 = 'Paul has reported a danger sign for 123. Please follow up ' +
+               'with her and provide necessary assistance immediately.';
 
     transition.onMatch({
         doc: doc
@@ -250,8 +250,8 @@ exports['ANC no danger and no advice sign'] = function(test) {
         }
     };
     var found = {
-        patient_id: "123",
-        serial_number: "ABC",
+        patient_id: '123',
+        serial_number: 'ABC',
         scheduled_tasks: [
             {
                 messages: [ { message: 'x' } ],
@@ -264,7 +264,7 @@ exports['ANC no danger and no advice sign'] = function(test) {
         ]
     };
     sinon.stub(utils, 'getOHWRegistration').callsArgWith(1, null, found);
-    msg1 = "Thank you, Paul. No danger sign for ABC has been recorded.";
+    msg1 = 'Thank you, Paul. No danger sign for ABC has been recorded.';
 
     transition.onMatch({
         doc: doc
@@ -309,8 +309,8 @@ exports['Labor with no danger sign or advice response'] = function(test) {
         }
     };
     var found = {
-        patient_id: "123",
-        serial_number: "ABC",
+        patient_id: '123',
+        serial_number: 'ABC',
         scheduled_tasks: [
             {
                 messages: [ { message: 'x' } ],
@@ -323,9 +323,9 @@ exports['Labor with no danger sign or advice response'] = function(test) {
         ]
     };
     sinon.stub(utils, 'getOHWRegistration').callsArgWith(1, null, found);
-    msg1 = "Thank you Paul. Labor report for ABC has been recorded. Please submit the birth outcome report after delivery.";
+    msg1 = 'Thank you Paul. Labor report for ABC has been recorded. Please submit the birth outcome report after delivery.';
 
-    msg2 = "Paul has reported a labor. Please follow up with her and provide necessary assistance immediately.";
+    msg2 = 'Paul has reported a labor. Please follow up with her and provide necessary assistance immediately.';
 
     transition.onMatch({
         doc: doc
@@ -374,8 +374,8 @@ exports['Labor with danger sign and no advice response'] = function(test) {
         }
     };
     var found = {
-        patient_id: "123",
-        serial_number: "ABC",
+        patient_id: '123',
+        serial_number: 'ABC',
         scheduled_tasks: [
             {
                 messages: [ { message: 'x' } ],
@@ -388,9 +388,9 @@ exports['Labor with danger sign and no advice response'] = function(test) {
         ]
     };
     sinon.stub(utils, 'getOHWRegistration').callsArgWith(1, null, found);
-    msg1 = "Thank you Paul. Labor report and danger sign for ABC has been recorded. Please submit the birth outcome report after delivery.";
+    msg1 = 'Thank you Paul. Labor report and danger sign for ABC has been recorded. Please submit the birth outcome report after delivery.';
 
-    msg2 = "Paul has reported a danger sign during labor. Please follow up with her and provide necessary assistance immediately.";
+    msg2 = 'Paul has reported a danger sign during labor. Please follow up with her and provide necessary assistance immediately.';
 
     transition.onMatch({
         doc: doc
@@ -437,8 +437,8 @@ exports['Labor with danger sign and advice response'] = function(test) {
         }
     };
     var found = {
-        patient_id: "123",
-        serial_number: "ABC",
+        patient_id: '123',
+        serial_number: 'ABC',
         scheduled_tasks: [
             {
                 messages: [ { message: 'x' } ],
@@ -451,7 +451,7 @@ exports['Labor with danger sign and advice response'] = function(test) {
         ]
     };
     sinon.stub(utils, 'getOHWRegistration').callsArgWith(1, null, found);
-    msg1 = "Thank you Paul. Labor report and danger sign for ABC has been recorded. Please submit the birth outcome report after delivery.";
+    msg1 = 'Thank you Paul. Labor report and danger sign for ABC has been recorded. Please submit the birth outcome report after delivery.';
 
     transition.onMatch({
         doc: doc

@@ -24,7 +24,7 @@ exports['filter signature'] = function(test) {
 
 exports['filter tests'] = function(test) {
     var contact = {
-        phone: "x"
+        phone: 'x'
     };
     test.equals(transition.filter({}), false);
     test.equals(transition.filter({

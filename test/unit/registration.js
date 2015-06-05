@@ -15,14 +15,14 @@ exports['bool expr supports complex logic'] = function(test) {
             age_in_years: 21,
             last_mentrual_period: ''
         },
-        "doc.age_in_years && doc.last_mentrual_period === ''"
+        'doc.age_in_years && doc.last_mentrual_period === \'\''
     ));
     test.equals(true, transition.isBoolExprFalse(
         {
             age_in_years: 21,
             last_mentrual_period: ''
         },
-        "!(doc.age_in_years && doc.last_mentrual_period === '')"
+        '!(doc.age_in_years && doc.last_mentrual_period === \'\')'
     ));
     test.done();
 };

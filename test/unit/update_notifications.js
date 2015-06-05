@@ -171,11 +171,11 @@ exports['validation failure adds error and response'] = function(test) {
             join_responses: false,
             list: [
                 {
-                    property: "patient_id",
-                    rule: "regex('^[0-9]{5}$')",
+                    property: 'patient_id',
+                    rule: 'regex("^[0-9]{5}$")',
                     message: [{
-                        content: "patient id needs 5 numbers.",
-                        locale: "en"
+                        content: 'patient id needs 5 numbers.',
+                        locale: 'en'
                     }]
                 }
             ]

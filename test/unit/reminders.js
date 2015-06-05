@@ -44,9 +44,9 @@ exports['config with three matching reminder calls runReminder thrice'] = functi
     test.expect(2);
     var runReminder;
     sinon.stub(config, 'get').returns([
-        {form:"x", cron:"x", message:"x"},
-        {form:"y", cron:"y", message:"y"},
-        {form:"z", cron:"z", message:"z"}
+        {form:'x', cron:'x', message:'x'},
+        {form:'y', cron:'y', message:'y'},
+        {form:'z', cron:'z', message:'z'}
     ]);
     runReminder = sinon.stub(reminders, 'runReminder').callsArgWith(1, null);
     reminders.execute({}, function(err) {

@@ -5,7 +5,7 @@
   "curly": true,
   "newcap": true,
   "eqnull": true,
-  //"quotmark": "single",
+  "quotmark": "single",
   "node": true,
   "unused": true
 }

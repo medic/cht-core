@@ -243,7 +243,7 @@ exports['handle missing condition reference gracefully'] = function(test) {
     };
     test.expect(2);
     transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
-        test.equals(err, "Cannot read property 's1_avail' of undefined");
+        test.equals(err, 'Cannot read property \'s1_avail\' of undefined');
         test.equals(changed, false);
         test.done();
     });

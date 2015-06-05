@@ -12,14 +12,14 @@ var addResponses = function() {
     var doc = new_doc,
         mute = !/^On$/i.test(String(doc.notifications));
 
-    var msg = "Thank you, {{contact_name}}. Record for {{serial_number}}" +
-        " has been deactivated per your report. No further notifications" +
-        " regarding this patient will be sent.";
+    var msg = 'Thank you, {{contact_name}}. Record for {{serial_number}}' +
+        ' has been deactivated per your report. No further notifications' +
+        ' regarding this patient will be sent.';
 
     if (!mute) {
-        msg = "Thank you, {{contact_name}}. Record for {{serial_number}}" +
-            " has been reactivated. Notifications regarding this" +
-            " patient will resume.";
+        msg = 'Thank you, {{contact_name}}. Record for {{serial_number}}' +
+            ' has been reactivated. Notifications regarding this' +
+            ' patient will resume.';
     }
 
     utils.addMessage(doc, {
@@ -49,7 +49,7 @@ var updateSchedule = function() {
 
 
 var checkRegistration = function(callback) {
-    var msg = "No patient with id '{{patient_id}}' found.";
+    var msg = 'No patient with id \'{{patient_id}}\' found.';
     var doc = new_doc;
     utils.getOHWRegistration(doc.patient_id, function(err, data) {
         if (err || !data) {

@@ -35,10 +35,10 @@ exports['filter succeeds with message task'] = function(test) {
     test.equals(transition.filter({
         tasks: [{
             messages: [{
-                to: "foo",
-                message: "foo",
+                to: 'foo',
+                message: 'foo',
             }],
-            state: "pending"
+            state: 'pending'
         }]
     }), true);
     test.done();
@@ -48,10 +48,10 @@ exports['filter succeeds with scheduled message tasks'] = function(test) {
     test.equals(transition.filter({
         scheduled_tasks: [{
             messages: [{
-                to: "foo",
-                message: "foo",
+                to: 'foo',
+                message: 'foo',
             }],
-            state: "pending"
+            state: 'pending'
         }]
     }), true);
     test.done();
@@ -62,10 +62,10 @@ exports['filter fails with error and scheduled message task'] = function(test) {
         errors: ['foo'],
         scheduled_tasks: [{
             messages: [{
-                to: "foo",
-                message: "foo",
+                to: 'foo',
+                message: 'foo',
             }],
-            state: "pending"
+            state: 'pending'
         }]
     }), false);
     test.done();
@@ -76,10 +76,10 @@ exports['onMatch does not cause update if message is already sent'] = function(t
         errors: ['foo'],
         scheduled_tasks: [{
             messages: [{
-                to: "foo",
-                message: "foo",
+                to: 'foo',
+                message: 'foo',
             }],
-            state: "sent"
+            state: 'sent'
         }]
     };
     transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {

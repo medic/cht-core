@@ -21,10 +21,10 @@ exports.setUp = function(callback) {
         form: 'PATR',
         events: [
            {
-               "name": "on_create",
-               "trigger": "add_patient_id",
-               "params": "",
-               "bool_expr": ""
+               name: 'on_create',
+               trigger: 'add_patient_id',
+               params: '',
+               bool_expr: ''
            }
         ],
         validations: [
@@ -38,28 +38,28 @@ exports.setUp = function(callback) {
             {
                 message: [
                     {
-                        content: "thanks {{contact.name}}",
-                        locale: "en"
+                        content: 'thanks {{contact.name}}',
+                        locale: 'en'
                     },
                     {
-                        content: "gracias {{contact.name}}",
-                        locale: "es"
+                        content: 'gracias {{contact.name}}',
+                        locale: 'es'
                     }
                 ],
-                recipient: "reporting_unit",
+                recipient: 'reporting_unit',
             },
             {
                 message: [
                     {
-                        content: "thanks {{fields.caregiver_name}}",
-                        locale: "en"
+                        content: 'thanks {{fields.caregiver_name}}',
+                        locale: 'en'
                     },
                     {
-                        content: "gracias {{fields.caregiver_name}}",
-                        locale: "es"
+                        content: 'gracias {{fields.caregiver_name}}',
+                        locale: 'es'
                     }
                 ],
-                recipient: "caregiver_phone",
+                recipient: 'caregiver_phone',
             }
         ]
     }]);
@@ -116,8 +116,8 @@ exports['getWeeksSinceDOB supports four property names'] = function(test) {
 };
 
 exports['isBoolExprFalse returns false/true based on regex'] = function(test) {
-    var regex1 = "/^\\s*[5]\\d+/.test(doc.foo)",
-        regex2 = "/^\\s*[3]\\d+/.test(doc.foo)",
+    var regex1 = '/^\\s*[5]\\d+/.test(doc.foo)',
+        regex2 = '/^\\s*[3]\\d+/.test(doc.foo)',
         doc = {
             foo: '533884'
         };

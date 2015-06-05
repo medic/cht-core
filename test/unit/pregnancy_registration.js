@@ -17,16 +17,16 @@ exports.setUp = function(callback) {
         type: 'pregnancy',
         events: [
            {
-               "name": "on_create",
-               "trigger": "add_patient_id",
-               "params": "",
-               "bool_expr": ""
+               name: 'on_create',
+               trigger: 'add_patient_id',
+               params: '',
+               bool_expr: ''
            },
            {
-               "name": "on_create",
-               "trigger": "add_expected_date",
-               "params": "",
-               "bool_expr": "typeof doc.getid === 'undefined'"
+               name: 'on_create',
+               trigger: 'add_expected_date',
+               params: '',
+               bool_expr: 'typeof doc.getid === "undefined"'
            }
         ],
         validations: {
@@ -55,16 +55,16 @@ exports.setUp = function(callback) {
         type: 'pregnancy',
         events: [
            {
-               "name": "on_create",
-               "trigger": "add_patient_id",
-               "params": "",
-               "bool_expr": ""
+               name: 'on_create',
+               trigger: 'add_patient_id',
+               params: '',
+               bool_expr: ''
            },
            {
-               "name": "on_create",
-               "trigger": "add_expected_date",
-               "params": "",
-               "bool_expr": "typeof doc.getid === 'undefined'"
+               name: 'on_create',
+               trigger: 'add_expected_date',
+               params: '',
+               bool_expr: 'typeof doc.getid === "undefined"'
            }
         ],
         validations: {

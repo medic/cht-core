@@ -181,7 +181,7 @@ module.exports = {
         });
     },
     triggers: {
-        'add_patient_id': function(db, doc, cb) {
+        add_patient_id: function(db, doc, cb) {
             var args = Array.prototype.slice.call(arguments),
                 self = module.exports;
             cb = args.pop();
@@ -194,7 +194,7 @@ module.exports = {
             }
             self.setId({db: db, doc: doc}, cb);
         },
-        "add_expected_date": function(db, doc, cb) {
+        add_expected_date: function(db, doc, cb) {
             var args = Array.prototype.slice.call(arguments),
                 self = module.exports;
             cb = args.pop();
@@ -204,7 +204,7 @@ module.exports = {
             self.setExpectedBirthDate(doc);
             cb();
         },
-        "add_birth_date": function(db, doc, cb) {
+        add_birth_date: function(db, doc, cb) {
             var args = Array.prototype.slice.call(arguments),
                 self = module.exports;
             cb = args.pop();
@@ -214,7 +214,7 @@ module.exports = {
             self.setBirthDate(doc);
             cb();
         },
-        'assign_schedule': function(db, doc, cb) {
+        assign_schedule: function(db, doc, cb) {
             var args = Array.prototype.slice.call(arguments);
             if (args.length < 4) {
                 cb('Please specify schedule name in settings.');

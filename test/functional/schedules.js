@@ -65,38 +65,38 @@ exports['registration sets up schedule'] = function(test) {
         form: 'PATR',
         events: [
            {
-               "name": "on_create",
-               "trigger": "assign_schedule",
-               "params": "group1",
-               "bool_expr": ""
+               name: 'on_create',
+               trigger: 'assign_schedule',
+               params: 'group1',
+               bool_expr: ''
            }
         ],
         validations: [],
         messages: [
             {
                 message: [{
-                    content: "thanks {{contact.name}}",
-                    locale: "en"
+                    content: 'thanks {{contact.name}}',
+                    locale: 'en'
                 }],
-                recipient: "reporting_unit"
+                recipient: 'reporting_unit'
             }
         ]
     }]);
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     sinon.stub(schedules, 'getScheduleConfig').returns({
-        "name": "group1",
-        "start_from": "reported_date",
-        "registration_response": "",
-        "messages": [
+        name: 'group1',
+        start_from: 'reported_date',
+        registration_response: '',
+        messages: [
             {
-                "message": [{
-                    "content": "Mustaches.  Overrated or underrated?",
-                    "locale": "en"
+                message: [{
+                    content: 'Mustaches.  Overrated or underrated?',
+                    locale: 'en'
                 }],
-                "group": 1,
-                "offset": "12 weeks",
-                "send_time": "",
-                "recipient": "reporting_unit"
+                group: 1,
+                offset: '12 weeks',
+                send_time: '',
+                recipient: 'reporting_unit'
             }
         ]
     });
@@ -141,7 +141,7 @@ exports['registration sets up schedule'] = function(test) {
         if (msg1) {
             test.deepEqual(msg1, {
                 to: '+1234',
-                message: "Mustaches.  Overrated or underrated?"
+                message: 'Mustaches.  Overrated or underrated?'
             });
         }
         test.done();
@@ -155,38 +155,38 @@ exports['registration sets up schedule using bool_expr'] = function(test) {
         form: 'PATR',
         events: [
            {
-               "name": "on_create",
-               "trigger": "assign_schedule",
-               "params": "group1",
-               "bool_expr": "doc.foo === 'baz'"
+               name: 'on_create',
+               trigger: 'assign_schedule',
+               params: 'group1',
+               bool_expr: 'doc.foo === "baz"'
            }
         ],
         validations: [],
         messages: [
             {
                 message: [{
-                    content: "thanks {{contact.name}}",
-                    locale: "en"
+                    content: 'thanks {{contact.name}}',
+                    locale: 'en'
                 }],
-                recipient: "reporting_unit"
+                recipient: 'reporting_unit'
             }
         ]
     }]);
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     sinon.stub(schedules, 'getScheduleConfig').returns({
-        "name": "group1",
-        "start_from": "reported_date",
-        "registration_response": "",
-        "messages": [
+        name: 'group1',
+        start_from: 'reported_date',
+        registration_response: '',
+        messages: [
             {
-                "message": [{
-                    "content": "Mustaches.  Overrated or underrated?",
-                    "locale": "en"
+                message: [{
+                    content: 'Mustaches.  Overrated or underrated?',
+                    locale: 'en'
                 }],
-                "group": 1,
-                "offset": "12 weeks",
-                "send_time": "",
-                "recipient": "reporting_unit"
+                group: 1,
+                offset: '12 weeks',
+                send_time: '',
+                recipient: 'reporting_unit'
             }
         ]
     });
@@ -232,7 +232,7 @@ exports['registration sets up schedule using bool_expr'] = function(test) {
         if (msg1) {
             test.deepEqual(msg1, {
                 to: '+1234',
-                message: "Mustaches.  Overrated or underrated?"
+                message: 'Mustaches.  Overrated or underrated?'
             });
         }
         test.done();
@@ -246,38 +246,38 @@ exports['no schedule using false bool_expr'] = function(test) {
         form: 'PATR',
         events: [
            {
-               "name": "on_create",
-               "trigger": "assign_schedule",
-               "params": "group1",
-               "bool_expr": "doc.foo === 'notbaz'"
+               name: 'on_create',
+               trigger: 'assign_schedule',
+               params: 'group1',
+               bool_expr: 'doc.foo === "notbaz"'
            }
         ],
         validations: [],
         messages: [
             {
                 message: [{
-                    content: "thanks {{contact.name}}",
-                    locale: "en"
+                    content: 'thanks {{contact.name}}',
+                    locale: 'en'
                 }],
-                recipient: "reporting_unit"
+                recipient: 'reporting_unit'
             }
         ]
     }]);
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     sinon.stub(schedules, 'getScheduleConfig').returns({
-        "name": "group1",
-        "start_from": "reported_date",
-        "registration_response": "",
-        "messages": [
+        name: 'group1',
+        start_from: 'reported_date',
+        registration_response: '',
+        messages: [
             {
-                "message": [{
-                    "content": "Mustaches.  Overrated or underrated?",
-                    "locale": "en"
+                message: [{
+                    content: 'Mustaches.  Overrated or underrated?',
+                    locale: 'en'
                 }],
-                "group": 1,
-                "offset": "12 weeks",
-                "send_time": "",
-                "recipient": "reporting_unit"
+                group: 1,
+                offset: '12 weeks',
+                send_time: '',
+                recipient: 'reporting_unit'
             }
         ]
     });

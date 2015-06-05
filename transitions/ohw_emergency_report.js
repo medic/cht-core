@@ -10,18 +10,18 @@ var async = require('async'),
     new_doc;
 
 var msgs = {
-    danger: "Thank you, {{contact_name}}. Danger sign for {{serial_number}} has been recorded.",
-    no_danger: "Thank you, {{contact_name}}. No danger sign for {{serial_number}} has been recorded.",
-    labor: "Thank you {{contact_name}}. Labor report for {{serial_number}} has been recorded. Please submit the birth outcome report after delivery.",
-    labor_and_danger: "Thank you {{contact_name}}. Labor report and danger sign for {{serial_number}} has been recorded. Please submit the birth outcome report after delivery.",
-    other: "Thank you, {{contact_name}}. Counseling visit for {{serial_number}} has been recorded. Please complete necessary protocol.",
-    not_found: "No patient with id '{{patient_id}}' found.",
-    dup_labor: "The labor report you sent appears to be a duplicate. A health facility staff will call you soon to confirm the validity of the forms.",
-    dup_danger: "The danger sign report you sent appears to be a duplicate. A health facility staff will call you soon to confirm the validity of the forms.",
+    danger: 'Thank you, {{contact_name}}. Danger sign for {{serial_number}} has been recorded.',
+    no_danger: 'Thank you, {{contact_name}}. No danger sign for {{serial_number}} has been recorded.',
+    labor: 'Thank you {{contact_name}}. Labor report for {{serial_number}} has been recorded. Please submit the birth outcome report after delivery.',
+    labor_and_danger: 'Thank you {{contact_name}}. Labor report and danger sign for {{serial_number}} has been recorded. Please submit the birth outcome report after delivery.',
+    other: 'Thank you, {{contact_name}}. Counseling visit for {{serial_number}} has been recorded. Please complete necessary protocol.',
+    not_found: 'No patient with id \'{{patient_id}}\' found.',
+    dup_labor: 'The labor report you sent appears to be a duplicate. A health facility staff will call you soon to confirm the validity of the forms.',
+    dup_danger: 'The danger sign report you sent appears to be a duplicate. A health facility staff will call you soon to confirm the validity of the forms.',
     alerts: {
-        default: "{{contact_name}} has reported a danger sign for {{patient_id}}. Please follow up with her and provide necessary assistance immediately.",
-        labor: "{{contact_name}} has reported a labor. Please follow up with her and provide necessary assistance immediately.",
-        danger_labor: "{{contact_name}} has reported a danger sign during labor. Please follow up with her and provide necessary assistance immediately."
+        default: '{{contact_name}} has reported a danger sign for {{patient_id}}. Please follow up with her and provide necessary assistance immediately.',
+        labor: '{{contact_name}} has reported a labor. Please follow up with her and provide necessary assistance immediately.',
+        danger_labor: '{{contact_name}} has reported a danger sign during labor. Please follow up with her and provide necessary assistance immediately.'
     }
 };
 
