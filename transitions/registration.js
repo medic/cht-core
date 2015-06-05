@@ -106,7 +106,7 @@ module.exports = {
      * Given a form code and config array, return config for that form.
      * */
     getRegistrationConfig: function(config, form_code) {
-        var regex = RegExp('^\W*' + form_code + '\\W*$','i');
+        var regex = new RegExp('^\W*' + form_code + '\\W*$','i');
         return _.find(config, function(conf) {
             return regex.test(conf.form);
         });
@@ -118,8 +118,7 @@ module.exports = {
     onMatch: function(change, db, audit, callback) {
         var self = module.exports,
             doc = change.doc,
-            config = self.getRegistrationConfig(self.getConfig(), doc.form),
-            isIdOnly = self.isIdOnly(doc);
+            config = self.getRegistrationConfig(self.getConfig(), doc.form);
 
         if (!config) {
             return callback();
@@ -151,7 +150,9 @@ module.exports = {
             var series = [];
             _.each(config.events, function(event) {
                 var trigger = self.triggers[event.trigger];
-                if (!trigger) return;
+                if (!trigger) {
+                    return;
+                }
                 if (event.name === 'on_create') {
                     var args = [db, doc];
                     if (event.params) {
@@ -168,15 +169,14 @@ module.exports = {
                 }
             });
 
-            async.series(series, function(err, results) {
+            async.series(series, function(err) {
                 if (err) {
-                    callback(err);
-                } else {
-                    // add messages is done last so data on doc can be used in
-                    // messages
-                    self.addMessages(config, doc);
-                    callback(null, true);
+                    return callback(err);
                 }
+                // add messages is done last so data on doc can be used in
+                // messages
+                self.addMessages(config, doc);
+                callback(null, true);
             });
         });
     },
@@ -189,7 +189,9 @@ module.exports = {
                 return;
             }
             // if we already have a patient id then return
-            if (doc.patient_id) return;
+            if (doc.patient_id) {
+                return;
+            }
             self.setId({db: db, doc: doc}, cb);
         },
         "add_expected_date": function(db, doc, cb) {
@@ -213,8 +215,7 @@ module.exports = {
             cb();
         },
         'assign_schedule': function(db, doc, cb) {
-            var self = module.exports,
-                args = Array.prototype.slice.call(arguments);
+            var args = Array.prototype.slice.call(arguments);
             if (args.length < 4) {
                 cb('Please specify schedule name in settings.');
             }
@@ -241,7 +242,7 @@ module.exports = {
             now = moment(date.getDate()),
             extra = {next_msg: schedules.getNextTimes(doc, now)};
         if (config.messages) {
-            _.each(config.messages, function(msg, idx) {
+            _.each(config.messages, function(msg) {
                 messages.addMessage({
                     doc: doc,
                     phone: messages.getRecipientPhone(doc, msg.recipient),

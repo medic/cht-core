@@ -110,7 +110,7 @@ exports['runReminder decorates options with moment if found'] = function(test) {
     matchReminder = sinon.stub(reminders, 'matchReminder').callsArgWith(1, null, now);
     sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(1, null);
 
-    reminders.runReminder(options, function(err) {
+    reminders.runReminder(options, function() {
         var moment = sendReminders.getCall(0).args[0].moment;
 
         test.ok(moment);
@@ -270,7 +270,7 @@ exports['sendReminders calls sendReminder for each clinic'] = function(test) {
     getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(1, null, clinics);
     sendReminder = sinon.stub(reminders, 'sendReminder').callsArgWithAsync(1, null);
 
-    reminders.sendReminders({}, function(err) {
+    reminders.sendReminders({}, function() {
         test.equals(sendReminder.callCount, 2);
         test.done();
     });
@@ -301,7 +301,7 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
         },
         moment: now,
         db: db
-    }, function(err) {
+    }, function() {
         var clinic,
             message,
             task;

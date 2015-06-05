@@ -56,8 +56,7 @@ module.exports = {
     },
     onMatch: function(change, db, audit, callback) {
         logger.debug('calling onMatch in transition' + __filename);
-        var self = module.exports,
-            doc = change.doc,
+        var doc = change.doc,
             q = { include_docs: true, limit: 1 };
 
         if (doc.refid) { // use reference id to find clinic if defined

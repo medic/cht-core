@@ -6,7 +6,9 @@ var _ = require('underscore'),
 
 var restore = function(objs) {
     _.each(objs, function(obj) {
-        if (obj.restore) obj.restore();
+        if (obj.restore) {
+            obj.restore();
+        }
     });
 };
 
@@ -235,8 +237,6 @@ exports['handle missing condition reference gracefully'] = function(test) {
             reported_date: 1390427075750,
             s1_avail: 0
         }]);
-
-    var messageFn = sinon.spy(messages, 'addMessage');
 
     var doc = {
         form: 'STCK'

@@ -4,7 +4,6 @@ var _ = require('underscore'),
     messages = require('../lib/messages'),
     moment = require('moment'),
     validation = require('../lib/validation'),
-    logger = require('../lib/logger'),
     utils = require('../lib/utils'),
     date = require('../date');
 
@@ -37,8 +36,7 @@ module.exports = {
         return config.get('patient_reports') || [];
     },
     silenceRegistrations: function(options, callback) {
-        var doc = options.doc,
-            report = options.report,
+        var report = options.report,
             registrations = options.registrations;
 
         if (report.silence_type) {

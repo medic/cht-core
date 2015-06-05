@@ -1,5 +1,4 @@
-var underscore = require('underscore'),
-    moment = require('moment'),
+var moment = require('moment'),
     validation = require('../../lib/validation'),
     utils = require('../../lib/utils'),
     db = require('../../db'),

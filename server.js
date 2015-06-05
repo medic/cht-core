@@ -38,7 +38,7 @@ db.request({ db: 'medic', doc: '_design/kujua-sentinel' }, function(err, doc) {
 
     if (err) {
         if (err.error === 'not_found') {
-            db.medic.insert(base, '_design/kujua-sentinel', function(err, ok) {
+            db.medic.insert(base, '_design/kujua-sentinel', function(err) {
                 completeSetup(err, base);
             });
         } else {
@@ -56,7 +56,7 @@ db.request({ db: 'medic', doc: '_design/kujua-sentinel' }, function(err, doc) {
             completeSetup(null, doc);
         } else {
             _.extend(doc, base);
-            db.medic.insert(doc, function(err, ok) {
+            db.medic.insert(doc, function(err) {
                 completeSetup(err, doc);
             });
         }

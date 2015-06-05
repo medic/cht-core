@@ -1,19 +1,19 @@
 var _ = require('underscore'),
     transition = require('../../transitions/registration'),
     sinon = require('sinon'),
-    moment = require('moment'),
     utils = require('../../lib/utils');
 
-
-
 function getMessage(doc, idx) {
-    if (!doc || !doc.tasks) return;
-    if (idx) {
-        if (!doc.tasks[idx]) return;
-        return _.first(doc.tasks[idx].messages);
-    } else {
-        return _.first(_.first(doc.tasks).messages);
+    if (!doc || !doc.tasks) {
+        return;
     }
+    if (idx) {
+        if (!doc.tasks[idx]) {
+            return;
+        }
+        return _.first(doc.tasks[idx].messages);
+    }
+    return _.first(_.first(doc.tasks).messages);
 }
 
 exports.setUp = function(callback) {

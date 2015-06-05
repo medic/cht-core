@@ -2,14 +2,15 @@ var async = require('async'),
     config = require('../config'),
     request = require('request'),
     utils = require('../lib/utils'),
-    logger = require('../lib/logger'),
     moment = require('moment');
 
 module.exports = {
     filter: function(doc) {
         function hasPending(doc) {
             var ret = false;
-            if (!doc.tasks) return ret;
+            if (!doc.tasks) {
+                return ret;
+            }
             doc.tasks.forEach(function(task) {
                 if (task.state === 'pending') {
                     ret = true;
@@ -17,7 +18,7 @@ module.exports = {
             });
             return ret;
         }
-        function hasConfig(doc) {
+        function hasConfig() {
             var twilioSid = config.get('twilio_sid'),
                 twilioToken = config.get('twilio_token');
             return twilioSid && twilioToken;
@@ -25,13 +26,11 @@ module.exports = {
         return Boolean(
             doc &&
             hasPending(doc) &&
-            hasConfig(doc)
+            hasConfig()
         );
     },
     onMatch: function(change, db, audit, callback) {
         var doc = change.doc,
-            original = JSON.stringify(doc),
-            fromNumber = config.get('twilio_number') || '+15037664982',
             twilioSid = config.get('twilio_sid'),
             twilioToken = config.get('twilio_token'),
             auth = twilioSid && twilioToken ? 'Basic ' + new Buffer(twilioSid + ':' + twilioToken).toString('base64') : false;

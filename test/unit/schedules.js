@@ -1,5 +1,4 @@
 var _ = require('underscore'),
-    sinon = require('sinon'),
     moment = require('moment'),
     schedules = require('../../lib/schedules');
 

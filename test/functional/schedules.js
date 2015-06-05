@@ -16,23 +16,29 @@ var _ = require('underscore'),
     };
 
 function getMessage(doc, idx) {
-    if (!doc || !doc.tasks) return;
-    if (idx) {
-        if (!doc.tasks[idx]) return;
-        return _.first(doc.tasks[idx].messages);
-    } else {
-        return _.first(_.first(doc.tasks).messages);
+    if (!doc || !doc.tasks) {
+        return;
     }
+    if (idx) {
+        if (!doc.tasks[idx]) {
+            return;
+        }
+        return _.first(doc.tasks[idx].messages);
+    }
+    return _.first(_.first(doc.tasks).messages);
 }
 
 function getScheduledMessage(doc, idx) {
-    if (!doc || !doc.scheduled_tasks) return;
-    if (idx) {
-        if (!doc.scheduled_tasks[idx]) return;
-        return _.first(doc.scheduled_tasks[idx].messages);
-    } else {
-        return _.first(_.first(doc.scheduled_tasks).messages);
+    if (!doc || !doc.scheduled_tasks) {
+        return;
     }
+    if (idx) {
+        if (!doc.scheduled_tasks[idx]) {
+            return;
+        }
+        return _.first(doc.scheduled_tasks[idx].messages);
+    }
+    return _.first(_.first(doc.scheduled_tasks).messages);
 }
 
 exports.setUp = function(callback) {

@@ -5,7 +5,9 @@ var _ = require('underscore'),
 
 var restore = function(objs) {
     _.each(objs, function(obj) {
-        if (obj.restore) obj.restore();
+        if (obj.restore) {
+            obj.restore();
+        }
     });
 };
 

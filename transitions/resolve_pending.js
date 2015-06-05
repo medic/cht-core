@@ -6,8 +6,7 @@
  * It is disabled by default in the default configuration.
  */
 var _ = require('underscore'),
-    utils = require('../lib/utils'),
-    logger = require('../lib/logger');
+    utils = require('../lib/utils');
 
 var getPendingTasks = function(tasks) {
     var ret = [];
@@ -47,9 +46,7 @@ var setStateOnTasks = function(tasks, state) {
 };
 
 var onMatch = function(change, db, audit, callback) {
-    var doc = change.doc,
-        updated = setStateOnTasks(all_pending);
-    callback(null, updated);
+    callback(null, setStateOnTasks(all_pending));
 };
 
 var all_pending;

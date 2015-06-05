@@ -1,13 +1,14 @@
 var _ = require('underscore'),
     sinon = require('sinon'),
     config = require('../../config'),
-    utils = require('../../lib/utils'),
     messages = require('../../lib/messages'),
     transition = require('../../transitions/default_responses');
 
 var restore = function(objs) {
     _.each(objs, function(obj) {
-        if (obj.restore) obj.restore();
+        if (obj.restore) {
+            obj.restore();
+        }
     });
 };
 

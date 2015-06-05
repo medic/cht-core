@@ -5,18 +5,18 @@ var _ = require('underscore'),
     utils = require('../../lib/utils');
 
 exports.tearDown = function(callback) {
-    if (transition.getAcceptedReports.restore)
+    if (transition.getAcceptedReports.restore) {
         transition.getAcceptedReports.restore();
-
-    if (transition.silenceReminders.restore)
+    }
+    if (transition.silenceReminders.restore) {
         transition.silenceReminders.restore();
-
-    if (transition.matchRegistrations.restore)
+    }
+    if (transition.matchRegistrations.restore) {
         transition.matchRegistrations.restore();
-
-    if (utils.getRegistrations.restore)
+    }
+    if (utils.getRegistrations.restore) {
         utils.getRegistrations.restore();
-
+    }
     callback();
 };
 
@@ -95,7 +95,7 @@ exports['matchRegistrations with no registrations adds error msg and response'] 
                 recipient: 'reporting_unit'
             }]
         }
-    }, function(err, complete) {
+    }, function() {
         test.ok(doc.errors);
         test.equals(doc.errors[0].message, 'not found x');
         test.ok(doc.tasks);
@@ -137,7 +137,7 @@ exports['matchRegistrations with registrations adds reply'] = function(test) {
                 recipient: 'reporting_unit'
             }]
         }
-    }, function(err, complete) {
+    }, function() {
         test.ok(doc.tasks);
         test.equals(
             _.first(_.first(doc.tasks).messages).message,

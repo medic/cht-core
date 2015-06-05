@@ -1,8 +1,7 @@
 var sinon = require('sinon'),
     fakedb = require('../fake-db'),
     fakeaudit = require('../fake-audit'),
-    transition = require('../../transitions/update_sent_by'),
-    phone = '+34567890123';
+    transition = require('../../transitions/update_sent_by');
 
 exports.setUp = function(callback) {
     process.env.TEST_ENV = true;

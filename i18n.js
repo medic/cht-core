@@ -1,5 +1,4 @@
-var async = require('async'),
-    config = require('./config'),
+var config = require('./config'),
     template = require('./lib/template'),
     _ = require('underscore'),
     values = {};

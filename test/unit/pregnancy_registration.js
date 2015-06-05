@@ -2,11 +2,12 @@ var _ = require('underscore'),
     transition = require('../../transitions/registration'),
     sinon = require('sinon'),
     moment = require('moment'),
-    utils = require('../../lib/utils'),
-    config;
+    utils = require('../../lib/utils');
 
 function getMessage(doc) {
-    if (!doc || !doc.tasks) return;
+    if (!doc || !doc.tasks) {
+        return;
+    }
     return _.first(_.first(doc.tasks).messages).message;
 }
 
@@ -98,7 +99,9 @@ exports.tearDown = function(callback) {
         transition.getConfig,
         utils.getForm
     ], function(o) {
-        if (o.restore) o.restore();
+        if (o.restore) {
+            o.restore();
+        }
     });
     callback();
 };

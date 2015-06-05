@@ -1,5 +1,4 @@
 var _ = require('underscore'),
-    sinon = require('sinon'),
     transition = require('../../transitions/resolve_pending');
 
 exports.tearDown = function(callback) {

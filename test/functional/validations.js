@@ -1,7 +1,5 @@
-var _ = require('underscore'),
-    sinon = require('sinon'),
-    transition = require('../../transitions/accept_patient_reports'),
-    utils = require('../../lib/utils');
+var sinon = require('sinon'),
+    transition = require('../../transitions/accept_patient_reports');
 
 /*
  * Eventually transitions/registration.js and accept_patient_reports.js will
@@ -9,8 +7,9 @@ var _ = require('underscore'),
  * */
 
 exports.tearDown = function(callback) {
-    if (transition.getAcceptedReports.restore)
+    if (transition.getAcceptedReports.restore) {
         transition.getAcceptedReports.restore();
+    }
     callback();
 };
 

@@ -11,8 +11,6 @@ var _ = require('underscore'),
  *
  */
 var handleMatch = function(change, db, audit, callback) {
-    var self = module.exports;
-
     new_doc = change.doc;
 
     getDuplicates(db, function(err, rows) {
@@ -68,8 +66,7 @@ var getDuplicates = function(db, callback) {
     var doc = new_doc,
         q = { include_docs: true },
         view,
-        clinic_id = utils.getClinicID(doc),
-        self = module.exports;
+        clinic_id = utils.getClinicID(doc);
 
     if (doc.week || doc.week_number) {
         q.startkey = [doc.form, doc.year, doc.week || doc.week_number, clinic_id];

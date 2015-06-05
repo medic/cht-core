@@ -1,10 +1,6 @@
 var async = require('async'),
-    moment = require('moment'),
-    config = require('../config'),
     i18n = require('../i18n'),
-    date = require('../date'),
     utils = require('../lib/utils'),
-    logger = require('../lib/logger'),
     template = require('../lib/template');
 
 var clinicContactName,
@@ -35,8 +31,9 @@ var checkDups = function(callback) {
         " facility staff will call you soon to confirm the validity of the" +
         " forms.";
 
-    if (new_doc.anc_pnc === 'PNC')
+    if (new_doc.anc_pnc === 'PNC') {
         msg = msg.replace(/ANC/g, 'PNC');
+    }
 
     var dups = function(row) {
         var keys = [
@@ -49,12 +46,14 @@ var checkDups = function(callback) {
            "days_since_birth",
            "vitamins",
            "weight"
-       ];
-       for (var i in keys) {
-           var k = keys[i];
-           if (row.doc[k] !== new_doc[k]) return false;
-       }
-       return true;
+        ];
+        for (var i in keys) {
+            var k = keys[i];
+            if (row.doc[k] !== new_doc[k]) {
+                return false;
+            }
+        }
+        return true;
     };
     var opts = {
         doc: new_doc,
@@ -64,7 +63,9 @@ var checkDups = function(callback) {
         filter: dups
     };
     utils.checkOHWDuplicates(opts, function(err) {
-        if (err) return callback(msg);
+        if (err) {
+            return callback(msg);
+        }
         return callback();
     });
 };
@@ -75,7 +76,9 @@ var validate = function(callback) {
         validations = [checkRegistration, checkDups];
 
     async.series(validations, function(err) {
-        if (!err) return callback();
+        if (!err) {
+            return callback();
+        }
         utils.addMessage(doc, {
             phone: clinicPhone,
             message: i18n(err, {
@@ -137,7 +140,7 @@ var processPNC = function() {
             " birth weight. Please refer to health facility immediately.";
     }
 
-    var changed = utils.obsoleteScheduledMessages(
+    utils.obsoleteScheduledMessages(
         registration, 'counseling_reminder', new_doc.reported_date
     );
 

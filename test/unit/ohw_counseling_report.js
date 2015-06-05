@@ -5,7 +5,6 @@ var _ = require('underscore'),
     fakedb = require('../fake-db'),
     fakeaudit = require('../fake-audit'),
     utils = require('../../lib/utils'),
-    date = require('../../date'),
     registration;
 
 exports.setUp = function(callback) {
@@ -135,7 +134,7 @@ exports['ANC acknowledgement'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, fakeaudit, function(err, complete) {
+    }, fakedb, fakeaudit, function() {
         test.ok(doc.tasks);
         test.equals(doc.tasks.length, 1);
         test.same(
@@ -154,7 +153,7 @@ exports['ANC report right now clears group 1'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, fakeaudit, function(err, complete) {
+    }, fakedb, fakeaudit, function() {
         var st = registration.scheduled_tasks;
         test.ok(st);
         test.equals(st.length, 12);
@@ -177,13 +176,14 @@ exports['ANC report right now clears group 1'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, fakeaudit, function(err, complete) {
+    }, fakedb, fakeaudit, function() {
         var st = registration.scheduled_tasks;
         test.ok(st);
         test.equals(st.length, 12);
         test.ok(_.all(registration.scheduled_tasks, function(task) {
-            if (task.type === 'anc_visit' && task.group === 1)
+            if (task.type === 'anc_visit' && task.group === 1) {
                 return task.state === 'cleared';
+            }
             return task.state !== 'cleared';
         }));
         test.done();
@@ -199,13 +199,14 @@ exports['ANC report in 14 days clears group 1 and 2'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, fakeaudit, function(err, complete) {
+    }, fakedb, fakeaudit, function() {
         var st = registration.scheduled_tasks;
         test.ok(st);
         test.equals(st.length, 12);
         test.ok(_.all(registration.scheduled_tasks, function(task) {
-            if (task.type === 'anc_visit' && [1,2].indexOf(task.group) !== -1)
+            if (task.type === 'anc_visit' && [1,2].indexOf(task.group) !== -1) {
                 return task.state === 'cleared';
+            }
             return task.state !== 'cleared';
         }));
         test.done();
@@ -229,7 +230,7 @@ exports['PNC normal acknowledgement'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, fakeaudit, function(err, complete) {
+    }, fakedb, fakeaudit, function() {
         test.ok(doc.tasks);
         test.equals(doc.tasks.length, 1);
         test.same(
@@ -249,7 +250,7 @@ exports['PNC report now clears group 1'] = function(test) {
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, fakeaudit, function(err, complete) {
+    }, fakedb, fakeaudit, function() {
         var st = registration.scheduled_tasks;
         test.equal(doc.tasks.length, 1);
         test.ok(registration);
@@ -286,7 +287,7 @@ exports['PNC report in 36 days clears all counseling reminders'] = function(test
     };
     transition.onMatch({
         doc: doc
-    }, fakedb, fakeaudit, function(err, complete) {
+    }, fakedb, fakeaudit, function() {
         var st = registration.scheduled_tasks;
         test.equal(doc.tasks.length, 1);
         test.ok(registration);

@@ -1,7 +1,6 @@
 var async = require('async'),
     template = require('../lib/template'),
     utils = require('../lib/utils'),
-    logger = require('../lib/logger'),
     i18n = require('../i18n'),
     clinicContactName,
     registration,
@@ -72,7 +71,9 @@ var validate = function(callback) {
         validations = [checkRegistration];
 
     async.series(validations, function(err) {
-        if (!err) return callback();
+        if (!err) {
+            return callback();
+        }
         utils.addMessage(doc, {
             phone: clinicPhone,
             message: i18n(err, {

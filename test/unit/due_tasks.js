@@ -1,7 +1,6 @@
-var _ = require('underscore'),
-  sinon = require('sinon'),
-  moment = require('moment'),
-  schedule = require('../../schedule/due_tasks');
+var sinon = require('sinon'),
+    moment = require('moment'),
+    schedule = require('../../schedule/due_tasks');
 
 exports['due_tasks handles view returning no rows'] = function(test) {
   test.expect(3);
@@ -147,21 +146,8 @@ exports['set all due scheduled tasks to pending and handles nonrepeated rows'] =
   test.expect(9);
 
   var due = moment().toISOString();
-  var notDue = moment().add('days', 7).toISOString();
   var id1 = 'xyz';
   var id2 = 'abc';
-  var doc = {
-    scheduled_tasks: [
-      {
-        due: due,
-        state: 'scheduled'
-      },
-      {
-        due: notDue,
-        state: 'scheduled'
-      }
-    ]
-  };
 
   var db = {
     view: function() {}

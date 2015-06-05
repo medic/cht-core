@@ -5,7 +5,6 @@ var _ = require('underscore'),
     fakedb = require('../fake-db'),
     fakeaudit = require('../fake-audit'),
     utils = require('../../lib/utils'),
-    date = require('../../date'),
     now;
 
 exports.setUp = function(callback) {
@@ -57,7 +56,7 @@ exports['mutes messages'] = function(test) {
     sinon.stub(utils, 'getOHWRegistration').callsArgWith(1, null, found);
     transition.onMatch({
         doc: doc
-    }, fakedb, fakeaudit, function(err, complete) {
+    }, fakedb, fakeaudit, function() {
         var message = _.first(_.first(doc.tasks).messages).message;
 
         test.ok(message.indexOf('deactivated') >= 0);
@@ -99,7 +98,7 @@ exports['unmutes messages; discards old ones'] = function(test) {
 
     transition.onMatch({
         doc: doc
-    }, fakedb, fakeaudit, function(err, complete) {
+    }, fakedb, fakeaudit, function() {
         var message = _.first(_.first(doc.tasks).messages).message;
 
         test.ok(message.indexOf('reactivated') >= 0);

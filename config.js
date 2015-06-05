@@ -1,5 +1,4 @@
 var _ = require('underscore'),
-    async = require('async'),
     follow = require('follow'),
     config = require('./defaults'),
     logger = require('./lib/logger');
@@ -30,7 +29,7 @@ function initFeed(callback) {
         since: 'now'
     });
 
-    feed.filter = function(doc, req) {
+    feed.filter = function(doc) {
         return doc._id === '_design/medic';
     };
 
@@ -63,7 +62,7 @@ function initConfig(data, callback) {
         config.schedule_evening_hours,
         config.schedule_evening_minutes
     );
-    initFeed(function(err) {
+    initFeed(function() {
         initInfo(callback);
     });
 }

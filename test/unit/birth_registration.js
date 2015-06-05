@@ -1,14 +1,7 @@
-var _ = require('underscore'),
-    transition = require('../../transitions/registration'),
+var transition = require('../../transitions/registration'),
     sinon = require('sinon'),
     moment = require('moment'),
-    utils = require('../../lib/utils'),
-    config;
-
-function getMessage(doc) {
-    if (!doc || !doc.tasks) return;
-    return _.first(_.first(doc.tasks).messages).message;
-}
+    utils = require('../../lib/utils');
 
 exports.setUp = function(callback) {
     sinon.stub(transition, 'getConfig').returns([{
@@ -50,12 +43,12 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-    if (utils.getRegistrations.restore)
+    if (utils.getRegistrations.restore) {
         utils.getRegistrations.restore();
-
-    if (transition.getConfig.restore)
+    }
+    if (transition.getConfig.restore) {
         transition.getConfig.restore();
-
+    }
     callback();
 };
 

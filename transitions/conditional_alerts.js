@@ -2,7 +2,6 @@ var config = require('../config'),
     _ = require('underscore'),
     messages = require('../lib/messages'),
     utils = require('../lib/utils'),
-    logger = require('../lib/logger'),
     async = require('async'),
     vm = require('vm');
 
@@ -28,7 +27,7 @@ module.exports = {
     },
     _evaluateCondition: function(doc, alert, callback) {
         var context = { doc: doc };
-        if (alert.condition.indexOf(alert.form) == -1) {
+        if (alert.condition.indexOf(alert.form) === -1) {
             module.exports._runCondition(alert.condition, context, callback);
         } else {
             utils.getRecentForm({

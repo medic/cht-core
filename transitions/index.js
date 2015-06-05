@@ -1,9 +1,6 @@
 var _ = require('underscore'),
     follow = require('follow'),
     async = require('async'),
-    path = require('path'),
-    fs = require('fs'),
-    date = require('../date'),
     utils = require('../lib/utils'),
     logger = require('../lib/logger'),
     config = require('../config'),
@@ -245,7 +242,7 @@ var attach = function() {
         since: config.last_valid_seq || 'now'
     });
 
-    feed.filter = function(doc, req) {
+    feed.filter = function(doc) {
         return match_types.indexOf(doc.type) >= 0;
     };
 
@@ -334,7 +331,7 @@ var attach = function() {
             },
 
             /* Completion handler */
-            function (e) {
+            function () {
                 logger.info(
                     'backlog: processing complete, %d failures', failures
                 );
@@ -348,8 +345,7 @@ var hasTransitions = function(doc) {
 };
 
 var hasTransitionErrors = function(doc) {
-    var transitions = doc.transitions || {},
-        keys = Object.keys(transitions);
+    var transitions = doc.transitions || {};
     for (var key in transitions) {
         if (!transitions[key].ok) {
             return true;

@@ -66,9 +66,6 @@ exports['addMessage supports template variables on doc'] = function(test) {
         reported_date: "2050-03-13T13:06:22.002Z",
         governor: "Schwarzenegger"
     };
-    var msg = {
-        due: moment().toISOString()
-    };
     messages.addMessage({
         doc: doc,
         phone: "+13125551212",

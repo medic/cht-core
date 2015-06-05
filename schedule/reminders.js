@@ -21,7 +21,9 @@ function getSchedule(config) {
     // fetch a schedule based on the configuration, parsing it as a "cron"
     // or "text" statement see:
     // http://bunkat.github.io/later/parsers.html
-    if (!config) return;
+    if (!config) {
+        return;
+    }
     if (config.text_expression) {
         // text expression takes precedence over cron
         return later.schedule(later.parse.text(config.text_expression));
@@ -40,7 +42,9 @@ module.exports = {
             reminders = config.get('reminders') || [];
 
         async.eachSeries(reminders, function(reminder, callback) {
-            if (!isConfigValid(reminder)) return callback();
+            if (!isConfigValid(reminder)) {
+                return callback();
+            }
             module.exports.runReminder({
                 db: db,
                 reminder: reminder

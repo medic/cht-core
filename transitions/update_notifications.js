@@ -1,9 +1,7 @@
 var async = require('async'),
     _ = require('underscore'),
-    mustache = require('mustache'),
     config = require('../config'),
     utils = require('../lib/utils'),
-    logger = require('../lib/logger'),
     messages = require('../lib/messages'),
     validation = require('../lib/validation');
 

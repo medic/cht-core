@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    transitions,
-    utils = require('../../lib/utils');
+    transitions;
 
 exports.setUp = function(callback) {
     process.env.TEST_ENV = true;
@@ -18,13 +17,8 @@ exports['save not called if transition results are null'] = function(test) {
     var doc = {
         _rev: '1'
     };
-    var db = {
-        get: function(id, callback) {
-            callback(null, latest);
-        }
-    };
     var audit = {
-        saveDoc: function(doc, callback) {
+        saveDoc: function() {
             test.fail();
         }
     };
@@ -42,7 +36,7 @@ exports['save is called if transition results have changes'] = function(test) {
         _rev: '1'
     };
     var audit = {
-        saveDoc: function(doc, callback) {
+        saveDoc: function(doc) {
             test.ok(doc._rev);
         }
     };
