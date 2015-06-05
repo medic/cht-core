@@ -39,7 +39,7 @@ var _ = require('underscore');
 
       var wrap = function(args, fn) {
         var options = args[args.length - 1] = args[args.length - 1] || {};
-        if (options.targetScope === "root") {
+        if (options.targetScope === 'root') {
           return fn.apply(this, args);
         }
         var canceller = $q.defer();

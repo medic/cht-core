@@ -43,8 +43,8 @@ describe('GenerateSearchQuery service', function() {
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
-          {reported_date:{"$from":"2013-02-08","$to":"2013-06-13"}},
-          {type:"report"}
+          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+          {type:'report'}
         ]}
       );
     });
@@ -73,9 +73,9 @@ describe('GenerateSearchQuery service', function() {
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
-          {reported_date:{"$from":"2013-02-08","$to":"2013-06-13"}},
-          {type:"report"},
-          {form:["A","B","C"]}
+          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+          {type:'report'},
+          {form:['A','B','C']}
         ]}
       );
     });
@@ -103,8 +103,8 @@ describe('GenerateSearchQuery service', function() {
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
-          {reported_date:{"$from":"2013-02-08","$to":"2013-06-13"}},
-          {type:"report"}
+          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+          {type:'report'}
         ]}
       );
     });
@@ -124,8 +124,8 @@ describe('GenerateSearchQuery service', function() {
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
-          {reported_date:{"$from":"2013-02-08","$to":"2013-06-13"}},
-          {type:"report"},
+          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+          {type:'report'},
           {$operator: 'not', $operands: { errors: 0 }}
         ]}
       );
@@ -146,8 +146,8 @@ describe('GenerateSearchQuery service', function() {
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
-          {reported_date:{"$from":"2013-02-08","$to":"2013-06-13"}},
-          {type:"report"},
+          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+          {type:'report'},
           {errors:0}
         ]}
       );
@@ -168,8 +168,8 @@ describe('GenerateSearchQuery service', function() {
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
-          {reported_date:{"$from":"2013-02-08","$to":"2013-06-13"}},
-          {type:"report"},
+          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+          {type:'report'},
           {verified:false}
         ]}
       );
@@ -190,8 +190,8 @@ describe('GenerateSearchQuery service', function() {
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
-          {reported_date:{"$from":"2013-02-08","$to":"2013-06-13"}},
-          {type:"report"},
+          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+          {type:'report'},
           {verified:true}
         ]}
       );
@@ -218,9 +218,9 @@ describe('GenerateSearchQuery service', function() {
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
-          {reported_date:{"$from":"2013-02-08","$to":"2013-06-13"}},
-          {type:"report"},
-          {clinic:["a","b","c"]}
+          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+          {type:'report'},
+          {clinic:['a','b','c']}
         ]}
       );
     });
@@ -244,8 +244,8 @@ describe('GenerateSearchQuery service', function() {
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
-          {reported_date:{"$from":"2013-02-08","$to":"2013-06-13"}},
-          {type:"report"}
+          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+          {type:'report'}
         ]}
       );
     });
@@ -266,8 +266,8 @@ describe('GenerateSearchQuery service', function() {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
           'pref*',
-          {reported_date:{"$from":"2013-02-08","$to":"2013-06-13"}},
-          {type:"report"}
+          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+          {type:'report'}
         ]}
       );
     });
@@ -288,8 +288,8 @@ describe('GenerateSearchQuery service', function() {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
           'patient_id:12345',
-          {reported_date:{"$from":"2013-02-08","$to":"2013-06-13"}},
-          {type:"report"}
+          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+          {type:'report'}
         ]}
       );
     });
@@ -312,9 +312,9 @@ describe('GenerateSearchQuery service', function() {
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
-          {reported_date:{"$from":"2013-02-08","$to":"2013-06-13"}},
-          {type:"report"},
-          {uuid:["a","b"]}
+          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+          {type:'report'},
+          {uuid:['a','b']}
         ]}
       );
     });
@@ -337,7 +337,7 @@ describe('GenerateSearchQuery service', function() {
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
-          {uuid:["a"]}
+          {uuid:['a']}
         ]}
       );
     });
@@ -371,7 +371,7 @@ describe('GenerateSearchQuery service', function() {
         {$operands:[
           'newp*',
           {type:['clinic','health_center']},
-          {clinic:["c","a","b"]}
+          {clinic:['c','a','b']}
         ]}
       );
     });

@@ -199,78 +199,78 @@ describe('ImportProperties service', function() {
 
   });
   var exampleSettings = {
-    "registrations": [
+    registrations: [
       {
-        "form": "P",
-        "fields": [
+        form: 'P',
+        fields: [
           {
-            "field_name": "",
-            "title": ""
+            field_name: '',
+            title: ''
           }
         ],
-        "help": "",
-        "events": [
+        help: '',
+        events: [
           {
-            "name": "on_create",
-            "trigger": "add_patient_id",
-            "params": "",
-            "bool_expr": ""
+            name: 'on_create',
+            trigger: 'add_patient_id',
+            params: '',
+            bool_expr: ''
           },
           {
-            "name": "on_create",
-            "trigger": "add_expected_date",
-            "params": "lmp_date",
-            "bool_expr": "doc.last_menstrual_period"
+            name: 'on_create',
+            trigger: 'add_expected_date',
+            params: 'lmp_date',
+            bool_expr: 'doc.last_menstrual_period'
           },
           {
-            "name": "on_create",
-            "trigger": "assign_schedule",
-            "params": "ANC Reminders LMP",
-            "bool_expr": "doc.last_menstrual_period"
+            name: 'on_create',
+            trigger: 'assign_schedule',
+            params: 'ANC Reminders LMP',
+            bool_expr: 'doc.last_menstrual_period'
           }
         ],
-        "validations": {
-          "join_responses": false,
-          "list": [
+        validations: {
+          join_responses: false,
+          list: [
             {
-              "property": "patient_name",
-              "rule": "lenMin(1) && lenMax(30)",
-              "message": [
+              property: 'patient_name',
+              rule: 'lenMin(1) && lenMax(30)',
+              message: [
                 {
-                  "content": "{{#patient_name}}The registration format is incorrect, ensure the message starts with P followed by space and the mother's name (maximum of 30 characters).{{/patient_name}}{{^patient_name}}The registration format is incorrect. ensure the message starts with P followed by space and the mother's name.{{/patient_name}}.",
-                  "locale": "en"
+                  content: '{{#patient_name}}The registration format is incorrect, ensure the message starts with P followed by space and the mother\'s name (maximum of 30 characters).{{/patient_name}}{{^patient_name}}The registration format is incorrect. ensure the message starts with P followed by space and the mother\'s name.{{/patient_name}}.',
+                  locale: 'en'
                 },
                 {
-                  "content": "{{#patient_name}} Ujumbe huu wa kusajili ANC si sahihi, tafadhali hakikisha umeanza na neno P ikifuatwa ikifuatiwa na nafasi na jina la mama (maximum of 30 characters).{{/patient_name}}{{^patient_name}} Ujumbe huu wa kusajili ANC si sahihi, tafadhali hakikisha umeanza na neno P ikifuatwa ikifuatiwa na nafasi na jina la mama{{/patient_name}}.",
-                  "locale": "sw"
+                  content: '{{#patient_name}} Ujumbe huu wa kusajili ANC si sahihi, tafadhali hakikisha umeanza na neno P ikifuatwa ikifuatiwa na nafasi na jina la mama (maximum of 30 characters).{{/patient_name}}{{^patient_name}} Ujumbe huu wa kusajili ANC si sahihi, tafadhali hakikisha umeanza na neno P ikifuatwa ikifuatiwa na nafasi na jina la mama{{/patient_name}}.',
+                  locale: 'sw'
                 }
               ]
             },
             {
-              "property": "last_menstrual_period",
-              "rule": "(integer && min(0) && max(42))",
-              "message": [
+              property: 'last_menstrual_period',
+              rule: '(integer && min(0) && max(42))',
+              message: [
                 {
-                  "content": "Ujumbe huu wa kusajili '{{patient_name}}' si sahihi, tafadhali hakikisha kuwa LMP ni number kati ya 0 na 42.",
-                  "locale": "sw"
+                  content: 'Ujumbe huu wa kusajili \'{{patient_name}}\' si sahihi, tafadhali hakikisha kuwa LMP ni number kati ya 0 na 42.',
+                  locale: 'sw'
                 }
               ]
             }
           ]
         },
-        "messages": [
+        messages: [
           {
-            "message": [
+            message: [
               {
-                "content": "Thank you for registering {{patient_name}}. Their pregnancy ID is {{patient_id}}, and EDD is {{#date}}{{expected_date}}{{/date}}",
-                "locale": "en"
+                content: 'Thank you for registering {{patient_name}}. Their pregnancy ID is {{patient_id}}, and EDD is {{#date}}{{expected_date}}{{/date}}',
+                locale: 'en'
               },
               {
-                "content": "Asante kwa kusajili {{patient_name}}.ID namba yake ya Uja uzito ni {{patient_id}}, na EDD yake ni {{#date}}{{expected_date}}{{/date}}",
-                "locale": "sw"
+                content: 'Asante kwa kusajili {{patient_name}}.ID namba yake ya Uja uzito ni {{patient_id}}, na EDD yake ni {{#date}}{{expected_date}}{{/date}}',
+                locale: 'sw'
               }
             ],
-            "recipient": "reporting_unit"
+            recipient: 'reporting_unit'
           }
         ]
       }
@@ -279,82 +279,82 @@ describe('ImportProperties service', function() {
 
 
   var expected = {
-    "registrations": [
+    registrations: [
       {
-        "form": "P",
-        "fields": [
+        form: 'P',
+        fields: [
           {
-            "field_name": "",
-            "title": ""
+            field_name: '',
+            title: ''
           }
         ],
-        "help": "",
-        "events": [
+        help: '',
+        events: [
           {
-            "name": "on_create",
-            "trigger": "add_patient_id",
-            "params": "",
-            "bool_expr": ""
+            name: 'on_create',
+            trigger: 'add_patient_id',
+            params: '',
+            bool_expr: ''
           },
           {
-            "name": "on_create",
-            "trigger": "add_expected_date",
-            "params": "lmp_date",
-            "bool_expr": "doc.last_menstrual_period"
+            name: 'on_create',
+            trigger: 'add_expected_date',
+            params: 'lmp_date',
+            bool_expr: 'doc.last_menstrual_period'
           },
           {
-            "name": "on_create",
-            "trigger": "assign_schedule",
-            "params": "ANC Reminders LMP",
-            "bool_expr": "doc.last_menstrual_period"
+            name: 'on_create',
+            trigger: 'assign_schedule',
+            params: 'ANC Reminders LMP',
+            bool_expr: 'doc.last_menstrual_period'
           }
         ],
-        "validations": {
-          "join_responses": false,
-          "list": [
+        validations: {
+          join_responses: false,
+          list: [
             {
-              "property": "patient_name",
-              "rule": "lenMin(1) && lenMax(30)",
-              "message": [
+              property: 'patient_name',
+              rule: 'lenMin(1) && lenMax(30)',
+              message: [
                 {
-                  "content": "VALIDATION 1",
-                  "locale": "en"
+                  content: 'VALIDATION 1',
+                  locale: 'en'
                 },
                 {
-                  "content": "{{#patient_name}} Ujumbe huu wa kusajili ANC si sahihi, tafadhali hakikisha umeanza na neno P ikifuatwa ikifuatiwa na nafasi na jina la mama (maximum of 30 characters).{{/patient_name}}{{^patient_name}} Ujumbe huu wa kusajili ANC si sahihi, tafadhali hakikisha umeanza na neno P ikifuatwa ikifuatiwa na nafasi na jina la mama{{/patient_name}}.",
-                  "locale": "sw"
+                  content: '{{#patient_name}} Ujumbe huu wa kusajili ANC si sahihi, tafadhali hakikisha umeanza na neno P ikifuatwa ikifuatiwa na nafasi na jina la mama (maximum of 30 characters).{{/patient_name}}{{^patient_name}} Ujumbe huu wa kusajili ANC si sahihi, tafadhali hakikisha umeanza na neno P ikifuatwa ikifuatiwa na nafasi na jina la mama{{/patient_name}}.',
+                  locale: 'sw'
                 }
               ]
             },
             {
-              "property": "last_menstrual_period",
-              "rule": "(integer && min(0) && max(42))",
-              "message": [
+              property: 'last_menstrual_period',
+              rule: '(integer && min(0) && max(42))',
+              message: [
                 {
-                  "content": "Ujumbe huu wa kusajili '{{patient_name}}' si sahihi, tafadhali hakikisha kuwa LMP ni number kati ya 0 na 42.",
-                  "locale": "sw"
+                  content: 'Ujumbe huu wa kusajili \'{{patient_name}}\' si sahihi, tafadhali hakikisha kuwa LMP ni number kati ya 0 na 42.',
+                  locale: 'sw'
                 },
                 {
-                  "content": "VALIDATION 2",
-                  "locale": "en"
+                  content: 'VALIDATION 2',
+                  locale: 'en'
                 }
               ]
             }
           ]
         },
-        "messages": [
+        messages: [
           {
-            "message": [
+            message: [
               {
-                "content": "MESSAGE 1",
-                "locale": "en"
+                content: 'MESSAGE 1',
+                locale: 'en'
               },
               {
-                "content": "Asante kwa kusajili {{patient_name}}.ID namba yake ya Uja uzito ni {{patient_id}}, na EDD yake ni {{#date}}{{expected_date}}{{/date}}",
-                "locale": "sw"
+                content: 'Asante kwa kusajili {{patient_name}}.ID namba yake ya Uja uzito ni {{patient_id}}, na EDD yake ni {{#date}}{{expected_date}}{{/date}}',
+                locale: 'sw'
               }
             ],
-            "recipient": "reporting_unit"
+            recipient: 'reporting_unit'
           }
         ]
       }

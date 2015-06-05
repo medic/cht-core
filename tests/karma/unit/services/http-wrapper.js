@@ -68,7 +68,7 @@ describe('HttpWrapper service', function() {
       .expect('GET', '/_users/abc')
       .respond(200, expected);
 
-    service.get('/_users/abc', { targetScope: "root" }).success(function(actual) {
+    service.get('/_users/abc', { targetScope: 'root' }).success(function(actual) {
       chai.expect(actual).to.deep.equal(expected);
       done();
     });

@@ -273,7 +273,7 @@ require('moment/locales');
         ReadMessages({
           user: UserCtxService().name,
           district: $scope.permissions.district,
-          targetScope: "messages"
+          targetScope: 'messages'
         }, function(err, data) {
           if (err) {
             return console.log(err);
