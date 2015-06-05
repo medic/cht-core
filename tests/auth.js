@@ -299,3 +299,83 @@ exports['checkUrl requests the given url and returns status'] = function(test) {
   });
 
 };
+
+exports['auth accepts multiple required roles'] = function(test) {
+  test.expect(6);
+
+  var district = '123';
+  var userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
+
+  var callbacks = { first: {}, second: {} };
+  var get = sinon.stub(http, 'get');
+  get.onFirstCall()
+    .returns({
+      on: function(e) {
+        test.equals(e, 'error');
+      }
+    })
+    .callsArgWith(1, {
+      on: function(eventType, callback) {
+        callbacks.first[eventType] = callback;
+      }
+    });
+  get.onSecondCall()
+    .returns({
+      on: function(e) {
+        test.equals(e, 'error');
+      }
+    })
+    .callsArgWith(1, {
+      on: function(eventType, callback) {
+        callbacks.second[eventType] = callback;
+      }
+    });
+
+  auth.check({ }, [ 'can_export_messages', 'can_export_contacts' ], district, function(err, ctx) {
+    test.equals(get.callCount, 2);
+    test.equals(err, null);
+    test.equals(ctx.user, 'steve');
+    test.equals(ctx.district, district);
+    test.done();
+  });
+
+  callbacks.first.data(JSON.stringify(userCtx));
+  callbacks.first.end();
+
+  callbacks.second.data(JSON.stringify({ facility_id: district }));
+  callbacks.second.end();
+
+};
+
+
+exports['auth checks all required roles'] = function(test) {
+  test.expect(4);
+
+  var district = '123';
+  var userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
+
+  var callbacks = { first: {}, second: {} };
+  var get = sinon.stub(http, 'get');
+  get.onFirstCall()
+    .returns({
+      on: function(e) {
+        test.equals(e, 'error');
+      }
+    })
+    .callsArgWith(1, {
+      on: function(eventType, callback) {
+        callbacks.first[eventType] = callback;
+      }
+    });
+
+  auth.check({ }, [ 'can_export_messages', 'can_export_server_logs' ], district, function(err) {
+    test.equals(get.callCount, 1);
+    test.equals(err.message, 'Insufficient privileges');
+    test.equals(err.code, 403);
+    test.done();
+  });
+
+  callbacks.first.data(JSON.stringify(userCtx));
+  callbacks.first.end();
+
+};
