@@ -91,14 +91,14 @@ exports['get returns monthly deliveries count'] = function(test) {
     rows: [
       {
         doc: {
-          patient_id: 1,
-          reported_date: moment().subtract(30, 'weeks')
+          reported_date: moment().subtract(30, 'weeks'),
+          fields: { patient_id: 1 }
         }
       },
       {
         doc: {
-          patient_id: 4,
-          reported_date: moment().subtract(16, 'weeks')
+          reported_date: moment().subtract(16, 'weeks'),
+          fields: { patient_id: 4 }
         }
       }
     ]

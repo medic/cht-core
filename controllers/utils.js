@@ -16,12 +16,6 @@ var formatDateRange = function(field, startDate, endDate) {
   return field + '<date>:[' + start + ' TO ' + end + ']';
 };
 
-var collectPatientIds = function(records) {
-  return _.map(records.rows, function(row) {
-    return row.doc.patient_id;
-  });
-};
-
 var getFormCode = function(key) {
   return config.get('anc_forms')[key];
 };
@@ -86,6 +80,18 @@ var chunk = function(items, size) {
   return chunks;
 };
 
+var uniquePerPatientId = function(rows) {
+  var ids = [];
+  return _.reject(rows, function(row) {
+    var id = row.doc.fields.patient_id;
+    if (_.contains(ids, id)) {
+      return true;
+    }
+    ids.push(id);
+    return false;
+  });
+};
+
 module.exports = {
 
   getFormCode: getFormCode,
@@ -130,7 +136,12 @@ module.exports = {
     if (options.district) {
       options.q += ' AND district:"' + options.district + '"';
     }
-    ftiWithPatientIds(options, callback);
+    ftiWithPatientIds(options, function(err, results) {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, uniquePerPatientId(results.rows));
+    });
   },
 
   getBirthPatientIds: function(options, callback) {
@@ -145,10 +156,13 @@ module.exports = {
         if (err) {
           return callback(err);
         }
-        callback(null, _.union(
-          collectPatientIds(deliveries),
-          collectPatientIds(registrations)
-        ));
+        var deliveryIds = _.map(deliveries, function(delivery) {
+          return delivery.doc.fields.patient_id;
+        });
+        var registrationsIds = _.map(registrations.rows, function(registration) {
+          return registration.doc.patient_id;
+        });
+        callback(null, _.union(deliveryIds, registrationsIds));
       });
     });
   },
@@ -165,8 +179,8 @@ module.exports = {
         return callback(err);
       }
       var undelivered = _.reject(objects, function(object) {
-        return _.some(deliveries.rows, function(delivery) {
-          return delivery.doc.patient_id === object.patient_id;
+        return _.some(deliveries, function(delivery) {
+          return delivery.doc.fields.patient_id === object.patient_id;
         });
       });
       callback(null, undelivered);
@@ -217,7 +231,7 @@ module.exports = {
         return callback(err);
       }
       var count = _.countBy(visits.rows, function(visit) {
-        return visit.doc.patient_id;
+        return visit.doc.fields.patient_id;
       });
       _.each(objects, function(object) {
         object.visits = count[object.patient_id] || 0;
@@ -233,7 +247,7 @@ module.exports = {
         return callback(err);
       }
       _.each(risks.rows, function(risk) {
-        var object = _.findWhere(objects, { patient_id: risk.doc.patient_id });
+        var object = _.findWhere(objects, { patient_id: risk.doc.fields.patient_id });
         if (object) {
           object.high_risk = true;
         }

@@ -56,8 +56,8 @@ exports['get returns empty if no registrations'] = function(test) {
   var fti = sinon.stub(db, 'fti');
   fti.onFirstCall().callsArgWith(2, null, {
     rows: [
-      { 
-        doc: { 
+      {
+        doc: {
           fields: {
             patient_id: 1
           },
@@ -65,9 +65,9 @@ exports['get returns empty if no registrations'] = function(test) {
             group: 1,
             due: moment().toISOString()
           } ]
-        } 
+        }
       },
-      { 
+      {
         doc: {
           fields: {
             patient_id: 2
@@ -76,7 +76,7 @@ exports['get returns empty if no registrations'] = function(test) {
             group: 1,
             due: moment().toISOString()
           } ]
-        } 
+        }
       }
     ]
   });
@@ -136,8 +136,8 @@ exports['get returns all high risk pregnancies if no deliveries'] = function(tes
   // visits
   fti.onCall(3).callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 1 } },
-      { doc: { patient_id: 1 } }
+      { doc: { fields: { patient_id: 1 } } },
+      { doc: { fields: { patient_id: 1 } } }
     ]
   });
 
@@ -209,13 +209,13 @@ exports['get returns all high risk pregnancies'] = function(test) {
   });
   fti.onCall(2).callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 4 } }
+      { doc: { fields: { patient_id: 4 } } }
     ]
   });
   fti.onCall(3).callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 1 } },
-      { doc: { patient_id: 1 } }
+      { doc: { fields: { patient_id: 1 } } },
+      { doc: { fields: { patient_id: 1 } } }
     ]
   });
   controller.get({}, function(err, results) {

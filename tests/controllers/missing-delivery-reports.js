@@ -50,30 +50,30 @@ exports['get returns zero if all registrations have delivered'] = function(test)
   var fti = sinon.stub(db, 'fti');
   fti.onFirstCall().callsArgWith(2, null, {
     rows: [
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 1,
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
           } ]
-        } 
+        }
       },
-      { 
+      {
         doc: { 
           patient_id: 2,
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
           } ]
-        } 
+        }
       }
     ]
   });
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 1 } },
-      { doc: { patient_id: 2 } }
+      { doc: { fields: { patient_id: 1 } } },
+      { doc: { fields: { patient_id: 2 } } }
     ]
   });
   controller.get({}, function(err, results) {
@@ -89,8 +89,8 @@ exports['get returns all registrations with missed delivery reports'] = function
   var today = moment();
   fti.onFirstCall().callsArgWith(2, null, {
     rows: [
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 1,
           fields: { patient_name: 'sarah' },
           form: 'R',
@@ -100,10 +100,10 @@ exports['get returns all registrations with missed delivery reports'] = function
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
           } ]
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 2,
           fields: { patient_name: 'sally' },
           form: 'P',
@@ -113,10 +113,10 @@ exports['get returns all registrations with missed delivery reports'] = function
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
           } ]
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 3,
           fields: { patient_name: 'sharon' },
           form: 'P',
@@ -126,19 +126,19 @@ exports['get returns all registrations with missed delivery reports'] = function
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
           } ]
-        } 
+        }
       }
     ]
   });
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 2 } }
+      { doc: { fields: { patient_id: 2 } } }
     ]
   });
   fti.onThirdCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 2 } },
-      { doc: { patient_id: 1 } }
+      { doc: { fields: { patient_id: 2 } } },
+      { doc: { fields: { patient_id: 1 } } }
     ]
   });
   controller.get({}, function(err, results) {

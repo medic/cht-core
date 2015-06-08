@@ -52,7 +52,7 @@ var rejectVisits = function(appointments, callback) {
     }
     callback(null, _.reject(appointments, function(appointment) {
       return _.some(visits.rows, function(visit) {
-        return visit.doc.patient_id === appointment.patient_id;
+        return visit.doc.fields.patient_id === appointment.patient_id;
       });
     }));
   });

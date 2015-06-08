@@ -68,17 +68,22 @@ exports['get returns zero for all counts when no preganacies are complete'] = fu
     ]
   });
   var fti = sinon.stub(db, 'fti');
+
+  // registrations
   fti.onFirstCall().callsArgWith(2, null, {
     rows: [
       { doc: { patient_id: '3' } },
       { doc: { patient_id: '4' } }
     ]
   });
+
+  // deliveries
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: '5' } }
+      { doc: { fields: { patient_id: '5' } } }
     ]
   });
+
   controller.get({}, function(err, results) {
     test.same(results, [0, 0, 0, 0]);
     test.equals(getView.callCount, 1);
@@ -105,7 +110,7 @@ exports['get returns counts when complete preganacies have visits'] = function(t
   });
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: '2' } }
+      { doc: { fields: { patient_id: '2' } } }
     ]
   });
   controller.get({}, function(err, results) {

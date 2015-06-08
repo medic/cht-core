@@ -35,7 +35,7 @@ var getAppointmentDates = function(pregnancies, callback) {
     _.each(pregnancies, function(pregnancy) {
       var count = 0;
       _.each(visits.rows, function(visit) {
-        if (visit.doc.patient_id === pregnancy.patient_id) {
+        if (visit.doc.fields.patient_id === pregnancy.patient_id) {
           count++;
           var appointmentDate = moment(visit.doc.reported_date);
           if (!pregnancy.lastAppointmentDate || 

@@ -50,30 +50,30 @@ exports['get returns zero if all registrations have delivered'] = function(test)
   var fti = sinon.stub(db, 'fti');
   fti.onFirstCall().callsArgWith(2, null, {
     rows: [
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 1,
           scheduled_tasks: [ {
             group: 1,
             due: moment().toISOString()
           } ]
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 2,
           scheduled_tasks: [ {
             group: 1,
             due: moment().toISOString()
           } ]
-        } 
+        }
       }
     ]
   });
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 1 } },
-      { doc: { patient_id: 2 } }
+      { doc: { fields: { patient_id: 1 } } },
+      { doc: { fields: { patient_id: 2 } } }
     ]
   });
   controller.get({}, function(err, results) {
@@ -88,34 +88,34 @@ exports['get returns zero if all registrations have visits'] = function(test) {
   var fti = sinon.stub(db, 'fti');
   fti.onFirstCall().callsArgWith(2, null, {
     rows: [
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 1,
           scheduled_tasks: [ {
             group: 1,
             due: moment().toISOString()
           } ]
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 2,
           scheduled_tasks: [ {
             group: 1,
             due: moment().toISOString()
           } ]
-        } 
+        }
       }
     ]
   });
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 1 } }
+      { doc: { fields: { patient_id: 1 } } }
     ]
   });
   fti.onThirdCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 2 } }
+      { doc: { fields: { patient_id: 2 } } }
     ]
   });
   controller.get({}, function(err, results) {
@@ -168,14 +168,14 @@ exports['get ignores registrations with upcoming appointment reminders'] = funct
   var fti = sinon.stub(db, 'fti');
   fti.onFirstCall().callsArgWith(2, null, {
     rows: [
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 1,
           scheduled_tasks: []
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 2,
           scheduled_tasks: [ {
             group: 1,
@@ -184,16 +184,16 @@ exports['get ignores registrations with upcoming appointment reminders'] = funct
             group: 1,
             due: moment().toISOString()
           } ]
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 3,
           scheduled_tasks: [ {
             group: 1,
             due: moment().add(6, 'days').toISOString()
           } ]
-        } 
+        }
       }
     ]
   });
@@ -210,8 +210,8 @@ exports['get returns all registrations with upcoming appointments'] = function(t
   var today = moment();
   fti.onFirstCall().callsArgWith(2, null, {
     rows: [
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 1,
           fields: { patient_name: 'sarah' },
           form: 'R',
@@ -224,10 +224,10 @@ exports['get returns all registrations with upcoming appointments'] = function(t
             group: 2,
             due: moment().add(4, 'weeks').toISOString()
           } ]
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 2,
           fields: { patient_name: 'sally' },
           form: 'P',
@@ -237,18 +237,18 @@ exports['get returns all registrations with upcoming appointments'] = function(t
             group: 1,
             due: today.toISOString()
           } ]
-        } 
+        }
       }
     ]
   });
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 4 } }
+      { doc: { fields: { patient_id: 4 } } }
     ]
   });
   fti.onThirdCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 5 } }
+      { doc: { fields: { patient_id: 5 } } }
     ]
   });
   fti.onCall(3).callsArgWith(2, null, {
@@ -256,7 +256,7 @@ exports['get returns all registrations with upcoming appointments'] = function(t
   });
   fti.onCall(4).callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 2 } }
+      { doc: { fields: { patient_id: 2 } } }
     ]
   });
   controller.get({}, function(err, results) {

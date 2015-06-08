@@ -53,9 +53,9 @@ var getDeliveries = function(options, results, callback) {
     if (err) {
       return callback(err);
     }
-    _.each(deliveries.rows, function(delivery) {
+    _.each(deliveries, function(delivery) {
       var edd = moment(delivery.doc.reported_date).startOf('month');
-      results[delivery.doc.patient_id] = edd;
+      results[delivery.doc.fields.patient_id] = edd;
     });
     callback(null, results);
   });

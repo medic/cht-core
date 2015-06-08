@@ -72,8 +72,8 @@ exports['get returns zero if all registrations have delivered'] = function(test)
   });
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 1 } },
-      { doc: { patient_id: 2 } }
+      { doc: { fields: { patient_id: 1 } } },
+      { doc: { fields: { patient_id: 2 } } }
     ]
   });
   controller.get({}, function(err, results) {
@@ -87,7 +87,9 @@ exports['get returns all women with upcoming due dates'] = function(test) {
   test.expect(20);
   var fti = sinon.stub(db, 'fti');
   var today = moment();
-  fti.onFirstCall().callsArgWith(2, null, {
+
+  // get registrations
+  fti.onCall(0).callsArgWith(2, null, {
     rows: [
       { 
         doc: { 
@@ -109,29 +111,36 @@ exports['get returns all women with upcoming due dates'] = function(test) {
       }
     ]
   });
-  fti.onSecondCall().callsArgWith(2, null, {
+
+  // get deliveries
+  fti.onCall(1).callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 4 } }
+      { doc: { fields: { patient_id: 4 } } }
     ]
   });
-  fti.onThirdCall().callsArgWith(2, null, {
+
+  // get visits
+  fti.onCall(2).callsArgWith(2, null, {
     rows: [
       { doc: { 
-        patient_id: 1,
-        reported_date: today.clone().subtract(2, 'weeks').toISOString()
+        reported_date: today.clone().subtract(2, 'weeks').toISOString(),
+        fields: { patient_id: 1 }
       } },
       { doc: { 
-        patient_id: 1,
-        reported_date: today.clone().subtract(6, 'weeks').toISOString()
+        reported_date: today.clone().subtract(6, 'weeks').toISOString(),
+        fields: { patient_id: 1 }
       } }
     ]
   });
+
+  // get risk
   fti.onCall(3).callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 2 } },
-      { doc: { patient_id: 1 } }
+      { doc: { fields: { patient_id: 2 } } },
+      { doc: { fields: { patient_id: 1 } } }
     ]
   });
+
   controller.get({}, function(err, results) {
     test.equals(results.length, 2);
 

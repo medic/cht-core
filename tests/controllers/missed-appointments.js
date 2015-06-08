@@ -72,8 +72,8 @@ exports['get returns zero if all registrations have delivered'] = function(test)
   });
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 1 } },
-      { doc: { patient_id: 2 } }
+      { doc: { fields: { patient_id: 1 } } },
+      { doc: { fields: { patient_id: 2 } } }
     ]
   });
   controller.get({}, function(err, results) {
@@ -110,12 +110,12 @@ exports['get returns zero if all registrations have visits'] = function(test) {
   });
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 1 } }
+      { doc: { fields: { patient_id: 1 } } }
     ]
   });
   fti.onThirdCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 2 } }
+      { doc: { fields: { patient_id: 2 } } }
     ]
   });
   controller.get({}, function(err, results) {
@@ -167,7 +167,9 @@ exports['get returns all registrations with missed appointments'] = function(tes
   test.expect(18);
   var fti = sinon.stub(db, 'fti');
   var today = moment();
-  fti.onFirstCall().callsArgWith(2, null, {
+
+  // get registrations
+  fti.onCall(0).callsArgWith(2, null, {
     rows: [
       { 
         doc: { 
@@ -197,27 +199,35 @@ exports['get returns all registrations with missed appointments'] = function(tes
       }
     ]
   });
-  fti.onSecondCall().callsArgWith(2, null, {
+
+  // get deliveries
+  fti.onCall(1).callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 4 } }
+      { doc: { fields: { patient_id: 4 } } }
     ]
   });
-  fti.onThirdCall().callsArgWith(2, null, {
+
+  // get visits for rejection
+  fti.onCall(2).callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 5 } }
+      { doc: { fields: { patient_id: 5 } } }
     ]
   });
+
+  // get visits for count
   fti.onCall(3).callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 1 } },
-      { doc: { patient_id: 2 } }
+      { doc: { fields: { patient_id: 1 } } },
+      { doc: { fields: { patient_id: 2 } } }
     ]
   });
+
+  // get high risk
   fti.onCall(4).callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: 1 } },
-      { doc: { patient_id: 1 } },
-      { doc: { patient_id: 3 } }
+      { doc: { fields: { patient_id: 1 } } },
+      { doc: { fields: { patient_id: 1 } } },
+      { doc: { fields: { patient_id: 3 } } }
     ]
   });
   controller.get({}, function(err, results) {

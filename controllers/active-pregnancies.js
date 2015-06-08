@@ -18,7 +18,7 @@ module.exports = {
           return callback(err);
         }
         callback(null, {
-          count: patientIds.length - deliveries.total_rows
+          count: patientIds.length - deliveries.length
         });
       });
     });

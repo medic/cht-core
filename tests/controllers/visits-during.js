@@ -122,8 +122,8 @@ exports['get returns zero for all counts when all preganacies have delivered'] =
   });
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: '1' } },
-      { doc: { patient_id: '2' } }
+      { doc: { fields: { patient_id: '1' } } },
+      { doc: { fields: { patient_id: '2' } } }
     ]
   });
   controller.get({}, function(err, results) {
@@ -154,7 +154,7 @@ exports['get returns counts when active preganacies have visits'] = function(tes
   });
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
-      { doc: { patient_id: '4' } }
+      { doc: { fields: { patient_id: '4' } } }
     ]
   });
   controller.get({}, function(err, results) {
