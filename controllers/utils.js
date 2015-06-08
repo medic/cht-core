@@ -129,19 +129,26 @@ module.exports = {
       callback = options;
       options = {};
     }
-    options.q = 'form:' + getFormCode('delivery');
+    var query = 'form:' + getFormCode('delivery');
     if (options.startDate && options.endDate) {
-      options.q += ' AND ' + formatDateRange('reported_date', options.startDate, options.endDate);
+      query += ' AND ' + formatDateRange('reported_date', options.startDate, options.endDate);
     }
     if (options.district) {
-      options.q += ' AND district:"' + options.district + '"';
+      query += ' AND district:"' + options.district + '"';
     }
-    ftiWithPatientIds(options, function(err, results) {
-      if (err) {
-        return callback(err);
+    ftiWithPatientIds(
+      {
+        q: query,
+        include_docs: true,
+        patientIds: options.patientIds
+      },
+      function(err, results) {
+        if (err) {
+          return callback(err);
+        }
+        callback(null, uniquePerPatientId(results.rows));
       }
-      callback(null, uniquePerPatientId(results.rows));
-    });
+    );
   },
 
   getBirthPatientIds: function(options, callback) {
