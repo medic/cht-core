@@ -1375,7 +1375,7 @@ exports['support mixed case field keys'] = function(test) {
         message: "R jane"
     };
     data = smsparser.parse(def, doc);
-    test.same(data, {ooOoo: "jane"}); //FAILS
+    test.same(data, {ooOoo: "jane"});
 
     // muvuku
     doc = {
@@ -1416,7 +1416,7 @@ exports['support uppercase field keys'] = function(test) {
         message: "R jane"
     };
     data = smsparser.parse(def, doc);
-    test.same(data, {OOOOO: "jane"}); //FAILS
+    test.same(data, {OOOOO: "jane"});
 
     // muvuku
     doc = {
