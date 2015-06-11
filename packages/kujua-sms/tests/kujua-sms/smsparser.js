@@ -1347,6 +1347,88 @@ exports['support textforms locale on tiny labels'] = function(test) {
 
 };
 
+exports['support mixed case field keys'] = function(test) {
+
+    var def = {
+        meta: {
+            code: 'R'
+        },
+        fields: {
+            ooOoo: {
+                type: 'string',
+                labels: {
+                    tiny: 'n'
+                }
+            }
+        }
+    };
+
+    // textforms
+    var doc = {
+        message: "R n jane",
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {ooOoo: "jane"});
+
+    // compact textforms
+    doc = {
+        message: "R jane"
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {ooOoo: "jane"}); //FAILS
+
+    // muvuku
+    doc = {
+        message: "1!R!jane"
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {ooOoo: "jane"});
+
+    test.done();
+
+};
+
+exports['support uppercase field keys'] = function(test) {
+
+    var def = {
+        meta: {
+            code: 'R'
+        },
+        fields: {
+            OOOOO: {
+                type: 'string',
+                labels: {
+                    tiny: 'n'
+                }
+            }
+        }
+    };
+
+    // textforms
+    var doc = {
+        message: "R n jane",
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {OOOOO: "jane"});
+
+    // compact textforms
+    doc = {
+        message: "R jane"
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {OOOOO: "jane"}); //FAILS
+
+    // muvuku
+    doc = {
+        message: "1!R!jane"
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {OOOOO: "jane"});
+
+    test.done();
+
+};
+
 exports['support regex chars in form code, parser escapes them'] = function(test) {
     var def = {
         meta: {

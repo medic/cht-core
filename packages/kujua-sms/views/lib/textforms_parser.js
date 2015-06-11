@@ -224,14 +224,16 @@ exports.parseCompact = function(def, msg) {
         if (values.length === 0) {
             break;
         }
-        key = keys[i];
+        var key = keys[i];
         if (i === keys.length - 1 && def.fields[key].type === 'string') {
             // parsing the trailing string field, use the rest of the msg
             value = values.join(' ');
         } else {
             value = values.shift();
         }
-        set_result(results, key, value.replace(/"/g,""));
+        if (typeof results[key] === 'undefined') {
+            results[key] = value.replace(/"/g, '');
+        }
     }
     return results;
 };
