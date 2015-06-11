@@ -192,7 +192,7 @@ exports.add = function(doc, request) {
     utils.info = info.getAppInfo.call(this);
 
     req = request;
-    if (req.form && req.form.message) {
+    if (req.form && typeof req.form.message !== 'undefined') {
         return add_sms(doc, request);
     }
     return add_json(doc, request);

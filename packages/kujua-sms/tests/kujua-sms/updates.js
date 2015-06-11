@@ -410,6 +410,20 @@ exports['support unstructured message'] = function(test) {
     test.done();
 };
 
+exports['creates record with empty message field'] = function(test) {
+    var req = {
+        form: {
+          message: ''
+        }
+    };
+    var ret = updates.add(null, req),
+        resp_body = JSON.parse(ret[1]),
+        doc = ret[0];
+    test.same(doc.sms_message.message, "");
+    test.same(resp_body.payload, {success: true});
+    test.done();
+};
+
 exports['JSON POST: return 500 error if form not found'] = function(test) {
     var req = {
         body: '{ "_meta": { "form": "foo" } }'
