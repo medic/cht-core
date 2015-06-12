@@ -6,7 +6,7 @@ ID="$1"
 XFORM_PATH="$2"
 DB="${COUCH_URL-http://127.0.0.1:5984/medic}"
 
-function _usage {
+_usage () {
     echo ""
     echo "Add a form to the system"
     echo ""
