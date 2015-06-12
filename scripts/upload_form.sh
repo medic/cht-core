@@ -31,7 +31,7 @@ if [ ! -f "$XFORM_PATH" ]; then
 fi
 
 # create new doc
-rev=`curl -H "Content-Type: application/json" -X PUT -d '{"type":"form"}' "$DB/${ID}"`
+rev=`curl -H "Content-Type: application/json" -X PUT -d '{"type":"form"}' "$DB/form:${ID}"`
 
 # exit if we don't see a rev property
 echo "$rev" | grep '"rev"' > /dev/null
@@ -44,5 +44,5 @@ rev=`echo "$rev" | sed 's/.*rev":"//' | sed 's/".*//g' | tr -d '\n' | tr -d '\r'
 
 curl -f -X PUT -H "Content-Type: text/xml" \
     --data-binary "@${XFORM_PATH}" \
-    "${DB}/${ID}/xml?rev=${rev}"
+    "${DB}/form:${ID}/xml?rev=${rev}"
 
