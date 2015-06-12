@@ -1065,6 +1065,20 @@ exports['valid javarosa message, values contain escaped delimiters'] = function 
     test.done();
 };
 
+exports['parse javarosa message with special characters in a value'] = function (test) {
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
+    var def = utils.info.getForm('YYYY');
+    var doc = {
+        sent_timestamp: '12-11-11 15:00',
+        from: '+15551212',
+        message: 'J1!YYYY!HFI#!fac*!?ty!#RPY#2015'
+    };
+    var obj = smsparser.parse(def, doc);
+    test.same(obj.facility_id, "!fac*!?ty!");
+    test.same(obj.year, 2015);
+    test.done();
+};
+
 exports['valid javarosa message with similarly named fields parses right'] = function (test) {
     var getForm = sinon.stub(utils.info, 'getForm').returns({
         "meta": {
