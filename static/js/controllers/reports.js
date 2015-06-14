@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, translateFilter, Settings, MarkRead, Search, Changes, EditGroup) {
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup', 'DbGet',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, translateFilter, Settings, MarkRead, Search, Changes, EditGroup, DbGet) {
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = undefined;
@@ -77,16 +77,12 @@ var _ = require('underscore'),
           if (message) {
             _setSelected(message);
           } else {
-            var options = {
-              changes: [ { id: id } ],
-              ignoreFilter: true
-            };
-            Search($scope, options, function(err, data) {
+            DbGet(id, {}, function(err, data) {
               if (err) {
                 return console.log(err);
               }
-              if (data.results.length) {
-                _setSelected(data.results[0]);
+              if (data.length) {
+                _setSelected(data[0]);
                 _initScroll();
               }
             });
@@ -108,6 +104,7 @@ var _ = require('underscore'),
 
       $scope.query = function(options) {
         options = options || {};
+        options.limit = 50;
         if (options.changes) {
           $scope.updateReadStatus();
           var deletedRows = _.where(options.changes, { deleted: true });
@@ -150,15 +147,15 @@ var _ = require('underscore'),
           $scope.error = false;
           $scope.errorSyntax = false;
 
-          $scope.update(data.results);
+          $scope.update(data);
           if (!options.changes) {
-            $scope.totalItems = data.total_rows;
+            $scope.moreItems = data.length >= options.limit;
           }
           if (!options.changes && !options.skip) {
-            if (!data.results.length) {
+            if (!data.length) {
               $scope.selectMessage();
             } else {
-              var curr = _.find(data.results, function(result) {
+              var curr = _.find(data, function(result) {
                 return result._id === $state.params.id;
               });
               if (curr) {
@@ -181,7 +178,7 @@ var _ = require('underscore'),
 
       var _initScroll = function() {
         scrollLoader.init(function() {
-          if (!$scope.loading && $scope.totalItems > $scope.items.length) {
+          if (!$scope.loading && $scope.moreItems) {
             $timeout(function() {
               $scope.query({ skip: true });
             });

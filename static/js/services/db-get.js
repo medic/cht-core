@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    escape = ['startkey','endkey','key','keys'];
+var _ = require('underscore');
 
 (function () {
 
@@ -7,20 +6,19 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('DbView', ['HttpWrapper', 'BaseUrlService',
+  inboxServices.factory('DbGet', ['HttpWrapper', 'BaseUrlService',
     function(HttpWrapper, BaseUrlService) {
-      return function(viewName, options, callback) {
+      return function(keys, options, callback) {
         if (!options.params) {
           options.params = {};
         }
-        escape.forEach(function(key) {
-          if (options.params[key]) {
-            options.params[key] = JSON.stringify(options.params[key]);
-          }
-        });
-        var url = BaseUrlService() + '/../_view/' + viewName;
+        options.params.include_docs = true;
+        var url = BaseUrlService() + '/../../../_all_docs';
+        if (!_.isArray(keys)) {
+          keys = [ keys ];
+        }
         HttpWrapper
-          .get(url, options)
+          .post(url, { keys: keys }, options)
           .success(function(results) {
             var meta = {
               total_rows: results.total_rows,

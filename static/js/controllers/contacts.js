@@ -37,11 +37,11 @@ var _ = require('underscore'),
             $scope.error = true;
             return console.log('Error searching for contacts', err);
           }
-          $scope.totalItems = data.total_rows;
+          $scope.totalItems = data.total_rows; // TODO work out how to do this
           if (options.skip) {
-            $scope.items.push.apply($scope.items, data.results);
+            $scope.items.push.apply($scope.items, data);
           } else {
-            $scope.setContacts(data.results);
+            $scope.setContacts(data);
             scrollLoader.init(function() {
               if (!$scope.loading && $scope.totalItems > $scope.items.length) {
                 $timeout(function() {
@@ -49,7 +49,7 @@ var _ = require('underscore'),
                 });
               }
             });
-            if (!data.results.length) {
+            if (!data.length) {
               $scope.selectContact();
             } else if (!options.stay && !$('#back').is(':visible')) {
               // wait for selected to be set before checking

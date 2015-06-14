@@ -25,7 +25,7 @@
   <p class="loading-status" ng-show="!error && !loading && !items.length">
     {{'No reports found' | translate}}
   </p>
-  <p class="loading-status" ng-show="!loading && items.length && items.length === totalItems">
+  <p class="loading-status" ng-show="!loading && items.length && !moreItems">
     {{'No more reports' | translate}}
   </p>
   <span class="mm-loader" ng-show="loading">

@@ -13,8 +13,8 @@
     logs:     { name: 'logs', format: 'zip' }
   };
 
-  inboxServices.factory('DownloadUrl', ['GenerateSearchQuery', 'Language',
-    function(GenerateSearchQuery, Language) {
+  inboxServices.factory('DownloadUrl', ['Language',
+    function(Language) {
 
       var buildUrl = function(type, params) {
         return '/api/v1/export/' + type.name + '?' + $.param(params);
@@ -22,17 +22,18 @@
 
       var getParams = function(type, language, $scope, callback) {
         var params = { format: type.format, locale: language };
-        if (!type.lucene) {
+        // if (!type.lucene) {
           return callback(null, params);
-        }
-        GenerateSearchQuery($scope, function(err, response) {
-          if (err) {
-            return callback(err);
-          }
-          params.query = JSON.stringify(response.query);
-          params.schema = JSON.stringify(response.schema);
-          return callback(null, params);
-        });
+        // }
+        // TODO get a list of ids?
+        // GenerateSearchQuery($scope, function(err, response) {
+        //   if (err) {
+        //     return callback(err);
+        //   }
+        //   params.query = JSON.stringify(response.query);
+        //   params.schema = JSON.stringify(response.schema);
+        //   return callback(null, params);
+        // });
       };
 
       return function($scope, typeName, callback) {

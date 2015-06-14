@@ -238,7 +238,7 @@ var _ = require('underscore'),
                     if (err) {
                       return console.log('Error getting doc', err);
                     }
-                    FormatDataRecord([{ doc: doc }], function(err, formatted) {
+                    FormatDataRecord([doc], function(err, formatted) {
                       if (err) {
                         return console.log('Error formatting record', err);
                       }
