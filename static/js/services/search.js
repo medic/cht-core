@@ -7,8 +7,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('Search', ['DbGet', 'DbView', 'HttpWrapper', 'FormatDataRecord', 'GenerateSearchRequests',
-    function(DbGet, DbView, HttpWrapper, FormatDataRecord, GenerateSearchRequests) {
+  inboxServices.factory('Search', ['DbGet', 'DbView', 'GenerateSearchRequests',
+    function(DbGet, DbView, GenerateSearchRequests) {
 
       var _currentQuery;
 
@@ -22,26 +22,13 @@ var _ = require('underscore'),
         return false;
       };
 
-      var getUnfilteredReports = function(options, callback) {
-        var requestOptions = {
-          targetScope: options.type,
-          params: {
-            include_docs: true,
-            descending: true,
-            limit: options.limit,
-            skip: options.skip
-          }
-        };
-        DbView('reports_by_date', requestOptions, callback);
-      };
-
       var getPage = function(rows, options) {
         var end = rows.length - options.skip;
         var start = end - options.limit;
         return _.pluck(_.sortBy(rows, 'value').slice(start, end), 'id');
       };
 
-      var getResponseIntersection = function(responses) {
+      var getIntersection = function(responses) {
         var intersection = responses.pop().rows;
         intersection = _.uniq(intersection, 'id');
         _.each(responses, function(response) {
@@ -52,7 +39,7 @@ var _ = require('underscore'),
         return intersection;
       };
 
-      var getRequest = function(request, options, callback) {
+      var view = function(request, options, callback) {
         DbView(
           request.view,
           { targetScope: options.type, params: request.params },
@@ -60,12 +47,12 @@ var _ = require('underscore'),
         );
       };
 
-      var getFilteredReports = function(requests, options, callback) {
-        async.map(requests, _.partial(getRequest, _, options), function(err, responses) {
+      var filter = function(requests, options, callback) {
+        async.map(requests, _.partial(view, _, options), function(err, responses) {
           if (err) {
             return callback(err);
           }
-          var intersection = getResponseIntersection(responses, options);
+          var intersection = getIntersection(responses, options);
           var page = getPage(intersection, options);
           if (!page.length) {
             callback(null, []);
@@ -74,11 +61,17 @@ var _ = require('underscore'),
         });
       };
 
-      var getReports = function(requests, options, callback) {
-        if (requests.length) {
-          getFilteredReports(requests, options, callback);
+      var execute = function(requests, options, callback) {
+        if (requests.length === 1 && requests[0].params.include_docs) {
+          // filter not required - just get the view directly
+          _.defaults(requests[0].params, {
+            limit: options.limit,
+            skip: options.skip
+          });
+          view(requests[0], options, callback);
         } else {
-          getUnfilteredReports(options, callback);
+          // filtering
+          filter(requests, options, callback);
         }
       };
 
@@ -101,22 +94,15 @@ var _ = require('underscore'),
           skip: 0,
           type: $scope.filterModel.type
         });
-        if (options.type === 'reports') {
-          generateRequests($scope, function(err, requests) {
-            if (err) {
-              return callback(err);
-            }
-            getReports(requests, options, function(err, results) {
-              _currentQuery = null;
-              if (err) {
-                return callback(err);
-              }
-              FormatDataRecord(results, callback);
-            });
+        generateRequests($scope, function(err, requests) {
+          if (err) {
+            return callback(err);
+          }
+          execute(requests, options, function(err, results) {
+            _currentQuery = null;
+            callback(err, results);
           });
-        } else {
-          console.log('TODO: not yet supported');
-        }
+        });
       };
     }
   ]);

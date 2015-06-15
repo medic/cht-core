@@ -25,15 +25,29 @@ describe('GenerateSearchRequests service', function() {
     };
   });
 
-  it('creates no requests for no filter', function() {
+  it('creates unfiltered request for no filter', function() {
     var result = service(scope);
-    chai.expect(result.length).to.equal(0);
+    chai.expect(result.length).to.equal(1);
+    chai.expect(result[0]).to.deep.equal({
+      view: 'reports_by_date',
+      params: {
+        include_docs: true,
+        descending: true
+      }
+    });
   });
 
   it('creates no request when all forms selected', function() {
     scope.filterModel.forms = scope.forms = [ { code: 'P' }, { code: 'R' } ];
     var result = service(scope);
-    chai.expect(result.length).to.equal(0);
+    chai.expect(result.length).to.equal(1);
+    chai.expect(result[0]).to.deep.equal({
+      view: 'reports_by_date',
+      params: {
+        include_docs: true,
+        descending: true
+      }
+    });
   });
 
   it('creates requests for reports with forms filter', function() {

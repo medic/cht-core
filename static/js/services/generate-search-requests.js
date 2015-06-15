@@ -106,20 +106,30 @@ var _ = require('underscore'),
       // TODO contacts
 
       var types = {
-        reports: function($scope, requests) {
-          requests.push(reportedDate($scope));
-          requests.push(form($scope));
-          requests.push(validity($scope));
-          requests.push(verification($scope));
-          requests.push(place($scope));
-          requests.push(freetext($scope));
+        reports: {
+          getRequests: function($scope, requests) {
+            requests.push(reportedDate($scope));
+            requests.push(form($scope));
+            requests.push(validity($scope));
+            requests.push(verification($scope));
+            requests.push(place($scope));
+            requests.push(freetext($scope));
+          },
+          unfiltered: {
+            view: 'reports_by_date',
+            params: {
+              include_docs: true,
+              descending: true
+            }
+          }
         }
       };
 
       var getRequests = function($scope, type) {
         var requests = [];
-        type($scope, requests);
-        return _.compact(requests);
+        type.getRequests($scope, requests);
+        requests = _.compact(requests);
+        return requests.length ? requests : [ type.unfiltered ];
       };
 
       return function($scope) {

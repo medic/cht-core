@@ -9,6 +9,7 @@ describe('ReportsCtrl controller', function() {
       MarkRead,
       Search,
       Changes,
+      FormatDataRecord,
       changesCallback;
 
   beforeEach(module('inboxApp'));
@@ -38,6 +39,10 @@ describe('ReportsCtrl controller', function() {
 
     MarkRead = function() {};
 
+    FormatDataRecord = function(data, callback) {
+      callback(null, data);
+    };
+
     Search = function($scope, options, callback) {
       callback(null, { });
     };
@@ -59,7 +64,8 @@ describe('ReportsCtrl controller', function() {
         'DeleteDoc': {},
         'UpdateFacility': {},
         'MessageState': {},
-        'EditGroup': {}
+        'EditGroup': {},
+        'FormatDataRecord': FormatDataRecord
       });
     };
   }));
