@@ -82,11 +82,11 @@ var _ = require('underscore'),
                 return console.log(err);
               }
               if (data.length) {
-                FormatDataRecord(data[0], function(err, data) {
+                FormatDataRecord(data, function(err, formatted) {
                   if (err) {
                     return console.log(err);
                   }
-                  _setSelected(data[0]);
+                  _setSelected(formatted[0]);
                   _initScroll();
                 });
               }

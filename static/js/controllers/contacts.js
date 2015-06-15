@@ -17,6 +17,7 @@ var _ = require('underscore'),
 
       $scope.query = function(options) {
         options = options || {};
+        options.limit = 50;
 
         $scope.loading = true;
         $scope.appending = options.skip;
@@ -37,13 +38,13 @@ var _ = require('underscore'),
             $scope.error = true;
             return console.log('Error searching for contacts', err);
           }
-          $scope.totalItems = data.total_rows; // TODO work out how to do this
+          $scope.moreItems = data.length >= options.limit;
           if (options.skip) {
             $scope.items.push.apply($scope.items, data);
           } else {
             $scope.setContacts(data);
             scrollLoader.init(function() {
-              if (!$scope.loading && $scope.totalItems > $scope.items.length) {
+              if (!$scope.loading && $scope.moreItems) {
                 $timeout(function() {
                   $scope.query({ skip: true });
                 });

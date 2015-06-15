@@ -18,7 +18,8 @@ describe('GenerateSearchRequests service', function() {
         type: 'reports',
         forms: [],
         facilities: [],
-        date: {}
+        date: {},
+        contactTypes: []
       },
       filterQuery: {},
       forms: []
@@ -139,6 +140,55 @@ describe('GenerateSearchRequests service', function() {
     var result = service(scope);
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0].view).to.equal('reports_by_freetext');
+    chai.expect(result[0].params).to.deep.equal({
+      startkey: [ 'someth' ],
+      endkey: [ 'someth\ufff0' ],
+    });
+  });
+
+  it('creates unfiltered contacts request for no filter', function() {
+    scope.filterModel.type = 'contacts';
+    var result = service(scope);
+    chai.expect(result.length).to.equal(1);
+    chai.expect(result[0]).to.deep.equal({
+      view: 'contacts_by_name',
+      params: {
+        include_docs: true
+      }
+    });
+  });
+
+  it('creates unfiltered contacts request for type filter', function() {
+    scope.filterModel.type = 'contacts';
+    scope.filterModel.contactTypes = [ 'person', 'clinic' ];
+    var result = service(scope);
+    chai.expect(result.length).to.equal(1);
+    chai.expect(result[0]).to.deep.equal({
+      view: 'contacts_by_type',
+      params: {
+        keys: [ [ 'person' ], [ 'clinic' ] ]
+      }
+    });
+  });
+
+  it('creates unfiltered contacts request for places filter', function() {
+    scope.filterModel.type = 'contacts';
+    scope.filterModel.facilities = [ 'a', 'b', 'c' ];
+    scope.facilitiesCount = 6;
+    var result = service(scope);
+    chai.expect(result.length).to.equal(1);
+    chai.expect(result[0].view).to.equal('contacts_by_place');
+    chai.expect(result[0].params).to.deep.equal({
+      keys: [ [ 'a' ], [ 'b' ], [ 'c' ] ]
+    });
+  });
+
+  it('creates requests for contacts with starts with freetext filters', function() {
+    scope.filterModel.type = 'contacts';
+    scope.filterQuery.value = 'someth';
+    var result = service(scope);
+    chai.expect(result.length).to.equal(1);
+    chai.expect(result[0].view).to.equal('contacts_by_freetext');
     chai.expect(result[0].params).to.deep.equal({
       startkey: [ 'someth' ],
       endkey: [ 'someth\ufff0' ],

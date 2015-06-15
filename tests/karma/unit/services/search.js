@@ -325,4 +325,47 @@ describe('Search service', function() {
     });
   });
 
+  it('sorts and limits contacts results', function(done) {
+    scope.filterModel.type = 'contacts';
+    options.limit = 10;
+    var viewResult = { rows: [] };
+    for (var i = 0; i < 15; i++) {
+      viewResult.rows.push({ id: i, value: i });
+    }
+    var expected = [];
+    for (var j = 0; j < 10; j++) {
+      expected.push(j);
+    }
+    GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
+    DbView.callsArgWith(2, null, viewResult);
+    DbGet.callsArgWith(2, null, []);
+    service(scope, options, function() {
+      chai.expect(DbGet.calledOnce).to.equal(true);
+      chai.expect(DbGet.args[0][0].length).to.equal(10);
+      chai.expect(DbGet.args[0][0]).to.deep.equal(expected);
+      done();
+    });
+  });
+
+  it('sorts and skips contacts results', function(done) {
+    scope.filterModel.type = 'contacts';
+    options.skip = 10;
+    var viewResult = { rows: [] };
+    for (var i = 0; i < 15; i++) {
+      viewResult.rows.push({ id: i, value: i });
+    }
+    var expected = [];
+    for (var j = 10; j < 15; j++) {
+      expected.push(j);
+    }
+    GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
+    DbView.callsArgWith(2, null, viewResult);
+    DbGet.callsArgWith(2, null, []);
+    service(scope, options, function() {
+      chai.expect(DbGet.calledOnce).to.equal(true);
+      chai.expect(DbGet.args[0][0].length).to.equal(5);
+      chai.expect(DbGet.args[0][0]).to.deep.equal(expected);
+      done();
+    });
+  });
 });

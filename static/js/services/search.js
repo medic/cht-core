@@ -23,8 +23,17 @@ var _ = require('underscore'),
       };
 
       var getPage = function(rows, options) {
-        var end = rows.length - options.skip;
-        var start = end - options.limit;
+        var start;
+        var end;
+        if (options.type === 'reports') {
+          // descending
+          end = rows.length - options.skip;
+          start = end - options.limit;
+        } else {
+          // ascending
+          start = options.skip;
+          end = start + options.limit;
+        }
         return _.pluck(_.sortBy(rows, 'value').slice(start, end), 'id');
       };
 
