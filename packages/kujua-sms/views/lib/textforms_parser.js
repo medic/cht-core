@@ -239,7 +239,7 @@ exports.parseCompact = function(def, msg) {
             value = value.substring(1, value.length - 1);
         }
         if (typeof results[key] === 'undefined') {
-            results[key] = value.replace(/"/g, '');
+            results[key] = value;
         }
     }
     return results;
