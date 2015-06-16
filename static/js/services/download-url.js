@@ -42,7 +42,9 @@ var moment = require('moment');
       return 'null_form';
     }
     if (options.form && options.form.code) {
-      return options.form.code;
+      // form code is always uppercase on the report/doc, and view queries are
+      // case sensitive.
+      return options.form.code.toUpperCase();
     }
     return '*';
   };
