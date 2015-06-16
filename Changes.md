@@ -4,11 +4,13 @@
 
 ### TBD
 
-- added SMS parser fixes from dev branch:
+- Added SMS parser fixes from dev branch:
    
   - parse string fields with exlamation marks
   - compact textforms format handles quotes in quotes
 
+- Fixed export bug when using lowercase form codes. Please re-upload your forms
+  so they are formatted correctly.
 
 ## 0.4.7
 
