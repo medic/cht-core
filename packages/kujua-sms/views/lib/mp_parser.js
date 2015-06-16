@@ -23,6 +23,11 @@ var parse = exports.parse = function(def, doc) {
         name = header[1],
         vals = parts.slice(1);
 
+    var n = 3;
+    while (n < header.length) {
+        header[2] += '!' + header[n++];
+    }
+
     vals.unshift(header[2]);
 
     if(!def || !def.fields) {

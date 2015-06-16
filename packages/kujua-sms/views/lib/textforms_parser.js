@@ -219,6 +219,10 @@ exports.parseCompact = function(def, msg) {
     var values = msg.match(/"[^"]+"|[^"\s]+/g);
     var keys = _.keys(def.fields);
 
+    if (values.length > keys.length) {
+        values = msg.match(/".+"|[^"\s]+/g);
+    }
+
     var results = {};
     for (var i = 0; i < keys.length; i++) {
         if (values.length === 0) {
@@ -231,8 +235,11 @@ exports.parseCompact = function(def, msg) {
         } else {
             value = values.shift();
         }
+        if (value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') {
+            value = value.substring(1, value.length - 1);
+        }
         if (typeof results[key] === 'undefined') {
-            results[key] = value.replace(/"/g, '');
+            results[key] = value;
         }
     }
     return results;
