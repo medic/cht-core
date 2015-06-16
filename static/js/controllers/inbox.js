@@ -18,8 +18,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'pouchDB', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, pouchDB, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes) {
 
       $scope.loadingContent = false;
       $scope.error = false;
@@ -803,10 +803,28 @@ require('moment/locales');
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
           showUpdateReady();
         }
-        Changes({ key: 'appcache', filter: 'medic/ddoc' }, function() {
+        Changes({ key: 'appcache', id: '_design/medic' }, function() {
           window.applicationCache.update();
         });
       }
+
+      // TODO filter replication for security
+      // TODO pass through api so security restriction is added server side
+      // TODO customise backoff function so it has a max interval
+      pouchDB('medic').sync('http://localhost:5988/medic', { live: true, retry: true })
+        .on('change', function(info) {
+          console.log('change', info);
+        }).on('paused', function() {
+          console.log('paused');
+        }).on('active', function() {
+          console.log('active');
+        }).on('denied', function(info) {
+          console.log('denied', info);
+        }).on('complete', function(info) {
+          console.log('complete', info);
+        }).on('error', function(err) {
+          console.log('error', err);
+        });
 
     }
   ]);

@@ -31,21 +31,15 @@
   };
 
   inboxServices.factory('ReadMessages', [
-    'HttpWrapper', 'BaseUrlService',
-    function(HttpWrapper, BaseUrlService) {
+    'pouchDB',
+    function(pouchDB) {
       return function(options, callback) {
-        var getOptions = {
-          params: { group: true },
-          targetScope: 'root'
-        };
-        HttpWrapper
-          .get(BaseUrlService() + '/read_records', getOptions)
-          .success(function(res) {
+        pouchDB('medic').query('medic/data_records_read_by_type', { group: true })
+          .then(function(res) {
             callback(null, calculateStatus(res, options));
           })
-          .error(function(data) {
-            console.log('err', arguments);
-            callback(new Error(data));
+          .catch(function(err) {
+            callback(err);
           });
       };
     }

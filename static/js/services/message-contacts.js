@@ -8,38 +8,29 @@ var async = require('async'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('MessageContactsRaw', [
-    'HttpWrapper', 'BaseUrlService',
-    function(HttpWrapper, BaseUrlService) {
+    'pouchDB',
+    function(pouchDB) {
       return function(params, callback, targetScope) {
-        var url = BaseUrlService() + '/message_contacts';
-        HttpWrapper.get(url, { params: params, targetScope: targetScope })
-          .success(function(res) {
+        pouchDB('medic').query('medic/data_records_by_contact', params)
+          .then(function(res) {
             callback(null, res.rows);
           })
-          .error(function(data, status) {
-            if(status === 0) {
-              // request failed unnaturally.  It was probably cancelled by a
-              // state change, so we can safely ignore it.
-              return;
-            }
-            callback(new Error(data));
+          .catch(function(err) {
+            callback(err);
           });
       };
     }
   ]);
 
   var generateQuery = function(options, districtId) {
-    var startkey = [ districtId ];
-    var endkey = [ districtId ];
-    if (options.id) {
-      startkey.push(options.id);
-      endkey.push(options.id);
-    }
-    (options.queryOptions.descending ? startkey : endkey).push({});
-
     var query = _.clone(options.queryOptions);
-    query.startkey = JSON.stringify(startkey);
-    query.endkey = JSON.stringify(endkey);
+    query.startkey = [ districtId ];
+    query.endkey = [ districtId ];
+    if (options.id) {
+      query.startkey.push(options.id);
+      query.endkey.push(options.id);
+    }
+    (options.queryOptions.descending ? query.startkey : query.endkey).push({});
     return query;
   };
 

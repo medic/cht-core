@@ -16,7 +16,8 @@ require('./filters/index');
     'inboxServices',
     'pascalprecht.translate',
     'nvd3ChartDirectives',
-    'angularFileUpload'
+    'angularFileUpload',
+    'pouchdb'
   ]);
 
   app.config(['$stateProvider', '$urlRouterProvider', '$translateProvider', '$compileProvider',

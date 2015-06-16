@@ -6,6 +6,8 @@ var db = require('db');
 
   var inboxServices = angular.module('inboxServices');
   
+  // TODO remove
+  // TODO remove db module too!
   inboxServices.factory('db', function() {
     return db.current();
   });
