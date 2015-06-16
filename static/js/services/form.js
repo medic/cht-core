@@ -55,7 +55,7 @@
           callback = options;
           options = {};
         }
-        Settings(options, function(err, res) {
+        Settings(function(err, res) {
           if (err) {
             return callback(err);
           }

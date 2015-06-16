@@ -454,7 +454,7 @@ require('moment/locales');
         });
       };
 
-      Settings({ targetScope: 'root' }, function(err, settings) {
+      Settings(function(err, settings) {
         if (err) {
           return console.log('Error fetching settings', err);
         }
@@ -769,7 +769,7 @@ require('moment/locales');
       };
 
       $scope.setupHeader = function() {
-        Settings({ targetScope: 'root' }, function(err, settings) {
+        Settings(function(err, settings) {
           if (err) {
             return console.log('Error retrieving settings', err);
           }

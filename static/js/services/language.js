@@ -13,7 +13,7 @@
       if (res && res.language) {
         return callback(null, res.language);
       }
-      Settings(options, function(err, res) {
+      Settings(function(err, res) {
         if (err) {
           return callback(err);
         }
