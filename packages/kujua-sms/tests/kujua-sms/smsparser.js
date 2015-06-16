@@ -1099,6 +1099,20 @@ exports['valid javarosa message, values contain escaped delimiters'] = function 
     test.done();
 };
 
+exports['parse javarosa message with special characters in a value'] = function (test) {
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
+    var def = utils.info.getForm('YYYY');
+    var doc = {
+        sent_timestamp: '12-11-11 15:00',
+        from: '+15551212',
+        message: 'J1!YYYY!HFI#!fac*!?ty!#RPY#2015'
+    };
+    var obj = smsparser.parse(def, doc);
+    test.same(obj.facility_id, "!fac*!?ty!");
+    test.same(obj.year, 2015);
+    test.done();
+};
+
 exports['valid javarosa message with similarly named fields parses right'] = function (test) {
     var getForm = sinon.stub(utils.info, 'getForm').returns({
         "meta": {
@@ -1376,6 +1390,88 @@ exports['support textforms locale on tiny labels'] = function(test) {
     };
     data = smsparser.parse(def, doc);
     test.same(data, {name: "jane"});
+
+    test.done();
+
+};
+
+exports['support mixed case field keys'] = function(test) {
+
+    var def = {
+        meta: {
+            code: 'R'
+        },
+        fields: {
+            ooOoo: {
+                type: 'string',
+                labels: {
+                    tiny: 'n'
+                }
+            }
+        }
+    };
+
+    // textforms
+    var doc = {
+        message: "R n jane",
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {ooOoo: "jane"});
+
+    // compact textforms
+    doc = {
+        message: "R jane"
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {ooOoo: "jane"});
+
+    // muvuku
+    doc = {
+        message: "1!R!jane"
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {ooOoo: "jane"});
+
+    test.done();
+
+};
+
+exports['support uppercase field keys'] = function(test) {
+
+    var def = {
+        meta: {
+            code: 'R'
+        },
+        fields: {
+            OOOOO: {
+                type: 'string',
+                labels: {
+                    tiny: 'n'
+                }
+            }
+        }
+    };
+
+    // textforms
+    var doc = {
+        message: "R n jane",
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {OOOOO: "jane"});
+
+    // compact textforms
+    doc = {
+        message: "R jane"
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {OOOOO: "jane"});
+
+    // muvuku
+    doc = {
+        message: "1!R!jane"
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {OOOOO: "jane"});
 
     test.done();
 

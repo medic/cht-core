@@ -12,7 +12,7 @@ var _ = require('underscore')._,
  * @api public
  */
 exports.parse = function(def, doc) {
-    var data = doc.message.split('!')[2],
+    var data = doc.message.split('!').slice(2).join('!'),
         labels = [],
         vals = [],
         obj = {};
