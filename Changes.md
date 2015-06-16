@@ -2,7 +2,7 @@
 
 ## 0.4.7
 
-### TBD
+### Jun 16, 2015
 
 - Fixed ODK forms list bug when the list is empty. Issue #886
 
