@@ -1,5 +1,15 @@
 # Medic Mobile Release Notes
 
+## 0.4.8
+
+### TBD
+
+- added SMS parser fixes from dev branch:
+   
+  - parse string fields with exlamation marks
+  - compact textforms format handles quotes in quotes
+
+
 ## 0.4.7
 
 ### Jun 16, 2015
