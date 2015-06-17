@@ -18,8 +18,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'pouchDB', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, pouchDB, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'pouchDB', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'User',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, pouchDB, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, User) {
 
       $scope.loadingContent = false;
       $scope.error = false;
@@ -298,7 +298,7 @@ require('moment/locales');
         sendMessage.init(Settings, Contact, translateFilter);
       };
 
-      Form({ targetScope: 'root' }, function(err, forms) {
+      Form(function(err, forms) {
         if (err) {
           return console.log('Failed to retrieve forms', err);
         }
@@ -435,7 +435,7 @@ require('moment/locales');
       });
 
       var updateEditUserModel = function(callback) {
-        User({ targetScope: 'root' }, function(err, user) {
+        User(function(err, user) {
           if (err) {
             return console.log('Error getting user', err);
           }
@@ -471,7 +471,7 @@ require('moment/locales');
 
       moment.locale(['en']);
 
-      Language({ targetScope: 'root' }, function(err, language) {
+      Language(function(err, language) {
         if (err) {
           return console.log('Error loading language', err);
         }
@@ -623,7 +623,7 @@ require('moment/locales');
         });
 
         // we have to wait for language to respond before initing the multidropdowns
-        Language({ targetScope: 'root' }, function(err, language) {
+        Language(function(err, language) {
 
           $translate.use(language);
 
@@ -811,7 +811,13 @@ require('moment/locales');
       // TODO filter replication for security
       // TODO pass through api so security restriction is added server side
       // TODO customise backoff function so it has a max interval
-      pouchDB('medic').sync('http://localhost:5988/medic', { live: true, retry: true })
+      // TODO only replicate for restricted users
+      // TODO work out how to go direct to remote for unrestricted users
+      // TODO handle nagivation when indexeddb transation not complete
+      // TODO show user notification if local not synced for some time
+      // TODO lock down api so non-admins can only replicate
+      pouchDB('medic')
+        .sync('http://localhost:5988/medic', { live: true, retry: true })
         .on('change', function(info) {
           console.log('change', info);
         }).on('paused', function() {
@@ -825,7 +831,8 @@ require('moment/locales');
         }).on('error', function(err) {
           console.log('error', err);
         });
-
+      pouchDB('_users')
+        .replicate.from('http://localhost:5988/_users', { live: true, retry: true });
     }
   ]);
 

@@ -25,26 +25,16 @@ var _ = require('underscore'),
     }
   ]);
 
-  var getUserResourceUrl = function(userCtx) {
-    return '/_users/org.couchdb.user%3A' + userCtx.name;
-  };
-
-  inboxServices.factory('User', ['HttpWrapper', 'UserCtxService',
-    function(HttpWrapper, UserCtxService) {
-      return function(options, callback) {
-        if (!callback) {
-          callback = options;
-          options = {};
-        }
-        options = options || {};
-        options.cache = options.cache || true;
-        HttpWrapper
-          .get(getUserResourceUrl(UserCtxService()), options)
-          .success(function(data) {
+  inboxServices.factory('User', ['UserCtxService', 'pouchDB',
+    function(UserCtxService, pouchDB) {
+      return function(callback) {
+        pouchDB('_users')
+          .get('org.couchdb.user:' + UserCtxService().name)
+          .then(function(data) {
             callback(null, data);
           })
-          .error(function(data) {
-            callback(new Error(data));
+          .catch(function(data) {
+            callback(new Error(data))
           });
       };
     }

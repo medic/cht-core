@@ -28,24 +28,23 @@ var _ = require('underscore');
     }
   ]);
 
-  inboxServices.factory('Facility', ['HttpWrapper', 'BaseUrlService',
-    function(HttpWrapper, BaseUrlService) {
+  inboxServices.factory('Facility', ['DbView',
+    function(DbView) {
       return function(options, callback) {
         if (!callback) {
           callback = options;
           options = {};
         }
-        var url = getFacilitiesUrl(BaseUrlService, options.district);
-        HttpWrapper.get(url, { cache: true, targetScope: options.targetScope })
-          .success(function(res) {
+        DbView('facilities', { include_docs: true })
+          .then(function(res) {
             if (options.types) {
-              return callback(null, _.filter(res.rows, function(row) {
-                return options.types.indexOf(row.doc.type) !== -1;
+              return callback(null, _.filter(res, function(doc) {
+                return options.types.indexOf(doc.type) !== -1;
               }));
             }
-            callback(null, res.rows);
+            callback(null, res);
           })
-          .error(function(data) {
+          .catch(function(data) {
             callback(new Error(data));
           });
       };
