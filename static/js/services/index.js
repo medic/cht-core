@@ -9,6 +9,7 @@
   require('./base');
   require('./changes');
   require('./count-messages');
+  require('./db');
   require('./db-view');
   require('./delete-doc');
   require('./download-url');

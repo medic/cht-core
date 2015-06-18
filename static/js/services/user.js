@@ -15,7 +15,6 @@ var _ = require('underscore'),
           return callback(new Error('Not logged in'));
         }
         if (utils.isUserAdmin(userCtx)) {
-          console.log('IS ADMIN');
           return callback();
         }
         if (utils.isUserDistrictAdmin(userCtx)) {
