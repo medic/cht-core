@@ -7,7 +7,7 @@ var _ = require('underscore');
   var inboxServices = angular.module('inboxServices');
   
   inboxServices.factory('DbView', ['pouchDB',
-    function(pouchDb) {
+    function(pouchDB) {
       return function(viewName, options, callback) {
         pouchDB('medic')
           .query('medic/' + viewName, options.params)

@@ -808,31 +808,73 @@ require('moment/locales');
         });
       }
 
-      // TODO filter replication for security
-      // TODO pass through api so security restriction is added server side
-      // TODO customise backoff function so it has a max interval
-      // TODO only replicate for restricted users
       // TODO work out how to go direct to remote for unrestricted users
       // TODO handle nagivation when indexeddb transation not complete
-      // TODO show user notification if local not synced for some time
       // TODO lock down api so non-admins can only replicate
+      // TODO for users replication, only replicate logged in user?
+      // TODO pull this out into a db module
+      // TODO replication doesn't work with non-admin basic auth?!
+      var backOffFunction = function(prev) {
+        if (prev <= 0) {
+          // first run, backoff 1 second
+          return 1000;
+        }
+        // double the backoff, maxing out at 1 minute
+        return Math.min(prev * 2, 60000);
+      };
+
+      UserDistrict(function(err, district) {
+        if (err) {
+          return console.log('Error fetching district', err);
+        }
+        console.log('district', district);
+        pouchDB('medic')
+          .replicate.from('http://districtadmin:pass@localhost:5988/medic', {
+            live: true,
+            retry: true,
+            back_off_function: backOffFunction,
+            filter: 'medic/doc_by_place',
+            query_params: {
+              id: district,
+              unassigned: false // TODO get from user
+            }
+          })
+          .on('change', function(info) {
+            console.log('from change', info);
+          }).on('paused', function() {
+            console.log('from paused');
+          }).on('active', function() {
+            console.log('from active');
+          }).on('denied', function(info) {
+            console.log('from denied', info);
+          }).on('complete', function(info) {
+            console.log('from complete', info);
+          }).on('error', function(err) {
+            console.log('from error', err);
+          });
+      });
       pouchDB('medic')
-        .sync('http://localhost:5988/medic', { live: true, retry: true })
+        .replicate.to('http://districtadmin:pass@localhost:5988/medic', {
+          live: true,
+          retry: true,
+          back_off_function: backOffFunction
+        })
         .on('change', function(info) {
-          console.log('change', info);
+          console.log('to change', info);
         }).on('paused', function() {
-          console.log('paused');
+          console.log('to paused');
         }).on('active', function() {
-          console.log('active');
+          console.log('to active');
         }).on('denied', function(info) {
-          console.log('denied', info);
+          console.log('to denied', info);
         }).on('complete', function(info) {
-          console.log('complete', info);
+          console.log('to complete', info);
         }).on('error', function(err) {
-          console.log('error', err);
+          console.log('to error', err);
         });
-      pouchDB('_users')
-        .replicate.from('http://localhost:5988/_users', { live: true, retry: true });
+      // TODO only admins can replicate _users! Find another way to get current user information
+      // pouchDB('_users')
+      //   .replicate.from('http://localhost:5988/_users', replicationOptions);
     }
   ]);
 

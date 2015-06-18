@@ -52,7 +52,7 @@
 
           <div class="form-group" ng-show="permissions.admin">
             <label for="facility">{{'Facility' | translate}}</label>
-            <select id="facility" class="form-control" ng-model="editUserModel.facility" ng-options="facility.doc.name group by typeName(facility) for facility in facilities | orderBy:['doc.type','doc.name'] track by facility.doc._id">
+            <select id="facility" class="form-control" ng-model="editUserModel.facility" ng-options="facility.name group by typeName(facility) for facility in facilities | orderBy:['type','name'] track by facility._id">
               <option value=""></option>
             </select>
           </div>

@@ -24,7 +24,7 @@ var _ = require('underscore'),
     if (data.everyoneAt) {
       return true;
     }
-    var contact = data.doc.contact || data.doc;
+    var contact = data.contact || data;
     return contact && libphonenumber.validate(settings, contact.phone);
   };
 
@@ -74,7 +74,7 @@ var _ = require('underscore'),
 
   var formatEveryoneAt = function(row) {
     return translateFn('Everyone at', {
-      facility: row.doc.name,
+      facility: row.name,
       count: row.descendants && row.descendants.length
     });
   };
@@ -86,14 +86,14 @@ var _ = require('underscore'),
       icon = 'fa-hospital-o';
       contact = format.sender({
         name: formatEveryoneAt(row),
-        parent: row.doc.parent
+        parent: row.parent
       });
     } else if (row.freetext) {
       icon = 'fa-user';
       contact = '<span class="freetext">' + row.id + '</span>';
     } else {
       icon = 'fa-user';
-      contact = format.contact(row.doc);
+      contact = format.contact(row);
     }
     return '<span class="fa fa-fw ' + icon + '"></span>' + contact;
   };
@@ -102,14 +102,14 @@ var _ = require('underscore'),
     if (row.everyoneAt) {
       return formatEveryoneAt(row);
     }
-    return row.doc.name || row.doc.phone;
+    return row.name || row.phone;
   };
 
   var createChoiceFromNumber = function(phone) {
     return {
       id: phone,
       freetext: true,
-      doc: { phone: phone }
+      phone: phone
     };
   };
 
@@ -121,8 +121,8 @@ var _ = require('underscore'),
       return term;
     });
     var matches = _.filter(contacts, function(val) {
-      var tags = [ val.doc.name, val.doc.phone ];
-      var parent = val.doc.parent;
+      var tags = [ val.name, val.phone ];
+      var parent = val.parent;
       while (parent) {
         tags.push(parent.name);
         parent = parent.parent;
@@ -133,8 +133,8 @@ var _ = require('underscore'),
       });
     });
     matches.sort(function(a, b) {
-      return a.doc.name.toLowerCase().localeCompare(
-             b.doc.name.toLowerCase());
+      return a.name.toLowerCase().localeCompare(
+             b.name.toLowerCase());
     });
     return matches;
   };
@@ -236,9 +236,9 @@ var _ = require('underscore'),
       }
       callback(null, _.map(recipients, function(recipient) {
         // see if we can resolve the facility
-        var phone = recipient.doc.phone || recipient.doc.contact.phone;
+        var phone = recipient.phone || recipient.contact.phone;
         var match = _.find(contacts, function(contact) {
-          return contact.doc.phone === phone &&
+          return contact.phone === phone &&
                  contact.everyoneAt === recipient.everyoneAt;
         });
         return match || recipient;
