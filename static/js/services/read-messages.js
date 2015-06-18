@@ -31,10 +31,11 @@
   };
 
   inboxServices.factory('ReadMessages', [
-    'pouchDB',
-    function(pouchDB) {
+    'DB',
+    function(DB) {
       return function(options, callback) {
-        pouchDB('medic').query('medic/data_records_read_by_type', { group: true })
+        DB.get()
+          .query('medic/data_records_read_by_type', { group: true })
           .then(function(res) {
             callback(null, calculateStatus(res, options));
           })

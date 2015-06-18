@@ -8,10 +8,11 @@ var async = require('async'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('MessageContactsRaw', [
-    'pouchDB',
-    function(pouchDB) {
+    'DB',
+    function(DB) {
       return function(params, callback, targetScope) {
-        pouchDB('medic').query('medic/data_records_by_contact', params)
+        DB.get()
+          .query('medic/data_records_by_contact', params)
           .then(function(res) {
             callback(null, res.rows);
           })

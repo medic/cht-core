@@ -7,10 +7,10 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Settings', ['pouchDB',
-    function(pouchDB) {
+  inboxServices.factory('Settings', ['DB',
+    function(DB) {
       return function(callback) {
-        pouchDB('medic')
+        DB.get()
           .get('_design/medic')
           .then(function(doc) {
             callback(null, _.defaults(doc.app_settings, defaults));

@@ -20,10 +20,9 @@ var _ = require('underscore');
     function(pouchDB, UserDistrict) {
 
       // TODO work out how to go direct to remote for unrestricted users
-      // TODO handle nagivation when indexeddb transation not complete
       // TODO lock down api so non-admins can only replicate
-      // TODO for users replication, only replicate logged in user?
       // TODO replication doesn't work with non-admin basic auth?!
+      // TODO stop users from creating docs against another facility - update validation on replicate?
 
       var replicate = function(from, options) {
         options = options || {};
@@ -33,17 +32,22 @@ var _ = require('underscore');
           back_off_function: backOffFunction
         });
         var direction = from ? 'from' : 'to';
-        var fn = pouchDB('medic').replicate[direction];
+        var fn = get().replicate[direction];
         return fn('http://gareth:pass@localhost:5988/medic', options)
           .on('error', function(err) {
             console.log('Error replicating ' + direction + ' remote server', err);
           });
       };
 
-      return {
-        sync: function() {
+      var get = function(name) {
+        return pouchDB(name || 'medic');
+      };
 
-          var medic = pouchDB('medic');
+      return {
+
+        get: get,
+
+        sync: function() {
 
           UserDistrict(function(err, district) {
             if (err) {
@@ -62,9 +66,11 @@ var _ = require('underscore');
           replicate(false);
 
           // TODO only admins can replicate _users! Find another way to get current user information
+          // TODO user context is actually cached in the dom in appcache. listen to change and invalidate appcacahe?
           // pouchDB('_users')
           //   .replicate.from('http://localhost:5988/_users', replicationOptions);
         }
+
       };
     }
   ]);

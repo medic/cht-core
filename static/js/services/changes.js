@@ -23,9 +23,9 @@ var _ = require('underscore');
     }
   };
   
-  inboxServices.factory('Changes', ['pouchDB',
+  inboxServices.factory('Changes', ['DB',
 
-    function(pouchDB) {
+    function(DB) {
 
       var callbacks = {};
       var inited = [];
@@ -40,7 +40,7 @@ var _ = require('underscore');
         callbacks[options.key] = callback;
         if (!_.contains(inited, type)) {
           inited.push(type);
-          pouchDB('medic')
+          DB.get()
             .changes({ live: true, since: 'now', filter: getFilter(options) })
             .on('change', function(data) {
               if (data && data.changes) {

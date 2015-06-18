@@ -6,10 +6,10 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('DbView', ['pouchDB',
-    function(pouchDB) {
+  inboxServices.factory('DbView', ['DB',
+    function(DB) {
       return function(viewName, options, callback) {
-        pouchDB('medic')
+        DB.get()
           .query('medic/' + viewName, options.params)
           .then(function(results) {
             var meta = {

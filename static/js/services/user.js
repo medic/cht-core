@@ -25,10 +25,10 @@ var _ = require('underscore'),
     }
   ]);
 
-  inboxServices.factory('User', ['UserCtxService', 'pouchDB',
-    function(UserCtxService, pouchDB) {
+  inboxServices.factory('User', ['UserCtxService', 'DB',
+    function(UserCtxService, DB) {
       return function(callback) {
-        pouchDB('_users')
+        DB.get('_users')
           .get('org.couchdb.user:' + UserCtxService().name)
           .then(function(data) {
             callback(null, data);
