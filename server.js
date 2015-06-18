@@ -346,13 +346,13 @@ app.get('/api/v1/scheduler/:name', function(req, res) {
 
 app.get('/api/v1/forms', function(req, res) {
   forms.listForms(req.headers, function(err, body, headers) {
-      if (err) {
-        return serverError(err, res);
-      }
-      if (headers) {
-        res.writeHead(headers.statusCode || 200, headers);
-      }
-      res.end(body);
+    if (err) {
+      return serverError(err, res);
+    }
+    if (headers) {
+      res.writeHead(headers.statusCode || 200, headers);
+    }
+    res.end(body);
   });
 });
 
@@ -371,6 +371,32 @@ app.get('/api/v1/forms/:form', function(req, res) {
       res.writeHead(headers.statusCode || 200, headers);
     }
     res.end(body);
+  });
+});
+
+// DB replication endpoint
+app.get('/medic/_changes', function(req, res) {
+  auth.getUserCtx(req, function(err, userCtx) {
+    if (err) {
+      return error(err, res);
+    }
+    if (auth.hasAllPermissions(userCtx, 'can_access_directly')) {
+      proxy.web(req, res);
+    } else {
+      auth.getFacilityId(req, userCtx, function(err, facilityId) {
+        if (err) {
+          return error(err, res);
+        }
+        // for security reasons ensure the params haven't been tampered with
+        if (req.query.filter !== 'medic/doc_by_place' ||
+            req.query.id !== facilityId ||
+            req.query.unassigned !== 'false') { // TODO get this from settings and role
+          console.log('Unauthorized replication attempt');
+          return error({ code: 403, message: 'Forbidden' }, res);
+        }
+        proxy.web(req, res);
+      });
+    }
   });
 });
 

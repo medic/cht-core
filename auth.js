@@ -3,6 +3,7 @@ var http = require('http'),
     db = require('./db');
 
 var permissionsMap = {
+  can_access_directly: ['national_admin'],
   can_export_messages: ['national_admin', 'district_admin', 'analytics'],
   can_export_audit: ['national_admin'],
   can_export_feedback: ['national_admin'],
@@ -94,19 +95,6 @@ var hasPermission = function(userCtx, permission) {
   });
 };
 
-var hasAllPermissions = function(userCtx, permissions) {
-  if (isDbAdmin(userCtx)) {
-    return true;
-  }
-  if (!permissions || !userCtx || !userCtx.roles) {
-    return false;
-  }
-  if (!_.isArray(permissions)) {
-    permissions = [ permissions ];
-  }
-  return _.every(permissions, _.partial(hasPermission, userCtx));
-};
-
 var checkDistrict = function(requested, permitted, callback) {
   if (!requested) {
     // limit to configured facility
@@ -123,38 +111,61 @@ var checkDistrict = function(requested, permitted, callback) {
   return callback({ code: 403, message: 'Insufficient privileges' });
 };
 
-var getUserCtx = function(req, callback) {
-  get('/_session', req.headers, function(err, auth) {
-    if (err) {
-      return callback(err);
-    }
-    if (auth && auth.userCtx && auth.userCtx.name) {
-      callback(null, auth.userCtx);
-    } else {
-      callback('Not logged in');
-    }
-  });
-};
 
 module.exports = {
 
-  check: function(req, permissions, districtId, callback) {
-    getUserCtx(req, function(err, userCtx) {
+  hasAllPermissions: function(userCtx, permissions) {
+    if (isDbAdmin(userCtx)) {
+      return true;
+    }
+    if (!permissions || !userCtx || !userCtx.roles) {
+      return false;
+    }
+    if (!_.isArray(permissions)) {
+      permissions = [ permissions ];
+    }
+    return _.every(permissions, _.partial(hasPermission, userCtx));
+  },
+
+  getUserCtx: function(req, callback) {
+    get('/_session', req.headers, function(err, auth) {
       if (err) {
-        return callback({ code: 401, message: err });
+        return callback({ code: 401, message: 'Not logged in', err: err });
+      }
+      if (auth && auth.userCtx && auth.userCtx.name) {
+        callback(null, auth.userCtx);
+      } else {
+        callback({ code: 401, message: 'Not logged in' });
+      }
+    });
+  },
+
+  getFacilityId: function(req, userCtx, callback) {
+    var url = '/_users/org.couchdb.user:' + userCtx.name;
+    get(url, req.headers, function(err, user) {
+      if (err) {
+        return callback({ code: 500, message: err });
+      }
+      callback(null, user.facility_id);
+    });
+  },
+
+  check: function(req, permissions, districtId, callback) {
+    module.exports.getUserCtx(req, function(err, userCtx) {
+      if (err) {
+        return callback(err);
       }
       if (isDbAdmin(userCtx)) {
         return callback(null, { user: userCtx.name });
       }
-      if (!hasAllPermissions(userCtx, permissions)) {
+      if (!module.exports.hasAllPermissions(userCtx, permissions)) {
         return callback({ code: 403, message: 'Insufficient privileges' });
       }
-      var url = '/_users/org.couchdb.user:' + userCtx.name;
-      get(url, req.headers, function(err, user) {
+      module.exports.getFacilityId(req, userCtx, function(err, facilityId) {
         if (err) {
           return callback({ code: 500, message: err });
         }
-        checkDistrict(districtId, user.facility_id, function(err, district) {
+        checkDistrict(districtId, facilityId, function(err, district) {
           if (err) {
             return callback(err);
           }
