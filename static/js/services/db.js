@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    utils = require('kujua-utils');
 
 (function () {
 
@@ -16,10 +17,9 @@ var _ = require('underscore');
   };
 
   inboxServices.factory('DB', [
-    'pouchDB', 'UserDistrict',
-    function(pouchDB, UserDistrict) {
+    'pouchDB', 'UserDistrict', 'UserCtxService',
+    function(pouchDB, UserDistrict, UserCtxService) {
 
-      // TODO work out how to go direct to remote for unrestricted users
       // TODO lock down api so non-admins can only replicate
       // TODO replication doesn't work with non-admin basic auth?!
       // TODO stop users from creating docs against another facility - update validation on replicate?
@@ -39,8 +39,16 @@ var _ = require('underscore');
           });
       };
 
+      var isAdmin = function() {
+        return utils.isUserAdmin(UserCtxService());
+      };
+
       var get = function(name) {
-        return pouchDB(name || 'medic');
+        name = name || 'medic';
+        if (isAdmin) {
+          name = 'http://localhost:5988/' + name;
+        }
+        return pouchDB(name);
       };
 
       return {
@@ -48,6 +56,11 @@ var _ = require('underscore');
         get: get,
 
         sync: function() {
+
+          if (isAdmin()) {
+            // admins have potentially too much data so bypass local pouch
+            return;
+          }
 
           UserDistrict(function(err, district) {
             if (err) {
