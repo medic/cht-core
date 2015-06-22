@@ -11,10 +11,10 @@ describe('Form service', function() {
   beforeEach(function (){
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('Settings', function(options, callback) {
+      $provide.value('Settings', function(callback) {
         callback(null, { forms: results });
       });
-      $provide.value('Language', function(options, callback) {
+      $provide.value('Language', function(callback) {
         callback(null, language);
       });
     });

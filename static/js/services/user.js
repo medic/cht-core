@@ -34,7 +34,7 @@ var _ = require('underscore'),
             callback(null, data);
           })
           .catch(function(data) {
-            callback(new Error(data))
+            callback(new Error(data));
           });
       };
     }

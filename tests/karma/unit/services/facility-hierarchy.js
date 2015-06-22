@@ -49,25 +49,38 @@ describe('FacilityHierarchy service', function() {
 
   it('builds hierarchy for facilities', function(done) {
 
-    var a = { _id: 'a', type: 'clinic', parent: { _id: 'b' } };
-    var b = { _id: 'b', type: 'health_center', parent: { _id: 'c' } };
-    var c = { _id: 'c', type: 'district_hospital' };
-    var d = { _id: 'd', type: 'clinic', parent: { _id: 'b' } };
-    var e = { _id: 'e', type: 'district_hospital', parent: { _id: 'x' } }; // unknown parent is ignored
-    var f = { _id: 'f', type: 'district_hospital' };
+    var a = { _id: 'a', parent: { _id: 'b' } };
+    var b = { _id: 'b', parent: { _id: 'c' } };
+    var c = { _id: 'c' };
+    var d = { _id: 'd', parent: { _id: 'b' } };
+    var e = { _id: 'e', parent: { _id: 'x' } }; // unknown parent is ignored
+    var f = { _id: 'f' };
 
-    facilities = [ { doc: a }, { doc: b }, { doc: c }, { doc: d }, { doc: e }, { doc: f } ];
+    facilities = [ a, b, c, d, e, f ];
 
     service(null, function(err, actual, actualTotal) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([
-        { doc: c, children: [
-          { doc: b, children: [
-            { doc: a },
-            { doc: d }
-          ] }
-        ] },
-        { doc: f }
+        {
+          _id: 'c',
+          children: [
+            {
+              _id: 'b',
+              parent: { _id: 'c' },
+              children: [
+                {
+                  _id: 'a',
+                  parent: { _id: 'b' }
+                },
+                {
+                  _id: 'd',
+                  parent: { _id: 'b' }
+                }
+              ]
+            }
+          ]
+        },
+        { _id: 'f' }
       ]);
       chai.expect(actualTotal).to.equal(5);
       done();

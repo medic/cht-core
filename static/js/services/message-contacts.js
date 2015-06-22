@@ -10,7 +10,7 @@ var async = require('async'),
   inboxServices.factory('MessageContactsRaw', [
     'DB',
     function(DB) {
-      return function(params, callback, targetScope) {
+      return function(params, callback) {
         DB.get()
           .query('medic/data_records_by_contact', params)
           .then(function(res) {
@@ -42,7 +42,7 @@ var async = require('async'),
       },
       request: ['district', function(callback, results) {
         var query = generateQuery(options, results.district || 'admin');
-        MessageContactsRaw(query, callback, options.targetScope);
+        MessageContactsRaw(query, callback);
       }],
       unallocated: function(callback) {
         if (!options.districtAdmin) {
@@ -57,7 +57,7 @@ var async = require('async'),
         if (!results.unallocated) {
           return callback();
         }
-        MessageContactsRaw(generateQuery(options, 'none'), callback, options.targetScope);
+        MessageContactsRaw(generateQuery(options, 'none'), callback);
       }]
     }, function(err, results) {
       var merged;

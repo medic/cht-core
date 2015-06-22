@@ -20,7 +20,7 @@ var _ = require('underscore');
     var type = options.type || 'data_record';
     return function(doc) {
       return doc.type === type;
-    }
+    };
   };
   
   inboxServices.factory('Changes', ['DB',

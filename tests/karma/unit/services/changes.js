@@ -10,11 +10,18 @@ describe('Changes service', function() {
   beforeEach(function () {
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('db', {
-        changes: function(options, callback) {
-          changesCount++;
-          chai.expect(options.filter).to.equal(filter);
-          changesCallback = callback;
+      $provide.value('DB', {
+        get: function() {
+          return {
+            changes: function() {
+              changesCount++;
+              return {
+                on: function(type, callback) {
+                  changesCallback = callback;
+                }
+              };
+            }
+          };
         }
       });
     });
@@ -36,7 +43,7 @@ describe('Changes service', function() {
       done();
     });
 
-    changesCallback(null, { results: expected });
+    changesCallback({ changes: expected });
   });
 
   it('calls the most recent callback with no key only', function(done) {
@@ -53,7 +60,7 @@ describe('Changes service', function() {
       done();
     });
 
-    changesCallback(null, { results: expected });
+    changesCallback({ changes: expected });
   });
 
   it('calls all registered callbacks', function(done) {
@@ -70,7 +77,7 @@ describe('Changes service', function() {
       results.key2.push(actual);
     });
 
-    changesCallback(null, { results: expected });
+    changesCallback({ changes: expected });
 
     chai.expect(results.key1.length).to.equal(1);
     chai.expect(results.key2.length).to.equal(1);
@@ -88,7 +95,7 @@ describe('Changes service', function() {
     });
 
     changesCallback('bugger');
-    changesCallback(null, {});
+    changesCallback({});
 
     done();
   });
@@ -99,7 +106,7 @@ describe('Changes service', function() {
       chai.expect(false).to.equal(true);
     });
 
-    changesCallback(null, {});
+    changesCallback({});
 
     done();
   });
@@ -115,6 +122,6 @@ describe('Changes service', function() {
       done();
     });
 
-    changesCallback(null, { results: expected });
+    changesCallback({ changes: expected });
   });
 });

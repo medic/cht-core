@@ -84,7 +84,7 @@ var _ = require('underscore');
                 contacts.push(_.extend({
                   everyoneAt: true,
                   descendants: _.filter(res, function(child) {
-                    return descendant(contact.id, child.parent);
+                    return descendant(contact._id, child.parent);
                   })
                 }, contact));
               }
