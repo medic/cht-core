@@ -278,6 +278,88 @@ exports['get exports reports in xml with each type on a separate tab'] = functio
   });
 };
 
+exports['if form definition not found then cannot add specific columns'] = function(test) {
+  test.expect(3);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    rows: [
+      { doc: {
+        _id: 'abc',
+        patient_id: '123456',
+        reported_date: 123456789,
+        form: 'STCK',
+        fields: {
+          qty: 115,
+          year: 2014
+        }
+      } },
+      { doc: {
+        _id: 'def',
+        patient_id: '654321',
+        reported_date: 987654321,
+        form: 'V',
+        fields: {
+          status: 'ok'
+        }
+      } },
+      { doc: {
+        _id: 'hij',
+        patient_id: '654321',
+        reported_date: 987654321,
+        form: 'D',
+        fields: {
+          qty: 3,
+          year: 2015
+        }
+      } }
+    ]
+  });
+  var configGet = sinon.stub(config, 'get').returns({
+    V: {
+      meta: {
+        label: { en: 'Visits' }
+      },
+      fields: {
+        status: { labels: { short: { en: 'Patient Status' } } }
+      }
+    },
+    STCK: {
+      meta: {
+        label: { en: 'Stock Monitoring' }
+      },
+      fields: {
+        qty: { labels: { short: { en: 'Quantity' } } },
+        year: { labels: { short: { en: 'Year' } } }
+      }
+    }
+  });
+  var expected =  '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html140" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">' +
+                    '<Worksheet ss:Name="{Reports:en}"><Table>' +
+                      '<Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell></Row>' +
+                      '<Row><Cell><Data ss:Type="String">abc</Data></Cell></Row>' +
+                      '<Row><Cell><Data ss:Type="String">def</Data></Cell></Row>' +
+                      '<Row><Cell><Data ss:Type="String">hij</Data></Cell></Row>' +
+                    '</Table></Worksheet>' +
+                    '<Worksheet ss:Name="D"><Table>' +
+                      '<Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell></Row>' +
+                      '<Row><Cell><Data ss:Type="String">hij</Data></Cell></Row>' +
+                    '</Table></Worksheet>' +
+                    '<Worksheet ss:Name="Stock Monitoring"><Table>' +
+                      '<Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell><Cell><Data ss:Type="String">Quantity</Data></Cell><Cell><Data ss:Type="String">Year</Data></Cell></Row>' +
+                      '<Row><Cell><Data ss:Type="String">abc</Data></Cell><Cell><Data ss:Type="String">115</Data></Cell><Cell><Data ss:Type="String">2014</Data></Cell></Row>' +
+                    '</Table></Worksheet>' +
+                    '<Worksheet ss:Name="Visits"><Table>' +
+                      '<Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell><Cell><Data ss:Type="String">Patient Status</Data></Cell></Row>' +
+                      '<Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">ok</Data></Cell></Row>' +
+                    '</Table></Worksheet>' +
+                  '</Workbook>';
+  controller.get({ type: 'forms', tz: '0', format: 'xml', columns: '[ "_id" ]' }, function(err, results) {
+    test.equals(results, expected);
+    test.equals(getView.callCount, 1);
+    test.equals(configGet.callCount, 3);
+    test.done();
+  });
+};
+
 exports['get uses locale param'] = function(test) {
   test.expect(2);
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {

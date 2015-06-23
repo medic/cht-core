@@ -75,15 +75,21 @@ var exportTypes = {
         if (!byForm[formCode]) {
           var def = config.get('forms')[formCode];
           columns = options.columns.concat([]);
-          for (var k in def.fields) {
-            var labels = def.fields[k].labels.short;
-            columns.push({
-              column: 'fields.' + k,
-              label: labels[options.locale] || labels.en || k
-            });
+          if (def) {
+            for (var k in def.fields) {
+              var labels = def.fields[k].labels.short;
+              columns.push({
+                column: 'fields.' + k,
+                label: labels[options.locale] || labels.en || k
+              });
+            }
           }
+          var label = def && def.meta && def.meta.label;
+          var name = label && label[options.locale] ||
+                     label && label.en ||
+                     formCode;
           byForm[formCode] = {
-            name: def.meta.label[options.locale] || def.meta.label.en || form,
+            name: name,
             columns: columns,
             rawColumnNames: _.pluck(columns, 'column'),
             data: []
