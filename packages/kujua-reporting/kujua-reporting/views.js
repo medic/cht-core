@@ -68,28 +68,28 @@ exports.total_clinics_by_facility = {
 exports.data_records_by_form_year_week_facility = {
     map: function (doc) {
 
-        if (doc.type && !doc.type.match(/data_record/))
+        if (doc.type !== 'data_record') {
             return;
+        }
 
-        if (!(doc.week_number || doc.week) || !doc.form)
+        if (!doc.form || !doc.fields) {
             return;
+        }
+
+        if (!doc.fields.week_number && !doc.fields.week) {
+            return;
+        }
 
         var utils = require('views/lib/kujua-reporting'),
             facilities = utils.getFacilitiesList(doc),
             dh = facilities[0],
             hc = facilities[1],
             cl = facilities[2],
-            week_number = parseInt(doc.week_number || doc.week, 10),
+            year = parseInt(doc.fields.year, 10),
+            week_number = parseInt(doc.fields.week_number || doc.fields.week, 10),
             is_valid = (doc.errors && doc.errors.length === 0);
 
-        var key = [
-            doc.form,
-            parseInt(doc.year, 10),
-            week_number,
-            dh._id,
-            hc._id,
-            cl._id
-        ];
+        var key = [ doc.form, year, week_number, dh._id, hc._id, cl._id ];
 
         emit(key, {
             district_hospital: dh.name,
@@ -108,27 +108,24 @@ exports.data_records_by_form_year_week_facility = {
 exports.data_records_by_form_year_month_facility = {
     map: function (doc) {
 
-        if (doc.type && !doc.type.match(/data_record/))
+        if (doc.type !== 'data_record') {
             return;
+        }
 
-        if (!doc.month || !doc.form)
+        if (!doc.fields || !doc.fields.month || !doc.form) {
             return;
+        }
 
         var utils = require('views/lib/kujua-reporting'),
             facilities = utils.getFacilitiesList(doc),
             dh = facilities[0],
             hc = facilities[1],
             cl = facilities[2],
+            year = parseInt(doc.fields.year, 10),
+            month = parseInt(doc.fields.month, 10);
             is_valid = (doc.errors && doc.errors.length === 0);
 
-        var key = [
-            doc.form,
-            parseInt(doc.year, 10),
-            parseInt(doc.month, 10),
-            dh._id,
-            hc._id,
-            cl._id
-        ];
+        var key = [ doc.form, year, month, dh._id, hc._id, cl._id ];
 
         emit(
             key,
@@ -139,7 +136,7 @@ exports.data_records_by_form_year_month_facility = {
                 reporter: utils.getReporterName(facilities.reverse(), doc.from),
                 reporting_phone: doc.from,
                 is_valid: is_valid,
-                month: parseInt(doc.month, 10)
+                month: month
             }
         );
     }
