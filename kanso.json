@@ -148,6 +148,10 @@
                     {
                         "code": "sw",
                         "name": "Kiswahili (Swahili)"
+                    },
+                    {
+                        "code": "hi",
+                        "name": "हिन्दी (Hindi)"
                     }
                 ]
             },
