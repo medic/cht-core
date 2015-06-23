@@ -65,7 +65,8 @@ module.exports = function(grunt) {
           'bower_components/concat.js',
           'bower_components/bootstrap-tour/build/js/bootstrap-tour.js',
           'static/js/bootstrap-multidropdown.js',
-          'static/dist/inbox.js'
+          'static/dist/inbox.js',
+          'static/dist/templates.js'
         ],
         dest: 'static/dist/inbox.js',
       }
@@ -181,11 +182,11 @@ module.exports = function(grunt) {
         tasks: ['mmcss', 'appcache', 'deploy']
       },
       js: {
-        files: ['static/js/**/*', 'packages/kujua-*/**/*', 'packages/feedback/**/*'],
+        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'packages/feedback/**/*'],
         tasks: ['mmjs', 'appcache', 'deploy']
       },
       other: {
-        files: ['templates/**/*', 'lib/**/*'],
+        files: ['lib/**/*'],
         tasks: ['appcache', 'deploy']
       }
     },
@@ -216,6 +217,12 @@ module.exports = function(grunt) {
         browsers: ['PhantomJS']
       }
     },
+    ngtemplates: {
+      inboxApp: {
+        src: [ 'templates/modals/**/*.html', 'templates/partials/**/*.html' ],
+        dest: 'static/dist/templates.js'
+      }
+    },
     appcache: {
       options: {
         baseUrl: '../../'
@@ -226,8 +233,7 @@ module.exports = function(grunt) {
           patterns: [
             'static/dist/**/*',
             'static/fonts/**/*',
-            'static/img/**/*',
-            'templates/**/*'
+            'static/img/**/*'
           ]
         },
         network: '*'
@@ -236,6 +242,7 @@ module.exports = function(grunt) {
   });
 
   // Load the plugins
+  grunt.loadNpmTasks('grunt-angular-templates');
   grunt.loadNpmTasks('grunt-appcache');
   grunt.loadNpmTasks('grunt-autoprefixer');
   grunt.loadNpmTasks('grunt-bower-concat');
@@ -260,6 +267,7 @@ module.exports = function(grunt) {
   grunt.registerTask('mmjs', 'Build the JS resources', [
     'copy:settings',
     'browserify:dist',
+    'ngtemplates',
     'concat:js'
   ]);
 
@@ -286,7 +294,7 @@ module.exports = function(grunt) {
     'mmbower',
     'mmcss',
     'mmjs',
-    'appcache',
+    'appcache'
   ]);
 
   grunt.registerTask('minify', 'Minify JS and CSS', [
