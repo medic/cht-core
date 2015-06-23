@@ -66,7 +66,10 @@ var _ = require('underscore'),
               $scope.language = null;
               $scope.editing = null;
               $scope.errors = {};
-              $rootScope.$broadcast('LanguageUpdated', { locales: locales, settings: res });
+              $rootScope.$broadcast('LanguageUpdated', {
+                locales: locales,
+                settings: res
+              });
               pane.done();
             });
           });
