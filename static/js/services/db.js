@@ -44,9 +44,8 @@ var _ = require('underscore'),
       };
 
       var get = function(name) {
-        console.log('GETTING', isAdmin());
         name = name || 'medic';
-        if (isAdmin) {
+        if (isAdmin()) {
           name = 'http://localhost:5988/' + name;
         }
         return pouchDB(name);
@@ -57,8 +56,6 @@ var _ = require('underscore'),
         get: get,
 
         sync: function() {
-
-          console.log('SYNCING', isAdmin());
 
           if (isAdmin()) {
             // admins have potentially too much data so bypass local pouch
