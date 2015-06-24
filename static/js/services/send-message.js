@@ -9,8 +9,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('SendMessage', ['$q', 'db', 'User', 'Settings',
-    function($q, db, User, Settings) {
+  inboxServices.factory('SendMessage', ['$q', 'DB', 'User', 'Settings',
+    function($q, DB, User, Settings) {
 
       var createMessageDoc = function(user, recipients) {
         var name = user && user.name;
@@ -38,13 +38,13 @@ var _ = require('underscore'),
 
       var mapRecipients = function(recipients) {
         var results = _.filter(recipients, function(recipient) {
-          return recipient.doc.phone ||
-                 recipient.doc.contact && recipient.doc.contact.phone;
+          return recipient.phone ||
+                 recipient.contact && recipient.contact.phone;
         });
         return _.map(results, function(recipient) {
           return {
-            phone: recipient.doc.phone || recipient.doc.contact.phone,
-            facility: recipient.doc
+            phone: recipient.phone || recipient.contact.phone,
+            facility: recipient
           };
         });
       };
@@ -97,24 +97,28 @@ var _ = require('underscore'),
             async.forEachSeries(
               explodedRecipients,
               function(data, callback) {
-                db.newUUID(100, function (err, uuid) {
-                  if (!err) {
-                    doc.tasks.push(createTask(settings, data, message, user, uuid));
-                  }
-                  callback(err);
-                });
+                DB.get()
+                  .id()
+                  .then(function(id) {
+                    doc.tasks.push(createTask(settings, data, message, user, id));
+                    callback();
+                  })
+                  .catch(function(err) {
+                    callback(err);
+                  });
               },
               function(err) {
                 if (err) {
                   return deferred.reject(err);
                 }
-                db.saveDoc(doc, function(err) {
-                  if (err) {
-                    deferred.reject(err);
-                  } else {
+                DB.get()
+                  .post(doc)
+                  .then(function() {
                     deferred.resolve();
-                  }
-                });
+                  })
+                  .catch(function(err) {
+                    deferred.reject(err);
+                  });
               }
             );
           });

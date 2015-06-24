@@ -236,7 +236,10 @@ var _ = require('underscore'),
       }
       callback(null, _.map(recipients, function(recipient) {
         // see if we can resolve the facility
-        var phone = recipient.phone || recipient.contact.phone;
+        var phone = (recipient.doc && recipient.doc.phone) ||
+                    (recipient.doc && recipient.doc.contact.phone) ||
+                    (recipient.phone) ||
+                    (recipient.contact.phone);
         var match = _.find(contacts, function(contact) {
           return contact.phone === phone &&
                  contact.everyoneAt === recipient.everyoneAt;
