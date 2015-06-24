@@ -202,18 +202,19 @@ var _ = require('underscore'),
             id: 'stock',
             label: 'Stock Monitoring',
             available: function() {
-              var forms = settings.forms;
-              var stockForms = settings['kujua-reporting'];
-              return _.some(stockForms, function(stockForm) {
-                return !!forms[stockForm.code];
-              });
+              return getScheduledForms(settings).length > 0;
             },
             render: function(scope) {
 
               scope.facilities = [];
               scope.districts = [];
-              scope.time = { time_unit: 'month', quantity: 3 };
-              scope.$watch('time', function() {
+              scope.filters = {
+                time_unit: 'month',
+                quantity: 3,
+                form: settings['kujua-reporting'][0].code
+              };
+              scope.forms = getScheduledForms(settings);
+              scope.$watch('filters', function() {
                 if (scope.district) {
                   scope.setDistrict(scope.district);
                 }
@@ -250,7 +251,12 @@ var _ = require('underscore'),
               };
 
               scope.setTime = function(time) {
-                scope.time = time;
+                scope.filters.time_unit = time.time_unit;
+                scope.filters.quantity = time.quantity;
+              };
+
+              scope.setForm = function(form) {
+                scope.filters.form = form;
               };
 
               var colours = {
@@ -266,8 +272,7 @@ var _ = require('underscore'),
 
               scope.setDistrict = function(district) {
                 scope.district = district;
-                scope.time.form = settings['kujua-reporting'][0].code;
-                var dates = stockUtils.getDates(scope.time);
+                var dates = stockUtils.getDates(scope.filters);
                 db.getDoc(district.id || district._id, function(err, district) {
                   if (err) {
                     return console.log(err);
@@ -343,6 +348,18 @@ var _ = require('underscore'),
       };
     }
   ]);
+
+  var getScheduledForms = function(settings) {
+    var results = [];
+    _.each(_.pairs(settings.forms), function(pair) {
+      if (_.some(settings['kujua-reporting'], function(report) {
+        return report.code === pair[0];
+      })) {
+        results.push(pair[1]);
+      }
+    });
+    return results;
+  };
 
   var getViewReports = function(DbView, doc, dates, callback) {
     var params = stockUtils.getReportingViewArgs(dates),
