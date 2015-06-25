@@ -24,7 +24,7 @@ var _ = require('underscore'),
     if (data.everyoneAt) {
       return true;
     }
-    var contact = data.contact || data;
+    var contact = data.doc.contact || data.doc;
     return contact && libphonenumber.validate(settings, contact.phone);
   };
 
@@ -74,7 +74,7 @@ var _ = require('underscore'),
 
   var formatEveryoneAt = function(row) {
     return translateFn('Everyone at', {
-      facility: row.name,
+      facility: row.doc.name,
       count: row.descendants && row.descendants.length
     });
   };
@@ -93,7 +93,7 @@ var _ = require('underscore'),
       contact = '<span class="freetext">' + row.id + '</span>';
     } else {
       icon = 'fa-user';
-      contact = format.contact(row);
+      contact = format.contact(row.doc);
     }
     return '<span class="fa fa-fw ' + icon + '"></span>' + contact;
   };
@@ -102,7 +102,7 @@ var _ = require('underscore'),
     if (row.everyoneAt) {
       return formatEveryoneAt(row);
     }
-    return row.name || row.phone;
+    return row.doc.name || row.doc.phone;
   };
 
   var createChoiceFromNumber = function(phone) {
@@ -136,7 +136,9 @@ var _ = require('underscore'),
       return a.name.toLowerCase().localeCompare(
              b.name.toLowerCase());
     });
-    return matches;
+    return _.map(matches, function(doc) {
+      return { id: doc._id, doc: doc, everyoneAt: doc.everyoneAt };
+    });
   };
 
   var initPhoneField = function($phone) {
