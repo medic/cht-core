@@ -70,6 +70,10 @@ app.all('*/update_settings/*', function(req, res) {
   // don't audit the app settings
   proxy.web(req, res);
 });
+app.all('/' + db.settings.db + '/_revs_diff', function(req, res) {
+  // don't audit the _revs_diff
+  proxy.web(req, res);
+});
 
 var audit = function(req, res) {
   var ap = new AuditProxy();
@@ -82,7 +86,7 @@ var audit = function(req, res) {
   ap.audit(proxyForAuditing, req, res);
 };
 
-var auditPath = db.settings.db + '*';
+var auditPath = '/' + db.settings.db + '*';
 app.put(auditPath, audit);
 app.post(auditPath, audit);
 app.delete(auditPath, audit);

@@ -5,7 +5,7 @@
   "dependencies": {
     "async": "~0.9.0",
     "body-parser": "^1.12.3",
-    "couchdb-audit": "~0.2.0",
+    "couchdb-audit": "~0.2.1",
     "cron": "~1.0.5",
     "express": "~4.12.4",
     "fast-csv": "^0.5.5",
