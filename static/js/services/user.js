@@ -25,15 +25,15 @@ var _ = require('underscore'),
     }
   ]);
 
-  inboxServices.factory('User', ['UserCtxService', 'DB',
-    function(UserCtxService, DB) {
+  inboxServices.factory('User', ['HttpWrapper', 'UserCtxService',
+    function(HttpWrapper, UserCtxService) {
       return function(callback) {
-        DB.get('_users')
-          .get('org.couchdb.user:' + UserCtxService().name)
-          .then(function(data) {
+        HttpWrapper
+          .get('/_users/org.couchdb.user%3A' + UserCtxService().name, { cache: true })
+          .success(function(data) {
             callback(null, data);
           })
-          .catch(function(data) {
+          .error(function(data) {
             callback(new Error(data));
           });
       };
