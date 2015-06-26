@@ -33,7 +33,8 @@ var _ = require('underscore'),
     fti = require('./controllers/fti'),
     createDomain = require('domain').create,
     staticResources = /\/(templates|static)\//,
-    appcacheManifest = /manifest\.appcache/;
+    appcacheManifest = /manifest\.appcache/,
+    pathPrefix = '/' + db.settings.db;
 
 http.globalAgent.maxSockets = 100;
 
@@ -66,16 +67,21 @@ var jsonParser = bodyParser.json({limit: '32mb'});
 // requires content-type header application/x-www-form-urlencoded
 var formParser = bodyParser.urlencoded({limit: '32mb', extended: false});
 
-app.all('*/update_settings/*', function(req, res) {
+app.all(pathPrefix + '/_design/' + db.settings.ddoc + '/_rewrite/update_settings/*', function(req, res) {
   // don't audit the app settings
   proxy.web(req, res);
 });
-app.all('/' + db.settings.db + '/_revs_diff', function(req, res) {
+app.all(pathPrefix + '/_revs_diff', function(req, res) {
   // don't audit the _revs_diff
+  proxy.web(req, res);
+});
+app.all(pathPrefix + '/_local/*', function(req, res) {
+  // don't audit the _local docs
   proxy.web(req, res);
 });
 
 var audit = function(req, res) {
+  console.log('AUDITING', req.path);
   var ap = new AuditProxy();
   ap.on('error', function(e) {
     serverError(e, res);
@@ -86,7 +92,7 @@ var audit = function(req, res) {
   ap.audit(proxyForAuditing, req, res);
 };
 
-var auditPath = '/' + db.settings.db + '*';
+var auditPath = pathPrefix + '*';
 app.put(auditPath, audit);
 app.post(auditPath, audit);
 app.delete(auditPath, audit);
