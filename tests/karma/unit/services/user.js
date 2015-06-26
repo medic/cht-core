@@ -3,8 +3,7 @@ describe('User service', function() {
   'use strict';
 
   var service,
-      successCb,
-      failCb,
+      $httpBackend,
       username = 'john';
 
   beforeEach(function() {
@@ -13,47 +12,49 @@ describe('User service', function() {
       $provide.value('UserCtxService', function() {
         return { name: username };
       });
-      $provide.value('DB', {
-        get: function() {
-          return {
-            get: function() {
-              return {
-                then: function(cb) {
-                  successCb = cb;
-                  return {
-                    catch: function(cb) {
-                      failCb = cb;
-                    }
-                  };
-                }
-              };
-            }
-          };
-        }
-      });
     });
     inject(function($injector) {
+      $httpBackend = $injector.get('$httpBackend');
       service = $injector.get('User');
     });
-    successCb = failCb = null;
+  });
+
+  afterEach(function() {
+    $httpBackend.verifyNoOutstandingExpectation();
+    $httpBackend.verifyNoOutstandingRequest();
   });
 
   it('retrieves user', function(done) {
+
     var expected = { fullname: 'John Smith' };
+
+    $httpBackend
+      .expect('GET', '/_users/org.couchdb.user%3A' + username)
+      .respond(expected);
+
     service(function(err, user) {
       chai.expect(err).to.equal(null);
       chai.expect(user).to.deep.equal(expected);
       done();
     });
-    successCb(expected);
+
+    $httpBackend.flush();
+
   });
 
   it('returns errors', function(done) {
+
+    $httpBackend
+      .expect('GET', '/_users/org.couchdb.user%3A' + username)
+      .respond(404, 'Not found');
+
     service(function(err) {
       chai.expect(err.message).to.equal('Not found');
       done();
     });
-    failCb('Not found');
+
+    $httpBackend.flush();
+
   });
 
 });
