@@ -24,7 +24,7 @@ if (couchUrl) {
     }
 
     module.exports.fti = function(index, data, cb) {
-        var uri = path.join('/_fti/local', settings.db, '_design', settings.ddoc, index);
+        var uri = path.join('/_fti/local', module.exports.settings.db, '_design', module.exports.settings.ddoc, index);
         module.exports.request({ path: uri, qs: data }, cb);
     };
     module.exports.config = function(cb) {
