@@ -126,7 +126,6 @@ exports['compact textforms format handles quotes in quotes'] = function(test) {
         somedate: 1331510400000
     };
 
-    debugger;
     var obj = smsparser.parse(def, doc);
     test.same(obj, expectedObj);
     test.done();
