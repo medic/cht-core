@@ -4,34 +4,41 @@
 
   var inboxServices = angular.module('inboxServices');
 
-  var updateParent = function(db, doc, callback) {
-    if (doc.type === 'person' && doc.parent && doc.parent._id) {
-      db.getDoc(doc.parent._id, function(err, parent)  {
-        if (err) {
-          if (err.reason === 'deleted') {
-            return callback();
-          }
-          return callback(err);
-        }
-        if (parent.contact.phone !== doc.phone) {
-          return callback();
-        }
-        parent.contact = null;
-        db.saveDoc(parent, callback);
-      });
-    } else {
-      callback();
-    }
-  };
-
   inboxServices.factory('DeleteDoc', ['$rootScope', 'db',
     function($rootScope, db) {
+
+      var updateParent = function(doc, callback) {
+        if (doc.type === 'person' && doc.parent && doc.parent._id) {
+          db.getDoc(doc.parent._id, function(err, parent)  {
+            if (err) {
+              if (err.reason === 'deleted') {
+                return callback();
+              }
+              return callback(err);
+            }
+            if (parent.contact.phone !== doc.phone) {
+              return callback();
+            }
+            parent.contact = null;
+            db.saveDoc(parent, function(err) {
+              if (err) {
+                return callback(err);
+              }
+              $rootScope.$broadcast('ContactUpdated', parent);
+              callback();
+            });
+          });
+        } else {
+          callback();
+        }
+      };
+
       return function(docId, callback) {
         db.getDoc(docId, function(err, doc) {
           if (err) {
             return callback(err);
           }
-          updateParent(db, doc, function(err) {
+          updateParent(doc, function(err) {
             if (err) {
               return callback(err);
             }
@@ -51,6 +58,7 @@
           });
         });
       };
+
     }
   ]);
 
