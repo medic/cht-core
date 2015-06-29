@@ -7,7 +7,7 @@ before_script:
   - npm install grunt-cli -g
 
 script: 
-  - ./validate-translations
+  - bash validate-translations
   - grunt test
 
 notifications:
