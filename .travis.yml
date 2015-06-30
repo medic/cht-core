@@ -13,7 +13,7 @@ before_script:
   - npm install kanso -g
   - npm install grunt-cli -g
 
-script: node --stack_size=10000 `which grunt` ci
+script: node --stack_size=10000 `which grunt` ci --force
 
 after_success:
   - python ./scripts/ci/travis_after_all.py
