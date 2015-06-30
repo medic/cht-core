@@ -8,7 +8,7 @@ cd translations
 english_strings=$(strs messages-en.properties)
 bad_trans=false
 
-for tran in $(ls .); do
+for tran in *.properties; do
 	case $tran in
 		*-en.properties) ;;
 		*)
