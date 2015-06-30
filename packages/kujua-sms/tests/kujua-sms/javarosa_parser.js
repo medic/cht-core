@@ -21,7 +21,6 @@ exports['getFormCode returns form code'] = function(test) {
 exports['getParts handles escaped data'] = function (test) {
   var msg = 'J1!ZZ!L2T#2#HFI#fa\\cility\\#2\\#3#CDT#3';
   var parts = javarosa_parser._getParts(msg);
-  console.log('parts',parts);
   test.same(parts, ["L2T", "2", "HFI", "fa\\cility#2#3", "CDT", "3"]);
   test.done();
 };
@@ -30,16 +29,14 @@ exports['getParts handles empty fields'] = function (test) {
   var msg = 'J1!ZZ!####';
   // todo: only passes using method 1
   var parts = javarosa_parser._getParts(msg, 1);
-  console.log('parts', parts);
   test.same(parts, []);
   test.done();
 };
 
-exports['parser handles precending and trailing fields'] = function(test) {
+exports['parser handles precending and trailing empty fields'] = function(test) {
   var msg = 'J1!R!##n#jane#';
   // todo: only passes using method 1
   var parts = javarosa_parser._getParts(msg, 1);
-  console.log('parts',parts);
   test.same(parts, ["n", "jane"]);
   test.done();
 };
