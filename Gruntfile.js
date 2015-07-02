@@ -217,6 +217,13 @@ module.exports = function(grunt) {
         browsers: ['PhantomJS']
       }
     },
+    protractor: {
+      default: {
+        options: {
+          configFile: 'tests/protractor/conf.js'
+        }
+      },
+    },
     ngtemplates: {
       inboxApp: {
         src: [ 'templates/modals/**/*.html', 'templates/partials/**/*.html' ],
@@ -259,6 +266,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-notify');
   grunt.loadNpmTasks('grunt-npm-install');
+  grunt.loadNpmTasks('grunt-protractor-runner');
   grunt.loadNpmTasks('grunt-text-replace');
 
   grunt.task.run('notify_hooks');
@@ -306,6 +314,7 @@ module.exports = function(grunt) {
     'default',
     'minify',
     'karma:unit_ci',
+    'protractor',
     'exec:deployci',
     'exec:phantom'
   ]);
@@ -319,7 +328,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('precommit', 'Lint and unit test', [
     'jshint',
-    'karma:unit'
+    'karma:unit',
+    'protractor'
   ]);
 
   grunt.registerTask('test', 'Lint, unit, and integration test', [
