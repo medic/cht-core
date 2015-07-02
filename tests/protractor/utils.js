@@ -1,8 +1,18 @@
 var http = require('http'),
-    url = require('url'),
-    kansorc = require('../../.kansorc');
+    url = require('url');
+
+var getKansorc = function() {
+  try {
+    return require('../../.kansorc');
+  } catch(e) {}
+};
 
 var getAuth = function() {
+  var kansorc = getKansorc();
+  if (!kansorc) {
+    // attempt request with no auth
+    return;
+  }
   var dbUrl = kansorc.env && kansorc.env.default && kansorc.env.default.db;
   if (!dbUrl) {
     throw new Error('.kansorc must have db url configured');
