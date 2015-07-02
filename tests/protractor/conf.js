@@ -1,4 +1,8 @@
 exports.config = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
-  specs: ['e2e/auditing.js']
+  specs: ['e2e/auditing.js'],
+  capabilities: {
+    // browserName: 'chromium-browser'
+    browserName: 'firefox'
+  }
 };
