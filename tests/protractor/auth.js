@@ -1,5 +1,6 @@
 var http = require('http'),
     url = require('url'),
+    username = 'ci_test',
     auth = '';
 
 var getKansorc = function() {
@@ -35,8 +36,9 @@ module.exports = {
       // might be running on travis - create a user
 
       // TODO check for existing user first
+
       var user = JSON.stringify({
-        _id: 'org.couchdb.user:ci_test',
+        _id: 'org.couchdb.user:' + username,
         name: 'CI Test User',
         type: 'user',
         roles: [ 'national_admin' ],
@@ -47,7 +49,7 @@ module.exports = {
         hostname: 'localhost',
         port: 5988,
         method: 'PUT',
-        path: '/_users/org.couchdb.user:ci_test',
+        path: '/_users/org.couchdb.user:' + username,
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': user.length
@@ -55,7 +57,7 @@ module.exports = {
       }, function(res) {
         res.on('data', function(chunk) {});
         res.on('end', function() {
-          auth = '_ci_test:pass';
+          auth = username + ':pass';
           deferred.fulfill();
         });
       });
