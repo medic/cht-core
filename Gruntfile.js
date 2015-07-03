@@ -174,6 +174,9 @@ module.exports = function(grunt) {
       },
       phantom: {
         cmd: 'phantomjs scripts/nodeunit_runner.js http://localhost:5984/medic/_design/medic/_rewrite/test'
+      },
+      runapi: {
+        cmd: 'node ./api/server.js'
       }
     },
     watch: {
@@ -314,8 +317,9 @@ module.exports = function(grunt) {
     'default',
     'minify',
     'karma:unit_ci',
-    'protractor',
     'exec:deployci',
+    'exec:runapi',
+    'protractor',
     'exec:phantom'
   ]);
 

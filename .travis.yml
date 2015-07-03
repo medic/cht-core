@@ -16,10 +16,9 @@ before_script:
   - bash ./scripts/ci/setup.sh
   - npm install kanso -g
   - npm install grunt-cli -g
+  - npm --prefix api install
   - ./node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update
   - nohup bash -c "./node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager start 2>&1 &"
-  - npm --prefix api install
-  - COUCH_URL=http://localhost:5984/medic node ./api/server.js
 
 script:
   - node --stack_size=10000 `which grunt` ci
