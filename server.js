@@ -82,7 +82,6 @@ app.all(pathPrefix + '/_local/*', function(req, res) {
 });
 
 var audit = function(req, res) {
-  console.log('AUDITING', req.path);
   var ap = new AuditProxy();
   ap.on('error', function(e) {
     serverError(e, res);
