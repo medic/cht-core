@@ -176,7 +176,10 @@ module.exports = function(grunt) {
         cmd: 'phantomjs scripts/nodeunit_runner.js http://localhost:5984/medic/_design/medic/_rewrite/test'
       },
       runapi: {
-        cmd: 'COUCH_URL=http://localhost:5984/medic node ./api/server.js'
+        cmd: 'COUCH_URL=http://localhost:5984/medic node ./api/server.js &'
+      },
+      sleep: {
+        cmd: 'sleep 10'
       }
     },
     watch: {
@@ -319,6 +322,7 @@ module.exports = function(grunt) {
     'karma:unit_ci',
     'exec:deployci',
     'exec:runapi',
+    'exec:sleep',
     'protractor',
     'exec:phantom'
   ]);
