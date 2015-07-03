@@ -1,10 +1,14 @@
 var utils = require('../utils');
 
+console.log('pos a');
+
 describe('Auditing', function() {
 
   'use strict';
 
   var savedUuid;
+
+  console.log('pos b');
 
   beforeEach(function(done) {
     utils.saveDoc({
@@ -44,6 +48,8 @@ describe('Auditing', function() {
 
   it('audits a change', function() {
 
+    console.log('pos c');
+
     utils.load('/#/messages/+64555555555');
 
     var selectedTab = element(by.css('.tabs .selected .button-label'));
@@ -81,6 +87,8 @@ describe('Auditing', function() {
       expect(doc.history[1].user).toEqual('gareth');
       expect(doc.history[1].doc._deleted).toEqual(true);
     });
+
+    console.log('pos d');
   });
 });
 
