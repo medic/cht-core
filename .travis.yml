@@ -18,6 +18,7 @@ before_script:
   - npm install grunt-cli -g
   - ./node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update
   - nohup bash -c "./node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager start 2>&1 &"
+  - npm --prefix api install
   - COUCH_URL=http://localhost:5984/medic node ./api/server.js
 
 script:
