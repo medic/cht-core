@@ -10,6 +10,7 @@ var getKansorc = function() {
 
 module.exports = {
   getAuth: function() {
+    console.log('USING AUTH:' + auth);
     return auth;
   },
   setup: function() {
