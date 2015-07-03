@@ -44,7 +44,8 @@ var request = function(options) {
       deferred.fulfill(JSON.parse(body));
     });
   });
-  req.on('error', function() {
+  req.on('error', function(e) {
+    console.log('Request failed: ' + e.message);
     deferred.reject();
   });
 

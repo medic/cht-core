@@ -11,6 +11,7 @@ describe('Auditing', function() {
   console.log('pos b');
 
   beforeEach(function(done) {
+    console.log('b1');
     utils.saveDoc({
       errors: [],
       form: null,
@@ -41,6 +42,7 @@ describe('Auditing', function() {
       type: 'data_record',
       sent_by: 'gareth'
     }).then(function(doc) {
+      console.log('b2');
       savedUuid = doc.id;
       done();
     });
