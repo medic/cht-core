@@ -17,7 +17,9 @@ before_script:
   - sh -e /etc/init.d/xvfb start
   - nohup bash -c "./node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager start 2>&1 &"
 
-script: node --stack_size=10000 `which grunt` ci
+script:
+  - node --stack_size=10000 `which grunt` ci
+  - cat nohup.out
 
 after_success:
   - python ./scripts/ci/travis_after_all.py
