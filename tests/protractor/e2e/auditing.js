@@ -36,10 +36,16 @@ describe('Auditing', function() {
       kujua_message: true,
       type: 'data_record',
       sent_by: 'gareth'
-    }).then(function(doc) {
-      savedUuid = doc.id;
-      done();
-    });
+    }).then(
+      function(doc) {
+        savedUuid = doc.id;
+        done();
+      },
+      function() {
+        console.log('Error setting up auditing');
+        done();
+      }
+    );
   });
 
   it('audits a change', function() {

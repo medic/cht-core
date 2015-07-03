@@ -1,40 +1,14 @@
 var http = require('http'),
-    url = require('url');
-
-var getKansorc = function() {
-  try {
-    return require('../../.kansorc');
-  } catch(e) {}
-};
-
-var getAuth = function() {
-  var kansorc = getKansorc();
-  if (!kansorc) {
-    // attempt request with no auth
-    return;
-  }
-  var dbUrl = kansorc.env && kansorc.env.default && kansorc.env.default.db;
-  if (!dbUrl) {
-    throw new Error('.kansorc must have db url configured');
-  }
-  var auth = url.parse(kansorc.env.default.db).auth;
-  if (!auth) {
-    throw new Error('auth component not found in DB url');
-  }
-  return auth;
-};
+    auth = require('./auth');
 
 var request = function(options) {
   var deferred = protractor.promise.defer();
 
-  var req = http.request({
-    hostname: 'localhost',
-    auth: getAuth(),
-    port: 5988,
-    path: options.path,
-    method: options.method,
-    headers: options.headers
-  }, function(res) {
+  options.hostname = 'localhost';
+  options.port = 5988;
+  options.auth = auth.getAuth();
+
+  var req = http.request(options, function(res) {
     res.setEncoding('utf8');
     var body = '';
     res.on('data', function (chunk) {
@@ -65,14 +39,11 @@ var request = function(options) {
 module.exports = {
 
   load: function(path) {
-   var auth = getAuth();
-    if (auth) {
-      auth += '@';
-    } else {
-      auth = '';
+    var authString = auth.getAuth();
+    if (authString) {
+      authString += '@';
     }
-
-    browser.get('http://' + auth + 'localhost:5988/medic/_design/medic/_rewrite' + path);
+    browser.get('http://' + authString + 'localhost:5988/medic/_design/medic/_rewrite' + path);
   },
 
   saveDoc: function(doc) {
