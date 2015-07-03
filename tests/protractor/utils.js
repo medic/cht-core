@@ -41,7 +41,12 @@ var request = function(options) {
       body += chunk;
     });
     res.on('end', function () {
-      deferred.fulfill(JSON.parse(body));
+      try {
+        deferred.fulfill(JSON.parse(body));
+      } catch(e) {
+        console.log('Error parsing response: ' + body);
+        deferred.reject();
+      }
     });
   });
   req.on('error', function(e) {

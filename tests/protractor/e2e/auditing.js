@@ -1,17 +1,12 @@
 var utils = require('../utils');
 
-console.log('pos a');
-
 describe('Auditing', function() {
 
   'use strict';
 
   var savedUuid;
 
-  console.log('pos b');
-
   beforeEach(function(done) {
-    console.log('b1');
     utils.saveDoc({
       errors: [],
       form: null,
@@ -42,15 +37,12 @@ describe('Auditing', function() {
       type: 'data_record',
       sent_by: 'gareth'
     }).then(function(doc) {
-      console.log('b2');
       savedUuid = doc.id;
       done();
     });
   });
 
   it('audits a change', function() {
-
-    console.log('pos c');
 
     utils.load('/#/messages/+64555555555');
 
@@ -90,7 +82,6 @@ describe('Auditing', function() {
       expect(doc.history[1].doc._deleted).toEqual(true);
     });
 
-    console.log('pos d');
   });
 });
 
