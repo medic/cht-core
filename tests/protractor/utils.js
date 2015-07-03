@@ -58,6 +58,17 @@ var request = function(options) {
 
 module.exports = {
 
+  load: function(path) {
+   var auth = getAuth();
+    if (auth) {
+      auth += '@';
+    } else {
+      auth = '';
+    }
+
+    browser.get('http://' + auth + 'localhost:5988/medic/_design/medic/_rewrite' + path);
+  },
+
   saveDoc: function(doc) {
     var postData = JSON.stringify(doc);
     return request({

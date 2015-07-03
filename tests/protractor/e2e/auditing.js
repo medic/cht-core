@@ -44,8 +44,8 @@ describe('Auditing', function() {
 
   it('audits a change', function() {
 
-    browser.get('http://gareth:pass@localhost:5988/medic/_design/medic/_rewrite/#/messages/+64555555555');
-    
+    utils.load('/#/messages/+64555555555');
+
     var selectedTab = element(by.css('.tabs .selected .button-label'));
     expect(selectedTab.getText()).toEqual('Messages');
 

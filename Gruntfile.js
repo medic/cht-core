@@ -218,9 +218,6 @@ module.exports = function(grunt) {
       }
     },
     protractor: {
-      options: {
-        debug: true
-      },
       default: {
         options: {
           configFile: 'tests/protractor/conf.js'
