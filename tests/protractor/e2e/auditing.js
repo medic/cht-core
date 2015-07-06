@@ -53,7 +53,7 @@ describe('Auditing', function() {
     console.log('starting auditing: ' + (new Date()).toISOString());
     utils.load('/#/messages/+64555555555');
     console.log('sleeping: ' + (new Date()).toISOString());
-    browser.sleep(10000);
+    protractor.sleep(10000);
     console.log('waiting: ' + (new Date()).toISOString());
     browser.waitForAngular();
     console.log('page loaded: ' + (new Date()).toISOString());
