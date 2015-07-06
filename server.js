@@ -84,7 +84,7 @@ app.all(pathPrefix + '/_local/*', function(req, res) {
 var audit = function(req, res) {
   var ap = new AuditProxy();
   ap.on('error', function(e) {
-    serverError(e, res);
+    serverError(e, req, res);
   });
   ap.on('not-authorized', function() {
     notLoggedIn(res);
@@ -126,7 +126,7 @@ app.get('/api/info', function(req, res) {
 app.get('/api/auth/:path', function(req, res) {
   auth.checkUrl(req, function(err, output) {
     if (err) {
-      return serverError(err, res);
+      return serverError(err, req, res);
     }
     if (output.status >= 400 && output.status < 500) {
       res.status(403).send('Forbidden');
@@ -139,11 +139,11 @@ app.get('/api/auth/:path', function(req, res) {
 var handleAnalyticsCall = function(req, res, controller) {
   auth.check(req, 'can_view_analytics', req.query.district, function(err, ctx) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     controller.get({ district: ctx.district }, function(err, obj) {
       if (err) {
-        return serverError(err, res);
+        return serverError(err, req, res);
       }
       res.json(obj);
     });
@@ -244,14 +244,14 @@ app.get(db.getPath() + '/export/:type/:form?', function(req, res) {
 app.get('/api/v1/export/:type/:form?', function(req, res) {
   auth.check(req, getExportPermission(req.params.type), req.query.district, function(err, ctx) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     req.query.type = req.params.type;
     req.query.form = req.params.form || req.query.form;
     req.query.district = ctx.district;
     exportData.get(req.query, function(err, obj) {
       if (err) {
-        return serverError(err, res);
+        return serverError(err, req, res);
       }
       var format = formats[req.query.format] || formats.csv;
       var filename = req.params.type + '-' +
@@ -268,14 +268,14 @@ app.get('/api/v1/export/:type/:form?', function(req, res) {
 app.get('/api/v1/fti/:view', function(req, res) {
   auth.check(req, 'can_view_data_records', null, function(err) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     auth.check(req, 'can_view_unallocated_data_records', null, function(err, ctx) {
       var queryOptions = _.pick(req.query, 'q', 'schema', 'sort', 'skip', 'limit', 'include_docs');
       queryOptions.allocatedOnly = !!err;
       fti.get(req.params.view, queryOptions, ctx && ctx.district, function(err, result) {
         if (err) {
-          return serverError(err.message, res);
+          return serverError(err.message, req, res);
         }
         res.json(result);
       });
@@ -286,12 +286,12 @@ app.get('/api/v1/fti/:view', function(req, res) {
 app.get('/api/v1/messages', function(req, res) {
   auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     var opts = _.pick(req.query, 'limit', 'start', 'descending', 'state');
     messages.getMessages(opts, ctx && ctx.district, function(err, result) {
       if (err) {
-        return error(err, res);
+        return error(err, req, res);
       }
       res.json(result);
     });
@@ -301,11 +301,11 @@ app.get('/api/v1/messages', function(req, res) {
 app.get('/api/v1/messages/:id', function(req, res) {
   auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     messages.getMessage(req.params.id, ctx && ctx.district, function(err, result) {
       if (err) {
-        return error(err, res);
+        return error(err, req, res);
       }
       res.json(result);
     });
@@ -315,11 +315,11 @@ app.get('/api/v1/messages/:id', function(req, res) {
 app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
   auth.check(req, 'can_update_messages', null, function(err, ctx) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     messages.updateMessage(req.params.id, req.body, ctx && ctx.district, function(err, result) {
       if (err) {
-        return error(err, res);
+        return error(err, req, res);
       }
       res.json(result);
     });
@@ -329,11 +329,11 @@ app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
 app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
   auth.check(req, 'can_create_records', null, function(err) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     records.create(req.body, req.is(['json','urlencoded']), function(err, result) {
       if (err) {
-        return error(err, res);
+        return error(err, req, res);
       }
       res.json(result);
     });
@@ -343,11 +343,11 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
 app.get('/api/v1/scheduler/:name', function(req, res) {
   auth.check(req, 'can_execute_schedules', null, function(err) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     scheduler.exec(req.params.name, function(err) {
       if (err) {
-        return error(err, res);
+        return error(err, req, res);
       }
       res.json({ schedule: req.params.name, result: 'success' });
     });
@@ -357,7 +357,7 @@ app.get('/api/v1/scheduler/:name', function(req, res) {
 app.get('/api/v1/forms', function(req, res) {
   forms.listForms(req.headers, function(err, body, headers) {
       if (err) {
-        return serverError(err, res);
+        return serverError(err, req, res);
       }
       if (headers) {
         res.writeHead(headers.statusCode || 200, headers);
@@ -371,11 +371,11 @@ app.get('/api/v1/forms/:form', function(req, res) {
       form = parts.slice(0, -1).join('.'),
       format = parts.slice(-1)[0];
   if (!form || !format) {
-    return serverError(new Error('Invalid form parameter.'), res);
+    return serverError(new Error('Invalid form parameter.'), req, res);
   }
   forms.getForm(form, format, function(err, body, headers) {
     if (err) {
-      return serverError(err, res);
+      return serverError(err, req, res);
     }
     if (headers) {
       res.writeHead(headers.statusCode || 200, headers);
@@ -412,18 +412,18 @@ app.all('*', function(req, res) {
 });
 
 proxy.on('error', function(err, req, res) {
-  serverError(JSON.stringify(err), res);
+  serverError(JSON.stringify(err), req, res);
 });
 
 proxyForAuditing.on('error', function(err, req, res) {
-  serverError(JSON.stringify(err), res);
+  serverError(JSON.stringify(err), req, res);
 });
 
-var error = function(err, res) {
+var error = function(err, req, res) {
   if (typeof err === 'string') {
-    return serverError(err, res);
+    return serverError(err, req, res);
   } else if (err.code === 500) {
-    return serverError(err.message, res);
+    return serverError(err.message, req, res);
   } else if (err.code === 401) {
     return notLoggedIn(res);
   }
@@ -433,8 +433,9 @@ var error = function(err, res) {
   res.end(err.message);
 };
 
-var serverError = function(err, res) {
-  console.error('Server error: ' + (err.stack || JSON.stringify(err)));
+var serverError = function(err, req, res) {
+  console.error('Server error fetching: ' + req.url);
+  console.log('  detail: ' + (err.stack || JSON.stringify(err)));
   res.writeHead(500, {
     'Content-Type': 'text/plain'
   });
@@ -485,6 +486,6 @@ config.load(function(err) {
 // http://expressjs.com/guide/error-handling.html
 // jshint ignore:start
 app.use(function(err, req, res, next) {
-  serverError(err, res);
+  serverError(err, req, res);
 });
 // jshint ignore:end
