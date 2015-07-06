@@ -176,10 +176,10 @@ module.exports = function(grunt) {
         cmd: 'phantomjs scripts/nodeunit_runner.js http://localhost:5984/medic/_design/medic/_rewrite/test'
       },
       runapi: {
-        cmd: 'NODE_DEBUG=net COUCH_URL=http://localhost:5984/medic node ./api/server.js > api.out &'
+        cmd: 'COUCH_URL=http://ci_test:pass@localhost:5984/medic node ./api/server.js > api.out &'
       },
       sleep: {
-        cmd: 'sleep 10'
+        cmd: 'sleep 20'
       },
       addadmin: {
         cmd: 'curl -X PUT localhost:5984/_config/admins/ci_test -d \'"pass"\''
@@ -325,9 +325,10 @@ module.exports = function(grunt) {
     'minify',
     'karma:unit_ci',
     'exec:deployci',
-    'exec:runapi',
     'exec:phantom',
     'exec:addadmin',
+    'exec:runapi',
+    'exec:sleep',
     'protractor'
   ]);
 
