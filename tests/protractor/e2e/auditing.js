@@ -50,13 +50,13 @@ describe('Auditing', function() {
 
   it('audits a change', function() {
 
-    console.log('starting auditing');
-
+    console.log('starting auditing: ' + (new Date()).toISOString());
     utils.load('/#/messages/+64555555555');
-    browser.waitForAngular();
+    console.log('sleeping: ' + (new Date()).toISOString());
     browser.sleep(10000);
-
-    console.log('page loaded');
+    console.log('waiting: ' + (new Date()).toISOString());
+    browser.waitForAngular();
+    console.log('page loaded: ' + (new Date()).toISOString());
 
     var selectedTab = element(by.css('.tabs .selected .button-label'));
     expect(selectedTab.getText()).toEqual('Messages');
