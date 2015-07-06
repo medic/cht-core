@@ -39,7 +39,9 @@ describe('Auditing', function() {
     }).then(
       function(doc) {
         savedUuid = doc.id;
-        done();
+        utils.load('/#/messages/+64555555555');
+        console.log('sleeping: ' + (new Date()).toISOString());
+        setTimeout(done, 10000);
       },
       function() {
         console.log('Error setting up auditing');
@@ -51,9 +53,6 @@ describe('Auditing', function() {
   it('audits a change', function() {
 
     console.log('starting auditing: ' + (new Date()).toISOString());
-    utils.load('/#/messages/+64555555555');
-    console.log('sleeping: ' + (new Date()).toISOString());
-    protractor.sleep(10000);
     console.log('waiting: ' + (new Date()).toISOString());
     browser.waitForAngular();
     console.log('page loaded: ' + (new Date()).toISOString());
