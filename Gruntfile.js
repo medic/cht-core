@@ -176,7 +176,7 @@ module.exports = function(grunt) {
         cmd: 'phantomjs scripts/nodeunit_runner.js http://localhost:5984/medic/_design/medic/_rewrite/test'
       },
       runapi: {
-        cmd: 'COUCH_URL=http://localhost:5984/medic node ./api/server.js &'
+        cmd: 'COUCH_URL=http://localhost:5984/medic node ./api/server.js > api.out &'
       },
       sleep: {
         cmd: 'sleep 10'

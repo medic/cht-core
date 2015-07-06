@@ -23,6 +23,7 @@ before_script:
 script:
   - node --stack_size=10000 `which grunt` ci
   - cat nohup.out
+  - cat api.out
 
 after_success:
   - python ./scripts/ci/travis_after_all.py
