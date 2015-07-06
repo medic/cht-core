@@ -4,6 +4,7 @@ exports.config = {
   framework: 'jasmine2',
   capabilities: {
     // browserName: 'chromium-browser'
-    browserName: 'firefox'
+    browserName: 'firefox',
+    loggingPrefs: { browser: 'SEVERE' }
   }
 };

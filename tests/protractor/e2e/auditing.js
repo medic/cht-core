@@ -7,6 +7,7 @@ describe('Auditing', function() {
   var savedUuid;
 
   beforeEach(function(done) {
+
     utils.saveDoc({
       errors: [],
       form: null,
@@ -48,6 +49,12 @@ describe('Auditing', function() {
         done();
       }
     );
+  });
+
+  afterEach(function() {
+    browser.manage().logs().get('browser').then(function(browserLog) {
+      console.log('browser console: ' + require('util').inspect(browserLog));
+    });
   });
 
   it('audits a change', function() {
