@@ -325,10 +325,9 @@ module.exports = function(grunt) {
     'karma:unit_ci',
     'exec:deployci',
     'exec:runapi',
-    'exec:sleep',
-    'protractor',
+    'exec:phantom',
     'exec:addadmin',
-    'exec:phantom'
+    'protractor'
   ]);
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
