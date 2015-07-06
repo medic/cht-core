@@ -249,7 +249,8 @@ module.exports = function(grunt) {
           patterns: [
             'static/dist/**/*',
             'static/fonts/**/*',
-            'static/img/**/*'
+            'static/img/**/*',
+            '!static/img/promo/**/*'
           ]
         },
         network: '*'
