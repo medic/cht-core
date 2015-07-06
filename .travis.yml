@@ -13,6 +13,7 @@ before_install:
 before_script:
   - sleep 3
   - curl -X PUT localhost:5984/medic
+  - curl -X PUT localhost:5984/_config/admins/ci_test -d '"pass"'
   - bash ./scripts/ci/setup.sh
   - npm install kanso -g
   - npm install grunt-cli -g

@@ -39,11 +39,7 @@ var request = function(options) {
 module.exports = {
 
   load: function(path) {
-    var authString = auth.getAuth();
-    if (authString) {
-      authString += '@';
-    }
-    browser.get('http://' + authString + 'localhost:5988/medic/_design/medic/_rewrite' + path);
+    browser.get('http://' + auth.getAuth() + '@localhost:5988/medic/_design/medic/_rewrite' + path);
   },
 
   saveDoc: function(doc) {
