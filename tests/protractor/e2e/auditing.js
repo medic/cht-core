@@ -54,6 +54,7 @@ describe('Auditing', function() {
 
     utils.load('/#/messages/+64555555555');
     browser.waitForAngular();
+    browser.sleep(10000);
 
     console.log('page loaded');
 
