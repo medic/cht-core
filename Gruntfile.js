@@ -180,6 +180,9 @@ module.exports = function(grunt) {
       },
       sleep: {
         cmd: 'sleep 10'
+      },
+      addadmin: {
+        cmd: 'curl -X PUT localhost:5984/_config/admins/ci_test -d \'"pass"\''
       }
     },
     watch: {
@@ -324,6 +327,7 @@ module.exports = function(grunt) {
     'exec:runapi',
     'exec:sleep',
     'protractor',
+    'exec:addadmin',
     'exec:phantom'
   ]);
 
