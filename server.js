@@ -434,7 +434,8 @@ var error = function(err, req, res) {
 };
 
 var serverError = function(err, req, res) {
-  console.error('Server error fetching: ' + req.url);
+  console.error('Server error: ');
+  console.log('  url: ' + req && req.url);
   console.log('  detail: ' + (err.stack || JSON.stringify(err)));
   res.writeHead(500, {
     'Content-Type': 'text/plain'
