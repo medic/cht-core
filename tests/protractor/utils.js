@@ -40,7 +40,7 @@ module.exports = {
 
   load: function(path) {
     console.log('should be naving to: ' + path);
-    protractor.get('#/messages/+64555555555');
+    browser.get('#/messages/+64555555555');
   },
 
   saveDoc: function(doc) {
