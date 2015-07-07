@@ -182,7 +182,10 @@ module.exports = function(grunt) {
         cmd: 'sleep 20'
       },
       addadmin: {
-        cmd: 'curl -X PUT localhost:5984/_config/admins/ci_test -d \'"pass"\''
+        cmd: function() {
+          return 'curl -X PUT http://localhost:5984/_config/admins/ci_test -d \'"pass"\' &&' +
+                 'curl -HContent-Type:application/json -vXPUT http://ci_test:pass@localhost:5984/_users/org.couchdb.user:ci_test  --data-binary \'{"_id": "org.couchdb.user:ci_test", "name": "ci_test", "roles": [], "type": "user", "password": "pass", "language": "en", "known": true}\'';
+        }
       }
     },
     watch: {
