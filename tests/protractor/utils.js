@@ -40,7 +40,7 @@ module.exports = {
 
   load: function(path) {
     console.log('should be naving to: ' + path);
-    browser.driver.get('http://ci_test:pass@localhost:5988/medic/_design/medic/_rewrite/NOTHINGTOSEEHERE');
+    browser.driver.get('http://ci_test:pass@localhost:5988/medic/_design/medic/_rewrite/#/messages/+64555555555');
   },
 
   saveDoc: function(doc) {
