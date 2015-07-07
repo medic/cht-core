@@ -39,7 +39,8 @@ var request = function(options) {
 module.exports = {
 
   load: function(path) {
-    browser.get('http://' + auth.getAuth() + '@localhost:5988/medic/_design/medic/_rewrite' + path);
+    console.log('should be naving to: ' + path);
+    browser.driver.get('http://ci_test:pass@localhost:5988/medic/_design/medic/_rewrite/#/messages/+64555555555').then(function() { console.log('got', arguments); });
   },
 
   saveDoc: function(doc) {

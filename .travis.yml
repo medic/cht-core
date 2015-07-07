@@ -31,7 +31,7 @@ after_success:
   - |
       if [ "$BUILD_LEADER" = "YES" ]; then
         if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-          echo "All jobs succeded! Publishing..."
+          echo "All jobs succeeded! Publishing..."
           bash ./scripts/ci/after_success.sh
         else
           echo "Some jobs failed. Not publishing."
