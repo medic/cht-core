@@ -174,6 +174,18 @@ module.exports = function(grunt) {
       },
       phantom: {
         cmd: 'phantomjs scripts/nodeunit_runner.js http://localhost:5984/medic/_design/medic/_rewrite/test'
+      },
+      runapi: {
+        cmd: 'COUCH_URL=http://ci_test:pass@localhost:5984/medic node ./api/server.js > api.out &'
+      },
+      sleep: {
+        cmd: 'sleep 20'
+      },
+      addadmin: {
+        cmd: function() {
+          return 'curl -X PUT http://localhost:5984/_config/admins/ci_test -d \'"pass"\' &&' +
+                 'curl -HContent-Type:application/json -vXPUT http://ci_test:pass@localhost:5984/_users/org.couchdb.user:ci_test  --data-binary \'{"_id": "org.couchdb.user:ci_test", "name": "ci_test", "roles": [], "type": "user", "password": "pass", "language": "en", "known": true}\'';
+        }
       }
     },
     watch: {
@@ -217,6 +229,13 @@ module.exports = function(grunt) {
         browsers: ['PhantomJS']
       }
     },
+    protractor: {
+      default: {
+        options: {
+          configFile: 'tests/protractor/conf.js'
+        }
+      },
+    },
     ngtemplates: {
       inboxApp: {
         src: [ 'templates/modals/**/*.html', 'templates/partials/**/*.html' ],
@@ -233,7 +252,8 @@ module.exports = function(grunt) {
           patterns: [
             'static/dist/**/*',
             'static/fonts/**/*',
-            'static/img/**/*'
+            'static/img/**/*',
+            '!static/img/promo/**/*'
           ]
         },
         network: '*'
@@ -259,6 +279,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-notify');
   grunt.loadNpmTasks('grunt-npm-install');
+  grunt.loadNpmTasks('grunt-protractor-runner');
   grunt.loadNpmTasks('grunt-text-replace');
 
   grunt.task.run('notify_hooks');
@@ -317,14 +338,10 @@ module.exports = function(grunt) {
     'watch'
   ]);
 
-  grunt.registerTask('precommit', 'Lint and unit test', [
-    'jshint',
-    'karma:unit'
-  ]);
-
   grunt.registerTask('test', 'Lint, unit, and integration test', [
-    'precommit',
-    'exec:phantom'
+    'jshint',
+    'karma:unit',
+    'protractor'
   ]);
 
   var browserifyMappings = [

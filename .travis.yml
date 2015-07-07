@@ -13,7 +13,8 @@ before_script:
   - npm install kanso -g
   - npm install grunt-cli -g
 
-script: node --stack_size=10000 `which grunt` ci
+script:
+  - node --stack_size=10000 `which grunt` ci
 
 after_success:
   - python ./scripts/ci/travis_after_all.py
@@ -21,7 +22,7 @@ after_success:
   - |
       if [ "$BUILD_LEADER" = "YES" ]; then
         if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-          echo "All jobs succeded! Publishing..."
+          echo "All jobs succeeded! Publishing..."
           bash ./scripts/ci/after_success.sh
         else
           echo "Some jobs failed. Not publishing."
@@ -37,4 +38,3 @@ notifications:
   email:
     recipients:
       - dev@medicmobile.org
-
