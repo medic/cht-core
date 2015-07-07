@@ -6,7 +6,7 @@ var request = function(options) {
 
   options.hostname = 'localhost';
   options.port = 5988;
-  options.auth = auth.getAuth();
+  options.auth = auth.getAuthString();
 
   var req = http.request(options, function(res) {
     res.setEncoding('utf8');
@@ -39,8 +39,7 @@ var request = function(options) {
 module.exports = {
 
   load: function(path) {
-    console.log('should be naving to: ' + path);
-    browser.get('#/messages/+64555555555');
+    browser.get('http://' + auth.getAuthString() + '@localhost:5988/medic/_design/medic/_rewrite' + path);
   },
 
   saveDoc: function(doc) {

@@ -328,11 +328,7 @@ module.exports = function(grunt) {
     'minify',
     'karma:unit_ci',
     'exec:deployci',
-    'exec:phantom',
-    'exec:addadmin',
-    'exec:runapi',
-    'exec:sleep',
-    'protractor'
+    'exec:phantom'
   ]);
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
@@ -342,15 +338,10 @@ module.exports = function(grunt) {
     'watch'
   ]);
 
-  grunt.registerTask('precommit', 'Lint and unit test', [
+  grunt.registerTask('test', 'Lint, unit, and integration test', [
     'jshint',
     'karma:unit',
     'protractor'
-  ]);
-
-  grunt.registerTask('test', 'Lint, unit, and integration test', [
-    'precommit',
-    'exec:phantom'
   ]);
 
   var browserifyMappings = [

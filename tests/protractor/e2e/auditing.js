@@ -1,4 +1,5 @@
-var utils = require('../utils');
+var utils = require('../utils'),
+    auth = require('../auth');
 
 describe('Auditing', function() {
 
@@ -41,8 +42,7 @@ describe('Auditing', function() {
       function(doc) {
         savedUuid = doc.id;
         utils.load('/#/messages/+64555555555');
-        console.log('sleeping: ' + (new Date()).toISOString());
-        setTimeout(done, 10000);
+        done();
       },
       function() {
         console.log('Error setting up auditing');
@@ -51,18 +51,9 @@ describe('Auditing', function() {
     );
   });
 
-  afterEach(function() {
-    browser.manage().logs().get('browser').then(function(browserLog) {
-      console.log('browser console: ' + require('util').inspect(browserLog));
-    });
-  });
-
   it('audits a change', function() {
 
-    console.log('starting auditing: ' + (new Date()).toISOString());
-    console.log('waiting: ' + (new Date()).toISOString());
     browser.waitForAngular();
-    console.log('page loaded: ' + (new Date()).toISOString());
 
     var selectedTab = element(by.css('.tabs .selected .button-label'));
     expect(selectedTab.getText()).toEqual('Messages');
@@ -96,7 +87,7 @@ describe('Auditing', function() {
       var doc = viewResult.rows[0].doc;
       expect(doc.history.length).toEqual(2);
       expect(doc.history[1].action).toEqual('delete');
-      expect(doc.history[1].user).toEqual('gareth');
+      expect(doc.history[1].user).toEqual(auth.getAuth().user);
       expect(doc.history[1].doc._deleted).toEqual(true);
     });
 

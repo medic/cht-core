@@ -16,18 +16,28 @@ module.exports = {
         if (!dbUrl) {
           throw new Error('.kansorc must have db url configured');
         } else {
-          console.log(JSON.stringify(url.parse(kansorc.env.default.db), null, 2));
-          auth = url.parse(kansorc.env.default.db).auth;
-          if (!auth) {
+          var parsed = url.parse(kansorc.env.default.db).auth;
+          if (!parsed) {
             throw new Error('auth component not found in DB url');
           }
+          parsed = parsed.split(':');
+          auth = {
+            user: parsed[0],
+            pass: parsed[1]
+          };
         }
       } else {
         // might be running on travis - create a user
-        auth = 'ci_test:pass';
+        auth = {
+          user: 'ci_test',
+          pass: 'pass'
+        };
       }
     }
-    console.log('USING AUTH:' + auth);
     return auth;
+  },
+  getAuthString: function() {
+    module.exports.getAuth();
+    return auth.user + ':' + auth.pass;
   }
 };

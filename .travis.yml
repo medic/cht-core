@@ -6,24 +6,15 @@ node_js:
 services:
   - couchdb
 
-before_install:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-
 before_script:
   - sleep 3
   - curl -X PUT localhost:5984/medic
   - bash ./scripts/ci/setup.sh
   - npm install kanso -g
   - npm install grunt-cli -g
-  - npm --prefix api install
-  - ./node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update
-  - nohup bash -c "./node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager start 2>&1 &"
 
 script:
   - node --stack_size=10000 `which grunt` ci
-  - cat nohup.out
-  - cat api.out
 
 after_success:
   - python ./scripts/ci/travis_after_all.py
