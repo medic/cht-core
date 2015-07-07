@@ -5,6 +5,6 @@ exports.config = {
   capabilities: {
     // browserName: 'chromium-browser'
     browserName: 'firefox',
-    loggingPrefs: { browser: 'SEVERE' }
+    loggingPrefs: { browser: 'INFO' }
   }
 };
