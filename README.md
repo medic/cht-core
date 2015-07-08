@@ -33,7 +33,8 @@ curl -X PUT http://localhost:5984/_config/admins/admin -d '"pass"'
 
 Reconfigure CouchDB to require authentication:
 ```
-curl -X PUT http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user -d '"true"' -H "Content-Type: application/json"
+curl -X PUT http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user \
+  -d '"true"' -H "Content-Type: application/json"
 ```
 
 The above command automatically modifies `local.ini` to contain:
@@ -44,7 +45,9 @@ require_valid_user = true
 
 Create an admin user:
 ```
-curl -X POST http://admin:pass@localhost:5984/_users -d '{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}' -H "Content-Type: application/json"
+curl -X POST http://admin:pass@localhost:5984/_users \
+  -H "Content-Type: application/json" \
+  -d '{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}'
 ```
 
 ### Kanso
@@ -137,9 +140,17 @@ See [Medic API](https://github.com/medic/medic-api) for more information.
 
 ### Push the dashboard
 
-Dashboard is required to load Medic Mobile. To install Dashboard:
+Dashboard is required to load Medic Mobile.
 
-First change the couch db configuration `secure_rewrites` to false.
+To install Dashboard, first change the CouchDB's `secure_rewrites` configuration
+parameter to false:
+
+```
+curl -X PUT http://admin:pass@localhost:5984/_config/httpd/secure_rewrites \
+  -d '"false"' -H "Content-Type: application/json"
+```
+
+Finally, download, build, and push the dashboard application to CouchDB:
 
 ```
 git clone https://github.com/garden20/dashboard
