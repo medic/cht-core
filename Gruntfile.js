@@ -66,7 +66,7 @@ module.exports = function(grunt) {
           'bower_components/bootstrap-tour/build/js/bootstrap-tour.js',
           'static/js/bootstrap-multidropdown.js'
         ],
-        dest: 'static/dist/stuff.js',
+        dest: 'static/dist/dependencies.js',
       }
     },
     uglify: {
@@ -76,7 +76,7 @@ module.exports = function(grunt) {
       build: {
         files: {
           'static/dist/templates.js': ['static/dist/templates.js'],
-          'static/dist/stuff.js': ['static/dist/stuff.js'],
+          'static/dist/dependencies.js': ['static/dist/dependencies.js'],
           'static/dist/inbox.js': ['static/dist/inbox.js'],
         }
       }
@@ -240,11 +240,6 @@ module.exports = function(grunt) {
       inboxApp: {
         src: [ 'templates/modals/**/*.html', 'templates/partials/**/*.html' ],
         dest: 'static/dist/templates.js'
-      },
-      options: {
-        htmlmin: {
-          collapseWhitespace: true
-        }
       }
     },
     appcache: {
