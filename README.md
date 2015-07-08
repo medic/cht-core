@@ -26,16 +26,23 @@ You will need to install the following:
 ### Setup CouchDB
 
 
-Setup admin access
+Setup admin access:
 ```
 curl -X PUT http://localhost:5984/_config/admins/admin -d '"pass"'
 ```
-In CouchDB's local.ini, force authentication
+
+Reconfigure CouchDB to require authentication:
+```
+curl -X PUT http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user -d '"true"' -H "Content-Type: application/json"
+```
+
+The above command automatically modifies `local.ini` to contain:
 ```
 [couch_httpd_auth]
 require_valid_user = true
 ```
-Create an admin user
+
+Create an admin user:
 ```
 curl -X POST http://admin:pass@localhost:5984/_users -d '{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}' -H "Content-Type: application/json"
 ```
