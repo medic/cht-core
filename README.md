@@ -1,30 +1,29 @@
 # Medic Mobile
 
 These instructions should help you get setup to run or develop on Medic Mobile.
-For latest changes and release announcements see the [change log](Changes.md).
+For latest changes and release announcements see our [change log](Changes.md).
 
 ## Overview
 
 Medic Mobile combines messaging, data collection, and analytics for health workers and health systems in hard-to-reach areas with or without internet connectivity.
 
-The `medic-webapp` repository is the core application in the Medic Mobile stack. When health workers submit data using text messages (SMS), our mobile or our SIM applications, the web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user defined configurations. All the information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application. 
+The `medic-webapp` repository is the core application in the Medic Mobile stack. When health workers submit data using text messages (SMS), our mobile or our SIM applications, the web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application. 
 
-The web app is fully responsive with a mobile first design and supports any written language. It can be installed locally, as part of a vm (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
+The web app is fully responsive with a mobile first design and supports any written language. It can be installed locally, as part of a virtual machine (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
 
-More information about Medic Mobile tools: www.medicmobile.org/tools
+For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
 
 ## Dependencies
 
 You will need to install the following:
 
-[Nodejs](http://nodejs.org)
+[Node.js](http://nodejs.org)
 
 [CouchDB](http://couchdb.apache.org)
 
 [couchdb-lucene](https://github.com/rnewson/couchdb-lucene) v1.0.2 or greater
 
 ### Setup CouchDB
-
 
 Setup admin access:
 ```
@@ -68,21 +67,21 @@ npm install grunt-cli -g
 
 ### Configure Lucene
 
-Add the following to CouchDB config `httpd_global_handlers`:
+Add the following to CouchDB's `httpd_global_handlers` configuration section:
 
 ```
 _fti = {couch_httpd_proxy, handle_proxy_req, <<"http://127.0.0.1:5985">>}
 ```
 
-Update `$lucene_home/conf/couchdb-lucene.ini` so the URL has credentials, eg:
+Update `$lucene_home/conf/couchdb-lucene.ini` so the URL has credentials, e.g.:
 
 ```
 url=http://admin:pass@localhost:5984/
 ```
 
-Start lucene: `$lucene_home/bin/run`
+Start lucene using the `$lucene_home/bin/run` script.
 
-You should now see the same welcome message at:
+You should now see an identical welcome message at two different URLs:
 
 ```
 curl http://localhost:5985
@@ -101,7 +100,7 @@ cd medic-webapp
 npm install
 ```
 
-Create a `.kansorc` file in the app directory  with your credentials, eg:
+Create a `.kansorc` file in the app directory with your CouchDB credentials, e.g.:
 
 ```
 exports.env = {
@@ -113,14 +112,14 @@ exports.env = {
 ```
 
 
-### Push the couchapp
+### Push the application
 
-`grunt dev` will build and deploy the webapp and also watch for changes and refresh the deploy if any are detected.
+`grunt dev` will build and deploy the webapp, then watch for changes and redeploy when necessary.
 
 ### Start medic-sentinel
 
 ```
-cd sentinel
+cd medic-sentinel
 npm install
 export COUCH_URL=http://admin:pass@localhost:5984/medic
 node ./server.js
@@ -130,7 +129,7 @@ See [Medic Sentinel](https://github.com/medic/medic-sentinel) for more informati
 ### Start medic-api
 
 ```
-cd api
+cd medic-api
 npm install
 export COUCH_URL=http://admin:pass@localhost:5984/medic
 node ./server.js
@@ -171,7 +170,7 @@ http://localhost:5988/medic/_design/medic/_rewrite/
 
 ## Tests
 
-To run precommit tests
+To run precommit tests:
 
 1. Start API: `COUCH_URL=http://user:pass@localhost:5984/medic node api/server.js`
 2. Update Webdriver: `node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update`
@@ -183,19 +182,19 @@ Some kanso tests are run in browser, you can run them manually if you browse to 
 ## Loading Data
 
 Loading your form definitions in the settings interface is supported but you can
-also do that from command line.
+also do that from command line:
 
 ```
 node scripts/load_forms.js
 ```
 
-To bulk load messages from a CSV file run:
+To batch-load messages from a CSV file, run:
 
 ```
 node scripts/load_messages.js
 ```
 
-Use curl to submit a single message:
+Use `curl` to submit a single message:
 
 ```
 curl -i -u gateway:123qwe \
@@ -203,16 +202,16 @@ curl -i -u gateway:123qwe \
     --data-urlencode 'from=+13125551212' \
     --data-urlencode 'sent_timestamp=1403965605868' \
     -X POST \
-    http://medic.local/medic/_design/medic/_rewrite/add
+    http://localhost:5988/medic/_design/medic/_rewrite/add
 ```
 
 
 ## Deploy to Market
 
-When deploying to market include the sentinel package in the couchapp so
+When deploying to the market, include the sentinel package in the couchapp so
 [gardener](https://github.com/garden20/gardener) can manage the process. This
-is already automated in the CI scripts and runs on Travis CI but here is the
-manual process.
+is already automated in the CI scripts (and runs on Travis CI), but here is the
+manual process:
 
 First clone the repo recursively so you get both submodules `api` and
 `sentinel`, then change directories:
@@ -223,18 +222,18 @@ cd medic-webapp
 ```
 
 Then edit `kanso.json` and add `"kanso-gardener":null` to the end of the list
-of dependencies.  You can use your editor but
-[jsontool](https://github.com/trentm/json) has an edit mode that works to:
+of dependencies.  You can use a text editor, or
+[jsontool](https://github.com/trentm/json) has an edit mode that works:
 
 ```
-cat kanso.json |json \
-  -e 'this.dependencies["kanso-gardener"] = null; this.dependencies_included = true;' \
-  > new.json && \
+cat kanso.json | json -e \
+  'this.dependencies["kanso-gardener"] = null; this.dependencies_included = true;' \
+    > new.json && \
 mv new.json kanso.json
 ```
 
-Finally push to the [Medic Alpha
-Market](https://staging.dev.medicmobile.org/markets-alpha/) run:
+Finally, push to the [Medic Alpha
+Market](https://staging.dev.medicmobile.org/markets-alpha/):
 
 ```
 kanso push https://staging.dev.medicmobile.org/markets-alpha/upload
@@ -256,7 +255,7 @@ Develop      | Testing       | Master
 
 ## License & Copyright
 
-Copyright 2013 Medic Mobile, 501(c)(3)  <hello@medicmobile.org>
+Copyright 2013-2015 Medic Mobile, Inc. <hello@medicmobile.org>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
