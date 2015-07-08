@@ -7,9 +7,9 @@ For latest changes and release announcements see our [change log](Changes.md).
 
 Medic Mobile combines messaging, data collection, and analytics for health workers and health systems in hard-to-reach areas with or without internet connectivity.
 
-The `medic-webapp` repository is the core application in the Medic Mobile stack. When health workers submit data using text messages (SMS), our mobile or our SIM applications, the web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application. 
+The `medic-webapp` repository is the core application in the Medic Mobile stack. When health workers submit data — using text messages (SMS), our mobile applications, or our SIM applications — the web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
 
-The web app is fully responsive with a mobile first design and supports any written language. It can be installed locally, as part of a virtual machine (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
+The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally, as part of a virtual machine (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
 
 For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
 
@@ -119,7 +119,7 @@ exports.env = {
 ### Start medic-sentinel
 
 ```
-cd medic-sentinel
+cd sentinel
 npm install
 export COUCH_URL=http://admin:pass@localhost:5984/medic
 node ./server.js
@@ -129,7 +129,7 @@ See [Medic Sentinel](https://github.com/medic/medic-sentinel) for more informati
 ### Start medic-api
 
 ```
-cd medic-api
+cd api
 npm install
 export COUCH_URL=http://admin:pass@localhost:5984/medic
 node ./server.js
@@ -177,11 +177,11 @@ To run precommit tests:
 3. Start Webdriver: `node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager start`
 4. Run tests: `grunt test`
 
-Some kanso tests are run in browser, you can run them manually if you browse to `/medic/_design/medic/_rewrite/test`.
+Some kanso tests are run in-browser; you can run them manually if you browse to `/medic/_design/medic/_rewrite/test`.
 
 ## Loading Data
 
-Loading your form definitions in the settings interface is supported but you can
+Loading your form definitions in the settings interface is supported, but you can
 also do that from command line:
 
 ```
@@ -221,7 +221,7 @@ git clone --recursive https://github.com/medic/medic-webapp
 cd medic-webapp
 ```
 
-Then edit `kanso.json` and add `"kanso-gardener":null` to the end of the list
+Then edit `kanso.json`, and add `"kanso-gardener":null` to the end of the list
 of dependencies.  You can use a text editor, or
 [jsontool](https://github.com/trentm/json) has an edit mode that works:
 
