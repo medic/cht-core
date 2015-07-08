@@ -24,7 +24,9 @@ module.exports = function(config) {
       'bower_components/jquery/dist/jquery.js',
 
       // application code
+      'static/dist/dependencies.js',
       'static/dist/inbox.js',
+      'static/dist/templates.js',
 
       // test-specific code
       'node_modules/chai/chai.js',
