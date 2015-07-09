@@ -16,6 +16,20 @@ var _ = require('underscore'),
     return Math.min(prev * 2, 60000);
   };
 
+  var getUrl = function() {
+    if (typeof medicmobile_android !== 'undefined') {
+      // running in the android container - get configured url
+      var url = medicmobile_android.getCouchDbUrl();
+      var user = medicmobile_android.getCouchDbUser();
+      var pass = medicmobile_android.getCouchDbPass();
+      return url.replace('://', '://' + user + ':' + pass + '@');
+    } else {
+      // running in the browser
+      // TODO don't harcode this URL
+      return 'http://gareth:pass@localhost:5988/medic';
+    }
+  };
+
   inboxServices.factory('DB', [
     'pouchDB', 'UserDistrict', 'UserCtxService',
     function(pouchDB, UserDistrict, UserCtxService) {
@@ -33,7 +47,7 @@ var _ = require('underscore'),
         });
         var direction = from ? 'from' : 'to';
         var fn = get().replicate[direction];
-        return fn('http://gareth:pass@localhost:5988/medic', options)
+        return fn(getUrl(), options)
           .on('error', function(err) {
             console.log('Error replicating ' + direction + ' remote server', err);
           });
