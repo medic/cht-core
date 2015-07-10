@@ -1,5 +1,4 @@
-var async = require('async'),
-    _ = require('underscore');
+var _ = require('underscore');
 
 (function () {
 
@@ -23,10 +22,10 @@ var async = require('async'),
     }
   ]);
 
-  var generateQuery = function(options, districtId) {
+  var generateQuery = function(options) {
     var query = _.clone(options.queryOptions);
-    query.startkey = [ districtId ];
-    query.endkey = [ districtId ];
+    query.startkey = [ ];
+    query.endkey = [ ];
     if (options.id) {
       query.startkey.push(options.id);
       query.endkey.push(options.id);
@@ -35,56 +34,27 @@ var async = require('async'),
     return query;
   };
 
-  var query = function($rootScope, MessageContactsRaw, UserDistrict, Settings, options, callback) {
-    async.auto({
-      district: function(callback) {
-        UserDistrict(callback);
-      },
-      request: ['district', function(callback, results) {
-        var query = generateQuery(options, results.district || 'admin');
-        MessageContactsRaw(query, callback);
-      }],
-      unallocated: function(callback) {
-        if (!options.districtAdmin) {
-          return callback(null, false);
-        }
-        Settings(function(err, settings) {
-          var result = settings && settings.district_admins_access_unallocated_messages;
-          callback(err, result);
-        });
-      },
-      requestUnallocated: ['unallocated', function(callback, results) {
-        if (!results.unallocated) {
-          return callback();
-        }
-        MessageContactsRaw(generateQuery(options, 'none'), callback);
-      }]
-    }, function(err, results) {
-      var merged;
-      if (results.request && results.requestUnallocated) {
-        merged = results.request.concat(results.requestUnallocated);
-      } else {
-        merged = results.request;
-      }
-      callback(err, merged);
+  var query = function($rootScope, MessageContactsRaw, options, callback) {
+    MessageContactsRaw(generateQuery(options), function(err, results) {
+      callback(err, results);
       if (!$rootScope.$$phase) {
         $rootScope.$apply();
       }
     });
   };
   
-  inboxServices.factory('MessageContact', ['$rootScope', 'MessageContactsRaw', 'UserDistrict', 'Settings',
-    function($rootScope, MessageContactsRaw, UserDistrict, Settings) {
+  inboxServices.factory('MessageContact', ['$rootScope', 'MessageContactsRaw',
+    function($rootScope, MessageContactsRaw) {
       return function(options, callback) {
         options.targetScope = 'messages';
-        options.queryOptions = { group_level: 2 };
-        query($rootScope, MessageContactsRaw, UserDistrict, Settings, options, callback);
+        options.queryOptions = { group_level: 1 };
+        query($rootScope, MessageContactsRaw, options, callback);
       };
     }
   ]);
   
-  inboxServices.factory('ContactConversation', ['$rootScope', 'MessageContactsRaw', 'UserDistrict', 'Settings',
-    function($rootScope, MessageContactsRaw, UserDistrict, Settings) {
+  inboxServices.factory('ContactConversation', ['$rootScope', 'MessageContactsRaw',
+    function($rootScope, MessageContactsRaw) {
       return function(options, callback) {
         options.targetScope = 'messages.details';
         options.queryOptions = {
@@ -94,7 +64,7 @@ var async = require('async'),
           skip: options.skip,
           limit: 50
         };
-        query($rootScope, MessageContactsRaw, UserDistrict, Settings, options, callback);
+        query($rootScope, MessageContactsRaw, options, callback);
       };
     }
   ]);

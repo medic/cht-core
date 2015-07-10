@@ -79,6 +79,7 @@
         "angular"   : true,
         "moment"    : true,
         "_"         : true,
+        "medicmobile_android": true,
 
         // tests_ui globals
         "beforeEach": true,
