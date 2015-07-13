@@ -16,26 +16,16 @@ var _ = require('underscore'),
     return Math.min(prev * 2, 60000);
   };
 
-  var getUrl = function() {
-    if (typeof medicmobile_android !== 'undefined') {
-      // running in the android container - get configured url
-      var url = medicmobile_android.getCouchDbUrl();
-      var user = medicmobile_android.getCouchDbUser();
-      var pass = medicmobile_android.getCouchDbPass();
-      return url.replace('://', '://' + user + ':' + pass + '@');
-    } else {
-      // running in the browser
-      // TODO don't harcode this URL
-      return 'http://gareth:pass@localhost:5988/medic';
-    }
+  var getRemoteUrl = function(name) {
+    var port = location.port ? ':' + location.port : '';
+    return location.protocol + '//' + location.hostname + port + '/' + name;
   };
 
   inboxServices.factory('DB', [
-    'pouchDB', 'UserDistrict', 'UserCtxService',
-    function(pouchDB, UserDistrict, UserCtxService) {
+    'pouchDB', 'UserDistrict', 'UserCtxService', 'DbNameService',
+    function(pouchDB, UserDistrict, UserCtxService, DbNameService) {
 
       // TODO lock down api so non-admins can only replicate
-      // TODO replication doesn't work with non-admin basic auth?!
       // TODO stop users from creating docs against another facility - update validation on replicate?
 
       var replicate = function(from, options) {
@@ -47,7 +37,7 @@ var _ = require('underscore'),
         });
         var direction = from ? 'from' : 'to';
         var fn = get().replicate[direction];
-        return fn(getUrl(), options)
+        return fn(getRemoteUrl(DbNameService()), options)
           .on('error', function(err) {
             console.log('Error replicating ' + direction + ' remote server', err);
           });
@@ -58,9 +48,9 @@ var _ = require('underscore'),
       };
 
       var get = function(name) {
-        name = name || 'medic';
+        name = name || DbNameService();
         if (isAdmin()) {
-          name = 'http://localhost:5988/' + name;
+          name = getRemoteUrl(name);
         }
         return pouchDB(name);
       };

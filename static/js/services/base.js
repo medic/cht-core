@@ -18,6 +18,17 @@ var db = require('db');
     };
   });
 
+  inboxServices.factory('DbNameService', ['BaseUrlService',
+    function(BaseUrlService) {
+      return function() {
+        var parts = BaseUrlService().split('/');
+        if (parts.length > 1) {
+          return parts[1];
+        }
+      };
+    }
+  ]);
+
   inboxServices.factory('UserCtxService', function() {
     return function() {
       return $('html').data('user');
