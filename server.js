@@ -62,12 +62,6 @@ app.use(function(req, res, next) {
   next();
 });
 
-// requires content-type header application/json
-var jsonParser = bodyParser.json({limit: '32mb'});
-
-// requires content-type header application/x-www-form-urlencoded
-var formParser = bodyParser.urlencoded({limit: '32mb', extended: false});
-
 app.all(pathPrefix + '/_design/' + db.settings.ddoc + '/_rewrite/update_settings/*', function(req, res) {
   // don't audit the app settings
   proxy.web(req, res);
