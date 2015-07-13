@@ -1,4 +1,5 @@
-var _ = require('underscore'),
+var fs = require('fs'),
+    _ = require('underscore'),
     bodyParser = require('body-parser'),
     express = require('express'),
     morgan = require('morgan'),
@@ -34,9 +35,23 @@ var _ = require('underscore'),
     createDomain = require('domain').create,
     staticResources = /\/(templates|static)\//,
     appcacheManifest = /manifest\.appcache/,
-    pathPrefix = '/' + db.settings.db;
+    pathPrefix = '/' + db.settings.db,
+    appPrefix = pathPrefix + '/_design/' + db.settings.ddoc + '/_rewrite',
+    loginTemplate;
 
 http.globalAgent.maxSockets = 100;
+
+_.templateSettings = {
+  interpolate: /\{\{(.+?)\}\}/g
+};
+
+fs.readFile(__dirname + '/public/login/index.html', { encoding: 'utf-8' }, function(err, data) {
+  if (err) {
+    console.error('Could not find login page');
+    throw err;
+  }
+  loginTemplate = _.template(data);
+});
 
 // requires content-type application/json header
 var jsonParser = bodyParser.json({limit: '32mb'});
@@ -61,13 +76,32 @@ app.use(function(req, res, next) {
   next();
 });
 
-// requires content-type header application/json
-var jsonParser = bodyParser.json({limit: '32mb'});
+app.use(express.static('./public'));
+app.get(pathPrefix + '/login', function(req, res) {
+  auth.getUserCtx(req, function(err) {
+    var redirectPath = req.query.redirect || appPrefix;
+    if (!err) {
+      // already logged in
+      res.redirect(redirectPath);
+    } else {
+      res.send(loginTemplate({
+        redirect: redirectPath,
+        branding: {
+          name: 'Medic Mobile'
+        },
+        translations: {
+          login: config.translate('login'),
+          loginerror: config.translate('login.error'),
+          loginincorrect: config.translate('login.incorrect'),
+          username: config.translate('User Name'),
+          password: config.translate('Password')
+        }
+      }));
+    }
+  });
+});
 
-// requires content-type header application/x-www-form-urlencoded
-var formParser = bodyParser.urlencoded({limit: '32mb', extended: false});
-
-app.all(pathPrefix + '/_design/' + db.settings.ddoc + '/_rewrite/update_settings/*', function(req, res) {
+app.all(appPrefix + '/update_settings/*', function(req, res) {
   // don't audit the app settings
   proxy.web(req, res);
 });
@@ -79,9 +113,12 @@ app.all(pathPrefix + '/_local/*', function(req, res) {
   // don't audit the _local docs
   proxy.web(req, res);
 });
+app.all('/_session', function(req, res) {
+  // don't audit session management
+  proxy.web(req, res);
+});
 
 var audit = function(req, res) {
-  console.log('AUDITING', req.path);
   var ap = new AuditProxy();
   ap.on('error', function(e) {
     serverError(e, res);

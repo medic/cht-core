@@ -32,7 +32,7 @@ var getMessage = function(value, locale) {
     return value;
   }
 
-  locale = locale || getLocale();
+  locale = locale || settings.locale;
 
   var test = false;
   if (locale === 'test') {
