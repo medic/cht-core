@@ -26,7 +26,6 @@ input {
   border-width: 1px;
   border-color: #CCCCCC;
   border-radius: 4px;
-  padding: 0.5em;
   width: 100%;
 }
 .btn {
@@ -35,11 +34,14 @@ input {
   text-align: center;
   cursor: pointer;
   border: 1px solid transparent;
-  padding: 6px 12px;
   line-height: 1.42857;
   border-radius: 4px;
   display: block;
   margin-top: 2em;
+}
+input, .btn {
+  width: 280px;
+  padding: 6px 10px;
 }
 .loading .btn {
   cursor: not-allowed;

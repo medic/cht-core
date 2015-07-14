@@ -124,7 +124,7 @@ var audit = function(req, res) {
     serverError(e, res);
   });
   ap.on('not-authorized', function() {
-    notLoggedIn(res);
+    notLoggedIn(req, res);
   });
   ap.audit(proxyForAuditing, req, res);
 };
@@ -176,7 +176,7 @@ app.get('/api/auth/:path', function(req, res) {
 var handleAnalyticsCall = function(req, res, controller) {
   auth.check(req, 'can_view_analytics', req.query.district, function(err, ctx) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     controller.get({ district: ctx.district }, function(err, obj) {
       if (err) {
@@ -281,7 +281,7 @@ app.get(db.getPath() + '/export/:type/:form?', function(req, res) {
 app.get('/api/v1/export/:type/:form?', function(req, res) {
   auth.check(req, getExportPermission(req.params.type), req.query.district, function(err, ctx) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     req.query.type = req.params.type;
     req.query.form = req.params.form || req.query.form;
@@ -305,7 +305,7 @@ app.get('/api/v1/export/:type/:form?', function(req, res) {
 app.get('/api/v1/fti/:view', function(req, res) {
   auth.check(req, 'can_view_data_records', null, function(err) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     auth.check(req, 'can_view_unallocated_data_records', null, function(err, ctx) {
       var queryOptions = _.pick(req.query, 'q', 'schema', 'sort', 'skip', 'limit', 'include_docs');
@@ -323,12 +323,12 @@ app.get('/api/v1/fti/:view', function(req, res) {
 app.get('/api/v1/messages', function(req, res) {
   auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     var opts = _.pick(req.query, 'limit', 'start', 'descending', 'state');
     messages.getMessages(opts, ctx && ctx.district, function(err, result) {
       if (err) {
-        return error(err, res);
+        return serverError(err.message, res);
       }
       res.json(result);
     });
@@ -338,11 +338,11 @@ app.get('/api/v1/messages', function(req, res) {
 app.get('/api/v1/messages/:id', function(req, res) {
   auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     messages.getMessage(req.params.id, ctx && ctx.district, function(err, result) {
       if (err) {
-        return error(err, res);
+        return serverError(err.message, res);
       }
       res.json(result);
     });
@@ -352,11 +352,11 @@ app.get('/api/v1/messages/:id', function(req, res) {
 app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
   auth.check(req, 'can_update_messages', null, function(err, ctx) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     messages.updateMessage(req.params.id, req.body, ctx && ctx.district, function(err, result) {
       if (err) {
-        return error(err, res);
+        return serverError(err.message, res);
       }
       res.json(result);
     });
@@ -366,11 +366,11 @@ app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
 app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
   auth.check(req, 'can_create_records', null, function(err) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     records.create(req.body, req.is(['json','urlencoded']), function(err, result) {
       if (err) {
-        return error(err, res);
+        return serverError(err.message, res);
       }
       res.json(result);
     });
@@ -380,11 +380,11 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
 app.get('/api/v1/scheduler/:name', function(req, res) {
   auth.check(req, 'can_execute_schedules', null, function(err) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     scheduler.exec(req.params.name, function(err) {
       if (err) {
-        return error(err, res);
+        return serverError(err.message, res);
       }
       res.json({ schedule: req.params.name, result: 'success' });
     });
@@ -425,14 +425,14 @@ app.get('/api/v1/forms/:form', function(req, res) {
 app.get('/medic/_changes', function(req, res) {
   auth.getUserCtx(req, function(err, userCtx) {
     if (err) {
-      return error(err, res);
+      return error(err, req, res);
     }
     if (auth.hasAllPermissions(userCtx, 'can_access_directly')) {
       proxy.web(req, res);
     } else {
       auth.getFacilityId(req, userCtx, function(err, facilityId) {
         if (err) {
-          return error(err, res);
+          return serverError(err.message, res);
         }
         // for security reasons ensure the params haven't been tampered with
         if (req.query.filter !== 'medic/doc_by_place' ||
@@ -482,13 +482,13 @@ proxyForAuditing.on('error', function(err, req, res) {
   serverError(JSON.stringify(err), res);
 });
 
-var error = function(err, res) {
+var error = function(err, req, res) {
   if (typeof err === 'string') {
     return serverError(err, res);
   } else if (err.code === 500) {
     return serverError(err.message, res);
   } else if (err.code === 401) {
-    return notLoggedIn(res);
+    return notLoggedIn(req, res);
   }
   res.writeHead(err.code || 500, {
     'Content-Type': 'text/plain'
@@ -510,12 +510,8 @@ var serverError = function(err, res) {
   }
 };
 
-var notLoggedIn = function(res) {
-  res.writeHead(401, {
-    'Content-Type': 'text/plain',
-    'WWW-Authenticate': 'Basic realm="Medic Mobile Web Services"'
-  });
-  res.end('Not logged in');
+var notLoggedIn = function(req, res) {
+  res.redirect(301, pathPrefix + '/login?redirect=' + encodeURIComponent(req.url));
 };
 
 migrations.run(function(err) {
