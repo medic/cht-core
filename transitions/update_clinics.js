@@ -28,10 +28,10 @@ module.exports = {
             view;
 
         if (doc.refid) { // use reference id to find clinic if defined
-            q.key = [ doc.refid ];
+            q.key = [ String(doc.refid) ];
             view = 'clinic_by_refid';
         } else if (doc.from) {
-            q.key = [ doc.from ];
+            q.key = [ String(doc.from) ];
             view = 'clinic_by_phone';
         } else {
             return callback(null, false);
