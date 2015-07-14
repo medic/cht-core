@@ -80,3 +80,38 @@ exports['should update clinic by refid and fix number'] = function(test) {
 };
 
 
+/*
+ * Since the facilities index uses strings for the reference value we need to
+ * always query with strings too.
+ */
+exports['refid field is cast to a string in view query'] = function(test) {
+  test.expect(1);
+  var change = {
+    doc: {
+      refid: 123
+    }
+  };
+  var db = {
+    view: function(ddoc, view, q , callback) {
+      test.ok(q.key[0] === '123');
+      test.done();
+    }
+  };
+  transition.onMatch(change, db, {}, function(){});
+};
+
+exports['from field is cast to string in view query'] = function(test) {
+  test.expect(1);
+  var change = {
+    doc: {
+      from: 123
+    }
+  };
+  var db = {
+    view: function(ddoc, view, q , callback) {
+      test.ok(q.key[0] === '123');
+      test.done();
+    }
+  };
+  transition.onMatch(change, db, {}, function(){});
+};
