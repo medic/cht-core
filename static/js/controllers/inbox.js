@@ -288,7 +288,7 @@ require('moment/locales');
       UserDistrict(function(err, district) {
         if (err) {
           console.log('Error fetching user district', err);
-          if (err !== 'Not logged in') {
+          if (err.message !== 'Not logged in') {
             $('body').html(err);
           }
           return;
