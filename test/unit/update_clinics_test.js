@@ -93,7 +93,7 @@ exports['refid field is cast to a string in view query'] = function(test) {
   };
   var db = {
     view: function(ddoc, view, q , callback) {
-      test.ok(typeof q.key[0] === 'string');
+      test.ok(q.key[0] === '123');
       test.done();
     }
   };
@@ -109,7 +109,7 @@ exports['from field is cast to string in view query'] = function(test) {
   };
   var db = {
     view: function(ddoc, view, q , callback) {
-      test.ok(typeof q.key[0] === 'string');
+      test.ok(q.key[0] === '123');
       test.done();
     }
   };
