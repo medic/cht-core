@@ -60,7 +60,7 @@ module.exports = {
             q = { include_docs: true, limit: 1 };
 
         if (doc.refid) { // use reference id to find clinic if defined
-            q.key = [ doc.refid ];
+            q.key = [ String(doc.refid) ];
             db.medic.view('kujua-sentinel', 'clinic_by_refid', q, function(err, data) {
                 if (err) {
                     return callback(err);
@@ -79,7 +79,7 @@ module.exports = {
                 }
             });
         } else if (doc.from) {
-            q.key = [ doc.from ];
+            q.key = [ String(doc.from) ];
             db.medic.view('kujua-sentinel', 'person_by_phone', q, function(err, data) {
                 var first = _.first(data.rows);
                 if (!first) {

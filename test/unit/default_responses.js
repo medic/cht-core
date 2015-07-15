@@ -88,6 +88,18 @@ exports['do not pass filter when message is from gateway'] = function(test) {
     test.done();
 };
 
+exports['do not pass filter when gateway config is missing country code'] = function(test) {
+    sinon.stub(transition, '_getConfig').returns('446681800');
+    test.equals(transition.filter({
+        from: '+222',
+        type: 'data_record',
+        sms_message: {
+            from: '+41446681800'
+        }
+    }), false);
+    test.done();
+};
+
 exports['do not pass filter when numbers are same but different formats'] = function(test) {
     sinon.stub(transition, '_getConfig').returns('77-44-5555-8888');
     test.equals(transition.filter({
