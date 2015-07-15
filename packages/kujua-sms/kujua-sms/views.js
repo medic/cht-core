@@ -10,7 +10,7 @@ exports.data_records = {
         if (doc.type === 'data_record') {
             clinicId = objectpath.get(doc, 'related_entities.clinic._id');
             centerId = objectpath.get(doc, 'related_entities.clinic.parent._id');
-            districtId = objectpath.get(doc, 'related_entities.clinic.parent.parent._id');
+            districtId = objectpath.get(doc, 'related_entities.clinic.parent.parent._id') || 'null_district';
             valid = !doc.errors || doc.errors.length === 0;
 
             emit([doc.reported_date], 1);

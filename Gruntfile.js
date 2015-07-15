@@ -125,6 +125,7 @@ module.exports = function(grunt) {
           'outline-none': false,
           'qualified-headings': false,
           'unique-headings': false,
+          'selector-max-approaching': false
         }
       }
     },

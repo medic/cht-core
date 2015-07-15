@@ -55,14 +55,7 @@ exports.rules = [
     },
     {
         from: '/export/forms/:form',
-        to: '_list/export_data_records/data_records',
-        query: {
-            include_docs: 'true',
-            descending: 'true',
-            startkey: [true, ':form', {}],
-            endkey: [true, ':form'],
-            form: ':form'
-        }
+        to: '_list/export_data_records/data_records'
     },
     {
         from: '/:form/data_record/add/clinic/:phone',

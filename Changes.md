@@ -1,5 +1,20 @@
 # Medic Mobile Release Notes
 
+## 0.4.8
+
+### Jul 14, 2015
+
+- Added SMS parser fixes from dev branch:
+   
+  - parse string fields with exlamation marks
+  - compact textforms format handles quotes in quotes
+
+- Fixed export bug when using lowercase form codes. Please re-upload your forms
+  so they are formatted correctly. #998
+
+- Fixed bug where exporting yields same result with or without date
+  filter. #1059, #1031
+
 ## 0.4.7
 
 ### Jun 16, 2015
