@@ -6,7 +6,7 @@
 
 - Added SMS parser fixes from dev branch:
    
-  - parse string fields with exlamation marks
+  - parse string fields with exclamation marks
   - compact textforms format handles quotes in quotes
 
 - Fixed export bug when using lowercase form codes. Please re-upload your forms
