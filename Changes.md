@@ -12,8 +12,8 @@
 - Fixed export bug when using lowercase form codes. Please re-upload your forms
   so they are formatted correctly. #998
 
-- Fixed bug where exporting yields same result with or without date filter.
-  #1059, #1031
+- Fixed bug where exporting yields same result with or without date
+  filter. #1059, #1031
 
 ## 0.4.7
 
