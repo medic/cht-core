@@ -204,7 +204,7 @@ exports['should update clinic by refid and get latest contact'] = function(test)
         test.equal(doc.contact.name, 'zenith');
         test.done();
     });
-}
+};
 
 /*
  * Since the facilities index uses strings for the reference value we need to
@@ -219,7 +219,7 @@ exports['refid field is cast to a string in view query'] = function(test) {
   };
   var db = {
     medic: {
-      view: function(ddoc, view, q , callback) {
+      view: function(ddoc, view, q) {
         test.ok(q.key[0] === '123');
         test.done();
       }
@@ -237,7 +237,7 @@ exports['from field is cast to string in view query'] = function(test) {
   };
   var db = {
     medic: {
-      view: function(ddoc, view, q , callback) {
+      view: function(ddoc, view, q) {
         test.ok(q.key[0] === '123');
         test.done();
       }
