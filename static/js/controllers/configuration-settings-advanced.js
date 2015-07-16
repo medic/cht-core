@@ -113,7 +113,12 @@ var _ = require('underscore'),
         $scope.minutes = generateTimeModels(60, 5);
         $scope.updateDateFormatExample();
         $scope.updateDatetimeFormatExample();
-        $('#outgoing-phone-replace-match').select2({ width: '20em', data: countries.list });
+        $('#outgoing-phone-replace-match').select2({
+          width: '20em',
+          data: countries.list,
+          placeholder: ' ',
+          allowClear: true
+        });
         $('#outgoing-phone-replace-match').select2('val', res.outgoing_phone_replace.match);
       });
 

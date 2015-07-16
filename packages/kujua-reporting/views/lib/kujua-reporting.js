@@ -11,9 +11,9 @@ var getParent = function(facility, type) {
  */
 exports.getFacilitiesList = function(doc) {
     return [
-        getParent(doc.contact, 'district_hospital'),
-        getParent(doc.contact, 'health_center'),
-        getParent(doc.contact, 'clinic')
+        getParent(doc.contact, 'district_hospital') || {},
+        getParent(doc.contact, 'health_center') || {},
+        getParent(doc.contact, 'clinic') || {}
     ];
 };
 

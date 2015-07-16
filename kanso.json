@@ -1,8 +1,8 @@
 {
     "name": "medic",
     "display_name": "Medic Mobile",
-    "version": "0.5.0",
-    "description": "SMS data collection designed for rural environments.",
+    "version": "0.6.0",
+    "description": "Medic Mobile combines SMS messaging, data collection, and analytics for health workers and health systems in hard-to-reach areas with or without internet connectivity.",
     "long_description" : "Medic Mobile is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
     "url": "https://github.com/medic/medic-webapp",
     "categories": ["health", "sms"],
@@ -27,7 +27,15 @@
         "static/dist",
         "static/fonts",
         "static/img",
-        "templates",
+        "templates/403.html",
+        "templates/404.html",
+        "templates/500.html",
+        "templates/base.html",
+        "templates/inbox.html",
+        "templates/loader.html",
+        "templates/top_bar.html",
+        "templates/feedback_admin.html",
+        "templates/workflow",
         "static/js/bootstrap-datetimepicker.js",
         "static/js/bootstrap.min.js",
         "static/js/bootstrap-multidropdown.js",
@@ -148,6 +156,10 @@
                     {
                         "code": "sw",
                         "name": "Kiswahili (Swahili)"
+                    },
+                    {
+                        "code": "hi",
+                        "name": "हिन्दी (Hindi)"
                     }
                 ]
             },
