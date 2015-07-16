@@ -35,7 +35,7 @@ var _ = require('underscore'),
       return {
         valid: false,
         message: translateFn('field is required', {
-          field: translateFn('Phone Number')
+          field: translateFn('tasks.0.messages.0.to')
         })
       };
     }

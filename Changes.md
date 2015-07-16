@@ -1,5 +1,36 @@
 # Medic Mobile Release Notes
 
+## 0.4.8
+
+### Jul 14, 2015
+
+- Added SMS parser fixes from dev branch:
+   
+  - parse string fields with exclamation marks
+  - compact textforms format handles quotes in quotes
+
+- Fixed export bug when using lowercase form codes. Please re-upload your forms
+  so they are formatted correctly. #998
+
+- Fixed bug where exporting yields same result with or without date
+  filter. #1059, #1031
+
+## 0.4.7
+
+### Jun 16, 2015
+
+- Fixed ODK forms list bug when the list is empty. Issue #886
+
+- Fixed compact textforms parser bug with exclamation points. Issue #989
+
+- Fixed bug in compact textforms parser we ignored fields with uppercase
+  letters in the key of the form definition.  Issue #991
+
+- Fixed bug when creating record with empty message. Issue #990
+
+- Moved raw message to bottom of report body.  Issue: #927
+
+
 ## 0.4.6
 
 ### Jun 4, 2015

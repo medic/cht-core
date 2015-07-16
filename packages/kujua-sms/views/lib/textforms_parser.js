@@ -228,7 +228,7 @@ exports.parseCompact = function(def, msg) {
         if (values.length === 0) {
             break;
         }
-        key = keys[i];
+        var key = keys[i];
         if (i === keys.length - 1 && def.fields[key].type === 'string') {
             // parsing the trailing string field, use the rest of the msg
             value = values.join(' ');
@@ -238,7 +238,9 @@ exports.parseCompact = function(def, msg) {
         if (value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') {
             value = value.substring(1, value.length - 1);
         }
-        set_result(results, key, value);
+        if (typeof results[key] === 'undefined') {
+            results[key] = value;
+        }
     }
     return results;
 };

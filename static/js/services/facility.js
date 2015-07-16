@@ -136,18 +136,13 @@ var _ = require('underscore');
 
   inboxServices.factory('District', ['DbView',
     function(DbView) {
-
-      var options = { params: {
-        startkey: ['district_hospital'],
-        endkey: ['district_hospital', {}],
-        reduce: false,
-        include_docs: true
-      } };
-
       return function(callback) {
-        DbView('facilities', options, callback);
+        DbView(
+          'facilities',
+          { params: { key: ['district_hospital'], include_docs: true } },
+          callback
+        );
       };
-
     }
   ]);
 

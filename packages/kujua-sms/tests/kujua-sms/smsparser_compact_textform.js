@@ -119,13 +119,11 @@ exports['compact textforms format handles quotes in quotes'] = function(test) {
         from: '+15551212',
         message: 'ANCR "Sarah "killer bee" Connor" 24 2012-03-12'
     };
-
     var expectedObj = {
         name: 'Sarah \"killer bee\" Connor',
         lmp: 24,
         somedate: 1331510400000
     };
-
     var obj = smsparser.parse(def, doc);
     test.same(obj, expectedObj);
     test.done();

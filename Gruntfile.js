@@ -64,10 +64,9 @@ module.exports = function(grunt) {
         src: [
           'bower_components/concat.js',
           'bower_components/bootstrap-tour/build/js/bootstrap-tour.js',
-          'static/js/bootstrap-multidropdown.js',
-          'static/dist/inbox.js'
+          'static/js/bootstrap-multidropdown.js'
         ],
-        dest: 'static/dist/inbox.js',
+        dest: 'static/dist/dependencies.js',
       }
     },
     uglify: {
@@ -76,7 +75,9 @@ module.exports = function(grunt) {
       },
       build: {
         files: {
-          'static/dist/inbox.js': ['static/dist/inbox.js']
+          'static/dist/templates.js': ['static/dist/templates.js'],
+          'static/dist/dependencies.js': ['static/dist/dependencies.js'],
+          'static/dist/inbox.js': ['static/dist/inbox.js'],
         }
       }
     },
@@ -130,7 +131,7 @@ module.exports = function(grunt) {
             src: [
               'bower_components/select2/*.gif',
               'bower_components/select2/*.png'
-            ], 
+            ],
             dest: 'static/dist/'
           },
           {
@@ -173,6 +174,18 @@ module.exports = function(grunt) {
       },
       phantom: {
         cmd: 'phantomjs scripts/nodeunit_runner.js http://localhost:5984/medic/_design/medic/_rewrite/test'
+      },
+      runapi: {
+        cmd: 'COUCH_URL=http://ci_test:pass@localhost:5984/medic node ./api/server.js > api.out &'
+      },
+      sleep: {
+        cmd: 'sleep 20'
+      },
+      addadmin: {
+        cmd: function() {
+          return 'curl -X PUT http://localhost:5984/_config/admins/ci_test -d \'"pass"\' &&' +
+                 'curl -HContent-Type:application/json -vXPUT http://ci_test:pass@localhost:5984/_users/org.couchdb.user:ci_test  --data-binary \'{"_id": "org.couchdb.user:ci_test", "name": "ci_test", "roles": [], "type": "user", "password": "pass", "language": "en", "known": true}\'';
+        }
       }
     },
     watch: {
@@ -181,11 +194,11 @@ module.exports = function(grunt) {
         tasks: ['mmcss', 'appcache', 'deploy']
       },
       js: {
-        files: ['static/js/**/*', 'packages/kujua-*/**/*', 'packages/feedback/**/*'],
+        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'packages/feedback/**/*'],
         tasks: ['mmjs', 'appcache', 'deploy']
       },
       other: {
-        files: ['templates/**/*', 'lib/**/*'],
+        files: ['lib/**/*'],
         tasks: ['appcache', 'deploy']
       }
     },
@@ -216,6 +229,19 @@ module.exports = function(grunt) {
         browsers: ['PhantomJS']
       }
     },
+    protractor: {
+      default: {
+        options: {
+          configFile: 'tests/protractor/conf.js'
+        }
+      },
+    },
+    ngtemplates: {
+      inboxApp: {
+        src: [ 'templates/modals/**/*.html', 'templates/partials/**/*.html' ],
+        dest: 'static/dist/templates.js'
+      }
+    },
     appcache: {
       options: {
         baseUrl: '../../'
@@ -227,7 +253,7 @@ module.exports = function(grunt) {
             'static/dist/**/*',
             'static/fonts/**/*',
             'static/img/**/*',
-            'templates/**/*'
+            '!static/img/promo/**/*'
           ]
         },
         network: '*'
@@ -236,6 +262,7 @@ module.exports = function(grunt) {
   });
 
   // Load the plugins
+  grunt.loadNpmTasks('grunt-angular-templates');
   grunt.loadNpmTasks('grunt-appcache');
   grunt.loadNpmTasks('grunt-autoprefixer');
   grunt.loadNpmTasks('grunt-bower-concat');
@@ -252,6 +279,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-notify');
   grunt.loadNpmTasks('grunt-npm-install');
+  grunt.loadNpmTasks('grunt-protractor-runner');
   grunt.loadNpmTasks('grunt-text-replace');
 
   grunt.task.run('notify_hooks');
@@ -260,6 +288,7 @@ module.exports = function(grunt) {
   grunt.registerTask('mmjs', 'Build the JS resources', [
     'copy:settings',
     'browserify:dist',
+    'ngtemplates',
     'concat:js'
   ]);
 
@@ -286,7 +315,7 @@ module.exports = function(grunt) {
     'mmbower',
     'mmcss',
     'mmjs',
-    'appcache',
+    'appcache'
   ]);
 
   grunt.registerTask('minify', 'Minify JS and CSS', [
@@ -309,14 +338,10 @@ module.exports = function(grunt) {
     'watch'
   ]);
 
-  grunt.registerTask('precommit', 'Lint and unit test', [
-    'jshint',
-    'karma:unit'
-  ]);
-
   grunt.registerTask('test', 'Lint, unit, and integration test', [
-    'precommit',
-    'exec:phantom'
+    'jshint',
+    'karma:unit',
+    'protractor'
   ]);
 
   var browserifyMappings = [

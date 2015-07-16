@@ -139,10 +139,14 @@ describe('DeleteDoc service', function() {
     service('a', function(err, actual) {
       chai.expect(getDoc.calledTwice).to.equal(true);
       chai.expect(saveDoc.calledTwice).to.equal(true);
-      chai.expect(broadcast.calledOnce).to.equal(true);
+      chai.expect(broadcast.calledTwice).to.equal(true);
       chai.expect(getDoc.firstCall.args[0]).to.equal('a');
       chai.expect(getDoc.secondCall.args[0]).to.equal('b');
       chai.expect(saveDoc.firstCall.args[0].contact).to.equal(null);
+      chai.expect(broadcast.firstCall.args[0]).to.equal('ContactUpdated');
+      chai.expect(broadcast.firstCall.args[1]._id).to.equal('b');
+      chai.expect(broadcast.secondCall.args[0]).to.equal('ContactUpdated');
+      chai.expect(broadcast.secondCall.args[1]._id).to.equal('a');
       chai.expect(actual._deleted).to.equal(true);
       done();
     });

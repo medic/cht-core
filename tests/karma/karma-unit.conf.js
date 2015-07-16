@@ -27,7 +27,9 @@ module.exports = function(config) {
       'tests/karma/pouchdb-shim.js',
 
       // application code
+      'static/dist/dependencies.js',
       'static/dist/inbox.js',
+      'static/dist/templates.js',
 
       // test-specific code
       'node_modules/chai/chai.js',
