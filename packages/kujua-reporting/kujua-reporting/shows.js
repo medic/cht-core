@@ -352,7 +352,12 @@ function renderDistrictChoice() {
         ).off('click', '#reporting-district-choice .form-name')
          .on('click', '#reporting-district-choice .form-name', function(ev) {
             ev.preventDefault();
-            $(this).siblings().slideToggle();
+            var siblings = $(this).siblings();
+            if (siblings.hasClass('hide')) {
+                siblings.hide();
+                siblings.removeClass('hide');
+            }
+            siblings.slideToggle();
         });
     });
 
