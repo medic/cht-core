@@ -31,6 +31,7 @@ var fs = require('fs'),
     exportData = require('./controllers/export-data'),
     messages = require('./controllers/messages'),
     records = require('./controllers/records'),
+    forms = require('./controllers/forms'),
     fti = require('./controllers/fti'),
     createDomain = require('domain').create,
     staticResources = /\/(templates|static)\//,
@@ -68,7 +69,7 @@ app.use(function(req, res, next) {
   domain.on('error', function(err) {
     console.error('UNCAUGHT EXCEPTION!');
     console.error(err);
-    serverError(err, res);
+    serverError(err, req, res);
     domain.dispose();
     process.exit(1);
   });
@@ -121,7 +122,7 @@ app.all('/_session', function(req, res) {
 var audit = function(req, res) {
   var ap = new AuditProxy();
   ap.on('error', function(e) {
-    serverError(e, res);
+    serverError(e, req, res);
   });
   ap.on('not-authorized', function() {
     notLoggedIn(req, res);
@@ -163,7 +164,7 @@ app.get('/api/info', function(req, res) {
 app.get('/api/auth/:path', function(req, res) {
   auth.checkUrl(req, function(err, output) {
     if (err) {
-      return serverError(err, res);
+      return serverError(err, req, res);
     }
     if (output.status >= 400 && output.status < 500) {
       res.status(403).send('Forbidden');
@@ -180,7 +181,7 @@ var handleAnalyticsCall = function(req, res, controller) {
     }
     controller.get({ district: ctx.district }, function(err, obj) {
       if (err) {
-        return serverError(err, res);
+        return serverError(err, req, res);
       }
       res.json(obj);
     });
@@ -288,7 +289,7 @@ app.get('/api/v1/export/:type/:form?', function(req, res) {
     req.query.district = ctx.district;
     exportData.get(req.query, function(err, obj) {
       if (err) {
-        return serverError(err, res);
+        return serverError(err, req, res);
       }
       var format = formats[req.query.format] || formats.csv;
       var filename = req.params.type + '-' +
@@ -312,7 +313,7 @@ app.get('/api/v1/fti/:view', function(req, res) {
       queryOptions.allocatedOnly = !!err;
       fti.get(req.params.view, queryOptions, ctx && ctx.district, function(err, result) {
         if (err) {
-          return serverError(err.message, res);
+          return serverError(err.message, req, res);
         }
         res.json(result);
       });
@@ -408,11 +409,11 @@ app.get('/api/v1/forms/:form', function(req, res) {
       form = parts.slice(0, -1).join('.'),
       format = parts.slice(-1)[0];
   if (!form || !format) {
-    return serverError(new Error('Invalid form parameter.'), res);
+    return serverError(new Error('Invalid form parameter.'), req, res);
   }
   forms.getForm(form, format, function(err, body, headers) {
     if (err) {
-      return serverError(err, res);
+      return serverError(err, req, res);
     }
     if (headers) {
       res.writeHead(headers.statusCode || 200, headers);
@@ -475,18 +476,18 @@ app.all('*', function(req, res) {
 });
 
 proxy.on('error', function(err, req, res) {
-  serverError(JSON.stringify(err), res);
+  serverError(JSON.stringify(err), req, res);
 });
 
 proxyForAuditing.on('error', function(err, req, res) {
-  serverError(JSON.stringify(err), res);
+  serverError(JSON.stringify(err), req, res);
 });
 
 var error = function(err, req, res) {
   if (typeof err === 'string') {
-    return serverError(err, res);
+    return serverError(err, req, res);
   } else if (err.code === 500) {
-    return serverError(err.message, res);
+    return serverError(err.message, req, res);
   } else if (err.code === 401) {
     return notLoggedIn(req, res);
   }
@@ -496,8 +497,10 @@ var error = function(err, req, res) {
   res.end(err.message);
 };
 
-var serverError = function(err, res) {
-  console.error('Server error: ' + (err.stack || JSON.stringify(err)));
+var serverError = function(err, req, res) {
+  console.error('Server error: ');
+  console.log('  url: ' + req && req.url);
+  console.log('  detail: ' + (err.stack || JSON.stringify(err)));
   res.writeHead(500, {
     'Content-Type': 'text/plain'
   });
@@ -544,6 +547,6 @@ config.load(function(err) {
 // http://expressjs.com/guide/error-handling.html
 // jshint ignore:start
 app.use(function(err, req, res, next) {
-  serverError(err, res);
+  serverError(err, req, res);
 });
 // jshint ignore:end

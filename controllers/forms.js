@@ -1,5 +1,5 @@
 var openrosaFormList = require('openrosa-formlist'),
-    db = require('../db-nano');
+    db = require('../db');
 
 // removes form: prefix on form docs
 function removePrefix(str) {

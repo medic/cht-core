@@ -401,3 +401,44 @@ Should updating the state value of a message require the doc revision?
 ## Backwards Compatibility
 
 This is a new API so clients can start using it at will, the old one remains available.
+
+# Contacts
+
+## GET /api/v1/export/contacts
+
+Returns a JSON array of contacts. 
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | ------------- 
+| format (required)  | The desired format of the file. Only 'json' is supported. 
+| query (required)   | The query parameters in lucene query generator format.
+
+### Examples
+
+Get all contacts
+
+```
+GET /api/v1/export/contacts?query={"$operands":[{"type":["person","clinic","health_center","district_hospital"]}]}&format=json
+```
+
+```
+HTTP/1.1 200 
+Content-Type: application/json; charset=utf-8
+
+[
+  {
+    "_rev":"1-e39081e9217eb0d99b8bcc4c64f33905",
+    "_id":"a483e2e88487da478c7ad9e2a51bf785",
+    "name":"Gareth",
+    "type":"person"
+  },
+  {
+    "_rev":"1-e39081e9217eb0d99b8bcc4c64f33905",
+    "_id":"a483e2e88487da478c7ad9e2a51bf786",
+    "name":"Dunedin",
+    "type":"district_hospital"
+  }
+]
+```
