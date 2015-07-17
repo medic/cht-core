@@ -64,6 +64,9 @@ var _ = require('underscore');
         get: function(url, options) {
           return wrap([ url, options ], $http.get);
         },
+        post: function(url, data, options) {
+          return wrap([ url, data, options ], $http.post);
+        },
         put: function(url, data, options) {
           return wrap([ url, data, options ], $http.put);
         },

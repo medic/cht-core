@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, translateFilter, Settings, MarkRead, Search, Changes, EditGroup) {
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup', 'DbGet', 'FormatDataRecord',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, translateFilter, Settings, MarkRead, Search, Changes, EditGroup, DbGet, FormatDataRecord) {
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = undefined;
@@ -77,17 +77,18 @@ var _ = require('underscore'),
           if (message) {
             _setSelected(message);
           } else {
-            var options = {
-              changes: [ { id: id } ],
-              ignoreFilter: true
-            };
-            Search($scope, options, function(err, data) {
+            DbGet(id, {}, function(err, data) {
               if (err) {
                 return console.log(err);
               }
-              if (data.results.length) {
-                _setSelected(data.results[0]);
-                _initScroll();
+              if (data.length) {
+                FormatDataRecord(data, function(err, formatted) {
+                  if (err) {
+                    return console.log(err);
+                  }
+                  _setSelected(formatted[0]);
+                  _initScroll();
+                });
               }
             });
           }
@@ -108,6 +109,7 @@ var _ = require('underscore'),
 
       $scope.query = function(options) {
         options = options || {};
+        options.limit = 50;
         if (options.changes) {
           $scope.updateReadStatus();
           var deletedRows = _.where(options.changes, { deleted: true });
@@ -150,28 +152,33 @@ var _ = require('underscore'),
           $scope.error = false;
           $scope.errorSyntax = false;
 
-          $scope.update(data.results);
-          if (!options.changes) {
-            $scope.totalItems = data.total_rows;
-          }
-          if (!options.changes && !options.skip) {
-            if (!data.results.length) {
-              $scope.selectMessage();
-            } else {
-              var curr = _.find(data.results, function(result) {
-                return result._id === $state.params.id;
-              });
-              if (curr) {
-                $scope.setSelected(curr);
-              } else if (!$('#back').is(':visible')) {
-                $timeout(function() {
-                  var id = $('.inbox-items li').first().attr('data-record-id');
-                  $state.go('reports.detail', { id: id });
+          FormatDataRecord(data, function(err, data) {
+            if (err) {
+              return console.log(err);
+            }
+            $scope.update(data);
+            if (!options.changes) {
+              $scope.moreItems = data.length >= options.limit;
+            }
+            if (!options.changes && !options.skip) {
+              if (!data.length) {
+                $scope.selectMessage();
+              } else {
+                var curr = _.find(data, function(result) {
+                  return result._id === $state.params.id;
                 });
+                if (curr) {
+                  $scope.setSelected(curr);
+                } else if (!$('#back').is(':visible')) {
+                  $timeout(function() {
+                    var id = $('.inbox-items li').first().attr('data-record-id');
+                    $state.go('reports.detail', { id: id });
+                  });
+                }
               }
             }
-          }
-          _initScroll();
+            _initScroll();
+          });
         });
       };
 
@@ -181,7 +188,7 @@ var _ = require('underscore'),
 
       var _initScroll = function() {
         scrollLoader.init(function() {
-          if (!$scope.loading && $scope.totalItems > $scope.items.length) {
+          if (!$scope.loading && $scope.moreItems) {
             $timeout(function() {
               $scope.query({ skip: true });
             });

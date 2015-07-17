@@ -11,6 +11,7 @@
   require('./conflict-resolution');
   require('./count-messages');
   require('./db');
+  require('./db-get');
   require('./db-view');
   require('./delete-doc');
   require('./download-url');
@@ -20,6 +21,7 @@
   require('./format-data-record');
   require('./format-date');
   require('./generate-search-query');
+  require('./generate-search-requests');
   require('./http-wrapper');
   require('./import-contacts');
   require('./language');

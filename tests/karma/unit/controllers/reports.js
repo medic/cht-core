@@ -9,6 +9,7 @@ describe('ReportsCtrl controller', function() {
       MarkRead,
       Search,
       Changes,
+      FormatDataRecord,
       changesCallback;
 
   beforeEach(module('inboxApp'));
@@ -38,6 +39,10 @@ describe('ReportsCtrl controller', function() {
 
     MarkRead = function() {};
 
+    FormatDataRecord = function(data, callback) {
+      callback(null, data);
+    };
+
     Search = function($scope, options, callback) {
       callback(null, { });
     };
@@ -60,6 +65,7 @@ describe('ReportsCtrl controller', function() {
         'UpdateFacility': {},
         'MessageState': {},
         'EditGroup': {},
+        'FormatDataRecord': FormatDataRecord,
         'Settings': {}
       });
     };
@@ -86,30 +92,30 @@ describe('ReportsCtrl controller', function() {
     Search = function($scope, options, callback) {
       chai.expect(options.silent).to.equal(true);
       chai.expect(options.changes).to.deep.equal(changedObjects);
-      callback(null, { results: [ 
-        { 
+      callback(null, [
+        {
           _id: 'a',
           _rev: 2,
           shared: 'z',
           unique: 'w'
         },
-        { 
+        {
           _id: 'b'
         }
-      ] });
+      ]);
     };
     
     createController();
     changesCallback(changedObjects);
     chai.expect(scope.items).to.deep.equal([
-      { 
+      {
         _id: 'a',
         _rev: 2,
         shared: 'z',
         unique: 'w',
         existing: 'y'
       },
-      { 
+      {
         _id: 'b'
       }
     ]);
@@ -151,9 +157,9 @@ describe('ReportsCtrl controller', function() {
     Search = function($scope, options, callback) {
       chai.expect(options.silent).to.equal(true);
       chai.expect(options.changes).to.deep.equal([{ id: 'b' }]);
-      callback(null, { results: [
+      callback(null, [
         { _id: 'b' }
-      ] });
+      ]);
     };
 
     createController();
