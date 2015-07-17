@@ -137,17 +137,14 @@ exports.checkDistrictConstraint = function(userCtx, db, callback) {
             return callback(err);
         }
         if (!facility) {
-            return callback('No district assigned to district admin.');
+            return callback(new Error('No district assigned to district admin.'));
         }
         db.getDoc(facility, function(err, doc) {
             if (err) {
                 if (err.error === 'not_found') {
-                    return callback("No facility found with id '" + facility + "'. Your admin needs to update the Facility Id in your user details.");
+                    return callback(new Error('No facility found with id "' + facility + '". Your admin needs to update the Facility Id in your user details.'));
                 }
                 return callback(err);
-            }
-            if (doc.type !== 'district_hospital') {
-                return callback(doc.name + " (id: '" + facility + "') is not a district hospital. Your admin needs to update the Facility Id in your user details.");
             }
             callback(null, facility);
         });

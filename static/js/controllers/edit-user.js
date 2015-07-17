@@ -44,7 +44,7 @@ var modal = require('../modules/modal');
             fullname: user.fullname,
             email: user.email,
             phone: user.phone,
-            facility: { doc: user.facility },
+            facility: user.facility,
             type: getType(user.type),
             language: user.language
           };
@@ -54,7 +54,7 @@ var modal = require('../modules/modal');
       });
 
       $scope.typeName = function(facility) {
-        return typeMap[facility.doc.type];
+        return typeMap[facility.type];
       };
       
       var validate = function() {
@@ -96,8 +96,7 @@ var modal = require('../modules/modal');
             password: $scope.editUserModel.password,
             roles: getRoles($scope.editUserModel.type),
             facility_id: $scope.editUserModel.facility &&
-                         $scope.editUserModel.facility.doc &&
-                         $scope.editUserModel.facility.doc._id
+                         $scope.editUserModel.facility._id
           }, function(err) {
             if (!err) {
               $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);

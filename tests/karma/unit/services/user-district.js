@@ -83,7 +83,7 @@ describe('UserDistrict service', function() {
     };
 
     service(function(err) {
-      chai.expect(err).to.equal('The administrator needs to give you additional privileges to use this site.');
+      chai.expect(err.message).to.equal('The administrator needs to give you additional privileges to use this site.');
       done();
     });
 
@@ -94,7 +94,7 @@ describe('UserDistrict service', function() {
     userCtx = {};
 
     service(function(err) {
-      chai.expect(err).to.equal('Not logged in');
+      chai.expect(err.message).to.equal('Not logged in');
       done();
     });
 

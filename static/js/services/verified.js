@@ -4,18 +4,25 @@
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('Verified', ['db',
-    function(db) {
+  inboxServices.factory('Verified', ['DB',
+    function(DB) {
       return function(messageId, verified, callback) {
-        db.getDoc(messageId, function(err, message) {
-          if (err) {
+        DB.get()
+          .get(messageId)
+          .then(function(message) {
+            message.verified = verified;
+            DB.get()
+              .post(message)
+              .then(function() {
+                callback(null, message);
+              })
+              .catch(function(err) {
+                callback(err);
+              });
+          })
+          .catch(function(err) {
             return callback(err);
-          }
-          message.verified = verified;
-          db.saveDoc(message, function(err) {
-            callback(err, message);
           });
-        });
       };
     }
   ]);

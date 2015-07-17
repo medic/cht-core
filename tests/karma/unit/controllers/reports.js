@@ -65,7 +65,8 @@ describe('ReportsCtrl controller', function() {
         'UpdateFacility': {},
         'MessageState': {},
         'EditGroup': {},
-        'FormatDataRecord': FormatDataRecord
+        'FormatDataRecord': FormatDataRecord,
+        'Settings': {}
       });
     };
   }));

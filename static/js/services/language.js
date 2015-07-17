@@ -5,15 +5,15 @@
   var inboxServices = angular.module('inboxServices');
   var localeCookieKey = 'locale';
   
-  var fetchLocale = function(User, Settings, options, callback) {
-    User(options, function(err, res) {
+  var fetchLocale = function(User, Settings, callback) {
+    User(function(err, res) {
       if (err) {
         return callback(err);
       }
       if (res && res.language) {
         return callback(null, res.language);
       }
-      Settings(options, function(err, res) {
+      Settings(function(err, res) {
         if (err) {
           return callback(err);
         }
@@ -30,19 +30,15 @@
     }
   ]);
 
-  inboxServices.factory('Language', ['ipCookie', 'SetLanguageCookie', 'User', 'Settings',
+  inboxServices.factory('Language', [
+    'ipCookie', 'SetLanguageCookie', 'User', 'Settings',
     function(ipCookie, SetLanguageCookie, User, Settings) {
-      return function(options, callback) {
-        if (!callback) {
-          callback = options;
-          options = {};
-        }
-        options = options || {};
+      return function(callback) {
         var cookieVal = ipCookie(localeCookieKey);
         if (cookieVal) {
           return callback(null, cookieVal);
         }
-        fetchLocale(User, Settings, options, function(err, locale) {
+        fetchLocale(User, Settings, function(err, locale) {
           if (err) {
             return callback(err);
           }
