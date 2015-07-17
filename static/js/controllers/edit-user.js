@@ -37,7 +37,6 @@ var modal = require('../modules/modal');
       };
 
       $scope.$on('EditUserInit', function(e, user) {
-        console.log('user', user);
         if (user) {
           $scope.editUserModel = {
             id: user.id,
@@ -88,7 +87,6 @@ var modal = require('../modules/modal');
             // editing current user's language, so update UI
             $scope.changeLanguage(language);
           }
-          console.log('updating to', $scope.editUserModel);
           UpdateUser($scope.editUserModel.id, {
             name: $scope.editUserModel.name,
             fullname: $scope.editUserModel.fullname,
