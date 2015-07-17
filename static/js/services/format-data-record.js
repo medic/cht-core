@@ -7,8 +7,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('FormatDataRecord', ['$timeout', 'AppInfo', 'Language',
-    function($timeout, AppInfo, Language) {
+  inboxServices.factory('FormatDataRecord', ['AppInfo', 'Language',
+    function(AppInfo, Language) {
       return function(docs, callback) {
         AppInfo(function(err, appinfo) {
           if (err) {
