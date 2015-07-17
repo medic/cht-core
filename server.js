@@ -1,4 +1,5 @@
-var _ = require('underscore'),
+var fs = require('fs'),
+    _ = require('underscore'),
     bodyParser = require('body-parser'),
     express = require('express'),
     morgan = require('morgan'),
@@ -35,9 +36,23 @@ var _ = require('underscore'),
     createDomain = require('domain').create,
     staticResources = /\/(templates|static)\//,
     appcacheManifest = /manifest\.appcache/,
-    pathPrefix = '/' + db.settings.db;
+    pathPrefix = '/' + db.settings.db,
+    appPrefix = pathPrefix + '/_design/' + db.settings.ddoc + '/_rewrite',
+    loginTemplate;
 
 http.globalAgent.maxSockets = 100;
+
+_.templateSettings = {
+  interpolate: /\{\{(.+?)\}\}/g
+};
+
+fs.readFile(__dirname + '/public/login/index.html', { encoding: 'utf-8' }, function(err, data) {
+  if (err) {
+    console.error('Could not find login page');
+    throw err;
+  }
+  loginTemplate = _.template(data);
+});
 
 // requires content-type application/json header
 var jsonParser = bodyParser.json({limit: '32mb'});
@@ -62,7 +77,32 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.all(pathPrefix + '/_design/' + db.settings.ddoc + '/_rewrite/update_settings/*', function(req, res) {
+app.use(express.static('./public'));
+app.get(pathPrefix + '/login', function(req, res) {
+  auth.getUserCtx(req, function(err) {
+    var redirectPath = req.query.redirect || appPrefix;
+    if (!err) {
+      // already logged in
+      res.redirect(redirectPath);
+    } else {
+      res.send(loginTemplate({
+        redirect: redirectPath,
+        branding: {
+          name: 'Medic Mobile'
+        },
+        translations: {
+          login: config.translate('login'),
+          loginerror: config.translate('login.error'),
+          loginincorrect: config.translate('login.incorrect'),
+          username: config.translate('User Name'),
+          password: config.translate('Password')
+        }
+      }));
+    }
+  });
+});
+
+app.all(appPrefix + '/update_settings/*', function(req, res) {
   // don't audit the app settings
   proxy.web(req, res);
 });
@@ -74,6 +114,10 @@ app.all(pathPrefix + '/_local/*', function(req, res) {
   // don't audit the _local docs
   proxy.web(req, res);
 });
+app.all('/_session', function(req, res) {
+  // don't audit session management
+  proxy.web(req, res);
+});
 
 var audit = function(req, res) {
   var ap = new AuditProxy();
@@ -81,7 +125,7 @@ var audit = function(req, res) {
     serverError(e, req, res);
   });
   ap.on('not-authorized', function() {
-    notLoggedIn(res);
+    notLoggedIn(req, res);
   });
   ap.audit(proxyForAuditing, req, res);
 };
@@ -285,7 +329,7 @@ app.get('/api/v1/messages', function(req, res) {
     var opts = _.pick(req.query, 'limit', 'start', 'descending', 'state');
     messages.getMessages(opts, ctx && ctx.district, function(err, result) {
       if (err) {
-        return error(err, req, res);
+        return serverError(err.message, res);
       }
       res.json(result);
     });
@@ -299,7 +343,7 @@ app.get('/api/v1/messages/:id', function(req, res) {
     }
     messages.getMessage(req.params.id, ctx && ctx.district, function(err, result) {
       if (err) {
-        return error(err, req, res);
+        return serverError(err.message, res);
       }
       res.json(result);
     });
@@ -313,7 +357,7 @@ app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
     }
     messages.updateMessage(req.params.id, req.body, ctx && ctx.district, function(err, result) {
       if (err) {
-        return error(err, req, res);
+        return serverError(err.message, res);
       }
       res.json(result);
     });
@@ -327,7 +371,7 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
     }
     records.create(req.body, req.is(['json','urlencoded']), function(err, result) {
       if (err) {
-        return error(err, req, res);
+        return serverError(err.message, res);
       }
       res.json(result);
     });
@@ -341,7 +385,7 @@ app.get('/api/v1/scheduler/:name', function(req, res) {
     }
     scheduler.exec(req.params.name, function(err) {
       if (err) {
-        return error(err, req, res);
+        return serverError(err.message, res);
       }
       res.json({ schedule: req.params.name, result: 'success' });
     });
@@ -350,13 +394,13 @@ app.get('/api/v1/scheduler/:name', function(req, res) {
 
 app.get('/api/v1/forms', function(req, res) {
   forms.listForms(req.headers, function(err, body, headers) {
-      if (err) {
-        return serverError(err, req, res);
-      }
-      if (headers) {
-        res.writeHead(headers.statusCode || 200, headers);
-      }
-      res.end(body);
+    if (err) {
+      return serverError(err, res);
+    }
+    if (headers) {
+      res.writeHead(headers.statusCode || 200, headers);
+    }
+    res.end(body);
   });
 });
 
@@ -375,6 +419,32 @@ app.get('/api/v1/forms/:form', function(req, res) {
       res.writeHead(headers.statusCode || 200, headers);
     }
     res.end(body);
+  });
+});
+
+// DB replication endpoint
+app.get('/medic/_changes', function(req, res) {
+  auth.getUserCtx(req, function(err, userCtx) {
+    if (err) {
+      return error(err, req, res);
+    }
+    if (auth.hasAllPermissions(userCtx, 'can_access_directly')) {
+      proxy.web(req, res);
+    } else {
+      auth.getFacilityId(req, userCtx, function(err, facilityId) {
+        if (err) {
+          return serverError(err.message, res);
+        }
+        // for security reasons ensure the params haven't been tampered with
+        if (req.query.filter !== 'medic/doc_by_place' ||
+            req.query.id !== facilityId ||
+            req.query.unassigned !== 'false') { // TODO get this from settings and role
+          console.log('Unauthorized replication attempt');
+          return error({ code: 403, message: 'Forbidden' }, res);
+        }
+        proxy.web(req, res);
+      });
+    }
   });
 });
 
@@ -419,7 +489,7 @@ var error = function(err, req, res) {
   } else if (err.code === 500) {
     return serverError(err.message, req, res);
   } else if (err.code === 401) {
-    return notLoggedIn(res);
+    return notLoggedIn(req, res);
   }
   res.writeHead(err.code || 500, {
     'Content-Type': 'text/plain'
@@ -443,12 +513,8 @@ var serverError = function(err, req, res) {
   }
 };
 
-var notLoggedIn = function(res) {
-  res.writeHead(401, {
-    'Content-Type': 'text/plain',
-    'WWW-Authenticate': 'Basic realm="Medic Mobile Web Services"'
-  });
-  res.end('Not logged in');
+var notLoggedIn = function(req, res) {
+  res.redirect(301, pathPrefix + '/login?redirect=' + encodeURIComponent(req.url));
 };
 
 migrations.run(function(err) {

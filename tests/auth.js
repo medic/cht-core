@@ -38,7 +38,7 @@ exports['auth returns error when not logged in'] = function(test) {
 };
 
 exports['auth returns error when cannot parse json'] = function(test) {
-  test.expect(4);
+  test.expect(5);
 
   var callbacks = {};
   var get = sinon.stub(http, 'get')
@@ -55,7 +55,8 @@ exports['auth returns error when cannot parse json'] = function(test) {
 
   auth.check({ }, null, null, function(err) {
     test.equals(get.callCount, 1);
-    test.equals(err.message, 'Could not parse response');
+    test.equals(err.message, 'Not logged in');
+    test.equals(err.err, 'Could not parse response');
     test.equals(err.code, 401);
     test.done();
   });
@@ -94,7 +95,7 @@ exports['auth returns error when no user context'] = function(test) {
 };
 
 exports['auth returns error when http errors'] = function(test) {
-  test.expect(4);
+  test.expect(5);
 
   var callbacks = {};
   var get = sinon.stub(http, 'get')
@@ -111,7 +112,8 @@ exports['auth returns error when http errors'] = function(test) {
 
   auth.check({ }, null, null, function(err) {
     test.equals(get.callCount, 1);
-    test.equals(err.message, 'some error');
+    test.equals(err.message, 'Not logged in');
+    test.equals(err.err, 'some error');
     test.equals(err.code, 401);
     test.done();
   });
