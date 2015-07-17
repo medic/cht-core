@@ -12,7 +12,7 @@ var _ = require('underscore'),
       return function(callback) {
         var userCtx = UserCtxService();
         if (!userCtx.name) {
-          return callback('Not logged in');
+          return callback(new Error('Not logged in'));
         }
         if (utils.isUserAdmin(userCtx)) {
           return callback();
@@ -20,26 +20,16 @@ var _ = require('underscore'),
         if (utils.isUserDistrictAdmin(userCtx)) {
           return utils.checkDistrictConstraint(userCtx, db, callback);
         }
-        callback('The administrator needs to give you additional privileges to use this site.');
+        callback(new Error('The administrator needs to give you additional privileges to use this site.'));
       };
     }
   ]);
 
-  var getUserResourceUrl = function(userCtx) {
-    return '/_users/org.couchdb.user%3A' + userCtx.name;
-  };
-
   inboxServices.factory('User', ['HttpWrapper', 'UserCtxService',
     function(HttpWrapper, UserCtxService) {
-      return function(options, callback) {
-        if (!callback) {
-          callback = options;
-          options = {};
-        }
-        options = options || {};
-        options.cache = options.cache || true;
+      return function(callback) {
         HttpWrapper
-          .get(getUserResourceUrl(UserCtxService()), options)
+          .get('/_users/org.couchdb.user%3A' + UserCtxService().name, { cache: true })
           .success(function(data) {
             callback(null, data);
           })
@@ -72,8 +62,7 @@ var _ = require('underscore'),
   };
 
   var getFacility = function(user, facilities) {
-    var facility = _.findWhere(facilities, { id: user.doc.facility_id });
-    return facility && facility.doc;
+    return _.findWhere(facilities, { _id: user.doc.facility_id });
   };
 
   var mapUsers = function(users, facilities, admins) {

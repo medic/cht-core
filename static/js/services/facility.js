@@ -28,26 +28,24 @@ var _ = require('underscore');
     }
   ]);
 
-  inboxServices.factory('Facility', ['HttpWrapper', 'BaseUrlService',
-    function(HttpWrapper, BaseUrlService) {
+  inboxServices.factory('Facility', ['DbView',
+    function(DbView) {
       return function(options, callback) {
         if (!callback) {
           callback = options;
           options = {};
         }
-        var url = getFacilitiesUrl(BaseUrlService, options.district);
-        HttpWrapper.get(url, { cache: true, targetScope: options.targetScope })
-          .success(function(res) {
-            if (options.types) {
-              return callback(null, _.filter(res.rows, function(row) {
-                return options.types.indexOf(row.doc.type) !== -1;
-              }));
-            }
-            callback(null, res.rows);
-          })
-          .error(function(data) {
-            callback(new Error(data));
-          });
+        DbView('facilities', { params: { include_docs: true } }, function(err, res) {
+          if (err) {
+            return callback(err);
+          }
+          if (options.types) {
+            return callback(null, _.filter(res, function(doc) {
+              return options.types.indexOf(doc.type) !== -1;
+            }));
+          }
+          callback(null, res);
+        });
       };
     }
   ]);
@@ -80,13 +78,13 @@ var _ = require('underscore');
             }
             var contacts = [];
             _.each(res, function(contact) {
-              if (contact.doc.type === 'person' && contact.doc.phone) {
+              if (contact.type === 'person' && contact.phone) {
                 contacts.push(contact);
-              } else if (contact.doc.type === 'health_center') {
+              } else if (contact.type === 'health_center') {
                 contacts.push(_.extend({
                   everyoneAt: true,
                   descendants: _.filter(res, function(child) {
-                    return descendant(contact.id, child.doc.parent);
+                    return descendant(contact._id, child.parent);
                   })
                 }, contact));
               }
@@ -113,10 +111,10 @@ var _ = require('underscore');
           var results = [];
           var total = 0;
           facilities.forEach(function(row) {
-            var parentId = row.doc.parent && row.doc.parent._id;
+            var parentId = row.parent && row.parent._id;
             if (parentId) {
               var parent = _.find(facilities, function(curr) {
-                return curr.doc._id === parentId;
+                return curr._id === parentId;
               });
               if (parent) {
                 if (!parent.children) {

@@ -2,21 +2,28 @@ describe('SendMessage service', function() {
 
   'use strict';
 
-  var db, 
-      service,
+  var service,
       $rootScope,
-      recipients,
-      count,
       settings,
-      message = 'hello';
+      id,
+      saveDoc;
 
   beforeEach(function () {
-    db = {};
+    id = sinon.stub();
+    saveDoc = sinon.stub();
     settings = {};
-    count = 0;
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('db', db);
+      $provide.factory('DB', function() {
+        return {
+          get: function() {
+            return {
+              post: saveDoc,
+              id: id
+            };
+          }
+        };
+      });
       $provide.value('User', function(callback) {
         callback(null, { phone: '+5551', name: 'jack' });
       });
@@ -29,6 +36,32 @@ describe('SendMessage service', function() {
       service = _SendMessage_;
     });
   });
+
+  afterEach(function() {
+    if (id.restore) {
+      id.restore();
+    }
+    if (saveDoc.restore) {
+      saveDoc.restore();
+    }
+  });
+
+  var fakeResolved = function(err, doc) {
+    return {
+      then: function(callback) {
+        if (!err) {
+          callback(doc);
+        }
+        return {
+          catch: function(callback) {
+            if (err) {
+              callback(err);
+            }
+          }
+        };
+      }
+    };
+  };
 
   function assertMessage(task, expected) {
     chai.expect(task.state).to.equal('pending');
@@ -43,36 +76,29 @@ describe('SendMessage service', function() {
 
   it('create doc for one recipient', function(done) {
 
-    db.newUUID = function(number, callback) {
-      callback(null, count++);
-    };
+    id.returns(fakeResolved(null, 53));
+    saveDoc.returns(fakeResolved());
 
-    db.saveDoc = function(message, callback) {
-      chai.expect(message.tasks.length).to.equal(1);
-      assertMessage(message.tasks[0], {
-        from: '+5551',
-        sent_by: 'jack',
-        to: '+5552',
-        uuid: 0,
-        facility: recipients[0].doc
-      });
-      callback(null);
-    };
-
-    recipients = [{
-      doc: {
-        _id: 'abc',
-        contact: {
-          phone: '+5552'
-        }
+    var recipient = {
+      _id: 'abc',
+      contact: {
+        phone: '+5552'
       }
-    }];
+    };
 
-    service(recipients, message).then(
-      function() {
+    service(recipient, 'hello')
+      .then(function() {
+        chai.expect(id.callCount).to.equal(1);
+        chai.expect(saveDoc.callCount).to.equal(1);
+        assertMessage(saveDoc.args[0][0].tasks[0], {
+          from: '+5551',
+          sent_by: 'jack',
+          to: '+5552',
+          uuid: 53,
+          facility: recipient
+        });
         done();
-      }
-    );
+      });
 
     // needed to resolve the promise
     $rootScope.$digest();
@@ -80,38 +106,27 @@ describe('SendMessage service', function() {
 
   it('normalizes phone numbers', function(done) {
 
-    db.newUUID = function(number, callback) {
-      callback(null, count++);
-    };
+    id.returns(fakeResolved(null, 53));
+    saveDoc.returns(fakeResolved());
 
-    db.saveDoc = function(message, callback) {
-      chai.expect(message.tasks.length).to.equal(1);
-      assertMessage(message.tasks[0], {
-        from: '+5551',
-        sent_by: 'jack',
-        to: '+2545552',
-        uuid: 0
-      });
-      callback(null);
-    };
-
-    recipients = [{
-      doc: {
-        contact: {
-          phone: '5552'
-        }
-      }
-    }];
+    var recipient = { contact: { phone: '5552' } };
 
     settings = {
       default_country_code: 254
     };
 
-    service(recipients, message).then(
-      function() {
+    service(recipient, 'hello')
+      .then(function() {
+        chai.expect(id.callCount).to.equal(1);
+        chai.expect(saveDoc.callCount).to.equal(1);
+        assertMessage(saveDoc.args[0][0].tasks[0], {
+          from: '+5551',
+          sent_by: 'jack',
+          to: '+2545552',
+          uuid: 53
+        });
         done();
-      }
-    );
+      });
 
     // needed to resolve the promise
     $rootScope.$digest();
@@ -119,53 +134,47 @@ describe('SendMessage service', function() {
 
   it('create doc for multiple recipients', function(done) {
 
-    db.newUUID = function(number, callback) {
-      callback(null, count++);
-    };
+    id
+      .onFirstCall().returns(fakeResolved(null, 53))
+      .onSecondCall().returns(fakeResolved(null, 150));
+    saveDoc.returns(fakeResolved());
 
-    db.saveDoc = function(message, callback) {
-      chai.expect(message.tasks.length).to.equal(2);
-      assertMessage(message.tasks[0], {
-        from: '+5551',
-        sent_by: 'jack',
-        to: '+5552',
-        uuid: 0,
-        facility: recipients[0].doc
-      });
-      assertMessage(message.tasks[1], {
-        from: '+5551',
-        sent_by: 'jack',
-        to: '+5553',
-        uuid: 1,
-        facility: recipients[1].doc
-      });
-      callback(null);
-    };
-
-    recipients = [
+    var recipients = [
       {
-        doc: {
-          _id: 'abc',
-          contact: {
-            phone: '+5552'
-          }
+        _id: 'abc',
+        contact: {
+          phone: '+5552'
         }
       },
       {
-        doc: {
-          _id: 'efg',
-          contact: {
-            phone: '+5553'
-          }
+        _id: 'efg',
+        contact: {
+          phone: '+5553'
         }
       }
     ];
 
-    service(recipients, message).then(
-      function() {
+    service(recipients, 'hello')
+      .then(function() {
+        chai.expect(id.callCount).to.equal(2);
+        chai.expect(saveDoc.callCount).to.equal(1);
+        chai.expect(saveDoc.args[0][0].tasks.length).to.equal(2);
+        assertMessage(saveDoc.args[0][0].tasks[0], {
+          from: '+5551',
+          sent_by: 'jack',
+          to: '+5552',
+          uuid: 53,
+          facility: recipients[0]
+        });
+        assertMessage(saveDoc.args[0][0].tasks[1], {
+          from: '+5551',
+          sent_by: 'jack',
+          to: '+5553',
+          uuid: 150,
+          facility: recipients[1]
+        });
         done();
-      }
-    );
+      });
 
     // needed to resolve the promise
     $rootScope.$digest();
@@ -173,81 +182,72 @@ describe('SendMessage service', function() {
 
   it('create doc for everyoneAt recipients', function(done) {
 
-    db.newUUID = function(number, callback) {
-      callback(null, count++);
-    };
+    id
+      .onFirstCall().returns(fakeResolved(null, 53))
+      .onSecondCall().returns(fakeResolved(null, 150))
+      .onThirdCall().returns(fakeResolved(null, 6));
+    saveDoc.returns(fakeResolved());
 
-    db.saveDoc = function(message, callback) {
-      chai.expect(message.tasks.length).to.equal(3);
-      assertMessage(message.tasks[0], {
-        from: '+5551',
-        sent_by: 'jack',
-        to: '+5552',
-        uuid: 0,
-        facility: recipients[0].doc
-      });
-      assertMessage(message.tasks[1], {
-        from: '+5551',
-        sent_by: 'jack',
-        to: '+5553',
-        uuid: 1,
-        facility: recipients[1].descendants[0].doc
-      });
-      assertMessage(message.tasks[2], {
-        from: '+5551',
-        sent_by: 'jack',
-        to: '+5554',
-        uuid: 2,
-        facility: recipients[1].descendants[2].doc
-      });
-      callback(null);
-    };
-
-    recipients = [
+    var recipients = [
       {
-        doc: {
-          _id: 'abc',
-          contact: {
-            phone: '+5552'
-          }
+        _id: 'abc',
+        contact: {
+          phone: '+5552'
         }
       }, 
       {
         everyoneAt: true,
         descendants: [
           {
-            doc: {
-              _id: 'efg',
-              contact: {
-                phone: '+5553'
-              }
+            _id: 'efg',
+            contact: {
+              phone: '+5553'
             }
           },
           {
-            doc: {
-              _id: 'hij',
-              contact: {
-                phone: '+5552' // duplicate phone number should be removed
-              }
+            _id: 'hij',
+            contact: {
+              phone: '+5552' // duplicate phone number should be removed
             }
           }, 
           {
-            doc: {
-              _id: 'klm',
-              contact: {
-                phone: '+5554'
-              }
+            _id: 'klm',
+            contact: {
+              phone: '+5554'
             }
           }
         ]
       }
     ];
 
-    service(recipients, message).then(
-      function() {
+    service(recipients, 'hello')
+      .then(function() {
+        chai.expect(id.callCount).to.equal(3);
+        chai.expect(saveDoc.callCount).to.equal(1);
+        chai.expect(saveDoc.args[0][0].tasks.length).to.equal(3);
+        assertMessage(saveDoc.args[0][0].tasks[0], {
+          from: '+5551',
+          sent_by: 'jack',
+          to: '+5552',
+          uuid: 53,
+          facility: recipients[0]
+        });
+        assertMessage(saveDoc.args[0][0].tasks[1], {
+          from: '+5551',
+          sent_by: 'jack',
+          to: '+5553',
+          uuid: 150,
+          facility: recipients[1].descendants[0]
+        });
+        assertMessage(saveDoc.args[0][0].tasks[2], {
+          from: '+5551',
+          sent_by: 'jack',
+          to: '+5554',
+          uuid: 6,
+          facility: recipients[1].descendants[2]
+        });
         done();
-      }
-    );
+      });
 
     // needed to resolve the promise
     $rootScope.$digest();
@@ -255,20 +255,16 @@ describe('SendMessage service', function() {
 
   it('returns newUUID errors', function(done) {
 
-    db.newUUID = function(number, callback) {
-      callback('errcode1');
+    id.returns(fakeResolved('errcode1'));
+
+    var recipients = {
+      _id: 'abc',
+      contact: {
+        phone: '+5552'
+      }
     };
 
-    recipients = [{
-      doc: {
-        _id: 'abc',
-        contact: {
-          phone: '+5552'
-        }
-      }
-    }];
-
-    service(recipients, message).then(
+    service(recipients, 'hello').then(
       function() {
         chai.fail('success', 'error');
       },
@@ -284,24 +280,17 @@ describe('SendMessage service', function() {
 
   it('returns saveDoc errors', function(done) {
 
-    db.newUUID = function(number, callback) {
-      callback(null, count++);
-    };
+    id.returns(fakeResolved(null, 3333));
+    saveDoc.returns(fakeResolved('errcode2'));
 
-    db.saveDoc = function(message, callback) {
-      callback('errcode2');
-    };
-
-    recipients = [{
-      doc: {
-        _id: 'abc',
-        contact: {
-          phone: '+5552'
-        }
+    var recipients = {
+      _id: 'abc',
+      contact: {
+        phone: '+5552'
       }
-    }];
+    };
 
-    service(recipients, message).then(
+    service(recipients, 'hello').then(
       function() {
         chai.fail('success', 'error');
       },

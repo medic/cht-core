@@ -59,7 +59,8 @@ describe('ReportsCtrl controller', function() {
         'DeleteDoc': {},
         'UpdateFacility': {},
         'MessageState': {},
-        'EditGroup': {}
+        'EditGroup': {},
+        'Settings': {}
       });
     };
   }));

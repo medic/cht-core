@@ -7,21 +7,15 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Settings', ['HttpWrapper', 'BaseUrlService',
-    function(HttpWrapper, BaseUrlService) {
-      return function(options, callback) {
-        if (!callback) {
-          callback = options;
-          options = {};
-        }
-        options = options || {};
-        options.cache = options.cache || true;
-        HttpWrapper.get(BaseUrlService() + '/app_settings/medic', options)
-          .success(function(res) {
-            callback(null, _.defaults(res.settings, defaults));
-          })
-          .error(function(data) {
-            callback(new Error(data));
+  inboxServices.factory('Settings', ['DB',
+    function(DB) {
+      return function(callback) {
+        DB.get()
+          .get('_design/medic')
+          .then(function(doc) {
+            callback(null, _.defaults(doc.app_settings, defaults));
+          }).catch(function(err) {
+            callback(new Error(err));
           });
       };
     }

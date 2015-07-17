@@ -18,8 +18,11 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'User', 'DB', 'ConflictResolution', 'DbNameService',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, User, DB, ConflictResolution, DbNameService) {
+
+      DB.sync();
+      ConflictResolution();
 
       $scope.loadingContent = false;
       $scope.error = false;
@@ -285,7 +288,7 @@ require('moment/locales');
       UserDistrict(function(err, district) {
         if (err) {
           console.log('Error fetching user district', err);
-          if (err !== 'Not logged in') {
+          if (err.message !== 'Not logged in') {
             $('body').html(err);
           }
           return;
@@ -298,7 +301,7 @@ require('moment/locales');
         sendMessage.init(Settings, Contact, translateFilter);
       };
 
-      Form({ targetScope: 'root' }, function(err, forms) {
+      Form(function(err, forms) {
         if (err) {
           return console.log('Failed to retrieve forms', err);
         }
@@ -435,7 +438,7 @@ require('moment/locales');
       });
 
       var updateEditUserModel = function(callback) {
-        User({ targetScope: 'root' }, function(err, user) {
+        User(function(err, user) {
           if (err) {
             return console.log('Error getting user', err);
           }
@@ -454,7 +457,7 @@ require('moment/locales');
         });
       };
 
-      Settings({ targetScope: 'root' }, function(err, settings) {
+      Settings(function(err, settings) {
         if (err) {
           return console.log('Error fetching settings', err);
         }
@@ -471,7 +474,7 @@ require('moment/locales');
 
       moment.locale(['en']);
 
-      Language({ targetScope: 'root' }, function(err, language) {
+      Language(function(err, language) {
         if (err) {
           return console.log('Error loading language', err);
         }
@@ -623,7 +626,7 @@ require('moment/locales');
         });
 
         // we have to wait for language to respond before initing the multidropdowns
-        Language({ targetScope: 'root' }, function(err, language) {
+        Language(function(err, language) {
 
           $translate.use(language);
 
@@ -769,13 +772,13 @@ require('moment/locales');
       };
 
       $scope.setupHeader = function() {
-        Settings({ targetScope: 'root' }, function(err, settings) {
+        Settings(function(err, settings) {
           if (err) {
             return console.log('Error retrieving settings', err);
           }
           require('../modules/add-record').init(settings.muvuku_webapp_url);
         });
-        require('../modules/manage-session').init();
+        require('../modules/manage-session').init(DbNameService());
       };
 
       UserDistrict(function() {
@@ -803,7 +806,7 @@ require('moment/locales');
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
           showUpdateReady();
         }
-        Changes({ key: 'appcache', filter: 'medic/ddoc' }, function() {
+        Changes({ key: 'appcache', id: '_design/medic' }, function() {
           window.applicationCache.update();
         });
       }

@@ -3,56 +3,54 @@ describe('Settings service', function() {
   'use strict';
 
   var service,
-      $httpBackend;
+      successCb,
+      failCb;
 
   beforeEach(function() {
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('BaseUrlService', function() {
-        return 'BASEURL';
+      $provide.value('DB', {
+        get: function() {
+          return {
+            get: function() {
+              return {
+                then: function(cb) {
+                  successCb = cb;
+                  return {
+                    catch: function(cb) {
+                      failCb = cb;
+                    }
+                  };
+                }
+              };
+            }
+          };
+        }
       });
     });
     inject(function($injector) {
-      $httpBackend = $injector.get('$httpBackend');
       service = $injector.get('Settings');
     });
   });
 
-  afterEach(function() {
-    $httpBackend.verifyNoOutstandingExpectation();
-    $httpBackend.verifyNoOutstandingRequest();
-  });
-
   it('retrieves settings', function(done) {
-
     var expected = {
       isTrue: true,
       isString: 'hello'
     };
-    $httpBackend
-      .expect('GET', 'BASEURL/app_settings/medic')
-      .respond({ settings: expected });
-
     service(function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual.isTrue).to.equal(expected.isTrue);
       chai.expect(actual.isString).to.equal(expected.isString);
       done();
     });
-
-    $httpBackend.flush();
-
+    successCb({ app_settings: expected });
   });
 
   it('merges settings with defaults', function(done) {
-
     var expected = {
       date_format: 'YYYY'
     };
-    $httpBackend
-      .expect('GET', 'BASEURL/app_settings/medic')
-      .respond({ settings: expected });
-
     service(function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual.date_format).to.equal(expected.date_format);
@@ -60,24 +58,16 @@ describe('Settings service', function() {
       chai.expect(actual.reported_date_format).to.equal('DD-MMM-YYYY HH:mm:ss');
       done();
     });
-
-    $httpBackend.flush();
-
+    successCb({ app_settings: expected });
   });
 
   it('returns errors', function(done) {
-
-    $httpBackend
-      .expect('GET', 'BASEURL/app_settings/medic')
-      .respond(404, 'Not found');
-
     service(function(err) {
       chai.expect(err).to.not.equal(null);
       chai.expect(err.message).to.equal('Not found');
       done();
     });
-
-    $httpBackend.flush();
-
+    failCb('Not found');
   });
+
 });

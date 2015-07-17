@@ -37,6 +37,7 @@ var modal = require('../modules/modal');
       };
 
       $scope.$on('EditUserInit', function(e, user) {
+        console.log('user', user);
         if (user) {
           $scope.editUserModel = {
             id: user.id,
@@ -44,7 +45,7 @@ var modal = require('../modules/modal');
             fullname: user.fullname,
             email: user.email,
             phone: user.phone,
-            facility: { doc: user.facility },
+            facility: user.facility,
             type: getType(user.type),
             language: user.language
           };
@@ -54,7 +55,7 @@ var modal = require('../modules/modal');
       });
 
       $scope.typeName = function(facility) {
-        return typeMap[facility.doc.type];
+        return typeMap[facility.type];
       };
       
       var validate = function() {
@@ -87,6 +88,7 @@ var modal = require('../modules/modal');
             // editing current user's language, so update UI
             $scope.changeLanguage(language);
           }
+          console.log('updating to', $scope.editUserModel);
           UpdateUser($scope.editUserModel.id, {
             name: $scope.editUserModel.name,
             fullname: $scope.editUserModel.fullname,
@@ -96,8 +98,7 @@ var modal = require('../modules/modal');
             password: $scope.editUserModel.password,
             roles: getRoles($scope.editUserModel.type),
             facility_id: $scope.editUserModel.facility &&
-                         $scope.editUserModel.facility.doc &&
-                         $scope.editUserModel.facility.doc._id
+                         $scope.editUserModel.facility._id
           }, function(err) {
             if (!err) {
               $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);

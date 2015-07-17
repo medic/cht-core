@@ -10,10 +10,22 @@ var _ = require('underscore');
   'use strict';
   
   var inboxServices = angular.module('inboxServices');
-  
-  inboxServices.factory('Changes', ['db',
 
-    function(db) {
+  var getFilter = function(options) {
+    if (options.id) {
+      return function(doc) {
+        return doc._id === options.id;
+      };
+    }
+    var type = options.type || 'data_record';
+    return function(doc) {
+      return doc.type === type;
+    };
+  };
+  
+  inboxServices.factory('Changes', ['DB',
+
+    function(DB) {
 
       var callbacks = {};
       var inited = [];
@@ -23,20 +35,20 @@ var _ = require('underscore');
           callback = options;
           options = {};
         }
-        _.defaults(options, {
-          key: 'unlabelled',
-          filter: 'medic/data_records'
-        });
+        var type = options.id || options.type || 'data_record';
+        options.key = options.key || 'unlabelled';
         callbacks[options.key] = callback;
-        if (!_.contains(inited, options.filter)) {
-          inited.push(options.filter);
-          db.changes({ filter: options.filter }, function(err, data) {
-            if (!err && data && data.results) {
-              Object.keys(callbacks).forEach(function(key) {
-                callbacks[key](data.results);
-              });
-            }
-          });
+        if (!_.contains(inited, type)) {
+          inited.push(type);
+          DB.get()
+            .changes({ live: true, since: 'now', filter: getFilter(options) })
+            .on('change', function(data) {
+              if (data && data.changes) {
+                Object.keys(callbacks).forEach(function(key) {
+                  callbacks[key](data.changes);
+                });
+              }
+            });
         }
       };
 

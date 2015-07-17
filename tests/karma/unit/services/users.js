@@ -6,9 +6,9 @@ describe('Users service', function() {
       $httpBackend,
       facilitiesError,
       adminsError,
-      facilitya = { name: 'aaron' },
-      facilityb = { name: 'brian' },
-      facilityc = { name: 'cathy' };
+      facilitya = { _id: 'a', name: 'aaron' },
+      facilityb = { _id: 'b', name: 'brian' },
+      facilityc = { _id: 'c', name: 'cathy' };
 
   beforeEach(function() {
     module('inboxApp');
@@ -17,11 +17,7 @@ describe('Users service', function() {
         if (facilitiesError) {
           return callback(facilitiesError);
         }
-        callback(null, [
-          { id: 'a', doc: facilitya },
-          { id: 'b', doc: facilityb },
-          { id: 'c', doc: facilityc }
-        ]);
+        callback(null, [ facilitya, facilityb, facilityc ]);
       });
       $provide.value('Admins', function(callback) {
         if (adminsError) {

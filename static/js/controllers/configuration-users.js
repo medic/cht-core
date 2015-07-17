@@ -19,6 +19,7 @@
           if (err) {
             return console.log('Error fetching users', err);
           }
+          console.log('rendering', users);
           $scope.users = users;
         });
       };

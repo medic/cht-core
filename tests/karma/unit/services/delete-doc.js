@@ -15,10 +15,14 @@ describe('DeleteDoc service', function() {
     message = {};
     module('inboxApp');
     module(function ($provide) {
-      $provide.factory('db', function() {
+      $provide.factory('DB', function() {
         return {
-          getDoc: getDoc,
-          saveDoc: saveDoc
+          get: function() {
+            return {
+              put: saveDoc,
+              get: getDoc
+            };
+          }
         };
       });
       $provide.factory('$rootScope', function() {
@@ -42,8 +46,25 @@ describe('DeleteDoc service', function() {
     }
   });
 
+  var fakeResolved = function(err, doc) {
+    return {
+      then: function(callback) {
+        if (!err) {
+          callback(doc);
+        }
+        return {
+          catch: function(callback) {
+            if (err) {
+              callback(err);
+            }
+          }
+        };
+      }
+    };
+  };
+
   it('returns db errors', function(done) {
-    getDoc.callsArgWith(1, 'errcode1');
+    getDoc.returns(fakeResolved('errcode1'));
     service('abc', function(err) {
       chai.expect(getDoc.calledOnce).to.equal(true);
       chai.expect(getDoc.firstCall.args[0]).to.equal('abc');
@@ -53,8 +74,8 @@ describe('DeleteDoc service', function() {
   });
 
   it('returns audit errors', function(done) {
-    getDoc.callsArgWith(1, null, { _id: 'xyz' });
-    saveDoc.callsArgWith(1, 'errcode2');
+    getDoc.returns(fakeResolved(null, { _id: 'xyz' }));
+    saveDoc.returns(fakeResolved('errcode2'));
     service('abc', function(err) {
       chai.expect(getDoc.calledOnce).to.equal(true);
       chai.expect(saveDoc.calledOnce).to.equal(true);
@@ -64,8 +85,8 @@ describe('DeleteDoc service', function() {
   });
 
   it('marks the message deleted', function(done) {
-    getDoc.callsArgWith(1, null, { _id: 'xyz', type: 'data_record' });
-    saveDoc.callsArgWith(1);
+    getDoc.returns(fakeResolved(null, { _id: 'xyz', type: 'data_record' }));
+    saveDoc.returns(fakeResolved());
     var expected = { _id: 'xyz', type: 'data_record', _deleted: true };
     service('abc', function(err, actual) {
       chai.expect(getDoc.calledOnce).to.equal(true);
@@ -78,8 +99,8 @@ describe('DeleteDoc service', function() {
   });
 
   it('broadcasts event if clinic', function(done) {
-    getDoc.callsArgWith(1, null, { _id: 'xyz', type: 'clinic' });
-    saveDoc.callsArgWith(1);
+    getDoc.returns(fakeResolved(null, { _id: 'xyz', type: 'clinic' }));
+    saveDoc.returns(fakeResolved());
     var expected = { _id: 'xyz', type: 'clinic', _deleted: true };
     service('abc', function(err, actual) {
       chai.expect(getDoc.calledOnce).to.equal(true);
@@ -112,9 +133,9 @@ describe('DeleteDoc service', function() {
       }
     };
     getDoc
-      .onFirstCall().callsArgWith(1, null, person)
-      .onSecondCall().callsArgWith(1, null, clinic);
-    saveDoc.callsArgWith(1);
+      .onFirstCall().returns(fakeResolved(null, person))
+      .onSecondCall().returns(fakeResolved(null, clinic));
+    saveDoc.returns(fakeResolved());
     service('a', function(err, actual) {
       chai.expect(getDoc.calledTwice).to.equal(true);
       chai.expect(saveDoc.calledTwice).to.equal(true);
@@ -150,9 +171,9 @@ describe('DeleteDoc service', function() {
       }
     };
     getDoc
-      .onFirstCall().callsArgWith(1, null, person)
-      .onSecondCall().callsArgWith(1, null, clinic);
-    saveDoc.callsArgWith(1);
+      .onFirstCall().returns(fakeResolved(null, person))
+      .onSecondCall().returns(fakeResolved(null, clinic));
+    saveDoc.returns(fakeResolved());
     service('a', function(err, actual) {
       chai.expect(getDoc.calledTwice).to.equal(true);
       chai.expect(saveDoc.calledOnce).to.equal(true);

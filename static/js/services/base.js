@@ -6,6 +6,8 @@ var db = require('db');
 
   var inboxServices = angular.module('inboxServices');
   
+  // TODO remove
+  // TODO remove db module too!
   inboxServices.factory('db', function() {
     return db.current();
   });
@@ -15,6 +17,17 @@ var db = require('db');
       return $('html').data('base-url');
     };
   });
+
+  inboxServices.factory('DbNameService', ['BaseUrlService',
+    function(BaseUrlService) {
+      return function() {
+        var parts = BaseUrlService().split('/');
+        if (parts.length > 1) {
+          return parts[1];
+        }
+      };
+    }
+  ]);
 
   inboxServices.factory('UserCtxService', function() {
     return function() {
