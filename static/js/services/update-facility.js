@@ -5,7 +5,7 @@ var _ = require('underscore');
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
-  
+
   inboxServices.factory('UpdateFacility', ['db',
     function(db) {
       return function(messageId, facilityId, callback) {

@@ -1,6 +1,7 @@
 var db = require('db'),
     utils = require('./utils'),
-    dust = require('dust-core'),
+    //dust = require('./dust-core'),
+    dust = require('./dust-helpers'),
     kutils = require('kujua-utils'),
     sms_utils = require('kujua-sms/utils'),
     appname = require('settings/root').name,
@@ -8,10 +9,10 @@ var db = require('db'),
     session = require('session'),
     appinfo = require('views/lib/appinfo');
 
-var facility_doc, 
-    dates, 
-    isAdmin, 
-    isDistrictAdmin, 
+var facility_doc,
+    dates,
+    isAdmin,
+    isDistrictAdmin,
     userDistrict;
 
 var getViewReports = function(doc, dates, callback) {
@@ -111,8 +112,8 @@ var renderRelatedFacilities = function(doc, selector) {
                 title: utils.viewHeading(p.type),
                 name: p.name
             });
-            if (p.parent) { 
-                appendRelated(p); 
+            if (p.parent) {
+                appendRelated(p);
             }
         }
     };
@@ -263,12 +264,14 @@ function registerListeners() {
     charts.initPieChart();
     $('body').on('click', '#reporting-district-choice .facility', function(e) {
         e.preventDefault();
+        console.log('clicked #reporting-district-choice .facility', e);
         var row = $(e.target).closest('.facility');
         renderFacility(row.attr('data-form-code'), row.attr('rel'));
     });
     $('body').on('click', '#date-nav a', function(e) {
         e.preventDefault();
         var link = $(e.target).closest('a');
+        console.log('clicked #data-nav', link);
         dates = utils.getDates({
             form: link.attr('data-form-code'),
             time_unit: link.attr('data-time-unit'),
@@ -282,7 +285,9 @@ function registerListeners() {
     });
     $('body').on('click', '#reporting-data tr[rel]', function(e) {
         e.preventDefault();
+        console.log('clicked #reporting-data tr', e);
         var facilityId = $(e.target).closest('tr').attr('rel');
+        console.log('redneringFacility', facilityId);
         renderFacility(dates.form, facilityId);
     });
 };
@@ -494,6 +499,7 @@ var renderReports = function(err, facilities) {
             $('.nav.facilities').show();
 
             getViewSiblingFacilities(doc, function(data) {
+                console.log('rendering sibling menu', data);
                 $('.nav.facilities .dropdown-menu').html(
                     render('kujua-reporting/siblings-umenu-item.html', {
                         rows: data.rows,
@@ -517,7 +523,6 @@ var render = function (name, context) {
 };
 
 exports.render_page = function() {
-    require('../../../lib/dust-helpers');
     db = db.current();
     registerListeners();
     sms_utils.info = appinfo.getAppInfo();

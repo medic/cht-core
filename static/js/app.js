@@ -19,7 +19,7 @@ require('../dist/reporting-views');
 
   app.config(['$routeProvider', '$translateProvider',
     function($routeProvider, $translateProvider) {
-     
+
       $routeProvider
         .when('/messages/:doc?', {
           templateUrl: '/partials/messages.html',
@@ -38,7 +38,7 @@ require('../dist/reporting-views');
         });
 
       $translateProvider.useLoader('SettingsLoader', {});
-      
+
     }
   ]);
 
@@ -68,10 +68,9 @@ require('../dist/reporting-views');
         }
         deferred.resolve(data);
       });
-      
+
       return deferred.promise;
     };
   }]);
-  
-}());
 
+}());

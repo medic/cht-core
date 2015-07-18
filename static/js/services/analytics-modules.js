@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('AnalyticsModules',
-    ['$resource', 'UserDistrict',
-    function($resource, UserDistrict) {
+    ['$resource', '$log', 'UserDistrict',
+    function($resource, $log, UserDistrict) {
 
       var request = function(url, district, options, callback) {
         if (!callback) {
@@ -22,6 +22,7 @@ var _ = require('underscore'),
           isArray: true,
           cache: true
         });
+        $log.debug('requesting', url, {district: district}, {query: options});
         $resource(url, { district: district }, { query: options }).query(
           function(data) {
             callback(null, data);
@@ -60,7 +61,7 @@ var _ = require('underscore'),
               scope.visitsDuring = { loading: true };
               scope.monthlyRegistrations = { loading: true };
               scope.monthlyDeliveries = { loading: true };
-              
+
               UserDistrict(function(err, district) {
 
                 if (err) {
@@ -229,7 +230,22 @@ var _ = require('underscore'),
                 return !!forms[stockForm.code];
               });
             },
-            render: stock.render_page
+            getViewSiblingFacilities: function(doc, callback) {
+                var args = {startkey: [], endkey: []};
+                if (!doc.type) {
+                    throw new Error('Doc without type attribute not supported.');
+                }
+                args.startkey.push(doc.type, doc.parent._id);
+                args.endkey.push(doc.type, doc.parent._id, {}); // {} couchdb endkey trick
+                db.getView(appname, 'facilities_by_parent', args, function(err, data) {
+                    if (err) { return alert(err); }
+                    callback(data);
+                });
+            },
+            render: function(scope) {
+              $log.debug('stock.render_page()');
+              stock.render_page();
+            }
           }
         ];
         return _.filter(modules, function(module) {
@@ -238,6 +254,5 @@ var _ = require('underscore'),
       };
     }
   ]);
-  
-}()); 
 
+}());

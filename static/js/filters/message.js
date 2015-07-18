@@ -17,7 +17,7 @@ var format = require('../modules/format');
 
   module.filter('summary', function () {
     return function (record, forms) {
-      if (!record || !forms) { 
+      if (!record || !forms) {
         return '';
       }
       if (record.form) {
@@ -38,7 +38,7 @@ var format = require('../modules/format');
 
   module.filter('title', function () {
     return function (message, forms) {
-      if (!message || !forms) { 
+      if (!message || !forms) {
         return '';
       }
       if (message.form) {
@@ -53,6 +53,10 @@ var format = require('../modules/format');
 
   module.filter('clinic', function () {
     return format.clinic;
+  });
+
+  module.filter('facility', function () {
+    return format.facility;
   });
 
 }());
