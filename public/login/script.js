@@ -2,6 +2,14 @@ var setState = function(className) {
   document.getElementById('form').className = className;
 };
 
+var createPayload = function(user, password) {
+  return JSON.stringify({ name: user, password: password });
+};
+
+var createAuthHeader = function(user, password) {
+  return 'Basic ' + window.btoa(user + ':' + password);
+};
+
 var handleResponse = function(xmlhttp) {
   if (xmlhttp.status === 200) {
     setState('');
@@ -20,19 +28,19 @@ var submit = function() {
   if (document.getElementById('form').className === 'loading') {
     return;
   }
+  setState('loading');
+  var user = document.getElementById('user').value;
+  var password = document.getElementById('password').value;
   var xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = function() {
     if (xmlhttp.readyState === XMLHttpRequest.DONE) {
       handleResponse(xmlhttp);
     }
   };
-  setState('loading');
   xmlhttp.open('POST', document.getElementById('form').action, true);
   xmlhttp.setRequestHeader('Content-Type', 'application/json');
-  xmlhttp.send(JSON.stringify({
-    name: document.getElementById('user').value,
-    password: document.getElementById('password').value
-  }));
+  xmlhttp.setRequestHeader('Authorization', createAuthHeader(user, password));
+  xmlhttp.send(createPayload(user, password));
 };
 
 var pressed = function(e) {

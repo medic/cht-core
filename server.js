@@ -114,10 +114,6 @@ app.all(pathPrefix + '/_local/*', function(req, res) {
   // don't audit the _local docs
   proxy.web(req, res);
 });
-app.all('/_session', function(req, res) {
-  // don't audit session management
-  proxy.web(req, res);
-});
 
 var audit = function(req, res) {
   var ap = new AuditProxy();
