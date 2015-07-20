@@ -27,6 +27,7 @@ input {
   border-color: #CCCCCC;
   border-radius: 4px;
   width: 100%;
+  font-size: 1em;
 }
 .btn {
   background-color: #337AB7;
