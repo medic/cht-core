@@ -12,9 +12,19 @@ var session = require('session');
       e.preventDefault();
       session.logout(redirectToLogin);
     });
-    if ($('html').data('user') && !$('html').data('user').name) {
+    var user = $('html').data('user');
+    if (user && !user.name) {
       redirectToLogin();
     } else {
+      if (user) {
+        $.get('/_users/org.couchdb.user:' + user.name).fail(function(data) {
+          console.log('arguments', arguments);
+          if (data.status === 401) {
+            // connected to the internet but unauthorized
+            redirectToLogin();
+          }
+        });
+      }
       session.on('change', function(userCtx) {
         if (!userCtx.name) {
           redirectToLogin();
