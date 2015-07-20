@@ -444,26 +444,52 @@ app.get('/medic/_changes', function(req, res) {
   });
 });
 
+var writeHeaders = function(req, res, headers, redirect) {
+  res.oldWriteHead = res.writeHead;
+  res.writeHead = function(_statusCode, _headers) {
+    // hardcode this so we never show the basic auth prompt
+    res.setHeader('WWW-Authenticate', 'Cookie');
+    if (headers) {
+      headers.forEach(function(header) {
+        res.setHeader(header[0], header[1]);
+      });
+    }
+    // for dynamic resources, redirect to login page
+    if (redirect && _statusCode === 401) {
+      _statusCode = 302;
+      res.setHeader(
+        'Location',
+        pathPrefix + '/login?redirect=' + encodeURIComponent(req.url)
+      );
+    }
+    res.oldWriteHead(_statusCode, _headers);
+  };
+};
+
 /**
  * Set cache control on static resources. Must be hacked in to
  * ensure we set the value first.
  */
 proxy.on('proxyReq', function(proxyReq, req, res) {
   if (appcacheManifest.test(req.url)) {
-    res.oldWriteHead = res.writeHead;
-    res.writeHead = function(statusCode, headers) {
-      res.setHeader('Cache-Control', 'must-revalidate');
-      res.setHeader('Content-Type', 'text/cache-manifest; charset=utf-8');
-      res.setHeader('Last-Modified', 'Tue, 28 Apr 2015 02:23:40 GMT');
-      res.setHeader('Expires', 'Tue, 28 Apr 2015 02:21:40 GMT');
-      res.oldWriteHead(statusCode, headers);
-    };
+    // requesting the appcache manifest
+    writeHeaders(req, res, [
+      [ 'Cache-Control', 'must-revalidate' ],
+      [ 'Content-Type', 'text/cache-manifest; charset=utf-8' ],
+      [ 'Last-Modified', 'Tue, 28 Apr 2015 02:23:40 GMT' ],
+      [ 'Expires', 'Tue, 28 Apr 2015 02:21:40 GMT' ]
+    ]);
   } else if (staticResources.test(req.url)) {
-    res.oldWriteHead = res.writeHead;
-    res.writeHead = function(statusCode, headers) {
-      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-      res.oldWriteHead(statusCode, headers);
-    };
+    // requesting static resources
+    writeHeaders(req, res, [
+      [ 'Cache-Control', 'no-cache, must-revalidate' ]
+    ]);
+  } else if (req.url.indexOf(appPrefix) !== -1 ) {
+    // requesting other application files
+    writeHeaders(req, res, [], true);
+  } else {
+    // everything else
+    writeHeaders(req, res);
   }
 });
 
