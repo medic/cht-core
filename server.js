@@ -46,7 +46,7 @@ _.templateSettings = {
   interpolate: /\{\{(.+?)\}\}/g
 };
 
-fs.readFile(__dirname + '/public/login/index.html', { encoding: 'utf-8' }, function(err, data) {
+fs.readFile(__dirname + '/templates/login/index.html', { encoding: 'utf-8' }, function(err, data) {
   if (err) {
     console.error('Could not find login page');
     throw err;
