@@ -17,9 +17,9 @@ For more information about Medic Mobile's tools, visit http://medicmobile.org/to
 
 You will need to install the following:
 
-[Node.js](http://nodejs.org)
+[Node.js](http://nodejs.org) v0.12.x
 
-[CouchDB](http://couchdb.apache.org)
+[CouchDB](http://couchdb.apache.org) v1.6.1
 
 [couchdb-lucene](https://github.com/rnewson/couchdb-lucene) v1.0.2 or greater
 
