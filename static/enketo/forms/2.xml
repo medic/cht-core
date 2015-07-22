@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>ANC Visit Report</h:title>
+    <model>
+      <instance>
+        <data id="V" version="2015-06-05">
+          <pregnancy_id tag="id" />
+          <meta>
+            <start tag="m_st" />
+            <end tag="m_et" />
+            <phonenumber tag="m_p" />
+            <deviceID tag="m_d" />
+            <subscriberID tag="m_s" />
+            <instanceID tag="m_i" />
+            <instanceName tag="m_n" />
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/pregnancy_id" required="true()" type="string"/>
+      <bind jr:preload="timestamp" jr:preloadParams="start" nodeset="/data/meta/start" type="dateTime"/>
+      <bind jr:preload="timestamp" jr:preloadParams="end" nodeset="/data/meta/end" type="dateTime"/>
+      <bind jr:preload="property" jr:preloadParams="uri:subscriberid" nodeset="/data/meta/subscriberID" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="uri:deviceid" nodeset="/data/meta/deviceID" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="phonenumber" nodeset="/data/meta/phonenumber" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+      <bind calculate="concat('Visit: ',  /data/pregnancy_id )" nodeset="/data/meta/instanceName" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input appearance="numbers" ref="/data/pregnancy_id">
+      <label>Pregnancy ID</label>
+      <hint>This is the 5 digit number associated to this woman's pregnancy</hint>
+    </input>
+  </h:body>
+</h:html>

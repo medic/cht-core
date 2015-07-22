@@ -61,14 +61,12 @@ module.exports = function(grunt) {
     },
     concat: {
       js: {
-        files: {
-          'static/dist/dependencies.js': [
+        src: [
             'bower_components/concat.js',
             'bower_components/bootstrap-tour/build/js/bootstrap-tour.js',
             'static/js/bootstrap-multidropdown.js'
-          ],
-          'static/dist/enketo.js': ['static/js/medic-enketo-offline-SNAPSHOT.min.js'],
-        },
+        ],
+        dest: 'static/dist/dependencies.js',
       },
     },
     uglify: {
@@ -155,6 +153,11 @@ module.exports = function(grunt) {
             dest: 'static/dist/'
           }
         ]
+      },
+      enketo: {
+        cwd: 'static',
+        src: 'enketo/*',
+        dest: 'static/dist/',
       }
     },
     exec: {
@@ -297,6 +300,10 @@ module.exports = function(grunt) {
     'copy:admin'
   ]);
 
+  grunt.registerTask('enketo', 'Copy static resources required by enketo to dist/', [
+    'copy:enketo'
+  ]);
+
   grunt.registerTask('deploy', 'Deploy the webapp', [
     'exec:deploy',
     'notify:deployed'
@@ -306,7 +313,8 @@ module.exports = function(grunt) {
     'mmbower',
     'mmcss',
     'mmjs',
-    'appcache'
+    'appcache',
+    'enketo'
   ]);
 
   grunt.registerTask('minify', 'Minify JS and CSS', [
