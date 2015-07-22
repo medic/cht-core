@@ -5,66 +5,67 @@ describe('Auditing', function() {
 
   'use strict';
 
-  var savedUuid;
-
-  beforeEach(function(done) {
-
-    utils.saveDoc({
-      errors: [],
-      form: null,
-      from: '0211111111',
-      reported_date: 1432801258088,
-      tasks: [
-        {
-          messages: [
-            {
-              from: '0211111111',
-              sent_by: 'gareth',
-              to: '+64555555555',
-              message: 'hello!',
-              uuid: '0a2bda49-7b12-67ce-c9140a6e14007c7a'
-            }
-          ],
-          state: 'pending',
-          state_history: [
-            {
-              state: 'pending',
-              timestamp: '2015-05-28T08:20:58.118Z'
-            }
-          ]
-        }
-      ],
-      read: ['gareth'],
-      kujua_message: true,
-      type: 'data_record',
-      sent_by: 'gareth'
-    }).then(
-      function(doc) {
-        savedUuid = doc.id;
-        utils.load('/#/messages/+64555555555');
-        done();
-      },
-      function() {
-        console.log('Error setting up auditing');
-        done();
+  var message = {
+    errors: [],
+    form: null,
+    from: '0211111111',
+    reported_date: 1432801258088,
+    tasks: [
+      {
+        messages: [
+          {
+            from: '0211111111',
+            sent_by: 'gareth',
+            to: '+64555555555',
+            message: 'hello!',
+            uuid: '0a2bda49-7b12-67ce-c9140a6e14007c7a'
+          }
+        ],
+        state: 'pending',
+        state_history: [
+          {
+            state: 'pending',
+            timestamp: (new Date()).toISOString()
+          }
+        ]
       }
-    );
+    ],
+    read: ['gareth'],
+    kujua_message: true,
+    type: 'data_record',
+    sent_by: 'gareth'
+  };
+
+  var savedUuid;
+  beforeEach(function(done) {
+    utils.saveDoc(message)
+      .then(function(doc) {
+        savedUuid = doc.id;
+        done();
+      }, function(err) {
+        console.log('Error saving doc', err);
+        done();
+      });
   });
 
-  it('audits a change', function() {
+  it('audits message deletion', function() {
 
+    // reload messages tab page
+    element(by.id('reports-tab')).click();
+    element(by.id('messages-tab')).click();
     browser.waitForAngular();
 
+    // check selected tab
     var selectedTab = element(by.css('.tabs .selected .button-label'));
     expect(selectedTab.getText()).toEqual('Messages');
 
+    // check message is displayed correctly
     var newMessage = element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .data p span'));
     expect(newMessage.getText()).toEqual('hello!');
 
-    var deleteIcon = element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .fa-trash-o'));
-    browser.actions().mouseMove(deleteIcon).perform();
-    deleteIcon.click();
-
+    // delete the message
+    element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .data p span')).click();
+    element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .fa-trash-o')).click();
     var confirmButton = element(by.css('#delete-confirm .submit'));
     browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton), 5000);
     confirmButton.click();
@@ -74,13 +75,17 @@ describe('Auditing', function() {
 
     var flow = protractor.promise.controlFlow();
     
+    // check the doc is deleted
     flow.execute(function() {
       return utils.getDoc(savedUuid);
     }).then(function(doc) {
       expect(doc.error).toEqual('not_found');
       expect(doc.reason).toEqual('deleted');
+    }, function(err) {
+      console.log('Error fetching doc', err);
     });
 
+    // check the audit doc is updated
     flow.execute(function() {
       return utils.getAuditDoc(savedUuid);
     }).then(function(viewResult) {
@@ -89,6 +94,8 @@ describe('Auditing', function() {
       expect(doc.history[1].action).toEqual('delete');
       expect(doc.history[1].user).toEqual(auth.getAuth().user);
       expect(doc.history[1].doc._deleted).toEqual(true);
+    }, function(err) {
+      console.log('Error fetching audit doc', err);
     });
 
   });

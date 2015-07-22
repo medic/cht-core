@@ -22,10 +22,10 @@ var _ = require('underscore');
       return doc.type === type;
     };
   };
-  
-  inboxServices.factory('Changes', ['DB',
 
-    function(DB) {
+  inboxServices.factory('Changes', ['E2ETESTING', 'DB',
+
+    function(E2ETESTING, DB) {
 
       var callbacks = {};
       var inited = [];
@@ -40,15 +40,17 @@ var _ = require('underscore');
         callbacks[options.key] = callback;
         if (!_.contains(inited, type)) {
           inited.push(type);
-          DB.get()
-            .changes({ live: true, since: 'now', filter: getFilter(options) })
-            .on('change', function(data) {
-              if (data && data.changes) {
-                Object.keys(callbacks).forEach(function(key) {
-                  callbacks[key](data.changes);
-                });
-              }
-            });
+          if (!E2ETESTING) {
+            DB.get()
+              .changes({ live: true, since: 'now', filter: getFilter(options) })
+              .on('change', function(data) {
+                if (data && data.changes) {
+                  Object.keys(callbacks).forEach(function(key) {
+                    callbacks[key](data.changes);
+                  });
+                }
+              });
+          }
         }
       };
 

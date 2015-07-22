@@ -44,7 +44,7 @@ var _ = require('underscore'),
       };
 
       var isAdmin = function() {
-        return false && utils.isUserAdmin(UserCtxService());
+        return utils.isUserAdmin(UserCtxService());
       };
 
       var get = function(name) {

@@ -29,7 +29,10 @@ var _ = require('underscore'),
     function(HttpWrapper, UserCtxService) {
       return function(callback) {
         HttpWrapper
-          .get('/_users/org.couchdb.user%3A' + UserCtxService().name, { cache: true })
+          .get(
+            '/_users/org.couchdb.user%3A' + UserCtxService().name,
+            { cache: true, targetScope: 'root' }
+          )
           .success(function(data) {
             callback(null, data);
           })

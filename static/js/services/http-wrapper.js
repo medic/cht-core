@@ -57,7 +57,7 @@ var _ = require('underscore');
       };
 
       /**
-       * To disable the cancel on navigation feature, set 'targetScope' to "root"
+       * To disable the cancel on navigation feature, set 'targetScope' to 'root'
        * in the options param.
        */
       return {

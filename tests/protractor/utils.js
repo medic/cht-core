@@ -38,10 +38,6 @@ var request = function(options) {
 
 module.exports = {
 
-  load: function(path) {
-    browser.get('http://' + auth.getAuthString() + '@localhost:5988/medic/_design/medic/_rewrite' + path);
-  },
-
   saveDoc: function(doc) {
     var postData = JSON.stringify(doc);
     return request({
