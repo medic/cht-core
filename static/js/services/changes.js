@@ -44,9 +44,9 @@ var _ = require('underscore');
             DB.get()
               .changes({ live: true, since: 'now', filter: getFilter(options) })
               .on('change', function(data) {
-                if (data && data.changes) {
+                if (data) {
                   Object.keys(callbacks).forEach(function(key) {
-                    callbacks[key](data.changes);
+                    callbacks[key](data);
                   });
                 }
               });

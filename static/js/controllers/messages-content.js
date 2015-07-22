@@ -95,10 +95,9 @@ var _ = require('underscore'),
         var selectedId = $scope.selected && $scope.selected.id;
         if (selectedId) {
           options = options || {};
-          if (options.changes && options.changes.length) {
+          if (options.changes && options.changes.deleted) {
             for (var i = $scope.selected.messages.length - 1; i >= 0; i--) {
-              var msgId = $scope.selected.messages[i].id;
-              if (_.findWhere(options.changes, { id: msgId, deleted: true })) {
+              if ($scope.selected.messages[i].id === options.changes.id) {
                 $scope.selected.messages.splice(i, 1);
               }
             }
