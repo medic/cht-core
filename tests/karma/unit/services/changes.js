@@ -35,7 +35,7 @@ describe('Changes service', function() {
 
   it('calls the callback', function(done) {
 
-    var expected = [{ id: 'x' }];
+    var expected = { id: 'x' };
 
     service(function(actual) {
       chai.expect(actual).to.equal(expected);
@@ -43,12 +43,12 @@ describe('Changes service', function() {
       done();
     });
 
-    changesCallback({ changes: expected });
+    changesCallback(expected);
   });
 
   it('calls the most recent callback with no key only', function(done) {
 
-    var expected = [{ id: 'x' }];
+    var expected = { id: 'x' };
 
     service(function() {
       chai.expect(false).to.equal(true);
@@ -60,12 +60,12 @@ describe('Changes service', function() {
       done();
     });
 
-    changesCallback({ changes: expected });
+    changesCallback(expected);
   });
 
   it('calls all registered callbacks', function(done) {
 
-    var expected = [{ id: 'x' }];
+    var expected = { id: 'x' };
     var results = { key1: [], key2: [] };
 
     service({ key: 'key1' }, function(actual) {
@@ -77,7 +77,7 @@ describe('Changes service', function() {
       results.key2.push(actual);
     });
 
-    changesCallback({ changes: expected });
+    changesCallback(expected);
 
     chai.expect(results.key1.length).to.equal(1);
     chai.expect(results.key2.length).to.equal(1);
@@ -88,32 +88,20 @@ describe('Changes service', function() {
     done();
   });
 
-  it('errors are ignored', function(done) {
-
-    service(function() {
-      chai.expect(false).to.equal(true);
-    });
-
-    changesCallback('bugger');
-    changesCallback({});
-
-    done();
-  });
-
   it('no results is ignored', function(done) {
 
     service(function() {
       chai.expect(false).to.equal(true);
     });
 
-    changesCallback({});
+    changesCallback();
 
     done();
   });
 
   it('passes through the filter', function(done) {
 
-    var expected = [{ id: 'x' }];
+    var expected = { id: 'x' };
     filter = 'medic/ddoc';
 
     service({ filter: filter }, function(actual) {
@@ -122,6 +110,6 @@ describe('Changes service', function() {
       done();
     });
 
-    changesCallback({ changes: expected });
+    changesCallback(expected);
   });
 });
