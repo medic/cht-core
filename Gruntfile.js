@@ -61,12 +61,14 @@ module.exports = function(grunt) {
     },
     concat: {
       js: {
-        src: [
-          'bower_components/concat.js',
-          'bower_components/bootstrap-tour/build/js/bootstrap-tour.js',
-          'static/js/bootstrap-multidropdown.js'
-        ],
-        dest: 'static/dist/dependencies.js',
+        files: {
+          'static/dist/dependencies.js': [
+            'bower_components/concat.js',
+            'bower_components/bootstrap-tour/build/js/bootstrap-tour.js',
+            'static/js/bootstrap-multidropdown.js'
+          ],
+          'static/dist/enketo.js': ['static/js/medic-enketo-offline-SNAPSHOT.min.js'],
+        },
       },
     },
     uglify: {
