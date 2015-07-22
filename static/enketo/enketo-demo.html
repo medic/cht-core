@@ -1,0 +1,51 @@
+<html>
+	<head>
+		<script src="js/medic-enketo-offline-SNAPSHOT.min.js"
+				type="text/javascript"></script>
+		<link type="text/css" rel="stylesheet" href="style/formhub.css"/>
+		<style>
+			#control-panel {
+				margin-top:20px;
+				padding-top:10px;
+				border-top:solid 1px gray;
+			}
+			#control-panel > tbody > tr > td {
+				padding:10px;
+				border: solid 1px #ccc;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="form-wrapper" style="display:none">
+			<div class="container"></div>
+			<input type="submit" value="Validate"/>
+			<div class="form-footer" style="margin:0">
+				<button class="btn btn-primary first-page">Go to start</button>
+				<button class="btn btn-primary previous-page">&lt;&lt;-- prev</button>
+				<button class="btn btn-primary next-page">next --&gt;</button>
+				<button class="btn btn-primary last-page">Go to end -- &gt;&gt;</button>
+			</div>
+		</div>
+
+		<table id="control-panel"><tbody><tr>
+			<td>
+				<h2>Instructions</h2>
+				<p>Select a form from the list of available forms.  When you click the `load` button, it should be loaded
+				from an XForms XML file, and then converted into both an HTML form and an XML validator using XSLT.</p>
+				<p>If you would like to see the XForms XML that the form is generated from, click the `view` button.</p>
+			</td>
+			<td>
+				<h2>Available forms</h2>
+				<table id="form-examples">
+					<tr><td>Form ID</td><td>View original form XML</td><td>Load form and display above</td></tr>
+				</table>
+			</td>
+
+			<td id="log">
+				<h2>Log</h2>
+				<div class="content">
+				</div>
+			</td>
+		</tr></tbody></table>
+	</body>
+</html>

@@ -1,0 +1,248 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Daily Hospital Surveillance</h:title>
+    <model>
+      <instance>
+        <hospital id="EDCD_H01" version="2015-06-17">
+          <report_date tag="date"/>
+          <select_facility tag="hs"/>
+          <group_facility>
+            <facility_code_list tag="hf"/>
+            <facility_code_other tag="hfo"/>
+            <facility_code tag="hfc" />
+          </group_facility>
+          <group_all_treated>
+            <opd_patients_under_five tag="au5"/>
+            <opd_patients_five_over tag="a5o"/>
+          </group_all_treated>
+          <group_influenza>
+            <influenza_under_five tag="iu5" />
+            <influenza_five_over tag="i5o" />
+          </group_influenza>
+          <group_respiratory>
+            <respiratory_under_five tag="ru5" />
+            <respiratory_five_over tag="r5o" />
+          </group_respiratory>
+          <group_watery_diarrhoea>
+            <watery_diarrhoea_under_five tag="wu5" />
+            <watery_diarrhoea_five_over tag="w5o" />
+          </group_watery_diarrhoea>
+          <group_bloody_diarrhoea>
+            <bloody_diarrhoea_under_five tag="bu5" />
+            <bloody_diarrhoea_five_over tag="b5o" />
+            <suspected_cholera tag="c5o" />
+          </group_bloody_diarrhoea>
+          <group_fever_jaundice>
+            <fever_jaundice_under_five tag="fju5" />
+            <fever_jaundice_five_over tag="fj5o" />
+          </group_fever_jaundice>
+          <group_fever_rash>
+            <fever_rash_under_five tag="fru5" />
+            <fever_rash_five_over tag="fr5o" />
+          </group_fever_rash>
+          <group_fever_other>
+            <fever_other_under_five tag="fou5" />
+            <fever_other_five_over tag="fo5o" />
+          </group_fever_other>
+          <note_outbreak/>
+          <phonenumber/>
+          <imei/>
+          <subscriberID/>
+          <start/>
+          <end/>
+          <meta>
+            <start tag="m_st" />
+            <end tag="m_et" />
+            <deviceID tag="m_d" />
+            <subscriberID tag="m_s" />
+            <phonenumber tag="m_p" />
+            <instanceID tag="m_i" />
+            <instanceName tag="m_n" />
+          </meta>
+        </hospital>
+      </instance>
+      <bind constraint=". &lt;= today()" jr:constraintMsg="Dates in the future are not allowed." nodeset="/hospital/report_date" required="true()" type="date"/>
+      <bind nodeset="/hospital/select_facility" required="true()" type="select1"/>
+      <bind nodeset="/hospital/group_facility/facility_code_list" relevant="selected( /hospital/select_facility ,'yes')" required="true()" type="select1"/>
+      <bind constraint="string-length(.) = 10" jr:constraintMsg="Code has to be 10 digits" nodeset="/hospital/group_facility/facility_code_other" relevant="selected( /hospital/group_facility/facility_code_list ,'other')" required="true()" type="string"/>
+      <bind calculate="coalesce(/hospital/group_facility/facility_code_other, /hospital/group_facility/facility_code_list)" nodeset="/hospital/group_facility/facility_code" required="false()" type="string"/>
+      <bind constraint="(. &gt;=0) and (. &lt;= 1000)" jr:constraintMsg="Number must be between 0 and 1000" nodeset="/hospital/group_all_treated/opd_patients_under_five" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (. &lt;= 1000)" jr:constraintMsg="Number must be between 0 and 1000" nodeset="/hospital/group_all_treated/opd_patients_five_over" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_under_five &gt;= (.))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients under 5 years" nodeset="/hospital/group_influenza/influenza_under_five" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_five_over &gt;= (.))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients 5 years and over" nodeset="/hospital/group_influenza/influenza_five_over" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_under_five &gt;= (. + /hospital/group_influenza/influenza_under_five))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients under 5 years" nodeset="/hospital/group_respiratory/respiratory_under_five" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_five_over &gt;= (. + /hospital/group_influenza/influenza_five_over))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients 5 years and over" nodeset="/hospital/group_respiratory/respiratory_five_over" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_under_five &gt;= (. + /hospital/group_influenza/influenza_under_five + /hospital/group_respiratory/respiratory_under_five))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients under 5 years" nodeset="/hospital/group_watery_diarrhoea/watery_diarrhoea_under_five" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_five_over &gt;= (. + /hospital/group_influenza/influenza_five_over + /hospital/group_respiratory/respiratory_five_over))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients 5 years and over" nodeset="/hospital/group_watery_diarrhoea/watery_diarrhoea_five_over" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_under_five &gt;= (. + /hospital/group_influenza/influenza_under_five + /hospital/group_respiratory/respiratory_under_five + /hospital/group_watery_diarrhoea/watery_diarrhoea_under_five))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients under 5 years" nodeset="/hospital/group_bloody_diarrhoea/bloody_diarrhoea_under_five" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_five_over &gt;= (. + /hospital/group_influenza/influenza_five_over + /hospital/group_respiratory/respiratory_five_over + /hospital/group_watery_diarrhoea/watery_diarrhoea_five_over))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients 5 years and over" nodeset="/hospital/group_bloody_diarrhoea/bloody_diarrhoea_five_over" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_five_over &gt;= (. + /hospital/group_influenza/influenza_five_over + /hospital/group_respiratory/respiratory_five_over + /hospital/group_watery_diarrhoea/watery_diarrhoea_five_over + /hospital/group_bloody_diarrhoea/bloody_diarrhoea_five_over))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients 5 years and over" nodeset="/hospital/group_bloody_diarrhoea/suspected_cholera" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_under_five &gt;= (. + /hospital/group_influenza/influenza_under_five + /hospital/group_respiratory/respiratory_under_five + /hospital/group_watery_diarrhoea/watery_diarrhoea_under_five + /hospital/group_bloody_diarrhoea/bloody_diarrhoea_under_five))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients under 5 years" nodeset="/hospital/group_fever_jaundice/fever_jaundice_under_five" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_five_over &gt;= (. + /hospital/group_influenza/influenza_five_over + /hospital/group_respiratory/respiratory_five_over + /hospital/group_watery_diarrhoea/watery_diarrhoea_five_over + /hospital/group_bloody_diarrhoea/bloody_diarrhoea_five_over + /hospital/group_bloody_diarrhoea/suspected_cholera))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients 5 years and over" nodeset="/hospital/group_fever_jaundice/fever_jaundice_five_over" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_under_five &gt;= (. + /hospital/group_influenza/influenza_under_five + /hospital/group_respiratory/respiratory_under_five + /hospital/group_watery_diarrhoea/watery_diarrhoea_under_five + /hospital/group_bloody_diarrhoea/bloody_diarrhoea_under_five + /hospital/group_fever_jaundice/fever_jaundice_under_five))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients under 5 years" nodeset="/hospital/group_fever_rash/fever_rash_under_five" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_five_over &gt;= (. + /hospital/group_influenza/influenza_five_over + /hospital/group_respiratory/respiratory_five_over + /hospital/group_watery_diarrhoea/watery_diarrhoea_five_over + /hospital/group_bloody_diarrhoea/bloody_diarrhoea_five_over + /hospital/group_bloody_diarrhoea/suspected_cholera + /hospital/group_fever_jaundice/fever_jaundice_five_over))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients 5 years and over" nodeset="/hospital/group_fever_rash/fever_rash_five_over" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_under_five &gt;= (. + /hospital/group_influenza/influenza_under_five + /hospital/group_respiratory/respiratory_under_five + /hospital/group_watery_diarrhoea/watery_diarrhoea_under_five + /hospital/group_bloody_diarrhoea/bloody_diarrhoea_under_five + /hospital/group_fever_jaundice/fever_jaundice_under_five + /hospital/group_fever_rash/fever_rash_under_five))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients under 5 years" nodeset="/hospital/group_fever_other/fever_other_under_five" required="true()" type="int"/>
+      <bind constraint="(. &gt;=0) and (/hospital/group_all_treated/opd_patients_five_over &gt;= (. + /hospital/group_influenza/influenza_five_over + /hospital/group_respiratory/respiratory_five_over + /hospital/group_watery_diarrhoea/watery_diarrhoea_five_over + /hospital/group_bloody_diarrhoea/bloody_diarrhoea_five_over + /hospital/group_bloody_diarrhoea/suspected_cholera + /hospital/group_fever_jaundice/fever_jaundice_five_over + /hospital/group_fever_rash/fever_rash_five_over))" jr:constraintMsg="Number must be greater than 0, 
+and sum of cases cannot be greater than all new patients 5 years and over" nodeset="/hospital/group_fever_other/fever_other_five_over" required="true()" type="int"/>
+      <bind nodeset="/hospital/note_outbreak" readonly="true()" type="string"/>
+      <bind jr:preload="timestamp" jr:preloadParams="start" nodeset="/hospital/meta/start" type="dateTime"/>
+      <bind jr:preload="timestamp" jr:preloadParams="end" nodeset="/hospital/meta/end" type="dateTime"/>
+      <bind jr:preload="property" jr:preloadParams="uri:deviceid" nodeset="/hospital/meta/deviceID" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="uri:subscriberid" nodeset="/hospital/meta/subscriberID" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="phonenumber" nodeset="/hospital/meta/phonenumber" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/hospital/meta/instanceID" readonly="true()" type="string"/>
+      <bind calculate="concat('Daily Hospital Surveillance - ',  /hospital/report_date )" nodeset="/hospital/meta/instanceName" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <input appearance="no-calendar" ref="/hospital/report_date">
+      <label>Reporting for (Date)</label>
+    </input>
+    <select1 appearance="quick" ref="/hospital/select_facility">
+      <label>Do you wish to select a health facility code?</label>
+      <item>
+        <label>Yes</label>
+        <value>yes</value>
+      </item>
+      <item>
+        <label>No</label>
+        <value>no</value>
+      </item>
+    </select1>
+    <group ref="/hospital/group_facility">
+      <label>Health Facility</label>
+      <select1 appearance="quick" ref="/hospital/group_facility/facility_code_list">
+        <label>Select From List</label>
+        <item>
+          <label>A Hospital
+</label>
+          <value>1111111111</value>
+        </item>
+        <item>
+          <label>B Hospital
+</label>
+          <value>1111111112</value>
+        </item>
+        <item>
+          <label>C Hospital
+</label>
+          <value>1111111114</value>
+        </item>
+        <item>
+          <label>D Hospital
+</label>
+          <value>1111111116</value>
+        </item>
+        <item>
+          <label>Other</label>
+          <value>other</value>
+        </item>
+      </select1>
+      <input appearance="numbers" ref="/hospital/group_facility/facility_code_other">
+        <label>Specify Facility Code</label>
+        <hint>10 digits</hint>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/hospital/group_all_treated">
+      <label>All new medical, pediatric, and general OPD, and Emergency patients treated</label>
+      <input ref="/hospital/group_all_treated/opd_patients_under_five">
+        <label>New patients under 5 years</label>
+      </input>
+      <input ref="/hospital/group_all_treated/opd_patients_five_over">
+        <label>New patients 5 years or above</label>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/hospital/group_influenza">
+      <label>All new epidemic prone cases in medical, pediatric, and general OPD, and Emergency</label>
+      <input ref="/hospital/group_influenza/influenza_under_five">
+        <label>Influenza Like Illness under 5 years</label>
+      </input>
+      <input ref="/hospital/group_influenza/influenza_five_over">
+        <label>Influenza Like Illness 5 years or above</label>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/hospital/group_respiratory">
+      <label>All new epidemic prone cases in medical, pediatric, and general OPD, and Emergency</label>
+      <input ref="/hospital/group_respiratory/respiratory_under_five">
+        <label>Severe Acute Respiratory Infection under 5 years</label>
+      </input>
+      <input ref="/hospital/group_respiratory/respiratory_five_over">
+        <label>Severe Acute Respiratory Infection 5 years or above</label>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/hospital/group_watery_diarrhoea">
+      <label>All new epidemic prone cases in medical, pediatric, and general OPD, and Emergency</label>
+      <input ref="/hospital/group_watery_diarrhoea/watery_diarrhoea_under_five">
+        <label>Acute Watery Diarrhoea under 5 years</label>
+      </input>
+      <input ref="/hospital/group_watery_diarrhoea/watery_diarrhoea_five_over">
+        <label>Acute Watery Diarrhoea 5 years or above</label>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/hospital/group_bloody_diarrhoea">
+      <label>All new epidemic prone cases in medical, pediatric, and general OPD, and Emergency</label>
+      <input ref="/hospital/group_bloody_diarrhoea/bloody_diarrhoea_under_five">
+        <label>Acute Bloody Diarrhoea under 5 years</label>
+      </input>
+      <input ref="/hospital/group_bloody_diarrhoea/bloody_diarrhoea_five_over">
+        <label>Acute Bloody Diarrhoea 5 years or above</label>
+      </input>
+      <input ref="/hospital/group_bloody_diarrhoea/suspected_cholera">
+        <label>Suspected Cholera 5 years or above only</label>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/hospital/group_fever_jaundice">
+      <label>All new epidemic prone cases in medical, pediatric, and general OPD, and Emergency</label>
+      <input ref="/hospital/group_fever_jaundice/fever_jaundice_under_five">
+        <label>Fever with Jaundice under 5 years</label>
+      </input>
+      <input ref="/hospital/group_fever_jaundice/fever_jaundice_five_over">
+        <label>Fever with Jaundice 5 years or above</label>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/hospital/group_fever_rash">
+      <label>All new epidemic prone cases in medical, pediatric, and general OPD, and Emergency</label>
+      <input ref="/hospital/group_fever_rash/fever_rash_under_five">
+        <label>Fever with Rash under 5 years</label>
+      </input>
+      <input ref="/hospital/group_fever_rash/fever_rash_five_over">
+        <label>Fever with Rash 5 years or above</label>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/hospital/group_fever_other">
+      <label>All new epidemic prone cases in medical, pediatric, and general OPD, and Emergency</label>
+      <input ref="/hospital/group_fever_other/fever_other_under_five">
+        <label>Fever without rash and jaundice under 5 years</label>
+      </input>
+      <input ref="/hospital/group_fever_other/fever_other_five_over">
+        <label>Fever without rash and jaundice 5 years or above</label>
+      </input>
+    </group>
+    <input ref="/hospital/note_outbreak">
+      <label>If you suspect any potential outbreak or need any additional support
+
+Please call:
+ 1234567890
+ 4567890123
+
+Or email:
+ help@example.com
+ help2@example.com</label>
+    </input>
+  </h:body>
+</h:html>
