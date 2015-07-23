@@ -83,7 +83,7 @@ app.get(pathPrefix + '/login', function(req, res) {
     var redirectPath = req.query.redirect;
     if(!redirectPath || redirectPath.indexOf(appPrefix) !== 0) {
       redirectPath = appPrefix;
-    };
+    }
     if (!err) {
       // already logged in
       res.redirect(redirectPath);
