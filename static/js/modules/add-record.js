@@ -3,7 +3,7 @@
   'use strict';
 
   exports.init = function(src) {
-    var enketo_src = '../static/dist/enketo-demo.html';
+    var enketo_src = './static/dist/enketo/enketo-demo.html';
     if (src) {
       $.ajax({
         type: 'head',
@@ -24,6 +24,7 @@
           btn.closest('li').removeClass('disabled');
           btn.on('click', function(e) {
             e.preventDefault();
+            $('#add-record-panel .dropdown-menu').show();
             var iframe = $('#add-record-panel iframe');
             iframe.attr('src', enketo_src);
           });
