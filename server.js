@@ -81,7 +81,10 @@ app.use(function(req, res, next) {
 app.use(express.static(path.join(__dirname, 'public')));
 app.get(pathPrefix + '/login', function(req, res) {
   auth.getUserCtx(req, function(err) {
-    var redirectPath = req.query.redirect || appPrefix;
+    var redirectPath = req.query.redirect;
+    if(!redirectPath || redirectPath.indexOf(appPrefix) !== 0) {
+      redirectPath = appPrefix;
+    };
     if (!err) {
       // already logged in
       res.redirect(redirectPath);
