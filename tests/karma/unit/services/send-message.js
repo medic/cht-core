@@ -46,23 +46,6 @@ describe('SendMessage service', function() {
     }
   });
 
-  var fakeResolved = function(err, doc) {
-    return {
-      then: function(callback) {
-        if (!err) {
-          callback(doc);
-        }
-        return {
-          catch: function(callback) {
-            if (err) {
-              callback(err);
-            }
-          }
-        };
-      }
-    };
-  };
-
   function assertMessage(task, expected) {
     chai.expect(task.state).to.equal('pending');
     chai.expect(task.messages.length).to.equal(1);
@@ -76,8 +59,8 @@ describe('SendMessage service', function() {
 
   it('create doc for one recipient', function(done) {
 
-    id.returns(fakeResolved(null, 53));
-    saveDoc.returns(fakeResolved());
+    id.returns(KarmaUtils.fakeResolved(null, 53));
+    saveDoc.returns(KarmaUtils.fakeResolved());
 
     var recipient = {
       _id: 'abc',
@@ -106,8 +89,8 @@ describe('SendMessage service', function() {
 
   it('normalizes phone numbers', function(done) {
 
-    id.returns(fakeResolved(null, 53));
-    saveDoc.returns(fakeResolved());
+    id.returns(KarmaUtils.fakeResolved(null, 53));
+    saveDoc.returns(KarmaUtils.fakeResolved());
 
     var recipient = { contact: { phone: '5552' } };
 
@@ -135,9 +118,9 @@ describe('SendMessage service', function() {
   it('create doc for multiple recipients', function(done) {
 
     id
-      .onFirstCall().returns(fakeResolved(null, 53))
-      .onSecondCall().returns(fakeResolved(null, 150));
-    saveDoc.returns(fakeResolved());
+      .onFirstCall().returns(KarmaUtils.fakeResolved(null, 53))
+      .onSecondCall().returns(KarmaUtils.fakeResolved(null, 150));
+    saveDoc.returns(KarmaUtils.fakeResolved());
 
     var recipients = [
       {
@@ -183,10 +166,10 @@ describe('SendMessage service', function() {
   it('create doc for everyoneAt recipients', function(done) {
 
     id
-      .onFirstCall().returns(fakeResolved(null, 53))
-      .onSecondCall().returns(fakeResolved(null, 150))
-      .onThirdCall().returns(fakeResolved(null, 6));
-    saveDoc.returns(fakeResolved());
+      .onFirstCall().returns(KarmaUtils.fakeResolved(null, 53))
+      .onSecondCall().returns(KarmaUtils.fakeResolved(null, 150))
+      .onThirdCall().returns(KarmaUtils.fakeResolved(null, 6));
+    saveDoc.returns(KarmaUtils.fakeResolved());
 
     var recipients = [
       {
@@ -255,7 +238,7 @@ describe('SendMessage service', function() {
 
   it('returns newUUID errors', function(done) {
 
-    id.returns(fakeResolved('errcode1'));
+    id.returns(KarmaUtils.fakeResolved('errcode1'));
 
     var recipients = {
       _id: 'abc',
@@ -280,8 +263,8 @@ describe('SendMessage service', function() {
 
   it('returns saveDoc errors', function(done) {
 
-    id.returns(fakeResolved(null, 3333));
-    saveDoc.returns(fakeResolved('errcode2'));
+    id.returns(KarmaUtils.fakeResolved(null, 3333));
+    saveDoc.returns(KarmaUtils.fakeResolved('errcode2'));
 
     var recipients = {
       _id: 'abc',

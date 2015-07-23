@@ -33,6 +33,7 @@ module.exports = function(config) {
       'node_modules/sinon/pkg/sinon.js',
       'bower_components/angular-mocks/angular-mocks.js',
       'bower_components/moment/moment.js',
+      'tests/karma/utils.js',
 
       // templates
       'templates/partials/sender.html',

@@ -36,26 +36,9 @@ describe('Verified service', function() {
     }
   });
 
-  var fakeResolved = function(err, doc) {
-    return {
-      then: function(callback) {
-        if (!err) {
-          callback(doc);
-        }
-        return {
-          catch: function(callback) {
-            if (err) {
-              callback(err);
-            }
-          }
-        };
-      }
-    };
-  };
-
   it('marks the message verified', function(done) {
-    getDoc.returns(fakeResolved(null, { _id: 'abc' }));
-    saveDoc.returns(fakeResolved());
+    getDoc.returns(KarmaUtils.fakeResolved(null, { _id: 'abc' }));
+    saveDoc.returns(KarmaUtils.fakeResolved());
     var expected = { 
       _id: 'abc',
       verified: true
@@ -72,8 +55,8 @@ describe('Verified service', function() {
   });
 
   it('marks the message verified if currently unverified', function(done) {
-    getDoc.returns(fakeResolved(null, { _id: 'abc', verified: false }));
-    saveDoc.returns(fakeResolved());
+    getDoc.returns(KarmaUtils.fakeResolved(null, { _id: 'abc', verified: false }));
+    saveDoc.returns(KarmaUtils.fakeResolved());
     var expected = { 
       _id: 'abc',
       verified: true
@@ -90,8 +73,8 @@ describe('Verified service', function() {
   });
 
   it('marks the message unverified', function(done) {
-    getDoc.returns(fakeResolved(null, { _id: 'abc', verified: true }));
-    saveDoc.returns(fakeResolved());
+    getDoc.returns(KarmaUtils.fakeResolved(null, { _id: 'abc', verified: true }));
+    saveDoc.returns(KarmaUtils.fakeResolved());
     var expected = { 
       _id: 'abc',
       verified: false
@@ -108,7 +91,7 @@ describe('Verified service', function() {
   });
 
   it('returns db get errors', function(done) {
-    getDoc.returns(fakeResolved('errcode1'));
+    getDoc.returns(KarmaUtils.fakeResolved('errcode1'));
     service('abc', false, function(err) {
       chai.expect(err).to.equal('errcode1');
       done();
@@ -116,8 +99,8 @@ describe('Verified service', function() {
   });
 
   it('returns db save errors', function(done) {
-    getDoc.returns(fakeResolved(null, { _id: 'abc', verified: true }));
-    saveDoc.returns(fakeResolved('errcode2'));
+    getDoc.returns(KarmaUtils.fakeResolved(null, { _id: 'abc', verified: true }));
+    saveDoc.returns(KarmaUtils.fakeResolved('errcode2'));
     service('abc', false, function(err) {
       chai.expect(err).to.equal('errcode2');
       done();
