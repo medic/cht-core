@@ -5,7 +5,7 @@ strs() {
 }
 
 cd translations
-english_strings=$(strs messages-en.properties)
+english_strings="$(strs messages-en.properties)"
 bad_trans=false
 
 for tran in *.properties; do
@@ -13,7 +13,7 @@ for tran in *.properties; do
 		*-en.properties) ;;
 		*)
 			echo "# $tran"
-			this=$(strs $tran)
+			this="$(strs $tran)"
 			extras=$(comm -13 <(echo "$english_strings") <(echo "$this"))
 			if [[ -z "$extras" ]]; then
 				echo "# OK"
