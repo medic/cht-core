@@ -10,10 +10,21 @@ var createAuthHeader = function(user, password) {
   return 'Basic ' + window.btoa(user + ':' + password);
 };
 
+var unescape = function(s) {
+  return s.
+    replace(/&amp;/g,  '&').
+    replace(/&lt;/g,   '<').
+    replace(/&gt;/g,   '>').
+    replace(/&quot;/g, '"').
+    replace(/&#x27;/g, '\'').
+    replace(/&#x60;/g, '`');
+};
+
 var handleResponse = function(xmlhttp) {
   if (xmlhttp.status === 200) {
     setState('');
-    location.href = document.getElementById('form').getAttribute('data-redirect');
+    location.href = unescape(
+        document.getElementById('form').getAttribute('data-redirect'));
     return;
   }
   if (xmlhttp.status === 401) {

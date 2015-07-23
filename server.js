@@ -43,7 +43,7 @@ var fs = require('fs'),
 http.globalAgent.maxSockets = 100;
 
 _.templateSettings = {
-  interpolate: /\{\{(.+?)\}\}/g
+  escape: /\{\{(.+?)\}\}/g,
 };
 
 fs.readFile(__dirname + '/templates/login/index.html', { encoding: 'utf-8' }, function(err, data) {
