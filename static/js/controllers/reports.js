@@ -22,9 +22,13 @@ var _ = require('underscore'),
 
       $scope.updateGroup = function(group) {
         var pane = modal.start($('#edit-message-group'));
-        EditGroup($scope.selected._id, group, function(err) {
-          pane.done(translateFilter('Error updating group'), err);
-        });
+        EditGroup($scope.selected._id, group)
+          .then(function() {
+            pane.done();
+          })
+          .catch(function(err) {
+            pane.done(translateFilter('Error updating group'), err);
+          });
       };
 
       var _merge = function(to, from) {
