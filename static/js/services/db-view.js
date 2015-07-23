@@ -8,8 +8,9 @@ var _ = require('underscore');
   
   inboxServices.factory('DbView', ['DB',
     function(DB) {
+
       return function(viewName, options, callback) {
-        DB.get()
+        return DB.get()
           .query('medic/' + viewName, options.params)
           .then(function(results) {
             var meta = {
@@ -19,10 +20,14 @@ var _ = require('underscore');
             if (options.params && options.params.include_docs) {
               results = _.pluck(results && results.rows, 'doc');
             }
-            callback(null, results, meta);
+            if (callback) {
+              callback(null, results, meta);
+            }
           })
           .catch(function(data) {
-            callback(new Error(data));
+            if (callback) {
+              callback(new Error(data));
+            }
           });
       };
     }

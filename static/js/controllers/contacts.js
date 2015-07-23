@@ -1,6 +1,6 @@
 var _ = require('underscore'),
-    async = require('async'),
-    scrollLoader = require('../modules/scroll-loader');
+    scrollLoader = require('../modules/scroll-loader'),
+    promise = require('lie');
 
 (function () {
 
@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', 
-    ['$scope', '$state', '$timeout', 'db', 'Search', 'DbView',
-    function ($scope, $state, $timeout, db, Search, DbView) {
+    ['$scope', '$state', '$timeout', 'DB', 'Search', 'DbView',
+    function ($scope, $state, $timeout, DB, Search, DbView) {
 
       $scope.filterModel.type = 'contacts';
       $scope.setContacts();
@@ -65,45 +65,41 @@ var _ = require('underscore'),
         });
       };
 
-      var getContact = function(id, callback) {
-        var doc = _.findWhere($scope.items, { _id: id });
-        if (doc) {
-          return callback(null, doc);
-        }
-        db.getDoc(id, callback);
+      var getContact = function(id) {
+        return DB.get().get(id);
+      };
+
+      var getChildren = function(id) {
+        var options = { params: {
+          startkey: [ id ],
+          endkey: [ id, {} ],
+          include_docs: true
+        } };
+        return DbView('facility_by_parent', options);
+      };
+
+      var getContactFor = function(id) {
+        var options = { params: {
+          key: [ id ],
+          include_docs: true
+        } };
+        return DbView('facilities_by_contact', options);
       };
 
       $scope.selectContact = function(id) {
         if (id) {
           $scope.setLoadingContent(id);
-          async.auto({
-            doc: function(callback) {
-              getContact(id, callback);
-            },
-            children: function(callback) {
-              var options = { params: {
-                startkey: [ id ],
-                endkey: [ id, {} ],
-                include_docs: true
-              } };
-              DbView('facility_by_parent', options, callback);
-            },
-            contactFor: function(callback) {
-              var options = { params: {
-                key: [ id ],
-                include_docs: true
-              } };
-              DbView('facilities_by_contact', options, callback);
-            }
-          }, function(err, results) {
-            if (err) {
+          promise.all([ getContact(id), getChildren(id), getContactFor(id) ])
+            .then(function(results) {
+              var doc = results[0];
+              doc.children = results[1][0];
+              doc.contactFor = results[2][0];
+              $scope.setSelected(doc);
+            })
+            .catch(function(err) {
               $scope.setSelected();
-              return console.log('Error fetching doc', err);
-            }
-            results.doc.children = results.children[0];
-            results.doc.contactFor = results.contactFor[0];
-            $scope.setSelected(results.doc);
-          });
+              console.log('Error fetching doc', err);
+            });
         } else {
           $scope.setSelected();
         }
