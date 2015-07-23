@@ -62,9 +62,9 @@ module.exports = function(grunt) {
     concat: {
       js: {
         src: [
-            'bower_components/concat.js',
-            'bower_components/bootstrap-tour/build/js/bootstrap-tour.js',
-            'static/js/bootstrap-multidropdown.js'
+          'bower_components/concat.js',
+          'bower_components/bootstrap-tour/build/js/bootstrap-tour.js',
+          'static/js/bootstrap-multidropdown.js'
         ],
         dest: 'static/dist/dependencies.js',
       },
@@ -158,7 +158,7 @@ module.exports = function(grunt) {
         cwd: 'static',
         src: 'enketo/*',
         dest: 'static/dist/',
-      }
+      },
     },
     exec: {
       deploy: {
