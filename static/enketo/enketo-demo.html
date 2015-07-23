@@ -47,5 +47,133 @@
 				</div>
 			</td></tr>
 		</tbody></table>
+
+		<script>
+			require.config( {
+			    shim: {
+			        "widget/date/bootstrap3-datepicker/js/bootstrap-datepicker": {
+			            deps: [ "jquery" ],
+			            exports: "jQuery.fn.datepicker"
+			        },
+			        "widget/time/bootstrap3-timepicker/js/bootstrap-timepicker": {
+			            deps: [ "jquery" ],
+			            exports: "jQuery.fn.timepicker"
+			        },
+			        "leaflet": {
+			            exports: "L"
+			        }
+			    }
+			} );
+
+
+			requirejs(['jquery'], function($) {
+			  function log(message) {
+			    console.log('LOG | ' + message);
+			    $('#log .content').append('<pre>' + message + '</p>');
+			    while($('#log .content').children().length > 5) {
+			        $('#log .content pre:first').remove();
+			    }
+			  };
+			  log('Scripts loaded.');
+
+			  log('Requiring enketo form...');
+			  requirejs(['enketo-js/Form'], function(Form) {
+			    log('Enketo loaded.');
+
+			    var showForm = function(formHtml, formData) {
+			      var form, formContainer, formWrapper,
+			          init = function() {
+			            var loadErrors;
+			            form = new Form('#form-wrapper form', { modelStr:formData });
+			            loadErrors = form.init();
+			            if(loadErrors) log('loadErrors = ' + loadErrors);
+			          };
+
+			      log('Adding form to DOM...');
+			      formWrapper = $('#form-wrapper');
+			      formWrapper.show();
+			      formContainer = formWrapper.find('.container');
+			      formContainer.empty();
+
+			      formContainer.append(formHtml);
+
+			      log('Attempting to load form with data of type: ' + (typeof formData));
+			      formData = formData;
+			      console.log('form:\n' + formData);
+			      init();
+
+			      $('#form-wrapper input[type=submit]').on('click', function() {
+			        form.validate();
+			        if(form.isValid()) {
+			          log('Form content is valid!  Saving and resetting.');
+			          var record = form.getDataStr();
+			          form.resetView();
+			          init();
+			        } else {
+			          log('Form contains errors.  Please correct them.');
+			        }
+			      });
+
+			      // Hide loading buttons (loading multiple forms without page reloads leads
+			      // to some bugs.  Simpler to avoid these for now.
+			      $('.btn.form-loader').replaceWith('(reload page to load a different form)');
+			    };
+
+			    var processors = {
+			      html: { processor:new XSLTProcessor() },
+			      model: { processor:new XSLTProcessor() } };
+			    $.get('forms/openrosa2html5form.xsl').done(function(doc) {
+			      processors.html.processor.importStylesheet(doc);
+			      processors.html.loaded = true;
+			    });
+			    $.get('forms/openrosa2xmlmodel.xsl').done(function(doc) {
+			      processors.model.processor.importStylesheet(doc);
+			      processors.model.loaded = true;
+			    });
+
+			    var loadForm = function(url) {
+			      if(!processors.html.loaded || !processors.model.loaded) {
+			        return log('Not all processors are loaded yet.');
+			      }
+
+			      log('Loading form: ' + url + '...');
+			      $.ajax(url).done(function(data) {
+			        log('Loaded form.');
+			        var doc = data,
+			            html = processors.html.processor.transformToDocument(doc),
+			            model = processors.model.processor.transformToDocument(doc);
+
+			        console.log('XML');
+			        console.log('---');
+			        console.log(new XMLSerializer().serializeToString(model));
+
+			        console.log('XML');
+			        console.log('---');
+			        console.log(new XMLSerializer().serializeToString(html));
+
+			        showForm(html.documentElement.innerHTML,
+			            model.documentElement.innerHTML);
+			      });
+			    };
+
+			    (function() {
+			      var i, table = $('#form-examples');
+
+			      window.loadXmlFrom = function(i, suffix) {
+			        var url = 'forms/' + i + suffix + '.xml';
+			        console.log('Should load from ' + url);
+			        loadForm(url);
+			      };
+
+			      for(i=1; i<=2; ++i) {
+			        table.append('<tr><td>' + i + '</td>' +
+			            '<td><a href="forms/' + i + '.xml">view</a></td>' +
+			            '<td><button class="btn btn-primary form-loader" onclick="loadXmlFrom(' + i + ', \'\')">load<button></td>' +
+			            '</tr>');
+			      }
+			    }());
+			  });
+			});
+		</script>
 	</body>
 </html>
