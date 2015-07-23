@@ -165,8 +165,9 @@ module.exports = function(grunt) {
         ]
       },
       enketo: {
-        cwd: 'static',
-        src: 'enketo/*',
+        expand:true,
+        cwd: 'static/',
+        src: 'enketo/**/*',
         dest: 'static/dist/',
       },
     },
