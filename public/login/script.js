@@ -16,9 +16,9 @@ var unescape = function(s) {
     replace(/&lt;/g,   '<').
     replace(/&gt;/g,   '>').
     replace(/&quot;/g, '"').
-    replace(/&#x27;/g, "'").
+    replace(/&#x27;/g, '\'').
     replace(/&#x60;/g, '`');
-}
+};
 
 var handleResponse = function(xmlhttp) {
   if (xmlhttp.status === 200) {
