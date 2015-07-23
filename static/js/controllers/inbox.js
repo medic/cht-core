@@ -225,10 +225,13 @@ require('moment/locales');
             if (err) {
               return console.log('Failed to retrieve facilities', err);
             }
-            function formatResult(row) {
-              return row && format.contact(row.doc);
+            function formatResult(doc) {
+              return doc && format.contact(doc);
             }
             $('#update-facility [name=facility]').select2({
+              id: function(doc) {
+                return doc._id;
+              },
               width: '100%',
               escapeMarkup: function(m) {
                 return m;
@@ -240,7 +243,7 @@ require('moment/locales');
                 if (!e) {
                   return callback();
                 }
-                var row = _.findWhere(facilities, { id: e });
+                var row = _.findWhere(facilities, { _id: e });
                 if (!row) {
                   return callback();
                 }
@@ -248,11 +251,11 @@ require('moment/locales');
               },
               query: function(options) {
                 var terms = options.term.toLowerCase().split(/\s+/);
-                var matches = _.filter(facilities, function(val) {
-                  var contact = val.doc.contact;
+                var matches = _.filter(facilities, function(doc) {
+                  var contact = doc.contact;
                   var name = contact && contact.name;
                   var phone = contact && contact.phone;
-                  var tags = [ val.doc.name, name, phone ].join(' ').toLowerCase();
+                  var tags = [ doc.name, name, phone ].join(' ').toLowerCase();
                   return _.every(terms, function(term) {
                     return tags.indexOf(term) > -1;
                   });
