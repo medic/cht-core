@@ -6,7 +6,9 @@ node_js:
 before_script:
   - npm install grunt-cli -g
 
-script: "grunt test"
+script: 
+  - bash validate-translations
+  - grunt test
 
 notifications:
   webhooks: 
