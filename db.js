@@ -4,6 +4,8 @@ var path = require('path'),
 
 var couchUrl = process.env.COUCH_URL;
 if (couchUrl) {
+  // strip trailing slash from to prevent bugs in path matching
+  couchUrl = couchUrl.replace(/\/$/, '');
   var parsedUrl = url.parse(couchUrl);
 
   module.exports = nano(couchUrl.substring(0, couchUrl.indexOf('/', 10)));
