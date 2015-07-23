@@ -6,6 +6,7 @@
     "url": "git://github.com/medic/medic-webapp.git"
   },
   "dependencies": {
+    "lie": "^2.9.1",
     "properties": "^1.2.1"
   },
   "devDependencies": {

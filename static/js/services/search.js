@@ -7,8 +7,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('Search', ['DbGet', 'DbView', 'GenerateSearchRequests',
-    function(DbGet, DbView, GenerateSearchRequests) {
+  inboxServices.factory('Search', ['DB', 'DbView', 'GenerateSearchRequests',
+    function(DB, DbView, GenerateSearchRequests) {
 
       var _currentQuery;
 
@@ -66,7 +66,14 @@ var _ = require('underscore'),
           if (!page.length) {
             callback(null, []);
           }
-          DbGet(page, { targetScope: options.type }, callback);
+          DB.get()
+            .allDocs({ include_docs: true, keys: page })
+            .then(function(docs) {
+              callback(null, docs);
+            })
+            .catch(function(err) {
+              callback(err);
+            });
         });
       };
 

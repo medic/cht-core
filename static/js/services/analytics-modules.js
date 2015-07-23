@@ -239,13 +239,14 @@ var _ = require('underscore'),
                     if (err) {
                       return console.log('Error getting doc', err);
                     }
-                    FormatDataRecord([doc], function(err, formatted) {
-                      if (err) {
-                        return console.log('Error formatting record', err);
-                      }
-                      scope.formattedRecord = formatted[0];
-                      scope.expandedRecord = id;
-                    });
+                    FormatDataRecord(doc)
+                      .then(function(formatted) {
+                        scope.formattedRecord = formatted[0];
+                        scope.expandedRecord = id;
+                      })
+                      .catch(function(err) {
+                        console.log('Error formatting record', err);
+                      });
                   });
                 }
               };

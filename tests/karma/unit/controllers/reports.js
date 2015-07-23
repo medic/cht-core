@@ -39,8 +39,15 @@ describe('ReportsCtrl controller', function() {
 
     MarkRead = function() {};
 
-    FormatDataRecord = function(data, callback) {
-      callback(null, data);
+    FormatDataRecord = function(data) {
+      return {
+        then: function(cb) {
+          cb(data);
+          return {
+            catch: function() {}
+          };
+        }
+      };
     };
 
     Search = function($scope, options, callback) {
@@ -66,7 +73,8 @@ describe('ReportsCtrl controller', function() {
         'MessageState': {},
         'EditGroup': {},
         'FormatDataRecord': FormatDataRecord,
-        'Settings': {}
+        'Settings': {},
+        'DB': {}
       });
     };
   }));

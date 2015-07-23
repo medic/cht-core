@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup', 'DbGet', 'FormatDataRecord',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, translateFilter, Settings, MarkRead, Search, Changes, EditGroup, DbGet, FormatDataRecord) {
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup', 'FormatDataRecord', 'DB',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, translateFilter, Settings, MarkRead, Search, Changes, EditGroup, FormatDataRecord, DB) {
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = undefined;
@@ -77,20 +77,18 @@ var _ = require('underscore'),
           if (message) {
             _setSelected(message);
           } else {
-            DbGet(id, {}, function(err, data) {
-              if (err) {
-                return console.log(err);
-              }
-              if (data.length) {
-                FormatDataRecord(data, function(err, formatted) {
-                  if (err) {
-                    return console.log(err);
-                  }
-                  _setSelected(formatted[0]);
+            DB.get()
+              .get(id)
+              .then(FormatDataRecord)
+              .then(function(doc) {
+                if (doc) {
+                  _setSelected(doc[0]);
                   _initScroll();
-                });
-              }
-            });
+                }
+              })
+              .catch(function(err) {
+                return console.log(err);
+              });
           }
         }
       };
@@ -137,8 +135,6 @@ var _ = require('underscore'),
         }
 
         Search($scope, options, function(err, data) {
-          $scope.loading = false;
-          $scope.appending = false;
           if (err) {
             $scope.error = true;
             if ($scope.filterQuery.value &&
@@ -149,36 +145,40 @@ var _ = require('underscore'),
             }
             return console.log('Error loading messages', err);
           }
-          $scope.error = false;
-          $scope.errorSyntax = false;
 
-          FormatDataRecord(data, function(err, data) {
-            if (err) {
-              return console.log(err);
-            }
-            $scope.update(data);
-            if (!options.changes) {
-              $scope.moreItems = data.length >= options.limit;
-            }
-            if (!options.changes && !options.skip) {
-              if (!data.length) {
-                $scope.selectMessage();
-              } else {
-                var curr = _.find(data, function(result) {
-                  return result._id === $state.params.id;
-                });
-                if (curr) {
-                  $scope.setSelected(curr);
-                } else if (!$('#back').is(':visible')) {
-                  $timeout(function() {
-                    var id = $('.inbox-items li').first().attr('data-record-id');
-                    $state.go('reports.detail', { id: id });
+          FormatDataRecord(data)
+            .then(function(data) {
+              $scope.loading = false;
+              $scope.appending = false;
+              $scope.error = false;
+              $scope.errorSyntax = false;
+              $scope.update(data);
+              if (!options.changes) {
+                $scope.moreItems = data.length >= options.limit;
+              }
+              if (!options.changes && !options.skip) {
+                if (!data.length) {
+                  $scope.selectMessage();
+                } else {
+                  var curr = _.find(data, function(result) {
+                    return result._id === $state.params.id;
                   });
+                  if (curr) {
+                    $scope.setSelected(curr);
+                  } else if (!$('#back').is(':visible')) {
+                    $timeout(function() {
+                      var id = $('.inbox-items li').first().attr('data-record-id');
+                      $state.go('reports.detail', { id: id });
+                    });
+                  }
                 }
               }
-            }
-            _initScroll();
-          });
+              _initScroll();
+            })
+            .catch(function(err) {
+              $scope.error = true;
+              console.log('Error formatting record', err);
+            });
         });
       };
 

@@ -9,6 +9,9 @@ var _ = require('underscore');
   module.filter('translateFrom', ['$translate',
     function($translate) {
       return function(labels) {
+        if (!labels) {
+          return;
+        }
         return labels[$translate.use()] || labels.en || _.values(labels)[0];
       };
     }

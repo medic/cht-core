@@ -2,7 +2,8 @@
  * Sane replacement for kujua-sms/views/lib/appinfo.js
  */
 
-var _ = require('underscore');
+var _ = require('underscore'),
+    promise = require('lie');
 
 (function () {
 
@@ -14,17 +15,19 @@ var _ = require('underscore');
 
   inboxServices.factory('AppInfo', ['Settings',
     function(Settings) {
-      return function(callback) {
-        Settings(function(err, res) {
-          if (err) {
-            return callback(err);
-          }
-          settings = res;
-          callback(null, {
-            getForm: getForm,
-            getMessage: getMessage,
-            translate: translate,
-            formatDate: formatDate
+      return function() {
+        return new promise(function(resolve, reject) {
+          Settings(function(err, res) {
+            if (err) {
+              return reject(err);
+            }
+            settings = res;
+            resolve({
+              getForm: getForm,
+              getMessage: getMessage,
+              translate: translate,
+              formatDate: formatDate
+            });
           });
         });
       };

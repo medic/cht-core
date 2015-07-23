@@ -24,10 +24,14 @@ describe('AppInfo service', function() {
 
   it('returns errors', function(done) {
     settingsError = 'boom';
-    service(function(err) {
-      chai.expect(err).to.equal(settingsError);
-      done();
-    });
+    service()
+      .then(function() {
+        done('SHOULD NOT GET HERE');
+      })
+      .catch(function(err) {
+        chai.expect(err).to.equal(settingsError);
+        done();
+      });
   });
 
   it('gets the form', function(done) {
@@ -37,26 +41,32 @@ describe('AppInfo service', function() {
         b: { id: 'b' }
       }
     };
-    service(function(err, appinfo) {
-      chai.expect(err).to.equal(null);
-      var form = appinfo.getForm('a');
-      chai.expect(form.id).to.equal('a');
-      done();
-    });
+    service()
+      .then(function(appinfo) {
+        var form = appinfo.getForm('a');
+        chai.expect(form.id).to.equal('a');
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('formats the date', function(done) {
     settings = {
       date_format: 'YYYY'
     };
-    service(function(err, appinfo) {
-      chai.expect(err).to.equal(null);
-      var date = moment().add(1, 'years');
-      var expected = date.format('YYYY') + ' (in a year)';
-      var actual = appinfo.formatDate(date);
-      chai.expect(actual).to.equal(expected);
-      done();
-    });
+    service()
+      .then(function(appinfo) {
+        var date = moment().add(1, 'years');
+        var expected = date.format('YYYY') + ' (in a year)';
+        var actual = appinfo.formatDate(date);
+        chai.expect(actual).to.equal(expected);
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('translates the key', function(done) {
@@ -72,12 +82,15 @@ describe('AppInfo service', function() {
         }
       ]
     };
-    service(function(err, appinfo) {
-      chai.expect(err).to.equal(null);
-      var actual = appinfo.translate('welcome', 'en_NZ');
-      chai.expect(actual).to.equal('kia ora');
-      done();
-    });
+    service()
+      .then(function(appinfo) {
+        var actual = appinfo.translate('welcome', 'en_NZ');
+        chai.expect(actual).to.equal('kia ora');
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('translates the key to the default locale if none provided', function(done) {
@@ -94,12 +107,15 @@ describe('AppInfo service', function() {
         }
       ]
     };
-    service(function(err, appinfo) {
-      chai.expect(err).to.equal(null);
-      var actual = appinfo.translate('welcome');
-      chai.expect(actual).to.equal('hi');
-      done();
-    });
+    service()
+      .then(function(appinfo) {
+        var actual = appinfo.translate('welcome');
+        chai.expect(actual).to.equal('hi');
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
 });

@@ -10,15 +10,12 @@ module.exports = function(config) {
     singleRun: false,
     colors: true,
     browserNoActivityTimeout: 60000,
-
     preprocessors: {
       'templates/partials/*.html': ['ng-html2js']
     },
-
     ngHtml2JsPreprocessor: {
       moduleName: 'templates'
     },
-    
     files: [
       // used to query html
       'bower_components/jquery/dist/jquery.js',
