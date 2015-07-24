@@ -35,6 +35,7 @@ var fs = require('fs'),
     forms = require('./controllers/forms'),
     fti = require('./controllers/fti'),
     createDomain = require('domain').create,
+    url = require('url'),
     staticResources = /\/(templates|static)\//,
     appcacheManifest = /manifest\.appcache/,
     pathPrefix = '/' + db.settings.db,
@@ -81,7 +82,12 @@ app.use(function(req, res, next) {
 app.use(express.static(path.join(__dirname, 'public')));
 app.get(pathPrefix + '/login', function(req, res) {
   auth.getUserCtx(req, function(err) {
-    var redirectPath = req.query.redirect;
+    var requestedRedirect = req.query.redirect,
+        redirectUrl, redirectPath;
+    try {
+      redirectUrl = url.parse(requestedRedirect);
+      redirectPath = redirectUrl.path + (redirectUrl.hash || '');
+    } catch(e) { /* invalid URL.  Will be corrected below */ }
     if(!redirectPath || redirectPath.indexOf(appPrefix) !== 0) {
       redirectPath = appPrefix;
     }
