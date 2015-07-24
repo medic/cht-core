@@ -3,15 +3,15 @@ window.KarmaUtils = {
     return {
       then: function(callback) {
         if (!err) {
-          callback(doc);
+          return KarmaUtils.fakeResolved(null, callback(doc));
         }
-        return {
-          catch: function(callback) {
-            if (err) {
-              callback(err);
-            }
-          }
-        };
+        return this;
+      },
+      catch: function(callback) {
+        if (err) {
+          callback(err);
+        }
+        return this;
       }
     };
   }

@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    promise = require('lie');
 
 (function () {
 
@@ -6,12 +7,12 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
 
-  var updateReadStatus = function(message, user, read) {
+  var updateMessage = function(user, read, message) {
     var readers = message.read || [];
     var index = readers.indexOf(user);
     if ((index !== -1) === read) {
       // already in the correct state
-      return false;
+      return;
     }
     if (read) {
       readers.push(user);
@@ -19,39 +20,41 @@ var _ = require('underscore');
       readers.splice(index, 1);
     }
     message.read = readers;
-    return true;
+    return message;
+  };
+
+  var updateMessages = function(user, read, messages) {
+    return _.compact(_.map(messages, _.partial(updateMessage, user, read)));
   };
   
-  inboxServices.factory('MarkRead', ['db', 'UserCtxService',
-    function(db, UserCtxService) {
-      return function(messageId, read, callback) {
-        db.getDoc(messageId, function(err, message) {
-          if (err) {
-            return callback(err);
-          }
-          if (updateReadStatus(message, UserCtxService().name, read)) {
-            db.saveDoc(message, function(err) {
-              callback(err, message);
-            });
-          } else {
-            callback(null, message);
-          }
+  inboxServices.factory('MarkRead', ['DB', 'UserCtxService',
+    function(DB, UserCtxService) {
+      return function(messageId, read) {
+        var user = UserCtxService().name;
+        return new promise(function(resolve, reject) {
+          DB.get().get(messageId)
+            .then(_.partial(updateMessage, user, read))
+            .then(function(doc) {
+              if (!doc) {
+                return resolve();
+              }
+              return DB.get()
+                .put(doc)
+                .then(resolve)
+                .catch(reject);
+            })
+            .catch(reject);
         });
       };
     }
   ]);
   
-  inboxServices.factory('MarkAllRead', ['db', 'UserCtxService',
-    function(db, UserCtxService) {
-      return function(messages, read, callback) {
-        var updated = _.filter(messages, function(message) {
-          return updateReadStatus(message, UserCtxService().name, read);
-        });
-        if (updated.length) {
-          db.bulkSave(updated, function(err) {
-            callback(err, updated);
-          });
-        }
+  inboxServices.factory('MarkAllRead', ['DB', 'UserCtxService',
+    function(DB, UserCtxService) {
+      return function(messages, read) {
+        var user = UserCtxService().name;
+        var updated = updateMessages(user, read, messages);
+        return DB.get().bulkDocs(updated);
       };
     }
   ]);

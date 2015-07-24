@@ -26,12 +26,11 @@ var _ = require('underscore'),
 
       var markAllRead = function() {
         var docs = _.pluck($scope.selected.messages, 'doc');
-        MarkAllRead(docs, true, function(err) {
-          if (err) {
+        MarkAllRead(docs, true)
+          .then($scope.updateReadStatus)
+          .catch(function(err) {
             return console.log('Error marking all as read', err);
-          }
-          $scope.updateReadStatus();
-        });
+          });
       };
 
       var findMostRecentFacility = function(messages) {

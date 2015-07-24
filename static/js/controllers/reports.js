@@ -63,10 +63,8 @@ var _ = require('underscore'),
         if (!$scope.isRead(message)) {
           $scope.readStatus.forms--;
         }
-        MarkRead(message._id, true, function(err) {
-          if (err) {
-            console.log(err);
-          }
+        MarkRead(message._id, true).catch(function(err) {
+          console.log(err);
         });
       };
 

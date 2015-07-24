@@ -94,6 +94,7 @@
         "protractor": true,
         "element"   : true,
         "by"        : true,
-        "browser"   : true
+        "browser"   : true,
+        "KarmaUtils": true
     }
 }

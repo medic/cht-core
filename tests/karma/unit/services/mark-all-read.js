@@ -3,15 +3,21 @@ describe('MarkAllRead service', function() {
   'use strict';
 
   var service,
-      db,
-      message;
+      bulkDocs;
 
   beforeEach(function() {
-    db = {};
-    message = {};
+    bulkDocs = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('db', db);
+      $provide.factory('DB', function() {
+        return {
+          get: function() {
+            return {
+              bulkDocs: bulkDocs
+            };
+          }
+        };
+      });
       $provide.value('UserCtxService', function() {
         return { name: 'james' };
       });
@@ -19,6 +25,12 @@ describe('MarkAllRead service', function() {
     inject(function(_MarkAllRead_) {
       service = _MarkAllRead_;
     });
+  });
+
+  afterEach(function() {
+    if (bulkDocs.restore) {
+      bulkDocs.restore();
+    }
   });
 
   it('marks the messages read', function(done) {
@@ -33,13 +45,10 @@ describe('MarkAllRead service', function() {
       { _id: 'c', read: [ 'jack', 'james' ] }
     ];
 
-    db.bulkSave = function(messages, callback) {
-      chai.expect(messages).to.deep.equal(expected);
-      callback(null);
-    };
+    bulkDocs.returns(KarmaUtils.fakeResolved());
 
-    service(docs, true, function(err, actual) {
-      chai.expect(actual).to.deep.equal(expected);
+    service(docs, true).then(function() {
+      chai.expect(bulkDocs.args[0][0]).to.deep.equal(expected);
       done();
     });
   });
@@ -56,22 +65,17 @@ describe('MarkAllRead service', function() {
       { _id: 'c', read: [ 'jack' ] }
     ];
 
-    db.bulkSave = function(messages, callback) {
-      chai.expect(messages).to.deep.equal(expected);
-      callback(null);
-    };
+    bulkDocs.returns(KarmaUtils.fakeResolved());
 
-    service(docs, false, function(err, actual) {
-      chai.expect(actual).to.deep.equal(expected);
+    service(docs, false).then(function() {
+      chai.expect(bulkDocs.args[0][0]).to.deep.equal(expected);
       done();
     });
   });
 
-  it('returns audit errors', function(done) {
+  it('returns save errors', function(done) {
 
-    db.bulkSave = function(messages, callback) {
-      callback('errcode1');
-    };
+    bulkDocs.returns(KarmaUtils.fakeResolved('errcode1'));
 
     var docs = [
       { _id: 'a', read: [ 'james' ] },
@@ -79,7 +83,7 @@ describe('MarkAllRead service', function() {
       { _id: 'c', read: [ 'james', 'jack' ] },
     ];
 
-    service(docs, true, function(err) {
+    service(docs, true).catch(function(err) {
       chai.expect(err).to.equal('errcode1');
       done();
     });
