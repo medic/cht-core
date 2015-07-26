@@ -95,39 +95,16 @@ var _ = require('underscore'),
         }
       };
 
-      var _deleteMessage = function(message) {
-        if ($scope.selected && $scope.selected._id === message.id) {
-          $scope.setSelected();
-        }
-        for (var i = 0; i < $scope.items.length; i++) {
-          if (message.id === $scope.items[i]._id) {
-            $scope.items.splice(i, 1);
-            return;
-          }
-        }
-      };
-
       $scope.query = function(options) {
         options = options || {};
         options.limit = 50;
-        if (options.changes) {
-          $scope.updateReadStatus();
-          var deletedRows = _.where(options.changes, { deleted: true });
-          _.each(deletedRows, _deleteMessage);
-          if (deletedRows.length === options.changes.length) {
-            // nothing to update
-            return;
-          }
-          options.changes = _.filter(options.changes, function(change) {
-            return !change.deleted;
-          });
-        } else if ($('#back').is(':visible')) {
-          $scope.selectMessage();
-        }
         if (!options.silent) {
           $scope.error = false;
           $scope.errorSyntax = false;
           $scope.loading = true;
+          if ($('#back').is(':visible')) {
+            $scope.selectMessage();
+          }
         }
         if (options.skip) {
           $scope.appending = true;
@@ -148,6 +125,12 @@ var _ = require('underscore'),
             return console.log('Error loading messages', err);
           }
 
+          if (options.changes && options.changes.doc._id === $state.params.id) {
+            FormatDataRecord(options.changes.doc).then(function(formatted) {
+              $scope.setSelected(formatted[0]);
+            });
+          }
+
           FormatDataRecord(data)
             .then(function(data) {
               $scope.loading = false;
@@ -157,21 +140,21 @@ var _ = require('underscore'),
               $scope.update(data);
               if (!options.changes) {
                 $scope.moreItems = data.length >= options.limit;
-              }
-              if (!options.changes && !options.skip) {
-                if (!data.length) {
-                  $scope.selectMessage();
-                } else {
-                  var curr = _.find(data, function(result) {
-                    return result._id === $state.params.id;
-                  });
-                  if (curr) {
-                    $scope.setSelected(curr);
-                  } else if (!$('#back').is(':visible')) {
-                    $timeout(function() {
-                      var id = $('.inbox-items li').first().attr('data-record-id');
-                      $state.go('reports.detail', { id: id });
+                if (!options.skip) {
+                  if (!data.length) {
+                    $scope.selectMessage();
+                  } else {
+                    var curr = _.find(data, function(result) {
+                      return result._id === $state.params.id;
                     });
+                    if (curr) {
+                      $scope.setSelected(curr);
+                    } else if (!$('#back').is(':visible')) {
+                      $timeout(function() {
+                        var id = $('.inbox-items li').first().attr('data-record-id');
+                        $state.go('reports.detail', { id: id });
+                      });
+                    }
                   }
                 }
               }

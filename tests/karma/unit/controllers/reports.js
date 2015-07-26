@@ -86,7 +86,7 @@ describe('ReportsCtrl controller', function() {
 
   it('updated reports when changed', function() {
 
-    var changedObjects = [ { id: 'a' }, { id: 'b' } ];
+    var changes = { doc :{ id: 'a' } };
 
     scope.items = [
       {
@@ -99,7 +99,6 @@ describe('ReportsCtrl controller', function() {
 
     Search = function($scope, options, callback) {
       chai.expect(options.silent).to.equal(true);
-      chai.expect(options.changes).to.deep.equal(changedObjects);
       callback(null, [
         {
           _id: 'a',
@@ -114,7 +113,7 @@ describe('ReportsCtrl controller', function() {
     };
     
     createController();
-    changesCallback(changedObjects);
+    changesCallback(changes);
     chai.expect(scope.items).to.deep.equal([
       {
         _id: 'a',
@@ -126,55 +125,6 @@ describe('ReportsCtrl controller', function() {
       {
         _id: 'b'
       }
-    ]);
-  });
-
-  it('updated reports when all deleted', function() {
-
-    var changedObjects = [
-      { id: 'a', deleted: true },
-      { id: 'b', deleted: true }
-    ];
-
-    scope.items = [
-      { _id: 'a' },
-      { _id: 'c' }
-    ];
-
-    createController();
-    changesCallback(changedObjects);
-    chai.expect(scope.items).to.deep.equal([
-      { _id: 'c' }
-    ]);
-  });
-
-  it('updated reports when some deleted', function() {
-
-    scope.selected = { _id: 'c' };
-
-    var changedObjects = [
-      { id: 'a', deleted: true },
-      { id: 'b' }
-    ];
-
-    scope.items = [
-      { _id: 'a' },
-      { _id: 'c' }
-    ];
-
-    Search = function($scope, options, callback) {
-      chai.expect(options.silent).to.equal(true);
-      chai.expect(options.changes).to.deep.equal([{ id: 'b' }]);
-      callback(null, [
-        { _id: 'b' }
-      ]);
-    };
-
-    createController();
-    changesCallback(changedObjects);
-    chai.expect(scope.items).to.deep.equal([
-      { _id: 'c' },
-      { _id: 'b' }
     ]);
   });
 

@@ -42,7 +42,7 @@ var _ = require('underscore');
           inited.push(type);
           if (!E2ETESTING) {
             DB.get()
-              .changes({ live: true, since: 'now', filter: getFilter(options) })
+              .changes({ live: true, since: 'now', filter: getFilter(options), include_docs: true })
               .on('change', function(data) {
                 if (data) {
                   Object.keys(callbacks).forEach(function(key) {

@@ -59,13 +59,16 @@ require('moment/locales');
       $scope.setSelected = function(selected) {
         $timeout.cancel(clearSelectedTimer);
         $scope.loadingContent = false;
+        var refreshing = (selected && selected._id) === ($scope.selected && $scope.selected._id);
         if (selected) {
           $scope.selected = selected;
           $timeout(function() {
             $scope.showContent = true;
-            $timeout(function() {
-              $('.item-body').scrollTop(0);
-            });
+            if (!refreshing) {
+              $timeout(function() {
+                $('.item-body').scrollTop(0);
+              });
+            }
           });
         } else if($scope.selected) {
           $scope.showContent = false;
