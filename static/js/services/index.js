@@ -30,7 +30,6 @@
   require('./outgoing-messages-configuration');
   require('./properties');
   require('./read-messages');
-  require('./save-doc');
   require('./search');
   require('./send-message');
   require('./settings');

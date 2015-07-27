@@ -3,15 +3,21 @@ describe('ImportContacts service', function() {
   'use strict';
 
   var service,
-      SaveDoc,
+      put,
       $httpBackend;
 
   beforeEach(function() {
-    SaveDoc = sinon.stub();
+    put = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.factory('SaveDoc', function() {
-        return SaveDoc;
+      $provide.factory('DB', function() {
+        return {
+          get: function() {
+            return {
+              put: put
+            };
+          }
+        };
       });
       $provide.value('BaseUrlService', function() {
         return 'BASEURL';
@@ -26,8 +32,8 @@ describe('ImportContacts service', function() {
   afterEach(function() {
     $httpBackend.verifyNoOutstandingExpectation();
     $httpBackend.verifyNoOutstandingRequest();
-    if (SaveDoc.restore) {
-      SaveDoc.restore();
+    if (put.restore) {
+      put.restore();
     }
   });
 
@@ -53,7 +59,7 @@ describe('ImportContacts service', function() {
     $httpBackend
       .expect('HEAD', 'BASEURL/_db/1')
       .respond(404);
-    SaveDoc.callsArgWith(2, 'boom');
+    put.returns(KarmaUtils.fakeResolved('boom'));
     service([{ _id: 1 }], true, function(err) {
       chai.expect(err).to.equal('boom');
       done();
@@ -68,16 +74,16 @@ describe('ImportContacts service', function() {
     $httpBackend
       .expect('HEAD', 'BASEURL/_db/2')
       .respond(404);
-    SaveDoc.callsArgWith(2, null, {});
+    put
+      .onFirstCall().returns(KarmaUtils.fakeResolved(null, { _id: 1, _rev: 1 }))
+      .onSecondCall().returns(KarmaUtils.fakeResolved(null, { _id: 2, _rev: 1 }));
     var contact1 = { _id: 1 };
     var contact2 = { _id: 2 };
     service([contact1, contact2], true, function(err) {
       chai.expect(err).to.equal(undefined);
-      chai.expect(SaveDoc.calledTwice).to.equal(true);
-      chai.expect(SaveDoc.args[0][0]).to.equal(null);
-      chai.expect(SaveDoc.args[0][1]).to.deep.equal(contact1);
-      chai.expect(SaveDoc.args[1][0]).to.equal(null);
-      chai.expect(SaveDoc.args[1][1]).to.deep.equal(contact2);
+      chai.expect(put.calledTwice).to.equal(true);
+      chai.expect(put.args[0][0]).to.deep.equal(contact1);
+      chai.expect(put.args[1][0]).to.deep.equal(contact2);
       done();
     });
     $httpBackend.flush();
@@ -90,14 +96,14 @@ describe('ImportContacts service', function() {
     $httpBackend
       .expect('HEAD', 'BASEURL/_db/2')
       .respond(200, '', { ETag: 'def' });
-    SaveDoc.callsArgWith(2, null, {});
+    put
+      .onFirstCall().returns(KarmaUtils.fakeResolved(null, { _id: 1, _rev: 1 }))
+      .onSecondCall().returns(KarmaUtils.fakeResolved(null, { _id: 2, _rev: 1 }));
     service([{ _id: 1 }, { _id: 2 }], true, function(err) {
       chai.expect(err).to.equal(undefined);
-      chai.expect(SaveDoc.calledTwice).to.equal(true);
-      chai.expect(SaveDoc.args[0][0]).to.equal(1);
-      chai.expect(SaveDoc.args[0][1]).to.deep.equal({ _id: 1, _rev: 'abc' });
-      chai.expect(SaveDoc.args[1][0]).to.equal(2);
-      chai.expect(SaveDoc.args[1][1]).to.deep.equal({ _id: 2, _rev: 'def' });
+      chai.expect(put.calledTwice).to.equal(true);
+      chai.expect(put.args[0][0]._id).to.equal(1);
+      chai.expect(put.args[1][0]._id).to.equal(2);
       done();
     });
     $httpBackend.flush();
@@ -110,12 +116,13 @@ describe('ImportContacts service', function() {
     $httpBackend
       .expect('HEAD', 'BASEURL/_db/2')
       .respond(200, '', { ETag: 'def' });
-    SaveDoc.callsArgWith(2, null, {});
+    put
+      .onFirstCall().returns(KarmaUtils.fakeResolved(null, { _id: 1, _rev: 1 }))
+      .onSecondCall().returns(KarmaUtils.fakeResolved(null, { _id: 2, _rev: 1 }));
     service([{ _id: 1 }, { _id: 2 }], false, function(err) {
       chai.expect(err).to.equal(undefined);
-      chai.expect(SaveDoc.calledOnce).to.equal(true);
-      chai.expect(SaveDoc.args[0][0]).to.equal(null);
-      chai.expect(SaveDoc.args[0][1]).to.deep.equal({ _id: 1 });
+      chai.expect(put.calledOnce).to.equal(true);
+      chai.expect(put.args[0][0]).to.deep.equal({ _id: 1, _rev: 1 });
       done();
     });
     $httpBackend.flush();
@@ -128,40 +135,36 @@ describe('ImportContacts service', function() {
     $httpBackend
       .expect('HEAD', 'BASEURL/_db/2')
       .respond(404);
-    SaveDoc.onCall(0).callsArgWith(2, null, { _id: 1, _rev: 1 });
-    SaveDoc.onCall(1).callsArgWith(2, null, { _id: 4, _rev: 1 });
-    SaveDoc.onCall(2).callsArgWith(2, null, {});
-    SaveDoc.onCall(3).callsArgWith(2, null, {});
+    put.onCall(0).returns(KarmaUtils.fakeResolved(null, { _id: 1, _rev: 1 }));
+    put.onCall(1).returns(KarmaUtils.fakeResolved(null, { _id: 4, _rev: 1 }));
+    put.onCall(2).returns(KarmaUtils.fakeResolved(null, { }));
+    put.onCall(3).returns(KarmaUtils.fakeResolved(null, { }));
     var contact1 = { _id: 1, contact: { name: 'john', phone: '+123' } };
     var contact2 = { _id: 2, contact: { _id: 3, name: 'jack', phone: '+123' } };
     service([contact1, contact2], true, function(err) {
       chai.expect(err).to.equal(undefined);
-      chai.expect(SaveDoc.callCount).to.equal(4);
+      chai.expect(put.callCount).to.equal(4);
 
       // save first place
-      chai.expect(SaveDoc.args[0][0]).to.equal(null);
-      chai.expect(SaveDoc.args[0][1]._id).to.equal(1);
-      chai.expect(SaveDoc.args[0][1].contact.name).to.equal('john');
-      chai.expect(SaveDoc.args[0][1].contact.phone).to.equal('+123');
+      chai.expect(put.args[0][0]._id).to.equal(1);
+      chai.expect(put.args[0][0].contact.name).to.equal('john');
+      chai.expect(put.args[0][0].contact.phone).to.equal('+123');
 
       // save contact
-      chai.expect(SaveDoc.args[1][0]).to.equal(null);
-      chai.expect(SaveDoc.args[1][1].type).to.equal('person');
-      chai.expect(SaveDoc.args[1][1].name).to.equal('john');
-      chai.expect(SaveDoc.args[1][1].phone).to.equal('+123');
-      chai.expect(SaveDoc.args[1][1].parent._id).to.equal(1);
+      chai.expect(put.args[1][0].type).to.equal('person');
+      chai.expect(put.args[1][0].name).to.equal('john');
+      chai.expect(put.args[1][0].phone).to.equal('+123');
+      chai.expect(put.args[1][0].parent._id).to.equal(1);
 
       // updated place with contact
-      chai.expect(SaveDoc.args[2][0]).to.equal(1);
-      chai.expect(SaveDoc.args[2][1].contact.type).to.equal('person');
-      chai.expect(SaveDoc.args[2][1].contact.name).to.equal('john');
-      chai.expect(SaveDoc.args[2][1].contact.phone).to.equal('+123');
-      chai.expect(SaveDoc.args[2][1].contact._id).to.equal(4);
-      chai.expect(SaveDoc.args[2][1].contact._rev).to.equal(1);
+      chai.expect(put.args[2][0].contact.type).to.equal('person');
+      chai.expect(put.args[2][0].contact.name).to.equal('john');
+      chai.expect(put.args[2][0].contact.phone).to.equal('+123');
+      chai.expect(put.args[2][0].contact._id).to.equal(4);
+      chai.expect(put.args[2][0].contact._rev).to.equal(1);
 
       // save second place
-      chai.expect(SaveDoc.args[3][0]).to.equal(null);
-      chai.expect(SaveDoc.args[3][1]).to.deep.equal(contact2);
+      chai.expect(put.args[3][0]).to.deep.equal(contact2);
 
       done();
     });

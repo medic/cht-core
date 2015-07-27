@@ -8,52 +8,49 @@ var async = require('async'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('ImportContacts',
-    ['HttpWrapper', 'SaveDoc', 'BaseUrlService',
-    function(HttpWrapper, SaveDoc, BaseUrlService) {
+    ['HttpWrapper', 'DB', 'BaseUrlService',
+    function(HttpWrapper, DB, BaseUrlService) {
 
-      var savePerson = function(doc, callback) {
-        if (!doc.contact || doc.contact._id) {
-          return callback();
-        }
-        SaveDoc(null, {
+      var savePerson = function(doc) {
+        var person = {
           type: 'person',
           name: doc.contact.name,
           phone: doc.contact.phone,
           parent: doc
-        }, function(err, result) {
-          if (err) {
-            return callback(err);
-          }
-          doc.contact.type = 'person';
-          doc.contact._id = result._id;
-          doc.contact._rev = result._rev;
-          callback(null, doc);
-        });
+        };
+        return DB.get()
+          .put(person)
+          .then(function(response) {
+            doc.contact.type = 'person';
+            doc.contact._id = response._id;
+            doc.contact._rev = response._rev;
+          });
       };
 
       var saveRecord = function(contact, create, callback) {
-        var id = create ? null : contact._id;
         if (create && contact._rev) {
           // delete _rev since this is a new doc in this database
           delete contact._rev;
         }
-        SaveDoc(id, contact, function(err, result) {
-          if (err) {
-            return callback(err);
-          }
-          if (!id) {
-            id = result._id;
-          }
-          savePerson(contact, function(err, contact) {
-            if (err) {
-              return callback(err);
-            }
-            if (!contact) {
+        DB.get()
+          .put(contact)
+          .then(function(response) {
+            contact._id = response._id;
+            contact._rev = response._rev;
+            if (!contact.contact || contact.contact._id) {
               return callback();
             }
-            SaveDoc(id, { contact: contact.contact }, callback);
-          });
-        });
+            return savePerson(contact)
+              .then(function() {
+                return DB.get()
+                  .put(contact)
+                  .then(function(response) {
+                    contact._rev = response._rev;
+                    callback(null, contact);
+                  });
+              });
+          })
+          .catch(callback);
       };
 
       return function(contacts, overwrite, callback) {
@@ -73,11 +70,11 @@ var async = require('async'),
                 saveRecord(contact, false, callback);
               })
               .error(function(data, status) {
-                if (status !== 404) {
-                  return callback(new Error(data));
+                if (status === 404) {
+                  // for some reason, angular thinks 404 is an error...
+                  return saveRecord(contact, true, callback);
                 }
-                // for some reason, angular thinks 404 is an error...
-                saveRecord(contact, true, callback);
+                callback(new Error(data));
               });
           },
           callback
