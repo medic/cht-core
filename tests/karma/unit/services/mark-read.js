@@ -26,8 +26,8 @@ describe('MarkRead service', function() {
   });
 
   it('marks the message read', function(done) {
-    get.returns(KarmaUtils.fakeResolved(null, { _id: 'xyz' }));
-    put.returns(KarmaUtils.fakeResolved());
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz' }));
+    put.returns(KarmaUtils.mockPromise());
     var expected = { _id: 'xyz', read: [ 'james' ] };
     service('abc', true).then(function() {
       chai.expect(get.args[0][0]).to.deep.equal('abc');
@@ -37,8 +37,8 @@ describe('MarkRead service', function() {
   });
 
   it('marks the message unread', function(done) {
-    get.returns(KarmaUtils.fakeResolved(null, { _id: 'xyz', read: [ 'james' ] }));
-    put.returns(KarmaUtils.fakeResolved());
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz', read: [ 'james' ] }));
+    put.returns(KarmaUtils.mockPromise());
     var expected = { _id: 'xyz', read: [ ] };
     service('abc', false).then(function() {
       chai.expect(get.args[0][0]).to.deep.equal('abc');
@@ -48,7 +48,7 @@ describe('MarkRead service', function() {
   });
 
   it('marks the message read when already read', function(done) {
-    get.returns(KarmaUtils.fakeResolved(null, { _id: 'xyz', read: [ 'james' ] }));
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz', read: [ 'james' ] }));
     service('abc', true).then(function() {
       chai.expect(get.args[0][0]).to.deep.equal('abc');
       done();
@@ -56,7 +56,7 @@ describe('MarkRead service', function() {
   });
 
   it('marks the message unread when already unread', function(done) {
-    get.returns(KarmaUtils.fakeResolved(null, { _id: 'xyz' }));
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz' }));
     service('abc', false).then(function() {
       chai.expect(get.args[0][0]).to.deep.equal('abc');
       done();
@@ -64,7 +64,7 @@ describe('MarkRead service', function() {
   });
 
   it('returns db errors', function(done) {
-    get.returns(KarmaUtils.fakeResolved('errcode1'));
+    get.returns(KarmaUtils.mockPromise('errcode1'));
     service('abc', true).catch(function(err) {
       chai.expect(err).to.equal('errcode1');
       done();
@@ -72,8 +72,8 @@ describe('MarkRead service', function() {
   });
 
   it('returns save errors', function(done) {
-    get.returns(KarmaUtils.fakeResolved(null, { _id: 'xyz' }));
-    put.returns(KarmaUtils.fakeResolved('errcode2'));
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz' }));
+    put.returns(KarmaUtils.mockPromise('errcode2'));
     service('abc', true).catch(function(err) {
       chai.expect(err).to.equal('errcode2');
       done();

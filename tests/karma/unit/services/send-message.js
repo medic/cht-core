@@ -45,8 +45,8 @@ describe('SendMessage service', function() {
 
   it('create doc for one recipient', function(done) {
 
-    id.returns(KarmaUtils.fakeResolved(null, 53));
-    post.returns(KarmaUtils.fakeResolved());
+    id.returns(KarmaUtils.mockPromise(null, 53));
+    post.returns(KarmaUtils.mockPromise());
 
     var recipient = {
       _id: 'abc',
@@ -75,8 +75,8 @@ describe('SendMessage service', function() {
 
   it('normalizes phone numbers', function(done) {
 
-    id.returns(KarmaUtils.fakeResolved(null, 53));
-    post.returns(KarmaUtils.fakeResolved());
+    id.returns(KarmaUtils.mockPromise(null, 53));
+    post.returns(KarmaUtils.mockPromise());
 
     var recipient = { contact: { phone: '5552' } };
 
@@ -104,9 +104,9 @@ describe('SendMessage service', function() {
   it('create doc for multiple recipients', function(done) {
 
     id
-      .onFirstCall().returns(KarmaUtils.fakeResolved(null, 53))
-      .onSecondCall().returns(KarmaUtils.fakeResolved(null, 150));
-    post.returns(KarmaUtils.fakeResolved());
+      .onFirstCall().returns(KarmaUtils.mockPromise(null, 53))
+      .onSecondCall().returns(KarmaUtils.mockPromise(null, 150));
+    post.returns(KarmaUtils.mockPromise());
 
     var recipients = [
       {
@@ -152,10 +152,10 @@ describe('SendMessage service', function() {
   it('create doc for everyoneAt recipients', function(done) {
 
     id
-      .onFirstCall().returns(KarmaUtils.fakeResolved(null, 53))
-      .onSecondCall().returns(KarmaUtils.fakeResolved(null, 150))
-      .onThirdCall().returns(KarmaUtils.fakeResolved(null, 6));
-    post.returns(KarmaUtils.fakeResolved());
+      .onFirstCall().returns(KarmaUtils.mockPromise(null, 53))
+      .onSecondCall().returns(KarmaUtils.mockPromise(null, 150))
+      .onThirdCall().returns(KarmaUtils.mockPromise(null, 6));
+    post.returns(KarmaUtils.mockPromise());
 
     var recipients = [
       {
@@ -224,7 +224,7 @@ describe('SendMessage service', function() {
 
   it('returns newUUID errors', function(done) {
 
-    id.returns(KarmaUtils.fakeResolved('errcode1'));
+    id.returns(KarmaUtils.mockPromise('errcode1'));
 
     var recipients = {
       _id: 'abc',
@@ -249,8 +249,8 @@ describe('SendMessage service', function() {
 
   it('returns post errors', function(done) {
 
-    id.returns(KarmaUtils.fakeResolved(null, 3333));
-    post.returns(KarmaUtils.fakeResolved('errcode2'));
+    id.returns(KarmaUtils.mockPromise(null, 3333));
+    post.returns(KarmaUtils.mockPromise('errcode2'));
 
     var recipients = {
       _id: 'abc',

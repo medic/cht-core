@@ -23,8 +23,8 @@ describe('Verified service', function() {
   });
 
   it('marks the message verified', function(done) {
-    get.returns(KarmaUtils.fakeResolved(null, { _id: 'abc' }));
-    post.returns(KarmaUtils.fakeResolved());
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'abc' }));
+    post.returns(KarmaUtils.mockPromise());
     var expected = { 
       _id: 'abc',
       verified: true
@@ -41,8 +41,8 @@ describe('Verified service', function() {
   });
 
   it('marks the message verified if currently unverified', function(done) {
-    get.returns(KarmaUtils.fakeResolved(null, { _id: 'abc', verified: false }));
-    post.returns(KarmaUtils.fakeResolved());
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'abc', verified: false }));
+    post.returns(KarmaUtils.mockPromise());
     var expected = { 
       _id: 'abc',
       verified: true
@@ -59,8 +59,8 @@ describe('Verified service', function() {
   });
 
   it('marks the message unverified', function(done) {
-    get.returns(KarmaUtils.fakeResolved(null, { _id: 'abc', verified: true }));
-    post.returns(KarmaUtils.fakeResolved());
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'abc', verified: true }));
+    post.returns(KarmaUtils.mockPromise());
     var expected = { 
       _id: 'abc',
       verified: false
@@ -77,7 +77,7 @@ describe('Verified service', function() {
   });
 
   it('returns db get errors', function(done) {
-    get.returns(KarmaUtils.fakeResolved('errcode1'));
+    get.returns(KarmaUtils.mockPromise('errcode1'));
     service('abc', false, function(err) {
       chai.expect(err).to.equal('errcode1');
       done();
@@ -85,8 +85,8 @@ describe('Verified service', function() {
   });
 
   it('returns db save errors', function(done) {
-    get.returns(KarmaUtils.fakeResolved(null, { _id: 'abc', verified: true }));
-    post.returns(KarmaUtils.fakeResolved('errcode2'));
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'abc', verified: true }));
+    post.returns(KarmaUtils.mockPromise('errcode2'));
     service('abc', false, function(err) {
       chai.expect(err).to.equal('errcode2');
       done();

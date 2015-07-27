@@ -6,8 +6,7 @@ window.KarmaUtils = {
       }
     }
   },
-  fakeResolved: function(err, doc) {
-    // TODO rename me
+  mockPromise: function(err, doc) {
     return new Promise(function(resolve, reject) {
       if (err) {
         reject(err);

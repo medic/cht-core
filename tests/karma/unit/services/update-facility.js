@@ -44,9 +44,9 @@ describe('UpdateFacility service', function() {
     };
 
     get
-      .onFirstCall().returns(KarmaUtils.fakeResolved(null, message))
-      .onSecondCall().returns(KarmaUtils.fakeResolved(null, facility));
-    put.returns(KarmaUtils.fakeResolved(null, { _id: message._id, _rev: 2 }));
+      .onFirstCall().returns(KarmaUtils.mockPromise(null, message))
+      .onSecondCall().returns(KarmaUtils.mockPromise(null, facility));
+    put.returns(KarmaUtils.mockPromise(null, { _id: message._id, _rev: 2 }));
 
     service('abc', 'xyz', function(err) {
       chai.expect(err).to.equal(null);
@@ -58,8 +58,8 @@ describe('UpdateFacility service', function() {
 
   it('returns db errors', function(done) {
     get
-      .onFirstCall().returns(KarmaUtils.fakeResolved('errcode1'))
-      .onSecondCall().returns(KarmaUtils.fakeResolved(null, {}));
+      .onFirstCall().returns(KarmaUtils.mockPromise('errcode1'))
+      .onSecondCall().returns(KarmaUtils.mockPromise(null, {}));
     service('abc', 'xyz', function(err) {
       chai.expect(err).to.equal('errcode1');
       done();
@@ -68,8 +68,8 @@ describe('UpdateFacility service', function() {
 
   it('returns db errors from second call', function(done) {
     get
-      .onFirstCall().returns(KarmaUtils.fakeResolved(null, {}))
-      .onSecondCall().returns(KarmaUtils.fakeResolved('errcode2'));
+      .onFirstCall().returns(KarmaUtils.mockPromise(null, {}))
+      .onSecondCall().returns(KarmaUtils.mockPromise('errcode2'));
     service('abc', 'xyz', function(err) {
       chai.expect(err).to.equal('errcode2');
       done();
@@ -78,9 +78,9 @@ describe('UpdateFacility service', function() {
 
   it('returns save errors', function(done) {
     get
-      .onFirstCall().returns(KarmaUtils.fakeResolved(null, {}))
-      .onSecondCall().returns(KarmaUtils.fakeResolved(null, {}));
-    put.returns(KarmaUtils.fakeResolved('errcode3'));
+      .onFirstCall().returns(KarmaUtils.mockPromise(null, {}))
+      .onSecondCall().returns(KarmaUtils.mockPromise(null, {}));
+    put.returns(KarmaUtils.mockPromise('errcode3'));
     service('abc', 'xyz', function(err) {
       chai.expect(err).to.equal('errcode3');
       done();

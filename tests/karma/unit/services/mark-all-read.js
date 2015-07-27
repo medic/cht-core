@@ -35,7 +35,7 @@ describe('MarkAllRead service', function() {
       { _id: 'c', read: [ 'jack', 'james' ] }
     ];
 
-    bulkDocs.returns(KarmaUtils.fakeResolved());
+    bulkDocs.returns(KarmaUtils.mockPromise());
 
     service(docs, true).then(function() {
       chai.expect(bulkDocs.args[0][0]).to.deep.equal(expected);
@@ -55,7 +55,7 @@ describe('MarkAllRead service', function() {
       { _id: 'c', read: [ 'jack' ] }
     ];
 
-    bulkDocs.returns(KarmaUtils.fakeResolved());
+    bulkDocs.returns(KarmaUtils.mockPromise());
 
     service(docs, false).then(function() {
       chai.expect(bulkDocs.args[0][0]).to.deep.equal(expected);
@@ -65,7 +65,7 @@ describe('MarkAllRead service', function() {
 
   it('returns save errors', function(done) {
 
-    bulkDocs.returns(KarmaUtils.fakeResolved('errcode1'));
+    bulkDocs.returns(KarmaUtils.mockPromise('errcode1'));
 
     var docs = [
       { _id: 'a', read: [ 'james' ] },
