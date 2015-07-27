@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('AnalyticsModules',
-    ['$rootScope', 'HttpWrapper', 'translateFilter', 'db', 'UserDistrict', 'District', 'DbView', 'ChildFacility', 'FormatDataRecord',
-    function($rootScope, HttpWrapper, translateFilter, db, UserDistrict, District, DbView, ChildFacility, FormatDataRecord) {
+    ['$rootScope', '$timeout', 'HttpWrapper', 'translateFilter', 'DB', 'UserDistrict', 'District', 'DbView', 'ChildFacility', 'FormatDataRecord',
+    function($rootScope, $timeout, HttpWrapper, translateFilter, DB, UserDistrict, District, DbView, ChildFacility, FormatDataRecord) {
 
       var request = function(url, district, callback) {
         HttpWrapper.get(url, { params: { district: district, cache: true } })
@@ -235,19 +235,18 @@ var _ = require('underscore'),
                 if (scope.expandedRecord === id) {
                   scope.expandedRecord = null;
                 } else {
-                  db.getDoc(id, function(err, doc) {
-                    if (err) {
-                      return console.log('Error getting doc', err);
-                    }
-                    FormatDataRecord(doc)
-                      .then(function(formatted) {
+                  DB.get()
+                    .get(id)
+                    .then(FormatDataRecord)
+                    .then(function(formatted) {
+                      $timeout(function() {
                         scope.formattedRecord = formatted[0];
                         scope.expandedRecord = id;
-                      })
-                      .catch(function(err) {
-                        console.log('Error formatting record', err);
                       });
-                  });
+                    })
+                    .catch(function(err) {
+                      console.log('Error getting doc', err);
+                    });
                 }
               };
 
@@ -274,51 +273,53 @@ var _ = require('underscore'),
               scope.setDistrict = function(district) {
                 scope.district = district;
                 var dates = stockUtils.getDates(scope.filters);
-                db.getDoc(district.id || district._id, function(err, district) {
-                  if (err) {
-                    return console.log(err);
-                  }
-                  ChildFacility(district, function(err, facilities) {
-                    if (err) {
-                      return console.log(err);
-                    }
-                    getViewReports(DbView, district, dates, function(err, reports) {
-                      scope.totals = stockUtils.getTotals(facilities, reports, dates);
-                      if (district.type === 'health_center') {
-                        scope.clinics = stockUtils.getRowsHC(facilities, reports, dates);
-                        _.each(scope.clinics, function(f) {
-                          f.chart = [
-                            { key: 'valid', y: f.valid_percent },
-                            { key: 'missing', y: 100 - f.valid_percent }
-                          ];
-                        });
-                      } else {
-                        scope.facilities = stockUtils.getRows(facilities, reports, dates);
-                        _.each(scope.facilities, function(f) {
-                          f.chart = [
-                            { key: 'valid', y: f.valid_percent },
-                            { key: 'missing', y: 100 - f.valid_percent }
-                          ];
-                        });
+                DB.get()
+                  .get(district.id || district._id)
+                  .then(function(district) {
+                    ChildFacility(district, function(err, facilities) {
+                      if (err) {
+                        return console.log(err);
                       }
-                      scope.chart = [
-                        { key: 'valid', y: scope.totals.complete },
-                        { key: 'missing', y: scope.totals.not_submitted },
-                        { key: 'invalid', y: scope.totals.incomplete }
-                      ];
-                      scope.xFunction = function() {
-                        return function(d) {
-                          return d.key;
+                      getViewReports(DbView, district, dates, function(err, reports) {
+                        scope.totals = stockUtils.getTotals(facilities, reports, dates);
+                        if (district.type === 'health_center') {
+                          scope.clinics = stockUtils.getRowsHC(facilities, reports, dates);
+                          _.each(scope.clinics, function(f) {
+                            f.chart = [
+                              { key: 'valid', y: f.valid_percent },
+                              { key: 'missing', y: 100 - f.valid_percent }
+                            ];
+                          });
+                        } else {
+                          scope.facilities = stockUtils.getRows(facilities, reports, dates);
+                          _.each(scope.facilities, function(f) {
+                            f.chart = [
+                              { key: 'valid', y: f.valid_percent },
+                              { key: 'missing', y: 100 - f.valid_percent }
+                            ];
+                          });
+                        }
+                        scope.chart = [
+                          { key: 'valid', y: scope.totals.complete },
+                          { key: 'missing', y: scope.totals.not_submitted },
+                          { key: 'invalid', y: scope.totals.incomplete }
+                        ];
+                        scope.xFunction = function() {
+                          return function(d) {
+                            return d.key;
+                          };
                         };
-                      };
-                      scope.yFunction = function() {
-                        return function(d) {
-                          return d.y;
+                        scope.yFunction = function() {
+                          return function(d) {
+                            return d.y;
+                          };
                         };
-                      };
+                      });
                     });
+                  })
+                  .catch(function(err) {
+                    console.log(err);
                   });
-                });
               };
 
               UserDistrict(function(err, district) {
