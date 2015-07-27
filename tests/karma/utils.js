@@ -7,20 +7,14 @@ window.KarmaUtils = {
     }
   },
   fakeResolved: function(err, doc) {
-    return {
-      then: function(callback) {
-        if (!err) {
-          return KarmaUtils.fakeResolved(null, callback(doc));
-        }
-        return this;
-      },
-      catch: function(callback) {
-        if (err) {
-          callback(err);
-        }
-        return this;
+    // TODO rename me
+    return new Promise(function(resolve, reject) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(doc);
       }
-    };
+    });
   },
   mockDB: function(db) {
     return function() {
@@ -32,7 +26,3 @@ window.KarmaUtils = {
     };
   }
 };
-
-
-
-

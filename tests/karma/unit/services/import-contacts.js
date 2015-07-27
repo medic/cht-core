@@ -126,8 +126,8 @@ describe('ImportContacts service', function() {
       .expect('HEAD', 'BASEURL/_db/2')
       .respond(404);
     put.onCall(0).returns(KarmaUtils.fakeResolved(null, { _id: 1, _rev: 1 }));
-    put.onCall(1).returns(KarmaUtils.fakeResolved(null, { _id: 4, _rev: 1 }));
-    put.onCall(2).returns(KarmaUtils.fakeResolved(null, { }));
+    put.onCall(1).returns(KarmaUtils.fakeResolved(null, { }));
+    put.onCall(2).returns(KarmaUtils.fakeResolved(null, { _id: 4, _rev: 1 }));
     put.onCall(3).returns(KarmaUtils.fakeResolved(null, { }));
     var contact1 = { _id: 1, contact: { name: 'john', phone: '+123' } };
     var contact2 = { _id: 2, contact: { _id: 3, name: 'jack', phone: '+123' } };
@@ -140,21 +140,21 @@ describe('ImportContacts service', function() {
       chai.expect(put.args[0][0].contact.name).to.equal('john');
       chai.expect(put.args[0][0].contact.phone).to.equal('+123');
 
+      // save second place
+      chai.expect(put.args[1][0]).to.deep.equal(contact2);
+
       // save contact
-      chai.expect(put.args[1][0].type).to.equal('person');
-      chai.expect(put.args[1][0].name).to.equal('john');
-      chai.expect(put.args[1][0].phone).to.equal('+123');
-      chai.expect(put.args[1][0].parent._id).to.equal(1);
+      chai.expect(put.args[2][0].type).to.equal('person');
+      chai.expect(put.args[2][0].name).to.equal('john');
+      chai.expect(put.args[2][0].phone).to.equal('+123');
+      chai.expect(put.args[2][0].parent._id).to.equal(1);
 
       // updated place with contact
-      chai.expect(put.args[2][0].contact.type).to.equal('person');
-      chai.expect(put.args[2][0].contact.name).to.equal('john');
-      chai.expect(put.args[2][0].contact.phone).to.equal('+123');
-      chai.expect(put.args[2][0].contact._id).to.equal(4);
-      chai.expect(put.args[2][0].contact._rev).to.equal(1);
-
-      // save second place
-      chai.expect(put.args[3][0]).to.deep.equal(contact2);
+      chai.expect(put.args[3][0].contact.type).to.equal('person');
+      chai.expect(put.args[3][0].contact.name).to.equal('john');
+      chai.expect(put.args[3][0].contact.phone).to.equal('+123');
+      chai.expect(put.args[3][0].contact._id).to.equal(4);
+      chai.expect(put.args[3][0].contact._rev).to.equal(1);
 
       done();
     });

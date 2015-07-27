@@ -491,16 +491,15 @@ require('moment/locales');
       $scope.sendMessage = function(event) {
         sendMessage.validate(event.target, function(recipients, message) {
           var pane = modal.start($(event.target).closest('.message-form'));
-          SendMessage(recipients, message).then(
-            function() {
+          SendMessage(recipients, message)
+            .then(function() {
               $('#message-footer').removeClass('sending');
               $('#message-footer textarea').val('');
               pane.done();
-            },
-            function(err) {
+            })
+            .catch(function(err) {
               pane.done(translateFilter('Error sending message'), err);
-            }
-          );
+            });
         });
       };
 

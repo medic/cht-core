@@ -25,16 +25,17 @@ describe('UpdateContact service', function() {
     KarmaUtils.restore(query, put);
   });
 
-  it('returns save errors', function() {
+  it('returns save errors', function(done) {
     var doc = { name: 'juan' };
     put.returns(KarmaUtils.fakeResolved('boom'));
     service(null, doc, function(err) {
       chai.expect(err).to.equal('boom');
       chai.expect(put.calledOnce).to.equal(true);
+      done();
     });
   });
 
-  it('adds a new doc', function() {
+  it('adds a new doc', function(done) {
     var doc = { name: 'juan' };
     var expected = { _id: 1, _rev: 1, name: 'juan' };
     put.returns(KarmaUtils.fakeResolved(null, { _id: 1, _rev: 1 }));
@@ -42,10 +43,11 @@ describe('UpdateContact service', function() {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(put.calledOnce).to.equal(true);
+      done();
     });
   });
 
-  it('edit an existing doc', function() {
+  it('edit an existing doc', function(done) {
     var doc = { _id: 1, _rev: 1, name: 'jack' };
     var updates = { name: 'juan' };
     var expected = { _id: 1, _rev: 2, name: 'juan' };
@@ -56,10 +58,11 @@ describe('UpdateContact service', function() {
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(put.calledOnce).to.equal(true);
       chai.expect(query.calledOnce).to.equal(true);
+      done();
     });
   });
 
-  it('returns view errors', function() {
+  it('returns view errors', function(done) {
     var doc = { _id: 1, _rev: 1, name: 'jack' };
     var updates = { name: 'juan' };
     put.returns(KarmaUtils.fakeResolved(null, { _id: 1, _rev: 2 }));
@@ -68,10 +71,11 @@ describe('UpdateContact service', function() {
       chai.expect(err).to.equal('boom');
       chai.expect(put.calledOnce).to.equal(true);
       chai.expect(query.calledOnce).to.equal(true);
+      done();
     });
   });
 
-  it('update children', function() {
+  it('update children', function(done) {
     var doc = { _id: 1, _rev: 1, name: 'jack', type: 'district_hospital' };
     var updates = { name: 'juan' };
     var expected = { _id: 1, _rev: 2, name: 'juan', type: 'district_hospital' };
@@ -87,10 +91,11 @@ describe('UpdateContact service', function() {
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(put.calledThrice).to.equal(true);
       chai.expect(query.calledOnce).to.equal(true);
+      done();
     });
   });
 
-  it('only updates children who are not already updated', function() {
+  it('only updates children who are not already updated', function(done) {
     var doc = { _id: 1, _rev: 1, name: 'jack', type: 'district_hospital' };
     var updates = { name: 'juan' };
     var expected = { _id: 1, _rev: 2, name: 'juan', type: 'district_hospital' };
@@ -106,25 +111,27 @@ describe('UpdateContact service', function() {
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(put.calledTwice).to.equal(true);
       chai.expect(query.calledOnce).to.equal(true);
+      done();
     });
   });
 
-  it('contacts must not have parents', function() {
+  it('contacts must not have parents', function(done) {
     var doc = { _id: 1, _rev: 1, name: 'jack', type: 'district_hospital' };
     var updates = { name: 'juan', type: 'district_hospital', contact: { name: 'dave', parent: { _id: 5 } } };
     var expected = { _id: 1, _rev: 2, name: 'juan', type: 'district_hospital', contact: { name: 'dave' } };
-    put.returns(KarmaUtils.fakeResolved(null, { _id: 1, _rev: 2 }));
-    query.returns(KarmaUtils.fakeResolved(null, { rows: [ ] }));
+    put.onFirstCall().returns(KarmaUtils.fakeResolved(null, { _id: 1, _rev: 2 }));
+    query.onFirstCall().returns(KarmaUtils.fakeResolved(null, { rows: [ ] }));
     service(doc, updates, function(err, actual) {
       chai.expect(err).to.equal(undefined);
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(put.calledOnce).to.equal(true);
       chai.expect(put.args[0][0]).to.deep.equal(expected);
       chai.expect(query.calledOnce).to.equal(true);
+      done();
     });
   });
 
-  it('when updating persons the facilitys contact field is also updated', function() {
+  it('when updating persons the facilitys contact field is also updated', function(done) {
     var doc = { _id: 1, _rev: 2, name: 'jack', phone: '5551234', type: 'person', parent: { _id: 2, _rev: 1, name: 'juanville', type: 'clinic' } };
     var updates = { name: 'juan' };
     var expected = { _id: 1, _rev: 2, name: 'juan', phone: '5551234', type: 'person', parent: { _id: 2, _rev: 1, name: 'juanville', type: 'clinic' } };
@@ -141,6 +148,7 @@ describe('UpdateContact service', function() {
       chai.expect(put.args[0][0]).to.deep.equal({ _id: 1, _rev: 2, name: 'juan', phone: '5551234', type: 'person', parent: { _id: 2, _rev: 1, name: 'juanville', type: 'clinic' } });
       chai.expect(put.args[1][0]).to.deep.equal({ _id: 2, _rev: 2, name: 'juanville', type: 'clinic', contact: { _id: 1, _rev: 2, name: 'juan', phone: '5551234', type: 'person' } });
       chai.expect(query.calledOnce).to.equal(true);
+      done();
     });
   });
 });

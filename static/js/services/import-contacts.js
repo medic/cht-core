@@ -47,8 +47,10 @@ var async = require('async'),
                   .then(function(response) {
                     contact._rev = response._rev;
                     callback(null, contact);
-                  });
-              });
+                  })
+                  .catch(callback);
+              })
+              .catch(callback);
           })
           .catch(callback);
       };

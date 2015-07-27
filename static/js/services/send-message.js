@@ -1,7 +1,8 @@
 var _ = require('underscore'),
     utils = require('kujua-utils'),
     async = require('async'),
-    libphonenumber = require('libphonenumber/utils');
+    libphonenumber = require('libphonenumber/utils'),
+    promise = require('lie');
 
 (function () {
 
@@ -9,8 +10,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('SendMessage', ['$q', 'DB', 'User', 'Settings',
-    function($q, DB, User, Settings) {
+  inboxServices.factory('SendMessage', ['DB', 'User', 'Settings',
+    function(DB, User, Settings) {
 
       var createMessageDoc = function(user, recipients) {
         var name = user && user.name;
@@ -75,56 +76,52 @@ var _ = require('underscore'),
 
       return function(recipients, message) {
 
-        var deferred = $q.defer();
+        return new promise(function(resolve, reject) {
 
-        if (!_.isArray(recipients)) {
-          recipients = [recipients];
-        }
-
-        User(function(err, user) {
-          if (err) {
-            return console.log('Error fetching user', err);
+          if (!_.isArray(recipients)) {
+            recipients = [recipients];
           }
 
-          Settings(function(err, settings) {
+          User(function(err, user) {
             if (err) {
-              return console.log('Error fetching settings', err);
+              return console.log('Error fetching user', err);
             }
 
-            var doc = createMessageDoc(user, recipients);
-            var explodedRecipients = formatRecipients(recipients);
-
-            async.forEachSeries(
-              explodedRecipients,
-              function(data, callback) {
-                DB.get()
-                  .id()
-                  .then(function(id) {
-                    doc.tasks.push(createTask(settings, data, message, user, id));
-                    callback();
-                  })
-                  .catch(function(err) {
-                    callback(err);
-                  });
-              },
-              function(err) {
-                if (err) {
-                  return deferred.reject(err);
-                }
-                DB.get()
-                  .post(doc)
-                  .then(function() {
-                    deferred.resolve();
-                  })
-                  .catch(function(err) {
-                    deferred.reject(err);
-                  });
+            Settings(function(err, settings) {
+              if (err) {
+                return console.log('Error fetching settings', err);
               }
-            );
+
+              var doc = createMessageDoc(user, recipients);
+              var explodedRecipients = formatRecipients(recipients);
+
+              async.forEachSeries(
+                explodedRecipients,
+                function(data, callback) {
+                  DB.get()
+                    .id()
+                    .then(function(id) {
+                      doc.tasks.push(createTask(settings, data, message, user, id));
+                      callback();
+                    })
+                    .catch(function(err) {
+                      callback(err);
+                    });
+                },
+                function(err) {
+                  if (err) {
+                    return reject(err);
+                  }
+                  DB.get()
+                    .post(doc)
+                    .then(resolve)
+                    .catch(reject);
+                }
+              );
+            });
           });
         });
 
-        return deferred.promise;
       };
     }
   ]);
