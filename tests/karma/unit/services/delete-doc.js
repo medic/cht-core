@@ -3,28 +3,19 @@ describe('DeleteDoc service', function() {
   'use strict';
 
   var service,
-      getDoc,
-      saveDoc,
+      get,
+      put,
       broadcast,
       message;
 
   beforeEach(function() {
-    getDoc = sinon.stub();
-    saveDoc = sinon.stub();
+    get = sinon.stub();
+    put = sinon.stub();
     broadcast = sinon.stub();
     message = {};
     module('inboxApp');
     module(function ($provide) {
-      $provide.factory('DB', function() {
-        return {
-          get: function() {
-            return {
-              put: saveDoc,
-              get: getDoc
-            };
-          }
-        };
-      });
+      $provide.factory('DB', KarmaUtils.mockDB({ put: put, get: get }));
       $provide.factory('$rootScope', function() {
         return { $broadcast: broadcast };
       });
@@ -35,53 +26,53 @@ describe('DeleteDoc service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(getDoc, saveDoc, broadcast);
+    KarmaUtils.restore(get, put, broadcast);
   });
 
   it('returns db errors', function(done) {
-    getDoc.returns(KarmaUtils.fakeResolved('errcode1'));
+    get.returns(KarmaUtils.fakeResolved('errcode1'));
     service('abc', function(err) {
-      chai.expect(getDoc.calledOnce).to.equal(true);
-      chai.expect(getDoc.firstCall.args[0]).to.equal('abc');
+      chai.expect(get.calledOnce).to.equal(true);
+      chai.expect(get.firstCall.args[0]).to.equal('abc');
       chai.expect(err).to.equal('errcode1');
       done();
     });
   });
 
   it('returns audit errors', function(done) {
-    getDoc.returns(KarmaUtils.fakeResolved(null, { _id: 'xyz' }));
-    saveDoc.returns(KarmaUtils.fakeResolved('errcode2'));
+    get.returns(KarmaUtils.fakeResolved(null, { _id: 'xyz' }));
+    put.returns(KarmaUtils.fakeResolved('errcode2'));
     service('abc', function(err) {
-      chai.expect(getDoc.calledOnce).to.equal(true);
-      chai.expect(saveDoc.calledOnce).to.equal(true);
+      chai.expect(get.calledOnce).to.equal(true);
+      chai.expect(put.calledOnce).to.equal(true);
       chai.expect(err).to.equal('errcode2');
       done();
     });
   });
 
   it('marks the message deleted', function(done) {
-    getDoc.returns(KarmaUtils.fakeResolved(null, { _id: 'xyz', type: 'data_record' }));
-    saveDoc.returns(KarmaUtils.fakeResolved());
+    get.returns(KarmaUtils.fakeResolved(null, { _id: 'xyz', type: 'data_record' }));
+    put.returns(KarmaUtils.fakeResolved());
     var expected = { _id: 'xyz', type: 'data_record', _deleted: true };
     service('abc', function(err, actual) {
-      chai.expect(getDoc.calledOnce).to.equal(true);
-      chai.expect(saveDoc.calledOnce).to.equal(true);
+      chai.expect(get.calledOnce).to.equal(true);
+      chai.expect(put.calledOnce).to.equal(true);
       chai.expect(broadcast.calledOnce).to.equal(false);
-      chai.expect(getDoc.firstCall.args[0]).to.equal('abc');
+      chai.expect(get.firstCall.args[0]).to.equal('abc');
       chai.expect(actual).to.deep.equal(expected);
       done();
     });
   });
 
   it('broadcasts event if clinic', function(done) {
-    getDoc.returns(KarmaUtils.fakeResolved(null, { _id: 'xyz', type: 'clinic' }));
-    saveDoc.returns(KarmaUtils.fakeResolved());
+    get.returns(KarmaUtils.fakeResolved(null, { _id: 'xyz', type: 'clinic' }));
+    put.returns(KarmaUtils.fakeResolved());
     var expected = { _id: 'xyz', type: 'clinic', _deleted: true };
     service('abc', function(err, actual) {
-      chai.expect(getDoc.calledOnce).to.equal(true);
-      chai.expect(saveDoc.calledOnce).to.equal(true);
+      chai.expect(get.calledOnce).to.equal(true);
+      chai.expect(put.calledOnce).to.equal(true);
       chai.expect(broadcast.calledOnce).to.equal(true);
-      chai.expect(getDoc.firstCall.args[0]).to.equal('abc');
+      chai.expect(get.firstCall.args[0]).to.equal('abc');
       chai.expect(broadcast.firstCall.args[0]).to.equal('ContactUpdated');
       chai.expect(broadcast.firstCall.args[1]).to.deep.equal(expected);
       chai.expect(actual).to.deep.equal(expected);
@@ -107,17 +98,17 @@ describe('DeleteDoc service', function() {
         _id: 'b'
       }
     };
-    getDoc
+    get
       .onFirstCall().returns(KarmaUtils.fakeResolved(null, person))
       .onSecondCall().returns(KarmaUtils.fakeResolved(null, clinic));
-    saveDoc.returns(KarmaUtils.fakeResolved());
+    put.returns(KarmaUtils.fakeResolved());
     service('a', function(err, actual) {
-      chai.expect(getDoc.calledTwice).to.equal(true);
-      chai.expect(saveDoc.calledTwice).to.equal(true);
+      chai.expect(get.calledTwice).to.equal(true);
+      chai.expect(put.calledTwice).to.equal(true);
       chai.expect(broadcast.calledTwice).to.equal(true);
-      chai.expect(getDoc.firstCall.args[0]).to.equal('a');
-      chai.expect(getDoc.secondCall.args[0]).to.equal('b');
-      chai.expect(saveDoc.firstCall.args[0].contact).to.equal(null);
+      chai.expect(get.firstCall.args[0]).to.equal('a');
+      chai.expect(get.secondCall.args[0]).to.equal('b');
+      chai.expect(put.firstCall.args[0].contact).to.equal(null);
       chai.expect(broadcast.firstCall.args[0]).to.equal('ContactUpdated');
       chai.expect(broadcast.firstCall.args[1]._id).to.equal('b');
       chai.expect(broadcast.secondCall.args[0]).to.equal('ContactUpdated');
@@ -145,16 +136,16 @@ describe('DeleteDoc service', function() {
         _id: 'b'
       }
     };
-    getDoc
+    get
       .onFirstCall().returns(KarmaUtils.fakeResolved(null, person))
       .onSecondCall().returns(KarmaUtils.fakeResolved(null, clinic));
-    saveDoc.returns(KarmaUtils.fakeResolved());
+    put.returns(KarmaUtils.fakeResolved());
     service('a', function(err, actual) {
-      chai.expect(getDoc.calledTwice).to.equal(true);
-      chai.expect(saveDoc.calledOnce).to.equal(true);
+      chai.expect(get.calledTwice).to.equal(true);
+      chai.expect(put.calledOnce).to.equal(true);
       chai.expect(broadcast.calledOnce).to.equal(true);
-      chai.expect(getDoc.firstCall.args[0]).to.equal('a');
-      chai.expect(getDoc.secondCall.args[0]).to.equal('b');
+      chai.expect(get.firstCall.args[0]).to.equal('a');
+      chai.expect(get.secondCall.args[0]).to.equal('b');
       chai.expect(actual._deleted).to.equal(true);
       done();
     });

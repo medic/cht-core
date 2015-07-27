@@ -11,16 +11,7 @@ describe('UpdateContact service', function() {
     put = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.factory('DB', function() {
-        return {
-          get: function() {
-            return {
-              put: put,
-              query: query
-            };
-          }
-        };
-      });
+      $provide.factory('DB', KarmaUtils.mockDB({ put: put, query: query }));
       $provide.factory('ClearFacilityCache', function() {
         return function() {};
       });

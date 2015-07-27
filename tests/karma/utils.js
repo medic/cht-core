@@ -21,5 +21,18 @@ window.KarmaUtils = {
         return this;
       }
     };
+  },
+  mockDB: function(db) {
+    return function() {
+      return {
+        get: function() {
+          return db;
+        }
+      };
+    };
   }
 };
+
+
+
+

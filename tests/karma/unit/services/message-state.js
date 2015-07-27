@@ -11,16 +11,7 @@ describe('MessageState service', function() {
     get = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.factory('DB', function() {
-        return {
-          get: function() {
-            return {
-              put: put,
-              get: get
-            };
-          }
-        };
-      });
+      $provide.factory('DB', KarmaUtils.mockDB({ put: put, get: get }));
     });
     inject(function(_MessageState_) {
       service = _MessageState_;

@@ -10,15 +10,7 @@ describe('ImportContacts service', function() {
     put = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.factory('DB', function() {
-        return {
-          get: function() {
-            return {
-              put: put
-            };
-          }
-        };
-      });
+      $provide.factory('DB', KarmaUtils.mockDB({ put: put }));
       $provide.value('BaseUrlService', function() {
         return 'BASEURL';
       });

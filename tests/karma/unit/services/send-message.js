@@ -6,24 +6,15 @@ describe('SendMessage service', function() {
       $rootScope,
       settings,
       id,
-      saveDoc;
+      post;
 
   beforeEach(function () {
     id = sinon.stub();
-    saveDoc = sinon.stub();
+    post = sinon.stub();
     settings = {};
     module('inboxApp');
     module(function ($provide) {
-      $provide.factory('DB', function() {
-        return {
-          get: function() {
-            return {
-              post: saveDoc,
-              id: id
-            };
-          }
-        };
-      });
+      $provide.factory('DB', KarmaUtils.mockDB({ post: post, id: id }));
       $provide.value('User', function(callback) {
         callback(null, { phone: '+5551', name: 'jack' });
       });
@@ -38,7 +29,7 @@ describe('SendMessage service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(id, saveDoc);
+    KarmaUtils.restore(id, post);
   });
 
   function assertMessage(task, expected) {
@@ -55,7 +46,7 @@ describe('SendMessage service', function() {
   it('create doc for one recipient', function(done) {
 
     id.returns(KarmaUtils.fakeResolved(null, 53));
-    saveDoc.returns(KarmaUtils.fakeResolved());
+    post.returns(KarmaUtils.fakeResolved());
 
     var recipient = {
       _id: 'abc',
@@ -67,8 +58,8 @@ describe('SendMessage service', function() {
     service(recipient, 'hello')
       .then(function() {
         chai.expect(id.callCount).to.equal(1);
-        chai.expect(saveDoc.callCount).to.equal(1);
-        assertMessage(saveDoc.args[0][0].tasks[0], {
+        chai.expect(post.callCount).to.equal(1);
+        assertMessage(post.args[0][0].tasks[0], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5552',
@@ -85,7 +76,7 @@ describe('SendMessage service', function() {
   it('normalizes phone numbers', function(done) {
 
     id.returns(KarmaUtils.fakeResolved(null, 53));
-    saveDoc.returns(KarmaUtils.fakeResolved());
+    post.returns(KarmaUtils.fakeResolved());
 
     var recipient = { contact: { phone: '5552' } };
 
@@ -96,8 +87,8 @@ describe('SendMessage service', function() {
     service(recipient, 'hello')
       .then(function() {
         chai.expect(id.callCount).to.equal(1);
-        chai.expect(saveDoc.callCount).to.equal(1);
-        assertMessage(saveDoc.args[0][0].tasks[0], {
+        chai.expect(post.callCount).to.equal(1);
+        assertMessage(post.args[0][0].tasks[0], {
           from: '+5551',
           sent_by: 'jack',
           to: '+2545552',
@@ -115,7 +106,7 @@ describe('SendMessage service', function() {
     id
       .onFirstCall().returns(KarmaUtils.fakeResolved(null, 53))
       .onSecondCall().returns(KarmaUtils.fakeResolved(null, 150));
-    saveDoc.returns(KarmaUtils.fakeResolved());
+    post.returns(KarmaUtils.fakeResolved());
 
     var recipients = [
       {
@@ -135,16 +126,16 @@ describe('SendMessage service', function() {
     service(recipients, 'hello')
       .then(function() {
         chai.expect(id.callCount).to.equal(2);
-        chai.expect(saveDoc.callCount).to.equal(1);
-        chai.expect(saveDoc.args[0][0].tasks.length).to.equal(2);
-        assertMessage(saveDoc.args[0][0].tasks[0], {
+        chai.expect(post.callCount).to.equal(1);
+        chai.expect(post.args[0][0].tasks.length).to.equal(2);
+        assertMessage(post.args[0][0].tasks[0], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5552',
           uuid: 53,
           facility: recipients[0]
         });
-        assertMessage(saveDoc.args[0][0].tasks[1], {
+        assertMessage(post.args[0][0].tasks[1], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5553',
@@ -164,7 +155,7 @@ describe('SendMessage service', function() {
       .onFirstCall().returns(KarmaUtils.fakeResolved(null, 53))
       .onSecondCall().returns(KarmaUtils.fakeResolved(null, 150))
       .onThirdCall().returns(KarmaUtils.fakeResolved(null, 6));
-    saveDoc.returns(KarmaUtils.fakeResolved());
+    post.returns(KarmaUtils.fakeResolved());
 
     var recipients = [
       {
@@ -201,23 +192,23 @@ describe('SendMessage service', function() {
     service(recipients, 'hello')
       .then(function() {
         chai.expect(id.callCount).to.equal(3);
-        chai.expect(saveDoc.callCount).to.equal(1);
-        chai.expect(saveDoc.args[0][0].tasks.length).to.equal(3);
-        assertMessage(saveDoc.args[0][0].tasks[0], {
+        chai.expect(post.callCount).to.equal(1);
+        chai.expect(post.args[0][0].tasks.length).to.equal(3);
+        assertMessage(post.args[0][0].tasks[0], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5552',
           uuid: 53,
           facility: recipients[0]
         });
-        assertMessage(saveDoc.args[0][0].tasks[1], {
+        assertMessage(post.args[0][0].tasks[1], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5553',
           uuid: 150,
           facility: recipients[1].descendants[0]
         });
-        assertMessage(saveDoc.args[0][0].tasks[2], {
+        assertMessage(post.args[0][0].tasks[2], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5554',
@@ -256,10 +247,10 @@ describe('SendMessage service', function() {
     $rootScope.$digest();
   });
 
-  it('returns saveDoc errors', function(done) {
+  it('returns post errors', function(done) {
 
     id.returns(KarmaUtils.fakeResolved(null, 3333));
-    saveDoc.returns(KarmaUtils.fakeResolved('errcode2'));
+    post.returns(KarmaUtils.fakeResolved('errcode2'));
 
     var recipients = {
       _id: 'abc',

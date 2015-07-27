@@ -9,15 +9,7 @@ describe('MarkAllRead service', function() {
     bulkDocs = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.factory('DB', function() {
-        return {
-          get: function() {
-            return {
-              bulkDocs: bulkDocs
-            };
-          }
-        };
-      });
+      $provide.factory('DB', KarmaUtils.mockDB({ bulkDocs: bulkDocs }));
       $provide.value('UserCtxService', function() {
         return { name: 'james' };
       });

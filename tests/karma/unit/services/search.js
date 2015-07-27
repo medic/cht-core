@@ -6,7 +6,6 @@ describe('Search service', function() {
   'use strict';
 
   var service,
-      DB,
       DbGet,
       DbView,
       GenerateSearchRequests,
@@ -15,15 +14,11 @@ describe('Search service', function() {
 
   beforeEach(function() {
     DbView = sinon.stub();
-    DB = sinon.stub();
     GenerateSearchRequests = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DbView', function() {
         return DbView;
-      });
-      $provide.factory('DB', function() {
-        return DB;
       });
       $provide.factory('GenerateSearchRequests', function() {
         return GenerateSearchRequests;
