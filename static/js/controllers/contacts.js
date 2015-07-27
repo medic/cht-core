@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', 
-    ['$scope', '$state', '$timeout', 'DB', 'Search', 'DbView',
-    function ($scope, $state, $timeout, DB, Search, DbView) {
+    ['$scope', '$state', '$timeout', 'DB', 'Search',
+    function ($scope, $state, $timeout, DB, Search) {
 
       $scope.filterModel.type = 'contacts';
       $scope.setContacts();
@@ -70,20 +70,20 @@ var _ = require('underscore'),
       };
 
       var getChildren = function(id) {
-        var options = { params: {
+        var options = {
           startkey: [ id ],
           endkey: [ id, {} ],
           include_docs: true
-        } };
-        return DbView('facility_by_parent', options);
+        };
+        return DB.get().query('medic/facility_by_parent', options);
       };
 
       var getContactFor = function(id) {
-        var options = { params: {
+        var options = {
           key: [ id ],
           include_docs: true
-        } };
-        return DbView('facilities_by_contact', options);
+        };
+        return DB.get().query('medic/facilities_by_contact', options);
       };
 
       $scope.selectContact = function(id) {
@@ -92,8 +92,8 @@ var _ = require('underscore'),
           promise.all([ getContact(id), getChildren(id), getContactFor(id) ])
             .then(function(results) {
               var doc = results[0];
-              doc.children = results[1][0];
-              doc.contactFor = results[2][0];
+              doc.children = results[1].rows;
+              doc.contactFor = results[2].rows;
               $scope.setSelected(doc);
             })
             .catch(function(err) {
