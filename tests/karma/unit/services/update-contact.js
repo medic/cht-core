@@ -31,12 +31,7 @@ describe('UpdateContact service', function() {
   });
 
   afterEach(function() {
-    if (query.restore) {
-      query.restore();
-    }
-    if (put.restore) {
-      put.restore();
-    }
+    KarmaUtils.restore(query, put);
   });
 
   it('returns save errors', function() {

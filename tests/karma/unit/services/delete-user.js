@@ -25,9 +25,7 @@ describe('DeleteUser service', function() {
   afterEach(function() {
     $httpBackend.verifyNoOutstandingExpectation();
     $httpBackend.verifyNoOutstandingRequest();
-    if (cacheRemove.restore) {
-      cacheRemove.restore();
-    }
+    KarmaUtils.restore(cacheRemove);
   });
 
   it('returns errors', function(done) {

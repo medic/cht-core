@@ -30,9 +30,7 @@ describe('UpdateUser service', function() {
   afterEach(function() {
     $httpBackend.verifyNoOutstandingExpectation();
     $httpBackend.verifyNoOutstandingRequest();
-    if (cacheRemove.restore) {
-      cacheRemove.restore();
-    }
+    KarmaUtils.restore(cacheRemove);
   });
 
   it('creates a user', function(done) {

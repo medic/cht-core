@@ -28,12 +28,7 @@ describe('MessageState service', function() {
   });
 
   afterEach(function() {
-    if (put.restore) {
-      put.restore();
-    }
-    if (get.restore) {
-      get.restore();
-    }
+    KarmaUtils.restore(put, get);
   });
 
   it('any returns true when some row in the group matches', function() {

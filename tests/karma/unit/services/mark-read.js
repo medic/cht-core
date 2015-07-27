@@ -31,12 +31,7 @@ describe('MarkRead service', function() {
   });
 
   afterEach(function() {
-    if (put.restore) {
-      put.restore();
-    }
-    if (get.restore) {
-      get.restore();
-    }
+    KarmaUtils.restore(put, get);
   });
 
   it('marks the message read', function(done) {

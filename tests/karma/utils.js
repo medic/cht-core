@@ -1,4 +1,11 @@
 window.KarmaUtils = {
+  restore: function() {
+    for (var i = 0; i < arguments.length; i++) {
+      if (arguments[i].restore) {
+        arguments[i].restore();
+      }
+    }
+  },
   fakeResolved: function(err, doc) {
     return {
       then: function(callback) {

@@ -32,9 +32,7 @@ describe('ImportContacts service', function() {
   afterEach(function() {
     $httpBackend.verifyNoOutstandingExpectation();
     $httpBackend.verifyNoOutstandingRequest();
-    if (put.restore) {
-      put.restore();
-    }
+    KarmaUtils.restore(put);
   });
 
   it('does nothing when there are no contacts', function(done) {

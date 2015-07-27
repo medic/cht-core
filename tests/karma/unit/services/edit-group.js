@@ -28,12 +28,7 @@ describe('EditGroup service', function() {
   });
 
   afterEach(function() {
-    if (put.restore) {
-      put.restore();
-    }
-    if (get.restore) {
-      get.restore();
-    }
+    KarmaUtils.restore(put, get);
   });
 
   it('returns get errors', function(done) {

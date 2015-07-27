@@ -28,12 +28,7 @@ describe('Verified service', function() {
   });
 
   afterEach(function() {
-    if (getDoc.restore) {
-      getDoc.restore();
-    }
-    if (saveDoc.restore) {
-      saveDoc.restore();
-    }
+    KarmaUtils.restore(getDoc, saveDoc);
   });
 
   it('marks the message verified', function(done) {

@@ -38,12 +38,7 @@ describe('SendMessage service', function() {
   });
 
   afterEach(function() {
-    if (id.restore) {
-      id.restore();
-    }
-    if (saveDoc.restore) {
-      saveDoc.restore();
-    }
+    KarmaUtils.restore(id, saveDoc);
   });
 
   function assertMessage(task, expected) {

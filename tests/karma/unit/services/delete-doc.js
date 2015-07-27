@@ -35,15 +35,7 @@ describe('DeleteDoc service', function() {
   });
 
   afterEach(function() {
-    if (getDoc.restore) {
-      getDoc.restore();
-    }
-    if (saveDoc.restore) {
-      saveDoc.restore();
-    }
-    if (broadcast.restore) {
-      broadcast.restore();
-    }
+    KarmaUtils.restore(getDoc, saveDoc, broadcast);
   });
 
   it('returns db errors', function(done) {

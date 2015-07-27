@@ -28,9 +28,7 @@ describe('MarkAllRead service', function() {
   });
 
   afterEach(function() {
-    if (bulkDocs.restore) {
-      bulkDocs.restore();
-    }
+    KarmaUtils.restore(bulkDocs);
   });
 
   it('marks the messages read', function(done) {
