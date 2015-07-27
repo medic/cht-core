@@ -70,6 +70,7 @@ var libphonenumber = require('libphonenumber/utils'),
           page1: {}
         };
 
+        $scope.original = contact;
         if (contact._id) {
           $scope.contact = {
             name: contact.name,
@@ -208,7 +209,7 @@ var libphonenumber = require('libphonenumber/utils'),
         if (!added) {
           return callback();
         }
-        UpdateContact(added._id, { parent: parent }, callback);
+        UpdateContact(added, { parent: parent }, callback);
       };
 
       $scope.setPage = function(page) {
@@ -231,7 +232,7 @@ var libphonenumber = require('libphonenumber/utils'),
               if (added) {
                 $scope.contact.contact = added;
               }
-              UpdateContact($scope.contactId, $scope.contact, function(err, contact) {
+              UpdateContact($scope.original, $scope.contact, function(err, contact) {
                 if (err) {
                   return pane.done(translateFilter('Error updating contact'), err);
                 }
