@@ -3,45 +3,38 @@ describe('UpdateFacility service', function() {
   'use strict';
 
   var service,
-      db;
+      get,
+      put;
 
   beforeEach(function() {
-    db = {};
+    get = sinon.stub();
+    put = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('db', db);
+      $provide.factory('DB', KarmaUtils.mockDB({ get: get, put: put }));
     });
     inject(function(_UpdateFacility_) {
       service = _UpdateFacility_;
     });
   });
 
+  afterEach(function() {
+    KarmaUtils.restore(get, put);
+  });
+
   it('updates the facility', function(done) {
-
-    db.getDoc = function(id, callback) {
-      if (id === 'abc') {
-        return callback(null, {
-          _id: 'abc',
-          errors: [
-            { code: 'sys.facility_not_found' },
-            { code: 'other error' }
-          ]
-        });
-      }
-      if (id === 'xyz') {
-        return callback(null, {
-          _id: 'xyz'
-        });
-      }
-      chai.fail(id, 'abc or xyz');
+    var message = {
+      _id: 'abc',
+      _rev: 1,
+      errors: [
+        { code: 'sys.facility_not_found' },
+        { code: 'other error' }
+      ]
     };
-
-    db.saveDoc = function(message, callback) {
-      callback(null);
-    };
-
+    var facility = { _id: 'xyz' };
     var expected = { 
       _id: 'abc',
+      _rev: 2,
       errors: [
         { code: 'other error' }
       ],
@@ -50,52 +43,44 @@ describe('UpdateFacility service', function() {
       }
     };
 
-    service('abc', 'xyz', function(err, actual) {
+    get
+      .onFirstCall().returns(KarmaUtils.fakeResolved(null, message))
+      .onSecondCall().returns(KarmaUtils.fakeResolved(null, facility));
+    put.returns(KarmaUtils.fakeResolved(null, { _id: message._id, _rev: 2 }));
+
+    service('abc', 'xyz', function(err) {
       chai.expect(err).to.equal(null);
-      chai.expect(actual).to.deep.equal(expected);
+      chai.expect(put.calledOnce).to.equal(true);
+      chai.expect(put.args[0][0]).to.deep.equal(expected);
       done();
     });
   });
 
   it('returns db errors', function(done) {
-
-    db.getDoc = function(id, callback) {
-      callback('errcode1');
-    };
-
+    get
+      .onFirstCall().returns(KarmaUtils.fakeResolved('errcode1'))
+      .onSecondCall().returns(KarmaUtils.fakeResolved(null, {}));
     service('abc', 'xyz', function(err) {
       chai.expect(err).to.equal('errcode1');
       done();
     });
   });
 
-  it('returns db errors from second invokation', function(done) {
-
-    db.getDoc = function(id, callback) {
-      if (id === 'abc') {
-        return callback(null, {
-          _id: 'abc'
-        });
-      }
-      callback('errcode2');
-    };
-
+  it('returns db errors from second call', function(done) {
+    get
+      .onFirstCall().returns(KarmaUtils.fakeResolved(null, {}))
+      .onSecondCall().returns(KarmaUtils.fakeResolved('errcode2'));
     service('abc', 'xyz', function(err) {
       chai.expect(err).to.equal('errcode2');
       done();
     });
   });
 
-  it('returns audit errors', function(done) {
-
-    db.getDoc = function(id, callback) {
-      return callback(null, {});
-    };
-
-    db.saveDoc = function(message, callback) {
-      callback('errcode3');
-    };
-
+  it('returns save errors', function(done) {
+    get
+      .onFirstCall().returns(KarmaUtils.fakeResolved(null, {}))
+      .onSecondCall().returns(KarmaUtils.fakeResolved(null, {}));
+    put.returns(KarmaUtils.fakeResolved('errcode3'));
     service('abc', 'xyz', function(err) {
       chai.expect(err).to.equal('errcode3');
       done();
