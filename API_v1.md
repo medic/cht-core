@@ -4,6 +4,13 @@ HTTP response bodies are all in JSON format.
 
 Respond with HTTP 200 status on successful requests.
 
+# Table of contents
+
+  * [Forms](#forms)
+  * [Records](#records)
+  * [Messages](#messages)
+  * [Contacts](#contacts)
+
 # Forms
 
 ## GET /api/v1/forms
