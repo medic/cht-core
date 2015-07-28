@@ -157,20 +157,40 @@
 			    };
 
 			    (function() {
-			      var i, table = $('#form-examples');
+			      var i, table = $('#form-examples'),
+			          addFormToTable = function(name, url) {
+			          table.append('<tr><td>' + name + '</td>' +
+			              '<td><a href="' + url + '">view</a></td>' +
+			              '<td><button class="btn btn-primary form-loader" onclick="loadXmlFrom(\'' + url + '\')">load<button></td>' +
+			              '</tr>');
+			          };
 
-			      window.loadXmlFrom = function(i, suffix) {
-			        var url = 'forms/' + i + suffix + '.xml';
+			      window.loadXmlFrom = function(url) {
 			        console.log('Should load from ' + url);
 			        loadForm(url);
 			      };
 
 			      for(i=1; i<=2; ++i) {
-			        table.append('<tr><td>' + i + '</td>' +
-			            '<td><a href="forms/' + i + '.xml">view</a></td>' +
-			            '<td><button class="btn btn-primary form-loader" onclick="loadXmlFrom(' + i + ', \'\')">load<button></td>' +
-			            '</tr>');
+			        addFormToTable('Demo Form ' + i,
+			           'forms/' + i + '.xml');
 			      }
+
+			      log('Fetching forms...');
+			      $.ajax({
+			        url: 'http://localhost:5988/api/v1/forms',
+			        headers: { 'X-OpenRosa-Version':'1.0' },
+			        success: function(xml) {
+			          debugger;
+			          var i, xform,
+			              xforms = xml.getElementsByTagName('xform');
+			          log('Loaded ' + xforms.length + ' forms from DB.');
+			          for(i=0; i<xforms.length; ++i) {
+			            xform = xforms[i];
+			            addFormToTable(xform.getElementsByTagName('name')[0].textContent,
+			                xform.getElementsByTagName('downloadUrl')[0].textContent);
+			          }
+			        }
+			      });
 			    }());
 			  });
 			});
