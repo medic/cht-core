@@ -51,6 +51,10 @@
 		</tbody></table>
 
 		<script>
+			window.medic_config = {
+			  app_root: window.location.protocol + '//' + window.location.host,
+			};
+
 			require.config( {
 			    shim: {
 			        "widget/date/bootstrap3-datepicker/js/bootstrap-datepicker": {
@@ -82,13 +86,38 @@
 			  requirejs(['enketo-js/Form'], function(Form) {
 			    log('Enketo loaded.');
 
-			    var showForm = function(formHtml, formData) {
+			    var showForm = function(formName, formHtml, formData) {
 			      var form, formContainer, formWrapper,
 			          init = function() {
 			            var loadErrors;
 			            form = new Form('#form-wrapper form', { modelStr:formData });
 			            loadErrors = form.init();
 			            if(loadErrors) log('loadErrors = ' + loadErrors);
+			          },
+			          xformDataAsJsonString = function(xml) {
+			            var i, n,
+			                data = xml.firstChild.childNodes,
+			                json = {
+			                  _meta:{
+			                    form: formName,
+			                    from: 'user:TODO',
+			                    reported_date: Date.now()
+			                  },
+			                  fields: {}, // FIXME
+			                };
+			            for(i=0; i<data.length; ++i) {
+			              n = data[i];
+			              if(n.nodeType !== Node.ELEMENT_NODE ||
+			                  n.nodeName === 'meta') continue;
+			              json[n.nodeName] = n.textContent;
+			              // FIXME as things generally aren't working,
+			              // it's not clear if data should be included
+			              // via `.fields` or in the root of the JSON.
+			              // When that is clarified, one or other
+			              // should be removed.
+			              json.fields[n.nodeName] = n.textContent;
+			            };
+			            return JSON.stringify(json);
 			          };
 
 			      log('Adding form to DOM...');
@@ -108,9 +137,30 @@
 			        form.validate();
 			        if(form.isValid()) {
 			          log('Form content is valid!  Saving and resetting.');
-			          var record = form.getDataStr();
-			          form.resetView();
-			          init();
+			          var record = $.parseXML(form.getDataStr()),
+			              addUrl = medic_config.app_root + '/api/v1/records',
+			              validateButton = $('#form-wrapper input[type=submit]');
+			          validateButton.prop('disabled', true);
+			          record = xformDataAsJsonString(record);
+			          $.ajax({
+			            url: addUrl,
+			            type: 'POST',
+			            data: record,
+			            headers: {
+			              'Content-Type': 'application/json'
+			            },
+			            success: function() {
+			              form.resetView();
+			              init();
+			            },
+			            error: function(req, status, err) {
+			              log('Error submitting form data: ' + {
+			                req:req, status:status, error:err });
+			            },
+			            complete: function() {
+			              validateButton.prop('disabled', false);
+			            }
+			          });
 			        } else {
 			          log('Form contains errors.  Please correct them.');
 			        }
@@ -133,7 +183,7 @@
 			      processors.model.loaded = true;
 			    });
 
-			    var loadForm = function(url) {
+			    var loadForm = function(name, url) {
 			      if(!processors.html.loaded || !processors.model.loaded) {
 			        return log('Not all processors are loaded yet.');
 			      }
@@ -153,42 +203,44 @@
 			        console.log('---');
 			        console.log(new XMLSerializer().serializeToString(html));
 
-			        showForm(html.documentElement.innerHTML,
+			        showForm(name,
+			            html.documentElement.innerHTML,
 			            model.documentElement.innerHTML);
 			      });
 			    };
 
 			    (function() {
 			      var i, table = $('#form-examples'),
-			          addFormToTable = function(name, url) {
+			          addFormToTable = function(id, name, url) {
 			          table.append('<tr><td>' + name + '</td>' +
 			              '<td><a href="' + url + '">view</a></td>' +
-			              '<td><button class="btn btn-primary form-loader" onclick="loadXmlFrom(\'' + url + '\')">load<button></td>' +
+			              '<td><button class="btn btn-primary form-loader" onclick="loadXmlFrom(\'' + id + '\', \'' + url + '\')">load<button></td>' +
 			              '</tr>');
 			          };
 
-			      window.loadXmlFrom = function(url) {
+			      window.loadXmlFrom = function(name, url) {
 			        console.log('Should load from ' + url);
-			        loadForm(url);
+			        loadForm(name, url);
 			      };
 
 			      for(i=1; i<=2; ++i) {
-			        addFormToTable('Demo Form ' + i,
+			        addFormToTable('demo:' + i,
+			           'Demo Form ' + i,
 			           'forms/' + i + '.xml');
 			      }
 
 			      log('Fetching forms...');
 			      $.ajax({
-			        url: 'http://localhost:5988/api/v1/forms',
+			        url: medic_config.app_root + '/api/v1/forms',
 			        headers: { 'X-OpenRosa-Version':'1.0' },
 			        success: function(xml) {
-			          debugger;
 			          var i, xform,
 			              xforms = xml.getElementsByTagName('xform');
 			          log('Loaded ' + xforms.length + ' forms from DB.');
 			          for(i=0; i<xforms.length; ++i) {
 			            xform = xforms[i];
-			            addFormToTable(xform.getElementsByTagName('name')[0].textContent,
+			            addFormToTable(xform.getElementsByTagName('formID')[0].textContent,
+			                xform.getElementsByTagName('name')[0].textContent,
 			                xform.getElementsByTagName('downloadUrl')[0].textContent);
 			          }
 			        }
