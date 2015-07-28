@@ -49,7 +49,7 @@ describe('User service', function() {
       .respond(404, 'Not found');
 
     service(function(err) {
-      chai.expect(err.message).to.equal('Not found');
+      chai.expect(err).to.equal('Not found');
       done();
     });
 

@@ -42,11 +42,11 @@ describe('UpdateUser service', function() {
     };
 
     var expected = {
+      _id: 'org.couchdb.user:sally',
+      type: 'user',
       name: 'sally',
       favcolour: 'aqua',
-      starsign: 'libra',
-      _id: 'org.couchdb.user:sally',
-      type: 'user'
+      starsign: 'libra'
     };
 
     $httpBackend
@@ -74,6 +74,7 @@ describe('UpdateUser service', function() {
     };
 
     var expected = {
+      _id: 'org.couchdb.user:jerome',
       name: 'jerome',
       favcolour: 'aqua',
       starsign: 'libra'
@@ -81,7 +82,7 @@ describe('UpdateUser service', function() {
 
     $httpBackend
       .expect('GET', '/_users/org.couchdb.user:jerome')
-      .respond({ name: 'jerome', favcolour: 'turquoise' });
+      .respond({ _id: 'org.couchdb.user:jerome', name: 'jerome', favcolour: 'turquoise' });
 
     $httpBackend
       .expect('PUT', '/_users/org.couchdb.user:jerome', JSON.stringify(expected))
@@ -109,6 +110,7 @@ describe('UpdateUser service', function() {
     };
 
     var expected = {
+      _id: 'org.couchdb.user:jerome',
       name: 'jerome',
       favcolour: 'aqua',
       starsign: 'libra',
@@ -117,7 +119,7 @@ describe('UpdateUser service', function() {
 
     $httpBackend
       .expect('GET', '/_users/org.couchdb.user:jerome')
-      .respond({ name: 'jerome', favcolour: 'turquoise', derived_key: 'abc', salt: 'def' });
+      .respond({ _id: 'org.couchdb.user:jerome', name: 'jerome', favcolour: 'turquoise', derived_key: 'abc', salt: 'def' });
 
     $httpBackend
       .expect('PUT', '/_users/org.couchdb.user:jerome', JSON.stringify(expected))
@@ -146,6 +148,7 @@ describe('UpdateUser service', function() {
     };
 
     var expected = {
+      _id: 'org.couchdb.user:gareth',
       name: 'gareth',
       favcolour: 'aqua',
       starsign: 'libra',
@@ -154,7 +157,7 @@ describe('UpdateUser service', function() {
 
     $httpBackend
       .expect('GET', '/_users/org.couchdb.user:gareth')
-      .respond({ name: 'gareth', favcolour: 'turquoise', derived_key: 'abc', salt: 'def' });
+      .respond({ _id: 'org.couchdb.user:gareth', name: 'gareth', favcolour: 'turquoise', derived_key: 'abc', salt: 'def' });
 
     $httpBackend
       .expect('PUT', '/_config/admins/gareth', '"xyz"')
@@ -189,7 +192,7 @@ describe('UpdateUser service', function() {
     };
 
     service('org.couchdb.user:jerome', updates, function(err) {
-      chai.expect(err.message).to.equal('Server error');
+      chai.expect(err).to.equal('Server error');
       chai.expect(cacheRemove.callCount).to.equal(0);
       done();
     });

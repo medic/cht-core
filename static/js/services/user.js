@@ -36,20 +36,18 @@ var _ = require('underscore'),
     }
   ]);
 
+  var getUser = function(HttpWrapper, id, callback) {
+    HttpWrapper.get('/_users/' + id, { cache: true, targetScope: 'root' })
+      .success(function(data) {
+        callback(null, data);
+      })
+      .error(callback);
+  };
+
   inboxServices.factory('User', ['HttpWrapper', 'UserCtxService',
     function(HttpWrapper, UserCtxService) {
       return function(callback) {
-        HttpWrapper
-          .get(
-            '/_users/org.couchdb.user%3A' + UserCtxService().name,
-            { cache: true, targetScope: 'root' }
-          )
-          .success(function(data) {
-            callback(null, data);
-          })
-          .error(function(data) {
-            callback(new Error(data));
-          });
+        getUser(HttpWrapper, 'org.couchdb.user%3A' + UserCtxService().name, callback);
       };
     }
   ]);
@@ -122,48 +120,6 @@ var _ = require('underscore'),
     }
   ]);
 
-  var getUser = function(HttpWrapper, id, updates, callback) {
-    if (id) {
-      HttpWrapper.get('/_users/' + id)
-        .success(function(data) {
-          callback(null, id, _.extend(data, updates));
-        })
-        .error(function(data) {
-          callback(new Error(data));
-        });
-    } else {
-      id = 'org.couchdb.user:' + updates.name;
-      updates._id = id;
-      updates.type = 'user';
-      callback(null, 'org.couchdb.user:' + updates.name, updates);
-    }
-  };
-
-  var updatePassword = function(HttpWrapper, Admins, updated, callback) {
-    if (!updated.password) {
-      // password not changed, do nothing
-      return callback();
-    }
-    updated.derived_key = undefined;
-    updated.salt = undefined;
-    Admins(function(err, admins) {
-      if (err) {
-        return callback(err);
-      }
-      if (!admins[updated.name]) {
-        // not an admin so admin password change not required
-        return callback();
-      }
-      HttpWrapper.put('/_config/admins/' + updated.name, '"' + updated.password + '"')
-        .success(function() {
-          callback();
-        })
-        .error(function(data) {
-          callback(new Error(data));
-        });
-    });
-  };
-
   var removeCacheEntry = function($cacheFactory, id) {
     var cache = $cacheFactory.get('$http');
     cache.remove('/_users/' + encodeURIComponent(id));
@@ -173,18 +129,55 @@ var _ = require('underscore'),
 
   inboxServices.factory('UpdateUser', ['HttpWrapper', '$cacheFactory', 'Admins',
     function(HttpWrapper, $cacheFactory, Admins) {
-      return function(id, updates, callback) {
-        getUser(HttpWrapper, id, updates, function(err, id, updated) {
+
+      var getOrCreateUser = function(id, updates, callback) {
+        if (id) {
+          return getUser(HttpWrapper, id, callback);
+        }
+        callback(null, {
+          _id: 'org.couchdb.user:' + updates.name,
+          type: 'user'
+        });
+      };
+
+      var updatePassword = function(updated, callback) {
+        if (!updated.password) {
+          // password not changed, do nothing
+          return callback();
+        }
+        updated.derived_key = undefined;
+        updated.salt = undefined;
+        Admins(function(err, admins) {
           if (err) {
             return callback(err);
           }
-          updatePassword(HttpWrapper, Admins, updated, function(err) {
+          if (!admins[updated.name]) {
+            // not an admin so admin password change not required
+            return callback();
+          }
+          HttpWrapper.put('/_config/admins/' + updated.name, '"' + updated.password + '"')
+            .success(function() {
+              callback();
+            })
+            .error(function(data) {
+              callback(new Error(data));
+            });
+        });
+      };
+
+      return function(id, updates, callback) {
+        getOrCreateUser(id, updates, function(err, user) {
+          if (err) {
+            return callback(err);
+          }
+          var updated = _.extend(user, updates);
+          updatePassword(updated, function(err) {
             if (err) {
               return callback(err);
             }
-            HttpWrapper.put('/_users/' + id, updated)
+            HttpWrapper.put('/_users/' + user._id, updated)
               .success(function() {
-                removeCacheEntry($cacheFactory, id);
+                removeCacheEntry($cacheFactory, user._id);
                 callback(null, updated);
               })
               .error(function(data) {
