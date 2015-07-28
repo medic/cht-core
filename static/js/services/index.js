@@ -11,6 +11,7 @@
   require('./conflict-resolution');
   require('./count-messages');
   require('./db');
+  require('./db-sync');
   require('./db-view');
   require('./delete-doc');
   require('./download-url');

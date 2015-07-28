@@ -7,8 +7,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('UserDistrict', ['db', 'UserCtxService',
-    function(db, UserCtxService) {
+  inboxServices.factory('UserDistrict', ['DB', 'User', 'UserCtxService',
+    function(DB, User, UserCtxService) {
       return function(callback) {
         var userCtx = UserCtxService();
         if (!userCtx.name) {
@@ -17,10 +17,21 @@ var _ = require('underscore'),
         if (utils.isUserAdmin(userCtx)) {
           return callback();
         }
-        if (utils.isUserDistrictAdmin(userCtx)) {
-          return utils.checkDistrictConstraint(userCtx, db, callback);
+        if (!utils.isUserDistrictAdmin(userCtx)) {
+          return callback(new Error('The administrator needs to give you additional privileges to use this site.'));
         }
-        callback(new Error('The administrator needs to give you additional privileges to use this site.'));
+        User(function(err, user) {
+          if (!user.facility_id) {
+            return callback(new Error('No district assigned to district admin.'));
+          }
+          // ensure the facility exists
+          DB.get()
+            .get(user.facility_id)
+            .then(function() {
+              callback(null, user.facility_id);
+            })
+            .catch(callback);
+        });
       };
     }
   ]);

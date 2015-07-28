@@ -3,30 +3,34 @@ describe('UserDistrict service', function() {
   'use strict';
 
   var service,
+      user,
       userCtx,
-      facility;
+      get;
 
   beforeEach(function() {
+    get = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
+      $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
+      $provide.value('User', function(callback) {
+        callback(null, user);
+      });
       $provide.value('UserCtxService', function() {
         return userCtx;
-      });
-      $provide.value('db', {
-        getDoc: function(facilityId, callback) {
-          callback(null, facility);
-        }
       });
     });
     inject(function($injector) {
       service = $injector.get('UserDistrict');
     });
-    userCtx = undefined;
-    facility = undefined;
+    userCtx = null;
+    user = null;
+  });
+
+  afterEach(function() {
+    KarmaUtils.restore(get);
   });
 
   it('returns nothing for db admin', function(done) {
-
     userCtx = {
       name: 'greg',
       roles: ['_admin']
@@ -59,13 +63,16 @@ describe('UserDistrict service', function() {
 
     userCtx = {
       name: 'jeff',
+      roles: ['district_admin']
+    };
+
+    user = {
+      name: 'jeff',
       roles: ['district_admin'],
       facility_id: 'x'
     };
 
-    facility = {
-      type: 'district_hospital'
-    };
+    get.onFirstCall().returns(KarmaUtils.mockPromise(null, { type: 'district_hospital' }));
 
     service(function(err, actual) {
       chai.expect(err).to.equal(null);
