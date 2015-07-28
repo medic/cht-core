@@ -6,10 +6,12 @@ var couchUrl = process.env.COUCH_URL;
 if (couchUrl) {
   // strip trailing slash from to prevent bugs in path matching
   couchUrl = couchUrl.replace(/\/$/, '');
+  var baseUrl = couchUrl.substring(0, couchUrl.indexOf('/', 10));
   var parsedUrl = url.parse(couchUrl);
 
-  module.exports = nano(couchUrl.substring(0, couchUrl.indexOf('/', 10)));
+  module.exports = nano(baseUrl);
   module.exports.medic = nano(couchUrl);
+  module.exports._users = module.exports.use('_users');
 
   module.exports.settings = {
     protocol: parsedUrl.protocol,
@@ -71,6 +73,10 @@ if (couchUrl) {
       get: function() {},
       insert: function() {},
       updateWithHandler: function() {}
+    },
+    _users: {
+      list: function() {},
+      insert: function() {}
     }
   };
 } else {
