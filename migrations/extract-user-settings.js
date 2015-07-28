@@ -9,7 +9,7 @@ var fieldsToIncludeInUser = fieldsToOmitFromSettings.concat(fieldsToIncludeInBot
 var updateUser = function(row, callback) {
   var user = _.pick(row.doc, fieldsToIncludeInUser);
   db._users.insert(user, callback);
-}
+};
 
 var splitUser = function(row, callback) {
   var settings = _.omit(row.doc, fieldsToOmitFromSettings);

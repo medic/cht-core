@@ -97,8 +97,7 @@ exports['returns errors from insert'] = function(test) {
 
 exports['returns errors from update'] = function(test) {
   test.expect(1);
-  var list = sinon.stub(db._users, 'list')
-    .callsArgWith(1, null, { rows: [ ddoc, userA, userB ] });
+  sinon.stub(db._users, 'list').callsArgWith(1, null, { rows: [ ddoc, userA, userB ] });
   var medicInsert = sinon.stub(db.medic, 'insert');
   medicInsert
     .onFirstCall().callsArgWith(1)
