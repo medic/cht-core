@@ -325,7 +325,7 @@ app.get('/api/v1/messages', function(req, res) {
     var opts = _.pick(req.query, 'limit', 'start', 'descending', 'state');
     messages.getMessages(opts, ctx && ctx.district, function(err, result) {
       if (err) {
-        return serverError(err.message, res);
+        return serverError(err.message, req, res);
       }
       res.json(result);
     });
@@ -339,7 +339,7 @@ app.get('/api/v1/messages/:id', function(req, res) {
     }
     messages.getMessage(req.params.id, ctx && ctx.district, function(err, result) {
       if (err) {
-        return serverError(err.message, res);
+        return serverError(err.message, req, res);
       }
       res.json(result);
     });
@@ -353,7 +353,7 @@ app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
     }
     messages.updateMessage(req.params.id, req.body, ctx && ctx.district, function(err, result) {
       if (err) {
-        return serverError(err.message, res);
+        return serverError(err.message, req, res);
       }
       res.json(result);
     });
@@ -367,7 +367,7 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
     }
     records.create(req.body, req.is(['json','urlencoded']), function(err, result) {
       if (err) {
-        return serverError(err.message, res);
+        return serverError(err.message, req, res);
       }
       res.json(result);
     });
@@ -381,7 +381,7 @@ app.get('/api/v1/scheduler/:name', function(req, res) {
     }
     scheduler.exec(req.params.name, function(err) {
       if (err) {
-        return serverError(err.message, res);
+        return serverError(err.message, req, res);
       }
       res.json({ schedule: req.params.name, result: 'success' });
     });
@@ -391,7 +391,7 @@ app.get('/api/v1/scheduler/:name', function(req, res) {
 app.get('/api/v1/forms', function(req, res) {
   forms.listForms(req.headers, function(err, body, headers) {
     if (err) {
-      return serverError(err, res);
+      return serverError(err, req, res);
     }
     if (headers) {
       res.writeHead(headers.statusCode || 200, headers);
@@ -429,7 +429,7 @@ app.get('/medic/_changes', function(req, res) {
     } else {
       auth.getFacilityId(req, userCtx, function(err, facilityId) {
         if (err) {
-          return serverError(err.message, res);
+          return serverError(err.message, req, res);
         }
         // for security reasons ensure the params haven't been tampered with
         if (req.query.filter !== 'medic/doc_by_place' ||
@@ -521,7 +521,6 @@ var error = function(err, req, res) {
 
 var serverError = function(err, req, res) {
   console.error('Server error: ');
-  console.log('  url: ' + req && req.url);
   console.log('  detail: ' + (err.stack || JSON.stringify(err)));
   res.writeHead(500, {
     'Content-Type': 'text/plain'
