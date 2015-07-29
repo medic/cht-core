@@ -436,7 +436,7 @@ app.get('/medic/_changes', function(req, res) {
             req.query.id !== facilityId ||
             req.query.unassigned !== 'false') { // TODO get this from settings and role
           console.log('Unauthorized replication attempt');
-          return error({ code: 403, message: 'Forbidden' }, res);
+          return error({ code: 403, message: 'Forbidden' }, req, res);
         }
         proxy.web(req, res);
       });
