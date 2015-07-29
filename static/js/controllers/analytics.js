@@ -24,12 +24,17 @@ var _ = require('underscore'),
 
       //debugger;
       $log.debug('AnalyticsCtrl');
-      $log.debug('$route', $route.current);
+      $log.debug('$route', $route.current.params);
       $scope.setSelectedModule();
       $scope.loading = true;
-      $log.debug('AnalyticsCtrl init $scope.filterModel', $scope.filterModel);
-
       $scope.filterModel.type = 'analytics';
+      if ($route.current.params.form) {
+        $scope.filterModel.selectedForm = $route.current.params.form;
+      }
+      if ($route.current.params.facility) {
+        $scope.filterModel.selectedFacility = $route.current.params.facility;
+      }
+      $log.debug('AnalyticsCtrl init $scope.filterModel', $scope.filterModel);
       var updateFilters = function() {
         console.log('analytics.updateAvailableFacilities $scope.permissions', $scope.permissions);
         FacilityRaw($scope.permissions.district).query(
@@ -109,9 +114,15 @@ var _ = require('underscore'),
         $scope.loading = false;
         //debugger;
         if ($scope.filterModel.module) {
-          $log.log('$scope.filterModel.module.render($scope)');
+          if ($scope.filterModel.selectedForm && $scope.filterModel.selectedFacility) {
+            $scope.filterModel.module.renderFacility(
+              $scope.filterModel.selectedForm,
+              $scope.filterModel.selectedFacility
+            );
+          } else {
+            $scope.filterModel.module.render($scope);
+          }
           // why is render on this property?
-          $scope.filterModel.module.render($scope);
           //console.log('$scope.facilities', $scope.facilities);
           //updateFilters();
           /*
@@ -122,7 +133,6 @@ var _ = require('underscore'),
           */
         }
       });
-      $log.debug('AnalyticsCtrl $route.current', $route.current.params.tour);
       tour.start($route.current.params.tour);
       $location.url($location.path());
     }

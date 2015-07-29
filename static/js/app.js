@@ -33,6 +33,14 @@ require('../dist/reporting-views');
           templateUrl: '/partials/analytics.html',
           controller: 'AnalyticsCtrl'
         })
+        .when('/analytics/stock/:form', {
+          templateUrl: '/partials/analytics.html',
+          controller: 'AnalyticsCtrl'
+        })
+        .when('/analytics/stock/:form/:facility', {
+          templateUrl: '/partials/analytics.html',
+          controller: 'AnalyticsCtrl'
+        })
         .otherwise({
           redirectTo: '/messages'
         });

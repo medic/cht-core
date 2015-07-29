@@ -152,7 +152,7 @@
         </span>
         <ul role="menu" aria-labelledby="form" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="form in forms">
-            <a role="menuitem" tabindex="-1" data-value="{~lb}{~lb}form.code{~rb}{~rb}" ng-bind="form.code"></a>
+            <a href="#/analytics/stock/{~lb}{~lb}form.code{~rb}{~rb}" role="menuitem" tabindex="-1" data-value="{~lb}{~lb}form.code{~rb}{~rb}" ng-bind="form.code"></a>
           </li>
         </ul>
       </span>
@@ -169,7 +169,7 @@
         </span>
         <ul role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="facility in facilities | filter: isDistrict">
-            <a role="menuitem" tabindex="-1" data-value="{~lb}{~lb}facility.id{~rb}{~rb}" ng-bind="facility.doc | facility"></a>
+            <a href="#/analytics/stock/{~lb}{~lb}filterModel.selectedForm{~rb}{~rb}/{~lb}{~lb}facility.id{~rb}{~rb}" role="menuitem" tabindex="-1" data-value="{~lb}{~lb}facility.id{~rb}{~rb}" ng-bind="facility.doc | facility"></a>
           </li>
         </ul>
       </span>
@@ -186,7 +186,7 @@
         </span>
         <ul role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="facility in facilities | filter: isHealthCenter">
-            <a role="menuitem" tabindex="-1" data-value="{~lb}{~lb}facility.id{~rb}{~rb}" ng-bind="facility.doc | facility"></a>
+            <a href="#/analytics/stock/{~lb}{~lb}filterModel.selectedForm{~rb}{~rb}/{~lb}{~lb}facility.id{~rb}{~rb}" role="menuitem" tabindex="-1" data-value="{~lb}{~lb}facility.id{~rb}{~rb}" ng-bind="facility.doc | facility"></a>
           </li>
         </ul>
       </span>

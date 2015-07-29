@@ -249,17 +249,6 @@ var renderReportingTotals = function(totals, doc) {
 
 };
 
-function renderFacility(formCode, facilityId) {
-    dates.form = formCode;
-    db.getDoc(facilityId, function(err, facility) {
-        if (err) {
-            return console.log(err);
-        }
-        facility_doc = facility;
-        getViewChildFacilities(facility, renderReports);
-    });
-};
-
 function registerListeners() {
     charts.initPieChart();
     $('body').on('click', '#reporting-district-choice .facility', function(e) {
@@ -512,6 +501,7 @@ var renderReports = function(err, facilities) {
 }
 
 var render = function (name, context) {
+    console.log('calling shows.render()');
     var r = '';
     dust.render(name, context, function (err, result) {
         if (err) {
@@ -520,6 +510,17 @@ var render = function (name, context) {
         r = result;
     });
     return r;
+};
+
+var renderFacility = exports.renderFacility = function(form, facility) {
+    db = db.current();
+    if (dates) {
+      dates.form = form;
+    } else {
+      dates = {form: form};
+    }
+    facility_doc = facility;
+    getViewChildFacilities(facility, renderReports);
 };
 
 exports.render_page = function() {

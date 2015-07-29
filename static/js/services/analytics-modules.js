@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('AnalyticsModules',
-    ['$resource', '$log', 'UserDistrict',
-    function($resource, $log, UserDistrict) {
+    ['$resource', '$log', 'UserDistrict', 'db',
+    function($resource, $log, UserDistrict, db) {
 
       var request = function(url, district, options, callback) {
         if (!callback) {
@@ -230,21 +230,16 @@ var _ = require('underscore'),
                 return !!forms[stockForm.code];
               });
             },
-            getViewSiblingFacilities: function(doc, callback) {
-                var args = {startkey: [], endkey: []};
-                if (!doc.type) {
-                    throw new Error('Doc without type attribute not supported.');
-                }
-                args.startkey.push(doc.type, doc.parent._id);
-                args.endkey.push(doc.type, doc.parent._id, {}); // {} couchdb endkey trick
-                db.getView(appname, 'facilities_by_parent', args, function(err, data) {
-                    if (err) { return alert(err); }
-                    callback(data);
-                });
-            },
             render: function(scope) {
               $log.debug('stock.render_page()');
               stock.render_page();
+            },
+            renderFacility: function(form, facility) {
+              $log.debug('stock.renderFacility()');
+              db.getDoc(facility, function(err, res) {
+                console.log('err res', err, res);
+                stock.renderFacility(form, res);
+              });
             }
           }
         ];
