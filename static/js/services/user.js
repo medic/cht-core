@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    utils = require('kujua-utils');
+    utils = require('kujua-utils'),
+    async = require('async');
 
 (function () {
 
@@ -52,6 +53,19 @@ var _ = require('underscore'),
     }
   ]);
 
+  inboxServices.factory('UserSettings', ['DB', 'UserCtxService',
+    function(DB, UserCtxService) {
+      return function(callback) {
+        DB.get()
+          .get('org.couchdb.user:' + UserCtxService().name)
+          .then(function(user) {
+            callback(null, user);
+          })
+          .catch(callback);
+      };
+    }
+  ]);
+
   inboxServices.factory('Admins', ['HttpWrapper',
     function(HttpWrapper) {
       return function(callback) {
@@ -66,56 +80,71 @@ var _ = require('underscore'),
     }
   ]);
 
-  var getType = function(user, admins) {
-    if (user.doc.roles && user.doc.roles.length) {
-      return user.doc.roles[0];
-    }
-    return admins[user.doc.name] ? 'admin' : 'unknown';
-  };
+  inboxServices.factory('Users', ['HttpWrapper', 'Facility', 'Admins', 'DbView',
+    function(HttpWrapper, Facility, Admins, DbView) {
 
-  var getFacility = function(user, facilities) {
-    return _.findWhere(facilities, { _id: user.doc.facility_id });
-  };
-
-  var mapUsers = function(users, facilities, admins) {
-    var filtered = _.filter(users, function(user) {
-      return user.id.indexOf('org.couchdb.user:') === 0;
-    });
-    return _.map(filtered, function(user) {
-      return {
-        id: user.id,
-        rev: user.doc._rev,
-        name: user.doc.name,
-        fullname: user.doc.fullname,
-        email: user.doc.email,
-        phone: user.doc.phone,
-        facility: getFacility(user, facilities),
-        type: getType(user, admins),
-        language: { code: user.doc.language }
+      var getType = function(user, admins) {
+        if (user.doc.roles && user.doc.roles.length) {
+          return user.doc.roles[0];
+        }
+        return admins[user.doc.name] ? 'admin' : 'unknown';
       };
-    });
-  };
 
-  inboxServices.factory('Users', ['HttpWrapper', 'Facility', 'Admins',
-    function(HttpWrapper, Facility, Admins) {
-      return function(callback) {
-        HttpWrapper.get('/_users/_all_docs?include_docs=true', { cache: true })
+      var getFacility = function(user, facilities) {
+        return _.findWhere(facilities, { _id: user.doc.facility_id });
+      };
+
+      var getSettings = function(user, settings) {
+        return _.findWhere(settings, { _id: user.id });
+      };
+
+      var mapUsers = function(users, settings, facilities, admins) {
+        var filtered = _.filter(users, function(user) {
+          return user.id.indexOf('org.couchdb.user:') === 0;
+        });
+        return _.map(filtered, function(user) {
+          var setting = getSettings(user, settings) || {};
+          return {
+            id: user.id,
+            rev: user.doc._rev,
+            name: user.doc.name,
+            fullname: setting.fullname,
+            email: setting.email,
+            phone: setting.phone,
+            facility: getFacility(user, facilities),
+            type: getType(user, admins),
+            language: { code: setting.language }
+          };
+        });
+      };
+
+      var getAllUsers = function(callback) {
+        HttpWrapper
+          .get('/_users/_all_docs', { cache: true, params: { include_docs: true } })
           .success(function(data) {
-            Facility(function(err, facilities) {
-              if (err) {
-                return callback(err);
-              }
-              Admins(function(err, admins) {
-                if (err) {
-                  return callback(err);
-                }
-                callback(null, mapUsers(data.rows, facilities, admins));
-              });
-            });
+            callback(null, data);
           })
-          .error(function(data) {
-            callback(new Error(data));
-          });
+          .error(callback);
+      };
+
+      var getAllUserSettings = function(callback) {
+        DbView(
+          'doc_by_type',
+          { params: { include_docs: true, key: ['user-settings'] } },
+          callback
+        );
+      };
+
+      return function(callback) {
+        async.parallel(
+          [ getAllUsers, getAllUserSettings, Facility, Admins ],
+          function(err, results) {
+            if (err) {
+              return callback(err);
+            }
+            callback(null, mapUsers(results[0].rows, results[1][0], results[2], results[3]));
+          }
+        );
       };
     }
   ]);
@@ -127,6 +156,7 @@ var _ = require('underscore'),
     cache.remove('/_config/admins');
   };
 
+  // TODO update user settings too
   inboxServices.factory('UpdateUser', ['HttpWrapper', '$cacheFactory', 'Admins',
     function(HttpWrapper, $cacheFactory, Admins) {
 
@@ -189,6 +219,7 @@ var _ = require('underscore'),
     }
   ]);
 
+  // TODO delete user settings too
   inboxServices.factory('DeleteUser', ['HttpWrapper', '$cacheFactory',
     function(HttpWrapper, $cacheFactory) {
       return function(user, callback) {
