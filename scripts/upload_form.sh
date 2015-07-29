@@ -15,7 +15,6 @@ _usage () {
     echo "Examples: "
     echo ""
     echo "COUCH_URL=http://localhost:8000/medic $SELF registration /home/henry/forms/RegisterPregnancy.xml"
-    exit
 }
 
 if [ -z "$ID" ]; then
@@ -31,16 +30,14 @@ if [ ! -f "$XFORM_PATH" ]; then
 fi
 
 # create new doc
-rev=`curl -H "Content-Type: application/json" -X PUT -d '{"type":"form"}' "$DB/form:${ID}"`
+revResponse=$(curl -s -H "Content-Type: application/json" -X PUT -d '{"type":"form"}' "$DB/form:${ID}")
+rev=$(jq -r .rev <<< "$revResponse")
 
 # exit if we don't see a rev property
-echo "$rev" | grep '"rev"' > /dev/null
-if [ $? != 0 ]; then
-    echo "Failed to create doc: $rev"
+if [ -z "$rev" ] || [ "$rev" = "null" ]; then
+    echo "Failed to create doc: $revResponse"
     exit 1
 fi
-
-rev=`echo "$rev" | sed 's/.*rev":"//' | sed 's/".*//g' | tr -d '\n' | tr -d '\r'`
 
 curl -f -X PUT -H "Content-Type: text/xml" \
     --data-binary "@${XFORM_PATH}" \
