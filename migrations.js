@@ -38,6 +38,7 @@ var runMigration = function(migration, callback) {
   if (!migration.created) {
     return callback(new Error('Migration "' + migration.name + '" has no "created" date property'));
   }
+  console.log('Running migration "' + migration.name + '"...');
   migration.run(function(err) {
     if (err) {
       return callback(error(migration, err));
