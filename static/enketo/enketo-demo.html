@@ -95,29 +95,14 @@
 			            if(loadErrors) log('loadErrors = ' + loadErrors);
 			          },
 			          xformDataAsJsonString = function(xml) {
-			            var i, n,
-			                data = xml.firstChild.childNodes,
-			                json = {
-			                  _meta:{
-			                    form: formName,
-			                    from: 'user:TODO',
-			                    reported_date: Date.now()
-			                  },
-			                  fields: {}, // FIXME
-			                };
-			            for(i=0; i<data.length; ++i) {
-			              n = data[i];
-			              if(n.nodeType !== Node.ELEMENT_NODE ||
-			                  n.nodeName === 'meta') continue;
-			              json[n.nodeName] = n.textContent;
-			              // FIXME as things generally aren't working,
-			              // it's not clear if data should be included
-			              // via `.fields` or in the root of the JSON.
-			              // When that is clarified, one or other
-			              // should be removed.
-			              json.fields[n.nodeName] = n.textContent;
-			            };
-			            return JSON.stringify(json);
+			            return JSON.stringify({
+			              form: formName,
+				      type: 'data_record',
+			              from: 'user:TODO',
+			              reported_date: Date.now(),
+			              contentType: 'xml',
+			              content: xml,
+			            });
 			          };
 
 			      log('Adding form to DOM...');
@@ -137,30 +122,23 @@
 			        form.validate();
 			        if(form.isValid()) {
 			          log('Form content is valid!  Saving and resetting.');
-			          var record = $.parseXML(form.getDataStr()),
-			              addUrl = medic_config.app_root + '/api/v1/records',
+			          var record = xformDataAsJsonString(form.getDataStr()),
 			              validateButton = $('#form-wrapper input[type=submit]');
 			          validateButton.prop('disabled', true);
-			          record = xformDataAsJsonString(record);
-			          $.ajax({
-			            url: addUrl,
-			            type: 'POST',
+				  console.log('Submitting to db: ' + record);
+				  $.ajax({
+				    url: 'http://localhost:5988/medic',
+				    type: 'POST',
+				    headers: {
+				      'Content-Type': 'application/json',
+				    },
 			            data: record,
-			            headers: {
-			              'Content-Type': 'application/json'
-			            },
-			            success: function() {
-			              form.resetView();
-			              init();
-			            },
-			            error: function(req, status, err) {
-			              log('Error submitting form data: ' + {
-			                req:req, status:status, error:err });
-			            },
-			            complete: function() {
-			              validateButton.prop('disabled', false);
-			            }
-			          });
+				    complete: function() {
+				        validateButton.prop('disabled', false); },
+				    error: function(req, status, err) {
+				        log('Error submitting form data: ' + err); },
+				    success: function() { form.resetView(); init(); },
+				 });
 			        } else {
 			          log('Form contains errors.  Please correct them.');
 			        }
