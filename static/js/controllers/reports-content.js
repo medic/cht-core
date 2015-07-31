@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsContentCtrl', 
-    ['$scope', '$stateParams', 'MessageState',
-    function ($scope, $stateParams, MessageState) {
+    ['$scope', '$stateParams', 'MessageState', 'DB',
+    function ($scope, $stateParams, MessageState, db) {
 
       $scope.selectMessage($stateParams.id);
       $('.tooltip').remove();
@@ -41,6 +41,7 @@
                 window.medic_config = {
                   app_root:    window.location.protocol + '//' + window.location.host,
                   db_root:     window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname),
+                  db_name:     /^\/[^\/]+/.exec(window.location.pathname),
                   enketo_root: window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname) + '/_design/medic/static/dist/enketo',
                 };
 
@@ -79,7 +80,7 @@
                       requirejs(['enketo-js/Form'], function(Form) {
                         log('Enketo loaded.');
 
-                        var showForm = function(formName, formHtml, formModel, formData) {
+                        var showForm = function(docId, formName, formHtml, formModel, formData) {
                           var form, formContainer, formWrapper,
                               init = function() {
                                 var loadErrors;
@@ -87,15 +88,15 @@
                                 loadErrors = form.init();
                                 if(loadErrors && loadErrors.length > 0) log('loadErrors = ' + loadErrors.toString());
                               },
-                              xformDataAsJsonString = function(xml) {
-                                return JSON.stringify({
+                              xformDataAsJson = function(xml) {
+                                return {
                                   form: formName,
                                   type: 'data_record',
                                   from: 'user:TODO',
                                   reported_date: Date.now(),
                                   content_type: 'xml',
                                   content: xml,
-                                });
+                                };
                               };
 
                           log('Adding form to DOM...');
@@ -114,23 +115,30 @@
                             form.validate();
                             if(form.isValid()) {
                               log('Form content is valid!  Saving and resetting.');
-                              var record = xformDataAsJsonString(form.getDataStr()),
+                              var record = xformDataAsJson(form.getDataStr()),
                                   validateButton = $('#form-wrapper input[type=submit]');
                               validateButton.prop('disabled', true);
-                          console.log('Submitting to db: ' + record);
-                          $.ajax({
-                            url: medic_config.db_root,
-                            type: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json',
-                            },
-                                data: record,
-                            complete: function() {
-                                validateButton.prop('disabled', false); },
-                            error: function(req, status, err) {
-                                log('Error submitting form data: ' + err); },
-                            success: function() { form.resetView(); init(); },
-                         });
+                              if(true) {
+                                // update an existing doc.  For convenience, get
+                                // the latest version and then modify the
+                                // content.  This will avoid most concurrent
+                                // edits, but is not ideal.  TODO update
+                                // write failure to handle concurrent
+                                // modifications.
+                                db.get().get(docId).then(function(doc) {
+                                  doc.content = record.content;
+                                  return db.get().put(doc);
+                                }).then(function() {
+                                    // TODO ideally this would be in a `finally` handler rather than duplicated in `then()` and `catch()`
+                                    validateButton.prop('disabled', false);
+                                  form.resetView();
+                                  init();
+                                }).catch(function(err) {
+                                    // TODO ideally this would be in a `finally` handler rather than duplicated in `then()` and `catch()`
+                                    validateButton.prop('disabled', false);
+                                  log('Error submitting form data: ' + err);
+                                });
+                              }
                             } else {
                               log('Form contains errors.  Please correct them.');
                             }
@@ -154,7 +162,7 @@
                           processors.model.loaded = true;
                         });
 
-                        var loadForm = function(name, url, formInstanceData) {
+                        var loadForm = function(docId, name, url, formInstanceData) {
                           if(!processors.html.loaded || !processors.model.loaded) {
                             return log('Not all processors are loaded yet.');
                           }
@@ -175,7 +183,7 @@
                             console.log('---');
                             console.log(new XMLSerializer().serializeToString(html));
 
-                            showForm(name,
+                            showForm(docId, name,
                                 html.documentElement.innerHTML,
                                 model.documentElement.innerHTML,
                                 formInstanceData);
@@ -197,18 +205,19 @@
                               case 'PREG': return 'pregnancy';
                               case 'HH': return 'households';
                               case 'EDCD_H01': return 'hospital-survey';
+                              case 'V': return 'visit-report';
                             }
                           };
                           return medic_config.app_root + '/api/v1/forms/' + fileName() + '.xml';
                         };
 
-                        window.loadFormFor = function(dataContainerSelecter) {
+                        window.loadFormFor = function(docId, dataContainerSelecter) {
                           var formData = $(dataContainerSelecter).text(),
                               xml = $.parseXML(formData),
                               formId = xml.evaluate('//./@id', xml).iterateNext().value, // FIXME this code gets the `id` attribute of the root element.  But it sure is ugly.
                               url = getFormUrl(formId);
                           console.log('Should load from ' + url);
-                          loadForm(formId, url, formData);
+                          loadForm(docId, formId, url, formData);
                         };
                       });
                     });
@@ -216,7 +225,7 @@
                     (function() {
                       // init load button
                       var btn = $('.btn.form-loader').on('click', function() {
-                        loadFormFor( '.raw-report-content p');
+                        loadFormFor($scope.selected._id, '.raw-report-content p');
                       });
                     }());
                   }, 1000);
