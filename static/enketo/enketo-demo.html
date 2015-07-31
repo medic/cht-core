@@ -221,7 +221,11 @@
 			                xform.getElementsByTagName('name')[0].textContent,
 			                xform.getElementsByTagName('downloadUrl')[0].textContent);
 			          }
-			        }
+			        },
+				error: function(req, status, err) {
+				  log('Error fetching forms: ' + err);
+				  log('Status: ' + status);
+				},
 			      });
 			    }());
 			  });
