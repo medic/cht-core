@@ -53,6 +53,7 @@
 		<script>
 			window.medic_config = {
 			  app_root: window.location.protocol + '//' + window.location.host,
+			  db_root:  window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname),
 			};
 
 			require.config( {
@@ -70,7 +71,6 @@
 			        }
 			    }
 			} );
-
 
 			requirejs(['jquery'], function($) {
 			  function log(message) {
@@ -127,7 +127,7 @@
 			          validateButton.prop('disabled', true);
 				  console.log('Submitting to db: ' + record);
 				  $.ajax({
-				    url: window.location.host + /^\/[^\/]+/.exec(window.location.pathname),
+				    url: medic_config.db_root,
 				    type: 'POST',
 				    headers: {
 				      'Content-Type': 'application/json',

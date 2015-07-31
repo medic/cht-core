@@ -41,8 +41,36 @@
             </ul>
           </li>
           <li ng-if="selected.content">
-            <label>{{'Raw Report Content' | translate}}</label>
-            <p>{{selected.content}}</p>
+            <div class="raw-report-content">
+              <label>{{'Raw Report Content' | translate}}</label>
+              <p>{{selected.content}}</p>
+            </div>
+            <button class="btn btn-primary form-loader" style="display:hidden">
+              edit
+            </button>
+            <div>
+              <div id="form-wrapper" style="display:none">
+                <div class="container"></div>
+                <div class="form-footer" style="margin:0">
+                  <input type="submit" value="Validate" class="btn btn-primary"/>
+                  <br/>
+                  <br/>
+                  <button class="btn btn-primary first-page">&lt;&lt; Go to start</button>
+                  <button class="btn btn-primary previous-page">&lt; prev</button>
+                  <button class="btn btn-primary next-page">next &gt;</button>
+                  <button class="btn btn-primary last-page">Go to end &gt;&gt;</button>
+                </div>
+              </div>
+
+              <table id="control-panel"><tbody>
+                <td id="log">
+                  <h2>Log</h2>
+                  <div class="content">
+                  </div>
+                </td></tr>
+              </tbody></table>
+              <link type="text/css" rel="stylesheet" href="http://localhost:5988/medic/_design/medic/static/dist/enketo/style/formhub.css"/>
+            </div>
           </li>
           <li ng-if="selected.sms_message.message">
             <label>{{'Raw Report Content' | translate}}</label>
