@@ -18,10 +18,7 @@ var utils = require('kujua-utils');
 
       // TODO lock down api so non-admins can only replicate
       // TODO stop users from creating docs against another facility - update validation on replicate?
-      // TODO only admins can replicate _users! Find another way to get current user information
       // TODO user context is actually cached in the dom in appcache. listen to change and invalidate appcacahe?
-      // pouchDB('_users')
-      //   .replicate.from('http://localhost:5988/_users', replicationOptions);
 
       return {
 
