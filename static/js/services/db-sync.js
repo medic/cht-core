@@ -42,7 +42,7 @@ var _ = require('underscore'),
             return callback(err);
           }
           var params = { id: results[1] };
-          if (utils.isUserDistrictAdmin(userCtx) &&
+          if (utils.hasPerm(userCtx, 'can_view_unallocated_data_records') &&
               results[0].district_admins_access_unallocated_messages) {
             params.unassigned = true;
           }
