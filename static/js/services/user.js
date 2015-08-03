@@ -8,8 +8,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('UserDistrict', ['DB', 'User', 'UserCtxService',
-    function(DB, User, UserCtxService) {
+  inboxServices.factory('UserDistrict', ['DB', 'UserSettings', 'UserCtxService',
+    function(DB, UserSettings, UserCtxService) {
       return function(callback) {
         var userCtx = UserCtxService();
         if (!userCtx.name) {
@@ -21,7 +21,7 @@ var _ = require('underscore'),
         if (!utils.isUserDistrictAdmin(userCtx)) {
           return callback(new Error('The administrator needs to give you additional privileges to use this site.'));
         }
-        User(function(err, user) {
+        UserSettings(function(err, user) {
           if (!user.facility_id) {
             return callback(new Error('No district assigned to district admin.'));
           }
@@ -33,26 +33,6 @@ var _ = require('underscore'),
             })
             .catch(callback);
         });
-      };
-    }
-  ]);
-
-  var getUserUrl = function(id) {
-    return '/_users/' + encodeURIComponent(id);
-  };
-
-  var getUser = function(HttpWrapper, id, callback) {
-    HttpWrapper.get(getUserUrl(id), { cache: true, targetScope: 'root' })
-      .success(function(data) {
-        callback(null, data);
-      })
-      .error(callback);
-  };
-
-  inboxServices.factory('User', ['HttpWrapper', 'UserCtxService',
-    function(HttpWrapper, UserCtxService) {
-      return function(callback) {
-        getUser(HttpWrapper, 'org.couchdb.user:' + UserCtxService().name, callback);
       };
     }
   ]);
@@ -153,6 +133,10 @@ var _ = require('underscore'),
     }
   ]);
 
+  var getUserUrl = function(id) {
+    return '/_users/' + encodeURIComponent(id);
+  };
+
   var removeCacheEntry = function($cacheFactory, id) {
     var cache = $cacheFactory.get('$http');
     cache.remove(getUserUrl(id));
@@ -169,7 +153,11 @@ var _ = require('underscore'),
 
       var getOrCreateUser = function(id, name, callback) {
         if (id) {
-          getUser(HttpWrapper, id, callback);
+          HttpWrapper.get(getUserUrl(id), { cache: true, targetScope: 'root' })
+            .success(function(data) {
+              callback(null, data);
+            })
+            .error(callback);
         } else {
           callback(null, {
             _id: createId(name),
@@ -199,8 +187,6 @@ var _ = require('underscore'),
           // password not changed, do nothing
           return callback();
         }
-        updated.derived_key = undefined;
-        updated.salt = undefined;
         Admins(function(err, admins) {
           if (err) {
             return callback(err);
@@ -231,19 +217,21 @@ var _ = require('underscore'),
           $log.debug('user being updated', user);
           $log.debug('updates', updates);
           var updated = _.extend(user, updates);
-          updatePassword(updated, function(err) {
-            if (err) {
-              return callback(err);
-            }
-            HttpWrapper.put(getUserUrl(user._id), updated)
-              .success(function() {
+          if (updated.password) {
+            updated.derived_key = undefined;
+            updated.salt = undefined;
+          }
+          HttpWrapper
+            .put(getUserUrl(user._id), updated)
+            .success(function() {
+              updatePassword(updated, function(err) {
                 removeCacheEntry($cacheFactory, user._id);
-                callback(null, updated);
-              })
-              .error(function(data) {
-                callback(new Error(data));
+                callback(err, updated);
               });
-          });
+            })
+            .error(function(data) {
+              callback(new Error(data));
+            });
         });
       };
 

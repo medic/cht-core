@@ -56,20 +56,26 @@ var modal = require('../modules/modal');
       $scope.typeName = function(facility) {
         return typeMap[facility.type];
       };
-      
-      var validate = function() {
+
+      var validatePassword = function() {
         $scope.errors = {};
-        if (!$scope.editUserModel.name) {
-          $scope.errors.name = translateFilter('field is required', {
-            field: translateFilter('User Name')
-          });
-        }
         if (!$scope.editUserModel.id && !$scope.editUserModel.password) {
           $scope.errors.password = translateFilter('field is required', {
             field: translateFilter('Password')
           });
         } else if ($scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
           $scope.errors.password = translateFilter('Passwords must match');
+        }
+        return !Object.keys($scope.errors).length;
+      };
+
+      var validate = function() {
+        $scope.errors = {};
+        validatePassword();
+        if (!$scope.editUserModel.name) {
+          $scope.errors.name = translateFilter('field is required', {
+            field: translateFilter('User Name')
+          });
         }
         return !Object.keys($scope.errors).length;
       };
@@ -85,7 +91,10 @@ var modal = require('../modules/modal');
           fullname: $scope.editUserModel.fullname,
           email: $scope.editUserModel.email,
           phone: $scope.editUserModel.phone,
-          language: $scope.editUserModel.language && $scope.editUserModel.language.code
+          language: $scope.editUserModel.language &&
+                    $scope.editUserModel.language.code,
+          facility_id: $scope.editUserModel.facility &&
+                       $scope.editUserModel.facility._id
         };
       };
 
@@ -99,6 +108,28 @@ var modal = require('../modules/modal');
         };
       };
 
+      var updateComplete = function(pane, err) {
+        if (!err) {
+          if ($scope.editUserModel.password) {
+            // reload the page so the user can log in with the new password
+            document.location.reload(true);
+          }
+          $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
+          $scope.editUserModel = null;
+        }
+        pane.done(translateFilter('Error updating user'), err);
+      };
+
+      $scope.updatePassword = function() {
+        if (validatePassword()) {
+          var pane = modal.start($('#update-password'));
+          var updates = { password: $scope.editUserModel.password };
+          UpdateUser($scope.editUserModel.id, null, updates, function(err) {
+            updateComplete(pane, err);
+          });
+        }
+      };
+
       $scope.editUser = function(settingsOnly) {
         if (settingsOnly || validate()) {
           var modalId = settingsOnly ? '#edit-user-settings' : '#edit-user-profile';
@@ -110,11 +141,7 @@ var modal = require('../modules/modal');
             $scope.changeLanguage(settings.language);
           }
           UpdateUser($scope.editUserModel.id, settings, user, function(err) {
-            if (!err) {
-              $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
-              $scope.editUserModel = null;
-            }
-            pane.done(translateFilter('Error updating user'), err);
+            updateComplete(pane, err);
           });
         }
       };

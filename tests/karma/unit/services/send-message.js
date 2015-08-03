@@ -15,7 +15,7 @@ describe('SendMessage service', function() {
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ post: post, id: id }));
-      $provide.value('User', function(callback) {
+      $provide.value('UserSettings', function(callback) {
         callback(null, { phone: '+5551', name: 'jack' });
       });
       $provide.value('Settings', function(callback) {

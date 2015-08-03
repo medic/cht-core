@@ -18,8 +18,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'User', 'DBSync', 'ConflictResolution', 'DbNameService', 'UserSettings',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, User, DBSync, ConflictResolution, DbNameService, UserSettings) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'DBSync', 'ConflictResolution', 'DbNameService', 'UserSettings',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, DBSync, ConflictResolution, DbNameService, UserSettings) {
 
       DBSync();
       ConflictResolution();

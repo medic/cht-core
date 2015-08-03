@@ -15,7 +15,7 @@ describe('Language service', function() {
     cookieCalledWith = null;
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('User', function(callback) {
+      $provide.value('UserSettings', function(callback) {
         callback(null, user);
       });
       $provide.value('Settings', function(callback) {

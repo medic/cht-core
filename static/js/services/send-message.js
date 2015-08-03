@@ -10,8 +10,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('SendMessage', ['DB', 'User', 'Settings',
-    function(DB, User, Settings) {
+  inboxServices.factory('SendMessage', ['DB', 'UserSettings', 'Settings',
+    function(DB, UserSettings, Settings) {
 
       var createMessageDoc = function(user, recipients) {
         var name = user && user.name;
@@ -82,7 +82,7 @@ var _ = require('underscore'),
             recipients = [recipients];
           }
 
-          User(function(err, user) {
+          UserSettings(function(err, user) {
             if (err) {
               return console.log('Error fetching user', err);
             }

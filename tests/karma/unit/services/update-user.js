@@ -203,11 +203,11 @@ describe('UpdateUser service', function() {
       .respond({ _id: 'org.couchdb.user:gareth', name: 'gareth', favcolour: 'turquoise', derived_key: 'abc', salt: 'def' });
 
     $httpBackend
-      .expect('PUT', '/_config/admins/gareth', '"xyz"')
+      .expect('PUT', '/_users/org.couchdb.user%3Agareth', JSON.stringify(expected))
       .respond(201, '');
 
     $httpBackend
-      .expect('PUT', '/_users/org.couchdb.user%3Agareth', JSON.stringify(expected))
+      .expect('PUT', '/_config/admins/gareth', '"xyz"')
       .respond(201, '');
 
     service('org.couchdb.user:gareth', null, updates, function(err) {
