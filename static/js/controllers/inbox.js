@@ -539,8 +539,8 @@ require('moment/locales');
         }
       };
 
-      $scope.updateFacility = function() {
-        var $modal = $('#update-facility');
+      $scope.updateFacility = function(modalSelecter) {
+        var $modal = $(modalSelecter || '#update-facility');
         var facilityId = $modal.find('[name=facility]').val();
         if (!facilityId) {
           $modal.find('.modal-footer .note')
@@ -555,7 +555,7 @@ require('moment/locales');
 
       $scope.updateReport = function() {
         if(!$scope.report_form) {
-          updateFacility();
+          $scope.updateFacility('#edit-report');
           return;
         }
         var form = $scope.report_form.form,
@@ -586,7 +586,6 @@ require('moment/locales');
           // and then modify the content.  This will avoid most concurrent
           // edits, but is not ideal.  TODO update write failure to handle
           // concurrent modifications.
-          debugger;
           db.get().get(facilityId).then(function(facility) {
             contact = facility;
             return db.get().get(docId);
@@ -601,6 +600,7 @@ require('moment/locales');
               $submit.prop('disabled', false);
             $('#edit-report').modal('hide');
             form.resetView();
+            $('#edit-report .form-wrapper').hide();
           }).catch(function(err) {
               // TODO ideally this would be in a `finally` handler rather than duplicated in `then()` and `catch()`
               $submit.prop('disabled', false);
@@ -668,6 +668,8 @@ require('moment/locales');
                                 $scope.report_form.form = form = new Form('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData });
                                 loadErrors = form.init();
                                 if(loadErrors && loadErrors.length > 0) log('loadErrors = ' + loadErrors.toString());
+
+                                $('#edit-report .form-wrapper').show();
                               };
 
                           log('Adding form to DOM...');
@@ -754,13 +756,6 @@ require('moment/locales');
                         };
                       });
                     });
-
-                    (function() {
-                      // init load button
-                      var btn = $('.btn.form-loader').on('click', function() {
-                        loadFormFor($scope.report_form.docId, '.raw-report-content p');
-                      });
-                    }());
                   }, 1000);
                 });
         }, 1000);
@@ -772,7 +767,9 @@ require('moment/locales');
           var val = (record.contact && record.contact._id) || '';
           $('#edit-report [name=facility]').select2('val', val);
           $('#edit-report').modal('show');
-          loadFormFor($scope.selected._id, '.raw-report-content p');
+          if($scope.selected.content_type === 'xml') {
+            loadFormFor($scope.selected._id, '.raw-report-content p');
+          }
         } else {
           $rootScope.$broadcast('EditContactInit', record);
         }
