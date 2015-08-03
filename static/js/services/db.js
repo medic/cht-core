@@ -16,12 +16,7 @@ var utils = require('kujua-utils');
         return location.protocol + '//' + location.hostname + port + '/' + name;
       };
 
-      // TODO lock down api so non-admins can only replicate
-      // TODO stop users from creating docs against another facility - update validation on replicate?
-      // TODO user context is actually cached in the dom in appcache. listen to change and invalidate appcacahe?
-
       return {
-
         get: function(name) {
           if (utils.isUserAdmin(UserCtxService())) {
             name = getRemoteUrl(name);
@@ -32,7 +27,6 @@ var utils = require('kujua-utils');
           return pouchDB(getRemoteUrl(name));
         },
         getRemoteUrl: getRemoteUrl
-
       };
     }
   ]);
