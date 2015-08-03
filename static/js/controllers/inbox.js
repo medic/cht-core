@@ -239,7 +239,7 @@ require('moment/locales');
             function formatResult(doc) {
               return doc && format.contact(doc);
             }
-            $('#update-facility [name=facility]').select2({
+            $('.update-facility [name=facility]').select2({
               id: function(doc) {
                 return doc._id;
               },
@@ -554,9 +554,15 @@ require('moment/locales');
       };
 
       $scope.updateReport = function() {
+        if(!$scope.report_form) {
+          updateFacility();
+          return;
+        }
         var form = $scope.report_form.form,
             formName = $scope.report_form.formName,
             docId = $scope.report_form.docId,
+            $modal = $('#edit-report'),
+            facilityId = $modal.find('[name=facility]').val(),
             xformDataAsJson = function(xml) {
               return {
                 form: formName,
@@ -572,6 +578,7 @@ require('moment/locales');
           console.log('Form content is valid!  Saving and resetting.');
           var record = xformDataAsJson(form.getDataStr()),
               $submit = $('.edit-report-dialog .btn.submit'),
+              contact = null,
               updatedDoc = null;
           $submit.prop('disabled', true);
 
@@ -579,8 +586,13 @@ require('moment/locales');
           // and then modify the content.  This will avoid most concurrent
           // edits, but is not ideal.  TODO update write failure to handle
           // concurrent modifications.
-          db.get().get(docId).then(function(doc) {
+          debugger;
+          db.get().get(facilityId).then(function(facility) {
+            contact = facility;
+            return db.get().get(docId);
+          }).then(function(doc) {
             doc.content = record.content;
+            doc.contact = contact;
             updatedDoc = doc;
             return db.get().put(doc);
           }).then(function() {
