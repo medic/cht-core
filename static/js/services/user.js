@@ -7,6 +7,23 @@ var _ = require('underscore'),
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
+
+  var getWithRemoteFallback = function(DB, id, callback) {
+    DB.get()
+      .get(id)
+      .then(function(response) {
+        callback(null, response);
+      })
+      .catch(function() {
+        // might be first load - try the remote db
+        DB.getRemote()
+          .get(id)
+          .then(function(response) {
+            callback(null, response);
+          })
+          .catch(callback);
+      });
+  };
   
   inboxServices.factory('UserDistrict', ['DB', 'UserSettings', 'UserCtxService',
     function(DB, UserSettings, UserCtxService) {
@@ -22,16 +39,16 @@ var _ = require('underscore'),
           return callback(new Error('The administrator needs to give you additional privileges to use this site.'));
         }
         UserSettings(function(err, user) {
+          if (err) {
+            return callback(err);
+          }
           if (!user.facility_id) {
             return callback(new Error('No district assigned to district admin.'));
           }
           // ensure the facility exists
-          DB.get()
-            .get(user.facility_id)
-            .then(function() {
-              callback(null, user.facility_id);
-            })
-            .catch(callback);
+          getWithRemoteFallback(DB, user.facility_id, function(err) {
+            callback(err, user.facility_id);
+          });
         });
       };
     }
@@ -40,12 +57,8 @@ var _ = require('underscore'),
   inboxServices.factory('UserSettings', ['DB', 'UserCtxService',
     function(DB, UserCtxService) {
       return function(callback) {
-        DB.get()
-          .get('org.couchdb.user:' + UserCtxService().name)
-          .then(function(user) {
-            callback(null, user);
-          })
-          .catch(callback);
+        var id = 'org.couchdb.user:' + UserCtxService().name;
+        getWithRemoteFallback(DB, id, callback);
       };
     }
   ]);

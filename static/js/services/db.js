@@ -27,9 +27,12 @@ var utils = require('kujua-utils');
 
         get: function(name) {
           if (utils.isUserAdmin(UserCtxService())) {
-            name = getRemoteUrl();
+            name = getRemoteUrl(name);
           }
           return pouchDB(name || DbNameService());
+        },
+        getRemote: function(name) {
+          return pouchDB(getRemoteUrl(name));
         },
         getRemoteUrl: getRemoteUrl
 
