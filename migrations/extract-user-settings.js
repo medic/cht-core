@@ -2,8 +2,8 @@ var async = require('async'),
     _ = require('underscore'),
     db = require('../db');
 
-var fieldsToIncludeInBoth = [ '_id', 'name' ];
-var fieldsToOmitFromSettings = [ '_rev', 'facility_id', 'salt', 'derived_key', 'password_scheme', 'iterations', 'roles', 'type' ];
+var fieldsToIncludeInBoth = [ '_id', 'name', 'facility_id' ];
+var fieldsToOmitFromSettings = [ '_rev', 'salt', 'derived_key', 'password_scheme', 'iterations', 'roles', 'type' ];
 var fieldsToIncludeInUser = fieldsToOmitFromSettings.concat(fieldsToIncludeInBoth);
 
 var updateUser = function(row, callback) {

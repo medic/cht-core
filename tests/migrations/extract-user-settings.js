@@ -136,7 +136,8 @@ exports['saves doc for settings'] = function(test) {
       phone: '0211111111',
       language: 'en',
       known: 'true',
-      type: 'user-settings'
+      type: 'user-settings',
+      facility_id: 'd012fe8f511c536273ab13e4d3025d2d'
     });
     test.same(medicInsert.args[1][0], {
       _id: 'org.couchdb.user:b',
