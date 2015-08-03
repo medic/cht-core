@@ -431,12 +431,14 @@ app.get('/medic/_changes', function(req, res) {
         if (err) {
           return serverError(err.message, req, res);
         }
+        var unassigned = config.get('district_admins_access_unallocated_messages') &&
+                         auth.hasPermission(userCtx, 'can_view_unallocated_data_records');
         // for security reasons ensure the params haven't been tampered with
         if (req.query.filter !== 'medic/doc_by_place' ||
             req.query.id !== facilityId ||
-            req.query.unassigned !== 'false') { // TODO get this from settings and role
+            (req.query.unassigned === 'true' && !unassigned)) {
           console.log('Unauthorized replication attempt');
-          return error({ code: 403, message: 'Forbidden' }, res);
+          return error({ code: 403, message: 'Forbidden' }, req, res);
         }
         proxy.web(req, res);
       });
