@@ -571,7 +571,8 @@ require('moment/locales');
         if(form.isValid()) {
           console.log('Form content is valid!  Saving and resetting.');
           var record = xformDataAsJson(form.getDataStr()),
-              $submit = $('.edit-report-dialog .btn.submit');
+              $submit = $('.edit-report-dialog .btn.submit'),
+              updatedDoc = null;
           $submit.prop('disabled', true);
 
           // update an existing doc.  For convenience, get the latest version
@@ -580,8 +581,10 @@ require('moment/locales');
           // concurrent modifications.
           db.get().get(docId).then(function(doc) {
             doc.content = record.content;
+            updatedDoc = doc;
             return db.get().put(doc);
           }).then(function() {
+            $scope.selected = updatedDoc;
               // TODO ideally this would be in a `finally` handler rather than duplicated in `then()` and `catch()`
               $submit.prop('disabled', false);
             $('#edit-report').modal('hide');
