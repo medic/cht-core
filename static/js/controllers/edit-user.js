@@ -79,25 +79,37 @@ var modal = require('../modules/modal');
         return type ? [type].concat(rolesMap[type]) : [];
       };
 
-      $scope.editUser = function() {
-        if (validate()) {
-          var pane = modal.start($('#edit-user-profile'));
-          var language = $scope.editUserModel.language && $scope.editUserModel.language.code;
-          if (language && UserCtxService().name === $scope.editUserModel.name) {
+      var getSettingsUpdates = function() {
+        return {
+          name: $scope.editUserModel.name,
+          fullname: $scope.editUserModel.fullname,
+          email: $scope.editUserModel.email,
+          phone: $scope.editUserModel.phone,
+          language: $scope.editUserModel.language && $scope.editUserModel.language.code
+        };
+      };
+
+      var getUserUpdates = function() {
+        return {
+          name: $scope.editUserModel.name,
+          password: $scope.editUserModel.password,
+          roles: getRoles($scope.editUserModel.type),
+          facility_id: $scope.editUserModel.facility &&
+                       $scope.editUserModel.facility._id
+        };
+      };
+
+      $scope.editUser = function(settingsOnly) {
+        if (settingsOnly || validate()) {
+          var modalId = settingsOnly ? '#edit-user-settings' : '#edit-user-profile';
+          var pane = modal.start($(modalId));
+          var settings = getSettingsUpdates();
+          var user = settingsOnly ? null : getUserUpdates();
+          if (settings.language && UserCtxService().name === $scope.editUserModel.name) {
             // editing current user's language, so update UI
-            $scope.changeLanguage(language);
+            $scope.changeLanguage(settings.language);
           }
-          UpdateUser($scope.editUserModel.id, {
-            name: $scope.editUserModel.name,
-            fullname: $scope.editUserModel.fullname,
-            email: $scope.editUserModel.email,
-            phone: $scope.editUserModel.phone,
-            language: language,
-            password: $scope.editUserModel.password,
-            roles: getRoles($scope.editUserModel.type),
-            facility_id: $scope.editUserModel.facility &&
-                         $scope.editUserModel.facility._id
-          }, function(err) {
+          UpdateUser($scope.editUserModel.id, settings, user, function(err) {
             if (!err) {
               $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
               $scope.editUserModel = null;

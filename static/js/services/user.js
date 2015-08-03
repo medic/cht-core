@@ -37,8 +37,12 @@ var _ = require('underscore'),
     }
   ]);
 
+  var getUserUrl = function(id) {
+    return '/_users/' + encodeURIComponent(id);
+  };
+
   var getUser = function(HttpWrapper, id, callback) {
-    HttpWrapper.get('/_users/' + id, { cache: true, targetScope: 'root' })
+    HttpWrapper.get(getUserUrl(id), { cache: true, targetScope: 'root' })
       .success(function(data) {
         callback(null, data);
       })
@@ -48,7 +52,7 @@ var _ = require('underscore'),
   inboxServices.factory('User', ['HttpWrapper', 'UserCtxService',
     function(HttpWrapper, UserCtxService) {
       return function(callback) {
-        getUser(HttpWrapper, 'org.couchdb.user%3A' + UserCtxService().name, callback);
+        getUser(HttpWrapper, 'org.couchdb.user:' + UserCtxService().name, callback);
       };
     }
   ]);
@@ -151,23 +155,43 @@ var _ = require('underscore'),
 
   var removeCacheEntry = function($cacheFactory, id) {
     var cache = $cacheFactory.get('$http');
-    cache.remove('/_users/' + encodeURIComponent(id));
+    cache.remove(getUserUrl(id));
     cache.remove('/_users/_all_docs?include_docs=true');
     cache.remove('/_config/admins');
   };
 
-  // TODO update user settings too
-  inboxServices.factory('UpdateUser', ['HttpWrapper', '$cacheFactory', 'Admins',
-    function(HttpWrapper, $cacheFactory, Admins) {
+  inboxServices.factory('UpdateUser', ['$log', '$cacheFactory', 'HttpWrapper', 'DB', 'Admins',
+    function($log, $cacheFactory, HttpWrapper, DB, Admins) {
 
-      var getOrCreateUser = function(id, updates, callback) {
+      var createId = function(name) {
+        return 'org.couchdb.user:' + name;
+      };
+
+      var getOrCreateUser = function(id, name, callback) {
         if (id) {
-          return getUser(HttpWrapper, id, callback);
+          getUser(HttpWrapper, id, callback);
+        } else {
+          callback(null, {
+            _id: createId(name),
+            type: 'user'
+          });
         }
-        callback(null, {
-          _id: 'org.couchdb.user:' + updates.name,
-          type: 'user'
-        });
+      };
+
+      var getOrCreateUserSettings = function(id, name, callback) {
+        if (id) {
+          DB.get()
+            .get(id)
+            .then(function(response) {
+              callback(null, response);
+            })
+            .catch(callback);
+        } else {
+          callback(null, {
+            _id: createId(name),
+            type: 'user-settings'
+          });
+        }
       };
 
       var updatePassword = function(updated, callback) {
@@ -195,17 +219,23 @@ var _ = require('underscore'),
         });
       };
 
-      return function(id, updates, callback) {
-        getOrCreateUser(id, updates, function(err, user) {
+      var updateUser = function(id, updates, callback) {
+        if (!updates) {
+          // only updating settings
+          return callback();
+        }
+        getOrCreateUser(id, updates.name, function(err, user) {
           if (err) {
             return callback(err);
           }
+          $log.debug('user being updated', user);
+          $log.debug('updates', updates);
           var updated = _.extend(user, updates);
           updatePassword(updated, function(err) {
             if (err) {
               return callback(err);
             }
-            HttpWrapper.put('/_users/' + user._id, updated)
+            HttpWrapper.put(getUserUrl(user._id), updated)
               .success(function() {
                 removeCacheEntry($cacheFactory, user._id);
                 callback(null, updated);
@@ -216,20 +246,54 @@ var _ = require('underscore'),
           });
         });
       };
+
+      var updateSettings = function(id, updates, callback) {
+        if (!updates) {
+          // only updating user
+          return callback();
+        }
+        getOrCreateUserSettings(id, updates.name, function(err, settings) {
+          if (err) {
+            return callback(err);
+          }
+          var updated = _.extend(settings, updates);
+          DB.get()
+            .put(updated)
+            .then(function() {
+              callback();
+            })
+            .catch(callback);
+        });
+      };
+
+      return function(id, settingUpdates, userUpdates, callback) {
+        if (!callback) {
+          callback = userUpdates;
+          userUpdates = null;
+        }
+        if (!id && !userUpdates) {
+          return callback(new Error('Cannot update user settings without user'));
+        }
+        updateUser(id, userUpdates, function(err) {
+          if (err) {
+            return callback(err);
+          }
+          updateSettings(id, settingUpdates, callback);
+        });
+      };
     }
   ]);
 
-  // TODO delete user settings too
-  inboxServices.factory('DeleteUser', ['HttpWrapper', '$cacheFactory',
-    function(HttpWrapper, $cacheFactory) {
-      return function(user, callback) {
-        var url = '/_users/' + user.id;
+  inboxServices.factory('DeleteUser', ['$cacheFactory', 'HttpWrapper', 'DeleteDoc',
+    function($cacheFactory, HttpWrapper, DeleteDoc) {
+
+      var deleteUser = function(id, callback) {
+        var url = getUserUrl(id);
         HttpWrapper.get(url)
           .success(function(user) {
             user._deleted = true;
             HttpWrapper.put(url, user)
               .success(function() {
-                removeCacheEntry($cacheFactory, user._id);
                 callback();
               })
               .error(function(data) {
@@ -239,6 +303,17 @@ var _ = require('underscore'),
           .error(function(data) {
             callback(new Error(data));
           });
+      };
+
+      return function(user, callback) {
+        var id = user.id;
+        deleteUser(id, function(err) {
+          if (err) {
+            return callback(err);
+          }
+          removeCacheEntry($cacheFactory, id);
+          DeleteDoc(id, callback);
+        });
       };
     }
   ]);

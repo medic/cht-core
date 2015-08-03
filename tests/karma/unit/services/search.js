@@ -1,5 +1,4 @@
 var sinon = require('sinon');
-require('sinon-as-promised');
 
 describe('Search service', function() {
 
