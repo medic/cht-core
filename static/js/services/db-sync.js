@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    utils = require('kujua-utils');
+    utils = require('kujua-utils'),
+    async = require('async');
 
 (function () {
 
@@ -17,8 +18,8 @@ var _ = require('underscore'),
   };
 
   inboxServices.factory('DBSync', [
-    'DB', 'UserDistrict', 'UserCtxService',
-    function(DB, UserDistrict, UserCtxService) {
+    'DB', 'UserDistrict', 'UserCtxService', 'Settings',
+    function(DB, UserDistrict, UserCtxService, Settings) {
 
       var replicate = function(from, options) {
         options = options || {};
@@ -35,25 +36,36 @@ var _ = require('underscore'),
           });
       };
 
+      var getQueryParams = function(userCtx, callback) {
+        async.parallel([ Settings, UserDistrict ], function(err, results) {
+          if (err) {
+            return callback(err);
+          }
+          var params = { id: results[1] };
+          if (utils.isUserDistrictAdmin(userCtx) &&
+              results[0].district_admins_access_unallocated_messages) {
+            params.unassigned = true;
+          }
+          callback(null, params);
+        });
+      };
+
       return function() {
-        if (utils.isUserAdmin(UserCtxService())) {
+        var userCtx = UserCtxService();
+        if (utils.isUserAdmin(userCtx)) {
           // admins have potentially too much data so bypass local pouch
           return;
         }
-        UserDistrict(function(err, district) {
+        replicate(false);
+        getQueryParams(userCtx, function(err, params) {
           if (err) {
-            return console.log('Error fetching district', err);
+            return console.log('Error initializing DB sync', err);
           }
-
           replicate(true, {
             filter: 'medic/doc_by_place',
-            query_params: {
-              id: district,
-              unassigned: false // TODO get from user
-            }
+            query_params: params
           });
         });
-        replicate(false);
       };
     }
   ]);
