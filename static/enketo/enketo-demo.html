@@ -1,5 +1,7 @@
 <html>
 	<head>
+		<script src="../../js/jquery.min.js"
+				type="text/javascript"></script>
 		<script src="js/medic-enketo-offline-SNAPSHOT.min.js"
 				type="text/javascript"></script>
 		<link type="text/css" rel="stylesheet" href="style/formhub.css"/>
@@ -56,21 +58,28 @@
 			  db_root:  window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname),
 			};
 
-			require.config( {
-			    shim: {
-			        "widget/date/bootstrap3-datepicker/js/bootstrap-datepicker": {
-			            deps: [ "jquery" ],
-			            exports: "jQuery.fn.datepicker"
-			        },
-			        "widget/time/bootstrap3-timepicker/js/bootstrap-timepicker": {
-			            deps: [ "jquery" ],
-			            exports: "jQuery.fn.timepicker"
-			        },
-			        "leaflet": {
-			            exports: "L"
-			        }
-			    }
-			} );
+			require.config({
+			  shim: {
+			    'jquery': {
+			      exports: 'jQuery',
+			    },
+			    'widget/date/bootstrap3-datepicker/js/bootstrap-datepicker': {
+			      deps: [ 'jquery' ],
+			      exports: 'jQuery.fn.datepicker'
+			    },
+			    'widget/time/bootstrap3-timepicker/js/bootstrap-timepicker': {
+			      deps: [ 'jquery' ],
+			      exports: 'jQuery.fn.timepicker'
+			    },
+			    'leaflet': {
+			      exports: 'L'
+			    },
+			  },
+			});
+
+			define('jquery', function() {
+			  return jQuery;
+			});
 
 			requirejs(['jquery'], function($) {
 			  function log(message) {

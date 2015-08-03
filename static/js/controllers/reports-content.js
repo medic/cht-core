@@ -50,23 +50,30 @@
                   setTimeout(function() {
                     console.log('Script fetched; setting up enketo...');
 
-                    requirejs.config( {
-                        shim: {
-                            "widget/date/bootstrap3-datepicker/js/bootstrap-datepicker": {
-                                deps: [ "jquery" ],
-                                exports: "jQuery.fn.datepicker"
-                            },
-                            "widget/time/bootstrap3-timepicker/js/bootstrap-timepicker": {
-                                deps: [ "jquery" ],
-                                exports: "jQuery.fn.timepicker"
-                            },
-                            "leaflet": {
-                                exports: "L"
-                            }
-                        }
-                    } );
+                    requirejs.config({
+                      shim: {
+                        'jquery': {
+                          exports: 'jQuery',
+                        },
+                        'widget/date/bootstrap3-datepicker/js/bootstrap-datepicker': {
+                          deps: [ 'jquery' ],
+                          exports: 'jQuery.fn.datepicker',
+                        },
+                        'widget/time/bootstrap3-timepicker/js/bootstrap-timepicker': {
+                          deps: [ 'jquery' ],
+                          exports: 'jQuery.fn.timepicker',
+                        },
+                        'leaflet': {
+                          exports: 'L',
+                        },
+                      }
+                    });
 
-                    requirejs(['jquery'], function($) {
+                    define('jquery', function() {
+                      return jQuery;
+                    });
+
+                    requirejs(['jquery'], function() {
                       function log(message) {
                         console.log('LOG | ' + message);
                         $('#log .content').append('<pre>' + message + '</p>');
