@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    stock = require('kujua-reporting/shows'),
+    reporting = require('kujua-reporting/shows'),
     moment = require('moment');
 
 (function () {
@@ -221,24 +221,26 @@ var _ = require('underscore'),
             }
           },
           {
-            id: 'stock',
-            label: 'Stock Monitoring',
+            id: 'reporting',
+            label: 'Reporting Rates',
             available: function() {
               var forms = settings.forms;
-              var stockForms = settings['kujua-reporting'];
-              return _.some(stockForms, function(stockForm) {
-                return !!forms[stockForm.code];
+              var configuredForms = settings['kujua-reporting'];
+              return _.some(configuredForms, function(f) {
+                return !!forms[f.code];
               });
             },
             render: function(scope) {
-              $log.debug('stock.render_page()');
-              stock.render_page();
+              $log.debug('analytics module render()');
+              //reporting.render_page();
             },
             renderFacility: function(form, facility) {
-              $log.debug('stock.renderFacility()');
+              $log.debug('reporting.renderFacility()');
               db.getDoc(facility, function(err, res) {
-                console.log('err res', err, res);
-                stock.renderFacility(form, res);
+                if (err) {
+                  $log.error('Failed to get doc: ', err, res);
+                }
+                reporting.renderFacility(form, res);
               });
             }
           }

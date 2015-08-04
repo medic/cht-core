@@ -501,7 +501,7 @@ var renderReports = function(err, facilities) {
 }
 
 var render = function (name, context) {
-    console.log('calling shows.render()');
+    console.log('calling shows.render()', arguments);
     var r = '';
     dust.render(name, context, function (err, result) {
         if (err) {
@@ -512,22 +512,25 @@ var render = function (name, context) {
     return r;
 };
 
-var renderFacility = exports.renderFacility = function(form, facility) {
-    db = db.current();
-    if (dates) {
-      dates.form = form;
-    } else {
-      dates = {form: form};
-    }
-    facility_doc = facility;
-    getViewChildFacilities(facility, renderReports);
-};
-
-exports.render_page = function() {
+var init_page = function() {
     db = db.current();
     registerListeners();
     sms_utils.info = appinfo.getAppInfo();
     dates = utils.getDates({});
+}
+
+var renderFacility = exports.renderFacility = function(form, facility) {
+    if (!dates) {
+      init_page();
+    }
+    dates.form = form;
+    facility_doc = facility;
+    getViewChildFacilities(facility, renderReports);
+};
+
+/*
+exports.render_page = function() {
+    init_page();
     session.info(function(err, info) {
         isAdmin = kutils.isUserAdmin(info.userCtx);
         isDistrictAdmin = kutils.isUserDistrictAdmin(info.userCtx);
@@ -537,3 +540,4 @@ exports.render_page = function() {
         });
     });
 };
+*/

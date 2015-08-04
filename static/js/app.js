@@ -33,11 +33,11 @@ require('../dist/reporting-views');
           templateUrl: '/partials/analytics.html',
           controller: 'AnalyticsCtrl'
         })
-        .when('/analytics/stock/:form', {
+        .when('/analytics/reporting/:form', {
           templateUrl: '/partials/analytics.html',
           controller: 'AnalyticsCtrl'
         })
-        .when('/analytics/stock/:form/:facility', {
+        .when('/analytics/reporting/:form/:facility', {
           templateUrl: '/partials/analytics.html',
           controller: 'AnalyticsCtrl'
         })
