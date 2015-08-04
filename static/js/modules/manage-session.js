@@ -18,7 +18,6 @@ var session = require('session');
     } else {
       if (user) {
         $.get('/_users/org.couchdb.user:' + user.name).fail(function(data) {
-          console.log('arguments', arguments);
           if (data.status === 401) {
             // connected to the internet but unauthorized
             redirectToLogin();
