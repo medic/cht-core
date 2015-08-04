@@ -609,7 +609,6 @@ require('moment/locales');
         }
       };
 
-        setTimeout(function() {
                 window.medic_config = {
                   app_root:    window.location.protocol + '//' + window.location.host,
                   db_root:     window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname),
@@ -619,7 +618,6 @@ require('moment/locales');
 
                 console.log('Requesting remote script...');
                 jQuery.getScript(medic_config.enketo_root + '/js/medic-enketo-offline-SNAPSHOT.min.js', function() {
-                  setTimeout(function() {
                     console.log('Script fetched; setting up enketo...');
 
                     requirejs.config({
@@ -756,9 +754,7 @@ require('moment/locales');
                         };
                       });
                     });
-                  }, 1000);
                 });
-        }, 1000);
 
 
 
