@@ -224,24 +224,18 @@ var _ = require('underscore'),
             id: 'reporting',
             label: 'Reporting Rates',
             available: function() {
+              return Boolean(this.getConfiguredForms());
+            },
+            getConfiguredForms: function() {
               var forms = settings.forms;
               var configuredForms = settings['kujua-reporting'];
               return _.some(configuredForms, function(f) {
                 return !!forms[f.code];
               });
             },
-            render: function(scope) {
+            render: function(form, facility) {
               $log.debug('analytics module render()');
-              //reporting.render_page();
-            },
-            renderFacility: function(form, facility) {
-              $log.debug('reporting.renderFacility()');
-              db.getDoc(facility, function(err, res) {
-                if (err) {
-                  $log.error('Failed to get doc: ', err, res);
-                }
-                reporting.renderFacility(form, res);
-              });
+              reporting.renderFacility(form, facility);
             }
           }
         ];

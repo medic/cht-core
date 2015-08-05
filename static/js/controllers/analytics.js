@@ -19,10 +19,9 @@ var _ = require('underscore'),
   };
 
   inboxControllers.controller('AnalyticsCtrl',
-    ['$scope', '$route', '$location', '$log', 'Settings', 'AnalyticsModules', 'FacilityRaw', 'Form',
-    function ($scope, $route, $location, $log, Settings, AnalyticsModules, FacilityRaw, Form) {
+    ['$scope', '$route', '$location', '$log', 'Settings', 'AnalyticsModules',
+    function ($scope, $route, $location, $log, Settings, AnalyticsModules) {
 
-      //debugger;
       $log.debug('AnalyticsCtrl');
       $log.debug('$route', $route.current.params);
       $scope.setSelectedModule();
@@ -32,30 +31,8 @@ var _ = require('underscore'),
         $scope.filterModel.selectedForm = $route.current.params.form;
       }
       if ($route.current.params.facility) {
-        $scope.filterModel.selectedFacility = $route.current.params.facility;
+        $scope.filterModel.selectedFacility = $scope.facilitiesLookup[$route.current.params.facility];
       }
-      $log.debug('AnalyticsCtrl init $scope.filterModel', $scope.filterModel);
-      var updateFilters = function() {
-        FacilityRaw($scope.permissions.district).query(
-          function(res) {
-            $scope.facilities = res;
-            console.log('facilities', res);
-            res.forEach(function(row) {
-            });
-          },
-          function() {
-            console.log('Failed to retrieve facilities');
-          }
-        );
-      };
-      Form().then(
-        function(forms) {
-          $scope.forms = forms;
-        },
-        function(err) {
-          console.log('Failed to retrieve forms', err);
-        }
-      );
       Settings(function(err, res) {
         if (err) {
           return $log.error('Error fetching settings: ', err);
@@ -66,22 +43,11 @@ var _ = require('underscore'),
         ));
         if ($scope.filterModel.module) {
           if ($scope.filterModel.selectedForm && $scope.filterModel.selectedFacility) {
-            $scope.filterModel.module.renderFacility(
+            $scope.filterModel.module.render(
               $scope.filterModel.selectedForm,
               $scope.filterModel.selectedFacility
             );
-          } else {
-            $scope.filterModel.module.render($scope);
           }
-          // why is render on this property?
-          //console.log('$scope.facilities', $scope.facilities);
-          //updateFilters();
-          /*
-          $scope.siblings.districts = getSiblings($scope, district);
-          if ($route.params.health_centers) {
-            $scope.siblings = getSiblings($scope, district);
-          }
-          */
         }
         $scope.loading = false;
       });

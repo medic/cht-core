@@ -21,6 +21,7 @@ var _ = require('underscore');
   };
 
   exports.facility = function(entity) {
+    console.log('entity', entity);
     return entity.name;
   }
 

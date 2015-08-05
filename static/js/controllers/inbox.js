@@ -24,6 +24,7 @@ var utils = require('kujua-utils'),
       $scope.editUserModel = {};
       $scope.forms = [];
       $scope.facilities = [];
+      $scope.facilitiesLookup = {};
       $scope.contacts = undefined;
       $scope.messages = undefined;
       $scope.selected = undefined;
@@ -180,6 +181,9 @@ var utils = require('kujua-utils'),
         FacilityRaw($scope.permissions.district).query(
           function(res) {
             $scope.facilities = res.rows;
+            for (var i = 0, len = res.rows.length; i < len; i++) {
+              $scope.facilitiesLookup[res.rows[i].id] = res.rows[i].doc;
+            }
             function formatResult(row) {
               return format.contact(row.doc);
             }

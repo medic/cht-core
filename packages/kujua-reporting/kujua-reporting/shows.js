@@ -527,17 +527,3 @@ var renderFacility = exports.renderFacility = function(form, facility) {
     facility_doc = facility;
     getViewChildFacilities(facility, renderReports);
 };
-
-/*
-exports.render_page = function() {
-    init_page();
-    session.info(function(err, info) {
-        isAdmin = kutils.isUserAdmin(info.userCtx);
-        isDistrictAdmin = kutils.isUserDistrictAdmin(info.userCtx);
-        kutils.getUserDistrict(info.userCtx, function(err, district) {
-            userDistrict = district;
-            renderDistrictChoice();
-        });
-    });
-};
-*/
