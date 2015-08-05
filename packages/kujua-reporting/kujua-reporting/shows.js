@@ -6,8 +6,7 @@ var db = require('db'),
     sms_utils = require('kujua-sms/utils'),
     appname = require('settings/root').name,
     charts = require('./ui/charts'),
-    session = require('session'),
-    appinfo = require('views/lib/appinfo');
+    session = require('session');
 
 var facility_doc,
     dates,
@@ -354,7 +353,6 @@ function renderDistrictChoice() {
             siblings.slideToggle();
         });
     });
-
 }
 
 var renderReports = function(err, facilities) {
@@ -512,16 +510,13 @@ var render = function (name, context) {
     return r;
 };
 
-var init_page = function() {
-    db = db.current();
-    registerListeners();
-    sms_utils.info = appinfo.getAppInfo();
-    dates = utils.getDates({});
-}
-
-var renderFacility = exports.renderFacility = function(form, facility) {
+var renderFacility = exports.renderFacility = function(form, facility, settings) {
     if (!dates) {
-      init_page();
+      // init page
+      db = db.current();
+      registerListeners();
+      sms_utils.info = settings;
+      dates = utils.getDates({});
     }
     dates.form = form;
     facility_doc = facility;

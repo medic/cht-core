@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('AnalyticsModules',
-    ['$resource', '$log', 'UserDistrict', 'db',
-    function($resource, $log, UserDistrict, db) {
+    ['$resource', '$log', 'UserDistrict',
+    function($resource, $log, UserDistrict) {
 
       var request = function(url, district, options, callback) {
         if (!callback) {
@@ -233,9 +233,15 @@ var _ = require('underscore'),
                 return !!forms[f.code];
               });
             },
-            render: function(form, facility) {
-              $log.debug('analytics module render()');
-              reporting.renderFacility(form, facility);
+            render: function(scope) {
+              $log.debug('reporting analytics module render()');
+              if (scope.filterModel.selectedForm && scope.filterModel.selectedFacility) {
+                reporting.renderFacility(
+                  scope.filterModel.selectedForm,
+                  scope.filterModel.selectedFacility,
+                  settings
+                );
+              }
             }
           }
         ];

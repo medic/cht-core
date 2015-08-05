@@ -1,6 +1,14 @@
 var dust = require('dust-core'),
-    app_settings = require('views/lib/appinfo').getAppInfo(),
+    appinfo = require('views/lib/appinfo'),
     _ = require('underscore');
+
+var info;
+var initInfo = function() {
+    if (!info || !info.translate) {
+      console.log('dust-helpers: initializing app setting');
+      info = appinfo.getAppInfo();
+    }
+};
 
 // add helpers
 _.extend(dust.helpers, {
@@ -35,8 +43,9 @@ _.extend(dust.helpers, {
         }
     },
     translate: function(chunk, context, bodies, params) {
+        initInfo();
         var value = dust.helpers.tap(params.value, chunk, context);
-        return chunk.write(app_settings.translate(value));
+        return chunk.write(info.translate(value));
     },
     formatDate: function(chunk, context, bodies, params) {
         var timestamp = Number(dust.helpers.tap(params.timestamp, chunk, context)),
@@ -57,6 +66,7 @@ _.extend(dust.helpers, {
         return chunk.write(sms_utils.getFormTitle(form));
     },
     contact: function(chunk, context, bodies, params) {
+        initInfo();
         var entities = dust.helpers.tapObject(params.entities, chunk, context),
             to = dust.helpers.tap(params.to, chunk, context),
             verbose = dust.helpers.tap(params.verbose, chunk, context),
@@ -67,7 +77,7 @@ _.extend(dust.helpers, {
         if (!contact && entities) {
             contact = objectpath.get(
                     entities,
-                    app_settings.contact_display_short
+                    info.contact_display_short
             );
             if (!contact) {
                 contact = entities.clinic && entities.clinic.name;

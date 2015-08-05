@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    tour = require('../modules/tour'),
-    format = require('../modules/format');
+    tour = require('../modules/tour');
 
 (function () {
 
@@ -25,8 +24,8 @@ var _ = require('underscore'),
       $log.debug('AnalyticsCtrl');
       $log.debug('$route', $route.current.params);
       $scope.setSelectedModule();
-      $scope.loading = true;
       $scope.filterModel.type = 'analytics';
+      $scope.loading = true;
       if ($route.current.params.form) {
         $scope.filterModel.selectedForm = $route.current.params.form;
       }
@@ -41,15 +40,10 @@ var _ = require('underscore'),
         $scope.setSelectedModule(findSelectedModule(
           $route.current.params.module, $scope.analyticsModules
         ));
-        if ($scope.filterModel.module) {
-          if ($scope.filterModel.selectedForm && $scope.filterModel.selectedFacility) {
-            $scope.filterModel.module.render(
-              $scope.filterModel.selectedForm,
-              $scope.filterModel.selectedFacility
-            );
-          }
-        }
         $scope.loading = false;
+        if ($scope.filterModel.module) {
+          $scope.filterModel.module.render($scope);
+        }
       });
       tour.start($route.current.params.tour);
       $location.url($location.path());

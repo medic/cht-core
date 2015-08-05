@@ -261,7 +261,7 @@ module.exports = function(grunt) {
 
   // Default tasks
   grunt.registerTask('mmjs', [
-    //'jshint',
+    'jshint',
     'dustjs',
     'copy:settings',
     'browserify',
