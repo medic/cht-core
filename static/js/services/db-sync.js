@@ -17,8 +17,8 @@ var _ = require('underscore'),
   };
 
   inboxServices.factory('DBSync', [
-    'DB', 'UserDistrict', 'UserCtxService',
-    function(DB, UserDistrict, UserCtxService) {
+    'DB', 'UserDistrict', 'Session',
+    function(DB, UserDistrict, Session) {
 
       var replicate = function(from, options) {
         options = options || {};
@@ -36,7 +36,7 @@ var _ = require('underscore'),
       };
 
       return function() {
-        if (utils.isUserAdmin(UserCtxService())) {
+        if (utils.isUserAdmin(Session.userCtx())) {
           // admins have potentially too much data so bypass local pouch
           return;
         }

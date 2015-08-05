@@ -7,8 +7,8 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditUserCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'UpdateUser', 'Facility', 'UserCtxService',
-    function ($scope, $rootScope, translateFilter, UpdateUser, Facility, UserCtxService) {
+    ['$scope', '$rootScope', 'translateFilter', 'UpdateUser', 'Facility', 'Session',
+    function ($scope, $rootScope, translateFilter, UpdateUser, Facility, Session) {
 
       Facility({ types: [ 'clinic', 'health_center', 'district_hospital' ] }, function(err, facilities) {
         if (err) {
@@ -83,7 +83,7 @@ var modal = require('../modules/modal');
         if (validate()) {
           var pane = modal.start($('#edit-user-profile'));
           var language = $scope.editUserModel.language && $scope.editUserModel.language.code;
-          if (language && UserCtxService().name === $scope.editUserModel.name) {
+          if (language && Session.userCtx().name === $scope.editUserModel.name) {
             // editing current user's language, so update UI
             $scope.changeLanguage(language);
           }

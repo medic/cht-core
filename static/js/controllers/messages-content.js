@@ -8,8 +8,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesContentCtrl', 
-    ['$scope', '$stateParams', '$timeout', 'ContactConversation', 'MarkAllRead', 'Changes', 'UserCtxService',
-    function ($scope, $stateParams, $timeout, ContactConversation, MarkAllRead, Changes, UserCtxService) {
+    ['$scope', '$stateParams', '$timeout', 'ContactConversation', 'MarkAllRead', 'Changes', 'Session',
+    function ($scope, $stateParams, $timeout, ContactConversation, MarkAllRead, Changes, Session) {
 
       var scrollToUnread = function() {
         var content = $('#message-content');
@@ -125,7 +125,7 @@ var _ = require('underscore'),
                 angular.extend(match, updated);
               } else {
                 $scope.selected.messages.push(updated);
-                if (updated.doc.sent_by === UserCtxService().name) {
+                if (updated.doc.sent_by === Session.userCtx().name) {
                   scrollToBottom = true;
                 }
               }

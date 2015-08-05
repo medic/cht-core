@@ -9,8 +9,12 @@ describe('User service', function() {
   beforeEach(function() {
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('UserCtxService', function() {
-        return { name: username };
+      $provide.factory('Session', function() {
+        return {
+          userCtx: function() {
+            return { name: username };
+          }
+        };
       });
     });
     inject(function($injector) {

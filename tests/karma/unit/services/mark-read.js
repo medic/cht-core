@@ -12,8 +12,12 @@ describe('MarkRead service', function() {
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ put: put, get: get }));
-      $provide.value('UserCtxService', function() {
-        return { name: 'james' };
+      $provide.factory('Session', function() {
+        return {
+          userCtx: function() {
+            return { name: 'james' };
+          }
+        };
       });
     });
     inject(function(_MarkRead_) {

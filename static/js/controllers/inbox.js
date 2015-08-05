@@ -18,9 +18,10 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'User', 'DBSync', 'ConflictResolution', 'DbNameService',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, User, DBSync, ConflictResolution, DbNameService) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'User', 'DBSync', 'ConflictResolution', 'Session',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, User, DBSync, ConflictResolution, Session) {
 
+      Session.init();
       DBSync();
       ConflictResolution();
 
@@ -39,6 +40,10 @@ require('moment/locales');
       $scope.version = version;
 
       $scope.baseUrl = BaseUrlService();
+
+      $scope.logout = function() {
+        Session.logout();
+      };
 
       $scope.setFilterQuery = function(query) {
         if (query) {
@@ -155,16 +160,16 @@ require('moment/locales');
       };
 
       $scope.isRead = function(message) {
-        return _.contains(message.read, UserCtxService().name);
+        return _.contains(message.read, Session.userCtx().name);
       };
 
       $scope.permissions = {
-        admin: utils.isUserAdmin(UserCtxService()),
-        nationalAdmin: utils.isUserNationalAdmin(UserCtxService()),
-        districtAdmin: utils.isUserDistrictAdmin(UserCtxService()),
+        admin: utils.isUserAdmin(Session.userCtx()),
+        nationalAdmin: utils.isUserNationalAdmin(Session.userCtx()),
+        districtAdmin: utils.isUserDistrictAdmin(Session.userCtx()),
         district: undefined,
-        canExport: utils.hasPerm(UserCtxService(), 'can_export_messages') || 
-                   utils.hasPerm(UserCtxService(), 'can_export_forms')
+        canExport: utils.hasPerm(Session.userCtx(), 'can_export_messages') ||
+                   utils.hasPerm(Session.userCtx(), 'can_export_forms')
       };
 
       $scope.readStatus = { forms: 0, messages: 0 };
@@ -280,7 +285,7 @@ require('moment/locales');
 
       $scope.updateReadStatus = function () {
         ReadMessages({
-          user: UserCtxService().name,
+          user: Session.userCtx().name,
           district: $scope.permissions.district,
           targetScope: 'messages'
         }, function(err, data) {
@@ -341,7 +346,7 @@ require('moment/locales');
           var selected = $(this).closest('.modal-content')
                                 .find('.selected')
                                 .attr('data-value');
-          var id = 'org.couchdb.user:' + UserCtxService().name;
+          var id = 'org.couchdb.user:' + Session.userCtx().name;
           UpdateUser(id, { language: selected }, function(err) {
             btn.removeClass('disabled');
             if (err) {
@@ -403,7 +408,7 @@ require('moment/locales');
           },
           render: function() {
             tour.start('intro', translateFilter);
-            var id = 'org.couchdb.user:' + UserCtxService().name;
+            var id = 'org.couchdb.user:' + Session.userCtx().name;
             UpdateUser(id, { known: true }, function(err) {
               if (err) {
                 console.log('Error updating user', err);
@@ -783,7 +788,6 @@ require('moment/locales');
           }
           require('../modules/add-record').init(settings.muvuku_webapp_url);
         });
-        require('../modules/manage-session').init(DbNameService());
       };
 
       UserDistrict(function() {

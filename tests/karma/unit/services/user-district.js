@@ -15,8 +15,12 @@ describe('UserDistrict service', function() {
       $provide.value('User', function(callback) {
         callback(null, user);
       });
-      $provide.value('UserCtxService', function() {
-        return userCtx;
+      $provide.factory('Session', function() {
+        return {
+          userCtx: function() {
+            return userCtx;
+          }
+        };
       });
     });
     inject(function($injector) {

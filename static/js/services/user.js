@@ -7,10 +7,10 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('UserDistrict', ['DB', 'User', 'UserCtxService',
-    function(DB, User, UserCtxService) {
+  inboxServices.factory('UserDistrict', ['DB', 'User', 'Session',
+    function(DB, User, Session) {
       return function(callback) {
-        var userCtx = UserCtxService();
+        var userCtx = Session.userCtx();
         if (!userCtx.name) {
           return callback(new Error('Not logged in'));
         }
@@ -44,10 +44,10 @@ var _ = require('underscore'),
       .error(callback);
   };
 
-  inboxServices.factory('User', ['HttpWrapper', 'UserCtxService',
-    function(HttpWrapper, UserCtxService) {
+  inboxServices.factory('User', ['HttpWrapper', 'Session',
+    function(HttpWrapper, Session) {
       return function(callback) {
-        getUser(HttpWrapper, 'org.couchdb.user%3A' + UserCtxService().name, callback);
+        getUser(HttpWrapper, 'org.couchdb.user%3A' + Session.userCtx().name, callback);
       };
     }
   ]);
