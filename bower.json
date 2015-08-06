@@ -36,6 +36,7 @@
   "resolutions": {
     "d3": "~3.4.11",
     "angular": "~1.4.3",
-    "moment": "~2.10.6"
+    "moment": "~2.10.6",
+    "pouchdb": "~4.0.0"
   }
 }
