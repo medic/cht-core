@@ -61,7 +61,7 @@ exports.checkSchedule = function() {
 
 function _reschedule() {
     var now = moment(),
-        heartbeat = now.clone().startOf('minute').add('minutes', 5),
+        heartbeat = now.clone().startOf('minute').add(5, 'minutes'),
         duration = moment.duration(heartbeat.valueOf() - now.valueOf());
 
     logger.info('checking schedule again in', moment.duration(duration).humanize());

@@ -31,7 +31,7 @@ exports['set all due scheduled tasks to pending'] = function(test) {
   test.expect(11);
 
   var due = moment().toISOString();
-  var notDue = moment().add('days', 7).toISOString();
+  var notDue = moment().add(7, 'days').toISOString();
   var id = 'xyz';
 
   var db = {
@@ -87,7 +87,7 @@ exports['set all due scheduled tasks to pending and handles repeated rows'] = fu
   test.expect(8);
 
   var due = moment().toISOString();
-  var notDue = moment().add('days', 7).toISOString();
+  var notDue = moment().add(7, 'days').toISOString();
   var id = 'xyz';
   var doc = {
     scheduled_tasks: [
@@ -190,17 +190,17 @@ exports['set all due scheduled tasks to pending and handles nonrepeated rows'] =
 
   schedule({ medic: db }, audit, function(err) {
     test.equals(err, undefined);
+    test.equals(view.callCount, 1);
+    test.equals(saveDoc.callCount, 2);
+    var saved1 = saveDoc.firstCall.args[0];
+    test.equals(saved1.scheduled_tasks.length, 1);
+    test.equals(saved1.scheduled_tasks[0].due, due);
+    test.equals(saved1.scheduled_tasks[0].state, 'pending');
+    var saved2 = saveDoc.secondCall.args[0];
+    test.equals(saved2.scheduled_tasks.length, 1);
+    test.equals(saved2.scheduled_tasks[0].due, due);
+    test.equals(saved2.scheduled_tasks[0].state, 'pending');
+    test.done();
   });
 
-  test.equals(view.callCount, 1);
-  test.equals(saveDoc.callCount, 2);
-  var saved1 = saveDoc.firstCall.args[0];
-  test.equals(saved1.scheduled_tasks.length, 1);
-  test.equals(saved1.scheduled_tasks[0].due, due);
-  test.equals(saved1.scheduled_tasks[0].state, 'pending');
-  var saved2 = saveDoc.secondCall.args[0];
-  test.equals(saved2.scheduled_tasks.length, 1);
-  test.equals(saved2.scheduled_tasks[0].due, due);
-  test.equals(saved2.scheduled_tasks[0].state, 'pending');
-  test.done();
 };

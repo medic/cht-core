@@ -228,7 +228,7 @@ exports['pass uniqueWithin validation on old doc'] = function(test) {
         xyz: '444'
     };
     validation.validate(doc, validations, function(errors) {
-        var start = moment().subtract('weeks', 2).toISOString();
+        var start = moment().subtract(2, 'weeks').toISOString();
         test.ok(fti.calledWith('data_records', {
             q: 'xyz:"444" AND reported_date<date>:[' + start + ' TO 3000-01-01T00:00:00]',
             include_docs: true

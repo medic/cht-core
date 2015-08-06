@@ -37,19 +37,19 @@ exports['mutes messages'] = function(test) {
                 messages: [ { message: 'keep me' } ],
                 type: 'anc_visit',
                 state: 'scheduled',
-                due: now.clone().add('days', 22).valueOf()
+                due: now.clone().add(22, 'days').valueOf()
             },
             {
                 messages: [ { message: 'x' } ],
                 type: 'anc_visit',
                 state: 'scheduled',
-                due: now.clone().add('days', 20).valueOf()
+                due: now.clone().add(20, 'days').valueOf()
             },
             {
                 messages: [ { message: 'x' } ],
                 type: 'anc_visit',
                 state: 'scheduled',
-                due: now.clone().subtract('days', 3).valueOf()
+                due: now.clone().subtract(3, 'days').valueOf()
             }
         ]
     };
@@ -78,19 +78,19 @@ exports['unmutes messages; discards old ones'] = function(test) {
                 messages: [ { message: 'keep me' } ],
                 type: 'anc_visit',
                 state: 'muted',
-                due: now.clone().add('days', 22).valueOf()
+                due: now.clone().add(22, 'days').valueOf()
             },
             {
                 messages: [ { message: 'x' } ],
                 type: 'anc_visit',
                 state: 'muted',
-                due: now.clone().add('days', 20).valueOf()
+                due: now.clone().add(20, 'days').valueOf()
             },
             {
                 messages: [ { message: 'x' } ],
                 type: 'anc_visit',
                 state: 'muted',
-                due: now.clone().subtract('days', 3).valueOf()
+                due: now.clone().subtract(3, 'days').valueOf()
             }
         ]
     };

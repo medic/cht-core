@@ -21,42 +21,42 @@ exports.setUp = function(callback) {
                 type: 'anc_visit',
                 state: 'scheduled',
                 group: 1,
-                due: now.clone().add('days', 3).valueOf()
+                due: now.clone().add(3, 'days').valueOf()
             },
             {
                 messages: [ { message: 'x' } ],
                 type: 'anc_visit',
                 state: 'scheduled',
                 group: 1,
-                due: now.clone().add('days', 7).valueOf()
+                due: now.clone().add(7, 'days').valueOf()
             },
             {
                 messages: [ { message: 'x' } ],
                 type: 'anc_visit',
                 state: 'scheduled',
                 group: 2,
-                due: now.clone().add('days', 15).valueOf()
+                due: now.clone().add(15, 'days').valueOf()
             },
             {
                 messages: [ { message: 'x' } ],
                 type: 'anc_visit',
                 state: 'scheduled',
                 group: 3,
-                due: now.clone().add('days', 17).valueOf()
+                due: now.clone().add(17, 'days').valueOf()
             },
             {
                 messages: [ { message: 'x' } ],
                 type: 'anc_visit',
                 state: 'scheduled',
                 group: 3,
-                due: now.clone().add('days', 25).valueOf()
+                due: now.clone().add(25, 'days').valueOf()
             },
             {
                 messages: [ { message: 'x' } ],
                 type: 'anc_visit',
                 state: 'scheduled',
                 group: 3,
-                due: now.clone().add('days', 31).valueOf()
+                due: now.clone().add(31, 'days').valueOf()
             },
             {
                 messages: [ { message: 'x' } ],
@@ -68,35 +68,35 @@ exports.setUp = function(callback) {
                 state: 'scheduled',
                 type: 'counseling_reminder',
                 group: 1,
-                due: now.clone().add('days', 10).valueOf()
+                due: now.clone().add(10, 'days').valueOf()
             },
             {
                 messages: [ { message: 'x' } ],
                 state: 'scheduled',
                 type: 'counseling_reminder',
                 group: 1,
-                due: now.clone().add('days', 12).valueOf()
+                due: now.clone().add(12, 'days').valueOf()
             },
             {
                 messages: [ { message: 'x' } ],
                 state: 'scheduled',
                 type: 'counseling_reminder',
                 group: 2,
-                due: now.clone().add('days', 14).valueOf()
+                due: now.clone().add(14, 'days').valueOf()
             },
             {
                 messages: [ { message: 'x' } ],
                 state: 'scheduled',
                 type: 'counseling_reminder',
                 group: 2,
-                due: now.clone().add('days', 25).valueOf()
+                due: now.clone().add(25, 'days').valueOf()
             },
             {
                 messages: [ { message: 'x' } ],
                 state: 'scheduled',
                 type: 'counseling_reminder',
                 group: 3,
-                due: now.clone().add('days', 34).valueOf()
+                due: now.clone().add(34, 'days').valueOf()
             }
         ]
     };
@@ -193,7 +193,7 @@ exports['ANC report right now clears group 1'] = function(test) {
 exports['ANC report in 14 days clears group 1 and 2'] = function(test) {
     test.expect(3);
     var doc = {
-        reported_date: moment(new Date()).add('days', 14).valueOf(),
+        reported_date: moment(new Date()).add(14, 'days').valueOf(),
         patient_id: '123',
         anc_pnc: 'ANC'
     };
@@ -281,7 +281,7 @@ exports['PNC report now clears group 1'] = function(test) {
 exports['PNC report in 36 days clears all counseling reminders'] = function(test) {
     test.expect(4);
     var doc = {
-        reported_date: moment(new Date()).add('days', 36).valueOf(),
+        reported_date: moment(new Date()).add(36, 'days').valueOf(),
         patient_id: '123',
         anc_pnc: 'PNC'
     };
