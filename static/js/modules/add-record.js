@@ -3,7 +3,7 @@
   'use strict';
 
   exports.init = function(src) {
-    var enketo_src = './static/dist/enketo/enketo-demo.html';
+    var enketo_src = './static/dist/enketo/composer.html';
     if (src) {
       $.ajax({
         type: 'head',
