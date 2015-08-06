@@ -2,8 +2,6 @@ require('./services/index');
 require('./controllers/inbox');
 require('./filters/index');
 
-var utils = require('kujua-utils');
-
 (function () {
 
   'use strict';
@@ -17,7 +15,7 @@ var utils = require('kujua-utils');
     'inboxServices',
     'pascalprecht.translate',
     'nvd3ChartDirectives',
-    'angularFileUpload',
+    'ngFileUpload',
     'pouchdb'
   ]);
 
@@ -279,16 +277,6 @@ var utils = require('kujua-utils');
     };
   }]);
 
-  // Protractor waits for requests to complete so we have to disable
-  // long polling requests.
-  app.constant('E2ETESTING', window.location.href.indexOf('e2eTesting=true') !== -1);
-
-  var bootstrapApplication = function() {
-    angular.element(document).ready(function() {
-      angular.bootstrap(document, [ 'inboxApp' ]);
-    });
-  };
-
   var getDbNames = function() {
     // parse the URL to determine the remote and local database names
     var url = window.location.href;
@@ -301,26 +289,42 @@ var utils = require('kujua-utils');
     };
   };
 
-  if (utils.isUserAdmin($('html').data('user'))) {
-    // admin users don't have local databases so bypass replication step
-    bootstrapApplication();
-  } else {
-    var names = getDbNames();
-    window.PouchDB(names.local)
-      .get('_design/medic')
-      .then(function() {
-        // ddoc found. bootstrap immediately.
-        bootstrapApplication();
-      }).catch(function() {
-        // no ddoc found, presumably first load. replicate it.
-        window.PouchDB(names.local)
-          .replicate.from(names.remote, { doc_ids: [ '_design/medic' ] })
-          .on('complete', bootstrapApplication)
-          .on('error', function(err) {
-            console.error('Error syncing ddoc. Bootstrapping anyway.', err);
-            bootstrapApplication();
-          });
-      });
-  }
+  // Protractor waits for requests to complete so we have to disable
+  // long polling requests.
+  app.constant('E2ETESTING', window.location.href.indexOf('e2eTesting=true') !== -1);
+
+  var bootstrapApplication = function(ddoc) {
+    app.constant('APP_CONFIG', {
+      name: ddoc && ddoc.kanso.config.name,
+      version: ddoc && ddoc.kanso.config.version
+    });
+    angular.element(document).ready(function() {
+      angular.bootstrap(document, [ 'inboxApp' ]);
+    });
+  };
+
+  var names = getDbNames();
+  window.PouchDB(names.local)
+    .get('_design/medic')
+    .then(function(ddoc) {
+      // ddoc found. bootstrap immediately.
+      bootstrapApplication(ddoc);
+    }).catch(function() {
+      // no ddoc found, presumably first load. replicate it.
+      window.PouchDB(names.local)
+        .replicate.from(names.remote, { doc_ids: [ '_design/medic' ] })
+        .on('complete', function() {
+          window.PouchDB(names.local)
+            .get('_design/medic')
+            .then(bootstrapApplication)
+            .catch(function() {
+              bootstrapApplication();
+            });
+        })
+        .on('error', function(err) {
+          console.error('Error syncing ddoc. Bootstrapping anyway.', err);
+          bootstrapApplication();
+        });
+    });
 
 }());

@@ -54,7 +54,7 @@ describe('UpdateContact service', function() {
     put.returns(KarmaUtils.mockPromise(null, { _id: 1, _rev: 2 }));
     query.returns(KarmaUtils.mockPromise(null, { rows: [] }));
     service(doc, updates, function(err, actual) {
-      chai.expect(err).to.equal(undefined);
+      chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(put.calledOnce).to.equal(true);
       chai.expect(query.calledOnce).to.equal(true);
@@ -87,7 +87,7 @@ describe('UpdateContact service', function() {
       .onThirdCall().returns(KarmaUtils.mockPromise(null, { _id: 3, _rev: 2 }));
     query.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: child1 }, { doc: child2 } ] }));
     service(doc, updates, function(err, actual) {
-      chai.expect(err).to.equal(undefined);
+      chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(put.calledThrice).to.equal(true);
       chai.expect(query.calledOnce).to.equal(true);
@@ -107,7 +107,7 @@ describe('UpdateContact service', function() {
       .onThirdCall().returns(KarmaUtils.mockPromise(null, { _id: 3, _rev: 2 }));
     query.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: child1 }, { doc: child2 } ] }));
     service(doc, updates, function(err, actual) {
-      chai.expect(err).to.equal(undefined);
+      chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(put.calledTwice).to.equal(true);
       chai.expect(query.calledOnce).to.equal(true);
@@ -122,7 +122,7 @@ describe('UpdateContact service', function() {
     put.onFirstCall().returns(KarmaUtils.mockPromise(null, { _id: 1, _rev: 2 }));
     query.onFirstCall().returns(KarmaUtils.mockPromise(null, { rows: [ ] }));
     service(doc, updates, function(err, actual) {
-      chai.expect(err).to.equal(undefined);
+      chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(put.calledOnce).to.equal(true);
       chai.expect(put.args[0][0]).to.deep.equal(expected);
@@ -142,7 +142,7 @@ describe('UpdateContact service', function() {
       .onThirdCall().returns(KarmaUtils.mockPromise(null, { _id: 3, _rev: 2 }));
     query.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: clinic } ] }));
     service(doc, updates, function(err, actual) {
-      chai.expect(err).to.equal(undefined);
+      chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(put.calledTwice).to.equal(true);
       chai.expect(put.args[0][0]).to.deep.equal({ _id: 1, _rev: 2, name: 'juan', phone: '5551234', type: 'person', parent: { _id: 2, _rev: 1, name: 'juanville', type: 'clinic' } });

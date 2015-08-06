@@ -1,6 +1,5 @@
 var db = require('db'),
     session = require('session'),
-    settings = require('settings/root'),
     levels = ['error', 'warn', 'log', 'info'];
 
 var log = [];
@@ -45,7 +44,7 @@ var registerUnhandledErrorHandler = function() {
   };
 };
 
-var create = function(info, callback) {
+var create = function(info, appInfo, callback) {
   session.info(function(err, session) {
     if (err) {
       return callback(err);
@@ -55,8 +54,8 @@ var create = function(info, callback) {
         time: new Date().toISOString(),
         user: session && session.userCtx,
         url: getUrl(),
-        app: settings.name,
-        version: settings.version
+        app: appInfo.name,
+        version: appInfo.version
       },
       info: info,
       log: log,
@@ -67,8 +66,8 @@ var create = function(info, callback) {
 
 module.exports = {
 
-  submit: function(info, callback) {
-    create(info, function(err, doc) {
+  submit: function(info, appInfo, callback) {
+    create(info, appInfo, function(err, doc) {
       if (err) {
         return callback(err);
       }

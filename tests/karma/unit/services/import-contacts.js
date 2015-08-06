@@ -29,7 +29,7 @@ describe('ImportContacts service', function() {
 
   it('does nothing when there are no contacts', function(done) {
     service([], true, function(err) {
-      chai.expect(err).to.equal(undefined);
+      chai.expect(err).to.equal(null);
       done();
     });
   });
@@ -70,7 +70,7 @@ describe('ImportContacts service', function() {
     var contact1 = { _id: 1 };
     var contact2 = { _id: 2 };
     service([contact1, contact2], true, function(err) {
-      chai.expect(err).to.equal(undefined);
+      chai.expect(err).to.equal(null);
       chai.expect(put.calledTwice).to.equal(true);
       chai.expect(put.args[0][0]).to.deep.equal(contact1);
       chai.expect(put.args[1][0]).to.deep.equal(contact2);
@@ -90,7 +90,7 @@ describe('ImportContacts service', function() {
       .onFirstCall().returns(KarmaUtils.mockPromise(null, { _id: 1, _rev: 1 }))
       .onSecondCall().returns(KarmaUtils.mockPromise(null, { _id: 2, _rev: 1 }));
     service([{ _id: 1 }, { _id: 2 }], true, function(err) {
-      chai.expect(err).to.equal(undefined);
+      chai.expect(err).to.equal(null);
       chai.expect(put.calledTwice).to.equal(true);
       chai.expect(put.args[0][0]._id).to.equal(1);
       chai.expect(put.args[1][0]._id).to.equal(2);
@@ -110,7 +110,7 @@ describe('ImportContacts service', function() {
       .onFirstCall().returns(KarmaUtils.mockPromise(null, { _id: 1, _rev: 1 }))
       .onSecondCall().returns(KarmaUtils.mockPromise(null, { _id: 2, _rev: 1 }));
     service([{ _id: 1 }, { _id: 2 }], false, function(err) {
-      chai.expect(err).to.equal(undefined);
+      chai.expect(err).to.equal(null);
       chai.expect(put.calledOnce).to.equal(true);
       chai.expect(put.args[0][0]).to.deep.equal({ _id: 1, _rev: 1 });
       done();
@@ -132,7 +132,7 @@ describe('ImportContacts service', function() {
     var contact1 = { _id: 1, contact: { name: 'john', phone: '+123' } };
     var contact2 = { _id: 2, contact: { _id: 3, name: 'jack', phone: '+123' } };
     service([contact1, contact2], true, function(err) {
-      chai.expect(err).to.equal(undefined);
+      chai.expect(err).to.equal(null);
       chai.expect(put.callCount).to.equal(4);
 
       // save first place

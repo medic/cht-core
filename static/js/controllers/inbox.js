@@ -2,7 +2,6 @@ var utils = require('kujua-utils'),
     feedback = require('feedback'),
     _ = require('underscore'),
     moment = require('moment'),
-    version = require('settings/root').version,
     sendMessage = require('../modules/send-message'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
@@ -18,8 +17,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'User', 'DBSync', 'ConflictResolution', 'Session',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, User, DBSync, ConflictResolution, Session) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'User', 'DBSync', 'ConflictResolution', 'Session', 'APP_CONFIG',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, User, DBSync, ConflictResolution, Session, APP_CONFIG) {
 
       Session.init();
       DBSync();
@@ -37,7 +36,7 @@ require('moment/locales');
       $scope.selected = undefined;
       $scope.filterQuery = { value: undefined };
       $scope.analyticsModules = undefined;
-      $scope.version = version;
+      $scope.version = APP_CONFIG.version;
 
       $scope.baseUrl = BaseUrlService();
 
@@ -776,7 +775,7 @@ require('moment/locales');
       $scope.submitFeedback = function() {
         var pane = modal.start($('#feedback'));
         var message = $('#feedback [name=feedback]').val();
-        feedback.submit(message, function(err) {
+        feedback.submit(message, APP_CONFIG, function(err) {
           pane.done(translateFilter('Error saving feedback'), err);
         });
       };

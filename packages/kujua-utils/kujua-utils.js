@@ -1,5 +1,4 @@
 var _ = require('underscore'),
-    settings = require('settings/root'),
     users = require('users'),
     cookies = require('cookies');
 
@@ -58,24 +57,16 @@ var logger = exports.logger = {
     },
     silent: function (obj) {},
     error: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['error']) {
-            this.log_error(obj);
-        }
+        this.log_error(obj);
     },
     warn: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['warn']) {
-            this.log(obj);
-        }
+        this.log(obj);
     },
     info: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['info']) {
-            this.log(obj);
-        }
+        this.log(obj);
     },
     debug: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['debug']) {
-            this.log(obj);
-        }
+        this.log(obj);
     }
 };
 

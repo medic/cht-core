@@ -7,35 +7,35 @@
     "**/*.txt"
   ],
   "dependencies": {
-    "angular": "1.3.8",
-    "angular-animate": "1.3.8",
-    "angular-cookie": "~4.0.5",
-    "angular-mocks": "1.3.8",
+    "angular": "1.4.3",
+    "angular-animate": "1.4.3",
+    "angular-cookie": "~4.0.9",
+    "angular-mocks": "1.4.3",
     "angular-pouchdb": "~2.1.0",
-    "angular-resource": "1.3.8",
-    "angular-route": "1.3.8",
-    "angular-sanitize": "1.3.8",
+    "angular-resource": "1.4.3",
+    "angular-route": "1.4.3",
+    "angular-sanitize": "1.4.3",
     "angular-translate": "~2.5.2",
     "angular-ui-router": "~0.2.11",
     "angularjs-nvd3-directives": "~0.0.7",
-    "async": "~0.9.0",
-    "bootstrap": "~3.3.2",
+    "async": "~1.4.0",
+    "bootstrap": "~3.3.5",
     "bootstrap-daterangepicker": "~1.3.19",
-    "bootstrap-tour": "~0.10.1",
+    "bootstrap-tour": "~0.10.2",
     "d3": "~3.4.11",
-    "fontawesome": "~4.3.0",
-    "jquery": "~2.1.3",
-    "moment": "~2.9.0",
-    "ng-file-upload": "~2.1.1",
+    "fontawesome": "~4.4.0",
+    "jquery": "~2.1.4",
+    "moment": "~2.10.6",
+    "ng-file-upload": "~6.0.3",
     "nvd3": "~1.1.15-beta",
-    "pouchdb": "~3.6.0",
+    "pouchdb": "~4.0.0",
     "select2": "~3.5.2",
     "select2-bootstrap-css": "~1.4.6",
-    "underscore": "~1.7.0"
+    "underscore": "~1.8.3"
   },
   "resolutions": {
     "d3": "~3.4.11",
-    "angular": "~1.3.8",
-    "pouchdb": "~3.6.0"
+    "angular": "~1.4.3",
+    "moment": "~2.10.6"
   }
 }
