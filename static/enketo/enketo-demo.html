@@ -200,12 +200,6 @@
 			        loadForm(name, url);
 			      };
 
-			      for(i=1; i<=2; ++i) {
-			        addFormToTable('demo:' + i,
-			           'Demo Form ' + i,
-			           'forms/' + i + '.xml');
-			      }
-
 			      log('Fetching forms...');
 			      $.ajax({
 			        url: medic_config.app_root + '/api/v1/forms',
