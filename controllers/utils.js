@@ -7,7 +7,7 @@ var _ = require('underscore'),
     noLmpDateModifier = 4;
 
 var formatDate = function(date) {
-  return date.zone(0).format('YYYY-MM-DD');
+  return date.utc().format('YYYY-MM-DD');
 };
 
 var formatDateRange = function(field, startDate, endDate) {
@@ -208,7 +208,7 @@ module.exports = {
   },
 
   getWeeksPregnant: function(doc) {
-    if (doc.form === 'R') {
+    if (doc.form === getFormCode('registration')) {
       return {
         number: moment().diff(moment(doc.reported_date), 'weeks') + noLmpDateModifier,
         approximate: true
@@ -220,7 +220,7 @@ module.exports = {
   },
 
   getEDD: function(doc) {
-    if (doc.form === 'R') {
+    if (doc.form === getFormCode('registration')) {
       return {
         date: moment(doc.reported_date).add(40 - noLmpDateModifier, 'weeks'),
         approximate: true

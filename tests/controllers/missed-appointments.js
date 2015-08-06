@@ -8,7 +8,13 @@ var clock;
 
 exports.setUp = function(callback) {
   clock = sinon.useFakeTimers();
-  sinon.stub(config, 'get').returns({});
+  sinon.stub(config, 'get').returns({
+    flag: 'F',
+    visit: 'V',
+    registration: 'R',
+    registrationLmp: 'P',
+    delivery: 'D'
+  });
   callback();
 };
 
