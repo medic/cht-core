@@ -92,40 +92,6 @@ exports.hasPerm = function(userCtx, perm) {
     return _.intersection(userCtx.roles, permissions[perm]).length > 0;
 };
 
-exports.checkDistrictConstraint = function(userCtx, db, callback) {
-    getUserDistrict(userCtx, function(err, facility) {
-        if (err) {
-            return callback(err);
-        }
-        if (!facility) {
-            return callback(new Error('No district assigned to district admin.'));
-        }
-        db.getDoc(facility, function(err, doc) {
-            if (err) {
-                if (err.error === 'not_found') {
-                    return callback(new Error('No facility found with id "' + facility + '". Your admin needs to update the Facility Id in your user details.'));
-                }
-                return callback(err);
-            }
-            callback(null, facility);
-        });
-    });
-};
-
-var getUserDistrict = function(userCtx, callback) {
-    var district = userCtx.facility_id;
-    if (!district && typeof(window) !== 'undefined') {
-        district = cookies.readBrowserCookies()['facility_id'];
-    }
-    if (district) {
-        return callback(null, district);
-    }
-    users.get(userCtx.name, function(err, user) {
-        if (err) return callback(err);
-        callback(null, user.facility_id);
-    });
-};
-
 /**
  * Update task/message object in-place.  Used by message update functions when
  * a message's state changes. Also adds new values to state history.

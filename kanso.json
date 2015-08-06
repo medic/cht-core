@@ -22,7 +22,7 @@
     ],
     "loglevel": "info",
     "load": "lib/app",
-    "modules": ["lib", "tests/kanso"],
+    "modules": ["lib"],
     "attachments": [
         "static/dist",
         "static/fonts",
