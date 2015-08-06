@@ -44,12 +44,6 @@
 					<tr><tr><td>Form ID</td></tr><td>View original form XML</td><td>Load form and display above</td></tr>
 				</table>
 			</td></tr>
-
-			<td id="log">
-				<h2>Log</h2>
-				<div class="content">
-				</div>
-			</td></tr>
 		</tbody></table>
 
 		<script>
@@ -84,10 +78,6 @@
 			requirejs(['jquery'], function($) {
 			  function log(message) {
 			    console.log('LOG | ' + message);
-			    $('#log .content').append('<pre>' + message + '</p>');
-			    while($('#log .content').children().length > 5) {
-			        $('#log .content pre:first').remove();
-			    }
 			  };
 			  log('Scripts loaded.');
 
