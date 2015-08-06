@@ -30,16 +30,6 @@ exports['checkDistrictConstraint exposed'] = function(test) {
     test.done();
 };
 
-exports['when getUserDistrict returns error, callback with error'] = function(test) {
-    sinon.stub(cookies, 'readBrowserCookies').returns({});
-    sinon.stub(users, 'get').callsArgWithAsync(1, 'd e d dead');
-
-    utils.checkDistrictConstraint({ }, db, function(err) {
-        test.equals(err, 'd e d dead');
-        test.done();
-    });
-};
-
 exports['when no district, callback with error'] = function(test) {
     sinon.stub(cookies, 'readBrowserCookies').returns({});
     sinon.stub(users, 'get').callsArgWithAsync(1, null, {});
