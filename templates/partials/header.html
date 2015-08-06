@@ -101,6 +101,13 @@
         <div class="button-label">{{'Messages' | translate}}</div>
       </a>
 
+      <a ui-sref="tasks" id="tasks-tab" class="tasks-tab" ng-class="{'selected': filterModel.type === 'tasks'}">
+        <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'tasks'}">
+          <span class="fa fa-flag"></span>
+        </div>
+        <div class="button-label">{{'Tasks' | translate}}</div>
+      </a>
+
       <a ui-sref="reports.detail" id="reports-tab" class="reports-tab" ng-class="{'selected': filterModel.type === 'reports'}">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'reports'}">
           <span class="fa fa-list-alt"></span>

@@ -158,6 +158,10 @@ require('moment/locales');
         $scope.items = contacts || [];
       };
 
+      $scope.setTasks = function(tasks) {
+        $scope.items = tasks || [];
+      };
+
       $scope.isRead = function(message) {
         return _.contains(message.read, Session.userCtx().name);
       };
@@ -822,34 +826,35 @@ require('moment/locales');
     }
   ]);
 
+  require('./analytics');
+  require('./configuration');
+  require('./configuration-export');
+  require('./configuration-forms');
+  require('./configuration-settings-advanced');
+  require('./configuration-settings-basic');
+  require('./configuration-translation-application');
+  require('./configuration-translation-languages');
+  require('./configuration-translation-messages');
+  require('./configuration-users');
+  require('./contacts');
+  require('./contacts-content');
+  require('./delete-language');
+  require('./delete-user');
+  require('./edit-contact');
+  require('./edit-language');
+  require('./edit-translation');
+  require('./edit-user');
+  require('./error');
+  require('./help');
+  require('./help-search');
+  require('./import-contacts');
+  require('./import-translation');
   require('./messages');
   require('./messages-content');
   require('./reports');
   require('./reports-content');
-  require('./analytics');
-  require('./contacts');
-  require('./contacts-content');
-  require('./configuration');
-  require('./edit-language');
-  require('./delete-language');
-  require('./edit-translation');
-  require('./import-translation');
-  require('./import-contacts');
-  require('./tour-select');
-  require('./configuration-settings-basic');
-  require('./configuration-settings-advanced');
-  require('./configuration-translation-languages');
-  require('./configuration-translation-application');
-  require('./configuration-translation-messages');
-  require('./configuration-forms');
-  require('./configuration-users');
-  require('./configuration-export');
-  require('./delete-user');
-  require('./edit-user');
-  require('./edit-contact');
-  require('./help');
-  require('./help-search');
+  require('./tasks');
   require('./theme');
-  require('./error');
+  require('./tour-select');
 
 }());

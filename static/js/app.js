@@ -88,6 +88,13 @@ require('./filters/index');
           }
         })
 
+        // contacts
+        .state('tasks', {
+          url: '/tasks',
+          controller: 'TasksCtrl',
+          templateUrl: 'templates/partials/tasks.html'
+        })
+
         // configuration
         .state('configuration', {
           url: '/configuration',
