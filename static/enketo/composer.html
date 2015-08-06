@@ -41,7 +41,7 @@
 			<tr><td>
 				<h2>Available forms</h2>
 				<table id="form-examples">
-					<tr><tr><td>Form ID</td></tr><td>View original form XML</td><td>Load form and display above</td></tr>
+					<tr><tr><td>Form ID</td><td></td></tr>
 				</table>
 			</td></tr>
 		</tbody></table>
@@ -190,7 +190,6 @@
 			      var i, table = $('#form-examples'),
 			          addFormToTable = function(id, name, url) {
 			          table.append('<tr><td>' + name + '</td>' +
-			              '<td><a href="' + url + '">view</a></td>' +
 			              '<td><button class="btn btn-primary form-loader" onclick="loadXmlFrom(\'' + id + '\', \'' + url + '\')">load<button></td>' +
 			              '</tr>');
 			          };
