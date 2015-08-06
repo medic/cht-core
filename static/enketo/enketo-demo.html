@@ -96,7 +96,7 @@
 			          xformDataAsJsonString = function(xml) {
 			            return JSON.stringify({
 			              form: formName,
-				      type: 'data_record',
+			              type: 'data_record',
 			              from: 'user:TODO',
 			              reported_date: Date.now(),
 			              content_type: 'xml',
@@ -124,28 +124,28 @@
 			          var record = xformDataAsJsonString(form.getDataStr()),
 			              validateButton = $('#form-wrapper input[type=submit]');
 			          validateButton.prop('disabled', true);
-				  console.log('Submitting to db: ' + record);
-				  $.ajax({
-				    url: medic_config.db_root,
-				    type: 'POST',
-				    headers: {
-				      'Content-Type': 'application/json',
-				    },
+			          console.log('Submitting to db: ' + record);
+			          $.ajax({
+			            url: medic_config.db_root,
+			            type: 'POST',
+			            headers: {
+			              'Content-Type': 'application/json',
+			            },
 			            data: record,
-				    complete: function() {
-				        validateButton.prop('disabled', false); },
-				    error: function(req, status, err) {
-				        log('Error submitting form data: ' + err); },
-				    success: function() { form.resetView(); init(); },
-				 });
+			            complete: function() {
+			                validateButton.prop('disabled', false); },
+			            error: function(req, status, err) {
+			                log('Error submitting form data: ' + err); },
+			            success: function() { form.resetView(); init(); },
+			         });
 			        } else {
 			          log('Form contains errors.  Please correct them.');
 			        }
 			      });
 
-			      // Hide loading buttons (loading multiple forms without page reloads leads
-			      // to some bugs.  Simpler to avoid these for now.
-			      $('.btn.form-loader').replaceWith('(reload page to load a different form)');
+			      // Hide loading section and instructions - hopefully the user knows what's
+			      // going on by now.
+			      $('#control-panel').remove();
 			    };
 
 			    var processors = {
