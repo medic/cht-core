@@ -10,6 +10,8 @@ var utils = require('kujua-utils');
     'pouchDB', 'UserCtxService', 'DbNameService',
     function(pouchDB, UserCtxService, DbNameService) {
 
+      var cache = {};
+
       var getRemoteUrl = function(name) {
         name = name || DbNameService();
         var port = location.port ? ':' + location.port : '';
@@ -21,7 +23,11 @@ var utils = require('kujua-utils');
           if (utils.isUserAdmin(UserCtxService())) {
             name = getRemoteUrl(name);
           }
-          return pouchDB(name || DbNameService());
+          name = name || DbNameService();
+          if (!cache[name]) {
+            cache[name] = pouchDB(name);
+          }
+          return cache[name];
         },
         getRemote: function(name) {
           return pouchDB(getRemoteUrl(name));
