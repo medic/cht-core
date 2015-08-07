@@ -7,3 +7,7 @@
 .modal .modal-dialog .form-footer {
 	width: 100%;
 }
+
+.datepicker-dropdown {
+  z-index: 1050 !important;
+}
