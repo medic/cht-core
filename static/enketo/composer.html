@@ -8,9 +8,7 @@
 		<link type="text/css" rel="stylesheet" href="style/enketo.css"/>
 		<style>
 			#control-panel {
-				margin-top:20px;
-				padding-top:10px;
-				border-top:solid 1px gray;
+				padding-top:5px;
 			}
 			#control-panel > tbody > tr > td {
 				padding:10px;
@@ -19,6 +17,11 @@
 		</style>
 	</head>
 	<body>
+		<div id="success-message" style="display:none">
+			<h2>Form saved.</h2>
+			<p>To fill another form, <a href='./composer.html' class="btn btn-primary">click here</a></p>.
+		</div>
+
 		<div id="form-wrapper" style="display:none">
 			<div class="container"></div>
 			<div class="form-footer" style="margin:0">
@@ -35,6 +38,8 @@
 		<table id="control-panel"><tbody>
 			<tr><td>
 				<h2>Available forms</h2>
+				<p class="status loading-forms">Loading forms...</p>
+				<p class="status no-forms" style="display:none">There are currently no forms available.</p>
 				<table id="form-examples">
 					<tr><tr><td>Form ID</td><td></td></tr>
 				</table>
@@ -127,11 +132,19 @@
 			              'Content-Type': 'application/json',
 			            },
 			            data: record,
-			            complete: function() {
-			                validateButton.prop('disabled', false); },
 			            error: function(req, status, err) {
-			                log('Error submitting form data: ' + err); },
-			            success: function() { form.resetView(); init(); },
+			                log('Error submitting form data: ' + err);
+			                validateButton.prop('disabled', false); },
+			            success: function() {
+			                if(window === window.top) {
+			                    form.resetView(); init();
+			                    validateButton.prop('disabled', false);
+			                } else {
+			                    // in an iframe, so just show success message
+			                    $('#success-message').show();
+			                    $('#form-wrapper').hide();
+			                }
+			            },
 			         });
 			        } else {
 			          log('Form contains errors.  Please correct them.');
@@ -195,25 +208,33 @@
 			      };
 
 			      log('Fetching forms...');
-			      $.ajax({
-			        url: medic_config.app_root + '/api/v1/forms',
-			        headers: { 'X-OpenRosa-Version':'1.0' },
-			        success: function(xml) {
-			          var i, xform,
-			              xforms = xml.getElementsByTagName('xform');
-			          log('Loaded ' + xforms.length + ' forms from DB.');
-			          for(i=0; i<xforms.length; ++i) {
-			            xform = xforms[i];
-			            addFormToTable(xform.getElementsByTagName('formID')[0].textContent,
-			                xform.getElementsByTagName('name')[0].textContent,
-			                xform.getElementsByTagName('downloadUrl')[0].textContent);
-			          }
-			        },
-				error: function(req, status, err) {
-				  log('Error fetching forms: ' + err);
-				  log('Status: ' + status);
-				},
-			      });
+			      (function() {
+			        var formsVisible = false;
+			        $.ajax({
+			          url: medic_config.app_root + '/api/v1/forms',
+			          headers: { 'X-OpenRosa-Version':'1.0' },
+			          success: function(xml) {
+			            var i, xform,
+			                xforms = xml.getElementsByTagName('xform');
+			            log('Loaded ' + xforms.length + ' forms from DB.');
+			            for(i=0; i<xforms.length; ++i) {
+			              xform = xforms[i];
+			              addFormToTable(xform.getElementsByTagName('formID')[0].textContent,
+			                  xform.getElementsByTagName('name')[0].textContent,
+			                  xform.getElementsByTagName('downloadUrl')[0].textContent);
+			            }
+			            formsVisible = xforms.length > 0;
+			          },
+			          error: function(req, status, err) {
+			              log('Error fetching forms: ' + err);
+			              log('Status: ' + status);
+			          },
+			          complete: function() {
+			              $('.loading-forms').hide();
+			              if(!formsVisible) $('.no-forms').show();
+			          },
+			        });
+			      }());
 			    }());
 			  });
 			});
