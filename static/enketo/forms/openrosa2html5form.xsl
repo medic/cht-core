@@ -192,9 +192,6 @@ XSLT Stylesheet that transforms OpenRosa style (X)Forms into valid HTMl5 forms
                             <xsl:apply-templates select="/h:html/h:head/xf:model/xf:bind[@calculate]" />
                         </fieldset>
                     </xsl:if>
-                    <xsl:if test="/h:html/h:body//xf:output">
-                        <xsl:apply-templates select="/h:html/h:body//xf:output" />
-                    </xsl:if>
                     <xsl:if test="/h:html/h:body//xf:itemset">
                         <xsl:comment>WARNING: Itemset support is experimental. Make sure to test whether they do what you want.</xsl:comment>
                     </xsl:if>
@@ -1002,11 +999,18 @@ XSLT Stylesheet that transforms OpenRosa style (X)Forms into valid HTMl5 forms
             <xsl:text><!-- avoids self-closing tags on empty elements -->
             </xsl:text>
         </xsl:if>
-        <xsl:value-of select="string(.)"/><!-- The following <apply-templates/>
-                does not work in Firefox.  FIXME It looks like we can get away
-                with just directly outputting the string, although it's likely
-                that will fail for more complicated examples. ->
-        <xsl:apply-templates /><!- call xf:output template if output is present -->
+
+        <!-- calling xsl:apply-templates does not create any output text for
+             constraintMsgs in Firefox.  It seems safe to assume that there
+             won't be any extra stuff that needs processing within these
+             constraintMsg values, so we can just output the string content
+             directly. -->
+        <xsl:if test="name() = 'jr:constraintMsg'">
+            <xsl:value-of select="string(.)"/>
+        </xsl:if>
+        <xsl:if test="name() != 'jr:constraintMsg'">
+            <xsl:apply-templates /><!-- call xf:output template if output is present -->
+        </xsl:if>
     </xsl:template>
 
     <xsl:template name="translations">
