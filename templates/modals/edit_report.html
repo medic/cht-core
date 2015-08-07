@@ -1,0 +1,47 @@
+<div class="modal fade edit-report-dialog update-facility" id="edit-report" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
+        <h3>{{'Edit Report' | translate}}</h3>
+      </div>
+      <div class="modal-body">
+        <form action="" method="POST">
+          <fieldset>
+            <div class="control-group">
+              <input type="hidden" name="facility" autocomplete="off" />
+            </div>
+          </fieldset>
+        </form>
+
+            <div>
+              <div class="form-wrapper" style="display:none">
+                <div class="container"></div>
+                <div class="form-footer" style="margin:0">
+                  <button class="btn btn-primary first-page">&lt;&lt; Go to start</button>
+                  <button class="btn btn-primary previous-page">&lt; prev</button>
+                  <button class="btn btn-primary next-page">next &gt;</button>
+                  <button class="btn btn-primary last-page">Go to end &gt;&gt;</button>
+                </div>
+              </div>
+
+              <table id="control-panel" style="display:none; TODO:remove"><tbody>
+                <td id="log">
+                  <h2>Log</h2>
+                  <div class="content">
+                  </div>
+                </td></tr>
+              </tbody></table>
+              <link type="text/css" rel="stylesheet" href="http://localhost:5988/medic/_design/medic/static/dist/enketo/style/enketo.css"/>
+              <link type="text/css" rel="stylesheet" href="http://localhost:5988/medic/_design/medic/static/dist/enketo/style/enketo-modal.css"/>
+            </div>
+      </div>
+
+      <div class="modal-footer">
+        <p class="note"></p>
+        <a class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
+        <a class="btn submit btn-primary" ng-click="updateReport()">{{'Submit' | translate}}</a>
+      </div>
+    </div>
+  </div>
+</div>

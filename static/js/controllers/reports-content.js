@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsContentCtrl', 
-    ['$scope', '$stateParams', 'MessageState',
-    function ($scope, $stateParams, MessageState) {
+    ['$scope', '$stateParams', 'MessageState', 'DB',
+    function ($scope, $stateParams, MessageState, db) {
 
       $scope.selectMessage($stateParams.id);
       $('.tooltip').remove();
@@ -36,7 +36,6 @@
       $scope.schedule = function(group) {
         setMessageState(group, 'muted', 'scheduled');
       };
-
     }
   ]);
 
