@@ -36,7 +36,7 @@ XSLT Stylesheet that transforms OpenRosa style (X)Forms into valid HTMl5 forms
     xmlns:str="http://exslt.org/strings"
     xmlns:dyn="http://exslt.org/dynamic"
     extension-element-prefixes="exsl str dyn"
-    version="1.0"
+    version="2.0"
     >
 
     <xsl:output method="xml" omit-xml-declaration="yes" encoding="UTF-8" indent="yes"/><!-- for xml: version="1.0" -->
@@ -65,16 +65,16 @@ XSLT Stylesheet that transforms OpenRosa style (X)Forms into valid HTMl5 forms
 
     <xsl:template match="/">
         <xsl:if test="not(function-available('exsl:node-set'))">
-            <xsl:comment>FATAL ERROR: exsl:node-set function is not available in this XSLT processor</xsl:comment>
+            <xsl:comment>WARNING: exsl:node-set function is not available in this XSLT processor</xsl:comment>
         </xsl:if>
         <xsl:if test="not(function-available('str:replace'))">
-            <xsl:comment>FATAL ERROR: str:replace function is not available in this XSLT processor</xsl:comment>
+            <xsl:comment>WARNING: str:replace function is not available in this XSLT processor</xsl:comment>
         </xsl:if>
         <xsl:if test="not(function-available('dyn:evaluate'))">
-            <xsl:comment>FATAL ERROR: dyn:evaluate function is not available in this XSLT processor</xsl:comment>
+            <xsl:comment>WARNING: dyn:evaluate function is not available in this XSLT processor</xsl:comment>
         </xsl:if>
         <xsl:if test="not(function-available('str:tokenize'))">
-            <xsl:comment>FATAL ERROR: str:tokenize function is not available in this XSLT processor</xsl:comment>
+            <xsl:comment>WARNING: str:tokenize function is not available in this XSLT processor</xsl:comment>
         </xsl:if>
         <xsl:for-each select="/h:html/h:head/xf:model/xf:bind">
             <xsl:if test="not(substring(./@nodeset, 1, 1) = '/')">
@@ -193,7 +193,7 @@ XSLT Stylesheet that transforms OpenRosa style (X)Forms into valid HTMl5 forms
                         </fieldset>
                     </xsl:if>
                     <xsl:if test="/h:html/h:body//xf:output">
-                        <xsl:comment>WARNING: Output element(s) added but note that only /absolute/path/to/node is properly supported as "value" attribute of outputs. Please test to make sure they do what you want.</xsl:comment>
+                        <xsl:apply-templates select="/h:html/h:body//xf:output" />
                     </xsl:if>
                     <xsl:if test="/h:html/h:body//xf:itemset">
                         <xsl:comment>WARNING: Itemset support is experimental. Make sure to test whether they do what you want.</xsl:comment>
@@ -335,13 +335,20 @@ XSLT Stylesheet that transforms OpenRosa style (X)Forms into valid HTMl5 forms
 
     <xsl:template name="appearance">
         <xsl:if test="@appearance">
-            <!-- str:tokenize browser support is poor (only Firefox) -->
-            <xsl:if test="function-available('str:tokenize')">
-                <xsl:variable name="appearances" select="str:tokenize(@appearance)" />
-                <xsl:for-each select="exsl:node-set($appearances)">
-                    <xsl:value-of select="concat('or-appearance-', normalize-space(translate(., $upper-case, $lower-case)), ' ')"/>
-                </xsl:for-each>
-            </xsl:if>
+            <xsl:choose>
+              <!-- str:tokenize browser support is poor (only Firefox) -->
+              <xsl:when test="function-available('str:tokenize')">
+                  <xsl:variable name="appearances" select="str:tokenize(@appearance)" />
+                  <xsl:for-each select="exsl:node-set($appearances)">
+                      <xsl:value-of select="concat('or-appearance-', normalize-space(translate(., $upper-case, $lower-case)), ' ')"/>
+                  </xsl:for-each>
+              </xsl:when>
+              <xsl:otherwise>
+                  <!-- so far in examples, @appearance has never had more than a single value, so it's safe just to use its value
+                       directly.  We appened a `space` character to maintain consistency with the output of `str:tokenize`. -->
+                  <xsl:value-of select="concat(concat('or-appearance-', @appearance), ' ')"/>
+              </xsl:otherwise>
+            </xsl:choose>
         </xsl:if>
     </xsl:template>
 
