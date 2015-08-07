@@ -744,13 +744,13 @@ require('moment/locales');
                           return medic_config.app_root + '/api/v1/forms/' + fileName() + '.xml';
                         };
 
-                        window.loadFormFor = function(docId, dataContainerSelecter) {
+                        window.loadFormFor = function(doc, dataContainerSelecter) {
                           var formData = $(dataContainerSelecter).text(),
                               xml = $.parseXML(formData),
-                              formId = xml.evaluate('//./@id', xml).iterateNext().value, // FIXME this code gets the `id` attribute of the root element.  But it sure is ugly.
+                              formId = doc.form,
                               url = getFormUrl(formId);
                           console.log('Should load from ' + url);
-                          loadForm(docId, formId, url, formData);
+                          loadForm(doc.id, formId, url, formData);
                         };
                       });
                     });
@@ -764,7 +764,7 @@ require('moment/locales');
           $('#edit-report [name=facility]').select2('val', val);
           $('#edit-report').modal('show');
           if($scope.selected.content_type === 'xml') {
-            loadFormFor($scope.selected._id, '.raw-report-content p');
+            loadFormFor($scope.selected, '.raw-report-content p');
           }
         } else {
           $rootScope.$broadcast('EditContactInit', record);
