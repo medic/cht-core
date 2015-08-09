@@ -324,6 +324,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci', 'Build, minify, and test for CI', [
+    'jshint',
     'default',
     'minify',
     'karma:unit_ci',
