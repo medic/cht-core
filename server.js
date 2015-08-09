@@ -77,7 +77,7 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use(express.static('./public'));
+app.use(express.static(__dirname + '/public'));
 app.get(pathPrefix + '/login', function(req, res) {
   auth.getUserCtx(req, function(err) {
     var redirectPath = req.query.redirect || appPrefix;
