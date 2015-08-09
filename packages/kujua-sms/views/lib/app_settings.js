@@ -64,6 +64,105 @@ module.exports = {
   "schedule_evening_minutes": 0,
   "synthetic_date": "",
   "contact_display_short": "clinic.name",
+  "permissions": [
+    {
+      "name": "can_export_messages",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "analytics"
+      ]
+    },
+    {
+      "name": "can_export_forms",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "analytics"
+      ]
+    },
+    {
+      "name": "can_export_contacts",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_export_audit",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_export_feedback",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_export_server_logs",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_access_directly",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_view_analytics",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "analytics"
+      ]
+    },
+    {
+      "name": "can_view_data_records",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "analytics",
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_view_unallocated_data_records",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_edit",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_update_messages",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_create_records",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "date_entry",
+        "gateway"
+      ]
+    }
+  ],
   "forms": {
     "YYYY": {
       "meta": {

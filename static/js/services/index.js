@@ -6,6 +6,7 @@
 
   require('./analytics-modules');
   require('./app-info');
+  require('./auth');
   require('./base');
   require('./changes');
   require('./conflict-resolution');

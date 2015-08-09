@@ -381,6 +381,26 @@
                     }
                 }
             },
+            "permissions": {
+                "title": "Permissions",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Permission"
+                        },
+                        "roles": {
+                            "title": "Roles",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
             "alerts": {
                 "title": "Alerts",
                 "type": "array",
