@@ -161,6 +161,45 @@ module.exports = {
         "date_entry",
         "gateway"
       ]
+    },
+    {
+      "name": "can_view_tasks",
+      "roles": [
+      ]
+    },
+    {
+      "name": "can_configure",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_view_messages",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_reports",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_analytics",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_contacts",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
     }
   ],
   "forms": {

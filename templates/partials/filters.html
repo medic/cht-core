@@ -32,14 +32,14 @@
           </span>
         </a>
 
-        <span class="dropdown" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'">
+        <span class="dropdown" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'" mm-auth="can_access_directly">
           <a data-toggle="dropdown">
             <div class="mm-icon">
               <span class="fa fa-fw fa-bars"></span>
             </div>
           </a>
           <ul role="menu" class="dropdown-menu mm-dropdown-menu">
-            <li role="presentation" ng-show="permissions.admin">
+            <li role="presentation">
               <a tabindex="-1" ng-click="download()" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'">
                 <i class="fa fa-arrow-down"></i>
                 {{'Export' | translate}}
@@ -274,37 +274,37 @@
           </span>
         </span>
         <ul role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
-          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+          <li class="ng-scope" role="presentation" mm-auth="can_configure">
             <a ui-sref="configuration.settings.basic" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-cog"></i>
               <span>{{'Settings' | translate}}</span>
             </a>
           </li>
-          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+          <li class="ng-scope" role="presentation" mm-auth="can_configure">
             <a ui-sref="configuration.translation.languages" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-language"></i>
               <span>{{'Languages' | translate}}</span>
             </a>
           </li>
-          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+          <li class="ng-scope" role="presentation" mm-auth="can_configure">
             <a ui-sref="configuration.forms" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-list-alt"></i>
               <span>{{'Forms' | translate}}</span>
             </a>
           </li>
-          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+          <li class="ng-scope" role="presentation" mm-auth="can_configure">
             <a href="{{baseUrl}}/schedules" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-clock-o"></i>
               <span>{{'Schedules' | translate}}</span>
             </a>
           </li>
-          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+          <li class="ng-scope" role="presentation" mm-auth="can_configure">
             <a ui-sref="configuration.export" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-arrow-circle-o-down"></i>
               <span>{{'Export' | translate}}</span>
             </a>
           </li>
-          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+          <li class="ng-scope" role="presentation" mm-auth="can_configure">
             <a ui-sref="configuration.users" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-user"></i>
               <span>{{'Users' | translate}}</span>
