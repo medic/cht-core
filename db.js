@@ -31,7 +31,7 @@ if (couchUrl) {
     if (data.q && !data.limit) {
       data.limit = 1000;
     }
-    var opts = {path: url};
+    var opts = { path: url };
     if (data.q) {
       opts.method = 'post';
       opts.form = data;
@@ -66,6 +66,7 @@ if (couchUrl) {
     request: function() {},
     getPath: function() {},
     settings: {},
+    getSettings: function() {},
     medic: {
       view: function() {},
       get: function() {},
