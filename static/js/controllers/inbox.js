@@ -607,7 +607,7 @@ require('moment/locales');
           });
         }
       };
-
+                /* globals define, loadFormFor, medic_config, requirejs, XSLTProcessor */
                 window.medic_config = {
                   app_root:    window.location.protocol + '//' + window.location.host,
                   db_root:     window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname),
@@ -650,7 +650,9 @@ require('moment/locales');
                                 $scope.report_form = { formName:formName, docId:$scope.selected._id };
                                 $scope.report_form.form = form = new Form('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData });
                                 loadErrors = form.init();
-                                if(loadErrors && loadErrors.length) console.log('[enketo] loadErrors: ' + JSON.stringify(loadErrors));
+                                if(loadErrors && loadErrors.length) {
+                                  console.log('[enketo] loadErrors: ' + JSON.stringify(loadErrors));
+                                }
 
                                 $('#edit-report .form-wrapper').show();
                               };
