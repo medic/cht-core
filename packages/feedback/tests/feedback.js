@@ -1,22 +1,23 @@
 var sinon = require('sinon'),
-    session = require('session'),
-    dbModule = { current: function() { return db; }},
-    db = { saveDoc: function() {} },
     feedback = require('../feedback'),
-    clock;
+    clock,
+    getUserCtx,
+    saveDoc;
 
 exports.setUp = function (callback) {
+  getUserCtx = sinon.stub();
+  saveDoc = sinon.stub();
   clock = sinon.useFakeTimers();
   callback();
 };
 
 exports.tearDown = function (callback) {
   clock.restore();
-  if (session.info.restore) {
-    session.info.restore();
+  if (getUserCtx.restore) {
+    getUserCtx.restore();
   }
-  if (db.saveDoc.restore) {
-    db.saveDoc.restore();
+  if (saveDoc.restore) {
+    saveDoc.restore();
   }
   callback();
 };
@@ -24,24 +25,20 @@ exports.tearDown = function (callback) {
 exports['unhandled error submits feedback'] = function(test) {
   test.expect(22);
 
-  var sessionInfo = sinon.stub(session, 'info').callsArgWith(0, null, {
-    userCtx: {
-      name: 'fred'
-    }
-  });
-  var dbSaveDoc = sinon.stub(db, 'saveDoc').callsArgWith(1);
+  getUserCtx.callsArgWith(0, null, { name: 'fred' });
+  saveDoc.callsArgWith(1);
 
   console.log('Trying to save');
   console.info('Saving in process');
   console.warn('Saving taking a while');
   console.error('Failed to save', '404');
 
-  feedback.withDb(dbModule);
+  feedback.init(saveDoc, getUserCtx);
   feedback.submit({ message: 'hello world' }, { name: 'medic', version: '0.5.0' }, function() {
 
-    test.equals(sessionInfo.callCount, 1);
-    test.equals(dbSaveDoc.callCount, 1);
-    var submittedDoc = dbSaveDoc.args[0][0];
+    test.equals(getUserCtx.callCount, 1);
+    test.equals(saveDoc.callCount, 1);
+    var submittedDoc = saveDoc.args[0][0];
 
     test.equals(submittedDoc.type, 'feedback');
     test.equals(submittedDoc.info.message, 'hello world');
@@ -70,28 +67,22 @@ exports['unhandled error submits feedback'] = function(test) {
   });
 };
 
-
 exports['log history restricted to 20 lines'] = function(test) {
   test.expect(5);
 
-  var sessionInfo = sinon.stub(session, 'info').callsArgWith(0, null, {
-    userCtx: {
-      name: 'fred'
-    }
-  });
-  var dbSaveDoc = sinon.stub(db, 'saveDoc').callsArgWith(1);
+  getUserCtx.callsArgWith(0, null, { name: 'fred' });
+  saveDoc.callsArgWith(1);
+  feedback.init(saveDoc, getUserCtx);
 
   for (var i = 0; i < 25; i++) {
     console.log('item ' + i);
   }
 
-  feedback.withDb(dbModule);
   feedback.submit({ message: 'hello world' }, { }, function() {
+    test.equals(getUserCtx.callCount, 1);
+    test.equals(saveDoc.callCount, 1);
 
-    test.equals(sessionInfo.callCount, 1);
-    test.equals(dbSaveDoc.callCount, 1);
-
-    var submittedDoc = dbSaveDoc.args[0][0];
+    var submittedDoc = saveDoc.args[0][0];
     test.equals(submittedDoc.log.length, 20);
     test.equals(submittedDoc.log[0].arguments[0], 'item 24');
     test.equals(submittedDoc.log[19].arguments[0], 'item 5');

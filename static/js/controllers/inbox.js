@@ -23,6 +23,19 @@ require('moment/locales');
       Session.init();
       DBSync();
       ConflictResolution();
+      feedback.init(
+        function(doc, callback) {
+          DB.get()
+            .post(doc)
+            .then(function() {
+              callback();
+            })
+            .catch(callback);
+        },
+        function(callback) {
+          callback(null, Session.userCtx());
+        }
+      );
 
       $scope.loadingContent = false;
       $scope.error = false;

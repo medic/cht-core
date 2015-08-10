@@ -1,8 +1,11 @@
-var db = require('db'),
-    session = require('session'),
-    levels = ['error', 'warn', 'log', 'info'];
-
-var log = [];
+var levels = ['error', 'warn', 'log', 'info'],
+    log = [],
+    saveDoc = function(doc, callback) {
+      callback(new Error('saveDoc not configured'));
+    },
+    getUserCtx = function(callback) {
+      callback(new Error('getUserCtx not configured'));
+    };
 
 var getUrl = function() {
   var url = document && document.URL;
@@ -45,14 +48,14 @@ var registerUnhandledErrorHandler = function() {
 };
 
 var create = function(info, appInfo, callback) {
-  session.info(function(err, session) {
+  getUserCtx(function(err, userCtx) {
     if (err) {
       return callback(err);
     }
     callback(null, {
       meta: {
         time: new Date().toISOString(),
-        user: session && session.userCtx,
+        user: userCtx,
         url: getUrl(),
         app: appInfo.name,
         version: appInfo.version
@@ -65,21 +68,18 @@ var create = function(info, appInfo, callback) {
 };
 
 module.exports = {
-
+  init: function(_saveDoc, _getUserCtx) {
+    saveDoc = _saveDoc;
+    getUserCtx = _getUserCtx;
+  },
   submit: function(info, appInfo, callback) {
     create(info, appInfo, function(err, doc) {
       if (err) {
         return callback(err);
       }
-      db.current().saveDoc(doc, callback);
+      saveDoc(doc, callback);
     });
-  },
-
-  // Exposed for testing
-  withDb: function(_db) {
-    db = _db;
   }
-
 };
 
 if (typeof window !== 'undefined') {
