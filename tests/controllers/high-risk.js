@@ -225,11 +225,11 @@ exports['get returns all high risk pregnancies'] = function(test) {
 
 
     // find flagged
-    var flaggedStart = moment().subtract(44, 'weeks').zone(0).format('YYYY-MM-DD');
+    var flaggedStart = moment().subtract(44, 'weeks').utc().format('YYYY-MM-DD');
     test.equals(fti.args[0][1].q, 'errors<int>:0 AND form:F AND reported_date<date>:[' + flaggedStart + ' TO 9999-01-01]');
 
     // get pregnancies
-    var registrationStart = moment().subtract(2, 'weeks').zone(0).format('YYYY-MM-DD');
+    var registrationStart = moment().subtract(2, 'weeks').utc().format('YYYY-MM-DD');
     test.equals(fti.args[1][1].q, 'errors<int>:0 AND form:("R" OR "P") AND expected_date<date>:[' + registrationStart + ' TO 1970-10-09] AND patient_id:(1 OR 3 OR 4)');
 
     // reject deliveries

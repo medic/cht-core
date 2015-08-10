@@ -1,49 +1,7 @@
 var http = require('http'),
     _ = require('underscore'),
-    db = require('./db');
-
-var permissionsMap = {
-  can_access_directly: ['national_admin'],
-  can_export_messages: ['national_admin', 'district_admin', 'analytics'],
-  can_export_audit: ['national_admin'],
-  can_export_feedback: ['national_admin'],
-  can_execute_schedules: [],
-  can_export_server_logs: ['national_admin'],
-  can_export_contacts: ['national_admin', 'district_admin'],
-  can_view_analytics: ['national_admin', 'district_admin', 'analytics'],
-  can_view_data_records: [
-      'national_admin',
-      'district_admin',
-      'analytics',
-      'gateway'
-  ],
-  can_view_unallocated_data_records: [
-      'national_admin',
-      'district_admin',
-      'gateway'
-  ],
-  can_edit: [
-      'national_admin',
-      'district_admin',
-      'gateway'
-  ],
-  can_update_messages: [
-      'national_admin',
-      'district_admin',
-      'gateway'
-  ],
-  can_update_records: [
-      'national_admin',
-      'district_admin',
-      'gateway'
-  ],
-  can_create_records: [
-      'national_admin',
-      'district_admin',
-      'data_entry',
-      'gateway'
-  ]
-};
+    db = require('./db'),
+    config = require('./config');
 
 var get = function(url, headers, callback) {
   http.get({
@@ -87,10 +45,11 @@ var isDbAdmin = function(userCtx) {
 };
 
 var hasPermission = function(userCtx, permission) {
-  if (!permissionsMap[permission]) {
+  var perm = _.findWhere(config.get('permissions'), { name: permission });
+  if (!perm) {
     return false;
   }
-  return _.some(permissionsMap[permission], function(role) {
+  return _.some(perm.roles, function(role) {
     return _.contains(userCtx.roles, role);
   });
 };

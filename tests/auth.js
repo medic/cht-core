@@ -1,10 +1,14 @@
 var http = require('http'),
     sinon = require('sinon'),
-    auth = require('../auth');
+    auth = require('../auth'),
+    config = require('../config');
 
 exports.tearDown = function (callback) {
   if (http.get.restore) {
     http.get.restore();
+  }
+  if (config.get.restore) {
+    config.get.restore();
   }
   callback();
 };
@@ -140,6 +144,9 @@ exports['auth returns error when no has insufficient privilege'] = function(test
         callbacks[eventType] = callback;
       }
     });
+  sinon.stub(config, 'get').returns([
+    { name: 'can_edit', roles: [ 'abc' ] }
+  ]);
 
   auth.check({ }, 'can_edit', district, function(err) {
     test.equals(get.callCount, 1);
@@ -215,6 +222,9 @@ exports['auth returns username and district'] = function(test) {
         callbacks.second[eventType] = callback;
       }
     });
+  sinon.stub(config, 'get').returns([
+    { name: 'can_edit', roles: [ 'district_admin' ] }
+  ]);
 
   auth.check({ }, 'can_edit', district, function(err, ctx) {
     test.equals(get.callCount, 2);
@@ -261,6 +271,9 @@ exports['auth returns error when requesting unallowed facility'] = function(test
         callbacks.second[eventType] = callback;
       }
     });
+  sinon.stub(config, 'get').returns([
+    { name: 'can_edit', roles: [ 'district_admin' ] }
+  ]);
 
   auth.check({ }, 'can_edit', '789', function(err) {
     test.equals(get.callCount, 2);
@@ -332,6 +345,10 @@ exports['auth accepts multiple required roles'] = function(test) {
         callbacks.second[eventType] = callback;
       }
     });
+  sinon.stub(config, 'get').returns([
+    { name: 'can_export_messages', roles: [ 'district_admin' ] },
+    { name: 'can_export_contacts', roles: [ 'district_admin' ] }
+  ]);
 
   auth.check({ }, [ 'can_export_messages', 'can_export_contacts' ], district, function(err, ctx) {
     test.equals(get.callCount, 2);
@@ -369,6 +386,10 @@ exports['auth checks all required roles'] = function(test) {
         callbacks.first[eventType] = callback;
       }
     });
+  sinon.stub(config, 'get').returns([
+    { name: 'can_export_messages', roles: [ 'district_admin' ] },
+    { name: 'can_export_server_logs', roles: [ 'national_admin' ] }
+  ]);
 
   auth.check({ }, [ 'can_export_messages', 'can_export_server_logs' ], district, function(err) {
     test.equals(get.callCount, 1);

@@ -335,7 +335,7 @@ var formatDate = function(date, tz) {
   // return in a specified timezone offset
   var result = moment(date);
   if (typeof tz !== 'undefined') {
-    result = result.zone(Number(tz));
+    result = result.utcOffset(-1 * Number(tz));
   }
   // return in UTC or browser/server preference/default
   return result.format('DD, MMM YYYY, HH:mm:ss Z');
