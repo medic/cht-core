@@ -74,22 +74,14 @@
 			});
 
 			requirejs(['jquery'], function($) {
-			  function log(message) {
-			    console.log('LOG | ' + message);
-			  };
-			  log('Scripts loaded.');
-
-			  log('Requiring enketo form...');
 			  requirejs(['enketo-js/Form'], function(Form) {
-			    log('Enketo loaded.');
-
 			    var showForm = function(formName, formHtml, formData) {
 			      var form, formContainer, formWrapper,
 			          init = function() {
 			            var loadErrors;
 			            form = new Form('#form-wrapper form', { modelStr:formData });
 			            loadErrors = form.init();
-			            if(loadErrors) log('loadErrors = ' + loadErrors);
+			            if(loadErrors && loadErrors.length) console.log('[enketo] loadErrors: ' + JSON.stringify(loadErrors));
 			          },
 			          xformDataAsJsonString = function(xml) {
 			            return JSON.stringify({
@@ -102,7 +94,6 @@
 			            });
 			          };
 
-			      log('Adding form to DOM...');
 			      formWrapper = $('#form-wrapper');
 			      formWrapper.show();
 			      formContainer = formWrapper.find('.container');
@@ -110,19 +101,15 @@
 
 			      formContainer.append(formHtml);
 
-			      log('Attempting to load form with data of type: ' + (typeof formData));
 			      formData = formData;
-			      console.log('form:\n' + formData);
 			      init();
 
 			      $('#form-wrapper input[type=submit]').on('click', function() {
 			        form.validate();
 			        if(form.isValid()) {
-			          log('Form content is valid!  Saving and resetting.');
 			          var record = xformDataAsJsonString(form.getDataStr()),
 			              validateButton = $('#form-wrapper input[type=submit]');
 			          validateButton.prop('disabled', true);
-			          console.log('Submitting to db: ' + record);
 			          $.ajax({
 			            url: medic_config.db_root,
 			            type: 'POST',
@@ -131,7 +118,6 @@
 			            },
 			            data: record,
 			            error: function(req, status, err) {
-			                log('Error submitting form data: ' + err);
 			                validateButton.prop('disabled', false); },
 			            success: function() {
 			                if(window === window.top) {
@@ -144,8 +130,6 @@
 			                }
 			            },
 			         });
-			        } else {
-			          log('Form contains errors.  Please correct them.');
 			        }
 			      });
 
@@ -168,23 +152,13 @@
 
 			    var loadForm = function(name, url) {
 			      if(!processors.html.loaded || !processors.model.loaded) {
-			        return log('Not all processors are loaded yet.');
+			        return console.log('[enketo] processors are not ready');
 			      }
 
-			      log('Loading form: ' + url + '...');
 			      $.ajax(url).done(function(data) {
-			        log('Loaded form.');
 			        var doc = data,
 			            html = processors.html.processor.transformToDocument(doc),
 			            model = processors.model.processor.transformToDocument(doc);
-
-			        console.log('XML');
-			        console.log('---');
-			        console.log(new XMLSerializer().serializeToString(model));
-
-			        console.log('XML');
-			        console.log('---');
-			        console.log(new XMLSerializer().serializeToString(html));
 
 			        showForm(name,
 			            html.documentElement.innerHTML,
@@ -201,11 +175,9 @@
 			          };
 
 			      window.loadXmlFrom = function(name, url) {
-			        console.log('Should load from ' + url);
 			        loadForm(name, url);
 			      };
 
-			      log('Fetching forms...');
 			      (function() {
 			        var formsVisible = false;
 			        $.ajax({
@@ -214,7 +186,6 @@
 			          success: function(xml) {
 			            var i, xform,
 			                xforms = xml.getElementsByTagName('xform');
-			            log('Loaded ' + xforms.length + ' forms from DB.');
 			            for(i=0; i<xforms.length; ++i) {
 			              xform = xforms[i];
 			              addFormToTable(xform.getElementsByTagName('formID')[0].textContent,
@@ -224,8 +195,6 @@
 			            formsVisible = xforms.length > 0;
 			          },
 			          error: function(req, status, err) {
-			              log('Error fetching forms: ' + err);
-			              log('Status: ' + status);
 			          },
 			          complete: function() {
 			              $('.loading-forms').hide();

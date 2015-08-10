@@ -575,7 +575,6 @@ require('moment/locales');
             };
         form.validate();
         if(form.isValid()) {
-          console.log('Form content is valid!  Saving and resetting.');
           var record = xformDataAsJson(form.getDataStr()),
               $submit = $('.edit-report-dialog .btn.submit'),
               contact = null,
@@ -616,9 +615,7 @@ require('moment/locales');
                   enketo_root: window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname) + '/_design/medic/static/dist/enketo',
                 };
 
-                console.log('Requesting remote script...');
                 jQuery.getScript(medic_config.enketo_root + '/js/medic-enketo-offline-SNAPSHOT.min.js', function() {
-                    console.log('Script fetched; setting up enketo...');
 
                     requirejs.config({
                       shim: {
@@ -644,19 +641,7 @@ require('moment/locales');
                     });
 
                     requirejs(['jquery'], function() {
-                      function log(message) {
-                        console.log('LOG | ' + message);
-                        $('#log .content').append('<pre>' + message + '</p>');
-                        while($('#log .content').children().length > 5) {
-                            $('#log .content pre:first').remove();
-                        }
-                      };
-                      log('Scripts loaded.');
-
-                      log('Requiring enketo form...');
                       requirejs(['enketo-js/Form'], function(Form) {
-                        log('Enketo loaded.');
-
                         var showForm = function(docId, formName, formHtml, formModel, formData) {
                           var form, formContainer, formWrapper,
                               init = function() {
@@ -665,12 +650,11 @@ require('moment/locales');
                                 $scope.report_form = { formName:formName, docId:$scope.selected._id };
                                 $scope.report_form.form = form = new Form('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData });
                                 loadErrors = form.init();
-                                if(loadErrors && loadErrors.length > 0) log('loadErrors = ' + loadErrors.toString());
+                                if(loadErrors && loadErrors.length) console.log('[enketo] loadErrors: ' + JSON.stringify(loadErrors));
 
                                 $('#edit-report .form-wrapper').show();
                               };
 
-                          log('Adding form to DOM...');
                           formWrapper = $('.edit-report-dialog .form-wrapper');
                           formWrapper.show();
                           formContainer = formWrapper.find('.container');
@@ -678,8 +662,6 @@ require('moment/locales');
 
                           formContainer.append(formHtml);
 
-                          log('Attempting to load form with data of type: ' + (typeof formModel));
-                          console.log('form:\n' + formModel);
                           init();
                         };
 
@@ -697,24 +679,13 @@ require('moment/locales');
 
                         var loadForm = function(docId, name, url, formInstanceData) {
                           if(!processors.html.loaded || !processors.model.loaded) {
-                            return log('Not all processors are loaded yet.');
+                            return console.log('[enketo] processors are not ready');
                           }
 
-                          log('TODO: we should be getting the form from `db`, not an ajax request.');
-                          log('Loading form: ' + url + '...');
                           $.ajax(url).done(function(data) {
-                            log('Loaded form.');
                             var doc = data,
                                 html = processors.html.processor.transformToDocument(doc),
                                 model = processors.model.processor.transformToDocument(doc);
-
-                            console.log('XML');
-                            console.log('---');
-                            console.log(new XMLSerializer().serializeToString(model));
-
-                            console.log('XML');
-                            console.log('---');
-                            console.log(new XMLSerializer().serializeToString(html));
 
                             showForm(docId, name,
                                 html.documentElement.innerHTML,
@@ -746,10 +717,8 @@ require('moment/locales');
 
                         window.loadFormFor = function(doc, dataContainerSelecter) {
                           var formData = $(dataContainerSelecter).text(),
-                              xml = $.parseXML(formData),
                               formId = doc.form,
                               url = getFormUrl(formId);
-                          console.log('Should load from ' + url);
                           loadForm(doc.id, formId, url, formData);
                         };
                       });
