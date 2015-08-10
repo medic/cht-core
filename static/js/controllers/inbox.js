@@ -18,7 +18,7 @@ require('moment/locales');
 
   inboxControllers.controller('InboxCtrl', 
     ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'User', 'DBSync', 'ConflictResolution', 'Session', 'APP_CONFIG', 'DB',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, User, DBSync, ConflictResolution, Session, APP_CONFIG, db) {
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, User, DBSync, ConflictResolution, Session, APP_CONFIG, DB) {
 
       Session.init();
       DBSync();
@@ -585,14 +585,14 @@ require('moment/locales');
           // and then modify the content.  This will avoid most concurrent
           // edits, but is not ideal.  TODO update write failure to handle
           // concurrent modifications.
-          db.get().get(facilityId).then(function(facility) {
+          DB.get().get(facilityId).then(function(facility) {
             contact = facility;
-            return db.get().get(docId);
+            return DB.get().get(docId);
           }).then(function(doc) {
             doc.content = record.content;
             doc.contact = contact;
             updatedDoc = doc;
-            return db.get().put(doc);
+            return DB.get().put(doc);
           }).then(function() {
             $scope.selected = updatedDoc;
               // TODO ideally this would be in a `finally` handler rather than duplicated in `then()` and `catch()`
