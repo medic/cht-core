@@ -1,5 +1,3 @@
-var modal = require('../modules/modal');
-
 (function () {
   'use strict';
   angular.module('inboxControllers').controller('EditReportCtrl',
@@ -8,7 +6,6 @@ var modal = require('../modules/modal');
       function log() { console.log.apply(console, arguments); }
 
       $scope.updateReport = function() {
-        debugger;
         if(!$scope.report_form) {
           $scope.updateFacility('#edit-report');
           return;
@@ -65,7 +62,7 @@ var modal = require('../modules/modal');
 
       (function constructor() {
         log('constructor() :: ENTRY');
-        /* globals define, loadFormFor, medic_config, requirejs, XSLTProcessor */
+        /* globals define, medic_config, requirejs, XSLTProcessor */
         window.medic_config = {
           app_root:    window.location.protocol + '//' + window.location.host,
           db_root:     window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname),

@@ -17,8 +17,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'User', 'DBSync', 'ConflictResolution', 'Session', 'APP_CONFIG', 'DB',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, User, DBSync, ConflictResolution, Session, APP_CONFIG, DB) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'User', 'DBSync', 'ConflictResolution', 'Session', 'APP_CONFIG',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, User, DBSync, ConflictResolution, Session, APP_CONFIG) {
 
       Session.init();
       DBSync();
@@ -559,6 +559,7 @@ require('moment/locales');
           $('#edit-report [name=facility]').select2('val', val);
           $('#edit-report').modal('show');
           if($scope.selected.content_type === 'xml') {
+            /* globals loadFormFor */
             loadFormFor($scope.selected, '.raw-report-content p');
           }
         } else {
