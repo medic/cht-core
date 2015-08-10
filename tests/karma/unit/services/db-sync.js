@@ -29,9 +29,11 @@ describe('DBSync service', function() {
       $provide.factory('Settings', function() {
         return Settings;
       });
-      $provide.factory('UserCtxService', function() {
-        return function() {
-          return userCtx;
+      $provide.factory('Session', function() {
+        return {
+          userCtx: function() {
+            return userCtx;
+          }
         };
       });
     });
