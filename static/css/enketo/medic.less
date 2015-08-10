@@ -1,0 +1,16 @@
+/**
+ * Some of the widths set up in the enketo.css file assume the form is being
+ * viewed full-screen.  These overrides are required when enketo is embedded in
+ * a modal dialog.
+ */
+.enketo.modal .modal-dialog .container,
+.enketo.modal .modal-dialog .form-footer {
+  width: 100%;
+}
+.enketo {
+  @import (inline) "core.css";
+
+  .datepicker-dropdown {
+	 z-index: 1050 !important;
+  }
+}
