@@ -1,27 +1,27 @@
 <div class="inner" ng-cloak>
   <div class="col-sm-12 page configuration" ui-view="content">
     <div class="configuration-menu">
-      <a ui-sref="configuration.settings.basic" ng-show="permissions.admin || permissions.nationalAdmin">
+      <a ui-sref="configuration.settings.basic" mm-auth="can_configure">
         <i class="fa fa-cog"></i>
         {{'Settings' | translate}}
       </a>
-      <a ui-sref="configuration.translation.languages" ng-show="permissions.admin || permissions.nationalAdmin">
+      <a ui-sref="configuration.translation.languages" mm-auth="can_configure">
         <i class="fa fa-language"></i>
         {{'Languages' | translate}}
       </a>
-      <a ui-sref="configuration.forms" ng-show="permissions.admin || permissions.nationalAdmin">
+      <a ui-sref="configuration.forms" mm-auth="can_configure">
         <i class="fa fa-list-alt"></i>
         {{'Forms' | translate}}
       </a>
-      <a href="{{baseUrl}}/schedules" ng-show="permissions.admin || permissions.nationalAdmin">
+      <a href="{{baseUrl}}/schedules" mm-auth="can_configure">
         <i class="fa fa-clock-o"></i>
         {{'Schedules' | translate}}
       </a>
-      <a ui-sref="configuration.export" ng-show="permissions.admin || permissions.nationalAdmin">
+      <a ui-sref="configuration.export" mm-auth="can_configure">
         <i class="fa fa-arrow-circle-o-down"></i>
         {{'Export' | translate}}
       </a>
-      <a ui-sref="configuration.users" ng-show="permissions.admin">
+      <a ui-sref="configuration.users" mm-auth="can_configure">
         <i class="fa fa-user"></i>
         {{'Users' | translate}}
       </a>

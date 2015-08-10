@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    moment = require('moment'),
-    utils = require('kujua-utils');
+    moment = require('moment');
 
 (function () {
 
@@ -28,6 +27,23 @@ var _ = require('underscore'),
         return false;
     };
 
+    var prettyMonth = function (month, full) {
+        var months_short = {
+            1:'Jan', 2:'Feb', 3:'Mar', 4:'Apr', 5:'May', 6:'Jun', 7:'Jul', 8:'Aug',
+            9:'Sep', 10:'Oct', 11:'Nov', 12:'Dec'
+        };
+        var months_full = {
+            1:'January', 2:'February', 3:'March', 4:'April', 5:'May', 6:'June',
+            7:'July', 8:'August', 9:'September', 10:'October', 11:'November',
+            12:'December'
+        };
+
+        if (full) {
+            return months_full[month];
+        }
+        return months_short[month];
+    };
+
     /**
      * Get the name/representation of the datarecord.
      *
@@ -42,7 +58,7 @@ var _ = require('underscore'),
         }
 
         if (typeof doc.month !== 'undefined') {
-            var m = doc.month_pp ? doc.month_pp : utils.prettyMonth(doc.month, true);
+            var m = doc.month_pp ? doc.month_pp : prettyMonth(doc.month, true);
             return m + ' ' + doc.year;
         }
     };
@@ -416,7 +432,7 @@ var _ = require('underscore'),
                             name: report.value.clinic
                         },
                         month: report.key[2],
-                        month_pp: utils.prettyMonth(report.key[2], true),
+                        month_pp: prettyMonth(report.key[2], true),
                         year: report.key[1],
                         reporter: report.value.reporter,
                         reporting_phone: report.value.reporting_phone,
@@ -481,7 +497,7 @@ var _ = require('underscore'),
                             name: report.value.clinic,
                         },
                         month: report.key[2],
-                        month_pp: utils.prettyMonth(report.key[2], true),
+                        month_pp: prettyMonth(report.key[2], true),
                         year: report.key[1],
                         reporter: report.value.reporter,
                         reporting_phone: report.value.reporting_phone,

@@ -38,6 +38,12 @@
               {{'Submit Report' | translate}}
             </a>
           </li>
+          <li role="presentation" class="disabled">
+            <a role="menuitem" tabindex="-1" id="send-record-enketo">
+              <i class="fa fa-fw fa-list-alt"></i>
+              {{'Submit Report with Enketo' | translate}}
+            </a>
+          </li>
         </ul>
       </span>
 
@@ -48,7 +54,7 @@
           </div>
         </a>
         <ul role="menu" class="dropdown-menu mm-dropdown-menu">
-          <li role="presentation" ng-show="permissions.admin">
+          <li role="presentation" mm-auth="can_configure">
             <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#guided-setup">
               <i class="fa fa-fw fa-list-ol"></i>
               {{'Easy Setup Wizard' | translate}}
@@ -85,7 +91,7 @@
             </a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" rel="external" id="logout">
+            <a role="menuitem" tabindex="-1" rel="external" ng-click="logout()">
               <i class="fa fa-fw fa-power-off"></i>
               {{'Log Out' | translate}}
             </a>
@@ -96,7 +102,7 @@
 
     <div class="tabs">
 
-      <a ui-sref="messages.detail" id="messages-tab" class="messages-tab" ng-class="{'selected': filterModel.type === 'messages'}">
+      <a ui-sref="messages.detail" id="messages-tab" class="messages-tab" ng-class="{'selected': filterModel.type === 'messages'}" mm-auth="can_view_messages">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'messages'}">
           <span class="fa fa-envelope"></span>
           <span class="mm-badge-overlay mm-badge-overlay-top" ng-hide="readStatus.messages <= 0">
@@ -107,7 +113,14 @@
         <div class="button-label">{{'Messages' | translate}}</div>
       </a>
 
-      <a ui-sref="reports.detail" id="reports-tab" class="reports-tab" ng-class="{'selected': filterModel.type === 'reports'}">
+      <a ui-sref="tasks" id="tasks-tab" class="tasks-tab" ng-class="{'selected': filterModel.type === 'tasks'}" mm-auth="can_view_tasks">
+        <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'tasks'}">
+          <span class="fa fa-flag"></span>
+        </div>
+        <div class="button-label">{{'Tasks' | translate}}</div>
+      </a>
+
+      <a ui-sref="reports.detail" id="reports-tab" class="reports-tab" ng-class="{'selected': filterModel.type === 'reports'}" mm-auth="can_view_reports">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'reports'}">
           <span class="fa fa-list-alt"></span>
           <span class="mm-badge-overlay mm-badge-overlay-top" ng-hide="readStatus.forms <= 0">
@@ -118,21 +131,21 @@
         <div class="button-label">{{'Reports' | translate}}</div>
       </a>
 
-      <a ui-sref="analytics" id="analytics-tab" class="analytics-tab" ng-class="{'selected': filterModel.type === 'analytics'}">
+      <a ui-sref="analytics" id="analytics-tab" class="analytics-tab" ng-class="{'selected': filterModel.type === 'analytics'}" mm-auth="can_view_analytics">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'analytics'}">
           <span class="fa fa-bar-chart-o"></span>
         </div>
         <div class="button-label">{{'Analytics' | translate}}</div>
       </a>
 
-      <a ui-sref="contacts.detail" id="contacts-tab" class="contacts-tab" ng-class="{'selected': filterModel.type === 'contacts'}">
+      <a ui-sref="contacts.detail" id="contacts-tab" class="contacts-tab" ng-class="{'selected': filterModel.type === 'contacts'}" mm-auth="can_view_contacts">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'contacts'}">
           <span class="fa fa-user"></span>
         </div>
         <div class="button-label">{{'Contacts' | translate}}</div>
       </a>
 
-      <a ui-sref="configuration" class="configuration-tab" ng-show="permissions.admin || permissions.nationalAdmin" ng-class="{'selected': filterModel.type === 'configuration'}">
+      <a ui-sref="configuration" class="configuration-tab" mm-auth="can_configure" ng-class="{'selected': filterModel.type === 'configuration'}">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'configuration'}">
           <span class="fa fa-cog"></span>
         </div>

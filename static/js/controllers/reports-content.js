@@ -36,7 +36,6 @@
       $scope.schedule = function(group) {
         setMessageState(group, 'muted', 'scheduled');
       };
-
     }
   ]);
 

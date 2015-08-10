@@ -7,8 +7,8 @@ var utils = require('kujua-utils');
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('DB', [
-    'pouchDB', 'UserCtxService', 'DbNameService',
-    function(pouchDB, UserCtxService, DbNameService) {
+    'pouchDB', 'Session', 'DbNameService',
+    function(pouchDB, Session, DbNameService) {
 
       var cache = {};
 
@@ -20,7 +20,7 @@ var utils = require('kujua-utils');
 
       return {
         get: function(name) {
-          if (utils.isUserAdmin(UserCtxService())) {
+          if (utils.isUserAdmin(Session.userCtx())) {
             name = getRemoteUrl(name);
           }
           name = name || DbNameService();

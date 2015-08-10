@@ -25,10 +25,10 @@ var _ = require('underscore'),
       });
   };
   
-  inboxServices.factory('UserDistrict', ['DB', 'UserSettings', 'UserCtxService',
-    function(DB, UserSettings, UserCtxService) {
+  inboxServices.factory('UserDistrict', ['DB', 'UserSettings', 'Session',
+    function(DB, UserSettings, Session) {
       return function(callback) {
-        var userCtx = UserCtxService();
+        var userCtx = Session.userCtx();
         if (!userCtx.name) {
           return callback(new Error('Not logged in'));
         }
@@ -54,10 +54,10 @@ var _ = require('underscore'),
     }
   ]);
 
-  inboxServices.factory('UserSettings', ['DB', 'UserCtxService',
-    function(DB, UserCtxService) {
+  inboxServices.factory('UserSettings', ['DB', 'Session',
+    function(DB, Session) {
       return function(callback) {
-        var id = 'org.couchdb.user:' + UserCtxService().name;
+        var id = 'org.couchdb.user:' + Session.userCtx().name;
         getWithRemoteFallback(DB, id, callback);
       };
     }

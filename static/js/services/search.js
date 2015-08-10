@@ -68,8 +68,8 @@ var _ = require('underscore'),
           }
           DB.get()
             .allDocs({ include_docs: true, keys: page })
-            .then(function(docs) {
-              callback(null, docs);
+            .then(function(response) {
+              callback(null, _.pluck(response.rows, 'doc'));
             })
             .catch(function(err) {
               callback(err);

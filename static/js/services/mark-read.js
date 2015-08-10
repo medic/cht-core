@@ -27,10 +27,10 @@ var _ = require('underscore'),
     return _.compact(_.map(messages, _.partial(updateMessage, user, read)));
   };
   
-  inboxServices.factory('MarkRead', ['DB', 'UserCtxService',
-    function(DB, UserCtxService) {
+  inboxServices.factory('MarkRead', ['DB', 'Session',
+    function(DB, Session) {
       return function(messageId, read) {
-        var user = UserCtxService().name;
+        var user = Session.userCtx().name;
         return new promise(function(resolve, reject) {
           DB.get().get(messageId)
             .then(_.partial(updateMessage, user, read))
@@ -49,10 +49,10 @@ var _ = require('underscore'),
     }
   ]);
   
-  inboxServices.factory('MarkAllRead', ['DB', 'UserCtxService',
-    function(DB, UserCtxService) {
+  inboxServices.factory('MarkAllRead', ['DB', 'Session',
+    function(DB, Session) {
       return function(messages, read) {
-        var user = UserCtxService().name;
+        var user = Session.userCtx().name;
         var updated = updateMessages(user, read, messages);
         return DB.get().bulkDocs(updated);
       };

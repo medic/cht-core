@@ -7,8 +7,8 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditUserCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'UpdateUser', 'Facility', 'UserCtxService',
-    function ($scope, $rootScope, translateFilter, UpdateUser, Facility, UserCtxService) {
+    ['$scope', '$rootScope', 'translateFilter', 'UpdateUser', 'Facility', 'Session',
+    function ($scope, $rootScope, translateFilter, UpdateUser, Facility, Session) {
 
       Facility({ types: [ 'clinic', 'health_center', 'district_hospital' ] }, function(err, facilities) {
         if (err) {
@@ -136,7 +136,7 @@ var modal = require('../modules/modal');
           var pane = modal.start($(modalId));
           var settings = getSettingsUpdates();
           var user = settingsOnly ? null : getUserUpdates();
-          if (settings.language && UserCtxService().name === $scope.editUserModel.name) {
+          if (settings.language && Session.userCtx().name === $scope.editUserModel.name) {
             // editing current user's language, so update UI
             $scope.changeLanguage(settings.language);
           }

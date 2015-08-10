@@ -22,7 +22,7 @@
     ],
     "loglevel": "info",
     "load": "lib/app",
-    "modules": ["lib", "tests/kanso"],
+    "modules": ["lib"],
     "attachments": [
         "static/dist",
         "static/fonts",
@@ -378,6 +378,26 @@
                         "type": "string",
                         "title": "Flag Pregnancy Form Code",
                         "default": "F"
+                    }
+                }
+            },
+            "permissions": {
+                "title": "Permissions",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Permission"
+                        },
+                        "roles": {
+                            "title": "Roles",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             },

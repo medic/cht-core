@@ -6,6 +6,7 @@
 
   require('./analytics-modules');
   require('./app-info');
+  require('./auth');
   require('./base');
   require('./changes');
   require('./conflict-resolution');
@@ -24,6 +25,7 @@
   require('./generate-search-requests');
   require('./http-wrapper');
   require('./import-contacts');
+  require('./kanso-packages');
   require('./language');
   require('./mark-read');
   require('./message-contacts');
@@ -33,6 +35,7 @@
   require('./read-messages');
   require('./search');
   require('./send-message');
+  require('./session');
   require('./settings');
   require('./update-contact');
   require('./update-facility');

@@ -1,37 +1,6 @@
 var _ = require('underscore'),
-    settings = require('settings/root'),
     users = require('users'),
     cookies = require('cookies');
-
-
-exports.getUserLocale = function(req) {
-    if (req.query.locale)
-        return req.query.locale;
-    return req.userCtx ? req.userCtx.locale : undefined;
-};
-
-exports.capitalize = function (str) {
-    return str.replace( /(^|\s)([a-z])/g , function(m,p1,p2){
-        return p1+p2.toUpperCase();
-    });
-};
-
-exports.prettyMonth = function (month, full) {
-    var months_short = {
-        1:'Jan', 2:'Feb', 3:'Mar', 4:'Apr', 5:'May', 6:'Jun', 7:'Jul', 8:'Aug',
-        9:'Sep', 10:'Oct', 11:'Nov', 12:'Dec'
-    };
-    var months_full = {
-        1:'January', 2:'February', 3:'March', 4:'April', 5:'May', 6:'June',
-        7:'July', 8:'August', 9:'September', 10:'October', 11:'November',
-        12:'December'
-    };
-
-    if (full)
-        return months_full[month];
-
-    return months_short[month];
-};
 
 var logger = exports.logger = {
     levels: {silent:0, error:1, warn:2, info:3, debug:4},
@@ -58,24 +27,16 @@ var logger = exports.logger = {
     },
     silent: function (obj) {},
     error: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['error']) {
-            this.log_error(obj);
-        }
+        this.log_error(obj);
     },
     warn: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['warn']) {
-            this.log(obj);
-        }
+        this.log(obj);
     },
     info: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['info']) {
-            this.log(obj);
-        }
+        this.log(obj);
     },
     debug: function (obj) {
-        if (this.levels[settings.loglevel] >= this.levels['debug']) {
-            this.log(obj);
-        }
+        this.log(obj);
     }
 };
 
@@ -130,90 +91,6 @@ exports.hasPerm = function(userCtx, perm) {
     }
 
     return _.intersection(userCtx.roles, permissions[perm]).length > 0;
-};
-
-exports.checkDistrictConstraint = function(userCtx, db, callback) {
-    exports.getUserDistrict(userCtx, function(err, facility) {
-        if (err) {
-            return callback(err);
-        }
-        if (!facility) {
-            return callback(new Error('No district assigned to district admin.'));
-        }
-        db.getDoc(facility, function(err, doc) {
-            if (err) {
-                if (err.error === 'not_found') {
-                    return callback(new Error('No facility found with id "' + facility + '". Your admin needs to update the Facility Id in your user details.'));
-                }
-                return callback(err);
-            }
-            callback(null, facility);
-        });
-    });
-};
-
-exports.getUserDistrict = function(userCtx, callback) {
-    var district = userCtx.facility_id;
-    if (!district && typeof(window) !== 'undefined') {
-        district = cookies.readBrowserCookies()['facility_id'];
-    }
-    if (district) {
-        return callback(null, district);
-    }
-    users.get(userCtx.name, function(err, user) {
-        if (err) return callback(err);
-        callback(null, user.facility_id);
-    });
-};
-
-/**
- * Return a title-case version of the supplied string.
- * @name titleize(str)
- * @param str The string to transform.
- * @returns {String}
- * @api public
- */
-exports.titleize = function (s) {
-    return s.trim()
-        .toLowerCase()
-        .replace(/([a-z\d])([A-Z]+)/g, '$1_$2')
-        .replace(/[-\s]+/g, '_')
-        .replace(/_/g, ' ')
-        .replace(/(?:^|\s|-)\S/g, function(c) {
-            return c.toUpperCase();
-        });
-};
-
-exports.updateTopNav = function(key, title) {
-    if (key) {
-        $('body').attr('data-page', key);
-    }
-    $('#topnavlinks .mm-button-text').text(title || '');
-    $('.page-header .controls').hide();
-    $('.page-header .container').attr('class', 'container');
-    $('body > .container div').filter(':first').attr('class', 'content');
-};
-
-/*
- * Return task object that matches message uuid or a falsey value if match
- * fails.
- */
-exports.getTask = function(uuid, doc, type) {
-    type = type || 'message';
-    var ret;
-    if (!uuid || !doc || !doc.tasks) {
-        return;
-    }
-    if (type === 'message') {
-        for (var i in doc.tasks) {
-            for (var j in doc.tasks[i].messages) {
-                if (uuid === doc.tasks[i].messages[j].uuid) {
-                    return doc.tasks[i];
-                }
-            }
-        };
-    }
-    return ret;
 };
 
 /**

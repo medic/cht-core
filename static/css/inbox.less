@@ -16,6 +16,8 @@
 @import "configuration";
 @import "help";
 
+@import "enketo/medic";
+
 .container-fluid {
   overflow-x: hidden;
 }
@@ -25,6 +27,11 @@ body {
   &.messages {
     .header .tabs .selected, .filters {
       background-color: @messages-color;
+    }
+  }
+  &.tasks {
+    .header .tabs .selected, .filters {
+      background-color: @tasks-color;
     }
   }
   &.reports {
@@ -181,6 +188,11 @@ body {
         &.messages-tab {
           &, .mm-icon-inverse, .mm-icon-inverse:hover {
             color: @messages-color;
+          }
+        }
+        &.tasks-tab {
+          &, .mm-icon-inverse, .mm-icon-inverse:hover {
+            color: @tasks-color;
           }
         }
         &.reports-tab {
@@ -480,6 +492,15 @@ body {
   }
   &.selected {
     background-color: lighten(@messages-color, 30%);
+  }
+}
+
+.tasks .inbox-items li {
+  .message-wrapper:hover {
+    border-left-color: @tasks-color;
+  }
+  &.selected {
+    background-color: lighten(@tasks-color, 30%);
   }
 }
 

@@ -2,7 +2,6 @@ var utils = require('kujua-utils'),
     feedback = require('feedback'),
     _ = require('underscore'),
     moment = require('moment'),
-    version = require('settings/root').version,
     sendMessage = require('../modules/send-message'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
@@ -18,11 +17,25 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'DBSync', 'ConflictResolution', 'DbNameService', 'UserSettings',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, DBSync, ConflictResolution, DbNameService, UserSettings) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'DBSync', 'ConflictResolution', 'UserSettings', 'APP_CONFIG', 'DB',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, DBSync, ConflictResolution, UserSettings, APP_CONFIG, DB) {
 
+      Session.init();
       DBSync();
       ConflictResolution();
+      feedback.init(
+        function(doc, callback) {
+          DB.get()
+            .post(doc)
+            .then(function() {
+              callback();
+            })
+            .catch(callback);
+        },
+        function(callback) {
+          callback(null, Session.userCtx());
+        }
+      );
 
       $scope.loadingContent = false;
       $scope.error = false;
@@ -36,9 +49,13 @@ require('moment/locales');
       $scope.selected = undefined;
       $scope.filterQuery = { value: undefined };
       $scope.analyticsModules = undefined;
-      $scope.version = version;
+      $scope.version = APP_CONFIG.version;
 
       $scope.baseUrl = BaseUrlService();
+
+      $scope.logout = function() {
+        Session.logout();
+      };
 
       $scope.setFilterQuery = function(query) {
         if (query) {
@@ -154,17 +171,21 @@ require('moment/locales');
         $scope.items = contacts || [];
       };
 
+      $scope.setTasks = function(tasks) {
+        $scope.items = tasks || [];
+      };
+
       $scope.isRead = function(message) {
-        return _.contains(message.read, UserCtxService().name);
+        return _.contains(message.read, Session.userCtx().name);
       };
 
       $scope.permissions = {
-        admin: utils.isUserAdmin(UserCtxService()),
-        nationalAdmin: utils.isUserNationalAdmin(UserCtxService()),
-        districtAdmin: utils.isUserDistrictAdmin(UserCtxService()),
+        admin: utils.isUserAdmin(Session.userCtx()),
+        nationalAdmin: utils.isUserNationalAdmin(Session.userCtx()),
+        districtAdmin: utils.isUserDistrictAdmin(Session.userCtx()),
         district: undefined,
-        canExport: utils.hasPerm(UserCtxService(), 'can_export_messages') || 
-                   utils.hasPerm(UserCtxService(), 'can_export_forms')
+        canExport: utils.hasPerm(Session.userCtx(), 'can_export_messages') ||
+                   utils.hasPerm(Session.userCtx(), 'can_export_forms')
       };
 
       $scope.readStatus = { forms: 0, messages: 0 };
@@ -231,7 +252,7 @@ require('moment/locales');
             function formatResult(doc) {
               return doc && format.contact(doc);
             }
-            $('#update-facility [name=facility]').select2({
+            $('.update-facility [name=facility]').select2({
               id: function(doc) {
                 return doc._id;
               },
@@ -280,7 +301,7 @@ require('moment/locales');
 
       $scope.updateReadStatus = function () {
         ReadMessages({
-          user: UserCtxService().name,
+          user: Session.userCtx().name,
           district: $scope.permissions.district,
           targetScope: 'messages'
         }, function(err, data) {
@@ -341,7 +362,7 @@ require('moment/locales');
           var selected = $(this).closest('.modal-content')
                                 .find('.selected')
                                 .attr('data-value');
-          var id = 'org.couchdb.user:' + UserCtxService().name;
+          var id = 'org.couchdb.user:' + Session.userCtx().name;
           UpdateUser(id, { language: selected }, function(err) {
             btn.removeClass('disabled');
             if (err) {
@@ -403,7 +424,7 @@ require('moment/locales');
           },
           render: function() {
             tour.start('intro', translateFilter);
-            var id = 'org.couchdb.user:' + UserCtxService().name;
+            var id = 'org.couchdb.user:' + Session.userCtx().name;
             UpdateUser(id, { known: true }, function(err) {
               if (err) {
                 console.log('Error updating user', err);
@@ -531,8 +552,8 @@ require('moment/locales');
         }
       };
 
-      $scope.updateFacility = function() {
-        var $modal = $('#update-facility');
+      $scope.updateFacility = function(modalSelecter) {
+        var $modal = $(modalSelecter || '#update-facility');
         var facilityId = $modal.find('[name=facility]').val();
         if (!facilityId) {
           $modal.find('.modal-footer .note')
@@ -544,11 +565,16 @@ require('moment/locales');
           pane.done(translateFilter('Error updating facility'), err);
         });
       };
+
       $scope.edit = function(record) {
         if ($scope.filterModel.type === 'reports') {
           var val = (record.contact && record.contact._id) || '';
-          $('#update-facility [name=facility]').select2('val', val);
-          $('#update-facility').modal('show');
+          $('#edit-report [name=facility]').select2('val', val);
+          $('#edit-report').modal('show');
+          if($scope.selected.content_type === 'xml') {
+            /* globals loadFormFor */
+            loadFormFor($scope.selected, '.raw-report-content p');
+          }
         } else {
           $rootScope.$broadcast('EditContactInit', record);
         }
@@ -771,7 +797,7 @@ require('moment/locales');
       $scope.submitFeedback = function() {
         var pane = modal.start($('#feedback'));
         var message = $('#feedback [name=feedback]').val();
-        feedback.submit(message, function(err) {
+        feedback.submit(message, APP_CONFIG, function(err) {
           pane.done(translateFilter('Error saving feedback'), err);
         });
       };
@@ -783,7 +809,6 @@ require('moment/locales');
           }
           require('../modules/add-record').init(settings.muvuku_webapp_url);
         });
-        require('../modules/manage-session').init(DbNameService());
       };
 
       UserDistrict(function() {
@@ -819,34 +844,36 @@ require('moment/locales');
     }
   ]);
 
+  require('./analytics');
+  require('./configuration');
+  require('./configuration-export');
+  require('./configuration-forms');
+  require('./configuration-settings-advanced');
+  require('./configuration-settings-basic');
+  require('./configuration-translation-application');
+  require('./configuration-translation-languages');
+  require('./configuration-translation-messages');
+  require('./configuration-users');
+  require('./contacts');
+  require('./contacts-content');
+  require('./delete-language');
+  require('./delete-user');
+  require('./edit-contact');
+  require('./edit-language');
+  require('./edit-report');
+  require('./edit-translation');
+  require('./edit-user');
+  require('./error');
+  require('./help');
+  require('./help-search');
+  require('./import-contacts');
+  require('./import-translation');
   require('./messages');
   require('./messages-content');
   require('./reports');
   require('./reports-content');
-  require('./analytics');
-  require('./contacts');
-  require('./contacts-content');
-  require('./configuration');
-  require('./edit-language');
-  require('./delete-language');
-  require('./edit-translation');
-  require('./import-translation');
-  require('./import-contacts');
-  require('./tour-select');
-  require('./configuration-settings-basic');
-  require('./configuration-settings-advanced');
-  require('./configuration-translation-languages');
-  require('./configuration-translation-application');
-  require('./configuration-translation-messages');
-  require('./configuration-forms');
-  require('./configuration-users');
-  require('./configuration-export');
-  require('./delete-user');
-  require('./edit-user');
-  require('./edit-contact');
-  require('./help');
-  require('./help-search');
+  require('./tasks');
   require('./theme');
-  require('./error');
+  require('./tour-select');
 
 }());

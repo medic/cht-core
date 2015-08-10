@@ -334,7 +334,7 @@ exports.update_message_task = function(doc, request) {
     if (!data.message_id) {
         return fail('Message id required');
     }
-    msg = kutils.getTask(data.message_id, doc);
+    msg = getTask(data.message_id, doc);
     if (!data.message_id || !msg) {
         return fail('Message not found: ' + data.message_id);
     }
@@ -343,4 +343,26 @@ exports.update_message_task = function(doc, request) {
         doc,
         JSON.stringify(getDefaultResponse(doc))
     ];
+};
+
+
+/*
+ * Return task object that matches message uuid or a falsey value if match
+ * fails.
+ */
+var getTask = function(uuid, doc, type) {
+    type = type || 'message';
+    if (!uuid || !doc || !doc.tasks) {
+        return;
+    }
+    if (type === 'message') {
+        for (var i in doc.tasks) {
+            for (var j in doc.tasks[i].messages) {
+                if (uuid === doc.tasks[i].messages[j].uuid) {
+                    return doc.tasks[i];
+                }
+            }
+        };
+    }
+    return;
 };

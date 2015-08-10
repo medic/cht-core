@@ -40,6 +40,12 @@
               </li>
             </ul>
           </li>
+          <li ng-if="selected.content">
+            <div class="raw-report-content">
+              <label>{{'Raw Report Content' | translate}}</label>
+              <p>{{selected.content}}</p>
+            </div>
+          </li>
           <li ng-if="selected.sms_message.message">
             <label>{{'Raw Report Content' | translate}}</label>
             <p>{{selected.sms_message.message}}</p>

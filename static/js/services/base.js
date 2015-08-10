@@ -21,10 +21,4 @@
     }
   ]);
 
-  inboxServices.factory('UserCtxService', function() {
-    return function() {
-      return $('html').data('user');
-    };
-  });
-
 }());
