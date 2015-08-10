@@ -7,6 +7,7 @@ window.KarmaUtils = {
     }
   },
   mockPromise: function(err, doc) {
+    /* globals Promise */
     return new Promise(function(resolve, reject) {
       if (err) {
         reject(err);
