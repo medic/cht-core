@@ -212,12 +212,13 @@
             window.loadComposer = function() {
               (function() {
                 var formsVisible = false;
-                // TODO not sure why we can't have a fresh table
-                // every time, or (1) get the list of forms from
-                // a service and (2) store them in `$scope`
+                // TODO not sure why we can't have a fresh table every time, or
+                // (1) get the list of forms from a service and (2) store them
+                // in `$scope`
                 $('.status.loading-forms').show();
                 $('#available-enketo-forms').empty();
                 $('.status.no-forms').hide();
+                $('#edit-report [name=facility]').select2('val', null);
 
                 $.ajax({
                   url: medic_config.app_root + '/api/v1/forms',
