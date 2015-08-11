@@ -34,7 +34,7 @@
             <select id="language" class="form-control" ng-model="editUserModel.language" ng-options="locale.name for locale in enabledLocales track by locale.code"></select>
           </div>
 
-          <div class="form-group" ng-show="permissions.admin">
+          <div class="form-group" mm-auth="can_configure">
             <label for="type">{{'User Type' | translate}}</label>
             <select id="type" class="form-control" ng-model="editUserModel.type">
               <option value=""></option>
@@ -50,7 +50,7 @@
             </select>
           </div>
 
-          <div class="form-group" ng-show="permissions.admin">
+          <div class="form-group" mm-auth="can_configure">
             <label for="facility">{{'Facility' | translate}}</label>
             <select id="facility" class="form-control" ng-model="editUserModel.facility" ng-options="facility.name group by typeName(facility) for facility in facilities | orderBy:['type','name'] track by facility._id">
               <option value=""></option>

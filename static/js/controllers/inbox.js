@@ -1,5 +1,4 @@
-var utils = require('kujua-utils'),
-    feedback = require('feedback'),
+var feedback = require('feedback'),
     _ = require('underscore'),
     moment = require('moment'),
     sendMessage = require('../modules/send-message'),
@@ -179,15 +178,6 @@ require('moment/locales');
         return _.contains(message.read, Session.userCtx().name);
       };
 
-      $scope.permissions = {
-        admin: utils.isUserAdmin(Session.userCtx()),
-        nationalAdmin: utils.isUserNationalAdmin(Session.userCtx()),
-        districtAdmin: utils.isUserDistrictAdmin(Session.userCtx()),
-        district: undefined,
-        canExport: utils.hasPerm(Session.userCtx(), 'can_export_messages') ||
-                   utils.hasPerm(Session.userCtx(), 'can_export_forms')
-      };
-
       $scope.readStatus = { forms: 0, messages: 0 };
 
       $scope.filterModel = {
@@ -299,30 +289,15 @@ require('moment/locales');
         });
       };
 
-      $scope.updateReadStatus = function () {
-        ReadMessages({
-          user: Session.userCtx().name,
-          district: $scope.permissions.district,
-          targetScope: 'messages'
-        }, function(err, data) {
+      $scope.updateReadStatus = function() {
+        ReadMessages(function(err, data) {
           if (err) {
-            return console.log(err);
+            return console.log('Error fetching read status', err);
           }
           $scope.readStatus = data;
         });
       };
-
-      UserDistrict(function(err, district) {
-        if (err) {
-          console.log('Error fetching user district', err);
-          if (err.message !== 'Not logged in') {
-            $('body').html(err);
-          }
-          return;
-        }
-        $scope.permissions.district = district;
-        $scope.updateReadStatus();
-      });
+      $scope.updateReadStatus();
 
       $scope.setupSendMessage = function() {
         sendMessage.init(Settings, Contact, translateFilter);
