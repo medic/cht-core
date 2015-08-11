@@ -152,7 +152,7 @@
         </span>
         <ul role="menu" aria-labelledby="form" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="form in forms">
-            <a href="#/analytics/reporting/{~lb}{~lb}form.code{~rb}{~rb}" role="menuitem" tabindex="-1" data-value="{~lb}{~lb}form.code{~rb}{~rb}" ng-bind="form.code"></a>
+          <a href="#/analytics/reporting/{~lb}{~lb}form.code{~rb}{~rb}/{{ filterModel.selectedFacility._id }}" role="menuitem" tabindex="-1" data-value="{~lb}{~lb}form.code{~rb}{~rb}" ng-bind="form.code"></a>
           </li>
         </ul>
       </span>

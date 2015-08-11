@@ -26,12 +26,6 @@ var _ = require('underscore'),
       $scope.setSelectedModule();
       $scope.filterModel.type = 'analytics';
       $scope.loading = true;
-      if ($route.current.params.form) {
-        $scope.filterModel.selectedForm = $route.current.params.form;
-      }
-      if ($route.current.params.facility) {
-        $scope.filterModel.selectedFacility = $scope.facilitiesLookup[$route.current.params.facility];
-      }
       Settings(function(err, res) {
         if (err) {
           return $log.error('Error fetching settings: ', err);
@@ -40,6 +34,12 @@ var _ = require('underscore'),
         $scope.setSelectedModule(findSelectedModule(
           $route.current.params.module, $scope.analyticsModules
         ));
+        if ($route.current.params.form) {
+          $scope.filterModel.selectedForm = $route.current.params.form;
+        }
+        if ($route.current.params.facility) {
+          $scope.filterModel.selectedFacility = $scope.facilitiesLookup[$route.current.params.facility];
+        }
         $scope.loading = false;
         if ($scope.filterModel.module) {
           $scope.filterModel.module.render($scope);

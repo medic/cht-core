@@ -271,13 +271,6 @@ function registerListeners() {
         });
         getViewChildFacilities(facility_doc, renderReports);
     });
-    $('body').on('click', '#reporting-data tr[rel]', function(e) {
-        e.preventDefault();
-        console.log('clicked #reporting-data tr', e);
-        var facilityId = $(e.target).closest('tr').attr('rel');
-        console.log('redneringFacility', facilityId);
-        renderFacility(dates.form, facilityId);
-    });
 };
 
 function getForms() {
@@ -429,6 +422,7 @@ var renderReports = function(err, facilities) {
 
         $('#reporting-data').html(
             render(data_template, {
+                form: dates.form,
                 rows: rows,
                 doc: doc
             })
@@ -512,13 +506,27 @@ var render = function (name, context) {
 
 var renderFacility = exports.renderFacility = function(form, facility, settings) {
     if (!dates) {
-      // init page
-      db = db.current();
-      registerListeners();
-      sms_utils.info = settings;
-      dates = utils.getDates({});
+        // init page
+        db = db.current();
+        registerListeners();
+        sms_utils.info = settings;
+        dates = utils.getDates({});
     }
-    dates.form = form;
-    facility_doc = facility;
-    getViewChildFacilities(facility, renderReports);
+    if (typeof form === 'object') {
+        dates.form = form.code;
+    } else {
+        dates.form = form;
+    }
+    if (typeof facility === 'object') {
+        facility_doc = facility;
+        getViewChildFacilities(facility, renderReports);
+    } else {
+        db.getDoc(facility, function(err, doc) {
+            if (err) {
+                return console.error(err);
+            }
+            facility_doc = doc;
+            getViewChildFacilities(doc, renderReports);
+        });
+    }
 };
