@@ -1,5 +1,4 @@
-var promise = require('lie'),
-    _ = require('underscore');
+var _ = require('underscore');
 
 /*
   Auth service returns a promise that will be resolved if
@@ -31,7 +30,7 @@ var promise = require('lie'),
         if (!_.isArray(requiredPermissions)) {
           requiredPermissions = [ requiredPermissions ];
         }
-        return new promise(function(resolve, reject) {
+        return new Promise(function(resolve, reject) {
           var userCtx = Session.userCtx();
           if (!userCtx) {
             return reject(new Error('Not logged in'));

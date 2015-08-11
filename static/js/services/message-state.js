@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    kujua_utils = require('kujua-utils'),
-    promise = require('lie');
+    kujua_utils = require('kujua-utils');
 
 (function () {
 
@@ -17,7 +16,7 @@ var _ = require('underscore'),
           });
         },
         set: function(recordId, group, fromState, toState) {
-          return new promise(function(resolve, reject) {
+          return new Promise(function(resolve, reject) {
             DB.get().get(recordId)
               .then(function(doc) {
                 var changed = false;

@@ -1,3 +1,5 @@
+require('lie/polyfill');
+
 require('./services/index');
 require('./controllers/inbox');
 require('./filters/index');

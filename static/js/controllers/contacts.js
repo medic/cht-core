@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    scrollLoader = require('../modules/scroll-loader'),
-    promise = require('lie');
+    scrollLoader = require('../modules/scroll-loader');
 
 (function () {
 
@@ -89,7 +88,7 @@ var _ = require('underscore'),
       $scope.selectContact = function(id) {
         if (id) {
           $scope.setLoadingContent(id);
-          promise.all([ getContact(id), getChildren(id), getContactFor(id) ])
+          Promise.all([ getContact(id), getChildren(id), getContactFor(id) ])
             .then(function(results) {
               var doc = results[0];
               doc.children = results[1].rows;

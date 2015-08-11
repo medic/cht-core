@@ -17,9 +17,6 @@ module.exports = function(config) {
       moduleName: 'templates'
     },
     files: [
-      // needed so mockPromise can use ES6 promises
-      'node_modules/babel-core/browser-polyfill.js',
-
       // used to query html
       'bower_components/jquery/dist/jquery.js',
 

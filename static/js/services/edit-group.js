@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    promise = require('lie');
+var _ = require('underscore');
 
 (function () {
 
@@ -70,7 +69,7 @@ var _ = require('underscore'),
   inboxServices.factory('EditGroup', ['DB',
     function(DB) {
       return function(recordId, group) {
-        return new promise(function(resolve, reject) {
+        return new Promise(function(resolve, reject) {
           DB.get()
             .get(recordId)
             .then(function(dataRecord) {

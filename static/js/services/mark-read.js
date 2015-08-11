@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    promise = require('lie');
+var _ = require('underscore');
 
 (function () {
 
@@ -31,7 +30,7 @@ var _ = require('underscore'),
     function(DB, Session) {
       return function(messageId, read) {
         var user = Session.userCtx().name;
-        return new promise(function(resolve, reject) {
+        return new Promise(function(resolve, reject) {
           DB.get().get(messageId)
             .then(_.partial(updateMessage, user, read))
             .then(function(doc) {

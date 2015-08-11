@@ -1,5 +1,3 @@
-var promise = require('lie');
-
 (function () {
 
   'use strict';
@@ -54,7 +52,7 @@ var promise = require('lie');
         if (callback) {
           get(callback);
         } else {
-          return new promise(function(resolve, reject) {
+          return new Promise(function(resolve, reject) {
             get(function(err, locale) {
               if (err) {
                 reject(err);

@@ -1,8 +1,7 @@
 var _ = require('underscore'),
     utils = require('kujua-utils'),
     async = require('async'),
-    libphonenumber = require('libphonenumber/utils'),
-    promise = require('lie');
+    libphonenumber = require('libphonenumber/utils');
 
 (function () {
 
@@ -76,7 +75,7 @@ var _ = require('underscore'),
 
       return function(recipients, message) {
 
-        return new promise(function(resolve, reject) {
+        return new Promise(function(resolve, reject) {
 
           if (!_.isArray(recipients)) {
             recipients = [recipients];
