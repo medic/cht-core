@@ -48,6 +48,11 @@ describe('Auditing', function() {
       });
   });
 
+  afterEach(function(done) {
+    utils.deleteDoc(savedUuid)
+      .then(done, done);
+  });
+
   it('audits message deletion', function() {
 
     // reload messages tab page
