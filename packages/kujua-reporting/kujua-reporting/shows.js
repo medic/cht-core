@@ -6,7 +6,9 @@ var db = require('db'),
     sms_utils = require('kujua-sms/utils'),
     appname = require('settings/root').name,
     charts = require('./ui/charts'),
-    session = require('session');
+    session = require('session'),
+    appinfo = require('views/lib/appinfo');
+
 
 var facility_doc,
     dates,
@@ -250,11 +252,6 @@ var renderReportingTotals = function(totals, doc) {
 
 function registerListeners() {
     charts.initPieChart();
-    $('body').on('click', '#reporting-district-choice .facility', function(e) {
-        e.preventDefault();
-        var row = $(e.target).closest('.facility');
-        renderFacility(row.attr('data-form-code'), row.attr('rel'));
-    });
     $('body').on('click', '#date-nav a', function(e) {
         e.preventDefault();
         var link = $(e.target).closest('a');
@@ -327,22 +324,6 @@ function renderDistrictChoice() {
             }
         });
 
-        $('[data-page=reporting_rates] #content').html(
-            render("kujua-reporting/reporting_district_choice.html", {
-                forms: config,
-                one_form: config.length === 1,
-                districts: districts_list
-            })
-        ).off('click', '#reporting-district-choice .form-name')
-         .on('click', '#reporting-district-choice .form-name', function(ev) {
-            ev.preventDefault();
-            var siblings = $(this).siblings();
-            if (siblings.hasClass('hide')) {
-                siblings.hide();
-                siblings.removeClass('hide');
-            }
-            siblings.slideToggle();
-        });
     });
 }
 
@@ -501,13 +482,12 @@ var render = function (name, context) {
 };
 
 var renderFacility = exports.renderFacility = function(form, facility, settings) {
-    if (!dates) {
-        // init page
-        db = db.current();
-        registerListeners();
-        sms_utils.info = settings;
-        dates = utils.getDates({});
-    }
+    // init globals :\
+    db = db.current();
+    registerListeners();
+    dates = dates || utils.getDates({});
+    sms_utils.info = appinfo.getAppInfo();
+
     if (typeof form === 'object') {
         dates.form = form.code;
     } else {
