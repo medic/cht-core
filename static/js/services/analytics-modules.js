@@ -22,13 +22,12 @@ var _ = require('underscore'),
           isArray: true,
           cache: true
         });
-        $log.debug('requesting', url, {district: district}, {query: options});
         $resource(url, { district: district }, { query: options }).query(
           function(data) {
             callback(null, data);
           },
           function(err) {
-            console.log('Error requesting module', err);
+            $log.error('Error requesting module', err);
             callback(err);
           }
         );
@@ -65,7 +64,7 @@ var _ = require('underscore'),
               UserDistrict(function(err, district) {
 
                 if (err) {
-                  return console.log('Error fetching district', err);
+                  return $log.error('Error fetching district', err);
                 }
 
                 request('/api/active-pregnancies', district, { isArray: false }, function(err, data) {
@@ -234,7 +233,6 @@ var _ = require('underscore'),
               });
             },
             render: function(scope) {
-              $log.debug('reporting analytics module render()');
               if (scope.filterModel.selectedForm && scope.filterModel.selectedFacility) {
                 reporting.renderFacility(
                   scope.filterModel.selectedForm,

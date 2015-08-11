@@ -5,7 +5,6 @@ var dust = require('dust-core'),
 var info;
 var initInfo = function() {
     if (!info || !info.translate) {
-      console.log('dust-helpers: initializing app setting');
       info = appinfo.getAppInfo();
     }
 };

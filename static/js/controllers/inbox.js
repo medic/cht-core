@@ -177,7 +177,6 @@ var utils = require('kujua-utils'),
       };
 
       var updateAvailableFacilities = function() {
-        console.log('inbox.updateAvailableFacilities $scope.permissions', $scope.permissions);
         FacilityRaw($scope.permissions.district).query(
           function(res) {
             $scope.facilities = res.rows;
@@ -476,7 +475,6 @@ var utils = require('kujua-utils'),
       });
 
       $('#facilityDropdown').on('update', function() {
-        console.log('facilityDropdown update called');
         var ids = $(this).multiDropdown().val();
         angularApply(function(scope) {
           scope.filterModel.facilities = ids;

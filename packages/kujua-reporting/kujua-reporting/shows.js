@@ -252,14 +252,12 @@ function registerListeners() {
     charts.initPieChart();
     $('body').on('click', '#reporting-district-choice .facility', function(e) {
         e.preventDefault();
-        console.log('clicked #reporting-district-choice .facility', e);
         var row = $(e.target).closest('.facility');
         renderFacility(row.attr('data-form-code'), row.attr('rel'));
     });
     $('body').on('click', '#date-nav a', function(e) {
         e.preventDefault();
         var link = $(e.target).closest('a');
-        console.log('clicked #data-nav', link);
         dates = utils.getDates({
             form: link.attr('data-form-code'),
             time_unit: link.attr('data-time-unit'),
@@ -480,7 +478,6 @@ var renderReports = function(err, facilities) {
             $('.nav.facilities').show();
 
             getViewSiblingFacilities(doc, function(data) {
-                console.log('rendering sibling menu', data);
                 $('.nav.facilities .dropdown-menu').html(
                     render('kujua-reporting/siblings-umenu-item.html', {
                         rows: data.rows,
@@ -493,7 +490,6 @@ var renderReports = function(err, facilities) {
 }
 
 var render = function (name, context) {
-    console.log('calling shows.render()', arguments);
     var r = '';
     dust.render(name, context, function (err, result) {
         if (err) {
