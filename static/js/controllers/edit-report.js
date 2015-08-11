@@ -90,7 +90,7 @@
           enketo_root: window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname) + '/_design/medic/static/dist/enketo',
         };
 
-        jQuery.getScript(medic_config.enketo_root + '/js/medic-enketo-offline-SNAPSHOT.min.js', function() {
+        jQuery.getScript(medic_config.enketo_root + '/js/medic-enketo-offline-0.1.1.min.js', function() {
             requirejs.config({
               shim: {
                 'jquery': {
