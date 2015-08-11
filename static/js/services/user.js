@@ -1,14 +1,32 @@
 var _ = require('underscore'),
-    utils = require('kujua-utils');
+    utils = require('kujua-utils'),
+    async = require('async');
 
 (function () {
 
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
+
+  var getWithRemoteFallback = function(DB, id, callback) {
+    DB.get()
+      .get(id)
+      .then(function(response) {
+        callback(null, response);
+      })
+      .catch(function() {
+        // might be first load - try the remote db
+        DB.getRemote()
+          .get(id)
+          .then(function(response) {
+            callback(null, response);
+          })
+          .catch(callback);
+      });
+  };
   
-  inboxServices.factory('UserDistrict', ['DB', 'User', 'Session',
-    function(DB, User, Session) {
+  inboxServices.factory('UserDistrict', ['DB', 'UserSettings', 'Session',
+    function(DB, UserSettings, Session) {
       return function(callback) {
         var userCtx = Session.userCtx();
         if (!userCtx.name) {
@@ -20,34 +38,27 @@ var _ = require('underscore'),
         if (!utils.isUserDistrictAdmin(userCtx)) {
           return callback(new Error('The administrator needs to give you additional privileges to use this site.'));
         }
-        User(function(err, user) {
+        UserSettings(function(err, user) {
+          if (err) {
+            return callback(err);
+          }
           if (!user.facility_id) {
             return callback(new Error('No district assigned to district admin.'));
           }
           // ensure the facility exists
-          DB.get()
-            .get(user.facility_id)
-            .then(function() {
-              callback(null, user.facility_id);
-            })
-            .catch(callback);
+          getWithRemoteFallback(DB, user.facility_id, function(err) {
+            callback(err, user.facility_id);
+          });
         });
       };
     }
   ]);
 
-  var getUser = function(HttpWrapper, id, callback) {
-    HttpWrapper.get('/_users/' + id, { cache: true, targetScope: 'root' })
-      .success(function(data) {
-        callback(null, data);
-      })
-      .error(callback);
-  };
-
-  inboxServices.factory('User', ['HttpWrapper', 'Session',
-    function(HttpWrapper, Session) {
+  inboxServices.factory('UserSettings', ['DB', 'Session',
+    function(DB, Session) {
       return function(callback) {
-        getUser(HttpWrapper, 'org.couchdb.user%3A' + Session.userCtx().name, callback);
+        var id = 'org.couchdb.user:' + Session.userCtx().name;
+        getWithRemoteFallback(DB, id, callback);
       };
     }
   ]);
@@ -66,78 +77,122 @@ var _ = require('underscore'),
     }
   ]);
 
-  var getType = function(user, admins) {
-    if (user.doc.roles && user.doc.roles.length) {
-      return user.doc.roles[0];
-    }
-    return admins[user.doc.name] ? 'admin' : 'unknown';
-  };
+  inboxServices.factory('Users', ['HttpWrapper', 'Facility', 'Admins', 'DbView',
+    function(HttpWrapper, Facility, Admins, DbView) {
 
-  var getFacility = function(user, facilities) {
-    return _.findWhere(facilities, { _id: user.doc.facility_id });
-  };
-
-  var mapUsers = function(users, facilities, admins) {
-    var filtered = _.filter(users, function(user) {
-      return user.id.indexOf('org.couchdb.user:') === 0;
-    });
-    return _.map(filtered, function(user) {
-      return {
-        id: user.id,
-        rev: user.doc._rev,
-        name: user.doc.name,
-        fullname: user.doc.fullname,
-        email: user.doc.email,
-        phone: user.doc.phone,
-        facility: getFacility(user, facilities),
-        type: getType(user, admins),
-        language: { code: user.doc.language }
+      var getType = function(user, admins) {
+        if (user.doc.roles && user.doc.roles.length) {
+          return user.doc.roles[0];
+        }
+        return admins[user.doc.name] ? 'admin' : 'unknown';
       };
-    });
-  };
 
-  inboxServices.factory('Users', ['HttpWrapper', 'Facility', 'Admins',
-    function(HttpWrapper, Facility, Admins) {
-      return function(callback) {
-        HttpWrapper.get('/_users/_all_docs?include_docs=true', { cache: true })
+      var getFacility = function(user, facilities) {
+        return _.findWhere(facilities, { _id: user.doc.facility_id });
+      };
+
+      var getSettings = function(user, settings) {
+        return _.findWhere(settings, { _id: user.id });
+      };
+
+      var mapUsers = function(users, settings, facilities, admins) {
+        var filtered = _.filter(users, function(user) {
+          return user.id.indexOf('org.couchdb.user:') === 0;
+        });
+        return _.map(filtered, function(user) {
+          var setting = getSettings(user, settings) || {};
+          return {
+            id: user.id,
+            rev: user.doc._rev,
+            name: user.doc.name,
+            fullname: setting.fullname,
+            email: setting.email,
+            phone: setting.phone,
+            facility: getFacility(user, facilities),
+            type: getType(user, admins),
+            language: { code: setting.language }
+          };
+        });
+      };
+
+      var getAllUsers = function(callback) {
+        HttpWrapper
+          .get('/_users/_all_docs', { cache: true, params: { include_docs: true } })
           .success(function(data) {
-            Facility(function(err, facilities) {
-              if (err) {
-                return callback(err);
-              }
-              Admins(function(err, admins) {
-                if (err) {
-                  return callback(err);
-                }
-                callback(null, mapUsers(data.rows, facilities, admins));
-              });
-            });
+            callback(null, data);
           })
-          .error(function(data) {
-            callback(new Error(data));
-          });
+          .error(callback);
+      };
+
+      var getAllUserSettings = function(callback) {
+        DbView(
+          'doc_by_type',
+          { params: { include_docs: true, key: ['user-settings'] } },
+          callback
+        );
+      };
+
+      return function(callback) {
+        async.parallel(
+          [ getAllUsers, getAllUserSettings, Facility, Admins ],
+          function(err, results) {
+            if (err) {
+              return callback(err);
+            }
+            callback(null, mapUsers(results[0].rows, results[1][0], results[2], results[3]));
+          }
+        );
       };
     }
   ]);
 
+  var getUserUrl = function(id) {
+    return '/_users/' + encodeURIComponent(id);
+  };
+
   var removeCacheEntry = function($cacheFactory, id) {
     var cache = $cacheFactory.get('$http');
-    cache.remove('/_users/' + encodeURIComponent(id));
+    cache.remove(getUserUrl(id));
     cache.remove('/_users/_all_docs?include_docs=true');
     cache.remove('/_config/admins');
   };
 
-  inboxServices.factory('UpdateUser', ['HttpWrapper', '$cacheFactory', 'Admins',
-    function(HttpWrapper, $cacheFactory, Admins) {
+  inboxServices.factory('UpdateUser', ['$log', '$cacheFactory', 'HttpWrapper', 'DB', 'Admins',
+    function($log, $cacheFactory, HttpWrapper, DB, Admins) {
 
-      var getOrCreateUser = function(id, updates, callback) {
+      var createId = function(name) {
+        return 'org.couchdb.user:' + name;
+      };
+
+      var getOrCreateUser = function(id, name, callback) {
         if (id) {
-          return getUser(HttpWrapper, id, callback);
+          HttpWrapper.get(getUserUrl(id), { cache: true, targetScope: 'root' })
+            .success(function(data) {
+              callback(null, data);
+            })
+            .error(callback);
+        } else {
+          callback(null, {
+            _id: createId(name),
+            type: 'user'
+          });
         }
-        callback(null, {
-          _id: 'org.couchdb.user:' + updates.name,
-          type: 'user'
-        });
+      };
+
+      var getOrCreateUserSettings = function(id, name, callback) {
+        if (id) {
+          DB.get()
+            .get(id)
+            .then(function(response) {
+              callback(null, response);
+            })
+            .catch(callback);
+        } else {
+          callback(null, {
+            _id: createId(name),
+            type: 'user-settings'
+          });
+        }
       };
 
       var updatePassword = function(updated, callback) {
@@ -145,8 +200,6 @@ var _ = require('underscore'),
           // password not changed, do nothing
           return callback();
         }
-        updated.derived_key = undefined;
-        updated.salt = undefined;
         Admins(function(err, admins) {
           if (err) {
             return callback(err);
@@ -165,40 +218,83 @@ var _ = require('underscore'),
         });
       };
 
-      return function(id, updates, callback) {
-        getOrCreateUser(id, updates, function(err, user) {
+      var updateUser = function(id, updates, callback) {
+        if (!updates) {
+          // only updating settings
+          return callback();
+        }
+        getOrCreateUser(id, updates.name, function(err, user) {
           if (err) {
             return callback(err);
           }
+          $log.debug('user being updated', user);
+          $log.debug('updates', updates);
           var updated = _.extend(user, updates);
-          updatePassword(updated, function(err) {
-            if (err) {
-              return callback(err);
-            }
-            HttpWrapper.put('/_users/' + user._id, updated)
-              .success(function() {
+          if (updated.password) {
+            updated.derived_key = undefined;
+            updated.salt = undefined;
+          }
+          HttpWrapper
+            .put(getUserUrl(user._id), updated)
+            .success(function() {
+              updatePassword(updated, function(err) {
                 removeCacheEntry($cacheFactory, user._id);
-                callback(null, updated);
-              })
-              .error(function(data) {
-                callback(new Error(data));
+                callback(err, updated);
               });
-          });
+            })
+            .error(function(data) {
+              callback(new Error(data));
+            });
+        });
+      };
+
+      var updateSettings = function(id, updates, callback) {
+        if (!updates) {
+          // only updating user
+          return callback();
+        }
+        getOrCreateUserSettings(id, updates.name, function(err, settings) {
+          if (err) {
+            return callback(err);
+          }
+          var updated = _.extend(settings, updates);
+          DB.get()
+            .put(updated)
+            .then(function() {
+              callback();
+            })
+            .catch(callback);
+        });
+      };
+
+      return function(id, settingUpdates, userUpdates, callback) {
+        if (!callback) {
+          callback = userUpdates;
+          userUpdates = null;
+        }
+        if (!id && !userUpdates) {
+          return callback(new Error('Cannot update user settings without user'));
+        }
+        updateUser(id, userUpdates, function(err) {
+          if (err) {
+            return callback(err);
+          }
+          updateSettings(id, settingUpdates, callback);
         });
       };
     }
   ]);
 
-  inboxServices.factory('DeleteUser', ['HttpWrapper', '$cacheFactory',
-    function(HttpWrapper, $cacheFactory) {
-      return function(user, callback) {
-        var url = '/_users/' + user.id;
+  inboxServices.factory('DeleteUser', ['$cacheFactory', 'HttpWrapper', 'DeleteDoc',
+    function($cacheFactory, HttpWrapper, DeleteDoc) {
+
+      var deleteUser = function(id, callback) {
+        var url = getUserUrl(id);
         HttpWrapper.get(url)
           .success(function(user) {
             user._deleted = true;
             HttpWrapper.put(url, user)
               .success(function() {
-                removeCacheEntry($cacheFactory, user._id);
                 callback();
               })
               .error(function(data) {
@@ -208,6 +304,17 @@ var _ = require('underscore'),
           .error(function(data) {
             callback(new Error(data));
           });
+      };
+
+      return function(user, callback) {
+        var id = user.id;
+        deleteUser(id, function(err) {
+          if (err) {
+            return callback(err);
+          }
+          removeCacheEntry($cacheFactory, id);
+          DeleteDoc(id, callback);
+        });
       };
     }
   ]);

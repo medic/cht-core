@@ -10,29 +10,29 @@ var utils = require('kujua-utils');
     'pouchDB', 'Session', 'DbNameService',
     function(pouchDB, Session, DbNameService) {
 
+      var cache = {};
+
       var getRemoteUrl = function(name) {
         name = name || DbNameService();
         var port = location.port ? ':' + location.port : '';
         return location.protocol + '//' + location.hostname + port + '/' + name;
       };
 
-      // TODO lock down api so non-admins can only replicate
-      // TODO stop users from creating docs against another facility - update validation on replicate?
-      // TODO only admins can replicate _users! Find another way to get current user information
-      // TODO user context is actually cached in the dom in appcache. listen to change and invalidate appcacahe?
-      // pouchDB('_users')
-      //   .replicate.from('http://localhost:5988/_users', replicationOptions);
-
       return {
-
         get: function(name) {
           if (utils.isUserAdmin(Session.userCtx())) {
-            name = getRemoteUrl();
+            name = getRemoteUrl(name);
           }
-          return pouchDB(name || DbNameService());
+          name = name || DbNameService();
+          if (!cache[name]) {
+            cache[name] = pouchDB(name);
+          }
+          return cache[name];
+        },
+        getRemote: function(name) {
+          return pouchDB(getRemoteUrl(name));
         },
         getRemoteUrl: getRemoteUrl
-
       };
     }
   ]);

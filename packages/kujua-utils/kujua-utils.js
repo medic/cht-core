@@ -71,7 +71,8 @@ exports.hasPerm = function(userCtx, perm) {
         can_export_messages: ['national_admin', 'district_admin', 'analytics'],
         can_export_forms: ['national_admin', 'district_admin', 'analytics'],
         can_export_audit: ['national_admin'],
-        can_export_feedback: ['national_admin']
+        can_export_feedback: ['national_admin'],
+        can_view_unallocated_data_records: ['national_admin', 'district_admin', 'gateway']
     };
 
     if (!userCtx || !userCtx.roles || userCtx.roles.length === 0) {

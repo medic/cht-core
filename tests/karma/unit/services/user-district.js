@@ -12,7 +12,7 @@ describe('UserDistrict service', function() {
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
-      $provide.value('User', function(callback) {
+      $provide.value('UserSettings', function(callback) {
         callback(null, user);
       });
       $provide.factory('Session', function() {
