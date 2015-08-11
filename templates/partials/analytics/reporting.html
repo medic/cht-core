@@ -1,5 +1,5 @@
 <div class="col-sm-12 reporting ng-hide" id="content" ng-show="filterModel.module.id === 'reporting'">
-  <p class="no-config" ng-show="!loading && !filterModel.selectedForm && !filterModel.selectedFacility">
+  <p class="no-config" ng-show="!loading && (!filterModel.selectedForm || !filterModel.selectedFacility)">
     Please choose a form and facility in the menus above.
   </p>
 </div>
