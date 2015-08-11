@@ -84,11 +84,9 @@
       };
 
       (function constructor() {
-        /* globals define, medic_config, requirejs, XSLTProcessor */
-        window.medic_config = {
+        /* globals define, requirejs, XSLTProcessor */
+        var medic_config = {
           app_root:    window.location.protocol + '//' + window.location.host,
-          db_root:     window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname),
-          db_name:     /^\/[^\/]+/.exec(window.location.pathname),
           enketo_root: window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname) + '/_design/medic/static/dist/enketo',
         };
 
