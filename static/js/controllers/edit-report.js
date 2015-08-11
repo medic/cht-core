@@ -12,20 +12,10 @@
             formName = $scope.report_form.formName,
             docId = $scope.report_form.docId,
             $modal = $('#edit-report'),
-            facilityId = $modal.find('[name=facility]').val(),
-            xformDataAsJson = function(xml) {
-              return {
-                form: formName,
-                type: 'data_record',
-                from: 'user:TODO',
-                reported_date: Date.now(),
-                content_type: 'xml',
-                content: xml,
-              };
-            };
+            facilityId = $modal.find('[name=facility]').val();
         form.validate();
         if(form.isValid()) {
-          var record = xformDataAsJson(form.getDataStr()),
+          var record = form.getDataStr(),
               $submit = $('.edit-report-dialog .btn.submit'),
               contact = null,
               updatedDoc = null;
@@ -40,12 +30,19 @@
               contact = facility;
               return DB.get().get(docId);
             }).then(function(doc) {
-              doc.content = record.content;
-              doc.contact = contact;
               updatedDoc = doc;
-              return DB.get().put(doc);
+              updatedDoc.content = record;
+              updatedDoc.contact = contact;
+              return DB.get().put(updatedDoc);
             }).then(function() {
-              $scope.$parent.selected = updatedDoc; // TODO make this run on the parent scope, so things actually get updated
+              var i, items = $scope.$parent.items;
+              for(i=0; i<items.length; ++i) {
+                if(items[i]._id === updatedDoc._id) {
+                  items[i] = updatedDoc;
+                  break;
+                }
+              }
+              $scope.$parent.select(updatedDoc._id);
               $submit.prop('disabled', false);
               $('#edit-report').modal('hide');
               form.resetView();
@@ -57,7 +54,7 @@
           } else {
             DB.get().get(facilityId).then(function(facility) {
               return DB.get().post({
-                content: record.content,
+                content: record,
                 contact: facility,
                 form: formName,
                 type: 'data_record',
@@ -66,9 +63,10 @@
                 content_type: 'xml',
               });
             }).then(function(doc) {
-              // TODO include doc in left-hand list
-              // TODO make this doc selected
-              $scope.$parent.selected = doc;
+              return DB.get().get(doc.id);
+            }).then(function(doc) {
+              $scope.$parent.items.unshift(doc);
+              $scope.$parent.select(doc._id);
               $submit.prop('disabled', false);
               $('#edit-report').modal('hide');
               form.resetView();
