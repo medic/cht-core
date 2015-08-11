@@ -35,14 +35,16 @@
               updatedDoc.contact = contact;
               return DB.get().put(updatedDoc);
             }).then(function() {
-              var i, items = $scope.$parent.items;
-              for(i=0; i<items.length; ++i) {
-                if(items[i]._id === updatedDoc._id) {
-                  items[i] = updatedDoc;
-                  break;
+              if($scope.$parent.filterModel.type === 'reports') {
+                var i, items = $scope.$parent.items;
+                for(i=0; i<items.length; ++i) {
+                  if(items[i]._id === updatedDoc._id) {
+                    items[i] = updatedDoc;
+                    break;
+                  }
                 }
+                $scope.$parent.select(updatedDoc._id);
               }
-              $scope.$parent.select(updatedDoc._id);
               $submit.prop('disabled', false);
               $('#edit-report').modal('hide');
               form.resetView();
@@ -65,8 +67,10 @@
             }).then(function(doc) {
               return DB.get().get(doc.id);
             }).then(function(doc) {
-              $scope.$parent.items.unshift(doc);
-              $scope.$parent.select(doc._id);
+              if($scope.$parent.filterModel.type === 'reports') {
+                $scope.$parent.items.unshift(doc);
+                $scope.$parent.select(doc._id);
+              }
               $submit.prop('disabled', false);
               $('#edit-report').modal('hide');
               form.resetView();
