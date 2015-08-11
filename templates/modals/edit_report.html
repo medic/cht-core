@@ -1,3 +1,29 @@
+<div class="modal enketo-composer fade create-report-dialog" id="create-report" role="dialog" ng-controller="EditReportCtrl">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
+        <h3>{{'Create Report' | translate}}</h3>
+      </div>
+      <div class="modal-body">
+        <table id="control-panel"><tbody>
+          <tr><td>
+            <h2>Available forms</h2>
+            <p class="status loading-forms">Loading forms...</p>
+            <p class="status no-forms" style="display:none">There are currently no forms available.</p>
+            <table id="available-enketo-forms"></table>
+          </td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="modal-footer">
+        <p class="note"></p>
+        <a class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal enketo fade edit-report-dialog update-facility" id="edit-report" role="dialog" ng-controller="EditReportCtrl">
   <div class="modal-dialog">
     <div class="modal-content">

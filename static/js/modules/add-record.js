@@ -3,7 +3,6 @@
   'use strict';
 
   exports.init = function(src) {
-    var enketo_src = './static/dist/enketo/composer.html';
     if (src) {
       $.ajax({
         type: 'head',
@@ -22,13 +21,13 @@
           });
 
           // enable enketo form submission
-          btn = $('#send-record-enketo');
+          btn = $('#launch-enketo-composer');
           btn.closest('li').removeClass('disabled');
           btn.on('click', function(e) {
             e.preventDefault();
-            $('#add-record-panel .dropdown-menu').show();
-            var iframe = $('#add-record-panel iframe');
-            iframe.attr('src', enketo_src);
+            $('#create-report').modal('show');
+            /* globals loadComposer */
+            loadComposer();
           });
 
           // enable close button
