@@ -102,8 +102,8 @@ describe('Tasks', function() {
     var heading = element(by.css('.content-pane .item-body h2'));
     expect(heading.getText()).toEqual('ANC visit #1 for sally');
 
-    var heading = element(by.css('.content-pane .item-body ul li:first-child p'));
-    expect(heading.getText()).toEqual('Please visit sally in Harrisa Village and refer her for ANC visit #1.');
+    var content = element(by.css('.content-pane .item-body ul li:first-child p'));
+    expect(content.getText()).toEqual('Please visit sally in Harrisa Village and refer her for ANC visit #1.');
 
   });
 });
