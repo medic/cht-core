@@ -9,9 +9,9 @@
         for(i=0; i<data.length; ++i) {
           n = data[i];
           if(n.nodeType !== Node.ELEMENT_NODE ||
-              n.nodeName === 'meta') continue;
+              n.nodeName === 'meta') { continue; }
           fields[n.nodeName] = n.textContent;
-        };
+        }
         return fields;
       }
 
