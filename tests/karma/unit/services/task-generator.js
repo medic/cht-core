@@ -35,157 +35,97 @@ describe('TaskGenerator service', function() {
       chai.expect(Search.callCount).to.equal(1);
       chai.expect(actual).to.deep.equal([]);
       done();
+    }).catch(function(err) {
+      console.error(err);
     });
   });
 
   it('generates tasks when given registrations', function(done) {
-    Search.callsArgWith(2, null, [
-      {
-        _id: 1,
-        reported_date: 1437618272360,
-        fields: {
-          patient_name: 'jenny',
-          last_menstrual_period: 10
-        }
-      },
-      {
-        _id: 2,
-        reported_date: 1437620272360,
-        fields: {
-          patient_name: 'sally',
-          last_menstrual_period: 20
-        }
+    var registration1 = {
+      _id: 1,
+      reported_date: 1437618272360,
+      fields: {
+        patient_name: 'jenny',
+        last_menstrual_period: 10
       }
-    ]);
+    };
+    var registration2 = {
+      _id: 2,
+      reported_date: 1437820272360,
+      fields: {
+        patient_name: 'sally',
+        last_menstrual_period: 20
+      }
+    };
+    var calculateDate = function(registration, days) {
+      return moment(registration.reported_date)
+        .subtract(registration.fields.last_menstrual_period, 'weeks')
+        .add(days, 'days')
+        .toISOString();
+    };
+    Search.callsArgWith(2, null, [ registration1, registration2 ]);
     var expected = [
       {
         _id: '2-1',
-        date: '2015-04-24T02:57:52.360Z',
+        date: calculateDate(registration2, 50),
         title: 'ANC visit #1 for sally',
         description: 'Please visit sally in Harrisa Village and refer her for ANC visit #1.',
-        registration: {
-          _id: 2,
-          reported_date: 1437620272360,
-          fields: {
-            patient_name: 'sally',
-            last_menstrual_period: 20
-          }
-        }
+        registration: registration2
       },
       {
         _id: '2-2',
-        date: '2015-06-13T02:57:52.360Z',
+        date: calculateDate(registration2, 100),
         title: 'ANC visit #2 for sally',
         description: 'Please visit sally in Harrisa Village and refer her for ANC visit #2.',
-        registration: {
-          _id: 2,
-          reported_date: 1437620272360,
-          fields: {
-            patient_name: 'sally',
-            last_menstrual_period: 20
-          }
-        }
+        registration: registration2
       },
       {
         _id: '2-3',
-        date: '2015-08-02T02:57:52.360Z',
+        date: calculateDate(registration2, 150),
         title: 'ANC visit #3 for sally',
         description: 'Please visit sally in Harrisa Village and refer her for ANC visit #3. Remember to check for danger signs!',
-        registration: {
-          _id: 2,
-          reported_date: 1437620272360,
-          fields: {
-            patient_name: 'sally',
-            last_menstrual_period: 20
-          }
-        }
+        registration: registration2
       },
       {
         _id: '2-4',
-        date: '2015-09-21T02:57:52.360Z',
+        date: calculateDate(registration2, 200),
         title: 'ANC visit #4 for sally',
         description: 'Please visit sally in Harrisa Village and refer her for ANC visit #4. Remember to check for danger signs!',
-        registration: {
-          _id: 2,
-          reported_date: 1437620272360,
-          fields: {
-            patient_name: 'sally',
-            last_menstrual_period: 20
-          }
-        }
+        registration: registration2
       },
       {
         _id: '1-1',
-        date: '2015-07-03T02:24:32.360Z',
+        date: calculateDate(registration1, 50),
         title: 'ANC visit #1 for jenny',
         description: 'Please visit jenny in Harrisa Village and refer her for ANC visit #1.',
-        registration: {
-          _id: 1,
-          reported_date: 1437618272360,
-          fields: {
-            patient_name: 'jenny',
-            last_menstrual_period: 10
-          }
-        }
+        registration: registration1
       },
       {
         _id: '1-2',
-        date: '2015-08-22T02:24:32.360Z',
+        date: calculateDate(registration1, 100),
         title: 'ANC visit #2 for jenny',
         description: 'Please visit jenny in Harrisa Village and refer her for ANC visit #2.',
-        registration: {
-          _id: 1,
-          reported_date: 1437618272360,
-          fields: {
-            patient_name: 'jenny',
-            last_menstrual_period: 10
-          }
-        }
+        registration: registration1
       },
       {
         _id: '1-3',
-        date: '2015-10-11T01:24:32.360Z',
+        date: calculateDate(registration1, 150),
         title: 'ANC visit #3 for jenny',
         description: 'Please visit jenny in Harrisa Village and refer her for ANC visit #3. Remember to check for danger signs!',
-        registration: {
-          _id: 1,
-          reported_date: 1437618272360,
-          fields: {
-            patient_name: 'jenny',
-            last_menstrual_period: 10
-          }
-        }
+        registration: registration1
       },
       {
         _id: '1-4',
-        date: '2015-11-30T01:24:32.360Z',
+        date: calculateDate(registration1, 200),
         title: 'ANC visit #4 for jenny',
         description: 'Please visit jenny in Harrisa Village and refer her for ANC visit #4. Remember to check for danger signs!',
-        registration: {
-          _id: 1,
-          reported_date: 1437618272360,
-          fields: {
-            patient_name: 'jenny',
-            last_menstrual_period: 10
-          }
-        }
+        registration: registration1
       }
     ];
     service().then(function(actual) {
-      console.log('FINISHED');
-      console.log(Search.callCount);
-      // console.log(JSON.stringify(actual));
-      // console.log(JSON.stringify(expected));
       chai.expect(Search.callCount).to.equal(1);
       chai.expect(actual.length).to.equal(expected.length);
       for (var i = 0; i < actual.length; i++) {
-        console.log('~~~~~~~~~~');
-        console.log('_id', actual[i]._id === expected[i]._id, actual[i]._id, expected[i]._id);
-        console.log('date', actual[i].date === expected[i].date, actual[i].date, expected[i].date);
-        console.log('title', actual[i].title === expected[i].title, actual[i].title, expected[i].title);
-        console.log('description', actual[i].description === expected[i].description, actual[i].description, expected[i].description);
-        console.log('registration._id', actual[i].registration._id === expected[i].registration._id, actual[i].registration._id, expected[i].registration._id);
-        console.log('~~~~~~~~~~');
         chai.expect(actual[i]._id).to.equal(expected[i]._id);
         chai.expect(actual[i].date).to.equal(expected[i].date);
         chai.expect(actual[i].title).to.equal(expected[i].title);
@@ -193,6 +133,8 @@ describe('TaskGenerator service', function() {
         chai.expect(actual[i].registration._id).to.equal(expected[i].registration._id);
       }
       done();
+    }).catch(function(err) {
+      console.error(err);
     });
   });
 });
