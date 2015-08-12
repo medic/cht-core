@@ -4,6 +4,11 @@ require('./services/index');
 require('./controllers/inbox');
 require('./filters/index');
 
+var _ = require('underscore');
+_.templateSettings = {
+  interpolate: /\{\{(.+?)\}\}/g
+};
+
 (function () {
 
   'use strict';

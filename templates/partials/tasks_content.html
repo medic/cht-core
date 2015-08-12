@@ -12,21 +12,23 @@
     <div>
       <div class="status">
         <span class="mm-badge mm-badge-round">
-          <span class="fa fa-user"></span>
+          <span class="fa" ng-class="{
+            'fa-user': selected.type === 'visit'
+          }"></span>
         </span>
       </div>
 
       <div class="body">
-        <h2>{{selected.title}}</h2>
+        <h2>{{selected.title | translateFrom:selected}}</h2>
 
         <ul>
           <li>
-            <label>{{'Content' | translate}}</label>
-            <p>{{selected.description}}</p>
-          </li>
-          <li>
             <label>{{'task.date' | translate}}</label>
             <p ng-bind-html="selected.date | simpleDate"></p>
+          </li>
+          <li ng-repeat="field in selected.fields">
+            <label>{{field.label | translateFrom:selected}}</label>
+            <p>{{field.value | translateFrom:selected}}</p>
           </li>
         </ul>
       </div>

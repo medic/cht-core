@@ -18,12 +18,13 @@ _.templateSettings = {
     "  doc: null" +
     "}" +
     "" +
-    "define Visit {" +
+    "define Task {" +
     "  _id: null," +
+    "  doc: null," +
+    "  type: null," +
     "  date: null," +
     "  title: null," +
-    "  description: null," +
-    "  registration: null" +
+    "  fields: null" +
     "}" +
     "" +
     "rule GenerateEvents {" +
@@ -32,14 +33,20 @@ _.templateSettings = {
     "  }" +
     "  then {" +
     "    schedule.forEach(function(s) {" +
-    "      var visit = new Visit({" +
+    "      var visit = new Task({" +
     "        _id: r.doc._id + '-' + s.id," +
+    "        doc: r.doc," +
+    "        type: 'visit'," +
     "        date: addDate(r.lmpDate, s.days).toISOString()," +
-    "        title: createTitle(s, r.doc)," +
-    "        description: createDescription(s, r.doc)," +
-    "        registration: r.doc" +
+    "        title: s.title," +
+    "        fields: [" +
+    "          {" +
+    "            label: { en: 'Description' }," +
+    "            value: s.description" +
+    "          }" +
+    "        ]" +
     "      });" +
-    "      emit('visit', visit);" +
+    "      emit('task', visit);" +
     "      assert(visit);" +
     "    });" +
     "  }" +
@@ -49,26 +56,26 @@ _.templateSettings = {
     {
       id: 1,
       days: 50,
-      title: _.template('ANC visit #{{schedule.id}} for {{doc.fields.patient_name}}'),
-      description: _.template('Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #{{schedule.id}}.')
+      title: { en: 'ANC visit #1 for {{doc.fields.patient_name}}' },
+      description: { en: 'Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #1. Remember to check for danger signs!' }
     },
     {
       id: 2,
       days: 100,
-      title: _.template('ANC visit #{{schedule.id}} for {{doc.fields.patient_name}}'),
-      description: _.template('Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #{{schedule.id}}.')
+      title: { en: 'ANC visit #2 for {{doc.fields.patient_name}}' },
+      description: { en: 'Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #2. Remember to check for danger signs!' }
     },
     {
       id: 3,
       days: 150,
-      title: _.template('ANC visit #{{schedule.id}} for {{doc.fields.patient_name}}'),
-      description: _.template('Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #{{schedule.id}}. Remember to check for danger signs!')
+      title: { en: 'ANC visit #3 for {{doc.fields.patient_name}}' },
+      description: { en: 'Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #3. Remember to check for danger signs!' }
     },
     {
       id: 4,
       days: 200,
-      title: _.template('ANC visit #{{schedule.id}} for {{doc.fields.patient_name}}'),
-      description: _.template('Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #{{schedule.id}}. Remember to check for danger signs!')
+      title: { en: 'ANC visit #4 for {{doc.fields.patient_name}}' },
+      description: { en: 'Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #4. Remember to check for danger signs!' }
     }
   ];
 
@@ -113,9 +120,9 @@ _.templateSettings = {
                 return reject(err);
               }
               var session = flow.getSession();
-              var visits = [];
-              session.on('visit', function(visit) {
-                visits.push(visit);
+              var tasks = [];
+              session.on('task', function(task) {
+                tasks.push(task);
               });
               data.forEach(function(doc) {
                 session.assert(new Registration({
@@ -125,7 +132,7 @@ _.templateSettings = {
               });
               session.match().then(
                 function() {
-                  resolve(visits);
+                  resolve(tasks);
                 },
                 reject
               );

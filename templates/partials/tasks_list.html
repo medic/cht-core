@@ -3,11 +3,13 @@
     <li class="animate-repeat" ng-show="!loading && !error" ng-repeat="task in items | orderBy:'date'" ng-click="select(task._id)" data-record-id="{{task._id}}" ng-class="{'selected': task._id === loadingContent || !loadingContent && task._id === selected._id}">
       <div class="message-wrapper">
         <span class="mm-badge">
-          <span class="fa fa-user"></span>
+          <span class="fa" ng-class="{
+            'fa-user': task.type === 'visit'
+          }"></span>
         </span>
         <div class="detail">
           <span class="time" ng-bind-html="task.date | relativeDate"></span>
-          <div class="description">{{task.title}}</div>
+          <div class="description">{{task.title | translateFrom:task}}</div>
         </div>
       </div>
     </li>
