@@ -35,7 +35,7 @@ var _ = require('underscore'),
           $route.current.params.module, $scope.analyticsModules
         ));
         if ($route.current.params.form) {
-          $scope.filterModel.selectedForm = $route.current.params.form;
+          $scope.filterModel.selectedForm = $scope.formsLookup[$route.current.params.form];
         }
         if ($route.current.params.facility) {
           $scope.filterModel.selectedFacility = $scope.facilitiesLookup[$route.current.params.facility];

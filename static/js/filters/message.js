@@ -55,8 +55,16 @@ var format = require('../modules/format');
     return format.clinic;
   });
 
-  module.filter('facility', function () {
-    return format.facility;
+  module.filter('shortLabel', function() {
+    return function(obj) {
+      if (['clinic', 'health_center', 'district_hospital'].indexOf(obj.type) >= 0) {
+        return obj.name;
+      } else if (obj.code) {
+        // a form object as returned from Form service
+        return obj.code + ': ' + obj.name;
+      }
+      return obj.toString();
+    };
   });
 
 }());

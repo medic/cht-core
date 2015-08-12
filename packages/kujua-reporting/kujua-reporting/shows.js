@@ -252,7 +252,7 @@ var renderReportingTotals = function(totals, doc) {
 
 function registerListeners() {
     charts.initPieChart();
-    $('body').on('click', '#date-nav a', function(e) {
+    $('body').on('click', '[data-page=reporting_rates] #date-nav a', function(e) {
         e.preventDefault();
         var link = $(e.target).closest('a');
         dates = utils.getDates({
@@ -414,7 +414,7 @@ var renderReports = function(err, facilities) {
             var color = Raphael.hsb(val/300, .75, .85);
 
             if (val === 0) {
-                paper.addClass('fa-times');
+                paper.addClass('fa-warning');
             } else if (val == 100) {
                 paper.addClass('fa-check');
             } else {

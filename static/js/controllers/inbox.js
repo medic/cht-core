@@ -23,6 +23,7 @@ var utils = require('kujua-utils'),
       $scope.languages = [];
       $scope.editUserModel = {};
       $scope.forms = [];
+      $scope.formsLookup = {};
       $scope.facilities = [];
       $scope.facilitiesLookup = {};
       $scope.contacts = undefined;
@@ -279,6 +280,9 @@ var utils = require('kujua-utils'),
       Form().then(
         function(forms) {
           $scope.forms = forms;
+          for (var i = 0, len = forms.length; i < len; i++) {
+            $scope.formsLookup[forms[i].code] = forms[i];
+          }
         },
         function(err) {
           console.log('Failed to retrieve forms', err);

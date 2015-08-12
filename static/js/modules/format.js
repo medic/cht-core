@@ -20,10 +20,6 @@ var _ = require('underscore');
     return _.map(parts, _.escape).join(' › ');
   };
 
-  exports.facility = function(entity) {
-    return entity.name;
-  };
-
   exports.contact = function(doc) {
     var parts = [];
     var contact = doc.contact;

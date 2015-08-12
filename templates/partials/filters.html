@@ -148,11 +148,15 @@
           <span class="mm-button-dropdown">
             <span class="fa fa-chevron-down"></span>
           </span>
-          <span class="mm-button-text">{{ filterModel.selectedForm || 'Select Form' }}</span>
+          <span class="mm-button-text" >{{
+            filterModel.selectedForm ?
+              filterModel.selectedForm.code + ': ' + filterModel.selectedForm.name :
+              'Select Form'
+          }}</span>
         </span>
         <ul role="menu" aria-labelledby="form" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="form in forms">
-          <a href="#/analytics/reporting/{~lb}{~lb}form.code{~rb}{~rb}/{{ filterModel.selectedFacility._id }}" role="menuitem" tabindex="-1" data-value="{~lb}{~lb}form.code{~rb}{~rb}" ng-bind="form.code"></a>
+          <a href="#/analytics/reporting/{~lb}{~lb}form.code{~rb}{~rb}/{{ filterModel.selectedFacility._id }}" role="menuitem" tabindex="-1" data-value="{~lb}{~lb}form.code{~rb}{~rb}" ng-bind="form | shortLabel"></a>
           </li>
         </ul>
       </span>
@@ -176,7 +180,7 @@
         </span>
         <ul role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="facility in facilities | filter: isDistrict">
-            <a href="#/analytics/reporting/{~lb}{~lb}filterModel.selectedForm{~rb}{~rb}/{~lb}{~lb}facility.id{~rb}{~rb}" role="menuitem" tabindex="-1" data-value="{~lb}{~lb}facility.id{~rb}{~rb}" ng-bind="facility.doc | facility"></a>
+            <a href="#/analytics/reporting/{~lb}{~lb}filterModel.selectedForm.code{~rb}{~rb}/{~lb}{~lb}facility.id{~rb}{~rb}" role="menuitem" tabindex="-1" data-value="{~lb}{~lb}facility.id{~rb}{~rb}" ng-bind="facility.doc | shortLabel"></a>
           </li>
         </ul>
       </span>
@@ -199,7 +203,7 @@
         </span>
         <ul role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="facility in facilities | filter: isHealthCenter">
-            <a href="#/analytics/reporting/{~lb}{~lb}filterModel.selectedForm{~rb}{~rb}/{~lb}{~lb}facility.id{~rb}{~rb}" role="menuitem" tabindex="-1" data-value="{~lb}{~lb}facility.id{~rb}{~rb}" ng-bind="facility.doc | facility"></a>
+            <a href="#/analytics/reporting/{~lb}{~lb}filterModel.selectedForm.code{~rb}{~rb}/{~lb}{~lb}facility.id{~rb}{~rb}" role="menuitem" tabindex="-1" data-value="{~lb}{~lb}facility.id{~rb}{~rb}" ng-bind="facility.doc | shortLabel"></a>
           </li>
         </ul>
       </span>
