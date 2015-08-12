@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "lie": "^3.0.1",
+    "nools": "^0.4.1",
     "properties": "^1.2.1"
   },
   "devDependencies": {

@@ -848,6 +848,7 @@ require('moment/locales');
   require('./reports');
   require('./reports-content');
   require('./tasks');
+  require('./tasks-content');
   require('./theme');
   require('./tour-select');
 

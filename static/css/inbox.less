@@ -514,15 +514,6 @@ body {
 }
 
 .contacts {
-  .item-content .status,
-  .message-wrapper {
-    .fa {
-      color: @ok-color;
-    }
-  }
-  .item-content > div {
-    margin-top: 1em;
-  }
   .inbox-items li {
     .message-wrapper:hover {
       border-left-color: @contacts-color;
@@ -533,6 +524,19 @@ body {
     &.orphan .detail {
       margin-top: 0.42em;
     }
+  }
+}
+
+.tasks,
+.contacts {
+  .item-content .status,
+  .message-wrapper {
+    .fa {
+      color: @ok-color;
+    }
+  }
+  .item-content > div {
+    margin-top: 1em;
   }
 }
 
@@ -781,7 +785,9 @@ a.fa:hover {
   }
 }
 
-.reports .item-content, .contacts .item-content {
+.reports .item-content,
+.contacts .item-content,
+.tasks .item-content {
 
   > div {
     margin-bottom: 5em;
