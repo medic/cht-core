@@ -3,6 +3,18 @@
   angular.module('inboxControllers').controller('EditReportCtrl',
     ['$scope', 'DB',
     function ($scope, DB) {
+      function recordToJs(record) {
+        var i, n, fields = {},
+            data = $.parseXML(record).firstChild.childNodes;
+        for(i=0; i<data.length; ++i) {
+          n = data[i];
+          if(n.nodeType !== Node.ELEMENT_NODE ||
+              n.nodeName === 'meta') continue;
+          fields[n.nodeName] = n.textContent;
+        };
+        return fields;
+      }
+
       $scope.updateReport = function() {
         if(!$scope.report_form) {
           $scope.updateFacility('#edit-report');
@@ -32,6 +44,7 @@
             }).then(function(doc) {
               updatedDoc = doc;
               updatedDoc.content = record;
+              updatedDoc.fields = recordToJs(record);
               updatedDoc.contact = contact;
               return DB.get().put(updatedDoc);
             }).then(function() {
@@ -57,6 +70,7 @@
             DB.get().get(facilityId).then(function(facility) {
               return DB.get().post({
                 content: record,
+                fields: recordToJs(record),
                 contact: facility,
                 form: formName,
                 type: 'data_record',
