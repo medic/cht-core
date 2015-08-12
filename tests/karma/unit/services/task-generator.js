@@ -174,10 +174,24 @@ describe('TaskGenerator service', function() {
     service().then(function(actual) {
       console.log('FINISHED');
       console.log(Search.callCount);
-      console.log(JSON.stringify(actual));
-      console.log(JSON.stringify(expected));
+      // console.log(JSON.stringify(actual));
+      // console.log(JSON.stringify(expected));
       chai.expect(Search.callCount).to.equal(1);
-      chai.expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
+      chai.expect(actual.length).to.equal(expected.length);
+      for (var i = 0; i < actual.length; i++) {
+        console.log('~~~~~~~~~~');
+        console.log('_id', actual[i]._id === expected[i]._id, actual[i]._id, expected[i]._id);
+        console.log('date', actual[i].date === expected[i].date, actual[i].date, expected[i].date);
+        console.log('title', actual[i].title === expected[i].title, actual[i].title, expected[i].title);
+        console.log('description', actual[i].description === expected[i].description, actual[i].description, expected[i].description);
+        console.log('registration._id', actual[i].registration._id === expected[i].registration._id, actual[i].registration._id, expected[i].registration._id);
+        console.log('~~~~~~~~~~');
+        chai.expect(actual[i]._id).to.equal(expected[i]._id);
+        chai.expect(actual[i].date).to.equal(expected[i].date);
+        chai.expect(actual[i].title).to.equal(expected[i].title);
+        chai.expect(actual[i].description).to.equal(expected[i].description);
+        chai.expect(actual[i].registration._id).to.equal(expected[i].registration._id);
+      }
       done();
     });
   });

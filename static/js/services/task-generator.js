@@ -34,7 +34,7 @@ _.templateSettings = {
     "    schedule.forEach(function(s) {" +
     "      var visit = new Visit({" +
     "        _id: r.doc._id + '-' + s.id," +
-    "        date: addDate(r.lmpDate, s.days)," +
+    "        date: addDate(r.lmpDate, s.days).toISOString()," +
     "        title: createTitle(s, r.doc)," +
     "        description: createDescription(s, r.doc)," +
     "        registration: r.doc" +
