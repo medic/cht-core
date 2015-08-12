@@ -102,9 +102,9 @@ _.templateSettings = {
   inboxServices.factory('TaskGenerator', [ 'Search',
     function(Search) {
       return function() {
-        var flow = getFlow(schedule);
-        var Registration = flow.getDefined('registration');
         return new Promise(function(resolve, reject) {
+          var flow = getFlow(schedule);
+          var Registration = flow.getDefined('registration');
           Search(
             { filterModel: { type: 'reports', forms: [ { code: 'P' } ], date: {}, facilities: [] }, filterQuery: '', forms: [ { code: 'P' }, { code: 'R' }, { code: 'V' } ] },
             { limit: 99999999 },

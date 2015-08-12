@@ -38,7 +38,7 @@ describe('TaskGenerator service', function() {
     });
   });
 
-  it('generates tasks when given docs', function(done) {
+  it('generates tasks when given registrations', function(done) {
     Search.callsArgWith(2, null, [
       {
         _id: 1,
@@ -172,6 +172,10 @@ describe('TaskGenerator service', function() {
       }
     ];
     service().then(function(actual) {
+      console.log('FINISHED');
+      console.log(Search.callCount);
+      console.log(JSON.stringify(actual));
+      console.log(JSON.stringify(expected));
       chai.expect(Search.callCount).to.equal(1);
       chai.expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
       done();
