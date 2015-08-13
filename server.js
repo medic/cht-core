@@ -5,6 +5,7 @@ var fs = require('fs'),
     morgan = require('morgan'),
     http = require('http'),
     moment = require('moment'),
+    path = require('path'),
     app = express(),
     db = require('./db'),
     config = require('./config'),
@@ -46,7 +47,7 @@ _.templateSettings = {
   escape: /\{\{(.+?)\}\}/g,
 };
 
-fs.readFile(__dirname + '/templates/login/index.html', { encoding: 'utf-8' }, function(err, data) {
+fs.readFile(path.join(__dirname, 'templates/login/index.html'), { encoding: 'utf-8' }, function(err, data) {
   if (err) {
     console.error('Could not find login page');
     throw err;
@@ -77,7 +78,7 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use(express.static(__dirname + '/public'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.get(pathPrefix + '/login', function(req, res) {
   auth.getUserCtx(req, function(err) {
     var redirectPath = req.query.redirect || appPrefix;
