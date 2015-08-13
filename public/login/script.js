@@ -1,3 +1,5 @@
+document.getElementById('user').focus();
+
 var setState = function(className) {
   document.getElementById('form').className = className;
 };
