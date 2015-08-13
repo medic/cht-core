@@ -10,7 +10,7 @@ var async = require('async'),
 module.exports = {
     _addErr: function(event_type, config, doc) {
         var locale = utils.getLocale(doc),
-            err_msg = 'Failed to complete notification, event type "%s" misconfigured.',
+            err_msg = 'Failed to complete notification request, event type "%s" misconfigured.',
             evConf = _.findWhere(config.messages, {
                 event_type: event_type
             });
@@ -115,6 +115,7 @@ module.exports = {
                     if (mute) {
                         if (config.confirm_deactivation) {
                             self._addErr('confirm_deactivation', config, doc);
+                            self._addMsg('confirm_deactivation', config, doc, registrations);
                             return callback(null, true);
                         } else {
                             self._addMsg('on_mute', config, doc, registrations);
