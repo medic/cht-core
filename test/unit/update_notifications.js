@@ -104,7 +104,7 @@ exports['add error when event type not found'] = function(test) {
     transition._addErr('foo', config, doc);
     test.same(doc.errors[0], {
         code:'invalid_report',
-        message: 'Failed to complete notification, event type "foo" misconfigured.'
+        message: 'Failed to complete notification request, event type "foo" misconfigured.'
     });
     test.done();
 };
@@ -139,7 +139,7 @@ exports['add message creates error when event type not found'] = function(test) 
     transition._addMsg('foo', config, doc);
     test.same(doc.errors[0], {
         code:'invalid_report',
-        message: 'Failed to complete notification, event type "foo" misconfigured.'
+        message: 'Failed to complete notification request, event type "foo" misconfigured.'
     });
     test.done();
 };
@@ -155,7 +155,7 @@ exports['add message creates error when event type message not found'] = functio
     transition._addMsg('foo', config, doc);
     test.same(doc.errors[0], {
         code:'invalid_report',
-        message: 'Failed to complete notification, event type "foo" misconfigured.'
+        message: 'Failed to complete notification request, event type "foo" misconfigured.'
     });
     test.done();
 };
@@ -171,7 +171,7 @@ exports['add error when event type message not found'] = function(test) {
     transition._addErr('foo', config, doc);
     test.same(doc.errors[0], {
         code:'invalid_report',
-        message: 'Failed to complete notification, event type "foo" misconfigured.'
+        message: 'Failed to complete notification request, event type "foo" misconfigured.'
     });
     test.done();
 };
