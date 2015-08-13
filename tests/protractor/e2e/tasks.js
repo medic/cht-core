@@ -63,19 +63,71 @@ describe('Tasks', function() {
 
   var savedUuid;
   beforeEach(function(done) {
-    utils.saveDoc(registration)
-      .then(function(doc) {
-        savedUuid = doc.id;
-        done();
-      }, function(err) {
-        console.log('Error saving doc', err);
-        done();
-      });
+    utils.updateSettings({
+      anc_forms: {
+        registration: 'R',
+        registrationLmp: 'P',
+        visit: 'V',
+        delivery: 'D',
+        flag: 'F'
+      },
+      tasks: {
+        rules: 'define Registration {\n  lmpDate: null,\n  doc: null\n}\n\ndefine Task {\n  _id: null,\n  doc: null,\n  type: null,\n  date: null,\n  title: null,\n  fields: null\n}\n\nrule GenerateEvents {\n  when {\n    r: Registration\n  }\n  then {\n    schedules.forEach(function(s) {\n      var visit = new Task({\n        _id: r.doc._id + \'-\' + s.id,\n        doc: r.doc,\n        type: s.type,\n        date: Utils.addDate(r.lmpDate, s.days).toISOString(),\n        title: s.title,\n        fields: [\n          {\n            label: [{ content: \'Description\', locale: \'en\' }],\n            value: s.description\n          }\n        ]\n      });\n      emit(\'task\', visit);\n      assert(visit);\n    });\n  }\n}',
+        schedules: [
+          {
+            id: 'visit-1',
+            days: 50,
+            type: 'visit',
+            title: [
+              {
+                content: 'ANC visit #1 for {{doc.fields.patient_name}}',
+                locale: 'en'
+              }
+            ],
+            description: [
+              {
+                content: 'Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #1. Remember to check for danger signs!',
+                locale: 'en'
+              }
+            ]
+          },
+          {
+            id: 'immunisation-1',
+            days: 150,
+            type: 'immunisation',
+            title: [
+              {
+                content: 'ANC immunisation #1 for {{doc.fields.patient_name}}',
+                locale: 'en'
+              }
+            ],
+            description: [
+              {
+                content: 'Please immunise {{doc.fields.patient_name}} in Harrisa Village.',
+                locale: 'en'
+              }
+            ]
+          }
+        ]
+      }
+    }).then(function() {
+      utils.saveDoc(registration)
+        .then(function(doc) {
+          savedUuid = doc.id;
+          done();
+        }, function(err) {
+          console.log('Error saving doc', err);
+          done();
+        });
+    });
   });
 
   afterEach(function(done) {
-    utils.deleteDoc(savedUuid)
-      .then(done, done);
+    utils.revertSettings()
+      .then(function() {
+        utils.deleteDoc(savedUuid)
+          .then(done, done);
+      });
   });
 
   it('visit tasks are shown', function() {
@@ -90,10 +142,10 @@ describe('Tasks', function() {
     expect(selectedTab.getText()).toEqual('Tasks');
 
     // check list details
-    var taskSummary = element(by.css('#tasks-list ul li[data-record-id="' + savedUuid + '-1"] .description'));
+    var taskSummary = element(by.css('#tasks-list ul li[data-record-id="' + savedUuid + '-visit-1"] .description'));
     expect(taskSummary.getText()).toEqual('ANC visit #1 for sally');
 
-    var taskDueDate = element(by.css('#tasks-list ul li[data-record-id="' + savedUuid + '-1"] .relative-date-content'));
+    var taskDueDate = element(by.css('#tasks-list ul li[data-record-id="' + savedUuid + '-visit-1"] .relative-date-content'));
     expect(taskDueDate.getText()).toEqual('3 months ago');
 
     taskSummary.click();

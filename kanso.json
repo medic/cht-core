@@ -394,6 +394,7 @@
                         "roles": {
                             "title": "Roles",
                             "type": "array",
+                            "default": [],
                             "items": {
                                 "type": "string"
                             }
@@ -1086,6 +1087,84 @@
                             }
                         },
                         "default": []
+                    }
+                }
+            },
+            "tasks": {
+                "title": "Task Generation",
+                "type": "object",
+                "properties": {
+                    "rules": {
+                        "title": "Rules",
+                        "type": "string",
+                        "description": "The <a href='https://github.com/C2FO/nools#dsl' rel='external'>Nools DSL</a> rule definition.",
+                        "je:hint": "textarea",
+                        "je:textarea": {
+                            "rows": 20
+                        }
+                    },
+                    "schedules": {
+                        "title": "Schedule",
+                        "type": "array",
+                        "description": "The schedule of tasks to generate",
+                        "default": [],
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "title": "Task ID",
+                                    "type": "string"
+                                },
+                                "days": {
+                                    "title": "Days after date that task is due",
+                                    "type": "integer"
+                                },
+                                "type": {
+                                    "title": "Task type",
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "title": "Title",
+                                    "type": "array",
+                                    "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                                    "default": [],
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "content": {
+                                                "type": "string",
+                                                "title": "Title Content"
+                                            },
+                                            "locale": {
+                                                "title": "Locale",
+                                                "type": "string",
+                                                "default": "en"
+                                            }
+                                        }
+                                    }
+                                },
+                                "description": {
+                                    "title": "Description",
+                                    "type": "array",
+                                    "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                                    "default": [],
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "content": {
+                                                "type": "string",
+                                                "title": "Description Content"
+                                            },
+                                            "locale": {
+                                                "title": "Locale",
+                                                "type": "string",
+                                                "default": "en"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             },
