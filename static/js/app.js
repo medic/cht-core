@@ -1,6 +1,13 @@
+require('lie/polyfill');
+
 require('./services/index');
 require('./controllers/inbox');
 require('./filters/index');
+
+var _ = require('underscore');
+_.templateSettings = {
+  interpolate: /\{\{(.+?)\}\}/g
+};
 
 (function () {
 
@@ -88,11 +95,20 @@ require('./filters/index');
           }
         })
 
-        // contacts
+        // tasks
         .state('tasks', {
           url: '/tasks',
           controller: 'TasksCtrl',
           templateUrl: 'templates/partials/tasks.html'
+        })
+        .state('tasks.detail', {
+          url: '/:id',
+          views: {
+            content: {
+              controller: 'TasksContentCtrl',
+              templateUrl: 'templates/partials/tasks_content.html'
+            }
+          }
         })
 
         // configuration

@@ -60,11 +60,7 @@ var _ = require('underscore'),
         $scope.loadingContent = true;
         $scope.setSelected({ id: id });
         $scope.setLoadingContent(id);
-        var opts = {
-          id: id,
-          districtAdmin: $scope.permissions.districtAdmin
-        };
-        ContactConversation(opts, function(err, data) {
+        ContactConversation({ id: id }, function(err, data) {
           if (err) {
             $scope.loadingContent = false;
             $scope.error = true;
@@ -101,10 +97,7 @@ var _ = require('underscore'),
               }
             }
           }
-          var opts = {
-            id: selectedId,
-            districtAdmin: $scope.permissions.districtAdmin
-          };
+          var opts = { id: selectedId };
           if (options.skip) {
             opts.skip = $scope.selected.messages.length;
             $timeout(function() {

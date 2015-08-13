@@ -7,10 +7,10 @@ describe('ContactConversation service', function() {
       districtErr,
       unallocated,
       settingsErr,
-      callback,
-      errCb;
+      query;
 
   beforeEach(function() {
+    query = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.value('BaseUrlService', function() {
@@ -22,24 +22,7 @@ describe('ContactConversation service', function() {
       $provide.value('Settings', function(callback) {
         callback(settingsErr, { district_admins_access_unallocated_messages: unallocated });
       });
-      $provide.value('DB', {
-        get: function() {
-          return {
-            query: function() {
-              return {
-                then: function(cb) {
-                  callback = cb;
-                  return {
-                    catch: function(cb) {
-                      errCb = cb;
-                    }
-                  };
-                }
-              };
-            }
-          };
-        }
-      });
+      $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
     });
     inject(function($injector) {
       service = $injector.get('ContactConversation');
@@ -50,15 +33,19 @@ describe('ContactConversation service', function() {
     settingsErr = null;
   });
 
+  afterEach(function() {
+    KarmaUtils.restore(query);
+  });
+
   it('builds admin conversation', function(done) {
     var expected = {
       rows: [ 'a', 'b' ]
     };
+    query.returns(KarmaUtils.mockPromise(null, expected));
     service({ id: 'abc'}, function(err, actual) {
       chai.expect(actual).to.deep.equal(expected.rows);
       done();
     });
-    callback(expected);
   });
 
   it('builds district admin conversation', function(done) {
@@ -66,30 +53,30 @@ describe('ContactConversation service', function() {
       rows: [ 'a', 'b' ]
     };
     district = 'xyz';
+    query.returns(KarmaUtils.mockPromise(null, expected));
     service({ id: 'abc' }, function(err, actual) {
       chai.expect(actual).to.deep.equal(expected.rows);
       done();
     });
-    callback(expected);
   });
 
   it('builds admin conversation with skip', function(done) {
     var expected = {
       rows: [ 'a', 'b' ]
     };
+    query.returns(KarmaUtils.mockPromise(null, expected));
     service({ id: 'abc', skip: 45 }, function(err, actual) {
       chai.expect(actual).to.deep.equal(expected.rows);
       done();
     });
-    callback(expected);
   });
 
   it('returns errors from db query', function(done) {
+    query.returns(KarmaUtils.mockPromise('server error'));
     service({ id: 'abc' }, function(err) {
       chai.expect(err).to.equal('server error');
       done();
     });
-    errCb('server error');
   });
 
 });

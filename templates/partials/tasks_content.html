@@ -1,0 +1,38 @@
+<div class="content-pane">
+
+  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
+    <div><span class="fa fa-spinner fa-spin"></span></div>
+  </div>
+
+  <div class="col-sm-8 item-content empty-selection" ng-show="!selected && !loadingContent">
+    <div>{{'No task selected' | translate}}</div>
+  </div>
+
+  <div class="col-sm-8 item-content item-body" ng-show="selected && !loadingContent">
+    <div>
+      <div class="status">
+        <span class="mm-badge mm-badge-round">
+          <span class="fa" ng-class="{
+            'fa-user': selected.type === 'visit'
+          }"></span>
+        </span>
+      </div>
+
+      <div class="body">
+        <h2>{{selected.title | translateFrom:selected}}</h2>
+
+        <ul>
+          <li>
+            <label>{{'task.date' | translate}}</label>
+            <p ng-bind-html="selected.date | simpleDate"></p>
+          </li>
+          <li ng-repeat="field in selected.fields">
+            <label>{{field.label | translateFrom:selected}}</label>
+            <p>{{field.value | translateFrom:selected}}</p>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>

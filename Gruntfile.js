@@ -68,6 +68,10 @@ module.exports = function(grunt) {
         ],
         dest: 'static/dist/dependencies.js',
       },
+      enketo_js: {
+        src: ['static/enketo/js/*.js'],
+        dest: 'static/dist/enketo.js',
+      },
     },
     uglify: {
       options: {
@@ -78,6 +82,7 @@ module.exports = function(grunt) {
           'static/dist/templates.js': ['static/dist/templates.js'],
           'static/dist/dependencies.js': ['static/dist/dependencies.js'],
           'static/dist/inbox.js': ['static/dist/inbox.js'],
+          'static/dist/enketo.js': ['static/dist/enketo.js'],
         }
       }
     },
@@ -157,7 +162,7 @@ module.exports = function(grunt) {
       enketo: {
         expand:true,
         cwd: 'static/',
-        src: 'enketo/**/*',
+        src: ['enketo/**/*', '!enketo/js/**'],
         dest: 'static/dist/',
       },
     },
@@ -284,7 +289,8 @@ module.exports = function(grunt) {
   grunt.registerTask('mmjs', 'Build the JS resources', [
     'browserify:dist',
     'ngtemplates',
-    'concat:js'
+    'concat:js',
+    'concat:enketo_js',
   ]);
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [

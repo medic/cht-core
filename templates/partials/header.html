@@ -39,7 +39,7 @@
             </a>
           </li>
           <li role="presentation" class="disabled">
-            <a role="menuitem" tabindex="-1" id="send-record-enketo">
+            <a role="menuitem" tabindex="-1" id="launch-enketo-composer">
               <i class="fa fa-fw fa-list-alt"></i>
               {{'Submit Report with Enketo' | translate}}
             </a>
@@ -73,9 +73,15 @@
             </a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" rel="external" ng-click="editCurrentUserPrepare()" data-toggle="modal" data-target="#edit-user-profile">
+            <a role="menuitem" tabindex="-1" rel="external" ng-click="editCurrentUserPrepare()" data-toggle="modal" data-target="#edit-user-settings">
               <i class="fa fa-fw fa-user"></i>
               {{'Edit User Profile' | translate}}
+            </a>
+          </li>
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" rel="external" ng-click="editCurrentUserPrepare()" data-toggle="modal" data-target="#update-password">
+              <i class="fa fa-fw fa-key"></i>
+              {{'password.update' | translate}}
             </a>
           </li>
           <li role="presentation">

@@ -514,15 +514,6 @@ body {
 }
 
 .contacts {
-  .item-content .status,
-  .message-wrapper {
-    .fa {
-      color: @ok-color;
-    }
-  }
-  .item-content > div {
-    margin-top: 1em;
-  }
   .inbox-items li {
     .message-wrapper:hover {
       border-left-color: @contacts-color;
@@ -533,6 +524,24 @@ body {
     &.orphan .detail {
       margin-top: 0.42em;
     }
+  }
+}
+
+.tasks .inbox-items .mm-badge {
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.tasks,
+.contacts {
+  .item-content .status,
+  .message-wrapper {
+    .fa {
+      color: @ok-color;
+    }
+  }
+  .item-content > div {
+    margin-top: 1em;
   }
 }
 
@@ -781,7 +790,9 @@ a.fa:hover {
   }
 }
 
-.reports .item-content, .contacts .item-content {
+.reports .item-content,
+.contacts .item-content,
+.tasks .item-content {
 
   > div {
     margin-bottom: 5em;

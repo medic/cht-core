@@ -95,6 +95,7 @@
         "element"   : true,
         "by"        : true,
         "browser"   : true,
-        "KarmaUtils": true
+        "KarmaUtils": true,
+        "Promise"   : true
     }
 }

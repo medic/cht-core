@@ -10553,7 +10553,7 @@ define('text!enketo-widget/date/config.json',[],function () { return '{\n    "st
 
 		show: function(){
 			if (!this.isInline)
-				this.picker.appendTo('body');
+				this.picker.appendTo('.enketo-widget-container');
 			this.picker.show();
 			this.place();
 			this._attachSecondaryEvents();

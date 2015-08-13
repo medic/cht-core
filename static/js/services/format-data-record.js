@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    sms_utils = require('kujua-sms/utils'),
-    promise = require('lie');
+    sms_utils = require('kujua-sms/utils');
 
 (function () {
 
@@ -14,7 +13,7 @@ var _ = require('underscore'),
         if (!docs) {
           return;
         }
-        return promise.all([ AppInfo(), Language() ])
+        return Promise.all([ AppInfo(), Language() ])
           .then(function(results) {
             if (!_.isArray(docs)) {
               docs = [ docs ];

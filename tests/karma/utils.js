@@ -7,21 +7,23 @@ window.KarmaUtils = {
     }
   },
   mockPromise: function(err, doc) {
-    /* globals Promise */
-    return new Promise(function(resolve, reject) {
+    var result = new Promise(function(resolve, reject) {
       if (err) {
         reject(err);
       } else {
         resolve(doc);
       }
     });
+    result.on = function() {};
+    return result;
   },
-  mockDB: function(db) {
+  mockDB: function(db, getRemoteUrl) {
     return function() {
       return {
         get: function() {
           return db;
-        }
+        },
+        getRemoteUrl: getRemoteUrl
       };
     };
   }

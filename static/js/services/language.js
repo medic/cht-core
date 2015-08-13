@@ -1,5 +1,3 @@
-var promise = require('lie');
-
 (function () {
 
   'use strict';
@@ -16,11 +14,11 @@ var promise = require('lie');
   ]);
 
   inboxServices.factory('Language', [
-    'ipCookie', 'SetLanguageCookie', 'User', 'Settings',
-    function(ipCookie, SetLanguageCookie, User, Settings) {
+    'ipCookie', 'SetLanguageCookie', 'UserSettings', 'Settings',
+    function(ipCookie, SetLanguageCookie, UserSettings, Settings) {
 
       var fetchLocale = function(callback) {
-        User(function(err, res) {
+        UserSettings(function(err, res) {
           if (err) {
             return callback(err);
           }
@@ -54,7 +52,7 @@ var promise = require('lie');
         if (callback) {
           get(callback);
         } else {
-          return new promise(function(resolve, reject) {
+          return new Promise(function(resolve, reject) {
             get(function(err, locale) {
               if (err) {
                 reject(err);

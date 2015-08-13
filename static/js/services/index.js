@@ -37,6 +37,7 @@
   require('./send-message');
   require('./session');
   require('./settings');
+  require('./task-generator');
   require('./update-contact');
   require('./update-facility');
   require('./update-settings');

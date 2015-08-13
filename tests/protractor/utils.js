@@ -63,6 +63,14 @@ module.exports = {
       path: '/medic/_design/medic/_view/audit_records_by_doc?include_docs=true&key=["' + id + '"]',
       method: 'GET'
     });
+  },
+
+  deleteDoc: function(id) {
+    return module.exports.getDoc(id)
+      .then(function(doc) {
+        doc._deleted = true;
+        return module.exports.saveDoc(doc);
+      });
   }
 
 };

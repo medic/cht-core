@@ -17,7 +17,7 @@
         if (!options.changes) {
           $scope.loading = true;
         }
-        MessageContact({ districtAdmin: $scope.permissions.districtAdmin }, function(err, data) {
+        MessageContact({ }, function(err, data) {
           if (err) {
             return console.log('Error fetching contact', err);
           }
@@ -30,7 +30,7 @@
         });
       };
 
-      updateContacts({}, function() {
+      updateContacts({ }, function() {
         if (!$state.params.id && $scope.items.length && !$('#back').is(':visible')) {
           $timeout(function() {
             var id = $('.inbox-items li').first().attr('data-record-id');

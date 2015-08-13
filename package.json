@@ -7,12 +7,12 @@
     "url": "git://github.com/medic/medic-webapp.git"
   },
   "dependencies": {
-    "lie": "^2.9.1",
+    "lie": "^3.0.1",
+    "nools": "^0.4.1",
     "properties": "^1.2.1"
   },
   "devDependencies": {
     "async": "^1.4.0",
-    "babel-core": "^5.8.9",
     "chai": "^2.1.0",
     "grunt": "^0.4.5",
     "grunt-angular-templates": "^0.5.7",

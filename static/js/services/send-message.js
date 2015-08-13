@@ -1,8 +1,7 @@
 var _ = require('underscore'),
     utils = require('kujua-utils'),
     async = require('async'),
-    libphonenumber = require('libphonenumber/utils'),
-    promise = require('lie');
+    libphonenumber = require('libphonenumber/utils');
 
 (function () {
 
@@ -10,8 +9,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('SendMessage', ['DB', 'User', 'Settings',
-    function(DB, User, Settings) {
+  inboxServices.factory('SendMessage', ['DB', 'UserSettings', 'Settings',
+    function(DB, UserSettings, Settings) {
 
       var createMessageDoc = function(user, recipients) {
         var name = user && user.name;
@@ -76,13 +75,13 @@ var _ = require('underscore'),
 
       return function(recipients, message) {
 
-        return new promise(function(resolve, reject) {
+        return new Promise(function(resolve, reject) {
 
           if (!_.isArray(recipients)) {
             recipients = [recipients];
           }
 
-          User(function(err, user) {
+          UserSettings(function(err, user) {
             if (err) {
               return console.log('Error fetching user', err);
             }

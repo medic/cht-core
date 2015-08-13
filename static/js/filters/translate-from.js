@@ -8,11 +8,15 @@ var _ = require('underscore');
 
   module.filter('translateFrom', ['$translate',
     function($translate) {
-      return function(labels) {
+      return function(labels, scope) {
         if (!labels) {
           return;
         }
-        return labels[$translate.use()] || labels.en || _.values(labels)[0];
+        var label = labels[$translate.use()] || labels.en || _.values(labels)[0];
+        if (!scope || label.indexOf('{{') === -1) {
+          return label;
+        }
+        return _.template(label)(scope);
       };
     }
   ]);
