@@ -1,7 +1,9 @@
 <div class="content-pane">
 
   <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
-    <div><span class="fa fa-spinner fa-spin"></span></div>
+    <div>
+      <div class="loader"></div>
+    </div>
   </div>
 
   <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && (!selected || selected.form === undefined)">
@@ -68,7 +70,7 @@
         </ul>
       </div>
 
-      <div class="body" ng-if="selected.scheduled_tasks_by_group.length">
+      <div class="body scheduled-tasks" ng-if="selected.scheduled_tasks_by_group.length">
         <h2>{{'Outgoing Messages' | translate}}</h2>
         <ul>
           <li ng-repeat="group in selected.scheduled_tasks_by_group">
@@ -79,9 +81,7 @@
                 <a class="btn btn-link" ng-click="mute(group)" ng-show="canMute(group)">{{'Mute' | translate}}</a>
                 <a class="btn btn-link" ng-click="schedule(group)" ng-show="canSchedule(group)">{{'Schedule' | translate}}</a>
               </span>
-              <span class="loading-button" ng-show="group.loading">
-                <span class="fa fa-spinner fa-spin"></span>
-              </span>
+              <span class="inline loader" ng-show="group.loading"></span>
             </p>
             <ul class="task-list">
               <li ng-repeat="task in group.rows | orderBy:'timestamp'">

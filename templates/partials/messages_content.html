@@ -1,7 +1,9 @@
 <div class="content-pane">
 
-  <div class="item-content empty-selection" ng-show="loadingContent">
-    <div><span class="fa fa-spinner fa-spin"></span></div>
+  <div class="item-content empty-selection">
+    <div>
+      <div class="loader"></div>
+    </div>
   </div>
 
   <div class="col-sm-8 item-content empty-selection" ng-show="!selected.messages[0] && !loadingContent">
@@ -13,9 +15,7 @@
       <mm-sender message="selected.messages[0].value"></mm-sender>
     </div>
     <div id="message-content" class="col-sm-8 item-content">
-      <span class="mm-loader" ng-show="loadingMoreContent">
-        <span class="fa fa-spinner fa-spin"></span>
-      </span>
+      <div class="loader" ng-show="loadingMoreContent"></div>
       <p class="loading-status" ng-show="allLoaded">
         {{'No more messages' | translate}}
       </p>

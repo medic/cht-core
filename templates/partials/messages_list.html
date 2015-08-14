@@ -12,7 +12,5 @@
   </ul>
   <p ng-show="error" class="alert alert-danger" role="alert">{{'Error fetching messages' | translate}}</p>
   <p class="loading-status" ng-show="!error && !loading && !items.length">{{'No messages found' | translate}}</p>
-  <span class="mm-loader" ng-show="loading">
-    <span class="fa fa-spinner fa-spin"></span>
-  </span>
+  <div class="loader" ng-show="loading"></div>
 </div>

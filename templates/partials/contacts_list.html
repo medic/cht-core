@@ -24,7 +24,5 @@
   <p ng-show="error" class="alert alert-danger" role="alert">{{'Error fetching contacts' | translate}}</p>
   <p class="loading-status" ng-show="!error && !loading && !items.length">{{'No contacts found' | translate}}</p>
   <p class="loading-status" ng-show="!error && !loading && items.length && !moreItems">{{'No more contacts' | translate}}</p>
-  <span class="mm-loader" ng-show="loading">
-    <span class="fa fa-spinner fa-spin"></span>
-  </span>
+  <div class="loader" ng-show="loading"></div>
 </div>
