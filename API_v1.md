@@ -119,6 +119,8 @@ Records can be created one of two ways, parsing the form data yourself and submi
 |  Content-Type | application/x-www-form-urlencoded | Processes form parameters.
 |  Content-Type | application/json | Processes form data in request body as JSON.
 
+Only one variant of the `Content-Type` header may be provided; RFC 2616 does not
+allow multiple content types to appear in a single `Content-Type` header.
 
 #### Form Parameters
 
