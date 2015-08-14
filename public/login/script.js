@@ -84,7 +84,8 @@ var handleResponse = function(xmlhttp) {
   }
 };
 
-var submit = function() {
+var submit = function(event) {
+  event.preventDefault();
   if (document.getElementById('form').className === 'loading') {
     return;
   }

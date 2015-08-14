@@ -26,12 +26,14 @@ input {
   border-width: 1px;
   border-color: #CCCCCC;
   border-radius: 4px;
-  width: 100%;
+  width: 280px;
   font-size: 1em;
+  padding: 6px 10px;
 }
 .btn {
   background-color: #337AB7;
   border-color: #2E6DA4;
+  color: #FFFFFF;
   text-align: center;
   cursor: pointer;
   border: 1px solid transparent;
@@ -39,9 +41,8 @@ input {
   border-radius: 4px;
   display: block;
   margin-top: 2em;
-}
-input, .btn {
-  width: 280px;
+  font-size: 1em;
+  width: 302px;
   padding: 6px 10px;
 }
 .loading .btn {
