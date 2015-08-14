@@ -1,5 +1,3 @@
-document.getElementById('user').focus();
-
 var setState = function(className) {
   document.getElementById('form').className = className;
 };
@@ -108,5 +106,6 @@ var pressed = function(e) {
   }
 };
 
+document.getElementById('user').focus();
 document.getElementById('login').addEventListener('click', submit, false);
 document.getElementById('password').addEventListener('keypress', pressed, false);
