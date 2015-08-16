@@ -122,10 +122,15 @@ module.exports = function(grunt) {
         }
       }
     },
-    autoprefixer: {
-      all: {
-        src: 'static/dist/*.css'
+    postcss: {
+      options: {
+        processors: [
+          require('autoprefixer-core')({ browsers: 'last 2 versions' })
+        ]
       },
+      dist: {
+        src: 'static/dist/*.css'
+      }
     },
     copy: {
       inbox: {
@@ -265,7 +270,6 @@ module.exports = function(grunt) {
   // Load the plugins
   grunt.loadNpmTasks('grunt-angular-templates');
   grunt.loadNpmTasks('grunt-appcache');
-  grunt.loadNpmTasks('grunt-autoprefixer');
   grunt.loadNpmTasks('grunt-bower-concat');
   grunt.loadNpmTasks('grunt-bower-task');
   grunt.loadNpmTasks('grunt-browserify');
@@ -280,6 +284,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-notify');
   grunt.loadNpmTasks('grunt-npm-install');
+  grunt.loadNpmTasks('grunt-postcss');
   grunt.loadNpmTasks('grunt-protractor-runner');
   grunt.loadNpmTasks('grunt-text-replace');
 
@@ -295,7 +300,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
     'less',
-    'autoprefixer'
+    'postcss'
   ]);
 
   grunt.registerTask('mmbower', 'Install, concat, and patch bower components', [
