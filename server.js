@@ -319,7 +319,7 @@ app.get('/api/v1/fti/:view', function(req, res) {
 });
 
 app.get('/api/v1/messages', function(req, res) {
-  auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err) {
+  auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err, ctx) {
     if (err) {
       return error(err, req, res);
     }
@@ -334,7 +334,7 @@ app.get('/api/v1/messages', function(req, res) {
 });
 
 app.get('/api/v1/messages/:id', function(req, res) {
-  auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err) {
+  auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err, ctx) {
     if (err) {
       return error(err, req, res);
     }
