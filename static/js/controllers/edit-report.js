@@ -104,38 +104,15 @@
           enketo_root: window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname) + '/_design/medic/static/dist/enketo',
         };
 
-        requirejs.config({
-          shim: {
-            'jquery': {
-              exports: 'jQuery',
-            },
-            'widget/date/bootstrap3-datepicker/js/bootstrap-datepicker': {
-              deps: [ 'jquery' ],
-              exports: 'jQuery.fn.datepicker',
-            },
-            'widget/time/bootstrap3-timepicker/js/bootstrap-timepicker': {
-              deps: [ 'jquery' ],
-              exports: 'jQuery.fn.timepicker',
-            },
-            'leaflet': {
-              exports: 'L',
-            },
-          }
-        });
-
-        define('jquery', function() {
-          return jQuery;
-        });
-
-        requirejs(['jquery'], function() {
-          requirejs(['enketo-js/Form'], function(Form) {
+        (function() {
+          (function() {
             var showForm = function(docId, formName, formHtml, formModel, formData) {
               var form, formContainer, formWrapper,
                   init = function() {
                     var loadErrors;
                     // TODO check if it's OK to attach to `$scope` like this
                     $scope.report_form = { formName:formName, docId:docId };
-                    $scope.report_form.form = form = new Form('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData });
+                    $scope.report_form.form = form = new EnketoForm('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData });
                     loadErrors = form.init();
                     if(loadErrors && loadErrors.length) {
                       console.log('[enketo] loadErrors: ' + JSON.stringify(loadErrors));
@@ -255,8 +232,8 @@
                 });
               }());
             };
-          });
-        });
+          }());
+        }());
       }());
     }
   ]);
