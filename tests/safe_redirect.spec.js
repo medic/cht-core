@@ -10,6 +10,7 @@ _.forEach([
     '%22%3E%3Cscript%3Ealert%28%27hello%27%29%3C/script%3E',
     'https://app.medicmobile.org/wrong/path',
     'http://app.medicmobile.org/medic/_design/medic/_rewrite', // wrong protocol
+    '/medic/_design/medic/_rewrite/../../../../../.htpasswd',
 ], function(requested) {
   exports['Bad redirect ' + requested + ' should redirect as ' + APP_PREFIX] = function(test) {
     // when
