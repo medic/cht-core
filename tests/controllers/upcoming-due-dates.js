@@ -92,7 +92,7 @@ exports['get returns zero if all registrations have delivered'] = function(test)
 exports['get returns all women with upcoming due dates'] = function(test) {
   test.expect(20);
   var fti = sinon.stub(db, 'fti');
-  var today = moment();
+  var today = moment.utc();
 
   // get registrations
   fti.onCall(0).callsArgWith(2, null, {
@@ -111,7 +111,7 @@ exports['get returns all women with upcoming due dates'] = function(test) {
           patient_id: 2,
           fields: { patient_name: 'sally' },
           form: 'P',
-          lmp_date: today.utc().clone().subtract(40, 'weeks').toISOString(),
+          lmp_date: today.clone().subtract(40, 'weeks').toISOString(),
           related_entities: { clinic: { id: 'y' } }
         } 
       }
