@@ -113,7 +113,7 @@ exports['get returns all registrations with missed delivery reports'] = function
           patient_id: 2,
           fields: { patient_name: 'sally' },
           form: 'P',
-          lmp_date: today.clone().subtract(14, 'weeks').toISOString(),
+          lmp_date: today.utc().clone().subtract(14, 'weeks').toISOString(),
           contact: { id: 'y' },
           scheduled_tasks: [ {
             group: 1,
@@ -126,7 +126,7 @@ exports['get returns all registrations with missed delivery reports'] = function
           patient_id: 3,
           fields: { patient_name: 'sharon' },
           form: 'P',
-          lmp_date: today.clone().subtract(40, 'weeks').toISOString(),
+          lmp_date: today.utc().clone().subtract(40, 'weeks').toISOString(),
           contact: { id: 'y' },
           scheduled_tasks: [ {
             group: 1,

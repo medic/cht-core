@@ -72,21 +72,21 @@ exports['get returns monthly deliveries count'] = function(test) {
         doc: {
           patient_id: 1,
           form: 'R',
-          reported_date: moment().subtract(60, 'weeks')
+          reported_date: moment.utc().subtract(60, 'weeks')
         }
       },
       {
         doc: {
           patient_id: 2,
           form: 'R',
-          reported_date: moment().subtract(78, 'weeks')
+          reported_date: moment.utc().subtract(78, 'weeks')
         }
       },
       {
         doc: {
           patient_id: 3,
           form: 'P',
-          lmp_date: moment().subtract(68, 'weeks')
+          lmp_date: moment.utc().subtract(68, 'weeks')
         }
       }
     ]
@@ -97,13 +97,13 @@ exports['get returns monthly deliveries count'] = function(test) {
     rows: [
       {
         doc: {
-          reported_date: moment().subtract(30, 'weeks'),
+          reported_date: moment.utc().subtract(30, 'weeks'),
           fields: { patient_id: 1 }
         }
       },
       {
         doc: {
-          reported_date: moment().subtract(16, 'weeks'),
+          reported_date: moment.utc().subtract(16, 'weeks'),
           fields: { patient_id: 4 }
         }
       }

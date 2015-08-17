@@ -210,24 +210,24 @@ module.exports = {
   getWeeksPregnant: function(doc) {
     if (doc.form === getFormCode('registration')) {
       return {
-        number: moment().diff(moment(doc.reported_date), 'weeks') + noLmpDateModifier,
+        number: moment.utc().diff(moment.utc(doc.reported_date), 'weeks') + noLmpDateModifier,
         approximate: true
       };
     }
     return {
-      number: moment().diff(moment(doc.lmp_date), 'weeks')
+      number: moment.utc().diff(moment.utc(doc.lmp_date), 'weeks')
     };
   },
 
   getEDD: function(doc) {
     if (doc.form === getFormCode('registration')) {
       return {
-        date: moment(doc.reported_date).add(40 - noLmpDateModifier, 'weeks'),
+        date: moment.utc(doc.reported_date).add(40 - noLmpDateModifier, 'weeks'),
         approximate: true
       };
     }
     return {
-      date: moment(doc.lmp_date).add(40, 'weeks')
+      date: moment.utc(doc.lmp_date).add(40, 'weeks')
     };
   },
 

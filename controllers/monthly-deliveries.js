@@ -3,7 +3,7 @@ var _ = require('underscore'),
     utils = require('./utils');
 
 var addMissingData = function(counts) {
-  var end = moment().startOf('month');
+  var end = moment.utc().startOf('month');
   var date = end.clone().subtract(1, 'years');
   while(date.isBefore(end)) {
     var key = date.toISOString();
@@ -16,7 +16,7 @@ var addMissingData = function(counts) {
 
 var formatDates = function(dates) {
   var counts = _.countBy(dates, function(date) {
-    return date.startOf('month').toISOString();
+    return moment.utc(date).startOf('month').toISOString();
   });
   addMissingData(counts);
   var sorted = _.sortBy(_.pairs(counts), function(count) { 
