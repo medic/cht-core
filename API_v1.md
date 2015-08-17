@@ -203,7 +203,47 @@ If invalid JSON return error response 500.
 
 If submitting JSON and correspending form is not found on the server you will receive an error.
 
+
+## GET /api/v1/export/forms/{formcode}
+
+Download reports.
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | -------------
+| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
+| locale             | Locale for translatable data. Defaults to 'en'.
+| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
+| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
+| columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
+
 # Messages
+
+## GET /api/v1/export/messages
+
+Download messages.
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | -------------
+| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
+| locale             | Locale for translatable data. Defaults to 'en'.
+| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
+| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
+| columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
+| filter_state       | Used in conjunction with the parameters below to only return messages that were in a given state. Possible values are 'received', 'scheduled', 'pending', 'sent', 'cleared', or 'muted'.
+| filter_state_from  | The number of days from now to use as a lower bound on the date that the message is in the given state. Defaults to no lower bound. Ignored if filter_state is not provided.
+| filter_state_to    | The number of days from now to use as an upper bound on the date that the message is in the given state. Defaults to no upper bound. Ignored if filter_state is not provided.
+
+### Examples
+
+Return only rows that are scheduled to be sent in the next ten days.
+
+```
+/export/messages?filter_state=scheduled&filter_state_to=10
+```
 
 ## GET /api/v1/messages
 
@@ -410,6 +450,36 @@ Should updating the state value of a message require the doc revision?
 ## Backwards Compatibility
 
 This is a new API so clients can start using it at will, the old one remains available.
+
+# Audit Log
+
+Export a file containing the audit log.
+
+## GET /api/v1/export/audit
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | -------------
+| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
+| locale             | Locale for translatable data. Defaults to 'en'.
+| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
+| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
+
+# User Feedback
+
+Export a file containing the user feedback.
+
+## GET /api/v1/export/feedback
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | -------------
+| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
+| locale             | Locale for translatable data. Defaults to 'en'.
+| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
+| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
 
 # Contacts
 
