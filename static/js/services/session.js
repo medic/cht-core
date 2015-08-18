@@ -13,10 +13,20 @@ var COOKIE_NAME = 'userCtx';
         return ipCookie(COOKIE_NAME);
       };
 
+      var waitForAppCache = function(callback) {
+        var appCache = $window.applicationCache;
+        if (appCache && appCache.status === appCache.DOWNLOADING) {
+          return appCache.addEventListener('updateready', callback);
+        }
+        callback();
+      };
+
       var navigateToLogin = function() {
         ipCookie.remove(COOKIE_NAME);
-        $window.location.href = '/' + DbNameService() + '/login' +
-          '?redirect=' + encodeURIComponent($window.location.href);
+        waitForAppCache(function() {
+          $window.location.href = '/' + DbNameService() + '/login' +
+            '?redirect=' + encodeURIComponent($window.location.href);
+        });
       };
 
       var logout = function() {

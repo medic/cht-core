@@ -6,6 +6,8 @@ describe('Session service', function() {
       ipCookie,
       ipCookieRemove,
       location,
+      appCache,
+      appCacheListener,
       DbNameService,
       kansoLogout,
       kansoInfo,
@@ -15,12 +17,18 @@ describe('Session service', function() {
     module('inboxApp');
     ipCookie = sinon.stub();
     ipCookieRemove = sinon.stub();
+    appCacheListener = sinon.stub();
     ipCookie.remove = ipCookieRemove;
     DbNameService = sinon.stub();
     kansoLogout = sinon.stub();
     kansoInfo = sinon.stub();
     kansoSessionListener = sinon.stub();
     location = {};
+    appCache = {
+      DOWNLOADING: 3,
+      status: 0,
+      addEventListener: appCacheListener
+    };
     module(function ($provide) {
       $provide.factory('ipCookie', function() {
         return ipCookie;
@@ -29,7 +37,10 @@ describe('Session service', function() {
         return DbNameService;
       });
       $provide.factory('$window', function() {
-        return { location: location };
+        return {
+          location: location,
+          applicationCache: appCache
+        };
       });
       $provide.value('KansoPackages', {
         session: {
@@ -45,7 +56,7 @@ describe('Session service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(ipCookie, ipCookieRemove, DbNameService, kansoLogout, kansoInfo, kansoSessionListener);
+    KarmaUtils.restore(ipCookie, ipCookieRemove, DbNameService, kansoLogout, kansoInfo, kansoSessionListener, appCacheListener);
   });
 
   it('gets the user context', function(done) {
@@ -138,6 +149,22 @@ describe('Session service', function() {
     chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
     chai.expect(kansoSessionListener.args[0][0]).to.equal('change');
+    done();
+  });
+
+  it('waits for app cache download before logging out', function(done) {
+    ipCookie.returns({});
+    location.href = 'CURRENT_URL';
+    DbNameService.returns('DB_NAME');
+    kansoLogout.callsArg(0);
+    appCache.status = 3;
+    service.init();
+    appCacheListener.args[0][1](); // fire the appcache callback
+    chai.expect(appCacheListener.callCount).to.equal(1);
+    chai.expect(appCacheListener.args[0][0]).to.equal('updateready');
+    chai.expect(kansoLogout.callCount).to.equal(1);
+    chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
+    chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
     done();
   });
 
