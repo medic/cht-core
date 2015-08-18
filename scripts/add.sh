@@ -57,7 +57,7 @@ function _curl {
         --data-urlencode "message=$MSG" \
         --data-urlencode "from=$FROM" \
         --data-urlencode "sent_timestamp=$TIMESTAMP" \
-        -X POST "${SITE}/${DB}/_design/medic/_rewrite/add"
+        -X POST "${SITE}/api/v1/records"
     RET=$?
     if [ $RET -ne 0 ]; then
         _exit_fail "$RET"
