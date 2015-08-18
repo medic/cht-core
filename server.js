@@ -79,6 +79,16 @@ app.use(function(req, res, next) {
   next();
 });
 
+app.get('/', function(req, res) {
+  if (req.query._nonce) {
+    // couchdb request - let it go
+    proxy.web(req, res);
+  } else {
+    // redirect to the app path - redirect to _rewrite
+    res.redirect(appPrefix);
+  }
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.get(pathPrefix + '/login', function(req, res) {
   auth.getUserCtx(req, function(err) {
