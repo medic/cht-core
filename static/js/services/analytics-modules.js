@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    stock = require('kujua-reporting/shows'),
+    reporting = require('kujua-reporting/shows'),
     moment = require('moment');
 
 (function () {
@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('AnalyticsModules',
-    ['$resource', 'UserDistrict',
-    function($resource, UserDistrict) {
+    ['$resource', '$log', 'UserDistrict',
+    function($resource, $log, UserDistrict) {
 
       var request = function(url, district, options, callback) {
         if (!callback) {
@@ -27,7 +27,7 @@ var _ = require('underscore'),
             callback(null, data);
           },
           function(err) {
-            console.log('Error requesting module', err);
+            $log.error('Error requesting module', err);
             callback(err);
           }
         );
@@ -60,11 +60,11 @@ var _ = require('underscore'),
               scope.visitsDuring = { loading: true };
               scope.monthlyRegistrations = { loading: true };
               scope.monthlyDeliveries = { loading: true };
-              
+
               UserDistrict(function(err, district) {
 
                 if (err) {
-                  return console.log('Error fetching district', err);
+                  return $log.error('Error fetching district', err);
                 }
 
                 request('/api/active-pregnancies', district, { isArray: false }, function(err, data) {
@@ -220,16 +220,27 @@ var _ = require('underscore'),
             }
           },
           {
-            id: 'stock',
-            label: 'Stock Monitoring',
+            id: 'reporting',
+            label: 'Reporting Rates',
             available: function() {
+              return Boolean(this.getConfiguredForms());
+            },
+            getConfiguredForms: function() {
               var forms = settings.forms;
-              var stockForms = settings['kujua-reporting'];
-              return _.some(stockForms, function(stockForm) {
-                return !!forms[stockForm.code];
+              var configuredForms = settings['kujua-reporting'];
+              return _.some(configuredForms, function(f) {
+                return !!forms[f.code];
               });
             },
-            render: stock.render_page
+            render: function(scope) {
+              if (scope.filterModel.selectedForm && scope.filterModel.selectedFacility) {
+                reporting.renderFacility(
+                  scope.filterModel.selectedForm,
+                  scope.filterModel.selectedFacility,
+                  settings
+                );
+              }
+            }
           }
         ];
         return _.filter(modules, function(module) {
@@ -238,6 +249,5 @@ var _ = require('underscore'),
       };
     }
   ]);
-  
-}()); 
 
+}());

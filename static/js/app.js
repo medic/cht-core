@@ -19,7 +19,7 @@ require('../dist/reporting-views');
 
   app.config(['$routeProvider', '$translateProvider',
     function($routeProvider, $translateProvider) {
-     
+
       $routeProvider
         .when('/messages/:doc?', {
           templateUrl: '/partials/messages.html',
@@ -33,12 +33,20 @@ require('../dist/reporting-views');
           templateUrl: '/partials/analytics.html',
           controller: 'AnalyticsCtrl'
         })
+        .when('/analytics/reporting/:form', {
+          templateUrl: '/partials/analytics.html',
+          controller: 'AnalyticsCtrl'
+        })
+        .when('/analytics/reporting/:form/:facility', {
+          templateUrl: '/partials/analytics.html',
+          controller: 'AnalyticsCtrl'
+        })
         .otherwise({
           redirectTo: '/messages'
         });
 
       $translateProvider.useLoader('SettingsLoader', {});
-      
+
     }
   ]);
 
@@ -68,10 +76,9 @@ require('../dist/reporting-views');
         }
         deferred.resolve(data);
       });
-      
+
       return deferred.promise;
     };
   }]);
-  
-}());
 
+}());

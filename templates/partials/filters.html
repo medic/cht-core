@@ -43,7 +43,7 @@
           <span class="mm-button-text"></span>
         </span>
         <ul role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
-          <li role="presentation" ng-repeat="facility in facilities">
+          <li role="presentation" ng-repeat="facility in facilities | filter: isClinic">
             <a role="menuitem" tabindex="-1" data-value="{~lb}{~lb}facility.id{~rb}{~rb}" ng-bind="facility.doc | clinic"></a>
           </li>
         </ul>
@@ -93,7 +93,7 @@
           </li>
         </ul>
       </span>
-      
+
       <span class="filter input-group freetext-filter" ng-show="filterModel.type === 'reports'">
         <input id="freetext" class="form-control" type="text" ng-model="filterQuery" placeholder="Extra search words">
         <span class="input-group-btn">
@@ -136,6 +136,74 @@
         <ul role="menu" aria-labelledby="module" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="module in analyticsModules">
             <a href="#/analytics/{~lb}{~lb}module.id{~rb}{~rb}" role="menuitem" tabindex="-1">{~lb}{~lb}module.label{~rb}{~rb}</a>
+          </li>
+        </ul>
+      </span>
+
+      <span id="formsDropdown" class="filter dropdown mm-dropdown" data-label-no-filter="Form" data-filter-label="facilities" ng-show="filterModel.module.id === 'reporting' && filterModel.type === 'analytics'">
+        <span id="formsDropdownContent" class="mm-button" data-toggle="dropdown">
+          <span class="mm-button-icon">
+            <span class="fa fa-file-o"></span>
+          </span>
+          <span class="mm-button-dropdown">
+            <span class="fa fa-chevron-down"></span>
+          </span>
+          <span class="mm-button-text" >{{
+            filterModel.selectedForm ?
+              filterModel.selectedForm.code + ': ' + filterModel.selectedForm.name :
+              'Select Form'
+          }}</span>
+        </span>
+        <ul role="menu" aria-labelledby="form" class="dropdown-menu mm-dropdown-menu">
+          <li role="presentation" ng-repeat="form in forms">
+          <a href="#/analytics/reporting/{~lb}{~lb}form.code{~rb}{~rb}/{{ filterModel.selectedFacility._id }}" role="menuitem" tabindex="-1" data-value="{~lb}{~lb}form.code{~rb}{~rb}" ng-bind="form | shortLabel"></a>
+          </li>
+        </ul>
+      </span>
+
+      <span id="districtDropdown" class="filter dropdown mm-dropdown" data-label-no-filter="District" data-filter-label="facilities" ng-show="filterModel.module.id === 'reporting' && filterModel.selectedForm && filterModel.type === 'analytics'">
+        <span id="districtDropdownContent" class="mm-button" data-toggle="dropdown">
+          <span class="mm-button-icon">
+            <span class="fa fa-hospital-o"></span>
+          </span>
+          <span class="mm-button-dropdown">
+            <span class="fa fa-chevron-down"></span>
+          </span>
+          <span class="mm-button-text">{{
+            filterModel.selectedFacility.type === 'district_hospital' ?
+            filterModel.selectedFacility.name : (
+              filterModel.selectedFacility.type === 'health_center' ?
+              filterModel.selectedFacility.parent.name : 
+              'Select District'
+            )
+          }}</span>
+        </span>
+        <ul role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
+          <li role="presentation" ng-repeat="facility in facilities | filter: isDistrict">
+            <a href="#/analytics/reporting/{~lb}{~lb}filterModel.selectedForm.code{~rb}{~rb}/{~lb}{~lb}facility.id{~rb}{~rb}" role="menuitem" tabindex="-1" data-value="{~lb}{~lb}facility.id{~rb}{~rb}" ng-bind="facility.doc | shortLabel"></a>
+          </li>
+        </ul>
+      </span>
+
+      <span id="healthCenterDropdown" class="filter dropdown mm-dropdown" data-label-no-filter="Health Centers" data-filter-label="facilities" ng-show="filterModel.module.id === 'reporting' && filterModel.type === 'analytics' && filterModel.selectedForm">
+        <span id="healthCenterDropdownContent" class="mm-button" data-toggle="dropdown">
+          <span class="mm-button-icon">
+            <span class="fa fa-plus-square"></span>
+          </span>
+          <span class="mm-button-dropdown">
+            <span class="fa fa-chevron-down"></span>
+          </span>
+          <span class="mm-button-text">{{
+            filterModel.selectedFacility.type === 'health_center' ?
+            filterModel.selectedFacility.name :
+            'Select Health Center'
+          }}</span>
+          <span ng-if="filterModel.selectedFacility.type !== 'health_center'"
+            class="mm-button-text">Select Health Center</span>
+        </span>
+        <ul role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
+          <li role="presentation" ng-repeat="facility in facilities | filter: isHealthCenter">
+            <a href="#/analytics/reporting/{~lb}{~lb}filterModel.selectedForm.code{~rb}{~rb}/{~lb}{~lb}facility.id{~rb}{~rb}" role="menuitem" tabindex="-1" data-value="{~lb}{~lb}facility.id{~rb}{~rb}" ng-bind="facility.doc | shortLabel"></a>
           </li>
         </ul>
       </span>

@@ -55,7 +55,7 @@ describe('AnalyticsCtrl controller', function() {
           done();
         }
       },
-      { 
+      {
         id: 'stock'
       }
     ];
@@ -65,7 +65,7 @@ describe('AnalyticsCtrl controller', function() {
   it('renders specified module', function(done) {
     moduleId = 'anc';
     modules = [
-      { 
+      {
         id: 'stock'
       },
       {
@@ -73,6 +73,25 @@ describe('AnalyticsCtrl controller', function() {
         render: function() {
           chai.expect(scope.filterModel.type).to.equal('analytics');
           chai.expect(scope.filterModel.module.id).to.equal('anc');
+          done();
+        }
+      }
+    ];
+    createController();
+  });
+
+  it('renders non-default specified module', function(done) {
+    moduleId = 'reporting';
+    modules = [
+      {
+        id: 'anc',
+        render: function() {}
+      },
+      {
+        id: 'reporting',
+        render: function() {
+          chai.expect(scope.filterModel.type).to.equal('analytics');
+          chai.expect(scope.filterModel.module.id).to.equal('reporting');
           done();
         }
       }

@@ -18,19 +18,28 @@ var _ = require('underscore'),
   };
 
   inboxControllers.controller('AnalyticsCtrl',
-    ['$scope', '$route', '$location', 'Settings', 'AnalyticsModules',
-    function ($scope, $route, $location, Settings, AnalyticsModules) {
+    ['$scope', '$route', '$location', '$log', 'Settings', 'AnalyticsModules',
+    function ($scope, $route, $location, $log, Settings, AnalyticsModules) {
+
+      $log.debug('AnalyticsCtrl');
+      $log.debug('$route', $route.current.params);
       $scope.setSelectedModule();
       $scope.filterModel.type = 'analytics';
       $scope.loading = true;
       Settings(function(err, res) {
         if (err) {
-          return console.log('Error fetching settings', err);
+          return $log.error('Error fetching settings: ', err);
         }
         $scope.setAnalyticsModules(AnalyticsModules(res));
         $scope.setSelectedModule(findSelectedModule(
           $route.current.params.module, $scope.analyticsModules
         ));
+        if ($route.current.params.form) {
+          $scope.filterModel.selectedForm = $scope.formsLookup[$route.current.params.form];
+        }
+        if ($route.current.params.facility) {
+          $scope.filterModel.selectedFacility = $scope.facilitiesLookup[$route.current.params.facility];
+        }
         $scope.loading = false;
         if ($scope.filterModel.module) {
           $scope.filterModel.module.render($scope);
