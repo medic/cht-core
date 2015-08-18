@@ -1,11 +1,10 @@
 var url = require('url');
 
 module.exports = function(appPrefix, requestedRedirect) {
-  var redirectPath = null, redirectUrl;
+  var redirectPath = null;
 
   try {
-    redirectUrl = url.parse(requestedRedirect);
-    redirectPath = redirectUrl.path + (redirectUrl.hash || '');
+    redirectPath = url.resolve('/', requestedRedirect);
   } catch(e) { /* invalid URL.  Will be corrected below */ }
 
   if(!redirectPath || redirectPath.indexOf(appPrefix) !== 0) {
