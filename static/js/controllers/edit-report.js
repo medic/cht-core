@@ -131,7 +131,7 @@
                       reader.addEventListener('loadend', function() {
                         var xml = reader.result, id;
                         xml = $.parseXML(xml);
-                        id = xml.evaluate('/h:html/h:head/*[2]/*[1]/*[1]/@id', xml, document.createNSResolver(xml)).iterateNext().value;
+                        id = xml.evaluate('/h:html/h:head/*[2]/*[1]/*[1]/@id', xml, document.createNSResolver(xml), XPathResult.ANY_TYPE, null).iterateNext().value;
                         if(id !== formName) { return; }
                         console.log('Searching for media links to process...');
                         $('#edit-report .form-wrapper').find('img').each(function(i, e) {
