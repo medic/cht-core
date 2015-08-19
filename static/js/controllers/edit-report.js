@@ -117,6 +117,42 @@
                 }
 
                 $('#edit-report .form-wrapper').show();
+
+                // Process JavaRosa embedded media links in the form
+                // TODO we should already know the form ID - we shouldn't have
+                // to look it up here!
+                DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
+                  // TODO find our form, so we can get hold of the attachments
+                  _.forEach(res.rows, function(row) {
+                    var xml = row.doc._attachments.xml;
+                    if(!xml) return;
+                    DB.get().getAttachment(row.id, 'xml').then(function(xmlBlob) {
+                      var reader = new FileReader();
+                      reader.addEventListener('loadend', function() {
+                        var xml = reader.result, id;
+                        xml = $.parseXML(xml);
+                        id = xml.evaluate('/h:html/h:head/*[2]/*[1]/*[1]/@id', xml, document.createNSResolver(xml)).iterateNext().value;
+                        if(id !== formName) return;
+                        console.log('Searching for media links to process...');
+                        $('#edit-report .form-wrapper').find('img').each(function(i, e) {
+                          var src;
+                          e = $(e); src = e.attr('src');
+                          console.log('testing: ' + src);
+                          if(!(/^jr:\/\//.test(src))) return;
+                          console.log('should substitute image for ' + src);
+                          DB.get().getAttachment(row.id, src.substring(5)).then(function(imageBlob) {
+                            e.attr('src', (window.URL || window.webkitURL).createObjectURL(imageBlob));
+                          }).catch(function(err) {
+                            console.log('[enketo] error fetching media file', row, src);
+                          });
+                        });
+                      });
+                      reader.readAsText(xmlBlob);
+                    });
+                  });
+                }).catch(function(err) {
+                  console.log('[enketo] failure fetching forms: ' + err);
+                });
               };
 
           formWrapper = $('.edit-report-dialog .form-wrapper');
