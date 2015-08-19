@@ -290,7 +290,7 @@ app.get(db.getPath() + '/export/:type/:form?', function(req, res) {
 app.get('/api/v1/export/:type/:form?', function(req, res) {
   auth.check(req, getExportPermission(req.params.type), req.query.district, function(err, ctx) {
     if (err) {
-      return error(err, req, res);
+      return error(err, req, res, true);
     }
     req.query.type = req.params.type;
     req.query.form = req.params.form || req.query.form;
@@ -332,7 +332,7 @@ app.get('/api/v1/fti/:view', function(req, res) {
 app.get('/api/v1/messages', function(req, res) {
   auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err, ctx) {
     if (err) {
-      return error(err, req, res);
+      return error(err, req, res, true);
     }
     var opts = _.pick(req.query, 'limit', 'start', 'descending', 'state');
     messages.getMessages(opts, ctx && ctx.district, function(err, result) {
@@ -347,7 +347,7 @@ app.get('/api/v1/messages', function(req, res) {
 app.get('/api/v1/messages/:id', function(req, res) {
   auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err, ctx) {
     if (err) {
-      return error(err, req, res);
+      return error(err, req, res, true);
     }
     messages.getMessage(req.params.id, ctx && ctx.district, function(err, result) {
       if (err) {
@@ -361,7 +361,7 @@ app.get('/api/v1/messages/:id', function(req, res) {
 app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
   auth.check(req, 'can_update_messages', null, function(err, ctx) {
     if (err) {
-      return error(err, req, res);
+      return error(err, req, res, true);
     }
     messages.updateMessage(req.params.id, req.body, ctx && ctx.district, function(err, result) {
       if (err) {
@@ -375,7 +375,7 @@ app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
 app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
   auth.check(req, 'can_create_records', null, function(err) {
     if (err) {
-      return error(err, req, res);
+      return error(err, req, res, true);
     }
     records.create(req.body, req.is(['json','urlencoded']), function(err, result) {
       if (err) {
@@ -389,7 +389,7 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
 app.get('/api/v1/scheduler/:name', function(req, res) {
   auth.check(req, 'can_execute_schedules', null, function(err) {
     if (err) {
-      return error(err, req, res);
+      return error(err, req, res, true);
     }
     scheduler.exec(req.params.name, function(err) {
       if (err) {
@@ -498,7 +498,7 @@ proxy.on('proxyReq', function(proxyReq, req, res) {
     writeHeaders(req, res, [
       [ 'Cache-Control', 'no-cache, must-revalidate' ]
     ]);
-  } else if (req.url.indexOf(appPrefix) !== -1 ) {
+  } else if (req.url.indexOf(appPrefix) !== -1) {
     // requesting other application files
     writeHeaders(req, res, [], true);
   } else {
@@ -519,13 +519,13 @@ proxyForAuditing.on('error', function(err, req, res) {
   serverError(JSON.stringify(err), req, res);
 });
 
-var error = function(err, req, res) {
+var error = function(err, req, res, showPrompt) {
   if (typeof err === 'string') {
     return serverError(err, req, res);
   } else if (err.code === 500) {
     return serverError(err.message, req, res);
   } else if (err.code === 401) {
-    return notLoggedIn(req, res);
+    return notLoggedIn(req, res, showPrompt);
   }
   res.writeHead(err.code || 500, {
     'Content-Type': 'text/plain'
@@ -548,8 +548,18 @@ var serverError = function(err, req, res) {
   }
 };
 
-var notLoggedIn = function(req, res) {
-  res.redirect(301, pathPrefix + '/login?redirect=' + encodeURIComponent(req.url));
+var notLoggedIn = function(req, res, showPrompt) {
+  if (showPrompt) {
+    // api access - basic auth allowed
+    res.writeHead(401, {
+      'Content-Type': 'text/plain',
+      'WWW-Authenticate': 'Basic realm="Medic Mobile Web Services"'
+    });
+    res.end('not logged in');
+  } else {
+    // web access - redirect to login page
+    res.redirect(301, pathPrefix + '/login?redirect=' + encodeURIComponent(req.url));
+  }
 };
 
 migrations.run(function(err) {
