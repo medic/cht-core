@@ -40,6 +40,8 @@ var request = function(options) {
 
 module.exports = {
 
+  request: request,
+
   saveDoc: function(doc) {
     var postData = JSON.stringify(doc);
     return request({

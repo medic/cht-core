@@ -13,7 +13,7 @@ exports.config = {
 
     browser.driver.get(
       'http://localhost:5988/medic/login?redirect=' +
-      encodeURIComponent('http://localhost:5988/medic/_design/medic/_rewrite/#/messages?e2eTesting=true')
+      encodeURIComponent('/medic/_design/medic/_rewrite/#/messages?e2eTesting=true')
     );
     browser.driver.findElement(by.name('user')).sendKeys(credentials.user);
     browser.driver.findElement(by.name('password')).sendKeys(credentials.pass);

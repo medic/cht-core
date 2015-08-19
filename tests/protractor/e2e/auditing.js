@@ -87,7 +87,8 @@ describe('Auditing', function() {
       expect(doc.error).toEqual('not_found');
       expect(doc.reason).toEqual('deleted');
     }, function(err) {
-      console.log('Error fetching doc', err);
+      console.error('Error fetching doc', err);
+      expect(true).toEqual(false);
     });
 
     // check the audit doc is updated
@@ -100,7 +101,8 @@ describe('Auditing', function() {
       expect(doc.history[1].user).toEqual(auth.getAuth().user);
       expect(doc.history[1].doc._deleted).toEqual(true);
     }, function(err) {
-      console.log('Error fetching audit doc', err);
+      console.error('Error fetching audit doc', err);
+      expect(true).toEqual(false);
     });
 
   });
