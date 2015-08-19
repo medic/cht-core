@@ -80,7 +80,7 @@ app.use(function(req, res, next) {
 });
 
 app.get('/', function(req, res) {
-  if (req.query._nonce) {
+  if (req.headers.accept === 'application/json') {
     // couchdb request - let it go
     proxy.web(req, res);
   } else {
