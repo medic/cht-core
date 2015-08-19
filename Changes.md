@@ -1,5 +1,22 @@
 # Medic Mobile Release Notes
 
+## 0.4.9
+
+### TBD
+
+- Fixed bug on node 0.12 in felix-couchdb. #1145
+
+- Improved error handling when notifications (start/stop) configs are
+  misconfigured. #1144
+
+- Fixed bug in `exists` validation where it fails on some unicode characters.
+  #1147
+
+- Fixed Reporting Rates interface that was neglected and broken. #1030
+
+- Fixed bug in exporting data by date, it's now inclusive. #1104
+
+
 ## 0.4.8
 
 ### Jul 14, 2015
