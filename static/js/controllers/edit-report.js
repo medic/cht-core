@@ -104,12 +104,12 @@
           enketo_root: window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname) + '/_design/medic/static/dist/enketo',
         };
 
-        var showForm = function(docId, formName, formHtml, formModel, formData) {
+        var showForm = function(docId, formInternalId, formHtml, formModel, formData) {
           var form, formContainer, formWrapper,
               init = function() {
                 var loadErrors;
                 // TODO check if it's OK to attach to `$scope` like this
-                $scope.report_form = { formName:formName, docId:docId };
+                $scope.report_form = { formName:formInternalId, docId:docId };
                 $scope.report_form.form = form = new EnketoForm('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData });
                 loadErrors = form.init();
                 if(loadErrors && loadErrors.length) {
@@ -118,7 +118,7 @@
 
                 $('#edit-report .form-wrapper').show();
 
-                withForm(formName, function(formDocId) {
+                withFormByFormInternalId(formInternalId, function(formDocId) {
                   console.log('Searching for media links to process...');
                   $('#edit-report .form-wrapper').find('img,video,audio').each(function(i, e) {
                     var src;
@@ -162,7 +162,7 @@
             return console.log('[enketo] processors are not ready');
           }
 
-          withForm(formInternalId, function(formDocId, data) {
+          withFormByFormInternalId(formInternalId, function(formDocId, data) {
             var doc = data,
                 html = processors.html.processor.transformToDocument(doc),
                 model = processors.model.processor.transformToDocument(doc);
@@ -174,7 +174,7 @@
           });
         };
 
-        var withForm = function(formInternalId, callback) {
+        var withFormByFormInternalId = function(formInternalId, callback) {
           DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
             // find our form
             _.forEach(res.rows, function(row) {
