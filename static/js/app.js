@@ -316,10 +316,10 @@ _.templateSettings = {
   // long polling requests.
   app.constant('E2ETESTING', window.location.href.indexOf('e2eTesting=true') !== -1);
 
-  var bootstrapApplication = function(ddoc) {
+  var bootstrapApplication = function() {
     app.constant('APP_CONFIG', {
-      name: ddoc && ddoc.kanso.config.name,
-      version: ddoc && ddoc.kanso.config.version
+      name: '@@APP_CONFIG.name',
+      version: '@@APP_CONFIG.version'
     });
     angular.element(document).ready(function() {
       angular.bootstrap(document, [ 'inboxApp' ]);
@@ -328,24 +328,17 @@ _.templateSettings = {
 
   var names = getDbNames();
   window.PouchDB(names.local)
-    .get('_design/medic')
-    .then(function(ddoc) {
-      // ddoc found. bootstrap immediately.
-      bootstrapApplication(ddoc);
+    .get('medic-settings')
+    .then(function() {
+      // settings found. bootstrap immediately.
+      bootstrapApplication();
     }).catch(function() {
-      // no ddoc found, presumably first load. replicate it.
+      // settings not found, presumably first load. replicate it.
       window.PouchDB(names.local)
-        .replicate.from(names.remote, { doc_ids: [ '_design/medic' ] })
-        .on('complete', function() {
-          window.PouchDB(names.local)
-            .get('_design/medic')
-            .then(bootstrapApplication)
-            .catch(function() {
-              bootstrapApplication();
-            });
-        })
+        .replicate.from(names.remote, { doc_ids: [ 'medic-settings' ] })
+        .on('complete', bootstrapApplication)
         .on('error', function(err) {
-          console.error('Error syncing ddoc. Bootstrapping anyway.', err);
+          console.error('Error syncing medic-settings. Bootstrapping anyway.', err);
           bootstrapApplication();
         });
     });

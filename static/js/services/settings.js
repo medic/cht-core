@@ -11,12 +11,10 @@ var _ = require('underscore'),
     function(DB) {
       return function(callback) {
         DB.get()
-          .get('_design/medic')
+          .get('medic-settings')
           .then(function(doc) {
             callback(null, _.defaults(doc.app_settings, defaults));
-          }).catch(function(err) {
-            callback(new Error(err));
-          });
+          }).catch(callback);
       };
     }
   ]);

@@ -44,6 +44,7 @@ describe('Settings service', function() {
       chai.expect(actual.date_format).to.equal(expected.date_format);
       // date format from defaults: kujua_sms/views/lib/app_settings
       chai.expect(actual.reported_date_format).to.equal('DD-MMM-YYYY HH:mm:ss');
+      chai.expect(get.args[0][0]).to.equal('medic-settings');
       done();
     });
   });
@@ -51,8 +52,7 @@ describe('Settings service', function() {
   it('returns errors', function(done) {
     get.returns(KarmaUtils.mockPromise('Not found'));
     service(function(err) {
-      chai.expect(err).to.not.equal(null);
-      chai.expect(err.message).to.equal('Not found');
+      chai.expect(err).to.equal('Not found');
       done();
     });
   });

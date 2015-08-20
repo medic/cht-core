@@ -1,4 +1,5 @@
-var remapify = require('remapify');
+var remapify = require('remapify'),
+    kansoJson = require('./kanso.json');
 
 module.exports = function(grunt) {
 
@@ -26,6 +27,17 @@ module.exports = function(grunt) {
       }
     },
     replace: {
+      hardcodeappsettings: {
+        src: [ 'static/dist/inbox.js' ],
+        overwrite: true,
+        replacements: [{
+          from: /@@APP_CONFIG.version/g,
+          to: kansoJson.version
+        }, {
+          from: /@@APP_CONFIG.name/g,
+          to: kansoJson.name
+        }]
+      },
       monkeypatchdate: {
         src: ['bower_components/concat.js'],
         overwrite: true,
@@ -293,6 +305,7 @@ module.exports = function(grunt) {
   // Default tasks
   grunt.registerTask('mmjs', 'Build the JS resources', [
     'browserify:dist',
+    'replace:hardcodeappsettings',
     'ngtemplates',
     'concat:js',
     'concat:enketo_js',
