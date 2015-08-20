@@ -64,6 +64,24 @@ var getMessage = function(value, locale) {
   return result;
 };
 
+var updateSettingsDoc = function(ddoc, callback) {
+  db.medic.get('medic-settings', function(err, _settings) {
+    if (err) {
+      if (err.statusCode === 404) {
+        _settings = { _id: 'medic-settings' };
+      } else {
+        return callback(err);
+      }
+    }
+    if (ddoc._rev === _settings.ddocRev) {
+      return callback();
+    }
+    _settings.ddocRev = ddoc._rev;
+    _settings.app_settings = ddoc.app_settings;
+    db.medic.insert(_settings, callback);
+  });
+};
+
 module.exports = {
   get: function(key) {
     return settings[key];
@@ -93,25 +111,28 @@ module.exports = {
       return value;
     }
   },
+  updateSettingsDoc: updateSettingsDoc,
   load: function(callback) {
-    db.getSettings(function(err, data) {
+    db.medic.get('_design/medic', function(err, ddoc) {
       if (err) {
         return callback(err);
       }
-      settings = data.settings;
+      settings = ddoc.app_settings;
       _.defaults(settings, defaults);
+      updateSettingsDoc(ddoc, function(err) {
+        if (err) {
+          console.error(err.message);
+        }
+      });
       callback();
     });
   },
   listen: function() {
     var feed = new follow.Feed({
       db: process.env.COUCH_URL,
-      since: 'now'
+      since: 'now',
+      filter: 'medic/design_doc'
     });
-
-    feed.filter = function(doc) {
-      return doc._id === '_design/medic';
-    };
 
     feed.on('change', function() {
       console.log('Detected settings change - reloading');
