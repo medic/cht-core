@@ -122,7 +122,7 @@
                 // TODO we should already know the form ID - we shouldn't have
                 // to look it up here!
                 DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
-                  // TODO find our form, so we can get hold of the attachments
+                  // find our form, so we can get hold of the attachments
                   _.forEach(res.rows, function(row) {
                     var xml = row.doc._attachments.xml;
                     if(!xml) { return; }
