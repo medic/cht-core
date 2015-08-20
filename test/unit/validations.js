@@ -244,6 +244,27 @@ exports['pass uniqueWithin validation on old doc'] = function(test) {
     });
 };
 
+exports['formatParam does not encode unicode'] = function(test) {
+    test.same(validation._formatParam('form', 'द'), 'form:"द"');
+    test.done();
+};
+
+exports['formatParam escapes quotes in values'] = function(test) {
+    test.same(
+        validation._formatParam('form', ' " AND everything'),
+        'form:" \\" AND everything"'
+    );
+    test.done();
+};
+
+exports['formatParam rejects quotes in field names'] = function(test) {
+    test.same(
+        validation._formatParam('*:"everything', 'xyz'),
+        '*:everything:"xyz"'
+    );
+    test.done();
+};
+
 exports['pass exists validation when matching document'] = function(test) {
     test.expect(2);
     // simulate view results with doc attribute
