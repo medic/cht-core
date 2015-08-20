@@ -225,23 +225,29 @@
             $('.status.no-forms').hide();
             $('#edit-report [name=facility]').select2('val', null);
 
-            $.ajax({
-              url: medic_config.app_root + '/api/v1/forms',
-              headers: { 'X-OpenRosa-Version':'1.0' },
-              success: function(xml) {
-                var i, xform,
-                    xforms = xml.getElementsByTagName('xform');
-                for(i=0; i<xforms.length; ++i) {
-                  xform = xforms[i];
-                  addFormToTable(xform.getElementsByTagName('formID')[0].textContent,
-                      xform.getElementsByTagName('name')[0].textContent);
-                }
-                formsVisible = xforms.length > 0;
-              },
-              complete: function() {
-                  $('.loading-forms').hide();
-                  if(!formsVisible) { $('.no-forms').show(); }
-              },
+            DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
+              _.forEach(res.rows, function(row) {
+                var formsVisible = false;
+                var xml = row.doc._attachments.xml;
+                if(!xml) { return; }
+                formsVisible = true;
+                // TODO parse XML to get form ID
+
+                DB.get().getAttachment(row.id, 'xml').then(function(xmlBlob) {
+                  var reader = new FileReader();
+                  reader.addEventListener('loadend', function() {
+                    var xml = reader.result, formInternalId, formTitle;
+                    xml = $.parseXML(xml);
+                    formInternalId = xml.evaluate('/h:html/h:head/*[2]/*[1]/*[1]/@id', xml, document.createNSResolver(xml), XPathResult.ANY_TYPE, null).iterateNext().value;
+                    formTitle = xml.evaluate('/h:html/h:head/h:title', xml, document.createNSResolver(xml), XPathResult.ANY_TYPE, null).iterateNext().textContent;
+                    addFormToTable(formInternalId, formTitle);
+                  });
+                  reader.readAsText(xmlBlob);
+                });
+              });
+
+              $('.loading-forms').hide();
+              if(!formsVisible) { $('.no-forms').show(); }
             });
           }());
         };
