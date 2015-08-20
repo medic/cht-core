@@ -118,40 +118,20 @@
 
                 $('#edit-report .form-wrapper').show();
 
-                // Process JavaRosa embedded media links in the form
-                // TODO we should already know the form ID - we shouldn't have
-                // to look it up here!
-                DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
-                  // find our form, so we can get hold of the attachments
-                  _.forEach(res.rows, function(row) {
-                    var xml = row.doc._attachments.xml;
-                    if(!xml) { return; }
-                    DB.get().getAttachment(row.id, 'xml').then(function(xmlBlob) {
-                      var reader = new FileReader();
-                      reader.addEventListener('loadend', function() {
-                        var xml = reader.result, id;
-                        xml = $.parseXML(xml);
-                        id = xml.evaluate('/h:html/h:head/*[2]/*[1]/*[1]/@id', xml, document.createNSResolver(xml), XPathResult.ANY_TYPE, null).iterateNext().value;
-                        if(id !== formName) { return; }
-                        console.log('Searching for media links to process...');
-                        $('#edit-report .form-wrapper').find('img,video,audio').each(function(i, e) {
-                          var src;
-                          e = $(e); src = e.attr('src');
-                          console.log('testing: ' + src);
-                          if(!(/^jr:\/\//.test(src))) { return; }
-                          console.log('should substitute image for ' + src);
-                          DB.get().getAttachment(row.id, src.substring(5)).then(function(imageBlob) {
-                            e.attr('src', (window.URL || window.webkitURL).createObjectURL(imageBlob));
-                          }).catch(function(err) {
-                            console.log('[enketo] error fetching media file', row, src, err);
-                          });
-                        });
-                      });
-                      reader.readAsText(xmlBlob);
+                withForm(formName, function(formDocId) {
+                  console.log('Searching for media links to process...');
+                  $('#edit-report .form-wrapper').find('img,video,audio').each(function(i, e) {
+                    var src;
+                    e = $(e); src = e.attr('src');
+                    console.log('testing: ' + src);
+                    if(!(/^jr:\/\//.test(src))) { return; }
+                    console.log('should substitute image for ' + src);
+                    DB.get().getAttachment(formDocId, src.substring(5)).then(function(imageBlob) {
+                      e.attr('src', (window.URL || window.webkitURL).createObjectURL(imageBlob));
+                    }).catch(function(err) {
+                      console.log('[enketo] error fetching media file', formDocId, src, err);
                     });
                   });
-                }).catch(function(err) {
-                  console.log('[enketo] failure fetching forms: ' + err);
                 });
               };
 
@@ -182,7 +162,7 @@
             return console.log('[enketo] processors are not ready');
           }
 
-          withFormXml(formInternalId, function(data) {
+          withForm(formInternalId, function(formDocId, data) {
             var doc = data,
                 html = processors.html.processor.transformToDocument(doc),
                 model = processors.model.processor.transformToDocument(doc);
@@ -194,7 +174,7 @@
           });
         };
 
-        var withFormXml = function(formInternalId, callback) {
+        var withForm = function(formInternalId, callback) {
           DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
             // find our form
             _.forEach(res.rows, function(row) {
@@ -207,7 +187,7 @@
                   xml = $.parseXML(xml);
                   id = xml.evaluate('/h:html/h:head/*[2]/*[1]/*[1]/@id', xml, document.createNSResolver(xml), XPathResult.ANY_TYPE, null).iterateNext().value;
                   if(id !== formInternalId) { return; }
-                  callback(xml);
+                  callback(row.id, xml);
                 });
                 reader.readAsText(xmlBlob);
               });
