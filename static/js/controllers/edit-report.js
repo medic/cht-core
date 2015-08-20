@@ -177,60 +177,60 @@
           processors.model.loaded = true;
         });
 
-        var loadForm = function(name, url, docId, formInstanceData) {
+        var loadForm = function(formInternalId, docId, formInstanceData) {
           if(!processors.html.loaded || !processors.model.loaded) {
             return console.log('[enketo] processors are not ready');
           }
 
-          $.ajax(url).done(function(data) {
+          withFormXml(formInternalId, function(data) {
             var doc = data,
                 html = processors.html.processor.transformToDocument(doc),
                 model = processors.model.processor.transformToDocument(doc);
 
-            showForm(docId, name,
+            showForm(docId, formInternalId,
                 html.documentElement.innerHTML,
                 model.documentElement.innerHTML,
                 formInstanceData);
           });
         };
 
-        var getFormUrl = function(formId) {
-          // TODO we should probably be (i) getting the forms from
-          // pouch directly, and (ii) storing the form by `formId`
-          // in the db, i.e. dosages.xml should be stored as frm:DSG
-          // In that case, this mapping would be unnecessary.  If we
-          // really wanted to keep this mapping in the short term,
-          // we can get a list of xforms from `api`, parse it, and
-          // do this id->filename lookup there.
-          var fileName = function() {
-            switch(formId) {
-              case 'DSG': return 'dosages';
-              case 'PNT': return 'treatments';
-              case 'PREG': return 'pregnancy';
-              case 'HH': return 'households';
-              case 'EDCD_H01': return 'hospital-survey';
-              case 'V': return 'visit-report';
-            }
-          };
-          return medic_config.app_root + '/api/v1/forms/' + fileName() + '.xml';
+        var withFormXml = function(formInternalId, callback) {
+          DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
+            // find our form
+            _.forEach(res.rows, function(row) {
+              var xml = row.doc._attachments.xml;
+              if(!xml) { return; }
+              DB.get().getAttachment(row.id, 'xml').then(function(xmlBlob) {
+                var reader = new FileReader();
+                reader.addEventListener('loadend', function() {
+                  var xml = reader.result, id;
+                  xml = $.parseXML(xml);
+                  id = xml.evaluate('/h:html/h:head/*[2]/*[1]/*[1]/@id', xml, document.createNSResolver(xml), XPathResult.ANY_TYPE, null).iterateNext().value;
+                  if(id !== formInternalId) { return; }
+                  callback(xml);
+                });
+                reader.readAsText(xmlBlob);
+              });
+            });
+          }).catch(function(err) {
+            console.log('[enketo] failure fetching forms: ' + err);
+          });
         };
 
-        var addFormToTable = function(id, name, url) {
-            $('#available-enketo-forms').append('<tr><td>' + name + '</td>' +
-                '<td><button class="btn btn-primary form-loader" onclick="loadXmlFrom(\'' + id + '\', \'' + url + '\')">load</button></td>' +
-                '</tr>');
-            };
+        var addFormToTable = function(id, name) {
+          $('#available-enketo-forms').append('<tr><td>' + name + '</td>' +
+              '<td><button class="btn btn-primary form-loader" onclick="loadXmlFrom(\'' + id + '\')">load</button></td>' +
+              '</tr>');
+        };
 
         window.loadFormFor = function(doc, dataContainerSelecter) {
-          var formData = $(dataContainerSelecter).text(),
-              formId = doc.form,
-              url = getFormUrl(formId);
-          loadForm(formId, url, doc._id, formData);
+          var formData = $(dataContainerSelecter).text();
+          loadForm(doc.form, doc._id, formData);
         };
 
-        window.loadXmlFrom = function(name, url) {
+        window.loadXmlFrom = function(name) {
           $('#create-report').modal('hide');
-          loadForm(name, url);
+          loadForm(name);
           $('#edit-report').modal('show');
         };
 
@@ -254,8 +254,7 @@
                 for(i=0; i<xforms.length; ++i) {
                   xform = xforms[i];
                   addFormToTable(xform.getElementsByTagName('formID')[0].textContent,
-                      xform.getElementsByTagName('name')[0].textContent,
-                      xform.getElementsByTagName('downloadUrl')[0].textContent);
+                      xform.getElementsByTagName('name')[0].textContent);
                 }
                 formsVisible = xforms.length > 0;
               },
