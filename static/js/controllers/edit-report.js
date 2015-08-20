@@ -197,9 +197,9 @@
           });
         };
 
-        var addFormToTable = function(id, name) {
+        var addFormToTable = function(formInternalId, name) {
           $('#available-enketo-forms').append('<tr><td>' + name + '</td>' +
-              '<td><button class="btn btn-primary form-loader" onclick="loadXmlFrom(\'' + id + '\')">load</button></td>' +
+              '<td><button class="btn btn-primary form-loader" onclick="loadXmlFrom(\'' + formInternalId + '\')">load</button></td>' +
               '</tr>');
         };
 
@@ -208,9 +208,9 @@
           loadForm(doc.form, doc._id, formData);
         };
 
-        window.loadXmlFrom = function(name) {
+        window.loadXmlFrom = function(formInternalId) {
           $('#create-report').modal('hide');
-          loadForm(name);
+          loadForm(formInternalId);
           $('#edit-report').modal('show');
         };
 
