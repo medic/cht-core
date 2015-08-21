@@ -4834,6 +4834,8 @@ var ExtendedXpathEvaluator = function(wrapped, extensions) {
             else if(op.t === '<=') res = lhs.v <= rhs.v;
             else if(op.t === '>=') res = lhs.v >= rhs.v;
             else if(op.t === '!=') res = lhs.v != rhs.v;
+            else if(op.t === '&') res = lhs.v && rhs.v;
+            else if(op.t === '|') res = lhs.v || rhs.v;
           }
 
           if(typeof res !== 'undefined' && res !== null) {
@@ -4938,6 +4940,12 @@ var ExtendedXpathEvaluator = function(wrapped, extensions) {
                 newCurrent();
               } else if(cur.v === 'div') {
                 peek().tokens.push({ t:'/' });
+                newCurrent();
+              } else if(cur.v === 'and') {
+                peek().tokens.push({ t:'&' });
+                newCurrent();
+              } else if(cur.v === 'or') {
+                peek().tokens.push({ t:'|' });
                 newCurrent();
               } else if(cur.v === '&lt;') {
                 peek().tokens.push({ t:'<' });
