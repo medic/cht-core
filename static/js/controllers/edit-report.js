@@ -21,7 +21,7 @@
           return;
         }
         var form = $scope.report_form.form,
-            formName = $scope.report_form.formName,
+            formInternalId = $scope.report_form.formInternalId,
             docId = $scope.report_form.docId,
             $modal = $('#edit-report'),
             facilityId = $modal.find('[name=facility]').val();
@@ -72,7 +72,7 @@
                 content: record,
                 fields: recordToJs(record),
                 contact: facility,
-                form: formName,
+                form: formInternalId,
                 type: 'data_record',
                 from: facility? facility.phone: '',
                 reported_date: Date.now(),
@@ -109,7 +109,7 @@
               init = function() {
                 var loadErrors;
                 // TODO check if it's OK to attach to `$scope` like this
-                $scope.report_form = { formName:formInternalId, docId:docId };
+                $scope.report_form = { formInternalId:formInternalId, docId:docId };
                 $scope.report_form.form = form = new EnketoForm('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData });
                 loadErrors = form.init();
                 if(loadErrors && loadErrors.length) {
@@ -194,8 +194,8 @@
           });
         };
 
-        var addFormToTable = function(formInternalId, name) {
-          $('#available-enketo-forms').append('<tr><td>' + name + '</td>' +
+        var addFormToTable = function(formInternalId, title) {
+          $('#available-enketo-forms').append('<tr><td>' + title + '</td>' +
               '<td><button class="btn btn-primary form-loader" onclick="loadXmlFrom(\'' + formInternalId + '\')">load</button></td>' +
               '</tr>');
         };
