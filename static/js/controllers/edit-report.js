@@ -231,8 +231,8 @@
                 var xml = row.doc._attachments.xml;
                 if(!xml) { return; }
                 formsVisible = true;
-                // TODO parse XML to get form ID
-
+                // TODO read formInternalId and formTitle direct from the doc once
+                // this data is denormalized from the XML at upload time
                 DB.get().getAttachment(row.id, 'xml').then(function(xmlBlob) {
                   var reader = new FileReader();
                   reader.addEventListener('loadend', function() {
