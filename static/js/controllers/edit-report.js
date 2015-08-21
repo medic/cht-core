@@ -1,8 +1,8 @@
 (function () {
   'use strict';
   angular.module('inboxControllers').controller('EditReportCtrl',
-    ['$scope', 'DB',
-    function ($scope, DB) {
+    ['$scope', 'DB', 'DbNameService',
+    function ($scope, DB, DbNameService) {
       function recordToJs(record) {
         var i, n, fields = {},
             data = $.parseXML(record).firstChild.childNodes;
@@ -99,10 +99,6 @@
 
       (function constructor() {
         /* globals EnketoForm, XSLTProcessor */
-        var medic_config = {
-          enketo_root: window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname) + '/_design/medic/static/dist/enketo',
-        };
-
         var showForm = function(docId, formInternalId, formHtml, formModel, formData) {
           var form, formContainer, formWrapper,
               init = function() {
@@ -144,27 +140,30 @@
           init();
         };
 
-        var processors = {
-          html: { processor:new XSLTProcessor() },
-          model: { processor:new XSLTProcessor() } };
-        $.get(medic_config.enketo_root + '/forms/openrosa2html5form.xsl').done(function(doc) {
-          processors.html.processor.importStylesheet(doc);
-          processors.html.loaded = true;
-        });
-        $.get(medic_config.enketo_root + '/forms/openrosa2xmlmodel.xsl').done(function(doc) {
-          processors.model.processor.importStylesheet(doc);
-          processors.model.loaded = true;
-        });
+        var processors = {};
+        (function initProcessors() {
+          var enketo_root = '/' + DbNameService() + '/_design/medic/static/dist/enketo';
+          $.get(enketo_root + '/forms/openrosa2html5form.xsl').done(function(doc) {
+            var processor = new XSLTProcessor();
+            processor.importStylesheet(doc);
+            processors.html = processor;
+          });
+          $.get(enketo_root + '/forms/openrosa2xmlmodel.xsl').done(function(doc) {
+            var processor = new XSLTProcessor();
+            processor.importStylesheet(doc);
+            processors.model = processor;
+          });
+        }());
 
         var loadForm = function(formInternalId, docId, formInstanceData) {
-          if(!processors.html.loaded || !processors.model.loaded) {
+          if(!processors.html || !processors.model) {
             return console.log('[enketo] processors are not ready');
           }
 
           withFormByFormInternalId(formInternalId, function(formDocId, data) {
             var doc = data,
-                html = processors.html.processor.transformToDocument(doc),
-                model = processors.model.processor.transformToDocument(doc);
+                html = processors.html.transformToDocument(doc),
+                model = processors.model.transformToDocument(doc);
 
             showForm(docId, formInternalId,
                 html.documentElement.innerHTML,
