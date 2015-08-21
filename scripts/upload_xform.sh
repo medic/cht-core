@@ -29,6 +29,21 @@ if [ ! -f "$XFORM_PATH" ]; then
     exit 1
 fi
 
+echo "[$SELF] parsing XML to get form title and internal ID..."
+# Yeah, it's ugly.  But we control the input.
+formTitle="$(grep h:title $XFORM_PATH | sed -E -e 's_.*<h:title>(.*)</h:title>.*_\1_')"
+formInternalId="$(grep -E '<'"$ID"'( .*)? id="[^"]+" .*' $XFORM_PATH | sed -E -e 's_.*id="([^"]+)".*_\1_')"
+
+cat <<EOF
+[$SELF] -----
+[$SELF] Summary
+[$SELF]   reading from: $XFORM_PATH
+[$SELF]   doc ID: form:$ID
+[$SELF]   form title: $formTitle
+[$SELF]   form internal ID: $formInternalId
+[$SELF] -----
+EOF
+
 check_rev() {
     # exit if we don't see a rev property
     if [ -z "$rev" ] || [ "$rev" = "null" ]; then
@@ -37,12 +52,16 @@ check_rev() {
     fi
 }
 
-revResponse=$(curl -s -H "Content-Type: application/json" -X PUT -d '{"type":"form"}' "$DB/form:${ID}")
+revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d '{
+    "type":"form",
+    "title":"'"${formTitle}"'",
+    "internalId":"'"${formInternalId}"'"
+}' "$DB/form:${ID}")
 rev=$(jq -r .rev <<< "$revResponse")
 check_rev
 
 echo "[$SELF] Uploading form: $ID..."
-revResponse=$(curl -f -X PUT -H "Content-Type: text/xml" \
+revResponse=$(curl -# -f -X PUT -H "Content-Type: text/xml" \
     --data-binary "@${XFORM_PATH}" \
     "${DB}/form:${ID}/xml?rev=${rev}")
 rev=$(jq -r .rev <<< "$revResponse")
@@ -51,7 +70,7 @@ while [ $# -gt 0 ]; do
     attachment="$1"
     shift
     echo "[$SELF] Uploading media attachment: $attachment..."
-    revResponse=$(curl -f -X PUT -H "Content-Type: text/xml" \
+    revResponse=$(curl -# -f -X PUT -H "Content-Type: text/xml" \
             --data-binary "@${attachment}" \
             "${DB}/form:${ID}/${attachment}?rev=${rev}")
     rev=$(jq -r .rev <<< "$revResponse")
