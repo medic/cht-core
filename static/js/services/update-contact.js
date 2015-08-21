@@ -10,7 +10,12 @@ var async = require('async');
     function(DB, ClearFacilityCache) {
 
       var updateDoc = function(doc, updates) {
-        return DB.get().put(_.extend(doc, updates));
+        var updated = _.extend(doc || {}, updates);
+        if (updated._id) {
+          return DB.get().put(updated);
+        } else {
+          return DB.get().post(updated);
+        }
       };
 
       var updateChildren = function(parent, callback) {

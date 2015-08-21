@@ -4,14 +4,16 @@ describe('UpdateContact service', function() {
 
   var service,
       query,
+      post,
       put;
 
   beforeEach(function() {
     query = sinon.stub();
     put = sinon.stub();
+    post = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.factory('DB', KarmaUtils.mockDB({ put: put, query: query }));
+      $provide.factory('DB', KarmaUtils.mockDB({ put: put, post: post, query: query }));
       $provide.factory('ClearFacilityCache', function() {
         return function() {};
       });
@@ -22,11 +24,11 @@ describe('UpdateContact service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(query, put);
+    KarmaUtils.restore(query, put, post);
   });
 
   it('returns save errors', function(done) {
-    var doc = { name: 'juan' };
+    var doc = { _id: 1, name: 'juan' };
     put.returns(KarmaUtils.mockPromise('boom'));
     service(null, doc, function(err) {
       chai.expect(err).to.equal('boom');
@@ -38,11 +40,11 @@ describe('UpdateContact service', function() {
   it('adds a new doc', function(done) {
     var doc = { name: 'juan' };
     var expected = { _id: 1, _rev: 1, name: 'juan' };
-    put.returns(KarmaUtils.mockPromise(null, { _id: 1, _rev: 1 }));
+    post.returns(KarmaUtils.mockPromise(null, { _id: 1, _rev: 1 }));
     service(null, doc, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal(expected);
-      chai.expect(put.calledOnce).to.equal(true);
+      chai.expect(post.calledOnce).to.equal(true);
       done();
     });
   });
