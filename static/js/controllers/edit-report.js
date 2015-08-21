@@ -178,15 +178,12 @@
           DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
             // find our form
             _.forEach(res.rows, function(row) {
-              var xml = row.doc._attachments.xml;
-              if(!xml) { return; }
+              if(!row.doc._attachments.xml) { return; }
+              if(row.doc.internalId !== formInternalId) { return; }
               DB.get().getAttachment(row.id, 'xml').then(function(xmlBlob) {
                 var reader = new FileReader();
                 reader.addEventListener('loadend', function() {
-                  var xml = reader.result, id;
-                  xml = $.parseXML(xml);
-                  id = xml.evaluate('/h:html/h:head/*[2]/*[1]/*[1]/@id', xml, document.createNSResolver(xml), XPathResult.ANY_TYPE, null).iterateNext().value;
-                  if(id !== formInternalId) { return; }
+                  var xml = $.parseXML(reader.result);
                   callback(row.id, xml);
                 });
                 reader.readAsText(xmlBlob);
@@ -231,19 +228,7 @@
                 var xml = row.doc._attachments.xml;
                 if(!xml) { return; }
                 formsVisible = true;
-                // TODO read formInternalId and formTitle direct from the doc once
-                // this data is denormalized from the XML at upload time
-                DB.get().getAttachment(row.id, 'xml').then(function(xmlBlob) {
-                  var reader = new FileReader();
-                  reader.addEventListener('loadend', function() {
-                    var xml = reader.result, formInternalId, formTitle;
-                    xml = $.parseXML(xml);
-                    formInternalId = xml.evaluate('/h:html/h:head/*[2]/*[1]/*[1]/@id', xml, document.createNSResolver(xml), XPathResult.ANY_TYPE, null).iterateNext().value;
-                    formTitle = xml.evaluate('/h:html/h:head/h:title', xml, document.createNSResolver(xml), XPathResult.ANY_TYPE, null).iterateNext().textContent;
-                    addFormToTable(formInternalId, formTitle);
-                  });
-                  reader.readAsText(xmlBlob);
-                });
+                addFormToTable(row.doc.internalId, row.doc.title);
               });
 
               $('.loading-forms').hide();
