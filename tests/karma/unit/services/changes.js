@@ -4,10 +4,11 @@ describe('Changes service', function() {
 
   var service,
       changesCallback,
-      changesCount,
-      filter;
+      changesCount;
 
   beforeEach(function () {
+    changesCallback = undefined;
+    changesCount = 0;
     module('inboxApp');
     module(function ($provide) {
       $provide.value('DB', {
@@ -28,16 +29,13 @@ describe('Changes service', function() {
     inject(function(_Changes_) {
       service = _Changes_;
     });
-    changesCallback = undefined;
-    changesCount = 0;
-    filter = 'medic/data_records';
   });
 
   it('calls the callback', function(done) {
 
     var expected = { id: 'x' };
 
-    service(function(actual) {
+    service('test', function(actual) {
       chai.expect(actual).to.equal(expected);
       chai.expect(changesCount).to.equal(1);
       done();
@@ -46,15 +44,15 @@ describe('Changes service', function() {
     changesCallback(expected);
   });
 
-  it('calls the most recent callback with no key only', function(done) {
+  it('calls the most recent callback only', function(done) {
 
     var expected = { id: 'x' };
 
-    service(function() {
+    service('test', function() {
       chai.expect(false).to.equal(true);
     });
 
-    service(function(actual) {
+    service('test', function(actual) {
       chai.expect(actual).to.equal(expected);
       chai.expect(changesCount).to.equal(1);
       done();
@@ -68,12 +66,11 @@ describe('Changes service', function() {
     var expected = { id: 'x' };
     var results = { key1: [], key2: [] };
 
-    service({ key: 'key1' }, function(actual) {
+    service('key1', function(actual) {
       results.key1.push(actual);
     });
 
-
-    service({ key: 'key2' }, function(actual) {
+    service('key2', function(actual) {
       results.key2.push(actual);
     });
 
@@ -90,7 +87,7 @@ describe('Changes service', function() {
 
   it('no results is ignored', function(done) {
 
-    service(function() {
+    service('test', function() {
       chai.expect(false).to.equal(true);
     });
 
@@ -99,17 +96,4 @@ describe('Changes service', function() {
     done();
   });
 
-  it('passes through the filter', function(done) {
-
-    var expected = { id: 'x' };
-    filter = 'medic/ddoc';
-
-    service({ filter: filter }, function(actual) {
-      chai.expect(actual).to.equal(expected);
-      chai.expect(changesCount).to.equal(1);
-      done();
-    });
-
-    changesCallback(expected);
-  });
 });

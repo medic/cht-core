@@ -39,9 +39,10 @@
         }
       });
 
-      Changes({ key: 'messages-list' }, function(data) {
-        if ($scope.filterModel.type === 'messages') {
-          updateContacts({ changes: data });
+      Changes('messages-list', function(change) {
+        if ($scope.filterModel.type === 'messages' &&
+            _.findWhere($scope.items, { _id: change.id })) {
+          updateContacts({ changes: true });
         }
       });
 

@@ -125,12 +125,6 @@ var _ = require('underscore'),
             return console.log('Error loading messages', err);
           }
 
-          if (options.changes && options.changes.doc._id === $state.params.id) {
-            FormatDataRecord(options.changes.doc).then(function(formatted) {
-              $scope.setSelected(formatted[0]);
-            });
-          }
-
           FormatDataRecord(data)
             .then(function(data) {
               $scope.loading = false;
@@ -138,25 +132,16 @@ var _ = require('underscore'),
               $scope.error = false;
               $scope.errorSyntax = false;
               $scope.update(data);
-              if (!options.changes) {
-                $scope.moreItems = data.length >= options.limit;
-                if (!options.skip) {
-                  if (!data.length) {
-                    $scope.selectMessage();
-                  } else {
-                    var curr = _.find(data, function(result) {
-                      return result._id === $state.params.id;
-                    });
-                    if (curr) {
-                      $scope.setSelected(curr);
-                    } else if (!$('#back').is(':visible')) {
-                      $timeout(function() {
-                        var id = $('.inbox-items li').first().attr('data-record-id');
-                        $state.go('reports.detail', { id: id });
-                      });
-                    }
-                  }
-                }
+              var curr = _.find(data, function(result) {
+                return result._id === $state.params.id;
+              });
+              if (curr) {
+                $scope.setSelected(curr);
+              } else if (!$('#back').is(':visible') && !options.changes) {
+                $timeout(function() {
+                  var id = $('.inbox-items li').first().attr('data-record-id');
+                  $state.go('reports.detail', { id: id });
+                });
               }
               _initScroll();
             })
@@ -181,9 +166,10 @@ var _ = require('underscore'),
         });
       };
 
-      Changes({ key: 'reports-list' }, function(data) {
-        if ($scope.filterModel.type === 'reports') {
-          $scope.query({ silent: true, changes: data });
+      Changes('reports-list', function(change) {
+        if ($scope.filterModel.type === 'reports' &&
+            _.findWhere($scope.items, { _id: change.id })) {
+          $scope.query({ silent: true, changes: true });
         }
       });
 

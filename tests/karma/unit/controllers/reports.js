@@ -86,7 +86,7 @@ describe('ReportsCtrl controller', function() {
 
   it('updated reports when changed', function() {
 
-    var changes = { doc :{ id: 'a' } };
+    var change = { id: 'a' };
 
     scope.items = [
       {
@@ -113,7 +113,7 @@ describe('ReportsCtrl controller', function() {
     };
     
     createController();
-    changesCallback(changes);
+    changesCallback(change);
     chai.expect(scope.items).to.deep.equal([
       {
         _id: 'a',

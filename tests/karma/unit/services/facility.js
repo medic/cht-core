@@ -6,11 +6,14 @@ describe('Facility service', function() {
       viewErr,
       viewResults;
 
-  beforeEach(function (){
+  beforeEach(function() {
     module('inboxApp');
-    module(function ($provide) {
+    module(function($provide) {
       $provide.value('DbView', function(name, options, callback) {
         return callback(viewErr, viewResults);
+      });
+      $provide.value('Cache', function(getResult) {
+        return getResult;
       });
     });
     inject(function($injector) {
@@ -21,7 +24,7 @@ describe('Facility service', function() {
 
   it('returns errors from request', function(done) {
     viewErr = 'boom';
-    service(function(err) {
+    service({}, function(err) {
       chai.expect(err).to.equal('boom');
       done();
     });
@@ -29,7 +32,7 @@ describe('Facility service', function() {
 
   it('returns zero when no facilities', function(done) {
     viewResults = [];
-    service(function(err, actual) {
+    service({}, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([]);
       done();

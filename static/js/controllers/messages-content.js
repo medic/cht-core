@@ -90,13 +90,6 @@ var _ = require('underscore'),
         var selectedId = $scope.selected && $scope.selected.id;
         if (selectedId) {
           options = options || {};
-          if (options.changes && options.changes.deleted) {
-            for (var i = $scope.selected.messages.length - 1; i >= 0; i--) {
-              if ($scope.selected.messages[i].id === options.changes.id) {
-                $scope.selected.messages.splice(i, 1);
-              }
-            }
-          }
           var opts = { id: selectedId };
           if (options.skip) {
             opts.skip = $scope.selected.messages.length;
@@ -157,8 +150,11 @@ var _ = require('underscore'),
         });
       };
 
-      Changes({ key: 'messages-content' }, function(data) {
-        updateContact({ changes: data });
+      Changes('messages-content', function(change) {
+        if ($scope.filterModel.type === 'messages' &&
+            change.id === ($scope.selected && $scope.selected.id)) {
+          updateContact({ changes: true });
+        }
       });
 
       $('.tooltip').remove();

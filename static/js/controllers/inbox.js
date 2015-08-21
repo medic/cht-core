@@ -21,7 +21,6 @@ require('moment/locales');
 
       Session.init();
       DBSync();
-      ConflictResolution();
       feedback.init(
         function(doc, callback) {
           DB.get()
@@ -811,8 +810,10 @@ require('moment/locales');
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
           showUpdateReady();
         }
-        Changes({ key: 'appcache', id: '_design/medic' }, function() {
-          window.applicationCache.update();
+        Changes('appcache', function(change) {
+          if (change.id === '_design/medic') {
+            window.applicationCache.update();
+          }
         });
       }
 

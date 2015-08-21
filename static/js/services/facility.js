@@ -28,14 +28,15 @@ var _ = require('underscore');
     }
   ]);
 
-  inboxServices.factory('Facility', ['DbView',
-    function(DbView) {
+  inboxServices.factory('Facility', ['DbView', 'Cache',
+    function(DbView, Cache) {
+
+      var cache = Cache(function(callback) {
+        DbView('facilities', { params: { include_docs: true } }, callback);
+      });
+
       return function(options, callback) {
-        if (!callback) {
-          callback = options;
-          options = {};
-        }
-        DbView('facilities', { params: { include_docs: true } }, function(err, res) {
+        cache(function(err, res) {
           if (err) {
             return callback(err);
           }

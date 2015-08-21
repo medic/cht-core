@@ -7,15 +7,26 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Settings', ['DB',
-    function(DB) {
-      return function(callback) {
+  inboxServices.factory('Settings', ['DB', 'Cache',
+    function(DB, Cache) {
+
+      var cache = Cache(function(callback) {
         DB.get()
           .get('medic-settings')
           .then(function(doc) {
-            callback(null, _.defaults(doc.app_settings, defaults));
+            callback(null, doc);
           }).catch(callback);
+      });
+
+      return function(callback) {
+        cache(function(err, doc) {
+          if (err) {
+            return callback(err);
+          }
+          callback(null, _.defaults(doc.app_settings, defaults));
+        }); 
       };
+
     }
   ]);
 

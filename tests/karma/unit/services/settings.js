@@ -8,8 +8,11 @@ describe('Settings service', function() {
   beforeEach(function() {
     get = sinon.stub();
     module('inboxApp');
-    module(function ($provide) {
+    module(function($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
+      $provide.value('Cache', function(getResult) {
+        return getResult;
+      });
     });
     inject(function($injector) {
       service = $injector.get('Settings');
