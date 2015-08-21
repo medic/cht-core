@@ -30,7 +30,7 @@ inside Enketo Smart Paper.
     xmlns:ev="http://www.w3.org/2001/xml-events" 
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:jr="http://openrosa.org/javarosa" 
-    version="1.0"
+    version="2.0"
     >
     <xsl:output method="xml" indent="yes" omit-xml-declaration="yes" version="1.0" encoding="UTF-8" />
 

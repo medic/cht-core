@@ -1050,39 +1050,29 @@ XSLT Stylesheet that transforms OpenRosa style (X)Forms into valid HTMl5 forms
                 </xsl:if>
             </xsl:for-each>
             <!-- media labels in document order -->
-            <xsl:for-each select="./xf:value[@form = 'image' or @form = 'video' or @form = 'audio' and not($class = 'or-hint')]" >
+            <xsl:for-each select="./xf:value[@form = 'image' or @form = 'big-image' or @form = 'video' or @form = 'audio' and not($class = 'or-hint')]" >
                 <xsl:choose>
                     <xsl:when test="@form = 'image'" >
-                        <!-- add empty span for option-labels that have no text, just an image, to support the new radio buttons and checkboxes -->
-                        <xsl:if test="$notext = 'true'" >
-                            <span>
-                                <xsl:attribute name="lang">
-                                    <xsl:value-of select="$lang"/>
+                        <!-- test if there is a sibling big-image -->
+                        <xsl:if test="../xf:value[@form = 'big-image']" >
+                            <a>
+                                <xsl:attribute name="href">
+                                    <xsl:value-of select="../xf:value[@form = 'big-image']"/>
                                 </xsl:attribute>
-                                <xsl:attribute name="class">
-                                    <xsl:value-of select="'option-label '"/>
-                                    <xsl:if test="string($active)">
-                                        <xsl:value-of select="$active"/>
-                                    </xsl:if>
-                                </xsl:attribute>
-                                <xsl:text>
-                                </xsl:text>
-                            </span>
+                                <xsl:call-template name="image">
+                                    <xsl:with-param name="active" select="$active"/>
+                                    <xsl:with-param name="notext" select="$notext"/>
+                                    <xsl:with-param name="lang" select="$lang"/>
+                                </xsl:call-template>
+                            </a>
                         </xsl:if>
-                        <img>
-                            <xsl:attribute name="lang">
-                                <xsl:value-of select="$lang"/>
-                            </xsl:attribute>
-                            <xsl:if test="string($active)">
-                                <xsl:attribute name="class">
-                                    <xsl:value-of select="$active" />
-                                </xsl:attribute>
-                            </xsl:if>
-                            <xsl:attribute name="src">
-                                <xsl:value-of select="." />
-                            </xsl:attribute>
-                            <xsl:attribute name="alt">image</xsl:attribute>
-                        </img>
+                        <xsl:if test="not(../xf:value[@form = 'big-image'])" > <!-- TODO when/otherwise never works for me :-( -->
+                            <xsl:call-template name="image">
+                                <xsl:with-param name="active" select="$active"/>
+                                <xsl:with-param name="notext" select="$notext"/>
+                                <xsl:with-param name="lang" select="$lang"/>
+                            </xsl:call-template>
+                        </xsl:if>
                     </xsl:when>
                     <xsl:when test="@form = 'audio'">
                         <audio controls="controls">
@@ -1248,6 +1238,41 @@ XSLT Stylesheet that transforms OpenRosa style (X)Forms into valid HTMl5 forms
         <xsl:value-of select="$newpath" />
     </xsl:template>-->
     
+    <xsl:template name="image">
+        <xsl:param name="active"/>
+        <xsl:param name="notext" />
+        <xsl:param name="lang"/>
+         <!-- add empty span for option-labels that have no text, just an image, to support the new radio buttons and checkboxes -->
+         <xsl:if test="$notext = 'true'" >
+             <span>
+                 <xsl:attribute name="lang">
+                     <xsl:value-of select="$lang"/>
+                 </xsl:attribute>
+                 <xsl:attribute name="class">
+                     <xsl:value-of select="'option-label '"/>
+                     <xsl:if test="string($active)">
+                         <xsl:value-of select="$active"/>
+                     </xsl:if>
+                 </xsl:attribute>
+                 <xsl:text>
+                 </xsl:text>
+             </span>
+         </xsl:if>
+         <img>
+             <xsl:attribute name="lang">
+                 <xsl:value-of select="$lang"/>
+             </xsl:attribute>
+             <xsl:if test="string($active)">
+                 <xsl:attribute name="class">
+                     <xsl:value-of select="$active" />
+                 </xsl:attribute>
+             </xsl:if>
+             <xsl:attribute name="src">
+                 <xsl:value-of select="." />
+             </xsl:attribute>
+             <xsl:attribute name="alt">image</xsl:attribute>
+         </img>
+    </xsl:template>
 
     <xsl:template name="nodeset_used">
         <xsl:choose>
