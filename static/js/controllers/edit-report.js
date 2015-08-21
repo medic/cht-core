@@ -222,7 +222,6 @@
 
             DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
               _.forEach(res.rows, function(row) {
-                var formsVisible = false;
                 var xml = row.doc._attachments.xml;
                 if(!xml) { return; }
                 formsVisible = true;
@@ -230,7 +229,7 @@
               });
 
               $('.loading-forms').hide();
-              if(!formsVisible) { $('.no-forms').show(); }
+              if(!formsVisible) { $('.status.no-forms').show(); }
             });
           }());
         };
