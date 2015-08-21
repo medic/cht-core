@@ -100,7 +100,6 @@
       (function constructor() {
         /* globals EnketoForm, XSLTProcessor */
         var medic_config = {
-          app_root:    window.location.protocol + '//' + window.location.host,
           enketo_root: window.location.protocol + '//' + window.location.host + /^\/[^\/]+/.exec(window.location.pathname) + '/_design/medic/static/dist/enketo',
         };
 
