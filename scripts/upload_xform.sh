@@ -32,7 +32,7 @@ fi
 echo "[$SELF] parsing XML to get form title and internal ID..."
 # Yeah, it's ugly.  But we control the input.
 formTitle="$(grep h:title $XFORM_PATH | sed -E -e 's_.*<h:title>(.*)</h:title>.*_\1_')"
-formInternalId="$(grep -E '<'"$ID"'( .*)? id="[^"]+" .*' $XFORM_PATH | sed -E -e 's_.*id="([^"]+)".*_\1_')"
+formInternalId="$(grep -E 'id="[^"]+"' $XFORM_PATH | head -n1 | sed -E -e 's_.*id="([^"]+)".*_\1_')"
 
 cat <<EOF
 [$SELF] -----
