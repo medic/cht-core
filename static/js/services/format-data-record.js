@@ -10,9 +10,6 @@ var _ = require('underscore'),
   inboxServices.factory('FormatDataRecord', ['AppInfo', 'Language',
     function(AppInfo, Language) {
       return function(docs) {
-        if (!docs) {
-          return;
-        }
         return Promise.all([ AppInfo(), Language() ])
           .then(function(results) {
             if (!_.isArray(docs)) {
