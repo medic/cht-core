@@ -102,6 +102,7 @@ var DEFAULT_PERMISSIONS = [
   {
     name: 'can_view_tasks',
     roles: [
+      'national_admin'
     ]
   },
   {
