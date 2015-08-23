@@ -165,6 +165,7 @@ module.exports = {
     {
       "name": "can_view_tasks",
       "roles": [
+        "national_admin"
       ]
     },
     {
