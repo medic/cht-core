@@ -39,7 +39,17 @@ var nools = require('nools'),
       };
 
       var getDataRecords = function(callback) {
-        var scope = { filterModel: { type: 'reports', forms: [ ], date: {}, facilities: [] }, filterQuery: '', forms: [ ] };
+        var scope = {
+          filterModel: {
+            type: 'reports',
+            valid: true,
+            forms: [],
+            date: {},
+            facilities: []
+          },
+          filterQuery: '',
+          forms: [ ]
+        };
         var options = { limit: 99999999 };
         Search(scope, options, callback);
       };
