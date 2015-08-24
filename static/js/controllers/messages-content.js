@@ -150,10 +150,15 @@ var _ = require('underscore'),
         });
       };
 
-      Changes('messages-content', function(change) {
-        if ($scope.filterModel.type === 'messages' &&
-            change.id === ($scope.selected && $scope.selected.id)) {
+      Changes({
+        key: 'messages-content',
+        callback: function() {
           updateContact({ changes: true });
+        },
+        filter: function(change) {
+          return $scope.filterModel.type === 'messages' &&
+            $scope.selected &&
+            $scope.selected.id === change.id;
         }
       });
 

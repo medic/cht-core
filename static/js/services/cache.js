@@ -11,23 +11,29 @@ var _ = require('underscore');
 
       var caches = [];
 
-      Changes('cache', function(change) {
-        var newRecord = change.changes[0].rev.indexOf('1-') === 0;
-        caches.forEach(function(cache) {
-          if (newRecord || _.some(cache.docs, function(doc) {
-            return doc._id === change.id;
-          })) {
-            cache.docs = null;
-            cache.pending = false;
-          }
-        });
+      var contains = function(cache, change) {
+        return _.findWhere(cache.docs, { _id: change.id });
+      };
+
+      Changes({
+        key: 'cache',
+        callback: function(change) {
+          caches.forEach(function(cache) {
+            if ((change.newDoc && (!cache.filter || cache.filter(change.newDoc))) ||
+                (!change.newDoc && contains(cache, change))) {
+              cache.docs = null;
+              cache.pending = false;
+            }
+          });
+        }
       });
 
-      return function(getResult) {
+      return function(options) {
 
         var cache = {
           docs: null,
           pending: false,
+          filter: options.filter,
           callbacks: []
         };
 
@@ -42,7 +48,7 @@ var _ = require('underscore');
             return;
           }
           cache.pending = true;
-          getResult(function(err, result) {
+          options.get(function(err, result) {
             cache.pending = false;
             if (!err) {
               cache.docs = result;

@@ -10,12 +10,17 @@ var _ = require('underscore'),
   inboxServices.factory('Settings', ['DB', 'Cache',
     function(DB, Cache) {
 
-      var cache = Cache(function(callback) {
-        DB.get()
-          .get('medic-settings')
-          .then(function(doc) {
-            callback(null, doc);
-          }).catch(callback);
+      var cache = Cache({
+        get: function(callback) {
+          DB.get()
+            .get('medic-settings')
+            .then(function(doc) {
+              callback(null, doc);
+            }).catch(callback);
+        },
+        filter: function(doc) {
+          return doc._id === 'medic-settings';
+        }
       });
 
       return function(callback) {

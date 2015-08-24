@@ -810,9 +810,11 @@ require('moment/locales');
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
           showUpdateReady();
         }
-        Changes('appcache', function(change) {
-          if (change.id === '_design/medic') {
-            window.applicationCache.update();
+        Changes({
+          key: 'appcache',
+          callback: window.applicationCache.update,
+          filter: function(change) {
+            return change.id === '_design/medic';
           }
         });
       }

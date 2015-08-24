@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    types = [ 'district_hospital', 'catchment_area', 'health_center', 'person' ];
 
 (function () {
 
@@ -9,8 +10,13 @@ var _ = require('underscore');
   inboxServices.factory('Facility', ['DbView', 'Cache',
     function(DbView, Cache) {
 
-      var cache = Cache(function(callback) {
-        DbView('facilities', { params: { include_docs: true } }, callback);
+      var cache = Cache({
+        get: function(callback) {
+          DbView('facilities', { params: { include_docs: true } }, callback);
+        },
+        filter: function(doc) {
+          return _.contains(types, doc.type);
+        }
       });
 
       return function(options, callback) {

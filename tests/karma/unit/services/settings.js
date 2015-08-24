@@ -10,8 +10,8 @@ describe('Settings service', function() {
     module('inboxApp');
     module(function($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
-      $provide.value('Cache', function(getResult) {
-        return getResult;
+      $provide.value('Cache', function(options) {
+        return options.get;
       });
     });
     inject(function($injector) {

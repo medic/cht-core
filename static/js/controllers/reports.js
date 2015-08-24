@@ -166,10 +166,19 @@ var _ = require('underscore'),
         });
       };
 
-      Changes('reports-list', function(change) {
-        if ($scope.filterModel.type === 'reports' &&
-            _.findWhere($scope.items, { _id: change.id })) {
+      Changes({
+        key: 'reports-list',
+        callback: function() {
           $scope.query({ silent: true, changes: true });
+        },
+        filter: function(change) {
+          if ($scope.filterModel.type !== 'reports') {
+            return false;
+          }
+          if (change.newDoc) {
+            return change.newDoc.form;
+          }
+          return _.findWhere($scope.items, { _id: change.id });
         }
       });
 

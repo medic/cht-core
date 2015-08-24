@@ -12,8 +12,8 @@ describe('Facility service', function() {
       $provide.value('DbView', function(name, options, callback) {
         return callback(viewErr, viewResults);
       });
-      $provide.value('Cache', function(getResult) {
-        return getResult;
+      $provide.value('Cache', function(options) {
+        return options.get;
       });
     });
     inject(function($injector) {

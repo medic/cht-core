@@ -39,10 +39,19 @@
         }
       });
 
-      Changes('messages-list', function(change) {
-        if ($scope.filterModel.type === 'messages' &&
-            _.findWhere($scope.items, { _id: change.id })) {
+      Changes({
+        key: 'messages-list',
+        callback: function() {
           updateContacts({ changes: true });
+        },
+        filter: function(change) {
+          if ($scope.filterModel.type !== 'messages') {
+            return false;
+          }
+          if (change.newDoc) {
+            return change.newDoc.kujua_message || change.newDoc.sms_message;
+          }
+          return _.findWhere($scope.items, { _id: change.id });
         }
       });
 

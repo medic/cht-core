@@ -8,8 +8,8 @@ describe('Cache service', function() {
   beforeEach(function() {
     module('inboxApp');
     module(function($provide) {
-      $provide.value('Changes', function(key, callback) {
-        changesCallback = callback;
+      $provide.value('Changes', function(options) {
+        changesCallback = options.callback;
       });
     });
     inject(function($injector) {
@@ -18,9 +18,9 @@ describe('Cache service', function() {
   });
 
   it('returns errors from get', function(done) {
-    service(function(callback) {
+    service({ get: function(callback) {
       callback('boom');
-    })(function(err) {
+    }})(function(err) {
       chai.expect(err).to.equal('boom');
       done();
     });
@@ -28,9 +28,9 @@ describe('Cache service', function() {
 
   it('returns results from get', function(done) {
     var docs = [ { _id: 1 } ];
-    service(function(callback) {
+    service({ get: function(callback) {
       callback(null, docs);
-    })(function(err, results) {
+    }})(function(err, results) {
       chai.expect(err).to.equal(null);
       chai.expect(results).to.deep.equal(docs);
       done();
@@ -41,9 +41,9 @@ describe('Cache service', function() {
     var docs = [ { _id: 1 } ];
     var callback;
     var count = 0;
-    var cache = service(function(_callback) {
+    var cache = service({ get: function(_callback) {
       callback = _callback;
-    });
+    }});
     var ass = function(err, results) {
       chai.expect(err).to.equal(null);
       chai.expect(results).to.deep.equal(docs);
@@ -61,9 +61,9 @@ describe('Cache service', function() {
     var docs = [ { _id: 1 } ];
     var callback;
     var count = 0;
-    var cache = service(function(_callback) {
+    var cache = service({ get: function(_callback) {
       callback = _callback;
-    });
+    }});
     var ass = function(err, results) {
       chai.expect(err).to.equal(null);
       chai.expect(results).to.deep.equal(docs);
@@ -82,7 +82,7 @@ describe('Cache service', function() {
     var initial = [ { _id: 1, name: 'gareth' } ];
     var updated = [ { _id: 1, name: 'alex' } ];
     var count = 0;
-    var cache = service(function(callback) {
+    var cache = service({ get: function(callback) {
       if (count === 0) {
         callback(null, initial);
       } else if (count === 1) {
@@ -91,7 +91,7 @@ describe('Cache service', function() {
         chai.expect(true).to.equal(false);
       }
       count++;
-    });
+    }});
     cache(function(err, results) {
       chai.expect(err).to.equal(null);
       chai.expect(results).to.deep.equal(initial);
@@ -105,28 +105,67 @@ describe('Cache service', function() {
   });
 
   it('invalidates the cache on new doc', function(done) {
+    var newDoc = { _id: 2, name: 'alex' };
     var initial = [ { _id: 1, name: 'gareth' } ];
-    var updated = [ { _id: 1, name: 'gareth' }, { _id: 2, name: 'alex' } ];
+    var updated = [ { _id: 1, name: 'gareth' }, newDoc ];
     var count = 0;
-    var cache = service(function(callback) {
-      if (count === 0) {
-        callback(null, initial);
-      } else if (count === 1) {
-        callback(null, updated);
-      } else {
-        chai.expect(true).to.equal(false);
+    var cache = service({
+      get: function(callback) {
+        if (count === 0) {
+          callback(null, initial);
+        } else if (count === 1) {
+          callback(null, updated);
+        } else {
+          chai.expect(true).to.equal(false);
+        }
+        count++;
+      },
+      filter: function(doc) {
+        return doc._id === newDoc._id;
       }
-      count++;
     });
     cache(function(err, results) {
       chai.expect(err).to.equal(null);
       chai.expect(results).to.deep.equal(initial);
     });
-    changesCallback({ id: 10, changes: [ { rev: '1-xyz' } ] });
+    changesCallback({ id: newDoc._id, newDoc: newDoc });
+    setTimeout(function() {
+      cache(function(err, results) {
+        chai.expect(err).to.equal(null);
+        chai.expect(results).to.deep.equal(updated);
+        done();
+      });
+    });
+  });
+
+  it('invalidates the when filter fails', function(done) {
+    var newDoc = { _id: 2, name: 'alex' };
+    var initial = [ { _id: 1, name: 'gareth' } ];
+    var count = 0;
+    var cache = service({
+      get: function(callback) {
+        if (count === 0) {
+          callback(null, initial);
+        } else {
+          chai.expect(true).to.equal(false);
+        }
+        count++;
+      },
+      filter: function(doc) {
+        return doc._id !== newDoc._id;
+      }
+    });
     cache(function(err, results) {
       chai.expect(err).to.equal(null);
-      chai.expect(results).to.deep.equal(updated);
-      done();
+      chai.expect(results).to.deep.equal(initial);
+    });
+    changesCallback({ id: newDoc._id, changes: [ { rev: '1-xyz' } ] });
+    setTimeout(function() {
+      cache(function(err, results) {
+        chai.expect(err).to.equal(null);
+        chai.expect(results).to.deep.equal(initial);
+        done();
+      });
     });
   });
 

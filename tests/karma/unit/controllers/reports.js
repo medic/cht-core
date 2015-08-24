@@ -54,8 +54,8 @@ describe('ReportsCtrl controller', function() {
       callback(null, { });
     };
 
-    Changes = function(key, callback) {
-      changesCallback = callback;
+    Changes = function(options) {
+      changesCallback = options.callback;
     };
 
     changesCallback = undefined;
