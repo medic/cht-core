@@ -6,8 +6,8 @@ var async = require('async');
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('UpdateContact', ['DB', 'ClearFacilityCache',
-    function(DB, ClearFacilityCache) {
+  inboxServices.factory('UpdateContact', ['DB',
+    function(DB) {
 
       var updateDoc = function(doc, updates) {
         var updated = _.extend(doc || {}, updates);
@@ -103,7 +103,6 @@ var async = require('async');
             doc._rev = response._rev;
             var updateFn = doc.type === 'person' ? updateParents : updateChildren;
             updateFn(doc, function(err) {
-              ClearFacilityCache();
               callback(err, doc);
             });
           })

@@ -14,9 +14,6 @@ describe('UpdateContact service', function() {
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ put: put, post: post, query: query }));
-      $provide.factory('ClearFacilityCache', function() {
-        return function() {};
-      });
     });
     inject(function(_UpdateContact_) {
       service = _UpdateContact_;

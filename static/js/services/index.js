@@ -19,6 +19,7 @@
   require('./download-url');
   require('./edit-group');
   require('./facility');
+  require('./facility-hierarchy');
   require('./form');
   require('./format-data-record');
   require('./format-date');
