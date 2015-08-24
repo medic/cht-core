@@ -49,10 +49,10 @@ describe('FacilityHierarchy service', function() {
 
   it('builds hierarchy for facilities', function(done) {
 
-    var a = { _id: 'a', parent: { _id: 'b' } };
+    var a = { _id: 'a', parent: { _id: 'b', parent: { _id: 'c' } } };
     var b = { _id: 'b', parent: { _id: 'c' } };
     var c = { _id: 'c' };
-    var d = { _id: 'd', parent: { _id: 'b' } };
+    var d = { _id: 'd', parent: { _id: 'b', parent: { _id: 'c' } } };
     var e = { _id: 'e', parent: { _id: 'x' } }; // unknown parent is ignored
     var f = { _id: 'f' };
 
@@ -62,25 +62,27 @@ describe('FacilityHierarchy service', function() {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([
         {
-          _id: 'c',
+          doc: c,
           children: [
             {
-              _id: 'b',
-              parent: { _id: 'c' },
+              doc: b,
               children: [
                 {
-                  _id: 'a',
-                  parent: { _id: 'b' }
+                  doc: a,
+                  children: []
                 },
                 {
-                  _id: 'd',
-                  parent: { _id: 'b' }
+                  doc: d,
+                  children: []
                 }
               ]
             }
           ]
         },
-        { _id: 'f' }
+        {
+          doc: f,
+          children: []
+        }
       ]);
       chai.expect(actualTotal).to.equal(5);
       done();

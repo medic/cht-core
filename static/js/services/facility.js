@@ -97,11 +97,55 @@ var _ = require('underscore');
     }
   ]);
 
+  var removeOrphans = function(children) {
+    var count = 0;
+    for (var i = children.length - 1; i >= 0 ; i--) {
+      if (children[i].doc.stub) {
+        children.splice(i, 1);
+      } else {
+        count++;
+        count += removeOrphans(children[i].children);
+      }
+    }
+    return count;
+  };
+
+  var getIdPath = function(facility) {
+    var path = [];
+    while(facility && facility._id) {
+      path.splice(0, 0, facility._id);
+      facility = facility.parent;
+    }
+    return path;
+  };
+
+  var buildHierarchy = function(facilities, callback) {
+    var results = [];
+    facilities.forEach(function(row) {
+      var result = results;
+      getIdPath(row).forEach(function(id) {
+        var found = _.find(result, function(r) {
+          return r.doc._id === id;
+        });
+        if (!found) {
+          found = { doc: { _id: id, stub: true }, children: [] };
+          result.push(found);
+        }
+        if (row._id === id) {
+          found.doc = row;
+        }
+        result = found.children;
+      });
+    });
+    var total = removeOrphans(results);
+    callback(null, results, total);
+  };
+
   inboxServices.factory('FacilityHierarchy', ['Facility',
     function(Facility) {
       return function(district, callback) {
         var options = {
-          types: ['clinic','health_center','district_hospital'],
+          types: [ 'clinic', 'health_center', 'district_hospital' ],
           district: district,
           targetScope: 'root'
         };
@@ -109,27 +153,7 @@ var _ = require('underscore');
           if (err) {
             return callback(err);
           }
-          var results = [];
-          var total = 0;
-          facilities.forEach(function(row) {
-            var parentId = row.parent && row.parent._id;
-            if (parentId) {
-              var parent = _.find(facilities, function(curr) {
-                return curr._id === parentId;
-              });
-              if (parent) {
-                if (!parent.children) {
-                  parent.children = [];
-                }
-                parent.children.push(row);
-                total++;
-              }
-            } else {
-              total++;
-              results.push(row);
-            }
-          });
-          callback(null, results, total);
+          buildHierarchy(facilities, callback);
         });
       };
     }
