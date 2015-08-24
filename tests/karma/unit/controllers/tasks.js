@@ -5,13 +5,13 @@ describe('TasksCtrl controller', function() {
   var createController,
       scope,
       TaskGenerator,
-      timeout;
+      $rootScope;
 
   beforeEach(module('inboxApp'));
 
-  beforeEach(inject(function($rootScope, $controller, $timeout) {
+  beforeEach(inject(function(_$rootScope_, $controller) {
+    $rootScope = _$rootScope_;
     scope = $rootScope.$new();
-    timeout = $timeout;
 
     scope.setSelectedModule = function() {};
     scope.setTasks = function(tasks) {
@@ -33,8 +33,8 @@ describe('TasksCtrl controller', function() {
   it('set up controller', function(done) {
     TaskGenerator.returns(KarmaUtils.mockPromise(null, [ { id: 1 } ]));
     createController();
+    $rootScope.$digest();
     setTimeout(function() {
-      timeout.flush();
       chai.expect(TaskGenerator.callCount).to.equal(1);
       chai.expect(scope.filterModel.type).to.equal('tasks');
       chai.expect(scope.items).to.deep.equal([ { id: 1 } ]);
@@ -47,6 +47,7 @@ describe('TasksCtrl controller', function() {
   it('shows task generator errors', function(done) {
     TaskGenerator.returns(KarmaUtils.mockPromise('boom'));
     createController();
+    $rootScope.$digest();
     setTimeout(function() {
       chai.expect(TaskGenerator.callCount).to.equal(1);
       chai.expect(scope.filterModel.type).to.equal('tasks');

@@ -4,7 +4,8 @@ describe('TaskGenerator service', function() {
 
   var service,
       Search,
-      Settings;
+      Settings,
+      $rootScope;
 
   /* jshint quotmark: false */
   var rules =
@@ -107,7 +108,8 @@ describe('TaskGenerator service', function() {
       $provide.value('Search', Search);
       $provide.value('Settings', Settings);
     });
-    inject(function($injector) {
+    inject(function($injector, _$rootScope_) {
+      $rootScope = _$rootScope_;
       service = $injector.get('TaskGenerator');
     });
   });
@@ -129,6 +131,7 @@ describe('TaskGenerator service', function() {
       chai.expect(Search.callCount).to.equal(1);
       done();
     });
+    $rootScope.$digest();
   });
 
   it('returns settings errors', function(done) {
@@ -138,6 +141,7 @@ describe('TaskGenerator service', function() {
       chai.expect(Settings.callCount).to.equal(1);
       done();
     });
+    $rootScope.$digest();
   });
 
   it('returns empty when search returns no documents', function(done) {
@@ -155,6 +159,9 @@ describe('TaskGenerator service', function() {
     }).catch(function(err) {
       console.error(err.toString());
     });
+    setTimeout(function() {
+      $rootScope.$digest();
+    });
   });
 
   it('returns empty when settings returns no config', function(done) {
@@ -167,6 +174,7 @@ describe('TaskGenerator service', function() {
     }).catch(function(err) {
       console.error(err.toString());
     });
+    $rootScope.$digest();
   });
 
   it('generates tasks when given registrations', function(done) {
@@ -215,6 +223,9 @@ describe('TaskGenerator service', function() {
       done();
     }).catch(function(err) {
       console.error(err.toString());
+    });
+    setTimeout(function() {
+      $rootScope.$digest();
     });
   });
 });

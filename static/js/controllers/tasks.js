@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksCtrl',
-    ['$scope', '$timeout', 'TaskGenerator',
-    function ($scope, $timeout, TaskGenerator) {
+    ['$scope', 'TaskGenerator',
+    function ($scope, TaskGenerator) {
 
       var _selectedId;
 
@@ -32,11 +32,9 @@
         $scope.error = false;
         TaskGenerator()
           .then(function(tasks) {
-            $timeout(function() {
-              $scope.setTasks(tasks);
-              $scope.loading = false;
-              selectItem();
-            });
+            $scope.setTasks(tasks);
+            $scope.loading = false;
+            selectItem();
           })
           .catch(function(err) {
             console.log('Error generating tasks', err);

@@ -7,8 +7,8 @@ var nools = require('nools'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TaskGenerator', ['Search', 'Settings',
-    function(Search, Settings) {
+  inboxServices.factory('TaskGenerator', ['$q', 'Search', 'Settings',
+    function($q, Search, Settings) {
 
       var Utils = {
         addDate: function(date, days) {
@@ -80,31 +80,30 @@ var nools = require('nools'),
       };
 
       return function() {
-        return new Promise(function(resolve, reject) {
-          Settings(function(err, settings) {
+        var deferred = $q.defer();
+        Settings(function(err, settings) {
+          if (err) {
+            return deferred.reject(err);
+          }
+          if (!settings.tasks ||
+              !settings.tasks.rules ||
+              !settings.tasks.schedules) {
+            // no rules or schedules configured
+            return deferred.resolve([]);
+          }
+          getDataRecords(function(err, dataRecords) {
             if (err) {
-              return reject(err);
+              return deferred.reject(err);
             }
-            if (!settings.tasks ||
-                !settings.tasks.rules ||
-                !settings.tasks.schedules) {
-              // no rules or schedules configured
-              return resolve([]);
-            }
-            getDataRecords(function(err, dataRecords) {
-                if (err) {
-                  return reject(err);
-                }
-                getTasks(dataRecords, settings, function(err, tasks) {
-                  if (err) {
-                    return reject(err);
-                  }
-                  resolve(tasks);
-                });
+            getTasks(dataRecords, settings, function(err, tasks) {
+              if (err) {
+                return deferred.reject(err);
               }
-            );
+              deferred.resolve(tasks);
+            });
           });
         });
+        return deferred.promise;
       };
     }
   ]);
