@@ -193,8 +193,8 @@
         };
 
         var addFormToTable = function(formInternalId, title) {
-          $('#available-enketo-forms').append('<tr><td>' + title + '</td>' +
-              '<td><button class="btn btn-primary form-loader" onclick="loadXmlFrom(\'' + formInternalId + '\')">load</button></td>' +
+          $('#available-enketo-forms').append('<tr><td><a onclick="loadXmlFrom(\'' + formInternalId + '\')">' + title + '</a></td>' +
+              '<td></td>' +
               '</tr>');
         };
 

@@ -9,15 +9,6 @@
     </a>
 
     <div class="extras">
-      
-      <span id="add-record-panel" class="add-record-panel">
-        <ul class="dropdown-menu">
-          <li>
-            <button type="button" class="cancel close">×</button>
-            <iframe></iframe>
-          </li>
-        </ul>
-      </span>
 
       <span class="dropdown options">
         <a data-toggle="dropdown">
@@ -32,16 +23,10 @@
               {{'Send Message' | translate}}
             </a>
           </li>
-          <li role="presentation" class="disabled">
-            <a role="menuitem" tabindex="-1" id="send-record-button">
+          <li role="presentation">
+            <a role="menuitem" tabindex="-1" data-toggle="modal" data-target="#create-report" ng-click="loadComposer()">
               <i class="fa fa-fw fa-list-alt"></i>
               {{'Submit Report' | translate}}
-            </a>
-          </li>
-          <li role="presentation" class="disabled">
-            <a role="menuitem" tabindex="-1" id="launch-enketo-composer">
-              <i class="fa fa-fw fa-list-alt"></i>
-              {{'Submit Report with Enketo' | translate}}
             </a>
           </li>
         </ul>

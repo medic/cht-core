@@ -776,13 +776,9 @@ require('moment/locales');
         });
       };
 
-      $scope.setupHeader = function() {
-        Settings(function(err, settings) {
-          if (err) {
-            return console.log('Error retrieving settings', err);
-          }
-          require('../modules/add-record').init(settings.muvuku_webapp_url);
-        });
+      $scope.loadComposer = function() {
+        /* globals loadComposer */
+        loadComposer();
       };
 
       UserDistrict(function() {
@@ -812,7 +808,9 @@ require('moment/locales');
         }
         Changes({
           key: 'appcache',
-          callback: window.applicationCache.update,
+          callback: function() {
+            window.applicationCache.update();
+          },
           filter: function(change) {
             return change.id === '_design/medic';
           }
