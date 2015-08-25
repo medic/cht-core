@@ -10,8 +10,8 @@
     <div>{{'No report selected' | translate}}</div>
   </div>
 
-  <div id="reports-content" class="col-sm-8 item-content item-body">
-    <div ng-show="!loadingContent && selected && selected.form !== undefined">
+  <div id="reports-content" class="col-sm-8 item-content item-body" ng-show="!loadingContent && selected && selected.form !== undefined">
+    <div>
 
       <div class="meta">
         <div class="time" ng-bind-html="selected.reported_date | fullDate"></div>
