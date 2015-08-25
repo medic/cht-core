@@ -101,7 +101,7 @@ require('moment/locales');
         if ($stateParams.id === id) {
           // message already set - make sure we're showing content
           if ($scope.filterModel.type === 'messages') {
-            return;
+            return $scope.$broadcast('update-contact-conversation');
           }
           var message = _.findWhere($scope.items, { _id: id });
           if (message) {

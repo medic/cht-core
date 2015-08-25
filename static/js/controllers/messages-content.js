@@ -164,6 +164,9 @@ var _ = require('underscore'),
 
       $('.tooltip').remove();
       selectContact($stateParams.id);
+      $scope.$on('update-contact-conversation', function() {
+        selectContact($stateParams.id);
+      });
 
       $('body')
         .on('focus', '#message-footer textarea', function() {
