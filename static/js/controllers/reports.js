@@ -138,9 +138,13 @@ var _ = require('underscore'),
               if (curr) {
                 $scope.setSelected(curr);
               } else if (!$('#back').is(':visible') && !options.changes) {
+                // TODO improve double timeout here - I think it's required
+                // because of the nested promises
                 $timeout(function() {
-                  var id = $('.inbox-items li').first().attr('data-record-id');
-                  $state.go('reports.detail', { id: id });
+                  $timeout(function() {
+                    var id = $('.inbox-items li').first().attr('data-record-id');
+                    $state.go('reports.detail', { id: id });
+                  });
                 });
               }
               _initScroll();

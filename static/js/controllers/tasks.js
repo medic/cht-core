@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksCtrl',
-    ['$scope', 'TaskGenerator',
-    function ($scope, TaskGenerator) {
+    ['$timeout', '$scope', '$state', 'TaskGenerator',
+    function ($timeout, $scope, $state, TaskGenerator) {
 
       var _selectedId;
 
@@ -21,6 +21,11 @@
             if (item._id === _selectedId) {
               $scope.setSelected(item);
             }
+          });
+        } else if(!$state.params.id && $scope.items.length && !$('#back').is(':visible')) {
+          $timeout(function() {
+            var id = $('.inbox-items li').first().attr('data-record-id');
+            $state.go('tasks.detail', { id: id });
           });
         } else {
           $scope.setSelected();
