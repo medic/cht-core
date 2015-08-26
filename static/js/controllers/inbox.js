@@ -806,16 +806,13 @@ require('moment/locales');
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
           showUpdateReady();
         }
-        Changes({
-          key: 'appcache',
-          callback: function() {
-            window.applicationCache.update();
-          },
-          filter: function(change) {
-            return change.id === '_design/medic';
-          }
-        });
       }
+
+      DB.watchDesignDoc(function() {
+        if (window.applicationCache) {
+          window.applicationCache.update();
+        }
+      });
 
     }
   ]);

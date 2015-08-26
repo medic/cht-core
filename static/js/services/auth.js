@@ -45,6 +45,7 @@ var _ = require('underscore');
             if (err) {
               return reject(err);
             }
+            console.log('checking', requiredPermissions, userCtx.roles, settings.permissions);
             if (hasAll(requiredPermissions, userCtx.roles, settings.permissions)) {
               return resolve();
             }

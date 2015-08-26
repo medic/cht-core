@@ -14,7 +14,9 @@ window.KarmaUtils = {
         resolve(doc);
       }
     });
-    result.on = function() {};
+    result.on = function() {
+      return result;
+    };
     return result;
   },
   mockDB: function(db, getRemoteUrl) {
