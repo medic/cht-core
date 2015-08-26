@@ -2,7 +2,7 @@
 
 ## 0.4.9
 
-### TBD
+### Aug 26, 2015
 
 - Fixed bug on node 0.12 in felix-couchdb. #1145
 
