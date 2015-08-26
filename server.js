@@ -446,10 +446,22 @@ app.get('/medic/_changes', function(req, res) {
         var unassigned = config.get('district_admins_access_unallocated_messages') &&
                          auth.hasPermission(userCtx, 'can_view_unallocated_data_records');
         // for security reasons ensure the params haven't been tampered with
-        if (req.query.filter !== 'medic/doc_by_place' ||
-            req.query.id !== facilityId ||
-            (req.query.unassigned === 'true' && !unassigned)) {
-          console.log('Unauthorized replication attempt');
+        if (req.query.filter === 'medic/doc_by_place') {
+          // replicating docs - check facility and unassigned settings
+          if (req.query.id !== facilityId ||
+              (req.query.unassigned === 'true' && !unassigned)) {
+            console.error('Unauthorized replication attempt - restricted filter params');
+            return error({ code: 403, message: 'Forbidden' }, req, res);
+          }
+        } else if (req.query.filter === '_doc_ids') {
+          // replicating medic-settings only
+          if (req.query.doc_ids !== JSON.stringify([ '_design/medic' ])) {
+            console.error('Unauthorized replication attempt - restricted filter id: ' + req.query.doc_ids[0]);
+            return error({ code: 403, message: 'Forbidden' }, req, res);
+          }
+        } else {
+          // unknown replication filter
+          console.error('Unauthorized replication attempt - restricted filter: ' + req.query.filter);
           return error({ code: 403, message: 'Forbidden' }, req, res);
         }
         proxy.web(req, res);
