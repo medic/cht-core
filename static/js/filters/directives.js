@@ -13,9 +13,9 @@
   });
 
   module.directive('mmAuth', ['Auth', function(Auth) {
-    var link = function(scope, element) {
+    var link = function(scope, element, attributes) {
       element.addClass('hidden');
-      Auth('can_view_tasks')
+      Auth(attributes.mmAuth)
         .then(function() {
           element.removeClass('hidden');
         })

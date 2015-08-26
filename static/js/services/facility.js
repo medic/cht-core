@@ -20,6 +20,10 @@ var _ = require('underscore'),
       });
 
       return function(options, callback) {
+        if (!callback) {
+          callback = options;
+          options = {};
+        }
         cache(function(err, res) {
           if (err) {
             return callback(err);

@@ -13,23 +13,18 @@ var _ = require('underscore'),
       var cache = Cache({
         get: function(callback) {
           DB.get()
-            .get('medic-settings')
-            .then(function(doc) {
-              callback(null, doc);
+            .get('_design/medic')
+            .then(function(ddoc) {
+              callback(null, _.defaults(ddoc.app_settings, defaults));
             }).catch(callback);
         },
         filter: function(doc) {
-          return doc._id === 'medic-settings';
+          return doc._id === '_design/medic';
         }
       });
 
       return function(callback) {
-        cache(function(err, doc) {
-          if (err) {
-            return callback(err);
-          }
-          callback(null, _.defaults(doc.app_settings, defaults));
-        }); 
+        cache(callback);
       };
 
     }

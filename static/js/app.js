@@ -40,6 +40,12 @@ _.templateSettings = {
           templateUrl: 'templates/partials/error.html'
         })
 
+        // home
+        .state('home', {
+          url: '/home',
+          controller: 'HomeCtrl'
+        })
+
         // messages
         .state('messages', {
           url: '/messages?tour',
@@ -253,7 +259,7 @@ _.templateSettings = {
           templateUrl: 'templates/partials/theme.html'
         });
 
-      $urlRouterProvider.when('', '/messages');
+      $urlRouterProvider.when('', '/home');
       $translateProvider.useLoader('SettingsLoader', {});
       $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|file|blob):/);
     }
@@ -328,18 +334,22 @@ _.templateSettings = {
 
   var names = getDbNames();
   window.PouchDB(names.local)
-    .get('medic-settings')
+    .get('_design/medic')
     .then(function() {
-      // settings found. bootstrap immediately.
+      // ddoc found - bootstrap immediately
       bootstrapApplication();
     }).catch(function() {
-      // settings not found, presumably first load. replicate it.
-      window.PouchDB(names.local)
-        .replicate.from(names.remote, { doc_ids: [ 'medic-settings' ] })
-        .on('complete', bootstrapApplication)
-        .on('error', function(err) {
-          console.error('Error syncing medic-settings. Bootstrapping anyway.', err);
-          bootstrapApplication();
+      window.PouchDB(names.remote)
+        .get('_design/medic')
+        .then(function(ddoc) {
+          var minimal = _.pick(ddoc, '_id', 'app_settings', 'views');
+          minimal.remote_rev = ddoc._rev;
+          return window.PouchDB(names.local)
+            .put(minimal);
+        })
+        .then(bootstrapApplication)
+        .catch(function(err) {
+          console.error('Could not get ddoc from remote server. Check your connection and try again.', err);
         });
     });
 

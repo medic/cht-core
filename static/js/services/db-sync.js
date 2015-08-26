@@ -31,8 +31,11 @@ var _ = require('underscore'),
         var direction = from ? 'from' : 'to';
         var fn = DB.get().replicate[direction];
         return fn(DB.getRemoteUrl(), options)
+          .on('denied', function(err) {
+            console.error('Denied replicating ' + direction + ' remote server', err);
+          })
           .on('error', function(err) {
-            console.log('Error replicating ' + direction + ' remote server', err);
+            console.error('Error replicating ' + direction + ' remote server', err);
           });
       };
 
@@ -56,7 +59,12 @@ var _ = require('underscore'),
           // admins have potentially too much data so bypass local pouch
           return;
         }
-        replicate(false);
+        replicate(false, {
+          filter: function(doc) {
+            // don't try to replicate ddoc back to the server
+            return doc._id !== '_design/medic';
+          }
+        });
         getQueryParams(userCtx, function(err, params) {
           if (err) {
             return console.log('Error initializing DB sync', err);

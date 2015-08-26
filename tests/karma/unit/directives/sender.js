@@ -1,4 +1,4 @@
-describe('mmSender', function() {
+describe('sender directive', function() {
 
   'use strict';
 
