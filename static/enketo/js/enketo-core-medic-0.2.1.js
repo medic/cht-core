@@ -12731,8 +12731,10 @@ define( function(require, exports, module){
         };
 
         Dropdown.prototype.keydown = function( e ) {
-            if ( !/(38|40|27)/.test( e.keyCode ) ) {
-                return;
+            var k = e.keyCode;
+
+            if (k != 27 && k != 38 && k != 40) {
+              return;
             }
 
             var $this = $( this );
