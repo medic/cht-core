@@ -15,7 +15,7 @@ require('moment/locales');
 
   var inboxControllers = angular.module('inboxControllers', []);
 
-  inboxControllers.controller('InboxCtrl', 
+  inboxControllers.controller('InboxCtrl',
     ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'DBSync', 'ConflictResolution', 'UserSettings', 'APP_CONFIG', 'DB', 'Session',
     function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, DBSync, ConflictResolution, UserSettings, APP_CONFIG, DB, Session) {
 
@@ -839,6 +839,7 @@ require('moment/locales');
   require('./error');
   require('./help');
   require('./help-search');
+  require('./home');
   require('./import-contacts');
   require('./import-translation');
   require('./messages');

@@ -40,6 +40,12 @@ _.templateSettings = {
           templateUrl: 'templates/partials/error.html'
         })
 
+        // home
+        .state('home', {
+          url: '/home',
+          controller: 'HomeCtrl'
+        })
+
         // messages
         .state('messages', {
           url: '/messages?tour',
@@ -253,7 +259,7 @@ _.templateSettings = {
           templateUrl: 'templates/partials/theme.html'
         });
 
-      $urlRouterProvider.when('', '/messages');
+      $urlRouterProvider.when('', '/home');
       $translateProvider.useLoader('SettingsLoader', {});
       $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|file|blob):/);
     }
