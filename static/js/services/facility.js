@@ -38,10 +38,10 @@ var _ = require('underscore');
             }
             if (contact.doc.type === 'health_center') {
               var clinics = _.filter(res.rows, function(child) {
-                return child.doc.parent && 
+                return child.doc.parent &&
                   child.doc.parent._id === contact.id;
               });
-              contacts.push(_.extend({ 
+              contacts.push(_.extend({
                 everyoneAt: true,
                 clinics: clinics
               }, contact));

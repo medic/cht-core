@@ -1,6 +1,7 @@
 var db = require('db'),
     utils = require('./utils'),
-    dust = require('dust-core'),
+    //dust = require('./dust-core'),
+    dust = require('./dust-helpers'),
     kutils = require('kujua-utils'),
     sms_utils = require('kujua-sms/utils'),
     appname = require('settings/root').name,
@@ -8,10 +9,11 @@ var db = require('db'),
     session = require('session'),
     appinfo = require('views/lib/appinfo');
 
-var facility_doc, 
-    dates, 
-    isAdmin, 
-    isDistrictAdmin, 
+
+var facility_doc,
+    dates,
+    isAdmin,
+    isDistrictAdmin,
     userDistrict;
 
 var getViewReports = function(doc, dates, callback) {
@@ -111,8 +113,8 @@ var renderRelatedFacilities = function(doc, selector) {
                 title: utils.viewHeading(p.type),
                 name: p.name
             });
-            if (p.parent) { 
-                appendRelated(p); 
+            if (p.parent) {
+                appendRelated(p);
             }
         }
     };
@@ -248,25 +250,9 @@ var renderReportingTotals = function(totals, doc) {
 
 };
 
-function renderFacility(formCode, facilityId) {
-    dates.form = formCode;
-    db.getDoc(facilityId, function(err, facility) {
-        if (err) {
-            return console.log(err);
-        }
-        facility_doc = facility;
-        getViewChildFacilities(facility, renderReports);
-    });
-};
-
 function registerListeners() {
     charts.initPieChart();
-    $('body').on('click', '#reporting-district-choice .facility', function(e) {
-        e.preventDefault();
-        var row = $(e.target).closest('.facility');
-        renderFacility(row.attr('data-form-code'), row.attr('rel'));
-    });
-    $('body').on('click', '#date-nav a', function(e) {
+    $('body').on('click', '[data-page=reporting_rates] #date-nav a', function(e) {
         e.preventDefault();
         var link = $(e.target).closest('a');
         dates = utils.getDates({
@@ -279,11 +265,6 @@ function registerListeners() {
             startyear: link.attr('data-startyear')
         });
         getViewChildFacilities(facility_doc, renderReports);
-    });
-    $('body').on('click', '#reporting-data tr[rel]', function(e) {
-        e.preventDefault();
-        var facilityId = $(e.target).closest('tr').attr('rel');
-        renderFacility(dates.form, facilityId);
     });
 };
 
@@ -343,19 +324,7 @@ function renderDistrictChoice() {
             }
         });
 
-        $('[data-page=reporting_rates] #content').html(
-            render("kujua-reporting/reporting_district_choice.html", {
-                forms: config,
-                one_form: config.length === 1,
-                districts: districts_list
-            })
-        ).off('click', '#reporting-district-choice .form-name')
-         .on('click', '#reporting-district-choice .form-name', function(ev) {
-            ev.preventDefault();
-            $(this).siblings().slideToggle();
-        });
     });
-
 }
 
 var renderReports = function(err, facilities) {
@@ -432,6 +401,7 @@ var renderReports = function(err, facilities) {
 
         $('#reporting-data').html(
             render(data_template, {
+                form: dates.form,
                 rows: rows,
                 doc: doc
             })
@@ -444,7 +414,7 @@ var renderReports = function(err, facilities) {
             var color = Raphael.hsb(val/300, .75, .85);
 
             if (val === 0) {
-                paper.addClass('fa-times');
+                paper.addClass('fa-warning');
             } else if (val == 100) {
                 paper.addClass('fa-check');
             } else {
@@ -511,18 +481,28 @@ var render = function (name, context) {
     return r;
 };
 
-exports.render_page = function() {
-    require('../../../lib/dust-helpers');
+var renderFacility = exports.renderFacility = function(form, facility, settings) {
+    // init globals :\
     db = db.current();
     registerListeners();
+    dates = dates || utils.getDates({});
     sms_utils.info = appinfo.getAppInfo();
-    dates = utils.getDates({});
-    session.info(function(err, info) {
-        isAdmin = kutils.isUserAdmin(info.userCtx);
-        isDistrictAdmin = kutils.isUserDistrictAdmin(info.userCtx);
-        kutils.getUserDistrict(info.userCtx, function(err, district) {
-            userDistrict = district;
-            renderDistrictChoice();
+
+    if (typeof form === 'object') {
+        dates.form = form.code;
+    } else {
+        dates.form = form;
+    }
+    if (typeof facility === 'object') {
+        facility_doc = facility;
+        getViewChildFacilities(facility, renderReports);
+    } else {
+        db.getDoc(facility, function(err, doc) {
+            if (err) {
+                return console.error(err);
+            }
+            facility_doc = doc;
+            getViewChildFacilities(doc, renderReports);
         });
-    });
+    }
 };

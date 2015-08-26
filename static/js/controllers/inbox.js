@@ -12,9 +12,9 @@ var utils = require('kujua-utils'),
 
   var inboxControllers = angular.module('inboxControllers', []);
 
-  inboxControllers.controller('InboxCtrl', 
-    ['$scope', '$route', '$location', '$translate', '$animate', '$rootScope', 'Facility', 'Form', 'Settings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
-    function ($scope, $route, $location, $translate, $animate, $rootScope, Facility, Form, Settings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
+  inboxControllers.controller('InboxCtrl',
+    ['$scope', '$route', '$location', '$translate', '$animate', '$rootScope', 'FacilityRaw', 'Form', 'Settings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteMessage', 'UpdateFacility', 'Exports',
+    function ($scope, $route, $location, $translate, $animate, $rootScope, FacilityRaw, Form, Settings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteMessage, UpdateFacility, Exports) {
 
       $scope.loading = true;
       $scope.error = false;
@@ -23,7 +23,9 @@ var utils = require('kujua-utils'),
       $scope.languages = [];
       $scope.editUserModel = {};
       $scope.forms = [];
+      $scope.formsLookup = {};
       $scope.facilities = [];
+      $scope.facilitiesLookup = {};
       $scope.contacts = undefined;
       $scope.messages = undefined;
       $scope.selected = undefined;
@@ -31,6 +33,18 @@ var utils = require('kujua-utils'),
       $scope.analyticsModules = undefined;
 
       require('../modules/manage-session').init();
+
+      $scope.isDistrict = function(row) {
+        return row.doc.type === 'district_hospital';
+      };
+
+      $scope.isHealthCenter = function(row) {
+        return row.doc.type === 'health_center';
+      };
+
+      $scope.isClinic = function(row) {
+        return row.doc.type === 'clinic';
+      };
 
       $scope.setFilterQuery = function(query) {
         if (!$scope.filterQuery && query) {
@@ -126,7 +140,7 @@ var utils = require('kujua-utils'),
         nationalAdmin: utils.isUserNationalAdmin(UserCtxService()),
         districtAdmin: utils.isUserDistrictAdmin(UserCtxService()),
         district: undefined,
-        canExport: utils.hasPerm(UserCtxService(), 'can_export_messages') || 
+        canExport: utils.hasPerm(UserCtxService(), 'can_export_messages') ||
                    utils.hasPerm(UserCtxService(), 'can_export_forms')
       };
 
@@ -164,9 +178,12 @@ var utils = require('kujua-utils'),
       };
 
       var updateAvailableFacilities = function() {
-        Facility($scope.permissions.district).then(
+        FacilityRaw($scope.permissions.district).query(
           function(res) {
-            $scope.facilities = res;
+            $scope.facilities = res.rows;
+            for (var i = 0, len = res.rows.length; i < len; i++) {
+              $scope.facilitiesLookup[res.rows[i].id] = res.rows[i].doc;
+            }
             function formatResult(row) {
               return format.contact(row.doc);
             }
@@ -182,7 +199,7 @@ var utils = require('kujua-utils'),
                 if (!e) {
                   return callback();
                 }
-                var row = _.findWhere(res, { id: e });
+                var row = _.findWhere(res.rows, { id: e });
                 if (!row) {
                   return callback();
                 }
@@ -190,7 +207,7 @@ var utils = require('kujua-utils'),
               },
               query: function(options) {
                 var terms = options.term.toLowerCase().split(/\s+/);
-                var matches = _.filter(res, function(val) {
+                var matches = _.filter(res.rows, function(val) {
                   var contact = val.doc.contact;
                   var name = contact && contact.name;
                   var phone = contact && contact.phone;
@@ -263,6 +280,9 @@ var utils = require('kujua-utils'),
       Form().then(
         function(forms) {
           $scope.forms = forms;
+          for (var i = 0, len = forms.length; i < len; i++) {
+            $scope.formsLookup[forms[i].code] = forms[i];
+          }
         },
         function(err) {
           console.log('Failed to retrieve forms', err);
@@ -379,8 +399,8 @@ var utils = require('kujua-utils'),
       };
       $scope.updateFacilityShow = function () {
         var val = '';
-        if ($scope.selected && 
-            $scope.selected.related_entities && 
+        if ($scope.selected &&
+            $scope.selected.related_entities &&
             $scope.selected.related_entities.clinic) {
           val = $scope.selected.related_entities.clinic._id;
         }

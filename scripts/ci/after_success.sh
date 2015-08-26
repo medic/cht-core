@@ -34,6 +34,10 @@ if [ "$TRAVIS_BRANCH" == "master" ]; then
     push 'release'
 fi;
 
+if [ "$TRAVIS_BRANCH" == "rc" ]; then
+    push 'rc'
+fi;
+
 if [ "$TRAVIS_BRANCH" == "testing" ]; then
     push 'beta'
 fi;
