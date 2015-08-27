@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksCtrl',
-    ['$scope', 'TaskGenerator',
-    function ($scope, TaskGenerator) {
+    ['$timeout', '$scope', '$state', 'TaskGenerator', 'Changes',
+    function ($timeout, $scope, $state, TaskGenerator, Changes) {
 
       var _selectedId;
 
@@ -22,13 +22,21 @@
               $scope.setSelected(item);
             }
           });
+        } else if(!$state.params.id && $scope.items.length && !$('#back').is(':visible')) {
+          $timeout(function() {
+            var id = $('.inbox-items li').first().attr('data-record-id');
+            $state.go('tasks.detail', { id: id });
+          });
         } else {
           $scope.setSelected();
         }
       };
 
-      var updateTasks = function() {
-        $scope.loading = true;
+      var updateTasks = function(options) {
+        options = options || {};
+        if (!options.silent) {
+          $scope.loading = true;
+        }
         $scope.error = false;
         TaskGenerator()
           .then(function(tasks) {
@@ -48,6 +56,22 @@
       $scope.filterModel.type = 'tasks';
       $scope.setTasks();
       updateTasks();
+
+      Changes({
+        key: 'tasks-list',
+        callback: function() {
+          updateTasks({ silent: true });
+        },
+        filter: function(change) {
+          if ($scope.filterModel.type !== 'tasks') {
+            return false;
+          }
+          if (change.newDoc) {
+            return change.newDoc.form;
+          }
+          return true;
+        }
+      });
     }
   ]);
 

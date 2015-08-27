@@ -500,7 +500,7 @@ body {
     border-left-color: @tasks-color;
   }
   &.selected {
-    background-color: lighten(@tasks-color, 30%);
+    background-color: lighten(@tasks-color, 25%);
   }
 }
 
@@ -1185,7 +1185,7 @@ a.fa:hover {
     }
     .extras a {
       padding-top: 0.3em;
-      margin-top: 0.5em;
+      margin-top: 0.2em;
       font-size: 1.2em;
     }
   }
@@ -1354,6 +1354,9 @@ a.fa:hover {
 }
 
 @media (max-width: 400px) {
+  .logo {
+    display: none;
+  }
   .filters .filter {
     margin: 0;
   }

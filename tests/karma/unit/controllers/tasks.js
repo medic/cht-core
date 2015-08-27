@@ -5,6 +5,7 @@ describe('TasksCtrl controller', function() {
   var createController,
       scope,
       TaskGenerator,
+      Changes,
       $rootScope;
 
   beforeEach(module('inboxApp'));
@@ -21,11 +22,13 @@ describe('TasksCtrl controller', function() {
     scope.setSelected = function() {};
 
     TaskGenerator = sinon.stub();
+    Changes = sinon.stub();
 
     createController = function() {
       return $controller('TasksCtrl', {
         '$scope': scope,
-        'TaskGenerator': TaskGenerator
+        'TaskGenerator': TaskGenerator,
+        'Changes': Changes
       });
     };
   }));
@@ -36,6 +39,7 @@ describe('TasksCtrl controller', function() {
     $rootScope.$digest();
     setTimeout(function() {
       chai.expect(TaskGenerator.callCount).to.equal(1);
+      chai.expect(Changes.callCount).to.equal(1);
       chai.expect(scope.filterModel.type).to.equal('tasks');
       chai.expect(scope.items).to.deep.equal([ { id: 1 } ]);
       chai.expect(scope.error).to.equal(false);
@@ -53,6 +57,24 @@ describe('TasksCtrl controller', function() {
       chai.expect(scope.filterModel.type).to.equal('tasks');
       chai.expect(scope.items).to.deep.equal([]);
       chai.expect(scope.error).to.equal(true);
+      chai.expect(scope.loading).to.equal(false);
+      done();
+    });
+  });
+
+  it('generates tasks when changes received', function(done) {
+    var expected = [ { id: 1 }, { id: 2 } ];
+    TaskGenerator
+      .onFirstCall().returns(KarmaUtils.mockPromise(null, [ { id: 1 } ]))
+      .onSecondCall().returns(KarmaUtils.mockPromise(null, expected));
+    createController();
+    Changes.args[0][0].callback();
+    $rootScope.$digest();
+    setTimeout(function() {
+      chai.expect(TaskGenerator.callCount).to.equal(2);
+      chai.expect(scope.filterModel.type).to.equal('tasks');
+      chai.expect(scope.items).to.deep.equal(expected);
+      chai.expect(scope.error).to.equal(false);
       chai.expect(scope.loading).to.equal(false);
       done();
     });

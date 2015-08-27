@@ -10,8 +10,8 @@ describe('TaskGenerator service', function() {
   /* jshint quotmark: false */
   var rules =
     "define Registration {" +
-    "  lmpDate: null," +
-    "  doc: null" +
+    "  doc: null," +
+    "  reports: null" +
     "}" +
     "" +
     "define Task {" +
@@ -20,7 +20,8 @@ describe('TaskGenerator service', function() {
     "  type: null," +
     "  date: null," +
     "  title: null," +
-    "  fields: null" +
+    "  fields: null," +
+    "  resolved: null" +
     "}" +
     "" +
     "rule GenerateEvents {" +
@@ -28,22 +29,30 @@ describe('TaskGenerator service', function() {
     "    r: Registration" +
     "  }" +
     "  then {" +
+    "    var visitCount = 0;" +
+    "    r.reports.forEach(function(report) {" +
+    "      if (report.form === 'V') {" +
+    "        visitCount++;" +
+    "      }" +
+    "    });" +
     "    schedules.forEach(function(s) {" +
     "      var visit = new Task({" +
     "        _id: r.doc._id + '-' + s.id," +
     "        doc: r.doc," +
     "        type: s.type," +
-    "        date: Utils.addDate(r.lmpDate, s.days).toISOString()," +
+    "        date: Utils.addDate(Utils.getLmpDate(r.doc), s.days).toISOString()," +
     "        title: s.title," +
     "        fields: [" +
     "          {" +
     "            label: [{ content: 'Description', locale: 'en' }]," +
     "            value: s.description" +
     "          }" +
-    "        ]" +
+    "        ]," +
+    "        resolved: visitCount > 0" +
     "      });" +
     "      emit('task', visit);" +
     "      assert(visit);" +
+    "      visitCount--;" +
     "    });" +
     "  }" +
     "}";
@@ -54,6 +63,7 @@ describe('TaskGenerator service', function() {
       _id: 1,
       form: 'P',
       reported_date: 1437618272360,
+      patient_id: '059',
       fields: {
         patient_name: 'Jenny',
         last_menstrual_period: 10
@@ -63,6 +73,7 @@ describe('TaskGenerator service', function() {
       _id: 2,
       form: 'P',
       reported_date: 1437820272360,
+      patient_id: '946',
       fields: {
         patient_name: 'Sally',
         last_menstrual_period: 20
@@ -71,12 +82,16 @@ describe('TaskGenerator service', function() {
     {
       _id: 3,
       form: 'V',
-      reported_date: 1438820272360
+      reported_date: 1438820272360,
+      fields: {
+        patient_id: '059'
+      }
     },
     {
       _id: 4,
       form: 'R',
       reported_date: 1437920272360,
+      patient_id: '555',
       fields: {
         patient_name: 'Rachel'
       }
@@ -90,6 +105,13 @@ describe('TaskGenerator service', function() {
       type: 'visit',
       title: [{ content: 'ANC visit #1 for {{doc.fields.patient_name}}', locale: 'en' }],
       description: [{ content: 'Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #1. Remember to check for danger signs!', locale: 'en' }]
+    },
+    {
+      id: 'visit-2',
+      days: 100,
+      type: 'visit',
+      title: [{ content: 'ANC visit #2 for {{doc.fields.patient_name}}', locale: 'en' }],
+      description: [{ content: 'Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #2. Remember to check for danger signs!', locale: 'en' }]
     },
     {
       id: 'immunisation-1',
@@ -201,7 +223,7 @@ describe('TaskGenerator service', function() {
       }
     });
 
-    var expectations = function(actual, registration, schedule) {
+    var expectations = function(actual, registration, schedule, resolved) {
       var task = _.findWhere(actual, { _id: registration._id + '-' + schedule.id });
       chai.expect(task.type).to.equal(schedule.type);
       chai.expect(task.date).to.equal(calculateDate(registration, schedule.days));
@@ -209,17 +231,21 @@ describe('TaskGenerator service', function() {
       chai.expect(task.fields[0].label).to.deep.equal([{ content: 'Description', locale: 'en' }]);
       chai.expect(task.fields[0].value).to.deep.equal(schedule.description);
       chai.expect(task.doc._id).to.equal(registration._id);
+      chai.expect(task.resolved).to.equal(resolved);
     };
     service().then(function(actual) {
       chai.expect(Search.callCount).to.equal(1);
       chai.expect(Settings.callCount).to.equal(1);
-      chai.expect(actual.length).to.equal(6);
-      expectations(actual, dataRecords[0], schedules[0]);
-      expectations(actual, dataRecords[0], schedules[1]);
-      expectations(actual, dataRecords[1], schedules[0]);
-      expectations(actual, dataRecords[1], schedules[1]);
-      expectations(actual, dataRecords[3], schedules[0]);
-      expectations(actual, dataRecords[3], schedules[1]);
+      chai.expect(actual.length).to.equal(9);
+      expectations(actual, dataRecords[0], schedules[0], true);
+      expectations(actual, dataRecords[0], schedules[1], false);
+      expectations(actual, dataRecords[0], schedules[2], false);
+      expectations(actual, dataRecords[1], schedules[0], false);
+      expectations(actual, dataRecords[1], schedules[1], false);
+      expectations(actual, dataRecords[1], schedules[2], false);
+      expectations(actual, dataRecords[3], schedules[0], false);
+      expectations(actual, dataRecords[3], schedules[1], false);
+      expectations(actual, dataRecords[3], schedules[2], false);
       done();
     }).catch(function(err) {
       console.error(err.toString());

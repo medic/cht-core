@@ -7,12 +7,12 @@ var async = require('async');
   var inboxControllers = angular.module('inboxControllers');
 
   var tabs = [
-    { state: 'messages',      perm: 'can_view_messages'   },
-    { state: 'tasks',         perm: 'can_view_tasks'      },
-    { state: 'reports',       perm: 'can_view_reports'    },
-    { state: 'analytics',     perm: 'can_view_analytics'  },
-    { state: 'contacts',      perm: 'can_view_contacts'   },
-    { state: 'configuration', perm: 'can_configure'       }
+    { state: 'messages.detail', perm: 'can_view_messages'   },
+    { state: 'tasks.detail',    perm: 'can_view_tasks'      },
+    { state: 'reports.detail',  perm: 'can_view_reports'    },
+    { state: 'analytics',       perm: 'can_view_analytics'  },
+    { state: 'contacts.detail', perm: 'can_view_contacts'   },
+    { state: 'configuration',   perm: 'can_configure'       }
   ];
 
   inboxControllers.controller('HomeCtrl', 

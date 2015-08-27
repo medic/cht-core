@@ -98,7 +98,7 @@
         <div class="button-label">{{'Messages' | translate}}</div>
       </a>
 
-      <a ui-sref="tasks" id="tasks-tab" class="tasks-tab" ng-class="{'selected': filterModel.type === 'tasks'}" mm-auth="can_view_tasks">
+      <a ui-sref="tasks.detail" id="tasks-tab" class="tasks-tab" ng-class="{'selected': filterModel.type === 'tasks'}" mm-auth="can_view_tasks">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': filterModel.type !== 'tasks'}">
           <span class="fa fa-flag"></span>
         </div>

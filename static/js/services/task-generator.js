@@ -1,4 +1,5 @@
 var nools = require('nools'),
+    _ = require('underscore'),
     noLmpDateModifier = 4;
 
 (function () {
@@ -15,6 +16,10 @@ var nools = require('nools'),
           var result = new Date(date.getTime());
           result.setDate(result.getDate() + days);
           return result;
+        },
+        getLmpDate: function(doc) {
+          var weeks = doc.fields.last_menstrual_period || noLmpDateModifier;
+          return Utils.addDate(new Date(doc.reported_date), weeks * -7);
         }
       };
 
@@ -33,10 +38,6 @@ var nools = require('nools'),
         return nools.compile(settings.tasks.rules, options);
       };
 
-      var getLmpDate = function(doc) {
-        var weeks = doc.fields.last_menstrual_period || noLmpDateModifier;
-        return Utils.addDate(new Date(doc.reported_date), weeks * -7);
-      };
 
       var getDataRecords = function(callback) {
         var scope = {
@@ -54,7 +55,32 @@ var nools = require('nools'),
         Search(scope, options, callback);
       };
 
+      var groupReports = function(dataRecords, settings) {
+        var registrations = {},
+            registration;
+        dataRecords.forEach(function(doc) {
+          if (doc.form === settings.anc_forms.registration ||
+              doc.form === settings.anc_forms.registrationLmp) {
+            if (doc.patient_id) {
+              registration = registrations[doc.patient_id];
+              if (!registration) {
+                registration = registrations[doc.patient_id] = { reports: [] };
+              }
+              registration.doc = doc;
+            }
+          } else if (doc.fields.patient_id) {
+            registration = registrations[doc.fields.patient_id];
+            if (!registration) {
+              registration = registrations[doc.fields.patient_id] = { reports: [] };
+            }
+            registration.reports.push(doc);
+          }
+        });
+        return registrations;
+      };
+
       var getTasks = function(dataRecords, settings, callback) {
+        var registrations = groupReports(dataRecords, settings);
         var flow = getFlow(settings);
         var Registration = flow.getDefined('registration');
         var session = flow.getSession();
@@ -62,13 +88,9 @@ var nools = require('nools'),
         session.on('task', function(task) {
           tasks.push(task);
         });
-        dataRecords.forEach(function(doc) {
-          if (doc.form === settings.anc_forms.registration ||
-              doc.form === settings.anc_forms.registrationLmp) {
-            session.assert(new Registration({
-              doc: doc,
-              lmpDate: getLmpDate(doc)
-            }));
+        _.values(registrations).forEach(function(registration) {
+          if (registration.doc) {
+            session.assert(new Registration(registration));
           }
         });
         return session.match().then(
