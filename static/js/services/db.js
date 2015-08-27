@@ -23,25 +23,29 @@ var utils = require('kujua-utils');
       };
 
       var getRemote = function(name) {
-        return pouchDB(getRemoteUrl(name));
+        return getFromCache(getRemoteUrl(name));
       };
 
-      var get = function(name) {
-        if (isAdmin()) {
-          name = getRemoteUrl(name);
-        }
-        name = name || DbNameService();
+      var getLocal = function(name) {
+        return getFromCache(name || DbNameService());
+      };
+
+      var getFromCache = function(name) {
         if (!cache[name]) {
           cache[name] = pouchDB(name);
         }
         return cache[name];
       };
 
-      var updateDesignDoc = function(ddoc, updates, callback) {
+      var get = function(name) {
+        return isAdmin() ? getRemote(name) : getLocal(name);
+      };
+
+      var updateLocalDesignDoc = function(ddoc, updates, callback) {
         ddoc.app_settings = updates.app_settings;
         ddoc.views = updates.views;
         ddoc.remote_rev = updates._rev;
-        get()
+        getLocal()
           .put(ddoc)
           .then(callback)
           .catch(function(err) {
@@ -50,7 +54,14 @@ var utils = require('kujua-utils');
       };
 
       var checkLocalDesignDoc = function(rev, callback) {
-        get()
+        if (isAdmin()) {
+          // admins access ddoc from remote db directly so don't update them
+          if (callback) {
+            callback();
+          }
+          return;
+        }
+        getLocal()
           .get('_design/medic')
           .then(function(localDdoc) {
             if (localDdoc.remote_rev >= rev) {
@@ -59,7 +70,7 @@ var utils = require('kujua-utils');
             getRemote()
               .get('_design/medic')
               .then(function(remoteDdoc) {
-                updateDesignDoc(localDdoc, remoteDdoc, callback);
+                updateLocalDesignDoc(localDdoc, remoteDdoc, callback);
               })
               .catch(function(err) {
                 console.error('Error updating ddoc. Check your connection and try again.', err);
@@ -88,10 +99,6 @@ var utils = require('kujua-utils');
           getRemote()
             .changes({ live: true, since: 'now', doc_ids: [ '_design/medic' ] })
             .on('change', function(change) {
-              if (isAdmin()) {
-                // admins access ddoc from remote db directly so don't update them
-                return callback();
-              }
               checkLocalDesignDoc(change.changes[0].rev, callback);
             });
         }
