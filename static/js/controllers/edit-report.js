@@ -134,7 +134,6 @@
           formWrapper.show();
           formContainer = formWrapper.find('.container');
           formContainer.empty();
-
           formContainer.append(formHtml);
 
           init();
@@ -156,19 +155,24 @@
         }());
 
         var loadForm = function(formInternalId, docId, formInstanceData) {
-          if(!processors.html || !processors.model) {
+          if (!processors.html || !processors.model) {
             return console.log('[enketo] processors are not ready');
           }
 
           withFormByFormInternalId(formInternalId, function(formDocId, data) {
+
             var doc = data,
-                html = processors.html.transformToDocument(doc),
+                s = new XMLSerializer();
+
+            var html = processors.html.transformToDocument(doc),
                 model = processors.model.transformToDocument(doc);
 
-            showForm(docId, formInternalId,
-                html.documentElement.innerHTML,
-                model.documentElement.innerHTML,
-                formInstanceData);
+            showForm(
+              docId, formInternalId,
+                s.serializeToString(html.documentElement),
+                s.serializeToString(model.documentElement),
+                formInstanceData
+            );
           });
         };
 
@@ -176,8 +180,8 @@
           DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
             // find our form
             _.forEach(res.rows, function(row) {
-              if(!row.doc._attachments.xml) { return; }
-              if(row.doc.internalId !== formInternalId) { return; }
+              if (!row.doc._attachments.xml) { return; }
+              if (row.doc.internalId !== formInternalId) { return; }
               DB.get().getAttachment(row.id, 'xml').then(function(xmlBlob) {
                 var reader = new FileReader();
                 reader.addEventListener('loadend', function() {
@@ -223,13 +227,13 @@
             DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
               _.forEach(res.rows, function(row) {
                 var xml = row.doc._attachments.xml;
-                if(!xml) { return; }
+                if (!xml) { return; }
                 formsVisible = true;
                 addFormToTable(row.doc.internalId, row.doc.title);
               });
 
               $('.loading-forms').hide();
-              if(!formsVisible) { $('.status.no-forms').show(); }
+              if (!formsVisible) { $('.status.no-forms').show(); }
             });
           }());
         };

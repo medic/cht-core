@@ -8604,7 +8604,6 @@ define( function(require, exports, module){
     // test touchscreen presence
     if ( ( 'ontouchstart' in window ) || window.DocumentTouch && document instanceof DocumentTouch ) {
         features.touch = true;
-        //document.documentElement.classList += ' ' + 'touch';
         document.documentElement.classList.add('touch');
     } else {
         features.touch = false;
