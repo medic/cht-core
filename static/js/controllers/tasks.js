@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksCtrl',
-    ['$timeout', '$scope', '$state', 'TaskGenerator',
-    function ($timeout, $scope, $state, TaskGenerator) {
+    ['$timeout', '$scope', '$state', 'TaskGenerator', 'Changes',
+    function ($timeout, $scope, $state, TaskGenerator, Changes) {
 
       var _selectedId;
 
@@ -32,8 +32,11 @@
         }
       };
 
-      var updateTasks = function() {
-        $scope.loading = true;
+      var updateTasks = function(options) {
+        options = options || {};
+        if (!options.silent) {
+          $scope.loading = true;
+        }
         $scope.error = false;
         TaskGenerator()
           .then(function(tasks) {
@@ -53,6 +56,22 @@
       $scope.filterModel.type = 'tasks';
       $scope.setTasks();
       updateTasks();
+
+      Changes({
+        key: 'tasks-list',
+        callback: function() {
+          updateTasks({ silent: true });
+        },
+        filter: function(change) {
+          if ($scope.filterModel.type !== 'tasks') {
+            return false;
+          }
+          if (change.newDoc) {
+            return change.newDoc.form;
+          }
+          return true;
+        }
+      });
     }
   ]);
 

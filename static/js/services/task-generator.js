@@ -56,19 +56,20 @@ var nools = require('nools'),
       };
 
       var groupReports = function(dataRecords, settings) {
-        var registrations = {};
+        var registrations = {},
+            registration;
         dataRecords.forEach(function(doc) {
           if (doc.form === settings.anc_forms.registration ||
               doc.form === settings.anc_forms.registrationLmp) {
             if (doc.patient_id) {
-              var registration = registrations[doc.patient_id];
+              registration = registrations[doc.patient_id];
               if (!registration) {
                 registration = registrations[doc.patient_id] = { reports: [] };
               }
               registration.doc = doc;
             }
           } else if (doc.fields.patient_id) {
-            var registration = registrations[doc.fields.patient_id];
+            registration = registrations[doc.fields.patient_id];
             if (!registration) {
               registration = registrations[doc.fields.patient_id] = { reports: [] };
             }
