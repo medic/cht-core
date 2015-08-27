@@ -3,7 +3,7 @@
     <li class="animate-repeat" ng-show="!loading && !error" ng-repeat="task in items | orderBy:'date'" ng-click="select(task._id)" data-record-id="{{task._id}}" ng-class="{'selected': task._id === loadingContent || !loadingContent && task._id === selected._id}">
       <div class="message-wrapper">
         <span class="mm-badge">
-          <span class="fa fa-fw" ng-class="{
+          <span class="fa" ng-class="{
             'fa-user': task.type === 'visit',
             'fa-calendar': task.type !== 'visit'
           }"></span>
