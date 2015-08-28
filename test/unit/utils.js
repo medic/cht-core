@@ -12,6 +12,34 @@ exports.tearDown = function(callback) {
     callback();
 };
 
+exports['getVal supports string keys'] = function(test) {
+    var doc = {
+        lmp_date: '8000001'
+    };
+    test.equals(utils.getVal(doc, 'lmp_date'), '8000001');
+    test.equals(utils.getVal(doc, 'foo'), undefined);
+    // non-string keys return undefined
+    test.equals(utils.getVal(doc, 10), undefined);
+    test.done();
+};
+
+exports['getVal supports dot notation'] = function(test) {
+    var doc = {
+        fields: {
+            baz: '99938388',
+            bim: {
+              bop: 15,
+              bam: [1,2,3]
+            }
+        }
+    };
+    test.equals(utils.getVal(doc, 'fields.baz'), '99938388');
+    test.equals(utils.getVal(doc, 'fields.bim.bop'), 15);
+    test.same(utils.getVal(doc, 'fields.bim.bam'), [1,2,3]);
+    test.equals(utils.getVal(doc, 'fields.404'), undefined);
+    test.done();
+};
+
 exports['updateable returns true when _rev the same'] = function(test) {
     test.ok(utils.updateable({ _rev: '1' }, { _rev: '1', x: 1 }));
     test.done();
