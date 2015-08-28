@@ -169,8 +169,8 @@
 
             showForm(
               docId, formInternalId,
-                s.serializeToString(html.documentElement),
-                s.serializeToString(model.documentElement),
+                s.serializeToString(html.documentElement.firstElementChild),
+                s.serializeToString(model.documentElement.firstElementChild),
                 formInstanceData
             );
           });
