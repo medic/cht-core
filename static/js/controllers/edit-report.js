@@ -206,9 +206,9 @@
           loadForm(doc.form, doc._id, doc.content);
         };
 
-        window.loadXmlFrom = function(formInternalId) {
+        window.loadXmlFrom = function(formInternalId, docId, content) {
           $('#create-report').modal('hide');
-          loadForm(formInternalId);
+          loadForm(formInternalId, docId, content);
           $('#edit-report').modal('show');
         };
 

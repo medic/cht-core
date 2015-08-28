@@ -33,6 +33,9 @@
             <label>{{field.label | translateFrom:selected}}</label>
             <p>{{field.value | translateFrom:selected}}</p>
           </li>
+          <li>
+            <a class="btn btn-default" ng-click="performAction(action)" ng-repeat="action in selected.actions">{{action.label}}</a>
+          </li>
         </ul>
       </div>
 

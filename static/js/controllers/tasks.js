@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 (function () {
 
   'use strict';
@@ -40,7 +42,7 @@
         $scope.error = false;
         TaskGenerator()
           .then(function(tasks) {
-            $scope.setTasks(tasks);
+            $scope.setTasks(_.where(tasks, { resolved: false }));
             $scope.loading = false;
             selectItem();
           })

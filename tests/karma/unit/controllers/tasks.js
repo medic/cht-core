@@ -34,14 +34,14 @@ describe('TasksCtrl controller', function() {
   }));
 
   it('set up controller', function(done) {
-    TaskGenerator.returns(KarmaUtils.mockPromise(null, [ { id: 1 } ]));
+    TaskGenerator.returns(KarmaUtils.mockPromise(null, [ { id: 1, resolved: false } ]));
     createController();
     $rootScope.$digest();
     setTimeout(function() {
       chai.expect(TaskGenerator.callCount).to.equal(1);
       chai.expect(Changes.callCount).to.equal(1);
       chai.expect(scope.filterModel.type).to.equal('tasks');
-      chai.expect(scope.items).to.deep.equal([ { id: 1 } ]);
+      chai.expect(scope.items).to.deep.equal([ { id: 1, resolved: false } ]);
       chai.expect(scope.error).to.equal(false);
       chai.expect(scope.loading).to.equal(false);
       done();
@@ -63,9 +63,12 @@ describe('TasksCtrl controller', function() {
   });
 
   it('generates tasks when changes received', function(done) {
-    var expected = [ { id: 1 }, { id: 2 } ];
+    var expected = [
+      { id: 1, resolved: false },
+      { id: 2, resolved: false }
+    ];
     TaskGenerator
-      .onFirstCall().returns(KarmaUtils.mockPromise(null, [ { id: 1 } ]))
+      .onFirstCall().returns(KarmaUtils.mockPromise(null, [ { id: 1, resolved: false } ]))
       .onSecondCall().returns(KarmaUtils.mockPromise(null, expected));
     createController();
     Changes.args[0][0].callback();

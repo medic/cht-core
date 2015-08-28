@@ -1,6 +1,6 @@
 <div id="tasks-list" class="col-sm-4 inbox-items">
   <ul ng-show="!loading && !error">
-    <li class="animate-repeat" ng-repeat="task in items | orderBy:'date'" ng-click="select(task._id)" data-record-id="{{task._id}}" ng-class="{'selected': task._id === loadingContent || !loadingContent && task._id === selected._id}" ng-hide="task.resolved">
+    <li ng-repeat="task in items | orderBy:'date'" ng-click="select(task._id)" data-record-id="{{task._id}}" ng-class="{'selected': task._id === loadingContent || !loadingContent && task._id === selected._id}">
       <div class="message-wrapper">
         <span class="mm-badge">
           <span class="fa" ng-class="{
