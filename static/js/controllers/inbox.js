@@ -547,7 +547,7 @@ require('moment/locales');
           $('#edit-report').modal('show');
           if($scope.selected.content_type === 'xml') {
             /* globals loadFormFor */
-            loadFormFor($scope.selected, '.raw-report-content p');
+            loadFormFor($scope.selected);
           }
         } else {
           $rootScope.$broadcast('EditContactInit', record);
