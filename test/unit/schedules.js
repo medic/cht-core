@@ -21,6 +21,28 @@ exports['getOffset returns durations for good syntax'] = function(test) {
     test.done();
 };
 
+exports['support string on start_from setting'] = function(test) {
+    var doc = {
+        lmp_date: '8000001'
+    };
+    test.equals(schedules._getVal(doc, 'lmp_date'), '8000001');
+    test.done();
+};
+
+exports['support dot notation on start_from setting'] = function(test) {
+    var doc = {
+        fields: {
+            baz: '99938388',
+            bim: {
+              boop: '8773383'
+            }
+        }
+    };
+    test.equals(schedules._getVal(doc, 'fields.baz'), '99938388');
+    test.equals(schedules._getVal(doc, 'fields.bim.boop'), '8773383');
+    test.done();
+};
+
 exports['assignSchedule returns false if already has scheduled_task for that name'] = function(test) {
 
     var doc = {
