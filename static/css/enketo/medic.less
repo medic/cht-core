@@ -3,13 +3,19 @@
  * viewed full-screen.  These overrides are required when enketo is embedded in
  * a modal dialog.
  */
-.modal-dialog .enketo {
-  .container, .form-footer {
-    width: 100%;
-  }
-}
 .enketo {
   @import "core.less";
+}
+
+.enketo {
+  .form-footer {
+    text-align: center;
+    margin: 0;
+  }
+  .container, .form-footer {
+    width: 100%;
+    padding: 0;
+  }
 }
 
 .datepicker-dropdown {
