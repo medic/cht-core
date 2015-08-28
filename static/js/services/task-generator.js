@@ -61,10 +61,11 @@ var nools = require('nools'),
         dataRecords.forEach(function(doc) {
           if (doc.form === settings.anc_forms.registration ||
               doc.form === settings.anc_forms.registrationLmp) {
-            if (doc.patient_id) {
-              registration = registrations[doc.patient_id];
+            var patientId = doc.patient_id || doc.fields.patient_id;
+            if (patientId) {
+              registration = registrations[patientId];
               if (!registration) {
-                registration = registrations[doc.patient_id] = { reports: [] };
+                registration = registrations[patientId] = { reports: [] };
               }
               registration.doc = doc;
             }
