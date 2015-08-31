@@ -8604,7 +8604,7 @@ define( function(require, exports, module){
     // test touchscreen presence
     if ( ( 'ontouchstart' in window ) || window.DocumentTouch && document instanceof DocumentTouch ) {
         features.touch = true;
-        document.documentElement.classList.add('touch');
+        document.documentElement.classList.add( 'touch' );
     } else {
         features.touch = false;
     }
@@ -12731,10 +12731,8 @@ define( function(require, exports, module){
         };
 
         Dropdown.prototype.keydown = function( e ) {
-            var k = e.keyCode;
-
-            if (k != 27 && k != 38 && k != 40) {
-              return;
+            if ( !/^(38|40|27)$/.test( e.keyCode ) ) {
+                return;
             }
 
             var $this = $( this );
