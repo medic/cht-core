@@ -73,12 +73,16 @@ exports.tearDown = function(callback) {
 });
 
 exports['when already logged in redirect to app'] = function(test) {
-  test.expect(4);
-  var getUserCtx = sinon.stub(auth, 'getUserCtx').callsArgWith(1);
+  test.expect(7);
+  var getUserCtx = sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, { name: 'josh' });
   var redirect = sinon.stub(res, 'redirect');
+  var cookie = sinon.stub(res, 'cookie').returns(res);
   controller.get(req, res);
   test.equals(getUserCtx.callCount, 1);
   test.same(getUserCtx.args[0][0], req);
+  test.equals(cookie.callCount, 1);
+  test.equals(cookie.args[0][0], 'userCtx');
+  test.equals(cookie.args[0][1], '{"name":"josh"}');
   test.equals(redirect.callCount, 1);
   test.equals(redirect.args[0][0], '/lg/_design/medic/_rewrite/');
   test.done();

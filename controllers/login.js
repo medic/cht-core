@@ -99,6 +99,15 @@ var createSession = function(req, callback) {
   }, callback);
 };
 
+var setSessionCookie = function(res, cookie) {
+  var sessionId = SESSION_COOKIE_RE.exec(cookie)[1];
+  res.cookie('AuthSession', sessionId, { httpOnly: true });
+};
+
+var setUserCtxCookie = function(res, userCtx) {
+  res.cookie('userCtx', JSON.stringify(userCtx));
+};
+
 var setCookies = function(res, sessionRes) {
   var sessionCookie = getSessionCookie(sessionRes);
   if (!sessionCookie) {
@@ -112,9 +121,8 @@ var setCookies = function(res, sessionRes) {
       res.status(401).json({ error: 'Error getting authCtx' });
       return;
     }
-    var sessionId = SESSION_COOKIE_RE.exec(sessionCookie)[1];
-    res.cookie('AuthSession', sessionId, { httpOnly: true });
-    res.cookie('userCtx', JSON.stringify(userCtx));
+    setSessionCookie(res, sessionCookie);
+    setUserCtxCookie(res, userCtx);
     res.json({ success: true });
   });
 };
@@ -122,20 +130,21 @@ var setCookies = function(res, sessionRes) {
 module.exports = {
   safePath: safePath,
   get: function(req, res) {
-    auth.getUserCtx(req, function(err) {
+    auth.getUserCtx(req, function(err, userCtx) {
       var redirect = safePath(req.query.redirect);
       if (!err) {
         // already logged in
+        setUserCtxCookie(res, userCtx);
         res.redirect(redirect);
-      } else {
-        renderLogin(redirect, function(err, body) {
-          if (err) {
-            console.error('Could not find login page');
-            throw err;
-          }
-          res.send(body);
-        });
+        return;
       }
+      renderLogin(redirect, function(err, body) {
+        if (err) {
+          console.error('Could not find login page');
+          throw err;
+        }
+        res.send(body);
+      });
     });
   },
   post: function(req, res) {
