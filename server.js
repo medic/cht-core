@@ -77,6 +77,7 @@ app.get('/', function(req, res) {
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.get(pathPrefix + 'login', login.get);
+app.post(pathPrefix + 'login', jsonParser, login.post);
 
 app.all(appPrefix + 'update_settings/*', function(req, res) {
   // don't audit the app settings

@@ -1,10 +1,12 @@
 var fs = require('fs'),
     url = require('url'),
     path = require('path'),
+    request = require('request'),
     _ = require('underscore'),
     auth = require('../auth'),
     db = require('../db'),
     config = require('../config'),
+    SESSION_COOKIE_RE = /AuthSession\=([^;]*);/,
     loginTemplate;
 
 _.templateSettings = {
@@ -58,6 +60,7 @@ var renderLogin = function(redirect, callback) {
       return callback(err);
     }
     var body = template({
+      action: path.join('/', db.settings.db, 'login'),
       redirect: redirect,
       branding: {
         name: 'Medic Mobile'
@@ -71,6 +74,48 @@ var renderLogin = function(redirect, callback) {
       }
     });
     callback(null, body);
+  });
+};
+
+var getSessionCookie = function(res) {
+  return _.find(res.headers['set-cookie'], function(cookie) {
+    return cookie.indexOf('AuthSession') === 0;
+  });
+};
+
+var createSession = function(req, callback) {
+  var user = req.body.user;
+  var password = req.body.password;
+  request.post({
+    url: url.format({
+      protocol: db.settings.protocol,
+      hostname: db.settings.host,
+      port: db.settings.port,
+      pathname: '_session'
+    }),
+    json: true,
+    body: { name: user, password: password },
+    auth: { user: user, pass: password }
+  }, callback);
+};
+
+var setCookies = function(res, sessionRes) {
+  var sessionCookie = getSessionCookie(sessionRes);
+  if (!sessionCookie) {
+    res.status(401).json({ error: 'Not logged in' });
+    return;
+  }
+  var options = { headers: { Cookie: sessionCookie } };
+  auth.getUserCtx(options, function(err, userCtx) {
+    if (err) {
+      console.error('Error getting authCtx', err);
+      res.status(401).json({ error: 'Error getting authCtx' });
+      return;
+    }
+    var sessionId = SESSION_COOKIE_RE.exec(sessionCookie)[1];
+    res.cookie('AuthSession', sessionId, { httpOnly: true });
+    res.cookie('userCtx', JSON.stringify(userCtx));
+    res.json({ success: true });
   });
 };
 
@@ -91,6 +136,20 @@ module.exports = {
           res.send(body);
         });
       }
+    });
+  },
+  post: function(req, res) {
+    createSession(req, function(err, sessionRes) {
+      if (err) {
+        console.error('Error logging in', err);
+        res.status(500).json({ error: 'Unexpected error logging in' });
+        return;
+      }
+      if (sessionRes.statusCode !== 200) {
+        res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
+        return;
+      }
+      setCookies(res, sessionRes);
     });
   }
 };
