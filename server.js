@@ -1,5 +1,4 @@
-var fs = require('fs'),
-    _ = require('underscore'),
+var _ = require('underscore'),
     bodyParser = require('body-parser'),
     express = require('express'),
     morgan = require('morgan'),
@@ -17,6 +16,7 @@ var fs = require('fs'),
     target = 'http://' + db.settings.host + ':' + db.settings.port,
     proxy = require('http-proxy').createProxyServer({ target: target }),
     proxyForAuditing = require('http-proxy').createProxyServer({ target: target }),
+    login = require('./controllers/login'),
     activePregnancies = require('./controllers/active-pregnancies'),
     upcomingAppointments = require('./controllers/upcoming-appointments'),
     missedAppointments = require('./controllers/missed-appointments'),
@@ -35,26 +35,16 @@ var fs = require('fs'),
     forms = require('./controllers/forms'),
     fti = require('./controllers/fti'),
     createDomain = require('domain').create,
-    safe_redirect = require('./safe-redirect'),
     staticResources = /\/(templates|static)\//,
     appcacheManifest = /manifest\.appcache/,
     pathPrefix = '/' + db.settings.db + '/',
-    appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
-    loginTemplate;
+    appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/';
 
 http.globalAgent.maxSockets = 100;
 
 _.templateSettings = {
   escape: /\{\{(.+?)\}\}/g,
 };
-
-fs.readFile(path.join(__dirname, 'templates', 'login', 'index.html'), { encoding: 'utf-8' }, function(err, data) {
-  if (err) {
-    console.error('Could not find login page');
-    throw err;
-  }
-  loginTemplate = _.template(data);
-});
 
 // requires content-type application/json header
 var jsonParser = bodyParser.json({limit: '32mb'});
@@ -90,29 +80,7 @@ app.get('/', function(req, res) {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.get(pathPrefix + 'login', function(req, res) {
-  auth.getUserCtx(req, function(err) {
-    var redirectPath = safe_redirect(appPrefix, req.query.redirect);
-    if (!err) {
-      // already logged in
-      res.redirect(redirectPath);
-    } else {
-      res.send(loginTemplate({
-        redirect: redirectPath,
-        branding: {
-          name: 'Medic Mobile'
-        },
-        translations: {
-          login: config.translate('login'),
-          loginerror: config.translate('login.error'),
-          loginincorrect: config.translate('login.incorrect'),
-          username: config.translate('User Name'),
-          password: config.translate('Password')
-        }
-      }));
-    }
-  });
-});
+app.get(pathPrefix + 'login', login.get);
 
 app.all(appPrefix + 'update_settings/*', function(req, res) {
   // don't audit the app settings
