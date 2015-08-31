@@ -42,10 +42,6 @@ var _ = require('underscore'),
 
 http.globalAgent.maxSockets = 100;
 
-_.templateSettings = {
-  escape: /\{\{(.+?)\}\}/g,
-};
-
 // requires content-type application/json header
 var jsonParser = bodyParser.json({limit: '32mb'});
 

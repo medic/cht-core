@@ -7,17 +7,9 @@ var fs = require('fs'),
     config = require('../config'),
     loginTemplate;
 
-fs.readFile(
-  path.join(__dirname, '..', 'templates', 'login', 'index.html'),
-  { encoding: 'utf-8' },
-  function(err, data) {
-    if (err) {
-      console.error('Could not find login page');
-      throw err;
-    }
-    loginTemplate = _.template(data);
-  }
-);
+_.templateSettings = {
+  escape: /\{\{(.+?)\}\}/g,
+};
 
 var safePath = function(requested) {
   var safePrefix = path.join('/', db.settings.db, '_design', db.settings.ddoc, '_rewrite');
@@ -43,6 +35,45 @@ var safePath = function(requested) {
   return requested;
 };
 
+var getLoginTemplate = function(callback) {
+  if (loginTemplate) {
+    return callback(null, loginTemplate);
+  }
+  fs.readFile(
+    path.join(__dirname, '..', 'templates', 'login', 'index.html'),
+    { encoding: 'utf-8' },
+    function(err, data) {
+      if (err) {
+        return callback(err);
+      }
+      loginTemplate = _.template(data);
+      callback(null, loginTemplate);
+    }
+  );
+};
+
+var renderLogin = function(redirect, callback) {
+  getLoginTemplate(function(err, template) {
+    if (err) {
+      return callback(err);
+    }
+    var body = template({
+      redirect: redirect,
+      branding: {
+        name: 'Medic Mobile'
+      },
+      translations: {
+        login: config.translate('login'),
+        loginerror: config.translate('login.error'),
+        loginincorrect: config.translate('login.incorrect'),
+        username: config.translate('User Name'),
+        password: config.translate('Password')
+      }
+    });
+    callback(null, body);
+  });
+};
+
 module.exports = {
   safePath: safePath,
   get: function(req, res) {
@@ -52,19 +83,13 @@ module.exports = {
         // already logged in
         res.redirect(redirect);
       } else {
-        res.send(loginTemplate({
-          redirect: redirect,
-          branding: {
-            name: 'Medic Mobile'
-          },
-          translations: {
-            login: config.translate('login'),
-            loginerror: config.translate('login.error'),
-            loginincorrect: config.translate('login.incorrect'),
-            username: config.translate('User Name'),
-            password: config.translate('Password')
+        renderLogin(redirect, function(err, body) {
+          if (err) {
+            console.error('Could not find login page');
+            throw err;
           }
-        }));
+          res.send(body);
+        });
       }
     });
   }
