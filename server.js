@@ -38,8 +38,8 @@ var fs = require('fs'),
     safe_redirect = require('./safe-redirect'),
     staticResources = /\/(templates|static)\//,
     appcacheManifest = /manifest\.appcache/,
-    pathPrefix = '/' + db.settings.db,
-    appPrefix = pathPrefix + '/_design/' + db.settings.ddoc + '/_rewrite',
+    pathPrefix = '/' + db.settings.db + '/',
+    appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
     loginTemplate;
 
 http.globalAgent.maxSockets = 100;
@@ -90,7 +90,7 @@ app.get('/', function(req, res) {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.get(pathPrefix + '/login', function(req, res) {
+app.get(pathPrefix + 'login', function(req, res) {
   auth.getUserCtx(req, function(err) {
     var redirectPath = safe_redirect(appPrefix, req.query.redirect);
     if (!err) {
@@ -114,15 +114,15 @@ app.get(pathPrefix + '/login', function(req, res) {
   });
 });
 
-app.all(appPrefix + '/update_settings/*', function(req, res) {
+app.all(appPrefix + 'update_settings/*', function(req, res) {
   // don't audit the app settings
   proxy.web(req, res);
 });
-app.all(pathPrefix + '/_revs_diff', function(req, res) {
+app.all(pathPrefix + '_revs_diff', function(req, res) {
   // don't audit the _revs_diff
   proxy.web(req, res);
 });
-app.all(pathPrefix + '/_local/*', function(req, res) {
+app.all(pathPrefix + '_local/*', function(req, res) {
   // don't audit the _local docs
   proxy.web(req, res);
 });
@@ -485,7 +485,7 @@ var writeHeaders = function(req, res, headers, redirect) {
       _statusCode = 302;
       res.setHeader(
         'Location',
-        pathPrefix + '/login?redirect=' + encodeURIComponent(req.url)
+        pathPrefix + 'login?redirect=' + encodeURIComponent(req.url)
       );
     }
     res.oldWriteHead(_statusCode, _headers);
@@ -570,7 +570,7 @@ var notLoggedIn = function(req, res, showPrompt) {
     res.end('not logged in');
   } else {
     // web access - redirect to login page
-    res.redirect(301, pathPrefix + '/login?redirect=' + encodeURIComponent(req.url));
+    res.redirect(301, pathPrefix + 'login?redirect=' + encodeURIComponent(req.url));
   }
 };
 
