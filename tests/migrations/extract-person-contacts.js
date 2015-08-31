@@ -1,17 +1,10 @@
 var sinon = require('sinon'),
     db = require('../../db'),
+    utils = require('../utils'),
     migration = require('../../migrations/extract-person-contacts');
 
 exports.tearDown = function (callback) {
-  if (db.medic.view.restore) {
-    db.medic.view.restore();
-  }
-  if (db.medic.get.restore) {
-    db.medic.get.restore();
-  }
-  if (db.medic.insert.restore) {
-    db.medic.insert.restore();
-  }
+  utils.restore(db.medic.view, db.medic.get, db.medic.insert);
   callback();
 };
 

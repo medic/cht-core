@@ -5,6 +5,7 @@ var controller = require('../../controllers/export-data'),
     childProcess = require('child_process'),
     jszip = require('jszip'),
     sinon = require('sinon'),
+    utils = require('../utils'),
     moment = require('moment');
 
 exports.setUp = function(callback) {
@@ -15,21 +16,13 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-  if (fti.get.restore) {
-    fti.get.restore();
-  }
-  if (db.medic.view.restore) {
-    db.medic.view.restore();
-  }
-  if (config.translate.restore) {
-    config.translate.restore();
-  }
-  if (config.get.restore) {
-    config.get.restore();
-  }
-  if (childProcess.spawn.restore) {
-    childProcess.spawn.restore();
-  }
+  utils.restore(
+    fti.get,
+    db.medic.view,
+    config.translate,
+    config.get,
+    childProcess.spawn
+  );
   callback();
 };
 

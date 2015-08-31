@@ -1,14 +1,10 @@
 var controller = require('../../controllers/records'),
     db = require('../../db'),
+    utils = require('../utils'),
     sinon = require('sinon');
 
 exports.tearDown = function (callback) {
-  if (db.request.restore) {
-    db.request.restore();
-  }
-  if (db.getPath.restore) {
-    db.getPath.restore();
-  }
+  utils.restore(db.request, db.getPath);
   callback();
 };
 

@@ -1,15 +1,11 @@
 var http = require('http'),
     sinon = require('sinon'),
     auth = require('../auth'),
+    utils = require('./utils'),
     config = require('../config');
 
 exports.tearDown = function (callback) {
-  if (http.get.restore) {
-    http.get.restore();
-  }
-  if (config.get.restore) {
-    config.get.restore();
-  }
+  utils.restore(http.get, config.get);
   callback();
 };
 

@@ -2,6 +2,7 @@ var controller = require('../../controllers/missed-appointments'),
     db = require('../../db'),
     config = require('../../config'),
     moment = require('moment'),
+    utils = require('../utils'),
     sinon = require('sinon');
 
 var clock;
@@ -19,13 +20,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function (callback) {
-  clock.restore();
-  if (db.fti.restore) {
-    db.fti.restore();
-  }
-  if (config.get.restore) {
-    config.get.restore();
-  }
+  utils.restore(clock, db.fti, config.get);
   callback();
 };
 

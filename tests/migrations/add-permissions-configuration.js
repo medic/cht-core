@@ -1,17 +1,10 @@
 var sinon = require('sinon'),
     db = require('../../db'),
+    utils = require('../utils'),
     migration = require('../../migrations/add-permissions-configuration');
 
 exports.tearDown = function (callback) {
-  if (db.getSettings.restore) {
-    db.getSettings.restore();
-  }
-  if (db.request.restore) {
-    db.request.restore();
-  }
-  if (db.getPath.restore) {
-    db.getPath.restore();
-  }
+  utils.restore(db.getSettings, db.request, db.getPath);
   db.settings = {};
   callback();
 };

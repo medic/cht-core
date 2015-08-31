@@ -1,20 +1,15 @@
 var controller = require('../../controllers/messages'),
     db = require('../../db'),
+    utils = require('../utils'),
     sinon = require('sinon');
 
 exports.tearDown = function (callback) {
-  if (db.medic.view.restore) {
-    db.medic.view.restore();
-  }
-  if (db.medic.updateWithHandler.restore) {
-    db.medic.updateWithHandler.restore();
-  }
-  if (controller._updateCouchDB.restore) {
-    controller._updateCouchDB.restore();
-  }
-  if (controller.getMessage.restore) {
-    controller.getMessage.restore();
-  }
+  utils.restore(
+    db.medic.view,
+    db.medic.updateWithHandler,
+    controller._updateCouchDB,
+    controller.getMessage
+  );
   callback();
 };
 

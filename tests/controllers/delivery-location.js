@@ -1,11 +1,10 @@
 var controller = require('../../controllers/delivery-location'),
     db = require('../../db'),
+    utils = require('../utils'),
     sinon = require('sinon');
 
 exports.tearDown = function (callback) {
-  if (db.medic.view.restore) {
-    db.medic.view.restore();
-  }
+  utils.restore(db.medic.view);
   callback();
 };
 

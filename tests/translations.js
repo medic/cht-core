@@ -3,25 +3,18 @@ var sinon = require('sinon'),
     properties = require('properties'),
     config = require('../config'),
     translations = require('../translations'),
+    utils = require('./utils'),
     db = require('../db');
 
-var restore = function(fns) {
-  fns.forEach(function(fn) {
-    if (fn.restore) {
-      fn.restore();
-    }
-  });
-};
-
 exports.tearDown = function (callback) {
-  restore([
+  utils.restore(
     fs.readdir,
     fs.readFile,
     config.get,
     properties.parse,
     db.medic.get,
     db.medic.insert
-  ]);
+  );
   callback();
 };
 

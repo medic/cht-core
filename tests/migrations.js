@@ -1,17 +1,10 @@
 var sinon = require('sinon'),
     migrations = require('../migrations'),
+    utils = require('./utils'),
     db = require('../db');
 
 exports.tearDown = function (callback) {
-  if (db.medic.view.restore) {
-    db.medic.view.restore();
-  }
-  if (db.medic.insert.restore) {
-    db.medic.insert.restore();
-  }
-  if (migrations.get.restore) {
-    migrations.get.restore();
-  }
+  utils.restore(db.medic.view, db.medic.insert, migrations.get);
   callback();
 };
 

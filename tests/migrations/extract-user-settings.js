@@ -1,5 +1,6 @@
 var sinon = require('sinon'),
     db = require('../../db'),
+    utils = require('../utils'),
     migration = require('../../migrations/extract-user-settings');
 
 var ddoc = { id: '_design/_auth', key: '_design/_auth' };
@@ -41,15 +42,7 @@ var userB = {
 };
 
 exports.tearDown = function (callback) {
-  if (db._users.list.restore) {
-    db._users.list.restore();
-  }
-  if (db.medic.insert.restore) {
-    db.medic.insert.restore();
-  }
-  if (db._users.insert.restore) {
-    db._users.insert.restore();
-  }
+  utils.restore(db._users.list, db._users.insert, db.medic.insert);
   callback();
 };
 

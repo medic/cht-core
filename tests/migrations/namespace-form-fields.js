@@ -1,24 +1,17 @@
 var sinon = require('sinon'),
     db = require('../../db'),
     config = require('../../config'),
+    utils = require('../utils'),
     migration = require('../../migrations/namespace-form-fields');
 
 exports.tearDown = function (callback) {
-  if (db.medic.view.restore) {
-    db.medic.view.restore();
-  }
-  if (db.medic.get.restore) {
-    db.medic.get.restore();
-  }
-  if (db.medic.insert.restore) {
-    db.medic.insert.restore();
-  }
-  if (config.get.restore) {
-    config.get.restore();
-  }
-  if (config.load.restore) {
-    config.load.restore();
-  }
+  utils.restore(
+    db.medic.view,
+    db.medic.get,
+    db.medic.insert,
+    config.get,
+    config.load
+  );
   callback();
 };
 

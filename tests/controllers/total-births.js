@@ -1,6 +1,7 @@
 var controller = require('../../controllers/total-births'),
     db = require('../../db'),
     config = require('../../config'),
+    utils = require('../utils'),
     sinon = require('sinon');
 
 exports.setUp = function(callback) {
@@ -9,12 +10,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function (callback) {
-  if (db.fti.restore) {
-    db.fti.restore();
-  }
-  if (config.get.restore) {
-    config.get.restore();
-  }
+  utils.restore(db.fti, config.get);
   callback();
 };
 

@@ -1,6 +1,7 @@
 var controller = require('../../controllers/fti'),
     utils = require('../../controllers/utils'),
     config = require('../../config'),
+    testUtils = require('../utils'),
     sinon = require('sinon');
 
 exports.setUp = function(callback) {
@@ -8,12 +9,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function (callback) {
-  if (utils.fti.restore) {
-    utils.fti.restore();
-  }
-  if (config.get.restore) {
-    config.get.restore();
-  }
+  testUtils.restore(utils.fti, config.get);
   callback();
 };
 

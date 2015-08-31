@@ -3,6 +3,7 @@ var sinon = require('sinon'),
     schedule = require('../../schedules/stats-submission'),
     db = require('../../db'),
     config = require('../../config'),
+    utils = require('../utils'),
     successfulResponse = JSON.stringify({ payload: { success: true }});
 
 var clock;
@@ -12,18 +13,14 @@ exports.setUp = function(callback) {
   callback();
 };
 
-var restore = function(fn) {
-  if (fn.restore) {
-    fn.restore();
-  }
-};
-
 exports.tearDown = function (callback) {
-  clock.restore();
-  restore(db.medic.view);
-  restore(db.medic.insert);
-  restore(config.get);
-  restore(request.post);
+  utils.restore(
+    clock,
+    db.medic.view,
+    db.medic.insert,
+    config.get,
+    request.post
+  );
   callback();
 };
 
