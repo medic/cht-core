@@ -196,7 +196,7 @@
           });
         };
 
-        window.loadFormFor = function(doc) {
+        $scope.$root.loadFormFor = function(doc) {
           loadForm(doc.form, doc._id, doc.content);
         };
 
@@ -206,7 +206,7 @@
           $('#edit-report').modal('show');
         };
 
-        window.loadComposer = function() {
+        $scope.$root.loadComposer = function() {
           (function() {
             $scope.$parent.loading = true;
 

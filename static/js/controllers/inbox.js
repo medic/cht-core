@@ -546,8 +546,7 @@ require('moment/locales');
           $('#edit-report [name=facility]').select2('val', val);
           $('#edit-report').modal('show');
           if($scope.selected.content_type === 'xml') {
-            /* globals loadFormFor */
-            loadFormFor($scope.selected);
+            $scope.loadFormFor($scope.selected);
           }
         } else {
           $rootScope.$broadcast('EditContactInit', record);
@@ -774,11 +773,6 @@ require('moment/locales');
         feedback.submit(message, APP_CONFIG, function(err) {
           pane.done(translateFilter('Error saving feedback'), err);
         });
-      };
-
-      $scope.loadComposer = function() {
-        /* globals loadComposer */
-        loadComposer();
       };
 
       UserDistrict(function() {
