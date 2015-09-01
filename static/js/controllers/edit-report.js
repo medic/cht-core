@@ -216,7 +216,7 @@
             // TODO not sure why we can't have a fresh table every time, or
             // (1) get the list of forms from a service and (2) store them
             // in `$scope`
-            $('.status.loading-forms').show();
+            $scope.$parent.loading = true;
             $('#available-enketo-forms').empty();
             $('.status.no-forms').hide();
             $('#edit-report [name=facility]').select2('val', null);
@@ -229,7 +229,7 @@
                 addFormToTable(row.doc.internalId, row.doc.title);
               });
 
-              $('.loading-forms').hide();
+              $scope.$parent.loading = false;
               if(!formsVisible) { $('.status.no-forms').show(); }
             });
           }());
