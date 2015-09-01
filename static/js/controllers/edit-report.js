@@ -200,7 +200,7 @@
           loadForm(doc.form, doc._id, doc.content);
         };
 
-        $scope.loadXmlFrom = function(formInternalId, docId, content) {
+        $scope.$root.loadXmlFrom = function(formInternalId, docId, content) {
           $('#create-report').modal('hide');
           loadForm(formInternalId, docId, content);
           $('#edit-report').modal('show');
