@@ -197,9 +197,7 @@
         };
 
         var addFormToTable = function(formInternalId, title) {
-          $('#available-enketo-forms').append('<tr><td><a onclick="loadXmlFrom(\'' + formInternalId + '\')">' + title + '</a></td>' +
-              '<td></td>' +
-              '</tr>');
+          $('#available-enketo-forms').append('<li><a onclick="loadXmlFrom(\'' + formInternalId + '\')">' + title + '</a></li>');
         };
 
         window.loadFormFor = function(doc) {
