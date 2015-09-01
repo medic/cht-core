@@ -196,15 +196,11 @@
           });
         };
 
-        var addFormToTable = function(formInternalId, title) {
-          $('#available-enketo-forms').append('<li><a onclick="loadXmlFrom(\'' + formInternalId + '\')">' + title + '</a></li>');
-        };
-
         window.loadFormFor = function(doc) {
           loadForm(doc.form, doc._id, doc.content);
         };
 
-        window.loadXmlFrom = function(formInternalId, docId, content) {
+        $scope.loadXmlFrom = function(formInternalId, docId, content) {
           $('#create-report').modal('hide');
           loadForm(formInternalId, docId, content);
           $('#edit-report').modal('show');
@@ -212,25 +208,18 @@
 
         window.loadComposer = function() {
           (function() {
-            var formsVisible = false;
-            // TODO not sure why we can't have a fresh table every time, or
-            // (1) get the list of forms from a service and (2) store them
-            // in `$scope`
             $scope.$parent.loading = true;
-            $('#available-enketo-forms').empty();
-            $('.status.no-forms').hide();
+
             $('#edit-report [name=facility]').select2('val', null);
 
             DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
-              _.forEach(res.rows, function(row) {
-                var xml = row.doc._attachments.xml;
-                if(!xml) { return; }
-                formsVisible = true;
-                addFormToTable(row.doc.internalId, row.doc.title);
+              $scope.$parent.availableForms = res.rows.filter(function(row) {
+                return row.doc._attachments.xml;
+              }).map(function(row) {
+                return row.doc;
               });
 
               $scope.$parent.loading = false;
-              if(!formsVisible) { $('.status.no-forms').show(); }
             });
           }());
         };

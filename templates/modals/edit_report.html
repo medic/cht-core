@@ -7,8 +7,12 @@
       </div>
       <div class="modal-body">
           <div class="loader" ng-show="loading"></div>
-          <p class="status no-forms" style="display:none">There are currently no forms available.</p>
-          <ul id="available-enketo-forms"></ul>
+          <p ng-show="!(loading || availableForms.length)">There are currently no forms available.</p>
+          <ul>
+            <li ng-repeat="f in availableForms">
+              <a ng-click="loadXmlFrom(f.internalId)">{{ f.title }}</a>
+            </li>
+          </ul>
       </div>
 
       <div class="modal-footer">
