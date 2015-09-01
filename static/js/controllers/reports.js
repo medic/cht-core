@@ -145,6 +145,7 @@ var _ = require('underscore'),
         Search($scope, options, function(err, data) {
           if (err) {
             $scope.error = true;
+            $scope.loading = false;
             if ($scope.filterQuery.value &&
                 err.reason &&
                 err.reason.toLowerCase().indexOf('bad query syntax') !== -1) {

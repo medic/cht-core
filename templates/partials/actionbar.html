@@ -3,7 +3,7 @@
     <div class="inner">
       <div class="col-sm-4"></div>
       <div class="col-sm-8 column">
-        <div class="actions" ng-show="showActionBar && !loadingContent">
+        <div class="actions" ng-show="showActionBar && actionBar._id && !loadingContent">
           <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" data-send-to="{{actionBar.sendTo}}">
             <span class="fa fa-envelope"></span>
             <p>{{'Send Message' | translate}}</p>
