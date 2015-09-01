@@ -17,19 +17,15 @@ describe('ReportsCtrl controller', function() {
   beforeEach(inject(function($rootScope, $controller) {
     scope = $rootScope.$new();
     scope.filterModel = { date: {} };
-    scope.selected = { _id: 'a' };
     report = { _id: 'x' };
     scope.readStatus = { forms: 0, messages: 0 };
     scope.updateReadStatus = function() {};
     scope.isRead = function() {
       return true;
     };
-    scope.setReports = function() {};
-    scope.setSelected = function(obj) {
-      scope.selected = obj;
-    };
-    scope.setFilterQuery = function() { };
-    scope.items = [ report, { _id: 'a' } ];
+    scope.setFilterQuery = function() {};
+    scope.reports = [ report, { _id: 'a' } ];
+    scope.clearSelected = function() {};
 
     UserDistrict = function() {
       return { 
@@ -86,17 +82,6 @@ describe('ReportsCtrl controller', function() {
 
   it('updated reports when changed', function() {
 
-    var change = { id: 'a' };
-
-    scope.items = [
-      {
-        _id: 'a',
-        _rev: 1,
-        shared: 'x',
-        existing: 'y'
-      }
-    ];
-
     Search = function($scope, options, callback) {
       chai.expect(options.silent).to.equal(true);
       callback(null, [
@@ -113,8 +98,19 @@ describe('ReportsCtrl controller', function() {
     };
     
     createController();
-    changesCallback(change);
-    chai.expect(scope.items).to.deep.equal([
+
+    scope.selected = { _id: 'a' };
+    scope.reports = [
+      {
+        _id: 'a',
+        _rev: 1,
+        shared: 'x',
+        existing: 'y'
+      }
+    ];
+    changesCallback({ id: 'a' });
+
+    chai.expect(scope.reports).to.deep.equal([
       {
         _id: 'a',
         _rev: 2,

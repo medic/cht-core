@@ -10,27 +10,20 @@ var _ = require('underscore');
     ['$timeout', '$scope', '$state', 'TaskGenerator', 'Changes',
     function ($timeout, $scope, $state, TaskGenerator, Changes) {
 
-      var _selectedId;
-
-      $scope.setSelectedId = function(id) {
-        _selectedId = id;
-        selectItem();
-      };
-
-      var selectItem = function() {
-        if (_selectedId) {
-          $scope.items.forEach(function(item) {
-            if (item._id === _selectedId) {
-              $scope.setSelected(item);
-            }
-          });
-        } else if(!$state.params.id && $scope.items.length && !$('#back').is(':visible')) {
+      $scope.setSelected = function(id) {
+        if (id) {
+          var refreshing = ($scope.selected && $scope.selected._id) === id;
+          $scope.selected = _.findWhere($scope.tasks, { _id: id });
+          $scope.settingSelected(refreshing);
+        } else if(!$state.params.id &&
+                  $scope.tasks.length &&
+                  !$('#back').is(':visible')) {
           $timeout(function() {
             var id = $('.inbox-items li').first().attr('data-record-id');
             $state.go('tasks.detail', { id: id });
           });
         } else {
-          $scope.setSelected();
+          $scope.clearSelected();
         }
       };
 
@@ -42,21 +35,27 @@ var _ = require('underscore');
         $scope.error = false;
         TaskGenerator()
           .then(function(tasks) {
-            $scope.setTasks(_.where(tasks, { resolved: false }));
+            $scope.tasks = _.where(tasks, { resolved: false });
             $scope.loading = false;
-            selectItem();
+            $scope.setSelected($state.params.id);
           })
           .catch(function(err) {
             console.log('Error generating tasks', err);
             $scope.loading = false;
             $scope.error = true;
-            $scope.setTasks();
+            $scope.tasks = [];
+            $scope.clearSelected();
           });
       };
 
+      $scope.$on('ClearSelected', function() {
+        $scope.selected = null;
+      });
+
       $scope.setSelectedModule();
       $scope.filterModel.type = 'tasks';
-      $scope.setTasks();
+      $scope.tasks = [];
+      $scope.selected = null;
       updateTasks();
 
       Changes({

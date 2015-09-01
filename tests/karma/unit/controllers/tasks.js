@@ -15,9 +15,6 @@ describe('TasksCtrl controller', function() {
     scope = $rootScope.$new();
 
     scope.setSelectedModule = function() {};
-    scope.setTasks = function(tasks) {
-      scope.items = tasks || [];
-    };
     scope.filterModel = {};
     scope.setSelected = function() {};
 
@@ -41,7 +38,7 @@ describe('TasksCtrl controller', function() {
       chai.expect(TaskGenerator.callCount).to.equal(1);
       chai.expect(Changes.callCount).to.equal(1);
       chai.expect(scope.filterModel.type).to.equal('tasks');
-      chai.expect(scope.items).to.deep.equal([ { id: 1, resolved: false } ]);
+      chai.expect(scope.tasks).to.deep.equal([ { id: 1, resolved: false } ]);
       chai.expect(scope.error).to.equal(false);
       chai.expect(scope.loading).to.equal(false);
       done();
@@ -55,7 +52,7 @@ describe('TasksCtrl controller', function() {
     setTimeout(function() {
       chai.expect(TaskGenerator.callCount).to.equal(1);
       chai.expect(scope.filterModel.type).to.equal('tasks');
-      chai.expect(scope.items).to.deep.equal([]);
+      chai.expect(scope.tasks).to.deep.equal([]);
       chai.expect(scope.error).to.equal(true);
       chai.expect(scope.loading).to.equal(false);
       done();
@@ -76,7 +73,7 @@ describe('TasksCtrl controller', function() {
     setTimeout(function() {
       chai.expect(TaskGenerator.callCount).to.equal(2);
       chai.expect(scope.filterModel.type).to.equal('tasks');
-      chai.expect(scope.items).to.deep.equal(expected);
+      chai.expect(scope.tasks).to.deep.equal(expected);
       chai.expect(scope.error).to.equal(false);
       chai.expect(scope.loading).to.equal(false);
       done();

@@ -8,7 +8,11 @@
     ['$scope', '$stateParams',
     function ($scope, $stateParams) {
 
-      $scope.selectContact($stateParams.id);
+      if ($stateParams.id) {
+        $scope.selectContact($stateParams.id);
+      } else {
+        $scope.clearSelected();
+      }
 
       $scope.$on('ContactUpdated', function(e, contact) {
         if (!contact) {
@@ -16,11 +20,9 @@
         } else if(contact._deleted &&
             $scope.selected &&
             $scope.selected._id === contact._id) {
-          $scope.setSelected();
+          $scope.clearSelected();
         } else if ($scope.selected && $scope.selected._id === contact._id) {
-          contact.children = $scope.selected.children;
-          contact.contactFor = $scope.selected.contactFor;
-          $scope.setSelected(contact);
+          $scope.selectContact(contact._id);
         }
       });
 

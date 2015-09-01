@@ -16,8 +16,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'DBSync', 'ConflictResolution', 'UserSettings', 'APP_CONFIG', 'DB', 'Session',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, DBSync, ConflictResolution, UserSettings, APP_CONFIG, DB, Session) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'DBSync', 'ConflictResolution', 'UserSettings', 'APP_CONFIG', 'DB', 'Session',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, DBSync, ConflictResolution, UserSettings, APP_CONFIG, DB, Session) {
 
       Session.init();
       DBSync();
@@ -42,12 +42,11 @@ require('moment/locales');
       $scope.languages = [];
       $scope.forms = [];
       $scope.facilities = [];
-      $scope.items = [];
       $scope.totalItems = undefined;
-      $scope.selected = undefined;
       $scope.filterQuery = { value: undefined };
       $scope.analyticsModules = undefined;
       $scope.version = APP_CONFIG.version;
+      $scope.actionBar = {};
 
       $scope.baseUrl = BaseUrlService();
 
@@ -70,50 +69,32 @@ require('moment/locales');
       };
 
       var clearSelectedTimer;
-
-      $scope.setSelected = function(selected) {
+      $scope.clearSelected = function() {
         $timeout.cancel(clearSelectedTimer);
+        $scope.showContent = false;
         $scope.loadingContent = false;
-        var refreshing = (selected && selected._id) === ($scope.selected && $scope.selected._id);
-        if (selected) {
-          $scope.selected = selected;
-          $timeout(function() {
-            $scope.showContent = true;
-            if (!refreshing) {
-              $timeout(function() {
-                $('.item-body').scrollTop(0);
-              });
-            }
-          });
-        } else if($scope.selected) {
-          $scope.showContent = false;
-          if ($('#back').is(':visible')) {
-            clearSelectedTimer = $timeout(function() {
-              $scope.selected = undefined;
-            }, 500);
-          } else {
-            $scope.selected = undefined;
-          }
+        if ($('#back').is(':visible')) {
+          clearSelectedTimer = $timeout(function() {
+            $scope.showActionBar = false;
+            $scope.$broadcast('ClearSelected');
+          }, 500);
+        } else {
+          $scope.$broadcast('ClearSelected');
         }
       };
 
-      $scope.select = function(id) {
-        if ($stateParams.id === id) {
-          // message already set - make sure we're showing content
-          if ($scope.filterModel.type === 'messages') {
-            return $scope.$broadcast('update-contact-conversation');
+      $scope.settingSelected = function(refreshing) {
+        $timeout.cancel(clearSelectedTimer);
+        $scope.loadingContent = false; // TODO move this into children?
+        $timeout(function() {
+          $scope.showContent = true;
+          $scope.showActionBar = true;
+          if (!refreshing) {
+            $timeout(function() {
+              $('.item-body').scrollTop(0);
+            });
           }
-          var message = _.findWhere($scope.items, { _id: id });
-          if (message) {
-            return $scope.setSelected(message);
-          }
-          $state.reload();
-          $scope.$broadcast('query');
-        } else if (id) {
-          $state.go($scope.filterModel.type + '.detail', { id: id });
-        } else {
-          $state.go($scope.filterModel.type);
-        }
+        });
       };
 
       $scope.setLoadingContent = function(id) {
@@ -121,56 +102,6 @@ require('moment/locales');
         $timeout(function() {
           $scope.showContent = true;
         });
-      };
-
-      var removeDeletedMessages = function(messages) {
-        var existingKey;
-        var checkExisting = function(updated) {
-          return existingKey === updated.key[1];
-        };
-        for (var i = $scope.items.length - 1; i >= 0; i--) {
-          existingKey = $scope.items[i].key[1];
-          if (!_.some(messages, checkExisting)) {
-            $scope.items.splice(i, 1);
-          }
-        }
-      };
-
-      var mergeUpdatedMessages = function(messages) {
-        _.each(messages, function(updated) {
-          var match = _.find($scope.items, function(existing) {
-            return existing.key[1] === updated.key[1];
-          });
-          if (match) {
-            if (!_.isEqual(updated.value, match.value)) {
-              match.value = updated.value;
-            }
-          } else {
-            $scope.items.push(updated);
-          }
-        });
-      };
-
-      $scope.setMessages = function(options) {
-        options = options || {};
-        if (options.changes) {
-          removeDeletedMessages(options.messages);
-          mergeUpdatedMessages(options.messages);
-        } else {
-          $scope.items = options.messages || [];
-        }
-      };
-
-      $scope.setReports = function(reports) {
-        $scope.items = reports || [];
-      };
-
-      $scope.setContacts = function(contacts) {
-        $scope.items = contacts || [];
-      };
-
-      $scope.setTasks = function(tasks) {
-        $scope.items = tasks || [];
       };
 
       $scope.isRead = function(message) {
@@ -498,14 +429,13 @@ require('moment/locales');
         });
       };
 
-      $scope.verify = function(verify) {
-        if ($scope.selected.form) {
-          Verified($scope.selected._id, verify, function(err) {
-            if (err) {
-              console.log('Error verifying message', err);
-            }
-          });
-        }
+      $scope.setActionBar = function(model) {
+        $scope.actionBar = model;
+      };
+
+      $scope.emit = function(name, param) {
+        console.log('broadcasting', name, param);
+        $rootScope.$broadcast(name, param);
       };
 
       var deleteMessageId;
@@ -538,19 +468,6 @@ require('moment/locales');
         UpdateFacility($scope.selected._id, facilityId, function(err) {
           pane.done(translateFilter('Error updating facility'), err);
         });
-      };
-
-      $scope.edit = function(record) {
-        if ($scope.filterModel.type === 'reports') {
-          var val = (record.contact && record.contact._id) || '';
-          $('#edit-report [name=facility]').select2('val', val);
-          $('#edit-report').modal('show');
-          if($scope.selected.content_type === 'xml') {
-            $scope.loadFormFor($scope.selected);
-          }
-        } else {
-          $rootScope.$broadcast('EditContactInit', record);
-        }
       };
 
       $('body').on('mouseenter', '.relative-date, .autoreply', function() {

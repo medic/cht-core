@@ -233,6 +233,17 @@ body {
   }
 }
 
+.slide-back a {
+  display: inline-block;
+  text-align: center;
+  cursor: default;
+  color: @grey;
+}
+.show-content .slide-back a {
+  cursor: pointer;
+  color: @grayDark;
+}
+
 .filters {
   height: 4.2em;
   font-size: 0.95em;
@@ -253,7 +264,6 @@ body {
       padding-top: 0;
     }
   }
-
 
   .filter-buttons .dropdown {
     > a {
@@ -351,7 +361,7 @@ body {
     }
   }
 
-  .filter-buttons, .slide-back, .reset-filter {
+  .filter-buttons, .reset-filter {
     > a {
       color: @grayDark;
       display: inline-block;

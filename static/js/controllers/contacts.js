@@ -8,11 +8,12 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', 
-    ['$scope', '$state', '$timeout', 'DB', 'Search',
-    function ($scope, $state, $timeout, DB, Search) {
+    ['$rootScope', '$scope', '$state', '$timeout', 'DB', 'Search',
+    function ($rootScope, $scope, $state, $timeout, DB, Search) {
 
       $scope.filterModel.type = 'contacts';
-      $scope.setContacts();
+      $scope.contacts = [];
+      $scope.selected = null;
 
       $scope.query = function(options) {
         options = options || {};
@@ -41,7 +42,7 @@ var _ = require('underscore'),
           if (options.skip) {
             $scope.items.push.apply($scope.items, data);
           } else {
-            $scope.setContacts(data);
+            $scope.contacts = data;
             scrollLoader.init(function() {
               if (!$scope.loading && $scope.moreItems) {
                 $timeout(function() {
@@ -50,7 +51,7 @@ var _ = require('underscore'),
               }
             });
             if (!data.length) {
-              $scope.selectContact();
+              $scope.clearSelected();
             } else if (!options.stay && !$('#back').is(':visible')) {
               // wait for selected to be set before checking
               $timeout(function() {
@@ -86,26 +87,36 @@ var _ = require('underscore'),
       };
 
       $scope.selectContact = function(id) {
-        if (id) {
-          $scope.setLoadingContent(id);
-          Promise.all([ getContact(id), getChildren(id), getContactFor(id) ])
-            .then(function(results) {
-              var doc = results[0];
-              doc.children = results[1].rows;
-              doc.contactFor = results[2].rows;
-              $scope.setSelected(doc);
-            })
-            .catch(function(err) {
-              $scope.setSelected();
-              console.log('Error fetching doc', err);
+        $scope.setLoadingContent(id);
+        Promise.all([ getContact(id), getChildren(id), getContactFor(id) ])
+          .then(function(results) {
+            var doc = results[0];
+            doc.children = results[1].rows;
+            doc.contactFor = results[2].rows;
+            var refreshing = ($scope.selected && $scope.selected._id) === id;
+            $scope.selected = doc;
+            $scope.setActionBar({
+              _id: doc._id,
+              sendTo: doc
             });
-        } else {
-          $scope.setSelected();
-        }
+            $scope.settingSelected(refreshing);
+          })
+          .catch(function(err) {
+            $scope.clearSelected();
+            console.log('Error fetching doc', err);
+          });
       };
+
+      $scope.$on('ClearSelected', function() {
+        $scope.selected = null;
+      });
 
       $scope.$on('query', function() {
         $scope.query();
+      });
+
+      $scope.$on('EditContact', function() {
+        $rootScope.$broadcast('EditContactInit', $scope.selected);
       });
 
       $scope.$on('ContactUpdated', function(e, contact) {

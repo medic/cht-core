@@ -49,17 +49,19 @@ var _ = require('underscore'),
         return [];
       };
 
-      var selectContact = function(id) {
+      var selectContact = function(id, options) {
+        options = options || {};
         if (!id) {
           $scope.error = false;
           $scope.loadingContent = false;
-          $scope.setSelected();
+          $scope.clearSelected();
           return;
         }
         $('#message-content').off('scroll', _checkScroll);
-        $scope.loadingContent = true;
         $scope.setSelected({ id: id });
-        $scope.setLoadingContent(id);
+        if (!options.silent) {
+          $scope.setLoadingContent(id);
+        }
         ContactConversation({ id: id }, function(err, data) {
           if (err) {
             $scope.loadingContent = false;
@@ -72,7 +74,7 @@ var _ = require('underscore'),
             return;
           }
           sendMessage.setRecipients(findMostRecentFacility(data));
-          $scope.loadingContent = false;
+          $scope.setLoadingContent(false);
           $scope.error = false;
           var unread = _.filter(data, function(message) {
             return !$scope.isRead(message.doc);
@@ -164,8 +166,8 @@ var _ = require('underscore'),
 
       $('.tooltip').remove();
       selectContact($stateParams.id);
-      $scope.$on('update-contact-conversation', function() {
-        selectContact($stateParams.id);
+      $scope.$on('UpdateContactConversation', function(e, options) {
+        selectContact($stateParams.id, options);
       });
 
       $('body')
