@@ -72,7 +72,6 @@ var _ = require('underscore'),
       $scope.setSelected = function(doc) {
         var refreshing = doc && $scope.selected && $scope.selected.id === doc._id;
         $scope.selected = doc;
-        console.log('doc', doc);
         $scope.setActionBar({
           _id: doc._id,
           verified: doc.verified,
