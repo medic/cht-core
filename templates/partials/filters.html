@@ -11,14 +11,14 @@
 
       <span class="filter-buttons">
 
-        <a tabindex="-1" ng-click="edit({ type: 'person' })" ng-show="filterModel.type === 'contacts'" ng-attr-title="{{'Add person' | translate}}">
+        <a tabindex="-1" ng-click="emit('EditContact', { type: 'person' })" ng-show="filterModel.type === 'contacts'" ng-attr-title="{{'Add person' | translate}}">
           <span class="fa-stack">
             <i class="fa fa-user fa-stack-1x"></i>
             <i class="fa fa-plus fa-stack-1x"></i>
           </span>
         </a>
 
-        <a tabindex="-1" ng-click="edit()" ng-show="filterModel.type === 'contacts'" ng-attr-title="{{'Add place' | translate}}">
+        <a tabindex="-1" ng-click="emit('EditContact', {})" ng-show="filterModel.type === 'contacts'" ng-attr-title="{{'Add place' | translate}}">
           <span class="fa-stack">
             <i class="fa fa-building fa-stack-1x"></i>
             <i class="fa fa-plus fa-stack-1x"></i>

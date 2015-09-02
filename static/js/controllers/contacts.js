@@ -115,8 +115,8 @@ var _ = require('underscore'),
         $scope.query();
       });
 
-      $scope.$on('EditContact', function() {
-        $rootScope.$broadcast('EditContactInit', $scope.selected);
+      $scope.$on('EditContact', function(e, record) {
+        $rootScope.$broadcast('EditContactInit', record || $scope.selected);
       });
 
       $scope.$on('ContactUpdated', function(e, contact) {
