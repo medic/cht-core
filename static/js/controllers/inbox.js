@@ -434,7 +434,6 @@ require('moment/locales');
       };
 
       $scope.emit = function(name, param) {
-        console.log('broadcasting', name, param);
         $rootScope.$broadcast(name, param);
       };
 
