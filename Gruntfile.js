@@ -56,20 +56,35 @@ module.exports = function(grunt) {
       }
     },
     browserify: {
-      options: {
-        preBundleCB: function(b) {
-          b.ignore('./flashmessages')
-           .plugin(remapify, browserifyMappings);
-        }
-      },
       dist: {
         src: ['static/js/app.js'],
         dest: 'static/dist/inbox.js',
         browserifyOptions: {
           detectGlobals: false,
           external: ['moment', 'underscore']
-        }
-      }
+        },
+        options: {
+          preBundleCB: function(b) {
+            b.ignore('./flashmessages')
+             .plugin(remapify, browserifyMappings);
+          }
+        },
+      },
+      enketo: {
+        src: './node_modules/enketo-core/src/medic/app.js',
+        dest: 'static/dist/enketo.js',
+        require: [ 'jquery' ],
+        options: {
+          alias: {
+            jquery:'./node_modules/enketo-core/src/medic/jquery-shim.js',
+            'text!enketo-config': './node_modules/enketo-core/src/medic/config.json',
+            'widgets': './node_modules/enketo-core/src/medic/widgets.js',
+            './XPathEvaluatorBinding':'./node_modules/enketo-core/src/medic/OpenrosaXpathEvaluatorBinding.js',
+            'extended-xpath': './node_modules/enketo-core/node_modules/openrosa-xpath-evaluator/src/extended-xpath.js',
+            'openrosa-xpath-extensions': './node_modules/enketo-core/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions.js'
+          },
+        },
+      },
     },
     concat: {
       js: {
@@ -79,10 +94,6 @@ module.exports = function(grunt) {
           'static/js/bootstrap-multidropdown.js'
         ],
         dest: 'static/dist/dependencies.js',
-      },
-      enketo_js: {
-        src: ['static/enketo/js/*.js'],
-        dest: 'static/dist/enketo.js',
       },
     },
     uglify: {
@@ -305,10 +316,10 @@ module.exports = function(grunt) {
   // Default tasks
   grunt.registerTask('mmjs', 'Build the JS resources', [
     'browserify:dist',
+    'browserify:enketo',
     'replace:hardcodeappsettings',
     'ngtemplates',
     'concat:js',
-    'concat:enketo_js',
   ]);
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
@@ -325,7 +336,7 @@ module.exports = function(grunt) {
     'copy:admin'
   ]);
 
-  grunt.registerTask('enketo', 'Copy static resources required by enketo to dist/', [
+  grunt.registerTask('enketo-resources', 'Copy static resources required by enketo to dist/', [
     'copy:enketo'
   ]);
 
@@ -339,7 +350,7 @@ module.exports = function(grunt) {
     'mmcss',
     'mmjs',
     'appcache',
-    'enketo'
+    'enketo-resources'
   ]);
 
   grunt.registerTask('minify', 'Minify JS and CSS', [
