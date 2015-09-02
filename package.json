@@ -15,7 +15,7 @@
     "async": "^1.4.0",
     "autoprefixer-core": "^5.2.1",
     "chai": "^2.1.0",
-    "enketo-core": "git@github.com:alxndrsn/enketo-core.git#67d5d41815ad6907361447471ed02d441df67c33",
+    "enketo-core": "git://github.com/alxndrsn/enketo-core.git#medic-0.4.0",
     "grunt": "^0.4.5",
     "grunt-angular-templates": "^0.5.7",
     "grunt-appcache": "^0.1.8",

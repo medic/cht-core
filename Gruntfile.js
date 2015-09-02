@@ -71,15 +71,15 @@ module.exports = function(grunt) {
         },
       },
       enketo: {
-        src: './node_modules/enketo-core/src/medic/app.js',
+        src: './static/enketo/js/main.js',
         dest: 'static/dist/enketo.js',
         require: [ 'jquery' ],
         options: {
           alias: {
-            jquery:'./node_modules/enketo-core/src/medic/jquery-shim.js',
-            'text!enketo-config': './node_modules/enketo-core/src/medic/config.json',
-            'widgets': './node_modules/enketo-core/src/medic/widgets.js',
-            './XPathEvaluatorBinding':'./node_modules/enketo-core/src/medic/OpenrosaXpathEvaluatorBinding.js',
+            jquery:'./static/enketo/js/jquery-shim.js',
+            'text!enketo-config': './static/enketo/js/config.json',
+            'widgets': './static/enketo/js/widgets.js',
+            './XPathEvaluatorBinding':'./static/enketo/js/OpenrosaXpathEvaluatorBinding.js',
             'extended-xpath': './node_modules/enketo-core/node_modules/openrosa-xpath-evaluator/src/extended-xpath.js',
             'openrosa-xpath-extensions': './node_modules/enketo-core/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions.js'
           },
