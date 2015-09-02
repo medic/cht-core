@@ -7,7 +7,8 @@
     modal.find('.form-wrapper .container').empty();
 
     // disable buttons for next load
-    $('.first-page, .previous-page, .next-page, .last-page').toggleClass('disabled', true);
+    $('.first-page, .previous-page, .next-page, .last-page')
+      .prop('disabled', true);
 
     // unload blobs
     objUrls.forEach(function(url) {
