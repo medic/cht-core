@@ -1,8 +1,11 @@
+var enketoCore = require('enketo-core-form');
+
 (function () {
   'use strict';
   angular.module('inboxControllers').controller('EditReportCtrl',
     ['$scope', 'DB', 'DbNameService',
     function ($scope, DB, DbNameService) {
+
       function recordToJs(record) {
         var i, n, fields = {},
             data = $.parseXML(record).firstChild.childNodes;
