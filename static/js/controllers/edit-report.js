@@ -3,6 +3,11 @@
   angular.module('inboxControllers').controller('EditReportCtrl',
     ['$scope', 'DB', 'DbNameService',
     function ($scope, DB, DbNameService) {
+      $(document).on('hidden.bs.modal', '#edit-report', function() {
+        var modal = $(this);
+        modal.find('.form-wrapper .container').empty();
+      });
+
       function recordToJs(record) {
         var i, n, fields = {},
             data = $.parseXML(record).firstChild.childNodes;
@@ -227,4 +232,3 @@
     }
   ]);
 }());
-
