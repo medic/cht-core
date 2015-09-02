@@ -81,7 +81,7 @@
               $('#edit-report .form-wrapper').hide();
             }).catch(function(err) {
               $submit.prop('disabled', false);
-              console.log('Error submitting form data: ' + err);
+              console.log('[enketo] Error submitting form data: ' + err);
             });
           } else {
             DB.get().get(facilityId).then(function(facility) {
@@ -108,7 +108,7 @@
               $('#edit-report .form-wrapper').hide();
             }).catch(function(err) {
               $submit.prop('disabled', false);
-              console.log('Error submitting form data: ' + err);
+              console.log('[enketo] Error submitting form data: ' + err);
             });
           }
         }
@@ -131,13 +131,10 @@
                 $('#edit-report .form-wrapper').show();
 
                 withFormByFormInternalId(formInternalId, function(formDocId) {
-                  console.log('Searching for media links to process...');
                   $('#edit-report .form-wrapper').find('img,video,audio').each(function(i, e) {
                     var src;
                     e = $(e); src = e.attr('src');
-                    console.log('testing: ' + src);
                     if(!(/^jr:\/\//.test(src))) { return; }
-                    console.log('should substitute image for ' + src);
                     DB.get().getAttachment(formDocId, src.substring(5)).then(function(imageBlob) {
                       var objUrl = (window.URL || window.webkitURL).createObjectURL(imageBlob);
                       objUrls.push(objUrl);
