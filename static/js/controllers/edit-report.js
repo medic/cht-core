@@ -1,12 +1,19 @@
 (function () {
   'use strict';
 
+  var objUrls = [];
   $(document).on('hidden.bs.modal', '#edit-report', function() {
     var modal = $(this);
     modal.find('.form-wrapper .container').empty();
 
     // disable buttons for next load
     $('.first-page, .previous-page, .next-page, .last-page').toggleClass('disabled', true);
+
+    // unload blobs
+    objUrls.forEach(function(url) {
+      (window.URL || window.webkitURL).revokeObjectURL(url);
+    });
+    objUrls.length = 0;
   });
 
   angular.module('inboxControllers').controller('EditReportCtrl',
@@ -132,7 +139,9 @@
                     if(!(/^jr:\/\//.test(src))) { return; }
                     console.log('should substitute image for ' + src);
                     DB.get().getAttachment(formDocId, src.substring(5)).then(function(imageBlob) {
-                      e.attr('src', (window.URL || window.webkitURL).createObjectURL(imageBlob));
+                      var objUrl = (window.URL || window.webkitURL).createObjectURL(imageBlob);
+                      objUrls.push(objUrl);
+                      e.attr('src', objUrl);
                     }).catch(function(err) {
                       console.log('[enketo] error fetching media file', formDocId, src, err);
                     });
