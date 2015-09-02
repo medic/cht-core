@@ -6,12 +6,12 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 
 define( function( require, exports, module ) {
     widgets = [
-        require( '../../../node_modules/enketo-core/src/widget/note/notewidget' ),
-        require( '../../../node_modules/enketo-core/src/widget/table/tablewidget' ),
-        require( '../../../node_modules/enketo-core/src/widget/radio/radiopicker' ),
-        require( '../../../node_modules/enketo-core/src/widget/date/datepicker-extended' ),
-        require( '../../../node_modules/enketo-core/src/widget/time/timepicker-extended' ),
-        require( '../../../node_modules/enketo-core/src/widget/datetime/datetimepicker-extended' ),
+        require( 'enketo-core/src/widget/note/notewidget' ),
+        require( 'enketo-core/src/widget/table/tablewidget' ),
+        require( 'enketo-core/src/widget/radio/radiopicker' ),
+        require( 'enketo-core/src/widget/date/datepicker-extended' ),
+        require( 'enketo-core/src/widget/time/timepicker-extended' ),
+        require( 'enketo-core/src/widget/datetime/datetimepicker-extended' ),
     ];
 
     module.exports = widgets;
