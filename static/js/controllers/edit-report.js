@@ -158,13 +158,13 @@
 
         var processors = {};
         (function initProcessors() {
-          var enketo_root = '/' + DbNameService() + '/_design/medic/static/dist/enketo';
-          $.get(enketo_root + '/forms/openrosa2html5form.xsl').done(function(doc) {
+          var static_root = '/' + DbNameService() + '/_design/medic/static';
+          $.get(static_root + '/xslt/openrosa2html5form.xsl').done(function(doc) {
             var processor = new XSLTProcessor();
             processor.importStylesheet(doc);
             processors.html = processor;
           });
-          $.get(enketo_root + '/forms/openrosa2xmlmodel.xsl').done(function(doc) {
+          $.get(static_root + '/xslt/openrosa2xmlmodel.xsl').done(function(doc) {
             var processor = new XSLTProcessor();
             processor.importStylesheet(doc);
             processors.model = processor;

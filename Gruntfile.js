@@ -282,7 +282,8 @@ module.exports = function(grunt) {
             'static/dist/**/*',
             'static/fonts/**/*',
             'static/img/**/*',
-            '!static/img/promo/**/*'
+            '!static/img/promo/**/*',
+            'static/xslt/**/*',
           ]
         },
         network: '*'

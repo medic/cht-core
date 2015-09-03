@@ -27,6 +27,7 @@
         "static/dist",
         "static/fonts",
         "static/img",
+        "static/xslt",
         "templates/403.html",
         "templates/404.html",
         "templates/500.html",
