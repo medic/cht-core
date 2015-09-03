@@ -131,16 +131,16 @@
                 $('#edit-report .form-wrapper').show();
 
                 withFormByFormInternalId(formInternalId, function(formDocId) {
-                  $('#edit-report .form-wrapper').find('img,video,audio').each(function(i, e) {
-                    var src;
-                    e = $(e); src = e.attr('src');
-                    if(!(/^jr:\/\//.test(src))) { return; }
-                    DB.get().getAttachment(formDocId, src.substring(5)).then(function(imageBlob) {
+                  $('#edit-report .form-wrapper').find('img,video,audio,a').each(function(i, e) {
+                    var url, attr = e.nodeName === 'A'? 'href': 'src';
+                    e = $(e); url = e.attr(attr);
+                    if(!(/^jr:\/\//.test(url))) { return; }
+                    DB.get().getAttachment(formDocId, url.substring(5)).then(function(imageBlob) {
                       var objUrl = (window.URL || window.webkitURL).createObjectURL(imageBlob);
                       objUrls.push(objUrl);
-                      e.attr('src', objUrl);
+                      e.attr(attr, objUrl);
                     }).catch(function(err) {
-                      console.log('[enketo] error fetching media file', formDocId, src, err);
+                      console.log('[enketo] error fetching media file', formDocId, url, err);
                     });
                   });
                 });

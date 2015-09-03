@@ -12,6 +12,7 @@ define( function( require, exports, module ) {
         require( 'enketo-core/src/widget/date/datepicker-extended' ),
         require( 'enketo-core/src/widget/time/timepicker-extended' ),
         require( 'enketo-core/src/widget/datetime/datetimepicker-extended' ),
+        require( './widget/lightbox/lightbox' ),
     ];
 
     module.exports = widgets;
