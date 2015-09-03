@@ -72,7 +72,7 @@ module.exports = function(grunt) {
       },
       enketo: {
         src: './static/enketo/js/main.js',
-        dest: 'static/dist/enketo.js',
+        dest: 'build/enketo.js',
         require: [ 'jquery' ],
         options: {
           alias: {
@@ -87,13 +87,20 @@ module.exports = function(grunt) {
       },
     },
     concat: {
-      js: {
+      dependencies: {
         src: [
           'bower_components/concat.js',
           'bower_components/bootstrap-tour/build/js/bootstrap-tour.js',
           'static/js/bootstrap-multidropdown.js'
         ],
         dest: 'static/dist/dependencies.js',
+      },
+      inbox: {
+        src: [
+          'static/dist/inbox.js',
+          'build/enketo.js',
+        ],
+        dest: 'static/dist/inbox.js',
       },
     },
     uglify: {
@@ -105,7 +112,6 @@ module.exports = function(grunt) {
           'static/dist/templates.js': ['static/dist/templates.js'],
           'static/dist/dependencies.js': ['static/dist/dependencies.js'],
           'static/dist/inbox.js': ['static/dist/inbox.js'],
-          'static/dist/enketo.js': ['static/dist/enketo.js'],
         }
       }
     },
@@ -320,7 +326,8 @@ module.exports = function(grunt) {
     'browserify:enketo',
     'replace:hardcodeappsettings',
     'ngtemplates',
-    'concat:js',
+    'concat:dependencies',
+    'concat:inbox',
   ]);
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
