@@ -71,15 +71,15 @@ module.exports = function(grunt) {
         },
       },
       enketo: {
-        src: './static/enketo/js/main.js',
+        src: './static/js/enketo/main.js',
         dest: 'build/enketo.js',
         require: [ 'jquery' ],
         options: {
           alias: {
-            jquery:'./static/enketo/js/jquery-shim.js',
-            'text!enketo-config': './static/enketo/js/config.json',
-            'widgets': './static/enketo/js/widgets.js',
-            './XPathEvaluatorBinding':'./static/enketo/js/OpenrosaXpathEvaluatorBinding.js',
+            jquery:'./static/js/enketo/jquery-shim.js',
+            'text!enketo-config': './static/js/enketo/config.json',
+            'widgets': './static/js/enketo/widgets.js',
+            './XPathEvaluatorBinding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding.js',
             'extended-xpath': './node_modules/enketo-core/node_modules/openrosa-xpath-evaluator/src/extended-xpath.js',
             'openrosa-xpath-extensions': './node_modules/enketo-core/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions.js'
           },
@@ -192,12 +192,6 @@ module.exports = function(grunt) {
             dest: 'static/dist/'
           }
         ]
-      },
-      enketo: {
-        expand:true,
-        cwd: 'static/',
-        src: ['enketo/**/*', '!enketo/js/**'],
-        dest: 'static/dist/',
       },
     },
     exec: {
@@ -344,10 +338,6 @@ module.exports = function(grunt) {
     'copy:admin'
   ]);
 
-  grunt.registerTask('enketo-resources', 'Copy static resources required by enketo to dist/', [
-    'copy:enketo'
-  ]);
-
   grunt.registerTask('deploy', 'Deploy the webapp', [
     'exec:deploy',
     'notify:deployed'
@@ -358,7 +348,6 @@ module.exports = function(grunt) {
     'mmcss',
     'mmjs',
     'appcache',
-    'enketo-resources'
   ]);
 
   grunt.registerTask('minify', 'Minify JS and CSS', [
