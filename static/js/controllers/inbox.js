@@ -85,7 +85,7 @@ require('moment/locales');
 
       $scope.settingSelected = function(refreshing) {
         $timeout.cancel(clearSelectedTimer);
-        $scope.loadingContent = false; // TODO move this into children?
+        $scope.loadingContent = false;
         $timeout(function() {
           $scope.showContent = true;
           $scope.showActionBar = true;
@@ -142,11 +142,6 @@ require('moment/locales');
           }
           $window.location.href = url;
         });
-      };
-
-      $scope.removeContact = function(contact) {
-        $scope.items = _.filter($scope.items, function(i) {
-            return i._id !== contact._id; });
       };
 
       $scope.$on('ContactUpdated', function() {
