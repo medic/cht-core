@@ -5,7 +5,7 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 }
 
 define( function( require, exports, module ) {
-    widgets = [
+    var widgets = [
         require( 'enketo-core/src/widget/note/notewidget' ),
         require( 'enketo-core/src/widget/table/tablewidget' ),
         require( 'enketo-core/src/widget/radio/radiopicker' ),
