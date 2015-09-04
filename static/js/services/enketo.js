@@ -27,6 +27,18 @@ angular.module('inboxServices').service('Enketo', [
       return xmlSerializer.serializeToString(rootElement);
     }
 
+    function recordToJs(record) {
+      var i, n, fields = {},
+          data = $.parseXML(record).firstChild.childNodes;
+      for(i=0; i<data.length; ++i) {
+        n = data[i];
+        if(n.nodeType !== Node.ELEMENT_NODE ||
+            n.nodeName === 'meta') { continue; }
+        fields[n.nodeName] = n.textContent;
+      }
+      return fields;
+    }
+
     this.transformXml = function(doc) {
       if(!processors.html || !processors.model) {
         return console.log('[enketo] processors are not ready');
@@ -55,6 +67,40 @@ angular.module('inboxServices').service('Enketo', [
       }).catch(function(err) {
         console.log('[enketo] failure fetching forms: ' + err);
       });
+    };
+
+    this.save = function(formInternalId, record, docId, facilityId) {
+      var contact;
+      if(docId) {
+        // update an existing doc.  For convenience, get the latest version
+        // and then modify the content.  This will avoid most concurrent
+        // edits, but is not ideal.  TODO update write failure to handle
+        // concurrent modifications.
+        return DB.get().get(facilityId).then(function(facility) {
+          contact = facility;
+          return DB.get().get(docId);
+        }).then(function(doc) {
+          doc.content = record;
+          doc.fields = recordToJs(record);
+          doc.contact = contact;
+          return DB.get().put(doc);
+        });
+      } else {
+        return DB.get().get(facilityId).then(function(facility) {
+          return DB.get().post({
+            content: record,
+            fields: recordToJs(record),
+            contact: facility,
+            form: formInternalId,
+            type: 'data_record',
+            from: facility? facility.phone: '',
+            reported_date: Date.now(),
+            content_type: 'xml',
+          });
+        }).then(function(doc) {
+          return DB.get().get(doc.id);
+        });
+      }
     };
   }
 ]);

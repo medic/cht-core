@@ -20,18 +20,6 @@
     ['$scope', 'DB', 'DbNameService', 'Enketo',
     function ($scope, DB, DbNameService, Enketo) {
 
-      function recordToJs(record) {
-        var i, n, fields = {},
-            data = $.parseXML(record).firstChild.childNodes;
-        for(i=0; i<data.length; ++i) {
-          n = data[i];
-          if(n.nodeType !== Node.ELEMENT_NODE ||
-              n.nodeName === 'meta') { continue; }
-          fields[n.nodeName] = n.textContent;
-        }
-        return fields;
-      }
-
       $scope.updateReport = function() {
         if(!$scope.report_form) {
           $scope.updateFacility('#edit-report');
@@ -45,64 +33,21 @@
         form.validate();
         if(form.isValid()) {
           var record = form.getDataStr(),
-              $submit = $('.edit-report-dialog .btn.submit'),
-              contact = null,
-              updatedDoc = null;
+              $submit = $('.edit-report-dialog .btn.submit');
           $submit.prop('disabled', true);
 
-          if(docId) {
-            // update an existing doc.  For convenience, get the latest version
-            // and then modify the content.  This will avoid most concurrent
-            // edits, but is not ideal.  TODO update write failure to handle
-            // concurrent modifications.
-            DB.get().get(facilityId).then(function(facility) {
-              contact = facility;
-              return DB.get().get(docId);
-            }).then(function(doc) {
-              updatedDoc = doc;
-              updatedDoc.content = record;
-              updatedDoc.fields = recordToJs(record);
-              updatedDoc.contact = contact;
-              return DB.get().put(updatedDoc);
-            }).then(function() {
-              //if($scope.$parent.filterModel.type === 'reports') {
-              // TODO set selected to `updatedDoc._id`
-              //}
-              $submit.prop('disabled', false);
-              $('#edit-report').modal('hide');
-              form.resetView();
-              $('#edit-report .form-wrapper').hide();
-            }).catch(function(err) {
-              $submit.prop('disabled', false);
-              console.log('[enketo] Error submitting form data: ' + err);
-            });
-          } else {
-            DB.get().get(facilityId).then(function(facility) {
-              return DB.get().post({
-                content: record,
-                fields: recordToJs(record),
-                contact: facility,
-                form: formInternalId,
-                type: 'data_record',
-                from: facility? facility.phone: '',
-                reported_date: Date.now(),
-                content_type: 'xml',
-              });
-            }).then(function(doc) {
-              return DB.get().get(doc.id);
-            }).then(function(/*doc*/) {
-              //if($scope.$parent.filterModel.type === 'reports') {
-              // TODO set selected to `doc._id`
-              //}
-              $submit.prop('disabled', false);
-              $('#edit-report').modal('hide');
-              form.resetView();
-              $('#edit-report .form-wrapper').hide();
-            }).catch(function(err) {
-              $submit.prop('disabled', false);
-              console.log('[enketo] Error submitting form data: ' + err);
-            });
-          }
+          Enketo.save(formInternalId, record, docId, facilityId).then(function(/*doc*/) {
+            //if($scope.$parent.filterModel.type === 'reports') {
+            // TODO set selected to `doc._id`
+            //}
+            $submit.prop('disabled', false);
+            $('#edit-report').modal('hide');
+            form.resetView();
+            $('#edit-report .form-wrapper').hide();
+          }).catch(function(err) {
+            $submit.prop('disabled', false);
+            console.log('[enketo] Error submitting form data: ' + err);
+          });
         }
       };
 
