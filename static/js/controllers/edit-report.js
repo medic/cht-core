@@ -65,9 +65,9 @@
               updatedDoc.contact = contact;
               return DB.get().put(updatedDoc);
             }).then(function() {
-              if($scope.$parent.filterModel.type === 'reports') {
-                // TODO set selected to `updatedDoc._id`
-              }
+              //if($scope.$parent.filterModel.type === 'reports') {
+              // TODO set selected to `updatedDoc._id`
+              //}
               $submit.prop('disabled', false);
               $('#edit-report').modal('hide');
               form.resetView();
@@ -91,9 +91,9 @@
             }).then(function(doc) {
               return DB.get().get(doc.id);
             }).then(function(doc) {
-              if($scope.$parent.filterModel.type === 'reports') {
-                // TODO set selected to `doc._id`
-              }
+              //if($scope.$parent.filterModel.type === 'reports') {
+              // TODO set selected to `doc._id`
+              //}
               $submit.prop('disabled', false);
               $('#edit-report').modal('hide');
               form.resetView();
