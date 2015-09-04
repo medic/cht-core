@@ -55,44 +55,35 @@ var nools = require('nools'),
         Search(scope, options, callback);
       };
 
-      var groupReports = function(dataRecords, settings) {
-        var registrations = {},
-            registration;
-        dataRecords.forEach(function(doc) {
-          if (doc.form === settings.anc_forms.registration ||
-              doc.form === settings.anc_forms.registrationLmp) {
-            var patientId = doc.patient_id || doc.fields.patient_id;
-            if (patientId) {
-              registration = registrations[patientId];
-              if (!registration) {
-                registration = registrations[patientId] = { reports: [] };
-              }
-              registration.doc = doc;
+      var groupReports = function(dataRecords) {
+        var reports = _.map(dataRecords, function(report) {
+          return { doc: report, reports: [] };
+        });
+        reports.forEach(function(report) {
+          var patientId = report.doc.fields && report.doc.fields.patient_id;
+          if (patientId) {
+            var group = _.find(reports, function(group) {
+              return group.doc.patient_id === patientId;
+            });
+            if (group) {
+              group.reports.push(report.doc);
             }
-          } else if (doc.fields.patient_id) {
-            registration = registrations[doc.fields.patient_id];
-            if (!registration) {
-              registration = registrations[doc.fields.patient_id] = { reports: [] };
-            }
-            registration.reports.push(doc);
           }
         });
-        return registrations;
+        return reports;
       };
 
       var getTasks = function(dataRecords, settings, callback) {
-        var registrations = groupReports(dataRecords, settings);
+        var reports = groupReports(dataRecords);
         var flow = getFlow(settings);
-        var Registration = flow.getDefined('registration');
+        var Report = flow.getDefined('report');
         var session = flow.getSession();
         var tasks = [];
         session.on('task', function(task) {
           tasks.push(task);
         });
-        _.values(registrations).forEach(function(registration) {
-          if (registration.doc) {
-            session.assert(new Registration(registration));
-          }
+        reports.forEach(function(report) {
+          session.assert(new Report(report));
         });
         return session.match().then(
           function() {

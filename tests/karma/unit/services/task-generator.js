@@ -9,7 +9,7 @@ describe('TaskGenerator service', function() {
 
   /* jshint quotmark: false */
   var rules =
-    "define Registration {" +
+    "define Report {" +
     "  doc: null," +
     "  reports: null" +
     "}" +
@@ -26,9 +26,12 @@ describe('TaskGenerator service', function() {
     "" +
     "rule GenerateEvents {" +
     "  when {" +
-    "    r: Registration" +
+    "    r: Report" +
     "  }" +
     "  then {" +
+    "    if (r.doc.form !== 'P' && r.doc.form !== 'R') {" +
+    "      return;" +
+    "    }"+
     "    var visitCount = 0;" +
     "    r.reports.forEach(function(report) {" +
     "      if (report.form === 'V') {" +
@@ -210,13 +213,6 @@ describe('TaskGenerator service', function() {
 
     Search.callsArgWith(2, null, dataRecords);
     Settings.callsArgWith(0, null, {
-      anc_forms: {
-        registration: 'R',
-        registrationLmp: 'P',
-        visit: 'V',
-        delivery: 'D',
-        flag: 'F'
-      },
       tasks: {
         rules: rules,
         schedules: schedules
