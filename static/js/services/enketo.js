@@ -1,3 +1,4 @@
+/* globals XSLTProcessor */
 angular.module('inboxServices').service('Enketo', [
   'DbNameService',
   function(DbNameService) {
