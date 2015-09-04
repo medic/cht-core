@@ -72,8 +72,8 @@
                     var src;
                     e = $(e); src = e.attr('src');
                     if(!(/^#jr:\/\//.test(src))) { return; }
-                    DB.get().getAttachment(formDocId, src.substring(6)).then(function(imageBlob) {
-                      var objUrl = (window.URL || window.webkitURL).createObjectURL(imageBlob);
+                    DB.get().getAttachment(formDocId, src.substring(6)).then(function(blob) {
+                      var objUrl = (window.URL || window.webkitURL).createObjectURL(blob);
                       objUrls.push(objUrl);
                       e.attr('src', objUrl);
                       e.css('visibility', '');
