@@ -5,20 +5,18 @@ angular.module('inboxServices').service('Enketo', [
     var processors = {},
         xmlSerializer = new XMLSerializer();
 
-    (function constructor() {
-      (function initProcessors() {
-        var static_root = '/' + DbNameService() + '/_design/medic/static';
-        $.get(static_root + '/xslt/openrosa2html5form.xsl').done(function(doc) {
-          var processor = new XSLTProcessor();
-          processor.importStylesheet(doc);
-          processors.html = processor;
-        });
-        $.get(static_root + '/xslt/openrosa2xmlmodel.xsl').done(function(doc) {
-          var processor = new XSLTProcessor();
-          processor.importStylesheet(doc);
-          processors.model = processor;
-        });
-      }());
+    (function initProcessors() {
+      var static_root = '/' + DbNameService() + '/_design/medic/static';
+      $.get(static_root + '/xslt/openrosa2html5form.xsl').done(function(doc) {
+        var processor = new XSLTProcessor();
+        processor.importStylesheet(doc);
+        processors.html = processor;
+      });
+      $.get(static_root + '/xslt/openrosa2xmlmodel.xsl').done(function(doc) {
+        var processor = new XSLTProcessor();
+        processor.importStylesheet(doc);
+        processors.model = processor;
+      });
     }());
 
     function transformTo(processorName, doc) {
