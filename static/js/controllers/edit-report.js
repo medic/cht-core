@@ -90,7 +90,7 @@
               });
             }).then(function(doc) {
               return DB.get().get(doc.id);
-            }).then(function(doc) {
+            }).then(function(/*doc*/) {
               //if($scope.$parent.filterModel.type === 'reports') {
               // TODO set selected to `doc._id`
               //}
