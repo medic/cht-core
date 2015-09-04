@@ -17,8 +17,8 @@
   });
 
   angular.module('inboxControllers').controller('EditReportCtrl',
-    ['$scope', 'DB', 'DbNameService',
-    function ($scope, DB, DbNameService) {
+    ['$scope', 'DB', 'DbNameService', 'Enketo',
+    function ($scope, DB, DbNameService, Enketo) {
 
       function recordToJs(record) {
         var i, n, fields = {},
@@ -148,32 +148,13 @@
           init();
         };
 
-        var processors = {};
-        (function initProcessors() {
-          var static_root = '/' + DbNameService() + '/_design/medic/static';
-          $.get(static_root + '/xslt/openrosa2html5form.xsl').done(function(doc) {
-            var processor = new XSLTProcessor();
-            processor.importStylesheet(doc);
-            processors.html = processor;
-          });
-          $.get(static_root + '/xslt/openrosa2xmlmodel.xsl').done(function(doc) {
-            var processor = new XSLTProcessor();
-            processor.importStylesheet(doc);
-            processors.model = processor;
-          });
-        }());
-
         var loadForm = function(formInternalId, docId, formInstanceData) {
-          if(!processors.html || !processors.model) {
-            return console.log('[enketo] processors are not ready');
-          }
-
           withFormByFormInternalId(formInternalId, function(formDocId, data) {
             var doc = data,
-                s = new XMLSerializer();
-
-            var html = processors.html.transformToDocument(doc),
-                model = processors.model.transformToDocument(doc);
+                s = new XMLSerializer(),
+                transformed = Enketo.transformXml(doc),
+                html = transformed.html,
+                model = transformed.model;
 
             showForm(
               docId, formInternalId,

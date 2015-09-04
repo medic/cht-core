@@ -18,6 +18,7 @@
   require('./delete-doc');
   require('./download-url');
   require('./edit-group');
+  require('./enketo');
   require('./facility');
   require('./facility-hierarchy');
   require('./form');
