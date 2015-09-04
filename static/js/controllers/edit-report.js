@@ -66,14 +66,7 @@
               return DB.get().put(updatedDoc);
             }).then(function() {
               if($scope.$parent.filterModel.type === 'reports') {
-                var i, items = $scope.$parent.items;
-                for(i=0; i<items.length; ++i) {
-                  if(items[i]._id === updatedDoc._id) {
-                    items[i] = updatedDoc;
-                    break;
-                  }
-                }
-                $scope.$parent.select(updatedDoc._id);
+                // TODO set selected to `updatedDoc._id`
               }
               $submit.prop('disabled', false);
               $('#edit-report').modal('hide');
@@ -99,8 +92,7 @@
               return DB.get().get(doc.id);
             }).then(function(doc) {
               if($scope.$parent.filterModel.type === 'reports') {
-                $scope.$parent.items.unshift(doc);
-                $scope.$parent.select(doc._id);
+                // TODO set selected to `doc._id`
               }
               $submit.prop('disabled', false);
               $('#edit-report').modal('hide');
