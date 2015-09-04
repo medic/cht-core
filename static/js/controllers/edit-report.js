@@ -108,6 +108,7 @@
           var src;
           e = $(e); src = e.attr('src');
           if(!(/^jr:\/\//.test(src))) { return; }
+          // Change URL to fragment to prevent browser trying to load it
           e.attr('src', '#'+src);
           e.css('visibility', 'hidden');
           e.wrap('<div class="loader">');
