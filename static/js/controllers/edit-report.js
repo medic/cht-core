@@ -82,7 +82,7 @@
         formContainer.empty();
         formContainer.append(formHtml);
 
-        form = new EnketoForm('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData }),
+        form = new EnketoForm('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData });
         loadErrors = form.init();
         if(loadErrors && loadErrors.length) {
           return console.log('[enketo] loadErrors: ' + JSON.stringify(loadErrors));
