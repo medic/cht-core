@@ -11,16 +11,21 @@ var nools = require('nools'),
   inboxServices.factory('TaskGenerator', ['$q', 'Search', 'Settings',
     function($q, Search, Settings) {
 
-      var Utils = {
-        addDate: function(date, days) {
-          var result = new Date(date.getTime());
-          result.setDate(result.getDate() + days);
-          return result;
-        },
-        getLmpDate: function(doc) {
-          var weeks = doc.fields.last_menstrual_period || noLmpDateModifier;
-          return Utils.addDate(new Date(doc.reported_date), weeks * -7);
-        }
+      var getUtils = function(settings) {
+        return {
+          addDate: function(date, days) {
+            var result = new Date(date.getTime());
+            result.setDate(result.getDate() + days);
+            return result;
+          },
+          getLmpDate: function(doc) {
+            var weeks = doc.fields.last_menstrual_period || noLmpDateModifier;
+            return this.addDate(new Date(doc.reported_date), weeks * -7);
+          },
+          getSchedule: function(name) {
+            return _.findWhere(settings.tasks.schedules, { name: name });
+          }
+        };
       };
 
       var getFlow = function(settings) {
@@ -30,14 +35,10 @@ var nools = require('nools'),
         }
         var options = {
           name: 'medic',
-          scope: {
-            schedules: settings.tasks.schedules,
-            Utils: Utils
-          }
+          scope: { Utils: getUtils(settings) }
         };
         return nools.compile(settings.tasks.rules, options);
       };
-
 
       var getDataRecords = function(callback) {
         var scope = {

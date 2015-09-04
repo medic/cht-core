@@ -1105,61 +1105,75 @@
                         }
                     },
                     "schedules": {
-                        "title": "Schedule",
+                        "title": "Schedules",
                         "type": "array",
-                        "description": "The schedule of tasks to generate",
                         "default": [],
                         "items": {
                             "type": "object",
                             "properties": {
-                                "id": {
-                                    "title": "Task ID",
+                                "name": {
+                                    "title": "Name",
                                     "type": "string"
                                 },
-                                "days": {
-                                    "title": "Days after date that task is due",
-                                    "type": "integer"
-                                },
-                                "type": {
-                                    "title": "Task type",
-                                    "type": "string"
-                                },
-                                "title": {
-                                    "title": "Title",
+                                "events": {
+                                    "title": "Events",
                                     "type": "array",
-                                    "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                                    "description": "The schedule of tasks to generate",
                                     "default": [],
                                     "items": {
                                         "type": "object",
                                         "properties": {
-                                            "content": {
-                                                "type": "string",
-                                                "title": "Title Content"
+                                            "id": {
+                                                "title": "Task ID",
+                                                "type": "string"
                                             },
-                                            "locale": {
-                                                "title": "Locale",
-                                                "type": "string",
-                                                "default": "en"
-                                            }
-                                        }
-                                    }
-                                },
-                                "description": {
-                                    "title": "Description",
-                                    "type": "array",
-                                    "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
-                                    "default": [],
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "content": {
-                                                "type": "string",
-                                                "title": "Description Content"
+                                            "days": {
+                                                "title": "Days after date that task is due",
+                                                "type": "integer"
                                             },
-                                            "locale": {
-                                                "title": "Locale",
-                                                "type": "string",
-                                                "default": "en"
+                                            "type": {
+                                                "title": "Task type",
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "title": "Title",
+                                                "type": "array",
+                                                "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                                                "default": [],
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "content": {
+                                                            "type": "string",
+                                                            "title": "Title Content"
+                                                        },
+                                                        "locale": {
+                                                            "title": "Locale",
+                                                            "type": "string",
+                                                            "default": "en"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "description": {
+                                                "title": "Description",
+                                                "type": "array",
+                                                "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                                                "default": [],
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "content": {
+                                                            "type": "string",
+                                                            "title": "Description Content"
+                                                        },
+                                                        "locale": {
+                                                            "title": "Locale",
+                                                            "type": "string",
+                                                            "default": "en"
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }

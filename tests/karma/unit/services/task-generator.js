@@ -29,34 +29,52 @@ describe('TaskGenerator service', function() {
     "    r: Report" +
     "  }" +
     "  then {" +
-    "    if (r.doc.form !== 'P' && r.doc.form !== 'R') {" +
-    "      return;" +
-    "    }"+
-    "    var visitCount = 0;" +
-    "    r.reports.forEach(function(report) {" +
-    "      if (report.form === 'V') {" +
-    "        visitCount++;" +
-    "      }" +
-    "    });" +
-    "    schedules.forEach(function(s) {" +
-    "      var visit = new Task({" +
-    "        _id: r.doc._id + '-' + s.id," +
-    "        doc: r.doc," +
-    "        type: s.type," +
-    "        date: Utils.addDate(Utils.getLmpDate(r.doc), s.days).toISOString()," +
-    "        title: s.title," +
-    "        fields: [" +
-    "          {" +
-    "            label: [{ content: 'Description', locale: 'en' }]," +
-    "            value: s.description" +
-    "          }" +
-    "        ]," +
-    "        resolved: visitCount > 0" +
+    "    if (r.doc.form === 'P' || r.doc.form === 'R') {" +
+    "      var visitCount = 0;" +
+    "      r.reports.forEach(function(report) {" +
+    "        if (report.form === 'V') {" +
+    "          visitCount++;" +
+    "        }" +
     "      });" +
-    "      emit('task', visit);" +
-    "      assert(visit);" +
-    "      visitCount--;" +
-    "    });" +
+    "      Utils.getSchedule('anc-registration').events.forEach(function(s) {" +
+    "        var visit = new Task({" +
+    "          _id: r.doc._id + '-' + s.id," +
+    "          doc: r.doc," +
+    "          type: s.type," +
+    "          date: Utils.addDate(Utils.getLmpDate(r.doc), s.days).toISOString()," +
+    "          title: s.title," +
+    "          fields: [" +
+    "            {" +
+    "              label: [{ content: 'Description', locale: 'en' }]," +
+    "              value: s.description" +
+    "            }" +
+    "          ]," +
+    "          resolved: visitCount > 0" +
+    "        });" +
+    "        emit('task', visit);" +
+    "        assert(visit);" +
+    "        visitCount--;" +
+    "      });" +
+    "    } else if (r.doc.form === 'V') {" +
+    "      Utils.getSchedule('anc-follow-up').events.forEach(function(s) {" +
+    "        var visit = new Task({" +
+    "          _id: r.doc._id + '-' + s.id," +
+    "          doc: r.doc," +
+    "          type: s.type," +
+    "          date: Utils.addDate(Utils.getLmpDate(r.doc), s.days).toISOString()," +
+    "          title: s.title," +
+    "          fields: [" +
+    "            {" +
+    "              label: [{ content: 'Description', locale: 'en' }]," +
+    "              value: s.description" +
+    "            }" +
+    "          ]," +
+    "          resolved: visitCount > 0" +
+    "        });" +
+    "        emit('task', visit);" +
+    "        assert(visit);" +
+    "      });" +
+    "    }" +
     "  }" +
     "}";
   /* jshint quotmark: true */
@@ -103,25 +121,42 @@ describe('TaskGenerator service', function() {
 
   var schedules = [
     {
-      id: 'visit-1',
-      days: 50,
-      type: 'visit',
-      title: [{ content: 'ANC visit #1 for {{doc.fields.patient_name}}', locale: 'en' }],
-      description: [{ content: 'Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #1. Remember to check for danger signs!', locale: 'en' }]
+      name: 'anc-registration',
+      events: [
+        {
+          id: 'visit-1',
+          days: 50,
+          type: 'visit',
+          title: [{ content: 'ANC visit #1 for {{doc.fields.patient_name}}', locale: 'en' }],
+          description: [{ content: 'Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #1. Remember to check for danger signs!', locale: 'en' }]
+        },
+        {
+          id: 'visit-2',
+          days: 100,
+          type: 'visit',
+          title: [{ content: 'ANC visit #2 for {{doc.fields.patient_name}}', locale: 'en' }],
+          description: [{ content: 'Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #2. Remember to check for danger signs!', locale: 'en' }]
+        },
+        {
+          id: 'immunisation-1',
+          days: 150,
+          type: 'immunisation',
+          title: [{ content: 'ANC immunisation #1 for {{doc.fields.patient_name}}', locale: 'en' }],
+          description: [{ content: 'Please immunise {{doc.fields.patient_name}} in Harrisa Village.', locale: 'en' }]
+        }
+      ]
     },
     {
-      id: 'visit-2',
-      days: 100,
-      type: 'visit',
-      title: [{ content: 'ANC visit #2 for {{doc.fields.patient_name}}', locale: 'en' }],
-      description: [{ content: 'Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #2. Remember to check for danger signs!', locale: 'en' }]
-    },
-    {
-      id: 'immunisation-1',
-      days: 150,
-      type: 'immunisation',
-      title: [{ content: 'ANC immunisation #1 for {{doc.fields.patient_name}}', locale: 'en' }],
-      description: [{ content: 'Please immunise {{doc.fields.patient_name}} in Harrisa Village.', locale: 'en' }]
+      name: 'anc-follow-up',
+      events: [
+        {
+          id: 'follow-up-1',
+          days: 50,
+          type: 'visit',
+          title: [{ content: 'ANC follow up #1 for {{doc.fields.patient_name}}', locale: 'en' }],
+          description: [{ content: 'Please follow up {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #1. Remember to check for danger signs!', locale: 'en' }]
+        }
+      ]
     }
   ];
 
@@ -221,6 +256,10 @@ describe('TaskGenerator service', function() {
 
     var expectations = function(actual, registration, schedule, resolved) {
       var task = _.findWhere(actual, { _id: registration._id + '-' + schedule.id });
+      if (!task) {
+        console.log('Failed to generate task: ' + registration._id + '-' + schedule.id);
+      }
+      chai.expect(!!task).to.equal(true);
       chai.expect(task.type).to.equal(schedule.type);
       chai.expect(task.date).to.equal(calculateDate(registration, schedule.days));
       chai.expect(task.title).to.deep.equal(schedule.title);
@@ -232,16 +271,17 @@ describe('TaskGenerator service', function() {
     service().then(function(actual) {
       chai.expect(Search.callCount).to.equal(1);
       chai.expect(Settings.callCount).to.equal(1);
-      chai.expect(actual.length).to.equal(9);
-      expectations(actual, dataRecords[0], schedules[0], true);
-      expectations(actual, dataRecords[0], schedules[1], false);
-      expectations(actual, dataRecords[0], schedules[2], false);
-      expectations(actual, dataRecords[1], schedules[0], false);
-      expectations(actual, dataRecords[1], schedules[1], false);
-      expectations(actual, dataRecords[1], schedules[2], false);
-      expectations(actual, dataRecords[3], schedules[0], false);
-      expectations(actual, dataRecords[3], schedules[1], false);
-      expectations(actual, dataRecords[3], schedules[2], false);
+      chai.expect(actual.length).to.equal(10);
+      expectations(actual, dataRecords[0], schedules[0].events[0], true);
+      expectations(actual, dataRecords[0], schedules[0].events[1], false);
+      expectations(actual, dataRecords[0], schedules[0].events[2], false);
+      expectations(actual, dataRecords[1], schedules[0].events[0], false);
+      expectations(actual, dataRecords[1], schedules[0].events[1], false);
+      expectations(actual, dataRecords[1], schedules[0].events[2], false);
+      expectations(actual, dataRecords[2], schedules[1].events[0], false);
+      expectations(actual, dataRecords[3], schedules[0].events[0], false);
+      expectations(actual, dataRecords[3], schedules[0].events[1], false);
+      expectations(actual, dataRecords[3], schedules[0].events[2], false);
       done();
     }).catch(function(err) {
       console.error(err.toString());
