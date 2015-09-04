@@ -102,6 +102,17 @@ angular.module('inboxServices').service('Enketo', [
         });
       }
     };
+
+    this.withAllForms = function(callback) {
+      DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
+        var forms = res.rows.filter(function(row) {
+          return row.doc._attachments.xml;
+        }).map(function(row) {
+          return row.doc;
+        });
+        callback(forms);
+      });
+    };
   }
 ]);
 
