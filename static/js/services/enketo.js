@@ -37,6 +37,40 @@ angular.module('inboxServices').service('Enketo', [
       return fields;
     }
 
+    function update(formInternalId, record, docId, facilityId) {
+      // update an existing doc.  For convenience, get the latest version
+      // and then modify the content.  This will avoid most concurrent
+      // edits, but is not ideal.  TODO update write failure to handle
+      // concurrent modifications.
+      var contact;
+      return DB.get().get(facilityId).then(function(facility) {
+        contact = facility;
+        return DB.get().get(docId);
+      }).then(function(doc) {
+        doc.content = record;
+        doc.fields = recordToJs(record);
+        doc.contact = contact;
+        return DB.get().put(doc);
+      });
+    }
+
+    function create(formInternalId, record, facilityId) {
+      return DB.get().get(facilityId).then(function(facility) {
+        return DB.get().post({
+          content: record,
+          fields: recordToJs(record),
+          contact: facility,
+          form: formInternalId,
+          type: 'data_record',
+          from: facility? facility.phone: '',
+          reported_date: Date.now(),
+          content_type: 'xml',
+        });
+      }).then(function(doc) {
+        return DB.get().get(doc.id);
+      });
+    }
+
     this.transformXml = function(doc) {
       if(!processors.html || !processors.model) {
         return console.log('[enketo] processors are not ready');
@@ -68,36 +102,10 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     this.save = function(formInternalId, record, docId, facilityId) {
-      var contact;
       if(docId) {
-        // update an existing doc.  For convenience, get the latest version
-        // and then modify the content.  This will avoid most concurrent
-        // edits, but is not ideal.  TODO update write failure to handle
-        // concurrent modifications.
-        return DB.get().get(facilityId).then(function(facility) {
-          contact = facility;
-          return DB.get().get(docId);
-        }).then(function(doc) {
-          doc.content = record;
-          doc.fields = recordToJs(record);
-          doc.contact = contact;
-          return DB.get().put(doc);
-        });
+        return update(formInternalId, record, docId, facilityId);
       } else {
-        return DB.get().get(facilityId).then(function(facility) {
-          return DB.get().post({
-            content: record,
-            fields: recordToJs(record),
-            contact: facility,
-            form: formInternalId,
-            type: 'data_record',
-            from: facility? facility.phone: '',
-            reported_date: Date.now(),
-            content_type: 'xml',
-          });
-        }).then(function(doc) {
-          return DB.get().get(doc.id);
-        });
+        return create(formInternalId, record, facilityId);
       }
     };
 
