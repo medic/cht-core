@@ -107,7 +107,7 @@
       };
 
       (function constructor() {
-        /* globals EnketoForm, XSLTProcessor */
+        /* globals EnketoForm */
         var showForm = function(docId, formInternalId, formHtml, formModel, formData) {
           var form, formContainer, formWrapper,
               init = function() {
