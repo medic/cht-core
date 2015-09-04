@@ -1,7 +1,8 @@
 angular.module('inboxServices').service('Enketo', [
   'DbNameService',
   function(DbNameService) {
-    var processors = {};
+    var processors = {},
+        xmlSerializer = new XMLSerializer();
 
     (function constructor() {
       (function initProcessors() {
@@ -19,13 +20,19 @@ angular.module('inboxServices').service('Enketo', [
       }());
     }());
 
+    function transformTo(processorName, doc) {
+      var transformedDoc = processors[processorName].transformToDocument(doc),
+          rootElement = transformedDoc.documentElement.firstElementChild;
+      return xmlSerializer.serializeToString(rootElement);
+    }
+
     this.transformXml = function(doc) {
       if(!processors.html || !processors.model) {
         return console.log('[enketo] processors are not ready');
       }
       return {
-        html: processors.html.transformToDocument(doc),
-        model: processors.model.transformToDocument(doc),
+        html: transformTo('html', doc),
+        model: transformTo('model', doc)
       };
     };
   }

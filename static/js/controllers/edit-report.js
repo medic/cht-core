@@ -151,17 +151,11 @@
         var loadForm = function(formInternalId, docId, formInstanceData) {
           withFormByFormInternalId(formInternalId, function(formDocId, data) {
             var doc = data,
-                s = new XMLSerializer(),
                 transformed = Enketo.transformXml(doc),
                 html = transformed.html,
                 model = transformed.model;
 
-            showForm(
-              docId, formInternalId,
-                s.serializeToString(html.documentElement.firstElementChild),
-                s.serializeToString(model.documentElement.firstElementChild),
-                formInstanceData
-            );
+            showForm(docId, formInternalId, html, model, formInstanceData);
           });
         };
 
