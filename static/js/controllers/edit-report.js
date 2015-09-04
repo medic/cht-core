@@ -51,86 +51,85 @@
         }
       };
 
-      (function constructor() {
-        /* globals EnketoForm */
-        var showForm = function(docId, formInternalId, formHtml, formModel, formData) {
-          var form, formContainer, formWrapper,
-              init = function() {
-                var loadErrors;
-                // TODO check if it's OK to attach to `$scope` like this
-                $scope.report_form = { formInternalId:formInternalId, docId:docId };
-                $scope.report_form.form = form = new EnketoForm('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData });
-                loadErrors = form.init();
-                if(loadErrors && loadErrors.length) {
-                  console.log('[enketo] loadErrors: ' + JSON.stringify(loadErrors));
-                }
+      $scope.$root.loadFormFor = function(doc) {
+        loadForm(doc.form, doc._id, doc.content);
+      };
 
-                $('#edit-report .form-wrapper').show();
+      $scope.$root.loadXmlFrom = function(formInternalId, docId, content) {
+        $('#create-report').modal('hide');
+        loadForm(formInternalId, docId, content);
+        $('#edit-report').modal('show');
+      };
 
-                Enketo.withFormByFormInternalId(formInternalId, function(formDocId) {
-                  $('#edit-report .form-wrapper').find('img,video,audio').each(function(i, e) {
-                    var src;
-                    e = $(e); src = e.attr('src');
-                    if(!(/^#jr:\/\//.test(src))) { return; }
-                    DB.get().getAttachment(formDocId, src.substring(6)).then(function(blob) {
-                      var objUrl = (window.URL || window.webkitURL).createObjectURL(blob);
-                      objUrls.push(objUrl);
-                      e.attr('src', objUrl);
-                      e.css('visibility', '');
-                      e.unwrap();
-                    }).catch(function(err) {
-                      console.log('[enketo] error fetching media file', formDocId, src, err);
-                    });
-                  });
-                });
-              };
+      $scope.$root.loadComposer = function() {
+        $scope.$parent.loading = true;
+        $('#edit-report [name=facility]').select2('val', null);
+        Enketo.withAllForms(function(forms) {
+          $scope.$parent.availableForms = forms;
+          $scope.$parent.loading = false;
+        });
+      };
 
-          formWrapper = $('.edit-report-dialog .form-wrapper');
-          formWrapper.show();
-          formContainer = formWrapper.find('.container');
-          formContainer.empty();
+      /* globals EnketoForm */
+      var showForm = function(docId, formInternalId, formHtml, formModel, formData) {
+        var form, formContainer, formWrapper, loadErrors;
+        formWrapper = $('.edit-report-dialog .form-wrapper');
+        formContainer = formWrapper.find('.container');
+        formContainer.empty();
 
-          formHtml = $(formHtml);
-          formHtml.find('img,video,audio').each(function(i, e) {
-            var src;
-            e = $(e); src = e.attr('src');
-            if(!(/^jr:\/\//.test(src))) { return; }
-            e.attr('src', '#'+src);
-            e.css('visibility', 'hidden');
-            e.wrap('<div class="loader">');
+        formHtml = $(formHtml);
+        replaceJavarosaMediaWithLoaders(formHtml);
+        formContainer.append(formHtml);
+
+        $scope.report_form = { formInternalId:formInternalId, docId:docId };
+        $scope.report_form.form = form = new EnketoForm('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData });
+
+        loadErrors = form.init();
+        if(loadErrors && loadErrors.length) {
+          return console.log('[enketo] loadErrors: ' + JSON.stringify(loadErrors));
+        }
+
+        formWrapper.show();
+
+        Enketo.withFormByFormInternalId(formInternalId, function(formDocId) {
+          embedJavarosaMedia(formDocId, formContainer);
+        });
+      };
+
+      var loadForm = function(formInternalId, docId, formInstanceData) {
+        Enketo.withFormByFormInternalId(formInternalId, function(formDocId, doc) {
+          var t = Enketo.transformXml(doc);
+          showForm(docId, formInternalId, t.html, t.model, formInstanceData);
+        });
+      };
+
+      var replaceJavarosaMediaWithLoaders = function(form) {
+        form.find('img,video,audio').each(function(i, e) {
+          var src;
+          e = $(e); src = e.attr('src');
+          if(!(/^jr:\/\//.test(src))) { return; }
+          e.attr('src', '#'+src);
+          e.css('visibility', 'hidden');
+          e.wrap('<div class="loader">');
+        });
+      };
+
+      var embedJavarosaMedia = function(formDocId, formContainer) {
+        formContainer.find('img,video,audio').each(function(i, e) {
+          var src;
+          e = $(e); src = e.attr('src');
+          if(!(/^#jr:\/\//.test(src))) { return; }
+          DB.get().getAttachment(formDocId, src.substring(6)).then(function(blob) {
+            var objUrl = (window.URL || window.webkitURL).createObjectURL(blob);
+            objUrls.push(objUrl);
+            e.attr('src', objUrl);
+            e.css('visibility', '');
+            e.unwrap();
+          }).catch(function(err) {
+            console.log('[enketo] error fetching media file', formDocId, src, err);
           });
-
-          formContainer.append(formHtml);
-
-          init();
-        };
-
-        var loadForm = function(formInternalId, docId, formInstanceData) {
-          Enketo.withFormByFormInternalId(formInternalId, function(formDocId, doc) {
-            var t = Enketo.transformXml(doc);
-            showForm(docId, formInternalId, t.html, t.model, formInstanceData);
-          });
-        };
-
-        $scope.$root.loadFormFor = function(doc) {
-          loadForm(doc.form, doc._id, doc.content);
-        };
-
-        $scope.$root.loadXmlFrom = function(formInternalId, docId, content) {
-          $('#create-report').modal('hide');
-          loadForm(formInternalId, docId, content);
-          $('#edit-report').modal('show');
-        };
-
-        $scope.$root.loadComposer = function() {
-          $scope.$parent.loading = true;
-          $('#edit-report [name=facility]').select2('val', null);
-          Enketo.withAllForms(function(forms) {
-            $scope.$parent.availableForms = forms;
-            $scope.$parent.loading = false;
-          });
-        };
-      }());
+        });
+      };
     }
   ]);
 }());
