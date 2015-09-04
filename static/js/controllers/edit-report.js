@@ -170,21 +170,19 @@
         };
 
         $scope.$root.loadComposer = function() {
-          (function() {
-            $scope.$parent.loading = true;
+          $scope.$parent.loading = true;
 
-            $('#edit-report [name=facility]').select2('val', null);
+          $('#edit-report [name=facility]').select2('val', null);
 
-            DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
-              $scope.$parent.availableForms = res.rows.filter(function(row) {
-                return row.doc._attachments.xml;
-              }).map(function(row) {
-                return row.doc;
-              });
-
-              $scope.$parent.loading = false;
+          DB.get().query('medic/forms', {include_docs:true}).then(function(res) {
+            $scope.$parent.availableForms = res.rows.filter(function(row) {
+              return row.doc._attachments.xml;
+            }).map(function(row) {
+              return row.doc;
             });
-          }());
+
+            $scope.$parent.loading = false;
+          });
         };
       }());
     }
