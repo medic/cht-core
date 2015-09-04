@@ -75,19 +75,20 @@
         var form, formContainer, formWrapper, loadErrors;
         formWrapper = $('.edit-report-dialog .form-wrapper');
         formContainer = formWrapper.find('.container');
-        formContainer.empty();
 
         formHtml = $(formHtml);
         replaceJavarosaMediaWithLoaders(formHtml);
+
+        formContainer.empty();
         formContainer.append(formHtml);
 
-        $scope.report_form = { formInternalId:formInternalId, docId:docId };
-        $scope.report_form.form = form = new EnketoForm('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData });
-
+        form = new EnketoForm('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData }),
         loadErrors = form.init();
         if(loadErrors && loadErrors.length) {
           return console.log('[enketo] loadErrors: ' + JSON.stringify(loadErrors));
         }
+
+        $scope.report_form = { formInternalId:formInternalId, docId:docId, form:form };
 
         formWrapper.show();
 
