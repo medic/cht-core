@@ -126,11 +126,13 @@
                   $('#edit-report .form-wrapper').find('img,video,audio').each(function(i, e) {
                     var src;
                     e = $(e); src = e.attr('src');
-                    if(!(/^jr:\/\//.test(src))) { return; }
-                    DB.get().getAttachment(formDocId, src.substring(5)).then(function(imageBlob) {
+                    if(!(/^#jr:\/\//.test(src))) { return; }
+                    DB.get().getAttachment(formDocId, src.substring(6)).then(function(imageBlob) {
                       var objUrl = (window.URL || window.webkitURL).createObjectURL(imageBlob);
                       objUrls.push(objUrl);
                       e.attr('src', objUrl);
+                      e.css('visibility', '');
+                      e.unwrap();
                     }).catch(function(err) {
                       console.log('[enketo] error fetching media file', formDocId, src, err);
                     });
@@ -142,6 +144,16 @@
           formWrapper.show();
           formContainer = formWrapper.find('.container');
           formContainer.empty();
+
+          formHtml = $(formHtml);
+          formHtml.find('img,video,audio').each(function(i, e) {
+            var src;
+            e = $(e); src = e.attr('src');
+            if(!(/^jr:\/\//.test(src))) { return; }
+            e.attr('src', '#'+src);
+            e.css('visibility', 'hidden');
+            e.wrap('<div class="loader">');
+          });
 
           formContainer.append(formHtml);
 
