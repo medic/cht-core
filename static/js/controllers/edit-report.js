@@ -17,8 +17,8 @@
   });
 
   angular.module('inboxControllers').controller('EditReportCtrl',
-    ['$scope', 'DB', 'DbNameService', 'Enketo',
-    function ($scope, DB, DbNameService, Enketo) {
+    ['$scope', '$state', 'DB', 'DbNameService', 'Enketo',
+    function ($scope, $state, DB, DbNameService, Enketo) {
 
       $scope.updateReport = function() {
         if(!$scope.report_form) {
@@ -36,10 +36,11 @@
               $submit = $('.edit-report-dialog .btn.submit');
           $submit.prop('disabled', true);
 
-          Enketo.save(formInternalId, record, docId, facilityId).then(function(/*doc*/) {
-            //if($scope.$parent.filterModel.type === 'reports') {
-            // TODO set selected to `doc._id`
-            //}
+          Enketo.save(formInternalId, record, docId, facilityId).then(function(doc) {
+            if (!docId && $state.includes('reports')) {
+              // set selected report
+              $state.go('reports.detail', { id: doc._id });
+            }
             $submit.prop('disabled', false);
             $('#edit-report').modal('hide');
             form.resetView();
