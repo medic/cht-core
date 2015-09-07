@@ -1,24 +1,21 @@
 (function () {
   'use strict';
 
-  var objUrls = [];
-  $(document).on('hidden.bs.modal', '#edit-report', function() {
-    var modal = $(this);
-    modal.find('.form-wrapper .container').empty();
-
-    // disable buttons for next load
-    $('.first-page, .previous-page, .next-page, .last-page').toggleClass('disabled', true);
-
-    // unload blobs
-    objUrls.forEach(function(url) {
-      (window.URL || window.webkitURL).revokeObjectURL(url);
-    });
-    objUrls.length = 0;
-  });
-
   angular.module('inboxControllers').controller('EditReportCtrl',
     ['$scope', '$state', 'DB', 'DbNameService', 'Enketo',
     function ($scope, $state, DB, DbNameService, Enketo) {
+      $(document).on('hidden.bs.modal', '#edit-report', function() {
+        var modal = $(this);
+        modal.find('.form-wrapper .container').empty();
+
+        // disable buttons for next load
+        $('.first-page, .previous-page, .next-page, .last-page').toggleClass('disabled', true);
+
+        Enketo.discardBlobs();
+
+        delete $scope.enketo_report;
+      });
+
       $scope.$root.loadComposer = function() {
         $scope.$parent.loading = true;
         $('#edit-report [name=facility]').select2('val', null);
@@ -56,7 +53,7 @@
           return console.log('[enketo] loadErrors: ' + JSON.stringify(loadErrors));
         }
 
-        $scope.report_form = { formInternalId:formInternalId, docId:docId, form:form };
+        $scope.enketo_report = { formInternalId:formInternalId, docId:docId, formInstance:form };
 
         formWrapper.show();
 
@@ -73,14 +70,17 @@
       };
 
       $scope.saveReport = function() {
-        if(!$scope.report_form) {
-          // save a non-Enketo report
+        if($scope.enketo_report) {
+          saveEnketoReport();
+        } else {
           $scope.updateFacility('#edit-report');
-          return;
         }
-        var form = $scope.report_form.form,
-            formInternalId = $scope.report_form.formInternalId,
-            docId = $scope.report_form.docId,
+      };
+
+      var saveEnketoReport = function() {
+        var form = $scope.enketo_report.formInstance,
+            formInternalId = $scope.enketo_report.formInternalId,
+            docId = $scope.enketo_report.docId,
             $modal = $('#edit-report'),
             facilityId = $modal.find('[name=facility]').val();
         form.validate();
@@ -104,7 +104,6 @@
           });
         }
       };
-
     }
   ]);
 }());

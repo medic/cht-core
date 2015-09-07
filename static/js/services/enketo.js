@@ -3,7 +3,8 @@ angular.module('inboxServices').service('Enketo', [
   'DB', 'DbNameService',
   function(DB, DbNameService) {
     var processors = {},
-        xmlSerializer = new XMLSerializer();
+        xmlSerializer = new XMLSerializer(),
+        objUrls = [];
 
     (function initProcessors() {
       var static_root = '/' + DbNameService() + '/_design/medic/static';
@@ -147,6 +148,14 @@ angular.module('inboxServices').service('Enketo', [
           console.log('[enketo] error fetching media file', formDocId, src, err);
         });
       });
+    };
+
+    this.discardBlobs = function() {
+      // unload blobs
+      objUrls.forEach(function(url) {
+        (window.URL || window.webkitURL).revokeObjectURL(url);
+      });
+      objUrls.length = 0;
     };
   }
 ]);
