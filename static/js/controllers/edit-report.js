@@ -19,9 +19,62 @@
   angular.module('inboxControllers').controller('EditReportCtrl',
     ['$scope', '$state', 'DB', 'DbNameService', 'Enketo',
     function ($scope, $state, DB, DbNameService, Enketo) {
+      $scope.$root.loadComposer = function() {
+        $scope.$parent.loading = true;
+        $('#edit-report [name=facility]').select2('val', null);
+        Enketo.withAllForms(function(forms) {
+          $scope.$parent.availableForms = forms;
+          $scope.$parent.loading = false;
+        });
+      };
 
-      $scope.updateReport = function() {
+      $scope.$root.loadFormFor = function(doc) {
+        loadForm(doc.form, doc.content, doc._id);
+      };
+
+      $scope.$root.loadXmlFrom = function(formInternalId, content) {
+        $('#create-report').modal('hide');
+        loadForm(formInternalId, content);
+        $('#edit-report').modal('show');
+      };
+
+      /* globals EnketoForm */
+      var showForm = function(formInternalId, formHtml, formModel, formData, docId) {
+        var form, formContainer, formWrapper, loadErrors;
+        formWrapper = $('.edit-report-dialog .form-wrapper');
+        formContainer = formWrapper.find('.container');
+
+        formHtml = $(formHtml);
+        Enketo.replaceJavarosaMediaWithLoaders(formHtml);
+
+        formContainer.empty();
+        formContainer.append(formHtml);
+
+        form = new EnketoForm('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData });
+        loadErrors = form.init();
+        if(loadErrors && loadErrors.length) {
+          return console.log('[enketo] loadErrors: ' + JSON.stringify(loadErrors));
+        }
+
+        $scope.report_form = { formInternalId:formInternalId, docId:docId, form:form };
+
+        formWrapper.show();
+
+        Enketo.withFormByFormInternalId(formInternalId, function(formDocId) {
+          Enketo.embedJavarosaMedia(formDocId, formContainer);
+        });
+      };
+
+      var loadForm = function(formInternalId, formInstanceData, docId) {
+        Enketo.withFormByFormInternalId(formInternalId, function(formDocId, doc) {
+          var t = Enketo.transformXml(doc);
+          showForm(formInternalId, t.html, t.model, formInstanceData, docId);
+        });
+      };
+
+      $scope.saveReport = function() {
         if(!$scope.report_form) {
+          // save a non-Enketo report
           $scope.updateFacility('#edit-report');
           return;
         }
@@ -52,58 +105,6 @@
         }
       };
 
-      $scope.$root.loadFormFor = function(doc) {
-        loadForm(doc.form, doc.content, doc._id);
-      };
-
-      $scope.$root.loadXmlFrom = function(formInternalId, content) {
-        $('#create-report').modal('hide');
-        loadForm(formInternalId, content);
-        $('#edit-report').modal('show');
-      };
-
-      $scope.$root.loadComposer = function() {
-        $scope.$parent.loading = true;
-        $('#edit-report [name=facility]').select2('val', null);
-        Enketo.withAllForms(function(forms) {
-          $scope.$parent.availableForms = forms;
-          $scope.$parent.loading = false;
-        });
-      };
-
-      /* globals EnketoForm */
-      var showForm = function(docId, formInternalId, formHtml, formModel, formData) {
-        var form, formContainer, formWrapper, loadErrors;
-        formWrapper = $('.edit-report-dialog .form-wrapper');
-        formContainer = formWrapper.find('.container');
-
-        formHtml = $(formHtml);
-        Enketo.replaceJavarosaMediaWithLoaders(formHtml);
-
-        formContainer.empty();
-        formContainer.append(formHtml);
-
-        form = new EnketoForm('.edit-report-dialog .form-wrapper form', { modelStr:formModel, instanceStr:formData });
-        loadErrors = form.init();
-        if(loadErrors && loadErrors.length) {
-          return console.log('[enketo] loadErrors: ' + JSON.stringify(loadErrors));
-        }
-
-        $scope.report_form = { formInternalId:formInternalId, docId:docId, form:form };
-
-        formWrapper.show();
-
-        Enketo.withFormByFormInternalId(formInternalId, function(formDocId) {
-          Enketo.embedJavarosaMedia(formDocId, formContainer);
-        });
-      };
-
-      var loadForm = function(formInternalId, formInstanceData, docId) {
-        Enketo.withFormByFormInternalId(formInternalId, function(formDocId, doc) {
-          var t = Enketo.transformXml(doc);
-          showForm(docId, formInternalId, t.html, t.model, formInstanceData);
-        });
-      };
     }
   ]);
 }());
