@@ -53,12 +53,12 @@
       };
 
       $scope.$root.loadFormFor = function(doc) {
-        loadForm(doc.form, doc._id, doc.content);
+        loadForm(doc.form, doc.content, doc._id);
       };
 
-      $scope.$root.loadXmlFrom = function(formInternalId, docId, content) {
+      $scope.$root.loadXmlFrom = function(formInternalId, content) {
         $('#create-report').modal('hide');
-        loadForm(formInternalId, docId, content);
+        loadForm(formInternalId, content);
         $('#edit-report').modal('show');
       };
 
@@ -98,7 +98,7 @@
         });
       };
 
-      var loadForm = function(formInternalId, docId, formInstanceData) {
+      var loadForm = function(formInternalId, formInstanceData, docId) {
         Enketo.withFormByFormInternalId(formInternalId, function(formDocId, doc) {
           var t = Enketo.transformXml(doc);
           showForm(docId, formInternalId, t.html, t.model, formInstanceData);

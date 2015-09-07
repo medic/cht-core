@@ -12,7 +12,7 @@
 
       $scope.performAction = function(action) {
         if (action.type === 'report') {
-          $scope.loadXmlFrom(action.form, null, action.content);
+          $scope.loadXmlFrom(action.form, action.content);
         }
       };
 
