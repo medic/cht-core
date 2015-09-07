@@ -56,7 +56,7 @@ var _ = require('underscore'),
               // wait for selected to be set before checking
               $timeout(function() {
                 var id = $('.inbox-items li').first().attr('data-record-id');
-                $state.go('contacts.detail', { id: id });
+                $state.go('contacts.detail', { id: id }, { location: 'replace' });
               });
             }
           }

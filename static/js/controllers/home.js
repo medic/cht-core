@@ -37,7 +37,7 @@ var async = require('async');
       };
 
       findFirstAuthorizedTab(function(state) {
-        $state.go(state);
+        $state.go(state, { }, { location: 'replace' });
       });
 
     }

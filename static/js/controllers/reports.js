@@ -161,9 +161,7 @@ var _ = require('underscore'),
               $scope.error = false;
               $scope.errorSyntax = false;
               $scope.update(data);
-              var curr = _.find(data, function(result) {
-                return result._id === $state.params.id;
-              });
+              var curr = _.findWhere(data, { _id: $state.params.id });
               if (curr) {
                 $scope.setSelected(curr);
               } else if (!$('#back').is(':visible') && !options.changes) {
@@ -172,7 +170,7 @@ var _ = require('underscore'),
                 $timeout(function() {
                   $timeout(function() {
                     var id = $('.inbox-items li').first().attr('data-record-id');
-                    $state.go('reports.detail', { id: id });
+                    $state.go('reports.detail', { id: id }, { location: 'replace' });
                   });
                 });
               }

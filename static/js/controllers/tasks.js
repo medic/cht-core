@@ -15,13 +15,6 @@ var _ = require('underscore');
           var refreshing = ($scope.selected && $scope.selected._id) === id;
           $scope.selected = _.findWhere($scope.tasks, { _id: id });
           $scope.settingSelected(refreshing);
-        } else if(!$state.params.id &&
-                  $scope.tasks.length &&
-                  !$('#back').is(':visible')) {
-          $timeout(function() {
-            var id = $('.inbox-items li').first().attr('data-record-id');
-            $state.go('tasks.detail', { id: id });
-          });
         } else {
           $scope.clearSelected();
         }
@@ -37,7 +30,15 @@ var _ = require('underscore');
           .then(function(tasks) {
             $scope.tasks = _.where(tasks, { resolved: false });
             $scope.loading = false;
-            $scope.setSelected($state.params.id);
+            var curr = _.findWhere(tasks, { _id: $state.params.id });
+            if (curr) {
+              $scope.selected = curr;
+            } else if (!$('#back').is(':visible')) {
+              $timeout(function() {
+                var id = $('.inbox-items li').first().attr('data-record-id');
+                $state.go('tasks.detail', { id: id }, { location: 'replace' });
+              });
+            }
           })
           .catch(function(err) {
             console.log('Error generating tasks', err);
@@ -52,11 +53,12 @@ var _ = require('underscore');
         $scope.selected = null;
       });
 
-      $scope.setSelectedModule();
       $scope.filterModel.type = 'tasks';
       $scope.tasks = [];
       $scope.selected = null;
-      updateTasks();
+      $scope.$on('query', function() {
+        updateTasks();
+      });
 
       Changes({
         key: 'tasks-list',
