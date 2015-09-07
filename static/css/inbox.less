@@ -1179,8 +1179,14 @@ a.fa:hover {
       top: 0.6em;
       right: 0.2em;
     }
-    .tabs a {
-      width: 6em;
+    .tabs {
+      display: flex;
+      flex-direction: row;
+      a {
+        flex-grow: 1;
+        min-width: 6em;
+        max-width: 9em;
+      }
     }
     .mm-icon {
       font-size: 2em;
@@ -1371,9 +1377,10 @@ a.fa:hover {
     margin: 0;
   }
   .header .tabs {
+    padding-left: 2px;
     a {
       padding-top: 0.8em;
-      width: 5em;
+      min-width: 5em;
     }
     .button-label {
       display: none;
