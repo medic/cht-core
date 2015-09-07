@@ -56,9 +56,7 @@ var _ = require('underscore');
       $scope.filterModel.type = 'tasks';
       $scope.tasks = [];
       $scope.selected = null;
-      $scope.$on('query', function() {
-        updateTasks();
-      });
+      updateTasks();
 
       Changes({
         key: 'tasks-list',
