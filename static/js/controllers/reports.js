@@ -203,6 +203,7 @@ var _ = require('underscore'),
 
       $scope.$on('EditReport', function() {
         var val = ($scope.selected.contact && $scope.selected.contact._id) || '';
+        $('#edit-report [name=id]').val($scope.selected._id);
         $('#edit-report [name=facility]').select2('val', val);
         $('#edit-report').modal('show');
         if($scope.selected.content_type === 'xml') {

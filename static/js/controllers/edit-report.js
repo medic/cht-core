@@ -1,9 +1,11 @@
+var modal = require('../modules/modal');
+
 (function () {
   'use strict';
 
   angular.module('inboxControllers').controller('EditReportCtrl',
-    ['$scope', '$state', 'DB', 'DbNameService', 'Enketo',
-    function ($scope, $state, DB, DbNameService, Enketo) {
+    ['$scope', '$state', '$translate', 'DB', 'DbNameService', 'UpdateFacility', 'Enketo',
+    function ($scope, $state, $translate, DB, DbNameService, UpdateFacility, Enketo) {
       $(document).on('hidden.bs.modal', '#edit-report', function() {
         var modal = $(this);
         modal.find('.form-wrapper .container').empty();
@@ -73,8 +75,28 @@
         if($scope.enketo_report) {
           saveEnketoReport();
         } else {
-          $scope.updateFacility('#edit-report');
+          saveJsonReport();
         }
+      };
+
+      var saveJsonReport = function() {
+        var $modal = $('#edit-report');
+        var docId = $modal.find('[name=id]').val();
+        var facilityId = $modal.find('[name=facility]').val();
+        if (!docId) {
+          $modal.find('.modal-footer .note')
+            .text($translate.instant('Error updating facility'));
+          return;
+        }
+        if (!facilityId) {
+          $modal.find('.modal-footer .note')
+            .text($translate.instant('Please select a facility'));
+          return;
+        }
+        var pane = modal.start($modal);
+        UpdateFacility(docId, facilityId, function(err) {
+          pane.done($translate.instant('Error updating facility'), err);
+        });
       };
 
       var saveEnketoReport = function() {

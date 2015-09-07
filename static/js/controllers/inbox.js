@@ -16,8 +16,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'DBSync', 'ConflictResolution', 'UserSettings', 'APP_CONFIG', 'DB', 'Session',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, DBSync, ConflictResolution, UserSettings, APP_CONFIG, DB, Session) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes', 'DBSync', 'ConflictResolution', 'UserSettings', 'APP_CONFIG', 'DB', 'Session',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes, DBSync, ConflictResolution, UserSettings, APP_CONFIG, DB, Session) {
 
       Session.init();
       DBSync();
@@ -448,20 +448,6 @@ require('moment/locales');
         } else {
           pane.done(translateFilter('Error deleting document'), 'No deleteMessageId set');
         }
-      };
-
-      $scope.updateFacility = function(modalSelecter) {
-        var $modal = $(modalSelecter || '#update-facility');
-        var facilityId = $modal.find('[name=facility]').val();
-        if (!facilityId) {
-          $modal.find('.modal-footer .note')
-            .text(translateFilter('Please select a facility'));
-          return;
-        }
-        var pane = modal.start($modal);
-        UpdateFacility($scope.selected._id, facilityId, function(err) {
-          pane.done(translateFilter('Error updating facility'), err);
-        });
       };
 
       $('body').on('mouseenter', '.relative-date, .autoreply', function() {
