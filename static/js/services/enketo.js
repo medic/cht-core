@@ -119,6 +119,35 @@ angular.module('inboxServices').service('Enketo', [
         callback(forms);
       });
     };
+
+    this.replaceJavarosaMediaWithLoaders = function(form) {
+      form.find('img,video,audio').each(function(i, e) {
+        var src;
+        e = $(e); src = e.attr('src');
+        if(!(/^jr:\/\//.test(src))) { return; }
+        // Change URL to fragment to prevent browser trying to load it
+        e.attr('src', '#'+src);
+        e.css('visibility', 'hidden');
+        e.wrap('<div class="loader">');
+      });
+    };
+
+    this.embedJavarosaMedia = function(formDocId, formContainer) {
+      formContainer.find('img,video,audio').each(function(i, e) {
+        var src;
+        e = $(e); src = e.attr('src');
+        if(!(/^#jr:\/\//.test(src))) { return; }
+        DB.get().getAttachment(formDocId, src.substring(6)).then(function(blob) {
+          var objUrl = (window.URL || window.webkitURL).createObjectURL(blob);
+          objUrls.push(objUrl);
+          e.attr('src', objUrl);
+          e.css('visibility', '');
+          e.unwrap();
+        }).catch(function(err) {
+          console.log('[enketo] error fetching media file', formDocId, src, err);
+        });
+      });
+    };
   }
 ]);
 

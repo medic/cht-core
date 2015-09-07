@@ -78,7 +78,7 @@
         formContainer = formWrapper.find('.container');
 
         formHtml = $(formHtml);
-        replaceJavarosaMediaWithLoaders(formHtml);
+        Enketo.replaceJavarosaMediaWithLoaders(formHtml);
 
         formContainer.empty();
         formContainer.append(formHtml);
@@ -94,7 +94,7 @@
         formWrapper.show();
 
         Enketo.withFormByFormInternalId(formInternalId, function(formDocId) {
-          embedJavarosaMedia(formDocId, formContainer);
+          Enketo.embedJavarosaMedia(formDocId, formContainer);
         });
       };
 
@@ -102,35 +102,6 @@
         Enketo.withFormByFormInternalId(formInternalId, function(formDocId, doc) {
           var t = Enketo.transformXml(doc);
           showForm(docId, formInternalId, t.html, t.model, formInstanceData);
-        });
-      };
-
-      var replaceJavarosaMediaWithLoaders = function(form) {
-        form.find('img,video,audio').each(function(i, e) {
-          var src;
-          e = $(e); src = e.attr('src');
-          if(!(/^jr:\/\//.test(src))) { return; }
-          // Change URL to fragment to prevent browser trying to load it
-          e.attr('src', '#'+src);
-          e.css('visibility', 'hidden');
-          e.wrap('<div class="loader">');
-        });
-      };
-
-      var embedJavarosaMedia = function(formDocId, formContainer) {
-        formContainer.find('img,video,audio').each(function(i, e) {
-          var src;
-          e = $(e); src = e.attr('src');
-          if(!(/^#jr:\/\//.test(src))) { return; }
-          DB.get().getAttachment(formDocId, src.substring(6)).then(function(blob) {
-            var objUrl = (window.URL || window.webkitURL).createObjectURL(blob);
-            objUrls.push(objUrl);
-            e.attr('src', objUrl);
-            e.css('visibility', '');
-            e.unwrap();
-          }).catch(function(err) {
-            console.log('[enketo] error fetching media file', formDocId, src, err);
-          });
         });
       };
     }
