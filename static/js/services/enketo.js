@@ -38,6 +38,7 @@ angular.module('inboxServices').service('Enketo', [
       return fields;
     }
 
+    // TODO merge this with `save` method
     function update(formInternalId, record, docId, facilityId) {
       // update an existing doc.  For convenience, get the latest version
       // and then modify the content.  This will avoid most concurrent
