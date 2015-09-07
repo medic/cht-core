@@ -41,8 +41,7 @@ angular.module('inboxServices').service('Enketo', [
     function update(formInternalId, record, docId, facilityId) {
       // update an existing doc.  For convenience, get the latest version
       // and then modify the content.  This will avoid most concurrent
-      // edits, but is not ideal.  TODO update write failure to handle
-      // concurrent modifications.
+      // edits, but is not ideal.
       var contact;
       return DB.get().get(facilityId).then(function(facility) {
         contact = facility;
