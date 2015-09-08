@@ -9,17 +9,18 @@ angular.module('inboxServices').service('Enketo', [
     (function initProcessors() {
       var static_root = '/' + DbNameService() + '/_design/medic/static';
 
-      $http.get(static_root + '/xslt/openrosa2html5form.xsl').then(function(doc) {
-        var processor = new XSLTProcessor();
-        processor.importStylesheet(doc);
-        processors.html = processor;
-      });
+      var getProcessor = function(name, file) {
+        $http
+          .get(static_root + file, { responseType: 'document' })
+          .then(function(response) {
+            var processor = new XSLTProcessor();
+            processor.importStylesheet(response.data);
+            processors[name] = processor;
+          });
+      };
 
-      $http.get(static_root + '/xslt/openrosa2xmlmodel.xsl').then(function(doc) {
-        var processor = new XSLTProcessor();
-        processor.importStylesheet(doc);
-        processors.model = processor;
-      });
+      getProcessor('html', '/xslt/openrosa2html5form.xsl');
+      getProcessor('model', '/xslt/openrosa2xmlmodel.xsl');
     }());
 
     function transformTo(processorName, doc) {
