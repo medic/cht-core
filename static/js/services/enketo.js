@@ -1,19 +1,21 @@
 /* globals XSLTProcessor */
 angular.module('inboxServices').service('Enketo', [
-  'DB', 'DbNameService',
-  function(DB, DbNameService) {
+  '$http', 'DB', 'DbNameService',
+  function($http, DB, DbNameService) {
     var processors = {},
         xmlSerializer = new XMLSerializer(),
         objUrls = [];
 
     (function initProcessors() {
       var static_root = '/' + DbNameService() + '/_design/medic/static';
-      $.get(static_root + '/xslt/openrosa2html5form.xsl').done(function(doc) {
+
+      $http.get(static_root + '/xslt/openrosa2html5form.xsl').then(function(doc) {
         var processor = new XSLTProcessor();
         processor.importStylesheet(doc);
         processors.html = processor;
       });
-      $.get(static_root + '/xslt/openrosa2xmlmodel.xsl').done(function(doc) {
+
+      $http.get(static_root + '/xslt/openrosa2xmlmodel.xsl').then(function(doc) {
         var processor = new XSLTProcessor();
         processor.importStylesheet(doc);
         processors.model = processor;
