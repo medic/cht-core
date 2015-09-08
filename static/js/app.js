@@ -1,7 +1,7 @@
 require('lie/polyfill');
 
 require('./services/index');
-require('./controllers/inbox');
+require('./controllers/index');
 require('./filters/index');
 
 var _ = require('underscore');
