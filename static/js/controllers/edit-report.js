@@ -9,12 +9,7 @@ var modal = require('../modules/modal');
       $(document).on('hidden.bs.modal', '#edit-report', function() {
         var modal = $(this);
         modal.find('.form-wrapper .container').empty();
-
-        // disable buttons for next load
-        $('.first-page, .previous-page, .next-page, .last-page').toggleClass('disabled', true);
-
         Enketo.discardBlobs();
-
         delete $scope.enketo_report;
       });
 
