@@ -22,6 +22,13 @@ var modal = require('../modules/modal');
       };
 
       $scope.$root.loadXmlFrom = function(formInternalId, content) {
+        if(!content) {
+          if($state.includes('contacts')) {
+            content = '<data><g_patient_id>' +
+                $state.params.id + '</g_patient_id></data>';
+          }
+        }
+
         $('#create-report').modal('hide');
         loadForm(formInternalId, content);
         $('#edit-report').modal('show');
@@ -29,6 +36,7 @@ var modal = require('../modules/modal');
 
       var loadForm = function(formInternalId, formInstanceData, docId) {
         var formWrapper = $('.edit-report-dialog .form-wrapper');
+
         Enketo.render(formWrapper, formInternalId, formInstanceData)
           .then(function(form) {
             $scope.enketo_report = {
