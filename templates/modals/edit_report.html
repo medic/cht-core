@@ -6,10 +6,9 @@
         <h3>{{'Create Report' | translate}}</h3>
       </div>
       <div class="modal-body">
-          <div class="loader" ng-show="loading"></div>
-          <p ng-show="!(loading || availableForms.length)">{{'forms.none.available' | translate}}</p>
+          <p ng-show="!formDefinitions.length">{{'forms.none.available' | translate}}</p>
           <ul>
-            <li ng-repeat="f in availableForms">
+            <li ng-repeat="f in formDefinitions">
               <a ng-click="loadXmlFrom(f.internalId)">{{ f.title }}</a>
             </li>
           </ul>

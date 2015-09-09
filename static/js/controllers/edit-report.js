@@ -14,12 +14,7 @@ var modal = require('../modules/modal');
       });
 
       $scope.$root.loadComposer = function() {
-        $scope.$parent.loading = true;
         $('#edit-report [name=facility]').select2('val', null);
-        Enketo.withAllForms(function(forms) {
-          $scope.$parent.availableForms = forms;
-          $scope.$parent.loading = false;
-        });
       };
 
       $scope.$root.loadFormFor = function(doc) {
