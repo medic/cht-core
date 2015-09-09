@@ -92,10 +92,10 @@ angular.module('inboxServices').service('Enketo', [
           if(row.doc.internalId !== formInternalId) { return; }
           DB.get().getAttachment(row.id, 'xml').then(function(xmlBlob) {
             var reader = new FileReader();
-            reader.addEventListener('loadend', function() {
+            reader.onloadend = function() {
               var xml = $.parseXML(reader.result);
               callback(row.id, xml);
-            });
+            };
             reader.readAsText(xmlBlob);
           });
         });
