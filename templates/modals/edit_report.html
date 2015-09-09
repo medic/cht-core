@@ -7,7 +7,7 @@
       </div>
       <div class="modal-body">
           <div class="loader" ng-show="loading"></div>
-          <p ng-show="!(loading || availableForms.length)">{{'There are currently no forms available.' | translate}}</p>
+          <p ng-show="!(loading || availableForms.length)">{{'forms.none.available' | translate}}</p>
           <ul>
             <li ng-repeat="f in availableForms">
               <a ng-click="loadXmlFrom(f.internalId)">{{ f.title }}</a>
@@ -28,7 +28,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{'Edit Report' | translate}}</h3>
+        <h3>{{'report.edit' | translate}}</h3>
       </div>
       <div class="modal-body enketo">
         <form action="" method="POST">
@@ -44,8 +44,8 @@
           <div class="form-wrapper" style="display:none">
             <div class="container pages"></div>
             <div class="form-footer">
-              <button class="btn btn-link previous-page">{{'&lt; prev' | translate}}</button>
-              <button class="btn btn-link next-page">{{'next &gt;' | translate}}</button>
+              <button class="btn btn-link previous-page">&lt; {{'Previous' | translate}}</button>
+              <button class="btn btn-link next-page">{{'Next' | translate}} &gt;</button>
               <a class="btn submit btn-primary" ng-click="saveReport()">{{'Submit' | translate}}</a>
             </div>
           </div>

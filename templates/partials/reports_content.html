@@ -43,7 +43,7 @@
             </ul>
           </li>
           <li ng-if="selected.sms_message.message">
-            <label>{{'Raw Report Content' | translate}}</label>
+            <label>{{'report.content.raw' | translate}}</label>
             <p>{{selected.sms_message.message}}</p>
           </li>
           <li ng-if="selected.tasks.length">
@@ -65,7 +65,7 @@
       </div>
 
       <div class="body scheduled-tasks" ng-if="selected.scheduled_tasks_by_group.length">
-        <h2>{{'Outgoing Messages' | translate}}</h2>
+        <h2>{{'tasks' | translate}}</h2>
         <ul>
           <li ng-repeat="group in selected.scheduled_tasks_by_group">
             <p>
