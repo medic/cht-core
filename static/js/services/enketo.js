@@ -42,41 +42,66 @@ angular.module('inboxServices').service('Enketo', [
       return fields;
     };
 
-    // TODO merge this with `save` method
-    var update = function(formInternalId, record, docId, facilityId) {
+    var update = function(formInternalId, record, docId, contactId) {
       // update an existing doc.  For convenience, get the latest version
       // and then modify the content.  This will avoid most concurrent
       // edits, but is not ideal.
       var contact;
-      return DB.get()
-        .get(facilityId)
-        .then(function(facility) {
-          contact = facility;
-          return DB.get().get(docId);
-        })
-        .then(function(doc) {
-          doc.content = record;
-          doc.fields = recordToJs(record);
-          doc.contact = contact;
-          return DB.get().put(doc);
-        });
+      if(contactId) {
+        return DB.get()
+          .get(contactId)
+          .then(function(c) {
+            contact = c;
+            return DB.get().get(docId);
+          })
+          .then(function(doc) {
+            doc.content = record;
+            doc.fields = recordToJs(record);
+            doc.contact = contact;
+            doc.from = contact? contact.phone: '';
+            return DB.get().put(doc);
+          });
+      } else {
+        return DB.get()
+          .get(docId)
+          .then(function(doc) {
+            doc.content = record;
+            doc.fields = recordToJs(record);
+            doc.from = '';
+            return DB.get().put(doc);
+          });
+      }
     };
 
-    var create = function(formInternalId, record, facilityId) {
-      return DB.get().get(facilityId).then(function(facility) {
-        return DB.get().post({
-          content: record,
-          fields: recordToJs(record),
-          contact: facility,
-          form: formInternalId,
-          type: 'data_record',
-          from: facility? facility.phone: '',
-          reported_date: Date.now(),
-          content_type: 'xml',
+    var create = function(formInternalId, record, contactId) {
+      if(contactId) {
+        return DB.get().get(contactId).then(function(contact) {
+          return DB.get().post({
+              content: record,
+              fields: recordToJs(record),
+              contact: contact,
+              form: formInternalId,
+              type: 'data_record',
+              from: contact? contact.phone: '',
+              reported_date: Date.now(),
+              content_type: 'xml',
+          });
+        }).then(function(doc) {
+          return DB.get().get(doc.id);
         });
-      }).then(function(doc) {
-        return DB.get().get(doc.id);
-      });
+      } else {
+        return DB.get().post({
+            content: record,
+            fields: recordToJs(record),
+            form: formInternalId,
+            type: 'data_record',
+            from: '',
+            reported_date: Date.now(),
+            content_type: 'xml',
+        }).then(function(doc) {
+          return DB.get().get(doc.id);
+        });
+      }
     };
 
     var transformXml = function(formDocId, doc) {
@@ -141,11 +166,13 @@ angular.module('inboxServices').service('Enketo', [
       });
     };
 
-    this.save = function(formInternalId, record, docId, facilityId) {
+    this.save = function(formInternalId, record, docId) {
+      // TODO get the current logged-in user, and pass his docId as the final
+      // argument to update()/create()
       if (docId) {
-        return update(formInternalId, record, docId, facilityId);
+        return update(formInternalId, record, docId);
       } else {
-        return create(formInternalId, record, facilityId);
+        return create(formInternalId, record);
       }
     };
 

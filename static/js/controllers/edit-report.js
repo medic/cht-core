@@ -36,6 +36,7 @@ var modal = require('../modules/modal');
               docId: docId,
               formInstance: form
             };
+            $scope.$apply();
             formWrapper.show();
           })
           .catch(function(err) {
