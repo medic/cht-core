@@ -164,7 +164,9 @@ var _ = require('underscore'),
               var curr = _.findWhere(data, { _id: $state.params.id });
               if (curr) {
                 $scope.setSelected(curr);
-              } else if (!$('#back').is(':visible') && !options.changes) {
+              } else if (!$('#back').is(':visible') &&
+                         !options.changes &&
+                         $state.is('reports.detail')) {
                 // TODO improve double timeout here - I think it's required
                 // because of the nested promises
                 $timeout(function() {
@@ -296,6 +298,7 @@ var _ = require('underscore'),
         });
         initEditMessageModal();
       };
+
     }
   ]);
 

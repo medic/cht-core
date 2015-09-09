@@ -1,8 +1,17 @@
 <div class="container-fluid action-container">
   <div class="row">
     <div class="inner">
-      <div class="col-sm-4"></div>
-      <div class="col-sm-8 column">
+      <div class="col-sm-4 general-actions">
+        <div class="fab-actions dropup">
+          <a class="fab speed-dial fa fa-plus dropdown-toggle" ng-show="filterModel.type === 'reports'" data-toggle="dropdown"></a>
+          <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+            <li ng-repeat="form in formDefinitions">
+              <a ui-sref="reports.add({ id: form.internalId })">{{ form.title }}</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-sm-8 detail-actions">
         <div class="actions" ng-show="showActionBar && actionBar._id && !loadingContent">
           <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" data-send-to="{{actionBar.sendTo}}">
             <span class="fa fa-envelope"></span>

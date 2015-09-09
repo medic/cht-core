@@ -5,6 +5,7 @@
   angular.module('inboxControllers', []);
 
   require('./inbox');
+
   require('./analytics');
   require('./configuration');
   require('./configuration-export');
@@ -33,6 +34,7 @@
   require('./messages');
   require('./messages-content');
   require('./reports');
+  require('./reports-add');
   require('./reports-content');
   require('./tasks');
   require('./tasks-content');
