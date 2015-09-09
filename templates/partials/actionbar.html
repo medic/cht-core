@@ -16,12 +16,17 @@
           <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" data-send-to="{{actionBar.sendTo}}">
             <span class="fa fa-envelope"></span>
             <p>{{'Send Message' | translate}}</p>
-          </a><a class="mm-icon mm-icon-inverse mm-icon-caption send-message" ng-show="filterModel.type === 'contacts'" ng-class="{'mm-icon-disabled': actionBar.sendTo.type !== 'health_center'}" data-send-to="{{actionBar.sendTo}}" data-everyone-at="true">
+          </a><a class="mm-icon mm-icon-inverse mm-icon-caption send-message" ng-show="filterModel.type === 'contacts' && actionBar.sendTo.type !== 'person'" ng-class="{'mm-icon-disabled': actionBar.sendTo.type !== 'health_center'}" data-send-to="{{actionBar.sendTo}}" data-everyone-at="true">
             <span class="fa-stack">
               <i class="fa fa-envelope fa-stack-1x stack-bottom-left"></i>
               <i class="fa fa-envelope fa-stack-1x stack-top-right"></i>
             </span>
             <p>{{'Message All' | translate}}</p>
+          </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="filterModel.type === 'contacts' && actionBar.sendTo.type === 'person'" data-toggle="modal" data-target="#create-report">
+            <span class="fa-stack">
+              <i class="fa fa-list-alt"></i>
+            </span>
+            <p>{{'Submit Report' | translate}}</p>
           </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="filterModel.type === 'reports' && !actionBar.verified" ng-click="emit('VerifyReport', true)">
             <span class="fa fa-check"></span>
             <p>{{'Verify' | translate}}</p>
