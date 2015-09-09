@@ -16,6 +16,7 @@
     "autoprefixer-core": "^5.2.1",
     "chai": "^2.1.0",
     "enketo-core": "git://github.com/alxndrsn/enketo-core.git#medic-0.4.1",
+    "enketo-xslt": "git@github.com:alxndrsn/enketo-client-side-transformer.git#30b5a5e3deb300740a78d9302293d71a45759813",
     "grunt": "^0.4.5",
     "grunt-angular-templates": "^0.5.7",
     "grunt-appcache": "^0.1.8",

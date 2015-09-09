@@ -193,6 +193,16 @@ module.exports = function(grunt) {
           }
         ]
       },
+      'enketo-xslt': {
+        files: [
+          {
+            expand: true,
+            flatten: true,
+            src: [ 'node_modules/enketo-client-side-transformer/xslt/client-side/*.xsl' ],
+            dest: 'static/dist/xslt/'
+          }
+        ]
+      },
     },
     exec: {
       deploy: {
@@ -283,7 +293,6 @@ module.exports = function(grunt) {
             'static/fonts/**/*',
             'static/img/**/*',
             '!static/img/promo/**/*',
-            'static/xslt/**/*',
           ]
         },
         network: '*'
@@ -361,6 +370,7 @@ module.exports = function(grunt) {
     'mmbower',
     'mmcss',
     'mmjs',
+    'copy:enketo-xslt',
     'appcache',
   ]);
 

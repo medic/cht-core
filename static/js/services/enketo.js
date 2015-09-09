@@ -19,8 +19,8 @@ angular.module('inboxServices').service('Enketo', [
           });
       };
 
-      getProcessor('html', '/xslt/openrosa2html5form.xsl');
-      getProcessor('model', '/xslt/openrosa2xmlmodel.xsl');
+      getProcessor('html', '/dist/xslt/openrosa2html5form.xsl');
+      getProcessor('model', '/dist/xslt/openrosa2xmlmodel.xsl');
     }());
 
     var transformTo = function(processorName, doc) {
