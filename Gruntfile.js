@@ -123,7 +123,8 @@ module.exports = function(grunt) {
           'static/js/bootstrap-datetimepicker.js',
           'static/js/jquery-ext.js',
           'static/js/json2.js',
-          'static/js/browser.js'
+          'static/js/browser.js',
+          'tests/karma/unit/blob-shim.js',
         ]
       },
       all: [

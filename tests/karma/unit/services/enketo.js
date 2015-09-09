@@ -361,9 +361,7 @@ describe('Enketo service with available processors', function() {
       service;
 
   function staticXsl(xmlString) {
-    return xmlDoc('<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:exsl="http://exslt.org/common" xmlns:str="http://exslt.org/strings" xmlns:dyn="http://exslt.org/dynamic" extension-element-prefixes="exsl str dyn" version="2.0" ><xsl:template match="/"><root>' +
-        xmlString +
-        '</root></xsl:template></xsl:stylesheet>');
+    return xmlDoc(window.MMXSLT.header + '<root>' + xmlString + '</root>' + window.MMXSLT.footer);
   }
 
   beforeEach(function() {
