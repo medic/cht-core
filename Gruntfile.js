@@ -288,7 +288,19 @@ module.exports = function(grunt) {
         },
         network: '*'
       }
-    }
+    },
+    sass: {
+      compile: {
+        cwd: 'static/css',
+        dest: 'build',
+        expand: true,
+        outputStyle: 'expanded',
+        src: 'enketo/enketo.scss',
+        ext: '.less',
+        flatten: true,
+        extDot: 'last',
+      },
+    },
   });
 
   // Load the plugins
@@ -310,6 +322,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-npm-install');
   grunt.loadNpmTasks('grunt-postcss');
   grunt.loadNpmTasks('grunt-protractor-runner');
+  grunt.loadNpmTasks('grunt-sass');
   grunt.loadNpmTasks('grunt-text-replace');
 
   grunt.task.run('notify_hooks');
@@ -325,6 +338,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
+    'sass',
     'less',
     'postcss'
   ]);

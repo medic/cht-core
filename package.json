@@ -35,6 +35,7 @@
     "grunt-npm-install": "^0.2.0",
     "grunt-postcss": "^0.5.5",
     "grunt-protractor-runner": "^2.0.0",
+    "grunt-sass": "^1.0.0",
     "grunt-text-replace": "^0.4.0",
     "karma": "~0.13.5",
     "karma-chrome-launcher": "~0.2.0",
