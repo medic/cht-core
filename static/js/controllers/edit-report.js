@@ -86,7 +86,7 @@ var modal = require('../modules/modal');
             docId = $scope.enketo_report.docId,
             $modal = $('#edit-report'),
             facilityId = $modal.find('[name=facility]').val(),
-            $submit = $('.edit-report-dialog .btn.submit')
+            $submit = $('.edit-report-dialog .btn.submit');
 
         $submit.prop('disabled', true);
         Enketo.save(formInternalId, form, docId, facilityId)
