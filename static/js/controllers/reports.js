@@ -75,6 +75,7 @@ var _ = require('underscore'),
         $scope.setActionBar({
           _id: doc._id,
           verified: doc.verified,
+          type: doc.content_type,
           sendTo: doc
         });
         $scope.settingSelected(refreshing);

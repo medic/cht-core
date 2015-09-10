@@ -43,7 +43,10 @@ angular.module('inboxServices').service('Enketo', [
             doc.content = record;
             doc.fields = recordToJs(record);
             doc.from = '';
-            return DB.get().put(doc);
+            return DB.get().put(doc).then(function(res) {
+              doc._rev = res.rev;
+              return doc;
+            });
           });
       }
     };
@@ -129,6 +132,7 @@ angular.module('inboxServices').service('Enketo', [
           if (loadErrors && loadErrors.length) {
             return Promise.reject(loadErrors);
           }
+          wrapper.show();
           return Promise.resolve(form);
         });
     };

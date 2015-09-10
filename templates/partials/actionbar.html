@@ -6,13 +6,13 @@
           <a class="fab speed-dial fa fa-plus dropdown-toggle" ng-show="filterModel.type === 'reports'" data-toggle="dropdown"></a>
           <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
             <li ng-repeat="form in formDefinitions">
-              <a ui-sref="reports.add({ id: form.internalId })">{{ form.title }}</a>
+              <a ui-sref="reports.add({ formId: form.internalId })">{{ form.title }}</a>
             </li>
           </ul>
         </div>
       </div>
       <div class="col-sm-8 detail-actions">
-        <div class="actions" ng-show="showActionBar && actionBar._id && !loadingContent">
+        <div class="actions" ng-show="showActionBar && actionBar._id && !loadingContent && (('reports.detail' | isState) || ('contacts.detail' | isState))">
           <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" data-send-to="{{actionBar.sendTo}}">
             <span class="fa fa-envelope"></span>
             <p>{{'Send Message' | translate}}</p>
@@ -33,7 +33,10 @@
           </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="filterModel.type === 'reports' && actionBar.verified" ng-click="emit('VerifyReport', false)">
             <span class="fa fa-times"></span>
             <p>{{'Unverify' | translate}}</p>
-          </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="filterModel.type === 'reports'" ng-click="emit('EditReport')">
+          </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="filterModel.type === 'reports' && actionBar.type === 'xml'" ui-sref="reports.edit({ reportId: actionBar._id })">
+            <span class="fa fa-pencil"></span>
+            <p>{{'Edit' | translate}}</p>
+          </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="filterModel.type === 'reports' && actionBar.type !== 'xml'" ng-click="emit('EditReport')">
             <span class="fa fa-pencil"></span>
             <p>{{'Edit' | translate}}</p>
           </a><a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="filterModel.type === 'contacts'" ng-click="emit('EditContact')">

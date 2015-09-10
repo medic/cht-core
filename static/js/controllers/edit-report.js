@@ -44,7 +44,6 @@ var modal = require('../modules/modal');
               docId: docId,
               formInstance: form
             };
-            formWrapper.show();
           })
           .catch(function(err) {
             return console.error('Error loading form.', err);

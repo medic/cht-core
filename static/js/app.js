@@ -69,7 +69,16 @@ _.templateSettings = {
           templateUrl: 'templates/partials/reports.html'
         })
         .state('reports.add', {
-          url: '/add/:id',
+          url: '/add/:formId',
+          views: {
+            content: {
+              controller: 'ReportsAddCtrl',
+              templateUrl: 'templates/partials/reports_add.html'
+            }
+          }
+        })
+        .state('reports.edit', {
+          url: '/edit/:reportId',
           views: {
             content: {
               controller: 'ReportsAddCtrl',
