@@ -85,29 +85,25 @@ var modal = require('../modules/modal');
             formInternalId = $scope.enketo_report.formInternalId,
             docId = $scope.enketo_report.docId,
             $modal = $('#edit-report'),
-            facilityId = $modal.find('[name=facility]').val();
-        form.validate();
-        if(form.isValid()) {
-          var record = form.getDataStr(),
-              $submit = $('.edit-report-dialog .btn.submit');
-          $submit.prop('disabled', true);
+            facilityId = $modal.find('[name=facility]').val(),
+            $submit = $('.edit-report-dialog .btn.submit')
 
-          Enketo.save(formInternalId, record, docId, facilityId)
-            .then(function(doc) {
-              if (!docId && $state.includes('reports')) {
-                // set selected report
-                $state.go('reports.detail', { id: doc._id });
-              }
-              $submit.prop('disabled', false);
-              $('#edit-report').modal('hide');
-              form.resetView();
-              $('#edit-report .form-wrapper').hide();
-            })
-            .catch(function(err) {
-              $submit.prop('disabled', false);
-              console.log('[enketo] Error submitting form data: ' + err);
-            });
-        }
+        $submit.prop('disabled', true);
+        Enketo.save(formInternalId, form, docId, facilityId)
+          .then(function(doc) {
+            if (!docId && $state.includes('reports')) {
+              // set selected report
+              $state.go('reports.detail', { id: doc._id });
+            }
+            $submit.prop('disabled', false);
+            $('#edit-report').modal('hide');
+            form.resetView();
+            $('#edit-report .form-wrapper').hide();
+          })
+          .catch(function(err) {
+            $submit.prop('disabled', false);
+            console.log('[enketo] Error submitting form data: ' + err);
+          });
       };
     }
   ]);

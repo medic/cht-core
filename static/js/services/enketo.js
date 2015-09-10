@@ -133,14 +133,24 @@ angular.module('inboxServices').service('Enketo', [
         });
     };
 
-    this.save = function(formInternalId, record, docId) {
+    this.save = function(formInternalId, form, docId) {
+      form.validate();
+      if (!form.isValid()) {
+        return Promise.reject(new Error('Form is invalid'));
+      }
+      var result;
+      var record = form.getDataStr();
       // TODO get the current logged-in user, and pass his docId as the final
       // argument to update()/create()
       if (docId) {
-        return update(formInternalId, record, docId);
+        result = update(formInternalId, record, docId);
       } else {
-        return create(formInternalId, record);
+        result = create(formInternalId, record);
       }
+      result.then(function() {
+        form.resetView();
+      });
+      return result;
     };
 
     this.withAllForms = function(callback) {
