@@ -16,8 +16,8 @@ var moment = require('moment');
   };
 
   inboxControllers.controller('ConfigurationFormsCtrl',
-    ['$scope', 'Settings', 'UpdateSettings',
-    function ($scope, Settings, UpdateSettings) {
+    ['$scope', 'Settings', 'UpdateSettings', 'FileReader',
+    function ($scope, Settings, UpdateSettings, FileReader) {
 
       $scope.uploading = false;
 
@@ -38,33 +38,28 @@ var moment = require('moment');
         if (!files || files.length === 0) {
           uploadFinished('File not found');
         }
-        var reader = new FileReader();
-        reader.onloadend = function(ev) {
-
-          var json,
-              settings = { forms: {} };
-
-          try {
-            // expects array of forms
-            json = JSON.parse(ev.target.result);
-            json.forEach(function(form) {
-              if (form.meta && form.meta.code) {
-                settings.forms[form.meta.code.toUpperCase()] = form;
-              }
-            });
-          } catch(e) {
-            uploadFinished(e);
-          }
-
-          UpdateSettings(settings, { replace: true }, function(err) {
-            if (!err) {
-              $scope.forms = settings.forms;
+        FileReader(files[0])
+          .then(function(result) {
+            var settings = { forms: {} };
+            try {
+              // expects array of forms
+              var json = JSON.parse(result);
+              json.forEach(function(form) {
+                if (form.meta && form.meta.code) {
+                  settings.forms[form.meta.code.toUpperCase()] = form;
+                }
+              });
+            } catch(e) {
+              uploadFinished(e);
             }
-            uploadFinished(err);
-          });
-
-        };
-        reader.readAsText(files[0]);
+            UpdateSettings(settings, { replace: true }, function(err) {
+              if (!err) {
+                $scope.forms = settings.forms;
+              }
+              uploadFinished(err);
+            });
+          })
+          .catch(uploadFinished);
       };
 
       $('#forms-upload-form .uploader').on('change', uploadForms);

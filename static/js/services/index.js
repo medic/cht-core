@@ -21,6 +21,7 @@
   require('./enketo');
   require('./facility');
   require('./facility-hierarchy');
+  require('./file-reader');
   require('./form');
   require('./format-data-record');
   require('./format-date');
@@ -46,5 +47,6 @@
   require('./update-settings');
   require('./user');
   require('./verified');
+  require('./xslt');
 
 }());

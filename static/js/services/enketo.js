@@ -1,33 +1,8 @@
-/* globals XSLTProcessor, EnketoForm */
+/* globals EnketoForm */
 angular.module('inboxServices').service('Enketo', [
-  '$http', 'DB', 'DbNameService',
-  function($http, DB, DbNameService) {
-    var processors = {},
-        xmlSerializer = new XMLSerializer(),
-        objUrls = [];
-
-    (function initProcessors() {
-      var static_root = '/' + DbNameService() + '/_design/medic/static';
-
-      var getProcessor = function(name, file) {
-        $http
-          .get(static_root + file, { responseType: 'document' })
-          .then(function(response) {
-            var processor = new XSLTProcessor();
-            processor.importStylesheet(response.data);
-            processors[name] = processor;
-          });
-      };
-
-      getProcessor('html', '/dist/xslt/openrosa2html5form.xsl');
-      getProcessor('model', '/dist/xslt/openrosa2xmlmodel.xsl');
-    }());
-
-    var transformTo = function(processorName, doc) {
-      var transformedDoc = processors[processorName].transformToDocument(doc),
-          rootElement = transformedDoc.documentElement.firstElementChild;
-      return xmlSerializer.serializeToString(rootElement);
-    };
+  '$window', 'DB', 'XSLT', 'FileReader',
+  function($window, DB, XSLT, FileReader) {
+    var objUrls = [];
 
     var recordToJs = function(record) {
       var i, n, fields = {},
@@ -104,16 +79,21 @@ angular.module('inboxServices').service('Enketo', [
       }
     };
 
-    var transformXml = function(formDocId, doc) {
-      if (!processors.html || !processors.model) {
-        return console.log('[enketo] processors are not ready');
-      }
-      var html = $(transformTo('html', doc));
-      replaceJavarosaMediaWithLoaders(formDocId, html);
-      return {
-        html: html,
-        model: transformTo('model', doc)
-      };
+    var transformXml = function(formDocId, doc, callback) {
+      Promise
+        .all([
+          XSLT.transform('openrosa2html5form.xsl', doc),
+          XSLT.transform('openrosa2xmlmodel.xsl', doc),
+        ])
+        .then(function(results) {
+          var result = {
+            html: $(results[0]),
+            model: results[1]
+          };
+          replaceJavarosaMediaWithLoaders(formDocId, result.html);
+          callback(null, result);
+        })
+        .catch(callback);
     };
 
     var withFormByFormInternalId = function(formInternalId, callback) {
@@ -122,22 +102,21 @@ angular.module('inboxServices').service('Enketo', [
         .query('medic/forms', { include_docs: true })
         .then(function(res) {
           // find our form
-          _.forEach(res.rows, function(row) {
-            if (!row.doc._attachments.xml || 
-                row.doc.internalId !== formInternalId) {
-              return;
-            }
-            DB.get()
-              .getAttachment(row.id, 'xml')
-              .then(function(xmlBlob) {
-                var reader = new FileReader();
-                reader.addEventListener('loadend', function() {
-                  var result = transformXml(row.id, $.parseXML(reader.result));
-                  callback(null, result);
-                });
-                reader.readAsText(xmlBlob);
-              });
+          var form = _.find(res.rows, function(row) {
+            return row.doc._attachments.xml && row.doc.internalId === formInternalId;
           });
+          if (!form) {
+            return callback(new Error('Requested form not found'));
+          }
+          DB.get()
+            .getAttachment(form.id, 'xml')
+            .then(FileReader)
+            .then(function(text) {
+              transformXml(form.id, $.parseXML(text), callback);
+            })
+            .catch(function(err) {
+              callback(err);
+            });
         })
         .catch(function(err) {
           callback(err);
@@ -151,8 +130,7 @@ angular.module('inboxServices').service('Enketo', [
             return reject(err);
           }
           var formContainer = wrapper.find('.container').first();
-          formContainer.empty();
-          formContainer.append(doc.html);
+          formContainer.html(doc.html);
           var form = new EnketoForm(wrapper.find('form').first(), {
             modelStr: doc.model,
             instanceStr: formInstanceData
@@ -203,7 +181,7 @@ angular.module('inboxServices').service('Enketo', [
         DB.get()
           .getAttachment(formDocId, src.substring(5))
           .then(function(blob) {
-            var objUrl = (window.URL || window.webkitURL).createObjectURL(blob);
+            var objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
             objUrls.push(objUrl);
             elem.attr('src', objUrl);
             elem.css('visibility', '');
@@ -218,7 +196,7 @@ angular.module('inboxServices').service('Enketo', [
     this.discardBlobs = function() {
       // unload blobs
       objUrls.forEach(function(url) {
-        (window.URL || window.webkitURL).revokeObjectURL(url);
+        ($window.URL || $window.webkitURL).revokeObjectURL(url);
       });
       objUrls.length = 0;
     };
