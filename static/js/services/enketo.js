@@ -4,6 +4,87 @@ angular.module('inboxServices').service('Enketo', [
   function($window, DB, XSLT, FileReader) {
     var objUrls = [];
 
+    var replaceJavarosaMediaWithLoaders = function(formDocId, form) {
+      form.find('img,video,audio').each(function(i, elem) {
+        elem = $(elem);
+        var src = elem.attr('src');
+        if (!(/^jr:\/\//.test(src))) {
+          return;
+        }
+        // Change URL to fragment to prevent browser trying to load it
+        elem.attr('src', '#' + src);
+        elem.css('visibility', 'hidden');
+        elem.wrap('<div class="loader">');
+        DB.get()
+          .getAttachment(formDocId, src.substring(5))
+          .then(function(blob) {
+            var objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
+            objUrls.push(objUrl);
+            elem.attr('src', objUrl);
+            elem.css('visibility', '');
+            elem.unwrap();
+          })
+          .catch(function(err) {
+            console.error('Error fetching media file', formDocId, src, err);
+          });
+      });
+    };
+
+    var transformXml = function(formDocId, doc) {
+      return Promise
+        .all([
+          XSLT.transform('openrosa2html5form.xsl', doc),
+          XSLT.transform('openrosa2xmlmodel.xsl', doc),
+        ])
+        .then(function(results) {
+          var result = {
+            html: $(results[0]),
+            model: results[1]
+          };
+          replaceJavarosaMediaWithLoaders(formDocId, result.html);
+          return Promise.resolve(result);
+        });
+    };
+
+    var withFormByFormInternalId = function(formInternalId) {
+      return DB.get()
+        .query('medic/forms', { include_docs: true, key: formInternalId })
+        .then(function(res) {
+          if (!res.rows.length) {
+            return Promise.reject(new Error('Requested form not found'));
+          }
+          var form = res.rows[0];
+          return DB.get()
+            .getAttachment(form.id, 'xml')
+            .then(FileReader)
+            .then(function(text) {
+              return transformXml(form.id, $.parseXML(text));
+            });
+        });
+    };
+
+    this.render = function(wrapper, formInternalId, formInstanceData) {
+      return withFormByFormInternalId(formInternalId)
+        .then(function(doc) {
+          wrapper.find('.form-footer')
+                 .addClass('end')
+                 .find('.previous-page,.next-page')
+                 .addClass('disabled');
+          var formContainer = wrapper.find('.container').first();
+          formContainer.html(doc.html);
+          var form = new EnketoForm(wrapper.find('form').first(), {
+            modelStr: doc.model,
+            instanceStr: formInstanceData
+          });
+          var loadErrors = form.init();
+          if (loadErrors && loadErrors.length) {
+            return Promise.reject(loadErrors);
+          }
+          wrapper.show();
+          return Promise.resolve(form);
+        });
+    };
+
     var recordToJs = function(record) {
       var i, n, fields = {},
           data = $.parseXML(record).firstChild.childNodes;
@@ -82,61 +163,6 @@ angular.module('inboxServices').service('Enketo', [
       }
     };
 
-    var transformXml = function(formDocId, doc) {
-      return Promise
-        .all([
-          XSLT.transform('openrosa2html5form.xsl', doc),
-          XSLT.transform('openrosa2xmlmodel.xsl', doc),
-        ])
-        .then(function(results) {
-          var result = {
-            html: $(results[0]),
-            model: results[1]
-          };
-          replaceJavarosaMediaWithLoaders(formDocId, result.html);
-          return Promise.resolve(result);
-        });
-    };
-
-    var withFormByFormInternalId = function(formInternalId) {
-      return DB.get()
-        .query('medic/forms', { include_docs: true, key: formInternalId })
-        .then(function(res) {
-          if (!res.rows.length) {
-            return Promise.reject(new Error('Requested form not found'));
-          }
-          var form = res.rows[0];
-          return DB.get()
-            .getAttachment(form.id, 'xml')
-            .then(FileReader)
-            .then(function(text) {
-              return transformXml(form.id, $.parseXML(text));
-            });
-        });
-    };
-
-    this.render = function(wrapper, formInternalId, formInstanceData) {
-      return withFormByFormInternalId(formInternalId)
-        .then(function(doc) {
-          wrapper.find('.form-footer')
-                 .addClass('end')
-                 .find('.previous-page,.next-page')
-                 .addClass('disabled');
-          var formContainer = wrapper.find('.container').first();
-          formContainer.html(doc.html);
-          var form = new EnketoForm(wrapper.find('form').first(), {
-            modelStr: doc.model,
-            instanceStr: formInstanceData
-          });
-          var loadErrors = form.init();
-          if (loadErrors && loadErrors.length) {
-            return Promise.reject(loadErrors);
-          }
-          wrapper.show();
-          return Promise.resolve(form);
-        });
-    };
-
     this.save = function(formInternalId, form, docId) {
       form.validate();
       if (!form.isValid()) {
@@ -170,32 +196,6 @@ angular.module('inboxServices').service('Enketo', [
         });
     };
 
-    var replaceJavarosaMediaWithLoaders = function(formDocId, form) {
-      form.find('img,video,audio').each(function(i, elem) {
-        elem = $(elem);
-        var src = elem.attr('src');
-        if (!(/^jr:\/\//.test(src))) {
-          return;
-        }
-        // Change URL to fragment to prevent browser trying to load it
-        elem.attr('src', '#' + src);
-        elem.css('visibility', 'hidden');
-        elem.wrap('<div class="loader">');
-        DB.get()
-          .getAttachment(formDocId, src.substring(5))
-          .then(function(blob) {
-            var objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
-            objUrls.push(objUrl);
-            elem.attr('src', objUrl);
-            elem.css('visibility', '');
-            elem.unwrap();
-          })
-          .catch(function(err) {
-            console.error('Error fetching media file', formDocId, src, err);
-          });
-      });
-    };
-
     this.unload = function(form) {
       if (form) {
         form.resetView();
@@ -208,4 +208,3 @@ angular.module('inboxServices').service('Enketo', [
     };
   }
 ]);
-
