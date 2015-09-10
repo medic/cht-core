@@ -39,7 +39,9 @@
           </li>
           <li>
             <label>{{'Phone Number' | translate}}</label>
-            <p>{{selected.phone || selected.contact.phone}}</p>
+            <p><a href="tel:{{selected.phone || selected.contact.phone}}">
+              {{selected.phone || selected.contact.phone}}
+            </a></p>
           </li>
           <li ng-show="selected.type !== 'person'">
             <label>{{'External ID' | translate}}</label>
