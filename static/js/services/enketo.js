@@ -1,7 +1,7 @@
 /* globals EnketoForm */
 angular.module('inboxServices').service('Enketo', [
-  '$window', 'DB', 'XSLT', 'FileReader',
-  function($window, DB, XSLT, FileReader) {
+  '$window', '$log', 'DB', 'XSLT', 'FileReader',
+  function($window, $log, DB, XSLT, FileReader) {
     var objUrls = [];
 
     var replaceJavarosaMediaWithLoaders = function(formDocId, form) {
@@ -25,7 +25,7 @@ angular.module('inboxServices').service('Enketo', [
             elem.unwrap();
           })
           .catch(function(err) {
-            console.error('Error fetching media file', formDocId, src, err);
+            $log.error('Error fetching media file', formDocId, src, err);
           });
       });
     };
