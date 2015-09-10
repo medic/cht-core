@@ -6,10 +6,10 @@ var modal = require('../modules/modal');
   angular.module('inboxControllers').controller('EditReportCtrl',
     ['$scope', '$state', '$translate', 'DB', 'DbNameService', 'UpdateFacility', 'Enketo',
     function ($scope, $state, $translate, DB, DbNameService, UpdateFacility, Enketo) {
+
       $(document).on('hidden.bs.modal', '#edit-report', function() {
-        var modal = $(this);
-        modal.find('.form-wrapper .container').empty();
-        Enketo.discardBlobs();
+        $(this).find('.form-wrapper .container').empty();
+        Enketo.unload($scope.enketo_report && $scope.enketo_report.formInstance);
         delete $scope.enketo_report;
       });
 
@@ -44,7 +44,6 @@ var modal = require('../modules/modal');
               docId: docId,
               formInstance: form
             };
-            $scope.$apply();
             formWrapper.show();
           })
           .catch(function(err) {
@@ -97,7 +96,6 @@ var modal = require('../modules/modal');
             }
             $submit.prop('disabled', false);
             $('#edit-report').modal('hide');
-            form.resetView();
             $('#edit-report .form-wrapper').hide();
           })
           .catch(function(err) {

@@ -35,6 +35,10 @@
             console.log('Error submitting form data: ', err);
           });
       };
+
+      $scope.$on('$destroy', function() {
+        Enketo.unload($scope.form);
+      });
     }
   ]);
 

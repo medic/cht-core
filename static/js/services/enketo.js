@@ -192,7 +192,10 @@ angular.module('inboxServices').service('Enketo', [
       });
     };
 
-    this.discardBlobs = function() {
+    this.unload = function(form) {
+      if (form) {
+        form.resetView();
+      }
       // unload blobs
       objUrls.forEach(function(url) {
         ($window.URL || $window.webkitURL).revokeObjectURL(url);
