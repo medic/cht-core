@@ -125,6 +125,10 @@ angular.module('inboxServices').service('Enketo', [
           if (err) {
             return reject(err);
           }
+          wrapper.find('.form-footer')
+                 .addClass('end')
+                 .find('.previous-page,.next-page')
+                 .addClass('disabled');
           var formContainer = wrapper.find('.container').first();
           formContainer.html(doc.html);
           var form = new EnketoForm(wrapper.find('form').first(), {
