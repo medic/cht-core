@@ -66,9 +66,7 @@ describe('Enketo service', function() {
 
     it('return error when form not found', function(done) {
       // given only irrelevant forms are available
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [
-        mockJsonForm('not-defined'), mockEnketoForm('irrelevant')
-      ] }));
+      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [] }));
       service
         .render(null, 'not-defined')
         .then(function() {
@@ -81,12 +79,7 @@ describe('Enketo service', function() {
     });
 
     it('return error when form initialisation fails', function(done) {
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [
-        mockEnketoForm('bad'),
-        mockJsonForm('ok'),
-        mockEnketoForm('ok', 'form-9'),
-        mockJsonForm('bad')
-      ] }));
+      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoForm('ok', 'form-9') ] }));
       dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xml'));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
@@ -106,9 +99,7 @@ describe('Enketo service', function() {
     });
 
     it('return form when everything works', function(done) {
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [
-        mockEnketoForm('ok', 'form-9')
-      ] }));
+      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoForm('ok', 'form-9') ] }));
       dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
       enketoInit.returns([]);
       FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
@@ -130,9 +121,7 @@ describe('Enketo service', function() {
     });
 
     it('replaces img src with obj urls', function(done) {
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [
-        mockEnketoForm('ok', 'form-9')
-      ] }));
+      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoForm('ok', 'form-9') ] }));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, '<div><img src="jr://myimg"></div>'))
         .onSecondCall().returns(KarmaUtils.mockPromise(null, 'my model'));
@@ -162,9 +151,7 @@ describe('Enketo service', function() {
     });
 
     it('leaves img wrapped if failed to load', function(done) {
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [
-        mockEnketoForm('ok', 'form-9')
-      ] }));
+      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoForm('ok', 'form-9') ] }));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, '<div><img src="jr://myimg"></div>'))
         .onSecondCall().returns(KarmaUtils.mockPromise(null, 'my model'));

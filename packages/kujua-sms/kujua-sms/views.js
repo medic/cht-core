@@ -493,13 +493,9 @@ exports.duplicate_form_submissions = {
  */
 exports.forms = {
     map: function(doc) {
-        if (doc.type !== 'form') {
+        if (doc.type !== 'form' || !doc._attachments.xml) {
             return;
         }
-        // removes form: prefix on form docs
-        function removePrefix(str) {
-           return str.split(':').slice(1).join(':');
-        };
-        emit(removePrefix(doc._id));
+        emit(doc.internalId);
     }
 };

@@ -97,17 +97,13 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     var withFormByFormInternalId = function(formInternalId, callback) {
-      // TODO query by internal code
       DB.get()
-        .query('medic/forms', { include_docs: true })
+        .query('medic/forms', { include_docs: true, key: formInternalId })
         .then(function(res) {
-          // find our form
-          var form = _.find(res.rows, function(row) {
-            return row.doc._attachments.xml && row.doc.internalId === formInternalId;
-          });
-          if (!form) {
+          if (!res.rows.length) {
             return callback(new Error('Requested form not found'));
           }
+          var form = res.rows[0];
           DB.get()
             .getAttachment(form.id, 'xml')
             .then(FileReader)
