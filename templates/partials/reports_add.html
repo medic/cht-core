@@ -1,5 +1,10 @@
 <div class="content-pane">
-  <div class="col-sm-8 item-content">
+  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
+    <div>
+      <div class="loader"></div>
+    </div>
+  </div>
+  <div class="col-sm-8 item-content" ng-show="!loadingContent">
     <div id="report-form" class="enketo">
       <div class="container pages"></div>
       <div class="form-footer">

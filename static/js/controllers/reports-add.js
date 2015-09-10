@@ -7,6 +7,7 @@
   inboxControllers.controller('ReportsAddCtrl', 
     ['$scope', '$state', 'Enketo',
     function ($scope, $state, Enketo) {
+      $scope.loadingContent = true;
       $scope.setSelected({ form: $state.params.id });
       // TODO unload enketo resources on navigate away
       // TODO angularify this
@@ -14,10 +15,14 @@
       Enketo.render(formWrapper, $state.params.id)
         .then(function(form) {
           $scope.form = form;
+          $scope.loadingContent = false;
           formWrapper.show();
+          $scope.$apply();
         })
         .catch(function(err) {
-          return console.error('Error loading form.', err);
+          $scope.loadingContent = false;
+          console.error('Error loading form.', err);
+          $scope.$apply();
         });
 
     }
