@@ -79,8 +79,8 @@ angular.module('inboxServices').service('Enketo', [
       }
     };
 
-    var transformXml = function(formDocId, doc, callback) {
-      Promise
+    var transformXml = function(formDocId, doc) {
+      return Promise
         .all([
           XSLT.transform('openrosa2html5form.xsl', doc),
           XSLT.transform('openrosa2xmlmodel.xsl', doc),
@@ -91,40 +91,30 @@ angular.module('inboxServices').service('Enketo', [
             model: results[1]
           };
           replaceJavarosaMediaWithLoaders(formDocId, result.html);
-          callback(null, result);
-        })
-        .catch(callback);
+          return Promise.resolve(result);
+        });
     };
 
-    var withFormByFormInternalId = function(formInternalId, callback) {
-      DB.get()
+    var withFormByFormInternalId = function(formInternalId) {
+      return DB.get()
         .query('medic/forms', { include_docs: true, key: formInternalId })
         .then(function(res) {
           if (!res.rows.length) {
-            return callback(new Error('Requested form not found'));
+            return Promise.reject(new Error('Requested form not found'));
           }
           var form = res.rows[0];
-          DB.get()
+          return DB.get()
             .getAttachment(form.id, 'xml')
             .then(FileReader)
             .then(function(text) {
-              transformXml(form.id, $.parseXML(text), callback);
-            })
-            .catch(function(err) {
-              callback(err);
+              return transformXml(form.id, $.parseXML(text));
             });
-        })
-        .catch(function(err) {
-          callback(err);
         });
     };
 
     this.render = function(wrapper, formInternalId, formInstanceData) {
-      return new Promise(function(resolve, reject) {
-        withFormByFormInternalId(formInternalId, function(err, doc) {
-          if (err) {
-            return reject(err);
-          }
+      return withFormByFormInternalId(formInternalId)
+        .then(function(doc) {
           wrapper.find('.form-footer')
                  .addClass('end')
                  .find('.previous-page,.next-page')
@@ -137,11 +127,10 @@ angular.module('inboxServices').service('Enketo', [
           });
           var loadErrors = form.init();
           if (loadErrors && loadErrors.length) {
-            return reject(loadErrors);
+            return Promise.reject(loadErrors);
           }
-          resolve(form);
+          return Promise.resolve(form);
         });
-      });
     };
 
     this.save = function(formInternalId, record, docId) {

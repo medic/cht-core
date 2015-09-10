@@ -17,14 +17,11 @@
           $scope.form = form;
           $scope.loadingContent = false;
           formWrapper.show();
-          $scope.$apply();
         })
         .catch(function(err) {
           $scope.loadingContent = false;
           console.error('Error loading form.', err);
-          $scope.$apply();
         });
-
     }
   ]);
 
