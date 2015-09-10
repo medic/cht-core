@@ -72,10 +72,7 @@ var _ = require('underscore'),
       };
 
       $scope.select = function(id) {
-        if ($state.params.id === id) {
-          $state.reload();
-          $scope.query();
-        } else if (id) {
+        if (id) {
           $state.go('contacts.detail', { id: id });
         } else {
           $state.go('contacts');
