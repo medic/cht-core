@@ -1,7 +1,7 @@
 /* globals XSLTProcessor */
 angular.module('inboxServices').service('XSLT', [
-  '$http', 'DbNameService',
-  function($http, DbNameService) {
+  '$http', '$q', 'DbNameService',
+  function($http, $q, DbNameService) {
 
     var staticRoot = '/' + DbNameService() + '/_design/medic/static/dist/xslt/';
     var processors = {};
@@ -9,7 +9,7 @@ angular.module('inboxServices').service('XSLT', [
 
     var getProcessor = function(name) {
       if (processors[name]) {
-        return processors[name];
+        return $q.when(processors[name]);
       }
       return $http
         .get(staticRoot + name, { responseType: 'document' })
