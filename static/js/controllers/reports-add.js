@@ -8,6 +8,7 @@
     ['$scope', '$state', 'Enketo',
     function ($scope, $state, Enketo) {
       $scope.loadingContent = true;
+      $scope.saving = false;
       $scope.setSelected({ form: $state.params.id });
       // TODO unload enketo resources on navigate away
       var formWrapper = $('#report-form');
@@ -23,15 +24,14 @@
         });
 
       $scope.save = function() {
-        var $submit = $('#report-form .btn.submit');
-        $submit.prop('disabled', true);
+        $scope.saving = true;
         Enketo.save($state.params.id, $scope.form)
           .then(function(doc) {
-            $submit.prop('disabled', false);
+            $scope.saving = false;
             $state.go('reports.detail', { id: doc._id });
           })
           .catch(function(err) {
-            $submit.prop('disabled', false);
+            $scope.saving = false;
             console.log('Error submitting form data: ', err);
           });
       };
