@@ -16,7 +16,6 @@ _.templateSettings = {
 var safePath = function(requested) {
   var appPrefix = path.join('/', db.settings.db, '_design', db.settings.ddoc, '_rewrite');
   var dirPrefix = path.join(appPrefix, '/');
-  var fragmentPrefix = appPrefix + '#';
 
   if (!requested) {
     // no redirect path - return root
@@ -30,14 +29,15 @@ var safePath = function(requested) {
     return appPrefix;
   }
 
-  if (requested !== appPrefix &&
-      requested.indexOf(dirPrefix) !== 0 &&
-      requested.indexOf(fragmentPrefix) !== 0) {
+  var parsed = url.parse(requested);
+
+  if (parsed.path !== appPrefix &&
+      parsed.path.indexOf(dirPrefix) !== 0) {
     // path is not relative to the couch app
     return appPrefix;
   }
 
-  return requested;
+  return parsed.path + (parsed.hash || '');
 };
 
 var getLoginTemplate = function(callback) {

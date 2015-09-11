@@ -1,4 +1,5 @@
 var controller = require('../../controllers/login'),
+    _ = require('underscore'),
     db = require('../../db'),
     auth = require('../../auth'),
     sinon = require('sinon'),
@@ -70,6 +71,18 @@ exports.tearDown = function(callback) {
 ].forEach(function(requested) {
   exports['Good URL "' + requested + '" should redirect unchanged'] = function(test) {
     test.equals(requested, controller.safePath(requested));
+    test.done();
+  };
+});
+
+_.forEach({
+  'http://test.com:1234/lg/_design/medic/_rewrite': '/lg/_design/medic/_rewrite',
+  'http://test.com:1234/lg/_design/medic/_rewrite#fragment': '/lg/_design/medic/_rewrite#fragment',
+  'http://wrong.com:666/lg/_design/medic/_rewrite#path/fragment': '/lg/_design/medic/_rewrite#path/fragment',
+  'http://wrong.com:666/lg/_design/medic/_rewrite/long/path': '/lg/_design/medic/_rewrite/long/path',
+}, function(expected, requested) {
+  exports['Absolute URL "' + requested + '" should redirect as a relative url'] = function(test) {
+    test.equals(expected, controller.safePath(requested));
     test.done();
   };
 });
