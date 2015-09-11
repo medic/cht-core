@@ -32,6 +32,7 @@
   require('./kanso-packages');
   require('./language');
   require('./mark-read');
+  require('./mega');
   require('./message-contacts');
   require('./message-state');
   require('./outgoing-messages-configuration');
