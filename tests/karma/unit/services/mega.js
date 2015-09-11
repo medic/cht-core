@@ -66,5 +66,29 @@ describe('Mega service', function() {
               '<label>{{\'person.name\' | translate}}</label></input>' +
           '</h:body></h:html>');
     });
+
+    it('handles db-reference fields', function() {
+      // given
+      var schema = {
+        type: 'person',
+        title: '{{name}}',
+        fields: {
+          loc: 'db:location',
+        },
+      };
+
+      // when
+      var xform = service.generateXform(schema);
+
+      // then
+      assert.equal(xform, '<h:html><h:head><h:title>{{\'person.new\' | translate}}</h:title>' +
+          '<model><instance><person id="person" version="1">' +
+            '<loc/><meta><instanceID/></meta></person></instance>' +
+            '<bind nodeset="/person/loc" type="string"/></model></h:head>' +
+          '<h:body>' +
+            '<input ref="/person/loc" appearance="dbObject" data-db-type="location">' +
+              '<label>{{\'person.loc\' | translate}}</label></input>' +
+          '</h:body></h:html>');
+    });
   });
 });

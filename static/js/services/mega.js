@@ -3,8 +3,21 @@ var _ = require('underscore');
 angular.module('inboxServices').service('Mega', [
   function() {
     var X = {
+      extraAttributesFor: function(conf) {
+        var typeString = typeof conf === 'string'? conf: conf.type,
+            extras = {};
+        if(/^db:/.test(typeString)) {
+          extras.appearance = 'dbObject';
+          extras['data-db-type'] = typeString.substring(3);
+        }
+        return extras;
+      },
       getBindingType: function(conf) {
-        return typeof conf === 'string'? conf: conf.type;
+        var typeString = typeof conf === 'string'? conf: conf.type;
+        if(/^db:/.test(typeString)) {
+          return 'string';
+        }
+        return typeString;
       },
       getInputType: function(conf) {
         return 'TODO:' + conf;
@@ -43,10 +56,17 @@ angular.module('inboxServices').service('Mega', [
       });
       xml += '</model></h:head><h:body>';
       _.forEach(schema.fields, function(conf, f) {
-        // TODO input seems to be missing a type, and may also need `appearance` attr
         var path = X.pathTo(type, f),
-            tr = X.translationFor(type, f);
-        xml += '<input ref="' + path + '"><label>' + tr + '</label></input>';
+            tr = X.translationFor(type, f),
+            extras = X.extraAttributesFor(conf);
+        xml += '<input ref="' + path + '"';
+        var extraString = _.map(extras, function(val, name) {
+          return name + '="' + val + '"';
+        }).join(' ');
+        if(extraString) {
+          xml += ' ' + extraString;
+        }
+        xml += '><label>' + tr + '</label></input>';
       });
       xml += '</h:body></h:html>';
       return xml;
