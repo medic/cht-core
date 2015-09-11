@@ -98,69 +98,51 @@ angular.module('inboxServices').service('Enketo', [
       return fields;
     };
 
+    var getContact = function(id) {
+      if (id) {
+        return DB.get().get(id);
+      }
+      return Promise.resolve();
+    };
+
     var update = function(formInternalId, record, docId, contactId) {
       // update an existing doc.  For convenience, get the latest version
       // and then modify the content.  This will avoid most concurrent
       // edits, but is not ideal.
-      var contact;
-      if(contactId) {
-        return DB.get()
-          .get(contactId)
-          .then(function(c) {
-            contact = c;
-            return DB.get().get(docId);
-          })
-          .then(function(doc) {
+      return getContact(contactId)
+        .then(function(contact) {
+          return DB.get().get(docId).then(function(doc) {
             doc.content = record;
             doc.fields = recordToJs(record);
             doc.contact = contact;
-            doc.from = contact? contact.phone: '';
-            return DB.get().put(doc);
-          });
-      } else {
-        return DB.get()
-          .get(docId)
-          .then(function(doc) {
-            doc.content = record;
-            doc.fields = recordToJs(record);
-            doc.from = '';
+            doc.from = contact && contact.phone;
             return DB.get().put(doc).then(function(res) {
               doc._rev = res.rev;
-              return doc;
+              return Promise.resolve(doc);
             });
           });
-      }
+        });
     };
 
     var create = function(formInternalId, record, contactId) {
-      if(contactId) {
-        return DB.get().get(contactId).then(function(contact) {
-          return DB.get().post({
-              content: record,
-              fields: recordToJs(record),
-              contact: contact,
-              form: formInternalId,
-              type: 'data_record',
-              from: contact? contact.phone: '',
-              reported_date: Date.now(),
-              content_type: 'xml',
-          });
-        }).then(function(doc) {
-          return DB.get().get(doc.id);
-        });
-      } else {
-        return DB.get().post({
+      return getContact(contactId)
+        .then(function(contact) {
+          var doc = {
             content: record,
             fields: recordToJs(record),
             form: formInternalId,
             type: 'data_record',
-            from: '',
-            reported_date: Date.now(),
             content_type: 'xml',
-        }).then(function(doc) {
-          return DB.get().get(doc.id);
+            reported_date: Date.now(),
+            contact: contact,
+            from: contact && contact.phone
+          };
+          return DB.get().post(doc).then(function(res) {
+            doc._id = res.id;
+            doc._rev = res.rev;
+            return Promise.resolve(doc);
+          });
         });
-      }
     };
 
     this.save = function(formInternalId, form, docId) {
@@ -183,8 +165,8 @@ angular.module('inboxServices').service('Enketo', [
       return result;
     };
 
-    this.withAllForms = function(callback) {
-      DB.get()
+    this.withAllForms = function() {
+      return DB.get()
         .query('medic/forms', { include_docs: true })
         .then(function(res) {
           var forms = res.rows.filter(function(row) {
@@ -192,7 +174,7 @@ angular.module('inboxServices').service('Enketo', [
           }).map(function(row) {
             return row.doc;
           });
-          callback(forms);
+          return Promise.resolve(forms);
         });
     };
 

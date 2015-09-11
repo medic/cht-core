@@ -659,9 +659,13 @@ require('moment/locales');
         });
       };
 
-      Enketo.withAllForms(function(forms) {
-        $scope.formDefinitions = forms;
-      });
+      Enketo.withAllForms()
+        .then(function(forms) {
+          $scope.formDefinitions = forms;
+        })
+        .catch(function(err) {
+          console.error('Error fetching form definitions', err);
+        });
 
       $scope.setupTour = function() {
         $('#tour-select').on('click', 'a.tour-option', function() {
