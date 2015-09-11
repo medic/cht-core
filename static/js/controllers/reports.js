@@ -209,9 +209,6 @@ var _ = require('underscore'),
         $('#edit-report [name=id]').val($scope.selected._id);
         $('#edit-report [name=facility]').select2('val', val);
         $('#edit-report').modal('show');
-        if($scope.selected.content_type === 'xml') {
-          $scope.loadFormFor($scope.selected);
-        }
       });
 
       var _initScroll = function() {

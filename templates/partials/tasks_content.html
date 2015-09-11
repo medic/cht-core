@@ -1,6 +1,6 @@
 <div class="content-pane">
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent || loadingForm">
     <div>
       <div class="loader"></div>
     </div>
@@ -10,7 +10,7 @@
     <div>{{'No task selected' | translate}}</div>
   </div>
 
-  <div class="col-sm-8 item-content item-body" ng-show="selected && !loadingContent">
+  <div class="col-sm-8 item-content item-body" ng-show="selected && !form && !loadingContent && !loadingForm">
     <div>
       <div class="status">
         <span class="mm-badge mm-badge-round">
@@ -39,6 +39,17 @@
         </ul>
       </div>
 
+    </div>
+  </div>
+
+  <div class="col-sm-8 item-content item-body" ng-show="selected && form && !loadingContent && !loadingForm">
+    <div id="task-report" class="enketo">
+      <div class="container pages"></div>
+      <div class="form-footer">
+        <button class="btn btn-link previous-page">&lt; {{'Previous' | translate}}</button>
+        <button class="btn btn-link next-page">{{'Next' | translate}} &gt;</button>
+        <a class="btn submit btn-primary" ng-click="save()" ng-disabled="saving">{{'Submit' | translate}}</a>
+      </div>
     </div>
   </div>
 </div>
