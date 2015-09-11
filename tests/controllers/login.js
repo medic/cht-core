@@ -53,15 +53,17 @@ exports.tearDown = function(callback) {
   'https://app.medicmobile.org/wrong/path',
   'http://app.medicmobile.org/lg/_design/medic/_rewrite', // wrong protocol
   '/lg/_design/medic/_rewrite/../../../../../.htpasswd',
+  '/lg/_design/medic/_rewrite_gone_bad',
 ].forEach(function(requested) {
   exports['Bad URL "' + requested + '" should redirect to root'] = function(test) {
-    test.equals('/lg/_design/medic/_rewrite/', controller.safePath(requested));
+    test.equals('/lg/_design/medic/_rewrite', controller.safePath(requested));
     test.done();
   };
 });
 
 [
   '/lg/_design/medic/_rewrite',
+  '/lg/_design/medic/_rewrite/',
   '/lg/_design/medic/_rewrite#fragment',
   '/lg/_design/medic/_rewrite#path/fragment',
   '/lg/_design/medic/_rewrite/long/path',
@@ -84,7 +86,7 @@ exports['when already logged in redirect to app'] = function(test) {
   test.equals(cookie.args[0][0], 'userCtx');
   test.equals(cookie.args[0][1], '{"name":"josh"}');
   test.equals(redirect.callCount, 1);
-  test.equals(redirect.args[0][0], '/lg/_design/medic/_rewrite/');
+  test.equals(redirect.args[0][0], '/lg/_design/medic/_rewrite');
   test.done();
 };
 

@@ -14,8 +14,9 @@ _.templateSettings = {
 };
 
 var safePath = function(requested) {
-  var safePrefix = path.join('/', db.settings.db, '_design', db.settings.ddoc, '_rewrite');
-  var appPrefix = path.join(safePrefix, '/');
+  var appPrefix = path.join('/', db.settings.db, '_design', db.settings.ddoc, '_rewrite');
+  var dirPrefix = path.join(appPrefix, '/');
+  var fragmentPrefix = appPrefix + '#';
 
   if (!requested) {
     // no redirect path - return root
@@ -29,7 +30,9 @@ var safePath = function(requested) {
     return appPrefix;
   }
 
-  if (requested.indexOf(safePrefix) !== 0) {
+  if (requested !== appPrefix &&
+      requested.indexOf(dirPrefix) !== 0 &&
+      requested.indexOf(fragmentPrefix) !== 0) {
     // path is not relative to the couch app
     return appPrefix;
   }
