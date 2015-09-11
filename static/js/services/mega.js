@@ -35,15 +35,17 @@ angular.module('inboxServices').service('Mega', [
 
     this.generateXform = function(schema) {
       var type = schema.type;
-      var xml = '<h:html><h:head>' +
+      var dataNode = 'data' || type; // TODO this should be `type`, but cannot be currently because of #1297.  When #1297 is resolved, then we can lose this extra var
+      var xml = '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
+          '<h:head>' +
           '<h:title>' + X.translationFor(type, 'new') + '</h:title>' +
           '<model><instance>' +
-          '<' + type + ' id="' + type + '" version="1">';
+          '<' + dataNode + ' id="' + type + '" version="1">';
       _.forEach(schema.fields, function(conf, f) {
         xml += '<' + f + '/>';
       });
       xml += '<meta><instanceID/></meta>' +
-          '</' + type + '>' +
+          '</' + dataNode + '>' +
           '</instance>';
       _.forEach(schema.fields, function(conf, f) {
         var dataType = X.getBindingType(conf),
