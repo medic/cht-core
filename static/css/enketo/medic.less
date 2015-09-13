@@ -8,23 +8,29 @@
 }
 
 .enketo {
-  margin: 0 1em;
   h2, h3, h4 {
     text-align: left;
   }
   .or h3 {
-    padding: 0;
+    padding: 0 15px;
   }
   .form-footer {
     margin: 0;
     margin-bottom: 1em;
-    .next-page, .submit {
+    padding: 0 15px;
+    .next-page, .submit, .loader {
       float: right;
     }
   }
+  label {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  .container {
+    padding: 0;
+  }
   .container, .form-footer {
     width: 100%;
-    padding: 0;
   }
   .or-appearance-hidden {
     display: none;
@@ -43,5 +49,14 @@
   }
   .question .geopicker input {
     width: 80%;
+  }
+  .invalid-constraint, .invalid-required {
+    margin: 0;
+    padding-left: 15px;
+    padding-right: 15px;
+    border-radius: 0;
+  }
+  .or-required-msg.active, .or-constraint-msg.active {
+    padding-top: 0;
   }
 }
