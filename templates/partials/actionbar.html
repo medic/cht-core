@@ -3,6 +3,7 @@
     <div class="inner">
       <div class="col-sm-4 general-actions">
         <div class="fab-actions dropup">
+          <a class="fab fa fa-plus send-message" ng-show="filterModel.type === 'messages'"></a>
           <a class="fab speed-dial fa fa-plus dropdown-toggle" ng-show="filterModel.type === 'reports'" data-toggle="dropdown"></a>
           <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
             <li ng-repeat="form in formDefinitions">

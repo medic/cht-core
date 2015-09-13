@@ -25,13 +25,6 @@
           </span>
         </a>
 
-        <a tabindex="-1" class="send-message" ng-show="filterModel.type === 'messages'" ng-attr-title="{{'Start new conversation' | translate}}">
-          <span class="fa-stack">
-            <i class="fa fa-envelope fa-stack-1x"></i>
-            <i class="fa fa-plus fa-stack-1x"></i>
-          </span>
-        </a>
-
         <span class="dropdown" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'" mm-auth="can_access_directly">
           <a data-toggle="dropdown">
             <div class="mm-icon">
