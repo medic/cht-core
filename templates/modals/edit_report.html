@@ -1,27 +1,3 @@
-<div class="modal enketo-composer fade create-report-dialog" id="create-report" role="dialog" ng-controller="EditReportCtrl">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{'Create Report' | translate}}</h3>
-      </div>
-      <div class="modal-body">
-          <p ng-show="!formDefinitions.length">{{'forms.none.available' | translate}}</p>
-          <ul>
-            <li ng-repeat="f in formDefinitions">
-              <a ng-click="loadXmlFrom(f.internalId)">{{ f.title }}</a>
-            </li>
-          </ul>
-      </div>
-
-      <div class="modal-footer">
-        <p class="note"></p>
-        <a class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="modal fade edit-report-dialog update-facility" id="edit-report" role="dialog" ng-controller="EditReportCtrl">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -29,8 +5,8 @@
         <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
         <h3>{{'report.edit' | translate}}</h3>
       </div>
-      <div class="modal-body enketo">
-        <form action="" method="POST" ng-hide="enketo_report">
+      <div class="modal-body">
+        <form>
           <input type="hidden" name="id" />
           <fieldset>
             <div class="control-group">
@@ -38,17 +14,11 @@
             </div>
           </fieldset>
         </form>
-
-        <div>
-          <div class="form-wrapper" style="display:none">
-            <div class="container pages"></div>
-            <div class="form-footer">
-              <button class="btn btn-link previous-page">&lt; {{'Previous' | translate}}</button>
-              <button class="btn btn-link next-page">{{'Next' | translate}} &gt;</button>
-              <a class="btn submit btn-primary" ng-click="saveReport()">{{'Submit' | translate}}</a>
-            </div>
-          </div>
-        </div>
+      </div>
+      <div class="modal-footer">
+        <p class="note"></p>
+        <a class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
+        <a class="btn submit btn-primary" ng-click="saveReport()">{{'Submit' | translate}}</a>
       </div>
     </div>
   </div>
