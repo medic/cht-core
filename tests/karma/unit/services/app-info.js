@@ -4,8 +4,7 @@ describe('AppInfo service', function() {
 
   var service,
       settings,
-      settingsError,
-      $rootScope;
+      settingsError;
 
   beforeEach(function() {
     settings = {};
@@ -15,8 +14,7 @@ describe('AppInfo service', function() {
         callback(settingsError, settings);
       });
     });
-    inject(function(_$rootScope_, _AppInfo_) {
-      $rootScope = _$rootScope_;
+    inject(function(_AppInfo_) {
       service = _AppInfo_;
     });
     settingsError = null;

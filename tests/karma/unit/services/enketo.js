@@ -17,8 +17,16 @@ describe('Enketo service', function() {
     return { doc: { _attachments: {} } };
   };
 
-  var clock,
-      service,
+  var digest = function(times) {
+    setTimeout(function() {
+      $rootScope.$digest();
+      if (times > 1) {
+        digest(times - 1);
+      }
+    });
+  };
+
+  var service,
       enketoInit,
       transform,
       dbGetAttachment,
@@ -28,12 +36,11 @@ describe('Enketo service', function() {
       dbPut,
       createObjectURL,
       FileReader,
-      form;
+      form,
+      $rootScope;
 
   beforeEach(function() {
     module('inboxApp');
-
-    clock = sinon.useFakeTimers();
 
     enketoInit = sinon.stub();
     dbGetAttachment = sinon.stub();
@@ -69,13 +76,14 @@ describe('Enketo service', function() {
       $provide.value('$window', { URL: { createObjectURL: createObjectURL } });
       $provide.value('FileReader', FileReader);
     });
-    inject(function(Enketo) {
-      service = Enketo;
+    inject(function(_$rootScope_, _Enketo_) {
+      service = _Enketo_;
+      $rootScope = _$rootScope_;
     });
   });
 
   afterEach(function() {
-    KarmaUtils.restore(clock, dbGetAttachment, dbGet, dbQuery, dbPost, dbPut, transform, createObjectURL, FileReader);
+    KarmaUtils.restore(dbGetAttachment, dbGet, dbQuery, dbPost, dbPut, transform, createObjectURL, FileReader);
   });
 
   describe('render', function() {
@@ -92,6 +100,7 @@ describe('Enketo service', function() {
           chai.expect(actual.message).to.equal('Requested form not found');
           done();
         });
+      digest(1);
     });
 
     it('return error when form initialisation fails', function(done) {
@@ -112,6 +121,7 @@ describe('Enketo service', function() {
           chai.expect(actual).to.deep.equal(expected);
           done();
         });
+      digest(2);
     });
 
     it('return form when everything works', function(done) {
@@ -134,6 +144,7 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
+      digest(2);
     });
 
     it('replaces img src with obj urls', function(done) {
@@ -164,6 +175,7 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
+      digest(2);
     });
 
     it('leaves img wrapped if failed to load', function(done) {
@@ -190,6 +202,7 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
+      digest(2);
     });
 
   });
@@ -214,6 +227,7 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
+      digest(1);
     });
   });
 
@@ -228,6 +242,7 @@ describe('Enketo service', function() {
           chai.expect(form.isValid.callCount).to.equal(1);
           done();
         });
+      digest(1);
     });
 
     it('creates report', function(done) {
@@ -249,11 +264,11 @@ describe('Enketo service', function() {
           chai.expect(actual.fields.lmp).to.equal('10');
           chai.expect(actual.form).to.equal('V');
           chai.expect(actual.type).to.equal('data_record');
-          chai.expect(actual.reported_date).to.equal(0);
           chai.expect(actual.content_type).to.equal('xml');
           done();
         })
         .catch(done);
+      digest(3);
     });
 
     it('updates report', function(done) {
@@ -292,6 +307,7 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
+      digest(3);
     });
 
   });

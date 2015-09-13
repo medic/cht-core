@@ -1,7 +1,7 @@
 /* globals EnketoForm */
 angular.module('inboxServices').service('Enketo', [
-  '$window', '$log', 'DB', 'XSLT', 'FileReader',
-  function($window, $log, DB, XSLT, FileReader) {
+  '$window', '$log', '$q', 'DB', 'XSLT', 'FileReader',
+  function($window, $log, $q, DB, XSLT, FileReader) {
     var objUrls = [];
 
     var replaceJavarosaMediaWithLoaders = function(formDocId, form) {
@@ -31,7 +31,7 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     var transformXml = function(formDocId, doc) {
-      return Promise
+      return $q
         .all([
           XSLT.transform('openrosa2html5form.xsl', doc),
           XSLT.transform('openrosa2xmlmodel.xsl', doc),
@@ -42,7 +42,7 @@ angular.module('inboxServices').service('Enketo', [
             model: results[1]
           };
           replaceJavarosaMediaWithLoaders(formDocId, result.html);
-          return Promise.resolve(result);
+          return $q.resolve(result);
         });
     };
 
@@ -51,7 +51,7 @@ angular.module('inboxServices').service('Enketo', [
         .query('medic/forms', { include_docs: true, key: formInternalId })
         .then(function(res) {
           if (!res.rows.length) {
-            return Promise.reject(new Error('Requested form not found'));
+            return $q.reject(new Error('Requested form not found'));
           }
           var form = res.rows[0];
           return DB.get()
@@ -78,10 +78,10 @@ angular.module('inboxServices').service('Enketo', [
           });
           var loadErrors = form.init();
           if (loadErrors && loadErrors.length) {
-            return Promise.reject(loadErrors);
+            return $q.reject(loadErrors);
           }
           wrapper.show();
-          return Promise.resolve(form);
+          return $q.resolve(form);
         });
     };
 
@@ -102,7 +102,7 @@ angular.module('inboxServices').service('Enketo', [
       if (id) {
         return DB.get().get(id);
       }
-      return Promise.resolve();
+      return $q.resolve();
     };
 
     var update = function(formInternalId, record, docId, contactId) {
@@ -118,7 +118,7 @@ angular.module('inboxServices').service('Enketo', [
             doc.from = contact && contact.phone;
             return DB.get().put(doc).then(function(res) {
               doc._rev = res.rev;
-              return Promise.resolve(doc);
+              return $q.resolve(doc);
             });
           });
         });
@@ -140,7 +140,7 @@ angular.module('inboxServices').service('Enketo', [
           return DB.get().post(doc).then(function(res) {
             doc._id = res.id;
             doc._rev = res.rev;
-            return Promise.resolve(doc);
+            return $q.resolve(doc);
           });
         });
     };
@@ -148,7 +148,7 @@ angular.module('inboxServices').service('Enketo', [
     this.save = function(formInternalId, form, docId) {
       form.validate();
       if (!form.isValid()) {
-        return Promise.reject(new Error('Form is invalid'));
+        return $q.reject(new Error('Form is invalid'));
       }
       var result;
       var record = form.getDataStr();
@@ -174,7 +174,7 @@ angular.module('inboxServices').service('Enketo', [
           }).map(function(row) {
             return row.doc;
           });
-          return Promise.resolve(forms);
+          return $q.resolve(forms);
         });
     };
 

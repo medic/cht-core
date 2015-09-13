@@ -83,21 +83,22 @@
   right: -0.2em;
 }
 
-.loader.inline {
-  vertical-align: middle;
-  display: inline-block;
-}
 .loader {
   margin: 1em auto;
   font-size: 10px;
   position: relative;
   border: 0.5em solid rgba(0, 0, 0, 0.1);
   border-left-color: rgba(0, 0, 0, 0.5);
-  -webkit-transform: translateZ(0);
-  -ms-transform: translateZ(0);
   transform: translateZ(0);
-  -webkit-animation: loader 1.1s infinite linear;
   animation: loader 1.1s infinite linear;
+  &.inline {
+    vertical-align: middle;
+    display: inline-block;
+    margin: 1em;
+  }
+  &.small {
+    font-size: 6px;
+  }
 }
 .loader,
 .loader:after {

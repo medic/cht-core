@@ -27,6 +27,7 @@ module.exports = function(config) {
       'static/dist/dependencies.js',
       'static/dist/inbox.js',
       'static/dist/templates.js',
+      'templates/partials/sender.html',
 
       // test-specific code
       'node_modules/chai/chai.js',
@@ -34,9 +35,6 @@ module.exports = function(config) {
       'bower_components/angular-mocks/angular-mocks.js',
       'bower_components/moment/moment.js',
       'tests/karma/utils.js',
-
-      // templates
-      'templates/partials/sender.html',
 
       // test files
       'tests/karma/unit/**/*.js'
