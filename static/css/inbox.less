@@ -25,42 +25,42 @@
 body {
   overflow-y: hidden;
   &.messages {
-    .header .tabs .selected, .filters, .fab {
+    .header .tabs .selected, .filters {
       background-color: @messages-color;
     }
   }
   &.tasks {
-    .header .tabs .selected, .filters, .fab {
+    .header .tabs .selected, .filters {
       background-color: @tasks-color;
     }
   }
   &.reports {
-    .header .tabs .selected, .filters, .fab {
+    .header .tabs .selected, .filters {
       background-color: @reports-color;
     }
   }
   &.analytics {
-    .header .tabs .selected, .filters, .fab {
+    .header .tabs .selected, .filters {
       background-color: @analytics-color;
     }
   }
   &.contacts {
-    .header .tabs .selected, .filters, .fab {
+    .header .tabs .selected, .filters {
       background-color: @contacts-color;
     }
   }
   &.configuration {
-    .header .tabs .selected, .filters, .fab {
+    .header .tabs .selected, .filters {
       background-color: @admin-color;
     }
   }
   &.help {
-    .header .tabs .selected, .filters, .fab {
+    .header .tabs .selected, .filters {
       background-color: @help-color;
     }
   }
   &.error {
-    .header .tabs .selected, .filters, .fab {
+    .header .tabs .selected, .filters {
       background-color: @error-color;
     }
   }
@@ -606,6 +606,10 @@ body {
     margin-left: 1em;
   }
 
+  .padding {
+    height: 150px;
+  }
+
 }
 
 .loading-status {
@@ -899,17 +903,7 @@ a.fa:hover {
   background: transparent;
   pointer-events: none;
 
-  .general-actions {
-    height: 8.4em;
-    position: relative;
-    .fab-actions {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-    }
-  }
-
-  .detail-actions .actions {
+  .actions {
     min-height: 5em;
     background-color: @grey;
     background-color: rgba(0, 0, 0, 0.65);
@@ -919,8 +913,7 @@ a.fa:hover {
     border-style: solid;
     max-width: 30em;
     text-align: center;
-    margin: 0 auto 2em;
-    overflow: hidden;
+    margin: 0 auto 1em;
     pointer-events: auto;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.63);
 
@@ -954,15 +947,19 @@ a.fa:hover {
   }
 }
 
-.reports .action-container .detail-actions .actions .mm-icon:hover {
+.messages .action-container .actions .mm-icon:hover {
+  border-bottom-color: @messages-color;
+}
+
+.reports .action-container .actions .mm-icon:hover {
   border-bottom-color: @reports-color;
 }
 
-.contacts .action-container .detail-actions .actions .mm-icon:hover {
+.contacts .action-container .actions .mm-icon:hover {
   border-bottom-color: @contacts-color;
 }
 
-.action-container .detail-actions .actions .mm-icon.mm-icon-disabled:hover {
+.action-container .actions .mm-icon.mm-icon-disabled:hover {
   border-bottom-color: transparent;
 }
 
@@ -1171,6 +1168,9 @@ a.fa:hover {
         background-color: @background-color;
       }
     }
+    .padding {
+      height: 100px;
+    }
   }
   .header {
     font-size: 0.65em;
@@ -1291,8 +1291,11 @@ a.fa:hover {
   }
 
   .action-container {
-    .detail-actions {
+    .inner > div {
       padding: 0;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
       .actions {
         box-shadow: none;
         border-width: 1px 0 0 0;
@@ -1300,17 +1303,6 @@ a.fa:hover {
         padding: 0;
         border-radius: 0;
         max-width: 100%;
-      }
-    }
-    .general-actions {
-      width: 100%;
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      .fab-actions {
-        position: absolute;
-        bottom: 0;
-        right: 0;
       }
     }
   }
@@ -1414,7 +1406,7 @@ a.fa:hover {
       }
     }
   }
-  .action-container .detail-actions .actions {
+  .action-container .actions {
     min-height: 4em;
     p {
       display: none;

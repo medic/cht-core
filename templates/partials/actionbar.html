@@ -2,10 +2,16 @@
   <div class="row">
     <div class="inner">
       <div class="col-sm-4 general-actions">
-        <div class="fab-actions dropup">
-          <a class="fab fa fa-plus send-message" ng-show="filterModel.type === 'messages'"></a>
-          <a class="fab speed-dial fa fa-plus dropdown-toggle" ng-show="filterModel.type === 'reports'" data-toggle="dropdown"></a>
-          <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+        <div class="actions dropup" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports'">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" ng-show="filterModel.type === 'messages'">
+            <span class="fa fa-plus"></span>
+            <p>{{'Send Message' | translate}}</p>
+          </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" ng-show="filterModel.type === 'reports'" data-toggle="dropdown">
+            <span class="fa fa-plus"></span>
+            <p>{{'Submit Report' | translate}}</p>
+          </a>
+          <ul class="dropdown-menu">
             <li ng-repeat="form in formDefinitions">
               <a ui-sref="reports.add({ formId: form.internalId })">{{ form.title }}</a>
             </li>
