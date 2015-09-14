@@ -11,7 +11,7 @@
   h2, h3, h4 {
     text-align: left;
   }
-  .or h3 {
+  .or h2, .or h3, .or h4 {
     padding: 0 15px;
   }
   .form-footer {
@@ -22,9 +22,12 @@
       float: right;
     }
   }
-  label {
+  label, .question, .note {
     padding-left: 15px;
     padding-right: 15px;
+  }
+  .note {
+    border: 0;
   }
   .container {
     padding: 0;
@@ -35,17 +38,14 @@
   .or-appearance-hidden {
     display: none;
   }
-  .question input[type="text"],
-  .question input[type="password"],
-  .question input[type="url"],
-  .question input[type="email"],
-  .question input[type="file"],
-  .note input[type="text"],
-  .note input[type="password"],
-  .note input[type="url"],
-  .note input[type="email"],
-  .note input[type="file"] {
-    width: 100%;
+  .question, .note {
+    input[type="text"],
+    input[type="password"],
+    input[type="url"],
+    input[type="email"],
+    input[type="file"] {
+      width: 100%;
+    }
   }
   .question .geopicker input {
     width: 80%;
