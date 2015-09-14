@@ -35,7 +35,7 @@ angular.module('inboxServices').service('Mega', [
 
     this.generateXform = function(schema) {
       var type = schema.type;
-      var dataNode = 'data' || type; // TODO this should be `type`, but cannot be currently because of #1297.  When #1297 is resolved, then we can lose this extra var
+      var dataNode = type;
       var xml = '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
           '<h:head>' +
           '<h:title>' + X.translationFor(type, 'new') + '</h:title>' +
@@ -49,7 +49,7 @@ angular.module('inboxServices').service('Mega', [
           '</instance>';
       _.forEach(schema.fields, function(conf, f) {
         var dataType = X.getBindingType(conf),
-            path = X.pathTo(type, f);
+            path = X.pathTo(dataNode, f);
         xml += '<bind nodeset="' + path + '" ';
         if(typeof conf !== 'string' && conf.required) {
           xml += 'required="true()" ';
@@ -58,7 +58,7 @@ angular.module('inboxServices').service('Mega', [
       });
       xml += '</model></h:head><h:body>';
       _.forEach(schema.fields, function(conf, f) {
-        var path = X.pathTo(type, f),
+        var path = X.pathTo(dataNode, f),
             tr = X.translationFor(type, f),
             extras = X.extraAttributesFor(conf);
         xml += '<input ref="' + path + '"';

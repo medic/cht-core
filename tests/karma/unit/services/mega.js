@@ -31,8 +31,8 @@ describe('Mega service', function() {
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head><h:title>{{\'person.new\' | translate}}</h:title>' +
-          '<model><instance><data id="person" version="1">' +
-            '<name/><meta><instanceID/></meta></data></instance>' +
+          '<model><instance><person id="person" version="1">' +
+            '<name/><meta><instanceID/></meta></person></instance>' +
             '<bind nodeset="/person/name" type="string"/></model></h:head>' +
           '<h:body>' +
             '<input ref="/person/name">' +
@@ -58,8 +58,8 @@ describe('Mega service', function() {
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head><h:title>{{\'person.new\' | translate}}</h:title>' +
-          '<model><instance><data id="person" version="1">' +
-            '<name/><meta><instanceID/></meta></data></instance>' +
+          '<model><instance><person id="person" version="1">' +
+            '<name/><meta><instanceID/></meta></person></instance>' +
             '<bind nodeset="/person/name" required="true()" type="string"/></model></h:head>' +
           '<h:body>' +
             '<input ref="/person/name">' +
@@ -83,8 +83,8 @@ describe('Mega service', function() {
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
           '<h:head><h:title>{{\'person.new\' | translate}}</h:title>' +
-          '<model><instance><data id="person" version="1">' +
-            '<loc/><meta><instanceID/></meta></data></instance>' +
+          '<model><instance><person id="person" version="1">' +
+            '<loc/><meta><instanceID/></meta></person></instance>' +
             '<bind nodeset="/person/loc" type="string"/></model></h:head>' +
           '<h:body>' +
             '<input ref="/person/loc" appearance="dbObject" data-db-type="location">' +
