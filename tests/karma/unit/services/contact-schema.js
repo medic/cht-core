@@ -23,19 +23,33 @@ describe('ContactSchema service', function() {
     describe('`person`', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().person, {
-          name: {
-            type: 'string',
-            required: true,
+          title: '{{name}}',
+          badge: 'fa-user',
+          fields: {
+            name: {
+              type: 'string',
+              required: true,
+            },
+            phone: {
+              type: 'phone',
+              required: true,
+            },
+            code: {
+              type: 'string',
+            },
+            notes: {
+              type: 'text',
+            },
+            catchment_area: {
+              type: 'db:clinic',
+            },
+            health_center: {
+              type: 'db:health_center',
+            },
+            district: {
+              type: 'db:district_hospital',
+            },
           },
-          phone: {
-            type: 'phone',
-            required: true,
-          },
-          code: 'string',
-          notes: 'text',
-          catchment_area: 'db:clinic',
-          health_center: 'db:health_center',
-          district: 'db:district_hospital',
         });
       });
     });
