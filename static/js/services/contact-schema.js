@@ -14,18 +14,31 @@ var PERSON = {
     },
     code: 'string',
     notes: 'text',
-    catchment_area: 'db:clinic',
-    health_center: 'db:health_center',
-    district: 'db:district_hospital',
+    parent: 'db:clinic',
   },
 };
 
-function tr(schema) {
+/**
+ * Normalise the schema.
+ *
+ * Normalisation involves:
+ * - expanding short-hand notation
+ * - explicitly setting default values
+ */
+function normalise(schema) {
   var clone = _.clone(schema);
   var fields = clone.fields;
   _.forEach(fields, function(conf, name) {
     if(typeof conf === 'string') {
-      fields[name] = { type: conf };
+      conf = { type: conf };
+      fields[name] = conf;
+    }
+    if(conf.type.match('^db:')) {
+      conf.db_type = conf.type.substring(3);
+      conf.type = 'db';
+      if(!conf.title) {
+        conf.title = 'name';
+      }
     }
   });
   return clone;
@@ -36,7 +49,7 @@ angular.module('inboxServices').service('ContactSchema', [
     return {
       get: function() {
         return {
-          person: tr(PERSON),
+          person: normalise(PERSON),
         };
       },
     };

@@ -40,14 +40,10 @@ describe('ContactSchema service', function() {
             notes: {
               type: 'text',
             },
-            catchment_area: {
-              type: 'db:clinic',
-            },
-            health_center: {
-              type: 'db:health_center',
-            },
-            district: {
-              type: 'db:district_hospital',
+            parent: {
+              type: 'db',
+              db_type: 'clinic',
+              title: 'name',
             },
           },
         });

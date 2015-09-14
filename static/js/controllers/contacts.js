@@ -8,12 +8,15 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', 
-    ['$rootScope', '$scope', '$state', '$timeout', 'DB', 'Search',
-    function ($rootScope, $scope, $state, $timeout, DB, Search) {
+    ['$rootScope', '$scope', '$state', '$timeout', 'ContactSchema', 'DB', 'Search',
+    function ($rootScope, $scope, $state, $timeout, ContactSchema, DB, Search) {
 
       $scope.filterModel.type = 'contacts';
       $scope.contacts = [];
       $scope.selected = null;
+      $scope.selectedSchema = function() {
+        return $scope.selected && ContactSchema.get()[$scope.selected.type];
+      };
 
       $scope.query = function(options) {
         options = options || {};
