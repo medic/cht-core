@@ -34,35 +34,42 @@ define( function( require, exports, module ) {
     Dbobjectwidget.prototype.constructor = Dbobjectwidget;
 
     Dbobjectwidget.prototype._init = function() {
-	var e = $(this.element);
+        var e = $(this.element);
 
-	// TODO extract the ID of the text input field
-	// TODO replace the text input with a loader
-	// TODO start a DB request to populate the list of whatevers
-	var loader = $('<div class="loader"/></div>');
-	var textInput = e.find('input');
-	var initialValue = textInput.val();
-	var container = $('<div ng-controller="DbObjectWidgetCtrl"/>');
-	container.append(loader);
-	textInput.replaceWith(container);
+        var loader = $('<div class="loader"/></div>');
+        var textInput = e.find('input');
+        var initialValue = textInput.val();
+        var container = $('<div/>');
+        var dbObjectType = textInput.attr('data-type-xml');
+        container.append(loader);
+        textInput.replaceWith(container);
 
-	/* global PouchDB */
+        // TODO this may be configured per-type
+        var titleString = '{{name}} ({{phone}})';
+        var titleFor = function(doc) {
+            return titleString.replace(/\{\{[^}]*\}\}/g, function(m) {
+                return doc[m.substring(2, m.length-2)];
+            });
+        };
+
+        /* global PouchDB */
         new PouchDB('http://localhost:5988/medic')
-	    // TODO fix the `endkey` value - just adding a `z` is surely not correct
-	    // TODO derive `startkey` from `e` - this may require XSLT tweaks!
-	    .query('medic/doc_by_type', {include_docs:true, startkey:['person'], endkey:['personz']})
-	    .then(function(res) {
-		loader.remove();
-		var selecter = $('<select/>');
-		selecter.attr('name', textInput.attr('name'));
-		selecter.attr('data-type-xml', textInput.attr('data-type-xml'));
-		container.append(selecter);
-		_.forEach(res.rows, function(row) {
-		    var val = row.id;
-		    var selected = row.id === initialValue? 'selected' : '';
-		    selecter.append('<option value="' + val + '" ' + selected + '>' + row.doc.name + '</option>');
-		});
-	    });
+            .query('medic/doc_by_type', {include_docs:true, key:[dbObjectType]})
+            .then(function(res) {
+                loader.remove();
+                var selecter = $('<select/>');
+                selecter.attr('name', textInput.attr('name'));
+                selecter.attr('data-type-xml', textInput.attr('data-type-xml'));
+                container.append(selecter);
+                var rows = _.sortBy(res.rows, function(row) {
+                    return titleFor(row.doc);
+                });
+                _.forEach(rows, function(row) {
+                    var val = row.id;
+                    var selected = row.id === initialValue? 'selected' : '';
+                    selecter.append('<option value="' + val + '" ' + selected + '>' + titleFor(row.doc) + '</option>');
+                });
+            });
     };
 
     Dbobjectwidget.prototype.destroy = function( /* element */ ) {};
