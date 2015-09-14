@@ -3,42 +3,41 @@ describe('AppInfo service', function() {
   'use strict';
 
   var service,
-      settings,
-      settingsError;
+      Settings,
+      $rootScope;
 
   beforeEach(function() {
-    settings = {};
+    Settings = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('Settings', function(callback) {
-        callback(settingsError, settings);
-      });
+      $provide.value('Settings', Settings);
     });
-    inject(function(_AppInfo_) {
+    inject(function(_$rootScope_, _AppInfo_) {
+      $rootScope = _$rootScope_;
       service = _AppInfo_;
     });
-    settingsError = null;
   });
 
   it('returns errors', function(done) {
-    settingsError = 'boom';
+    Settings.callsArgWith(0, 'boom');
     service()
       .then(function() {
         done('SHOULD NOT GET HERE');
       })
       .catch(function(err) {
-        chai.expect(err).to.equal(settingsError);
+        chai.expect(err).to.equal('boom');
         done();
       });
+    $rootScope.$digest();
   });
 
   it('gets the form', function(done) {
-    settings = {
+    Settings.callsArgWith(0, null, {
       forms: {
         a: { id: 'a' },
         b: { id: 'b' }
       }
-    };
+    });
     service()
       .then(function(appinfo) {
         var form = appinfo.getForm('a');
@@ -48,12 +47,13 @@ describe('AppInfo service', function() {
       .catch(function(err) {
         done(err);
       });
+    $rootScope.$digest();
   });
 
   it('formats the date', function(done) {
-    settings = {
+    Settings.callsArgWith(0, null, {
       date_format: 'YYYY'
-    };
+    });
     service()
       .then(function(appinfo) {
         var date = moment().add(1, 'years');
@@ -65,10 +65,11 @@ describe('AppInfo service', function() {
       .catch(function(err) {
         done(err);
       });
+    $rootScope.$digest();
   });
 
   it('translates the key', function(done) {
-    settings = {
+    Settings.callsArgWith(0, null, {
       translations: [
         { 
           key: 'welcome', 
@@ -79,7 +80,7 @@ describe('AppInfo service', function() {
           translations: [{ locale: 'en', content: 'bye' }]
         }
       ]
-    };
+    });
     service()
       .then(function(appinfo) {
         var actual = appinfo.translate('welcome', 'en_NZ');
@@ -89,10 +90,11 @@ describe('AppInfo service', function() {
       .catch(function(err) {
         done(err);
       });
+    $rootScope.$digest();
   });
 
   it('translates the key to the default locale if none provided', function(done) {
-    settings = {
+    Settings.callsArgWith(0, null, {
       locale: 'en',
       translations: [
         { 
@@ -104,7 +106,7 @@ describe('AppInfo service', function() {
           translations: [{ locale: 'en', content: 'bye' }]
         }
       ]
-    };
+    });
     service()
       .then(function(appinfo) {
         var actual = appinfo.translate('welcome');
@@ -114,6 +116,7 @@ describe('AppInfo service', function() {
       .catch(function(err) {
         done(err);
       });
+    $rootScope.$digest();
   });
 
 });

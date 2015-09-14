@@ -402,13 +402,14 @@ require('moment/locales');
 
       moment.locale(['en']);
 
-      Language(function(err, language) {
-        if (err) {
-          return console.log('Error loading language', err);
-        }
-        moment.locale([language, 'en']);
-        $translate.use(language);
-      });
+      Language()
+        .then(function(language) {
+          moment.locale([language, 'en']);
+          $translate.use(language);
+        })
+        .catch(function(err) {
+          console.log('Error loading language', err);
+        });
 
       $scope.sendMessage = function(event) {
         sendMessage.validate(event.target, function(recipients, message) {
@@ -528,7 +529,7 @@ require('moment/locales');
         });
 
         // we have to wait for language to respond before initing the multidropdowns
-        Language(function(err, language) {
+        Language().then(function(language) {
 
           $translate.use(language);
 
@@ -655,7 +656,6 @@ require('moment/locales');
               });
             });
           });
-
         });
       };
 

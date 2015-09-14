@@ -9,59 +9,40 @@
     function(ipCookie) {
       return function(value) {
         ipCookie(localeCookieKey, value, { expires: 365, path: '/' });
+        return value;
       };
     }
   ]);
 
   inboxServices.factory('Language', [
-    'ipCookie', 'SetLanguageCookie', 'UserSettings', 'Settings',
-    function(ipCookie, SetLanguageCookie, UserSettings, Settings) {
+    '$q', 'ipCookie', 'SetLanguageCookie', 'UserSettings', 'Settings',
+    function($q, ipCookie, SetLanguageCookie, UserSettings, Settings) {
 
-      var fetchLocale = function(callback) {
-        UserSettings(function(err, res) {
-          if (err) {
-            return callback(err);
-          }
-          if (res && res.language) {
-            return callback(null, res.language);
-          }
-          Settings(function(err, res) {
+      var fetchLocale = function() {
+        return $q(function(resolve, reject) {
+          UserSettings(function(err, res) {
             if (err) {
-              return callback(err);
+              return reject(err);
             }
-            callback(null, res.locale || 'en');
-          });
-        });
-      };
-
-      var get = function(callback) {
-        var cookieVal = ipCookie(localeCookieKey);
-        if (cookieVal) {
-          return callback(null, cookieVal);
-        }
-        fetchLocale(function(err, locale) {
-          if (err) {
-            return callback(err);
-          }
-          SetLanguageCookie(locale);
-          callback(null, locale);
-        });
-      };
-
-      return function(callback) {
-        if (callback) {
-          get(callback);
-        } else {
-          return new Promise(function(resolve, reject) {
-            get(function(err, locale) {
+            if (res && res.language) {
+              return resolve(res.language);
+            }
+            Settings(function(err, res) {
               if (err) {
-                reject(err);
-              } else {
-                resolve(locale);
+                return reject(err);
               }
+              resolve(res.locale || 'en');
             });
           });
+        });
+      };
+
+      return function() {
+        var cookieVal = ipCookie(localeCookieKey);
+        if (cookieVal) {
+          return $q.resolve(cookieVal);
         }
+        return fetchLocale().then(SetLanguageCookie);
       };
     }
   ]);

@@ -40,14 +40,13 @@
         if (!type) {
           return callback(new Error('Unknown download type'));
         }
-        Language(function(err, language) {
-          if (err) {
-            return callback(err);
-          }
-          getParams(type, language, $scope, function(err, params) {
-            callback(null, buildUrl(type, params));
-          });
-        });
+        Language()
+          .then(function(language) {
+            getParams(type, language, $scope, function(err, params) {
+              callback(null, buildUrl(type, params));
+            });
+          })
+          .catch(callback);
       };
     }
   ]);

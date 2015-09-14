@@ -7,10 +7,10 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('FormatDataRecord', ['AppInfo', 'Language',
-    function(AppInfo, Language) {
+  inboxServices.factory('FormatDataRecord', ['$q', 'AppInfo', 'Language',
+    function($q, AppInfo, Language) {
       return function(docs) {
-        return Promise.all([ AppInfo(), Language() ])
+        return $q.all([ AppInfo(), Language() ])
           .then(function(results) {
             if (!_.isArray(docs)) {
               docs = [ docs ];

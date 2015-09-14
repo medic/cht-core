@@ -3,60 +3,55 @@ describe('DownloadUrl service', function() {
   'use strict';
 
   var service,
-      query,
-      locale;
+      Language = sinon.stub(),
+      GenerateSearchQuery = sinon.stub();
 
   beforeEach(function() {
     module('inboxApp');
-    module(function ($provide) {
-      $provide.value('Language', function(callback) {
-        callback(null, locale);
-      });
-      $provide.value('GenerateSearchQuery', function($scope, callback) {
-        callback(null, { query: query });
-      });
-      $provide.value('BaseUrlService', function() {
-        return 'BASEURL';
-      });
+    module(function($provide) {
+      $provide.value('Language', Language);
+      $provide.value('GenerateSearchQuery', GenerateSearchQuery);
     });
     inject(function(_DownloadUrl_) {
       service = _DownloadUrl_;
     });
-    query = null;
-    locale = null;
+  });
+
+  afterEach(function() {
+    KarmaUtils.restore(Language, GenerateSearchQuery);
   });
 
   it('builds url for messages', function() {
-    locale = 'en';
+    Language.returns(KarmaUtils.mockPromise(null, 'en'));
     service(null, 'messages', function(err, actual) {
       chai.expect(actual).to.equal('/api/v1/export/messages?format=xml&locale=en');
     });
   });
 
   it('builds url for audit', function() {
-    locale = 'en';
+    Language.returns(KarmaUtils.mockPromise(null, 'en'));
     service(null, 'audit', function(err, actual) {
       chai.expect(actual).to.equal('/api/v1/export/audit?format=xml&locale=en');
     });
   });
 
   it('builds url for feedback', function() {
-    locale = 'en';
+    Language.returns(KarmaUtils.mockPromise(null, 'en'));
     service(null, 'feedback', function(err, actual) {
       chai.expect(actual).to.equal('/api/v1/export/feedback?format=xml&locale=en');
     });
   });
 
   it('builds url for logs', function() {
-    locale = 'en';
+    Language.returns(KarmaUtils.mockPromise(null, 'en'));
     service(null, 'logs', function(err, actual) {
       chai.expect(actual).to.equal('/api/v1/export/logs?format=zip&locale=en');
     });
   });
 
   it('builds url for forms', function() {
-    locale = 'en';
-    query = 'form:P';
+    Language.returns(KarmaUtils.mockPromise(null, 'en'));
+    GenerateSearchQuery.callsArgWith(1, null, { query: 'form:P' });
     service(null, 'reports', function(err, actual) {
       chai.expect(decodeURIComponent(actual))
           .to.equal('/api/v1/export/forms?format=xml&locale=en&query="form:P"&schema=');
@@ -64,8 +59,8 @@ describe('DownloadUrl service', function() {
   });
 
   it('builds url for contacts backup', function() {
-    locale = 'en';
-    query = 'district:2';
+    Language.returns(KarmaUtils.mockPromise(null, 'en'));
+    GenerateSearchQuery.callsArgWith(1, null, { query: 'district:2' });
     service(null, 'contacts', function(err, actual) {
       chai.expect(decodeURIComponent(actual))
           .to.equal('/api/v1/export/contacts?format=json&locale=en&query="district:2"&schema=');

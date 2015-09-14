@@ -55,12 +55,11 @@
           if (err) {
             return callback(err);
           }
-          Language(function(err, language) {
-            if (err) {
-              return callback(err);
-            }
-            callback(null, formatResults(res.forms, language));
-          });
+          Language()
+            .then(function(language) {
+              callback(null, formatResults(res.forms, language));
+            })
+            .catch(callback);
         });
       };
     }
