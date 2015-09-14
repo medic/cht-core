@@ -71,6 +71,11 @@ var _ = require('underscore'),
         });
       };
 
+      $scope.orderByType = function(contact) {
+        var types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
+        return types.indexOf(contact.type);
+      };
+
       $scope.select = function(id) {
         if (id) {
           $state.go('contacts.detail', { id: id });
