@@ -241,11 +241,20 @@ var libphonenumber = require('libphonenumber/utils'),
         // don't `start` the modal until form validation is handled - otherwise
         // fields are disabled, and ignored for validation.
         var pane = modal.start($modal);
-        var doc = Enketo.recordToJs(form.getDataStr());
-        doc.type = $scope.enketo_contact.type;
         if(docId) {
-          doc._id = docId;
+          DB.get().get(docId)
+            .then(function(doc) {
+              $.extend(doc, Enketo.recordToJs(form.getDataStr()));
+              saveDoc(form, pane, doc);
+            });
+        } else {
+          var doc = Enketo.recordToJs(form.getDataStr());
+          doc.type = $scope.enketo_contact.type;
+          saveDoc(form, pane, doc);
         }
+      };
+
+      function saveDoc(form, pane, doc) {
         DB.get().post(doc)
           .then(function(doc) {
             form.resetView();
@@ -256,7 +265,7 @@ var libphonenumber = require('libphonenumber/utils'),
           .catch(function(err) {
             pane.done(translateFilter('Error updating contact'), err);
           });
-      };
+      }
     }
   ]);
 
