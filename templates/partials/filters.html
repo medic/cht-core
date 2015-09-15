@@ -9,32 +9,6 @@
 
     <span class="basic-filters">
 
-      <span class="filter-buttons">
-
-        <span class="dropdown" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'" mm-auth="can_access_directly">
-          <a data-toggle="dropdown">
-            <div class="mm-icon">
-              <span class="fa fa-fw fa-bars"></span>
-            </div>
-          </a>
-          <ul role="menu" class="dropdown-menu mm-dropdown-menu">
-            <li role="presentation">
-              <a tabindex="-1" ng-click="download()" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'">
-                <i class="fa fa-arrow-down"></i>
-                {{'Export' | translate}}
-              </a>
-            </li>
-            <li role="presentation">
-              <a tabindex="-1" ng-show="filterModel.type === 'contacts'" data-toggle="modal" data-target="#import-contacts">
-                <i class="fa fa-arrow-up"></i>
-                {{'Import' | translate}}
-              </a>
-            </li>
-          </ul>
-        </span>
-
-      </span>
-
       <span id="formTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All form types" data-filter-label="Number of form types" ng-show="filterModel.type === 'reports'">
         <span id="form_type" class="mm-button mm-button-nudge-down" data-toggle="dropdown">
           <span class="mm-button-icon">
@@ -57,7 +31,6 @@
         </span>
       </span>
 
-  
       <span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="Number of facilities" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'">
         <span id="facility" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">

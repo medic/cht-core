@@ -221,12 +221,10 @@ body {
   }
 }
 
-.header .options, .filters .filter-buttons {
-  .dropdown-menu {
-    width: 200px;
-    left: auto;
-    margin-top: 1.9em;
-  }
+.header .options .dropdown-menu {
+  width: 200px;
+  left: auto;
+  margin-top: 1.9em;
 }
 
 .slide-back a {
@@ -258,24 +256,6 @@ body {
    
     .dropdown-menu {
       padding-top: 0;
-    }
-  }
-
-  .filter-buttons .dropdown {
-    > a {
-      display: inline-block;
-      height: 3em;
-      border-radius: 0.5em 0.5em 0 0;
-    }
-    &.open > a {
-      background-color: #FFFFFF;
-    }
-    .mm-icon {
-      width: 1.5em;
-      line-height: 1em;
-      &:hover {
-        color: @medic-slate-color;
-      }
     }
   }
 
@@ -332,24 +312,7 @@ body {
     }
   }
 
-  .filter-buttons {
-    float: right;
-    display: inline-block;
-    text-align: right;
-    padding-right: 5px;
-    .mm-icon {
-      font-size: 2em;
-      width: 1.5em;
-      padding-top: 0.25em;
-    }
-    .dropdown {
-      vertical-align: bottom;
-      height: 1.4em;
-      line-height: inherit;
-    }
-  }
-
-  .filter-buttons, .reset-filter {
+  .reset-filter {
     > a {
       color: @grayDark;
       display: inline-block;
@@ -908,11 +871,14 @@ a.fa:hover {
     margin: 0 auto 1em;
     pointer-events: auto;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.63);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
 
     .mm-icon {
-      width: 25%;
       margin: 1.5em 0 0;
-      display: inline-block;
+      flex-grow: 1;
+      max-width: 10em;
       outline: 0;
       border-bottom: 5px solid transparent;
       .fa {
@@ -1240,14 +1206,6 @@ a.fa:hover {
 
       .search-pane {
         padding: 1em;
-      }
-    }
-    .filter-buttons {
-      width: inherit;
-      padding-right: 0.4em;
-      .dropdown-menu {
-        top: 3.8em;
-        right: 0.2em;
       }
     }
   }
