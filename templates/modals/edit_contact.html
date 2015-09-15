@@ -7,33 +7,32 @@
       </div>
       <div class="modal-body enketo">
 
-        <form ng-show="category === 'place'">
-          <div class="form-group">
-            <label>{{'Contact type' | translate}} *</label>
-            <p class="horizontal-options">
-              <a class="icon" ng-class="{'selected': contact.type === 'district_hospital'}" ng-click="contact.type = 'district_hospital'">
-                <span class="rectangle">
-                  <span class="fa fa-building"></span>{{'District Hospital' | translate}}
-                </span>
-              </a>
-              <a class="icon" ng-class="{'selected': contact.type === 'health_center'}" ng-click="contact.type = 'health_center'">
-                <span class="rectangle">
-                  <span class="fa fa-hospital-o"></span>{{'Health Center' | translate}}
-                </span>
-              </a>
-              <a class="icon" ng-class="{'selected': contact.type === 'clinic'}" ng-click="contact.type = 'clinic'">
-                <span class="rectangle">
-                  <span class="fa fa-home"></span>{{'Clinic' | translate}}
-                </span>
-              </a>
-            </p>
-          </div>
-        </form>
+        <div class="form-group" ng-show="category === 'place'">
+          <label>{{'Contact type' | translate}} *</label>
+          <p class="horizontal-options">
+            <a class="icon" ng-class="{'selected': contact.type === 'district_hospital'}" ng-click="contact.type = 'district_hospital'">
+              <span class="rectangle">
+                <span class="fa fa-building"></span>{{'District Hospital' | translate}}
+              </span>
+            </a>
+            <a class="icon" ng-class="{'selected': contact.type === 'health_center'}" ng-click="contact.type = 'health_center'">
+              <span class="rectangle">
+                <span class="fa fa-hospital-o"></span>{{'Health Center' | translate}}
+              </span>
+            </a>
+            <a class="icon" ng-class="{'selected': contact.type === 'clinic'}" ng-click="contact.type = 'clinic'">
+              <span class="rectangle">
+                <span class="fa fa-home"></span>{{'Clinic' | translate}}
+              </span>
+            </a>
+          </p>
+        </div>
 
         <div class="container pages"></div>
 
       </div>
       <div class="modal-footer form-footer">
+        <p class="note"></p>
         <button class="btn btn-link previous-page">&lt; {{'Previous' | translate}}</button>
         <button class="btn btn-link next-page">{{'Next' | translate}} &gt;</button>
         <a class="btn submit btn-primary" ng-click="save()" ng-attr-data-working-label="{{'Submitting' | translate}}">{{'Submit' | translate}}</a>
