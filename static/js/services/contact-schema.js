@@ -25,8 +25,9 @@ var PERSON = {
  * - expanding short-hand notation
  * - explicitly setting default values
  */
-function normalise(schema) {
+function normalise(type, schema) {
   var clone = _.clone(schema);
+  clone.type = type;
   var fields = clone.fields;
   _.forEach(fields, function(conf, name) {
     if(typeof conf === 'string') {
@@ -49,7 +50,7 @@ angular.module('inboxServices').service('ContactSchema', [
     return {
       get: function() {
         return {
-          person: normalise(PERSON),
+          person: normalise('person', PERSON),
         };
       },
     };

@@ -3,16 +3,12 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3 ng-show="page === 0 && category === 'person' && contactId">{{'Edit person' | translate}}</h3>
-        <h3 ng-show="(page === 0 && category === 'person' && !contactId) || (page === 1)">{{'Add person' | translate}}</h3>
-        <h3 ng-show="page === 0 && category === 'place' && contactId">{{'Edit place' | translate}}</h3>
-        <h3 ng-show="page === 0 && category === 'place' && !contactId">{{'Add place' | translate}}</h3>
+        <h3>{{'contact.type.' + category + (contactId? '.edit': '.new') | translate}}</h3>
       </div>
-      <div class="modal-body">
+      <div class="modal-body enketo">
 
-        <form ng-show="page === 0">
-
-          <div class="form-group" ng-show="category === 'place'">
+        <form ng-show="category === 'place'">
+          <div class="form-group">
             <label>{{'Contact type' | translate}} *</label>
             <p class="horizontal-options">
               <a class="icon" ng-class="{'selected': contact.type === 'district_hospital'}" ng-click="contact.type = 'district_hospital'">
@@ -32,98 +28,15 @@
               </a>
             </p>
           </div>
-
-          <div class="form-group" ng-class="{'has-error': errors.page0.name}">
-            <label>{{'Name' | translate}} *</label>
-            <input type="text" class="form-control small" ng-model="contact.name" />
-            <span class="error" ng-show="errors.page0.name">{{errors.page0.name}}</span>
-          </div>
-
-          <div class="form-group" ng-show="contact.type === 'person'" ng-class="{'has-error': errors.page0.phone}">
-            <label>{{'Phone Number' | translate}}</label>
-            <input type="text" class="form-control small" ng-model="contact.phone" />
-            <span class="error" ng-show="errors.page0.phone">{{errors.page0.phone}}</span>
-          </div>
-
-          <div class="form-group" ng-show="contact.type === 'person'">
-            <label>{{'Primary location' | translate}}</label>
-            <select class="form-control small" ng-model="contact.parent" ng-options="parent.name for parent in parents | filter:{type:'!person'} | orderBy:'name' track by parent._id">
-              <option value=""></option>
-            </select>
-          </div>
-
-          <div class="form-group" ng-show="contact.type === 'health_center'" ng-class="{'has-error': errors.page0.district_hospital}">
-            <label>{{'District Hospital' | translate}} *</label>
-            <select class="form-control small" ng-model="contact.parent" ng-options="parent.name for parent in parents | filter:{type:'district_hospital'} | orderBy:'name' track by parent._id"></select>
-            <span class="error" ng-show="errors.page0.district_hospital">{{errors.page0.district_hospital}}</span>
-          </div>
-
-          <div class="form-group" ng-show="contact.type === 'clinic'" ng-class="{'has-error': errors.page0.health_center}">
-            <label>{{'Health Center' | translate}} *</label>
-            <select class="form-control small" ng-model="contact.parent" ng-options="parent.name group by parent.parent.name for parent in parents | filter:{type:'health_center'} | orderBy:['parent.name','name'] track by parent._id"></select>
-            <span class="error" ng-show="errors.page0.health_center">{{errors.page0.health_center}}</span>
-          </div>
-
-          <div class="form-group" ng-show="category === 'place'">
-            <label>{{'Primary contact' | translate}}</label>
-            <select class="form-control small" ng-model="contact.contact" ng-options="parent.name for parent in parents | filter:{type:'person'} | orderBy:['order','name'] track by parent._id">
-              <option value=""></option>
-            </select>
-          </div>
-
-          <div class="form-group" ng-show="category === 'place'">
-            <label>{{'External ID' | translate}}</label>
-            <input type="text" class="form-control small" ng-model="contact.external_id" />
-          </div>
-
-          <div class="form-group" ng-show="category === 'person'">
-            <label>{{'RC Code' | translate}}</label>
-            <input type="text" class="form-control small" ng-model="contact.rc_code" />
-          </div>
-
-          <div class="form-group">
-            <label>{{'Notes' | translate}}</label>
-            <textarea class="form-control small" ng-model="contact.notes"></textarea>
-          </div>
-
         </form>
 
-        <form ng-show="page === 1">
-
-          <div class="form-group" ng-class="{'has-error': errors.page1.name}">
-            <label>{{'Name' | translate}} *</label>
-            <input type="text" class="form-control small" ng-model="primaryContact.name" />
-            <span class="error" ng-show="errors.page1.name">{{errors.page1.name}}</span>
-          </div>
-
-          <div class="form-group" ng-class="{'has-error': errors.page1.phone}">
-            <label>{{'Phone Number' | translate}}</label>
-            <input type="text" class="form-control small" ng-model="primaryContact.phone" />
-            <span class="error" ng-show="errors.page1.phone">{{errors.page1.phone}}</span>
-          </div>
-
-          <div class="form-group">
-            <label>{{'Notes' | translate}}</label>
-            <textarea class="form-control small" ng-model="primaryContact.notes"></textarea>
-          </div>
-
-        </form>
+        <div class="container pages"></div>
 
       </div>
-      <div class="modal-footer">
-        <p class="note"></p>
-        <a class="btn cancel" data-dismiss="modal">
-          {{'Cancel' | translate}}
-        </a>
-        <a class="btn btn-default" ng-click="setPage(1)" ng-show="page === 0 && contact.contact._id === 'NEW'">
-          {{'Next' | translate}}
-        </a>
-        <a class="btn btn-default" ng-click="setPage(0)" ng-show="page === 1">
-          {{'Previous' | translate}}
-        </a>
-        <a class="btn submit btn-primary" ng-click="save()" ng-attr-data-working-label="{{'Submitting' | translate}}" ng-show="page === 1 || contact.contact._id !== 'NEW'">
-          {{'Submit' | translate}}
-        </a>
+      <div class="modal-footer form-footer">
+        <button class="btn btn-link previous-page">&lt; {{'Previous' | translate}}</button>
+        <button class="btn btn-link next-page">{{'Next' | translate}} &gt;</button>
+        <a class="btn submit btn-primary" ng-click="save()" ng-attr-data-working-label="{{'Submitting' | translate}}">{{'Submit' | translate}}</a>
       </div>
     </div>
   </div>

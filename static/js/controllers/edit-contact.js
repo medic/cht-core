@@ -8,8 +8,8 @@ var libphonenumber = require('libphonenumber/utils'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditContactCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'Settings', 'UpdateContact', 'DbView',
-    function ($scope, $rootScope, translateFilter, Settings, UpdateContact, DbView) {
+    ['$scope', '$rootScope', 'translateFilter', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'Mega', 'Settings', 'UpdateContact',
+    function ($scope, $rootScope, translateFilter, ContactSchema, DbView, DB, Enketo, Mega, Settings, UpdateContact) {
 
       var populateParents = function() {
         var options = {
@@ -92,7 +92,19 @@ var libphonenumber = require('libphonenumber/utils'),
           $scope.contactId = null;
         }
 
-        $('#edit-contact').modal('show');
+        var modal = $('#edit-contact');
+
+        Enketo.renderFromXml(modal,
+            Mega.generateXform(ContactSchema.get()[contact.type]))
+          .then(function(form) {
+            $scope.enketo_contact = {
+              type: $scope.contact.type,
+              formInstance: form,
+              docId: $scope.contactId,
+            };
+          });
+
+        modal.modal('show');
       });
 
       var validatePage0 = function(settings, callback) {
@@ -217,41 +229,33 @@ var libphonenumber = require('libphonenumber/utils'),
       };
 
       $scope.save = function() {
-        validate(function(err, valid) {
-          var pane;
-          if (err) {
-            pane = modal.start($('#edit-contact'));
-            return pane.done(translateFilter('Error updating contact'), err);
-          }
-          if (valid.page0 && valid.page1) {
-            pane = modal.start($('#edit-contact'));
-            addNewPrimaryContact(function(err, added) {
-              if (err) {
-                return pane.done(translateFilter('Error updating contact'), err);
-              }
-              if (added) {
-                $scope.contact.contact = added;
-              }
-              UpdateContact($scope.original, $scope.contact, function(err, contact) {
-                if (err) {
-                  return pane.done(translateFilter('Error updating contact'), err);
-                }
-                updateNewPrimaryContact(added, contact, function(err) {
-                  if (!err) {
-                    contact.parent = $scope.contact.parent;
-                    $rootScope.$broadcast('ContactUpdated', contact);
-                  }
-                  pane.done(translateFilter('Error updating contact'), err);
-                });
-              });
-            });
-          } else if($scope.page === 1 && valid.page1) {
-            // make sure we're showing a page with validation errors
-            $scope.page = 0;
-          }
-        });
-      };
+        var form = $scope.enketo_contact.formInstance,
+            docId = $scope.enketo_contact.docId,
+            $modal = $('#edit-contact'),
+            $submit = $('.edit-report-dialog .btn.submit');
 
+        var pane = modal.start($('#edit-contact'));
+
+        form.validate();
+        if(!form.isValid()) {
+          return console.log('[enketo] form invalid');
+        }
+        var doc = Enketo.recordToJs(form.getDataStr());
+        doc.type = $scope.enketo_contact.type;
+        if(docId) {
+          doc._id = docId;
+        }
+        DB.get().post(doc)
+          .then(function(doc) {
+            form.resetView();
+            delete $scope.enketo_contact;
+            $rootScope.$broadcast('ContactUpdated', doc);
+            pane.done();
+          })
+          .catch(function(err) {
+            pane.done(translateFilter('Error updating contact'), err);
+          });
+      };
     }
   ]);
 

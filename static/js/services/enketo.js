@@ -32,8 +32,8 @@ angular.module('inboxServices').service('Enketo', [
       });
     };
 
-    var transformXml = function(formDocId, doc) {
-      return $q
+    var transformXml = function(doc, formDocId) {
+      return Promise
         .all([
           XSLT.transform('openrosa2html5form.xsl', doc),
           XSLT.transform('openrosa2xmlmodel.xsl', doc),
@@ -43,8 +43,10 @@ angular.module('inboxServices').service('Enketo', [
             html: $(results[0]),
             model: results[1]
           };
-          replaceJavarosaMediaWithLoaders(formDocId, result.html);
-          return $q.resolve(result);
+          if(formDocId) {
+            replaceJavarosaMediaWithLoaders(formDocId, result.html);
+          }
+          return Promise.resolve(result);
         });
     };
 
@@ -60,7 +62,7 @@ angular.module('inboxServices').service('Enketo', [
             .getAttachment(form.id, 'xml')
             .then(FileReader)
             .then(function(text) {
-              return transformXml(form.id, $.parseXML(text));
+              return transformXml($.parseXML(text), form.id);
             });
         });
     };
@@ -119,6 +121,29 @@ angular.module('inboxServices').service('Enketo', [
           });
     };
 
+    this.renderFromXml = function(wrapper, xmlString, formInstanceData) {
+      return transformXml($.parseXML(xmlString))
+        .then(function(doc) {
+          // TODO refactor with `.render()` when upstream changes have been merged
+          wrapper.find('.form-footer')
+                 .addClass('end')
+                 .find('.previous-page,.next-page')
+                 .addClass('disabled');
+          var formContainer = wrapper.find('.container').first();
+          formContainer.html(doc.html);
+          var form = new EnketoForm(wrapper.find('form').first(), {
+            modelStr: doc.model,
+            instanceStr: formInstanceData
+          });
+          var loadErrors = form.init();
+          if (loadErrors && loadErrors.length) {
+            return Promise.reject(loadErrors);
+          }
+          wrapper.show();
+          return Promise.resolve(form);
+        });
+    };
+
     var recordToJs = function(record) {
       var i, n, fields = {},
           data = $.parseXML(record).firstChild.childNodes;
@@ -131,6 +156,7 @@ angular.module('inboxServices').service('Enketo', [
       }
       return fields;
     };
+    this.recordToJs = recordToJs;
 
     var update = function(formInternalId, record, docId) {
       // update an existing doc.  For convenience, get the latest version

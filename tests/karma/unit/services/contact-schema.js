@@ -23,6 +23,7 @@ describe('ContactSchema service', function() {
     describe('`person`', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().person, {
+          type: 'person',
           title: '{{name}}',
           badge: 'fa-user',
           fields: {
