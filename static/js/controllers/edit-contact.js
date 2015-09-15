@@ -234,12 +234,13 @@ var libphonenumber = require('libphonenumber/utils'),
             $modal = $('#edit-contact'),
             $submit = $('.edit-report-dialog .btn.submit');
 
-        var pane = modal.start($('#edit-contact'));
-
         form.validate();
         if(!form.isValid()) {
           return console.log('[enketo] form invalid');
         }
+        // don't `start` the modal until form validation is handled - otherwise
+        // fields are disabled, and ignored for validation.
+        var pane = modal.start($modal);
         var doc = Enketo.recordToJs(form.getDataStr());
         doc.type = $scope.enketo_contact.type;
         if(docId) {
