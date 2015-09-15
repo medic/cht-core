@@ -1,4 +1,4 @@
-<div id="message-list" class="col-sm-4 inbox-items">
+<div id="message-list" class="col-sm-4 inbox-items left-pane">
   <ul>
     <li class="animate-repeat" ng-show="!loading || appending" ng-repeat="message in messages | orderBy:'-value.date'" ng-click="select(message.key[0])" data-record-id="{{message.key[0]}}" ng-class="{'selected': message.key[0] === loadingContent || !loadingContent && message.key[0] === selected.id, 'read': isRead(message.value)}">
       <div class="message-wrapper">

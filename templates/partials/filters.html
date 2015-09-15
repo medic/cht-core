@@ -1,13 +1,6 @@
 <div class="row filters">
   <div class="inner">
-
-    <span class="slide-back" ng-click="clearSelected()" ng-show="filterModel.type === 'reports' || filterModel.type === 'messages' || filterModel.type === 'contacts' || filterModel.type === 'tasks'">
-      <a id="back">
-        <span class="fa fa-chevron-left" title="{{'Back' | translate}}"></span>
-      </a>
-    </span>
-
-    <span class="basic-filters">
+    <div class="col-sm-4 basic-filters left-pane">
 
       <span id="formTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All form types" data-filter-label="Number of form types" ng-show="filterModel.type === 'reports'">
         <span id="form_type" class="mm-button mm-button-nudge-down" data-toggle="dropdown">
@@ -94,7 +87,6 @@
           </ul>
         </span>
       </span>
-
 
       <span id="contactTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All contact types" data-filter-label="Number of contact types" ng-show="filterModel.type === 'contacts'">
         <span class="mm-button mm-button-nudge-down" data-toggle="dropdown">
@@ -264,8 +256,14 @@
           </li>
         </ul>
       </span>
+    </div>
 
-    </span>
-
+    <div class="col-sm-8 right-pane">
+      <span class="slide-back" ng-click="clearSelected()" ng-show="filterModel.type === 'reports' || filterModel.type === 'messages' || filterModel.type === 'contacts' || filterModel.type === 'tasks'">
+        <a id="back">
+          <span class="fa fa-chevron-left" title="{{'Back' | translate}}"></span>
+        </a>
+      </span>
+    </div>
   </div>
 </div>

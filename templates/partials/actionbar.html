@@ -1,7 +1,7 @@
 <div class="container-fluid action-container">
   <div class="row">
     <div class="inner">
-      <div class="col-sm-4 general-actions">
+      <div class="col-sm-4 general-actions left-pane">
         <div class="actions dropup" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'">
           <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" ng-show="filterModel.type === 'messages'">
             <span class="fa fa-plus"></span>
@@ -40,7 +40,7 @@
           </a>
         </div>
       </div>
-      <div class="col-sm-8 detail-actions">
+      <div class="col-sm-8 detail-actions right-pane">
         <div class="actions" ng-show="showActionBar && actionBar._id && !loadingContent && (('reports.detail' | isState) || ('contacts.detail' | isState))">
           <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" data-send-to="{{actionBar.sendTo}}">
             <span class="fa fa-envelope"></span>

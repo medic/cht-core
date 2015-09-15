@@ -238,22 +238,26 @@ body {
   color: @grayDark;
 }
 
+
 .filters {
   height: 4.2em;
-  font-size: 0.95em;
   white-space: nowrap;
+  padding: 0.4em 0;
+  font-size: 0.77em;
 
   .inner {
     position: relative;
   }
 
   .filter {
-    width: 18%;
+    width: 4.3em;
     margin: 0 0.2%;
     text-align: left;
     display: inline-block;
     vertical-align: top;
-   
+    &.analytics-module {
+      width: 5em;
+    }
     .dropdown-menu {
       padding-top: 0;
     }
@@ -263,10 +267,18 @@ body {
     margin-left: -0.5em;
   }
 
+  .open .mm-dropdown-menu {
+    left: 1px;
+    margin: 2.5em 0;
+    font-size: 1.25em;
+    border-width: 1px;
+    width: 300px;
+  }
+
   .mm-button-text {
-    display: inline-block;
-    overflow: hidden;
-    width: 88%;
+    width: 0;
+    visibility: hidden;
+    padding-right: 0.75em;
   }
 
   .mm-button {
@@ -274,21 +286,16 @@ body {
   }
 
   .basic-filters, .slide-back {
-    padding-top: 0.65em;
+    padding-top: 0.2em;
+    padding-left: 0.2em;
   }
   
-  .basic-filters {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-  }
-
   .help {
     line-height: 3em;
   }
-
+  
   .freetext-filter {
+    display: none;
     padding-right: 2em;
     input, .btn {
       height: 2.85em;
@@ -308,7 +315,7 @@ body {
   .slide-back, .reset-filter {
     line-height: 3em;
     > a {
-      width: 2em;
+      width: 4em;
     }
   }
 
@@ -326,14 +333,25 @@ body {
   }
 
   .mobile-freetext-filter {
-    display: none;
-  }
-  .advanced-filter {
-    width: 3.3em;
-  }
+    display: inline-block;
 
+    .search-pane {
+      padding: 1em;
+    }
+  }
+  .mm-button {
+    padding-left: 0.8em;
+  }
+  .mm-button-icon {
+    padding-right: 0.1em;
+  }
+  .mm-button-dropdown {
+    padding-right: 0.6em;
+  }
+  .right-pane {
+    padding-left: 0;
+  }
 }
-
 
 .container-fluid {
   background-color: @background-color;
@@ -346,7 +364,7 @@ body {
 
 .content {
   .page {
-    top: 8.7em;
+    top: 8em;
     bottom: 0;
     position: absolute;
     width: 100%;
@@ -1138,6 +1156,19 @@ a.fa:hover {
       height: 100px;
     }
   }
+  .filters {
+    padding: 0;
+    .slide-back {
+      display: inline-block;
+    }
+    .open .mm-dropdown-menu {
+      margin: 0;
+    }
+    .right-pane {
+      position: absolute;
+      top: 0;
+    }
+  }
   .header {
     font-size: 0.65em;
     .dropdown-menu {
@@ -1167,48 +1198,7 @@ a.fa:hover {
       font-size: 1.2em;
     }
   }
-  .filters {
-    padding: 0;
-    padding-bottom: 1em;
-    font-size: 0.77em;
-    .dropdown, .slide-back .mm-button {
-      vertical-align: top;
-    }
-    .dropdown {
-      width: 4.3em;
-
-      &.analytics-module {
-        width: 5em;
-      }
-    }
-    .mm-button-text {
-      width: 0;
-      visibility: hidden;
-      padding-right: 0.75em;
-    }
-    .slide-back {
-      display: inline-block;
-    }
-    .basic-filters, .slide-back {
-      padding-top: 0.2em;
-    }
-    .basic-filters {
-      left: 2.5em;
-    }
-    .freetext-filter {
-      display: none;
-    }
-    .advanced-filter {
-      width: 3em;
-    }
-    .mobile-freetext-filter {
-      display: inline-block;
-
-      .search-pane {
-        padding: 1em;
-      }
-    }
-  }
+  
   .inbox-items,
   .content-pane {
     width: 100%;
@@ -1265,29 +1255,23 @@ a.fa:hover {
     }
   }
 
-  .action-container .detail-actions,
-  .action-container .general-actions,
-  .content .inbox-items,
-  .content-pane {
+  .left-pane,
+  .right-pane {
     transition: left 500ms ease 0s;
   }
 
-  .content .inbox-items,
-  .action-container .general-actions {
+  .left-pane {
     left: 0;
   }
-  .action-container .detail-actions,
-  .content-pane {
+  .right-pane {
     left: 100%;
   }
 
   body.show-content {
-    .content .inbox-items,
-    .action-container .general-actions {
+    .left-pane {
       left: -100%;
     }
-    .action-container .detail-actions,
-    .content-pane {
+    .right-pane {
       left: 0;
     }
   }

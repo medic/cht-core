@@ -1,4 +1,4 @@
-<div id="tasks-list" class="col-sm-4 inbox-items">
+<div id="tasks-list" class="col-sm-4 inbox-items left-pane">
   <ul ng-show="!loading && !error">
     <li ng-repeat="task in tasks | orderBy:'date'" ng-click="setSelected(task._id)" data-record-id="{{task._id}}" ng-class="{'selected': task._id === loadingContent || !loadingContent && task._id === selected._id}">
       <div class="message-wrapper">

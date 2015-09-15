@@ -1,4 +1,4 @@
-<div id="reports-list" class="col-sm-4 inbox-items">
+<div id="reports-list" class="col-sm-4 inbox-items left-pane">
   <ul ng-show="!loading || appending">
     <li class="animate-repeat" ng-repeat="report in reports | orderBy:'-reported_date'" ng-click="select(report._id)" data-record-id="{{report._id}}" ng-class="{'selected': report._id === loadingContent || !loadingContent && report._id === selected._id, 'read': isRead(report)}">
       <div class="message-wrapper">

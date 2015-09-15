@@ -20,6 +20,7 @@ var _ = require('underscore');
     ['$scope', '$rootScope', '$state', '$stateParams', 'Settings', 'AnalyticsModules',
     function ($scope, $rootScope, $state, $stateParams, Settings, AnalyticsModules) {
       $scope.setSelectedModule();
+      $scope.clearSelected();
       $scope.filterModel.type = 'analytics';
       $scope.loading = true;
       Settings(function(err, res) {
