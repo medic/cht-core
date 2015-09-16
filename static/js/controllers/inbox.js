@@ -70,6 +70,11 @@ require('moment/locales');
         $scope.filterModel.module = module;
       };
 
+      $scope.back = function() {
+        $scope.clearSelected();
+        $state.go($scope.filterModel.type);
+      };
+
       $scope.clearSelected = function() {
         $scope.showContent = false;
         $scope.loadingContent = false;
