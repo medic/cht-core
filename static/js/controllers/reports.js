@@ -166,7 +166,7 @@ var _ = require('underscore'),
               if (curr) {
                 $scope.setSelected(curr);
               } else if (!$('#back').is(':visible') &&
-                         !options.changes &&
+                         !$scope.selected &&
                          $state.is('reports.detail')) {
                 // TODO improve double timeout here - I think it's required
                 // because of the nested promises
