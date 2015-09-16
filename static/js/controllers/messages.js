@@ -83,7 +83,6 @@
         }
       };
 
-      $scope.setLoadingContent(false);
       $scope.allLoaded = false;
       $scope.filterModel.type = 'messages';
       $scope.messages = [];
