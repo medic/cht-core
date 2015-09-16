@@ -94,6 +94,32 @@ describe('Mega service', function() {
           '</h:body></h:html>');
     });
 
+    it('handles phone number data type', function() {
+      // given
+      var schema = {
+        type: 'contact',
+        title: '{{number}}',
+        fields: {
+          number: {
+            type: 'phone',
+          }
+        }
+      };
+
+      // when
+      var xform = service.generateXform(schema);
+
+      // then
+      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head><h:title>{{\'contact.new\' | translate}}</h:title>' +
+          '<model><instance><contact id="contact" version="1">' +
+            '<number/><meta><instanceID/></meta></contact></instance>' +
+            '<bind nodeset="/contact/number" type="phone"/></model></h:head>' +
+          '<h:body>' +
+            '<input ref="/contact/number">' +
+              '<label>{{\'contact.number\' | translate}}</label></input>' +
+          '</h:body></h:html>');
+    });
+
     it('handles db-reference fields', function() {
       // given
       var schema = {

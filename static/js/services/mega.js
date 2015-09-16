@@ -51,7 +51,7 @@ angular.module('inboxServices').service('Mega', [
         var dataType = X.getBindingType(conf),
             path = X.pathTo(dataNode, f);
         xml += '<bind nodeset="' + path + '" ';
-        if(typeof conf !== 'string' && conf.required) {
+        if(conf.required) {
           xml += 'required="true()" ';
         }
         xml += 'type="' + dataType + '"/>';

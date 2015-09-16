@@ -16,6 +16,7 @@ define( function( require, exports, module ) {
         require( './widgets/patient-select' ),
         require( './widgets/place-select' ),
         require( './widgets/db-object-widget' ),
+        require( './widgets/phone-widget' ),
     ];
 
     module.exports = widgets;

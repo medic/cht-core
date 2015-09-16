@@ -81,7 +81,9 @@ module.exports = function(grunt) {
             'widgets': './static/js/enketo/widgets.js',
             './XPathEvaluatorBinding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding.js',
             'extended-xpath': './node_modules/enketo-core/node_modules/openrosa-xpath-evaluator/src/extended-xpath.js',
-            'openrosa-xpath-extensions': './node_modules/enketo-core/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions.js'
+            'openrosa-xpath-extensions': './node_modules/enketo-core/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions.js',
+            'libphonenumber/phoneformat': './packages/libphonenumber/libphonenumber/phoneformat.js',
+            'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils.js',
           },
         },
       },
