@@ -48,6 +48,7 @@ require('moment/locales');
       $scope.version = APP_CONFIG.version;
       $scope.actionBar = {};
       $scope.formDefinitions = [];
+      $scope.title = undefined;
 
       $scope.baseUrl = BaseUrlService();
 
@@ -74,6 +75,7 @@ require('moment/locales');
         $timeout.cancel(clearSelectedTimer);
         $scope.showContent = false;
         $scope.loadingContent = false;
+        $scope.setTitle();
         if ($('#back').is(':visible')) {
           clearSelectedTimer = $timeout(function() {
             $scope.showActionBar = false;
@@ -96,6 +98,10 @@ require('moment/locales');
             });
           }
         });
+      };
+
+      $scope.setTitle = function(title) {
+        $scope.title = title;
       };
 
       $scope.setLoadingContent = function(id) {

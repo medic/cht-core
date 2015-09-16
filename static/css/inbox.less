@@ -230,14 +230,8 @@ body {
 .slide-back a {
   display: inline-block;
   text-align: center;
-  cursor: default;
-  color: @grey;
-}
-.show-content .slide-back a {
-  cursor: pointer;
   color: @grayDark;
 }
-
 
 .filters {
   height: 4.2em;
@@ -286,7 +280,6 @@ body {
   }
 
   .basic-filters, .slide-back {
-    padding-top: 0.2em;
     padding-left: 0.2em;
   }
   
@@ -313,7 +306,7 @@ body {
   }
 
   .slide-back, .reset-filter {
-    line-height: 3em;
+    line-height: 40px;
     > a {
       width: 4em;
     }
@@ -350,6 +343,14 @@ body {
   }
   .right-pane {
     padding-left: 0;
+  }
+  h2 {
+    font-size: 20px;
+    line-height: 40px;
+    overflow: hidden;
+    font-weight: bold;
+    margin: 0;
+    text-align: center;
   }
 }
 
@@ -1160,6 +1161,7 @@ a.fa:hover {
     padding: 0;
     .slide-back {
       display: inline-block;
+      float: left;
     }
     .open .mm-dropdown-menu {
       margin: 0;
@@ -1167,6 +1169,9 @@ a.fa:hover {
     .right-pane {
       position: absolute;
       top: 0;
+    }
+    h2 {
+      text-align: left;
     }
   }
   .header {
@@ -1199,8 +1204,8 @@ a.fa:hover {
     }
   }
   
-  .inbox-items,
-  .content-pane {
+  .left-pane,
+  .right-pane {
     width: 100%;
   }
   .inbox-items,
@@ -1224,8 +1229,10 @@ a.fa:hover {
       padding-bottom: 0;
     }
   }
-  .reports .content .item-content .body > ul > li {
-    padding: 1em;
+  .reports, .contacts, .tasks {
+    .content .item-content .body > ul > li {
+      padding: 1em;
+    }
   }
   .messages .content .item-content .body {
     margin-bottom: 0;
