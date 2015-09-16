@@ -70,24 +70,15 @@ require('moment/locales');
         $scope.filterModel.module = module;
       };
 
-      var clearSelectedTimer;
       $scope.clearSelected = function() {
-        $timeout.cancel(clearSelectedTimer);
         $scope.showContent = false;
         $scope.loadingContent = false;
+        $scope.showActionBar = false;
         $scope.setTitle();
-        if ($('#back').is(':visible')) {
-          clearSelectedTimer = $timeout(function() {
-            $scope.showActionBar = false;
-            $scope.$broadcast('ClearSelected');
-          }, 500);
-        } else {
-          $scope.$broadcast('ClearSelected');
-        }
+        $scope.$broadcast('ClearSelected');
       };
 
       $scope.settingSelected = function(refreshing) {
-        $timeout.cancel(clearSelectedTimer);
         $scope.loadingContent = false;
         $timeout(function() {
           $scope.showContent = true;

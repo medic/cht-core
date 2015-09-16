@@ -235,23 +235,20 @@ body {
 
 .filters {
   height: 4.2em;
+  font-size: 0.95em;
   white-space: nowrap;
   padding: 0.4em 0;
-  font-size: 0.77em;
 
   .inner {
     position: relative;
   }
 
   .filter {
-    width: 4.3em;
+    width: 18%;
     margin: 0 0.2%;
     text-align: left;
     display: inline-block;
     vertical-align: top;
-    &.analytics-module {
-      width: 5em;
-    }
     .dropdown-menu {
       padding-top: 0;
     }
@@ -261,18 +258,10 @@ body {
     margin-left: -0.5em;
   }
 
-  .open .mm-dropdown-menu {
-    left: 1px;
-    margin: 2.5em 0;
-    font-size: 1.25em;
-    border-width: 1px;
-    width: 300px;
-  }
-
   .mm-button-text {
-    width: 0;
-    visibility: hidden;
-    padding-right: 0.75em;
+    display: inline-block;
+    overflow: hidden;
+    width: 88%;
   }
 
   .mm-button {
@@ -280,15 +269,21 @@ body {
   }
 
   .basic-filters, .slide-back {
-    padding-left: 0.2em;
+    padding-top: 0.2em;
   }
-  
+
+  .basic-filters {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+
   .help {
     line-height: 3em;
   }
   
   .freetext-filter {
-    display: none;
     padding-right: 2em;
     input, .btn {
       height: 2.85em;
@@ -308,7 +303,7 @@ body {
   .slide-back, .reset-filter {
     line-height: 40px;
     > a {
-      width: 4em;
+      width: 2em;
     }
   }
 
@@ -326,20 +321,10 @@ body {
   }
 
   .mobile-freetext-filter {
-    display: inline-block;
-
-    .search-pane {
-      padding: 1em;
-    }
+    display: none;
   }
-  .mm-button {
-    padding-left: 0.8em;
-  }
-  .mm-button-icon {
-    padding-right: 0.1em;
-  }
-  .mm-button-dropdown {
-    padding-right: 0.6em;
+  .advanced-filter {
+    width: 3.3em;
   }
   .right-pane {
     padding-left: 0;
@@ -365,7 +350,7 @@ body {
 
 .content {
   .page {
-    top: 8em;
+    top: 8.7em;
     bottom: 0;
     position: absolute;
     width: 100%;
@@ -599,30 +584,6 @@ body {
 .reports, .contacts {
   .inbox-items .detail {
     margin-left: 3em;
-  }
-}
-
-.inbox-items, .item-content {
-  .animate-repeat {
-    &.ng-move,
-    &.ng-enter,
-    &.ng-leave {
-      transition: all 500ms ease 0s;
-    }
-
-    &.ng-leave-active,
-    &.ng-move,
-    &.ng-enter {
-      opacity: 0;
-      max-height: 0;
-    }
-
-    &.ng-leave,
-    &.ng-move-active,
-    &.ng-enter-active {
-      opacity: 1;
-      max-height: 70px;
-    }
   }
 }
 
@@ -1159,12 +1120,11 @@ a.fa:hover {
   }
   .filters {
     padding: 0;
+    padding-bottom: 1em;
+    font-size: 0.77em;
     .slide-back {
       display: inline-block;
       float: left;
-    }
-    .open .mm-dropdown-menu {
-      margin: 0;
     }
     .right-pane {
       position: absolute;
@@ -1172,6 +1132,37 @@ a.fa:hover {
     }
     h2 {
       text-align: left;
+    }
+    .dropdown, .slide-back .mm-button {
+      vertical-align: top;
+    }
+    .dropdown {
+      width: 4.3em;
+
+      &.analytics-module {
+        width: 5em;
+      }
+    }
+    .mm-button-text {
+      width: 0;
+      visibility: hidden;
+      padding-right: 0.75em;
+    }
+    .basic-filters {
+      left: 0.2em;
+    }
+    .freetext-filter {
+      display: none;
+    }
+    .advanced-filter {
+      width: 3em;
+    }
+    .mobile-freetext-filter {
+      display: inline-block;
+
+      .search-pane {
+        padding: 1em;
+      }
     }
   }
   .header {
@@ -1262,11 +1253,6 @@ a.fa:hover {
     }
   }
 
-  .left-pane,
-  .right-pane {
-    transition: left 500ms ease 0s;
-  }
-
   .left-pane {
     left: 0;
   }
@@ -1275,6 +1261,12 @@ a.fa:hover {
   }
 
   body.show-content {
+    .header {
+      display: none;
+    }
+    .content .page {
+      top: 2.75em;
+    }
     .left-pane {
       left: -100%;
     }
