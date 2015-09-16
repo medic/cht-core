@@ -73,5 +73,15 @@ angular.module('inboxServices').service('Mega', [
       xml += '</h:body></h:html>';
       return xml;
     };
+
+    this.jsToFormInstanceData = function(obj) {
+      var root = $('<' + obj.type + '>');
+      _.each(obj, function(val, key) {
+        if(!/^(_|type$)/.test(key)) {
+          $('<' + key + '>', { text: val }).appendTo(root);
+        }
+      });
+      return root[0].outerHTML;
+    };
   }
 ]);

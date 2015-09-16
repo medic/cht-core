@@ -15,6 +15,33 @@ describe('Mega service', function() {
     assert.isDefined(service);
   });
 
+  describe('#jsToFormInstanceData()', function() {
+    it('generates simple XML structure when supplied with form JS', function() {
+      // given
+      var js = {
+        _id: 'abc-123-xyz',
+        type: 'person',
+        name: 'Abraham Apple',
+        phone: '+447890123456',
+        code: 'morse',
+        notes: 'Mr. Apple is a big-time Charlie.  1 < 2.',
+        parent: 'asdf-123-zxcv',
+      };
+
+      // when
+      var xml = service.jsToFormInstanceData(js);
+
+      // then
+      assert.equal(xml, '<person>' +
+          '<name>Abraham Apple</name>' +
+          '<phone>+447890123456</phone>' +
+          '<code>morse</code>' +
+          '<notes>Mr. Apple is a big-time Charlie.  1 &lt; 2.</notes>' +
+          '<parent>asdf-123-zxcv</parent>' +
+          '</person>');
+    });
+  });
+
   describe('XForm generation', function() {
     it('generates a simple XForm when supplied with a simple schema', function() {
       // given

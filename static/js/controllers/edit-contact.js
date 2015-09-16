@@ -1,5 +1,4 @@
-var libphonenumber = require('libphonenumber/utils'),
-    modal = require('../modules/modal');
+var modal = require('../modules/modal');
 
 (function () {
 
@@ -8,8 +7,8 @@ var libphonenumber = require('libphonenumber/utils'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditContactCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'Mega', 'Settings', 'UpdateContact',
-    function ($scope, $rootScope, translateFilter, ContactSchema, DbView, DB, Enketo, Mega, Settings, UpdateContact) {
+    ['$scope', '$rootScope', 'translateFilter', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'Mega',
+    function ($scope, $rootScope, translateFilter, ContactSchema, DbView, DB, Enketo, Mega) {
 
       var populateParents = function() {
         var options = {
@@ -35,31 +34,13 @@ var libphonenumber = require('libphonenumber/utils'),
         });
       };
 
-      var validatePhoneNumber = function(number, contactId, settings, callback) {
-        if (!libphonenumber.validate(settings, number)) {
-          return callback(translateFilter('Phone number not valid'));
-        }
-        number = libphonenumber.format(settings, number);
-        var options = { params: { key: [ number ] } };
-        DbView('person_by_phone', options, function(err, results) {
-          if (err) {
-            return callback(translateFilter('Phone number not valid'));
-          }
-          if (results.rows.length && results.rows[0].id !== contactId) {
-            return callback(translateFilter(
-              'phone number not unique',
-              { name: results.rows[0].value.name }
-            ));
-          }
-          callback(null, number);
-        });
-      };
-
       populateParents();
 
       $scope.$on('ContactUpdated', populateParents);
 
       $scope.$on('EditContactInit', function(e, contact) {
+
+        var formInstanceData;
 
         contact = contact || {};
 
@@ -84,6 +65,7 @@ var libphonenumber = require('libphonenumber/utils'),
           };
           $scope.contactId = contact._id;
           $scope.category = contact.type === 'person' ? 'person' : 'place';
+          formInstanceData = Mega.jsToFormInstanceData(contact);
         } else {
           $scope.contact = {
             type: contact.type || 'district_hospital'
@@ -95,7 +77,8 @@ var libphonenumber = require('libphonenumber/utils'),
         var modal = $('#edit-contact');
 
         Enketo.renderFromXml(modal,
-            Mega.generateXform(ContactSchema.get()[contact.type]))
+            Mega.generateXform(ContactSchema.get()[contact.type]),
+            formInstanceData)
           .then(function(form) {
             $scope.enketo_contact = {
               type: $scope.contact.type,
@@ -107,123 +90,6 @@ var libphonenumber = require('libphonenumber/utils'),
         modal.modal('show');
       });
 
-      var validatePage0 = function(settings, callback) {
-
-        var errors = {};
-
-        if (!$scope.contact.name) {
-          errors.name = translateFilter('field is required', {
-            field: translateFilter('Name')
-          });
-        }
-
-        if ($scope.contact.type === 'health_center' &&
-            (!$scope.contact.parent || $scope.contact.parent.type !== 'district_hospital')) {
-          errors.district_hospital = translateFilter('field is required', {
-            field: translateFilter('District Hospital')
-          });
-        }
-        if ($scope.contact.type === 'clinic' &&
-            (!$scope.contact.parent || $scope.contact.parent.type !== 'health_center')) {
-          errors.health_center = translateFilter('field is required', {
-            field: translateFilter('Health Center')
-          });
-        }
-        if ($scope.contact.type === 'district_hospital') {
-          // districts are orphans
-          $scope.contact.parent = null;
-        }
-
-        if ($scope.contact.type !== 'person' || !$scope.contact.phone) {
-          return callback(errors);
-        }
-
-        validatePhoneNumber($scope.contact.phone, $scope.contactId, settings, function(err, validated) {
-          if (err) {
-            errors.phone = err;
-          } else {
-            $scope.contact.phone = validated;
-          }
-          callback(errors);
-        });
-      };
-
-      var validatePage1 = function(settings, callback) {
-        if (!newPrimaryContact()) {
-          return callback({});
-        }
-
-        var errors = {};
-
-        if (!$scope.primaryContact.name) {
-          errors.name = translateFilter('field is required', {
-            field: translateFilter('Name')
-          });
-        }
-
-        if (!$scope.primaryContact.phone) {
-          return callback(errors);
-        }
-
-        validatePhoneNumber($scope.primaryContact.phone, null, settings, function(err, validated) {
-          if (err) {
-            errors.phone = err;
-          } else {
-            $scope.primaryContact.phone = validated;
-          }
-          callback(errors);
-        });
-      };
-
-      var newPrimaryContact = function() {
-        return $scope.contact.type !== 'person' &&
-               $scope.contact.contact &&
-               $scope.contact.contact._id === 'NEW';
-      };
-      
-      var validate = function(callback) {
-        $scope.errors = {
-          page0: {},
-          page1: {}
-        };
-
-        Settings(function(err, settings) {
-          if (err) {
-            return callback(err);
-          }
-          validatePage0(settings, function(errors) {
-            $scope.errors.page0 = errors;
-            validatePage1(settings, function(errors) {
-              $scope.errors.page1 = errors;
-              callback(null, {
-                page0: Object.keys($scope.errors.page0).length === 0,
-                page1: Object.keys($scope.errors.page1).length === 0
-              });
-            });
-          });
-        });
-      };
-
-      var addNewPrimaryContact = function(callback) {
-        if (!newPrimaryContact()) {
-          return callback();
-        }
-        var add = {
-          type: 'person',
-          name: $scope.primaryContact.name,
-          phone: $scope.primaryContact.phone,
-          notes: $scope.primaryContact.notes
-        };
-        UpdateContact(null, add, callback);
-      };
-
-      var updateNewPrimaryContact = function(added, parent, callback) {
-        if (!added) {
-          return callback();
-        }
-        UpdateContact(added, { parent: parent }, callback);
-      };
-
       $scope.setPage = function(page) {
         $scope.page = page;
       };
@@ -231,8 +97,7 @@ var libphonenumber = require('libphonenumber/utils'),
       $scope.save = function() {
         var form = $scope.enketo_contact.formInstance,
             docId = $scope.enketo_contact.docId,
-            $modal = $('#edit-contact'),
-            $submit = $('.edit-report-dialog .btn.submit');
+            $modal = $('#edit-contact');
 
         form.validate();
         if(!form.isValid()) {
