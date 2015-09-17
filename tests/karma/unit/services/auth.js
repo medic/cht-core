@@ -4,7 +4,8 @@ describe('Auth service', function() {
 
   var service,
       userCtx,
-      Settings;
+      Settings,
+      $rootScope;
 
   beforeEach(function () {
     module('inboxApp');
@@ -18,7 +19,8 @@ describe('Auth service', function() {
         return Settings;
       });
     });
-    inject(function($injector) {
+    inject(function($injector, _$rootScope_) {
+      $rootScope = _$rootScope_;
       service = $injector.get('Auth');
     });
   });
@@ -34,6 +36,7 @@ describe('Auth service', function() {
         chai.expect(err.message).to.equal('Not logged in');
         done();
       });
+    $rootScope.$digest();
   });
 
   it('rejects when user has no role', function(done) {
@@ -43,11 +46,13 @@ describe('Auth service', function() {
         chai.expect(err).to.equal(undefined);
         done();
       });
+    $rootScope.$digest();
   });
 
   it('resolves when user is db admin', function(done) {
     userCtx.returns({ roles: [ '_admin' ] });
     service().then(done);
+    $rootScope.$digest();
   });
 
   it('rejects when settings errors', function(done) {
@@ -58,6 +63,7 @@ describe('Auth service', function() {
         chai.expect(err).to.equal('boom');
         done();
       });
+    $rootScope.$digest();
   });
 
   it('rejects when unknown permission', function(done) {
@@ -71,6 +77,7 @@ describe('Auth service', function() {
         chai.expect(err).to.equal(undefined);
         done();
       });
+    $rootScope.$digest();
   });
 
   it('rejects when user does not have permission', function(done) {
@@ -84,6 +91,7 @@ describe('Auth service', function() {
         chai.expect(err).to.equal(undefined);
         done();
       });
+    $rootScope.$digest();
   });
 
   it('rejects when user does not have all permissions', function(done) {
@@ -97,6 +105,7 @@ describe('Auth service', function() {
         chai.expect(err).to.equal(undefined);
         done();
       });
+    $rootScope.$digest();
   });
 
   it('resolves when user has all permissions', function(done) {
@@ -106,6 +115,7 @@ describe('Auth service', function() {
       { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
     ] });
     service([ 'can_backup_facilities', 'can_export_messages' ]).then(done);
+    $rootScope.$digest();
   });
 
 });
