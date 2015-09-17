@@ -27,36 +27,26 @@ describe('Enketo service', function() {
   };
 
   var service,
-      enketoInit,
-      transform,
-      dbGetAttachment,
-      dbGet,
-      dbQuery,
-      dbPost,
-      dbPut,
-      createObjectURL,
-      FileReader,
-      form,
+      enketoInit = sinon.stub(),
+      transform = sinon.stub(),
+      dbGetAttachment = sinon.stub(),
+      dbGet = sinon.stub(),
+      dbQuery = sinon.stub(),
+      dbPost = sinon.stub(),
+      dbPut = sinon.stub(),
+      UserSettings = sinon.stub(),
+      createObjectURL = sinon.stub(),
+      FileReader = sinon.stub(),
+      form = {
+        validate: sinon.stub(),
+        isValid: sinon.stub(),
+        getDataStr: sinon.stub(),
+        resetView: sinon.stub()
+      },
       $rootScope;
 
   beforeEach(function() {
     module('inboxApp');
-
-    enketoInit = sinon.stub();
-    dbGetAttachment = sinon.stub();
-    dbGet = sinon.stub();
-    dbQuery = sinon.stub();
-    dbPost = sinon.stub();
-    dbPut = sinon.stub();
-    transform = sinon.stub();
-    createObjectURL = sinon.stub();
-    FileReader = sinon.stub();
-    form = {
-      validate: sinon.stub(),
-      isValid: sinon.stub(),
-      getDataStr: sinon.stub(),
-      resetView: sinon.stub()
-    };
 
     window.EnketoForm = function() {
       return {
@@ -75,6 +65,7 @@ describe('Enketo service', function() {
       $provide.value('XSLT', { transform: transform });
       $provide.value('$window', { URL: { createObjectURL: createObjectURL } });
       $provide.value('FileReader', FileReader);
+      $provide.value('UserSettings', UserSettings);
     });
     inject(function(_$rootScope_, _Enketo_) {
       service = _Enketo_;
@@ -83,7 +74,7 @@ describe('Enketo service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(dbGetAttachment, dbGet, dbQuery, dbPost, dbPut, transform, createObjectURL, FileReader);
+    KarmaUtils.restore(enketoInit, dbGetAttachment, dbGet, dbQuery, dbPost, dbPut, transform, createObjectURL, FileReader, UserSettings, form.validate, form.isValid, form.getDataStr, form.resetView);
   });
 
   describe('render', function() {
@@ -250,6 +241,8 @@ describe('Enketo service', function() {
       var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
       form.getDataStr.returns(content);
       dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
+      UserSettings.callsArgWith(0, null, { contact_id: '123' });
+      dbGet.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' } ));
       service.save('V', form)
         .then(function(actual) {
           chai.expect(form.validate.callCount).to.equal(1);
@@ -257,6 +250,9 @@ describe('Enketo service', function() {
           chai.expect(form.getDataStr.callCount).to.equal(1);
           chai.expect(form.resetView.callCount).to.equal(1);
           chai.expect(dbPost.callCount).to.equal(1);
+          chai.expect(UserSettings.callCount).to.equal(1);
+          chai.expect(dbGet.callCount).to.equal(1);
+          chai.expect(dbGet.args[0][0]).to.equal('123');
           chai.expect(actual._id).to.equal('5');
           chai.expect(actual._rev).to.equal('1-abc');
           chai.expect(actual.content).to.equal(content);
@@ -265,10 +261,12 @@ describe('Enketo service', function() {
           chai.expect(actual.form).to.equal('V');
           chai.expect(actual.type).to.equal('data_record');
           chai.expect(actual.content_type).to.equal('xml');
+          chai.expect(actual.contact._id).to.equal('123');
+          chai.expect(actual.from).to.equal('555');
           done();
         })
         .catch(done);
-      digest(3);
+      digest(4);
     });
 
     it('updates report', function(done) {

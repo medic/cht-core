@@ -170,7 +170,7 @@ require('moment/locales');
             function formatResult(doc) {
               return doc && format.contact(doc);
             }
-            $('.update-facility [name=facility]').select2({
+            $('.update-facility [name=facility], #edit-user-profile [name=contact]').select2({
               id: function(doc) {
                 return doc._id;
               },
@@ -379,7 +379,8 @@ require('moment/locales');
             fullname: user.fullname,
             email: user.email,
             phone: user.phone,
-            language: { code: user.language }
+            language: { code: user.language },
+            contact_id: user.contact_id
           };
           if (callback) {
             callback(user);

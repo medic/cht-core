@@ -48,6 +48,7 @@ var modal = require('../modules/modal');
             type: getType(user.type),
             language: user.language
           };
+          $('#edit-user-profile [name=contact]').select2('val', user.contact_id || '');
         } else {
           $scope.editUserModel = {};
         }
@@ -94,7 +95,8 @@ var modal = require('../modules/modal');
           language: $scope.editUserModel.language &&
                     $scope.editUserModel.language.code,
           facility_id: $scope.editUserModel.facility &&
-                       $scope.editUserModel.facility._id
+                       $scope.editUserModel.facility._id,
+          contact_id: $('#edit-user-profile [name=contact]').val()
         };
       };
 

@@ -1,7 +1,7 @@
 /* globals EnketoForm */
 angular.module('inboxServices').service('Enketo', [
-  '$window', '$log', '$q', 'DB', 'XSLT', 'FileReader',
-  function($window, $log, $q, DB, XSLT, FileReader) {
+  '$window', '$log', '$q', 'DB', 'XSLT', 'FileReader', 'UserSettings',
+  function($window, $log, $q, DB, XSLT, FileReader, UserSettings) {
     var objUrls = [];
 
     var replaceJavarosaMediaWithLoaders = function(formDocId, form) {
@@ -98,34 +98,39 @@ angular.module('inboxServices').service('Enketo', [
       return fields;
     };
 
-    var getContact = function(id) {
-      if (id) {
-        return DB.get().get(id);
-      }
-      return $q.resolve();
-    };
-
-    var update = function(formInternalId, record, docId, contactId) {
+    var update = function(formInternalId, record, docId) {
       // update an existing doc.  For convenience, get the latest version
       // and then modify the content.  This will avoid most concurrent
       // edits, but is not ideal.
-      return getContact(contactId)
-        .then(function(contact) {
-          return DB.get().get(docId).then(function(doc) {
-            doc.content = record;
-            doc.fields = recordToJs(record);
-            doc.contact = contact;
-            doc.from = contact && contact.phone;
-            return DB.get().put(doc).then(function(res) {
-              doc._rev = res.rev;
-              return $q.resolve(doc);
-            });
-          });
+      return DB.get().get(docId).then(function(doc) {
+        doc.content = record;
+        doc.fields = recordToJs(record);
+        return DB.get().put(doc).then(function(res) {
+          doc._rev = res.rev;
+          return $q.resolve(doc);
         });
+      });
     };
 
-    var create = function(formInternalId, record, contactId) {
-      return getContact(contactId)
+    var getContactId = function() {
+      return $q(function(resolve, reject) {
+        UserSettings(function(err, user) {
+          if (err) {
+            return reject(err);
+          }
+          if (!user || !user.contact_id) {
+            return reject(new Error('User has no associated contact.'));
+          }
+          resolve(user.contact_id);
+        });
+      });
+    };
+
+    var create = function(formInternalId, record) {
+      return getContactId()
+        .then(function(contactId) {
+          return DB.get().get(contactId);
+        })
         .then(function(contact) {
           var doc = {
             content: record,
@@ -152,8 +157,6 @@ angular.module('inboxServices').service('Enketo', [
       }
       var result;
       var record = form.getDataStr();
-      // TODO get the current logged-in user, and pass his docId as the final
-      // argument to update()/create()
       if (docId) {
         result = update(formInternalId, record, docId);
       } else {

@@ -57,8 +57,11 @@ var _ = require('underscore'),
   inboxServices.factory('UserSettings', ['DB', 'Session',
     function(DB, Session) {
       return function(callback) {
-        var id = 'org.couchdb.user:' + Session.userCtx().name;
-        getWithRemoteFallback(DB, id, callback);
+        var userCtx = Session.userCtx();
+        if (!userCtx) {
+          return callback(new Error('UserCtx not found.'));
+        }
+        getWithRemoteFallback(DB, 'org.couchdb.user:' + userCtx.name, callback);
       };
     }
   ]);
@@ -110,7 +113,8 @@ var _ = require('underscore'),
             phone: setting.phone,
             facility: getFacility(user, facilities),
             type: getType(user, admins),
-            language: { code: setting.language }
+            language: { code: setting.language },
+            contact_id: setting.contact_id
           };
         });
       };
