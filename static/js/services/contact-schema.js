@@ -1,5 +1,64 @@
 var _ = require('underscore');
 
+var CATCHMENT_AREA = {
+  title: '{{name}}',
+  badge: 'fa-home',
+  fields: {
+    name: {
+      type: 'string',
+      required: true,
+    },
+    health_centre: {
+      type: 'db:health_centre',
+      required: true,
+    },
+    primary_contact: {
+      type: 'db:person',
+      required: true,
+    },
+    external_id: 'string',
+    notes: 'text',
+  },
+};
+
+var DISTRICT = {
+  title: '{{name}}',
+  badge: 'fa-building',
+  fields: {
+    name: {
+      type: 'string',
+      required: true,
+    },
+    primary_contact: {
+      type: 'db:person',
+      required: true,
+    },
+    external_id: 'string',
+    notes: 'text',
+  },
+};
+
+var HEALTH_CENTRE = {
+  title: '{{name}}',
+  badge: 'fa-hospital-a',
+  fields: {
+    name: {
+      type: 'string',
+      required: true,
+    },
+    district: {
+      type: 'db:district',
+      required: true,
+    },
+    primary_contact: {
+      type: 'db:person',
+      required: true,
+    },
+    external_id: 'string',
+    notes: 'text',
+  },
+};
+
 var PERSON = {
   title: '{{name}}',
   badge: 'fa-user',
@@ -14,7 +73,7 @@ var PERSON = {
     },
     code: 'string',
     notes: 'text',
-    parent: 'db:clinic',
+    primary_location: 'custom:facility',
   },
 };
 
@@ -34,11 +93,12 @@ function normalise(type, schema) {
       conf = { type: conf };
       fields[name] = conf;
     }
-    if(conf.type.match('^db:')) {
-      conf.db_type = conf.type.substring(3);
-      conf.type = 'db';
+    var matches = conf.type.match('^(db|custom):');
+    if(matches) {
+      conf[matches[1] + '_type'] = conf.type.substring(matches[0].length);
+      conf.type = matches[1];
       if(!conf.title) {
-        conf.title = 'name';
+        conf.title = '{{name}}';
       }
     }
   });
@@ -50,6 +110,9 @@ angular.module('inboxServices').service('ContactSchema', [
     return {
       get: function() {
         return {
+          catchment_area: normalise('catchment_area', CATCHMENT_AREA),
+          district: normalise('district', DISTRICT),
+          health_centre: normalise('health_centre', HEALTH_CENTRE),
           person: normalise('person', PERSON),
         };
       },
