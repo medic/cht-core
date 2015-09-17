@@ -1,6 +1,6 @@
 var _ = require('underscore');
 
-var CATCHMENT_AREA = {
+var CLINIC = {
   title: '{{name}}',
   badge: 'fa-home',
   fields: {
@@ -8,11 +8,11 @@ var CATCHMENT_AREA = {
       type: 'string',
       required: true,
     },
-    health_centre: {
-      type: 'db:health_centre',
+    parent: {
+      type: 'db:health_center',
       required: true,
     },
-    primary_contact: {
+    contact: {
       type: 'db:person',
       required: true,
     },
@@ -21,7 +21,7 @@ var CATCHMENT_AREA = {
   },
 };
 
-var DISTRICT = {
+var DISTRICT_HOSPITAL = {
   title: '{{name}}',
   badge: 'fa-building',
   fields: {
@@ -29,7 +29,7 @@ var DISTRICT = {
       type: 'string',
       required: true,
     },
-    primary_contact: {
+    contact: {
       type: 'db:person',
       required: true,
     },
@@ -38,7 +38,7 @@ var DISTRICT = {
   },
 };
 
-var HEALTH_CENTRE = {
+var HEALTH_CENTER = {
   title: '{{name}}',
   badge: 'fa-hospital-a',
   fields: {
@@ -46,11 +46,11 @@ var HEALTH_CENTRE = {
       type: 'string',
       required: true,
     },
-    district: {
-      type: 'db:district',
+    parent: {
+      type: 'db:district_hospital',
       required: true,
     },
-    primary_contact: {
+    contact: {
       type: 'db:person',
       required: true,
     },
@@ -73,7 +73,7 @@ var PERSON = {
     },
     code: 'string',
     notes: 'text',
-    primary_location: 'custom:facility',
+    parent: 'custom:facility',
   },
 };
 
@@ -110,9 +110,9 @@ angular.module('inboxServices').service('ContactSchema', [
     return {
       get: function() {
         return {
-          catchment_area: normalise('catchment_area', CATCHMENT_AREA),
-          district: normalise('district', DISTRICT),
-          health_centre: normalise('health_centre', HEALTH_CENTRE),
+          clinic: normalise('clinic', CLINIC),
+          district_hospital: normalise('district_hospital', DISTRICT_HOSPITAL),
+          health_center: normalise('health_center', HEALTH_CENTER),
           person: normalise('person', PERSON),
         };
       },

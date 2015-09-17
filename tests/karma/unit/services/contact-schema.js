@@ -63,7 +63,7 @@ describe('ContactSchema service', function() {
             notes: {
               type: 'text',
             },
-            primary_location: {
+            parent: {
               type: 'custom',
               custom_type: 'facility',
               title: '{{name}}',
@@ -73,10 +73,10 @@ describe('ContactSchema service', function() {
       });
     });
 
-    describe('`district`', function() {
+    describe('`district_hospital`', function() {
       it('has a simple default', function() {
-        assert.deepEqual(service.get().district, {
-          type: 'district',
+        assert.deepEqual(service.get().district_hospital, {
+          type: 'district_hospital',
           title: '{{name}}',
           badge: 'fa-building',
           fields: {
@@ -84,7 +84,7 @@ describe('ContactSchema service', function() {
               type: 'string',
               required: true,
             },
-            primary_contact: {
+            contact: {
               type: 'db',
               db_type: 'person',
               required: true,
@@ -101,10 +101,10 @@ describe('ContactSchema service', function() {
       });
     });
 
-    describe('`health_centre`', function() {
+    describe('`health_center`', function() {
       it('has a simple default', function() {
-        assert.deepEqual(service.get().health_centre, {
-          type: 'health_centre',
+        assert.deepEqual(service.get().health_center, {
+          type: 'health_center',
           title: '{{name}}',
           badge: 'fa-hospital-a',
           fields: {
@@ -112,13 +112,13 @@ describe('ContactSchema service', function() {
               type: 'string',
               required: true,
             },
-            district: {
+            parent: {
               type: 'db',
-              db_type: 'district',
+              db_type: 'district_hospital',
               required: true,
               title: '{{name}}',
             },
-            primary_contact: {
+            contact: {
               type: 'db',
               db_type: 'person',
               required: true,
@@ -135,10 +135,10 @@ describe('ContactSchema service', function() {
       });
     });
 
-    describe('`catchment_area`', function() {
+    describe('`clinic`', function() {
       it('has a simple default', function() {
-        assert.deepEqual(service.get().catchment_area, {
-          type: 'catchment_area',
+        assert.deepEqual(service.get().clinic, {
+          type: 'clinic',
           title: '{{name}}',
           badge: 'fa-home',
           fields: {
@@ -146,13 +146,13 @@ describe('ContactSchema service', function() {
               type: 'string',
               required: true,
             },
-            health_centre: {
+            parent: {
               type: 'db',
-              db_type: 'health_centre',
+              db_type: 'health_center',
               required: true,
               title: '{{name}}'
             },
-            primary_contact: {
+            contact: {
               type: 'db',
               db_type: 'person',
               required: true,
