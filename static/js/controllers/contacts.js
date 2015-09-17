@@ -16,6 +16,9 @@ var _ = require('underscore'),
       $scope.selected = null;
 
       $scope.titleFor = function(doc) {
+        if(!doc) {
+          return '';
+        }
         var titleFormat = ContactSchema.get()[doc.type].title;
         return titleFormat.replace(/\{\{([^}]+)\}\}/g, function(all, name) {
           return doc[name];
