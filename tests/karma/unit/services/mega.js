@@ -43,13 +43,34 @@ describe('Mega service', function() {
       var xml = service.jsToFormInstanceData(js);
 
       // then
-      assert.equal(xml, '<person>' +
+      assert.equal(xml,
+        '<person>' +
           '<name>Abraham Apple</name>' +
           '<phone>+447890123456</phone>' +
           '<code>morse</code>' +
           '<notes>Mr. Apple is a big-time Charlie.  1 &lt; 2.</notes>' +
           '<parent>asdf-123-zxcv</parent>' +
-          '</person>');
+        '</person>');
+    });
+
+    it('converts couch object values to IDs', function() {
+      // given
+      var js = {
+        _id: 'xyz-123',
+        type: 'person',
+        name: 'huxley',
+        parent: { _id:'xxx-111', name:'meridian' },
+      };
+
+      // when
+      var xml = service.jsToFormInstanceData(js);
+
+      // then
+      assert.equal(xml,
+        '<person>' +
+          '<name>huxley</name>' +
+          '<parent>xxx-111</parent>' +
+        '</person>');
     });
   });
 

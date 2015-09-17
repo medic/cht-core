@@ -77,6 +77,7 @@ angular.module('inboxServices').service('Mega', [
     this.jsToFormInstanceData = function(obj) {
       var root = $('<' + obj.type + '>');
       _.each(obj, function(val, key) {
+        val = val._id || val;
         if(!/^(_|type$)/.test(key)) {
           $('<' + key + '>', { text: val }).appendTo(root);
         }
