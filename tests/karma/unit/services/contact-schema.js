@@ -64,8 +64,7 @@ describe('ContactSchema service', function() {
               type: 'text',
             },
             parent: {
-              type: 'custom',
-              custom_type: 'facility',
+              type: 'facility',
             },
           },
         });

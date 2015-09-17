@@ -4,20 +4,20 @@ angular.module('inboxServices').service('Mega', [
   function() {
     var X = {
       extraAttributesFor: function(conf) {
-        var typeString = typeof conf === 'string'? conf: conf.type,
-            extras = {};
-        if(/^db:/.test(typeString)) {
-          extras.appearance = 'dbObject';
-          extras['data-db-type'] = typeString.substring(3);
+        var extras = {};
+        var typeString = conf.type;
+        if(typeString === 'db' || typeString === 'custom') {
+          extras.appearance = typeString + '-object';
+          extras['data-' + typeString + '-type'] = conf[typeString + '_type'];
         }
         return extras;
       },
       getBindingType: function(conf) {
-        var typeString = typeof conf === 'string'? conf: conf.type;
-        if(/^db:/.test(typeString)) {
+        var typeString = conf.type;
+        if(typeString === 'db' || typeString === 'custom') {
           return 'string';
         }
-        return typeString;
+        return conf.type;
       },
       getInputType: function(conf) {
         return 'TODO:' + conf;

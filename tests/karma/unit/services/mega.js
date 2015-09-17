@@ -4,6 +4,17 @@ describe('Mega service', function() {
   var service,
       assert = chai.assert;
 
+  var equal = assert.equal;
+  assert.equal = function() {
+    try {
+      equal.apply(this, arguments);
+    } catch(e) {
+      throw new Error(e +
+          '\nA: ' + arguments[0] +
+          '\nB: ' + arguments[1]);
+    }
+  };
+
   beforeEach(function() {
     module('inboxApp');
     inject(function(_Mega_) {
@@ -49,7 +60,9 @@ describe('Mega service', function() {
         type: 'person',
         title: '{{name}}',
         fields: {
-          name: 'string',
+          name: {
+            type: 'string',
+          },
         },
       };
 
@@ -126,7 +139,10 @@ describe('Mega service', function() {
         type: 'person',
         title: '{{name}}',
         fields: {
-          loc: 'db:location',
+          loc: {
+            type: 'db',
+            db_type: 'location',
+          },
         },
       };
 
@@ -140,8 +156,35 @@ describe('Mega service', function() {
             '<loc/><meta><instanceID/></meta></person></instance>' +
             '<bind nodeset="/person/loc" type="string"/></model></h:head>' +
           '<h:body>' +
-            '<input ref="/person/loc" appearance="dbObject" data-db-type="location">' +
+            '<input ref="/person/loc" appearance="db-object" data-db-type="location">' +
               '<label>{{\'person.loc\' | translate}}</label></input>' +
+          '</h:body></h:html>');
+    });
+
+    it('handles facility fields', function() {
+      // given
+      var schema = {
+        type: 'person',
+        title: '{{name}}',
+        fields: {
+          parent: {
+            type: 'facility',
+          },
+        },
+      };
+
+      // when
+      var xform = service.generateXform(schema);
+
+      // then
+      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
+          '<h:head><h:title>{{\'person.new\' | translate}}</h:title>' +
+          '<model><instance><person id="person" version="1">' +
+            '<parent/><meta><instanceID/></meta></person></instance>' +
+            '<bind nodeset="/person/parent" type="facility"/></model></h:head>' +
+          '<h:body>' +
+            '<input ref="/person/parent">' +
+              '<label>{{\'person.parent\' | translate}}</label></input>' +
           '</h:body></h:html>');
     });
   });

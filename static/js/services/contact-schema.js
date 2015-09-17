@@ -73,7 +73,7 @@ var PERSON = {
     },
     code: 'string',
     notes: 'text',
-    parent: 'custom:facility',
+    parent: 'facility',
   },
 };
 
@@ -93,7 +93,7 @@ function normalise(type, schema) {
       conf = { type: conf };
       fields[name] = conf;
     }
-    var matches = conf.type.match('^(db|custom):');
+    var matches = conf.type.match('^(db):');
     if(matches) {
       conf[matches[1] + '_type'] = conf.type.substring(matches[0].length);
       conf.type = matches[1];

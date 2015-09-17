@@ -10,7 +10,7 @@ define( function( require, exports, module ) {
     var $ = require( 'jquery' );
     require( 'enketo-core/src/js/plugins' );
 
-    var pluginName = 'dbobjectwidget';
+    var pluginName = 'facilitywidget';
 
     /**
      * Allows drop-down selecters for db objects.
@@ -21,31 +21,30 @@ define( function( require, exports, module ) {
      * @param {*=} e     event
      */
 
-    function Dbobjectwidget( element, options ) {
+    function Facilitywidget( element, options ) {
         this.namespace = pluginName;
         Widget.call( this, element, options );
         this._init();
     }
 
     //copy the prototype functions from the Widget super class
-    Dbobjectwidget.prototype = Object.create( Widget.prototype );
+    Facilitywidget.prototype = Object.create( Widget.prototype );
 
     //ensure the constructor is the new one
-    Dbobjectwidget.prototype.constructor = Dbobjectwidget;
+    Facilitywidget.prototype.constructor = Facilitywidget;
 
-    Dbobjectwidget.prototype._init = function() {
-        var e = $(this.element);
+    Facilitywidget.prototype._init = function() {
+        var e = $(this.element).parent();
 
         var loader = $('<div class="loader"/></div>');
         var textInput = e.find('input');
         var initialValue = textInput.val();
         var container = $('<div/>');
-        var dbObjectType = textInput.attr('data-type-xml');
         container.append(loader);
         textInput.replaceWith(container);
 
         // TODO this may be configured per-type
-        var titleString = '{{name}} ({{phone}})';
+        var titleString = '{{name}}';
         var titleFor = function(doc) {
             return titleString.replace(/\{\{[^}]*\}\}/g, function(m) {
                 return doc[m.substring(2, m.length-2)];
@@ -54,14 +53,18 @@ define( function( require, exports, module ) {
 
         /* global PouchDB */
         new PouchDB('http://localhost:5988/medic')
-            .query('medic/doc_by_type', {include_docs:true, key:[dbObjectType]})
+            .query('medic/facilities', {include_docs:true})
             .then(function(res) {
                 loader.remove();
                 var selecter = $('<select/>');
                 selecter.attr('name', textInput.attr('name'));
                 selecter.attr('data-type-xml', textInput.attr('data-type-xml'));
                 container.append(selecter);
-                var rows = _.sortBy(res.rows, function(row) {
+		// TODO we shouldn't have to manually remove persons here!
+                var rows = _.filter(res.rows, function(row) {
+		    return row.doc.type !== 'person';
+		});
+		rows = _.sortBy(rows, function(row) {
                     return titleFor(row.doc);
                 });
                 _.forEach(rows, function(row) {
@@ -72,7 +75,7 @@ define( function( require, exports, module ) {
             });
     };
 
-    Dbobjectwidget.prototype.destroy = function( /* element */ ) {};
+    Facilitywidget.prototype.destroy = function( /* element */ ) {};
 
     $.fn[ pluginName ] = function( options, event ) {
         return this.each( function() {
@@ -82,7 +85,7 @@ define( function( require, exports, module ) {
             options = options || {};
 
             if ( !data && typeof options === 'object' ) {
-                $this.data( pluginName, ( data = new Dbobjectwidget( this, options, event ) ) );
+                $this.data( pluginName, ( data = new Facilitywidget( this, options, event ) ) );
             } else if ( data && typeof options === 'string' ) {
                 data[ options ]( this );
             }
@@ -91,6 +94,8 @@ define( function( require, exports, module ) {
 
     module.exports = {
         'name': pluginName,
-        'selector': '.or-appearance-db-object',
+        'selector': 'input[data-type-xml=facility]',
     };
 } );
+
+
