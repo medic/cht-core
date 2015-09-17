@@ -97,9 +97,6 @@ function normalise(type, schema) {
     if(matches) {
       conf[matches[1] + '_type'] = conf.type.substring(matches[0].length);
       conf.type = matches[1];
-      if(!conf.title) {
-        conf.title = '{{name}}';
-      }
     }
   });
   return clone;

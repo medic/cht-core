@@ -14,8 +14,27 @@ var _ = require('underscore'),
       $scope.filterModel.type = 'contacts';
       $scope.contacts = [];
       $scope.selected = null;
+
+      $scope.titleFor = function(doc) {
+        var titleFormat = ContactSchema.get()[doc.type].title;
+        return titleFormat.replace(/\{\{([^}]+)\}\}/g, function(all, name) {
+          return doc[name];
+        });
+      };
+
       $scope.selectedSchema = function() {
         return $scope.selected && ContactSchema.get()[$scope.selected.type];
+      };
+
+      $scope.selectedSchemaNormalFields = function() {
+        // TODO we should parse `title` for `selected.type` and remove referenced fields
+        if(!$scope.selected) {
+          return;
+        }
+        var fields = _.clone(ContactSchema.get()[$scope.selected.type].fields);
+        delete fields.name;
+        delete fields.parent;
+        return fields;
       };
 
       $scope.query = function(options) {

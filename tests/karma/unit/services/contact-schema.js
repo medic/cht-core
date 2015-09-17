@@ -66,7 +66,6 @@ describe('ContactSchema service', function() {
             parent: {
               type: 'custom',
               custom_type: 'facility',
-              title: '{{name}}',
             },
           },
         });
@@ -88,7 +87,6 @@ describe('ContactSchema service', function() {
               type: 'db',
               db_type: 'person',
               required: true,
-              title: '{{name}}',
             },
             external_id: {
               type: 'string',
@@ -116,13 +114,11 @@ describe('ContactSchema service', function() {
               type: 'db',
               db_type: 'district_hospital',
               required: true,
-              title: '{{name}}',
             },
             contact: {
               type: 'db',
               db_type: 'person',
               required: true,
-              title: '{{name}}',
             },
             external_id: {
               type: 'string',
@@ -150,13 +146,11 @@ describe('ContactSchema service', function() {
               type: 'db',
               db_type: 'health_center',
               required: true,
-              title: '{{name}}'
             },
             contact: {
               type: 'db',
               db_type: 'person',
               required: true,
-              title: '{{name}}'
             },
             external_id: {
               type: 'string',

@@ -35,33 +35,36 @@
       </div>
 
       <div class="body">
-        <h2>{{translateFor(selectedSchema().title, selected)}}</h2>
-        <h5>{{'contact.type.' + selected.type | translate}}</h5>
+        <h2>{{titleFor(selected)}}</h2>
+        <h5>{{'contact.type.' + selected.doc.type | translate}}</h5>
         <ul>
-          <li ng-repeat="(name, conf) in selectedSchema().fields">
-            <label>{{selected.type + '.field.' + name | translate}}</label>
+          <li ng-repeat="(name, conf) in selectedSchemaNormalFields()">
+            <label>{{selected.doc.type + '.field.' + name | translate}}</label>
             <p ng-switch="conf.type">
               <!-- TODO links to `select()` should probably be using ui-sref instead -->
-              <span ng-switch-when="phone"><a href="tel:{{selected[name]}}">{{selected[name] | translate}}</a></span>
-              <span ng-switch-when="db"><a ng-click="select(selected[name])">{{selected[name][conf.title] | translate}}</a></span>
+              <span ng-switch-when="phone"><a href="tel:{{selected[name]}}">{{selected[name]}}</a></span>
+              <span ng-switch-when="db"><a ng-click="select(selected[name]._id)">{{titleFor(selected[name])}}</a></span>
+              <span ng-switch-when="custom"><a ng-click="select(selected[name]._id)">{{titleFor(selected[name])}}</a></span>
               <span ng-switch-default>{{selected[name]}}</span>
             </p>
+          </li>
+          <li ng-repeat="parent in selected.parents">
+            <label>{{'contact.type.' + parent.type | translate}}</label>
+            <p><a ng-click="select(parent._id)">{{titleFor(parent)}}</a></p>
           </li>
           <li ng-if="selected.contactFor.length">
             <label>{{'Primary Contact For' | translate}}</label>
             <ul>
               <li class="row" ng-repeat="place in selected.contactFor">
                 <div class="col-sm-4">
-                  <a ui-sref="contacts.detail({ id: place.doc._id })">{{place.doc.name}}</a>
+                  <a ui-sref="contacts.detail({ id: place.doc._id })">{{titleFor(place.doc)}}</a>
                 </div>
                 <div class="col-sm-8" ng-bind-html="place.doc.parent | clinic"></div>
               </li>
             </ul>
           </li>
           <li ng-if="selected.children.length">
-            <label ng-show="selected.doc.type === 'district_hospital'">{{'Health Centers' | translate}}</label>
-            <label ng-show="selected.doc.type === 'health_center'">{{'Clinics' | translate}}</label>
-            <label ng-show="selected.doc.type === 'clinic'">{{'people' | translate}}</label>
+            <label>{{selected.doc.type + '.field.children' | translate}}</label>
             <ul>
               <li class="row" ng-repeat="child in selected.children">
                 <div class="col-sm-4">
