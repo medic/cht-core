@@ -67,7 +67,7 @@ describe('Mega service', function() {
           '</h:body></h:html>');
     });
 
-    it('handles required fields', function() {
+    it('handles *required* fields', function() {
       // given
       var schema = {
         type: 'person',
