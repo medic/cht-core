@@ -13,6 +13,7 @@
       $scope.formId = null;
 
       $scope.performAction = function(action) {
+        $scope.contentError = false;
         if (action.type === 'report') {
           $scope.loadingForm = true;
           $scope.formId = action.form;
@@ -22,6 +23,7 @@
               $scope.loadingForm = false;
             })
             .catch(function(err) {
+              $scope.contentError = true;
               $scope.loadingForm = false;
               $log.error('Error loading form.', err);
             });

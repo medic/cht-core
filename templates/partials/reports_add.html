@@ -4,7 +4,10 @@
       <div class="loader"></div>
     </div>
   </div>
-  <div class="col-sm-8 item-content" ng-show="!loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && contentError">
+    <div>{{'error.loading.form' | translate}}</div>
+  </div>
+  <div class="col-sm-8 item-content" ng-show="!loadingContent && !contentError">
     <div id="report-form" class="enketo">
       <div class="container pages"></div>
       <div class="form-footer">

@@ -664,6 +664,7 @@ require('moment/locales');
 
       Enketo.withAllForms()
         .then(function(forms) {
+          console.log('forms', forms);
           $scope.formDefinitions = forms;
         })
         .catch(function(err) {

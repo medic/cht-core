@@ -1,7 +1,7 @@
 /* globals EnketoForm */
 angular.module('inboxServices').service('Enketo', [
-  '$window', '$log', '$q', 'DB', 'XSLT', 'FileReader', 'UserSettings',
-  function($window, $log, $q, DB, XSLT, FileReader, UserSettings) {
+  '$window', '$log', '$q', 'DB', 'XSLT', 'FileReader', 'UserSettings', 'Auth',
+  function($window, $log, $q, DB, XSLT, FileReader, UserSettings, Auth) {
     var objUrls = [];
 
     var replaceJavarosaMediaWithLoaders = function(formDocId, form) {
@@ -63,26 +63,46 @@ angular.module('inboxServices').service('Enketo', [
         });
     };
 
-    this.render = function(wrapper, formInternalId, formInstanceData) {
-      return withFormByFormInternalId(formInternalId)
-        .then(function(doc) {
-          wrapper.find('.form-footer')
-                 .addClass('end')
-                 .find('.previous-page,.next-page')
-                 .addClass('disabled');
-          var formContainer = wrapper.find('.container').first();
-          formContainer.html(doc.html);
-          var form = new EnketoForm(wrapper.find('form').first(), {
-            modelStr: doc.model,
-            instanceStr: formInstanceData
+    var checkPermissions = function() {
+      return Auth('can_create_records')
+        .then(function() {
+          return $q(function(resolve, reject) {
+            UserSettings(function(err, settings) {
+              if (err) {
+                return reject(err);
+              }
+              if (!settings.contact_id) {
+                return reject(new Error('Your user does not have an associated contact. Talk to your administrator to correct this.'));
+              }
+              resolve();
+            });
           });
-          var loadErrors = form.init();
-          if (loadErrors && loadErrors.length) {
-            return $q.reject(loadErrors);
-          }
-          wrapper.show();
-          return $q.resolve(form);
         });
+    };
+
+    this.render = function(wrapper, formInternalId, formInstanceData) {
+      return checkPermissions()
+        .then(function() {
+          return withFormByFormInternalId(formInternalId)
+            .then(function(doc) {
+              wrapper.find('.form-footer')
+                     .addClass('end')
+                     .find('.previous-page,.next-page')
+                     .addClass('disabled');
+              var formContainer = wrapper.find('.container').first();
+              formContainer.html(doc.html);
+              var form = new EnketoForm(wrapper.find('form').first(), {
+                modelStr: doc.model,
+                instanceStr: formInstanceData
+              });
+              var loadErrors = form.init();
+              if (loadErrors && loadErrors.length) {
+                return $q.reject(loadErrors);
+              }
+              wrapper.show();
+              return $q.resolve(form);
+            });
+          });
     };
 
     var recordToJs = function(record) {

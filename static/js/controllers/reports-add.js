@@ -19,6 +19,7 @@
       };
 
       $scope.loadingContent = true;
+      $scope.contentError = false;
       $scope.saving = false;
 
       getSelected()
@@ -32,6 +33,7 @@
             })
             .catch(function(err) {
               $scope.loadingContent = false;
+              $scope.contentError = true;
               $log.error('Error loading form.', err);
             });
         })

@@ -13,8 +13,8 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Auth', ['Settings', 'Session',
-    function(Settings, Session) {
+  inboxServices.factory('Auth', ['$q', 'Settings', 'Session',
+    function($q, Settings, Session) {
 
       var hasAll = function(requiredPermissions, userRoles, config) {
         return _.every(requiredPermissions, function(permission) {
@@ -30,7 +30,7 @@ var _ = require('underscore');
         if (!_.isArray(requiredPermissions)) {
           requiredPermissions = [ requiredPermissions ];
         }
-        return new Promise(function(resolve, reject) {
+        return $q(function(resolve, reject) {
           var userCtx = Session.userCtx();
           if (!userCtx) {
             return reject(new Error('Not logged in'));

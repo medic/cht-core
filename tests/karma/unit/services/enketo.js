@@ -43,6 +43,7 @@ describe('Enketo service', function() {
         getDataStr: sinon.stub(),
         resetView: sinon.stub()
       },
+      Auth = sinon.stub(),
       $rootScope;
 
   beforeEach(function() {
@@ -66,6 +67,7 @@ describe('Enketo service', function() {
       $provide.value('$window', { URL: { createObjectURL: createObjectURL } });
       $provide.value('FileReader', FileReader);
       $provide.value('UserSettings', UserSettings);
+      $provide.value('Auth', Auth);
     });
     inject(function(_$rootScope_, _Enketo_) {
       service = _Enketo_;
@@ -74,13 +76,45 @@ describe('Enketo service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(enketoInit, dbGetAttachment, dbGet, dbQuery, dbPost, dbPut, transform, createObjectURL, FileReader, UserSettings, form.validate, form.isValid, form.getDataStr, form.resetView);
+    KarmaUtils.restore(enketoInit, dbGetAttachment, dbGet, dbQuery, dbPost, dbPut, transform, createObjectURL, FileReader, UserSettings, form.validate, form.isValid, form.getDataStr, form.resetView, Auth);
   });
 
   describe('render', function() {
 
+    it('renders error when user lacks permission', function(done) {
+      Auth.returns(KarmaUtils.mockPromise('no permission'));
+      service
+        .render(null, 'not-defined')
+        .then(function() {
+          done('Should not call callback');
+        })
+        .catch(function(actual) {
+          chai.expect(Auth.callCount).to.equal(1);
+          chai.expect(Auth.args[0][0]).to.equal('can_create_records');
+          chai.expect(actual).to.equal('no permission');
+          done();
+        });
+    });
+
+    it('renders error when user does not have associated contact', function(done) {
+      Auth.returns(KarmaUtils.mockPromise());
+      UserSettings.callsArgWith(0, null, { name: 'amanda' });
+      service
+        .render(null, 'not-defined')
+        .then(function() {
+          done('Should not call callback');
+        })
+        .catch(function(actual) {
+          chai.expect(actual.message).to.equal('Your user does not have an associated contact. Talk to your administrator to correct this.');
+          done();
+        });
+      digest(1);
+    });
+
     it('return error when form not found', function(done) {
       // given only irrelevant forms are available
+      Auth.returns(KarmaUtils.mockPromise());
+      UserSettings.callsArgWith(0, null, { contact_id: '123' });
       dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [] }));
       service
         .render(null, 'not-defined')
@@ -91,10 +125,12 @@ describe('Enketo service', function() {
           chai.expect(actual.message).to.equal('Requested form not found');
           done();
         });
-      digest(1);
+      digest(2);
     });
 
     it('return error when form initialisation fails', function(done) {
+      Auth.returns(KarmaUtils.mockPromise());
+      UserSettings.callsArgWith(0, null, { contact_id: '123' });
       dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
       dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xml'));
       transform
@@ -112,10 +148,12 @@ describe('Enketo service', function() {
           chai.expect(actual).to.deep.equal(expected);
           done();
         });
-      digest(2);
+      digest(3);
     });
 
     it('return form when everything works', function(done) {
+      Auth.returns(KarmaUtils.mockPromise());
+      UserSettings.callsArgWith(0, null, { contact_id: '123' });
       dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
       dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
       enketoInit.returns([]);
@@ -126,6 +164,8 @@ describe('Enketo service', function() {
       service
         .render($('<div></div>'), 'ok')
         .then(function() {
+          chai.expect(Auth.callCount).to.equal(1);
+          chai.expect(UserSettings.callCount).to.equal(1);
           chai.expect(transform.callCount).to.equal(2);
           chai.expect(transform.args[0][0]).to.equal('openrosa2html5form.xsl');
           chai.expect(transform.args[1][0]).to.equal('openrosa2xmlmodel.xsl');
@@ -135,10 +175,12 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
-      digest(2);
+      digest(3);
     });
 
     it('replaces img src with obj urls', function(done) {
+      Auth.returns(KarmaUtils.mockPromise());
+      UserSettings.callsArgWith(0, null, { contact_id: '123' });
       dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, '<div><img src="jr://myimg"></div>'))
@@ -166,10 +208,12 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
-      digest(2);
+      digest(3);
     });
 
     it('leaves img wrapped if failed to load', function(done) {
+      Auth.returns(KarmaUtils.mockPromise());
+      UserSettings.callsArgWith(0, null, { contact_id: '123' });
       dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, '<div><img src="jr://myimg"></div>'))
@@ -193,7 +237,7 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
-      digest(2);
+      digest(3);
     });
 
   });
